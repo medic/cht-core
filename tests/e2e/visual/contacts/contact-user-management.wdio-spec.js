@@ -10,21 +10,10 @@ const path = require('path');
 const { resizeWindowForScreenshots, generateScreenshot } = require('@utils/screenshots');
 
 describe('Contact List Page', () => {
-  const modifyRolePermissions = async (roleValue, addPermissions, removePermissions = []) => {
-    const roles = [roleValue];
-    const settings = await utils.getSettings();
-    const permissions = await utils.getUpdatedPermissions(roles, addPermissions, removePermissions);
-
-    await utils.updateSettings(
-      { roles: settings.roles, permissions: permissions},
-      { revert: true, ignoreReload: true, refresh: true, sync: true }
-    );
-  };
-
   const updateContactSummarySettings = async () => {
     await chtConfUtils.initializeConfigDir();
-    const contactSummaryFile = path.join(__dirname, 'contact-summary.templated.js');
-    const contactSummaryExtrasFile = path.join(__dirname, 'contact-summary-extras.js');
+    const contactSummaryFile = path.join(__dirname, 'config/contact-summary.templated.js');
+    const contactSummaryExtrasFile = path.join(__dirname, 'config/contact-summary-extras.js');
     const { contactSummary } = await chtConfUtils.compileNoolsConfig({ contactSummary: contactSummaryFile, contactSummaryExtras: contactSummaryExtrasFile });
     await utils.updateSettings(
       { contact_summary: contactSummary},
@@ -114,7 +103,7 @@ describe('Contact List Page', () => {
     });
 
     it('should show UHC sort', async () => {
-      await modifyRolePermissions('chw', ['can_view_uhc_stats', 'can_view_last_visited_date'], []);
+      await utils.updateRolePermissions('chw', ['can_view_uhc_stats', 'can_view_last_visited_date'], []);
       await commonPage.waitForPageLoaded();
       await commonPage.goToPeople();
       await sortPage.selectSortOrder('By date last visited');
@@ -124,7 +113,7 @@ describe('Contact List Page', () => {
 
     it('should show cares guides', async () => {
       await compileAndUploadForms();
-      await modifyRolePermissions('chw', [],['can_view_call_action', 'can_view_message_action']);
+      await utils.updateRolePermissions('chw', [],['can_view_call_action', 'can_view_message_action']);
       await commonPage.waitForPageLoaded();
       await commonPage.goToPeople();
       expect(await commonPage.isPeopleListPresent()).to.be.true;

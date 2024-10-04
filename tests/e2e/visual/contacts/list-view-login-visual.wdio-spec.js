@@ -8,16 +8,6 @@ const utils = require('@utils');
 const { resizeWindowForScreenshots, generateScreenshot } = require('@utils/screenshots');
 
 describe('Contact List Page', () => {
-  const updateRolePermissions = async (roleValue, addPermissions, removePermissions = []) => {
-    const roles = [roleValue];
-    const settings = await utils.getSettings();
-    const permissions = await utils.getUpdatedPermissions(roles, addPermissions, removePermissions);
-    await utils.updateSettings(
-      { roles: settings.roles, permissions },
-      { revert: true, ignoreReload: true, refresh: true, sync: true }
-    );
-  };
-
   const docs = dataFactory.createHierarchy({
     name: 'Janet Mwangi',
     user: true,
@@ -68,7 +58,7 @@ describe('Contact List Page', () => {
 
     it('should hide contacts page as tab and from menu option ' +
       'when can_view_contacts_tab permissions is enable but can_view_contact permission is not', async () => {
-      await updateRolePermissions('chw', [], ['can_view_contacts']);
+      await utils.updateRolePermissions('chw', [], ['can_view_contacts']);
       await commonPage.waitForPageLoaded();
       await commonPage.goToMessages();
       await (await commonPage.contactsTab()).waitForDisplayed({ reverse: true });
@@ -88,7 +78,7 @@ describe('Contact List Page', () => {
 
     it('should hide contacts page as tab, show from menu option ' +
       'when can_view_contact permissions is enable but can_view_contact permission is not', async () => {
-      await updateRolePermissions('chw', ['can_view_contacts'], ['can_view_contacts_tab']);
+      await utils.updateRolePermissions('chw', ['can_view_contacts'], ['can_view_contacts_tab']);
       await commonPage.waitForPageLoaded();
       await commonPage.goToMessages();
       await (await commonPage.contactsTab()).waitForDisplayed({ reverse: true });
@@ -112,7 +102,7 @@ describe('Contact List Page', () => {
 
     it('should hide contacts page as a tab and from menu option ' +
       'when can_view_contact and can_view_contact permissions are disable', async () => {
-      await updateRolePermissions('chw', [], ['can_view_contacts_tab', 'can_view_contacts']);
+      await utils.updateRolePermissions('chw', [], ['can_view_contacts_tab', 'can_view_contacts']);
       await commonPage.waitForPageLoaded();
       await commonPage.goToMessages();
       await (await commonPage.contactsTab()).waitForDisplayed({ reverse: true });
