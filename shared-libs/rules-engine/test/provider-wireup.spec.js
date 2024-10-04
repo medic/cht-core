@@ -72,6 +72,9 @@ const fixtures = [
 let clock;
 let wireup;
 let rulesStateStore;
+const currentUserContact = { _id: 'mock_user_id' };
+const currentUserSettings = { _id: 'org.couchdb.user:username' };
+
 const realSetTimeout = setTimeout;
 
 describe('provider-wireup integration tests', () => {
@@ -81,8 +84,8 @@ describe('provider-wireup integration tests', () => {
     clock = sinon.useFakeTimers(NOW);
     wireup = rewire('../src/provider-wireup');
     rulesStateStore = RestorableRulesStateStore();
-    sinon.stub(rulesStateStore, 'currentUserContact').returns({ _id: 'mock_user_id' });
-    sinon.stub(rulesStateStore, 'currentUserSettings').returns({ _id: 'org.couchdb.user:username' });
+    sinon.stub(rulesStateStore, 'currentUserContact').returns(currentUserContact);
+    sinon.stub(rulesStateStore, 'currentUserSettings').returns(currentUserSettings);
     wireup.__set__('rulesStateStore', rulesStateStore);
 
     db = await memdownMedic('../..');
@@ -90,6 +93,7 @@ describe('provider-wireup integration tests', () => {
 
     sinon.spy(db, 'put');
     sinon.spy(db, 'query');
+    sinon.spy(db, 'bulkDocs');
 
     provider = pouchdbProvider(db);
   });
@@ -160,6 +164,10 @@ describe('provider-wireup integration tests', () => {
   });
 
   describe('updateEmissionsFor', () => {
+    const targetAggregate = {
+      filterInterval: { start: 0, end: 1000 },
+      targets: [],
+    };
     beforeEach(async () => {
       await wireup.initialize(provider, engineSettings(), { });
     });
@@ -167,6 +175,8 @@ describe('provider-wireup integration tests', () => {
       sinon.stub(rulesStateStore, 'markDirty').resolves();
       sinon.stub(rulesStateStore, 'getMonthStartDate').returns(1);
       sinon.stub(rulesStateStore, 'storeTargetEmissions').resolves();
+      sinon.stub(rulesStateStore, 'aggregateStoredTargetEmissions')
+        .resolves({ aggregate: targetAggregate, isUpdated: false });
       sinon.stub(rulesStateStore, 'markFresh').resolves();
 
       const refreshRulesEmissions = sinon.stub().resolves({
@@ -177,6 +187,15 @@ describe('provider-wireup integration tests', () => {
 
       await wireup.updateEmissionsFor(provider, []);
       expect(rulesStateStore.markDirty.args).to.deep.eq([[[]]]);
+      expect(rulesStateStore.storeTargetEmissions.callCount).to.equal(1);
+      expect(rulesStateStore.aggregateStoredTargetEmissions.callCount).to.equal(1);
+      expect(db.bulkDocs.callCount).to.equal(1);
+      expect(db.bulkDocs.args[0][0].docs[0]).to.deep.include({
+        type: 'target',
+        targets: [],
+      });
+
+      expect(rulesStateStore.markFresh.args).to.deep.equal([[ Date.now(), []]]);
     });
 
     it('contact id', async () => {
@@ -184,32 +203,96 @@ describe('provider-wireup integration tests', () => {
       sinon.stub(rulesStateStore, 'isDirty').resolves(false);
       sinon.stub(rulesStateStore, 'getMonthStartDate').returns(1);
       sinon.stub(rulesStateStore, 'storeTargetEmissions').resolves();
+      sinon.stub(rulesStateStore, 'aggregateStoredTargetEmissions')
+        .resolves({ aggregate: targetAggregate, isUpdated: false });
       sinon.stub(rulesStateStore, 'markFresh').resolves();
 
       await wireup.updateEmissionsFor(provider, chtDocs.contact._id);
       expect(rulesStateStore.markDirty.args).to.deep.eq([[['patient']]]);
+      expect(rulesStateStore.storeTargetEmissions.callCount).to.equal(1);
+      expect(rulesStateStore.aggregateStoredTargetEmissions.callCount).to.equal(1);
+      expect(db.bulkDocs.callCount).to.equal(2);
+      const docTypes = db.bulkDocs.args[0][0].map(doc => doc.type);
+      expect([...new Set(docTypes)]).to.deep.equal(['task']);
+      expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
+        type: 'target',
+        targets: [],
+      });
+
+      expect(rulesStateStore.markFresh.args).to.deep.equal([[ Date.now(), ['patient']]]);
     });
 
     it('patient id', async () => {
       sinon.stub(rulesStateStore, 'markDirty').resolves();
       sinon.stub(rulesStateStore, 'getMonthStartDate').returns(1);
+      sinon.stub(rulesStateStore, 'storeTargetEmissions').resolves();
+      sinon.stub(rulesStateStore, 'aggregateStoredTargetEmissions')
+        .resolves({ aggregate: targetAggregate, isUpdated: false });
+      sinon.stub(rulesStateStore, 'markFresh').resolves();
+
       await wireup.updateEmissionsFor(provider, [chtDocs.contact.patient_id]);
       expect(rulesStateStore.markDirty.args).to.deep.eq([[['patient']]]);
+
+      expect(rulesStateStore.storeTargetEmissions.callCount).to.equal(1);
+      expect(rulesStateStore.aggregateStoredTargetEmissions.callCount).to.equal(1);
+      expect(db.bulkDocs.callCount).to.equal(2);
+      const docTypes = db.bulkDocs.args[0][0].map(doc => doc.type);
+      expect([...new Set(docTypes)]).to.deep.equal(['task']);
+      expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
+        type: 'target',
+        targets: [],
+      });
+
+      expect(rulesStateStore.markFresh.args).to.deep.equal([[ Date.now(), ['patient']]]);
     });
 
     it('unknown subject id still gets marked (headless scenario)', async () => {
       sinon.stub(rulesStateStore, 'markDirty').resolves();
       sinon.stub(rulesStateStore, 'getMonthStartDate').returns(1);
+      sinon.stub(rulesStateStore, 'storeTargetEmissions').resolves();
+      sinon.stub(rulesStateStore, 'aggregateStoredTargetEmissions')
+        .resolves({ aggregate: targetAggregate, isUpdated: false });
+      sinon.stub(rulesStateStore, 'markFresh').resolves();
+
       await wireup.updateEmissionsFor(provider, 'headless');
       expect(rulesStateStore.markDirty.args).to.deep.eq([[['headless']]]);
+
+      expect(rulesStateStore.storeTargetEmissions.callCount).to.equal(1);
+      expect(rulesStateStore.aggregateStoredTargetEmissions.callCount).to.equal(1);
+      expect(db.bulkDocs.callCount).to.equal(2);
+      const docTypes = db.bulkDocs.args[0][0].map(doc => doc.type);
+      expect([...new Set(docTypes)]).to.deep.equal(['task']);
+      expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
+        type: 'target',
+        targets: [],
+      });
+
+      expect(rulesStateStore.markFresh.args).to.deep.equal([[ Date.now(), ['headless']]]);
     });
 
     it('many', async () => {
       sinon.stub(rulesStateStore, 'markDirty').resolves();
       sinon.stub(rulesStateStore, 'getMonthStartDate').returns(1);
+      sinon.stub(rulesStateStore, 'storeTargetEmissions').resolves();
+      sinon.stub(rulesStateStore, 'aggregateStoredTargetEmissions')
+        .resolves({ aggregate: targetAggregate, isUpdated: false });
+      sinon.stub(rulesStateStore, 'markFresh').resolves();
+
       await wireup.updateEmissionsFor(provider, ['headless', 'patient', 'patient_id']);
       // dupes don't matter here
       expect(rulesStateStore.markDirty.args).to.deep.eq([[['patient', 'headless', 'patient']]]);
+
+      expect(rulesStateStore.storeTargetEmissions.callCount).to.equal(1);
+      expect(rulesStateStore.aggregateStoredTargetEmissions.callCount).to.equal(1);
+      expect(db.bulkDocs.callCount).to.equal(2);
+      const docTypes = db.bulkDocs.args[0][0].map(doc => doc.type);
+      expect([...new Set(docTypes)]).to.deep.equal(['task']);
+      expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
+        type: 'target',
+        targets: [],
+      });
+
+      expect(rulesStateStore.markFresh.args).to.deep.equal([[ Date.now(), ['patient', 'headless', 'patient']]]);
     });
 
     it('none', async () => {
@@ -225,7 +308,6 @@ describe('provider-wireup integration tests', () => {
       const rules = simpleNoolsTemplate('');
       const settings = { rules };
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
-      sinon.spy(db, 'bulkDocs');
       await wireup.initialize(provider, settings, {});
 
       const refreshRulesEmissions = sinon.stub().resolves({
@@ -242,6 +324,11 @@ describe('provider-wireup integration tests', () => {
       });
 
       expect(db.bulkDocs.callCount).to.eq(2);
+      expect(db.bulkDocs.args[0][0].docs.length).to.equal(1);
+      expect(db.bulkDocs.args[0][0].docs[0]).to.deep.include({
+        type: 'target',
+        targets: [],
+      });
       expect(db.bulkDocs.args[1][0][0]).to.nested.include({
         _id: 'headlessTask',
         type: 'task',
@@ -304,12 +391,18 @@ describe('provider-wireup integration tests', () => {
       const rules = simpleNoolsTemplate('');
       const settings = { rules };
       await wireup.initialize(provider, settings, {});
+      await wireup.updateEmissionsFor(provider); // make sure the state is up to date
+      rulesEmitter.getEmissionsFor.resetHistory();
+      db.bulkDocs.resetHistory();
+      db.query.resetHistory();
+
       await rulesStateStore.markFresh(Date.now(), 'fresh');
 
       const actual = await wireup.fetchTasksFor(provider, ['fresh']);
       expect(actual).to.be.empty;
       expect(rulesEmitter.getEmissionsFor.callCount).to.eq(1);
       expect(db.query.callCount).to.eq(1);
+      expect(db.bulkDocs.callCount).to.equal(0);
     });
 
     /*
@@ -348,7 +441,6 @@ describe('provider-wireup integration tests', () => {
         },
       });
 
-      sinon.spy(db, 'bulkDocs');
       clock.setSystemTime(moment('2000-01-01').valueOf());
       const emission = mockChtEmission();
       sinon.stub(rulesEmitter, 'getEmissionsFor').resolves({ tasks: [emission], targets: [] });
@@ -396,17 +488,42 @@ describe('provider-wireup integration tests', () => {
 
   describe('fetchTargets', () => {
     it('cht yields targets when tasks disabled', async () => {
+      sinon.spy(provider, 'commitTargetDoc');
       await wireup.initialize(provider, engineSettings({ enableTasks: false, enableTargets: true }), {});
       const targets = await wireup.fetchTargets(provider);
       expect(targets.length).to.be.gt(1);
       const target = targets.find(target => target.id === 'active-pregnancies-1+-visits');
       expect(target.value).to.deep.eq({ pass: 1, total: 1 });
+      expect(provider.commitTargetDoc.callCount).to.eq(1);
+      expect(provider.commitTargetDoc.args[0])
+        .excludingEvery(['goal', 'icon', 'subtitle_translation_key', 'translation_key', 'type'])
+        .to.deep.equal([
+          targets,
+          currentUserContact,
+          currentUserSettings,
+          moment().format('YYYY-MM'),
+          true
+        ]);
+
+      expect(await wireup.fetchTargets(provider)).to.deep.equal(targets);
+      expect(provider.commitTargetDoc.callCount).to.eq(2);
+      expect(provider.commitTargetDoc.args[1])
+        .excludingEvery(['goal', 'icon', 'subtitle_translation_key', 'translation_key', 'type'])
+        .to.deep.equal([
+          targets,
+          currentUserContact,
+          currentUserSettings,
+          moment().format('YYYY-MM'),
+          false
+        ]);
     });
 
-    it('cht yields nothing when tasks disabled', async () => {
+    it('cht yields nothing when targets disabled', async () => {
+      sinon.spy(provider, 'commitTargetDoc');
       await wireup.initialize(provider, engineSettings({ enableTasks: true, enableTargets: false }), {});
       const actual = await wireup.fetchTargets(provider);
       expect(actual).to.be.empty;
+      expect(provider.commitTargetDoc.callCount).to.eq(0);
     });
 
     it('aggregate target doc is written (latest)', async () => {
@@ -805,7 +922,7 @@ describe('provider-wireup integration tests', () => {
     });
 
     describe('during regular use', () => {
-      it('should do nothing when in same interval', async () => {
+      it('should save target docs when state is recalculated', async () => {
         const rules = simpleNoolsTemplate('');
         const settings = {
           rules,
@@ -831,8 +948,9 @@ describe('provider-wireup integration tests', () => {
 
         await withMockRefresher(() => wireup.fetchTasksFor(provider));
         expect(provider.commitTargetDoc.callCount).to.equal(1);
-        const currentInterval = { start: moment('2020-04-01').valueOf(), end: moment('2020-04-30').valueOf() };
-        await withMockRefresher(() => wireup.fetchTargets(provider, currentInterval));
+        expect(provider.commitTargetDoc.args[0][3]).to.equal('2020-04');
+        expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
+        await withMockRefresher(() => wireup.fetchTargets(provider));
 
         expect(provider.commitTargetDoc.callCount).to.equal(2);
         expect(provider.commitTargetDoc.args[1][3]).to.equal('2020-04');
@@ -867,6 +985,8 @@ describe('provider-wireup integration tests', () => {
         expect(provider.commitTargetDoc.callCount).to.equal(0);
         await withMockRefresher(() => wireup.fetchTasksFor(provider));
         expect(provider.commitTargetDoc.callCount).to.equal(1);
+        expect(provider.commitTargetDoc.args[0][3]).to.equal('2020-04');
+        expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
 
         clock.tick(5 * 60 * 60 * 1000); // 6 hours, it's now 2020-05-01 04:00:00
         await withMockRefresher(() => wireup.fetchTasksFor(provider));
@@ -918,10 +1038,11 @@ describe('provider-wireup integration tests', () => {
         await withMockRefresher(() => wireup.fetchTasksFor(provider));
 
         expect(provider.commitTargetDoc.callCount).to.equal(1);
+        expect(provider.commitTargetDoc.args[0][3]).to.equal('2020-04');
+        expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
 
         clock.tick(5 * 60 * 60 * 1000); // 6 hours, it's now 2020-05-01 04:00:00
-        const currentInterval = { start: moment('2020-05-01').valueOf(), end: moment('2020-05-31').valueOf() };
-        await withMockRefresher(() => wireup.fetchTargets(provider, currentInterval));
+        await withMockRefresher(() => wireup.fetchTargets(provider));
 
         expect(provider.commitTargetDoc.callCount).to.equal(3);
         expect(provider.commitTargetDoc.args[1][3]).to.equal('2020-04');
@@ -952,6 +1073,7 @@ describe('provider-wireup integration tests', () => {
       sinon.stub(provider, 'commitTaskDocs').resolves();
       sinon.stub(provider, 'allTasks').resolves([]);
       sinon.stub(provider, 'commitTargetDoc').resolves();
+      sinon.stub(provider, 'contactsBySubjectId').resolves([]);
 
       const settings = { rules: simpleNoolsTemplate(''), enableTargets: true };
       await wireup.initialize(provider, settings, {});
@@ -991,6 +1113,12 @@ describe('provider-wireup integration tests', () => {
           .on('queued', listeners.slice(-1)[0].queued)
           .on('running', listeners.slice(-1)[0].running);
 
+        listeners.push(generateListeners());
+        wireup
+          .updateEmissionsFor(provider)
+          .on('queued', listeners.slice(-1)[0].queued)
+          .on('running', listeners.slice(-1)[0].running);
+
         chai.expect(refreshRulesEmissions.callCount).to.equal(0);
         await nextTick();
 
@@ -1006,6 +1134,9 @@ describe('provider-wireup integration tests', () => {
 
         chai.expect(listeners[3].queued.callCount).to.equal(1);
         chai.expect(listeners[3].running.callCount).to.equal(0);
+
+        chai.expect(listeners[4].queued.callCount).to.equal(1);
+        chai.expect(listeners[4].running.callCount).to.equal(0);
 
         chai.expect(refreshRulesEmissions.callCount).to.equal(1);
         clock.tick(10000);
@@ -1029,6 +1160,8 @@ describe('provider-wireup integration tests', () => {
         chai.expect(listeners[3].queued.callCount).to.equal(1);
         chai.expect(listeners[3].running.callCount).to.equal(0);
 
+        chai.expect(listeners[4].queued.callCount).to.equal(1);
+        chai.expect(listeners[4].running.callCount).to.equal(0);
 
         await nextTick();
         await nextTick();
@@ -1054,6 +1187,9 @@ describe('provider-wireup integration tests', () => {
         chai.expect(listeners[3].queued.callCount).to.equal(1);
         chai.expect(listeners[3].running.callCount).to.equal(0);
 
+        chai.expect(listeners[4].queued.callCount).to.equal(1);
+        chai.expect(listeners[4].running.callCount).to.equal(0);
+
         promiseQueue.pop()(dummyEmissions);
         await nextTick();
         chai.expect(refreshRulesEmissions.callCount).to.equal(4);
@@ -1070,6 +1206,16 @@ describe('provider-wireup integration tests', () => {
 
         chai.expect(listeners[3].queued.callCount).to.equal(1);
         chai.expect(listeners[3].running.callCount).to.equal(1);
+
+        chai.expect(listeners[4].queued.callCount).to.equal(1);
+        chai.expect(listeners[4].running.callCount).to.equal(0);
+
+        promiseQueue.pop()(dummyEmissions);
+        await nextTick();
+        chai.expect(refreshRulesEmissions.callCount).to.equal(5);
+
+        chai.expect(listeners[4].queued.callCount).to.equal(1);
+        chai.expect(listeners[4].running.callCount).to.equal(1);
       });
     });
 

@@ -19,6 +19,7 @@ let rulesEngine;
 
 
 const TEST_START = 1500000000000;
+const TARGET_INTERVAL = moment(TEST_START).startOf('month').format('YYYY-MM');
 const TASK_ID_PREFIX = (taskId) => `task~org.couchdb.user:username~${taskId}`;
 const FACILITY_REMINDER_TASK_ID = 'report~pregnancy-facility-visit-reminder~anc.facility_reminder';
 const PREGNANCY_REMINDER_12_TASK_ID = 'pregReg~pregnancy-home-visit-week12~anc.pregnancy_home_visit.known_lmp';
@@ -179,8 +180,8 @@ describe(`Rules Engine Integration Tests`, () => {
 
         const targetDoc = db.bulkDocs.args[1][0].docs[0];
         expect(targetDoc).to.deep.include({
-          _id: `target~2017-07~user~org.couchdb.user:username`,
-          reporting_period: '2017-07',
+          _id: `target~${TARGET_INTERVAL}~user~org.couchdb.user:username`,
+          reporting_period: TARGET_INTERVAL,
         });
         expect(targetDoc.targets).to.deep.include({
           id: 'pregnancy-registrations-this-month',
@@ -233,6 +234,7 @@ describe(`Rules Engine Integration Tests`, () => {
           type: 'target',
           user: 'org.couchdb.user:username',
           owner: 'user',
+          reporting_period: TARGET_INTERVAL,
         });
 
         expect(db.bulkDocs.args[2][0].length).to.eq(1);
@@ -258,26 +260,13 @@ describe(`Rules Engine Integration Tests`, () => {
         const monthLater = await rulesEngine.fetchTasksFor(['patient']);
         expect(monthLater).to.have.property('length', 0);
         expect(db.bulkDocs.callCount).to.eq(5);
-        expect(db.bulkDocs.args[1][0].docs.length).to.eq(1);
-        expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
-          type: 'target',
-          user: 'org.couchdb.user:username',
-          owner: 'user',
-        });
-        expect(db.bulkDocs.args[1][0].docs.length).to.equal(1);
-        const date = moment(TEST_START + MS_IN_DAY).format('YYYY-MM');
-        expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
-          _id: `target~${date}~user~org.couchdb.user:username`,
-          type: 'target',
-          owner: 'user',
-          reporting_period: date,
-        });
 
+        // interval turnover
         expect(db.bulkDocs.args[3][0].docs[0]).to.deep.include({
-          _id: `target~${date}~user~org.couchdb.user:username`,
+          _id: `target~${TARGET_INTERVAL}~user~org.couchdb.user:username`,
           type: 'target',
           owner: 'user',
-          reporting_period: date,
+          reporting_period: TARGET_INTERVAL,
         });
 
         const dateNext = moment(TEST_START + MS_IN_DAY * 39).format('YYYY-MM');

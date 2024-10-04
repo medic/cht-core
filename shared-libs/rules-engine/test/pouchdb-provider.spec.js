@@ -222,7 +222,10 @@ describe('pouchdb provider', () => {
       const docTag = '2019-07';
       await pouchdbProvider(db).commitTargetDoc(targets, userContactDoc, userSettingsDoc, docTag);
 
-      expect(await db.get('target~2019-07~user~org.couchdb.user:username')).excluding('_rev').to.deep.eq({
+      const targetDocId = 'target~2019-07~user~org.couchdb.user:username';
+
+      const firstTargetDoc = await db.get(targetDocId);
+      expect(firstTargetDoc).excluding('_rev').to.deep.eq({
         _id: 'target~2019-07~user~org.couchdb.user:username',
         updated_date: moment().startOf('day').valueOf(),
         type: 'target',
@@ -234,11 +237,12 @@ describe('pouchdb provider', () => {
 
       const nextTargets = [{ id: 'target', score: 1 }];
       await pouchdbProvider(db).commitTargetDoc(nextTargets, userContactDoc, userSettingsDoc, docTag);
-      const ignoredUpdate = await db.get('target~2019-07~user~org.couchdb.user:username');
-      expect(ignoredUpdate._rev.startsWith('1-')).to.be.true;
+      const ignoredUpdate = await db.get(targetDocId);
+      expect(ignoredUpdate._rev).to.equal(firstTargetDoc._rev);
 
       await pouchdbProvider(db).commitTargetDoc(nextTargets, userContactDoc, userSettingsDoc, docTag, true);
-      expect(await db.get('target~2019-07~user~org.couchdb.user:username')).excluding('_rev').to.deep.eq({
+      const secondTargetDoc = await db.get(targetDocId);
+      expect(secondTargetDoc).excluding('_rev').to.deep.eq({
         _id: 'target~2019-07~user~org.couchdb.user:username',
         updated_date: moment().startOf('day').valueOf(),
         type: 'target',
@@ -247,7 +251,9 @@ describe('pouchdb provider', () => {
         targets: nextTargets,
         reporting_period: '2019-07',
       });
+      expect(secondTargetDoc._rev).not.to.equal(firstTargetDoc._rev);
     });
+
   });
 
   describe('contactsBySubjectId', () => {
