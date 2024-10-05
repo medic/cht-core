@@ -231,7 +231,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
     this.showConfirmExit = confirm;
   }
 
-   quitTraining() {
+  quitTraining() {
     this.globalActions.setTrainingCardFormId(null);
 
     if (this.nextUrl) {
