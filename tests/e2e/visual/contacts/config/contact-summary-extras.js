@@ -1,5 +1,6 @@
 const moment = require('moment');
 const today = moment().startOf('day');
+const now = Date.now();
 
 const isReportValid = function (report) {
   if (report.form && report.fields && report.reported_date) { return true; }
@@ -18,12 +19,44 @@ const pregnancDangerSignForms = ['pregnancy', 'pregnancy_home_visit', 'pregnancy
 const MAX_DAYS_IN_PREGNANCY = 42 * 7;
 const AVG_DAYS_IN_PREGNANCY = 280;
 
+const IMMUNIZATION_DOSES = [
+  ['hep_a_1', 'HA1'],
+  ['hep_a_2', 'HA2'],
+  ['flu', 'FLU'],
+  ['polio_0', 'OPV0'],
+  ['polio_1', 'OPV1'],
+  ['polio_2', 'OPV2'],
+  ['polio_3', 'OPV3'],
+  ['penta_1', 'PENTA1'],
+  ['penta_2', 'PENTA2'],
+  ['penta_3', 'PENTA3'],
+  ['rotavirus_1', 'ROTA1'],
+  ['rotavirus_2', 'ROTA2'],
+  ['rotavirus_3', 'ROTA3']
+];
+
 const IMMUNIZATION_LIST = [
   'hep_a',
   'flu',
   'polio',
   'penta',
   'rotavirus'
+];
+
+const immunizationForms = [
+  'PENTA1',
+  'PENTA2',
+  'PENTA3',
+  'OPV0',
+  'OPV1',
+  'OPV2',
+  'OPV3',
+  'ROTA1',
+  'ROTA2',
+  'ROTA3',
+  'FLU',
+  'HA1',
+  'HA2'
 ];
 
 const getField = (report, fieldPath) => ['fields', ...(fieldPath || '').split('.')]
@@ -389,6 +422,66 @@ function knowsHIVStatusInPast3Months(allReports) {
   return knows;
 }
 
+const addImmunizations = function(master, vaccines_received) {
+  IMMUNIZATION_DOSES.forEach(function(dose) {
+    if(!master[dose[0]]) {
+      master[dose[0]] = typeof vaccines_received === 'string' ?
+          vaccines_received.toUpperCase() === dose[1] :
+          vaccines_received['received_' + dose[0]] === 'yes';
+    }
+  });
+};
+
+function getAgeInMonths() {
+  let birthDate, ageInMs;
+  if (contact.date_of_birth && contact.date_of_birth !== '') {
+    birthDate = new Date(contact.date_of_birth);
+    ageInMs = new Date(Date.now() - birthDate.getTime());
+    return (Math.abs(ageInMs.getFullYear() - 1970) * 12) + ageInMs.getMonth();
+  }
+}
+
+const initImmunizations = function() {
+  var master = {};
+  IMMUNIZATION_DOSES.forEach(function(dose) {
+    master[dose[0]] = false;
+  });
+  return master;
+};
+
+const isSingleDose = function(name)  {
+  // Single doses wont be followed by an underscore in the list of doses
+  return IMMUNIZATION_DOSES.some(function(d) {
+    return d[0] === name;
+  });
+};
+
+function count(arr, fn) {
+  var c = 0;
+  for(var i=0; i<arr.length; ++i) {
+    if(fn(arr[i])) { ++c; }
+  }
+  return c;
+}
+
+const countDosesReceived = function(master, name) {
+  return count(IMMUNIZATION_DOSES, function(dose) {
+    return master[dose[0]] && dose[0].indexOf(name + '_') === 0;
+  });
+};
+
+function countDosesPossible(name) {
+  return count(IMMUNIZATION_DOSES, function(dose) {
+    return dose[0].indexOf(name + '_') === 0;
+  });
+}
+
+function countReportsSubmittedInWindow(form, end) {
+  return count(reports, function(r) {
+    return r.reported_date <= end && form.indexOf(r.form) !== -1;
+  });
+}
+
 module.exports = {
   today,
   MAX_DAYS_IN_PREGNANCY,
@@ -415,5 +508,14 @@ module.exports = {
   getFormArraySubmittedInWindow,
   getRecentANCVisitWithEvent,
   getField,
-  getRiskFactorsFromPregnancy
+  getRiskFactorsFromPregnancy,
+  now,
+  addImmunizations,
+  getAgeInMonths,
+  initImmunizations,
+  isSingleDose,
+  countDosesReceived,
+  countDosesPossible,
+  countReportsSubmittedInWindow,
+  immunizationForms,
 };

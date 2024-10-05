@@ -78,6 +78,11 @@ const deathCardSelectors = {
   deathPlace: () => $(`${DEATH_CARD_TEST_ID} div[test-id="contact.profile.death.place"] p.card-field-value`),
 };
 
+const INMUNIZATION_CARD_TEST_ID = `div[test-id="contact.profile.immunizations"]`;
+const inmunizationCardSelectors = {
+  inmunizationCard: () => $(INMUNIZATION_CARD_TEST_ID),
+};
+
 const search = async (query) => {
   if (!await (await searchSelectors.searchBox()).isDisplayed()) {
     await mobileSearchPage.performSearch(query);
@@ -386,6 +391,7 @@ module.exports = {
   reportsCardSelectors,
   pregnancyCardSelectors,
   deathCardSelectors,
+  inmunizationCardSelectors,
   selectLHSRowByText,
   selectRHSRowById,
   getReportFiltersText,

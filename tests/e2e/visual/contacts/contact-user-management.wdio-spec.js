@@ -81,9 +81,9 @@ describe('Contact List Page', () => {
       await generateScreenshot('people', 'condition-card-active-pregnancy');
       await commonPage.goToBase();
       await commonPage.goToPeople();
-      //await contactPage.selectLHSRowByText('Hawa Bass');
-      //await (await contactPage.pregnancyCardSelectors.pregnancyCard()).scrollIntoView();
-      //await generateScreenshot('people', 'condition-card-inmunization');
+      await contactPage.selectLHSRowByText('Hawa Bass');
+      await (await contactPage.inmunizationCardSelectors.inmunizationCard()).scrollIntoView();
+      await generateScreenshot('people', 'condition-card-inmunization');
     });
 
     it('should show profiles (area and branch)', async () => {
