@@ -4,7 +4,17 @@ const { today, MAX_DAYS_IN_PREGNANCY, isHighRiskPregnancy, getNewestReport, getS
   getSubsequentDeliveries, isAlive, isReadyForNewPregnancy, isReadyForDelivery, isActivePregnancy, countANCFacilityVisits,
   getAllRiskFactors, getLatestDangerSignsForPregnancy, getNextANCVisitDate,
   getMostRecentLMPDateForPregnancy, getMostRecentEDDForPregnancy, getDeliveryDate, getFormArraySubmittedInWindow,
-  getRecentANCVisitWithEvent, getAllRiskFactorExtra, getField } = extras;
+  getRecentANCVisitWithEvent, getAllRiskFactorExtra, getField,
+  now,
+  IMMUNIZATION_LIST,
+  addImmunizations,
+  getAgeInMonths,
+  initImmunizations,
+  isSingleDose,
+  countDosesReceived,
+  countDosesPossible,
+  countReportsSubmittedInWindow,
+  immunizationForms } = extras;
 
 //contact, reports, lineage are globally available for contact-summary
 const thisContact = contact;
@@ -309,6 +319,58 @@ const cards = [
 
       return fields;
     }
+  },
+  {
+    label: 'contact.profile.immunizations',
+    appliesToType: 'person',
+    appliesIf: function() {
+      return getAgeInMonths() < 144;
+    },
+    fields: function() {
+      var i, report;
+      var immunizations = initImmunizations();
+      for(i=0; i<reports.length; ++i) {
+        report = reports[i];
+        if (report.form === 'immunization_visit') {
+          if (report && report.fields && report.fields.vaccines_received) {
+            addImmunizations(immunizations, report.fields.vaccines_received);
+          }
+        } else if (report.form === 'C_IMM') {
+          addImmunizations(immunizations, report.fields);
+        }  else {
+          addImmunizations(immunizations, report.form);
+        }
+      }
+
+      var fields = [];
+
+      IMMUNIZATION_LIST.forEach(function(imm) {
+        var field = {
+          label: 'contact.profile.imm.' + imm,
+          translate: true,
+          width: 6,
+        };
+        if (isSingleDose(imm)) {
+          field.value = immunizations[imm] ? 'yes' : 'no';
+        } else {
+          field.value = 'contact.profile.imm.doses';
+          field.context = {
+            count: countDosesReceived(immunizations, imm),
+            total: countDosesPossible(imm),
+          };
+        }
+        fields.push(field);
+      });
+      if (!fields.length) {
+        fields.push({
+          label: 'contact.profile.imm.generic',
+          translate: true,
+          value: countReportsSubmittedInWindow(immunizationForms, now),
+          width: 12,
+        });
+      }
+      return fields;
+    },
   },
 
 ];

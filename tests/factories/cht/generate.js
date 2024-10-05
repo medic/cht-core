@@ -4,6 +4,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const deliveryFactory = require('@factories/cht/reports/delivery');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const pregnancyVisitFactory = require('@factories/cht/reports/pregnancy-visit');
+const immunizationFactory = require('@factories/cht/reports/inmunization');
 
 // Fixed collection of real-world data
 const FIRST_NAMES_FAMILY = ['Amanda', 'Beatrice', 'Dana', 'Fatima', 'Gina', 'Helen', 'Isabelle', 'Jessica', 'Ivy', 'Sara'];
@@ -16,7 +17,16 @@ const PHONE_NUMBERS = [
   '+256414345792'
 ];
 const PATIENT_IDS = [65421, 65422, 65423, 65424, 65425, 65426, 65427, 65428, 65429, 65430];
-const DATE_OF_BIRTHS = ['1999-02-01', '2022-02-01', '2013-02-01', '2016-02-01'];
+
+const calculateDateOfBirth = (age) => {
+  const today = new Date();
+  const birthYear = today.getFullYear() - age;
+  const birthMonth = today.getMonth() + 1;
+  const birthDay = today.getDate();
+  return `${birthYear}-${String(birthMonth).padStart(2, '0')}-${String(birthDay).padStart(2, '0')}`;
+};
+const AGES = [25, 2, 10, 7];
+const DATE_OF_BIRTHS = AGES.map(calculateDateOfBirth);
 
 const getReportContext = (patient, submitter) => {
   const daysAgo = Math.floor(Math.random() * 10) + 1;
@@ -58,7 +68,7 @@ const createDataWithFixedData = ({ healthCenter, user, nbrClinics = 10, nbrPerso
 
   const reports = [
     ...persons.map(person => [
-      //deliveryFactory.build(getReportContext(person, user)),
+      deliveryFactory.build(getReportContext(person, user)),
       pregnancyFactory.build(getReportContext(person, user)),
       pregnancyVisitFactory.build(getReportContext(person, user)),
     ]),
@@ -110,10 +120,10 @@ const createAdditionalPersons = (nbrPersons, clinic) => {
 
 const createReportsForPerson = (person, user) => {
   return [
-    deliveryFactory.build(getReportContext(person, user)),
-    pregnancyFactory.build(getReportContext(person, user)),
-    pregnancyVisitFactory.build(getReportContext(person, user))
-  ];
+      pregnancyFactory.build(getReportContext(person, user)),
+      pregnancyVisitFactory.build(getReportContext(person, user)),
+      immunizationFactory.build({contact: user, patient: person})
+    ];
 };
 
 const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
