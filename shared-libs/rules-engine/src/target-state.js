@@ -49,18 +49,32 @@ const clearEmissions = (state, contactIds) => {
   return clearEmissionsForContacts(state, contactIds);
 };
 
+const clearTargetEmissionsForContact = (emissions, contactId) => {
+  let isUpdated;
+  for (const emissionId of Object.keys(emissions)) {
+    const emission = emissions[emissionId];
+    if (emission[contactId]) {
+      delete emission[contactId];
+      isUpdated = true;
+    }
+  }
+
+  return isUpdated;
+};
+
+const clearEmissionsForContact = (state, contactId) => {
+  let isUpdated = false;
+  for (const targetId of Object.keys(state.targets)) {
+    isUpdated = clearTargetEmissionsForContact(state.targets[targetId].emissions, contactId) || isUpdated;
+  }
+  return isUpdated;
+};
+
 const clearEmissionsForContacts = (state, contactIds) => {
   let isUpdated = false;
+
   for (const contactId of contactIds) {
-    for (const targetId of Object.keys(state.targets)) {
-      for (const emissionId of Object.keys(state.targets[targetId].emissions)) {
-        const emission = state.targets[targetId].emissions[emissionId];
-        if (emission[contactId]) {
-          delete emission[contactId];
-          isUpdated = true;
-        }
-      }
-    }
+    isUpdated = clearEmissionsForContact(state, contactId) || isUpdated;
   }
 
   return isUpdated;
