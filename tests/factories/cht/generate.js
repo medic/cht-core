@@ -7,9 +7,17 @@ const pregnancyVisitFactory = require('@factories/cht/reports/pregnancy-visit');
 const immunizationFactory = require('@factories/cht/reports/inmunization');
 
 // Fixed collection of real-world data
-const FIRST_NAMES_FAMILY = ['Amanda', 'Beatrice', 'Dana', 'Fatima', 'Gina', 'Helen', 'Isabelle', 'Jessica', 'Ivy', 'Sara'];
+const FIRST_NAMES_FAMILY = [
+  'Amanda', 'Beatrice', 'Dana', 'Fatima',
+  'Gina', 'Helen', 'Isabelle', 'Jessica',
+  'Ivy', 'Sara'
+];
 const FIRST_NAMES = ['John', 'Hawa', 'Timmy', 'Ana'];
-const LAST_NAMES_FAMILY = ['Allen', 'Bass', 'Dearborn', 'Flair', 'Gorman', 'Hamburg', 'Ivanas', 'James', 'Moore', 'Taylor'];
+const LAST_NAMES_FAMILY = [
+  'Allen', 'Bass', 'Dearborn', 'Flair',
+  'Gorman', 'Hamburg', 'Ivanas', 'James',
+  'Moore', 'Taylor'
+];
 const PHONE_NUMBERS = [
   '+256414345783', '+256414345784', '+256414345785',
   '+256414345786', '+256414345787', '+256414345788',
@@ -105,7 +113,7 @@ const createAdditionalPersons = (nbrPersons, clinic) => {
   return Array
     .from({ length: nbrPersons - 1 })
     .map((_, i) => {
-      lastName = clinic.name.split(' ')[1];
+      const lastName = clinic.name.split(' ')[1];
       const additionalPersonName = `${FIRST_NAMES[i % FIRST_NAMES.length]} ${lastName}`;
       const additionalPhoneNumber = PHONE_NUMBERS[i % PHONE_NUMBERS.length];
       return personFactory.build({
@@ -120,10 +128,10 @@ const createAdditionalPersons = (nbrPersons, clinic) => {
 
 const createReportsForPerson = (person, user) => {
   return [
-      pregnancyFactory.build(getReportContext(person, user)),
-      pregnancyVisitFactory.build(getReportContext(person, user)),
-      immunizationFactory.build({contact: user, patient: person})
-    ];
+    pregnancyFactory.build(getReportContext(person, user)),
+    pregnancyVisitFactory.build(getReportContext(person, user)),
+    immunizationFactory.build({contact: user, patient: person})
+  ];
 };
 
 const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {

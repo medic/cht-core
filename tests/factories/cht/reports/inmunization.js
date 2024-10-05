@@ -42,7 +42,7 @@ const immunizationVisitFactory = {
       patient_name: patient.name,
       chw_name: patient.name,
       chw_phone: '',
-      chw_sms: `Nice work, ${patient.name}! ${patient.name} (${patient.patient_id}) attended their immunizations visit at the health facility. Keep up the good work. Thank you!`,
+      chw_sms: `Nice work`,
       visit_confirmed: 'yes',
       vaccines_received: {
         received_hep_a_1: 'no',
@@ -91,7 +91,7 @@ const immunizationVisitFactory = {
       },
       group_note: {
         default_chw_sms: 'default',
-        default_chw_sms_text: `Nice work, ${patient.name}! ${patient.name} (${patient.patient_id}) attended their immunizations visit at the health facility. Keep up the good work. Thank you!`,
+        default_chw_sms_text: `Nice work`,
         default_chw_sms_note: '',
         is_sms_edited: 'yes',
         g_chw_sms: ''

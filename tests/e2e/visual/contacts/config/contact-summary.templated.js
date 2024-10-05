@@ -36,7 +36,9 @@ const fields = [
   { appliesToType: '!person', label: 'contact', value: thisContact.contact && thisContact.contact.name, width: 4 },
   { appliesToType: '!person', label: 'contact.phone', value: thisContact.contact && thisContact.contact.phone, width: 4 },
   { appliesToType: 'clinic', label: 'Last Visited', value: '36 days ago', width: 4 },
-  { appliesToType: '!person', appliesIf: function () { return thisContact.parent && thisLineage[0]; }, label: 'contact.parent', value: thisLineage, filter: 'lineage' }
+  { appliesToType: '!person', appliesIf: function () {
+    return thisContact.parent && thisLineage[0]; 
+  }, label: 'contact.parent', value: thisLineage, filter: 'lineage' }
 ];
 
 if (thisContact.short_name) {
@@ -47,7 +49,9 @@ const cards = [
   {
     label: 'contact.profile.pregnancy.active',
     appliesToType: 'report',
-    appliesIf: function (report) { return isActivePregnancy(thisContact, allReports, report); },
+    appliesIf: function (report) {
+      return isActivePregnancy(thisContact, allReports, report); 
+    },
     fields: function (report) {
       const fields = [];
       const riskFactors = getAllRiskFactors(allReports, report);
@@ -94,11 +98,9 @@ const cards = [
         let riskValue = '';
         if (!riskFactors && riskFactorsCustom) {
           riskValue = riskFactorsCustom.join(', ');
-        }
-        else if (riskFactors.length > 1 || riskFactors && riskFactorsCustom) {
+        } else if (riskFactors.length > 1 || riskFactors && riskFactorsCustom) {
           riskValue = 'contact.profile.risk.multiple';
-        }
-        else {
+        } else {
           riskValue = 'contact.profile.danger_sign.' + riskFactors[0];
         }
         fields.push(
@@ -142,7 +144,9 @@ const cards = [
         hivTested = getField(followUpReport, 'hiv_status_known');
         dewormingMedicationReceived = getField(followUpReport, 'deworming_med_received');
         ttReceived = getField(followUpReport, 'tt_received');
-        if (getField(followUpReport, 't_pregnancy_follow_up') === 'yes') { pregnancyFollowupDateRecent = getField(followUpReport, 't_pregnancy_follow_up_date'); }
+        if (getField(followUpReport, 't_pregnancy_follow_up') === 'yes') {
+          pregnancyFollowupDateRecent = getField(followUpReport, 't_pregnancy_follow_up_date'); 
+        }
 
       });
       ctx.lmp_date_8601 = lmpDate;
@@ -175,8 +179,7 @@ const cards = [
           dateOfDeath = deathDetails.date_of_death;
           placeOfDeath = deathDetails.place_of_death;
         }
-      }
-      else if (thisContact.date_of_death) {
+      } else if (thisContact.date_of_death) {
         dateOfDeath = thisContact.date_of_death;
       }
       fields.push(
@@ -190,8 +193,12 @@ const cards = [
     label: 'contact.profile.pregnancy.past',
     appliesToType: 'report',
     appliesIf: function (report) {
-      if (thisContact.type !== 'person') { return false; }
-      if (report.form === 'delivery') { return true; }
+      if (thisContact.type !== 'person') {
+        return false; 
+      }
+      if (report.form === 'delivery') {
+        return true; 
+      }
       if (report.form === 'pregnancy') {
         //check if early end to pregnancy (miscarriage/abortion)
         if (getRecentANCVisitWithEvent(allReports, report, 'abortion') || getRecentANCVisitWithEvent(allReports, report, 'miscarriage')) {
@@ -245,8 +252,7 @@ const cards = [
           if (abortionReport) {
             endReason = 'abortion';
             endDate = moment(getField(abortionReport, 'pregnancy_ended.abortion_date'));
-          }
-          else {
+          } else {
             endReason = 'miscarriage';
             endDate = moment(getField(miscarriageReport, 'pregnancy_ended.miscarriage_date'));
           }
@@ -270,7 +276,9 @@ const cards = [
         if (getField(report, 'baby_death')) {
           fields.push({ label: 'contact.profile.deceased_babies', value: babiesDeceased, width: 6 });
           let babyDeaths = getField(report, 'baby_death.baby_death_repeat');
-          if (!babyDeaths) { babyDeaths = []; }
+          if (!babyDeaths) {
+            babyDeaths = []; 
+          }
           let count = 0;
           babyDeaths.forEach(function (babyDeath) {
             if (count > 0) {
@@ -285,8 +293,7 @@ const cards = [
             if (count === babyDeaths.length) {
               fields.push({ label: '', value: '', width: 6 });
             }
-          }
-          );
+          });
 
         }
       }
@@ -304,11 +311,9 @@ const cards = [
           const riskFactorsCustom = getAllRiskFactorExtra(allReports, relevantPregnancy);
           if (!riskFactors && riskFactorsCustom) {
             riskValue = riskFactorsCustom.join(', ');
-          }
-          else if (riskFactors.length > 1 || riskFactors && riskFactorsCustom) {
+          } else if (riskFactors.length > 1 || riskFactors && riskFactorsCustom) {
             riskValue = 'contact.profile.risk.multiple';
-          }
-          else {
+          } else {
             riskValue = 'contact.profile.danger_sign.' + riskFactors[0];
           }
           fields.push(
@@ -327,9 +332,10 @@ const cards = [
       return getAgeInMonths() < 144;
     },
     fields: function() {
-      var i, report;
-      var immunizations = initImmunizations();
-      for(i=0; i<reports.length; ++i) {
+      let i; let 
+        report;
+      const immunizations = initImmunizations();
+      for (i=0; i<reports.length; ++i) {
         report = reports[i];
         if (report.form === 'immunization_visit') {
           if (report && report.fields && report.fields.vaccines_received) {
@@ -342,10 +348,10 @@ const cards = [
         }
       }
 
-      var fields = [];
+      const fields = [];
 
       IMMUNIZATION_LIST.forEach(function(imm) {
-        var field = {
+        const field = {
           label: 'contact.profile.imm.' + imm,
           translate: true,
           width: 6,

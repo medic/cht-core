@@ -14,7 +14,10 @@ describe('Contact List Page', () => {
     await chtConfUtils.initializeConfigDir();
     const contactSummaryFile = path.join(__dirname, 'config/contact-summary.templated.js');
     const contactSummaryExtrasFile = path.join(__dirname, 'config/contact-summary-extras.js');
-    const { contactSummary } = await chtConfUtils.compileNoolsConfig({ contactSummary: contactSummaryFile, contactSummaryExtras: contactSummaryExtrasFile });
+    const { contactSummary } = await chtConfUtils.compileNoolsConfig({
+      contactSummary: contactSummaryFile,
+      contactSummaryExtras: contactSummaryExtrasFile
+    });
     await utils.updateSettings(
       { contact_summary: contactSummary},
       { revert: true, ignoreReload: true, refresh: true, sync: true }
@@ -113,7 +116,7 @@ describe('Contact List Page', () => {
 
     it('should show cares guides', async () => {
       await compileAndUploadForms();
-      await utils.updateRolePermissions('chw', [],['can_view_call_action', 'can_view_message_action']);
+      await utils.updateRolePermissions('chw', [], ['can_view_call_action', 'can_view_message_action']);
       await commonPage.waitForPageLoaded();
       await commonPage.goToPeople();
       expect(await commonPage.isPeopleListPresent()).to.be.true;
