@@ -102,7 +102,7 @@ export class TrainingCardsService {
     if (routeSnapshot?.data?.hideTraining) {
       return;
     }
-    this.modalService.show(TrainingCardsComponent);
+    this.modalService.show(TrainingCardsComponent, { closeOnNavigation: false });
   }
 
   private async getFirstChronologicalForm(xForms) {

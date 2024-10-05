@@ -36,6 +36,7 @@ export const Selectors = {
   getUserFacilityIds: createSelector(getGlobalState, (globalState) => globalState.userFacilityIds),
   getUserContactId: createSelector(getGlobalState, (globalState) => globalState.userContactId),
   getTrainingCardFormId: createSelector(getGlobalState, (globalState) => globalState.trainingCardFormId),
+  getTrainingCard: createSelector(getGlobalState, (globalState) => globalState.trainingCard),
 
   // enketo
   getEnketoStatus: createSelector(getGlobalState, (globalState) => globalState.enketoStatus),

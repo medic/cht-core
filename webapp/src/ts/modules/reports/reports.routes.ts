@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { AppRouteGuardProvider } from '../../app-route.guard.provider';
+import { TrainingCardDeactivationGuardProvider } from 'src/ts/training-card.guard.provider';
 import { ReportsComponent } from '@mm-modules/reports/reports.component';
 import { ReportsContentComponent } from '@mm-modules/reports/reports-content.component';
 import { ReportsAddComponent } from '@mm-modules/reports/reports-add.component';
@@ -15,6 +16,7 @@ export const routes:Routes = [
     component: ReportsComponent,
     data: { permissions: ['can_view_reports'], tab: 'reports' },
     canActivate: [AppRouteGuardProvider],
+    canDeactivate: [TrainingCardDeactivationGuardProvider],
     children: [
       {
         path: '',

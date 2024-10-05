@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { AppRouteGuardProvider } from '../../app-route.guard.provider';
+import { TrainingCardDeactivationGuardProvider } from 'src/ts/training-card.guard.provider';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
 import {
@@ -15,6 +16,7 @@ export const routes:Routes = [
     component: TasksComponent,
     data: { permissions: ['can_edit', 'can_view_tasks'], tab: 'tasks' },
     canActivate: [AppRouteGuardProvider],
+    canDeactivate: [TrainingCardDeactivationGuardProvider],
     children: [
       {
         path: '',

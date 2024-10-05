@@ -24,6 +24,7 @@ const initialState: GlobalState = {
   filters: {}, // Selected criteria to filter data.
   sidebarFilter: {},
   searchBar: { isOpen: false },
+  trainingCard: { isOpen: false, showConfirmExit: false, nextUrl: '' },
   sidebarMenu: { isOpen: false },
   forms: null,
   lastChangedDoc: false,
@@ -173,6 +174,9 @@ const _globalReducer = createReducer(
   on(Actions.setSearchBar, (state, { payload: { searchBar } }) => {
     return { ...state, searchBar: { ...state.searchBar, ...searchBar } };
   }),
+  on(Actions.setTrainingCard, (state, { payload: { trainingCard } }) => {
+    return { ...state, trainingCard: { ...state.trainingCard, ...trainingCard } };
+  }),
 );
 
 export const globalReducer = (state, action) => {
@@ -189,6 +193,7 @@ export interface GlobalState {
   filters: Record<string, any>; // Selected criteria to filter data.
   sidebarFilter: SidebarFilterState;
   searchBar: SearchBarState;
+  trainingCard: TrainingCardState;
   sidebarMenu: SidebarMenuState;
   forms: null | Record<string, any>[];
   lastChangedDoc: boolean | Record<string, any>;
@@ -214,6 +219,12 @@ interface SidebarMenuState {
 
 interface SearchBarState {
   isOpen: boolean;
+}
+
+interface TrainingCardState {
+  isOpen: boolean;
+  showConfirmExit: boolean;
+  nextUrl: null|string;
 }
 
 interface SnackbarState {

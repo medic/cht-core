@@ -21,6 +21,7 @@ const globalState: GlobalState = {
     filterCount: { total: 5, placeFilter: 3, formFilter: 2 },
   },
   searchBar: { isOpen: false },
+  trainingCard: { isOpen: false, showConfirmExit: false, nextUrl: '' },
   trainingCardFormId: 'training:new_change',
   navigation: {
     cancelCallback: function() {},
