@@ -38,6 +38,7 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
     const waitForPartialLoad = privacyPolicy || adminApp;
     waitForPartialLoad ? await commonPage.waitForLoaders() : await commonPage.waitForPageLoaded();
   }
+  await commonPage.hideSnackbar();
 };
 
 const cookieLogin = async (options = {}) => {

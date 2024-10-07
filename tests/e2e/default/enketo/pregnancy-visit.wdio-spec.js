@@ -66,6 +66,8 @@ describe('Pregnancy Visit', () => {
     await commonPage.openFastActionReport('pregnancy_home_visit');
     await pregnancyVisitForm.submitDefaultPregnancyVisit();
 
+    await utils.delayPromise(1000); // wait for rules engine to recalculate
+
     await commonPage.goToAnalytics();
     await analyticsPage.goToTargets();
 
