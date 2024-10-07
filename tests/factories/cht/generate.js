@@ -5,6 +5,7 @@ const deliveryFactory = require('@factories/cht/reports/delivery');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const pregnancyVisitFactory = require('@factories/cht/reports/pregnancy-visit');
 const immunizationFactory = require('@factories/cht/reports/inmunization');
+const moment = require('moment');
 
 // Fixed collection of real-world data
 const FIRST_NAMES_FAMILY = [
@@ -35,6 +36,7 @@ const calculateDateOfBirth = (age) => {
 };
 const AGES = [25, 2, 10, 7];
 const DATE_OF_BIRTHS = AGES.map(calculateDateOfBirth);
+const lmp = moment().subtract(252, 'days');
 
 const getReportContext = (patient, submitter) => {
   const daysAgo = Math.floor(Math.random() * 10) + 1;
@@ -46,7 +48,8 @@ const getReportContext = (patient, submitter) => {
       patient_uuid: patient._id,
       patient_name: patient.name,
       visited_contact_uuid: patient.parent._id,
-      visited_date: currentDate
+      visited_date: currentDate,
+      lmp_date_8601: lmp,
     },
   };
   if (submitter) {
