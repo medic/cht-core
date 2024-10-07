@@ -57,9 +57,20 @@ describe('Tasks', () => {
   });
 
   afterEach(async () => {
-    await utils.revertSettings(true);
-    await browser.refresh();
+    await utils.revertSettings(true);m
     await commonPage.logout();
+  });
+
+  // WIP
+  it('should remove task from list when CHW completes a task successfully', async () => {
+    const settings = await compileTasks('tasks-multiple-config.js');
+    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
+  });
+
+  // WIP
+  it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
+    const settings = await compileTasks('tasks-multiple-config.js');
+    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
   });
 
   it('should load multiple pages of tasks on infinite scrolling', async () => {
