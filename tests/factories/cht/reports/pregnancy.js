@@ -18,7 +18,7 @@ const defaultSubmitter = {
 };
 
 const nextANCVisit = moment().add(2, 'day');
-const lmp = moment().subtract(252, 'days');
+const lmp = moment().subtract(90, 'days');
 
 const defaultFields = {
   'inputs': {
