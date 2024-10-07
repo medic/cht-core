@@ -18,7 +18,7 @@ export const TRAINING_PREFIX: string = 'training:';
   providedIn: 'root'
 })
 export class TrainingCardsService {
-  private globalActions: GlobalActions;
+  private readonly globalActions: GlobalActions;
   private readonly STORAGE_KEY_LAST_VIEWED_DATE = 'training-cards-last-viewed-date';
 
   constructor(
@@ -111,7 +111,7 @@ export class TrainingCardsService {
 
     this.modalService
       .show(TrainingCardsComponent)
-      .afterOpened()
+      ?.afterOpened()
       .pipe(first())
       .subscribe(() => {
         window.localStorage.setItem(this.STORAGE_KEY_LAST_VIEWED_DATE, new Date().toISOString());
@@ -153,7 +153,7 @@ export class TrainingCardsService {
   }
 
   private hasBeenDisplayed() {
-    const dateString = window.localStorage.getItem(this.STORAGE_KEY_LAST_VIEWED_DATE) || '';
+    const dateString = window.localStorage.getItem(this.STORAGE_KEY_LAST_VIEWED_DATE) ?? '';
     const lastViewedDate = new Date(dateString);
 
     if (isNaN(lastViewedDate.getTime())) {
