@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
+import { first } from 'rxjs/operators';
 
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TrainingCardsComponent } from '@mm-modals/training-cards/training-cards.component';
@@ -17,7 +18,8 @@ export const TRAINING_PREFIX: string = 'training:';
   providedIn: 'root'
 })
 export class TrainingCardsService {
-  private globalActions;
+  private globalActions: GlobalActions;
+  private readonly STORAGE_KEY_LAST_VIEWED_DATE = 'training-cards-last-viewed-date';
 
   constructor(
     private store: Store,
@@ -27,7 +29,7 @@ export class TrainingCardsService {
     private sessionService: SessionService,
     private routeSnapshotService: RouteSnapshotService,
   ) {
-    this.globalActions = new GlobalActions(store);
+    this.globalActions = new GlobalActions(this.store);
   }
 
   private getAvailableTrainingCards(xForms, userCtx) {
@@ -98,11 +100,22 @@ export class TrainingCardsService {
   }
 
   displayTrainingCards() {
+    if (this.hasBeenDisplayed()) {
+      return;
+    }
+
     const routeSnapshot = this.routeSnapshotService.get();
     if (routeSnapshot?.data?.hideTraining) {
       return;
     }
-    this.modalService.show(TrainingCardsComponent);
+
+    this.modalService
+      .show(TrainingCardsComponent)
+      .afterOpened()
+      .pipe(first())
+      .subscribe(() => {
+        window.localStorage.setItem(this.STORAGE_KEY_LAST_VIEWED_DATE, new Date().toISOString());
+      });
   }
 
   private async getFirstChronologicalForm(xForms) {
@@ -137,5 +150,20 @@ export class TrainingCardsService {
       throw new Error('Training Cards :: Cannot create document ID, user context does not have the "name" property.');
     }
     return `${TRAINING_PREFIX}${userName}:${uuid()}`;
+  }
+
+  private hasBeenDisplayed() {
+    const dateString = window.localStorage.getItem(this.STORAGE_KEY_LAST_VIEWED_DATE) || '';
+    const lastViewedDate = new Date(dateString);
+
+    if (isNaN(lastViewedDate.getTime())) {
+      return false;
+    }
+
+    lastViewedDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return lastViewedDate >= today;
   }
 }
