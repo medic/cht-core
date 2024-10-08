@@ -232,7 +232,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
   }
 
   quitTraining() {
-    this.globalActions.setTrainingCardFormId(null);
+    this.recordPerformanceQuitTraining();
 
     if (this.nextUrl) {
       this.router.navigateByUrl(this.nextUrl);
