@@ -9,7 +9,7 @@ const chtConfUtils = require('@utils/cht-conf');
 const path = require('path');
 const { resizeWindowForScreenshots, generateScreenshot } = require('@utils/screenshots');
 
-describe('Contact List Page', () => {
+describe('Contact and User Management', () => {
   const updateContactSummarySettings = async () => {
     await chtConfUtils.initializeConfigDir();
     const contactSummaryFile = path.join(__dirname, 'config/contact-summary.templated.js');
@@ -58,7 +58,7 @@ describe('Contact List Page', () => {
     await commonPage.goToBase();
   });
 
-  describe('Contact and user management workflow', () => {
+  describe('Contact and user overview', () => {
     it('should show contacts list, search, profiles (person and family), '+
       'contact summary, condition cards and care guides', async () => {
       await commonPage.goToPeople();

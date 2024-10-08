@@ -447,4 +447,5 @@ module.exports = {
   getCurrentPersonEditFormValues,
   filterReportViewAll,
   openFirstContact,
+  menuSelectors,
 };
