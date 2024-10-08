@@ -76,6 +76,14 @@ describe('RulesEngineService', () => {
       dueDate: '2023-10-24',
     },
   };
+  const sampleTarget =  {
+    id: 'pregnancy-registrations-this-month',
+    value: {
+      pass: 0,
+      total: 0
+    }
+  };
+
   const userSettingsDoc = {
     _id: 'org.couchdb.user:username',
     type: 'user-settings',
@@ -322,8 +330,8 @@ describe('RulesEngineService', () => {
     });
   });
 
+  const changeFeedFormat = doc => ({ id: doc._id, doc });
   describe('changes feeds', () => {
-    const changeFeedFormat = doc => ({ id: doc._id, doc });
     const scenarios = [
       {
         doc: { _id: 'person', type: 'person' },
@@ -441,22 +449,19 @@ describe('RulesEngineService', () => {
       const subscription = service.contactsMarkedAsDirty(callback);
 
       const change = changesService.subscribe.args[0][0];
-      const report = { _id: 'doc', type: 'data_record', form: 'theform', fields: { patient_id: '65479' } };
-      await change.callback(changeFeedFormat(report));
-      await change.callback(changeFeedFormat({ _id: 'contact', type: 'person', patient_id: '65479' }));
+      await change.callback(changeFeedFormat({ type: 'data_record', form: 'f', fields: { patient_id: 'p1' } }));
+      await change.callback(changeFeedFormat({ _id: '2', type: 'person', patient_id: 'p2' }));
       tick(500);
-      await change.callback(changeFeedFormat({ _id: 'contact2', type: 'person', patient_id: '12312' }));
+      await change.callback(changeFeedFormat({ _id: '3', type: 'person', patient_id: 'p3' }));
       tick(900);
-      await change.callback(changeFeedFormat({ ...report, fields: { patient_id: '5632' } }));
+      await change.callback(changeFeedFormat({ type: 'data_record', form: 'f', fields: { patient_id: 'p3' }}));
 
       expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.equal(0);
 
       tick(1000);
 
       expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.equal(1);
-      expect(rulesEngineCoreStubs.updateEmissionsFor.args[0][0]).to.have.members(
-        ['65479', 'contact', 'contact2', '5632']
-      );
+      expect(rulesEngineCoreStubs.updateEmissionsFor.args[0][0]).to.have.members([ 'p3', '3', '2', 'p1' ]);
       expect(callback.callCount).to.equal(1);
       subscription.unsubscribe();
     }));
@@ -542,6 +547,54 @@ describe('RulesEngineService', () => {
     expect(stopPerformanceTrackStub.args[2][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
   });
 
+  it('fetchTaskDocsForAllContacts should wait for contacts to be marked as dirty', fakeAsync(async () => {
+    service = TestBed.inject(RulesEngineService);
+    await service.isEnabled();
+    await service.fetchTargets(); // clear old timers
+    stopPerformanceTrackStub.resetHistory();
+
+    const taskDoc = JSON.parse(JSON.stringify(sampleTaskDoc));
+    fetchTasksResult = sinon.stub().resolves([taskDoc]);
+    rulesEngineCoreStubs.getDirtyContacts.returns(['a', 'b', 'c']);
+    service = TestBed.inject(RulesEngineService);
+
+    const callback = sinon.stub();
+    const subscription = service.contactsMarkedAsDirty(callback);
+
+    const change = changesService.subscribe.args[0][0];
+    await change.callback(changeFeedFormat({ type: 'data_record', form: 'f', fields: { patient_id: 'p1' } }));
+    const tasksPromise = service.fetchTaskDocsForAllContacts();
+    await change.callback(changeFeedFormat({ _id: '2', type: 'person', patient_id: 'p2' }));
+    tick(500);
+    expect(rulesEngineCoreStubs.fetchTasksFor.called).to.be.false;
+    await change.callback(changeFeedFormat({ _id: '3', type: 'person', patient_id: 'p3' }));
+    tick(900);
+    expect(rulesEngineCoreStubs.fetchTasksFor.called).to.be.false;
+    await change.callback(changeFeedFormat({ type: 'data_record', form: 'f', fields: { patient_id: 'p3' }}));
+    expect(rulesEngineCoreStubs.fetchTasksFor.called).to.be.false;
+
+    tick(1000);
+    const tasks = await tasksPromise;
+
+    expect(rulesEngineCoreStubs.fetchTasksFor.calledOnce).to.be.true;
+    expect(rulesEngineCoreStubs.fetchTasksFor.args[0][0]).to.be.undefined;
+    expect(tasks.length).to.eq(1);
+    const actualTask = tasks[0];
+    expect(actualTask._id).to.equal(taskDoc._id);
+    expect(actualTask.emission.date.toDateString()).to.equal('Tue Oct 24 2023');
+    expect(actualTask.emission).to.deep.include({
+      _id: 'emission_id',
+      title: 'translate.this',
+      priorityLabel: 'and.this',
+      other: true,
+      overdue: true,
+      owner: 'contact-1234',
+      dueDate: '2023-10-24'
+    });
+
+    subscription.unsubscribe();
+  }));
+
   it('fetchTaskDocsFor() should fetch task docs', async () => {
     const taskDoc = JSON.parse(JSON.stringify(sampleTaskDoc));
     const contactIds = ['a', 'b', 'c'];
@@ -605,6 +658,53 @@ describe('RulesEngineService', () => {
     expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks:some-contacts' });
   });
 
+  it('fetchTasksFor should wait for contacts to be marked as dirty', fakeAsync(async () => {
+    service = TestBed.inject(RulesEngineService);
+    await service.isEnabled();
+    await service.fetchTargets(); // clear old timers
+    stopPerformanceTrackStub.resetHistory();
+
+    const taskDoc = JSON.parse(JSON.stringify(sampleTaskDoc));
+    fetchTasksResult = sinon.stub().resolves([taskDoc]);
+    rulesEngineCoreStubs.getDirtyContacts.returns(['a', 'b', 'c']);
+    service = TestBed.inject(RulesEngineService);
+
+    const callback = sinon.stub();
+    const subscription = service.contactsMarkedAsDirty(callback);
+
+    const change = changesService.subscribe.args[0][0];
+    await change.callback(changeFeedFormat({ type: 'data_record', form: 'f', fields: { patient_id: 'p1' } }));
+    const tasksPromise = service.fetchTaskDocsFor(['a']);
+    await change.callback(changeFeedFormat({ _id: '2', type: 'person', patient_id: 'p2' }));
+    tick(500);
+    expect(rulesEngineCoreStubs.fetchTasksFor.called).to.be.false;
+    await change.callback(changeFeedFormat({ _id: '3', type: 'person', patient_id: 'p3' }));
+    tick(900);
+    expect(rulesEngineCoreStubs.fetchTasksFor.called).to.be.false;
+    await change.callback(changeFeedFormat({ type: 'data_record', form: 'f', fields: { patient_id: 'p3' }}));
+    expect(rulesEngineCoreStubs.fetchTasksFor.called).to.be.false;
+
+    tick(1000);
+    const tasks = await tasksPromise;
+
+    expect(rulesEngineCoreStubs.fetchTasksFor.calledOnce).to.be.true;
+    expect(tasks.length).to.eq(1);
+    const actualTask = tasks[0];
+    expect(actualTask._id).to.equal(taskDoc._id);
+    expect(actualTask.emission.date.toDateString()).to.equal('Tue Oct 24 2023');
+    expect(actualTask.emission).to.deep.include({
+      _id: 'emission_id',
+      title: 'translate.this',
+      priorityLabel: 'and.this',
+      other: true,
+      overdue: true,
+      owner: 'contact-1234',
+      dueDate: '2023-10-24'
+    });
+
+    subscription.unsubscribe();
+  }));
+
   it('fetchTargets() should send correct range to Rules Engine Core when getting targets', async () => {
     fetchTargetsResult = sinon.stub().resolves([]);
     service = TestBed.inject(RulesEngineService);
@@ -615,6 +715,39 @@ describe('RulesEngineService', () => {
     expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(1);
     expect(rulesEngineCoreStubs.fetchTargets.args[0][0]).to.have.keys('start', 'end');
   });
+
+  it('fetchTargets should wait for contacts to be marked as dirty', fakeAsync(async () => {
+    fetchTargetsResult = sinon.stub().resolves([{ ...sampleTarget }]);
+    service = TestBed.inject(RulesEngineService);
+    await service.isEnabled();
+    await service.fetchTaskDocsForAllContacts(); // clear old timers
+    stopPerformanceTrackStub.resetHistory();
+
+    service = TestBed.inject(RulesEngineService);
+
+    const callback = sinon.stub();
+    const subscription = service.contactsMarkedAsDirty(callback);
+
+    const change = changesService.subscribe.args[0][0];
+    await change.callback(changeFeedFormat({ type: 'data_record', form: 'f', fields: { patient_id: 'p1' } }));
+    const targetsPromise = service.fetchTargets();
+    await change.callback(changeFeedFormat({ _id: '2', type: 'person', patient_id: 'p2' }));
+    tick(500);
+    expect(rulesEngineCoreStubs.fetchTargets.called).to.be.false;
+    await change.callback(changeFeedFormat({ _id: '3', type: 'person', patient_id: 'p3' }));
+    tick(900);
+    expect(rulesEngineCoreStubs.fetchTargets.called).to.be.false;
+    await change.callback(changeFeedFormat({ type: 'data_record', form: 'f', fields: { patient_id: 'p3' }}));
+    expect(rulesEngineCoreStubs.fetchTargets.called).to.be.false;
+
+    tick(1000);
+    const targets = await targetsPromise;
+
+    expect(rulesEngineCoreStubs.fetchTargets.calledOnce).to.be.true;
+    expect(targets.length).to.eq(1);
+
+    subscription.unsubscribe();
+  }));
 
   it('should ensure freshness of tasks and targets', fakeAsync(async () => {
     rulesEngineCoreStubs.getDirtyContacts.returns(Array.from({ length: 20 }).map(i => i));
@@ -668,6 +801,7 @@ describe('RulesEngineService', () => {
     service.fetchTargets();
     service.fetchTaskDocsForAllContacts();
     service.fetchTaskDocsFor(['a']);
+    await Promise.resolve();
     await Promise.resolve();
 
     expect(fetchTargets.events).to.have.keys(['queued', 'running']);
@@ -730,6 +864,7 @@ describe('RulesEngineService', () => {
     service.fetchTargets();
     service.fetchTaskDocsForAllContacts();
     service.fetchTaskDocsFor(['a']);
+    await Promise.resolve();
     await Promise.resolve();
 
     expect(fetchTargets.events).to.have.keys(['queued', 'running']);
