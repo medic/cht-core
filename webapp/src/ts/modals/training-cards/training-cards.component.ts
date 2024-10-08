@@ -162,7 +162,6 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
   }
 
   close() {
-    // this.globalActions.setTrainingCardFormId(null);
     this.globalActions.setTrainingCard({ formId: null, isOpen: false, showConfirmExit: false, nextUrl: null });
     this.matDialogRef.close();
   }

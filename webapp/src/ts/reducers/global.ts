@@ -41,7 +41,6 @@ const initialState: GlobalState = {
   translationsLoaded: false,
   userFacilityIds: [],
   userContactId: null,
-  // trainingCardFormId: null,
 };
 
 const setShowContent = (state, showContent) => {
@@ -165,9 +164,6 @@ const _globalReducer = createReducer(
     return { ...state, userFacilityIds };
   }),
   on(Actions.setUserContactId, (state, { payload: { userContactId }}) => ({ ...state, userContactId })),
-  // on(Actions.setTrainingCardFormId, (state, { payload: { trainingCardFormId }}) => {
-  //   return { ...state, trainingCardFormId };
-  // }),
   on(Actions.setSidebarMenu, (state, { payload: { sidebarMenu }}) => {
     return { ...state, sidebarMenu: { ...state.sidebarMenu, ...sidebarMenu } };
   }),
@@ -210,7 +206,6 @@ export interface GlobalState {
   translationsLoaded: boolean;
   userFacilityIds: null | string[];
   userContactId: null | string;
-  // trainingCardFormId: null | string;
 }
 
 interface SidebarMenuState {
