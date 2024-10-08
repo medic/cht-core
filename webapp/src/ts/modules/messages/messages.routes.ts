@@ -10,8 +10,8 @@ export const routes: Routes = [
     path: 'messages',
     component: MessagesComponent,
     data: { permissions: ['can_view_messages'], tab: 'messages'},
-    canActivate: [AppRouteGuardProvider],
-    canDeactivate: [TrainingCardDeactivationGuardProvider],
+    canActivate: [ AppRouteGuardProvider ],
+    canDeactivate: [ TrainingCardDeactivationGuardProvider ],
     children: [
       {
         path: '',

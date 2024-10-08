@@ -15,8 +15,8 @@ export const routes:Routes = [
     path: 'tasks',
     component: TasksComponent,
     data: { permissions: ['can_edit', 'can_view_tasks'], tab: 'tasks' },
-    canActivate: [AppRouteGuardProvider],
-    canDeactivate: [TrainingCardDeactivationGuardProvider],
+    canActivate: [ AppRouteGuardProvider ],
+    canDeactivate: [ TrainingCardDeactivationGuardProvider ],
     children: [
       {
         path: '',

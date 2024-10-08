@@ -19,7 +19,7 @@ export const routes:Routes = [
     data: { permissions: [ 'can_view_analytics' ], tab: 'analytics' },
     canActivate: [ AppRouteGuardProvider ],
     canActivateChild: [ AnalyticsRouteGuardProvider ],
-    canDeactivate: [TrainingCardDeactivationGuardProvider],
+    canDeactivate: [ TrainingCardDeactivationGuardProvider ],
     children: [
       {
         path: '',

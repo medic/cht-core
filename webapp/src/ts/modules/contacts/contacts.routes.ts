@@ -13,9 +13,9 @@ export const routes: Routes = [
   {
     path: 'contacts',
     component: ContactsComponent,
-    data: {permissions: ['can_view_contacts'], tab: 'contacts'},
-    canActivate: [AppRouteGuardProvider],
-    canDeactivate: [TrainingCardDeactivationGuardProvider],
+    data: { permissions: ['can_view_contacts'], tab: 'contacts' },
+    canActivate: [ AppRouteGuardProvider ],
+    canDeactivate: [ TrainingCardDeactivationGuardProvider ],
     children: [
       {
         path: '',

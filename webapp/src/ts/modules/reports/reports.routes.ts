@@ -15,8 +15,8 @@ export const routes:Routes = [
     path: 'reports',
     component: ReportsComponent,
     data: { permissions: ['can_view_reports'], tab: 'reports' },
-    canActivate: [AppRouteGuardProvider],
-    canDeactivate: [TrainingCardDeactivationGuardProvider],
+    canActivate: [ AppRouteGuardProvider ],
+    canDeactivate: [ TrainingCardDeactivationGuardProvider ],
     children: [
       {
         path: '',
