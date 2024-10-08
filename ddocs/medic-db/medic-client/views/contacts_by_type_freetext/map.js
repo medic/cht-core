@@ -1,12 +1,13 @@
 function(doc) {
+  var skip = [ '_id', '_rev', 'type', 'refid', 'geolocation' ];
+
   var usedKeys = [];
   var emitMaybe = function(type, key, value) {
-    if (
-      usedKeys.indexOf(key) === -1 && // Not already used
-      key.length > 2 // Not too short
+    if (usedKeys.indexOf(key) === -1 && // Not already used
+        key.length > 2 // Not too short
     ) {
       usedKeys.push(key);
-      emit([type, key], value);
+      emit([ type, key ], value);
     }
   };
 
@@ -14,7 +15,10 @@ function(doc) {
     if (!key || !value) {
       return;
     }
-
+    key = key.toLowerCase();
+    if (skip.indexOf(key) !== -1 || /_date$/.test(key)) {
+      return;
+    }
     if (typeof value === 'string') {
       value = value.toLowerCase();
       value.split(/\s+/).forEach(function(word) {
@@ -23,10 +27,7 @@ function(doc) {
     }
   };
 
-  var include = [
-    'name', 'case_id', 'place_id', 'patient_id', 'external_id', 'house_number', 'notes', 'search_keywords', 'type',
-  ];
-  var types = ['district_hospital', 'health_center', 'clinic', 'person'];
+  var types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
   var idx;
   var type;
   if (doc.type === 'contact') {
@@ -39,13 +40,11 @@ function(doc) {
     type = doc.type;
     idx = types.indexOf(type);
   }
-
-  var isContactOrPlace = idx !== -1;
-  if (isContactOrPlace) {
+  if (idx !== -1) {
     var dead = !!doc.date_of_death;
     var muted = !!doc.muted;
     var order = dead + ' ' + muted + ' ' + idx + ' ' + (doc.name && doc.name.toLowerCase());
-    include.forEach(function(key) {
+    Object.keys(doc).forEach(function(key) {
       emitField(type, key, doc[key], order);
     });
     emitMaybe('case_id:' + doc.case_id, order);
