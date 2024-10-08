@@ -62,28 +62,28 @@ describe('Tasks', () => {
   });
 
   // WIP
-  // it('should remove task from list when CHW completes a task successfully', async () => {
-  //   const settings = await compileTasks('tasks-breadcrumbs-config.js');
-  //   await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
+  it('should remove task from list when CHW completes a task successfully', async () => {
+    const settings = await compileTasks('tasks-breadcrumbs-config.js');
+    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
     
-  //   await tasksPage.goToTasksTab();
-  //   const list = await tasksPage.getTasks();
-  //   await browser.debug();
-  //   const infos = await tasksPage.getTasksListInfos(list);
-  //   expect(infos).to.have.length(3);
-  //   // open task and then complete the task
-  //   // expect(infos).to.have.length(2);
-  // });
+    await tasksPage.goToTasksTab();
+    const list = await tasksPage.getTasks();
+    await browser.debug();
+    const infos = await tasksPage.getTasksListInfos(list);
+    expect(infos).to.have.length(3);
+    // open task and then complete the task
+    // expect(infos).to.have.length(2);
+  });
 
   // WIP
-  // it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
-  //   const settings = await compileTasks('tasks-multiple-config.js');
-  //   await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
+  it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
+    const settings = await compileTasks('tasks-multiple-config.js');
+    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
     
-  //   await tasksPage.goToTasksTab();
-  //   const list = await tasksPage.getTasks();
-  //   const infos = await tasksPage.getTasksListInfos(list);
-  // });
+    await tasksPage.goToTasksTab();
+    const list = await tasksPage.getTasks();
+    const infos = await tasksPage.getTasksListInfos(list);
+  });
 
   it('should load multiple pages of tasks on infinite scrolling', async () => {
     const settings = await compileTasks('tasks-multiple-config.js');
@@ -111,23 +111,23 @@ describe('Tasks', () => {
     expect(elementText).to.contain('No more tasks');
   });
 
-  // it('Should show error message for bad config', async () => {
-  //   const settings = await compileTasks('tasks-error-config.js');
-  //   await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
-  //   await commonPage.goToTasks();
+  it('Should show error message for bad config', async () => {
+    const settings = await compileTasks('tasks-error-config.js');
+    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
+    await commonPage.goToTasks();
 
-  //   const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
+    const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
 
-  //   expect(username).to.equal(chw.username);
-  //   expect(url).to.equal('localhost');
-  //   expect(errorMessage).to.equal('Error fetching tasks');
-  //   expect(await (await errorStack.isDisplayed())).to.be.true;
-  //   expect(await (await errorStack.getText())).to
-  //     .include('TypeError: Cannot read properties of undefined (reading \'name\')');
+    expect(username).to.equal(chw.username);
+    expect(url).to.equal('localhost');
+    expect(errorMessage).to.equal('Error fetching tasks');
+    expect(await (await errorStack.isDisplayed())).to.be.true;
+    expect(await (await errorStack.getText())).to
+      .include('TypeError: Cannot read properties of undefined (reading \'name\')');
 
-  //   const feedbackDocs = await chtDbUtils.getFeedbackDocs();
-  //   expect(feedbackDocs.length).to.equal(1);
-  //   expect(feedbackDocs[0].info.message).to.include('Cannot read properties of undefined (reading \'name\')');
-  //   await chtDbUtils.clearFeedbackDocs();
-  // });
+    const feedbackDocs = await chtDbUtils.getFeedbackDocs();
+    expect(feedbackDocs.length).to.equal(1);
+    expect(feedbackDocs[0].info.message).to.include('Cannot read properties of undefined (reading \'name\')');
+    await chtDbUtils.clearFeedbackDocs();
+  });
 });
