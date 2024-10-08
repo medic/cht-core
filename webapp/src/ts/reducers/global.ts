@@ -24,7 +24,7 @@ const initialState: GlobalState = {
   filters: {}, // Selected criteria to filter data.
   sidebarFilter: {},
   searchBar: { isOpen: false },
-  trainingCard: { isOpen: false, showConfirmExit: false, nextUrl: '' },
+  trainingCard: { formId: null, isOpen: false, showConfirmExit: false, nextUrl: null },
   sidebarMenu: { isOpen: false },
   forms: null,
   lastChangedDoc: false,
@@ -41,7 +41,7 @@ const initialState: GlobalState = {
   translationsLoaded: false,
   userFacilityIds: [],
   userContactId: null,
-  trainingCardFormId: null,
+  // trainingCardFormId: null,
 };
 
 const setShowContent = (state, showContent) => {
@@ -165,9 +165,9 @@ const _globalReducer = createReducer(
     return { ...state, userFacilityIds };
   }),
   on(Actions.setUserContactId, (state, { payload: { userContactId }}) => ({ ...state, userContactId })),
-  on(Actions.setTrainingCardFormId, (state, { payload: { trainingCardFormId }}) => {
-    return { ...state, trainingCardFormId };
-  }),
+  // on(Actions.setTrainingCardFormId, (state, { payload: { trainingCardFormId }}) => {
+  //   return { ...state, trainingCardFormId };
+  // }),
   on(Actions.setSidebarMenu, (state, { payload: { sidebarMenu }}) => {
     return { ...state, sidebarMenu: { ...state.sidebarMenu, ...sidebarMenu } };
   }),
@@ -210,7 +210,7 @@ export interface GlobalState {
   translationsLoaded: boolean;
   userFacilityIds: null | string[];
   userContactId: null | string;
-  trainingCardFormId: null | string;
+  // trainingCardFormId: null | string;
 }
 
 interface SidebarMenuState {
@@ -222,6 +222,7 @@ interface SearchBarState {
 }
 
 interface TrainingCardState {
+  formId: null | string;
   isOpen: boolean;
   showConfirmExit: boolean;
   nextUrl: null|string;

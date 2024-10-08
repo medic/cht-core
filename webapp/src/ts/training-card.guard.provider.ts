@@ -10,7 +10,8 @@ import { Selectors } from '@mm-selectors/index';
 })
 export class TrainingCardDeactivationGuardProvider implements CanDeactivate<any> {
   private globalActions;
-
+  private trainingCardOpen = false;
+  private formId: string | null = null;
 
   constructor(private store: Store) {
     this.globalActions = new GlobalActions(store);
@@ -22,16 +23,21 @@ export class TrainingCardDeactivationGuardProvider implements CanDeactivate<any>
     currentState: RouterStateSnapshot,
     nextState: RouterStateSnapshot,
   ) {
-    let trainingCardOpen = false;
 
     this.store
       .select(Selectors.getTrainingCard)
       .subscribe(trainingCard => {
-        trainingCardOpen = trainingCard.isOpen;
+        this.trainingCardOpen = trainingCard.isOpen;
+        this.formId = trainingCard.formId;
       }).unsubscribe();
 
-    if (trainingCardOpen) {
-      this.globalActions.setTrainingCard({ isOpen: true, showConfirmExit: true, nextUrl: nextState.url });
+    if (this.trainingCardOpen) {
+      this.globalActions.setTrainingCard({
+        formId: this.formId,
+        isOpen: true,
+        showConfirmExit: true,
+        nextUrl: nextState.url
+      });
       return false;
     }
 

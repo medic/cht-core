@@ -28,7 +28,7 @@ describe('TrainingCardsService', () => {
   beforeEach(() => {
     localDb = { allDocs: sinon.stub() };
     dbService = { get: () => localDb };
-    globalActions = { setTrainingCardFormId: sinon.stub(GlobalActions.prototype, 'setTrainingCardFormId') };
+    globalActions = { setTrainingCard: sinon.stub(GlobalActions.prototype, 'setTrainingCard') };
     xmlFormsService = { subscribe: sinon.stub() };
     modalService = { show: sinon.stub() };
     sessionService = {
