@@ -8,6 +8,8 @@ const onlineUserRole = 'program_officer';
 const offlineUserRole = 'chw';
 const username = 'jackuser';
 const password = 'Jacktest@123';
+const password2 = 'Jacktest@456';
+const username2 = 'jack_user';
 const incorrectpassword = 'Passwor';
 const places = placeFactory.generateHierarchy();
 const districtHospital = places.get('district_hospital');
@@ -78,6 +80,40 @@ describe('User Test Cases ->', () => {
       );
       await usersAdminPage.saveUser();
       expect(await usersAdminPage.getAllUsernames()).to.include.members([username]);
+    });
+
+    it('should hide and reveal password value, and add user with a revealed password', async () => {
+      await usersAdminPage.inputAddUserFields(
+        username2,
+        'Jack',
+        onlineUserRole,
+        districtHospital.name,
+        person.name,
+        password
+      );
+
+      let revealedPassword = await usersAdminPage.togglePassword();
+      expect(revealedPassword.type).to.equal('text');
+      expect(revealedPassword.value).to.equal(password);
+      expect(revealedPassword.confirmType).to.equal('text');
+      expect(revealedPassword.confirmValue).to.equal(password);
+
+      await usersAdminPage.setUserPassword(password2);
+      await usersAdminPage.setUserConfirmPassword(password2);
+      const hiddenPassword = await usersAdminPage.togglePassword();
+      expect(hiddenPassword.type).to.equal('password');
+      expect(hiddenPassword.value).to.equal(password2);
+      expect(hiddenPassword.confirmType).to.equal('password');
+      expect(hiddenPassword.confirmValue).to.equal(password2);
+
+      revealedPassword = await usersAdminPage.togglePassword();
+      expect(revealedPassword.type).to.equal('text');
+      expect(revealedPassword.value).to.equal(password2);
+      expect(revealedPassword.confirmType).to.equal('text');
+      expect(revealedPassword.confirmValue).to.equal(password2);
+
+      await usersAdminPage.saveUser();
+      expect(await usersAdminPage.getAllUsernames()).to.include.members([username2]);
     });
   });
 

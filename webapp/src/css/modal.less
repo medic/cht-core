@@ -125,19 +125,30 @@ mm-modal-layout {
 
 @media (max-width: @media-mobile) {
   mm-modal-layout {
-    .enketo-modal .enketo {
-      form {
-        max-height: 60vh;
+    .enketo-modal {
+      .enketo {
+        form {
+          max-height: 60vh;
+        }
+
+        .form-footer {
+          .btn.btn-link.cancel {
+            display: inline-block;
+          }
+
+          .previous-page {
+            float: none;
+          }
+        }
       }
 
-      .form-footer {
-        .btn.btn-link.cancel {
-          display: inline-block;
-        }
+      // The form title is hidden by default for mobile devices, but in training cards, the title is optional.
+      :not(.form-no-title) #form-title {
+        display: inherit;
+      }
 
-        .previous-page {
-          float: none;
-        }
+      .form-no-title  #form-title {
+        display: none;
       }
     }
   }
