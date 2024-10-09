@@ -264,7 +264,11 @@ describe('Create user for contacts', () => {
         expect(district.contact._id).to.equal(replacementContactId);
 
         await browser.throttle('online');
-        await commonPage.syncAndNotWaitForSuccess();
+        try {
+          await commonPage.syncAndNotWaitForSuccess();
+        } catch {
+          // sync can get triggered automatically
+        }
         await (await loginPage.loginButton()).waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();
@@ -474,7 +478,11 @@ describe('Create user for contacts', () => {
         expect(district.contact._id).to.equal(replacementContactId1);
 
         await browser.throttle('online');
-        await commonPage.syncAndNotWaitForSuccess();
+        try {
+          await commonPage.syncAndNotWaitForSuccess();
+        } catch {
+          // sync can get triggered automatically
+        }
         await (await loginPage.loginButton()).waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();
@@ -776,7 +784,11 @@ describe('Create user for contacts', () => {
         await chtDbUtils.updateDoc(newContact._id, { ...newContact, phone: undefined }, true);
 
         await browser.throttle('online');
-        await commonPage.syncAndNotWaitForSuccess();
+        try {
+          await commonPage.syncAndNotWaitForSuccess();
+        } catch {
+          // sync can get triggered automatically
+        }
         await (await loginPage.loginButton()).waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();

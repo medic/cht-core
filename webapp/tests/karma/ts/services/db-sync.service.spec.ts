@@ -286,19 +286,10 @@ describe('DBSync service', () => {
       expectSyncCall(1);
       await nextTick();
       expectSyncCall(1);
-    });
 
-    it('multiple calls return current replication attempt', async () => {
-      getItem.withArgs('medic-last-replicated-seq').returns(99);
-      isOnlineOnly.returns(false);
-      hasAuth.resolves(true);
-
-      const r = service.sync();
-      await service.sync();
-
-      console.log(r, Object.keys(r));
-      expect(r).to.be.a('promise');
-      expect(2).to.equal(1);
+      expect(await p1).to.equal(undefined);
+      expect(await p2).to.equal(undefined);
+      expect(await p3).to.equal(undefined);
     });
 
     it('force sync while offline still syncs', () => {
