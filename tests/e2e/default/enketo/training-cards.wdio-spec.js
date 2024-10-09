@@ -17,6 +17,7 @@ describe('Training Cards', () => {
     'If you leave now, you will lose your progress and be prompted again later to complete it.';
 
   const formDocId = 'training:training-cards-text-only';
+  let clock;
 
   before(async () => {
     const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
@@ -26,7 +27,7 @@ describe('Training Cards', () => {
     formDoc._id = `form:${formDocId}`;
     formDoc.internalId = formDocId;
     formDoc.context = {
-      start_date: new Date().getTime(),
+      start_date: '2024-05-22',
       user_roles: [ 'nurse' ],
       duration: 5,
     };
@@ -36,6 +37,7 @@ describe('Training Cards', () => {
     await utils.createUsers([ user ]);
     await loginPage.login(user);
     await commonElements.waitForPageLoaded();
+    clock = await browser.emulate('clock', { now: new Date('2024-05-23 06:29:25') });
   });
 
   it('should cancel training and not save it as completed', async () => {
@@ -52,7 +54,7 @@ describe('Training Cards', () => {
     expect(await reportsPage.leftPanelSelectors.allReports()).to.be.empty;
   });
 
-  it('should display training after it was canceled and the training doc was updated', async () => {
+  it('should not display training after it was canceled and the training doc was updated', async () => {
     await commonPage.goToMessages();
     await commonElements.waitForPageLoaded();
     // Unfinished trainings should appear again after reload.
@@ -73,15 +75,11 @@ describe('Training Cards', () => {
     const updatedTrainingForm = await utils.getDoc(`form:${formDocId}`);
     expect(updatedTrainingForm.context.duration).to.equal(10);
 
-    await trainingCardsPage.waitForTrainingCards();
-    const context = 'training_cards_text_only';
-    const introCard = await trainingCardsPage.getCardContent(context, 'intro/intro_note_1:label"]');
-    expect(introCard).to.equal(
-      'There have been some changes to icons in your app. The next few screens will show you the difference.'
-    );
+    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
   });
 
   it('should display training after privacy policy', async () => {
+    await clock.setSystemTime(new Date('2024-05-25 12:45:37'));
     const privacyPolicy = privacyPolicyFactory.privacyPolicy().build();
     await utils.saveDocs([privacyPolicy]);
     await commonPage.goToReports();
@@ -94,11 +92,10 @@ describe('Training Cards', () => {
     await trainingCardsPage.quitTraining();
   });
 
-  it('should display training after reload and complete training', async () => {
+  it('should display training next day and complete training', async () => {
+    await clock.setSystemTime(new Date('2024-05-26 17:45:37'));
     await commonPage.goToMessages();
     await commonElements.waitForPageLoaded();
-    // Unfinished trainings should appear again after reload.
-    await browser.refresh();
     await trainingCardsPage.waitForTrainingCards();
 
     const context = 'training_cards_text_only';
@@ -127,6 +124,10 @@ describe('Training Cards', () => {
     await commonElements.waitForPageLoaded();
     // Completed trainings should not appear again after reload.
     await browser.refresh();
+    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
+
+    // Completed trainings should not appear again the following day.
+    await clock.setSystemTime(new Date('2024-05-27 17:45:37'));
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
   });
 });

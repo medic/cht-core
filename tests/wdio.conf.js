@@ -95,6 +95,7 @@ const baseConfig = {
     // grid with only 5 firefox instances available you can make sure that not more than
     // 5 instances get started at a time.
     maxInstances: 1,
+    webSocketUrl: true,
     //
     browserName: 'chrome',
     browserVersion: utils.isMinimumChromeVersion ? CHROME_VERSION : undefined,
