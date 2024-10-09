@@ -21,7 +21,7 @@ const globalState: GlobalState = {
     filterCount: { total: 5, placeFilter: 3, formFilter: 2 },
   },
   searchBar: { isOpen: false },
-  trainingCardFormId: 'training:new_change',
+  trainingCard: { formId: 'training:new_change', isOpen: false, showConfirmExit: false, nextUrl: '' },
   navigation: {
     cancelCallback: function() {},
     preventNavigation: true,
@@ -243,7 +243,7 @@ describe('Selectors', () => {
     });
 
     it('should getTrainingCardFormId', () => {
-      expect(Selectors.getTrainingCardFormId.projector(state.global)).to.equal(clonedState.global.trainingCardFormId);
+      expect(Selectors.getTrainingCardFormId.projector(state.global)).to.equal(clonedState.global.trainingCard?.formId);
     });
 
     // null checks

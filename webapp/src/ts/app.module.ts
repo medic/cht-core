@@ -23,6 +23,7 @@ _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppRouteGuardProvider } from './app-route.guard.provider';
+import { TrainingCardDeactivationGuardProvider } from './training-card.guard.provider';
 import { AppComponent } from './app.component';
 import { ModulesModule } from '@mm-modules/modules.module';
 import { environment } from '@mm-environments/environment';
@@ -93,6 +94,7 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
   providers: [
     { provide: APP_BASE_HREF, useValue: '/' },
     AppRouteGuardProvider,
+    TrainingCardDeactivationGuardProvider,
     AnalyticsRouteGuardProvider,
     CookieService,
     ParseProvider,

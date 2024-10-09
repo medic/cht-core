@@ -320,11 +320,11 @@ describe('Global Reducer', () => {
   });
 
   it('should set trainingCard in state', () => {
-    state = globalReducer(state, Actions.setTrainingCardFormId('training:new_change'));
-    expect(state).to.deep.equal({ trainingCardFormId: 'training:new_change' });
+    state = globalReducer(state, Actions.setTrainingCard({ formId: 'training:new_change' }));
+    expect(state).to.deep.equal({ trainingCard: { formId: 'training:new_change' } });
 
-    state = globalReducer(state, Actions.setTrainingCardFormId('training:another_new_change'));
-    expect(state).to.deep.equal({ trainingCardFormId: 'training:another_new_change' });
+    state = globalReducer(state, Actions.setTrainingCard({ formId: 'training:another_new_change' }));
+    expect(state).to.deep.equal({ trainingCard: { formId: 'training:another_new_change' } });
   });
 
   it('should set userFacilityIds in state', () => {

@@ -1,6 +1,7 @@
 import { Routes, UrlSegment } from '@angular/router';
 
 import { AppRouteGuardProvider } from '../../app-route.guard.provider';
+import { TrainingCardDeactivationGuardProvider } from 'src/ts/training-card.guard.provider';
 import { MessagesComponent } from './messages.component';
 import { MessagesContentComponent } from './messages-content.component';
 
@@ -9,11 +10,12 @@ export const routes: Routes = [
     path: 'messages',
     component: MessagesComponent,
     data: { permissions: ['can_view_messages'], tab: 'messages'},
-    canActivate: [AppRouteGuardProvider],
+    canActivate: [ AppRouteGuardProvider ],
     children: [
       {
         path: '',
-        component: MessagesContentComponent
+        component: MessagesContentComponent,
+        canDeactivate: [ TrainingCardDeactivationGuardProvider ],
       },
       /** This child route with matcher will redirect from /messages/[uuid] to /messages/contacts:[uuid]
        * Ignoring any extra URL parameters because messages-content component is
@@ -37,7 +39,8 @@ export const routes: Routes = [
       },
       {
         path: ':type_id',
-        component: MessagesContentComponent
+        component: MessagesContentComponent,
+        canDeactivate: [ TrainingCardDeactivationGuardProvider ],
       }
     ]
   },

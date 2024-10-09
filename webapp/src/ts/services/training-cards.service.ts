@@ -90,7 +90,7 @@ export class TrainingCardsService {
         return;
       }
 
-      this.globalActions.setTrainingCardFormId(firstChronologicalTrainingCard.code);
+      this.globalActions.setTrainingCard({ formId: firstChronologicalTrainingCard.code });
     } catch (error) {
       console.error('Training Cards :: Error showing modal.', error);
       return;
@@ -102,7 +102,7 @@ export class TrainingCardsService {
     if (routeSnapshot?.data?.hideTraining) {
       return;
     }
-    this.modalService.show(TrainingCardsComponent);
+    this.modalService.show(TrainingCardsComponent, { closeOnNavigation: false });
   }
 
   private async getFirstChronologicalForm(xForms) {

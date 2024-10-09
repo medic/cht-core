@@ -1,6 +1,7 @@
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { Router } from '@angular/router';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -33,6 +34,7 @@ describe('TrainingCardsComponent', () => {
   let consoleErrorMock;
   let performanceService;
   let stopPerformanceTrackStub;
+  let routerMock;
 
   beforeEach(() => {
     consoleErrorMock = sinon.stub(console, 'error');
@@ -49,18 +51,23 @@ describe('TrainingCardsComponent', () => {
       save: sinon.stub(),
       render: sinon.stub().resolves(),
     };
+    routerMock = {
+      navigateByUrl: sinon.stub(),
+    };
     feedbackService = { submit: sinon.stub() };
     const mockedSelectors = [
       { selector: Selectors.getEnketoStatus, value: {} },
       { selector: Selectors.getEnketoSavingStatus, value: false },
       { selector: Selectors.getEnketoError, value: false },
       { selector: Selectors.getTrainingCardFormId, value: null },
+      { selector: Selectors.getTrainingCard, value: {} },
     ];
     globalActions = {
       clearEnketoStatus: sinon.stub(GlobalActions.prototype, 'clearEnketoStatus'),
       setEnketoSavingStatus: sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus'),
       setEnketoError: sinon.stub(GlobalActions.prototype, 'setEnketoError'),
       setSnackbarContent: sinon.stub(GlobalActions.prototype, 'setSnackbarContent'),
+      setTrainingCard: sinon.stub(GlobalActions.prototype, 'setTrainingCard'),
     };
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
@@ -85,6 +92,7 @@ describe('TrainingCardsComponent', () => {
           { provide: PerformanceService, useValue: performanceService },
           { provide: FeedbackService, useValue: feedbackService },
           { provide: MatDialogRef, useValue: matDialogRef },
+          { provide: Router, useValue: routerMock },
           { provide: MAT_DIALOG_DATA, useValue: {} },
         ],
       })
@@ -132,6 +140,10 @@ describe('TrainingCardsComponent', () => {
     xmlFormsService.get.resolves(xmlForm);
     formService.render.resolves(renderedForm);
     store.overrideSelector(Selectors.getTrainingCardFormId, 'training:a_form_id');
+    store.overrideSelector(
+      Selectors.getTrainingCard,
+      { formId: '', isOpen: false, showConfirmExit: false, nextUrl: '' }
+    );
     store.refreshState();
     tick();
 
@@ -149,7 +161,49 @@ describe('TrainingCardsComponent', () => {
     expect(stopPerformanceTrackStub.callCount).to.equal(2);
     expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'enketo:training:a_form_id:add:render' });
     expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'enketo:training:a_form_id:add:quit' });
+    expect(globalActions.setTrainingCard.args[0]).to.deep.equal([{
+      formId: null,
+      isOpen: false,
+      showConfirmExit: false,
+      nextUrl: null,
+    }]);
   }));
+
+  it('should get training card state from store', fakeAsync(() => {
+    sinon.resetHistory();
+    store.overrideSelector(
+      Selectors.getTrainingCard,
+      { formId: '', isOpen: true, showConfirmExit: true, nextUrl: '/next/page' }
+    );
+    store.refreshState();
+    tick();
+
+    component.ngOnInit();
+
+    expect(globalActions.setTrainingCard.calledOnce).to.be.true;
+    expect(globalActions.setTrainingCard.args[0][0]).to.deep.equal({ isOpen: true });
+    expect(component.showConfirmExit).to.be.true;
+    expect(component.nextUrl).to.equal('/next/page');
+  }));
+
+  it('should navigate to nextUrl if present', () => {
+    sinon.resetHistory();
+    component.nextUrl = '/next/page';
+    component.quitTraining();
+
+    expect(matDialogRef.close.calledOnce).to.be.true;
+    expect(routerMock.navigateByUrl.calledOnce).to.be.true;
+    expect(routerMock.navigateByUrl.args[0]).to.have.deep.members(['/next/page']);
+  });
+
+  it('should not navigate to nextUrl if not present', () => {
+    sinon.resetHistory();
+    component.nextUrl = null;
+    component.quitTraining();
+
+    expect(matDialogRef.close.calledOnce).to.be.true;
+    expect(routerMock.navigateByUrl.notCalled).to.be.true;
+  });
 
   describe('onInit', () => {
     it('should subscribe to redux and init component', () => {
@@ -164,6 +218,8 @@ describe('TrainingCardsComponent', () => {
       expect(component.form).to.be.null;
       expect(component.loadingContent).to.be.true;
       expect(component.hideModalFooter).to.be.true;
+      expect(component.nextUrl).to.be.undefined;
+      expect(component.showConfirmExit).to.be.undefined;
     });
 
     it('should reset component', () => {
