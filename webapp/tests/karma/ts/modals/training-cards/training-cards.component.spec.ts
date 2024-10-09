@@ -140,8 +140,10 @@ describe('TrainingCardsComponent', () => {
     xmlFormsService.get.resolves(xmlForm);
     formService.render.resolves(renderedForm);
     store.overrideSelector(Selectors.getTrainingCardFormId, 'training:a_form_id');
-    store
-      .overrideSelector(Selectors.getTrainingCard, { formId: '', isOpen: false, showConfirmExit: false, nextUrl: '' });
+    store.overrideSelector(
+      Selectors.getTrainingCard,
+      { formId: '', isOpen: false, showConfirmExit: false, nextUrl: '' }
+    );
     store.refreshState();
     tick();
 
@@ -169,9 +171,10 @@ describe('TrainingCardsComponent', () => {
 
   it('should get training card state from store', fakeAsync(() => {
     sinon.resetHistory();
-    store
-      .overrideSelector(Selectors
-        .getTrainingCard, { formId: '', isOpen: true, showConfirmExit: true, nextUrl: '/next/page' });
+    store.overrideSelector(
+      Selectors.getTrainingCard,
+      { formId: '', isOpen: true, showConfirmExit: true, nextUrl: '/next/page' }
+    );
     store.refreshState();
     tick();
 

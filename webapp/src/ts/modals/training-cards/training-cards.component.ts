@@ -75,6 +75,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
     // see https://github.com/medic/cht-core/issues/2198#issuecomment-210202785 for AngularJS behavior
     this.formService.unload(this.form);
     this.globalActions.clearEnketoStatus();
+    this.globalActions.setTrainingCard({ formId: null, isOpen: false, showConfirmExit: false, nextUrl: null });
   }
 
   private loadForm() {

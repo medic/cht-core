@@ -16,32 +16,32 @@ export const routes:Routes = [
     component: ReportsComponent,
     data: { permissions: ['can_view_reports'], tab: 'reports' },
     canActivate: [ AppRouteGuardProvider ],
-    canDeactivate: [ TrainingCardDeactivationGuardProvider ],
     children: [
       {
         path: '',
         component: ReportsContentComponent,
         data: { name: 'reports.detail' },
-        canDeactivate: [ReportsSelectModelDeactivationGuardProvider],
+        canDeactivate: [ ReportsSelectModelDeactivationGuardProvider, TrainingCardDeactivationGuardProvider ],
       },
       {
         path: ':id',
         component: ReportsContentComponent,
         data: { name: 'reports.detail' },
+        canDeactivate: [ TrainingCardDeactivationGuardProvider ],
       },
       {
         path: 'add/:formId',
         component: ReportsAddComponent,
         data: { permissions: ['can_edit'], hideTraining: true },
-        canActivate: [AppRouteGuardProvider],
-        canDeactivate: [ReportsAddDeactivationGuardProvider],
+        canActivate: [ AppRouteGuardProvider ],
+        canDeactivate: [ ReportsAddDeactivationGuardProvider ],
       },
       {
         path: 'edit/:reportId',
         component: ReportsAddComponent,
         data: { permissions: ['can_edit'], hideTraining: true },
-        canActivate: [AppRouteGuardProvider],
-        canDeactivate: [ReportsAddDeactivationGuardProvider],
+        canActivate: [ AppRouteGuardProvider ],
+        canDeactivate: [ ReportsAddDeactivationGuardProvider ],
       }
     ]
   },

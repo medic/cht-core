@@ -1,6 +1,7 @@
-import { ActivatedRouteSnapshot, CanDeactivate, RouterStateSnapshot } from '@angular/router';
 import { Injectable } from '@angular/core';
+import { CanDeactivate, RouterStateSnapshot, ActivatedRouteSnapshot } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { Observable, map, take } from 'rxjs';
 
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
@@ -10,11 +11,9 @@ import { Selectors } from '@mm-selectors/index';
 })
 export class TrainingCardDeactivationGuardProvider implements CanDeactivate<any> {
   private globalActions;
-  private trainingCardOpen = false;
-  private formId: string | null = null;
 
   constructor(private store: Store) {
-    this.globalActions = new GlobalActions(store);
+    this.globalActions = new GlobalActions(this.store);
   }
 
   canDeactivate(
@@ -22,26 +21,21 @@ export class TrainingCardDeactivationGuardProvider implements CanDeactivate<any>
     currentRoute: ActivatedRouteSnapshot,
     currentState: RouterStateSnapshot,
     nextState: RouterStateSnapshot,
-  ) {
-
-    this.store
+  ): Observable<boolean> {
+    return this.store
       .select(Selectors.getTrainingCard)
-      .subscribe(trainingCard => {
-        this.trainingCardOpen = trainingCard.isOpen;
-        this.formId = trainingCard.formId;
-      }).unsubscribe();
-
-    if (this.trainingCardOpen) {
-      this.globalActions.setTrainingCard({
-        formId: this.formId,
-        isOpen: true,
-        showConfirmExit: true,
-        nextUrl: nextState.url
-      });
-      return false;
-    }
-
-    return true;
+      .pipe(
+        take(1),
+        map(trainingCard => {
+          if (trainingCard.isOpen) {
+            this.globalActions.setTrainingCard({
+              showConfirmExit: true,
+              nextUrl: nextState.url
+            });
+            return false;
+          }
+          return true;
+        })
+      );
   }
 }
-

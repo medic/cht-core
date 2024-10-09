@@ -19,29 +19,33 @@ export const routes:Routes = [
     data: { permissions: [ 'can_view_analytics' ], tab: 'analytics' },
     canActivate: [ AppRouteGuardProvider ],
     canActivateChild: [ AnalyticsRouteGuardProvider ],
-    canDeactivate: [ TrainingCardDeactivationGuardProvider ],
     children: [
       {
         path: '',
         component: AnalyticsModulesComponent,
+        canDeactivate: [ TrainingCardDeactivationGuardProvider ],
       },
       {
         path: 'targets',
         component: AnalyticsTargetsComponent,
-        data: { moduleId: 'targets' }
+        data: { moduleId: 'targets' },
+        canDeactivate: [ TrainingCardDeactivationGuardProvider ],
       },
       {
         path: 'target-aggregates',
         component: AnalyticsTargetAggregatesComponent,
         data: { moduleId: AGGREGATE_TARGETS_ID },
+        canDeactivate: [ TrainingCardDeactivationGuardProvider ],
         children: [
           {
             path: '',
-            component: AnalyticsTargetAggregatesDetailComponent
+            component: AnalyticsTargetAggregatesDetailComponent,
+            canDeactivate: [ TrainingCardDeactivationGuardProvider ],
           },
           {
             path: ':id',
-            component: AnalyticsTargetAggregatesDetailComponent
+            component: AnalyticsTargetAggregatesDetailComponent,
+            canDeactivate: [ TrainingCardDeactivationGuardProvider ],
           }
         ]
       }

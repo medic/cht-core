@@ -16,25 +16,25 @@ export const routes:Routes = [
     component: TasksComponent,
     data: { permissions: ['can_edit', 'can_view_tasks'], tab: 'tasks' },
     canActivate: [ AppRouteGuardProvider ],
-    canDeactivate: [ TrainingCardDeactivationGuardProvider ],
     children: [
       {
         path: '',
         component: TasksContentComponent,
         data: { name: 'tasks.detail' },
+        canDeactivate: [ TrainingCardDeactivationGuardProvider ],
       },
       {
         path: 'group',
         component: TasksGroupComponent,
         data: { name: 'tasks.group', permissions: ['can_view_tasks_group'], redirect: ['/tasks'] },
-        canActivate: [AppRouteGuardProvider],
-        canDeactivate: [TasksGroupRouteGuardProvider],
+        canActivate: [ AppRouteGuardProvider ],
+        canDeactivate: [ TasksGroupRouteGuardProvider, TrainingCardDeactivationGuardProvider ],
       },
       {
         path: ':id',
         component: TasksContentComponent,
         data: { name: 'tasks.detail', hideTraining: true },
-        canDeactivate: [TasksContentRouteGuardProvider],
+        canDeactivate: [ TasksContentRouteGuardProvider, TrainingCardDeactivationGuardProvider ],
       },
     ]
   },
