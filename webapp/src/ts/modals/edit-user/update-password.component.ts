@@ -11,6 +11,8 @@ import { TranslateService } from '@mm-services/translate.service';
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
+const SHOW_PASSWORD_ICON = '/login/images/show-password.svg';
+const HIDE_PASSWORD_ICON = '/login/images/hide-password.svg';
 
 @Component({
   selector: 'update-password',
@@ -23,11 +25,18 @@ export class UpdatePasswordComponent {
   processing = false;
   errors: any;
   editUserModel: {
-    username?;
-    currentPassword?;
-    password?;
-    passwordConfirm?;
-  } = {};
+    username?: string;
+    currentPassword?: string;
+    password?: string;
+    passwordConfirm?: string;
+    passwordFieldType: string;
+    showPasswordIcon: string;
+    hidePasswordIcon: string;
+  } = {
+      passwordFieldType: 'password',
+      showPasswordIcon: SHOW_PASSWORD_ICON,
+      hidePasswordIcon: HIDE_PASSWORD_ICON,
+    };
 
   constructor(
     private store: Store,
@@ -90,6 +99,11 @@ export class UpdatePasswordComponent {
     this.matDialogRef.close();
   }
 
+  // Mask or show the password.
+  togglePasswordMasking() {
+    this.editUserModel.passwordFieldType = this.editUserModel.passwordFieldType === 'password' ? 'text' : 'password';
+  }
+
   private async validatePasswordFields() {
     return await this.validateRequired('password', 'Password', ErrorType.PASSWORD) &&
       await this.validateRequired('currentPassword', 'Current Password', ErrorType.CURRENT_PASSWORD) &&
@@ -111,7 +125,7 @@ export class UpdatePasswordComponent {
   }
 
   private async validatePasswordStrength() {
-    const password = this.editUserModel.password || '';
+    const password = this.editUserModel.password ?? '';
     if (password.length < PASSWORD_MINIMUM_LENGTH) {
       const value = await this.translateService.get('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH });
       this.setError(ErrorType.PASSWORD, value);
