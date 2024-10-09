@@ -274,10 +274,31 @@ describe('DBSync service', () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
-      service.sync();
-      await service.sync();
+      const p1 = service.sync();
+      expect(p1).to.be.a('promise');
+      const p2 = service.sync();
+      expect(p2).to.be.a('promise');
+      const p3 = service.sync();
+      expect(p3).to.be.a('promise');
+
+      await p3;
+
+      expectSyncCall(1);
       await nextTick();
       expectSyncCall(1);
+    });
+
+    it('multiple calls return current replication attempt', async () => {
+      getItem.withArgs('medic-last-replicated-seq').returns(99);
+      isOnlineOnly.returns(false);
+      hasAuth.resolves(true);
+
+      const r = service.sync();
+      await service.sync();
+
+      console.log(r, Object.keys(r));
+      expect(r).to.be.a('promise');
+      expect(2).to.equal(1);
     });
 
     it('force sync while offline still syncs', () => {
