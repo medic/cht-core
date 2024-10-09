@@ -99,7 +99,7 @@ const assertFeedbackDocs = async () => {
 
   const unknownMessages = feedbackDocs
     .map(doc => doc.info.message)
-    .filter(message => message.includes('Http failure response'));
+    .filter(message => message.includes('Http failure response') || message.includes('Server error'));
 
   if (!unknownMessages.length) {
     //await chtDbUtils.clearFeedbackDocs();
