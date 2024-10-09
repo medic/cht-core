@@ -121,8 +121,8 @@ describe('TrainingCardsService', () => {
       startkey: 'training:a_user:',
       endkey: 'training:a_user:\ufff0',
     });
-    expect(globalActions.setTrainingCardFormId.calledOnce);
-    expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-b' ]);
+    expect(globalActions.setTrainingCard.calledOnce);
+    expect(globalActions.setTrainingCard.args[0]).to.deep.equal([ { formId: 'training:form-b' } ]);
     expect(consoleErrorMock.notCalled).to.be.true;
     expect(feedbackService.submit.notCalled).to.be.true;
   });
@@ -189,8 +189,8 @@ describe('TrainingCardsService', () => {
       startkey: 'training:a_user:',
       endkey: 'training:a_user:\ufff0',
     });
-    expect(globalActions.setTrainingCardFormId.calledOnce);
-    expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-d' ]);
+    expect(globalActions.setTrainingCard.calledOnce);
+    expect(globalActions.setTrainingCard.args[0]).to.deep.equal([ { formId: 'training:form-d' } ]);
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
     expect(feedbackService.submit.notCalled).to.be.true;
@@ -246,8 +246,8 @@ describe('TrainingCardsService', () => {
       startkey: 'training:a_user:',
       endkey: 'training:a_user:\ufff0',
     });
-    expect(globalActions.setTrainingCardFormId.calledOnce);
-    expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-c' ]);
+    expect(globalActions.setTrainingCard.calledOnce);
+    expect(globalActions.setTrainingCard.args[0]).to.deep.equal([ { formId: 'training:form-c' } ]);
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
     expect(feedbackService.submit.notCalled).to.be.true;
@@ -311,8 +311,8 @@ describe('TrainingCardsService', () => {
       startkey: 'training:a_user:',
       endkey: 'training:a_user:\ufff0',
     });
-    expect(globalActions.setTrainingCardFormId.calledOnce);
-    expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-c' ]);
+    expect(globalActions.setTrainingCard.calledOnce);
+    expect(globalActions.setTrainingCard.args[0]).to.deep.equal([ { formId: 'training:form-c' } ]);
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
     expect(feedbackService.submit.notCalled).to.be.true;
@@ -372,7 +372,7 @@ describe('TrainingCardsService', () => {
       startkey: 'training:a_user:',
       endkey: 'training:a_user:\ufff0',
     });
-    expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
+    expect(globalActions.setTrainingCard.notCalled).to.be.true;
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
     expect(feedbackService.submit.notCalled).to.be.true;
@@ -424,7 +424,7 @@ describe('TrainingCardsService', () => {
 
     expect(sessionService.hasRole.calledThrice).to.be.true;
     expect(localDb.allDocs.notCalled).to.be.true;
-    expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
+    expect(globalActions.setTrainingCard.notCalled).to.be.true;
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
     expect(feedbackService.submit.notCalled).to.be.true;
@@ -474,7 +474,7 @@ describe('TrainingCardsService', () => {
 
     expect(sessionService.hasRole.calledThrice).to.be.true;
     expect(localDb.allDocs.notCalled).to.be.true;
-    expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
+    expect(globalActions.setTrainingCard.notCalled).to.be.true;
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
     expect(feedbackService.submit.notCalled).to.be.true;
@@ -523,7 +523,7 @@ describe('TrainingCardsService', () => {
     await callback(null, xforms);
 
     expect(localDb.allDocs.notCalled).to.be.true;
-    expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
+    expect(globalActions.setTrainingCard.notCalled).to.be.true;
     expect(modalService.show.notCalled).to.be.true;
 
     expect(consoleErrorMock.calledThrice).to.be.true;
@@ -550,7 +550,7 @@ describe('TrainingCardsService', () => {
 
     expect(sessionService.hasRole.notCalled).to.be.true;
     expect(localDb.allDocs.notCalled).to.be.true;
-    expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
+    expect(globalActions.setTrainingCard.notCalled).to.be.true;
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
     expect(feedbackService.submit.notCalled).to.be.true;
@@ -569,7 +569,7 @@ describe('TrainingCardsService', () => {
     expect(localDb.allDocs.notCalled).to.be.true;
     expect(sessionService.userCtx.notCalled).to.be.true;
     expect(sessionService.hasRole.notCalled).to.be.true;
-    expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
+    expect(globalActions.setTrainingCard.notCalled).to.be.true;
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.calledOnce).to.be.true;
     expect(consoleErrorMock.args[0][0]).to.equal('Training Cards :: Error fetching forms.');
@@ -601,7 +601,7 @@ describe('TrainingCardsService', () => {
     expect(sessionService.hasRole.calledOnce).to.be.true;
     expect(sessionService.userCtx.calledOnce).to.be.true;
     expect(localDb.allDocs.calledOnce).to.be.true;
-    expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
+    expect(globalActions.setTrainingCard.notCalled).to.be.true;
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.calledOnce).to.be.true;
     expect(consoleErrorMock.args[0][0]).to.equal('Training Cards :: Error showing modal.');
@@ -689,8 +689,8 @@ describe('TrainingCardsService', () => {
       startkey: 'training:a_user:',
       endkey: 'training:a_user:\ufff0',
     });
-    expect(globalActions.setTrainingCardFormId.calledOnce);
-    expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-e' ]);
+    expect(globalActions.setTrainingCard.calledOnce);
+    expect(globalActions.setTrainingCard.args[0]).to.deep.equal([ { formId: 'training:form-e' } ]);
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
     expect(feedbackService.submit.notCalled).to.be.true;
@@ -738,8 +738,8 @@ describe('TrainingCardsService', () => {
       startkey: 'training:a_user:',
       endkey: 'training:a_user:\ufff0',
     });
-    expect(globalActions.setTrainingCardFormId.calledOnce);
-    expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-d' ]);
+    expect(globalActions.setTrainingCard.calledOnce);
+    expect(globalActions.setTrainingCard.args[0]).to.deep.equal([ { formId: 'training:form-d' } ]);
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
     expect(feedbackService.submit.notCalled).to.be.true;

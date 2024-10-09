@@ -160,6 +160,7 @@ describe('TrainingCardsComponent', () => {
     expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'enketo:training:a_form_id:add:render' });
     expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'enketo:training:a_form_id:add:quit' });
     expect(globalActions.setTrainingCard.args[0]).to.deep.equal([{
+      formId: null,
       isOpen: false,
       showConfirmExit: false,
       nextUrl: null,
