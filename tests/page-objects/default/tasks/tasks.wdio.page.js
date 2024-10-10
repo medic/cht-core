@@ -86,6 +86,12 @@ const openTaskById = async (id, taskType) => {
   await $(taskFormSelector).waitForDisplayed();
 };
 
+const scrollToLastTaskItem = async () => {
+  await browser.execute(() => {
+    $('.content-row:last-child').get(0).scrollIntoView();
+  });
+};
+
 module.exports = {
   tasksList,
   getTasks,
@@ -100,4 +106,5 @@ module.exports = {
   getTasksInGroup,
   noSelectedTask,
   openTaskById,
+  scrollToLastTaskItem,
 };
