@@ -255,9 +255,10 @@ const self = {
    * @returns {string} result.aggregate.targets[n].* All attributes of the target as defined in the settings doc
    * @returns {Integer} result.aggregate.targets[n].total The total number of unique target emission ids matching
    *    instanceFilter
-   * @returns {Integer} result.aggregate.targetsn].pass The number of unique target emission ids matching instanceFilter
-   *    with thelatest emission with truthy "pass"
+   * @returns {Integer} result.aggregate.targets[n].pass The number of unique target emission ids dated within
+   * filterInterval with the latest emission with truthy "pass"
    * @returns {Integer} result.aggregate.targets[n].percent The percentage of pass/total
+   * @returns {Boolean} result.isUpdated True if the aggregate has been update compared to previous stored value.
    */
   aggregateStoredTargetEmissions: async (filterInterval) => {
     const currentInterval = calendarInterval.getCurrent(state.monthStartDate);
@@ -282,6 +283,19 @@ const self = {
    */
   getDirtyContacts: () => self.getContactIds().filter(self.isDirty),
 
+  /**
+   * Returns stored target aggregate for current interval or calculates aggregate for custom interval.
+   * Does not store aggregate calculated for custom interval.
+   *
+   * @param {{ start:number, end: number }} filterInterval Calendar interval that limits emissions to be aggregated
+   * @returns {Promise<{ filterInterval, targets: [] }>} result
+   * @returns {string} result.targets[n].* All attributes of the target as defined in the settings doc
+   * @returns {Integer} result.targets[n].total The total number of unique target emission ids matching
+   *    instanceFilter
+   * @returns {Integer} result.targets[n].pass The number of unique target emission ids dated within
+   * filterInterval with the latest emission with truthy "pass"
+   * @returns {Integer} result.targets[n].percent The percentage of pass/total
+   */
   getTargetAggregates: async (filterInterval) => {
     if (calendarInterval.isEqual(filterInterval, state.targetState.aggregate?.filterInterval)) {
       return state.targetState.aggregate;

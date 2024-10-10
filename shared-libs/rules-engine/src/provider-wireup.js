@@ -62,6 +62,14 @@ module.exports = {
       });
   },
 
+  /**
+   * Refreshes the rules emissions for all provided contacts
+   * Writes target document if changed
+   *
+   * @param {Object} provider A data provider
+   * @param {string[]} contactIds An array of contact ids. If undefined, refreshes emissions for all contacts
+   * @returns {Promise<>}
+   */
   refreshRulesEmissionForContacts: (provider, contactIds) => {
     if (!rulesEmitter.isEnabled()) {
       return disabledResponse();
@@ -284,12 +292,15 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
 const storeTargetsDoc = (provider, aggregate, updatedTargets) => {
   const targetDocTag = aggregate.filterInterval ? moment(aggregate.filterInterval.end).format('YYYY-MM') : 'latest';
   const minifyTarget = target => ({ id: target.id, value: target.value });
+  const userContext = {
+    userContactDoc: rulesStateStore.currentUserContact(),
+    userSettingsDoc: rulesStateStore.currentUserSettings(),
+  };
 
   return provider.commitTargetDoc(
     aggregate.targets.map(minifyTarget),
-    rulesStateStore.currentUserContact(),
-    rulesStateStore.currentUserSettings(),
     targetDocTag,
+    userContext,
     updatedTargets
   );
 };

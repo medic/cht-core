@@ -204,7 +204,7 @@ export class RulesEngineService implements OnDestroy {
     };
   }
 
-  private monitorChanges(rulesEngineContext) {
+  private monitorContactChanges() {
     const isReport = doc => doc.type === 'data_record' && !!doc.form;
 
     const dirtyContactsSubscription = this.changesService.subscribe({
@@ -252,7 +252,9 @@ export class RulesEngineService implements OnDestroy {
       }
     });
     this.subscriptions.add(dirtyContactsSubscription);
+  }
 
+  private monitorConfigChanges(rulesEngineContext) {
     const userLineage: any[] = [];
     for (
       let current = rulesEngineContext.userContactDoc;
@@ -280,6 +282,11 @@ export class RulesEngineService implements OnDestroy {
       },
     });
     this.subscriptions.add(rulesUpdateSubscription);
+  }
+
+  private monitorChanges(rulesEngineContext) {
+    this.monitorContactChanges();
+    this.monitorConfigChanges(rulesEngineContext);
   }
 
   private rulesConfigChange(rulesEngineContext) {

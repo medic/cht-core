@@ -220,7 +220,7 @@ describe('pouchdb provider', () => {
 
     it('create and update a doc', async () => {
       const docTag = '2019-07';
-      await pouchdbProvider(db).commitTargetDoc(targets, userContactDoc, userSettingsDoc, docTag);
+      await pouchdbProvider(db).commitTargetDoc(targets, docTag, { userContactDoc, userSettingsDoc });
 
       const targetDocId = 'target~2019-07~user~org.couchdb.user:username';
 
@@ -236,11 +236,11 @@ describe('pouchdb provider', () => {
       });
 
       const nextTargets = [{ id: 'target', score: 1 }];
-      await pouchdbProvider(db).commitTargetDoc(nextTargets, userContactDoc, userSettingsDoc, docTag);
+      await pouchdbProvider(db).commitTargetDoc(nextTargets, docTag, { userContactDoc, userSettingsDoc });
       const ignoredUpdate = await db.get(targetDocId);
       expect(ignoredUpdate._rev).to.equal(firstTargetDoc._rev);
 
-      await pouchdbProvider(db).commitTargetDoc(nextTargets, userContactDoc, userSettingsDoc, docTag, true);
+      await pouchdbProvider(db).commitTargetDoc(nextTargets, docTag, { userContactDoc, userSettingsDoc },  true);
       const secondTargetDoc = await db.get(targetDocId);
       expect(secondTargetDoc).excluding('_rev').to.deep.eq({
         _id: 'target~2019-07~user~org.couchdb.user:username',

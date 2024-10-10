@@ -499,9 +499,8 @@ describe('provider-wireup integration tests', () => {
         .excludingEvery(['goal', 'icon', 'subtitle_translation_key', 'translation_key', 'type'])
         .to.deep.equal([
           targets,
-          currentUserContact,
-          currentUserSettings,
           moment().format('YYYY-MM'),
+          { userContactDoc: currentUserContact, userSettingsDoc: currentUserSettings },
           true
         ]);
 
@@ -511,9 +510,8 @@ describe('provider-wireup integration tests', () => {
         .excludingEvery(['goal', 'icon', 'subtitle_translation_key', 'translation_key', 'type'])
         .to.deep.equal([
           targets,
-          currentUserContact,
-          currentUserSettings,
           moment().format('YYYY-MM'),
+          { userContactDoc: currentUserContact, userSettingsDoc: currentUserSettings },
           false
         ]);
     });
@@ -784,9 +782,8 @@ describe('provider-wireup integration tests', () => {
         expect(provider.commitTargetDoc.callCount).to.equal(1);
         expect(provider.commitTargetDoc.args[0]).to.deep.equal([
           [{ id: 'uhc', value: { pass: 1, total: 2 } }],
-          { _id: 'mock_user_id' },
-          { _id: 'org.couchdb.user:username' },
           '2020-04',
+          { userSettingsDoc: { _id: 'org.couchdb.user:username' }, userContactDoc: { _id: 'mock_user_id' }},
           true,
         ]);
       });
@@ -830,9 +827,8 @@ describe('provider-wireup integration tests', () => {
         expect(provider.commitTargetDoc.callCount).to.equal(1);
         expect(provider.commitTargetDoc.args[0]).to.deep.equal([
           [{ id: 'uhc', value: { pass: 2, total: 2 } }],
-          { _id: 'mock_user_id' },
-          { _id: 'org.couchdb.user:username' },
           '2020-04',
+          { userSettingsDoc: { _id: 'org.couchdb.user:username' }, userContactDoc: { _id: 'mock_user_id' } },
           true,
         ]);
       });
@@ -871,9 +867,8 @@ describe('provider-wireup integration tests', () => {
         expect(provider.commitTargetDoc.callCount).to.equal(1);
         expect(provider.commitTargetDoc.args[0]).to.deep.equal([
           [{ id: 'uhc', value: { pass: 2, total: 2 } }],
-          { _id: 'mock_user_id' },
-          { _id: 'org.couchdb.user:username' },
           '2020-05',
+          { userSettingsDoc: { _id: 'org.couchdb.user:username' }, userContactDoc: { _id: 'mock_user_id' } },
           true,
         ]);
       });
@@ -913,9 +908,8 @@ describe('provider-wireup integration tests', () => {
         expect(provider.commitTargetDoc.callCount).to.equal(1);
         expect(provider.commitTargetDoc.args[0]).to.deep.equal([
           [{ id: 'uhc', value: { pass: 2, total: 2 } }],
-          { _id: 'mock_user_id' },
-          { _id: 'org.couchdb.user:username' },
           '2020-05',
+          { userSettingsDoc: { _id: 'org.couchdb.user:username' }, userContactDoc: { _id: 'mock_user_id' } },
           true,
         ]);
       });
@@ -948,12 +942,12 @@ describe('provider-wireup integration tests', () => {
 
         await withMockRefresher(() => wireup.fetchTasksFor(provider));
         expect(provider.commitTargetDoc.callCount).to.equal(1);
-        expect(provider.commitTargetDoc.args[0][3]).to.equal('2020-04');
+        expect(provider.commitTargetDoc.args[0][1]).to.equal('2020-04');
         expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
         await withMockRefresher(() => wireup.fetchTargets(provider));
 
         expect(provider.commitTargetDoc.callCount).to.equal(2);
-        expect(provider.commitTargetDoc.args[1][3]).to.equal('2020-04');
+        expect(provider.commitTargetDoc.args[1][1]).to.equal('2020-04');
         expect(provider.commitTargetDoc.args[1][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
       });
 
@@ -985,16 +979,16 @@ describe('provider-wireup integration tests', () => {
         expect(provider.commitTargetDoc.callCount).to.equal(0);
         await withMockRefresher(() => wireup.fetchTasksFor(provider));
         expect(provider.commitTargetDoc.callCount).to.equal(1);
-        expect(provider.commitTargetDoc.args[0][3]).to.equal('2020-04');
+        expect(provider.commitTargetDoc.args[0][1]).to.equal('2020-04');
         expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
 
         clock.tick(5 * 60 * 60 * 1000); // 6 hours, it's now 2020-05-01 04:00:00
         await withMockRefresher(() => wireup.fetchTasksFor(provider));
 
         expect(provider.commitTargetDoc.callCount).to.equal(3);
-        expect(provider.commitTargetDoc.args[1][3]).to.equal('2020-04');
+        expect(provider.commitTargetDoc.args[1][1]).to.equal('2020-04');
         expect(provider.commitTargetDoc.args[1][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
-        expect(provider.commitTargetDoc.args[2][3]).to.equal('2020-05');
+        expect(provider.commitTargetDoc.args[2][1]).to.equal('2020-05');
         expect(provider.commitTargetDoc.args[2][0]).to.deep.equal([{ id: 'uhc', value: { pass: 1, total: 1 }}]);
       });
 
@@ -1038,16 +1032,16 @@ describe('provider-wireup integration tests', () => {
         await withMockRefresher(() => wireup.fetchTasksFor(provider));
 
         expect(provider.commitTargetDoc.callCount).to.equal(1);
-        expect(provider.commitTargetDoc.args[0][3]).to.equal('2020-04');
+        expect(provider.commitTargetDoc.args[0][1]).to.equal('2020-04');
         expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
 
         clock.tick(5 * 60 * 60 * 1000); // 6 hours, it's now 2020-05-01 04:00:00
         await withMockRefresher(() => wireup.fetchTargets(provider));
 
         expect(provider.commitTargetDoc.callCount).to.equal(3);
-        expect(provider.commitTargetDoc.args[1][3]).to.equal('2020-04');
+        expect(provider.commitTargetDoc.args[1][1]).to.equal('2020-04');
         expect(provider.commitTargetDoc.args[1][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
-        expect(provider.commitTargetDoc.args[2][3]).to.equal('2020-05');
+        expect(provider.commitTargetDoc.args[2][1]).to.equal('2020-05');
         expect(provider.commitTargetDoc.args[2][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
       });
     });
