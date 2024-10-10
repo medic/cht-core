@@ -274,10 +274,22 @@ describe('DBSync service', () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
 
-      service.sync();
-      await service.sync();
+      const p1 = service.sync();
+      expect(p1).to.be.a('promise');
+      const p2 = service.sync();
+      expect(p2).to.be.a('promise');
+      const p3 = service.sync();
+      expect(p3).to.be.a('promise');
+
+      await p3;
+
+      expectSyncCall(1);
       await nextTick();
       expectSyncCall(1);
+
+      expect(await p1).to.equal(undefined);
+      expect(await p2).to.equal(undefined);
+      expect(await p3).to.equal(undefined);
     });
 
     it('force sync while offline still syncs', () => {

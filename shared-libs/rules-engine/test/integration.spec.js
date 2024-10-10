@@ -19,7 +19,14 @@ let rulesEngine;
 
 
 const TEST_START = 1500000000000;
-const EXPECTED_TASK_ID_PREFIX = 'task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder'; // eslint-disable-line
+const TARGET_INTERVAL = moment(TEST_START).startOf('month').format('YYYY-MM');
+const TASK_ID_PREFIX = (taskId) => `task~org.couchdb.user:username~${taskId}`;
+const FACILITY_REMINDER_TASK_ID = 'report~pregnancy-facility-visit-reminder~anc.facility_reminder';
+const PREGNANCY_REMINDER_12_TASK_ID = 'pregReg~pregnancy-home-visit-week12~anc.pregnancy_home_visit.known_lmp';
+const PREGNANCY_REMINDER_20_TASK_ID = 'pregReg~pregnancy-home-visit-week20~anc.pregnancy_home_visit.known_lmp';
+const PREGNANCY_REMINDER_26_TASK_ID = 'pregReg~pregnancy-home-visit-week26~anc.pregnancy_home_visit.known_lmp';
+const EXPECTED_TASK_ID_PREFIX = TASK_ID_PREFIX(FACILITY_REMINDER_TASK_ID);
+
 const patientContact = {
   _id: 'patient',
   name: 'chw',
@@ -72,9 +79,8 @@ const expectedQueriesForFreshData = [
   'medic-client/tasks_by_contact',
 ];
 
-const fetchTargets = async (filterInterval) => {
-  filterInterval = filterInterval || calendarInterval.getInterval(engineSettings().monthStartDate, TEST_START);
-  const targets = await rulesEngine.fetchTargets(filterInterval);
+const fetchTargets = async (interval) => {
+  const targets = await rulesEngine.fetchTargets(interval);
   return targets.reduce((agg, target) => {
     agg[target.id] = target;
     return agg;
@@ -129,6 +135,68 @@ describe(`Rules Engine Integration Tests`, () => {
         });
       }
 
+      it('should refresh emissions for all contacts', async () => {
+        await db.bulkDocs([patientContact, pregnancyFollowupReport, pregnancyRegistrationReport]);
+        sinon.spy(db, 'bulkDocs');
+        sinon.spy(db, 'query');
+
+        await rulesEngine.refreshEmissionsFor();
+
+        expect(db.bulkDocs.callCount).to.equal(2);
+
+        const tasks = db.bulkDocs.args[0][0];
+        expect(tasks.length).to.equal(4);
+        const taskReminder12 = tasks.find(task => task.emission._id === PREGNANCY_REMINDER_12_TASK_ID);
+        expect(taskReminder12).to.deep.include({
+          _id: `${TASK_ID_PREFIX(PREGNANCY_REMINDER_12_TASK_ID)}~${TEST_START}`,
+          requester: patientContact._id,
+          owner: patientContact._id,
+          state: 'Draft',
+        });
+
+        const taskReminder20 = tasks.find(task => task.emission._id === PREGNANCY_REMINDER_20_TASK_ID);
+        expect(taskReminder20).to.deep.include({
+          _id: `${TASK_ID_PREFIX(PREGNANCY_REMINDER_20_TASK_ID)}~${TEST_START}`,
+          requester: patientContact._id,
+          owner: patientContact._id,
+          state: 'Draft',
+        });
+
+        const taskReminder26 = tasks.find(task => task.emission._id === PREGNANCY_REMINDER_26_TASK_ID);
+        expect(taskReminder26).to.deep.include({
+          _id: `${TASK_ID_PREFIX(PREGNANCY_REMINDER_26_TASK_ID)}~${TEST_START}`,
+          requester: patientContact._id,
+          owner: patientContact._id,
+          state: 'Draft',
+        });
+
+        const taskFacilityReminder = tasks.find(task => task.emission._id === FACILITY_REMINDER_TASK_ID);
+        expect(taskFacilityReminder).to.deep.include({
+          _id: `${TASK_ID_PREFIX(FACILITY_REMINDER_TASK_ID)}~${TEST_START}`,
+          requester: patientContact._id,
+          owner: patientContact._id,
+          state: 'Ready',
+        });
+
+        const targetDoc = db.bulkDocs.args[1][0].docs[0];
+        expect(targetDoc).to.deep.include({
+          _id: `target~${TARGET_INTERVAL}~user~org.couchdb.user:username`,
+          reporting_period: TARGET_INTERVAL,
+        });
+        expect(targetDoc.targets).to.deep.include({
+          id: 'pregnancy-registrations-this-month',
+          value: { pass: 1, total: 1 },
+        });
+        expect(targetDoc.targets).to.deep.include( {
+          id: 'active-pregnancies',
+          value: { pass: 1, total: 1 },
+        },);
+        expect(targetDoc.targets).to.deep.include( {
+          id: 'births-this-month',
+          value: { pass: 0, total: 0 },
+        });
+      });
+
       it('unknown contact yields zero tasks and empty targets', async () => {
         await db.bulkDocs([patientContact, pregnancyFollowupReport]);
         sinon.spy(db, 'query');
@@ -159,9 +227,18 @@ describe(`Rules Engine Integration Tests`, () => {
         const noTasks = await rulesEngine.fetchTasksFor(['patient']);
         expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length + 1);
         expect(noTasks).to.have.property('length', 0);
-        expect(db.bulkDocs.callCount).to.eq(2);
-        expect(db.bulkDocs.args[1][0]).to.have.property('length', 1);
-        expect(db.bulkDocs.args[1][0][0]).to.deep.include({
+        expect(db.bulkDocs.callCount).to.eq(3);
+
+        expect(db.bulkDocs.args[1][0].docs.length).to.eq(1);
+        expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
+          type: 'target',
+          user: 'org.couchdb.user:username',
+          owner: 'user',
+          reporting_period: TARGET_INTERVAL,
+        });
+
+        expect(db.bulkDocs.args[2][0].length).to.eq(1);
+        expect(db.bulkDocs.args[2][0][0]).to.deep.include({
           _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${NOW}`,
           requester: 'patient',
           owner: 'patient',
@@ -182,15 +259,24 @@ describe(`Rules Engine Integration Tests`, () => {
         clock.setSystemTime(TEST_START + MS_IN_DAY * 39);
         const monthLater = await rulesEngine.fetchTasksFor(['patient']);
         expect(monthLater).to.have.property('length', 0);
-        expect(db.bulkDocs.callCount).to.eq(3);
-        expect(db.bulkDocs.args[2][0].docs.length).to.equal(1);
-        const date = moment(TEST_START + MS_IN_DAY).format('YYYY-MM');
-        expect(db.bulkDocs.args[2][0].docs[0]).to.deep.include({
-          _id: `target~${date}~user~org.couchdb.user:username`,
+        expect(db.bulkDocs.callCount).to.eq(5);
+
+        // interval turnover
+        expect(db.bulkDocs.args[3][0].docs[0]).to.deep.include({
+          _id: `target~${TARGET_INTERVAL}~user~org.couchdb.user:username`,
           type: 'target',
           owner: 'user',
-          reporting_period: date,
+          reporting_period: TARGET_INTERVAL,
         });
+
+        const dateNext = moment(TEST_START + MS_IN_DAY * 39).format('YYYY-MM');
+        expect(db.bulkDocs.args[4][0].docs[0]).to.deep.include({
+          _id: `target~${dateNext}~user~org.couchdb.user:username`,
+          type: 'target',
+          owner: 'user',
+          reporting_period: dateNext,
+        });
+
       });
 
       it('fail facility_reminder because of fresh doc merge', async () => {
@@ -202,9 +288,16 @@ describe(`Rules Engine Integration Tests`, () => {
         expect(db.query.args.map(args => args[0]))
           .to.deep.eq([...expectedQueriesForFreshData, ...expectedQueriesForFreshData]);
         expect(noTasks).to.have.property('length', 0);
-        expect(db.bulkDocs.callCount).to.eq(2);
-        expect(db.bulkDocs.args[1][0]).to.have.property('length', 1);
-        expect(db.bulkDocs.args[1][0][0]).to.deep.include({
+        expect(db.bulkDocs.callCount).to.eq(3);
+
+        expect(db.bulkDocs.args[1][0].docs.length).to.eq(1);
+        expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
+          type: 'target',
+          user: 'org.couchdb.user:username',
+          owner: 'user',
+        });
+        expect(db.bulkDocs.args[2][0]).to.have.property('length', 1);
+        expect(db.bulkDocs.args[2][0][0]).to.deep.include({
           _id: `${EXPECTED_TASK_ID_PREFIX}~${TEST_START}`,
           state: 'Failed',
           stateHistory: [
@@ -234,18 +327,18 @@ describe(`Rules Engine Integration Tests`, () => {
 
         // changes feed marks contact for updates
         await rulesEngine.updateEmissionsFor('patient');
-        expect(db.bulkDocs.callCount).to.eq(2);
+        expect(db.bulkDocs.callCount).to.eq(4);
 
         // requery via 'tasks tab' interface instead of 'contacts tab' interface
         const completedTask = await rulesEngine.fetchTasksFor();
         expect(completedTask).to.have.property('length', 0);
         expect(db.query.callCount).to.eq(
-          expectedQueriesForFreshData.length + 1 /* update emissions for*/ +
-          expectedQueriesForAllFreshData.length + 1 /* tasks */
+          expectedQueriesForFreshData.length + 2 /* update emissions for*/ +
+          expectedQueriesForAllFreshData.length + 2 /* tasks */
         );
-        expect(db.bulkDocs.callCount).to.eq(3);
-        expect(db.bulkDocs.args[2][0]).to.have.property('length', 1);
-        expect(db.bulkDocs.args[2][0][0]).to.deep.include({
+        expect(db.bulkDocs.callCount).to.eq(4);
+        expect(db.bulkDocs.args[3][0]).to.have.property('length', 1);
+        expect(db.bulkDocs.args[3][0][0]).to.deep.include({
           _id: `${EXPECTED_TASK_ID_PREFIX}~${TEST_START}`,
           state: 'Completed',
           stateHistory: [
@@ -262,8 +355,8 @@ describe(`Rules Engine Integration Tests`, () => {
 
         await rulesEngine.fetchTargets();
         expect(db.query.callCount).to.eq(
-          expectedQueriesForFreshData.length + 1 /* update emissions for*/ +
-          expectedQueriesForAllFreshData.length + 1 /* tasks */
+          expectedQueriesForFreshData.length + 2 /* update emissions for*/ +
+          expectedQueriesForAllFreshData.length + 2 /* tasks */
         );
       });
 
@@ -279,15 +372,15 @@ describe(`Rules Engine Integration Tests`, () => {
 
         // changes feed marks contact for updates
         await rulesEngine.updateEmissionsFor('patient');
-        expect(db.bulkDocs.callCount).to.eq(2);
+        expect(db.bulkDocs.callCount).to.eq(4);
 
         const completedTask = await rulesEngine.fetchTasksFor(['patient']);
         expect(completedTask).to.have.property('length', 0);
         expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length * 2 + 1);
-        expect(db.bulkDocs.callCount).to.eq(3);
-        expect(db.bulkDocs.args[2][0]).to.have.property('length', 1);
+        expect(db.bulkDocs.callCount).to.eq(4);
+        expect(db.bulkDocs.args[3][0]).to.have.property('length', 1);
 
-        const [taskDoc] = db.bulkDocs.args[2][0];
+        const [taskDoc] = db.bulkDocs.args[3][0];
         expect(taskDoc).to.deep.include({
           _id: `${EXPECTED_TASK_ID_PREFIX}~${TEST_START}`,
           state: 'Cancelled',
@@ -319,7 +412,7 @@ describe(`Rules Engine Integration Tests`, () => {
         const settings = { rulesAreDeclarative, rules: 'const nothing = [];' };
         const updatedSettings = engineSettings(settings, simpleNoolsTemplate);
         await rulesEngine.rulesConfigChange(updatedSettings);
-        expect(db.bulkDocs.callCount).to.eq(1);
+        expect(db.bulkDocs.callCount).to.eq(2);
 
         const completedTask = await rulesEngine.fetchTasksFor(['patient']);
         expect(completedTask).to.have.property('length', 0);
@@ -394,7 +487,7 @@ describe(`Rules Engine Integration Tests`, () => {
 
         await rulesEngine.updateEmissionsFor(reportByPatientIdOnly.patient_id);
         const secondTasks = await rulesEngine.fetchTasksFor();
-        expect(rulesEmitter.getEmissionsFor.callCount).to.eq(2);
+        expect(rulesEmitter.getEmissionsFor.callCount).to.eq(3);
         expect(rulesEmitter.getEmissionsFor.args[1]).excludingEvery('_rev').to.deep.eq([
           [patientContact],
           [reportByPatientIdOnly],
@@ -425,7 +518,7 @@ describe(`Rules Engine Integration Tests`, () => {
 
         await rulesEngine.updateEmissionsFor(reportByPatientIdOnly.patient_id);
         const secondTasks = await rulesEngine.fetchTasksFor([patientContact._id]);
-        expect(rulesEmitter.getEmissionsFor.callCount).to.eq(2);
+        expect(rulesEmitter.getEmissionsFor.callCount).to.eq(3);
         expect(rulesEmitter.getEmissionsFor.args[1]).excludingEvery('_rev').to.deep.eq([
           [patientContact],
           [reportByPatientIdOnly],
@@ -460,7 +553,7 @@ describe(`Rules Engine Integration Tests`, () => {
         expect(db.query.args.map(args => args[0]))
           .to.deep.eq([...expectedQueriesForAllFreshData, 'medic-client/tasks_by_contact']);
         expect(firstResult).excludingEvery('_rev').to.deep.eq([taskOwnedByHeadless]);
-        expect(db.bulkDocs.callCount).to.eq(1); // taskEmittedByHeadless2 gets cancelled
+        expect(db.bulkDocs.callCount).to.eq(2); // taskEmittedByHeadless2 gets cancelled
 
         await rulesEngine.updateEmissionsFor('headless');
         const secondResult = await rulesEngine.fetchTasksFor();
@@ -715,7 +808,7 @@ const triggerFacilityReminderInReadyState = async (selectBy, docs = [patientCont
   expect(db.query.args.map(args => args[0])).to.deep.eq(
     selectBy ? expectedQueriesForFreshData : [...expectedQueriesForAllFreshData, 'medic-client/tasks_by_contact']
   );
-  expect(db.bulkDocs.callCount).to.eq(1);
+  expect(db.bulkDocs.callCount).to.eq(2);
   expect(tasks[0]).to.deep.include({
     _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${Date.now()}`,
     state: 'Ready',

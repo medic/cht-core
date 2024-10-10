@@ -82,4 +82,8 @@ module.exports = {
    * @returns { start: number, end: number } - timestamps that define the calendar interval
    */
   getInterval: (intervalStartDate, timestamp) => getInterval(intervalStartDate, moment(timestamp)),
+
+  isEqual: (intervalA, intervalB) => !!intervalA &&
+                                     intervalA?.start === intervalB?.start &&
+                                     intervalA?.end === intervalB?.end,
 };

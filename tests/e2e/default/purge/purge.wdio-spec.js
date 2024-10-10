@@ -54,7 +54,16 @@ describe('purge', function() {
   });
 
   const updatePurgeSettings = async (purgeFn, revert) => {
-    const settings = { purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds', run_every_days: -1 } };
+
+    const permissions = await utils.getUpdatedPermissions(['chw'], [], ['can_view_tasks', 'can_view_analytics']);
+    const settings = {
+      purge: {
+        fn: purgeFn.toString(),
+        text_expression: 'every 1 seconds',
+        run_every_days: -1
+      },
+      permissions,
+    };
     await utils.updateSettings(settings, { revert: revert, ignoreReload: true });
   };
 
@@ -96,7 +105,7 @@ describe('purge', function() {
     await updatePurgeSettings(filterHomeVisitReports, true);
     await runPurging();
 
-    await commonElements.sync(true);
+    await commonElements.sync(true, 40 * 1000);
 
     allReports = await getAllReports();
     // this only works because the client didn't have to "purge" these docs and the revs didn't have

@@ -87,6 +87,30 @@ const loginAsUser = async (user) => {
   await commonPage.waitForPageLoaded();
 };
 
+/**
+ * Ongoing replication can be interrupted by the user being edited on the server side.
+ * A 401 for a replication request will create a feedback doc, which will fail the test.
+ */
+const assertFeedbackDocs = async () => {
+  const feedbackDocs = await chtDbUtils.getFeedbackDocs();
+  if (!feedbackDocs.length) {
+    return;
+  }
+
+  const feedbackDocsToIgnore = [
+    'Http failure response',
+    'Server error'
+  ];
+
+  const unknownMessages = feedbackDocs
+    .map(doc => doc.info.message)
+    .filter(message => !feedbackDocsToIgnore.find(toIgnore => message.includes(toIgnore)));
+
+  if (!unknownMessages.length) {
+    await chtDbUtils.clearFeedbackDocs();
+  }
+};
+
 const loginAsOfflineUser = () => loginAsUser(ORIGINAL_USER);
 
 const loginAsOnlineUser = () => loginAsUser(ONLINE_USER);
@@ -245,7 +269,11 @@ describe('Create user for contacts', () => {
         expect(district.contact._id).to.equal(replacementContactId);
 
         await browser.throttle('online');
-        await commonPage.syncAndNotWaitForSuccess();
+        try {
+          await commonPage.syncAndNotWaitForSuccess();
+        } catch {
+          // sync can get triggered automatically
+        }
         await (await loginPage.loginButton()).waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();
@@ -284,6 +312,8 @@ describe('Create user for contacts', () => {
         const basicReport3 = await utils.getDoc(basicReportId3);
         // New reports written by the old user are not re-parented
         expect(basicReport3.contact._id).to.equal(originalContactId);
+
+        await assertFeedbackDocs();
       });
 
       it('creates a new user when the replace_user form is submitted while online', async () => {
@@ -332,6 +362,8 @@ describe('Create user for contacts', () => {
         await commonPage.waitForPageLoaded();
         const [cookie] = await browser.getCookies('userCtx');
         expect(cookie.value).to.include(newUserSettings.name);
+
+        await assertFeedbackDocs();
       });
 
       it('does not assign new person as primary contact of parent place ' +
@@ -384,6 +416,8 @@ describe('Create user for contacts', () => {
         await commonPage.waitForPageLoaded();
         const [cookie] = await browser.getCookies('userCtx');
         expect(cookie.value).to.include(newUserSettings.name);
+
+        await assertFeedbackDocs();
       });
 
       it('creates new user from latest replace_user form data ' +
@@ -449,7 +483,11 @@ describe('Create user for contacts', () => {
         expect(district.contact._id).to.equal(replacementContactId1);
 
         await browser.throttle('online');
-        await commonPage.syncAndNotWaitForSuccess();
+        try {
+          await commonPage.syncAndNotWaitForSuccess();
+        } catch {
+          // sync can get triggered automatically
+        }
         await (await loginPage.loginButton()).waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();
@@ -481,6 +519,8 @@ describe('Create user for contacts', () => {
         // Basic form reports were successfully synced to the server
         const basicReportsFromRemote = await utils.getDocs([basicReportId0, basicReportId1]);
         basicReportsFromRemote.forEach((report, index) => expect(report).to.deep.equal(basicReports[index]));
+
+        await assertFeedbackDocs();
       });
 
       it('creates new user when replace_user form is submitted ' +
@@ -548,6 +588,8 @@ describe('Create user for contacts', () => {
         await loginPage.login(otherUser);
         await commonPage.waitForPageLoaded();
         await commonPage.goToPeople(originalContactId);
+
+        await assertFeedbackDocs();
       });
 
       it('creates new user for the first version of a contact ' +
@@ -668,6 +710,8 @@ describe('Create user for contacts', () => {
         // be deleted. This first call will delete the current "winning" version and then the subsequent call in
         // afterEach will handle deleting the other version.
         await utils.revertDb([/^form:/], true);
+
+        await assertFeedbackDocs();
       });
 
       it('does not create a new user or re-parent reports when the transition is disabled', async () => {
@@ -703,6 +747,8 @@ describe('Create user for contacts', () => {
         // Original contact not updated
         const updatedOriginalContact = await utils.getDoc(DEFAULT_USER_CONTACT_DOC._id);
         expect(updatedOriginalContact.user_for_contact).to.be.undefined;
+
+        await assertFeedbackDocs();
       });
 
       it('does not create any new user nor does it reparent new reports when the transition fails', async () => {
@@ -743,7 +789,11 @@ describe('Create user for contacts', () => {
         await chtDbUtils.updateDoc(newContact._id, { ...newContact, phone: undefined }, true);
 
         await browser.throttle('online');
-        await commonPage.syncAndNotWaitForSuccess();
+        try {
+          await commonPage.syncAndNotWaitForSuccess();
+        } catch {
+          // sync can get triggered automatically
+        }
         await (await loginPage.loginButton()).waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();
@@ -781,6 +831,8 @@ describe('Create user for contacts', () => {
         const basicReportId3 = await submitBasicForm();
         const subsequentBasicReports = await chtDbUtils.getDocs([basicReportId2, basicReportId3]);
         subsequentBasicReports.forEach((report) => expect(report.contact._id).to.equal(originalContactId));
+
+        await assertFeedbackDocs();
       });
     });
 

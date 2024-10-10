@@ -339,7 +339,8 @@ const baseConfig = {
     if (users.length) {
       await utils.deleteUsers(users);
     }
-    await utils.revertDb([/^form:/], true);
+    const forms = await utils.getDefaultForms();
+    await utils.revertDb(forms, true);
   },
   /**
    * Gets executed right after terminating the webdriver session.
