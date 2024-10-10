@@ -53,7 +53,7 @@ describe('Old Navigation', () => {
 
   it('should navigate to the Messages section and open a sent message', async () => {
     const message = 'Navigations test';
-    await messagesPage.sendMessageOnMobile(message, person.name, person.phone );
+    await messagesPage.sendMessageOnMobile(message, person.phone, person.name);
     await messagesPage.openMessage(person._id);
 
     const { name } = await commonPage.getHeaderTitleOnMobile();
