@@ -771,4 +771,39 @@ describe('TrainingCardsService', () => {
         .to.equal('Training Cards :: Cannot create document ID, user context does not have the "name" property.');
     }
   });
+
+  describe('Display training cards once', () => {
+    afterEach(() => window.localStorage.removeItem('training-cards-last-viewed-date'));
+
+    it('should display training when it has not been displayed today', async () => {
+      routeSnapshotService.get.returns({ data: { hideTraining: false } });
+      window.localStorage.setItem('training-cards-last-viewed-date', '2024-05-23 20:29:25');
+      clock = sinon.useFakeTimers(new Date('2025-05-25 20:29:25'));
+
+      service.displayTrainingCards();
+
+      expect(modalService.show.calledOnce).to.be.true;
+    });
+
+    it('should display training when last viewed date is empty', async () => {
+      routeSnapshotService.get.returns({ data: { hideTraining: false } });
+      window.localStorage.setItem('training-cards-last-viewed-date', '');
+      clock = sinon.useFakeTimers(new Date('2025-05-25 20:29:25'));
+
+      service.displayTrainingCards();
+
+      expect(modalService.show.calledOnce).to.be.true;
+    });
+
+    it('should not display training when it has been displayed today', async () => {
+      routeSnapshotService.get.returns({ data: { hideTraining: false } });
+      window.localStorage.setItem('training-cards-last-viewed-date', '2024-05-23 20:29:25');
+      clock = sinon.useFakeTimers(new Date('2024-05-23 06:29:25'));
+
+      service.displayTrainingCards();
+
+      expect(modalService.show.notCalled).to.be.true;
+    });
+  });
+
 });
