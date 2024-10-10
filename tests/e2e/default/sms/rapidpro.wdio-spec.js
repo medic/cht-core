@@ -48,12 +48,12 @@ describe('RapidPro SMS Gateway', () => {
     messagesEndpointRequests = [];
   });
 
-  after(() => {
-    stopMockApp();
-    utils.revertDb([/^form:/], true);
-  });
+  after(() => stopMockApp() );
 
-  afterEach(() => utils.revertDb([/^form:/], true));
+  afterEach(async () => {
+    await utils.revertDb([/^form:/], true);
+    await utils.revertSettings(true);
+  });
 
   describe('Webapp Terminating messages', () => {
     const endpoint = '/api/v2/sms/rapidpro/incoming-messages';
@@ -293,8 +293,6 @@ describe('RapidPro SMS Gateway', () => {
       };
       await utils.updateSettings(settings, { ignoreReload: true });
     });
-
-    afterEach(() => utils.revertDb([], true));
 
     it('should not call RapidPro endpoint when credentials are not set', async () => {
       await utils.saveDoc(pregnancyReportWithTasks);

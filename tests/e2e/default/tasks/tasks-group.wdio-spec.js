@@ -13,7 +13,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 
 describe('Tasks group landing page', () => {
-  const todayDate = new Date().getTime();
+  const todayDate = Date.now();
 
   const places = placeFactory.generateHierarchy(['district_hospital', 'health_center']);
   const healthCenter = places.get('health_center');

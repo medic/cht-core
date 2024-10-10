@@ -13,14 +13,6 @@ describe('Task list due dates', () => {
   const healthCenter = places.get('health_center');
   const chw = userFactory.build({ place: healthCenter._id, contact: { _id: 'fixture:user:bob', name: 'Bob' } });
 
-  const getTasksInfos = async (tasks) => {
-    const infos = [];
-    for (const task of tasks) {
-      infos.push(await tasksPage.getTaskInfo(task));
-    }
-    return infos;
-  };
-
   const updateDueDatesSettings = async (updates = {}) => {
     await chtConfUtils.initializeConfigDir();
     const tasksFilePath = path.join(__dirname, 'config/due-dates-config.js');
@@ -52,7 +44,7 @@ describe('Task list due dates', () => {
     await updateDueDatesSettings();
 
     await commonPage.goToTasks();
-    const infos = await getTasksInfos(await tasksPage.getTasks());
+    const infos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
 
     expect(infos).to.have.deep.members([
       { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false, lineage: '' },
@@ -88,7 +80,7 @@ describe('Task list due dates', () => {
     await updateDueDatesSettings({ task_days_overdue: true });
 
     await commonPage.goToTasks();
-    const infos = await getTasksInfos(await tasksPage.getTasks());
+    const infos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
 
     expect(infos).to.have.deep.members([
       { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false, lineage: '' },
@@ -125,7 +117,7 @@ describe('Task list due dates', () => {
     await updateDueDatesSettings({ task_days_overdue: true });
 
     await commonPage.goToTasks();
-    const infos = await getTasksInfos(await tasksPage.getTasks());
+    const infos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
 
     expect(infos).to.have.deep.members([
       { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false, lineage: '' },

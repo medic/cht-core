@@ -94,6 +94,7 @@ describe('Tasks tab breadcrumbs', () => {
   after(async () => {
     await utils.deleteUsers([ chw, supervisor ]);
     await utils.revertDb([/^form:/], true);
+    await utils.revertSettings(true);
   });
 
   describe('for chw', () => {

@@ -98,10 +98,6 @@ describe('Service worker cache', () => {
     await utils.revertDb([/^form:/], true);
   });
 
-  afterEach(async () => {
-    await utils.revertSettings(true);
-  });
-
   it('confirm initial list of cached resources', async () => {
     const cacheDetails = await getCachedRequests();
 
