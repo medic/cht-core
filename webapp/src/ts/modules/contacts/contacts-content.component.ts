@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Store } from '@ngrx/store';
+import {createSelector, Store} from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { first, take } from 'rxjs/operators';
@@ -112,15 +112,35 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscriptions.add(subscription);
   }
 
+  private recordSearchTelemetry(selectedContact, nextSelectedContact, nextFilters) {
+    if (
+      !nextFilters?.search ||
+      !nextSelectedContact
+    ) {
+      console.log("SKIP no filters or no selected contact");
+      return null;
+    }
+
+    // user searched for something and now selects a contact
+    if (
+      selectedContact === null || // had no contact selected
+      selectedContact._id !== nextSelectedContact._id // or had a different contact selected
+    ) {
+      console.log({ nextFilters, nextSelectedContact });
+      // TODO: find which properties matched user's query
+      // TODO: record telemetry
+    }
+  }
+
   private subscribeToStore() {
-    const reduxSubscription = combineLatest(
+    const reduxSubscription = combineLatest([
       this.store.select(Selectors.getSelectedContact),
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getLoadingSelectedContactReports),
       this.store.select(Selectors.getContactsLoadingSummary),
       this.store.select(Selectors.getFilters),
-    ).subscribe(([
+    ]).subscribe(([
       selectedContact,
       forms,
       loadingContent,
@@ -128,6 +148,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       contactsLoadingSummary,
       filters,
     ]) => {
+      this.recordSearchTelemetry(this.selectedContact, selectedContact, filters);
       if (this.selectedContact?._id !== selectedContact?._id) {
         // reset view when selected contact changes
         this.resetTaskAndReportsFilter();
