@@ -5,6 +5,7 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const searchPage = require('@page-objects/default/search/search.wdio.page');
+const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
 
 const utils = require('@utils');
 const { resizeWindowForScreenshots, generateScreenshot } = require('@utils/screenshots');
@@ -22,13 +23,10 @@ describe('Creating and editing contacts and users', () => {
     await utils.revertDb([/^form:/], true);
   });
 
-  afterEach(async () => {
-    await commonPage.goToPeople();
-  });
-
   describe('Creating and editing contacts and users', () => {
     it('should create health facility, chw area and chw '+
       'chw supervisor and chw user', async () => {
+      //create health facility
       await generateScreenshot('new-facility', 'select-new-facility');
       await commonPage.clickFastActionFlat({ waitForList: false });
       await commonEnketoPage.selectRadioButton('Set the Primary Contact', 'Skip this step');
@@ -41,6 +39,7 @@ describe('Creating and editing contacts and users', () => {
       await commonPage.hideSnackbar();
       await generateScreenshot('new-facility', 'created-facility');
 
+      //create chw area and chw
       await commonPage.clickFastActionFAB({ waitForList: false });
       await browser.pause(500);
       await generateScreenshot('new-chw-area', 'new-chw-area');
@@ -48,11 +47,13 @@ describe('Creating and editing contacts and users', () => {
       await commonPage.clickFastActionFAB({ actionId: 'health_center' });
       await commonEnketoPage.selectRadioButton('Set the Primary Contact', 'Create a new person');
       await commonEnketoPage.setInputValue('Full Name', 'Jane Doe');
+      await commonEnketoPage.selectRadioButton('Set the Primary Contact', 'Create a new person');
       await generateScreenshot('new-chw-area', 'create-new-person');
       await commonEnketoPage.setDateValue('Age', '1990-01-21');
       await commonEnketoPage.selectRadioButton('Sex', 'Male');
-      await commonEnketoPage.selectRadioButton('Role', 'CHW');
+      await (await commonEnketoPage.getLabelElement('Age')).scrollIntoView(false);
       await generateScreenshot('new-chw-area', 'fill-required-fields');
+      await commonEnketoPage.selectRadioButton('Role', 'CHW');
       await genericForm.nextPage();
       await commonEnketoPage.selectRadioButton(
         'Would you like to name the place after the primary contact:',
@@ -64,6 +65,7 @@ describe('Creating and editing contacts and users', () => {
       await commonPage.hideSnackbar();
       await generateScreenshot('new-chw-area', 'created-chw-area');
 
+      //create chw supervisor
       await contactPage.selectLHSRowByText(healthFacilityName);
       await searchPage.clearSearch();
       await commonPage.clickFastActionFAB({ waitForList: false });
@@ -83,7 +85,33 @@ describe('Creating and editing contacts and users', () => {
       await generateScreenshot('new-chw-supervisor', 'edit-facility');
       await (await contactPage.menuSelectors.editContactButton()).waitForClickable();
       await (await contactPage.menuSelectors.editContactButton()).click();
+      await contactPage.openPrimaryContactSearchDropdown();
+      await contactPage.inputPrimaryContactSearchValue('John');
       await generateScreenshot('new-chw-supervisor', 'set-primary-contact');
+      await contactPage.selectPrimaryContactSearchFirstResult();
+      await contactPage.genericForm.submitForm();
+      await contactPage.selectLHSRowByText(healthFacilityName);
+      await searchPage.clearSearch();
+      await generateScreenshot('new-chw-supervisor', 'primary-contact-selected');
+
+      //create chw user
+      await commonPage.openHamburgerMenu();
+      await generateScreenshot('new-chw-user', 'app-settings');
+      await commonPage.openAppManagement();
+      await usersAdminPage.goToAdminUser();
+      await browser.pause(500);
+      await generateScreenshot('new-chw-user', 'add-user');
+      await usersAdminPage.openAddUserDialog();
+      await usersAdminPage.inputAddUserFields(
+        'Janet',
+        '',
+        'chw',
+        `Jane Doe's Area`,
+        'John Doe',
+        'Secret_1'
+      );
+      await usersAdminPage.scrollToRole();
+      await generateScreenshot('new-chw-user', 'fill-user-details');
     });
   });
 });
