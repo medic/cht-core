@@ -174,6 +174,9 @@ describe('EditUserCtrl controller', () => {
           contactSelect: userToEdit.contact_id,
           contact: userToEdit.contact_id,
           tokenLoginEnabled: undefined,
+          passwordFieldType: 'password',
+          showPasswordIcon: '/login/images/show-password.svg',
+          hidePasswordIcon: '/login/images/hide-password.svg',
         });
       });
     });
