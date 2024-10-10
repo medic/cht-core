@@ -143,8 +143,8 @@ const tokenize = (str) => {
 
     // Push outstanding tokens
     if (tokensToPush.length > 0) {
-      for (let a = 0; a < tokensToPush.length; a++) {
-        pushToken(tokensToPush[a][0], tokensToPush[a][1]);
+      for (const token of tokensToPush) {
+        pushToken(token[0], token[1]);
       }
     }
   } // End the char loop

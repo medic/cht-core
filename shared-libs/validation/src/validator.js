@@ -11,8 +11,7 @@ const validate = (entities, values, valueKey) => {
   let negateNext = false;
 
   // Loop through the entities
-  for (let i = 0; i < entities.length; i++) {
-    const thisEntity = entities[i];
+  for (const thisEntity of entities) {
     let tempResult = true;
     let useTempResult = false;
 
@@ -28,8 +27,8 @@ const validate = (entities, values, valueKey) => {
 
       // Clone the function arguments so below we don't affect
       // the original arguments in the entity.
-      for (let a = 0; a < thisEntity.funcArgs.length; a++) {
-        funcArgs.push(thisEntity.funcArgs[a]);
+      for (const funcArg of thisEntity.funcArgs) {
+        funcArgs.push(funcArg);
       }
 
       if (funcName.substr(0, 5) === 'other') {
@@ -74,8 +73,6 @@ const validate = (entities, values, valueKey) => {
       } else {
         validationResult = validationResult || tempResult;
       }
-
-      useTempResult = false;
     }
   }
 

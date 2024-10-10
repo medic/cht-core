@@ -32,14 +32,11 @@ const ValidatorFunctions = {
     const args = Array.prototype.slice.call(arguments);
     args.shift();
     args.shift();
-
-    const inList = args;
-    for (let i = 0; i < inList.length; i++) {
-      if (inList[i] === value) {
+    for (const arg of args) {  
+      if (arg === value) {
         return true;
       }
     }
-
     return false;
   },
 

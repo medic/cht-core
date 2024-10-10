@@ -55,9 +55,9 @@ const parse = (tokens) => {
     });
 
     // And accept the tokens listed as our argument array
-    for (let i = 0; i < oneOf.length; i++) {
-      if (typeof accept[oneOf[i]] !== 'undefined') {
-        accept[oneOf[i]] = 1;
+    for (const token of oneOf) {
+      if (typeof accept[token] !== 'undefined') {
+        accept[token] = 1;
       }
     }
   };
@@ -230,8 +230,8 @@ const parse = (tokens) => {
     }
 
     if (entitiesToPush.length > 0) {
-      for (let a = 0; a < entitiesToPush.length; a++) {
-        currentBlock.sub.push(entitiesToPush[a]);
+      for (const entity of entitiesToPush) {
+        currentBlock.sub.push(entity);
       }
     }
 
