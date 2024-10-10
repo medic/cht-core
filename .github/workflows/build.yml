@@ -370,7 +370,7 @@ jobs:
       if: ${{ failure() }}
 
   publish:
-    needs: [tests, config-tests, test-cht-form, translations]
+    needs: [build, translations]
     name: Publish branch build
     runs-on: ubuntu-22.04
     timeout-minutes: 60
