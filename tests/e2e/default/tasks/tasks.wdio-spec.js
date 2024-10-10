@@ -8,37 +8,25 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const chtDbUtils = require('@utils/cht-db');
 
-const compileTasks = async (tasksFileName) => {
-  await chtConfUtils.initializeConfigDir();
-  const tasksFilePath = path.join(__dirname, `config/${tasksFileName}`);
-  return await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
-};
-
 describe('Tasks', () => {
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
   const healthCenter = places.get('health_center');
 
-  const contact = {
-    _id: 'fixture:user:user1',
+  const contact = personFactory.build({
     name: 'CHW',
     phone: '+12068881234',
-    type: 'person',
     place: healthCenter._id,
-    parent: {
-      _id: healthCenter._id,
-      parent: healthCenter.parent
-    },
+    parent: healthCenter
+  });
+  const chw = userFactory.build({ isOffline: true, place: healthCenter._id, contact: contact._id });
+  const owl = personFactory.build({ name: 'Owl', parent: clinic });
+
+  const compileTasks = async (tasksFileName) => {
+    await chtConfUtils.initializeConfigDir();
+    const tasksFilePath = path.join(__dirname, `config/${tasksFileName}`);
+    return await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
   };
-  const chw = userFactory.build({
-    isOffline: true,
-    place: healthCenter._id,
-    contact: contact._id,
-  });
-  const owl = personFactory.build({
-    name: 'Owl',
-    parent: { _id: clinic._id, parent: clinic.parent }
-  });
 
   before(async () => {
     await utils.saveDocs([...places.values(), contact, owl]);
@@ -47,6 +35,8 @@ describe('Tasks', () => {
   });
 
   after(async () => {
+    await utils.deleteUsers([chw]);
+    await utils.revertDb([/^form:/], true);
     await browser.deleteCookies();
     await browser.refresh();
   });

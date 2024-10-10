@@ -54,7 +54,7 @@ describe('Old Navigation', () => {
   it('should navigate to the Messages section and open a sent message', async () => {
     const message = 'Navigations test';
     await oldNavigationPage.goToMessages();
-    await messagesPage.sendMessage(message, person.name, person.phone );
+    await messagesPage.sendMessageDesktop(message, person.name, person.phone );
     await messagesPage.openMessage(person._id);
 
     const { name, phone } = await messagesPage.getMessageHeader();

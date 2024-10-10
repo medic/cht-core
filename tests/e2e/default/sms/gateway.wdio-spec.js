@@ -5,21 +5,21 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const smsPregnancy = require('@factories/cht/reports/sms-pregnancy');
 
-const pollSmsApi = body => {
-  return utils.request({
-    method: 'POST',
-    path: '/api/sms',
-    body: body
-  });
-};
-
 describe('sms-gateway api', () => {
+  const pollSmsApi = body => {
+    return utils.request({
+      method: 'POST',
+      path: '/api/sms',
+      body: body
+    });
+  };
+
   before(async () => {
     await loginPage.cookieLogin();
     await commonElements.waitForPageLoaded();
   });
 
-  describe('- gateway submits new WT sms messages', () => {
+  describe('Gateway submits new WT sms messages', () => {
     beforeEach(async () => {
       const body = {
         messages: [
@@ -33,7 +33,7 @@ describe('sms-gateway api', () => {
       await pollSmsApi(body);
     });
 
-    it('shows content', async () => {
+    it('should shows content', async () => {
       //LHS
       const phone = '+64271234567';
       const msg = 'hello';
@@ -53,7 +53,7 @@ describe('sms-gateway api', () => {
     });
   });
 
-  describe('- gateway submits WT sms status updates', () => {
+  describe('Gateway submits WT sms status updates', () => {
     let savedDoc;
 
     beforeEach(async () => {
@@ -74,7 +74,7 @@ describe('sms-gateway api', () => {
       await pollSmsApi(body);
     });
 
-    it('- shows content', async () => {
+    it('should shows content', async () => {
 
       await reportsPage.goToReportById(savedDoc);
 
@@ -90,7 +90,7 @@ describe('sms-gateway api', () => {
     });
   });
 
-  describe('- api returns list of pending WO messages', () => {
+  describe('api returns list of pending WO messages', () => {
     let savedDoc;
     let response;
     let reportWithTwoMessagesToSend;
@@ -109,7 +109,7 @@ describe('sms-gateway api', () => {
       response = await pollSmsApi({});
     });
 
-    it('- returns list and updates state', async () => {
+    it('should returns list and updates state', async () => {
       const scheduledTaskMessage = reportWithTwoMessagesToSend.scheduled_tasks[0].messages[0];
       const taskMessage = reportWithTwoMessagesToSend.tasks[0].messages[0];
       expect(response.messages.length).to.equal(2);

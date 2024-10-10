@@ -1,98 +1,86 @@
-const { expect } = require('chai');
 const URL = require('url');
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
-
-// global caches fetch Response navigator
-const getCachedRequests = async (raw) => {
-  const cacheDetails = await browser.executeAsync(async (callback) => {
-    const cacheNames = await caches.keys();
-    const cache = await caches.open(cacheNames[0]);
-    const cachedRequests = await cache.keys();
-    const cachedRequestSummary = cachedRequests.map(req => ({ url: req.url }));
-    callback({
-      name: cacheNames[0],
-      requests: cachedRequestSummary,
-    });
-  });
-
-  if (raw) {
-    return cacheDetails;
-  }
-
-  const urls = cacheDetails.requests.map(request => URL.parse(request.url).pathname);
-  urls.sort();
-  return { name: cacheDetails.name, urls };
-};
-
-const stubAllCachedRequests = () => browser.executeAsync(async (callback) => {
-  const cacheNames = await caches.keys();
-  const cache = await caches.open(cacheNames[0]);
-  const cachedRequests = await cache.keys();
-  await Promise.all(cachedRequests.map(request => cache.put(request, new Response('cache'))));
-  callback();
-});
-
-const doFetch = (path, headers) => browser.executeAsync(async (innerPath, innerHeaders, callback) => {
-  const result = await fetch(innerPath, { headers: innerHeaders });
-  callback({
-    body: await result.text(),
-    ok: result.ok,
-    status: result.status,
-  });
-}, path, headers);
-
-const unregisterServiceWorkerAndWipeAllCaches = () => browser.executeAsync(async (callback) => {
-  const registrations = await navigator.serviceWorker.getRegistrations();
-  registrations.forEach(registration => registration.unregister());
-
-  const cacheNames = await caches.keys();
-  for (const name of cacheNames) {
-    await caches.delete(name);
-  }
-
-  callback();
-});
-
-const district = {
-  _id: 'fixture:district',
-  type: 'district_hospital',
-  name: 'District',
-  place_id: 'district',
-  reported_date: new Date().getTime(),
-};
-
-const chw = {
-  username: 'bob',
-  password: 'medic.123',
-  place: 'fixture:district',
-  contact: { _id: 'fixture:user:bob', name: 'Bob' },
-  roles: ['chw'],
-};
-
-const login = async () => {
-  await browser.throttle('online');
-  await loginPage.login(chw);
-  await commonPage.waitForPageLoaded();
-};
-
-const isLoggedIn = async () => {
-  const tab = await commonPage.messagesTab();
-  return await tab.isExisting();
-};
-
-const loginIfNeeded = async () => {
-  if (!await isLoggedIn()) {
-    await login();
-  }
-};
+const placeFactory = require('@factories/cht/contacts/place');
+const userFactory = require('@factories/cht/users/users');
 
 describe('Service worker cache', () => {
   const DEFAULT_TRANSLATIONS = {
     'sync.now': 'Sync now',
     'sidebar_menu.title': 'Menu',
     'sync.status.not_required': 'All reports synced',
+  };
+
+  // global caches fetch Response navigator
+  const getCachedRequests = async (raw) => {
+    const cacheDetails = await browser.executeAsync(async (callback) => {
+      const cacheNames = await caches.keys();
+      const cache = await caches.open(cacheNames[0]);
+      const cachedRequests = await cache.keys();
+      const cachedRequestSummary = cachedRequests.map(req => ({ url: req.url }));
+      callback({
+        name: cacheNames[0],
+        requests: cachedRequestSummary,
+      });
+    });
+
+    if (raw) {
+      return cacheDetails;
+    }
+
+    const urls = cacheDetails.requests.map(request => URL.parse(request.url).pathname);
+    urls.sort();
+    return { name: cacheDetails.name, urls };
+  };
+
+  const stubAllCachedRequests = () => browser.executeAsync(async (callback) => {
+    const cacheNames = await caches.keys();
+    const cache = await caches.open(cacheNames[0]);
+    const cachedRequests = await cache.keys();
+    await Promise.all(cachedRequests.map(request => cache.put(request, new Response('cache'))));
+    callback();
+  });
+
+  const doFetch = (path, headers) => browser.executeAsync(async (innerPath, innerHeaders, callback) => {
+    const result = await fetch(innerPath, { headers: innerHeaders });
+    callback({
+      body: await result.text(),
+      ok: result.ok,
+      status: result.status,
+    });
+  }, path, headers);
+
+  const unregisterServiceWorkerAndWipeAllCaches = () => browser.executeAsync(async (callback) => {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    registrations.forEach(registration => registration.unregister());
+
+    const cacheNames = await caches.keys();
+    for (const name of cacheNames) {
+      await caches.delete(name);
+    }
+
+    callback();
+  });
+
+  const district = placeFactory.generateHierarchy(['district_hospital']).get('district_hospital');
+  const chw = userFactory.build({ place: district._id });
+
+  const login = async () => {
+    await browser.throttle('online');
+    await loginPage.login(chw);
+    await commonPage.waitForPageLoaded();
+  };
+
+  const isLoggedIn = async () => {
+    const tab = await commonPage.messagesTab();
+    return await tab.isExisting();
+  };
+
+  const loginIfNeeded = async () => {
+    if (!await isLoggedIn()) {
+      await login();
+    }
   };
 
   before(async () => {
@@ -105,8 +93,9 @@ describe('Service worker cache', () => {
     await loginIfNeeded();
   });
 
-  afterEach(async () => {
-    await utils.revertSettings(true);
+  after(async () => {
+    await utils.deleteUsers([chw]);
+    await utils.revertDb([/^form:/], true);
   });
 
   it('confirm initial list of cached resources', async () => {

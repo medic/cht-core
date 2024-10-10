@@ -6,13 +6,13 @@ const loginPage = require('@page-objects//default/login/login.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const smsPregnancy = require('@factories/cht/reports/sms-pregnancy');
 
-const CREDENTIAL_PASS = 'yabbadabbadoo';
-const CREDENTIAL_KEY = 'africastalking.com:incoming';
+describe('Africas Talking api', () => {
+  const CREDENTIAL_PASS = 'yabbadabbadoo';
+  const CREDENTIAL_KEY = 'africastalking.com:incoming';
 
-describe('africas talking api', () => {
   before( () => utils.saveCredentials(CREDENTIAL_KEY, CREDENTIAL_PASS) );
 
-  describe('- gateway submits new WT sms messages', () => {
+  describe('Gateway submits new WT sms messages', () => {
     const submitSms = body => {
       const content = querystring.stringify(body);
       return utils.request({
@@ -32,7 +32,7 @@ describe('africas talking api', () => {
       await loginPage.cookieLogin();
     });
 
-    it('- shows content', async () => {
+    it('should shows content', async () => {
       const rawNumber = '+64271234567';
       const message = 'Hello';
 
@@ -55,7 +55,7 @@ describe('africas talking api', () => {
 
   });
 
-  describe('- gateway submits WT sms status updates', () => {
+  describe('Gateway submits WT sms status updates', () => {
     let savedDoc;
     let testReport;
 
@@ -92,7 +92,7 @@ describe('africas talking api', () => {
 
     afterEach(() => utils.deleteDoc(savedDoc));
 
-    it('- shows content', async () => {
+    it('should shows content', async () => {
       await commonPage.goToReports();
       const firstReport = await reportsPage.leftPanelSelectors.firstReport();
       const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
