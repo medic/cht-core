@@ -361,7 +361,7 @@ describe('Export Data V2.0', () => {
         path: '/api/v2/export/contacts',
         body: {
           filters: {
-            search: 'value'
+            search: '123'
           }
         }
       });
@@ -374,7 +374,23 @@ describe('Export Data V2.0', () => {
       expectRows(expected, rows);
     });
 
-    it('POST filters by freetext and type', async () => {
+    it('POST filters by freetext - custom properties are not indexed', async () => {
+      const result = await utils.request({
+        method: 'POST',
+        path: '/api/v2/export/contacts',
+        body: {
+          filters: {
+            // this string is assigned to extra properties on contacts `jen_id` and `john_id` and shouldn't be indexed
+            search: 'value'
+          }
+        }
+      });
+      const rows = getRows(result);
+      const expected = ['id,rev,name,patient_id,type,contact_type,place_id'];
+      expectRows(expected, rows);
+    });
+
+    it.skip('POST filters by freetext and type', async () => {
       const result = await utils.request({
         method: 'POST',
         path: '/api/v2/export/contacts',

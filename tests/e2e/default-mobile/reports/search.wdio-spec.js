@@ -37,7 +37,7 @@ describe('Search Reports', () => {
     // Asserting first load reports
     expect((await reportsPage.reportsListDetails()).length).to.equal(reportDocs.length);
 
-    await searchPage.performSearch('+64275555556');
+    await searchPage.performSearch('28551');
     await commonPage.waitForLoaders();
     expect((await reportsPage.reportsListDetails()).length).to.equal(2);
     expect(await (await reportsPage.leftPanelSelectors.reportByUUID(hospitalSMS.id)).isDisplayed()).to.be.true;
