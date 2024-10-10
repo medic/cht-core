@@ -18,6 +18,12 @@ describe('Training Cards', () => {
 
   const formDocId = 'training:training-cards-text-only';
 
+  const setLastViewedDateInThePast = () => {
+    return browser.execute(function() {
+      this.localStorage.setItem('training-cards-last-viewed-date', new Date('2024-10-05 20:10:05').toISOString());
+    });
+  };
+
   before(async () => {
     const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
     const user = userFactory.build({ roles: [ 'nurse', 'chw' ] });
@@ -52,9 +58,8 @@ describe('Training Cards', () => {
     expect(await reportsPage.leftPanelSelectors.allReports()).to.be.empty;
   });
 
-  it('should display training after it was canceled and the training doc was updated', async () => {
-    await commonPage.goToMessages();
-    await commonElements.waitForPageLoaded();
+  it('should not display training after it was canceled and the training doc was updated', async () => {
+    await setLastViewedDateInThePast();
     // Unfinished trainings should appear again after reload.
     await browser.refresh();
     await trainingCardsPage.waitForTrainingCards();
@@ -73,12 +78,7 @@ describe('Training Cards', () => {
     const updatedTrainingForm = await utils.getDoc(`form:${formDocId}`);
     expect(updatedTrainingForm.context.duration).to.equal(10);
 
-    await trainingCardsPage.waitForTrainingCards();
-    const context = 'training_cards_text_only';
-    const introCard = await trainingCardsPage.getCardContent(context, 'intro/intro_note_1:label"]');
-    expect(introCard).to.equal(
-      'There have been some changes to icons in your app. The next few screens will show you the difference.'
-    );
+    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
   });
 
   it('should display training after privacy policy', async () => {
@@ -86,6 +86,7 @@ describe('Training Cards', () => {
     await utils.saveDocs([privacyPolicy]);
     await commonPage.goToReports();
     await commonElements.sync();
+    await setLastViewedDateInThePast();
     await browser.refresh();
 
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
@@ -97,6 +98,7 @@ describe('Training Cards', () => {
   it('should display training after reload and complete training', async () => {
     await commonPage.goToMessages();
     await commonElements.waitForPageLoaded();
+    await setLastViewedDateInThePast();
     // Unfinished trainings should appear again after reload.
     await browser.refresh();
     await trainingCardsPage.waitForTrainingCards();
