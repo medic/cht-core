@@ -15,8 +15,8 @@ const sharp = require('sharp');
 const MOBILE_WINDOW_WIDTH = 768;
 const MOBILE_VIEWPORT_WIDTH = 320;
 const MOBILE_VIEWPORT_HEIGHT = 550;
-const DESKTOP_WINDOW_WIDTH = 1000;
-const DESKTOP_WINDOW_HEIGHT = 820;
+const DESKTOP_WINDOW_WIDTH = 1440;
+const DESKTOP_WINDOW_HEIGHT = 1024;
 const HIGH_DENSITY_DISPLAY_2X = 2;
 
 const isMobile = async () => {

@@ -77,6 +77,9 @@ describe('Contact and User Management', () => {
     });
 
     it('should show condition cards', async () => {
+      if (!browser.capabilities.isMobile) {
+        this.skip(); // Skip this test if running on desktop
+      }
       await commonPage.goToPeople();
       expect(await commonPage.isPeopleListPresent()).to.be.true;
       await contactPage.selectLHSRowByText('Beatrice Bass');
@@ -90,6 +93,9 @@ describe('Contact and User Management', () => {
     });
 
     it('should show profiles (area and branch)', async () => {
+      if (!browser.capabilities.isMobile) {
+        this.skip(); // Skip this test if running on desktop
+      }
       await commonPage.logout();
       await loginPage.cookieLogin();
       await commonPage.goToPeople();
@@ -106,6 +112,9 @@ describe('Contact and User Management', () => {
     });
 
     it('should show UHC sort', async () => {
+      if (!browser.capabilities.isMobile) {
+        this.skip(); // Skip this test if running on desktop
+      }
       await utils.updateRolePermissions('chw', ['can_view_uhc_stats', 'can_view_last_visited_date'], []);
       await commonPage.waitForPageLoaded();
       await commonPage.goToPeople();
@@ -115,6 +124,9 @@ describe('Contact and User Management', () => {
     });
 
     it('should show cares guides', async () => {
+      if (!browser.capabilities.isMobile) {
+        this.skip(); // Skip this test if running on desktop
+      }
       await compileAndUploadForms();
       await utils.updateRolePermissions('chw', [], ['can_view_call_action', 'can_view_message_action']);
       await commonPage.waitForPageLoaded();

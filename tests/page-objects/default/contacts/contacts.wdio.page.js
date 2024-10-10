@@ -83,6 +83,15 @@ const inmunizationCardSelectors = {
   inmunizationCard: () => $(INMUNIZATION_CARD_TEST_ID),
 };
 
+const PRIMARY_CONTACT_SEARCH_DROPDOWN = 'span.select2-selection--single[aria-labelledby^="select2-/data/district_hospital/contact/_id"]';
+const PRIMARY_CONTACT_SEARCH_INPUT = 'input.select2-search__field';
+const PRIMARY_CONTACT_SEARCH_RESULT = '.select2-results__option--highlighted';
+const editDistrictHospitalSelectors = {
+  primaryContactSearchDropdown : () => $(PRIMARY_CONTACT_SEARCH_DROPDOWN),
+  primaryContactSearchInput : () => $(PRIMARY_CONTACT_SEARCH_INPUT),
+  primaryContactSearchFirstResult : () => $(PRIMARY_CONTACT_SEARCH_RESULT),
+};
+
 const search = async (query) => {
   if (!await (await searchSelectors.searchBox()).isDisplayed()) {
     await mobileSearchPage.performSearch(query);
@@ -382,6 +391,23 @@ const openFirstContact = async () => {
   await openSelectedContact(firstContact);
 };
 
+const openPrimaryContactSearchDropdown = async () => {
+  await editDistrictHospitalSelectors.primaryContactSearchDropdown().waitForClickable();
+  await editDistrictHospitalSelectors.primaryContactSearchDropdown().click();
+};
+
+const inputPrimaryContactSearchValue = async (searchQuery) => {
+  await editDistrictHospitalSelectors.primaryContactSearchInput().waitForDisplayed();
+  await editDistrictHospitalSelectors.primaryContactSearchInput().setValue(searchQuery);
+  await browser.pause(1000);
+};
+
+const selectPrimaryContactSearchFirstResult = async () => {
+  await editDistrictHospitalSelectors.primaryContactSearchFirstResult().waitForClickable();
+  await editDistrictHospitalSelectors.primaryContactSearchFirstResult().click();
+};
+
+
 module.exports = {
   genericForm,
   leftPanelSelectors,
@@ -426,4 +452,7 @@ module.exports = {
   filterReportViewAll,
   openFirstContact,
   menuSelectors,
+  openPrimaryContactSearchDropdown,
+  inputPrimaryContactSearchValue,
+  selectPrimaryContactSearchFirstResult,
 };
