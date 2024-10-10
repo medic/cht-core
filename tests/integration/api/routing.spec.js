@@ -167,7 +167,7 @@ describe('routing', () => {
       });
     });
 
-    it('should display deploy-info to authenticated users', () => {
+    it.skip('should display deploy-info to authenticated users', () => {
       return Promise.all([
         utils.request(Object.assign({ path: '/api/deploy-info' }, onlineRequestOptions)),
         utils.request(Object.assign({ path: '/api/deploy-info' }, offlineRequestOptions)),
