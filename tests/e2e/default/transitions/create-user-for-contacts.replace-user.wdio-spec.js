@@ -97,9 +97,14 @@ const assertFeedbackDocs = async () => {
     return;
   }
 
+  const feedbackDocsToIgnore = [
+    'Http failure response',
+    'Server error'
+  ];
+
   const unknownMessages = feedbackDocs
     .map(doc => doc.info.message)
-    .filter(message => message.includes('Http failure response') || message.includes('Server error'));
+    .filter(message => !feedbackDocsToIgnore.find(toIgnore => message.includes(toIgnore)));
 
   if (!unknownMessages.length) {
     await chtDbUtils.clearFeedbackDocs();
