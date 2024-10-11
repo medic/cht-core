@@ -72,4 +72,5 @@ const generateScreenshot = async (scenario, step) => {
 module.exports = {
   resizeWindowForScreenshots,
   generateScreenshot,
+  isMobile,
 };

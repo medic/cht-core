@@ -7,7 +7,7 @@ const sortPage = require('@page-objects/default/sort/sort.wdio.page');
 const utils = require('@utils');
 const chtConfUtils = require('@utils/cht-conf');
 const path = require('path');
-const { resizeWindowForScreenshots, generateScreenshot } = require('@utils/screenshots');
+const { resizeWindowForScreenshots, generateScreenshot, isMobile } = require('@utils/screenshots');
 
 describe('Contact and User Management', () => {
   const updateContactSummarySettings = async () => {
@@ -60,7 +60,7 @@ describe('Contact and User Management', () => {
 
   describe('Contact and user overview', () => {
     it('should show contacts list, search, profiles (person and family), '+
-      'contact summary', async () => {
+      'contact summary', async function() {
       await commonPage.goToPeople();
       expect(await commonPage.isPeopleListPresent()).to.be.true;
       await generateScreenshot('people', 'list');
@@ -76,7 +76,10 @@ describe('Contact and User Management', () => {
       await generateScreenshot('people', 'profile-person');
     });
 
-    it('should show condition cards', async () => {
+    it('should show condition cards', async function() {
+      if(!await isMobile()){
+        this.skip();
+      }
       await commonPage.goToPeople();
       expect(await commonPage.isPeopleListPresent()).to.be.true;
       await contactPage.selectLHSRowByText('Beatrice Bass');
@@ -89,7 +92,10 @@ describe('Contact and User Management', () => {
       await generateScreenshot('people', 'condition-card-inmunization');
     });
 
-    it('should show profiles (area and branch)', async () => {
+    it('should show profiles (area and branch)', async function() {
+      if(!await isMobile()){
+        this.skip();
+      }
       await commonPage.logout();
       await loginPage.cookieLogin();
       await commonPage.goToPeople();
@@ -105,7 +111,10 @@ describe('Contact and User Management', () => {
       await loginPage.login(docs.user);
     });
 
-    it('should show UHC sort', async () => {
+    it('should show UHC sort', async function() {
+      if(!await isMobile()){
+        this.skip();
+      }
       await utils.updateRolePermissions('chw', ['can_view_uhc_stats', 'can_view_last_visited_date'], []);
       await commonPage.waitForPageLoaded();
       await commonPage.goToPeople();
@@ -114,7 +123,10 @@ describe('Contact and User Management', () => {
       await generateScreenshot('people', 'sort');
     });
 
-    it('should show cares guides', async () => {
+    it('should show cares guides', async function() {
+      if(!await isMobile()){
+        this.skip();
+      }
       await compileAndUploadForms();
       await utils.updateRolePermissions('chw', [], ['can_view_call_action', 'can_view_message_action']);
       await commonPage.waitForPageLoaded();
