@@ -9,10 +9,9 @@ const mobileCapability = {
     ...wdioBaseConfig.config.capabilities[0]['goog:chromeOptions'],
     args: [
       ...wdioBaseConfig.config.capabilities[0]['goog:chromeOptions'].args,
-      'window-size=450,700',
+      'window-size=375,850',
     ],
-  },
-  isMobile: true,
+  }
 };
 
 const desktopCapability = {
@@ -21,24 +20,25 @@ const desktopCapability = {
     ...wdioBaseConfig.config.capabilities[0]['goog:chromeOptions'],
     args: [
       ...wdioBaseConfig.config.capabilities[0]['goog:chromeOptions'].args,
-      'window-size=2880, 2048',
+      'window-size=1440, 1024',
     ],
-  },
-  isMobile: false,
+  }
 };
 
 exports.config = Object.assign(wdioBaseConfig.config, {
   specs: ['**/*.wdio-spec.js'],
   suites: {
     desktopTests: [
-      'contacts/contact-user-hierarchy-creation.wdio-spec.js',
       'contacts/contact-user-management.wdio-spec.js',
+      'contacts/contact-user-hierarchy-creation.wdio-spec.js',
     ],
     mobileTests: [
       'contacts/contact-user-management.wdio-spec.js',
       'contacts/list-view-login-visual.wdio-spec.js',
     ]
   },
-  capabilities: [],
+  capabilities: process.argv.includes('--suite=mobileTests')
+    ? [mobileCapability]
+    : [desktopCapability],
   maxInstances: 1,
 });
