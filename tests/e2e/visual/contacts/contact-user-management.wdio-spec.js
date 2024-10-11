@@ -77,7 +77,7 @@ describe('Contact and User Management', () => {
     });
 
     it('should show condition cards', async function() {
-      if(!await isMobile()){
+      if (!await isMobile()){
         this.skip();
       }
       await commonPage.goToPeople();
@@ -93,7 +93,7 @@ describe('Contact and User Management', () => {
     });
 
     it('should show profiles (area and branch)', async function() {
-      if(!await isMobile()){
+      if (!await isMobile()){
         this.skip();
       }
       await commonPage.logout();
@@ -112,7 +112,7 @@ describe('Contact and User Management', () => {
     });
 
     it('should show UHC sort', async function() {
-      if(!await isMobile()){
+      if (!await isMobile()){
         this.skip();
       }
       await utils.updateRolePermissions('chw', ['can_view_uhc_stats', 'can_view_last_visited_date'], []);
@@ -124,7 +124,7 @@ describe('Contact and User Management', () => {
     });
 
     it('should show cares guides', async function() {
-      if(!await isMobile()){
+      if (!await isMobile()){
         this.skip();
       }
       await compileAndUploadForms();
