@@ -70,7 +70,7 @@ module.exports = {
    * @param {string[]} contactIds An array of contact ids. If undefined, refreshes emissions for all contacts
    * @returns {Promise<>}
    */
-  refreshRulesEmissionForContacts: (provider, contactIds) => {
+  refreshEmissionsFor: (provider, contactIds) => {
     if (!rulesEmitter.isEnabled()) {
       return disabledResponse();
     }

@@ -579,6 +579,7 @@ describe('CalendarInterval', () => {
       chai.expect(service.isEqual({ start: 0, end: 0 }, { start: 100, end: 0 })).to.equal(false);
       chai.expect(service.isEqual({ start: 0, end: 100 }, { start: 0, end: 0 })).to.equal(false);
       chai.expect(service.isEqual({ start: 200, end: 100 }, { start: 10, end: 20 })).to.equal(false);
+      chai.expect(service.isEqual({ start: 100, end: 200 }, { start: 200, end: 300 })).to.equal(false);
     });
 
     it('should return false when one interval is undefined', () => {

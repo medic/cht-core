@@ -261,6 +261,17 @@ describe('RulesEngineService', () => {
 
     it('should be disabled for online users', async () => {
       sessionService.isOnlineOnly.returns(true);
+      rulesEngineCoreStubs.isEnabled.returns(true);
+      service = TestBed.inject(RulesEngineService);
+
+      const result = await service.isEnabled();
+
+      expect(result).to.equal(false);
+      expect(telemetryService.record.callCount).to.equal(0);
+    });
+
+    it('should be disabled if disabled in rules engine', async () => {
+      sessionService.isOnlineOnly.returns(false);
       rulesEngineCoreStubs.isEnabled.returns(false);
       service = TestBed.inject(RulesEngineService);
 

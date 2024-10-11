@@ -135,8 +135,8 @@ module.exports = {
 
   aggregateStoredTargetEmissions: (state, filterInterval, updateState) => {
     const targetEmissionFilter = (emission => {
-      // 4th parameter of isBetween represents inclusivity. By default or using ( is exclusive, [ is inclusive
-      return moment(emission.date).isBetween(filterInterval.start, filterInterval.end, null, '[]');
+      const INCLUSIVE_START_AND_END = '[]';
+      return moment(emission.date).isBetween(filterInterval.start, filterInterval.end, null, INCLUSIVE_START_AND_END);
     });
 
     const pick = (obj, attrs) => attrs
@@ -227,14 +227,15 @@ module.exports = {
       targets: Object.keys(state.targets).map(targetId => aggregateTarget(state.targets[targetId]))
     };
 
-    let isUpdated = false;
-    if (updateState) {
-      isUpdated = !!aggregate.targets.find(target => {
-        const stateTarget = state.aggregate?.targets?.find(stateTarget => stateTarget.id === target.id);
-        return stateTarget?.value.pass !== target.value.pass || stateTarget?.value.total !== target.value.total;
-      });
-      state.aggregate = aggregate;
+    if (!updateState) {
+      return { aggregate, isUpdated: false };
     }
+
+    const isUpdated = !!aggregate.targets.find(target => {
+      const stateTarget = state.aggregate?.targets?.find(stateTarget => stateTarget.id === target.id);
+      return stateTarget?.value.pass !== target.value.pass || stateTarget?.value.total !== target.value.total;
+    });
+    state.aggregate = aggregate;
 
     return { aggregate, isUpdated };
   },

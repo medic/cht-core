@@ -70,23 +70,21 @@ const medicPouchProvider = db => {
       const userSettingsId = userSettingsDoc?._id;
       const _id = `target~${docTag}~${userContactId}~${userSettingsId}`;
 
-      let saveDoc = updatedTargets;
-      const createNew = () => {
-        saveDoc = true;
-        return {
-          _id,
-          type: 'target',
-          user: userSettingsId,
-          owner: userContactId,
-          reporting_period: docTag,
-        };
-      };
-
       return db
         .get(_id)
-        .catch(createNew)
+        .catch(err => {
+          if (err.status === 404) {
+            return {
+              _id,
+              type: 'target',
+              user: userSettingsId,
+              owner: userContactId,
+              reporting_period: docTag,
+            };
+          }
+        })
         .then(existingDoc => {
-          if (!saveDoc) {
+          if (!updatedTargets && existingDoc._rev) {
             return false;
           }
 

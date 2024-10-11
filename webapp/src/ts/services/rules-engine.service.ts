@@ -52,7 +52,8 @@ export class RulesEngineCoreFactoryService {
 export class RulesEngineService implements OnDestroy {
   private rulesEngineCore;
   private readonly MAX_LINEAGE_DEPTH = 50;
-  private readonly ENSURE_FRESHNESS_SECS = 120;
+  private readonly ENSURE_FRESHNESS_MILLIS = 120 * 1000;
+  private readonly DEBOUNCE_CHANGE_MILLIS = 1000;
   private readonly CHANGE_WATCHER_KEY = 'mark-contacts-dirty';
   private readonly FRESHNESS_KEY = 'freshness';
   private subscriptions: Subscription = new Subscription();
@@ -98,7 +99,7 @@ export class RulesEngineService implements OnDestroy {
 
     const hasPermissions = canViewTargets || canViewTasks;
     if (!hasPermissions || this.sessionService.isOnlineOnly()) {
-      return;
+      return false;
     }
 
     const [settingsDoc, userContactDoc, userSettingsDoc, chtScriptApi] =
@@ -127,6 +128,7 @@ export class RulesEngineService implements OnDestroy {
 
     if (!isEnabled) {
       trackPerformance?.stop(trackName);
+      return false;
     }
 
     this.assignMonthStartDate(settingsDoc);
@@ -135,7 +137,7 @@ export class RulesEngineService implements OnDestroy {
     const rulesDebounceRef = _debounce(() => {
       this.debounceActive[this.FRESHNESS_KEY].active = false;
       this.refreshEmissions();
-    }, this.ENSURE_FRESHNESS_SECS * 1000);
+    }, this.ENSURE_FRESHNESS_MILLIS);
 
     this.debounceActive[this.FRESHNESS_KEY] = {
       active: true,
@@ -148,6 +150,8 @@ export class RulesEngineService implements OnDestroy {
     this.debounceActive[this.FRESHNESS_KEY].debounceRef();
 
     trackPerformance?.stop(trackName);
+
+    return true;
   }
 
   private cancelDebounce(entity) {
@@ -204,52 +208,56 @@ export class RulesEngineService implements OnDestroy {
     };
   }
 
-  private monitorContactChanges() {
-    const isReport = doc => doc.type === 'data_record' && !!doc.form;
+  private isReport(doc) {
+    return doc.type === 'data_record' && !!doc.form;
+  }
 
+  private dirtyContactCallback(change) {
+    const subjectIds = [this.isReport(change.doc) ? RegistrationUtils.getSubjectId(change.doc) : change.id];
+
+    if (this.debounceActive[this.CHANGE_WATCHER_KEY]?.active) {
+      const oldSubjectIds = this.debounceActive[this.CHANGE_WATCHER_KEY].params;
+      if (oldSubjectIds) {
+        subjectIds.push(...oldSubjectIds);
+      }
+
+      this.debounceActive[this.CHANGE_WATCHER_KEY].params = subjectIds;
+      this.debounceActive[this.CHANGE_WATCHER_KEY].debounceRef();
+      return;
+    }
+
+    const trackPerformance = this.performanceService.track();
+    let resolve;
+    const promise = new Promise(r => resolve = r);
+
+    const debounceRef = _debounce(async () => {
+      this.debounceActive[this.CHANGE_WATCHER_KEY].active = false;
+      this.debounceActive[this.CHANGE_WATCHER_KEY].resolve();
+
+      await this.rulesEngineCore.updateEmissionsFor(this.debounceActive[this.CHANGE_WATCHER_KEY].params);
+      this.observable.next(this.debounceActive[this.CHANGE_WATCHER_KEY].params);
+      trackPerformance?.stop({ name: [ 'rules-engine', 'update-emissions' ].join(':') });
+    }, this.DEBOUNCE_CHANGE_MILLIS);
+
+    this.debounceActive[this.CHANGE_WATCHER_KEY] = {
+      active: true,
+      promise: promise,
+      resolve: resolve,
+      performance: {
+        name: [ 'rules-engine', 'update-emissions', 'cancel' ],
+        track: this.performanceService.track()
+      },
+      debounceRef: debounceRef,
+      params: subjectIds,
+    };
+    this.debounceActive[this.CHANGE_WATCHER_KEY].debounceRef();
+  }
+
+  private monitorContactChanges() {
     const dirtyContactsSubscription = this.changesService.subscribe({
       key: this.CHANGE_WATCHER_KEY,
-      filter: change => !!change.doc && (this.contactTypesService.includes(change.doc) || isReport(change.doc)),
-      callback: change => {
-        const subjectIds = [isReport(change.doc) ? RegistrationUtils.getSubjectId(change.doc) : change.id];
-
-        if (this.debounceActive[this.CHANGE_WATCHER_KEY]?.active) {
-          const oldSubjectIds = this.debounceActive[this.CHANGE_WATCHER_KEY].params;
-          if (oldSubjectIds) {
-            subjectIds.push(...oldSubjectIds);
-          }
-
-          this.debounceActive[this.CHANGE_WATCHER_KEY].params = subjectIds;
-          this.debounceActive[this.CHANGE_WATCHER_KEY].debounceRef();
-          return;
-        }
-
-        const trackPerformance = this.performanceService.track();
-        let resolve;
-        const promise = new Promise(r => resolve = r);
-
-        const debounceRef = _debounce(async () => {
-          this.debounceActive[this.CHANGE_WATCHER_KEY].active = false;
-          this.debounceActive[this.CHANGE_WATCHER_KEY].resolve();
-
-          await this.rulesEngineCore.updateEmissionsFor(this.debounceActive[this.CHANGE_WATCHER_KEY].params);
-          this.observable.next(this.debounceActive[this.CHANGE_WATCHER_KEY].params);
-          trackPerformance?.stop({ name: [ 'rules-engine', 'update-emissions' ].join(':') });
-        }, 1000);
-
-        this.debounceActive[this.CHANGE_WATCHER_KEY] = {
-          active: true,
-          promise: promise,
-          resolve: resolve,
-          performance: {
-            name: [ 'rules-engine', 'update-emissions', 'cancel' ],
-            track: this.performanceService.track()
-          },
-          debounceRef: debounceRef,
-          params: subjectIds,
-        };
-        this.debounceActive[this.CHANGE_WATCHER_KEY].debounceRef();
-      }
+      filter: change => !!change.doc && (this.contactTypesService.includes(change.doc) || this.isReport(change.doc)),
+      callback: change => this.dirtyContactCallback(change)
     });
     this.subscriptions.add(dirtyContactsSubscription);
   }
@@ -339,7 +347,7 @@ export class RulesEngineService implements OnDestroy {
   }
 
   isEnabled() {
-    return this.initialized.then(this.rulesEngineCore.isEnabled);
+    return this.initialized;
   }
 
   private refreshEmissions() {

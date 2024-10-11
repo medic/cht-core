@@ -41,7 +41,7 @@ module.exports = db => {
      * @param {string[]} contactIds An array of contact ids. If undefined, returns tasks for all contacts
      * @returns {Promise<Object[]>} All the fresh task docs owned by contactIds
      */
-    refreshEmissionsFor: contactIds => wireupToProvider.refreshRulesEmissionForContacts(provider, contactIds),
+    refreshEmissionsFor: contactIds => wireupToProvider.refreshEmissionsFor(provider, contactIds),
     /**
      * Refreshes all rules documents for a set of contacts and returns their task documents
      *
