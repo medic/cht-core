@@ -22,22 +22,20 @@ describe('Tasks tab breadcrumbs', () => {
     parent: { _id: districtHospital._id },
   });
 
-  const chwContact = {
-    _id: 'fixture:user:user1',
+  const chwContact = personFactory.build({
     name: 'chw',
     phone: '+12068881234',
-    type: 'person',
     place: healthCenter1._id,
-    parent: healthCenter1
-  };
-  const supervisorContact = {
-    _id: 'fixture:user:user2',
+    parent: healthCenter1,
+    reported_date: ''
+  });
+  const supervisorContact = personFactory.build({
     name: 'supervisor',
     phone: '+12068881235',
-    type: 'person',
     place: districtHospital._id,
-    parent: districtHospital
-  };
+    parent: districtHospital,
+    reported_date: ''
+  });
 
   const chw = userFactory.build({
     username: 'offlineuser_tasks',
