@@ -1,7 +1,7 @@
 require('../../../../../../tests/aliases');
 const assert = require('chai').assert;
 const sinon = require('sinon');
-const glob = require('glob');
+const { glob } = require('glob');
 const path = require('path');
 
 const utils = require('../../../../../../tests/utils');
@@ -145,18 +145,15 @@ describe('Test utils', () => {
     const pathToDefaultTesting = path.resolve(__dirname, '../../../../../../tests/e2e/default');
     sinon.stub(sentinelUtils, 'skipToSeq');
     const suiteSpecs = [];
-    const getDirectories = (src) => {
-      return new Promise((resolve, reject) => glob(src, (err, res) => err ? reject(err) : resolve(res)));
-    };
 
     for (const relativePaths of Object.values(suites)) {
       for (const relativePath of relativePaths) {
         const resolvedPath = path.resolve(pathToDefaultTesting, relativePath);
-        suiteSpecs.push(...await getDirectories(resolvedPath));
+        suiteSpecs.push(await glob(resolvedPath));
       }
     }
 
-    const allSpecs = await getDirectories(path.join(pathToDefaultTesting, '/**/*.wdio-spec.js'));
-    assert.sameMembers(allSpecs, suiteSpecs);
+    const allSpecs = await glob(path.join(pathToDefaultTesting, '/**/*.wdio-spec.js'));
+    assert.sameMembers(allSpecs, suiteSpecs.flat());
   });
 });
