@@ -97,8 +97,8 @@ const getTextareaValue = async (question) => {
 
 const getLabelElement = async (label) => {
   return await (await getCurrentPageSection())
-    .$(`label*=${label}`)
-}
+    .$(`label*=${label}`);
+};
 
 const isRequiredMessageDisplayed = async (question) => {
   await formTitle().click();

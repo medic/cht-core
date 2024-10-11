@@ -83,13 +83,15 @@ const inmunizationCardSelectors = {
   inmunizationCard: () => $(INMUNIZATION_CARD_TEST_ID),
 };
 
-const PRIMARY_CONTACT_SEARCH_DROPDOWN = 'span.select2-selection--single[aria-labelledby^="select2-/data/district_hospital/contact/_id"]';
+const PRIMARY_CONTACT_SEARCH_DROPDOWN =
+    'span.select2-selection--single' +
+    '[aria-labelledby^="select2-/data/district_hospital/contact/_id"]';
 const PRIMARY_CONTACT_SEARCH_INPUT = 'input.select2-search__field';
 const PRIMARY_CONTACT_SEARCH_RESULT = '.select2-results__option--highlighted';
 const editDistrictHospitalSelectors = {
-  primaryContactSearchDropdown : () => $(PRIMARY_CONTACT_SEARCH_DROPDOWN),
-  primaryContactSearchInput : () => $(PRIMARY_CONTACT_SEARCH_INPUT),
-  primaryContactSearchFirstResult : () => $(PRIMARY_CONTACT_SEARCH_RESULT),
+  primaryContactSearchDropdown: () => $(PRIMARY_CONTACT_SEARCH_DROPDOWN),
+  primaryContactSearchInput: () => $(PRIMARY_CONTACT_SEARCH_INPUT),
+  primaryContactSearchFirstResult: () => $(PRIMARY_CONTACT_SEARCH_RESULT),
 };
 
 const search = async (query) => {
