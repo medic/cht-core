@@ -34,6 +34,7 @@ import { ContactsMoreMenuComponent } from '@mm-modules/contacts/contacts-more-me
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { PerformanceService } from '@mm-services/performance.service';
+import { DbService } from '@mm-services/db.service';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -161,6 +162,7 @@ describe('Contacts component', () => {
           { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
           { provide: PerformanceService, useValue: performanceService },
           { provide: MatDialog, useValue: { open: sinon.stub() } },
+          { provide: DbService, useValue: {} },
         ]
       })
       .compileComponents().then(() => {

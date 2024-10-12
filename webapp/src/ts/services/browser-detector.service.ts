@@ -59,4 +59,8 @@ export class BrowserDetectorService {
 
     return this.androidAppVersion?.startsWith('v1.');
   }
+
+  isDesktopUserAgent() {
+    return this.parser.getPlatformType(true) === 'desktop';
+  }
 }
