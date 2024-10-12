@@ -10,9 +10,10 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const privacyPolicyFactory = require('@factories/cht/settings/privacy-policy');
 const privacyPage = require('@page-objects/default/privacy-policy/privacy-policy.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const modalPage = require('@page-objects/default/common/modal.wdio.page');
 
 describe('Training Cards', () => {
-
+  const expectedConfirmModalHeader = 'Leave training?';
   const expectedConfirmMessage = 'This training is not finished. ' +
     'If you leave now, you will lose your progress and be prompted again later to complete it.';
 
@@ -42,10 +43,56 @@ describe('Training Cards', () => {
     await trainingCardsPage.waitForTrainingCards();
 
     const confirmMessage = await trainingCardsPage.quitTraining();
-    expect(confirmMessage.header).to.equal('Leave training?');
+    expect(confirmMessage.header).to.equal(expectedConfirmModalHeader);
     expect(confirmMessage.body).to.contain(expectedConfirmMessage);
     await trainingCardsPage.confirmQuitTraining();
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
+
+    await commonPage.goToReports();
+    await commonElements.waitForPageLoaded();
+    expect(await reportsPage.leftPanelSelectors.allReports()).to.be.empty;
+  });
+
+  it('should display confirm message before navigating to different page', async () => {
+    await browser.refresh();
+    await trainingCardsPage.waitForTrainingCards();
+
+    await commonPage.goToPeople();
+
+    const confirmMessage = await modalPage.getModalDetails();
+    expect(confirmMessage.header).to.contain(expectedConfirmModalHeader);
+    expect(confirmMessage.body).to.contain(expectedConfirmMessage);
+    expect(await browser.getUrl()).to.contain('/reports');
+
+    await trainingCardsPage.confirmQuitTraining();
+    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
+    expect(await browser.getUrl()).to.contain('/contacts');
+
+    await commonPage.goToReports();
+    await commonElements.waitForPageLoaded();
+    expect(await reportsPage.leftPanelSelectors.allReports()).to.be.empty;
+  });
+
+  it('should display confirm message when browser back button is clicked', async () => {
+    await browser.refresh();
+    await trainingCardsPage.waitForTrainingCards();
+    await commonPage.goToPeople();
+    await trainingCardsPage.confirmQuitTraining();
+    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
+
+    await browser.refresh();
+    await trainingCardsPage.waitForTrainingCards();
+
+    await browser.back();
+
+    const confirmMessage = await modalPage.getModalDetails();
+    expect(confirmMessage.header).to.contain(expectedConfirmModalHeader);
+    expect(confirmMessage.body).to.contain(expectedConfirmMessage);
+    expect(await browser.getUrl()).to.contain('/contacts');
+
+    await trainingCardsPage.confirmQuitTraining();
+    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
+    expect(await browser.getUrl()).to.contain('/reports');
 
     await commonPage.goToReports();
     await commonElements.waitForPageLoaded();
