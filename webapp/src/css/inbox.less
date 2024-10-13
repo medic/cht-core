@@ -198,10 +198,17 @@ body {
     a .button-label {
       margin-top: 3px;
       position: relative;
-      overflow: hidden;
-      word-wrap: break-word;
       color: @nav-icon-gray;
       font-size: @font-XXS;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      hyphens: auto;
+      white-space: normal;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      line-clamp: 2;
+      overflow: hidden;
       text-overflow: ellipsis;
     }
 
@@ -1309,10 +1316,14 @@ mm-sidebar-menu .mat-sidenav-container {
     }
 
     .panel-header-close {
-      width: 20px;
+      width: 80px;
+      height: 40px;
       text-align: center;
 
       mat-icon {
+        width: 20px;
+        height: 40px;
+        margin: auto;
         color: @mat-inverse-icon-color;
       }
     }
@@ -1327,7 +1338,8 @@ mm-sidebar-menu .mat-sidenav-container {
   }
 
   .nav-item {
-    padding: 0 20px 20px 20px;
+    //padding: 0 20px 20px 20px;
+    padding-bottom: 20px;
     color: @text-normal-color;
     text-decoration: none;
     font-size: @font-medium;
@@ -1364,6 +1376,7 @@ mm-sidebar-menu .mat-sidenav-container {
     }
 
     mat-icon {
+      width: 80px;
       text-align: center;
       margin-right: 15px;
       flex-shrink: 0;
@@ -1407,6 +1420,14 @@ mm-sidebar-menu .mat-sidenav-container {
       .panel-header-title {
         font-size: @font-extra-large;
       }
+
+      .panel-header-close {
+        width: 48px;
+      }
+    }
+
+    .nav-item mat-icon {
+      width: 48px !important;
     }
   }
 
@@ -1456,7 +1477,7 @@ mm-sidebar-menu .mat-sidenav-container {
           top: 0;
           font-size: @font-XXS;
           padding-top: 5px;
-          text-overflow: ellipsis;
+          //text-overflow: ellipsis;
           margin-top: 0;
         }
 
