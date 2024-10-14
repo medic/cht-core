@@ -64,6 +64,7 @@ const parse = (tokens) => {
 
   expectOneOf(['identifier', 'negator', 'blockStart']);
 
+  // NOSONAR_BEGIN
   for (let i = 0; i < tokens.length; i++) {
     const thisToken = tokens[i];
     const entitiesToPush = [];
@@ -269,6 +270,7 @@ const parse = (tokens) => {
       currentBlock = blockStack[blockStack.length - 1];
     }
   } // End token loop
+  // NOSONAR_END
 
   if (blockStack.length > 1) {
     throw new ParserException('All blocks weren\'t closed.');

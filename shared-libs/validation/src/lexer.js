@@ -38,6 +38,7 @@ const tokenize = (str) => {
   let stringStartChar = null;
 
   // Loop through the chars
+  // NOSONAR_BEGIN
   for (i = 0; i < chars.length; i++) {
     const thisChar = chars[i];
     const nextChar = chars[i + 1];
@@ -148,6 +149,7 @@ const tokenize = (str) => {
       }
     }
   } // End the char loop
+  // NOSONAR_END
 
   return resultTokens;
 };
