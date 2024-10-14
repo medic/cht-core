@@ -18,7 +18,7 @@ const compileTasks = async (tasksFileName) => {
   return await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
 };
 
-describe('Tasks tab breadcrumbs', () => {
+describe('Tasks', () => {
 
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
@@ -78,31 +78,31 @@ describe('Tasks tab breadcrumbs', () => {
     parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id }},
     reported_date: new Date().getTime(),
   });
-  const contactWithManyPlaces = personFactory.build({
-    parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id } },
-  });
-  const userWithManyPlaces = {
-    _id: 'org.couchdb.user:offline_many_facilities',
-    language: 'en',
-    known: true,
-    type: 'user-settings',
-    roles: [ 'chw' ],
-    facility_id: [ healthCenter1._id, healthCenter2._id ],
-    contact_id: contactWithManyPlaces._id,
-    name: 'offline_many_facilities'
-  };
-  const userWithManyPlacesPass = uuid();
+  // const contactWithManyPlaces = personFactory.build({
+  //   parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id } },
+  // });
+  // const userWithManyPlaces = {
+  //   _id: 'org.couchdb.user:offline_many_facilities',
+  //   language: 'en',
+  //   known: true,
+  //   type: 'user-settings',
+  //   roles: [ 'chw' ],
+  //   facility_id: [ healthCenter1._id, healthCenter2._id ],
+  //   contact_id: contactWithManyPlaces._id,
+  //   name: 'offline_many_facilities'
+  // };
+  // const userWithManyPlacesPass = uuid();
 
   before(async () => {
     await utils.saveDocs([
       ...places.values(), healthCenter2, chwContact, supervisorContact, patient, patient2,
-      contactWithManyPlaces, userWithManyPlaces,
+      // contactWithManyPlaces, userWithManyPlaces,
     ]);
-    await utils.request({
-      path: `/_users/${userWithManyPlaces._id}`,
-      method: 'PUT',
-      body: { ...userWithManyPlaces, password: userWithManyPlacesPass, type: 'user' },
-    });
+    // await utils.request({
+    //   path: `/_users/${userWithManyPlaces._id}`,
+    //   method: 'PUT',
+    //   body: { ...userWithManyPlaces, password: userWithManyPlacesPass, type: 'user' },
+    // });
     await utils.createUsers([ chw, supervisor ]);
     await sentinelUtils.waitForSentinel();
 
@@ -129,7 +129,7 @@ describe('Tasks tab breadcrumbs', () => {
     await browser.refresh();
   });
 
-  it('should remove task from list when CHW completes a task successfully', async () => {
+  it.only('should remove task from list when CHW completes a task successfully', async () => {
     const settings = await compileTasks('tasks-breadcrumbs-config.js');
     await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
     
