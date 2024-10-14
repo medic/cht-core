@@ -10,9 +10,9 @@ import { Selectors } from '@mm-selectors/index';
   providedIn: 'root'
 })
 export class TrainingCardDeactivationGuardProvider implements CanDeactivate<any> {
-  private globalActions;
+  private readonly globalActions;
 
-  constructor(private store: Store) {
+  constructor(private readonly store: Store) {
     this.globalActions = new GlobalActions(this.store);
   }
 

@@ -132,6 +132,12 @@ describe('Training Cards', () => {
     const privacyPolicy = privacyPolicyFactory.privacyPolicy().build();
     await utils.saveDocs([privacyPolicy]);
     await commonPage.goToReports();
+    const confirmMessage = await modalPage.getModalDetails();
+    expect(confirmMessage.header).to.contain(expectedConfirmModalHeader);
+    expect(confirmMessage.body).to.contain(expectedConfirmMessage);
+    
+    await trainingCardsPage.confirmQuitTraining();
+    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
     await commonElements.sync();
     await browser.refresh();
 
