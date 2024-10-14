@@ -119,7 +119,7 @@ describe('Tasks tab breadcrumbs', () => {
   });
 
   afterEach(async () => {
-    await commonPage.logout()
+    await commonPage.logout();
   });
 
   after(async () => {
