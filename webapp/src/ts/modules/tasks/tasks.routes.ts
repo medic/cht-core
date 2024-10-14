@@ -34,7 +34,7 @@ export const routes:Routes = [
         path: ':id',
         component: TasksContentComponent,
         data: { name: 'tasks.detail', hideTraining: true },
-        canDeactivate: [ TasksContentRouteGuardProvider, TrainingCardDeactivationGuardProvider ],
+        canDeactivate: [ TasksContentRouteGuardProvider ],
       },
     ]
   },
