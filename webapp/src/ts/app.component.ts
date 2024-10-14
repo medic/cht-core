@@ -501,10 +501,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private displayTrainingCards() {
-    if (this.showPrivacyPolicy && !this.privacyPolicyAccepted) {
-      return;
-    }
-    if (!this.trainingCardFormId) {
+    if (!this.trainingCardFormId || (this.showPrivacyPolicy && !this.privacyPolicyAccepted)) {
       return;
     }
 
