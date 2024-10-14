@@ -28,6 +28,7 @@
     require( './widgets/bikram-sambat-datepicker' ),
     require( './widgets/mrdt' ),
     require( './widgets/android-app-launcher' ),
+    require( './widgets/barcode-scanner' ),
     require( './widgets/display-base64-image' ),
     require( './widgets/dynamic-url' ),
     require( './widgets/draw' ),
