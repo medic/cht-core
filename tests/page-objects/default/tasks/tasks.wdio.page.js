@@ -3,6 +3,7 @@ const taskFormSelector = '#task-report';
 const tasksGroupSelector = '#tasks-group .item-content';
 const formTitleSelector = `${taskFormSelector} h3#form-title`;
 const noSelectedTaskSelector = '.empty-selection';
+const taskSubmitSelector = '.submit';
 
 const tasksList = () => $(taskListSelector);
 
@@ -92,6 +93,13 @@ const scrollToLastTaskItem = async () => {
   });
 };
 
+const submitFirstTask = async () => {
+  const tasks = await getTasks();
+  await (tasks[0]).click();
+  await (await $(taskSubmitSelector)).waitForDisplayed();
+  await $(taskSubmitSelector).click();
+};
+
 module.exports = {
   tasksList,
   getTasks,
@@ -107,4 +115,5 @@ module.exports = {
   noSelectedTask,
   openTaskById,
   scrollToLastTaskItem,
+  submitFirstTask,
 };

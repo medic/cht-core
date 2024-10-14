@@ -17,7 +17,7 @@ const isFormArraySubmittedInWindow = (reports, formArray, start, end, count) => 
   return count ? reportCount >= count : found;
 };
 
-module.exports = Array.from({ length: 200 }, (_, index) => ({
+module.exports = Array.from({ length: 67 }, (_, index) => ({
   name: `person_create_${index + 1}`,
   icon: 'icon-person',
   title: `person_create_${index + 1}`,
