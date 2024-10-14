@@ -7,13 +7,14 @@ const userName = () => $('#edit-username');
 const userFullName = () => $('#fullname');
 const userPassword = () => $('#edit-password');
 const userConfirmPassword = () => $('#edit-password-confirm');
+const passwordToggleButton = () => $('#password-toggle');
 const saveUserButton = () => $('a[test-id="modal-submit-btn"]');
 const logoutButton = () => $('i.fa-power-off');
 const usernameTextSelector = '[test-id="username-list"]';
 const usernameText = () => $(usernameTextSelector);
 const usernameTextList = () => $$(usernameTextSelector);
 const usernameErrorMessage = () => $('span.help-block.ng-binding');
-const passwordErrorMessage = () => $('#edit-password ~ .help-block');
+const passwordErrorMessage = () => $('.password-input-group ~ .help-block');
 const placeErrorMessage = () => $('#facilitySelect ~ .help-block');
 const contactErrorMessage = () => $('#contactSelect ~ .help-block');
 const uploadUsersButton = () => $('a#add-users');
@@ -154,6 +155,30 @@ const getPasswordErrorText = async () => {
   return await (await passwordErrorMessage()).getText();
 };
 
+const setUserPassword = async (password) => {
+  await (await userPassword()).waitForDisplayed();
+  await (await userPassword()).setValue(password);
+};
+
+const setUserConfirmPassword = async (password) => {
+  await (await userConfirmPassword()).waitForDisplayed();
+  await (await userConfirmPassword()).setValue(password);
+};
+
+const togglePassword = async () => {
+  await (await userPassword()).waitForDisplayed();
+  await (await userConfirmPassword()).waitForDisplayed();
+  await (await passwordToggleButton()).waitForClickable();
+  await (await passwordToggleButton()).click();
+
+  return {
+    type: await (await userPassword()).getAttribute('type'),
+    value: await (await userPassword()).getValue(),
+    confirmType: await (await userConfirmPassword()).getAttribute('type'),
+    confirmValue: await (await userConfirmPassword()).getValue(),
+  };
+};
+
 const getPlaceErrorText = async () => {
   return await (await placeErrorMessage()).getText();
 };
@@ -209,6 +234,9 @@ module.exports = {
   getAllUsernames,
   getUsernameErrorText,
   getPasswordErrorText,
+  togglePassword,
+  setUserPassword,
+  setUserConfirmPassword,
   getPlaceErrorText,
   getContactErrorText,
   openUploadUsersDialog,
