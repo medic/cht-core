@@ -10,7 +10,7 @@
           [routerLink]="module.routerLink"
           [mmAuth]="module.hasPermissions">
           <mat-icon [fontIcon]="module.icon"></mat-icon>
-          <span>{{ module.translationKey | translate }}</span>
+          <span class="nav-item-title">{{ module.translationKey | translate }}</span>
         </a>
 
         <a class="nav-item"
@@ -19,7 +19,7 @@
           [mmAuthAny]="[ 'can_configure', 'can_view_outgoing_messages', 'can_export_all' ]"
           [mmAuthOnline]="true">
           <mat-icon fontIcon="fa-cog"></mat-icon>
-          <span>{{ 'admin.app.name' | translate }}</span>
+          <span class="nav-item-title">{{ 'admin.app.name' | translate }}</span>
         </a>
       </div>
 
@@ -29,7 +29,7 @@
           [class.disabled]="replicationStatus?.current?.disableSyncButton"
           (click)="replicate()">
           <mat-icon fontIcon="fa-refresh"></mat-icon>
-          <span>{{ 'sync.now' | translate }}</span>
+          <span class="nav-item-title">{{ 'sync.now' | translate }}</span>
         </a>
       </div>
 
@@ -37,12 +37,12 @@
         <div class="nav-item" [class]="replicationStatus?.current?.className">
           <mat-icon [fontIcon]="replicationStatus?.current?.icon" *ngIf="replicationStatus?.current"></mat-icon>
           <div class="sync-summary">
-            <span *ngIf="replicationStatus?.current">{{ replicationStatus?.current.key | translate }}</span>
+            <span class="nav-item-title" *ngIf="replicationStatus?.current">{{ replicationStatus?.current.key | translate }}</span>
 
             <div *ngIf="replicationStatus?.lastSuccessTo" class="last-sync">
               <span>{{ 'sync.last_success' | translate }}</span>
               <!-- The tabindex=0 prevents showing the tooltip when menu opens in mobile devices -->
-              <span [innerHTML]="replicationStatus?.lastSuccessTo | relativeDate" tabindex="0"></span>
+              <span class="nav-item-title" [innerHTML]="replicationStatus?.lastSuccessTo | relativeDate" tabindex="0"></span>
             </div>
           </div>
         </div>
@@ -56,7 +56,7 @@
             [mmAuth]="option.hasPermissions"
             (click)="option.click && option.click()">
             <mat-icon [fontIcon]="option.icon"></mat-icon>
-            <span>{{ option.translationKey | translate }}</span>
+            <span class="nav-item-title">{{ option.translationKey | translate }}</span>
           </a>
 
           <a class="nav-item"
@@ -64,7 +64,7 @@
             [routerLink]="option.routerLink"
             (click)="option.click && option.click()">
             <mat-icon [fontIcon]="option.icon"></mat-icon>
-            <span>{{ option.translationKey | translate }}</span>
+            <span class="nav-item-title">{{ option.translationKey | translate }}</span>
           </a>
         </ng-container>
       </div>
@@ -72,7 +72,7 @@
       <div class="nav-section">
         <a *ngIf="canLogOut" class="nav-item" (click)="logout()">
           <mat-icon fontIcon="fa-power-off"></mat-icon>
-          <span>{{ 'Log Out' | translate }}</span>
+          <span class="nav-item-title">{{ 'Log Out' | translate }}</span>
         </a>
       </div>
 

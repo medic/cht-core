@@ -1269,6 +1269,7 @@ mm-search-bar {
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
+      line-clamp: 2;
       white-space: normal;
       letter-spacing: normal;
     }
@@ -1310,7 +1311,7 @@ mm-sidebar-menu .mat-sidenav-container {
       font-size: @font-XXL;
       font-weight: bold;
       line-height: @font-XXL;
-      margin-left: 15px;
+      margin-left: -15px;
       color: @text-inverse-color;
       letter-spacing: normal;
     }
@@ -1375,6 +1376,10 @@ mm-sidebar-menu .mat-sidenav-container {
       color: @text-secondary-color;
     }
 
+    .nav-item-title {
+      margin-left: -15px;
+    }
+
     mat-icon {
       width: 80px;
       text-align: center;
@@ -1419,6 +1424,7 @@ mm-sidebar-menu .mat-sidenav-container {
       height: @sidebar-menu-header-mobile;
       .panel-header-title {
         font-size: @font-extra-large;
+        margin-left: 0px;
       }
 
       .panel-header-close {
@@ -1428,6 +1434,10 @@ mm-sidebar-menu .mat-sidenav-container {
 
     .nav-item mat-icon {
       width: 48px !important;
+    }
+
+    .nav-item-title {
+      margin-left: 0px !important;
     }
   }
 
