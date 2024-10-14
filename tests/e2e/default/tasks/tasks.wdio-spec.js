@@ -127,16 +127,17 @@ describe('Tasks tab breadcrumbs', () => {
     await browser.refresh();
   });
 
-  // WIP
   it('should remove task from list when CHW completes a task successfully', async () => {
     const settings = await compileTasks('tasks-breadcrumbs-config.js');
     await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
     
     await tasksPage.goToTasksTab();
-    const list = await tasksPage.getTasks();
+    let list = await tasksPage.getTasks();
     expect(list).to.have.length(3);
-    await tasksPage.submitFirstTask();
-    // validate completed task is removed from the list = taskList length should be 2
+    await tasksPage.submitTask(1);
+    await commonPage.sync(true);
+    list = await tasksPage.getTasks();
+    expect(list).to.have.length(2);
   });
 
   // WIP

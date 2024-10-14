@@ -93,9 +93,9 @@ const scrollToLastTaskItem = async () => {
   });
 };
 
-const submitFirstTask = async () => {
+const submitTask = async (taskIndex) => {
   const tasks = await getTasks();
-  await (tasks[0]).click();
+  await (tasks[taskIndex]).click();
   await (await $(taskSubmitSelector)).waitForDisplayed();
   await $(taskSubmitSelector).click();
 };
@@ -115,5 +115,5 @@ module.exports = {
   noSelectedTask,
   openTaskById,
   scrollToLastTaskItem,
-  submitFirstTask,
+  submitTask,
 };
