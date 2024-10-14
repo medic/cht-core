@@ -8,8 +8,8 @@ const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page'
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const commonEnketoPage = require("@page-objects/default/enketo/common-enketo.wdio.page");
-const genericForm = require("@page-objects/default/enketo/generic-form.wdio.page");
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 const compileConfig = async (tasksFileName, targetFileName) => {
   await chtConfUtils.initializeConfigDir();
@@ -44,13 +44,6 @@ const chw = userFactory.build({
 const targetTag = moment().format('YYYY-MM');
 const targetDocId = `target~${targetTag}~${chwContact._id}~org.couchdb.user:${chw.username}`;
 
-const assertServerTargetDocs = async () => {
-  const docs = await utils.db.allDocs({
-    startkey: 'target', endkey: 'target\ufff0'
-  });
-  expect(docs.rows.length).to.equal(1);
-};
-
 describe('Target accuracy', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), chwContact]);
@@ -58,7 +51,7 @@ describe('Target accuracy', () => {
     const settings = await compileConfig(
       'target-accuracy-tasks.js',
       'target-accuracy-targets.js'
-      );
+    );
     await utils.updateSettings(settings, { ignoreReload: 'api' });
     await loginPage.login(chw);
   });
@@ -171,5 +164,10 @@ describe('Target accuracy', () => {
         total: contacts.length
       }
     }]);
+  });
+
+  it('should only create one target doc', async () => {
+    const docs = await utils.db.allDocs({ startkey: 'target', endkey: 'target\ufff0' });
+    expect(docs.rows.length).to.equal(1);
   });
 });
