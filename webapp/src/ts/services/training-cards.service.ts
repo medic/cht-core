@@ -114,7 +114,10 @@ export class TrainingCardsService {
       ?.afterOpened()
       .pipe(first())
       .subscribe(() => {
-        window.localStorage.setItem(this.STORAGE_KEY_LAST_VIEWED_DATE, new Date().toISOString());
+        const key = this.getLocalStorageKey();
+        if (key) {
+          window.localStorage.setItem(key, new Date().toISOString());
+        }
       });
   }
 
@@ -153,9 +156,13 @@ export class TrainingCardsService {
   }
 
   private hasBeenDisplayed() {
-    const dateString = window.localStorage.getItem(this.STORAGE_KEY_LAST_VIEWED_DATE) ?? '';
-    const lastViewedDate = new Date(dateString);
+    const key = this.getLocalStorageKey();
+    if (!key) {
+      return false;
+    }
 
+    const dateString = window.localStorage.getItem(key) ?? '';
+    const lastViewedDate = new Date(dateString);
     if (isNaN(lastViewedDate.getTime())) {
       return false;
     }
@@ -165,5 +172,14 @@ export class TrainingCardsService {
     today.setHours(0, 0, 0, 0);
 
     return lastViewedDate >= today;
+  }
+
+  private getLocalStorageKey() {
+    const username = this.sessionService.userCtx()?.name;
+    if (!username) {
+      return;
+    }
+
+    return `${this.STORAGE_KEY_LAST_VIEWED_DATE}-${username}`;
   }
 }

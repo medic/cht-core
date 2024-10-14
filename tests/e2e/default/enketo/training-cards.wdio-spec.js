@@ -20,7 +20,7 @@ describe('Training Cards', () => {
 
   const setLastViewedDateInThePast = () => {
     return browser.execute(function() {
-      this.localStorage.setItem('training-cards-last-viewed-date', new Date('2024-10-05 20:10:05').toISOString());
+      this.localStorage.setItem('training-cards-last-viewed-date-user1', new Date('2024-10-05 20:10:05').toISOString());
     });
   };
 
