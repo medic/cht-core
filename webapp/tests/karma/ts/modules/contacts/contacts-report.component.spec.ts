@@ -141,13 +141,11 @@ describe('contacts report component', () => {
     it('should initialize the component', fakeAsync(() => {
       const setShowContent = sinon.stub(GlobalActions.prototype, 'setShowContent');
       const setCancelCallback = sinon.stub(GlobalActions.prototype, 'setCancelCallback');
-      const clearRightActionBar = sinon.stub(GlobalActions.prototype, 'clearRightActionBar');
       component.ngOnInit();
       flush();
 
       expect(setShowContent.args).to.deep.equal([[true]]);
       expect(setCancelCallback.callCount).to.equal(1);
-      expect(clearRightActionBar.callCount).to.equal(1);
     }));
 
     it('should render with the right information', fakeAsync(() => {
@@ -268,7 +266,7 @@ describe('contacts report component', () => {
 
       expect(setEnketoError.callCount).to.equal(1);
 
-      store.overrideSelector(Selectors.getEnketoError, true);
+      store.overrideSelector(Selectors.getEnketoError, 'Error submitting form data.');
       store.refreshState();
       component.save();
       flush();

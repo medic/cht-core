@@ -5,6 +5,8 @@ const cht = require('@medic/cht-datasource');
 const chtDatasource = cht.getDatasource(cht.getRemoteDataContext());
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
+const SHOW_PASSWORD_ICON = '/login/images/show-password.svg';
+const HIDE_PASSWORD_ICON = '/login/images/hide-password.svg';
 const USERNAME_ALLOWED_CHARS = /^[a-z0-9_-]+$/;
 const ADMIN_ROLE = '_admin';
 const FIELDS_TO_IGNORE = [
@@ -91,6 +93,12 @@ angular
             return $q.resolve({});
           }
 
+          // Start with the password masked.
+          $scope.model.passwordFieldType  = 'password';
+
+          $scope.model.showPasswordIcon = SHOW_PASSWORD_ICON;
+          $scope.model.hidePasswordIcon = HIDE_PASSWORD_ICON;
+
           const facilityId = getFacilityId();
           const tokenLoginData = $scope.model.token_login;
           const tokenLoginEnabled = tokenLoginData &&
@@ -116,6 +124,9 @@ angular
             contactSelect: $scope.model.contact_id,
             contact: $scope.model.contact_id,
             tokenLoginEnabled: tokenLoginEnabled,
+            passwordFieldType: $scope.model.passwordFieldType,
+            showPasswordIcon: $scope.model.showPasswordIcon,
+            hidePasswordIcon: $scope.model.hidePasswordIcon,
           });
         });
     };
@@ -523,6 +534,12 @@ angular
       } else {
         $scope.editUserModel.roles.splice(index, 1);
       }
+    };
+
+    // Mask or show the password.
+    $scope.togglePasswordMasking = () => {
+      $scope.editUserModel.passwordFieldType = $scope.editUserModel.passwordFieldType ===
+      'password' ? 'text' : 'password';
     };
 
     // #edit-user-profile is the admin view, which has additional fields.

@@ -73,6 +73,12 @@ const sidebarFilterSelectors = {
   dateAccordionBody: () => $('#date-filter-accordion mat-panel-description'),
   toDate: () => $('#toDateFilter'),
   fromDate: () => $('#fromDateFilter'),
+  formAccordionHeader: () => $('#form-filter-accordion mat-expansion-panel-header'),
+  formAccordionBody: () => $('#form-filter-accordion mat-panel-description'),
+  facilityAccordionHeader: () => $('#place-filter-accordion mat-expansion-panel-header'),
+  facilityAccordionBody: () => $('#place-filter-accordion mat-panel-description'),
+  statusAccordionHeader: () => $('#status-filter-accordion mat-expansion-panel-header'),
+  statusAccordionBody: () => $('#status-filter-accordion mat-panel-description'),
 };
 
 const deleteDialogSelectors = {
@@ -260,8 +266,46 @@ const openSidebarFilterDateAccordion = async () => {
   return (await sidebarFilterSelectors.dateAccordionBody()).waitForDisplayed();
 };
 
+const filterByForm = async (formName) => {
+  await (await sidebarFilterSelectors.formAccordionHeader()).click();
+  await (await sidebarFilterSelectors.formAccordionBody()).waitForDisplayed();
+  const option = sidebarFilterSelectors.formAccordionBody().$(`a*=${formName}`);
+  await (await option).waitForDisplayed();
+  await (await option).waitForClickable();
+  await (await option).click();
+};
+
+const filterByStatus = async (statusOption) => {
+  await (await sidebarFilterSelectors.statusAccordionHeader()).click();
+  await (await sidebarFilterSelectors.statusAccordionBody()).waitForDisplayed();
+  const option = sidebarFilterSelectors.statusAccordionBody().$(`a*=${statusOption}`);
+  await (await option).waitForDisplayed();
+  await (await option).waitForClickable();
+  await (await option).click();
+};
+
+const filterByFacility = async (parentFacility, reportFacility) => {
+  await (await sidebarFilterSelectors.facilityAccordionHeader()).click();
+  await (await sidebarFilterSelectors.facilityAccordionBody()).waitForDisplayed();
+
+  const parent = sidebarFilterSelectors.facilityAccordionBody().$(`a*=${parentFacility}`);
+  await parent.waitForDisplayed();
+  await parent.waitForClickable();
+  await (await parent).click();
+
+  const facility = await sidebarFilterSelectors
+    .facilityAccordionBody()
+    .$('.mm-dropdown-submenu')
+    .$(`a*=${reportFacility}`);
+  await facility.waitForDisplayed();
+  await facility.waitForClickable();
+  const checkbox = facility.previousElement();
+  await (await checkbox).click();
+};
+
 const setSidebarFilterDate = async (fieldPromise, calendarIdx, date) => {
   await (await fieldPromise).waitForDisplayed();
+  await (await fieldPromise).waitForClickable();
   await (await fieldPromise).click();
 
   const dateRangePicker = `.daterangepicker:nth-of-type(${calendarIdx})`;
@@ -447,6 +491,12 @@ const verifyReport = async () => {
   expect(validatedReport.patient).to.be.undefined;
 };
 
+const openFirstReport = async () => {
+  const firstReport = leftPanelSelectors.firstReport();
+  await firstReport.waitForClickable();
+  await openSelectedReport(firstReport);
+};
+
 module.exports = {
   leftPanelSelectors,
   rightPanelSelectors,
@@ -460,6 +510,9 @@ module.exports = {
   openSidebarFilterDateAccordion,
   setSidebarFilterFromDate,
   setSidebarFilterToDate,
+  filterByForm,
+  filterByFacility,
+  filterByStatus,
   setDateInput,
   getFieldValue,
   setBikDateInput,
@@ -490,4 +543,5 @@ module.exports = {
   getReportListLoadingStatus,
   openSelectedReport,
   verifyReport,
+  openFirstReport,
 };

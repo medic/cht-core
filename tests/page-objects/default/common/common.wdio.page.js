@@ -2,11 +2,10 @@ const modalPage = require('./modal.wdio.page');
 const constants = require('@constants');
 const aboutPage = require('@page-objects/default/about/about.wdio.page');
 
-const hamburgerMenu = () => $('#header-dropdown-link');
-const userSettingsMenuOption = () => $('[test-id="user-settings-menu-option"]');
+const hamburgerMenu = () => $('aria/Application menu');
+const closeSideBarMenu = () => $('.panel-header-close');
 const FAST_ACTION_TRIGGER = '.fast-action-trigger';
-const NOT_MOBILE_ONLY = 'mm-fast-action-button:not(.mobile-only)';
-const fastActionFAB = () => $(`${NOT_MOBILE_ONLY} ${FAST_ACTION_TRIGGER} .fast-action-fab-button`);
+const fastActionFAB = () => $$(`${FAST_ACTION_TRIGGER} .fast-action-fab-button`);
 const fastActionFlat = () => $(`${FAST_ACTION_TRIGGER} .fast-action-flat-button`);
 const multipleActions = () => $(`${FAST_ACTION_TRIGGER}[test-id="multiple-actions-menu"]`);
 const FAST_ACTION_LIST_CONTAINER = '.fast-action-content-wrapper';
@@ -14,10 +13,10 @@ const fastActionListContainer = () => $(FAST_ACTION_LIST_CONTAINER);
 const fastActionListCloseButton = () => $(`${FAST_ACTION_LIST_CONTAINER} .panel-header .panel-header-close`);
 const fastActionById = (id) => $(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item[test-id="${id}"]`);
 const fastActionItems = () => $$(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item`);
-const moreOptionsMenu = () => $('.more-options-menu-container>.mat-mdc-menu-trigger');
+const moreOptionsMenu = () => $('aria/Actions menu');
 const hamburgerMenuItemSelector = '#header-dropdown li';
-const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
-const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-refresh`);
+const logoutButton = () => $('aria/Log out');
+const syncButton = () => $('aria/Sync now');
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
 const taskTab = () => $('#tasks-tab');
@@ -26,14 +25,13 @@ const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
 const loaders = () => $$('.container-fluid .loader');
-const syncInProgress = () => $(`${hamburgerMenuItemSelector}.sync-status .in_progress`);
-const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
+const syncSuccess = () => $('aria/All reports synced');
+const syncInProgress = () => $('*="Currently syncing"');
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
 const syncDone = () => $(`${hamburgerMenuItemSelector}.sync-status :is(.required,.success)`);
 const jsonError = async () => (await $('pre')).getText();
-
-const actionBar = () => $('.detail-actions.right-pane');
-const actionBarActions = () => $$('.detail-actions.right-pane span');
+const REPORTS_CONTENT_SELECTOR = '#reports-content';
+const reportsFastActionFAB = () => $(`${REPORTS_CONTENT_SELECTOR} .fast-action-fab-button mat-icon`);
 
 //languages
 const activeSnackbar = () => $('#snackbar.active');
@@ -42,23 +40,27 @@ const snackbar = () => $('#snackbar.active .snackbar-message');
 const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
 const snackbarAction = () => $('#snackbar.active .snackbar-action');
 
-//Hamburguer menu
+// Mobile
+const mobileTopBarTitle = () => $('mm-navigation .ellipsis-title');
+
 //User settings
-const USER_SETTINGS = '#header-dropdown a[routerlink="user"] i.fa-user';
+const USER_SETTINGS = 'aria/User settings';
 const EDIT_PROFILE = '.user .configuration.page i.fa-user';
 // Feedback or Report bug
-const FEEDBACK_MENU = '#header-dropdown i.fa-bug';
+const feedbackMenuOption = () => $('aria/Report bug');
 const FEEDBACK = '#feedback';
 //About menu
-const ABOUT_MENU = '#header-dropdown i.fa-question';
+const ABOUT_MENU = 'aria/About';
 //Configuration App
 const CONFIGURATION_APP_MENU = '#header-dropdown i.fa-cog';
 const ELEMENT_DISPLAY_PAUSE = 500; // 500ms
 
+const configurationAppMenuOption = () => $('aria/App Management');
 const errorLog = () => $(`error-log`);
+const sideBarMenuTitle = () => $('aria/Menu');
 
 const isHamburgerMenuOpen = async () => {
-  return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
+  return await (await $('mat-sidenav-container.mat-drawer-container-has-open')).isExisting();
 };
 
 const openMoreOptionsMenu = async () => {
@@ -80,12 +82,24 @@ const clickFastActionById = async (id) => {
   await (await fastActionById(id)).click();
 };
 
+/**
+ * There are two FABs, one for desktop and another for mobile. This finds the visible FAB.
+ * @returns {Promise<HTMLElement>}
+ */
+const findVisibleFAB = async () => {
+  for (const button of await fastActionFAB()) {
+    if (await button.isDisplayed()) {
+      return button;
+    }
+  }
+};
+
 const clickFastActionFAB = async ({ actionId, waitForList }) => {
   await closeHamburgerMenu();
-  await (await fastActionFAB()).waitForDisplayed();
-  await (await fastActionFAB()).waitForClickable();
+  const fab = await findVisibleFAB();
+  await fab.waitForClickable();
   waitForList = waitForList === undefined ? await (await multipleActions()).isExisting() : waitForList;
-  await (await fastActionFAB()).click();
+  await fab.click();
   if (waitForList) {
     await clickFastActionById(actionId);
   }
@@ -93,9 +107,9 @@ const clickFastActionFAB = async ({ actionId, waitForList }) => {
 
 const getFastActionItemsLabels = async () => {
   await closeHamburgerMenu();
-  await (await fastActionFAB()).waitForDisplayed();
-  await (await fastActionFAB()).waitForClickable();
-  await (await fastActionFAB()).click();
+  const fab = await findVisibleFAB();
+  await fab.waitForClickable();
+  await fab.click();
 
   await browser.pause(ELEMENT_DISPLAY_PAUSE);
   await (await fastActionListContainer()).waitForDisplayed();
@@ -143,6 +157,17 @@ const closeFastActionList = async () => {
   await (await fastActionListCloseButton()).click();
 };
 
+const isReportActionDisplayed = async () => {
+  return await browser.waitUntil(async () => {
+    const exists = await (await reportsFastActionFAB()).isExisting();
+    if (exists) {
+      await (await reportsFastActionFAB()).waitForDisplayed();
+    }
+
+    return exists;
+  });
+};
+
 const isMessagesListPresent = () => {
   return isElementByIdPresent('message-list');
 };
@@ -171,18 +196,30 @@ const isElementByIdPresent = async (elementId) => {
   return await (await $(`#${elementId}`)).isExisting();
 };
 
+const getHeaderTitleOnMobile = async () => {
+  return {
+    name: await mobileTopBarTitle().getText(),
+  };
+};
+
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
     await (await hamburgerMenu()).waitForClickable();
     await (await hamburgerMenu()).click();
   }
+
+  // Adding pause here as we have to wait for sidebar nav menu animation to load
+  await browser.pause(500);
+  await (await sideBarMenuTitle()).waitForDisplayed();
 };
 
 const closeHamburgerMenu = async () => {
   if (await isHamburgerMenuOpen()) {
-    await (await hamburgerMenu()).waitForClickable();
-    await (await hamburgerMenu()).click();
+    await (await closeSideBarMenu()).waitForClickable();
+    await (await closeSideBarMenu()).click();
   }
+
+  await (await sideBarMenuTitle()).waitForDisplayed({ reverse: true });
 };
 
 const navigateToLogoutModal = async () => {
@@ -266,22 +303,12 @@ const waitForLoaderToDisappear = async (element) => {
 
 const hideSnackbar = () => {
   // snackbar appears in the bottom of the page for 5 seconds when certain actions are made
-  // for example when filling a form, or creating a contact
-  // and intercepts all clicks in the actionbar
+  // for example when filling a form, or creating a contact and intercepts all clicks in the FAB and Flat buttons
   // this action is temporary, and will be undone with a refresh
   return browser.execute(() => {
     // eslint-disable-next-line no-undef
     window.jQuery('.snackbar-content').hide();
   });
-};
-
-const toggleActionbar = (hide) => {
-  // the actiobar can cover elements at the bottom of the page, making clicks land in incorrect places
-  return browser.execute((hide) => {
-    // eslint-disable-next-line no-undef
-    const element = window.jQuery('.detail-actions');
-    hide ? element.hide() : element.show();
-  }, hide);
 };
 
 const getVisibleLoaders = async () => {
@@ -303,7 +330,7 @@ const waitForLoaders = async () => {
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
-  await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
+  await (await hamburgerMenu()).waitForDisplayed({ timeout });
 };
 
 const waitForPageLoaded = async () => {
@@ -331,12 +358,9 @@ const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
   await openHamburgerMenu();
 
   if (!await (await syncInProgress()).isExisting()) {
-    console.log('trying to sync');
-    retry < 10 && await browser.saveScreenshot(`allure-results/beforesync-${Date.now()}.png`);
     await (await syncButton()).click();
     await openHamburgerMenu();
-    retry < 10 && await browser.saveScreenshot(`allure-results/afterSync-${Date.now()}.png`);
-  }
+   }
 
   await (await syncInProgress()).waitForDisplayed({ timeout, reverse: true });
   await (await syncDone()).waitForDisplayed({ timeout });
@@ -362,7 +386,7 @@ const sync = async (expectReload, timeout) => {
   let closedModal = false;
   if (expectReload) {
     // it's possible that sync already happened organically, and we already have the reload modal
-    closedModal = await closeReloadModal(false, 0);
+    closedModal = await closeReloadModal();
   }
 
   await syncAndWaitForSuccess(timeout);
@@ -383,8 +407,8 @@ const syncAndWaitForFailure = async () => {
 
 const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
   try {
+    await browser.waitUntil( async () => await modalPage.modal().isDisplayed(), { timeout: 10000, interval: 500 } );
     shouldUpdate ? await modalPage.submit(timeout) : await modalPage.cancel(timeout);
-    await modalPage.checkModalHasClosed();
     shouldUpdate && await waitForAngularLoaded();
     return true;
   } catch (err) {
@@ -394,8 +418,8 @@ const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
 };
 
 const openReportBugAndFetchProperties = async () => {
-  await (await $(FEEDBACK_MENU)).waitForClickable();
-  await (await $(FEEDBACK_MENU)).click();
+  await (await feedbackMenuOption()).waitForClickable();
+  await (await feedbackMenuOption()).click();
   return await modalPage.getModalDetails();
 };
 
@@ -416,8 +440,8 @@ const openAboutMenu = async () => {
 };
 
 const openUserSettings = async () => {
-  await (await userSettingsMenuOption()).waitForClickable();
-  await (await userSettingsMenuOption()).click();
+  await (await $(USER_SETTINGS)).waitForClickable();
+  await (await $(USER_SETTINGS)).click();
 };
 
 const openUserSettingsAndFetchProperties = async () => {
@@ -431,8 +455,8 @@ const openEditProfile = async () => {
 };
 
 const openAppManagement = async () => {
-  await (await $(CONFIGURATION_APP_MENU)).waitForClickable();
-  await (await $(CONFIGURATION_APP_MENU)).click();
+  await (await configurationAppMenuOption()).waitForClickable();
+  await (await configurationAppMenuOption()).click();
   await (await $('.navbar-brand')).waitForDisplayed();
 };
 
@@ -461,14 +485,6 @@ const loadNextInfiniteScrollPage = async () => {
     $('.items-container .content-row:last-child').get(0).scrollIntoView();
   });
   await waitForLoaderToDisappear(await $('.left-pane'));
-};
-
-const getActionBarLabels = async () => {
-  await (await actionBar()).waitForDisplayed();
-  await (await actionBarActions())[0].waitForDisplayed();
-  const items = await actionBarActions();
-  const labels = await items.map(item => item.getText());
-  return labels.filter(label => !!label);
 };
 
 const getErrorLog = async () => {
@@ -518,6 +534,7 @@ module.exports = {
   isTargetMenuItemPresent,
   isTargetAggregatesMenuItemPresent,
   openHamburgerMenu,
+  closeHamburgerMenu,
   openAboutMenu,
   openUserSettingsAndFetchProperties,
   openUserSettings,
@@ -532,7 +549,6 @@ module.exports = {
   snackbarMessage,
   snackbarAction,
   getTextForElements,
-  toggleActionbar,
   jsonError,
   isMenuOptionEnabled,
   isMenuOptionVisible,
@@ -545,6 +561,8 @@ module.exports = {
   loadNextInfiniteScrollPage,
   goToUrl,
   getFastActionItemsLabels,
-  getActionBarLabels,
-  getErrorLog
+  getErrorLog,
+  reportsFastActionFAB,
+  isReportActionDisplayed,
+  getHeaderTitleOnMobile,
 };

@@ -1,29 +1,21 @@
-<div class="filters tab-bar">
-  <div class="inner">
-    <reports-filters
-      *ngIf="!useSidebarFilter && !selectMode"
-      (search)="search()"
-      [disabled]="selectMode && selectedReports?.length">
-    </reports-filters>
-    <mm-navigation></mm-navigation>
-    <mm-search-bar
-      *ngIf="useSidebarFilter && !selectMode"
-      (toggleFilter)="toggleFilter()"
-      (search)="search()"
-      [disabled]="selectMode && selectedReports?.length"
-      [showFilter]="true">
-    </mm-search-bar>
-    <mm-multiselect-bar *ngIf="selectModeAvailable && selectMode && selectedReports?.length"
-      [display]="'mobile'"
-      [selectedCount]="selectedReports?.length"
-      [areAllReportsSelected]="areAllReportsSelected()"
-      (deleteItems)="bulkDeleteReports()"
-      (selectItems)="selectAllReports()"
-      (deselectItems)="deselectAllReports()">
-    </mm-multiselect-bar>
-    <mm-reports-more-menu (exportReports)="exportReports()"></mm-reports-more-menu>
-  </div>
-</div>
+<mm-tool-bar title="Reports">
+  <mm-search-bar
+    *ngIf="!selectMode"
+    (toggleFilter)="toggleFilter()"
+    (search)="search()"
+    [disabled]="selectMode && selectedReports?.length"
+    [showFilter]="true">
+  </mm-search-bar>
+  <mm-multiselect-bar *ngIf="selectModeAvailable && selectMode && selectedReports?.length"
+    [display]="'mobile'"
+    [selectedCount]="selectedReports?.length"
+    [areAllReportsSelected]="areAllReportsSelected()"
+    (deleteItems)="bulkDeleteReports()"
+    (selectItems)="selectAllReports()"
+    (deselectItems)="deselectAllReports()">
+  </mm-multiselect-bar>
+  <mm-reports-more-menu (exportReports)="exportReports()"></mm-reports-more-menu>
+</mm-tool-bar>
 
 <div class="inner">
   <div class="inbox page">
@@ -107,7 +99,6 @@
 
       <mm-reports-sidebar-filter
         class="col-sm-3 sidebar-filter-wrapper"
-        *ngIf="useSidebarFilter"
         (search)="search()"
         [disabled]="selectMode && selectedReports?.length">
       </mm-reports-sidebar-filter>

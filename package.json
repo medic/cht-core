@@ -1,6 +1,6 @@
 {
   "name": "medic",
-  "version": "4.11.0",
+  "version": "4.13.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "repository": {
@@ -32,7 +32,7 @@
     "-- DEV TEST SCRIPTS": "-----------------------------------------------------------------------------------------------",
     "integration-all-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-integration-all",
     "integration-sentinel-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-integration-sentinel",
-    "integration-api": "mocha 'api/tests/integration/**/*.js' -t 10000",
+    "integration-api": "./api/tests/integration/couch-start.sh && mocha --config ./api/tests/integration/.mocharc.js && ./api/tests/integration/couch-stop.sh",
     "integration-all-k3d-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-integration-all-k3d",
     "integration-sentinel-k3d-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-integration-sentinel-k3d",
     "integration-cht-form": "wdio run ./tests/integration/cht-form/wdio.conf.js",
@@ -52,6 +52,7 @@
     "unit-haproxy-healthcheck": "cd haproxy-healthcheck && make test",
     "unit-cht-deploy": "cd scripts/deploy && npm test",
     "wdio-default-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/default-mobile/wdio.conf.js --suite=all",
+    "wdio-visual-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/visual/wdio.conf.js --suite=all",
     "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/default/wdio.conf.js",
     "apdex-test": "wdio run ./tests/performance/apdex-score/wdio.conf.js",
     "-- CI SCRIPTS ": "-----------------------------------------------------------------------------------------------",
@@ -156,6 +157,7 @@
     "rewire": "^7.0.0",
     "rosie": "^2.1.0",
     "sass": "^1.67.0",
+    "sharp": "^0.33.5",
     "shellcheck": "^2.2.0",
     "sinon": "^16.1.0",
     "tail": "^2.2.6",
@@ -171,7 +173,7 @@
   "dependencies": {
     "async": "^3.2.1",
     "bikram-sambat": "^1.7.0",
-    "body-parser": "^1.20.2",
+    "body-parser": "^1.20.3",
     "bowser": "^2.11.0",
     "buffer-shims": "^1.0.0",
     "cht-nootils": "^4.2.0",

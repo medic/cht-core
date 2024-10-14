@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
+import { MatIconModule } from '@angular/material/icon';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { provideMockStore } from '@ngrx/store/testing';
@@ -21,6 +22,7 @@ import { SendMessageComponent } from '@mm-modals/send-message/send-message.compo
 import { MessagesMoreMenuComponent } from '@mm-modules/messages/messages-more-menu.component';
 import { SessionService } from '@mm-services/session.service';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ExportService } from '@mm-services/export.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -71,14 +73,16 @@ describe('Messages Component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule
+          RouterTestingModule,
+          MatIconModule,
         ],
         declarations: [
           MessagesComponent,
           RelativeDatePipe,
           NavigationComponent,
           MessagesMoreMenuComponent,
-          FastActionButtonComponent
+          FastActionButtonComponent,
+          ToolBarComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),

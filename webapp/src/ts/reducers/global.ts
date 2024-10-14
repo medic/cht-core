@@ -1,12 +1,11 @@
 import { createReducer, on } from '@ngrx/store';
+import { Data } from '@angular/router';
 
 import { Actions } from '@mm-actions/global';
+import { VersionNumber } from '@mm-services/browser-detector.service';
 
-const initialState = {
-  actionBar: {
-    left: {},
-    right: {}
-  },
+const initialState: GlobalState = {
+  androidAppVersion: null,
   navigation: {
     cancelCallback: null,
     preventNavigation: null,
@@ -23,20 +22,20 @@ const initialState = {
   },
   facilities: [],
   filters: {}, // Selected criteria to filter data.
-  sidebarFilter: {}, // Component state.
+  sidebarFilter: {},
+  searchBar: { isOpen: false },
+  sidebarMenu: { isOpen: false },
   forms: null,
   lastChangedDoc: false,
   loadingContent: false,
-  loadingSubActionBar: false,
+  processingReportVerification: false,
   replicationStatus: {},
   selectMode: false,
   privacyPolicyAccepted: false,
-  showActionBar: false,
   showContent: false,
   showPrivacyPolicy: false,
   title: null,
   unreadCount: {},
-  version: null,
   snackbarContent: null as any,
   translationsLoaded: false,
   userFacilityIds: [],
@@ -75,18 +74,12 @@ const _globalReducer = createReducer(
   on(Actions.setLoadingContent, (state, { payload: { loadingContent } }) => {
     return { ...state, loadingContent };
   }),
-  on(Actions.setShowActionBar, (state, { payload: { showActionBar } }) => {
-    return { ...state, showActionBar };
-  }),
   on(Actions.setForms, (state, { payload: { forms } }) => {
     return { ...state, forms };
   }),
   on(Actions.clearFilters, (state, { payload: { skip } }) => {
     const newValue = skip && state.filters[skip] ? { [skip]: state.filters[skip] } : {};
     return { ...state, filters: newValue };
-  }),
-  on(Actions.setFilters, (state, { payload: { filters } }) => {
-    return { ...state, filters };
   }),
   on(Actions.setFilter, (state, { payload: { filter } }) => {
     return {
@@ -111,45 +104,6 @@ const _globalReducer = createReducer(
   }),
   on(Actions.setSelectMode, (state, { payload: { selectMode } }) => {
     return { ...state, selectMode };
-  }),
-  on(Actions.setLeftActionBar, (state, { payload: { left } }) => {
-    return {
-      ...state,
-      actionBar: { ...state.actionBar, left }
-    };
-  }),
-  on(Actions.updateLeftActionBar, (state, { payload: { left } }) => {
-    return {
-      ...state,
-      actionBar: {
-        ...state.actionBar,
-        left: { ...state.actionBar?.left, ...left },
-      },
-    };
-  }),
-  on(Actions.setRightActionBar, (state, { payload: { right } }) => {
-    return {
-      ...state,
-      actionBar: { ...state.actionBar, right }
-    };
-  }),
-  on(Actions.setRightActionBarVerified, (state, { payload: { verified } }) => {
-    return {
-      ...state,
-      actionBar: {
-        ...state.actionBar,
-        right: { ...state.actionBar?.right, verified },
-      },
-    };
-  }),
-  on(Actions.updateRightActionBar, (state, { payload: { right } }) => {
-    return {
-      ...state,
-      actionBar: {
-        ...state.actionBar,
-        right: { ...state.actionBar?.right, ...right },
-      },
-    };
   }),
   on(Actions.setEnketoStatus, (state, { payload: { enketoStatus } }) => {
     return {
@@ -195,8 +149,8 @@ const _globalReducer = createReducer(
       },
     };
   }),
-  on(Actions.setLoadingSubActionBar, (state, { payload: { loading } }) => {
-    return { ...state, loadingSubActionBar: loading };
+  on(Actions.setProcessingReportVerification, (state, { payload: { loading } }) => {
+    return { ...state, processingReportVerification: loading };
   }),
   on(Actions.setUnreadCount, (state, { payload: { unreadCount } }) => {
     return { ...state, unreadCount: unreadCount };
@@ -213,8 +167,79 @@ const _globalReducer = createReducer(
   on(Actions.setTrainingCardFormId, (state, { payload: { trainingCardFormId }}) => {
     return { ...state, trainingCardFormId };
   }),
+  on(Actions.setSidebarMenu, (state, { payload: { sidebarMenu }}) => {
+    return { ...state, sidebarMenu: { ...state.sidebarMenu, ...sidebarMenu } };
+  }),
+  on(Actions.setSearchBar, (state, { payload: { searchBar } }) => {
+    return { ...state, searchBar: { ...state.searchBar, ...searchBar } };
+  }),
 );
 
 export const globalReducer = (state, action) => {
   return _globalReducer(state, action);
 };
+
+export interface GlobalState {
+  androidAppVersion: VersionNumber | null;
+  navigation: NavigationState;
+  currentTab: null | string;
+  snapshotData: Data | null;
+  enketoStatus: EnketoStatusState;
+  facilities: Record<string, any>[];
+  filters: Record<string, any>; // Selected criteria to filter data.
+  sidebarFilter: SidebarFilterState;
+  searchBar: SearchBarState;
+  sidebarMenu: SidebarMenuState;
+  forms: null | Record<string, any>[];
+  lastChangedDoc: boolean | Record<string, any>;
+  loadingContent: boolean;
+  processingReportVerification: boolean;
+  replicationStatus: Record<string, any>;
+  selectMode: boolean;
+  privacyPolicyAccepted: boolean;
+  showContent: boolean;
+  showPrivacyPolicy: boolean;
+  title: null | string;
+  unreadCount: Record<string, any>;
+  snackbarContent: SnackbarState;
+  translationsLoaded: boolean;
+  userFacilityIds: null | string[];
+  userContactId: null | string;
+  trainingCardFormId: null | string;
+}
+
+interface SidebarMenuState {
+  isOpen: boolean;
+}
+
+interface SearchBarState {
+  isOpen: boolean;
+}
+
+interface SnackbarState {
+  message?: string;
+  action?: {
+    label: string;
+    onClick?: () => void;
+  };
+}
+
+interface EnketoStatusState {
+  form: boolean;
+  edited: boolean;
+  saving: boolean;
+  error: null|string;
+}
+
+interface NavigationState {
+  cancelCallback: (() => void) | null;
+  preventNavigation: null | boolean;
+  cancelTranslationKey: null | string;
+  recordTelemetry: null | string;
+}
+
+interface SidebarFilterState {
+  isOpen?: boolean;
+  filterCount?: Record<string, number>;
+  defaultFilters?: Record<string, any>;
+}

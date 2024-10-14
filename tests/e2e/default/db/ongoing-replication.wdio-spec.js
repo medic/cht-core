@@ -42,7 +42,7 @@ describe('ongoing replication', function() {
     const isRevertingSettings = utils.revertSettings(true);
     if (isRevertingSettings) {
       await isRevertingSettings;
-      await commonPage.sync(true);
+      await commonPage.sync(true, 30000);
     }
   });
 

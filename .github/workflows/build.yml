@@ -58,8 +58,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-    - name: Couch Start
-      run: ./scripts/ci/couch-start
     - name: Create logs directory
       run: mkdir tests/logs
     - run: npm ci

@@ -6,6 +6,7 @@ const upgradePage = require('@page-objects/upgrade/upgrade.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const adminPage = require('@page-objects/default/admin/admin.wdio.page');
 const aboutPage = require('@page-objects/default/about/about.wdio.page');
+const oldNavigationPage = require('@page-objects/default/old-navigation/old-navigation.wdio.page');
 const constants = require('@constants');
 const version = require('../../../scripts/build/versions');
 const dataFactory = require('@factories/cht/generate');
@@ -20,7 +21,6 @@ describe('Performing an upgrade', () => {
     nbrClinics: 1,
     nbrPersons: 1,
   });
-
 
   const getDdocs = async () => {
     const result = await utils.requestOnMedicDb({
@@ -57,15 +57,14 @@ describe('Performing an upgrade', () => {
     if (testFrontend) {
       // a variety of selectors that we use in e2e tests to interact with webapp
       // are not compatible with older versions of the app.
-      await loginPage.login(docs.user);
+      await loginPage.login({ username: docs.user.username, password: docs.user.password });
       await commonPage.logout();
+      await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
+      return;
     }
 
-    await loginPage.cookieLogin({
-      username: constants.USERNAME,
-      password: constants.PASSWORD,
-      createUser: false
-    });
+    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, loadPage: false });
+    await oldNavigationPage.goToBase();
   });
 
   after(async () => {
@@ -73,7 +72,7 @@ describe('Performing an upgrade', () => {
     await utils.revertDb([/^form:/], true);
   });
 
-  it('should have an upgrade_log after installing', async () => {
+  it('should have an upgrade_log after installing the app, without logs upgrade is aborted', async () => {
     const logs = await getUpgradeLogs();
     expect(logs.length).to.equal(1);
     expect(logs[0]).to.include({
@@ -82,11 +81,7 @@ describe('Performing an upgrade', () => {
     });
   });
 
-  it('should have valid semver after installing', async () => {
-    if (!testFrontend) {
-      return;
-    }
-
+  (testFrontend ? it : xit)('should have valid semver after installing', async () => {
     const deployInfo = await utils.request({ path: '/api/deploy-info' });
     expect(semver.valid(deployInfo.version)).to.be.ok;
   });
@@ -119,16 +114,15 @@ describe('Performing an upgrade', () => {
       state: 'finalized',
     });
 
-    if (!testFrontend) {
-      return;
-    }
-
     await adminPage.logout();
-    await loginPage.login(docs.user);
-    await commonPage.sync(true);
+  });
 
+  (testFrontend ? it : xit)('should display current branch in the about page', async () => {
+    await loginPage.login({ username: docs.user.username, password: docs.user.password });
+    await commonPage.sync(true);
     await browser.refresh();
     await commonPage.waitForPageLoaded();
+
     await commonPage.goToAboutPage();
     await (await aboutPage.aboutCard()).waitForDisplayed();
     const expected = TAG || `${utils.escapeBranchName(BRANCH)} (`;
@@ -137,14 +131,8 @@ describe('Performing an upgrade', () => {
   });
 
   it('should display upgrade page even without upgrade logs', async () => {
-    await loginPage.cookieLogin({
-      username: constants.USERNAME,
-      password: constants.PASSWORD,
-      createUser: false
-    });
-
+    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
     await deleteUpgradeLogs();
-
     await upgradePage.goToUpgradePage();
 
     const currentVersion = await upgradePage.getCurrentVersion();

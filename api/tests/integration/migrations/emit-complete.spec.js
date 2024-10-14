@@ -1,15 +1,8 @@
-const sinon = require('sinon');
-
 const utils = require('./utils');
 
 describe('emit-complete', function() {
   beforeEach(async () => {
     await utils.initDb([]);
-  });
-
-  afterEach(() => {
-    utils.tearDown();
-    sinon.restore();
   });
 
   it('should do nothing when tasks not configured', function() {

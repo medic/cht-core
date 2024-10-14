@@ -128,13 +128,6 @@ export class AndroidApiService {
       return true;
     }
 
-    // If there is an actionbar drop-up menu open, close it
-    const $dropup = $('.actions.dropup.open:visible');
-    if ($dropup.length) {
-      $dropup.removeClass('open');
-      return true;
-    }
-
     if (this.closeDropdownsIn($('body'))) {
       return true;
     }

@@ -90,7 +90,7 @@ show_help_intro() {
     echo "    ./cht-docker-compose.sh"
 }
 
-show_help_existing_stop_and_destroy() {
+show_help() {
     echo ""
     echo "Start existing project"
     echo "    ./cht-docker-compose.sh ENV-FILE.env"
@@ -101,7 +101,7 @@ show_help_existing_stop_and_destroy() {
     echo "Stop and destroy all project data:"
     echo "    ./cht-docker-compose.sh ENV-FILE.env destroy"
     echo ""
-    echo "https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/"
+    echo "https://docs.communityhealthtoolkit.org/hosting/4.x/app-developer/"
     echo ""
 }
 
@@ -248,6 +248,7 @@ get_global_running_container_count(){
 }
 
 get_system_and_docker_info(){
+  projectURL=$(get_local_ip_url "$(get_lan_ip)")
   info='Service Status Container Image'
   services="cht-upgrade-service haproxy healthcheck api sentinel nginx couchdb"
   IFS=' ' read -ra servicesArray <<<"$services"
@@ -261,15 +262,45 @@ get_system_and_docker_info(){
   echo "---DEBUG INFO---"
   echo "Load: $(get_load_avg)"
   echo "CHT Containers: $(get_running_container_count)"
-  echo "Global Containers $(get_global_running_container_count)"
+  echo "Global Containers: $(get_global_running_container_count)"
+  echo "URL: $projectURL"
   echo
   echo $"$info" | column -t
+}
+
+update_nginx_local_ip_tls_cert(){
+  nginxContainerId=$1
+  rm -f /tmp/local-ip-fullchain /tmp/local-ip-key
+  curl  --retry 3 --fail --silent --show-error -o /tmp/local-ip-fullchain https://local-ip.medicmobile.org/fullchain
+  curl  --retry 3 --fail --silent --show-error -o /tmp/local-ip-key https://local-ip.medicmobile.org/key
+  docker cp /tmp/local-ip-fullchain "${nginxContainerId}":/etc/nginx/private/cert.pem  1>/dev/null
+  docker cp /tmp/local-ip-key "${nginxContainerId}":/etc/nginx/private/key.pem  1>/dev/null
+  docker exec "$nginxContainerId" bash -c "nginx -s reload"  2>/dev/null
+}
+
+validate_tls(){
+  url=$1
+  attempt=$2
+  max_retries=3
+  # by default curl validates TLS.  If we get back  60 then TLS isn't valid:
+  # exitcode: https://everything.curl.dev/usingcurl/verbose/writeout.html
+  # 60: https://everything.curl.dev/cmdline/exitcode.html
+  status=$(curl --retry 3 --write-out "%{exitcode}" -qs  "$url" -o /dev/null)
+  if [ "$status" != "0" ]; then
+    if [ "$attempt" -gt $max_retries ]; then
+      echo "false: status is $status"
+    else
+      duration_seconds=$((2 ** attempt))
+      sleep $duration_seconds
+      validate_tls "$url" $((attempt+1))
+    fi
+  fi
 }
 
 if [ "$(docker_not_installed)" ];then
   echo ""
   echo -e "${red}\"docker\" or \"docker compose\" is not installed or could not be found. Please install and try again!${noColor}"
-  show_help_existing_stop_and_destroy
+  show_help
   exit 0
 fi
 
@@ -277,7 +308,7 @@ fi
 if [[ -n "${1-}" ]]; then
   if [[ "$1" == "--help" ]] || [[  "$1" == "-h" ]]; then
     show_help_intro
-    show_help_existing_stop_and_destroy
+    show_help
     exit 0
   elif [[ -f "$1" ]]; then
     projectFile=$1
@@ -286,7 +317,7 @@ if [[ -n "${1-}" ]]; then
   else
     echo ""
     echo -e "${red}File \"$1\" doesnt exist - be sure to include \".env\" at the end!${noColor}"
-    show_help_existing_stop_and_destroy
+    show_help
     exit 0
   fi
 fi
@@ -419,7 +450,7 @@ if [[ -z "$projectName" ]]; then
   else
     echo ""
     echo -e "${red}No projects found, please initialize a new one.${noColor}"
-    show_help_existing_stop_and_destroy
+    show_help
     exit 1
   fi
 fi
@@ -468,9 +499,14 @@ while [[ "$running" != "true" ]]; do
   running=$(is_nginx_running "$nginxContainerId")
 done
 
-docker exec "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"  2>/dev/null
-docker exec "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"  2>/dev/null
-docker exec "$nginxContainerId" bash -c "nginx -s reload"  2>/dev/null
+# output a new line with echo and then update certs every time we run to ensure they're current
+echo;update_nginx_local_ip_tls_cert "$nginxContainerId"
+if [ "$(validate_tls "$projectURL" 0)" ];then
+  echo ""
+  echo -e "${red}Failed to install local-ip TLS certificate. Check for errors above and try again${noColor}"
+  get_system_and_docker_info
+  exit 0
+fi
 
 echo ""
 echo ""
@@ -485,7 +521,7 @@ echo "    Login: ${COUCHDB_USER}"
 echo "    Password: ${COUCHDB_PASSWORD}"
 echo ""
 echo " -------------------------------------------------------- "
-show_help_existing_stop_and_destroy
+show_help
 echo ""
 echo -e "${green} Have a great day!${noColor} "
 echo ""

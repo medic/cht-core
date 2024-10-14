@@ -1,6 +1,7 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, discardPeriodicTasks, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ActivationEnd, Router } from '@angular/router';
+import { Router, ActivationEnd } from '@angular/router';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -31,7 +32,6 @@ import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { RecurringProcessManagerService } from '@mm-services/recurring-process-manager.service';
 import { WealthQuintilesWatcherService } from '@mm-services/wealth-quintiles-watcher.service';
 import { GlobalActions } from '@mm-actions/global';
-import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component';
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
 import { DatabaseConnectionMonitorService } from '@mm-services/database-connection-monitor.service';
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
@@ -47,6 +47,8 @@ import { Selectors } from '@mm-selectors/index';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { FormService } from '@mm-services/form.service';
+import { OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
+import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 
 describe('AppComponent', () => {
@@ -190,14 +192,15 @@ describe('AppComponent', () => {
       .configureTestingModule({
         declarations: [
           AppComponent,
-          ActionbarComponent,
           SnackbarComponent,
+          SidebarMenuComponent,
         ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
         ],
         providers: [
+          provideAnimations(),
           provideMockStore({ selectors: mockedSelectors }),
           { provide: DBSyncService, useValue: dbSyncService },
           { provide: TranslateService, useValue: translateService },
@@ -235,6 +238,12 @@ describe('AppComponent', () => {
           { provide: FormService, useValue: formService },
           { provide: Router, useValue: router  },
         ]
+      })
+      .overrideComponent(SidebarMenuComponent, {
+        set: {
+          selector: 'mm-sidebar-menu',
+          template: '<div>Sidebar Menu Mock</div>',
+        },
       })
       .compileComponents();
     store = TestBed.inject(MockStore);
@@ -304,6 +313,45 @@ describe('AppComponent', () => {
     expect(modalService.show.args[0]).to.have.deep.members([BrowserCompatibilityComponent]);
   });
 
+  it('should set hasOldNav to be false by default', fakeAsync(async () => {
+    sessionService.isAdmin.returns(false);
+    authService.has
+      .withArgs(OLD_NAV_PERMISSION)
+      .resolves(false);
+    await getComponent();
+    await component.ngAfterViewInit();
+    flush();
+    discardPeriodicTasks();
+
+    expect(component.hasOldNav).to.be.false;
+  }));
+
+  it('should set hasOldNav to be true if user has permission and is not admin', fakeAsync(async () => {
+    sessionService.isAdmin.returns(false);
+    authService.has
+      .withArgs(OLD_NAV_PERMISSION)
+      .resolves(true);
+    await getComponent();
+    await component.ngAfterViewInit();
+    flush();
+    discardPeriodicTasks();
+
+    expect(component.hasOldNav).to.be.true;
+  }));
+
+  it('should set hasOldNav to be false if user has permission but is admin', fakeAsync(async () => {
+    sessionService.isAdmin.returns(true);
+    authService.has
+      .withArgs(OLD_NAV_PERMISSION)
+      .resolves(true);
+    await getComponent();
+    await component.ngAfterViewInit();
+    flush();
+    discardPeriodicTasks();
+
+    expect(component.hasOldNav).to.be.false;
+  }));
+
   it('should set isSidebarFilterOpen true when filter state is open', fakeAsync(async () => {
     authService.has.resolves(false);
     await getComponent();
@@ -311,7 +359,8 @@ describe('AppComponent', () => {
 
     store.overrideSelector(Selectors.getSidebarFilter, { isOpen: true });
     store.refreshState();
-    tick();
+    flush();
+    discardPeriodicTasks();
 
     expect(component.isSidebarFilterOpen).to.be.true;
   }));
@@ -341,7 +390,7 @@ describe('AppComponent', () => {
     await component.translationsLoaded;
 
     expect(jsonFormsService.get.callCount).to.equal(1);
-    expect(xmlFormsService.subscribe.callCount).to.equal(2);
+    expect(xmlFormsService.subscribe.callCount).to.equal(1);
 
     expect(xmlFormsService.subscribe.getCall(0).args[0]).to.equal('FormsFilter');
     expect(xmlFormsService.subscribe.getCall(0).args[1]).to.deep.equal({
@@ -367,17 +416,6 @@ describe('AppComponent', () => {
         title: 'form2'
       }
     ]);
-
-    expect(xmlFormsService.subscribe.getCall(1).args[0]).to.equal('AddReportMenu');
-    expect(xmlFormsService.subscribe.getCall(1).args[1]).to.deep.equal({ reportForms: true });
-    expect(xmlFormsService.subscribe.getCall(1).args[2]).to.be.a('Function');
-    xmlFormsService.subscribe.getCall(1).args[2](false, [form2]);
-    expect(component.reportForms).to.have.deep.members([{
-      id: 'form:456',
-      code: '456',
-      icon: 'icon',
-      title: 'form2'
-    }]);
     expect(trainingCardsService.initTrainingCards.calledOnce).to.be.true;
   });
 
@@ -438,7 +476,8 @@ describe('AppComponent', () => {
 
     await getComponent();
     observable.next(true);
-    tick();
+    flush();
+    discardPeriodicTasks();
 
     expect(databaseConnectionMonitorService.listenForDatabaseClosed.callCount).to.equal(1);
     expect(modalService.show.callCount).to.equal(1);
@@ -646,7 +685,8 @@ describe('AppComponent', () => {
       }]);
 
       await getComponent();
-      tick();
+      flush();
+      discardPeriodicTasks();
 
       expect(consoleErrorStub.callCount).to.equal(0);
       expect(analyticsModulesService.get.callCount).to.equal(1);
@@ -664,7 +704,8 @@ describe('AppComponent', () => {
       analyticsModulesService.get.throws({ error: 'Oops' });
 
       await getComponent();
-      tick();
+      flush();
+      discardPeriodicTasks();
 
       expect(consoleErrorStub.callCount).to.equal(1);
       expect(consoleErrorStub.args[0]).to.deep.equal([
@@ -679,7 +720,8 @@ describe('AppComponent', () => {
       chtDatasourceService.isInitialized.throws({ error: 'some error'});
 
       await getComponent();
-      tick();
+      flush();
+      discardPeriodicTasks();
 
       expect(consoleErrorStub.callCount).to.equal(1);
       expect(consoleErrorStub.args[0]).to.deep.equal([

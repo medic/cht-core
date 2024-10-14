@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { fakeAsync, tick, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
 import { Selectors } from '@mm-selectors/index';
@@ -26,6 +27,9 @@ describe('SnackbarComponent', () => {
 
     await TestBed
       .configureTestingModule({
+        imports: [
+          RouterTestingModule,
+        ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
         ],
