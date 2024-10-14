@@ -22,7 +22,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
   constructor(
     private ngZone: NgZone,
     private store: Store,
-    private router: Router,
+    private readonly router: Router,
     private xmlFormsService: XmlFormsService,
     private formService: FormService,
     private geolocationService: GeolocationService,
