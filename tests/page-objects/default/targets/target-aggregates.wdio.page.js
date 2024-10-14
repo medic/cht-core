@@ -1,12 +1,15 @@
 const commonPage = require('@page-objects/default/common/common.wdio.page');
-const AGGREGATE_LIST = '#target-aggregates-list';
-const loadingStatus = () => $(`${AGGREGATE_LIST} .loading-status`);
-const aggregateList = () => $$(`${AGGREGATE_LIST}  ul li.content-row`);
 
+const AGGREGATE_LIST = '#target-aggregates-list';
 const NAVIGATION_LINK = '.mm-navigation-menu li a';
 const CONTENT_DISABLED = '.page .item-content.disabled';
+const TARGET_DETAIL = '.target-detail';
+const AGGREGATE_DETAIL_CONTACT_LIST = '.aggregate-detail li';
+const AGGREGATE_DETAIL_PROGRESS_BAR = '.progress-bar';
+
+const loadingStatus = () => $(`${AGGREGATE_LIST} .loading-status`);
+const aggregateList = () => $$(`${AGGREGATE_LIST}  ul li.content-row`);
 const lineItem = (elementId) => $(`${AGGREGATE_LIST} li[data-record-id=${elementId}]`);
-const getAggregateDetailListElementByIndex = (index) => $$(AGGREGATE_DETAIL_CONTACT_LIST)[index];
 
 const sidebarFilter = {
   filterBtn: () => $('button*=Filter'),
@@ -16,16 +19,12 @@ const sidebarFilter = {
   optionRadioBtn: (optionLabel) => $(`span*=${optionLabel}`).parentElement(),
 };
 
-const TARGET_DETAIL = '.target-detail';
 const targetDetail = {
   title: (titleValue) => $(TARGET_DETAIL).$(`h2=${titleValue}`),
   counter: () => $(`${TARGET_DETAIL} .cell p`),
   place: (value) => $(TARGET_DETAIL).$(`span*=${value}`),
   period: (periodValue) => $('.aggregate-detail .action-header').$(`h3*=${periodValue}`),
 };
-
-const AGGREGATE_DETAIL_CONTACT_LIST = '.aggregate-detail li';
-const AGGREGATE_DETAIL_PROGRESS_BAR = '.progress-bar';
 
 const aggregateDetailContactItem = (contactId) => {
   return $(`${AGGREGATE_DETAIL_CONTACT_LIST}[data-record-id="${contactId}"]`); // a
@@ -75,7 +74,7 @@ const checkContentDisabled = async () => {
 };
 
 const getTargetItem = async (target, period, place) => {
-  const item = lineItem(target.id);
+  const item = await lineItem(target.id);
   return {
     title: await (await item.$('h4')).getText(),
     counter: await (await item.$('.aggregate-status span')).getText(),
@@ -85,7 +84,7 @@ const getTargetItem = async (target, period, place) => {
 };
 
 const openTargetDetails = async (target) => {
-  const item = lineItem(target.id);
+  const item = await lineItem(target.id);
   await item.waitForClickable();
   await item.click();
   await commonPage.waitForLoaders();
@@ -151,7 +150,6 @@ module.exports = {
   getTargetItem,
   openTargetDetails,
   getAggregateDetailListLength,
-  getAggregateDetailListElementByIndex,
   getAggregateDetailContact,
   getAggregateTargetProgressBar,
   getAggregateTargetGoal,

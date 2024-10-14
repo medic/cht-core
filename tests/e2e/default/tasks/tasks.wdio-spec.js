@@ -123,6 +123,8 @@ describe('Tasks tab breadcrumbs', () => {
   });
 
   after(async () => {
+    await utils.deleteUsers([chw]);
+    await utils.revertDb([/^form:/], true);
     await browser.deleteCookies();
     await browser.refresh();
   });

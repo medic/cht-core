@@ -1,14 +1,12 @@
-const taskListSelector = '#tasks-list';
-const taskFormSelector = '#task-report';
-const tasksGroupSelector = '#tasks-group .item-content';
-const formTitleSelector = `${taskFormSelector} h3#form-title`;
-const noSelectedTaskSelector = '.empty-selection';
-const taskSubmitSelector = '.submit';
+const TASK_LIST_SELECTOR = '#tasks-list';
+const TASK_FORM_SELECTOR = '#task-report';
+const TASKS_GROUP_SELECTOR = '#tasks-group .item-content';
+const FORM_TITLE_SELECTOR = `${TASK_FORM_SELECTOR} h3#form-title`;
+const NO_SELECTED_TASK_SELECTOR = '.empty-selection';
+const SUBMIT_TASK_SELECTOR = '.submit';
 
-const tasksList = () => $(taskListSelector);
-
-const getTaskById = (emissionId) => $(`${taskListSelector} li[data-record-id="${emissionId}"`);
-const getTasks = () => $$(`${taskListSelector} li.content-row`);
+const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"`);
+const getTasks = () => $$(`${TASK_LIST_SELECTOR} li.content-row`);
 
 const getTaskInfo = async (taskElement) => {
   const contactName = await (await taskElement.$('h4 span')).getText();
@@ -49,19 +47,10 @@ const getTaskByContactAndForm = async (name, title) => {
   }
 };
 
-const goToTasksTab = async () => {
-  await browser.url('/#/tasks');
-  await (await tasksList()).waitForDisplayed();
-  await browser.waitUntil(async () => (await getTasks()).length, {
-    timeout: 4000,
-    timeoutMsg: 'Timed out waiting for tasks to load'
-  });
-};
-
 const waitForTaskContentLoaded = async (name) => {
-  await (await $(formTitleSelector)).waitForDisplayed();
+  await (await $(FORM_TITLE_SELECTOR)).waitForDisplayed();
   await browser.waitUntil(async () => {
-    const formTitle = await (await $(`${formTitleSelector}`)).getText();
+    const formTitle = await (await $(`${FORM_TITLE_SELECTOR}`)).getText();
     return formTitle === name;
   }, { timeout: 2000 });
 };
@@ -72,19 +61,19 @@ const getOpenTaskElement = async () => {
 };
 
 const waitForTasksGroupLoaded = async () => {
-  await (await $(tasksGroupSelector)).waitForDisplayed();
+  await (await $(TASKS_GROUP_SELECTOR)).waitForDisplayed();
   await browser.waitUntil(async () => {
-    const pageTitle = await (await $(`${tasksGroupSelector} .action-header h3`)).getText();
+    const pageTitle = await (await $(`${TASKS_GROUP_SELECTOR} .action-header h3`)).getText();
     return pageTitle === 'Other household tasks';
   }, { timeout: 2000 });
 };
 
-const getTasksInGroup = () => $$(`${tasksGroupSelector} li`);
-const noSelectedTask = () => $(noSelectedTaskSelector);
+const getTasksInGroup = () => $$(`${TASKS_GROUP_SELECTOR} li`);
+const noSelectedTask = () => $(NO_SELECTED_TASK_SELECTOR);
 
 const openTaskById = async (id, taskType) => {
   await getTaskById(`${id}${taskType}`).click();
-  await $(taskFormSelector).waitForDisplayed();
+  await $(TASK_FORM_SELECTOR).waitForDisplayed();
 };
 
 const scrollToLastTaskItem = async () => {
@@ -96,15 +85,12 @@ const scrollToLastTaskItem = async () => {
 const submitTask = async (taskIndex) => {
   const tasks = await getTasks();
   await (tasks[taskIndex]).click();
-  await (await $(taskSubmitSelector)).waitForDisplayed();
-  await $(taskSubmitSelector).click();
+  await (await $(SUBMIT_TASK_SELECTOR)).waitForDisplayed();
+  await $(SUBMIT_TASK_SELECTOR).click();
 };
 
 module.exports = {
-  tasksList,
   getTasks,
-  goToTasksTab,
-  getTaskById,
   getTaskByContactAndForm,
   waitForTaskContentLoaded,
   getTaskInfo,
