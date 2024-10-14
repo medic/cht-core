@@ -140,7 +140,7 @@ export class SendMessageService {
 
     return Promise
       .all(promises)
-      .then((recipients) => {
+      .then((recipients: { phone: string }[]) => {
         // hydrate() and resolvePhoneNumbers() are promises with multiple values
         recipients = _flattenDeep(recipients);
         // removes any undefined values caused by bad data
