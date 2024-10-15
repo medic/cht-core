@@ -43,17 +43,17 @@ describe('RapidPro SMS Gateway', () => {
 
   before(() => startMockApp());
 
-  after(() => {
-    stopMockApp();
-    utils.revertDb([/^form:/], true);
-  });
-
   beforeEach(() => {
     broadcastsEndpointRequests = [];
     messagesEndpointRequests = [];
   });
 
-  afterEach(() => utils.revertDb([/^form:/], true));
+  after(() => stopMockApp() );
+
+  afterEach(async () => {
+    await utils.revertDb([/^form:/], true);
+    await utils.revertSettings(true);
+  });
 
   describe('Webapp Terminating messages', () => {
     const endpoint = '/api/v2/sms/rapidpro/incoming-messages';
@@ -259,14 +259,8 @@ describe('RapidPro SMS Gateway', () => {
 
     const pregnancyReportWithTasks = pregnancyReportFactory.pregnancy().build({
       tasks: [
-        {
-          messages: [{ to: 'phone1', message: 'message1', uuid: 'uuid1' }],
-          state: 'pending',
-        },
-        {
-          messages: [{ to: 'phone2', message: 'message2', uuid: 'uuid2' }],
-          state: 'sent',
-        },
+        { messages: [{ to: 'phone1', message: 'message1', uuid: 'uuid1' }], state: 'pending' },
+        { messages: [{ to: 'phone2', message: 'message2', uuid: 'uuid2' }], state: 'sent' },
       ],
       scheduled_tasks: [
         {
@@ -299,9 +293,6 @@ describe('RapidPro SMS Gateway', () => {
       };
       await utils.updateSettings(settings, { ignoreReload: true });
     });
-
-    afterEach(() => utils.revertDb([], true));
-
 
     it('should not call RapidPro endpoint when credentials are not set', async () => {
       await utils.saveDoc(pregnancyReportWithTasks);
@@ -588,4 +579,3 @@ describe('RapidPro SMS Gateway', () => {
   }); //End describe 'Webapp originating messages and state updates'
 
 });
-

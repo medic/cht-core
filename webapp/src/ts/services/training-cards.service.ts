@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
+import { first } from 'rxjs/operators';
 
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TrainingCardsComponent } from '@mm-modals/training-cards/training-cards.component';
@@ -17,7 +18,8 @@ export const TRAINING_PREFIX: string = 'training:';
   providedIn: 'root'
 })
 export class TrainingCardsService {
-  private globalActions;
+  private readonly globalActions: GlobalActions;
+  private readonly STORAGE_KEY_LAST_VIEWED_DATE = 'training-cards-last-viewed-date';
 
   constructor(
     private store: Store,
@@ -27,7 +29,7 @@ export class TrainingCardsService {
     private sessionService: SessionService,
     private routeSnapshotService: RouteSnapshotService,
   ) {
-    this.globalActions = new GlobalActions(store);
+    this.globalActions = new GlobalActions(this.store);
   }
 
   private getAvailableTrainingCards(xForms, userCtx) {
@@ -98,11 +100,25 @@ export class TrainingCardsService {
   }
 
   displayTrainingCards() {
+    if (this.hasBeenDisplayed()) {
+      return;
+    }
+
     const routeSnapshot = this.routeSnapshotService.get();
     if (routeSnapshot?.data?.hideTraining) {
       return;
     }
-    this.modalService.show(TrainingCardsComponent, { closeOnNavigation: false });
+
+    this.modalService
+      .show(TrainingCardsComponent, { closeOnNavigation: false })
+      ?.afterOpened()
+      .pipe(first())
+      .subscribe(() => {
+        const key = this.getLocalStorageKey();
+        if (key) {
+          window.localStorage.setItem(key, new Date().toISOString());
+        }
+      });
   }
 
   private async getFirstChronologicalForm(xForms) {
@@ -137,5 +153,33 @@ export class TrainingCardsService {
       throw new Error('Training Cards :: Cannot create document ID, user context does not have the "name" property.');
     }
     return `${TRAINING_PREFIX}${userName}:${uuid()}`;
+  }
+
+  private hasBeenDisplayed() {
+    const key = this.getLocalStorageKey();
+    if (!key) {
+      return false;
+    }
+
+    const dateString = window.localStorage.getItem(key) ?? '';
+    const lastViewedDate = new Date(dateString);
+    if (isNaN(lastViewedDate.getTime())) {
+      return false;
+    }
+
+    lastViewedDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return lastViewedDate >= today;
+  }
+
+  private getLocalStorageKey() {
+    const username = this.sessionService.userCtx()?.name;
+    if (!username) {
+      return;
+    }
+
+    return `${this.STORAGE_KEY_LAST_VIEWED_DATE}-${username}`;
   }
 }

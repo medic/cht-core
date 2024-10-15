@@ -10,7 +10,6 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const privacyPolicyFactory = require('@factories/cht/settings/privacy-policy');
 const privacyPage = require('@page-objects/default/privacy-policy/privacy-policy.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
-const modalPage = require('@page-objects/default/common/modal.wdio.page');
 
 describe('Training Cards', () => {
   const expectedConfirmModalHeader = 'Leave training?';
@@ -18,6 +17,12 @@ describe('Training Cards', () => {
     'If you leave now, you will lose your progress and be prompted again later to complete it.';
 
   const formDocId = 'training:training-cards-text-only';
+
+  const setLastViewedDateInThePast = () => {
+    return browser.execute(function() {
+      this.localStorage.setItem('training-cards-last-viewed-date-user1', new Date('2024-10-05 20:10:05').toISOString());
+    });
+  };
 
   before(async () => {
     const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
@@ -99,9 +104,8 @@ describe('Training Cards', () => {
     expect(await reportsPage.leftPanelSelectors.allReports()).to.be.empty;
   });
 
-  it('should display training after it was canceled and the training doc was updated', async () => {
-    await commonPage.goToMessages();
-    await commonElements.waitForPageLoaded();
+  it('should not display training after it was canceled and the training doc was updated', async () => {
+    await setLastViewedDateInThePast();
     // Unfinished trainings should appear again after reload.
     await browser.refresh();
     await trainingCardsPage.waitForTrainingCards();
@@ -120,25 +124,15 @@ describe('Training Cards', () => {
     const updatedTrainingForm = await utils.getDoc(`form:${formDocId}`);
     expect(updatedTrainingForm.context.duration).to.equal(10);
 
-    await trainingCardsPage.waitForTrainingCards();
-    const context = 'training_cards_text_only';
-    const introCard = await trainingCardsPage.getCardContent(context, 'intro/intro_note_1:label"]');
-    expect(introCard).to.equal(
-      'There have been some changes to icons in your app. The next few screens will show you the difference.'
-    );
+    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
   });
 
   it('should display training after privacy policy', async () => {
     const privacyPolicy = privacyPolicyFactory.privacyPolicy().build();
     await utils.saveDocs([privacyPolicy]);
     await commonPage.goToReports();
-    const confirmMessage = await modalPage.getModalDetails();
-    expect(confirmMessage.header).to.contain(expectedConfirmModalHeader);
-    expect(confirmMessage.body).to.contain(expectedConfirmMessage);
-    
-    await trainingCardsPage.confirmQuitTraining();
-    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
     await commonElements.sync();
+    await setLastViewedDateInThePast();
     await browser.refresh();
 
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
@@ -150,6 +144,7 @@ describe('Training Cards', () => {
   it('should display training after reload and complete training', async () => {
     await commonPage.goToMessages();
     await commonElements.waitForPageLoaded();
+    await setLastViewedDateInThePast();
     // Unfinished trainings should appear again after reload.
     await browser.refresh();
     await trainingCardsPage.waitForTrainingCards();
