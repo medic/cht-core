@@ -57,10 +57,9 @@ describe('Performing an upgrade', () => {
     if (testFrontend) {
       // a variety of selectors that we use in e2e tests to interact with webapp
       // are not compatible with older versions of the app.
-      await loginPage.login({ username: docs.user.username, password: docs.user.password });
-      await commonPage.logout();
-      await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
-      return;
+      await loginPage.login({ username: docs.user.username, password: docs.user.password, loadPage: false });
+      await oldNavigationPage.goToBase();
+      await oldNavigationPage.logout();
     }
 
     await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, loadPage: false });
@@ -72,7 +71,7 @@ describe('Performing an upgrade', () => {
     await utils.revertDb([/^form:/], true);
   });
 
-  it('should have an upgrade_log after installing the app, without logs upgrade is aborted', async () => {
+  it('should have an upgrade_log after installing', async () => {
     const logs = await getUpgradeLogs();
     expect(logs.length).to.equal(1);
     expect(logs[0]).to.include({
@@ -81,7 +80,11 @@ describe('Performing an upgrade', () => {
     });
   });
 
-  (testFrontend ? it : xit)('should have valid semver after installing', async () => {
+  it('should have valid semver after installing', async () => {
+    if (!testFrontend) {
+      return;
+    }
+
     const deployInfo = await utils.request({ path: '/api/deploy-info' });
     expect(semver.valid(deployInfo.version)).to.be.ok;
   });
@@ -114,15 +117,17 @@ describe('Performing an upgrade', () => {
       state: 'finalized',
     });
 
-    await adminPage.logout();
-  });
+    if (!testFrontend) {
+      return;
+    }
 
-  (testFrontend ? it : xit)('should display current branch in the about page', async () => {
-    await loginPage.login({ username: docs.user.username, password: docs.user.password });
-    await commonPage.sync(true);
+    await adminPage.logout();
+    await loginPage.login({ username: docs.user.username, password: docs.user.password, loadPage: false });
+    await oldNavigationPage.goToBase();
+    await oldNavigationPage.sync(true);
+
     await browser.refresh();
     await commonPage.waitForPageLoaded();
-
     await commonPage.goToAboutPage();
     await (await aboutPage.aboutCard()).waitForDisplayed();
     const expected = TAG || `${utils.escapeBranchName(BRANCH)} (`;
@@ -131,8 +136,12 @@ describe('Performing an upgrade', () => {
   });
 
   it('should display upgrade page even without upgrade logs', async () => {
-    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
+    if (testFrontend) {
+      await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
+    }
+
     await deleteUpgradeLogs();
+
     await upgradePage.goToUpgradePage();
 
     const currentVersion = await upgradePage.getCurrentVersion();
