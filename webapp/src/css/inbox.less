@@ -198,10 +198,17 @@ body {
     a .button-label {
       margin-top: 3px;
       position: relative;
-      overflow: hidden;
-      word-wrap: break-word;
       color: @nav-icon-gray;
       font-size: @font-XXS;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      hyphens: auto;
+      white-space: normal;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      line-clamp: 2;
+      overflow: hidden;
       text-overflow: ellipsis;
     }
 
@@ -1292,6 +1299,7 @@ mm-sidebar-menu .mat-sidenav-container {
   mm-panel-header {
     background: @top-header-color;
     height: @sidebar-menu-header-desktop;
+    padding: 0px !important;
 
     .panel-header {
       justify-content: flex-end;
@@ -1303,13 +1311,13 @@ mm-sidebar-menu .mat-sidenav-container {
       font-size: @font-XXL;
       font-weight: bold;
       line-height: @font-XXL;
-      margin-left: 15px;
+      margin-left: -15px;
       color: @text-inverse-color;
       letter-spacing: normal;
     }
 
     .panel-header-close {
-      width: 20px;
+      width: 80px;
       text-align: center;
 
       mat-icon {
@@ -1366,6 +1374,7 @@ mm-sidebar-menu .mat-sidenav-container {
     mat-icon {
       text-align: center;
       margin-right: 15px;
+      margin-left: 10px;
       flex-shrink: 0;
     }
   }
@@ -1402,12 +1411,43 @@ mm-sidebar-menu .mat-sidenav-container {
       height: calc(@sidebar-menu-height - @sidebar-menu-header-mobile);
     }
 
+    mat-icon {
+      margin-left: -6px !important;
+    }
+
     mm-panel-header {
       height: @sidebar-menu-header-mobile;
+
       .panel-header-title {
         font-size: @font-extra-large;
       }
+
+      .panel-header-close {
+        width: 48px !important;
+      }
+
+      .panel-header-title {
+        margin-left: unset;
+      }
     }
+  }
+
+  .app-root:not(.old-nav) .header .tabs a .button-label {
+    /* Keep the desired styles */
+    margin-top: 3px;
+    overflow: hidden;
+    word-wrap: break-word;
+    color: @nav-icon-gray;
+    font-size: @font-XXS;
+    text-overflow: ellipsis;
+
+    /* Unset or override the unwanted properties */
+    display: block;
+    white-space: unset;
+    word-break: unset;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: unset;
+    line-clamp: unset;
   }
 
   .app-root:not(.old-nav) {
@@ -1456,7 +1496,6 @@ mm-sidebar-menu .mat-sidenav-container {
           top: 0;
           font-size: @font-XXS;
           padding-top: 5px;
-          text-overflow: ellipsis;
           margin-top: 0;
         }
 
@@ -1883,4 +1922,3 @@ mm-sidebar-menu .mat-sidenav-container {
     display: none;
   }
 }
-
