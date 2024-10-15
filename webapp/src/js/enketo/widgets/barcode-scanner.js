@@ -28,15 +28,18 @@ class Barcodescannerwidget extends Widget {
       return;
     }
 
-    const barcodeImageElement = await window.CHTCore.BarcodeScanner.initBarcodeScanner(codes => {
-      $(APPEARANCES.input)
-        .val(codes)
+    const barcodeImageElement = await window.CHTCore.BarcodeScanner.initBarcodeScanner(barcodes => {
+      if (!barcodes || !barcodes.length) {
+        return;
+      }
+      $(`${APPEARANCES.input} input[type="text"]`)
+        .val(barcodes[0].rawValue)
         .trigger('change');
     });
 
     $widget.append(
       `<label class="scan-barcode fa fa-qrcode">
-         <input type="file" class="barcode-scanner-file" data-type-xml="binary" accept="image/*"/>
+         <input type="file" name="barcode-file" class="barcode-scanner-file" data-type-xml="binary" accept="image/*"/>
       </label>`
     );
 
