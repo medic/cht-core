@@ -78,31 +78,31 @@ describe('Tasks', () => {
     parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id }},
     reported_date: new Date().getTime(),
   });
-  // const contactWithManyPlaces = personFactory.build({
-  //   parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id } },
-  // });
-  // const userWithManyPlaces = {
-  //   _id: 'org.couchdb.user:offline_many_facilities',
-  //   language: 'en',
-  //   known: true,
-  //   type: 'user-settings',
-  //   roles: [ 'chw' ],
-  //   facility_id: [ healthCenter1._id, healthCenter2._id ],
-  //   contact_id: contactWithManyPlaces._id,
-  //   name: 'offline_many_facilities'
-  // };
-  // const userWithManyPlacesPass = uuid();
+  const contactWithManyPlaces = personFactory.build({
+    parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id } },
+  });
+  const userWithManyPlaces = {
+    _id: 'org.couchdb.user:offline_many_facilities',
+    language: 'en',
+    known: true,
+    type: 'user-settings',
+    roles: [ 'chw' ],
+    facility_id: [ healthCenter1._id, healthCenter2._id ],
+    contact_id: contactWithManyPlaces._id,
+    name: 'offline_many_facilities'
+  };
+  const userWithManyPlacesPass = uuid();
 
   before(async () => {
     await utils.saveDocs([
       ...places.values(), healthCenter2, chwContact, supervisorContact, patient, patient2,
-      // contactWithManyPlaces, userWithManyPlaces,
+      contactWithManyPlaces, userWithManyPlaces,
     ]);
-    // await utils.request({
-    //   path: `/_users/${userWithManyPlaces._id}`,
-    //   method: 'PUT',
-    //   body: { ...userWithManyPlaces, password: userWithManyPlacesPass, type: 'user' },
-    // });
+    await utils.request({
+      path: `/_users/${userWithManyPlaces._id}`,
+      method: 'PUT',
+      body: { ...userWithManyPlaces, password: userWithManyPlacesPass, type: 'user' },
+    });
     await utils.createUsers([ chw, supervisor ]);
     await sentinelUtils.waitForSentinel();
 
@@ -120,45 +120,21 @@ describe('Tasks', () => {
 
   afterEach(async () => {
     await commonPage.logout();
+    await utils.revertSettings(true);
   });
 
   after(async () => {
-    await utils.deleteUsers([chw]);
+    await utils.deleteUsers([chw, supervisor]);
     await utils.revertDb([/^form:/], true);
     await browser.deleteCookies();
     await browser.refresh();
-  });
-
-  it.only('should remove task from list when CHW completes a task successfully', async () => {
-    const settings = await compileTasks('tasks-breadcrumbs-config.js');
-    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
-    
-    await tasksPage.goToTasksTab();
-    let list = await tasksPage.getTasks();
-    expect(list).to.have.length(3);
-    await tasksPage.submitTask(1);
-    await commonPage.sync(true);
-    list = await tasksPage.getTasks();
-    expect(list).to.have.length(2);
-  });
-
-  // WIP
-  it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
-    const settings = await compileTasks('tasks-breadcrumbs-config.js');
-    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
-    
-    await tasksPage.goToTasksTab();
-    const list = await tasksPage.getTasks();
-    expect(list).to.have.length(3);
-    await tasksPage.submitFirstTask();
-    // validate new task is created = taskList length should still be 3
   });
 
   it('should load multiple pages of tasks on infinite scrolling', async () => {
     const settings = await compileTasks('tasks-multiple-config.js');
     await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
 
-    await tasksPage.goToTasksTab();
+    await commonPage.goToTasks();
     const list = await tasksPage.getTasks();
     const infos = await tasksPage.getTasksListInfos(list);
     expect(infos).to.have.length(201);
@@ -193,8 +169,32 @@ describe('Tasks', () => {
     expect(elementText).to.contain('No more tasks');
   });
 
-  it('Should show error message for bad config', async () => {
+  it('should remove task from list when CHW completes a task successfully', async () => {
+    const settings = await compileTasks('tasks-breadcrumbs-config.js');
+    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
+    
+    await commonPage.goToTasks();
+    let list = await tasksPage.getTasks();
+    expect(list).to.have.length(3);
+    await tasksPage.submitTask(1);
+    await commonPage.sync(true);
+    list = await tasksPage.getTasks();
+    expect(list).to.have.length(2);
+  });
 
+  // WIP
+  it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
+    const settings = await compileTasks('tasks-breadcrumbs-config.js');
+    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
+    
+    await commonPage.goToTasks();
+    const list = await tasksPage.getTasks();
+    expect(list).to.have.length(2);
+    await tasksPage.submitTask(1);
+    // validate new task is created = taskList length should still be 2
+  });
+
+  it('Should show error message for bad config', async () => {
     const settings = await compileTasks('tasks-error-config.js');
     await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
     await commonPage.goToTasks();
