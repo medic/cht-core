@@ -45,12 +45,6 @@ describe('Training Cards', () => {
     await commonElements.waitForPageLoaded();
   });
 
-  beforeEach(async () => {
-    await setLastViewedDateInThePast();
-    // Unfinished trainings should appear again after reload.
-    await browser.refresh();
-  });
-
   it('should cancel training and not save it as completed', async () => {
     await trainingCardsPage.waitForTrainingCards();
 
@@ -66,6 +60,7 @@ describe('Training Cards', () => {
   });
 
   it('should display confirm message before navigating to different page', async () => {
+    await commonPage.goToBase();
     await trainingCardsPage.waitForTrainingCards();
 
     await commonPage.goToPeople();
@@ -73,18 +68,20 @@ describe('Training Cards', () => {
     const confirmMessage = await modalPage.getModalDetails();
     expect(confirmMessage.header).to.contain(expectedConfirmModalHeader);
     expect(confirmMessage.body).to.contain(expectedConfirmMessage);
-    expect(await browser.getUrl()).to.contain('/reports');
+    expect(await browser.getUrl()).to.contain('/messages');
 
     await trainingCardsPage.confirmQuitTraining();
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
     expect(await browser.getUrl()).to.contain('/contacts');
 
     await commonPage.goToReports();
-    await commonElements.waitForPageLoaded();
     expect(await reportsPage.leftPanelSelectors.allReports()).to.be.empty;
   });
 
   it('should display confirm message when browser back button is clicked', async () => {
+    await commonPage.goToBase();
+    await trainingCardsPage.waitForTrainingCards();
+    await commonPage.goToPeople();
     await trainingCardsPage.waitForTrainingCards();
 
     await browser.back();
@@ -92,7 +89,7 @@ describe('Training Cards', () => {
     const confirmMessage = await modalPage.getModalDetails();
     expect(confirmMessage.header).to.contain(expectedConfirmModalHeader);
     expect(confirmMessage.body).to.contain(expectedConfirmMessage);
-    expect(await browser.getUrl()).to.contain('/reports');
+    expect(await browser.getUrl()).to.contain('/messages');
 
     await trainingCardsPage.confirmQuitTraining();
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
@@ -104,6 +101,9 @@ describe('Training Cards', () => {
   });
 
   it('should not display training after it was canceled and the training doc was updated', async () => {
+    await setLastViewedDateInThePast();
+    // Unfinished trainings should appear again after reload.
+    await browser.refresh();
     await trainingCardsPage.waitForTrainingCards();
 
     const confirmMessage = await trainingCardsPage.quitTraining();
@@ -124,10 +124,6 @@ describe('Training Cards', () => {
   });
 
   it('should display training after privacy policy', async () => {
-    await trainingCardsPage.quitTraining();
-    await trainingCardsPage.confirmQuitTraining();
-    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
-
     const privacyPolicy = privacyPolicyFactory.privacyPolicy().build();
     await utils.saveDocs([privacyPolicy]);
     await commonPage.goToReports();
