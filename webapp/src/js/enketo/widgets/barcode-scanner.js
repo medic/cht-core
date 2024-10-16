@@ -17,35 +17,34 @@ class Barcodescannerwidget extends Widget {
     return APPEARANCES.widget;
   }
 
-  _init() {
+  async _init() {
     const $widget = $(this.element);
 
-    if (!window.CHTCore.BarcodeScanner.isEnabled()) {
+    const canScanBarcodes = await window.CHTCore.BarcodeScanner.canScanBarcodes();
+    if (!canScanBarcodes) {
       window.CHTCore.Translate
         .get('barcode_scanner.message.disable')
         .then(label => $widget.append(`<label>${label}</label>`));
       return;
     }
 
-    window.CHTCore.Translate
-      .get('barcode_scanner.label.scan')
-      .then(label => {
-        $widget.append(
-          `<div class="barcode-scanner-actions"><a class="btn btn-primary scan-barcode">${label}</a></div>`
-        );
+    const barcodeImageElement = await window.CHTCore.BarcodeScanner.initBarcodeScanner(codes => {
+      $(APPEARANCES.input)
+        .val(codes)
+        .trigger('change');
+    });
 
-        $widget.on('click', '.btn.scan-barcode', () => this.scanBarcode($widget));
-      });
-  }
+    $widget.append(
+      `<label class="scan-barcode fa fa-qrcode">
+         <input type="file" class="barcode-scanner-file" data-type-xml="binary" accept="image/*"/>
+      </label>`
+    );
 
-  scanBarcode() {
-    window.CHTCore.BarcodeScanner
-      .scanBarcode()
-      .then(code => {
-        $(APPEARANCES.input)
-          .val(code)
-          .trigger('change');
-      });
+    $widget.on(
+      'change',
+      '.barcode-scanner-file',
+      event => window.CHTCore.BarcodeScanner.processBarcodeFile(event.target, barcodeImageElement)
+    );
   }
 }
 
