@@ -197,8 +197,7 @@ describe('Muting', () => {
 
   describe('for an offline user', () => {
     const updateClientSideMutingSettings = async (settings) => {
-      await utils.updateSettings(settings);
-      await commonPage.sync();
+      await utils.updateSettings(settings, { sync: true, refresh: true, ignoreReload: true });
     };
 
     const unmuteContacts = () => {
