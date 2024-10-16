@@ -63,6 +63,25 @@ module.exports = {
   },
 
   /**
+   * Refreshes the rules emissions for all provided contacts
+   * Writes target document if changed
+   *
+   * @param {Object} provider A data provider
+   * @param {string[]} contactIds An array of contact ids. If undefined, refreshes emissions for all contacts
+   * @returns {Promise<>}
+   */
+  refreshEmissionsFor: (provider, contactIds) => {
+    if (!rulesEmitter.isEnabled()) {
+      return disabledResponse();
+    }
+
+    return enqueue(async () => {
+      const calculationTimestamp = Date.now();
+      await refreshRulesEmissionForContacts(provider, calculationTimestamp, contactIds);
+    });
+  },
+
+  /**
    * Refreshes the rules emissions for all contacts
    * Fetches all tasks in non-terminal state owned by the contacts
    * Updates the temporal states of the task documents
@@ -140,18 +159,10 @@ module.exports = {
       return disabledResponse();
     }
 
-    const calculationTimestamp = Date.now();
-    const targetEmissionFilter = filterInterval && (emission => {
-      // 4th parameter of isBetween represents inclusivity. By default or using ( is exclusive, [ is inclusive
-      return moment(emission.date).isBetween(filterInterval.start, filterInterval.end, null, '[]');
-    });
-
-    return enqueue(() => {
-      return refreshRulesEmissionForContacts(provider, calculationTimestamp)
-        .then(() => {
-          const targets = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);
-          return storeTargetsDoc(provider, targets, filterInterval).then(() => targets);
-        });
+    return enqueue(async () => {
+      await refreshRulesEmissionForContacts(provider, Date.now());
+      const aggregate = await rulesStateStore.getTargetAggregates(filterInterval);
+      return aggregate.targets;
     });
   },
 
@@ -172,11 +183,13 @@ module.exports = {
       subjectIds = [subjectIds];
     }
 
+    subjectIds = [...new Set(subjectIds)];
+
     // this function accepts subject ids, but rulesStateStore accepts a contact id, so a conversion is required
-    return enqueue(() => {
-      return provider
-        .contactsBySubjectId(subjectIds)
-        .then(contactIds => rulesStateStore.markDirty(contactIds));
+    return enqueue(async () => {
+      const contactIds = await provider.contactsBySubjectId(subjectIds);
+      await rulesStateStore.markDirty(contactIds);
+      await refreshRulesEmissionForContacts(provider, Date.now(), contactIds);
     });
   },
 };
@@ -217,14 +230,18 @@ const disabledResponse = () => {
   return p;
 };
 
+const storeTargetEmissions = async (provider, updatedContactIds, targetEmissions) => {
+  await rulesStateStore.storeTargetEmissions(updatedContactIds, targetEmissions);
+  const { aggregate, isUpdated } = await rulesStateStore.aggregateStoredTargetEmissions();
+  await storeTargetsDoc(provider, aggregate, isUpdated);
+};
+
 const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contactIds) => {
-  const refreshAndSave = (freshData, updatedContactIds) => (
-    refreshRulesEmissions(freshData, calculationTimestamp, wireupOptions)
-      .then(refreshed => Promise.all([
-        rulesStateStore.storeTargetEmissions(updatedContactIds, refreshed.targetEmissions),
-        provider.commitTaskDocs(refreshed.updatedTaskDocs),
-      ]))
-  );
+  const refreshAndSave = async (freshData, updatedContactIds) => {
+    const refreshed = await refreshRulesEmissions(freshData, calculationTimestamp, wireupOptions);
+    await provider.commitTaskDocs(refreshed.updatedTaskDocs);
+    await storeTargetEmissions(provider, updatedContactIds, refreshed.targetEmissions);
+  };
 
   const refreshForAllContacts = (calculationTimestamp) => (
     provider.allTaskData(rulesStateStore.currentUserSettings())
@@ -272,27 +289,28 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
   });
 };
 
-const storeTargetsDoc = (provider, targets, filterInterval, force = false) => {
-  const targetDocTag = filterInterval ? moment(filterInterval.end).format('YYYY-MM') : 'latest';
+const storeTargetsDoc = (provider, aggregate, updatedTargets) => {
+  const targetDocTag = aggregate.filterInterval ? moment(aggregate.filterInterval.end).format('YYYY-MM') : 'latest';
   const minifyTarget = target => ({ id: target.id, value: target.value });
+  const userContext = {
+    userContactDoc: rulesStateStore.currentUserContact(),
+    userSettingsDoc: rulesStateStore.currentUserSettings(),
+  };
 
   return provider.commitTargetDoc(
-    targets.map(minifyTarget),
-    rulesStateStore.currentUserContact(),
-    rulesStateStore.currentUserSettings(),
+    aggregate.targets.map(minifyTarget),
     targetDocTag,
-    force
+    userContext,
+    updatedTargets
   );
 };
 
-// Because we only save the `target` document once per day (when we calculate targets for the first time),
-// we're losing all updates to targets that happened in the last day of the reporting period.
 // This function takes the last saved state (which may be stale) and generates the targets doc for the corresponding
 // reporting interval (that includes the date when the state was calculated).
 // We don't recalculate the state prior to this because we support targets that count events infinitely to emit `now`,
 // which means that they would all be excluded from the emission filter (being outside the past reporting interval).
 // https://github.com/medic/cht-core/issues/6209
-const handleIntervalTurnover = (provider, { monthStartDate }) => {
+const handleIntervalTurnover = async (provider, { monthStartDate }) => {
   if (!rulesStateStore.isLoaded() || !wireupOptions.enableTargets) {
     return Promise.resolve();
   }
@@ -309,11 +327,6 @@ const handleIntervalTurnover = (provider, { monthStartDate }) => {
   }
 
   const filterInterval = calendarInterval.getInterval(monthStartDate, stateCalculatedAt);
-  const targetEmissionFilter = (emission => {
-    // 4th parameter of isBetween represents inclusivity. By default or using ( is exclusive, [ is inclusive
-    return moment(emission.date).isBetween(filterInterval.start, filterInterval.end, null, '[]');
-  });
-
-  const targets = rulesStateStore.aggregateStoredTargetEmissions(targetEmissionFilter);
-  return storeTargetsDoc(provider, targets, filterInterval, true);
+  const aggregate = await rulesStateStore.getTargetAggregates(filterInterval);
+  return storeTargetsDoc(provider, aggregate, true);
 };
