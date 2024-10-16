@@ -27,6 +27,9 @@ interface DebounceActive {
     active?: boolean;
     debounceRef?: any;
     performance?: any;
+    params?:any;
+    promise?:Promise<any>;
+    resolve?:any;
   };
 }
 
@@ -49,7 +52,10 @@ export class RulesEngineCoreFactoryService {
 export class RulesEngineService implements OnDestroy {
   private rulesEngineCore;
   private readonly MAX_LINEAGE_DEPTH = 50;
-  private readonly ENSURE_FRESHNESS_SECS = 120;
+  private readonly ENSURE_FRESHNESS_MILLIS = 120 * 1000;
+  private readonly DEBOUNCE_CHANGE_MILLIS = 1000;
+  private readonly CHANGE_WATCHER_KEY = 'mark-contacts-dirty';
+  private readonly FRESHNESS_KEY = 'freshness';
   private subscriptions: Subscription = new Subscription();
   private initialized;
   private uhcMonthStartDate;
@@ -87,87 +93,71 @@ export class RulesEngineService implements OnDestroy {
     return this.ngZone.runOutsideAngular(() => this._initialize());
   }
 
-  private _initialize() {
-    return Promise
-      .all([
-        this.authService.has('can_view_tasks'),
-        this.authService.has('can_view_analytics')
-      ])
-      .then(([canViewTasks, canViewTargets]) => {
-        const hasPermission = canViewTargets || canViewTasks;
-        if (!hasPermission || this.sessionService.isOnlineOnly()) {
-          return false;
-        }
+  private async _initialize() {
+    const canViewTasks = await this.authService.has('can_view_tasks');
+    const canViewTargets = await this.authService.has('can_view_analytics');
 
-        return Promise
-          .all([
-            this.settingsService.get(),
-            this.userContactService.get(),
-            this.userSettingsService.get(),
-            this.chtDatasourceService.get()
-          ])
-          .then(([settingsDoc, userContactDoc, userSettingsDoc, chtScriptApi]) => {
-            const rulesEngineContext = this.getRulesEngineContext(
-              settingsDoc,
-              userContactDoc,
-              userSettingsDoc,
-              canViewTasks,
-              canViewTargets,
-              chtScriptApi
-            );
-            const rulesSettings = this.getRulesSettings(rulesEngineContext);
-            const trackPerformance = this.performanceService.track();
+    const hasPermissions = canViewTargets || canViewTasks;
+    if (!hasPermissions || this.sessionService.isOnlineOnly()) {
+      return false;
+    }
 
-            return this.rulesEngineCore
-              .initialize(rulesSettings)
-              .then(() => {
-                const isEnabled = this.rulesEngineCore.isEnabled();
+    const [settingsDoc, userContactDoc, userSettingsDoc, chtScriptApi] =
+      await Promise.all([
+        this.settingsService.get(),
+        this.userContactService.get(),
+        this.userSettingsService.get(),
+        this.chtDatasourceService.get()
+      ]);
 
-                if (isEnabled) {
-                  this.assignMonthStartDate(settingsDoc);
-                  this.monitorChanges(rulesEngineContext);
+    const rulesEngineContext = this.getRulesEngineContext(
+      settingsDoc,
+      userContactDoc,
+      userSettingsDoc,
+      canViewTasks,
+      canViewTargets,
+      chtScriptApi
+    );
 
-                  const tasksDebounceRef = _debounce(() => {
-                    this.debounceActive.tasks.active = false;
-                    this.fetchTaskDocsForAllContacts();
-                  }, this.ENSURE_FRESHNESS_SECS * 1000);
+    const rulesSettings = this.getRulesSettings(rulesEngineContext);
+    const trackPerformance = this.performanceService.track();
+    const trackName = { name: [ 'rules-engine', 'initialize' ].join(':') };
 
-                  this.debounceActive.tasks = {
-                    active: true,
-                    performance: {
-                      name: [ 'rules-engine', 'ensureTaskFreshness', 'cancel' ],
-                      track: this.performanceService.track()
-                    },
-                    debounceRef: tasksDebounceRef
-                  };
-                  this.debounceActive.tasks.debounceRef();
+    await this.rulesEngineCore.initialize(rulesSettings);
+    const isEnabled = this.rulesEngineCore.isEnabled();
 
-                  const targetsDebounceRef = _debounce(() => {
-                    this.debounceActive.targets.active = false;
-                    this.fetchTargets();
-                  }, this.ENSURE_FRESHNESS_SECS * 1000);
+    if (!isEnabled) {
+      trackPerformance?.stop(trackName);
+      return false;
+    }
 
-                  this.debounceActive.targets = {
-                    active: true,
-                    performance: {
-                      name: [ 'rules-engine', 'ensureTargetFreshness', 'cancel' ],
-                      track: this.performanceService.track()
-                    },
-                    debounceRef: targetsDebounceRef
-                  };
-                  this.debounceActive.targets.debounceRef();
-                }
+    this.assignMonthStartDate(settingsDoc);
+    this.monitorChanges(rulesEngineContext);
 
-                trackPerformance?.stop({ name: [ 'rules-engine', 'initialize' ].join(':') });
-              });
-          });
-      });
+    const rulesDebounceRef = _debounce(() => {
+      this.debounceActive[this.FRESHNESS_KEY].active = false;
+      this.refreshEmissions();
+    }, this.ENSURE_FRESHNESS_MILLIS);
+
+    this.debounceActive[this.FRESHNESS_KEY] = {
+      active: true,
+      performance: {
+        name: [ 'rules-engine', 'ensureFreshness', 'cancel' ],
+        track: this.performanceService.track()
+      },
+      debounceRef: rulesDebounceRef
+    };
+    this.debounceActive[this.FRESHNESS_KEY].debounceRef();
+
+    trackPerformance?.stop(trackName);
+
+    return true;
   }
 
   private cancelDebounce(entity) {
     const debounceInfo = this.debounceActive[entity];
 
-    if (!debounceInfo || !debounceInfo.debounceRef) {
+    if (!debounceInfo?.debounceRef || !debounceInfo?.active) {
       return;
     }
 
@@ -177,6 +167,14 @@ export class RulesEngineService implements OnDestroy {
 
     debounceInfo.debounceRef.cancel();
     debounceInfo.active = false;
+  }
+
+  private waitForDebounce(entity):Promise<any> | undefined {
+    if (this.debounceActive[entity]?.active && this.debounceActive[entity]?.promise) {
+      return this.debounceActive[entity].promise;
+    }
+
+    return Promise.resolve();
   }
 
   private getRulesEngineContext(settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets, chtScriptApi){
@@ -194,7 +192,7 @@ export class RulesEngineService implements OnDestroy {
     const settingsTasks = rulesEngineContext?.settingsDoc?.tasks || {};
     const filterTargetByContext = (target) => target.context ?
       !!this.parseProvider.parse(target.context)({ user: rulesEngineContext.userContactDoc }) : true;
-    const targets = settingsTasks.targets && settingsTasks.targets.items || [];
+    const targets = settingsTasks?.targets?.items || [];
 
     return {
       rules: settingsTasks.rules,
@@ -210,27 +208,61 @@ export class RulesEngineService implements OnDestroy {
     };
   }
 
-  private monitorChanges(rulesEngineContext) {
-    const isReport = doc => doc.type === 'data_record' && !!doc.form;
+  private isReport(doc) {
+    return doc.type === 'data_record' && !!doc.form;
+  }
 
-    const dirtyContactsSubscription = this.changesService.subscribe({
-      key: 'mark-contacts-dirty',
-      filter: change => !!change.doc && (this.contactTypesService.includes(change.doc) || isReport(change.doc)),
-      callback: change => {
-        const subjectIds = isReport(change.doc) ? RegistrationUtils.getSubjectId(change.doc) : change.id;
-        const trackPerformance = this.performanceService.track();
+  private dirtyContactCallback(change) {
+    const subjectIds = [this.isReport(change.doc) ? RegistrationUtils.getSubjectId(change.doc) : change.id];
 
-        return this.rulesEngineCore
-          .updateEmissionsFor(subjectIds)
-          .then((result) => {
-            this.observable.next(subjectIds);
-            trackPerformance?.stop({ name: [ 'rules-engine', 'update-emissions' ].join(':') });
-            return result;
-          });
+    if (this.debounceActive[this.CHANGE_WATCHER_KEY]?.active) {
+      const oldSubjectIds = this.debounceActive[this.CHANGE_WATCHER_KEY].params;
+      if (oldSubjectIds) {
+        subjectIds.push(...oldSubjectIds);
       }
+
+      this.debounceActive[this.CHANGE_WATCHER_KEY].params = subjectIds;
+      this.debounceActive[this.CHANGE_WATCHER_KEY].debounceRef();
+      return;
+    }
+
+    const trackPerformance = this.performanceService.track();
+    let resolve;
+    const promise = new Promise(r => resolve = r);
+
+    const debounceRef = _debounce(async () => {
+      this.debounceActive[this.CHANGE_WATCHER_KEY].active = false;
+      this.debounceActive[this.CHANGE_WATCHER_KEY].resolve();
+
+      await this.rulesEngineCore.updateEmissionsFor(this.debounceActive[this.CHANGE_WATCHER_KEY].params);
+      this.observable.next(this.debounceActive[this.CHANGE_WATCHER_KEY].params);
+      trackPerformance?.stop({ name: [ 'rules-engine', 'update-emissions' ].join(':') });
+    }, this.DEBOUNCE_CHANGE_MILLIS);
+
+    this.debounceActive[this.CHANGE_WATCHER_KEY] = {
+      active: true,
+      promise: promise,
+      resolve: resolve,
+      performance: {
+        name: [ 'rules-engine', 'update-emissions', 'cancel' ],
+        track: this.performanceService.track()
+      },
+      debounceRef: debounceRef,
+      params: subjectIds,
+    };
+    this.debounceActive[this.CHANGE_WATCHER_KEY].debounceRef();
+  }
+
+  private monitorContactChanges() {
+    const dirtyContactsSubscription = this.changesService.subscribe({
+      key: this.CHANGE_WATCHER_KEY,
+      filter: change => !!change.doc && (this.contactTypesService.includes(change.doc) || this.isReport(change.doc)),
+      callback: change => this.dirtyContactCallback(change)
     });
     this.subscriptions.add(dirtyContactsSubscription);
+  }
 
+  private monitorConfigChanges(rulesEngineContext) {
     const userLineage: any[] = [];
     for (
       let current = rulesEngineContext.userContactDoc;
@@ -260,6 +292,11 @@ export class RulesEngineService implements OnDestroy {
     this.subscriptions.add(rulesUpdateSubscription);
   }
 
+  private monitorChanges(rulesEngineContext) {
+    this.monitorContactChanges();
+    this.monitorConfigChanges(rulesEngineContext);
+  }
+
   private rulesConfigChange(rulesEngineContext) {
     const rulesSettings = this.getRulesSettings(rulesEngineContext);
     this.rulesEngineCore.rulesConfigChange(rulesSettings);
@@ -287,7 +324,7 @@ export class RulesEngineService implements OnDestroy {
     return this.rulesEngineCore.updateEmissionsFor(_uniq(contactsWithUpdatedTasks));
   }
 
-  private hydrateTaskDocs(taskDocs: { emission?: any; owner: string }[] = []) {
+  private hydrateTaskDocs(taskDocs: { _id: string; emission?: any; owner: string }[] = []) {
     taskDocs.forEach(taskDoc => {
       const { emission } = taskDoc;
       if (!emission) {
@@ -310,73 +347,98 @@ export class RulesEngineService implements OnDestroy {
   }
 
   isEnabled() {
-    return this.initialized.then(this.rulesEngineCore.isEnabled);
+    return this.initialized;
+  }
+
+  private refreshEmissions() {
+    return this.ngZone.runOutsideAngular(() => this._refreshEmissions());
+  }
+
+  private async _refreshEmissions() {
+    const trackName = [ 'rules-engine', 'emissions', 'all-contacts' ];
+    let trackPerformanceQueueing;
+    let trackPerformanceRunning;
+
+    await this.initialized;
+    this.telemetryService.record(
+      'rules-engine:emissions:dirty-contacts',
+      this.rulesEngineCore.getDirtyContacts().length
+    );
+    this.cancelDebounce(this.FRESHNESS_KEY);
+
+    await this.rulesEngineCore
+      .refreshEmissionsFor()
+      .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
+      .on('running', () => {
+        trackPerformanceRunning = this.performanceService.track();
+        trackPerformanceQueueing?.stop({ name: [ ...trackName, 'queued' ].join(':') });
+      });
+
+    if (!trackPerformanceRunning) {
+      trackPerformanceRunning = this.performanceService.track();
+    }
+    trackPerformanceRunning.stop({ name: trackName.join(':') });
   }
 
   fetchTaskDocsForAllContacts() {
     return this.ngZone.runOutsideAngular(() => this._fetchTaskDocsForAllContacts());
   }
 
-  private _fetchTaskDocsForAllContacts() {
+  private async _fetchTaskDocsForAllContacts() {
     const trackName = [ 'rules-engine', 'tasks', 'all-contacts' ];
     let trackPerformanceQueueing;
     let trackPerformanceRunning;
 
-    return this.initialized
-      .then(() => {
-        this.telemetryService.record(
-          'rules-engine:tasks:dirty-contacts',
-          this.rulesEngineCore.getDirtyContacts().length
-        );
-        this.cancelDebounce('tasks');
-        return this.rulesEngineCore
-          .fetchTasksFor()
-          .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
-          .on('running', () => {
-            trackPerformanceRunning = this.performanceService.track();
-            trackPerformanceQueueing?.stop({ name: [ ...trackName, 'queued' ].join(':') });
-          });
-      })
-      .then(taskDocs => {
-        if (!trackPerformanceRunning) {
-          trackPerformanceRunning = this.performanceService.track();
-        }
-        trackPerformanceRunning.stop({ name: trackName.join(':') });
-        return this.hydrateTaskDocs(taskDocs);
+    await this.initialized;
+    this.telemetryService.record(
+      'rules-engine:tasks:dirty-contacts',
+      this.rulesEngineCore.getDirtyContacts().length
+    );
+    this.cancelDebounce(this.FRESHNESS_KEY);
+    await this.waitForDebounce(this.CHANGE_WATCHER_KEY);
+    const taskDocs = await this.rulesEngineCore
+      .fetchTasksFor()
+      .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
+      .on('running', () => {
+        trackPerformanceRunning = this.performanceService.track();
+        trackPerformanceQueueing?.stop({ name: [ ...trackName, 'queued' ].join(':') });
       });
+
+    if (!trackPerformanceRunning) {
+      trackPerformanceRunning = this.performanceService.track();
+    }
+    trackPerformanceRunning.stop({ name: trackName.join(':') });
+    return this.hydrateTaskDocs(taskDocs);
   }
 
   fetchTaskDocsFor(contactIds) {
     return this.ngZone.runOutsideAngular(() => this._fetchTaskDocsFor(contactIds));
   }
 
-  private _fetchTaskDocsFor(contactIds) {
+  private async _fetchTaskDocsFor(contactIds) {
     const trackName = [ 'rules-engine', 'tasks', 'some-contacts' ];
     let trackPerformanceQueueing;
     let trackPerformanceRunning;
 
-    return this.initialized
-      .then(() => {
-        this.telemetryService.record(
-          'rules-engine:tasks:dirty-contacts',
-          this.rulesEngineCore.getDirtyContacts().length
-        );
-
-        return this.rulesEngineCore
-          .fetchTasksFor(contactIds)
-          .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
-          .on('running', () => {
-            trackPerformanceRunning = this.performanceService.track();
-            trackPerformanceQueueing?.stop({ name: [ ...trackName, 'queued' ].join(':') });
-          });
-      })
-      .then(taskDocs => {
-        if (!trackPerformanceRunning) {
-          trackPerformanceRunning = this.performanceService.track();
-        }
-        trackPerformanceRunning?.stop({ name: trackName.join(':') });
-        return this.hydrateTaskDocs(taskDocs);
+    await this.initialized;
+    this.telemetryService.record(
+      'rules-engine:tasks:dirty-contacts',
+      this.rulesEngineCore.getDirtyContacts().length
+    );
+    await this.waitForDebounce(this.CHANGE_WATCHER_KEY);
+    const taskDocs = await this.rulesEngineCore
+      .fetchTasksFor(contactIds)
+      .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
+      .on('running', () => {
+        trackPerformanceRunning = this.performanceService.track();
+        trackPerformanceQueueing?.stop({ name: [ ...trackName, 'queued' ].join(':') });
       });
+
+    if (!trackPerformanceRunning) {
+      trackPerformanceRunning = this.performanceService.track();
+    }
+    trackPerformanceRunning?.stop({ name: trackName.join(':') });
+    return this.hydrateTaskDocs(taskDocs);
   }
 
   fetchTasksBreakdown(contactIds?) {
@@ -402,34 +464,33 @@ export class RulesEngineService implements OnDestroy {
     return this.ngZone.runOutsideAngular(() => this._fetchTargets());
   }
 
-  private _fetchTargets(): Target[] {
+  private async _fetchTargets(): Promise<Target[]> {
     const trackName = [ 'rules-engine', 'targets' ];
     let trackPerformanceQueueing;
     let trackPerformanceRunning;
 
-    return this.initialized
-      .then(() => {
-        this.telemetryService.record(
-          'rules-engine:targets:dirty-contacts',
-          this.rulesEngineCore.getDirtyContacts().length
-        );
-        this.cancelDebounce('targets');
-        const relevantInterval = this.calendarIntervalService.getCurrent(this.uhcMonthStartDate);
-        return this.rulesEngineCore
-          .fetchTargets(relevantInterval)
-          .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
-          .on('running', () => {
-            trackPerformanceRunning = this.performanceService.track();
-            trackPerformanceQueueing?.stop({ name: [ ...trackName, 'queued' ].join(':') });
-          });
-      })
-      .then(targets => {
-        if (!trackPerformanceRunning) {
-          trackPerformanceRunning = this.performanceService.track();
-        }
-        trackPerformanceRunning?.stop({ name: trackName.join(':') });
-        return targets;
+    await this.initialized;
+    this.telemetryService.record(
+      'rules-engine:targets:dirty-contacts',
+      this.rulesEngineCore.getDirtyContacts().length
+    );
+    this.cancelDebounce(this.FRESHNESS_KEY);
+    await this.waitForDebounce(this.CHANGE_WATCHER_KEY);
+
+    const relevantInterval = this.calendarIntervalService.getCurrent(this.uhcMonthStartDate);
+    const targets = await this.rulesEngineCore
+      .fetchTargets(relevantInterval)
+      .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
+      .on('running', () => {
+        trackPerformanceRunning = this.performanceService.track();
+        trackPerformanceQueueing?.stop({ name: [ ...trackName, 'queued' ].join(':') });
       });
+
+    if (!trackPerformanceRunning) {
+      trackPerformanceRunning = this.performanceService.track();
+    }
+    trackPerformanceRunning?.stop({ name: trackName.join(':') });
+    return targets;
   }
 
   monitorExternalChanges(replicationResult?) {

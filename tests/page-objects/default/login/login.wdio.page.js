@@ -34,10 +34,18 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
     await utils.setupUserDoc(username);
   }
 
-  if (loadPage) {
-    const waitForPartialLoad = privacyPolicy || adminApp;
-    waitForPartialLoad ? await commonPage.waitForLoaders() : await commonPage.waitForPageLoaded();
+  if (!loadPage) {
+    return;
   }
+
+  const waitForPartialLoad = privacyPolicy || adminApp;
+  if (waitForPartialLoad) {
+    await commonPage.waitForLoaders();
+    return;
+  }
+
+  await commonPage.waitForPageLoaded();
+  await commonPage.hideSnackbar();
 };
 
 const cookieLogin = async (options = {}) => {

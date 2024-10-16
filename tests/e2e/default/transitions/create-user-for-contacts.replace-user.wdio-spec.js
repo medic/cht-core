@@ -87,6 +87,30 @@ const loginAsUser = async (user) => {
   await commonPage.waitForPageLoaded();
 };
 
+/**
+ * Ongoing replication can be interrupted by the user being edited on the server side.
+ * A 401 for a replication request will create a feedback doc, which will fail the test.
+ */
+const assertFeedbackDocs = async () => {
+  const feedbackDocs = await chtDbUtils.getFeedbackDocs();
+  if (!feedbackDocs.length) {
+    return;
+  }
+
+  const feedbackDocsToIgnore = [
+    'Http failure response',
+    'Server error'
+  ];
+
+  const unknownMessages = feedbackDocs
+    .map(doc => doc.info.message)
+    .filter(message => !feedbackDocsToIgnore.find(toIgnore => message.includes(toIgnore)));
+
+  if (!unknownMessages.length) {
+    await chtDbUtils.clearFeedbackDocs();
+  }
+};
+
 const loginAsOfflineUser = () => loginAsUser(ORIGINAL_USER);
 
 const loginAsOnlineUser = () => loginAsUser(ONLINE_USER);
@@ -272,9 +296,8 @@ describe('Create user for contacts', () => {
         try {
           await commonPage.syncAndNotWaitForSuccess();
         } catch {
-          // sync can happen organically
+          // sync can get triggered automatically
         }
-
         await (await loginPage.loginButton()).waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();
@@ -487,7 +510,7 @@ describe('Create user for contacts', () => {
         try {
           await commonPage.syncAndNotWaitForSuccess();
         } catch {
-          // sync can happen organically
+          // sync can get triggered automatically
         }
         await (await loginPage.loginButton()).waitForDisplayed();
 
@@ -748,6 +771,8 @@ describe('Create user for contacts', () => {
         // Original contact not updated
         const updatedOriginalContact = await utils.getDoc(DEFAULT_USER_CONTACT_DOC._id);
         expect(updatedOriginalContact.user_for_contact).to.be.undefined;
+
+        await assertFeedbackDocs();
       });
 
       it('does not create any new user nor does it reparent new reports when the transition fails', async () => {
@@ -791,7 +816,7 @@ describe('Create user for contacts', () => {
         try {
           await commonPage.syncAndNotWaitForSuccess();
         } catch {
-          // sync can happen organically
+          // sync can get triggered automatically
         }
         await (await loginPage.loginButton()).waitForDisplayed();
 
@@ -830,6 +855,8 @@ describe('Create user for contacts', () => {
         const basicReportId3 = await submitBasicForm();
         const subsequentBasicReports = await chtDbUtils.getDocs([basicReportId2, basicReportId3]);
         subsequentBasicReports.forEach((report) => expect(report.contact._id).to.equal(originalContactId));
+
+        await assertFeedbackDocs();
       });
     });
 

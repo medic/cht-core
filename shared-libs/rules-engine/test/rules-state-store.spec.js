@@ -173,12 +173,26 @@ describe('rules-state-store', () => {
   it('empty targets', async () => {
     const onStateChange = sinon.stub().resolves();
     await rulesStateStore.build({}, onStateChange);
-    rulesStateStore.storeTargetEmissions([], [{ id: 'abc', type: 'dne', contact: { _id: 'a', reported_date: 1000 } }]);
-    const initialTargets = rulesStateStore.aggregateStoredTargetEmissions();
-    expect(initialTargets).to.be.empty;
+    await rulesStateStore.storeTargetEmissions(
+      [],
+      [{ id: 'abc', type: 'dne', date: 1000, contact: { _id: 'a', reported_date: 1000 } }]
+    );
+    const initialTargets = await rulesStateStore.aggregateStoredTargetEmissions();
+    expect(initialTargets).to.deep.equal({
+      aggregate: {
+        filterInterval: {
+          start: moment().startOf('month').valueOf(),
+          end: moment().endOf('month').valueOf()
+        },
+        targets: [],
+      },
+      isUpdated: false,
+    });
   });
 
   it('target scenario', async () => {
+    const now = moment('2024-10-10T20:00:00');
+    clock.setSystemTime(now.valueOf());
     const mockSettings = {
       targets: [{
         id: 'target',
@@ -186,17 +200,49 @@ describe('rules-state-store', () => {
     };
     const onStateChange = sinon.stub().resolves();
     await rulesStateStore.build(mockSettings, onStateChange);
-    rulesStateStore.storeTargetEmissions([], [{
-      id: 'abc', type: 'target', pass: true, contact: { _id: 'a', reported_date: 1000 }
+    await rulesStateStore.storeTargetEmissions([], [{
+      _id: '1', type: 'target', pass: true, date: now.valueOf() - 1000, contact: { _id: 'a' }
     }]);
-    const initialTargets = rulesStateStore.aggregateStoredTargetEmissions();
-    expect(initialTargets).to.deep.eq([{
-      id: 'target',
-      value: {
-        pass: 1,
-        total: 1,
+    const { aggregate, isUpdated } = await rulesStateStore.aggregateStoredTargetEmissions();
+    expect(aggregate).to.deep.equal({
+      filterInterval: {
+        start: now.startOf('month').valueOf(),
+        end: now.endOf('month').valueOf()
       },
-    }]);
+      targets: [{
+        id: 'target',
+        value: {
+          pass: 1,
+          total: 1,
+        },
+      }]
+    });
+    expect(isUpdated).to.equal(true);
+
+    const result = await rulesStateStore.aggregateStoredTargetEmissions();
+    expect(result.isUpdated).to.equal(false);
+    expect(aggregate).to.deep.equal(result.aggregate);
+
+    await rulesStateStore.storeTargetEmissions([], [
+      { _id: '1', type: 'target', pass: true, date: now.valueOf() - 1000, contact: { _id: 'a' } },
+      { _id: '2', type: 'target', pass: true, date: now.valueOf() - 2000, contact: { _id: 'b' } }
+    ]);
+
+    const updated = await rulesStateStore.aggregateStoredTargetEmissions();
+    expect(updated.isUpdated).to.equal(true);
+    expect(updated.aggregate).to.deep.equal({
+      filterInterval: {
+        start: now.startOf('month').valueOf(),
+        end: now.endOf('month').valueOf()
+      },
+      targets: [{
+        id: 'target',
+        value: {
+          pass: 2,
+          total: 2,
+        },
+      }]
+    });
   });
 
   describe('marking contacts as dirty when switching reporting intervals', () => {
@@ -307,6 +353,82 @@ describe('rules-state-store', () => {
       expect(rulesStateStore.getDirtyContacts()).to.deep.equal(['a', 'b', 'c', 'd']);
       await rulesStateStore.markFresh(now.add(10, 'days').valueOf(), ['a', 'b', 'c']);
       expect(rulesStateStore.getDirtyContacts()).to.deep.equal(['d']);
+    });
+  });
+
+  describe('getTargetAggregates', () => {
+    it('should return current aggregate for same interval', async () => {
+      const now = moment('2024-10-10T20:00:00');
+      clock.setSystemTime(now.valueOf());
+      sinon.spy(rulesStateStore, 'aggregateStoredTargetEmissions');
+      const mockSettings = {
+        targets: [{
+          id: 'target',
+        }],
+      };
+      const onStateChange = sinon.stub().resolves();
+
+      await rulesStateStore.build(mockSettings, onStateChange);
+      await rulesStateStore.storeTargetEmissions([], [
+        { _id: 'abc', type: 'target', pass: true, date: now.valueOf() - 1000, contact: { _id: 'a' } },
+        { _id: '2', type: 'target', pass: true, date: 10, contact: { _id: 'a' } },
+        { _id: '3', type: 'target', pass: true, date: 20, contact: { _id: 'b' } },
+      ]);
+      const interval = {
+        start: moment().startOf('month').valueOf(),
+        end: moment().endOf('month').valueOf(),
+      };
+
+      const aggregate = await rulesStateStore.getTargetAggregates(interval);
+      expect(await rulesStateStore.getTargetAggregates(interval)).to.deep.equal(aggregate);
+      expect(rulesStateStore.aggregateStoredTargetEmissions.callCount).to.equal(0);
+
+      expect(aggregate.targets).to.deep.include({
+        id: 'target',
+        value: { pass: 1, total: 1 },
+      });
+    });
+
+    it('should aggregate emissions for custom interval', async () => {
+      const now = moment('2024-10-10T20:00:00');
+      const oneMonthAgo = now.clone().subtract(1, 'month');
+      clock.setSystemTime(now.valueOf());
+      const mockSettings = {
+        targets: [{
+          id: 'target',
+        }],
+      };
+      const onStateChange = sinon.stub().resolves();
+
+      await rulesStateStore.build(mockSettings, onStateChange);
+      await rulesStateStore.storeTargetEmissions([], [
+        { _id: '1', type: 'target', pass: true, date: now.valueOf(), contact: { _id: 'a' } },
+        { _id: '2', type: 'target', pass: true, date: oneMonthAgo.valueOf(), contact: { _id: 'a' } },
+        { _id: '3', type: 'target', pass: true, date: oneMonthAgo.valueOf(), contact: { _id: 'b' } },
+      ]);
+      expect(onStateChange.callCount).to.equal(2);
+
+      const interval = {
+        start: oneMonthAgo.startOf('month').valueOf(),
+        end: oneMonthAgo.endOf('month').valueOf(),
+      };
+      const aggregate = await rulesStateStore.getTargetAggregates(interval);
+      expect(onStateChange.callCount).to.equal(2);
+      expect(aggregate.targets).to.deep.include({
+        id: 'target',
+        value: { pass: 2, total: 2 },
+      });
+
+      const currentInterval = {
+        start: moment().startOf('month').valueOf(),
+        end: moment().endOf('month').valueOf(),
+      };
+      const currentAggregate = await rulesStateStore.getTargetAggregates(currentInterval);
+      expect(onStateChange.callCount).to.equal(3);
+      expect(currentAggregate.targets).to.deep.include({
+        id: 'target',
+        value: { pass: 1, total: 1 },
+      });
     });
   });
 });
