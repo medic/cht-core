@@ -34,6 +34,74 @@
  * }
  */
 
+/* eslint-disable no-console */
+
+const moment = require('moment/moment');
+
+const clearEmissions = (state, contactIds) => {
+  if (!contactIds) {
+    for (const targetId of Object.keys(state.targets)) {
+      state.targets[targetId].emissions = {};
+    }
+    return true;
+  }
+
+  return clearEmissionsForContacts(state, contactIds);
+};
+
+const clearTargetEmissionsForContact = (emissions, contactId) => {
+  let isUpdated;
+  for (const emissionId of Object.keys(emissions)) {
+    const emission = emissions[emissionId];
+    if (emission[contactId]) {
+      delete emission[contactId];
+      isUpdated = true;
+    }
+  }
+
+  return isUpdated;
+};
+
+const clearEmissionsForContact = (state, contactId) => {
+  let isUpdated = false;
+  for (const targetId of Object.keys(state.targets)) {
+    isUpdated = clearTargetEmissionsForContact(state.targets[targetId].emissions, contactId) || isUpdated;
+  }
+  return isUpdated;
+};
+
+const clearEmissionsForContacts = (state, contactIds) => {
+  let isUpdated = false;
+
+  for (const contactId of contactIds) {
+    isUpdated = clearEmissionsForContact(state, contactId) || isUpdated;
+  }
+
+  return isUpdated;
+};
+
+const mergeEmissions = (state, contactIds, targetEmissions) => {
+  let isUpdated = false;
+
+  for (const emission of targetEmissions) {
+    const target = state.targets[emission.type];
+    const requestor = emission?.contact?._id;
+
+    if (target && requestor && !emission.deleted) {
+      const targetRequestors = target.emissions[emission._id] = target.emissions[emission._id] || {};
+      targetRequestors[requestor] = {
+        pass: !!emission.pass,
+        groupBy: emission.groupBy,
+        date: emission.date,
+        order: emission.contact.reported_date || -1,
+      };
+      isUpdated = true;
+    }
+  }
+
+  return isUpdated;
+};
+
 module.exports = {
   /**
    * Builds an empty target-state.
@@ -41,11 +109,13 @@ module.exports = {
    * @param {Object[]} targets An array of target definitions
    */
   createEmptyState: (targets=[]) => {
-    return targets
-      .reduce((agg, definition) => {
-        agg[definition.id] = Object.assign({}, definition, { emissions: {} });
-        return agg;
-      }, {});
+    const state = {
+      targets: {},
+      aggregate: {}
+    };
+
+    targets.forEach(definition => state.targets[definition.id] = { ...definition, emissions: {} });
+    return state;
   },
 
   storeTargetEmissions: (state, contactIds, targetEmissions) => {
@@ -55,44 +125,20 @@ module.exports = {
     }
 
     // Remove all emissions that were previously emitted by the contact ("cancelled emissions")
-    if (!contactIds) {
-      for (const targetId of Object.keys(state)) {
-        state[targetId].emissions = {};
-      }
-    } else {
-      for (const contactId of contactIds) {
-        for (const targetId of Object.keys(state)) {
-          for (const emissionId of Object.keys(state[targetId].emissions)) {
-            const emission = state[targetId].emissions[emissionId];
-            if (emission[contactId]) {
-              delete emission[contactId];
-              isUpdated = true;
-            }
-          }
-        }
-      }
-    }
+    isUpdated = clearEmissions(state, contactIds);
 
     // Merge the emission data into state
-    for (const emission of targetEmissions) {
-      const target = state[emission.type];
-      const requestor = emission.contact && emission.contact._id;
-      if (target && requestor && !emission.deleted) {
-        const targetRequestors = target.emissions[emission._id] = target.emissions[emission._id] || {};
-        targetRequestors[requestor] = {
-          pass: !!emission.pass,
-          groupBy: emission.groupBy,
-          date: emission.date,
-          order: emission.contact.reported_date || -1,
-        };
-        isUpdated = true;
-      }
-    }
+    isUpdated = mergeEmissions(state, contactIds, targetEmissions) || isUpdated;
 
     return isUpdated;
   },
 
-  aggregateStoredTargetEmissions: (state, targetEmissionFilter) => {
+  aggregateStoredTargetEmissions: (state, filterInterval, updateState) => {
+    const targetEmissionFilter = (emission => {
+      const INCLUSIVE_START_AND_END = '[]';
+      return moment(emission.date).isBetween(filterInterval.start, filterInterval.end, null, INCLUSIVE_START_AND_END);
+    });
+
     const pick = (obj, attrs) => attrs
       .reduce((agg, attr) => {
         if (Object.hasOwnProperty.call(obj, attr)) {
@@ -176,6 +222,21 @@ module.exports = {
       }, undefined);
     };
 
-    return Object.keys(state).map(targetId => aggregateTarget(state[targetId]));
+    const aggregate = {
+      filterInterval,
+      targets: Object.keys(state.targets).map(targetId => aggregateTarget(state.targets[targetId]))
+    };
+
+    if (!updateState) {
+      return { aggregate, isUpdated: false };
+    }
+
+    const isUpdated = !!aggregate.targets.find(target => {
+      const stateTarget = state.aggregate?.targets?.find(stateTarget => stateTarget.id === target.id);
+      return stateTarget?.value.pass !== target.value.pass || stateTarget?.value.total !== target.value.total;
+    });
+    state.aggregate = aggregate;
+
+    return { aggregate, isUpdated };
   },
 };
