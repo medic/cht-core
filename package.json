@@ -203,6 +203,7 @@
     "pouchdb-adapter-http": "^9.0.0",
     "pouchdb-browser": "^9.0.0",
     "pouchdb-core": "^9.0.0",
+    "pouchdb-debug": "^7.2.1",
     "pouchdb-find": "^9.0.0",
     "pouchdb-generate-replication-id": "^9.0.0",
     "pouchdb-mapreduce": "^9.0.0",
