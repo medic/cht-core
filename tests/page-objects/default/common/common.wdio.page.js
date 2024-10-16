@@ -51,7 +51,6 @@ const FEEDBACK = '#feedback';
 //About menu
 const ABOUT_MENU = 'aria/About';
 //Configuration App
-const CONFIGURATION_APP_MENU = '#header-dropdown i.fa-cog';
 const ELEMENT_DISPLAY_PAUSE = 500; // 500ms
 
 const configurationAppMenuOption = () => $('aria/App Management');
