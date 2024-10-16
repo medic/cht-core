@@ -32,7 +32,7 @@ export class BarcodeScannerService {
     if (
       !('BarcodeDetector' in this.windowRef)
       || !barcodeTypes?.length
-      //|| this.browserDetectorService.isDesktopUserAgent() // CHT won't support it in desktop's browser.
+      || this.browserDetectorService.isDesktopUserAgent() // CHT won't support it in desktop's browser.
     ) {
       const message = 'Barcode Detector API is not supported in this browser.';
       console.error(message);
