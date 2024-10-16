@@ -60,9 +60,12 @@ describe('Training Cards', () => {
   });
 
   it('should display confirm message before navigating to different page', async () => {
-    await commonPage.goToBase();
+    await commonPage.goToMessages();
+    await commonElements.waitForPageLoaded();
+    await setLastViewedDateInThePast();
+    // Unfinished trainings should appear again after reload.
+    await browser.refresh();
     await trainingCardsPage.waitForTrainingCards();
-
     await commonPage.goToPeople();
 
     const confirmMessage = await modalPage.getModalDetails();
@@ -79,24 +82,25 @@ describe('Training Cards', () => {
   });
 
   it('should display confirm message when browser back button is clicked', async () => {
-    await commonPage.goToBase();
-    await trainingCardsPage.waitForTrainingCards();
+    await commonPage.goToMessages();
     await commonPage.goToPeople();
+    await commonElements.waitForPageLoaded();
+    await setLastViewedDateInThePast();
+    // Unfinished trainings should appear again after reload.
+    await browser.refresh();
     await trainingCardsPage.waitForTrainingCards();
-
     await browser.back();
 
     const confirmMessage = await modalPage.getModalDetails();
     expect(confirmMessage.header).to.contain(expectedConfirmModalHeader);
     expect(confirmMessage.body).to.contain(expectedConfirmMessage);
-    expect(await browser.getUrl()).to.contain('/messages');
+    expect(await browser.getUrl()).to.contain('/contacts');
 
     await trainingCardsPage.confirmQuitTraining();
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
-    expect(await browser.getUrl()).to.contain('/contacts');
+    expect(await browser.getUrl()).to.contain('/messages');
 
     await commonPage.goToReports();
-    await commonElements.waitForPageLoaded();
     expect(await reportsPage.leftPanelSelectors.allReports()).to.be.empty;
   });
 
