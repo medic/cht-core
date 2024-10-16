@@ -77,13 +77,16 @@ describe('Training Cards', () => {
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
     expect(await browser.getUrl()).to.contain('/contacts');
 
+    // Going to Reports to check training was not saved
     await commonPage.goToReports();
     expect(await reportsPage.leftPanelSelectors.allReports()).to.be.empty;
   });
 
   it('should display confirm message when browser back button is clicked', async () => {
+    // Creating navigation history to test back action
     await commonPage.goToMessages();
     await commonPage.goToPeople();
+
     await commonElements.waitForPageLoaded();
     await setLastViewedDateInThePast();
     // Unfinished trainings should appear again after reload.
@@ -100,6 +103,7 @@ describe('Training Cards', () => {
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
     expect(await browser.getUrl()).to.contain('/messages');
 
+    // Going to Reports to check training was not saved
     await commonPage.goToReports();
     expect(await reportsPage.leftPanelSelectors.allReports()).to.be.empty;
   });
