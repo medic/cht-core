@@ -36,16 +36,16 @@ const self = {
     currentUserSettings = settings.user;
     setOnChangeState(stateChangeCallback);
 
+    if (!state) {
+      return true;
+    }
+
     const rulesConfigHash = hashRulesConfig(settings);
-    if (state && state.rulesConfigHash !== rulesConfigHash) {
+    if (state?.rulesConfigHash !== rulesConfigHash || targetState.isStale(state?.targetState)) {
       state.stale = true;
     }
 
-    if (state && targetState.isStale(state.targetState)) {
-      state.stale = true;
-    }
-
-    return !state || state.stale;
+    return state.stale;
   },
 
   /**
