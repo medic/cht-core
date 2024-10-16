@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import {createSelector, Store} from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { first, take } from 'rxjs/operators';
@@ -16,7 +16,6 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { ModalService } from '@mm-services/modal.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { SessionService } from '@mm-services/session.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
@@ -64,7 +63,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
     private contactTypesService: ContactTypesService,
     private settingsService: SettingsService,
-    private userSettingsService: UserSettingsService,
     private responsiveService: ResponsiveService,
     private fastActionButtonService: FastActionButtonService,
     private sessionService: SessionService,
@@ -285,16 +283,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       ...childType,
       permission: childType.type?.person ? 'can_create_people' : 'can_create_places',
     }));
-  }
-
-  private setUserSettings() {
-    if (this.userSettings) {
-      return;
-    }
-    return this.userSettingsService
-      .get()
-      .then(userSettings => this.userSettings = userSettings)
-      .catch(error => console.error('Error fetching user settings', error));
   }
 
   private setSettings() {
