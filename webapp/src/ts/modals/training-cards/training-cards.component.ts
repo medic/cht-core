@@ -2,6 +2,7 @@ import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { FormService } from '@mm-services/form.service';
@@ -21,6 +22,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
   constructor(
     private ngZone: NgZone,
     private store: Store,
+    private readonly router: Router,
     private xmlFormsService: XmlFormsService,
     private formService: FormService,
     private geolocationService: GeolocationService,
@@ -51,12 +53,14 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
   enketoStatus;
   enketoSaving;
   showConfirmExit;
+  nextUrl;
   subscription: Subscription = new Subscription();
 
   ngOnInit() {
     this.trackRender = this.performanceService.track();
     this.reset();
     this.subscribeToStore();
+    this.globalActions.setTrainingCard({ isOpen: true });
   }
 
   ngOnDestroy() {
@@ -71,6 +75,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
     // see https://github.com/medic/cht-core/issues/2198#issuecomment-210202785 for AngularJS behavior
     this.formService.unload(this.form);
     this.globalActions.clearEnketoStatus();
+    this.globalActions.setTrainingCard({ formId: null, isOpen: false, showConfirmExit: false, nextUrl: null });
   }
 
   private loadForm() {
@@ -113,15 +118,19 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getEnketoSavingStatus),
       this.store.select(Selectors.getEnketoError),
       this.store.select(Selectors.getTrainingCardFormId),
+      this.store.select(Selectors.getTrainingCard),
     ]).subscribe(([
       enketoStatus,
       enketoSaving,
       enketoError,
       trainingCardFormId,
+      trainingCard,
     ]) => {
       this.enketoStatus = enketoStatus;
       this.enketoSaving = enketoSaving;
       this.enketoError = enketoError;
+      this.showConfirmExit = trainingCard.showConfirmExit;
+      this.nextUrl = trainingCard.nextUrl;
 
       if (trainingCardFormId && trainingCardFormId !== this.trainingCardFormId) {
         this.trainingCardFormId = trainingCardFormId;
@@ -154,7 +163,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
   }
 
   close() {
-    this.globalActions.setTrainingCardFormId(null);
+    this.globalActions.setTrainingCard({ formId: null, isOpen: false, showConfirmExit: false, nextUrl: null });
     this.matDialogRef.close();
   }
 
@@ -224,6 +233,11 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
 
   quitTraining() {
     this.recordPerformanceQuitTraining();
+
+    if (this.nextUrl) {
+      this.router.navigateByUrl(this.nextUrl);
+    }
+
     this.close();
   }
 }
