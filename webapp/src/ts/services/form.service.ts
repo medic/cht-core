@@ -147,7 +147,8 @@ export class FormService {
         this.getLineage(contact),
         this.getTargetDocs(contact),
       ])
-      .then(([reports, lineage, targetDocs]) => this.contactSummaryService.get(contact, reports, lineage, targetDocs));
+      // eslint-disable-next-line max-len
+      .then(([reports, lineage, targetDocs]) => this.contactSummaryService.get(contact, reports, lineage, contact.children, targetDocs));
   }
 
   private canAccessForm(formContext: EnketoFormContext) {
@@ -352,4 +353,3 @@ export class FormService {
     this.enketoService.unload(form);
   }
 }
-
