@@ -286,7 +286,8 @@
     "can_have_multiple_places": [],
     "can_export_devices_details": [
       "national_admin"
-    ]
+    ],
+    "can_search_with_barcode_scanner": []
   },
   "uhc": {
     "contacts_default_sort": "",

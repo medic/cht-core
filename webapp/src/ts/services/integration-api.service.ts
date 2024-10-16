@@ -9,12 +9,14 @@ import { AndroidApiService } from '@mm-services/android-api.service';
 import { DbService } from '@mm-services/db.service';
 import { EnketoService } from '@mm-services/enketo.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { BarcodeScannerService } from '@mm-services/barcode-scanner.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class IntegrationApiService {
   AndroidAppLauncher;
+  BarcodeScanner;
   Language;
   Select2Search;
   Enketo;
@@ -35,9 +37,11 @@ export class IntegrationApiService {
     private mrdtService:MRDTService,
     private settingsService:SettingsService,
     private androidApiService:AndroidApiService,
+    private barcodeScannerService:BarcodeScannerService,
   ) {
     this.DB = dbService;
     this.AndroidAppLauncher = androidAppLauncherService;
+    this.BarcodeScanner = barcodeScannerService;
     this.Language = languageService;
     this.Select2Search = select2SearchService;
     this.Enketo = enketoService;
