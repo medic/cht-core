@@ -21,6 +21,7 @@ import { SessionService } from '@mm-services/session.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Component({
   selector: 'contacts-content',
@@ -68,6 +69,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     private sessionService: SessionService,
     private mutingTransition: MutingTransition,
     private contactMutedService: ContactMutedService,
+    private telemetryService: TelemetryService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -110,13 +112,14 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscriptions.add(subscription);
   }
 
-  private recordSearchTelemetry(selectedContact, nextSelectedContact, nextFilters) {
+  private async recordSearchTelemetry(selectedContact, nextSelectedContact, nextFilters) {
     if (
+      // TODO: do we want to collect it for online users too? we probably do
+      this.isOnlineOnly ||
       !nextFilters?.search ||
       !nextSelectedContact
     ) {
-      console.log("SKIP no filters or no selected contact");
-      return null;
+      return;
     }
 
     // user searched for something and now selects a contact
@@ -125,8 +128,40 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       selectedContact._id !== nextSelectedContact._id // or had a different contact selected
     ) {
       console.log({ nextFilters, nextSelectedContact });
-      // TODO: find which properties matched user's query
-      // TODO: record telemetry
+
+      const search = nextFilters.search;
+      const matchingProperties = new Set<string>();
+      const skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
+      const colonSearch = search.split(':');
+      if (colonSearch.length > 1) {
+        matchingProperties.add(`${colonSearch[0]}:$value`);
+      }
+
+      const findMatchingProperties = (object: Record<string, any>, basePropertyPath = '') => {
+        Object.entries(object).forEach(([key, value]) => {
+          const _key = key.toLowerCase();
+          if (skip.includes(_key) || _key.endsWith('_date')) {
+            return;
+          }
+
+          const propertyPath = basePropertyPath ? `${basePropertyPath}.${key}` : key;
+          if (typeof value === 'string' && value.toLowerCase().includes(search.toLowerCase())) {
+            matchingProperties.add(propertyPath);
+          }
+
+          if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            // TODO: unsure if needed, might remove before shipping
+            //  this essentially tells us if the user selected a contact further down the lineage
+            findMatchingProperties(value, propertyPath);
+          }
+        });
+      };
+      findMatchingProperties(nextSelectedContact.doc);
+
+      for (const key of matchingProperties) {
+        await this.telemetryService.record(`search:contacts_by_freetext:${key}`);
+        console.info('record', `search:contacts_by_freetext:${key}`);
+      }
     }
   }
 
