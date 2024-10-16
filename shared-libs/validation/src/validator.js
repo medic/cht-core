@@ -11,7 +11,6 @@ const validate = (entities, values, valueKey) => {
   let negateNext = false;
 
   // Loop through the entities
-  // NOSONAR_BEGIN
   for (const thisEntity of entities) {
     let tempResult = true;
     let useTempResult = false;
@@ -76,7 +75,6 @@ const validate = (entities, values, valueKey) => {
       }
     }
   }
-  // NOSONAR_END
   return validationResult;
 };
 
