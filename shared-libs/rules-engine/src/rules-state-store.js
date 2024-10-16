@@ -41,6 +41,10 @@ const self = {
       state.stale = true;
     }
 
+    if (state && targetState.isStale(state.targetState)) {
+      state.stale = true;
+    }
+
     return !state || state.stale;
   },
 

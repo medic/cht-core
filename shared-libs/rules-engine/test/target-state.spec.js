@@ -275,5 +275,19 @@ describe('target-state', () => {
       ]);
     });
   });
+
+  describe('isStale', () => {
+    it('should return true if state is invalid', () => {
+      expect(targetState.isStale()).to.equal(true);
+      expect(targetState.isStale({})).to.equal(true);
+      expect(targetState.isStale({ oldTarget: { emissions: [] } })).to.equal(true);
+      expect(targetState.isStale({ targets: {} })).to.equal(true);
+      expect(targetState.isStale({ aggregate: {} })).to.equal(true);
+    });
+    
+    it('should return false if state is valid', () => {
+      expect(targetState.isStale({ targets: {}, aggregate: {} })).to.equal(false);
+    });
+  });
 });
 
