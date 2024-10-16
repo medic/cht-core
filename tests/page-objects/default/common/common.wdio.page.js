@@ -14,7 +14,7 @@ const fastActionListCloseButton = () => $(`${FAST_ACTION_LIST_CONTAINER} .panel-
 const fastActionById = (id) => $(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item[test-id="${id}"]`);
 const fastActionItems = () => $$(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item`);
 const moreOptionsMenu = () => $('aria/Actions menu');
-const hamburgerMenuItemSelector = '#header-dropdown li';
+const hamburgerMenuItemSelector = 'mat-sidenav-content';
 const logoutButton = () => $('aria/Log out');
 const syncButton = () => $('aria/Sync now');
 const messagesTab = () => $('#messages-tab');
@@ -26,9 +26,8 @@ const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $('aria/All reports synced');
-const syncInProgress = () => $('*="Currently syncing"');
-const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
-const syncDone = () => $(`${hamburgerMenuItemSelector}.sync-status :is(.required,.success)`);
+const syncInProgress = () => $(hamburgerMenuItemSelector).$('*="Currently syncing"');
+const syncRequired = () => $(`${hamburgerMenuItemSelector} .sync-status .required`);
 const jsonError = async () => (await $('pre')).getText();
 const REPORTS_CONTENT_SELECTOR = '#reports-content';
 const reportsFastActionFAB = () => $(`${REPORTS_CONTENT_SELECTOR} .fast-action-fab-button mat-icon`);
@@ -350,23 +349,22 @@ const syncAndNotWaitForSuccess = async () => {
 };
 
 const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
-  console.log('retry', retry, new Date().toISOString());
   if (retry < 0) {
     throw new Error('Failed to sync after 10 retries');
   }
   await closeReloadModal(false, 0);
-  await openHamburgerMenu();
 
-  if (!await (await syncInProgress()).isExisting()) {
-    await (await syncButton()).click();
-    await openHamburgerMenu();
-   }
-
-  await (await syncInProgress()).waitForDisplayed({ timeout, reverse: true });
-  await (await syncDone()).waitForDisplayed({ timeout });
   try {
+    await openHamburgerMenu();
+    if (!await (await syncInProgress()).isExisting()) {
+      await (await syncButton()).click();
+      await openHamburgerMenu();
+    }
+
+    await (await syncInProgress()).waitForDisplayed({ timeout, reverse: true });
     await (await syncSuccess()).waitForDisplayed({ timeout: ELEMENT_DISPLAY_PAUSE });
   } catch (err) {
+    console.error(err);
     await syncAndWaitForSuccess(timeout, retry - 1);
   }
 };
@@ -407,7 +405,6 @@ const syncAndWaitForFailure = async () => {
 
 const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
   try {
-    await browser.waitUntil( async () => await modalPage.modal().isDisplayed(), { timeout: 10000, interval: 500 } );
     shouldUpdate ? await modalPage.submit(timeout) : await modalPage.cancel(timeout);
     shouldUpdate && await waitForAngularLoaded();
     return true;
