@@ -12,6 +12,7 @@ import { enableProdMode } from '@angular/core';
 import '@angular/compiler';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import * as $ from 'jquery';
+import pouchdbDebug from 'pouchdb-debug';
 
 import { AppModule } from './app.module';
 import { environment } from '@mm-environments/environment';
@@ -43,6 +44,7 @@ Object.defineProperties($, {
   htmlPrefilter: { value: (html) => html.replace(rxhtmlTag, '<$1></$2>') }
 });
 
+window.PouchDB.plugin(pouchdbDebug);
 bootstrapper(POUCHDB_OPTIONS)
   .then(() => {
     window.startupTimes.bootstrapped = performance.now();
