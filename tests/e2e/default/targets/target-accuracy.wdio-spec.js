@@ -188,7 +188,11 @@ describe('Target accuracy', () => {
     await commonPage.waitForPageLoaded();
 
     const targets = await analyticsPage.getTargets();
-    console.log(targets);
     expect(targets.length).to.equal(1);
+    expect(targets[0]).to.deep.include({
+      title: 'targets.new_persons.title',
+      goal: '0',
+      count: '20',
+    });
   });
 });
