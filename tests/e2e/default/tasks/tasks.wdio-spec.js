@@ -7,6 +7,8 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const chtConfUtils = require('@utils/cht-conf');
 const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
@@ -63,24 +65,18 @@ describe('Tasks', () => {
     contact: supervisorContact._id,
   });
   const patient = personFactory.build({
-    _id: 'patient1',
     name: 'patient1',
-    type: 'person',
     patient_id: 'patient1',
-    parent: { _id: clinic._id, parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id }}},
+    parent: clinic,
     reported_date: new Date().getTime(),
   });
   const patient2 = personFactory.build({
-    _id: 'patient2',
     name: 'patient2',
-    type: 'person',
     patient_id: 'patient2',
-    parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id }},
+    parent: healthCenter1,
     reported_date: new Date().getTime(),
   });
-  const contactWithManyPlaces = personFactory.build({
-    parent: { _id: healthCenter1._id, parent: { _id: districtHospital._id } },
-  });
+  const contactWithManyPlaces = personFactory.build({ parent: healthCenter1 });
   const userWithManyPlaces = {
     _id: 'org.couchdb.user:offline_many_facilities',
     language: 'en',
@@ -164,9 +160,7 @@ describe('Tasks', () => {
       ]);
     }
     await tasksPage.scrollToLastTaskItem();
-    const loadingStatusSelector = await $('#tasks-list p.loading-status');
-    const elementText = await loadingStatusSelector.getText();
-    expect(elementText).to.contain('No more tasks');
+    expect(await commonEnketoPage.isElementDisplayed('p', 'No more tasks', 'div#tasks-list')).to.be.true;
   });
 
   it('should remove task from list when CHW completes a task successfully', async () => {
@@ -176,8 +170,12 @@ describe('Tasks', () => {
     await commonPage.goToTasks();
     let list = await tasksPage.getTasks();
     expect(list).to.have.length(3);
-    await tasksPage.submitTask(1);
-    await commonPage.sync(true);
+    const task = await tasksPage.getTaskByContactAndForm('patient1', 'person_create');
+    await task.click();
+    await tasksPage.waitForTaskContentLoaded('Home Visit');
+    const taskElement = await tasksPage.getOpenTaskElement();
+    await genericForm.submitForm();
+    await taskElement.waitForDisplayed({ reverse: true });
     list = await tasksPage.getTasks();
     expect(list).to.have.length(2);
   });
@@ -188,9 +186,16 @@ describe('Tasks', () => {
     await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
     
     await commonPage.goToTasks();
-    const list = await tasksPage.getTasks();
+    let list = await tasksPage.getTasks();
     expect(list).to.have.length(2);
-    await tasksPage.submitTask(1);
+    const task = await tasksPage.getTaskByContactAndForm('patient2', 'person_create');
+    await task.click();
+    await tasksPage.waitForTaskContentLoaded('Home Visit');
+    const taskElement = await tasksPage.getOpenTaskElement();
+    await genericForm.submitForm();
+    await taskElement.waitForDisplayed({ reverse: true });
+    list = await tasksPage.getTasks();
+    expect(list).to.have.length(1);
     // validate new task is created = taskList length should still be 2
   });
 
