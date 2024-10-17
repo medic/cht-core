@@ -159,8 +159,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       findMatchingProperties(nextSelectedContact.doc);
 
       for (const key of matchingProperties) {
-        await this.telemetryService.record(`search:contacts_by_freetext:${key}`);
-        console.info('record', `search:contacts_by_freetext:${key}`);
+        await this.telemetryService.record(`search_match:contacts_by_freetext:${key}`);
+        console.info('record', `search_match:contacts_by_freetext:${key}`);
       }
     }
   }
