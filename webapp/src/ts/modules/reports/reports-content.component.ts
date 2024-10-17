@@ -16,6 +16,7 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { DbService } from '@mm-services/db.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Component({
   templateUrl: './reports-content.component.html'
@@ -43,6 +44,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     private messageStateService:MessageStateService,
     private responsiveService:ResponsiveService,
     private modalService:ModalService,
+    private telemetryService: TelemetryService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -68,6 +70,13 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     this.reportsActions.setSelectedReport();
   }
 
+  private async recordSearchTelemetry() {
+    if (false) {
+      const key = 'TODO';
+      await this.telemetryService.record(`search_match:reports_by_freetext:${key}`);
+    }
+  }
+
   private subscribeToStore() {
     const reportsSubscription = combineLatest(
       this.store.select(Selectors.getSelectedReport),
@@ -76,6 +85,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       selectedReport,
       selectedReports,
     ]) => {
+      this.recordSearchTelemetry();
       if (selectedReport) {
         this.selectedReports = [ selectedReport ];
       } else {
