@@ -20,6 +20,21 @@ services:
     networks:
       cht-net:
 
+  nouveau:
+    image: {{{ repo }}}/cht-couchdb-nouveau:{{ tag }}
+    volumes:
+      - ${COUCHDB_NOUVEAU_DATA:-./srv_nouveau}:/data/nouveau
+    restart: always
+    depends_on:
+      - couchdb
+    logging:
+      driver: "local"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
+    networks:
+      cht-net:
+
 volumes:
   cht-credentials:
 
