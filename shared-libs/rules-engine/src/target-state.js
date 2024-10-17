@@ -118,6 +118,8 @@ module.exports = {
     return state;
   },
 
+  isStale: (state) => !state || !state.targets || !state.aggregate,
+
   storeTargetEmissions: (state, contactIds, targetEmissions) => {
     let isUpdated = false;
     if (!Array.isArray(targetEmissions)) {
