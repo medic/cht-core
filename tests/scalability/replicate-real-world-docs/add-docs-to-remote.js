@@ -3,7 +3,7 @@ const threadId = args[0];
 const config = require('./config.json');
 const user = config.users[threadId % config.users.length];
 
-const PouchDB = require('pouchdb');
+const PouchDB = require('pouchdb-browser');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-session-authentication'));
 const path = require('path');
