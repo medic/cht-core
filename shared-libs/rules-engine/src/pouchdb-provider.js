@@ -65,28 +65,31 @@ const medicPouchProvider = db => {
 
     stateChangeCallback: docUpdateClosure(db),
 
-    commitTargetDoc: (targets, userContactDoc, userSettingsDoc, docTag, force = false) => { // NOSONAR
+    commitTargetDoc: (targets, docTag, { userContactDoc, userSettingsDoc }, updatedTargets) => {
       const userContactId = userContactDoc?._id;
       const userSettingsId = userSettingsDoc?._id;
       const _id = `target~${docTag}~${userContactId}~${userSettingsId}`;
-      const createNew = () => ({
-        _id,
-        type: 'target',
-        user: userSettingsId,
-        owner: userContactId,
-        reporting_period: docTag,
-      });
 
-      const today = moment().startOf('day').valueOf();
-      return db.get(_id)
-        .catch(createNew)
+      return db
+        .get(_id)
+        .catch(err => {
+          if (err.status === 404) {
+            return {
+              _id,
+              type: 'target',
+              user: userSettingsId,
+              owner: userContactId,
+              reporting_period: docTag,
+            };
+          }
+        })
         .then(existingDoc => {
-          if (existingDoc.updated_date === today && !force) {
+          if (!updatedTargets && existingDoc._rev) {
             return false;
           }
 
           existingDoc.targets = targets;
-          existingDoc.updated_date = today;
+          existingDoc.updated_date = moment().startOf('day').valueOf();
           return db.put(existingDoc);
         });
     },

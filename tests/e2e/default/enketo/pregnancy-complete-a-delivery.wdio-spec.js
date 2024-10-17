@@ -52,8 +52,6 @@ describe('Contact Delivery Form', () => {
     await utils.saveDocs([ ...places.values(), pregnantWoman, pregnantWoman2, pregnantWoman3 ]);
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
-    await commonPage.waitForPageLoaded();
-    await commonPage.hideSnackbar();
   });
 
   it('Complete a delivery: Process a delivery with a live child and facility birth, ' +
