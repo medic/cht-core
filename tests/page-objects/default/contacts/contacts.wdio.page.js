@@ -91,21 +91,22 @@ const search = async (query) => {
   }
 };
 
-const findRowByText = async (text) => {
+const findRowByText = async (text, strict) => {
   for (const row of await leftPanelSelectors.contentRows()) {
-    if ((await row.getText()) === text) {
+    const rowText = await row.getText();
+    if ((strict && rowText === text) || rowText.includes(text)) {
       return row;
     }
   }
 };
 
-const selectLHSRowByText = async (text, executeSearch = true) => {
+const selectLHSRowByText = async (text, executeSearch = true, strict = true) => {
   await commonPage.waitForLoaderToDisappear();
   if (executeSearch) {
     await search(text);
   }
-  await browser.waitUntil(async () => await findRowByText(text));
-  const row = await findRowByText(text);
+  await browser.waitUntil(async () => await findRowByText(text, strict));
+  const row = await findRowByText(text, strict);
   if (!row) {
     throw new Error(`Contact "${text}" was not found`);
   }

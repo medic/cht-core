@@ -92,7 +92,7 @@ export class TrainingCardsService {
         return;
       }
 
-      this.globalActions.setTrainingCardFormId(firstChronologicalTrainingCard.code);
+      this.globalActions.setTrainingCard({ formId: firstChronologicalTrainingCard.code });
     } catch (error) {
       console.error('Training Cards :: Error showing modal.', error);
       return;
@@ -110,7 +110,7 @@ export class TrainingCardsService {
     }
 
     this.modalService
-      .show(TrainingCardsComponent)
+      .show(TrainingCardsComponent, { closeOnNavigation: false })
       ?.afterOpened()
       .pipe(first())
       .subscribe(() => {

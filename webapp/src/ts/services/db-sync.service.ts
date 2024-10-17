@@ -259,9 +259,10 @@ export class DBSyncService {
 
     try {
       this.sendUpdate({ state: SyncStatus.InProgress });
-      this.inProgressSync = true;
       const replicateFromServer = force || !quick;
-      const syncState = await this.syncMedic(replicateFromServer);
+      const syncMedicPromise = this.syncMedic(replicateFromServer);
+      this.inProgressSync = syncMedicPromise.then(() => {});
+      const syncState = await syncMedicPromise;
       this.updateAfterSyncMedic(syncState, force);
     } finally {
       this.inProgressSync = undefined;

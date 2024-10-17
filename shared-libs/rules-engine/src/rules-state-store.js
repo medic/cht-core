@@ -36,12 +36,16 @@ const self = {
     currentUserSettings = settings.user;
     setOnChangeState(stateChangeCallback);
 
+    if (!state) {
+      return true;
+    }
+
     const rulesConfigHash = hashRulesConfig(settings);
-    if (state && state.rulesConfigHash !== rulesConfigHash) {
+    if (state.rulesConfigHash !== rulesConfigHash || targetState.isStale(state.targetState)) {
       state.stale = true;
     }
 
-    return !state || state.stale;
+    return state.stale;
   },
 
   /**
@@ -239,37 +243,70 @@ const self = {
    *    If undefined, all contacts are updated.
    * @param {Object[]} targetEmissions An array of target emissions (the result of the rules-emitter).
    */
-  storeTargetEmissions: (contactIds, targetEmissions) => {
+  storeTargetEmissions: async (contactIds, targetEmissions) => {
     const isUpdated = targetState.storeTargetEmissions(state.targetState, contactIds, targetEmissions);
     if (isUpdated) {
-      return onStateChange(state);
+      await onStateChange(state);
     }
+    return isUpdated;
   },
 
   /**
    * Aggregates the stored target emissions into target models
    *
-   * @param {Function(emission)=} targetEmissionFilter Filter function to filter which target emissions should
-   *    be aggregated
-   * @example aggregateStoredTargetEmissions(emission => emission.date > moment().startOf('month').valueOf())
-   *
-   * @returns {Object[]} result
-   * @returns {string} result[n].* All attributes of the target as defined in the settings doc
-   * @returns {Integer} result[n].total The total number of unique target emission ids matching instanceFilter
-   * @returns {Integer} result[n].pass The number of unique target emission ids matching instanceFilter with the
-   *    latest emission with truthy "pass"
-   * @returns {Integer} result[n].percent The percentage of pass/total
+   * @param {{ start:number, end: number }} filterInterval Calendar interval that limits emissions to be aggregated
+   * @returns {Promise<{ aggregate: { filterInterval, targets: [] }, isUpdated: boolean }>} result
+   * @returns {string} result.aggregate.targets[n].* All attributes of the target as defined in the settings doc
+   * @returns {Integer} result.aggregate.targets[n].total The total number of unique target emission ids matching
+   *    instanceFilter
+   * @returns {Integer} result.aggregate.targets[n].pass The number of unique target emission ids dated within
+   * filterInterval with the latest emission with truthy "pass"
+   * @returns {Integer} result.aggregate.targets[n].percent The percentage of pass/total
+   * @returns {Boolean} result.isUpdated True if the aggregate has been update compared to previous stored value.
    */
-  aggregateStoredTargetEmissions: targetEmissionFilter => targetState.aggregateStoredTargetEmissions(
-    state.targetState,
-    targetEmissionFilter
-  ),
+  aggregateStoredTargetEmissions: async (filterInterval) => {
+    const currentInterval = calendarInterval.getCurrent(state.monthStartDate);
+    const interval = filterInterval || currentInterval;
+    const storeAggregate = calendarInterval.isEqual(interval, currentInterval);
+
+    const { aggregate, isUpdated } = targetState.aggregateStoredTargetEmissions(
+      state.targetState,
+      interval,
+      storeAggregate
+    );
+    if (isUpdated) {
+      await onStateChange(state);
+    }
+
+    return { aggregate, isUpdated };
+  },
 
   /**
    * Returns a list of UUIDs of tracked contacts that are marked as dirty
    * @returns {Array} list of dirty contacts UUIDs
    */
   getDirtyContacts: () => self.getContactIds().filter(self.isDirty),
+
+  /**
+   * Returns stored target aggregate for current interval or calculates aggregate for custom interval.
+   * Does not store aggregate calculated for custom interval.
+   *
+   * @param {{ start:number, end: number }} filterInterval Calendar interval that limits emissions to be aggregated
+   * @returns {Promise<{ filterInterval, targets: [] }>} result
+   * @returns {string} result.targets[n].* All attributes of the target as defined in the settings doc
+   * @returns {Integer} result.targets[n].total The total number of unique target emission ids matching
+   *    instanceFilter
+   * @returns {Integer} result.targets[n].pass The number of unique target emission ids dated within
+   * filterInterval with the latest emission with truthy "pass"
+   * @returns {Integer} result.targets[n].percent The percentage of pass/total
+   */
+  getTargetAggregates: async (filterInterval) => {
+    if (calendarInterval.isEqual(filterInterval, state.targetState.aggregate?.filterInterval)) {
+      return state.targetState.aggregate;
+    }
+    const { aggregate } = await self.aggregateStoredTargetEmissions(filterInterval);
+    return aggregate;
+  },
 };
 
 const hashRulesConfig = (settings) => {

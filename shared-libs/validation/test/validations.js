@@ -901,4 +901,54 @@ describe('validations', () => {
       ]);
     });
   });
+
+  describe('"other" prefix', () => {
+    const validations = [
+      {
+        property: 'state',
+        rule: 'otherEquals("country", "US") ? lenMin(2) : lenMin(0)',
+        message: [
+          {
+            content: 'Invalid state.',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+
+    const VALID_US = {
+      name: 'valid state for US',
+      valid: true, 
+      doc: { _id: 'same', state: 'CA', country: 'US' }
+    };
+
+    const INVALID_US = {
+      name: 'invalid state for US',
+      valid: false, 
+      doc: { _id: 'same', state: 'O', country: 'US' }
+    };
+
+    const VALID_NZ = {
+      name: 'ignore state for NZ',
+      valid: true, 
+      doc: { _id: 'same', state: 'O', country: 'NZ' }
+    };
+
+    [ VALID_US, INVALID_US, VALID_NZ ].forEach(({ name, valid, doc }) => {
+      it(name, () => {
+        return validation.validate(doc, validations).then(errors => {
+          if (valid) {
+            assert.equal(errors.length, 0);
+          } else {
+            assert.deepEqual(errors, [{
+              code: 'invalid_state',
+              message: 'Invalid state.',
+            }]);
+          }
+        });
+      });
+    });
+
+  });
+  
 });

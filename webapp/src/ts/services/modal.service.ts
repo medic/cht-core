@@ -37,6 +37,7 @@ export class ModalService {
     return this.matDialog.open(component, {
       autoFocus: false,
       disableClose: true,
+      closeOnNavigation: true,
       minWidth: isMobile ? '90vw' : '340px', // Give maximum space to date picker's calendar when in mobile.
       width: '600px',
       maxWidth: '90vw',
