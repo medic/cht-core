@@ -1,9 +1,14 @@
+const path = require('path');
+const utils = require('@utils');
+const chtConfUtils = require('@utils/cht-conf');
+
 const TASK_LIST_SELECTOR = '#tasks-list';
 const TASK_FORM_SELECTOR = '#task-report';
 const TASKS_GROUP_SELECTOR = '#tasks-group .item-content';
 const FORM_TITLE_SELECTOR = `${TASK_FORM_SELECTOR} h3#form-title`;
 const NO_SELECTED_TASK_SELECTOR = '.empty-selection';
 
+const getTaskList = () => $('div#tasks-list');
 const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"`);
 const getTasks = () => $$(`${TASK_LIST_SELECTOR} li.content-row`);
 
@@ -81,6 +86,17 @@ const scrollToLastTaskItem = async () => {
   });
 };
 
+const compileTasks = async (tasksFileName) => {
+  await chtConfUtils.initializeConfigDir();
+  const tasksFilePath = path.join(__dirname, `../../../e2e/default/tasks/config/${tasksFileName}`);
+  const settings = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
+  await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
+};
+
+const isTaskElementDisplayed = async (type, text) => {
+  return await (await getTaskList()).$(`${type}*=${text}`).isDisplayed();
+};
+
 module.exports = {
   getTasks,
   getTaskByContactAndForm,
@@ -93,4 +109,6 @@ module.exports = {
   noSelectedTask,
   openTaskById,
   scrollToLastTaskItem,
+  compileTasks,
+  isTaskElementDisplayed,
 };

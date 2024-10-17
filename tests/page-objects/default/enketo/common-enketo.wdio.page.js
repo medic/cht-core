@@ -27,9 +27,8 @@ const getCorrectFieldsetSection = async (section) => {
   return section;
 };
 
-const isElementDisplayed = async (type, text, parent) => {
-  const elemSelector = parent === undefined ? getCurrentPageSection() : $(`${parent}`);
-  return await (await elemSelector).$(`${type}*=${text}`).isDisplayed();
+const isElementDisplayed = async (type, text) => {
+  return await (await getCurrentPageSection()).$(`${type}*=${text}`).isDisplayed();
 };
 
 const selectRadioButton = async (question, value) => {

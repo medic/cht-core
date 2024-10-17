@@ -1,4 +1,3 @@
-const { v4: uuid } = require('uuid');
 const path = require('path');
 
 const utils = require('@utils');
@@ -7,18 +6,11 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
-const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const chtConfUtils = require('@utils/cht-conf');
 const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const chtDbUtils = require('@utils/cht-db');
-
-const compileTasks = async (tasksFileName) => {
-  await chtConfUtils.initializeConfigDir();
-  const tasksFilePath = path.join(__dirname, `config/${tasksFileName}`);
-  return await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
-};
 
 describe('Tasks', () => {
 
@@ -31,38 +23,17 @@ describe('Tasks', () => {
     type: 'health_center',
     parent: { _id: districtHospital._id },
   });
-  const chwContact = {
-    _id: 'fixture:user:user1',
-    name: 'chw',
+  const chwContact = personFactory.build({
+    name: 'Megan Spice',
     phone: '+12068881234',
-    type: 'person',
     place: healthCenter1._id,
-    parent: {
-      _id: healthCenter1._id,
-      parent: healthCenter1.parent
-    },
-  };
-  const supervisorContact = {
-    _id: 'fixture:user:user2',
-    name: 'supervisor',
-    phone: '+12068881235',
-    type: 'person',
-    place: districtHospital._id,
-    parent: {
-      _id: districtHospital._id,
-    },
-  };
+    parent: healthCenter1,
+  });
   const chw = userFactory.build({
     username: 'offlineuser_tasks',
     isOffline: true,
     place: healthCenter1._id,
     contact: chwContact._id,
-  });
-  const supervisor = userFactory.build({
-    username: 'supervisor_tasks',
-    roles: [ 'chw_supervisor' ],
-    place: districtHospital._id,
-    contact: supervisorContact._id,
   });
   const patient = personFactory.build({
     name: 'patient1',
@@ -76,37 +47,16 @@ describe('Tasks', () => {
     parent: healthCenter1,
     reported_date: new Date().getTime(),
   });
-  const contactWithManyPlaces = personFactory.build({ parent: healthCenter1 });
-  const userWithManyPlaces = {
-    _id: 'org.couchdb.user:offline_many_facilities',
-    language: 'en',
-    known: true,
-    type: 'user-settings',
-    roles: [ 'chw' ],
-    facility_id: [ healthCenter1._id, healthCenter2._id ],
-    contact_id: contactWithManyPlaces._id,
-    name: 'offline_many_facilities'
-  };
-  const userWithManyPlacesPass = uuid();
 
   before(async () => {
     await utils.saveDocs([
-      ...places.values(), healthCenter2, chwContact, supervisorContact, patient, patient2,
-      contactWithManyPlaces, userWithManyPlaces,
+      ...places.values(), healthCenter2, chwContact, patient, patient2,
     ]);
-    await utils.request({
-      path: `/_users/${userWithManyPlaces._id}`,
-      method: 'PUT',
-      body: { ...userWithManyPlaces, password: userWithManyPlacesPass, type: 'user' },
-    });
-    await utils.createUsers([ chw, supervisor ]);
+    await utils.createUsers([ chw ]);
     await sentinelUtils.waitForSentinel();
-
-    await chtConfUtils.initializeConfigDir();
 
     const formsPath = path.join(__dirname, 'forms');
     await chtConfUtils.compileAndUploadAppForms(formsPath);
-
   });
 
   beforeEach(async () => {
@@ -127,8 +77,7 @@ describe('Tasks', () => {
   });
 
   it('should load multiple pages of tasks on infinite scrolling', async () => {
-    const settings = await compileTasks('tasks-multiple-config.js');
-    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
+    await tasksPage.compileTasks('tasks-multiple-config.js');
 
     await commonPage.goToTasks();
     const list = await tasksPage.getTasks();
@@ -137,7 +86,7 @@ describe('Tasks', () => {
     for (let i = 0; i < (infos.length/3); i++) {
       expect(infos).to.include.deep.members([
         {
-          contactName: 'Mary Smith',
+          contactName: 'Megan Spice',
           formTitle: `person_create_${i + 1}`,
           lineage: '',
           dueDateText: 'Due today',
@@ -160,12 +109,11 @@ describe('Tasks', () => {
       ]);
     }
     await tasksPage.scrollToLastTaskItem();
-    expect(await commonEnketoPage.isElementDisplayed('p', 'No more tasks', 'div#tasks-list')).to.be.true;
+    expect(await tasksPage.isTaskElementDisplayed('p', 'No more tasks')).to.be.true;
   });
 
   it('should remove task from list when CHW completes a task successfully', async () => {
-    const settings = await compileTasks('tasks-breadcrumbs-config.js');
-    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
+    await tasksPage.compileTasks('tasks-breadcrumbs-config.js');
     
     await commonPage.goToTasks();
     let list = await tasksPage.getTasks();
@@ -180,28 +128,8 @@ describe('Tasks', () => {
     expect(list).to.have.length(2);
   });
 
-  // WIP
-  it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
-    const settings = await compileTasks('tasks-breadcrumbs-config.js');
-    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
-    
-    await commonPage.goToTasks();
-    let list = await tasksPage.getTasks();
-    expect(list).to.have.length(2);
-    const task = await tasksPage.getTaskByContactAndForm('patient2', 'person_create');
-    await task.click();
-    await tasksPage.waitForTaskContentLoaded('Home Visit');
-    const taskElement = await tasksPage.getOpenTaskElement();
-    await genericForm.submitForm();
-    await taskElement.waitForDisplayed({ reverse: true });
-    list = await tasksPage.getTasks();
-    expect(list).to.have.length(1);
-    // validate new task is created = taskList length should still be 2
-  });
-
   it('Should show error message for bad config', async () => {
-    const settings = await compileTasks('tasks-error-config.js');
-    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
+    await tasksPage.compileTasks('tasks-error-config.js');
     await commonPage.goToTasks();
 
     const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
