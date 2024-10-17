@@ -207,7 +207,6 @@ body {
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
-      line-clamp: 2;
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -1296,10 +1295,10 @@ mm-sidebar-menu .mat-sidenav-container {
     }
   }
 
-  mm-panel-header {
+  .mat-sidenav mm-panel-header {
     background: @top-header-color;
     height: @sidebar-menu-header-desktop;
-    padding: 0px !important;
+    padding: 0;
 
     .panel-header {
       justify-content: flex-end;
@@ -1411,7 +1410,7 @@ mm-sidebar-menu .mat-sidenav-container {
       height: calc(@sidebar-menu-height - @sidebar-menu-header-mobile);
     }
 
-    mat-icon {
+    .nav-item mat-icon {
       margin-left: -6px !important;
     }
 
@@ -1420,14 +1419,11 @@ mm-sidebar-menu .mat-sidenav-container {
 
       .panel-header-title {
         font-size: @font-extra-large;
+        margin-left: 0 !important;
       }
 
       .panel-header-close {
         width: 48px !important;
-      }
-
-      .panel-header-title {
-        margin-left: unset;
       }
     }
   }
@@ -1492,28 +1488,37 @@ mm-sidebar-menu .mat-sidenav-container {
         flex-direction: row;
         align-items: center;
         justify-content: center;
+    
         .button-label {
-          top: 0;
-          font-size: @font-XXS;
-          padding-top: 5px;
-          margin-top: 0;
+            top: 0;
+            font-size: @font-XXS;
+            padding-top: 5px;
+            margin-top: 3px;
+            overflow: hidden;
+            word-wrap: break-word;
+            color: @nav-icon-gray;
+            text-overflow: ellipsis;
+            white-space: unset;
+            word-break: unset;
+            -webkit-line-clamp: unset;
+            -webkit-box-orient: unset;
+            line-clamp: unset;
         }
-
+    
         a {
-          min-width: 65px;
-          margin-top: 1px;
-
-          .mm-icon {
-            padding: 8px 0;
-          }
-
-          &.selected
-          .mm-icon {
-            border-radius: 999px;
-            background-color: @tab-selected-color;
-          }
+            min-width: 65px;
+            margin-top: 1px;
+    
+            .mm-icon {
+                padding: 8px 0;
+            }
+    
+            &.selected .mm-icon {
+                border-radius: 999px;
+                background-color: @tab-selected-color;
+            }
         }
-      }
+    }
     }
 
     &.select-mode {
