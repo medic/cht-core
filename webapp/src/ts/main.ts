@@ -11,8 +11,8 @@ window.$ = window.jQuery = require('jquery');
 import { enableProdMode } from '@angular/core';
 import '@angular/compiler';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import pouchdbDebug from 'pouchdb-debug';
 import * as $ from 'jquery';
+import pouchdbDebug from 'pouchdb-debug';
 
 import { AppModule } from './app.module';
 import { environment } from '@mm-environments/environment';
