@@ -63,7 +63,7 @@ describe('More Options Menu - Offline User', () => {
       it('should hide the kebab menu.', async () => {
         await commonPage.goToMessages();
         await sms.sendSms('testing', contact.phone);
-        expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+        expect(await commonPage.moreOptionsMenu().isExisting()).to.be.false;
       });
     });
 
@@ -100,7 +100,7 @@ describe('More Options Menu - Offline User', () => {
       it('should hide the \'export\' and \'edit\' options and ' +
         'enable the \'delete\' and \'review\' options when the sms report is opened', async () => {
         await commonPage.goToReports();
-        expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+        expect(await commonPage.moreOptionsMenu().isExisting()).to.be.false;
 
         await reportPage.goToReportById(smsReportId);
         await commonPage.openMoreOptionsMenu();
@@ -136,21 +136,20 @@ describe('More Options Menu - Offline User', () => {
     it('should hide the kebab menu in Messages, People and Reports tabs', async () => {
       await commonPage.goToMessages();
       await sms.sendSms('testing', contact.phone);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.moreOptionsMenu().isExisting()).to.be.false;
 
       await commonPage.goToPeople();
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.moreOptionsMenu().isExisting()).to.be.false;
 
       await contactPage.selectLHSRowByText(contact.name);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.moreOptionsMenu().isExisting()).to.be.false;
 
       await commonPage.goToReports();
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.moreOptionsMenu().isExisting()).to.be.false;
       await reportPage.goToReportById(smsReportId);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.moreOptionsMenu().isExisting()).to.be.false;
       await reportPage.goToReportById(xmlReportId);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.moreOptionsMenu().isExisting()).to.be.false;
     });
   });
 });
-

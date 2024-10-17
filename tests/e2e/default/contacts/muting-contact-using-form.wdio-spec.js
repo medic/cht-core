@@ -48,7 +48,7 @@ describe('Mute/Unmute contacts using a specific form - ', () => {
     await commonPage.waitForPageLoaded();
     await commonPage.sync();
 
-    expect(await (await contactPage.contactCardSelectors.contactMuted()).isDisplayed()).to.be.true;
+    expect(await contactPage.contactCardSelectors.contactMuted().isDisplayed()).to.be.true;
   });
 
   it('should unmute a contact using the defined unmute_forms (undo_death_report).', async () => {
@@ -63,7 +63,7 @@ describe('Mute/Unmute contacts using a specific form - ', () => {
     await genericForm.submitForm();
     await commonPage.sync();
 
-    expect(await (await contactPage.contactCardSelectors.contactMuted()).isDisplayed()).to.be.false;
+    expect(await contactPage.contactCardSelectors.contactMuted().isDisplayed()).to.be.false;
   });
 
   it('should show a popup when trying to submit a non-unmuting form against a muted contact', async () => {
