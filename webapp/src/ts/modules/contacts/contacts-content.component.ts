@@ -16,12 +16,12 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { ModalService } from '@mm-services/modal.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { SessionService } from '@mm-services/session.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Component({
   selector: 'contacts-content',
@@ -64,12 +64,12 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
     private contactTypesService: ContactTypesService,
     private settingsService: SettingsService,
-    private userSettingsService: UserSettingsService,
     private responsiveService: ResponsiveService,
     private fastActionButtonService: FastActionButtonService,
     private sessionService: SessionService,
     private mutingTransition: MutingTransition,
     private contactMutedService: ContactMutedService,
+    private telemetryService: TelemetryService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -112,15 +112,68 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscriptions.add(subscription);
   }
 
+  private async recordSearchTelemetry(selectedContact, nextSelectedContact, nextFilters) {
+    if (
+      // TODO: do we want to collect it for online users too? we probably do
+      this.isOnlineOnly ||
+      !nextFilters?.search ||
+      !nextSelectedContact
+    ) {
+      return;
+    }
+
+    // user searched for something and now selects a contact
+    if (
+      selectedContact === null || // had no contact selected
+      selectedContact._id !== nextSelectedContact._id // or had a different contact selected
+    ) {
+      console.log({ nextFilters, nextSelectedContact });
+
+      const search = nextFilters.search;
+      const matchingProperties = new Set<string>();
+      const skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
+      const colonSearch = search.split(':');
+      if (colonSearch.length > 1) {
+        matchingProperties.add(`${colonSearch[0]}:$value`);
+      }
+
+      const findMatchingProperties = (object: Record<string, any>, basePropertyPath = '') => {
+        Object.entries(object).forEach(([key, value]) => {
+          const _key = key.toLowerCase();
+          if (skip.includes(_key) || _key.endsWith('_date')) {
+            return;
+          }
+
+          const propertyPath = basePropertyPath ? `${basePropertyPath}.${key}` : key;
+          if (typeof value === 'string' && value.toLowerCase().includes(search.toLowerCase())) {
+            matchingProperties.add(propertyPath);
+          }
+
+          if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            // TODO: unsure if needed, might remove before shipping
+            //  this essentially tells us if the user selected a contact further down the lineage
+            findMatchingProperties(value, propertyPath);
+          }
+        });
+      };
+      findMatchingProperties(nextSelectedContact.doc);
+
+      for (const key of matchingProperties) {
+        await this.telemetryService.record(`search_match:contacts_by_freetext:${key}`);
+        console.info('record', `search_match:contacts_by_freetext:${key}`);
+      }
+    }
+  }
+
   private subscribeToStore() {
-    const reduxSubscription = combineLatest(
+    const reduxSubscription = combineLatest([
       this.store.select(Selectors.getSelectedContact),
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getLoadingSelectedContactReports),
       this.store.select(Selectors.getContactsLoadingSummary),
       this.store.select(Selectors.getFilters),
-    ).subscribe(([
+    ]).subscribe(([
       selectedContact,
       forms,
       loadingContent,
@@ -128,6 +181,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       contactsLoadingSummary,
       filters,
     ]) => {
+      this.recordSearchTelemetry(this.selectedContact, selectedContact, filters);
       if (this.selectedContact?._id !== selectedContact?._id) {
         // reset view when selected contact changes
         this.resetTaskAndReportsFilter();
@@ -264,16 +318,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       ...childType,
       permission: childType.type?.person ? 'can_create_people' : 'can_create_places',
     }));
-  }
-
-  private setUserSettings() {
-    if (this.userSettings) {
-      return;
-    }
-    return this.userSettingsService
-      .get()
-      .then(userSettings => this.userSettings = userSettings)
-      .catch(error => console.error('Error fetching user settings', error));
   }
 
   private setSettings() {
