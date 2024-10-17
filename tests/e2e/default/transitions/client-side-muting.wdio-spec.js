@@ -11,7 +11,7 @@ const personFactory = require('@factories/cht/contacts/person');
 
 /* global window */
 
-describe.skip('Muting', () => {
+describe('Muting', () => {
   const places = placeFactory.generateHierarchy();
   const district = places.get('district_hospital');
   const healthCenter = places.get('health_center');
@@ -155,22 +155,6 @@ describe.skip('Muting', () => {
     expect(doc.muted).to.be.ok;
     expect(doc.muting_history).to.be.undefined;
   };
-  const setBrowserOffline = async () => {
-    await browser.throttle({
-      offline: true,
-      downloadThroughput: 0,
-      uploadThroughput: 0,
-      latency: 0
-    });
-  };
-  const setBrowserOnline = async () => {
-    await browser.throttle({
-      offline: false,
-      downloadThroughput: 1000 * 1000,
-      uploadThroughput: 1000 * 1000,
-      latency: 0
-    });
-  };
 
   before(async () => {
     await utils.saveDocs([district, healthCenter]);
@@ -213,17 +197,7 @@ describe.skip('Muting', () => {
 
   describe('for an offline user', () => {
     const updateClientSideMutingSettings = async (settings) => {
-      await setBrowserOffline();
-      await utils.updateSettings(settings);
-      await setBrowserOnline();
-      try {
-        await commonPage.sync();
-      } catch (err) {
-        // sometimes sync happens by itself, on timeout
-        console.error('Error when trying to sync', err);
-        await commonPage.closeReloadModal(true);
-        await commonPage.sync();
-      }
+      await utils.updateSettings(settings, { sync: true, refresh: true, ignoreReload: true });
     };
 
     const unmuteContacts = () => {
@@ -264,10 +238,8 @@ describe.skip('Muting', () => {
 
     afterEach(async () => {
       await commonPage.sync();
-      await setBrowserOffline();
       await utils.revertSettings(true);
       await unmuteContacts();
-      await setBrowserOnline();
     });
 
     it( 'should not process muting client-side if not enabled', async () => {
