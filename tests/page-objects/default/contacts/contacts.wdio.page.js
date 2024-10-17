@@ -296,28 +296,23 @@ const openReport = async () => {
 };
 
 const getContactCardTitle = async () => {
-  await rightPanelSelectors.contactCardTitle().waitForDisplayed();
-  return (await rightPanelSelectors.contactCardTitle()).getText();
+  return rightPanelSelectors.contactCardTitle().getText();
 };
 
 const getContactInfoName = async () => {
-  await contactCardSelectors.contactCardName().waitForDisplayed();
-  return (await contactCardSelectors.contactCardName()).getText();
+  return contactCardSelectors.contactCardName().getText();
 };
 
 const getContactMedicID = async () => {
-  await contactCardSelectors.contactMedicID().waitForDisplayed();
-  return (await contactCardSelectors.contactMedicID()).getText();
+  return contactCardSelectors.contactMedicID().getText();
 };
 
 const getContactDeceasedStatus = async () => {
   const deceasedStatus = await contactCardSelectors.contactDeceasedStatus();
-  await deceasedStatus.waitForDisplayed();
   return await deceasedStatus.getText();
 };
 
 const getPregnancyCardInfo = async () => {
-  await pregnancyCardSelectors.pregnancyCard().waitForDisplayed();
   return {
     weeksPregnant: await pregnancyCardSelectors.weeksPregnant().getText(),
     deliveryDate: await pregnancyCardSelectors.edd().getText(),
@@ -327,7 +322,6 @@ const getPregnancyCardInfo = async () => {
 };
 
 const getDeathCardInfo = async () => {
-  await deathCardSelectors.deathCard().waitForDisplayed();
   return {
     deathDate: await deathCardSelectors.deathDate().getText(),
     deathPlace: await deathCardSelectors.deathPlace().getText(),

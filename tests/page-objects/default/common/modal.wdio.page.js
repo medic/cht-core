@@ -10,6 +10,8 @@ const cancelButton = () => $(`${MODAL_CONTAINER} ${MODAL_FOOTER} button[test-id=
 const getModalDetails = async () => {
   await header().waitForDisplayed();
   await body().waitForDisplayed();
+  await header().waitForDisplayed();
+  await body().waitForDisplayed();
   return {
     header: await header().getText(),
     body: await body().getText(),

@@ -35,6 +35,7 @@ const emptySelectionNoError = () => $(`${EMPTY_SELECTION}:not(.selection-error)`
 const getTargetInfo = async (targetElement) => {
   const target = {
     title: await targetTitle(targetElement).getText()
+    title: await targetTitle(targetElement).getText()
   };
 
   if (await targetGoal(targetElement).isExisting()) {
@@ -59,6 +60,7 @@ const getTargetInfo = async (targetElement) => {
 };
 
 const getTargets = async () => {
+  await targetWrap().waitForDisplayed();
   await targetWrap().waitForDisplayed();
   const displayedTargets = await targets();
 

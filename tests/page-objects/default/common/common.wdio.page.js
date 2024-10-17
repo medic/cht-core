@@ -344,13 +344,13 @@ const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
 
   try {
     await openHamburgerMenu();
-    if (!await (await syncInProgress()).isExisting()) {
-      await (await syncButton()).click();
+    if (!await syncInProgress().isExisting()) {
+      await syncButton().click();
       await openHamburgerMenu();
     }
 
-    await (await syncInProgress()).waitForDisplayed({ timeout, reverse: true });
-    await (await syncSuccess()).waitForDisplayed({ timeout });
+    await syncInProgress().waitForDisplayed({ timeout, reverse: true });
+    await syncSuccess().waitForDisplayed({ timeout });
   } catch (err) {
     console.error(err);
     await syncAndWaitForSuccess(timeout, retry - 1);
