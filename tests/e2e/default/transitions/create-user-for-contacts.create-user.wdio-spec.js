@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { expect } = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const messagesUtils = require('@utils/messages');
@@ -11,74 +10,55 @@ const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page'
 const { BASE_URL } = require('@constants');
 const { cookieLogin } = require('@page-objects/default/login/login.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-
-const CONTACT_NAME = 'Bob_chw';
-const ADD_CHW_FORM = 'form[data-form-id="add_chw"]';
-
-const chwNameField = () => $(`${ADD_CHW_FORM} input[name="/add_chw/chw_profile/name"]`);
-const chwPhoneField = () => $(`${ADD_CHW_FORM} input[name="/add_chw/chw_profile/phone"]`);
-
-const setChwName = async (nameValue = 'Ron') => {
-  const name = await chwNameField();
-  await name.waitForDisplayed();
-  await name.setValue(nameValue);
-};
-
-const setChwPhone = async (phoneValue = '+40755696969') => {
-  const phone = await chwPhoneField();
-  await phone.waitForDisplayed();
-  await phone.setValue(phoneValue);
-};
-
-const submitAddChwForm = async ({
-  name: nameValue,
-  phone: phoneValue,
-} = {}) => {
-  await setChwName(nameValue);
-  await setChwPhone(phoneValue);
-  await genericForm.submitForm();
-};
-
-const district = utils.deepFreeze(
-  placeFactory
-    .place()
-    .build({ type: 'district_hospital' })
-);
-
-const settings = utils.deepFreeze({
-  transitions: { create_user_for_contacts: true },
-  token_login: { enabled: true },
-  app_url: BASE_URL
-});
-
-const settingsNoTransitions = utils.deepFreeze({
-  transitions: { create_user_for_contacts: false },
-  token_login: { enabled: true },
-  app_url: BASE_URL
-});
-
-const offlineUser = utils.deepFreeze(userFactory.build({
-  username: 'offline_user_create',
-  place: district._id,
-}));
-
-const addChwAppForm = utils.deepFreeze({
-  _id: 'form:add_chw',
-  internalId: 'add_chw',
-  title: 'Add CHW',
-  type: 'form',
-  _attachments: {
-    xml: {
-      content_type: 'application/octet-stream',
-      data: Buffer
-        .from(fs.readFileSync(`${__dirname}/forms/add_chw.xml`, 'utf8'))
-        .toString('base64')
-    }
-  }
-});
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('Create user when adding contact', () => {
-  const newUsers = [];
+  const NEW_USERS = [];
+  const CONTACT_NAME = 'Bob_chw';
+
+  const submitAddChwForm = async ({
+    name: nameValue,
+    phone: phoneValue,
+  } = {}) => {
+    await commonEnketoPage.setInputValue('Name', nameValue);
+    await commonEnketoPage.setInputValue('Phone Number', phoneValue);
+    await genericForm.submitForm();
+  };
+
+  const district = utils.deepFreeze( placeFactory.place().build({ type: 'district_hospital' }) );
+
+  const settings = utils.deepFreeze({
+    transitions: { create_user_for_contacts: true },
+    token_login: { enabled: true },
+    app_url: BASE_URL
+  });
+
+  const settingsNoTransitions = utils.deepFreeze({
+    transitions: { create_user_for_contacts: false },
+    token_login: { enabled: true },
+    app_url: BASE_URL
+  });
+
+  const offlineUser = utils.deepFreeze(userFactory.build({
+    username: 'offline_user_create',
+    place: district._id,
+  }));
+
+  //WIP: Maybe move this to a method in commons, and move also the one that is in common-enketo
+  const addChwAppForm = utils.deepFreeze({
+    _id: 'form:add_chw',
+    internalId: 'add_chw',
+    title: 'Add CHW',
+    type: 'form',
+    _attachments: {
+      xml: {
+        content_type: 'application/octet-stream',
+        data: Buffer
+          .from(fs.readFileSync(`${__dirname}/forms/add_chw.xml`, 'utf8'))
+          .toString('base64')
+      }
+    }
+  });
 
   const verifyUserCreation = async () => {
     const chwContactId = await contactsPage.getCurrentContactId();
@@ -93,7 +73,7 @@ describe('Create user when adding contact', () => {
     // New user created
     const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: chwContactId });
     expect(additionalUsers).to.be.empty;
-    newUsers.push(newUserSettings.name);
+    NEW_USERS.push(newUserSettings.name);
     const loginLink = await messagesUtils.getTextedLoginLink(newUserSettings);
 
     // Open the texted link
@@ -124,8 +104,8 @@ describe('Create user when adding contact', () => {
   beforeEach(async () => await utils.saveDocs([district]));
 
   afterEach(async () => {
-    await utils.deleteUsers(newUsers.map(username => ({ username })));
-    newUsers.length = 0;
+    await utils.deleteUsers(NEW_USERS.map(username => ({ username })));
+    NEW_USERS.length = 0;
     await utils.revertDb([/^form:/], true);
     await sentinelUtils.waitForSentinel();
     await browser.reloadSession();
@@ -134,7 +114,7 @@ describe('Create user when adding contact', () => {
 
   it('Creates a new user while offline', async () => {
     await utils.createUsers([offlineUser]);
-    newUsers.push(offlineUser.username);
+    NEW_USERS.push(offlineUser.username);
 
     await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
     await loginPage.login(offlineUser);
