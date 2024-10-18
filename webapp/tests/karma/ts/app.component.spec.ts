@@ -145,6 +145,7 @@ describe('AppComponent', () => {
       isOnlineOnly: sinon.stub()
     };
     dbSyncService = {
+      init: sinon.stub().resolves(),
       addUpdateListener: sinon.stub(),
       isEnabled: sinon.stub().returns(false),
       sync: sinon.stub(),
@@ -479,6 +480,7 @@ describe('AppComponent', () => {
       }]);
       expect(globalActions.updateReplicationStatus.getCall(1).args).to.deep.equal([{disabled: true}]);
       expect(dbSyncService.subscribe.callCount).to.equal(1);
+      expect(dbSyncService.init.calledOnceWithExactly()).to.be.true;
     });
 
     it('should sync db if enabled', async () => {
@@ -499,6 +501,7 @@ describe('AppComponent', () => {
 
       expect(dbSyncService.sync.callCount).to.equal(1);
       expect(dbSyncService.subscribe.callCount).to.equal(1);
+      expect(dbSyncService.init.calledOnceWithExactly()).to.be.true;
     });
 
     it('should set dbSync replication status in subcription callback', async () => {

@@ -14,6 +14,8 @@ import { TranslateService } from '@mm-services/translate.service';
 import { MigrationsService } from '@mm-services/migrations.service';
 import { ReplicationService } from '@mm-services/replication.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import medicOfflineDdoc from '@mm-services/offline-ddocs/medic-offline-freetext.ddoc';
+import { DesignDoc } from '@mm-services/offline-ddocs/design-doc';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -24,6 +26,9 @@ const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 const BATCH_SIZE = 100;
 const MAX_SUCCESSIVE_SYNCS = 2;
+const OFFLINE_DDOCS = [
+  medicOfflineDdoc,
+];
 
 const readOnlyFilter = function(doc) {
   // Never replicate "purged" documents upwards
@@ -63,6 +68,21 @@ type SyncState = {
 
 type SyncStateListener = Parameters<Subject<SyncState>['subscribe']>[0];
 
+const getRev = async (db, id: string): Promise<string | undefined> => db
+  .get(id)
+  .then(({ _rev }) => _rev as string)
+  .catch((e) => {
+    if (e.status === 404) {
+      return undefined;
+    }
+    throw e;
+  });
+
+const initDdoc = (db) => async (ddoc: DesignDoc) => db.put({
+  ...ddoc,
+  _rev: await getRev(db, ddoc._id),
+});
+
 @Injectable({
   providedIn: 'root'
 })
@@ -99,6 +119,14 @@ export class DBSyncService {
   isEnabled() {
     return !this.sessionService.isOnlineOnly();
   }
+
+  init = async () => {
+    if (!this.isEnabled()) {
+      return;
+    }
+    const medicDb = await this.dbService.get();
+    return Promise.all(OFFLINE_DDOCS.map(initDdoc(medicDb)));
+  };
 
   private replicateToRetry({ batchSize=BATCH_SIZE }={}) {
     const telemetryEntry = new DbSyncTelemetry(
