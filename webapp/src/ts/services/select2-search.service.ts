@@ -70,6 +70,7 @@ export class Select2SearchService {
       types: { selected: types },
       search: params.data.q,
     };
+    console.log("ddddddfilters", filters);
     if (options.filterByParent) {
       filters.parent = this.getContactId();
     }
@@ -78,6 +79,7 @@ export class Select2SearchService {
       .search('contacts', filters, searchOptions)
       .then((documents) => {
         if (currentQuery === params.data.q) {
+          console.log("documents", documents);
           successCb({
             results: options.sendMessageExtras(this.prepareRows(documents)),
             pagination: {
