@@ -162,6 +162,13 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         throw new Error(`Unknown contact type "${contactTypeId}"`);
       }
 
+      const parentId = this.routeSnapshot.params?.parent_id;
+      const newContactType = this.routeSnapshot.params?.type;
+      const validateParents = await this.validateParent(parentId, newContactType);
+      if (!validateParents) {
+        throw new Error(`"{newContactType}" is not a child of "${parentId}"`);
+      }
+
       const formId = this.getForm(contact, contactType);
       if (!formId) {
         throw new Error('Unknown form');
@@ -219,6 +226,17 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     return formId;
+  }
+
+  private async validateParent(parentId, newContactType) {
+    const parentContact = await this.lineageModelGeneratorService.contact(parentId, {merge: true});
+    const parentType = this.contactTypesService.getTypeId(parentContact.doc);
+    const validChildTypes = await this.contactTypesService.getChildren(parentType);
+
+    if (validChildTypes.some(childType => childType.id === newContactType)) {
+      return true;
+    }
+    return false;
   }
 
   private setTitle(titleKey: string) {
