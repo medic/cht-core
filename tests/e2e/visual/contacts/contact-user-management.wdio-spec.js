@@ -115,7 +115,12 @@ describe('Contact and User Management', () => {
       if (!await isMobile()){
         this.skip();
       }
-      await utils.updateRolePermissions('chw', ['can_view_uhc_stats', 'can_view_last_visited_date'], []);
+      await utils.updateRolePermissions('chw', ['can_view_uhc_stats', 'can_view_last_visited_date'], [], {
+        ignoreReload: true,
+        revert: true,
+        refresh: true,
+        sync: true
+      });
       await commonPage.waitForPageLoaded();
       await commonPage.goToPeople();
       await sortPage.selectSortOrder('By date last visited');
@@ -128,7 +133,12 @@ describe('Contact and User Management', () => {
         this.skip();
       }
       await compileAndUploadForms();
-      await utils.updateRolePermissions('chw', [], ['can_view_call_action', 'can_view_message_action']);
+      await utils.updateRolePermissions('chw', [], ['can_view_call_action', 'can_view_message_action'], {
+        ignoreReload: true,
+        revert: true,
+        refresh: true,
+        sync: true
+      });
       await commonPage.waitForPageLoaded();
       await commonPage.goToPeople();
       expect(await commonPage.isPeopleListPresent()).to.be.true;
