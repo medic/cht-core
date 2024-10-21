@@ -108,7 +108,7 @@ describe('Tasks', () => {
         },
       ]);
     }
-    await tasksPage.scrollToLastTaskItem();
+    await commonPage.loadNextInfiniteScrollPage();
     expect(await tasksPage.isTaskElementDisplayed('p', 'No more tasks')).to.be.true;
   });
 

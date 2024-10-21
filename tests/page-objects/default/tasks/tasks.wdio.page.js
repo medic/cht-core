@@ -8,7 +8,6 @@ const TASKS_GROUP_SELECTOR = '#tasks-group .item-content';
 const FORM_TITLE_SELECTOR = `${TASK_FORM_SELECTOR} h3#form-title`;
 const NO_SELECTED_TASK_SELECTOR = '.empty-selection';
 
-const getTaskList = () => $('div#tasks-list');
 const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"`);
 const getTasks = () => $$(`${TASK_LIST_SELECTOR} li.content-row`);
 
@@ -94,7 +93,7 @@ const compileTasks = async (tasksFileName) => {
 };
 
 const isTaskElementDisplayed = async (type, text) => {
-  return await (await getTaskList()).$(`${type}*=${text}`).isDisplayed();
+  return await (await $(TASK_LIST_SELECTOR)).$(`${type}*=${text}`).isDisplayed();
 };
 
 module.exports = {
