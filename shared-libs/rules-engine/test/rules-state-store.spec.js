@@ -441,14 +441,17 @@ describe('rules-state-store', () => {
       expect(stale).to.equal(true);
     });
 
-    it('should mark as stale when target-state is stale', () => {
+    it('should mark as stale and migrate when target-state is stale', () => {
       const settings = { config: '123' };
+      const targets = { t1: { emissions: [] }, t2: { emissions: [] } };
+      Object.freeze(targets);
       const staleState = {
-        targetState: {},
+        targetState: targets,
         rulesConfigHash: md5(JSON.stringify(settings))
       };
       const stale = rulesStateStore.load(staleState, settings);
       expect(stale).to.equal(true);
+      expect(staleState.targetState).to.deep.equal({ targets, aggregate: { } });
     });
 
     it('should not mark as stale when not stale', () => {
