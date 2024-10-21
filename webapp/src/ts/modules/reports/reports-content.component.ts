@@ -70,10 +70,46 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     this.reportsActions.setSelectedReport();
   }
 
-  private async recordSearchTelemetry() {
-    if (false) {
-      const key = 'TODO';
-      await this.telemetryService.record(`search_match:reports_by_freetext:${key}`);
+  private async recordSearchTelemetry(selectedReport, nextSelectedReport, nextFilters) {
+    if (!nextFilters?.search || !nextSelectedReport) {
+      return;
+    }
+
+    // user searched for something and now selects a report
+    const hadNoReportSelected = selectedReport === null || selectedReport.length === 0;
+    const hadDifferentReportSelected = Array.isArray(selectedReport) &&
+        selectedReport.length === 1 &&
+        selectedReport[0]._id !== nextSelectedReport._id;
+    if (hadNoReportSelected || hadDifferentReportSelected) {
+      const search = nextFilters.search;
+      const matchingProperties = new Set<string>();
+      const colonSearch = search.split(':');
+      if (colonSearch.length > 1) {
+        matchingProperties.add(`${colonSearch[0]}:$value`);
+      }
+
+      const skip = ['_id', '_rev', 'type', 'refid', 'content'];
+      const _search = search.toLowerCase();
+      const findMatchingProperties = (object: Record<string, any>, basePropertyPath = '') => {
+        Object.entries(object).forEach(([key, value]) => {
+          const _key = key.toLowerCase();
+          if (skip.includes(_key) || _key.endsWith('_date')) {
+            return;
+          }
+
+          const propertyPath = basePropertyPath ? `${basePropertyPath}.${key}` : key;
+          if (typeof value === 'string' && value.toLowerCase().includes(_search)) {
+            matchingProperties.add(propertyPath);
+          }
+        });
+      };
+      findMatchingProperties(nextSelectedReport.doc);
+      findMatchingProperties(nextSelectedReport.doc.fields, 'fields');
+
+      for (const key of matchingProperties) {
+        await this.telemetryService.record(`search_match:reports_by_freetext:${key}`);
+        console.info('record', `search_match:contacts_by_freetext:${key}`);
+      }
     }
   }
 
@@ -81,11 +117,13 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     const reportsSubscription = combineLatest(
       this.store.select(Selectors.getSelectedReport),
       this.store.select(Selectors.getSelectedReports),
+      this.store.select(Selectors.getFilters),
     ).subscribe(([
       selectedReport,
       selectedReports,
+      filters
     ]) => {
-      this.recordSearchTelemetry();
+      this.recordSearchTelemetry(this.selectedReports, selectedReport, filters);
       if (selectedReport) {
         this.selectedReports = [ selectedReport ];
       } else {
