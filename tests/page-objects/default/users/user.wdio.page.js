@@ -223,7 +223,7 @@ const closeAddUserDialog = async () => {
   await (await addUserDialog()).waitForDisplayed({ reverse: true });
 };
 const scrollToRole = async () => {
-  await (await $(`#role-select`)).scrollIntoView();
+  await (await $('#role-select')).scrollIntoView();
 };
 
 module.exports = {
