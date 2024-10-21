@@ -198,7 +198,7 @@ const closeAddUserDialog = async () => {
 };
 
 const scrollToRole = async () => {
-  await (await $(`#role-select`)).scrollIntoView();
+  await (await $('#role-select')).scrollIntoView();
 };
 
 module.exports = {
