@@ -107,14 +107,9 @@ const openSortMenu = async () => {
 };
 const selectSortOrder = async (sortOrder) => {
   await openSortMenu();
-  const options = await sortMenuSelectors.sortMenuItems();
-  for (const option of options) {
-    const optionText = await option.getText();
-    if (optionText.trim() === sortOrder) {
-      await option.click();
-      break;
-    }
-  }
+  const allOptions = await sortMenuItems();
+  const option = await allOptions.$(`aria/${sortOrder}`);
+  await option.click();
 };
 
 const search = async (query) => {
