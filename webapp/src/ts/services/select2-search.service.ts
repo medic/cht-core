@@ -15,6 +15,7 @@ import { TranslateService } from '@mm-services/translate.service';
   providedIn: 'root'
 })
 export class Select2SearchService {
+  private currentQuery: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -58,7 +59,7 @@ export class Select2SearchService {
   }
 
   private query(params, successCb, failureCb, options, types) {
-    const currentQuery = params.data.q;
+    this.currentQuery = params.data.q;
 
     const searchOptions = {
       limit: options.pageSize,
@@ -70,7 +71,6 @@ export class Select2SearchService {
       types: { selected: types },
       search: params.data.q,
     };
-    console.log("ddddddfilters", filters);
     if (options.filterByParent) {
       filters.parent = this.getContactId();
     }
@@ -78,8 +78,8 @@ export class Select2SearchService {
     this.searchService
       .search('contacts', filters, searchOptions)
       .then((documents) => {
-        if (currentQuery === params.data.q) {
-          console.log("documents", documents);
+        if (this.currentQuery === params.data.q) {
+          this.currentQuery = null;
           successCb({
             results: options.sendMessageExtras(this.prepareRows(documents)),
             pagination: {
@@ -89,7 +89,8 @@ export class Select2SearchService {
         }
       })
       .catch((err) => {
-        if (currentQuery === params.data.q) {
+        if (this.currentQuery === params.data.q) {
+          this.currentQuery = null;
           failureCb(err);
         }
       });
