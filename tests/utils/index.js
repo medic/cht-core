@@ -1499,18 +1499,12 @@ const getUpdatedPermissions = async (roles, addPermissions, removePermissions) =
   return settings.permissions;
 };
 
-const updatePermissions = async (roles, addPermissions, removePermissions, ignoreReload) => {
+const updatePermissions = async (roles, addPermissions, removePermissions, options = {}) => {
   const permissions = await getUpdatedPermissions(roles, addPermissions, removePermissions);
-  await updateSettings({permissions}, { ignoreReload: ignoreReload });
-};
-
-const updateRolePermissions = async (roleValue, addPermissions, removePermissions = []) => {
-  const roles = [roleValue];
-  const settings = await getSettings();
-  const permissions = await getUpdatedPermissions(roles, addPermissions, removePermissions);
+  const { ignoreReload = false, revert = false, refresh = false, sync = false } = options;
   await updateSettings(
-    { roles: settings.roles, permissions },
-    { revert: true, ignoreReload: true, refresh: true, sync: true }
+    { permissions },
+    { ignoreReload, revert, refresh, sync }
   );
 };
 
@@ -1631,5 +1625,4 @@ module.exports = {
   isK3D,
   stopCouchDb,
   startCouchDb,
-  updateRolePermissions,
 };

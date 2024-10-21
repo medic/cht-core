@@ -58,7 +58,12 @@ describe('Contact List Page', () => {
 
     it('should hide contacts page as tab and from menu option ' +
       'when can_view_contacts_tab permissions is enable but can_view_contact permission is not', async () => {
-      await utils.updateRolePermissions('chw', [], ['can_view_contacts']);
+      await utils.updateRolePermissions('chw', [], ['can_view_contacts'], {
+        ignoreReload: true,
+        revert: true,
+        refresh: true,
+        sync: true
+      });
       await commonPage.waitForPageLoaded();
       await commonPage.goToMessages();
       await (await commonPage.contactsTab()).waitForDisplayed({ reverse: true });
@@ -78,7 +83,12 @@ describe('Contact List Page', () => {
 
     it('should hide contacts page as tab, show from menu option ' +
       'when can_view_contact permissions is enable but can_view_contact permission is not', async () => {
-      await utils.updateRolePermissions('chw', ['can_view_contacts'], ['can_view_contacts_tab']);
+      await utils.updateRolePermissions('chw', ['can_view_contacts'], ['can_view_contacts_tab'], {
+        ignoreReload: true,
+        revert: true,
+        refresh: true,
+        sync: true
+      });
       await commonPage.waitForPageLoaded();
       await commonPage.goToMessages();
       await (await commonPage.contactsTab()).waitForDisplayed({ reverse: true });
@@ -102,7 +112,12 @@ describe('Contact List Page', () => {
 
     it('should hide contacts page as a tab and from menu option ' +
       'when can_view_contact and can_view_contact permissions are disable', async () => {
-      await utils.updateRolePermissions('chw', [], ['can_view_contacts_tab', 'can_view_contacts']);
+      await utils.updateRolePermissions('chw', [], ['can_view_contacts_tab', 'can_view_contacts'], {
+        ignoreReload: true,
+        revert: true,
+        refresh: true,
+        sync: true
+      });
       await commonPage.waitForPageLoaded();
       await commonPage.goToMessages();
       await (await commonPage.contactsTab()).waitForDisplayed({ reverse: true });
