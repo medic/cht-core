@@ -10,12 +10,15 @@ import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Select2SearchService {
+  private selectEl;
   private currentQuery: string | null = null;
+  private onceHandler;
 
   constructor(
     private route: ActivatedRoute,
@@ -25,7 +28,8 @@ export class Select2SearchService {
     private searchService: SearchService,
     private sessionService: SessionService,
     private settingsService: SettingsService,
-    private contactMutedService: ContactMutedService
+    private contactMutedService: ContactMutedService,
+    private telemetryService: TelemetryService,
   ) { }
 
   private defaultTemplateResult(row) {
@@ -79,6 +83,51 @@ export class Select2SearchService {
       .search('contacts', filters, searchOptions)
       .then((documents) => {
         if (this.currentQuery === params.data.q) {
+          if (this.onceHandler) {
+            this.selectEl!.off('select2:select', this.onceHandler);
+            this.onceHandler = null;
+          }
+
+          this.onceHandler = async (event) => {
+            this.onceHandler = null;
+
+            const search = params.data.q;
+            if (!search) {
+              return;
+            }
+
+            const matchingProperties = new Set<string>();
+            const colonSearch = search.split(':');
+            if (colonSearch.length > 1) {
+              matchingProperties.add(`${colonSearch[0]}:$value`);
+            }
+
+            const docId = event.params && event.params.data && event.params.data.id;
+            const doc = await this.getDoc(docId);
+            const skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
+            const _search = search.toLowerCase();
+            const findMatchingProperties = (object: Record<string, any>, basePropertyPath = '') => {
+              Object.entries(object).forEach(([key, value]) => {
+                const _key = key.toLowerCase();
+                if (skip.includes(_key) || _key.endsWith('_date')) {
+                  return;
+                }
+
+                const propertyPath = basePropertyPath ? `${basePropertyPath}.${key}` : key;
+                if (typeof value === 'string' && value.toLowerCase().includes(_search)) {
+                  matchingProperties.add(propertyPath);
+                }
+              });
+            };
+            findMatchingProperties(doc);
+
+            for (const key of matchingProperties) {
+              await this.telemetryService.record(`search_match:contacts_by_type_freetext:${key}`);
+              console.info('record', `search_match:contacts_by_type_freetext:${key}`);
+            }
+          };
+          this.selectEl!.one('select2:select', this.onceHandler);
+
           this.currentQuery = null;
           successCb({
             results: options.sendMessageExtras(this.prepareRows(documents)),
@@ -218,6 +267,7 @@ export class Select2SearchService {
   }
 
   async init(selectEl, _types, _options:any = {}) {
+    this.selectEl = selectEl;
     const settings = await this.settingsService.get();
     const types = Array.isArray(_types) ? _types : [ _types ];
     const options = {
