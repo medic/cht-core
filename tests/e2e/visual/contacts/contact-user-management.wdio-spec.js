@@ -3,7 +3,6 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const dataFactory = require('@factories/cht/generate');
 const searchPage = require('@page-objects/default/search/search.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const sortPage = require('@page-objects/default/sort/sort.wdio.page');
 const utils = require('@utils');
 const chtConfUtils = require('@utils/cht-conf');
 const path = require('path');
@@ -123,8 +122,8 @@ describe('Contact and User Management', () => {
       });
       await commonPage.waitForPageLoaded();
       await commonPage.goToPeople();
-      await sortPage.selectSortOrder('By date last visited');
-      await sortPage.openSortMenu();
+      await contactPage.selectSortOrder('By date last visited');
+      await contactPage.openSortMenu();
       await generateScreenshot('people', 'sort');
     });
 
