@@ -113,30 +113,23 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   }
 
   private async recordSearchTelemetry(selectedContact, nextSelectedContact, nextFilters) {
-    if (
-      // TODO: do we want to collect it for online users too? we probably do
-      this.isOnlineOnly ||
-      !nextFilters?.search ||
-      !nextSelectedContact
-    ) {
+    if (!nextFilters?.search || !nextSelectedContact) {
       return;
     }
 
     // user searched for something and now selects a contact
-    if (
-      selectedContact === null || // had no contact selected
-      selectedContact._id !== nextSelectedContact._id // or had a different contact selected
-    ) {
-      console.log({ nextFilters, nextSelectedContact });
-
+    const hadNoContactSelected = selectedContact === null;
+    const hadDifferentContactSelected = selectedContact !== null && selectedContact._id !== nextSelectedContact._id;
+    if (hadNoContactSelected || hadDifferentContactSelected) {
       const search = nextFilters.search;
       const matchingProperties = new Set<string>();
-      const skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
       const colonSearch = search.split(':');
       if (colonSearch.length > 1) {
         matchingProperties.add(`${colonSearch[0]}:$value`);
       }
 
+      const skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
+      const _search = search.toLowerCase();
       const findMatchingProperties = (object: Record<string, any>, basePropertyPath = '') => {
         Object.entries(object).forEach(([key, value]) => {
           const _key = key.toLowerCase();
@@ -145,14 +138,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
           }
 
           const propertyPath = basePropertyPath ? `${basePropertyPath}.${key}` : key;
-          if (typeof value === 'string' && value.toLowerCase().includes(search.toLowerCase())) {
+          if (typeof value === 'string' && value.toLowerCase().includes(_search)) {
             matchingProperties.add(propertyPath);
-          }
-
-          if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-            // TODO: unsure if needed, might remove before shipping
-            //  this essentially tells us if the user selected a contact further down the lineage
-            findMatchingProperties(value, propertyPath);
           }
         });
       };
