@@ -79,12 +79,6 @@ const openTaskById = async (id, taskType) => {
   await $(TASK_FORM_SELECTOR).waitForDisplayed();
 };
 
-const scrollToLastTaskItem = async () => {
-  await browser.execute(() => {
-    $('.content-row:last-child').get(0).scrollIntoView();
-  });
-};
-
 const compileTasks = async (tasksFileName) => {
   await chtConfUtils.initializeConfigDir();
   const tasksFilePath = path.join(__dirname, `../../../e2e/default/tasks/config/${tasksFileName}`);
@@ -107,7 +101,6 @@ module.exports = {
   getTasksInGroup,
   noSelectedTask,
   openTaskById,
-  scrollToLastTaskItem,
   compileTasks,
   isTaskElementDisplayed,
 };
