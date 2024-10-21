@@ -94,6 +94,28 @@ const editDistrictHospitalSelectors = {
   primaryContactSearchFirstResult: () => $(PRIMARY_CONTACT_SEARCH_RESULT),
 };
 
+const sortMenuSelectors = {
+  sortIcon: () => $('#sort-results'),
+  sortDropdown: () => $('#sort-results-dropdown'),
+  sortMenuItems: () => $$('#sort-results-dropdown a[role="menuitem"]'),
+};
+
+const openSortMenu = async () => {
+  await sortMenuSelectors.sortIcon().click();
+  await sortMenuSelectors.sortDropdown().waitForDisplayed();
+};
+const selectSortOrder = async (sortOrder) => {
+  await openSortMenu();
+  const options = await sortMenuSelectors.sortMenuItems();
+  for (const option of options) {
+    const optionText = await option.getText();
+    if (optionText.trim() === sortOrder) {
+      await option.click();
+      break;
+    }
+  }
+};
+
 const search = async (query) => {
   if (!await (await searchSelectors.searchBox()).isDisplayed()) {
     await mobileSearchPage.performSearch(query);
@@ -457,4 +479,6 @@ module.exports = {
   openPrimaryContactSearchDropdown,
   inputPrimaryContactSearchValue,
   selectPrimaryContactSearchFirstResult,
+  openSortMenu,
+  selectSortOrder,
 };
