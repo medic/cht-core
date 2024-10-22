@@ -8,13 +8,13 @@ const immunizationFactory = require('@factories/cht/reports/inmunization');
 const moment = require('moment');
 
 // Fixed collection of real-world data
-const FIRST_NAMES_FAMILY = [
+const PRIMARY_CONTACT_FIRST_NAMES = [
   'Amanda', 'Beatrice', 'Dana', 'Fatima',
   'Gina', 'Helen', 'Isabelle', 'Jessica',
   'Ivy', 'Sara'
 ];
-const FIRST_NAMES = ['John', 'Hawa', 'Timmy', 'Ana'];
-const LAST_NAMES_FAMILY = [
+const ADDITIONAL_PERSON_FIRST_NAMES = ['John', 'Hawa', 'Timmy', 'Ana'];
+const FAMILY_LAST_NAMES = [
   'Allen', 'Bass', 'Dearborn', 'Flair',
   'Gorman', 'Hamburg', 'Ivanas', 'James',
   'Moore', 'Taylor'
@@ -89,8 +89,8 @@ const createDataWithFixedData = ({ healthCenter, user, nbrClinics = 10, nbrPerso
 };
 
 const createClinic = (index, healthCenter) => {
-  const firstName = FIRST_NAMES_FAMILY[index % FIRST_NAMES_FAMILY.length];
-  const lastName = LAST_NAMES_FAMILY[index % LAST_NAMES_FAMILY.length];
+  const firstName = PRIMARY_CONTACT_FIRST_NAMES[index % PRIMARY_CONTACT_FIRST_NAMES.length];
+  const lastName = FAMILY_LAST_NAMES[index % FAMILY_LAST_NAMES.length];
   const personName = `${firstName} ${lastName}`;
   const personPhoneNumber = PHONE_NUMBERS[index % PHONE_NUMBERS.length];
 
@@ -117,7 +117,7 @@ const createAdditionalPersons = (nbrPersons, clinic) => {
     .from({ length: nbrPersons - 1 })
     .map((_, i) => {
       const lastName = clinic.name.split(' ')[1];
-      const additionalPersonName = `${FIRST_NAMES[i % FIRST_NAMES.length]} ${lastName}`;
+      const additionalPersonName = `${ADDITIONAL_PERSON_FIRST_NAMES[i % ADDITIONAL_PERSON_FIRST_NAMES.length]} ${lastName}`;
       const additionalPhoneNumber = PHONE_NUMBERS[i % PHONE_NUMBERS.length];
       return personFactory.build({
         parent: { _id: clinic._id, parent: clinic.parent },
