@@ -51,7 +51,7 @@ describe('Creating and editing contacts and users', () => {
       await generateScreenshot('new-chw-area', 'create-new-person');
       await commonEnketoPage.setDateValue('Age', '1990-01-21');
       await commonEnketoPage.selectRadioButton('Sex', 'Male');
-      await (await commonEnketoPage.getLabelElement('Age')).scrollIntoView(false);
+      await commonEnketoPage.scrollToQuestion('Age');
       await generateScreenshot('new-chw-area', 'fill-required-fields');
       await commonEnketoPage.selectRadioButton('Role', 'CHW');
       await genericForm.nextPage();

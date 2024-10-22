@@ -119,9 +119,15 @@ const getTextareaValue = async (question) => {
   return await getValue('textarea', question);
 };
 
-const getLabelElement = async (label) => {
+/*const getLabelElement = async (label) => {
   return await (await getCurrentPageSection())
     .$(`label*=${label}`);
+};*/
+
+const scrollToQuestion = async (label) => {
+  return await (await getCurrentPageSection())
+    .$(`label*=${label}`)
+    .scrollIntoView(false);
 };
 
 const isRequiredMessageDisplayed = async (question) => {
@@ -183,5 +189,5 @@ module.exports = {
   addRepeatSection,
   drawShapeOnCanvas,
   isRadioButtonSelected,
-  getLabelElement,
+  scrollToQuestion,
 };
