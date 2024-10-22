@@ -5,7 +5,6 @@ const deliveryFactory = require('@factories/cht/reports/delivery');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const pregnancyVisitFactory = require('@factories/cht/reports/pregnancy-visit');
 const immunizationFactory = require('@factories/cht/reports/inmunization');
-const moment = require('moment');
 
 // Fixed collection of real-world data
 const PRIMARY_CONTACT_FIRST_NAMES = [
@@ -36,7 +35,9 @@ const calculateDateOfBirth = (age) => {
 };
 const AGES = [25, 2, 10, 7];
 const DATE_OF_BIRTHS = AGES.map(calculateDateOfBirth);
-const lmp = moment().subtract(252, 'days');
+const date = new Date();
+date.setDate(date.getDate() - 252);
+const LAST_MENSTRUAL_PERIOD = date.toISOString().split('T')[0]; //'YYYY-MM-DD'
 
 const getReportContext = (patient, submitter) => {
   const daysAgo = Math.floor(Math.random() * 10) + 1;
@@ -49,7 +50,7 @@ const getReportContext = (patient, submitter) => {
       patient_name: patient.name,
       visited_contact_uuid: patient.parent._id,
       visited_date: currentDate,
-      lmp_date_8601: lmp,
+      lmp_date_8601: LAST_MENSTRUAL_PERIOD,
     },
   };
   if (submitter) {
