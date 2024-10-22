@@ -79,11 +79,11 @@ const openTaskById = async (id, taskType) => {
   await $(TASK_FORM_SELECTOR).waitForDisplayed();
 };
 
-const compileTasks = async (tasksFileName) => {
+const compileTasks = async (tasksFileName, sync) => {
   await chtConfUtils.initializeConfigDir();
   const tasksFilePath = path.join(__dirname, `../../../e2e/default/tasks/config/${tasksFileName}`);
   const settings = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
-  await utils.updateSettings(settings, { ignoreReload: 'api', sync: true });
+  await utils.updateSettings(settings, { ignoreReload: 'api', sync });
 };
 
 const isTaskElementDisplayed = async (type, text) => {

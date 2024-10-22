@@ -81,7 +81,7 @@ describe('Tasks tab breadcrumbs', () => {
 
     const formsPath = path.join(__dirname, 'forms');
     await chtConfUtils.compileAndUploadAppForms(formsPath);
-    await tasksPage.compileTasks('tasks-breadcrumbs-config.js');
+    await tasksPage.compileTasks('tasks-breadcrumbs-config.js', false);
   });
 
   after(async () => {

@@ -77,7 +77,7 @@ describe('Tasks', () => {
   });
 
   it('should load multiple pages of tasks on infinite scrolling', async () => {
-    await tasksPage.compileTasks('tasks-multiple-config.js');
+    await tasksPage.compileTasks('tasks-multiple-config.js', true);
 
     await commonPage.goToTasks();
     const list = await tasksPage.getTasks();
@@ -113,7 +113,7 @@ describe('Tasks', () => {
   });
 
   it('should remove task from list when CHW completes a task successfully', async () => {
-    await tasksPage.compileTasks('tasks-breadcrumbs-config.js');
+    await tasksPage.compileTasks('tasks-breadcrumbs-config.js', true);
     
     await commonPage.goToTasks();
     let list = await tasksPage.getTasks();
@@ -129,7 +129,7 @@ describe('Tasks', () => {
   });
 
   it('Should show error message for bad config', async () => {
-    await tasksPage.compileTasks('tasks-error-config.js');
+    await tasksPage.compileTasks('tasks-error-config.js', true);
     await commonPage.goToTasks();
 
     const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();

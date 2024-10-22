@@ -138,7 +138,7 @@ describe('Tasks group landing page', () => {
 
     const formsPath = path.join(__dirname, 'forms');
     await chtConfUtils.compileAndUploadAppForms(formsPath);
-    await tasksPage.compileTasks('tasks-group-config.js');
+    await tasksPage.compileTasks('tasks-group-config.js', false);
   });
 
   after(async () => {
