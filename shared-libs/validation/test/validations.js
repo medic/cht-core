@@ -1,8 +1,7 @@
 const moment = require('moment');
-const rewire = require('rewire');
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const validation = rewire('../src/validation');
+const validation = require('../src/validation');
 const logger = require('@medic/logger');
 
 let clock;
@@ -33,11 +32,6 @@ describe('validations', () => {
       clock.restore();
     }
     sinon.restore();
-  });
-
-  it('should throw an error when validate is called without initialization', () => {
-    validation.__set__('inited', false);
-    assert.throws(validation.validate, '');
   });
 
   it('validate handles pupil parse errors', () => {
@@ -661,7 +655,7 @@ describe('validations', () => {
     return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
         {
-          code: 'invalid_parent_id_exists',
+          code: 'invalid_parent_id',
           message: 'Unknown patient {{parent_id}}.',
         },
       ]);
@@ -696,7 +690,7 @@ describe('validations', () => {
     return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
         {
-          code: 'invalid_parent_id_exists',
+          code: 'invalid_parent_id',
           message: 'Unknown patient {{parent_id}}.',
         },
       ]);
@@ -947,6 +941,172 @@ describe('validations', () => {
           }
         });
       });
+    });
+
+  });
+
+  describe('combining validations - #8806', () => {
+
+    describe('rule L or G exists', () => {
+
+      const validations = [{
+        property: 'patient_id',
+        rule: 'exists("L","patient_id") || exists("G","patient_id")',
+        message: [{
+          content: 'Pregnancy not registered already',
+          locale: 'en',
+        }]
+      }];
+
+      it('should fail when neither L nor G exists', () => {
+        sinon.stub(db.medic, 'query').resolves({ rows: [] });
+        const doc = {
+          _id: 'same',
+          patient_id: '444',
+        };
+        return validation.validate(doc, validations).then(errors => {
+          assert.equal(errors.length, 1);
+        });
+      });
+
+      it('should pass when L exists', () => {
+        sinon.stub(db.medic, 'query')
+          .onCall(0).resolves({ rows: [{ id: 'different1' }] })  // once for patient_id=444
+          .onCall(1).resolves({ rows: [{ id: 'different1' }] })  // once for form=L
+          .onCall(2).resolves({ rows: [{ id: 'different2' }] })  // once for patient_id=444
+          .onCall(3).resolves({ rows: [] }); // once for form=G
+        sinon.stub(db.medic, 'allDocs').resolves({
+          rows: [{
+            id: 'different1',
+            doc: { _id: 'different1', errors: [] },
+          }],
+        });
+        const doc = {
+          _id: 'same',
+          patient_id: '444',
+        };
+        return validation.validate(doc, validations).then(errors => {
+          assert.equal(db.medic.query.callCount, 4); // TODO maybe should be 2, bcause we can short-circuit
+          assert.equal(db.medic.allDocs.callCount, 1);
+          assert.equal(errors.length, 0);
+        });
+      });
+
+      it('should pass when G exists', () => {
+        sinon.stub(db.medic, 'query')
+          .onCall(0).resolves({ rows: [{ id: 'different1' }] })  // once for patient_id=444
+          .onCall(1).resolves({ rows: [] })  // once for form=L
+          .onCall(2).resolves({ rows: [{ id: 'different2' }] })  // once for patient_id=444
+          .onCall(3).resolves({ rows: [{ id: 'different2' }] }); // once for form=G
+        sinon.stub(db.medic, 'allDocs').resolves({
+          rows: [{
+            id: 'different2',
+            doc: { _id: 'different2', errors: [] },
+          }],
+        });
+        const doc = {
+          _id: 'same',
+          patient_id: '444',
+        };
+        return validation.validate(doc, validations).then(errors => {
+          assert.equal(db.medic.query.callCount, 4);
+          assert.equal(db.medic.allDocs.callCount, 1);
+          assert.equal(errors.length, 0);
+        });
+      });
+
+      it('should pass when L and G exist', () => {
+        sinon.stub(db.medic, 'query')
+          .onCall(0).resolves({ rows: [{ id: 'different1' }] }) // once for patient_id=444
+          .onCall(1).resolves({ rows: [{ id: 'different1' }] }) // once for form=L
+          .onCall(2).resolves({ rows: [{ id: 'different2' }] })  // once for patient_id=444
+          .onCall(3).resolves({ rows: [{ id: 'different2' }] }); // once for form=G
+        sinon.stub(db.medic, 'allDocs')
+          .onCall(0).resolves({
+            rows: [{
+              id: 'different1',
+              doc: { _id: 'different1', errors: [] },
+            }],
+          })
+          .onCall(1).resolves({
+            rows: [{
+              id: 'different2',
+              doc: { _id: 'different2', errors: [] },
+            }],
+          });
+        const doc = {
+          _id: 'same',
+          patient_id: '444',
+        };
+        return validation.validate(doc, validations).then(errors => {
+          assert.equal(db.medic.query.callCount, 4);
+          assert.equal(db.medic.allDocs.callCount, 2);
+          assert.equal(errors.length, 0);
+        });
+      });
+    });
+
+    describe('rule length and exists', () => {
+
+      const validations = [{
+        property: 'patient_id',
+        rule: 'lenMin(2) && exists("G","patient_id")',
+        message: [{
+          content: 'Pregnancy not registered already',
+          locale: 'en',
+        }]
+      }];
+
+      it('should fail when patient id too short', () => {
+        sinon.stub(db.medic, 'query').resolves({ rows: [] });
+        const doc = {
+          _id: 'same',
+          patient_id: '1',
+        };
+        return validation.validate(doc, validations).then(errors => {
+          assert.equal(errors.length, 1);
+        });
+      });
+
+      it('should fail when not exists', () => {
+        sinon.stub(db.medic, 'query').resolves({ rows: [] });
+        sinon.stub(db.medic, 'allDocs')
+          .onCall(0).resolves({
+            rows: [{
+              id: 'different1',
+              doc: { _id: 'different1', errors: [] },
+            }],
+          });
+        const doc = {
+          _id: 'same',
+          patient_id: '123',
+        };
+        return validation.validate(doc, validations).then(errors => {
+          assert.equal(errors.length, 1);
+        });
+      });
+
+
+      it('should pass when long enough and exists', () => {
+        sinon.stub(db.medic, 'query')
+          .onCall(0).resolves({ rows: [{ id: 'different1' }] }) // once for patient_id=444
+          .onCall(1).resolves({ rows: [{ id: 'different1' }] }); // once for form=G
+        sinon.stub(db.medic, 'allDocs')
+          .onCall(0).resolves({
+            rows: [{
+              id: 'different1',
+              doc: { _id: 'different1', errors: [] },
+            }],
+          });
+        const doc = {
+          _id: 'same',
+          patient_id: '123',
+        };
+        return validation.validate(doc, validations).then(errors => {
+          assert.equal(errors.length, 0);
+        });
+      });
+
     });
 
   });

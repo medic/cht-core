@@ -1,3 +1,6 @@
+const logger = require('@medic/logger');
+const validationUtils = require('./validation_utils');
+
 const re = {
   alpha: /^[a-zA-Z]+$/,
   alphanumeric: /^[a-zA-Z0-9]+$/,
@@ -66,7 +69,15 @@ const ValidatorFunctions = {
 
   integer: (allValues, value) => parseInt(value, 10) === value,
 
-  equalsto: (allValues, value, equalsToKey) => value === allValues[equalsToKey]
+  equalsto: (allValues, value, equalsToKey) => value === allValues[equalsToKey],
+
+  exists: async (allValues, value, formName, fieldName) => {
+    try {
+      return await validationUtils.exists(allValues, [fieldName], { additionalFilter: `form:${formName}` });
+    } catch (e) {
+      logger.error('Error running "exists" validation: %o', e);
+    }
+  },
 };
 
 module.exports = ValidatorFunctions;

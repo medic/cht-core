@@ -5,6 +5,7 @@ const phoneNumberParser = require('@medic/phone-number');
 const logger = require('@medic/logger');
 const config = require('../../transitions/src/config');
 const pupil = require('./pupil');
+const validationUtils = require('./validation_utils');
 
 let db;
 let settings;
@@ -149,6 +150,7 @@ module.exports = {
     db = options.db;
     translate = options.translate;
     settings = options.settings || options.config;
+    validationUtils.init(db);
 
     inited = true;
   },
@@ -185,13 +187,13 @@ module.exports = {
         })
         .then(result => !result);
     },
-    exists: (doc, validation) => {
-      const formName = validation.funcArgs[0];
-      const fieldName = validation.funcArgs[1];
-      return _exists(doc, [fieldName], { additionalFilter: `form:${formName}` }).catch(err => {
-        logger.error('Error running "exists" validation: %o', err);
-      });
-    },
+    // exists: (doc, validation) => {
+    //   const formName = validation.funcArgs[0];
+    //   const fieldName = validation.funcArgs[1];
+    //   return _exists(doc, [fieldName], { additionalFilter: `form:${formName}` }).catch(err => {
+    //     logger.error('Error running "exists" validation: %o', err);
+    //   });
+    // },
     // Check if the week is a valid ISO week given a year.
     isISOWeek: (doc, validation) => {
       const weekFieldName = validation.funcArgs[0];
@@ -269,7 +271,7 @@ module.exports = {
    * @param {String[]} [ignores=[]] Keys of doc that is always considered valid
    * @returns {Promise} Array of errors if validation failed, empty array otherwise.
    */
-  validate: (doc, validations = [], ignores = []) => {
+  validate: async (doc, validations = [], ignores = []) => {
     if (!inited) {
       throw new Error('Validation module not initialized');
     }
@@ -319,7 +321,8 @@ module.exports = {
     const attributes = Object.assign({}, doc, doc.fields);
 
     try {
-      result = pupil.validate(getRules(validations), attributes);
+      const rules = getRules(validations);
+      result = await pupil.validate(rules, attributes);
     } catch (e) {
       errors.push('Error on pupil validations: ' + JSON.stringify(e));
       return Promise.resolve(errors);
