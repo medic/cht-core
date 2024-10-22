@@ -38,6 +38,7 @@ describe('ContactsEdit component', () => {
   beforeEach(() => {
     contactTypesService = {
       get: sinon.stub().resolves(),
+      getChildren: sinon.stub().resolves(),
       getTypeId: sinon.stub().callsFake(contact => contact?.type === 'contact' ? contact.contact_type : contact?.type),
     };
     translateService = { get: sinon.stub().resolvesArg(0) };
@@ -203,9 +204,10 @@ describe('ContactsEdit component', () => {
     });
 
     it('should respond to url changes', fakeAsync(async () => {
-      routeSnapshot.params = { type: 'random' };
-      route.params.next({ type: 'random' });
+      routeSnapshot.params = { type: 'random', parent_id: 'the_district' };
+      route.params.next({ type: 'random', parent_id: 'the_district' });
 
+      contactTypesService.getChildren.resolves([{ id: 'random' }, { id: 'other' }]);
       contactTypesService.get
         .withArgs('random')
         .resolves({
@@ -231,12 +233,12 @@ describe('ContactsEdit component', () => {
       expect(formService.render.args[0][0]).to.deep.include({
         selector: '#contact-form',
         formDoc: { _id: 'random_create', the: 'form' },
-        instanceData: { random: { type: 'contact', contact_type: 'random', parent: '' } },
+        instanceData: { random: { type: 'contact', contact_type: 'random', parent: 'the_district' } },
         titleKey: 'random',
       });
 
-      routeSnapshot = { params: { type: 'other' } };
-      route.params.next({ type: 'other' });
+      routeSnapshot = { params: { type: 'other', parent_id: 'the_district' } };
+      route.params.next({ type: 'other', parent_id: 'the_district' });
 
       await fixture.whenStable();
       flushMicrotasks();
@@ -247,7 +249,7 @@ describe('ContactsEdit component', () => {
       expect(formService.render.args[1][0]).to.deep.include({
         selector: '#contact-form',
         formDoc: { _id: 'other_create' },
-        instanceData: { other: { type: 'contact', contact_type: 'other', parent: '' } },
+        instanceData: { other: { type: 'contact', contact_type: 'other', parent: 'the_district' } },
         titleKey: 'other_key',
       });
     }));
@@ -281,6 +283,25 @@ describe('ContactsEdit component', () => {
         expect(component.enketoContact).to.deep.equal(undefined);
       });
 
+      it('should fail when new contact is not a child of the parent', async () => {
+        routeSnapshot.params = { type: 'the_place', parent_id: 'parent_id' };
+        contactTypesService.get.resolves({
+          create_form: 'the_place_create_form_id',
+          create_key: 'the_place_create_key',
+        });
+        contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
+
+        await createComponent();
+        await fixture.whenStable();
+
+        expect(contactTypesService.get.callCount).to.equal(1);
+        expect(contactTypesService.get.args[0]).to.deep.equal(['the_place']);
+        expect(contactTypesService.getChildren.callCount).to.equal(1);
+        expect(formService.render.callCount).to.equal(0);
+        expect(component.enketoContact).to.deep.equal(undefined);
+        expect(component.contentError).to.equal(true);
+      });
+
       it('should fail when no form', async () => {
         routeSnapshot.params = { type: 'person' };
         contactTypesService.get.resolves({
@@ -303,6 +324,7 @@ describe('ContactsEdit component', () => {
 
       it('should render form with parent', async () => {
         routeSnapshot.params = { type: 'clinic', parent_id: 'the_district' };
+        contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
         contactTypesService.get.resolves({
           create_form: 'clinic_create_form_id',
           create_key: 'clinic_create_key',
@@ -314,6 +336,7 @@ describe('ContactsEdit component', () => {
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['clinic']);
+        expect(contactTypesService.getChildren.callCount).to.equal(1);
         expect(dbGet.callCount).to.equal(1);
         expect(dbGet.args[0]).to.deep.equal(['clinic_create_form_id']);
         expect(component.enketoContact).to.deep.equal({
@@ -635,6 +658,7 @@ describe('ContactsEdit component', () => {
 
     it('when saving new contact', async () => {
       routeSnapshot.params = { type: 'clinic', parent_id: 'the_district' };
+      contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
       contactTypesService.get.resolves({
         create_form: 'clinic_create_form_id',
         create_key: 'clinic_create_key',

@@ -163,10 +163,10 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       }
 
       const parentId = this.routeSnapshot.params?.parent_id;
-      const newContactType = this.routeSnapshot.params?.type;
-      const validateParents = await this.validateParent(parentId, newContactType);
-      if (!validateParents) {
-        throw new Error(`"{newContactType}" is not a child of "${parentId}"`);
+      const childTypeId = this.routeSnapshot.params?.type;
+      const validateParent = await this.validateParent(parentId, childTypeId);
+      if (!validateParent) {
+        throw new Error(`"${childTypeId}" is not a valid child of parent with ID "${parentId}"`);
       }
 
       const formId = this.getForm(contact, contactType);
@@ -228,12 +228,16 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     return formId;
   }
 
-  private async validateParent(parentId, newContactType) {
-    const parentContact = await this.lineageModelGeneratorService.contact(parentId, {merge: true});
+  private async validateParent(parentId, childTypeId) {
+    if (!parentId) {
+      return true;
+    }
+    
+    const parentContact = await this.lineageModelGeneratorService.contact(parentId, { merge: true });
     const parentType = this.contactTypesService.getTypeId(parentContact.doc);
     const validChildTypes = await this.contactTypesService.getChildren(parentType);
 
-    if (validChildTypes.some(childType => childType.id === newContactType)) {
+    if (validChildTypes.some(childType => childType.id === childTypeId)) {
       return true;
     }
     return false;
