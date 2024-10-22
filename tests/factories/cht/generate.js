@@ -131,11 +131,23 @@ const createAdditionalPersons = (nbrPersons, clinic) => {
 };
 
 const createReportsForPerson = (person, user) => {
-  return [
-    pregnancyFactory.build(getReportContext(person, user)),
-    pregnancyVisitFactory.build(getReportContext(person, user)),
-    immunizationFactory.build({contact: user, patient: person})
-  ];
+  const reports = [];
+  const isWoman = person.gender === 'female';
+  const age = new Date().getFullYear() - new Date(person.date_of_birth).getFullYear();
+  const isInPregnancyAgeRange = age >= 12 && age <= 49;
+  if (isWoman && isInPregnancyAgeRange) {
+    reports.push(
+      pregnancyFactory.build(getReportContext(person, user)),
+      pregnancyVisitFactory.build(getReportContext(person, user))
+    );
+  }
+  const isChild = age < 5;
+  if (isChild) {
+    reports.push(
+      immunizationFactory.build({ contact: user, patient: person })
+    );
+  }
+  return reports;
 };
 
 const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
