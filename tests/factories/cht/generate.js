@@ -132,7 +132,7 @@ const createAdditionalPersons = (nbrPersons, clinic) => {
 
 const createReportsForPerson = (person, user) => {
   const reports = [];
-  const isWoman = person.gender === 'female';
+  const isWoman = person.sex === 'female';
   const age = new Date().getFullYear() - new Date(person.date_of_birth).getFullYear();
   const isInPregnancyAgeRange = age >= 12 && age <= 49;
   if (isWoman && isInPregnancyAgeRange) {
