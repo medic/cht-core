@@ -1,10 +1,10 @@
 const _ = require('lodash/core');
 const moment = require('moment');
-const pupil = require('./pupil/src/pupil');
 const messages = require('@medic/message-utils');
-const config = require('../../transitions/src/config');
 const phoneNumberParser = require('@medic/phone-number');
 const logger = require('@medic/logger');
+const config = require('../../transitions/src/config');
+const pupil = require('./pupil');
 
 let db;
 let settings;

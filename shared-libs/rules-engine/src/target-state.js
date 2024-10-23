@@ -102,6 +102,13 @@ const mergeEmissions = (state, contactIds, targetEmissions) => {
   return isUpdated;
 };
 
+const createState = (existentStaleState) => {
+  return {
+    targets: existentStaleState ? existentStaleState : {},
+    aggregate: {}
+  };
+};
+
 module.exports = {
   /**
    * Builds an empty target-state.
@@ -109,14 +116,14 @@ module.exports = {
    * @param {Object[]} targets An array of target definitions
    */
   createEmptyState: (targets=[]) => {
-    const state = {
-      targets: {},
-      aggregate: {}
-    };
+    const state = createState();
 
     targets.forEach(definition => state.targets[definition.id] = { ...definition, emissions: {} });
     return state;
   },
+
+  isStale: (state) => !state || !state.targets || !state.aggregate,
+  migrateStaleState: (state) => module.exports.isStale(state) ? createState(state) : state,
 
   storeTargetEmissions: (state, contactIds, targetEmissions) => {
     let isUpdated = false;

@@ -1,5 +1,7 @@
 const { expect } = require('chai');
 const { RestorableRulesStateStore } = require('./mocks');
+const md5 = require('md5');
+
 const sinon = require('sinon');
 const moment = require('moment');
 
@@ -429,6 +431,40 @@ describe('rules-state-store', () => {
         id: 'target',
         value: { pass: 1, total: 1 },
       });
+    });
+  });
+
+  describe('load', () => {
+    it('should mark as stale when rules config hash has changed', () => {
+      const staleState = {};
+      const stale = rulesStateStore.load(staleState, { config: '123' });
+      expect(stale).to.equal(true);
+    });
+
+    it('should mark as stale and migrate when target-state is stale', () => {
+      const settings = { config: '123' };
+      const targets = { t1: { emissions: [] }, t2: { emissions: [] } };
+      Object.freeze(targets);
+      const staleState = {
+        targetState: targets,
+        rulesConfigHash: md5(JSON.stringify(settings))
+      };
+      const stale = rulesStateStore.load(staleState, settings);
+      expect(stale).to.equal(true);
+      expect(staleState.targetState).to.deep.equal({ targets, aggregate: { } });
+    });
+
+    it('should not mark as stale when not stale', () => {
+      const settings = { config: '123' };
+      const staleState = {
+        targetState: {
+          targets: {},
+          aggregate: {}
+        },
+        rulesConfigHash: md5(JSON.stringify(settings))
+      };
+      const stale = rulesStateStore.load(staleState, settings);
+      expect(stale).to.equal(undefined);
     });
   });
 });

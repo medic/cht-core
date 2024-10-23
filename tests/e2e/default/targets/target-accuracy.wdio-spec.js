@@ -1,10 +1,12 @@
 const path = require('path');
 const moment = require('moment');
 const chtConfUtils = require('@utils/cht-conf');
+const chtDbUtils = require('@utils/cht-db');
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
@@ -169,5 +171,28 @@ describe('Target accuracy', () => {
   it('should only create one target doc', async () => {
     const docs = await utils.db.allDocs({ startkey: 'target', endkey: 'target\ufff0' });
     expect(docs.rows.length).to.equal(1);
+  });
+
+  it('should handle old format of the rules-state-store', async () => {
+    const docId = '_local/rulesStateStore';
+    const localRulesStateStore = await chtDbUtils.getDoc(docId);
+    await chtDbUtils.updateDoc('_local/rulesStateStore', {
+      rulesStateStore: {
+        ...localRulesStateStore.rulesStateStore,
+        targetState: localRulesStateStore.rulesStateStore.targetState.targets
+      }
+    });
+
+    await commonPage.refresh();
+    await analyticsPage.goToTargets();
+    await commonPage.waitForPageLoaded();
+
+    const targets = await analyticsPage.getTargets();
+    expect(targets.length).to.equal(1);
+    expect(targets[0]).to.deep.include({
+      title: 'targets.new_persons.title',
+      goal: '0',
+      count: '20',
+    });
   });
 });

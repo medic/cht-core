@@ -275,5 +275,38 @@ describe('target-state', () => {
       ]);
     });
   });
+
+  describe('isStale', () => {
+    it('should return true if state is invalid', () => {
+      expect(targetState.isStale()).to.equal(true);
+      expect(targetState.isStale({})).to.equal(true);
+      expect(targetState.isStale({ oldTarget: { emissions: [] } })).to.equal(true);
+      expect(targetState.isStale({ targets: {} })).to.equal(true);
+      expect(targetState.isStale({ aggregate: {} })).to.equal(true);
+    });
+    
+    it('should return false if state is valid', () => {
+      expect(targetState.isStale({ targets: {}, aggregate: {} })).to.equal(false);
+    });
+  });
+
+  describe('migrateStaleState', () => {
+    it('should migrate on stale state', () => {
+      expect(targetState.migrateStaleState({ })).to.deep.equal( { targets: {}, aggregate: {} });
+      const targets = { t1: { emissions: [] }, t2: { emissions: [] } };
+      Object.freeze(targets);
+      expect(targetState.migrateStaleState(targets)).to.deep.equal({ targets, aggregate: {}});
+    });
+
+    it('should not migrate on not stale state', () => {
+      const state = {
+        targets: { t1: { emissions: [] }, t2: { emissions: [] } },
+        aggregate: { targets: [], filterInterval: {} },
+      };
+      Object.freeze(state);
+      Object.freeze(state.targets);
+      expect(targetState.migrateStaleState(state)).to.equal(state);
+    });
+  });
 });
 
