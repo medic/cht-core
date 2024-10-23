@@ -469,7 +469,7 @@ const isMenuOptionVisible = async (action, item) => {
 
 const loadNextInfiniteScrollPage = async () => {
   await browser.execute(() => {
-    $('.items-container .content-row:last-child').get(0).scrollIntoView();
+    $('.inbox-items .content-row:last-child').get(0).scrollIntoView();
   });
   await waitForLoaderToDisappear(await $('.left-pane'));
 };
