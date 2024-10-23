@@ -486,12 +486,13 @@ const getErrorLog = async () => {
   return { errorMessage, url, username, errorStack };
 };
 
-const createFormDoc = (path, formName) => {
-  const formXML = fs.readFileSync(`${path}/${formName}.xml`, 'utf8');
+const createFormDoc = (path, formId) => {
+  const id = formId ? formId : path.split('/').pop();
+  const formXML = fs.readFileSync(`${path}.xml`, 'utf8');
   const formDoc = {
-    _id: `form:${formName}`,
-    internalId: formName,
-    title: formName,
+    _id: `form:${id}`,
+    internalId: id,
+    title: id,
     type: 'form',
     context: {
       person: true,

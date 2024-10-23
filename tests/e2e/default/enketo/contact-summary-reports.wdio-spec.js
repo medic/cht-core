@@ -26,7 +26,7 @@ describe('Contact summary', () => {
     ));
 
   before(async () => {
-    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms`, 'contact-summary-reports'));
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/contact-summary-reports`));
     await chtConfUtils.initializeConfigDir();
     const contactSummaryFile = path.join(__dirname, 'config/contact-summary-reports.js');
     const { contactSummary } = await chtConfUtils.compileNoolsConfig({ contactSummary: contactSummaryFile });

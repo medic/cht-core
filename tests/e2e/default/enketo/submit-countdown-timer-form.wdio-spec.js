@@ -8,7 +8,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 describe('Countdown timer widget', () => {
 
   before(async () => {
-    await utils.saveDocIfNotExists(await commonPage.createFormDoc(`${__dirname}/forms`, 'countdown-timer'));
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/countdown-timer`));
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();
   });

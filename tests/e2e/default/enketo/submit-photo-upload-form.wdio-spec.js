@@ -9,7 +9,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 describe('Submit Photo Upload form', () => {
 
   before(async () => {
-    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms`, 'photo-upload'));
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/photo-upload`));
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();
   });

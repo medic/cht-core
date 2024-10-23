@@ -9,8 +9,8 @@ const utils = require('@utils');
 describe('Submit Enketo form', () => {
 
   before(async () => {
-    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms`, 'assessment'));
-    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms`, 'required-note'));
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/assessment`));
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/required-note`));
     await loginPage.cookieLogin();
   });
 

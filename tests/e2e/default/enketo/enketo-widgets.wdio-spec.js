@@ -76,7 +76,7 @@ describe('Enketo Widgets', () => {
   };
 
   before(async () => {
-    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms`, 'enketo_widgets_test'));
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/enketo_widgets_test`));
     await utils.saveDoc(districtHospital);
     await utils.createUsers([offlineUser]);
     await sentinelUtils.waitForSentinel(); // we expect a shortcode to be generated for the user's contact

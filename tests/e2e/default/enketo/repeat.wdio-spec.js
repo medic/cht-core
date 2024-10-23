@@ -24,9 +24,9 @@ describe('RepeatForm', () => {
   before(async () => {
     await utils.saveDocs(hierarchy.places);
     await utils.createUsers([hierarchy.user]);
-    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms`, 'repeat-translation-count'));
-    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms`, 'repeat-translation-button'));
-    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms`, 'repeat-translation-select'));
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/repeat-translation-count`));
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/repeat-translation-button`));
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/repeat-translation-select`));
   });
 
   afterEach(async () => {

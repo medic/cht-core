@@ -78,7 +78,7 @@ describe('Create user when adding contact', () => {
   };
 
   before(async () =>  {
-    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms`, FORM_NAME));
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/${FORM_NAME}`));
   });
 
   beforeEach(async () => await utils.saveDocs([district]));
