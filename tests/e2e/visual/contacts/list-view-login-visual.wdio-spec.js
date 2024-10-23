@@ -3,6 +3,7 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const dataFactory = require('@factories/cht/generate');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const searchPage = require('@page-objects/default/search/search.wdio.page');
 const utils = require('@utils');
 
 const { resizeWindowForScreenshots, generateScreenshot } = require('@utils/screenshots');
@@ -47,6 +48,8 @@ describe('Contact List Page', () => {
       expect(await commonPage.isPeopleListPresent()).to.be.true;
       await generateScreenshot('contact-page', 'people-list-visible');
       await commonPage.goToReports();
+      await searchPage.performSearch('Amanda Allen');
+      await commonPage.waitForLoaders();
       await reportsPage.openFirstReport();
       await reportsPage.rightPanelSelectors.patientName().waitForClickable();
       await generateScreenshot('contact-page', 'reports-visible');
@@ -58,7 +61,7 @@ describe('Contact List Page', () => {
 
     it('should hide contacts page as tab and from menu option ' +
       'when can_view_contacts_tab permissions is enable but can_view_contact permission is not', async () => {
-      await utils.updateRolePermissions('chw', [], ['can_view_contacts'], {
+      await utils.updatePermissions('chw', [], ['can_view_contacts'], {
         ignoreReload: true,
         revert: true,
         refresh: true,
@@ -83,7 +86,7 @@ describe('Contact List Page', () => {
 
     it('should hide contacts page as tab, show from menu option ' +
       'when can_view_contact permissions is enable but can_view_contact permission is not', async () => {
-      await utils.updateRolePermissions('chw', ['can_view_contacts'], ['can_view_contacts_tab'], {
+      await utils.updatePermissions('chw', ['can_view_contacts'], ['can_view_contacts_tab'], {
         ignoreReload: true,
         revert: true,
         refresh: true,
@@ -112,7 +115,7 @@ describe('Contact List Page', () => {
 
     it('should hide contacts page as a tab and from menu option ' +
       'when can_view_contact and can_view_contact permissions are disable', async () => {
-      await utils.updateRolePermissions('chw', [], ['can_view_contacts_tab', 'can_view_contacts'], {
+      await utils.updatePermissions('chw', [], ['can_view_contacts_tab', 'can_view_contacts'], {
         ignoreReload: true,
         revert: true,
         refresh: true,

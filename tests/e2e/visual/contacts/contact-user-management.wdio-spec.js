@@ -114,7 +114,7 @@ describe('Contact and User Management', () => {
       if (!await isMobile()){
         this.skip();
       }
-      await utils.updateRolePermissions('chw', ['can_view_uhc_stats', 'can_view_last_visited_date'], [], {
+      await utils.updatePermissions('chw', ['can_view_uhc_stats', 'can_view_last_visited_date'], [], {
         ignoreReload: true,
         revert: true,
         refresh: true,
@@ -132,7 +132,7 @@ describe('Contact and User Management', () => {
         this.skip();
       }
       await compileAndUploadForms();
-      await utils.updateRolePermissions('chw', [], ['can_view_call_action', 'can_view_message_action'], {
+      await utils.updatePermissions('chw', [], ['can_view_call_action', 'can_view_message_action'], {
         ignoreReload: true,
         revert: true,
         refresh: true,
