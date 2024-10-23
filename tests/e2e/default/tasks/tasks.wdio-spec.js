@@ -76,42 +76,6 @@ describe('Tasks', () => {
     await browser.refresh();
   });
 
-  it('should load multiple pages of tasks on infinite scrolling', async () => {
-    await tasksPage.compileTasks('tasks-multiple-config.js', true);
-
-    await commonPage.goToTasks();
-    const list = await tasksPage.getTasks();
-    const infos = await tasksPage.getTasksListInfos(list);
-    expect(infos).to.have.length(201);
-    for (let i = 0; i < (infos.length/3); i++) {
-      expect(infos).to.include.deep.members([
-        {
-          contactName: 'Megan Spice',
-          formTitle: `person_create_${i + 1}`,
-          lineage: '',
-          dueDateText: 'Due today',
-          overdue: true
-        },
-        {
-          contactName: 'patient1',
-          formTitle: `person_create_${i + 1}`,
-          lineage: 'clinic2',
-          dueDateText: 'Due today',
-          overdue: true
-        },
-        {
-          contactName: 'patient2',
-          formTitle: `person_create_${i + 1}`,
-          lineage: '',
-          dueDateText: 'Due today',
-          overdue: true
-        },
-      ]);
-    }
-    await commonPage.loadNextInfiniteScrollPage();
-    expect(await tasksPage.isTaskElementDisplayed('p', 'No more tasks')).to.be.true;
-  });
-
   it('should remove task from list when CHW completes a task successfully', async () => {
     await tasksPage.compileTasks('tasks-breadcrumbs-config.js', true);
     
@@ -126,6 +90,35 @@ describe('Tasks', () => {
     await taskElement.waitForDisplayed({ reverse: true });
     list = await tasksPage.getTasks();
     expect(list).to.have.length(2);
+  });
+
+  it('should load multiple pages of tasks on infinite scrolling', async () => {
+    await tasksPage.compileTasks('tasks-multiple-config.js', true);
+
+    await commonPage.goToTasks();
+    const list = await tasksPage.getTasks();
+    const infos = await tasksPage.getTasksListInfos(list);
+    expect(infos).to.have.length(134);
+    for (let i = 0; i < (infos.length/2); i++) {
+      expect(infos).to.include.deep.members([
+        {
+          contactName: 'Megan Spice',
+          formTitle: `person_create_${i + 1}`,
+          lineage: '',
+          dueDateText: 'Due today',
+          overdue: true
+        },
+        {
+          contactName: 'patient2',
+          formTitle: `person_create_${i + 1}`,
+          lineage: '',
+          dueDateText: 'Due today',
+          overdue: true
+        },
+      ]);
+    }
+    await commonPage.loadNextInfiniteScrollPage();
+    expect(await tasksPage.isTaskElementDisplayed('p', 'No more tasks')).to.be.true;
   });
 
   it('Should show error message for bad config', async () => {
