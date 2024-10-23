@@ -1,4 +1,3 @@
-const fs = require('fs');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const messagesUtils = require('@utils/messages');
@@ -15,10 +14,11 @@ const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdi
 describe('Create user when adding contact', () => {
   const NEW_USERS = [];
   const CONTACT_NAME = 'Bob_chw';
+  const FORM_NAME = 'add_chw';
 
   const submitAddChwForm = async ({
-    name: nameValue,
-    phone: phoneValue,
+    name: nameValue = 'Ron',
+    phone: phoneValue = '+40755696969',
   } = {}) => {
     await commonEnketoPage.setInputValue('Name', nameValue);
     await commonEnketoPage.setInputValue('Phone Number', phoneValue);
@@ -27,14 +27,8 @@ describe('Create user when adding contact', () => {
 
   const district = utils.deepFreeze( placeFactory.place().build({ type: 'district_hospital' }) );
 
-  const settings = utils.deepFreeze({
-    transitions: { create_user_for_contacts: true },
-    token_login: { enabled: true },
-    app_url: BASE_URL
-  });
-
-  const settingsNoTransitions = utils.deepFreeze({
-    transitions: { create_user_for_contacts: false },
+  const setSettings = (create_user_for_contacts) => utils.deepFreeze({
+    transitions: { create_user_for_contacts },
     token_login: { enabled: true },
     app_url: BASE_URL
   });
@@ -43,22 +37,6 @@ describe('Create user when adding contact', () => {
     username: 'offline_user_create',
     place: district._id,
   }));
-
-  //WIP: Maybe move this to a method in commons, and move also the one that is in common-enketo
-  const addChwAppForm = utils.deepFreeze({
-    _id: 'form:add_chw',
-    internalId: 'add_chw',
-    title: 'Add CHW',
-    type: 'form',
-    _attachments: {
-      xml: {
-        content_type: 'application/octet-stream',
-        data: Buffer
-          .from(fs.readFileSync(`${__dirname}/forms/add_chw.xml`, 'utf8'))
-          .toString('base64')
-      }
-    }
-  });
 
   const verifyUserCreation = async () => {
     const chwContactId = await contactsPage.getCurrentContactId();
@@ -99,7 +77,9 @@ describe('Create user when adding contact', () => {
     expect(userSettings).to.be.empty;
   };
 
-  before(async () => await utils.saveDocIfNotExists(addChwAppForm));
+  before(async () =>  {
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms`, FORM_NAME));
+  });
 
   beforeEach(async () => await utils.saveDocs([district]));
 
@@ -115,36 +95,29 @@ describe('Create user when adding contact', () => {
   it('Creates a new user while offline', async () => {
     await utils.createUsers([offlineUser]);
     NEW_USERS.push(offlineUser.username);
-
-    await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
+    await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
     await browser.throttle('offline');
     await commonPage.goToPeople(district._id);
-
     await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' });
-
     await browser.throttle('online');
     await commonPage.sync();
-
     await verifyUserCreation();
   });
 
   it('creates a new user while online', async () => {
-    await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
+    await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
-
     await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' });
-
     await verifyUserCreation();
   });
 
   it('Creates a new user when adding a person while adding a place', async () => {
-    await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
+    await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
-
     await contactsPage.addPlace({
       type: 'health_center',
       placeName: 'HC1',
@@ -152,56 +125,48 @@ describe('Create user when adding contact', () => {
       phone: '+40755696969'
     });
     await contactsPage.selectLHSRowByText(CONTACT_NAME);
-
     await verifyUserCreation();
   });
 
   it('Does not create a new user when the transition is disabled', async () => {
-    await utils.updateSettings(settingsNoTransitions, 'sentinel');
+    await utils.updateSettings(setSettings(false), 'sentinel');
     await cookieLogin();
     await commonPage.goToPeople(district._id);
-
     await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' });
     await contactsPage.selectLHSRowByText(CONTACT_NAME);
-
     await verifyUserNotCreated();
   });
 
   it('creates a new user when contact is added from app form', async () => {
-    await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
+    await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
-
-    await commonPage.openFastActionReport(addChwAppForm.internalId);
+    await commonPage.openFastActionReport(FORM_NAME);
     await submitAddChwForm({ name: CONTACT_NAME });
     await contactsPage.selectLHSRowByText(CONTACT_NAME);
-
     await verifyUserCreation();
   });
 
   it('Does not create a new user when the transition fails', async () => {
-    await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
+    await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
-
-    await commonPage.openFastActionReport(addChwAppForm.internalId);
+    await commonPage.openFastActionReport(FORM_NAME);
     // Add contact with invalid phone number
     await submitAddChwForm({ name: CONTACT_NAME, phone: '+40755' });
     await contactsPage.selectLHSRowByText(CONTACT_NAME);
-
     await verifyUserNotCreated({ ok: false });
   });
 
   it('Does not create a new user when editing contact', async () => {
-    await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
+    await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
-    await commonPage.openFastActionReport(addChwAppForm.internalId);
+    await commonPage.openFastActionReport(FORM_NAME);
     // Add contact with invalid phone number
     await submitAddChwForm({ name: CONTACT_NAME, phone: '+40755' });
     await contactsPage.selectLHSRowByText(CONTACT_NAME);
     await verifyUserNotCreated({ ok: false });
-
     // Edit contact to have valid phone number
     await contactsPage.editPerson(CONTACT_NAME, { phone: '+40755696969', dob: '2000-01-01' });
 
@@ -213,12 +178,10 @@ describe('Create user when adding contact', () => {
   });
 
   it('creates a new user when Sentinel recovers from outage', async () => {
-    await utils.updateSettings(settings, {ignoreReload: 'sentinel'});
+    await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
     await utils.stopSentinel();
-
     await cookieLogin();
     await commonPage.goToPeople(district._id);
-
     await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' }, false);
     await contactsPage.editPerson(CONTACT_NAME, { name: 'Edit 1' });
     await contactsPage.editPerson('Edit 1', { name: 'Edit 2' });

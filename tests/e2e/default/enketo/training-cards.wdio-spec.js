@@ -5,11 +5,9 @@ const trainingCardsPage = require('@page-objects/default/enketo/training-cards.w
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const personFactory = require('@factories/cht/contacts/person');
-const commonElements = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const privacyPolicyFactory = require('@factories/cht/settings/privacy-policy');
 const privacyPage = require('@page-objects/default/privacy-policy/privacy-policy.wdio.page');
-const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
 
 describe('Training Cards', () => {
@@ -29,7 +27,7 @@ describe('Training Cards', () => {
     const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
     const user = userFactory.build({ roles: [ 'nurse', 'chw' ] });
     const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
-    const formDoc = await commonEnketoPage.uploadForm('training-cards-text-only', false);
+    const formDoc = commonPage.createFormDoc(`${__dirname}/forms`, 'training-cards-text-only');
     formDoc._id = `form:${formDocId}`;
     formDoc.internalId = formDocId;
     formDoc.context = {
@@ -42,7 +40,7 @@ describe('Training Cards', () => {
     await utils.saveDoc(formDoc);
     await utils.createUsers([ user ]);
     await loginPage.login(user);
-    await commonElements.waitForPageLoaded();
+    await commonPage.waitForPageLoaded();
   });
 
   it('should cancel training and not save it as completed', async () => {
@@ -55,13 +53,13 @@ describe('Training Cards', () => {
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
 
     await commonPage.goToReports();
-    await commonElements.waitForPageLoaded();
+    await commonPage.waitForPageLoaded();
     expect(await reportsPage.leftPanelSelectors.allReports()).to.be.empty;
   });
 
   it('should display confirm message before navigating to different page', async () => {
     await commonPage.goToMessages();
-    await commonElements.waitForPageLoaded();
+    await commonPage.waitForPageLoaded();
     await setLastViewedDateInThePast();
     // Unfinished trainings should appear again after reload.
     await browser.refresh();
@@ -87,7 +85,7 @@ describe('Training Cards', () => {
     await commonPage.goToMessages();
     await commonPage.goToPeople();
 
-    await commonElements.waitForPageLoaded();
+    await commonPage.waitForPageLoaded();
     await setLastViewedDateInThePast();
     // Unfinished trainings should appear again after reload.
     await browser.refresh();
@@ -135,7 +133,7 @@ describe('Training Cards', () => {
     const privacyPolicy = privacyPolicyFactory.privacyPolicy().build();
     await utils.saveDocs([privacyPolicy]);
     await commonPage.goToReports();
-    await commonElements.sync();
+    await commonPage.sync();
     await setLastViewedDateInThePast();
     await browser.refresh();
 
@@ -147,7 +145,7 @@ describe('Training Cards', () => {
 
   it('should display training after reload and complete training', async () => {
     await commonPage.goToMessages();
-    await commonElements.waitForPageLoaded();
+    await commonPage.waitForPageLoaded();
     await setLastViewedDateInThePast();
     // Unfinished trainings should appear again after reload.
     await browser.refresh();
@@ -176,7 +174,7 @@ describe('Training Cards', () => {
 
   it('should not display completed training', async () => {
     await commonPage.goToMessages();
-    await commonElements.waitForPageLoaded();
+    await commonPage.waitForPageLoaded();
     // Completed trainings should not appear again after reload.
     await browser.refresh();
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
