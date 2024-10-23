@@ -32,6 +32,7 @@ import { ReportImageComponent } from '@mm-components/report-image/report-image.c
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
+import { FilterSliderIconComponent } from '@mm-components/filter-slider-icon/filter-slider-icon.component';
 import { MultiselectBarComponent } from '@mm-components/multiselect-bar/multiselect-bar.component';
 import {
   AnalyticsTargetsProgressComponent
@@ -61,6 +62,7 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
     FreetextFilterComponent,
     FastActionButtonComponent,
     SearchBarComponent,
+    FilterSliderIconComponent,
     MultiselectBarComponent,
     SortFilterComponent,
     SenderComponent,
@@ -104,6 +106,7 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
     FastActionButtonComponent,
     StatusFilterComponent,
     SearchBarComponent,
+    FilterSliderIconComponent,
     MultiselectBarComponent,
     FreetextFilterComponent,
     SortFilterComponent,

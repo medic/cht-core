@@ -42,6 +42,7 @@ import {
   AnalyticsTargetAggregatesDetailComponent
 } from '@mm-modules/analytics/analytics-target-aggregates-detail.component';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
+import { TasksSidebarFilterComponent } from '@mm-modules/tasks/tasks-sidebar-filter.component';
 import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
 import { TasksGroupComponent } from '@mm-modules/tasks/tasks-group.component';
 import { TestingComponent } from '@mm-modules/testing/testing.component';
@@ -75,6 +76,7 @@ import { DirectivesModule } from '@mm-directives/directives.module';
     AnalyticsTargetAggregatesDetailComponent,
     AnalyticsTargetAggregatesSidebarFilterComponent,
     TasksComponent,
+    TasksSidebarFilterComponent,
     TasksContentComponent,
     TasksGroupComponent,
     TestingComponent,
