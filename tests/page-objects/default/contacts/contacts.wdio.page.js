@@ -25,6 +25,7 @@ const leftPanelSelectors = {
   contentRows: () =>  $$(CONTENT_ROW_SELECTOR),
   contactName: () => $$(`${CONTENT_ROW_SELECTOR} .heading h4 span`),
   contactListLoadingStatus: () => $(`${CONTACT_LIST_SELECTOR} .loading-status`),
+  firstContact: () => $(`${CONTACT_LIST_SELECTOR} li:first-child`),
 };
 
 const rightPanelSelectors = {
@@ -81,6 +82,40 @@ const deathCardSelectors = {
   deathCard: () => $(DEATH_CARD_TEST_ID),
   deathDate: () => $(`${DEATH_CARD_TEST_ID} div[test-id="contact.profile.death.date"] p.card-field-value`),
   deathPlace: () => $(`${DEATH_CARD_TEST_ID} div[test-id="contact.profile.death.place"] p.card-field-value`),
+};
+
+const INMUNIZATION_CARD_TEST_ID = `div[test-id="contact.profile.immunizations"]`;
+const inmunizationCardSelectors = {
+  inmunizationCard: () => $(INMUNIZATION_CARD_TEST_ID),
+};
+
+const PRIMARY_CONTACT_SEARCH_DROPDOWN =
+    'span.select2-selection--single' +
+    '[aria-labelledby^="select2-/data/district_hospital/contact/_id"]';
+const PRIMARY_CONTACT_SEARCH_INPUT = 'input.select2-search__field';
+const PRIMARY_CONTACT_SEARCH_RESULT = '.select2-results__option--highlighted';
+const editDistrictHospitalSelectors = {
+  primaryContactSearchDropdown: () => $(PRIMARY_CONTACT_SEARCH_DROPDOWN),
+  primaryContactSearchInput: () => $(PRIMARY_CONTACT_SEARCH_INPUT),
+  primaryContactSearchFirstResult: () => $(PRIMARY_CONTACT_SEARCH_RESULT),
+};
+
+const sortMenuSelectors = {
+  sortIcon: () => $('#sort-results'),
+  sortDropdown: () => $('#sort-results-dropdown'),
+  sortMenuItems: () => $$('#sort-results-dropdown a[role="menuitem"]'),
+};
+
+const openSortMenu = async () => {
+  await sortMenuSelectors.sortIcon().waitForClickable();
+  await sortMenuSelectors.sortIcon().click();
+  await sortMenuSelectors.sortDropdown().waitForDisplayed();
+};
+const selectSortOrder = async (sortOrder) => {
+  await openSortMenu();
+  const allOptions = await sortMenuItems();
+  const option = await allOptions.$(`aria/${sortOrder}`);
+  await option.click();
 };
 
 const search = async (query) => {
@@ -387,6 +422,33 @@ const filterReportViewAll = async () => {
   await (await tabsContainer.$('*=View all')).click();
 };
 
+const openSelectedContact = async (listElement) => {
+  await listElement.click();
+};
+
+const openFirstContact = async () => {
+  const firstContact = leftPanelSelectors.firstContact();
+  await firstContact.waitForClickable();
+  await openSelectedContact(firstContact);
+};
+
+const openPrimaryContactSearchDropdown = async () => {
+  await editDistrictHospitalSelectors.primaryContactSearchDropdown().waitForClickable();
+  await editDistrictHospitalSelectors.primaryContactSearchDropdown().click();
+};
+
+const inputPrimaryContactSearchValue = async (searchQuery) => {
+  await editDistrictHospitalSelectors.primaryContactSearchInput().waitForDisplayed();
+  await editDistrictHospitalSelectors.primaryContactSearchInput().setValue(searchQuery);
+  await browser.pause(1000);
+};
+
+const selectPrimaryContactSearchFirstResult = async () => {
+  await editDistrictHospitalSelectors.primaryContactSearchFirstResult().waitForClickable();
+  await editDistrictHospitalSelectors.primaryContactSearchFirstResult().click();
+};
+
+
 module.exports = {
   genericForm,
   leftPanelSelectors,
@@ -396,6 +458,7 @@ module.exports = {
   reportsCardSelectors,
   pregnancyCardSelectors,
   deathCardSelectors,
+  inmunizationCardSelectors,
   selectLHSRowByText,
   selectRHSRowById,
   getReportFiltersText,
@@ -430,4 +493,11 @@ module.exports = {
   getDisplayedContactsNames,
   getCurrentPersonEditFormValues,
   filterReportViewAll,
+  openFirstContact,
+  menuSelectors,
+  openPrimaryContactSearchDropdown,
+  inputPrimaryContactSearchValue,
+  selectPrimaryContactSearchFirstResult,
+  openSortMenu,
+  selectSortOrder,
 };

@@ -13,10 +13,10 @@
 const sharp = require('sharp');
 
 const MOBILE_WINDOW_WIDTH = 768;
-const MOBILE_VIEWPORT_WIDTH = 320;
-const MOBILE_VIEWPORT_HEIGHT = 570;
-const DESKTOP_WINDOW_WIDTH = 1000;
-const DESKTOP_WINDOW_HEIGHT = 820;
+const MOBILE_VIEWPORT_WIDTH = 375;
+const MOBILE_VIEWPORT_HEIGHT = 645;
+const DESKTOP_WINDOW_WIDTH = 1440;
+const DESKTOP_WINDOW_HEIGHT = 1024;
 const HIGH_DENSITY_DISPLAY_2X = 2;
 
 const isMobile = async () => {
@@ -37,8 +37,8 @@ const resizeWindowForScreenshots = async () => {
       'AppleWebKit/537.36 (KHTML, like Gecko) ' +
       'Chrome/92.0.4515.159 Mobile Safari/537.36'
     });
-  } 
-  
+  }
+
   return await browser.setWindowSize(DESKTOP_WINDOW_WIDTH, DESKTOP_WINDOW_HEIGHT);
 };
 
@@ -72,4 +72,5 @@ const generateScreenshot = async (scenario, step) => {
 module.exports = {
   resizeWindowForScreenshots,
   generateScreenshot,
+  isMobile,
 };
