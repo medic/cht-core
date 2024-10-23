@@ -129,20 +129,26 @@ describe('RapidPro SMS Gateway', () => {
         { to: 'phone2', content: 'message2', id: 'two' },
         { to: 'phone3', content: 'message3', id: 'three' },
         { to: 'phone4', content: 'message4', id: 'four' },
+        { to: 'phone5', content: 'message5', id: 'five' },
+        { to: 'phone6', content: 'message6', id: 'six' },
       ];
 
       sinon.stub(request, 'post')
         .withArgs(sinon.match({ body: { text: 'message1' } })).resolves({ id: 'broadcast1', status: 'queued' })
         .withArgs(sinon.match({ body: { text: 'message2' } })).resolves()
         .withArgs(sinon.match({ body: { text: 'message3' } })).rejects({ some: 'error' })
-        .withArgs(sinon.match({ body: { text: 'message4' } })).resolves({ id: 'broadcast4', status: 'queued' });
+        .withArgs(sinon.match({ body: { text: 'message4' } })).resolves({ id: 'broadcast4', status: 'queued' })
+        .withArgs(sinon.match({ body: { text: 'message5' } })).rejects({ statusCode: 400 })
+        .withArgs(sinon.match({ body: { text: 'message6' } })).resolves({ id: 'broadcast6' });
 
       return service.send(messages).then((result) => {
-        expect(request.post.callCount).to.equal(4);
+        expect(request.post.callCount).to.equal(6);
 
         expect(result).to.deep.equal([
           { messageId: 'one', gatewayRef: 'broadcast1', state: 'received-by-gateway', details: 'Queued' },
           { messageId: 'four', gatewayRef: 'broadcast4', state: 'received-by-gateway', details: 'Queued' },
+          { messageId: 'five', gatewayRef: undefined, state: 'failed', details: 'Failed' },
+          { messageId: 'six', gatewayRef: 'broadcast6', state: 'received-by-gateway', details: 'Queued' },
         ]);
       });
     });
