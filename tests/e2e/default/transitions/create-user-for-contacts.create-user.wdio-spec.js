@@ -8,22 +8,12 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const { BASE_URL } = require('@constants');
 const { cookieLogin } = require('@page-objects/default/login/login.wdio.page');
-const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const createUserForContactsPage = require('@page-objects/default/enketo/create-user-for-contacts');
 
 describe('Create user when adding contact', () => {
   const NEW_USERS = [];
   const CONTACT_NAME = 'Bob_chw';
   const FORM_NAME = 'add_chw';
-
-  const submitAddChwForm = async ({
-    name: nameValue = 'Ron',
-    phone: phoneValue = '+40755696969',
-  } = {}) => {
-    await commonEnketoPage.setInputValue('Name', nameValue);
-    await commonEnketoPage.setInputValue('Phone Number', phoneValue);
-    await genericForm.submitForm();
-  };
 
   const district = utils.deepFreeze( placeFactory.place().build({ type: 'district_hospital' }) );
 
@@ -141,8 +131,7 @@ describe('Create user when adding contact', () => {
     await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
-    await commonPage.openFastActionReport(FORM_NAME);
-    await submitAddChwForm({ name: CONTACT_NAME });
+    await createUserForContactsPage.submitAddChwForm({ name: CONTACT_NAME });
     await contactsPage.selectLHSRowByText(CONTACT_NAME);
     await verifyUserCreation();
   });
@@ -151,9 +140,8 @@ describe('Create user when adding contact', () => {
     await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
-    await commonPage.openFastActionReport(FORM_NAME);
     // Add contact with invalid phone number
-    await submitAddChwForm({ name: CONTACT_NAME, phone: '+40755' });
+    await createUserForContactsPage.submitAddChwForm({ name: CONTACT_NAME, phone: '+40755' });
     await contactsPage.selectLHSRowByText(CONTACT_NAME);
     await verifyUserNotCreated({ ok: false });
   });
@@ -162,9 +150,8 @@ describe('Create user when adding contact', () => {
     await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
-    await commonPage.openFastActionReport(FORM_NAME);
     // Add contact with invalid phone number
-    await submitAddChwForm({ name: CONTACT_NAME, phone: '+40755' });
+    await createUserForContactsPage.submitAddChwForm({ name: CONTACT_NAME, phone: '+40755' });
     await contactsPage.selectLHSRowByText(CONTACT_NAME);
     await verifyUserNotCreated({ ok: false });
     // Edit contact to have valid phone number
