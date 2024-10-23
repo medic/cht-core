@@ -1,4 +1,8 @@
 const _ = require('lodash/core');
+const moment = require('moment');
+const logger = require('@medic/logger');
+const phoneNumberParser = require('@medic/phone-number');
+const config = require('../../transitions/src/config');
 
 let db;
 
@@ -14,6 +18,19 @@ const getIntersection = responses => {
     ids = ids.filter(id => _.find(response.rows, { id }));
   });
   return ids;
+};
+
+const parseDuration = (duration) => {
+  const parts = duration.split(' ');
+  return moment.duration(parseInt(parts[0]), parts[1]);
+};
+
+const parseStartDate = (duration) => {
+  if (!duration) {
+    return;
+  }
+  const parsed = parseDuration(duration);
+  return moment().subtract(parsed).valueOf();
 };
 
 const exists = async (doc, fields, options = {}) => {
@@ -38,15 +55,78 @@ const exists = async (doc, fields, options = {}) => {
   }
 
   const result = await db.medic.allDocs({ keys: ids, include_docs: true });
+  const startDate = parseStartDate(options.duration);
   // filter out docs with errors
   const found = result.rows.some(row => {
     const doc = row.doc;
     return (
       (!doc.errors || doc.errors.length === 0) &&
-      (!options.startDate || doc.reported_date >= options.startDate)
+      (!startDate || doc.reported_date >= startDate)
     );
   });
   return found;
+};
+
+// const compareDate = (doc, validation, checkAfter = false) => {
+const compareDate = (doc, date, d, checkAfter = false) => {
+  try {
+    const duration = parseDuration(d);
+    if (!duration.isValid()) {
+      logger.error('date constraint validation: the duration is invalid');
+      return false;
+    }
+    const testDate = moment(date);
+    const controlDate = checkAfter ?
+      moment(doc.reported_date).add(duration) :
+      moment(doc.reported_date).subtract(duration);
+    if (!testDate.isValid() || !controlDate.isValid()) {
+      logger.error('date constraint validation: the date is invalid');
+      return false;
+    }
+
+    if (checkAfter && testDate.isSameOrAfter(controlDate, 'days')) {
+      return true;
+    }
+    if (!checkAfter && testDate.isSameOrBefore(controlDate, 'days')) {
+      return true;
+    }
+
+    logger.error('date constraint validation failed');
+    return false;
+  } catch (err) {
+    logger.error('date constraint validation: the date or duration is invalid: %o', err);
+    return false;
+  }
+};
+
+const isISOWeek = (doc, weekFieldName, yearFieldName) => {
+  if (!_.has(doc, weekFieldName) || (yearFieldName && !_.has(doc, yearFieldName))) {
+    logger.error('isISOWeek validation failed: input field(s) do not exist');
+    return false;
+  }
+
+  const year = yearFieldName ? doc[yearFieldName] : new Date().getFullYear();
+  const isValidISOWeek =
+    /^\d{1,2}$/.test(doc[weekFieldName]) &&
+    /^\d{4}$/.test(year) &&
+    doc[weekFieldName] >= 1 &&
+    doc[weekFieldName] <= moment().year(year).isoWeeksInYear();
+  if (isValidISOWeek) {
+    return true;
+  }
+
+  logger.error('isISOWeek validation failed: the number of week is greater than the maximum');
+  return false;
+};
+
+const validPhone = (value) => {
+  const appSettings = config.getAll();
+  return phoneNumberParser.validate(appSettings, value);
+};
+
+const uniquePhone = async (value) => {
+  const results = await db.medic.query('medic-client/contacts_by_phone', { key: value });
+  return !results?.rows?.length;
 };
 
 module.exports = {
@@ -54,4 +134,8 @@ module.exports = {
     db = _db;
   },
   exists,
+  compareDate,
+  isISOWeek,
+  validPhone,
+  uniquePhone
 };

@@ -18,6 +18,7 @@ const stubMe = (functionName) => {
 };
 
 describe('validations', () => {
+
   beforeEach(() => {
     db = { medic: { query: () => stubMe('query'), allDocs: () => stubMe('allDocs') } };
     config = {};
@@ -27,6 +28,7 @@ describe('validations', () => {
 
     validation.init({ db, config, translate });
   });
+
   afterEach(() => {
     if (clock) {
       clock.restore();
@@ -191,7 +193,7 @@ describe('validations', () => {
     return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
         {
-          code: 'invalid_xyz_unique',
+          code: 'invalid_xyz',
           message: 'Duplicate: {{xyz}}.',
         },
       ]);
@@ -237,7 +239,7 @@ describe('validations', () => {
       assert.deepEqual(allDocs.args[0][0], { keys: ['different'], include_docs: true });
       assert.deepEqual(errors, [
         {
-          code: 'invalid_xyz_unique',
+          code: 'invalid_xyz',
           message: 'Duplicate xyz {{xyz}} and abc {{abc}}.',
         },
       ]);
@@ -521,7 +523,7 @@ describe('validations', () => {
     return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
         {
-          code: 'invalid_xyz_uniqueWithin',
+          code: 'invalid_xyz',
           message: 'Duplicate xyz {{xyz}}.',
         },
       ]);
@@ -771,7 +773,7 @@ describe('validations', () => {
     return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
         {
-          code: 'invalid_lmp_date_isBefore',
+          code: 'invalid_lmp_date',
           message: 'Invalid date.',
         },
       ]);
@@ -799,7 +801,7 @@ describe('validations', () => {
     return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
         {
-          code: 'invalid_lmp_date_isBefore',
+          code: 'invalid_lmp_date',
           message: 'Invalid date.',
         },
       ]);
@@ -827,7 +829,7 @@ describe('validations', () => {
     return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
         {
-          code: 'invalid_lmp_date_isBefore',
+          code: 'invalid_lmp_date',
           message: 'Invalid date.',
         },
       ]);
@@ -889,7 +891,7 @@ describe('validations', () => {
     return validation.validate(doc, validations).then(errors => {
       assert.deepEqual(errors, [
         {
-          code: 'invalid_lmp_date_isAfter',
+          code: 'invalid_lmp_date',
           message: 'Invalid date.',
         },
       ]);

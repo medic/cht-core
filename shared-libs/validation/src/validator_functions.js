@@ -78,6 +78,46 @@ const ValidatorFunctions = {
       logger.error('Error running "exists" validation: %o', e);
     }
   },
+
+  unique: async (allValues, value, ...fieldNames) => {
+    try {
+      const exists = await validationUtils.exists(allValues, fieldNames);
+      return !exists;
+    } catch (e) {
+      logger.error('Error running "unique" validation: %o', e);
+    }
+  },
+
+  uniquewithin: async (allValues, value, ...fields) => {
+    const duration = fields.pop();
+    try {
+      const exists = await validationUtils.exists(allValues, fields, { duration });
+      return !exists;
+    } catch (e) {
+      logger.error('Error running "uniqueWithin" validation: %o', e);
+    }
+  },
+
+  isafter: (allValues, value, duration) => {
+    return validationUtils.compareDate(allValues, value, duration, true);
+  },
+
+  isbefore: (allValues, value, duration) => {
+    return validationUtils.compareDate(allValues, value, duration, false);
+  },
+
+  isisoweek: (allValues, value, weekFieldName, yearFieldName) => {
+    return validationUtils.isISOWeek(allValues, weekFieldName, yearFieldName);
+  },
+
+  validphone: (allValues, value, phoneFieldName) => {
+    return validationUtils.validPhone(allValues[phoneFieldName]);
+  },
+
+  uniquephone: async (allValues, value, phoneFieldName) => {
+    return await validationUtils.uniquePhone(allValues[phoneFieldName]);
+  }
+
 };
 
 module.exports = ValidatorFunctions;
