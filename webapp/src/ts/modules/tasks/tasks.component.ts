@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, AfterViewInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
@@ -22,6 +22,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { LineagePipe } from '@mm-pipes/message.pipe';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
+import { TasksSidebarFilterComponent } from '@mm-modules/tasks/tasks-sidebar-filter.component';
 
 @Component({
   templateUrl: './tasks.component.html',
@@ -38,7 +39,9 @@ import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
     TaskDueDatePipe,
   ],
 })
-export class TasksComponent implements OnInit, OnDestroy {
+export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild(TasksSidebarFilterComponent) tasksSidebarFilter: TasksSidebarFilterComponent;
+
   constructor(
     private readonly store: Store,
     private readonly changesService: ChangesService,
@@ -61,11 +64,17 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   tasksList;
   selectedTask;
+  selectedTasks;
   errorStack;
   hasTasks;
   loading;
   tasksDisabled;
   userLineageLevel;
+  filters: any = {};
+  selectMode = false;  
+  selectModeAvailable = false;
+  useSidebarFilter = true;
+  isSidebarFilterOpen = false;  
 
   private tasksLoaded;
   private debouncedReload;
@@ -79,11 +88,15 @@ export class TasksComponent implements OnInit, OnDestroy {
     const taskList$ = combineLatest([
       this.store.select(Selectors.getTasksList),
       this.store.select(Selectors.getSelectedTask),
+      this.store.select(Selectors.getFilters),      
     ]).subscribe(([
       tasksList = [],
       selectedTask,
+      filters,      
     ]) => {
       this.selectedTask = selectedTask;
+      this.filters = filters;
+      
       // Make new reference because the one from store is read-only. Fixes: ExpressionChangedAfterItHasBeenCheckedError
       this.tasksList = tasksList.map(task => ({ ...task, selected: task._id === this.selectedTask?._id }));
     });
@@ -128,6 +141,10 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.refreshTasks();
   }
 
+  async ngAfterViewInit() {
+    this.subscribeSidebarFilter();
+  }   
+
   ngOnDestroy() {
     this.subscription.unsubscribe();
     this.tasksActions.setTasksList([]);
@@ -140,6 +157,17 @@ export class TasksComponent implements OnInit, OnDestroy {
   refreshTaskList() {
     window.location.reload();
   }
+
+  private subscribeSidebarFilter() {
+    if (!this.useSidebarFilter) {
+      return;
+    }
+
+    const subscription = this.store
+      .select(Selectors.getSidebarFilter)
+      .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
+    this.subscription.add(subscription);
+  }  
 
   private hydrateEmissions(taskDocs) {
     return taskDocs.map(taskDoc => {
@@ -163,7 +191,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
       this.hasTasks = taskDocs.length > 0;
 
-      const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
+      let hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
       const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
       if (subjects?.size) {
         const userLineageLevel = await this.userLineageLevel;
@@ -171,6 +199,19 @@ export class TasksComponent implements OnInit, OnDestroy {
           task.lineage = this.getTaskLineage(subjects, task, userLineageLevel);
         });
       }
+
+      if (subjects?.size) {
+        const userLineageLevel = await this.currentLevel;
+        hydratedTasks.forEach(task => {
+          task.lineageId = this.getTaskLineageById(subjects, task, userLineageLevel);
+        });
+      }
+
+      if(this.filters?.facilities) {
+        hydratedTasks = hydratedTasks.filter(task =>
+          task.lineageId.some(value => this.filters.facilities.selected.includes(value))
+        );        
+      }      
 
       this.tasksActions.setTasksList(hydratedTasks);
 
@@ -207,6 +248,18 @@ export class TasksComponent implements OnInit, OnDestroy {
     return task?._id;
   }
 
+  toggleFilter() {
+    this.tasksSidebarFilter?.toggleSidebarFilter();
+  }
+
+  resetFilter() {
+    this.tasksSidebarFilter?.resetFilters();
+  }
+
+  search() {
+    this.refreshTasks();
+  }  
+
   private getLineagesFromTaskDocs(taskDocs) {
     const ids = [ ...new Set(taskDocs.map(task => task.owner)) ];
     return this.lineageModelGeneratorService
@@ -220,4 +273,11 @@ export class TasksComponent implements OnInit, OnDestroy {
       ?.map(lineage => lineage?.name);
     return this.extractLineageService.removeUserFacility(lineage, userLineageLevel);
   }
+
+  private getTaskLineageById(subjects, task, userLineageLevel) {
+    const lineage = subjects
+      .get(task.owner)
+      ?.map(lineage => lineage?._id);
+      return this.extractLineageService.removeUserFacility(lineage, userLineageLevel);
+  }  
 }

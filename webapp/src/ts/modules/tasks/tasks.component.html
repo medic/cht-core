@@ -1,9 +1,24 @@
 <mm-tool-bar title="Tasks"></mm-tool-bar>
 
+<div class="filters tab-bar">
+  <div class="inner">
+    <mm-navigation></mm-navigation>
+    <mm-filter-slider-icon
+      *ngIf="useSidebarFilter && !selectMode"
+      (toggleFilter)="toggleFilter()"
+      [disabled]="selectMode && selectedTasks?.length"
+      [showFilter]="true">
+    </mm-filter-slider-icon>
+  </div>
+</div>
+
 <div class="inner">
   <div class="inbox page">
 
-    <div id="tasks-list" class="col-sm-4 inbox-items left-pane">
+    <div id="tasks-list" 
+      class="inbox-items left-pane"
+      [ngClass]="{ 'col-sm-3': isSidebarFilterOpen, 'col-sm-4': !isSidebarFilterOpen }">
+
       <ul *ngIf="!errorStack && hasTasks">
         <li *ngFor="let task of tasksList; trackBy: listTrackBy"
           [attr.data-record-id]="task._id"
@@ -41,6 +56,17 @@
       <div class="loader" *ngIf="loading && !tasksDisabled && !errorStack"></div>
     </div>
 
-    <router-outlet></router-outlet>
+    <div class="content-pane right-pane">
+      <div class="item-content" [ngClass]="{ 'col-sm-6': isSidebarFilterOpen, 'col-sm-8': !isSidebarFilterOpen }">
+        <router-outlet></router-outlet>
+      </div>
+    
+      <mm-tasks-sidebar-filter
+        class="col-sm-3 sidebar-filter-wrapper"
+        *ngIf="useSidebarFilter"
+        (search)="search()"
+        [disabled]="selectMode">
+      </mm-tasks-sidebar-filter>
+    </div>
   </div>
 </div>

@@ -1,0 +1,11 @@
+<section class="mm-filter-slider-container" [class.disabled]="disabled">
+  <button 
+    mat-flat-button 
+    class="open-filter" 
+    *ngIf="showFilter" 
+    (click)="toggleFilter.emit()">
+    <span class="fa fa-sliders"></span>
+    <span class="open-filter-label">{{ 'search_bar.filter.label' | translate }}</span>
+    <span class="filter-counter" *ngIf="activeFilters">{{ activeFilters.toString() | translate }}</span>
+  </button>
+</section>
