@@ -8,6 +8,8 @@ const { faker: Faker } = require('@faker-js/faker');
 const userFactory = require('@factories/cht/users/users');
 const searchPage = require('@page-objects/default/search/search.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const { BRANCH, TAG } = process.env;
 
 describe('Telemetry', () => {
@@ -25,6 +27,7 @@ describe('Telemetry', () => {
   const contact = personFactory.build({
     name: Faker.person.firstName(),
     parent: { _id: healthCenter._id },
+    phone: '+9779841299392',
   });
   const user = userFactory.build({
     username: Faker.internet.userName().toLowerCase().replace(/[^0-9a-zA-Z_]/g, ''),
@@ -33,9 +36,23 @@ describe('Telemetry', () => {
     contact: contact._id,
     known: true,
   });
+  const pregnancyReport = pregnancyFactory.build({
+    fields: {
+      patient_id: patient.patient_id,
+      patient_uuid: patient._id,
+      name: patient.name,
+    },
+    contact: {
+      _id: contact._id,
+      parent: contact.parent,
+    },
+    from: contact.phone,
+  });
+  let reportDocs;
 
   before(async () => {
     await utils.saveDocs([...places.values(), contact, patient]);
+    reportDocs = await utils.saveDocs([pregnancyReport]);
     await utils.createUsers([user]);
     await loginPage.login(user);
     await commonPage.waitForPageLoaded();
@@ -96,7 +113,6 @@ describe('Telemetry', () => {
       const phone = patient.phone;
       const patient_id = patient.patient_id;
       const searchTerms = [firstName, lastName, phone, patient_id, `patient_id:${patient_id}`];
-
       for (const searchTerm of searchTerms) {
         await searchPage.performSearch(searchTerm);
         await contactPage.selectLHSRowByText(patient.name, false);
@@ -107,6 +123,25 @@ describe('Telemetry', () => {
       expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:phone')).to.have.lengthOf(1);
       expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:patient_id')).to.have.lengthOf(1);
       expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:patient_id:$value')).to.have.lengthOf(1);
+    });
+
+    it('should record telemetry for reports searches', async () => {
+      await commonPage.goToReports();
+
+      const [firstName, lastName] = patient.name.split(' ');
+      const phone = contact.phone;
+      const patient_id = patient.patient_id;
+      const searchTerms = [firstName, lastName, phone, patient_id, `patient_id:${patient_id}`];
+      for (const searchTerm of searchTerms) {
+        await searchPage.performSearch(searchTerm);
+        await reportsPage.openReport(reportDocs[0].id);
+        await searchPage.clearSearch();
+      }
+
+      expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:fields.name')).to.have.lengthOf(2);
+      expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:from')).to.have.lengthOf(1);
+      expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:fields.patient_id')).to.have.lengthOf(1);
+      expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:patient_id:$value')).to.have.lengthOf(1);
     });
   });
 });
