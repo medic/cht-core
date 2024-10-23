@@ -10,6 +10,8 @@ const searchPage = require('@page-objects/default/search/search.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const { BRANCH, TAG } = process.env;
 
 describe('Telemetry', () => {
@@ -142,6 +144,24 @@ describe('Telemetry', () => {
       expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:from')).to.have.lengthOf(1);
       expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:fields.patient_id')).to.have.lengthOf(1);
       expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:patient_id:$value')).to.have.lengthOf(1);
+    });
+
+    it('should record telemetry for contact searches by type', async () => {
+      await commonPage.goToPeople();
+
+      await commonPage.clickFastActionFAB({ actionId: 'clinic' });
+      await commonEnketoPage.selectRadioButton('Set the Primary Contact', 'Select an existing person');
+
+      const [firstName, lastName] = patient.name.split(' ');
+      const searchTerms = [firstName, lastName, patient.phone, `phone:${patient.phone}`];
+      for (const searchTerm of searchTerms) {
+        await genericForm.selectContact(patient.name, 'Select the Primary Contact', searchTerm);
+        await genericForm.clearSelectedContact('Select the Primary Contact');
+      }
+
+      expect(await getTelemetryEntryByKey('search_match:contacts_by_type_freetext:name')).to.have.lengthOf(2);
+      expect(await getTelemetryEntryByKey('search_match:contacts_by_type_freetext:phone')).to.have.lengthOf(1);
+      expect(await getTelemetryEntryByKey('search_match:contacts_by_type_freetext:phone:$value')).to.have.lengthOf(1);
     });
   });
 });
