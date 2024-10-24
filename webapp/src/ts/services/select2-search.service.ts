@@ -82,60 +82,62 @@ export class Select2SearchService {
     this.searchService
       .search('contacts', filters, searchOptions)
       .then((documents) => {
-        if (this.currentQuery === params.data.q) {
-          if (this.onceHandler) {
-            this.selectEl!.off('select2:select', this.onceHandler);
-            this.onceHandler = null;
+        if (this.currentQuery !== params.data.q) {
+          return;
+        }
+
+        if (this.onceHandler) {
+          this.selectEl!.off('select2:select', this.onceHandler);
+          this.onceHandler = null;
+        }
+
+        this.onceHandler = async (event) => {
+          this.onceHandler = null;
+
+          const search = params.data.q;
+          if (!search) {
+            return;
           }
 
-          this.onceHandler = async (event) => {
-            this.onceHandler = null;
+          const matchingProperties = new Set<string>();
+          const colonSearch = search.split(':');
+          if (colonSearch.length > 1) {
+            matchingProperties.add(`${colonSearch[0]}:$value`);
+          }
 
-            const search = params.data.q;
-            if (!search) {
-              return;
-            }
+          const docId = event.params && event.params.data && event.params.data.id;
+          const doc = await this.getDoc(docId);
+          const skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
+          const _search = search.toLowerCase();
+          const findMatchingProperties = (object: Record<string, any>, basePropertyPath = '') => {
+            Object.entries(object).forEach(([key, value]) => {
+              const _key = key.toLowerCase();
+              if (skip.includes(_key) || _key.endsWith('_date')) {
+                return;
+              }
 
-            const matchingProperties = new Set<string>();
-            const colonSearch = search.split(':');
-            if (colonSearch.length > 1) {
-              matchingProperties.add(`${colonSearch[0]}:$value`);
-            }
-
-            const docId = event.params && event.params.data && event.params.data.id;
-            const doc = await this.getDoc(docId);
-            const skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
-            const _search = search.toLowerCase();
-            const findMatchingProperties = (object: Record<string, any>, basePropertyPath = '') => {
-              Object.entries(object).forEach(([key, value]) => {
-                const _key = key.toLowerCase();
-                if (skip.includes(_key) || _key.endsWith('_date')) {
-                  return;
-                }
-
-                const propertyPath = basePropertyPath ? `${basePropertyPath}.${key}` : key;
-                if (typeof value === 'string' && value.toLowerCase().includes(_search)) {
-                  matchingProperties.add(propertyPath);
-                }
-              });
-            };
-            findMatchingProperties(doc);
-
-            for (const key of matchingProperties) {
-              await this.telemetryService.record(`search_match:contacts_by_type_freetext:${key}`);
-              console.info('record', `search_match:contacts_by_type_freetext:${key}`);
-            }
+              const propertyPath = basePropertyPath ? `${basePropertyPath}.${key}` : key;
+              if (typeof value === 'string' && value.toLowerCase().includes(_search)) {
+                matchingProperties.add(propertyPath);
+              }
+            });
           };
-          this.selectEl!.one('select2:select', this.onceHandler);
+          findMatchingProperties(doc);
 
-          this.currentQuery = null;
-          successCb({
-            results: options.sendMessageExtras(this.prepareRows(documents)),
-            pagination: {
-              more: documents.length === options.pageSize
-            }
-          });
-        }
+          for (const key of matchingProperties) {
+            await this.telemetryService.record(`search_match:contacts_by_type_freetext:${key}`);
+            console.info('record', `search_match:contacts_by_type_freetext:${key}`);
+          }
+        };
+        this.selectEl!.one('select2:select', this.onceHandler);
+
+        this.currentQuery = null;
+        successCb({
+          results: options.sendMessageExtras(this.prepareRows(documents)),
+          pagination: {
+            more: documents.length === options.pageSize
+          }
+        });
       })
       .catch((err) => {
         if (this.currentQuery === params.data.q) {
