@@ -10,21 +10,26 @@ import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Select2SearchService {
+  private selectEl;
+  private currentQuery: string | null = null;
+  private onContactSelect;
 
   constructor(
-    private route: ActivatedRoute,
-    private formatProvider: FormatProvider,
-    private translateService: TranslateService,
-    private lineageModelGeneratorService: LineageModelGeneratorService,
-    private searchService: SearchService,
-    private sessionService: SessionService,
-    private settingsService: SettingsService,
-    private contactMutedService: ContactMutedService
+    private readonly route: ActivatedRoute,
+    private readonly formatProvider: FormatProvider,
+    private readonly translateService: TranslateService,
+    private readonly lineageModelGeneratorService: LineageModelGeneratorService,
+    private readonly searchService: SearchService,
+    private readonly sessionService: SessionService,
+    private readonly settingsService: SettingsService,
+    private readonly contactMutedService: ContactMutedService,
+    private readonly searchTelemetryService: SearchTelemetryService,
   ) { }
 
   private defaultTemplateResult(row) {
@@ -58,7 +63,8 @@ export class Select2SearchService {
   }
 
   private query(params, successCb, failureCb, options, types) {
-    const currentQuery = params.data.q;
+    this.currentQuery = params.data.q;
+    const search = params.data.q;
 
     const searchOptions = {
       limit: options.pageSize,
@@ -68,7 +74,7 @@ export class Select2SearchService {
 
     const filters: Filter = {
       types: { selected: types },
-      search: params.data.q,
+      search,
     };
     if (options.filterByParent) {
       filters.parent = this.getContactId();
@@ -77,17 +83,39 @@ export class Select2SearchService {
     this.searchService
       .search('contacts', filters, searchOptions)
       .then((documents) => {
-        if (currentQuery === params.data.q) {
-          successCb({
-            results: options.sendMessageExtras(this.prepareRows(documents)),
-            pagination: {
-              more: documents.length === options.pageSize
-            }
-          });
+        if (this.currentQuery !== search) {
+          return;
         }
+
+        if (this.onContactSelect) {
+          this.selectEl!.off('select2:select', this.onContactSelect);
+          this.onContactSelect = null;
+        }
+
+        this.onContactSelect = async (event) => {
+          this.onContactSelect = null;
+
+          const docId = event.params?.data?.id;
+          if (!search || !docId) {
+            return;
+          }
+
+          const doc = await this.getDoc(docId);
+          await this.searchTelemetryService.recordContactByTypeSearch(doc, search);
+        };
+        this.selectEl!.one('select2:select', this.onContactSelect);
+
+        this.currentQuery = null;
+        successCb({
+          results: options.sendMessageExtras(this.prepareRows(documents)),
+          pagination: {
+            more: documents.length === options.pageSize
+          }
+        });
       })
       .catch((err) => {
-        if (currentQuery === params.data.q) {
+        if (this.currentQuery === params.data.q) {
+          this.currentQuery = null;
           failureCb(err);
         }
       });
@@ -215,6 +243,7 @@ export class Select2SearchService {
   }
 
   async init(selectEl, _types, _options:any = {}) {
+    this.selectEl = selectEl;
     const settings = await this.settingsService.get();
     const types = Array.isArray(_types) ? _types : [ _types ];
     const options = {
@@ -237,5 +266,4 @@ export class Select2SearchService {
 
     return this.resolveInitialValue(selectEl, options, settings);
   }
-
 }
