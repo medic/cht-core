@@ -9,7 +9,6 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const createUserForContactsPage = require('@page-objects/default/enketo/create-user-for-contacts');
 const { BASE_URL, DEFAULT_USER_CONTACT_DOC } = require('@constants');
 
@@ -270,8 +269,7 @@ describe('Create user for contacts', () => {
         const originalContactId = ORIGINAL_USER.contact._id;
 
         await commonPage.goToPeople(originalContactId);
-        await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID);
-        await genericForm.submitForm({ waitForPageLoaded: false });
+        await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID, false);
 
         // Logout triggered immediately
         await (await loginPage.loginButton()).waitForDisplayed();
@@ -306,6 +304,7 @@ describe('Create user for contacts', () => {
 
         // Open the texted link
         await commonPage.logout();
+
         await browser.url(loginLink);
         await commonPage.waitForPageLoaded();
         const [cookie] = await browser.getCookies('userCtx');
@@ -484,8 +483,7 @@ describe('Create user for contacts', () => {
         const originalContactId = ORIGINAL_USER.contact._id;
 
         await commonPage.goToPeople(originalContactId);
-        await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID);
-        await genericForm.submitForm({ waitForPageLoaded: false });
+        await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID, false);
 
         // Logout triggered immediately
         await (await loginPage.loginButton()).waitForDisplayed();

@@ -14,7 +14,7 @@ const submitAddChwForm = async ({
   await genericForm.submitForm();
 };
 
-const submitReplaceUserForm = async (formID) => {
+const submitReplaceUserForm = async (formID, waitForPageLoaded = true) => {
   await commonPage.openFastActionReport(formID);
   await commonEnketoPage.setInputValue('Admin Code', '1234');
   await genericForm.nextPage();
@@ -22,7 +22,7 @@ const submitReplaceUserForm = async (formID) => {
   await commonEnketoPage.selectRadioButton('Sex', 'Female');
   await commonEnketoPage.setDateValue('Age', moment().subtract(22, 'years').format('YYYY-MM-DD'));
   await genericForm.nextPage();
-  await genericForm.submitForm();
+  await genericForm.submitForm({ waitForPageLoaded });
 };
 
 const submitBasicForm = async () => {
