@@ -63,7 +63,7 @@ describe('ContactSummary service', () => {
     Settings.resolves({ contact_summary: '' });
     const contact = {};
     const reports = [];
-    return service.get(contact, reports, [], []).then(actual => {
+    return service.get(contact, reports, [], [], []).then(actual => {
       expect(actual.fields.length).to.equal(0);
       expect(actual.cards.length).to.equal(0);
     });
@@ -77,7 +77,7 @@ describe('ContactSummary service', () => {
     Settings.resolves({ contact_summary: script });
     const contact = { name: 'jack' };
     const reports = [ { _id: 1 }, { _id: 2} ];
-    return service.get(contact, reports,  [], []).then(actual => {
+    return service.get(contact, reports,  [], [], []).then(actual => {
       expect(actual.fields.length).to.equal(2);
       expect(actual.fields[0].label).to.equal('Notes');
       expect(actual.fields[0].value).to.equal('Hello jack');
@@ -94,7 +94,7 @@ describe('ContactSummary service', () => {
     Settings.resolves({ contact_summary: script });
     const contact = {};
     const reports = [];
-    return service.get(contact, reports, [], []).then(actual => {
+    return service.get(contact, reports, [], [], []).then(actual => {
       expect(actual.fields.length).to.equal(1);
       expect(actual.fields[0].label).to.equal('Notes');
       expect(actual.fields[0].value).to.equal('olleH');
@@ -112,7 +112,7 @@ describe('ContactSummary service', () => {
     Settings.resolves({ contact_summary: script });
     const contact = {};
     const reports = [];
-    return service.get(contact, reports, [], []).then(actual => {
+    return service.get(contact, reports, [], [], []).then(actual => {
       expect(actual.fields).to.deep.equal([undefined]);
       expect(actual.cards).to.deep.equal([undefined]);
     });
@@ -128,7 +128,7 @@ describe('ContactSummary service', () => {
     Settings.resolves({ contact_summary: script });
     const contact = {};
     const reports = [];
-    return service.get(contact, reports, [], []).then(actual => {
+    return service.get(contact, reports, [], [], []).then(actual => {
       expect(actual.fields).to.be.an('array');
       expect(actual.fields.length).to.equal(0);
       expect(actual.cards).to.be.an('array');
@@ -177,7 +177,7 @@ describe('ContactSummary service', () => {
       { date_updated: 'a month ago', targets: [{ id: 'target', type: 'count' }] },
     ];
 
-    return service.get(contact, reports, lineage, targetDocs).then(contactSummary => {
+    return service.get(contact, reports, lineage, [], targetDocs).then(contactSummary => {
       expect(contactSummary).to.deep.equal({
         fields: ['boa', 'parent'],
         cards: [
@@ -213,7 +213,7 @@ describe('ContactSummary service', () => {
       end: moment('2021-04-25 23:59:59.999').valueOf()
     });
 
-    const contactSummary = await service.get(contact, reports, [], []);
+    const contactSummary = await service.get(contact, reports, [], [], []);
 
     expect(contactSummary).to.deep.equal({
       cards: [],
@@ -241,7 +241,7 @@ describe('ContactSummary service', () => {
 
     Settings.resolves({ contact_summary: script });
 
-    const contactSummary = await service.get(contact, reports, [], []);
+    const contactSummary = await service.get(contact, reports, [], [], []);
 
     expect(contactSummary).to.deep.equal({
       cards: [],
