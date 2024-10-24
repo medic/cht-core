@@ -6,41 +6,39 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const sentinelUtils = require('@utils/sentinel');
 
-const languageCode = 'hil';
-
-const createLanguage = async () =>  {
-  await utils.addTranslations(languageCode, {
-    'n.month': '{MONTHS, plural, =1{1 luna} other{# luni}}',
-    'n.week': '{WEEKS, plural, =1{1 saptamana} other{# saptamani}}',
-    'reports.none.n.months':
-      '{MONTHS, plural, =1{No reports in the last month.} other{No reports in the last # months.}}',
-    'task.days.left': '{DAYS, plural, =1{1 day left} other{# days left}',
-    'tasks.none.n.weeks': '{WEEKS, plural, =1{No tasks in the next week.} other{No tasks in the next # weeks.}}',
-    'Reports': 'HilReports',
-    'view.all': 'View all'
-  });
-  await utils.enableLanguage(languageCode);
-};
-
-const createContact = () => {
-  return placeFactory.place().build({
-    name: 'hil district',
-    type: 'district_hospital',
-    reported_date: 1000,
-    parent: '',
-  });
-};
-
-let contact;
-
 describe('Testing Incorrect locale', () => {
+  let contact;
+  const LANGUAGE_CODE = 'hil';
+
+  const createLanguage = async () =>  {
+    await utils.addTranslations(LANGUAGE_CODE, {
+      'n.month': '{MONTHS, plural, =1{1 luna} other{# luni}}',
+      'n.week': '{WEEKS, plural, =1{1 saptamana} other{# saptamani}}',
+      'reports.none.n.months':
+        '{MONTHS, plural, =1{No reports in the last month.} other{No reports in the last # months.}}',
+      'task.days.left': '{DAYS, plural, =1{1 day left} other{# days left}',
+      'tasks.none.n.weeks': '{WEEKS, plural, =1{No tasks in the next week.} other{No tasks in the next # weeks.}}',
+      'Reports': 'HilReports',
+      'view.all': 'View all'
+    });
+    await utils.enableLanguage(LANGUAGE_CODE);
+  };
+
+  const createContact = () => {
+    return placeFactory.place().build({
+      name: 'hil district',
+      type: 'district_hospital',
+      reported_date: 1000,
+      parent: '',
+    });
+  };
 
   beforeEach(() => {
     contact = createContact();
   });
 
   afterEach(async () => {
-    await utils.deleteDocs([ contact._id, `messages-${languageCode}` ]);
+    await utils.deleteDocs([ contact._id, `messages-${LANGUAGE_CODE}` ]);
     await utils.revertSettings(true);
     await browser.setCookies({ name: 'locale', value: 'en' });
   });
@@ -54,7 +52,7 @@ describe('Testing Incorrect locale', () => {
     await waitForServiceWorker.promise;
     await commonElements.closeReloadModal(true);
 
-    await userSettingsElements.setLanguage(languageCode);
+    await userSettingsElements.setLanguage(LANGUAGE_CODE);
 
     const text = await commonElements.getReportsButtonLabel().getText();
     expect(text).to.equal('HilReports');
