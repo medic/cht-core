@@ -51,6 +51,20 @@ const templates = {
       'privacy.policy'
     ],
   },
+  passwordReset: {
+    file: path.join(__dirname, '..', 'templates', 'login', 'password-reset.html'),
+    translationStrings: [
+      'login',
+      'Password',
+      'privacy.policy'
+    ],
+  }
+};
+
+let password_change_required = true;
+
+const checkPasswordChange = async (userCtx) => {
+  return await auth.hasAllPermissions(userCtx, 'can_change_password_first_login');
 };
 
 const getHomeUrl = userCtx => {
@@ -300,15 +314,27 @@ const renderLogin = (req) => {
   return render('login', req);
 };
 
+const renderPasswordReset = (req) => {
+  return render('passwordReset', req);
+}
+
 const login = async (req, res) => {
   try {
     const sessionRes = await createSession(req);
     if (sessionRes.statusCode !== 200) {
       res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
-    } else {
-      const redirectUrl = await setCookies(req, res, sessionRes);
-      res.status(302).send(redirectUrl);
     }
+    const sessionCookie = getSessionCookie(sessionRes);
+    const options = { headers: { Cookie: sessionCookie } };
+    const userCtx = await getUserCtxRetry(options);
+    await setCookies(req, res, sessionRes);
+
+    const needsPasswordChange = await checkPasswordChange(userCtx);
+    if (needsPasswordChange && password_change_required) {
+      return res.status(302).send('/medic/password-reset');
+    }
+    const redirectUrl = getRedirectUrl(userCtx, req.body.redirect);
+    res.status(302).send(redirectUrl);
   } catch (e) {
     if (e.status === 401) {
       return res.status(401).json({ error: e.error });
@@ -320,6 +346,7 @@ const login = async (req, res) => {
 
 module.exports = {
   renderLogin,
+  renderPasswordReset,
 
   get: (req, res, next) => {
     return renderLogin(req)
@@ -355,6 +382,17 @@ module.exports = {
       });
   },
 
+  passwordResetGet: (req, res, next) => {
+    return renderPasswordReset(req)
+        .then(body => {
+          res.setHeader(
+              'Link',
+              '</login/style.css>; rel=preload; as=style, '
+          );
+          res.send(body);
+        })
+        .catch(next);
+  },
   tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),
   tokenPost: async (req, res, next) => {
     const limited = await rateLimitService.isLimited(req);
