@@ -41,6 +41,7 @@ describe('ContactsEdit component', () => {
   beforeEach(() => {
     contactTypesService = {
       get: sinon.stub().resolves(),
+      isPerson: sinon.stub().resolves(),
       getChildren: sinon.stub().resolves(),
       getTypeId: sinon.stub().callsFake(contact => contact?.type === 'contact' ? contact.contact_type : contact?.type),
     };
@@ -218,6 +219,7 @@ describe('ContactsEdit component', () => {
       route.params.next({ type: 'random', parent_id: 'the_district' });
 
       contactTypesService.getChildren.resolves([{ id: 'random' }, { id: 'other' }]);
+      contactTypesService.isPerson.resolves(false);
       chtScriptApi.v1.place.getByUuid.resolves({ _id: 'the_district', type: 'random' });
       contactTypesService.get
         .withArgs('random')
@@ -316,6 +318,7 @@ describe('ContactsEdit component', () => {
 
       it('should fail when no form', async () => {
         routeSnapshot.params = { type: 'person' };
+        contactTypesService.getChildren.resolves([{ id: 'person' }]);
         contactTypesService.get.resolves({
           create_form: 'person_create_form_id',
           create_key: 'person_create_key',
@@ -341,6 +344,7 @@ describe('ContactsEdit component', () => {
           create_form: 'clinic_create_form_id',
           create_key: 'clinic_create_key',
         });
+        contactTypesService.isPerson.resolves(false);
         chtScriptApi.v1.place.getByUuid.resolves({ _id: 'parent_id', type: 'clinic' });
         dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
 
@@ -374,6 +378,7 @@ describe('ContactsEdit component', () => {
 
       it('should render form without parent', async () => {
         routeSnapshot.params = { type: 'district_hospital' };
+        contactTypesService.getChildren.resolves([{ id: 'district_hospital' }]);
         contactTypesService.get.resolves({
           create_form: 'district_create_form_id',
           create_key: 'district_create_key',
