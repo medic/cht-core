@@ -79,8 +79,8 @@ describe('Create User for Contacts Transition', () => {
     chtDatasourceService = {
       bind: sinon.stub()
     };
-    chtDatasourceService.bind.withArgs(Person.v1.get).resolves(getPerson);
-    chtDatasourceService.bind.withArgs(Place.v1.get).resolves(getPlace);
+    chtDatasourceService.bind.withArgs(Person.v1.get).returns(getPerson);
+    chtDatasourceService.bind.withArgs(Place.v1.get).returns(getPlace);
     createUserForContactsService = {
       isBeingReplaced: sinon.stub(),
       setReplaced: sinon.stub(),
@@ -103,10 +103,8 @@ describe('Create User for Contacts Transition', () => {
   });
 
   afterEach(() => {
-    if (chtDatasourceService.bind.notCalled) {
-      expect(getPerson.notCalled).to.be.true;
-      expect(getPlace.notCalled).to.be.true;
-    }
+    expect(chtDatasourceService.bind.args).to.deep.equal([[Place.v1.get], [Person.v1.get]]);
+    sinon.restore();
   });
 
   describe('init', () => {
@@ -116,7 +114,10 @@ describe('Create User for Contacts Transition', () => {
       consoleWarn = sinon.stub(console, 'warn');
     });
 
-    afterEach(() => sinon.restore());
+    afterEach(() => {
+      expect(getPerson.notCalled).to.be.true;
+      expect(getPlace.notCalled).to.be.true;
+    });
 
     it('returns true when replace forms have been configured', () => {
       const settings = { create_user_for_contacts: { replace_forms: ['replace_user'] } };
@@ -145,6 +146,11 @@ describe('Create User for Contacts Transition', () => {
   });
 
   describe('filter', () => {
+    afterEach(() => {
+      expect(getPerson.notCalled).to.be.true;
+      expect(getPlace.notCalled).to.be.true;
+    });
+
     [
       [{ type: 'data_record' }],
       [{ type: 'person' }, { type: 'user-settings' }, { type: 'data_record' }],
@@ -181,7 +187,8 @@ describe('Create User for Contacts Transition', () => {
 
       expect(docs).to.be.empty;
       expect(userContactService.get.callCount).to.equal(0);
-      expect(chtDatasourceService.bind.notCalled).to.be.true;
+      expect(getPerson.notCalled).to.be.true;
+      expect(getPlace.notCalled).to.be.true;
       expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
       expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(0);
     });
@@ -193,7 +200,8 @@ describe('Create User for Contacts Transition', () => {
 
       expect(docs).to.deep.equal([REPLACE_USER_DOC]);
       expect(userContactService.get.callCount).to.equal(1);
-      expect(chtDatasourceService.bind.notCalled).to.be.true;
+      expect(getPerson.notCalled).to.be.true;
+      expect(getPlace.notCalled).to.be.true;
       expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
       expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(0);
     });
@@ -208,7 +216,8 @@ describe('Create User for Contacts Transition', () => {
 
       expect(docs).to.deep.equal([submittedDocs[0], submittedDocs[2], submittedDocs[3]]);
       expect(userContactService.get.callCount).to.equal(1);
-      expect(chtDatasourceService.bind.notCalled).to.be.true;
+      expect(getPerson.notCalled).to.be.true;
+      expect(getPlace.notCalled).to.be.true;
       expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
       expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(1);
       expect(createUserForContactsService.isBeingReplaced.args[0]).to.deep.equal([ORIGINAL_CONTACT]);
@@ -232,7 +241,6 @@ describe('Create User for Contacts Transition', () => {
           }
         }]);
         expect(userContactService.get.callCount).to.equal(1);
-        expect(chtDatasourceService.bind.args).to.deep.equal([[Person.v1.get], [Place.v1.get]]);
         expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(NEW_CONTACT._id))).to.be.true;
         expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(parentPlace._id))).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
@@ -256,7 +264,7 @@ describe('Create User for Contacts Transition', () => {
           }
         }]);
         expect(userContactService.get.callCount).to.equal(1);
-        expect(chtDatasourceService.bind.args).to.deep.equal([[Place.v1.get]]);
+        expect(getPerson.notCalled).to.be.true;
         expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(parentPlace._id))).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
         expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, NEW_CONTACT]);
@@ -311,10 +319,13 @@ describe('Create User for Contacts Transition', () => {
         expect(createUserForContactsService.getReplacedBy.args).to.deep.equal([[originalUser], [originalUser]]);
         // User replaced again
         expect(userContactService.get.callCount).to.equal(1);
-        expect(chtDatasourceService.bind.args).to.deep.equal([[Place.v1.get]]);
+        expect(getPerson.notCalled).to.be.true;
         expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(parentPlace._id))).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
         expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, secondNewContact]);
+        // Hack to keep the afterEach assertion happy since we called resetHistory
+        chtDatasourceService.bind(Place.v1.get);
+        chtDatasourceService.bind(Person.v1.get);
       });
 
       it('does not assign new contact as primary contact when original contact was not primary', async () => {
@@ -329,7 +340,6 @@ describe('Create User for Contacts Transition', () => {
         expect(docs).to.deep.equal([REPLACE_USER_DOC, originalUser]);
         expect(parentPlace.contact).to.deep.equal({ _id: 'different-contact', });
         expect(userContactService.get.callCount).to.equal(1);
-        expect(chtDatasourceService.bind.args).to.deep.equal([[Person.v1.get], [Place.v1.get]]);
         expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(NEW_CONTACT._id))).to.be.true;
         expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(parentPlace._id))).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
@@ -347,7 +357,6 @@ describe('Create User for Contacts Transition', () => {
 
         expect(docs).to.deep.equal([REPLACE_USER_DOC, originalUser]);
         expect(userContactService.get.callCount).to.equal(1);
-        expect(chtDatasourceService.bind.args).to.deep.equal([[Person.v1.get], [Place.v1.get]]);
         expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(NEW_CONTACT._id))).to.be.true;
         expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(PARENT_PLACE._id))).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
@@ -369,8 +378,8 @@ describe('Create User for Contacts Transition', () => {
 
           expect(docs).to.deep.equal([REPLACE_USER_DOC, originalUser]);
           expect(userContactService.get.callCount).to.equal(1);
-          expect(chtDatasourceService.bind.args).to.deep.equal([[Person.v1.get]]);
           expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(newContact._id))).to.be.true;
+          expect(getPlace.notCalled).to.be.true;
           expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
           expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, newContact]);
           expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(2);
@@ -392,7 +401,8 @@ describe('Create User for Contacts Transition', () => {
           }
 
           expect(userContactService.get.callCount).to.equal(1);
-          expect(chtDatasourceService.bind.notCalled).to.be.true;
+          expect(getPerson.notCalled).to.be.true;
+          expect(getPlace.notCalled).to.be.true;
           expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
           expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(2);
         });
@@ -412,7 +422,8 @@ describe('Create User for Contacts Transition', () => {
           }
 
           expect(userContactService.get.callCount).to.equal(1);
-          expect(chtDatasourceService.bind.notCalled).to.be.true;
+          expect(getPerson.notCalled).to.be.true;
+          expect(getPlace.notCalled).to.be.true;
           expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
           expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(1);
         });
@@ -430,8 +441,8 @@ describe('Create User for Contacts Transition', () => {
         }
 
         expect(userContactService.get.callCount).to.equal(1);
-        expect(chtDatasourceService.bind.args).to.deep.equal([[Person.v1.get]]);
         expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(NEW_CONTACT._id))).to.be.true;
+        expect(getPlace.notCalled).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
         expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(2);
       });
@@ -448,8 +459,8 @@ describe('Create User for Contacts Transition', () => {
         }
 
         expect(userContactService.get.callCount).to.equal(1);
-        expect(chtDatasourceService.bind.args).to.deep.equal([[Person.v1.get]]);
         expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(NEW_CONTACT._id))).to.be.true;
+        expect(getPlace.notCalled).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
         expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(2);
       });
@@ -468,7 +479,8 @@ describe('Create User for Contacts Transition', () => {
         }
 
         expect(userContactService.get.callCount).to.equal(1);
-        expect(chtDatasourceService.bind.notCalled).to.be.true;
+        expect(getPerson.notCalled).to.be.true;
+        expect(getPlace.notCalled).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
         expect(createUserForContactsService.isBeingReplaced.callCount).to.equal(1);
       });
@@ -477,7 +489,8 @@ describe('Create User for Contacts Transition', () => {
     describe(`when the reports submitted do not include a replace user report, but the user is replaced`, () => {
       afterEach(() => {
         // Functions from the user replace flow should not be called
-        expect(chtDatasourceService.bind.notCalled).to.be.true;
+        expect(getPerson.notCalled).to.be.true;
+        expect(getPlace.notCalled).to.be.true;
         expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
       });
 
