@@ -34,17 +34,17 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   fastActionList?: FastAction[];
 
   constructor(
-    private changesService:ChangesService,
-    private store:Store,
-    private dbService: DbService,
-    private route:ActivatedRoute,
-    private router:Router,
-    private searchFiltersService:SearchFiltersService,
-    private fastActionButtonService:FastActionButtonService,
-    private messageStateService:MessageStateService,
-    private responsiveService:ResponsiveService,
-    private modalService:ModalService,
-    private telemetryService: TelemetryService,
+    private readonly changesService:ChangesService,
+    private readonly store:Store,
+    private readonly dbService: DbService,
+    private readonly route:ActivatedRoute,
+    private readonly router:Router,
+    private readonly searchFiltersService:SearchFiltersService,
+    private readonly fastActionButtonService:FastActionButtonService,
+    private readonly messageStateService:MessageStateService,
+    private readonly responsiveService:ResponsiveService,
+    private readonly modalService:ModalService,
+    private readonly telemetryService: TelemetryService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);

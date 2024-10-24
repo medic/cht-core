@@ -21,15 +21,15 @@ export class Select2SearchService {
   private onContactSelect;
 
   constructor(
-    private route: ActivatedRoute,
-    private formatProvider: FormatProvider,
-    private translateService: TranslateService,
-    private lineageModelGeneratorService: LineageModelGeneratorService,
-    private searchService: SearchService,
-    private sessionService: SessionService,
-    private settingsService: SettingsService,
-    private contactMutedService: ContactMutedService,
-    private telemetryService: TelemetryService,
+    private readonly route: ActivatedRoute,
+    private readonly formatProvider: FormatProvider,
+    private readonly translateService: TranslateService,
+    private readonly lineageModelGeneratorService: LineageModelGeneratorService,
+    private readonly searchService: SearchService,
+    private readonly sessionService: SessionService,
+    private readonly settingsService: SettingsService,
+    private readonly contactMutedService: ContactMutedService,
+    private readonly telemetryService: TelemetryService,
   ) { }
 
   private defaultTemplateResult(row) {

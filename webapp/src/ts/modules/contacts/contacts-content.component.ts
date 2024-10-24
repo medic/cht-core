@@ -55,21 +55,21 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   DISPLAY_LIMIT = 50;
 
   constructor(
-    private store: Store,
-    private route: ActivatedRoute,
-    private router: Router,
-    private changesService: ChangesService,
-    private contactChangeFilterService: ContactChangeFilterService,
-    private xmlFormsService: XmlFormsService,
-    private modalService: ModalService,
-    private contactTypesService: ContactTypesService,
-    private settingsService: SettingsService,
-    private responsiveService: ResponsiveService,
-    private fastActionButtonService: FastActionButtonService,
-    private sessionService: SessionService,
-    private mutingTransition: MutingTransition,
-    private contactMutedService: ContactMutedService,
-    private telemetryService: TelemetryService,
+    private readonly store: Store,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly changesService: ChangesService,
+    private readonly contactChangeFilterService: ContactChangeFilterService,
+    private readonly xmlFormsService: XmlFormsService,
+    private readonly modalService: ModalService,
+    private readonly contactTypesService: ContactTypesService,
+    private readonly settingsService: SettingsService,
+    private readonly responsiveService: ResponsiveService,
+    private readonly fastActionButtonService: FastActionButtonService,
+    private readonly sessionService: SessionService,
+    private readonly mutingTransition: MutingTransition,
+    private readonly contactMutedService: ContactMutedService,
+    private readonly telemetryService: TelemetryService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
