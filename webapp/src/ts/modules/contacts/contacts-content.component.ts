@@ -145,18 +145,18 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // user searched for something and now selects a contact
-    const hadNoContactSelected = selectedContact === null;
-    const hadDifferentContactSelected = selectedContact !== null && selectedContact._id !== nextSelectedContact._id;
-    if (hadNoContactSelected || hadDifferentContactSelected) {
-      const search = nextFilters.search;
-      const skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
-      const matchingProperties = await this.findMatchingProperties(nextSelectedContact.doc, search, skip);
+    const hasSelectedNewContact = selectedContact === null || selectedContact._id !== nextSelectedContact._id;
+    if (!hasSelectedNewContact) {
+      return;
+    }
 
-      for (const key of matchingProperties) {
-        await this.telemetryService.record(`search_match:contacts_by_freetext:${key}`);
-        console.info('record', `search_match:contacts_by_freetext:${key}`);
-      }
+    const search = nextFilters.search;
+    const skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
+    const matchingProperties = await this.findMatchingProperties(nextSelectedContact.doc, search, skip);
+
+    for (const key of matchingProperties) {
+      await this.telemetryService.record(`search_match:contacts_by_freetext:${key}`);
+      console.info('record', `search_match:contacts_by_freetext:${key}`);
     }
   }
 
