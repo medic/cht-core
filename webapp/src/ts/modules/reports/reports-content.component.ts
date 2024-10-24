@@ -98,27 +98,33 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     return matchingProperties;
   }
 
+  private hasSelectedNewReport(selectedReport, nextSelectedReport): boolean {
+    const hadNoReportSelected = selectedReport === null || selectedReport.length === 0;
+    const hadDifferentReportSelected = Array.isArray(selectedReport) &&
+        selectedReport.length === 1 &&
+        selectedReport[0]._id !== nextSelectedReport._id;
+
+    return hadNoReportSelected || hadDifferentReportSelected;
+  }
+
   private async recordSearchTelemetry(selectedReport, nextSelectedReport, nextFilters) {
     if (!nextFilters?.search || !nextSelectedReport) {
       return;
     }
 
-    // user searched for something and now selects a report
-    const hadNoReportSelected = selectedReport === null || selectedReport.length === 0;
-    const hadDifferentReportSelected = Array.isArray(selectedReport) &&
-        selectedReport.length === 1 &&
-        selectedReport[0]._id !== nextSelectedReport._id;
-    if (hadNoReportSelected || hadDifferentReportSelected) {
-      const search = nextFilters.search;
-      const skip = ['_id', '_rev', 'type', 'refid', 'content'];
-      const matches = await this.findMatchingProperties(nextSelectedReport.doc, search, skip);
-      const fieldsMatches = await this.findMatchingProperties(nextSelectedReport.doc.fields, search, skip, 'fields');
-      const matchingProperties = new Set(...matches, ...fieldsMatches);
+    if (!this.hasSelectedNewReport(selectedReport, nextSelectedReport)) {
+      return;
+    }
 
-      for (const key of matchingProperties) {
-        await this.telemetryService.record(`search_match:reports_by_freetext:${key}`);
-        console.info('record', `search_match:contacts_by_freetext:${key}`);
-      }
+    const search = nextFilters.search;
+    const skip = ['_id', '_rev', 'type', 'refid', 'content'];
+    const matches = await this.findMatchingProperties(nextSelectedReport.doc, search, skip);
+    const fieldsMatches = await this.findMatchingProperties(nextSelectedReport.doc.fields, search, skip, 'fields');
+    const matchingProperties = new Set(...matches, ...fieldsMatches);
+
+    for (const key of matchingProperties) {
+      await this.telemetryService.record(`search_match:reports_by_freetext:${key}`);
+      console.info('record', `search_match:contacts_by_freetext:${key}`);
     }
   }
 
