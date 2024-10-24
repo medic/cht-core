@@ -13,6 +13,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { CHTDatasourceService } from "@mm-services/cht-datasource.service";
 
 
 @Component({
@@ -29,6 +30,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private dbService:DbService,
     private performanceService:PerformanceService,
     private translateService:TranslateService,
+    private chtDatasourceService:CHTDatasourceService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -162,14 +164,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         throw new Error(`Unknown contact type "${contactTypeId}"`);
       }
 
-      const parentId = this.routeSnapshot.params?.parent_id;
-      const childTypeId = this.routeSnapshot.params?.type;
-      const validateParent = await this.validateParent(parentId, childTypeId);
-      if (!validateParent) {
-        throw new Error(`"${childTypeId}" is not a valid child of parent with ID "${parentId}"`);
-      }
-
-      const formId = this.getForm(contact, contactType);
+      const formId = await this.getForm(contact, contactType);
       if (!formId) {
         throw new Error('Unknown form');
       }
@@ -207,7 +202,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       .then((result) => result.doc);
   }
 
-  private getForm(contact, contactType) {
+  private async getForm(contact, contactType) {
     let formId;
     if (contact) { // editing
       this.contact = contact;
@@ -223,24 +218,27 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       };
       this.contactId = null;
       formId = contactType.create_form;
+
+      await this.validateParentForCreateForm();
     }
 
     return formId;
   }
 
-  private async validateParent(parentId, childTypeId) {
-    if (!parentId) {
-      return true;
+  private async validateParentForCreateForm() {
+    if (!this.contact.parent) {
+      return;
     }
-    
-    const parentContact = await this.lineageModelGeneratorService.contact(parentId, { merge: true });
-    const parentType = this.contactTypesService.getTypeId(parentContact.doc);
-    const validChildTypes = await this.contactTypesService.getChildren(parentType);
 
-    if (validChildTypes.some(childType => childType.id === childTypeId)) {
-      return true;
+    const datasource = await this.chtDatasourceService.get();
+    const parent = await datasource.v1.place.getByUuid(this.contact.parent);
+    const parentType = this.contactTypesService.getTypeId(parent);
+    const validChildTypes = await this.contactTypesService.getChildren(parentType);
+    const isValidChildType = validChildTypes.some(({ id }) => id === this.contact.contact_type);
+
+    if (!isValidChildType) {
+     throw new Error(`Cannot create a ${this.contact.contact_type} as a child of a ${parentType}.`);
     }
-    return false;
   }
 
   private setTitle(titleKey: string) {
