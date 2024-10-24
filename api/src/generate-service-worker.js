@@ -53,6 +53,10 @@ const getLoginPageContents = async () => {
   return await loginController.renderLogin();
 };
 
+const getPasswordResetPageContents = async () => {
+  return await loginController.renderPasswordReset();
+}
+
 const appendExtensionLibs = async (config) => {
   const libs = await extensionLibs.getAll();
   // cache this even if there are no libs so offline client knows there are no libs
@@ -99,6 +103,7 @@ const writeServiceWorkerFile = async () => {
     templatedURLs: {
       '/': ['webapp/index.html'], // Webapp's entry point
       '/medic/login': await getLoginPageContents(),
+      '/medic/password-reset': await getPasswordResetPageContents(),
       '/medic/_design/medic/_rewrite/': ['webapp/appcache-upgrade.html']
     },
     ignoreURLParametersMatching: [/redirect/, /username/],
