@@ -4,43 +4,40 @@ const placeFactory = require('@factories/cht/contacts/place');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const personFactory = require('@factories/cht/contacts/person');
 
-const onlineUserRole = 'program_officer';
-const offlineUserRole = 'chw';
-const username = 'jackuser';
-const password = 'Jacktest@123';
-const password2 = 'Jacktest@456';
-const username2 = 'jack_user';
-const incorrectpassword = 'Passwor';
-const places = placeFactory.generateHierarchy();
-const districtHospital = places.get('district_hospital');
-const districtHospital2 = placeFactory.place().build({
-  name: 'district_hospital',
-  type: 'district_hospital',
-});
-
-const person = personFactory.build(
-  {
-    parent: {
-      _id: districtHospital._id,
-      parent: districtHospital.parent
-    },
-    roles: [offlineUserRole]
-  }
-);
-
-
-const docs = [...places.values(), person, districtHospital2];
-
 describe('User Test Cases ->', () => {
+  const ONLINE_USER_ROLE = 'program_officer';
+  const OFFLINE_USER_ROLE = 'chw';
+  const USERNAME = 'jackuser';
+  const PASSWORD = 'Jacktest@123';
+  const USERNAME_2 = 'jack_user';
+  const PASSWORD_2 = 'Jacktest@456';
+  const INCORRECT_PASSWORD = 'Passwor';
+
+  const places = placeFactory.generateHierarchy();
+  const districtHospital = places.get('district_hospital');
+  const districtHospital2 = placeFactory.place().build({
+    name: 'district_hospital',
+    type: 'district_hospital',
+  });
+
+  const person = personFactory.build(
+    {
+      parent: {
+        _id: districtHospital._id,
+        parent: districtHospital.parent
+      },
+      roles: [OFFLINE_USER_ROLE]
+    }
+  );
 
   before(async () => {
     const settings = await utils.getSettings();
     const permissions = {
       ...settings.permissions,
-      can_have_multiple_places: [offlineUserRole],
+      can_have_multiple_places: [OFFLINE_USER_ROLE],
     };
     await utils.updateSettings({ permissions }, { ignoreReload: true });
-    await utils.saveDocs(docs);
+    await utils.saveDocs([...places.values(), person, districtHospital2]);
     await loginPage.cookieLogin();
   });
 
@@ -52,85 +49,90 @@ describe('User Test Cases ->', () => {
     await usersAdminPage.openAddUserDialog();
   });
 
+  after(async () => {
+    await utils.revertSettings(true);
+    await utils.revertDb([/^form:/], true);
+  });
+
   describe('Creating Users ->', () => {
 
-    after(async () => await utils.deleteUsers([{ username: username }]));
+    after(async () => await utils.deleteUsers([{ username: USERNAME }]));
 
     it('should add user with valid password', async () => {
       await usersAdminPage.inputAddUserFields(
-        username,
+        USERNAME,
         'Jack',
-        onlineUserRole,
+        ONLINE_USER_ROLE,
         districtHospital.name,
         person.name,
-        password
+        PASSWORD
       );
       await usersAdminPage.saveUser();
-      expect(await usersAdminPage.getAllUsernames()).to.include.members([username]);
+      expect(await usersAdminPage.getAllUsernames()).to.include.members([USERNAME]);
     });
 
     it('should add user with multiple places with permission', async () => {
       await usersAdminPage.inputAddUserFields(
         'new_jack',
         'Jack',
-        offlineUserRole,
+        OFFLINE_USER_ROLE,
         [districtHospital.name, districtHospital2.name],
         person.name,
-        password
+        PASSWORD
       );
       await usersAdminPage.saveUser();
-      expect(await usersAdminPage.getAllUsernames()).to.include.members([username]);
+      expect(await usersAdminPage.getAllUsernames()).to.include.members([USERNAME]);
     });
 
     it('should hide and reveal password value, and add user with a revealed password', async () => {
       await usersAdminPage.inputAddUserFields(
-        username2,
+        USERNAME_2,
         'Jack',
-        onlineUserRole,
+        ONLINE_USER_ROLE,
         districtHospital.name,
         person.name,
-        password
+        PASSWORD
       );
 
       let revealedPassword = await usersAdminPage.togglePassword();
       expect(revealedPassword.type).to.equal('text');
-      expect(revealedPassword.value).to.equal(password);
+      expect(revealedPassword.value).to.equal(PASSWORD);
       expect(revealedPassword.confirmType).to.equal('text');
-      expect(revealedPassword.confirmValue).to.equal(password);
+      expect(revealedPassword.confirmValue).to.equal(PASSWORD);
 
-      await usersAdminPage.setUserPassword(password2);
-      await usersAdminPage.setUserConfirmPassword(password2);
+      await usersAdminPage.setUserPassword(PASSWORD_2);
+      await usersAdminPage.setUserConfirmPassword(PASSWORD_2);
       const hiddenPassword = await usersAdminPage.togglePassword();
       expect(hiddenPassword.type).to.equal('password');
-      expect(hiddenPassword.value).to.equal(password2);
+      expect(hiddenPassword.value).to.equal(PASSWORD_2);
       expect(hiddenPassword.confirmType).to.equal('password');
-      expect(hiddenPassword.confirmValue).to.equal(password2);
+      expect(hiddenPassword.confirmValue).to.equal(PASSWORD_2);
 
       revealedPassword = await usersAdminPage.togglePassword();
       expect(revealedPassword.type).to.equal('text');
-      expect(revealedPassword.value).to.equal(password2);
+      expect(revealedPassword.value).to.equal(PASSWORD_2);
       expect(revealedPassword.confirmType).to.equal('text');
-      expect(revealedPassword.confirmValue).to.equal(password2);
+      expect(revealedPassword.confirmValue).to.equal(PASSWORD_2);
 
       await usersAdminPage.saveUser();
-      expect(await usersAdminPage.getAllUsernames()).to.include.members([username2]);
+      expect(await usersAdminPage.getAllUsernames()).to.include.members([USERNAME_2]);
     });
   });
 
   describe('Invalid entries -> ', () => {
 
     [
-      { passwordValue: incorrectpassword, errorMessage: 'The password must be at least 8 characters long.' },
+      { passwordValue: INCORRECT_PASSWORD, errorMessage: 'The password must be at least 8 characters long.' },
       { passwordValue: 'weakPassword', errorMessage: 'The password is too easy to guess.' },
-      { passwordValue: password, otherPassword: 'other-password', errorMessage: 'Passwords must match' },
+      { passwordValue: PASSWORD, otherPassword: 'other-password', errorMessage: 'Passwords must match' },
       { passwordValue: '', errorMessage: 'required' },
       { passwordValue: '', errorMessage: 'required' }
     ].forEach(async (args) => {
       it(`TestCase for ${args.errorMessage}`, async () => {
         await usersAdminPage.inputAddUserFields(
-          username,
+          USERNAME,
           'Jack',
-          onlineUserRole,
+          ONLINE_USER_ROLE,
           districtHospital.name,
           person.name,
           args.passwordValue,
@@ -143,14 +145,16 @@ describe('User Test Cases ->', () => {
     });
 
     it('should require username', async () => {
-      await usersAdminPage.inputAddUserFields('', 'Jack', onlineUserRole, districtHospital.name, person.name, password);
+      await usersAdminPage.inputAddUserFields(
+        '', 'Jack', ONLINE_USER_ROLE, districtHospital.name, person.name, PASSWORD
+      );
       await usersAdminPage.saveUser(false);
       const text = await usersAdminPage.getUsernameErrorText();
       expect(text).to.contain('required');
     });
 
     it('should require place and contact for restricted user', async () => {
-      await usersAdminPage.inputAddUserFields(username, 'Jack', offlineUserRole, null, null, password);
+      await usersAdminPage.inputAddUserFields(USERNAME, 'Jack', OFFLINE_USER_ROLE, null, null, PASSWORD);
       await usersAdminPage.saveUser(false);
       expect(await usersAdminPage.getPlaceErrorText()).to.contain('required');
       expect(await usersAdminPage.getContactErrorText()).to.contain('required');
@@ -158,12 +162,12 @@ describe('User Test Cases ->', () => {
 
     it('should require user to have permission for multiple places', async () => {
       await usersAdminPage.inputAddUserFields(
-        username,
+        USERNAME,
         'Jack',
-        onlineUserRole,
+        ONLINE_USER_ROLE,
         [districtHospital.name, districtHospital2.name],
         person.name,
-        password
+        PASSWORD
       );
       await usersAdminPage.saveUser(false);
       expect(await usersAdminPage.getPlaceErrorText()).to.contain(

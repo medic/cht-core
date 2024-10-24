@@ -8,17 +8,17 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
 
-const ENG_LANG_CODE = 'en';
-const NEW_LANG_NAME = 'Afrikaans';
-const NEW_LANG_CODE = 'afr';
-const NEW_TRANSLATIONS = {
-  'No messages found': 'Geen boodskappe gevind nie',
-  'No contacts found': 'Geen mense gevind nie',
-  'reports.none': 'Geen verslae gevind nie',
-  'Analytics': 'Analytiks'
-};
-
 describe('Adding new language', () => {
+  const ENG_LANG_CODE = 'en';
+  const NEW_LANG_NAME = 'Afrikaans';
+  const NEW_LANG_CODE = 'afr';
+  const NEW_TRANSLATIONS = {
+    'No messages found': 'Geen boodskappe gevind nie',
+    'No contacts found': 'Geen mense gevind nie',
+    'reports.none': 'Geen verslae gevind nie',
+    'Analytics': 'Analytiks'
+  };
+
   const addTranslations = async (langCode, translations = {}) => {
     const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations(langCode, translations);

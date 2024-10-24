@@ -8,35 +8,32 @@ const { faker: Faker } = require('@faker-js/faker');
 const userFactory = require('@factories/cht/users/users');
 const { BRANCH, TAG } = process.env;
 
-const setupUser = () => {
-  const places = placeFactory.generateHierarchy();
-  const districtHospital = places.get('district_hospital');
-  const contact = personFactory.build({
-    name: Faker.name.firstName(),
-    parent: { _id: districtHospital._id },
-  });
-  const user = userFactory.build({
-    username: Faker.internet.userName().toLowerCase().replace(/[^0-9a-zA-Z_]/g, ''),
-    password: 'Secret_1',
-    place: districtHospital._id,
-    contact: contact._id,
-    known: true,
-  });
-
-  return {
-    docs: [
-      ...places.values(),
-      contact,
-    ],
-    user,
-  };
-};
-
 describe('Telemetry', () => {
   const DATE_FORMAT = 'YYYY-MM-DD';
   const TELEMETRY_PREFIX = 'telemetry';
   let user;
   let docs;
+
+  const setupUser = () => {
+    const places = placeFactory.generateHierarchy();
+    const districtHospital = places.get('district_hospital');
+    const contact = personFactory.build({
+      name: Faker.name.firstName(),
+      parent: { _id: districtHospital._id },
+    });
+    const user = userFactory.build({
+      username: Faker.internet.userName().toLowerCase().replace(/[^0-9a-zA-Z_]/g, ''),
+      password: 'Secret_1',
+      place: districtHospital._id,
+      contact: contact._id,
+      known: true,
+    });
+
+    return {
+      docs: [ ...places.values(), contact ],
+      user,
+    };
+  };
 
   before(async () => {
     ({ docs, user } = setupUser());
@@ -44,6 +41,11 @@ describe('Telemetry', () => {
     await utils.createUsers([user]);
     await loginPage.login(user);
     await commonPage.waitForPageLoaded();
+  });
+
+  after(async () => {
+    await utils.deleteUsers([ user ]);
+    await utils.revertDb([/^form:/], true);
   });
 
   it('should record telemetry', async () => {

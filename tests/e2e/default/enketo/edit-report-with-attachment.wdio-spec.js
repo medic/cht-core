@@ -3,28 +3,28 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const uuid = require('uuid').v4;
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
-const commonElements = require('@page-objects/default/common/common.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const { editReportWithAttachmentDoc } = require('@page-objects/default/enketo/custom-doc.wdio.page');
 
 describe('Edit report with attachment', () => {  
 
   before(async () => {
-    const formDoc = await commonEnketoPage.uploadForm('one-text-form', false);
+    const formDoc = commonPage.createFormDoc(`${__dirname}/forms/one-text-form`);
     formDoc.context = {
       expression: 'summary.alive',
     };
     await utils.saveDoc(formDoc);
     await loginPage.cookieLogin();
-    await commonElements.waitForPageLoaded();
-    await commonElements.hideSnackbar();
+    await commonPage.waitForPageLoaded();
+    await commonPage.hideSnackbar();
   });
 
   it('should remove attachment when saving', async () => {
     editReportWithAttachmentDoc._id = uuid();
     await utils.saveDoc(editReportWithAttachmentDoc);
 
-    await commonElements.goToReports();
+    await commonPage.goToReports();
 
     await reportsPage.openReport(editReportWithAttachmentDoc._id);
     await reportsPage.editReport();
@@ -48,7 +48,7 @@ describe('Edit report with attachment', () => {
     await utils.saveDoc(editReportWithAttachmentDoc);
     await browser.refresh();
 
-    await commonElements.goToReports();
+    await commonPage.goToReports();
     await reportsPage.openReport(editReportWithAttachmentDoc._id);
     await reportsPage.editReport();
     await commonEnketoPage.setInputValue('Enter text', 'initial text updated');

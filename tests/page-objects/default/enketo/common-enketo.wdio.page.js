@@ -1,5 +1,3 @@
-const fs = require('fs');
-const utils = require('@utils');
 const { formTitle } = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 const currentSection =  () => $('section[class*="current"]');
@@ -80,30 +78,6 @@ const validateSummaryReport = async (textArray) => {
   }
 };
 
-const uploadForm = async (formName, saveDoc = true) => {
-  const formXML = fs.readFileSync(`${__dirname}/../../../e2e/default/enketo/forms/${formName}.xml`, 'utf8');
-  const formDoc = {
-    _id: `form:${formName}`,
-    internalId: formName,
-    title: formName,
-    type: 'form',
-    context: {
-      person: true,
-      place: true,
-    },
-    _attachments: {
-      xml: {
-        content_type: 'application/octet-stream',
-        data: Buffer.from(formXML).toString('base64'),
-      },
-    },
-  };
-  if (saveDoc) {
-    await utils.saveDoc(formDoc);
-  }
-  return formDoc;
-};
-
 const getValue = async (typeSelector, question) => {
   return await (await getCurrentPageSection())
     .$(`label*=${question}`)
@@ -170,7 +144,6 @@ module.exports = {
   setTextareaValue,
   addFileInputValue,
   validateSummaryReport,
-  uploadForm,
   getInputValue,
   getTextareaValue,
   isRequiredMessageDisplayed,

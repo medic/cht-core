@@ -2,31 +2,21 @@ const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const adminPage = require('@page-objects/default/admin/admin.wdio.page');
 
-const settings = {
-  languages: [
-    {
-      locale: 'en',
-      enabled: true,
-    },
-    {
-      locale: 'es',
-      enabled: true,
-    },
-    {
-      locale: 'fr',
-      enabled: true,
-    },
-  ],
-};
-
 describe('Enabling/disabling languages', () => {
+  const SETTINGS = {
+    languages: [
+      { locale: 'en', enabled: true },
+      { locale: 'es', enabled: true },
+      { locale: 'fr', enabled: true },
+    ],
+  };
 
   afterEach(async () => {
     await utils.revertSettings(true);
   });
 
   it('should disable a language and enable another', async () => {
-    await utils.updateSettings(settings, { ignoreReload: true });
+    await utils.updateSettings(SETTINGS, { ignoreReload: true });
     await browser.reloadSession();
     await browser.url('/');
 
@@ -53,22 +43,10 @@ describe('Enabling/disabling languages', () => {
     //   - Swahili has been enabled in the app_settings
     const updatedSettings = await utils.getSettings();
     expect(updatedSettings.languages).to.deep.equal([
-      {
-        locale: 'en',
-        enabled: true,
-      },
-      {
-        locale: 'es',
-        enabled: false,
-      },
-      {
-        locale: 'fr',
-        enabled: true,
-      },
-      {
-        locale: 'sw',
-        enabled: true,
-      },
+      { locale: 'en', enabled: true },
+      { locale: 'es', enabled: false },
+      { locale: 'fr', enabled: true },
+      { locale: 'sw', enabled: true },
     ]);
 
     // assert:

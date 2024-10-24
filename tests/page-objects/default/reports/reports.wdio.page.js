@@ -126,18 +126,6 @@ const setBikDateInput = async (name, date) => {
   await (await dateWidget.$('input[name="year"]')).setValue(date.year);
 };
 
-const getSummaryField = async (name) => {
-  const input = await $(`input[name="${name}"]`);
-  const summaryElement = await input.previousElement();
-  return summaryElement.getText();
-};
-
-const getFieldValue = async (name) => {
-  const input = await $(`input[name="${name}"]`);
-  await input.click();
-  return input.getValue();
-};
-
 const getElementText = async (element) => {
   if (await (await element).isExisting()) {
     return (await element).getText();
@@ -514,9 +502,7 @@ module.exports = {
   filterByFacility,
   filterByStatus,
   setDateInput,
-  getFieldValue,
   setBikDateInput,
-  getSummaryField,
   reportsListDetails,
   selectAll,
   deselectAll,

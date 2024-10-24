@@ -5,12 +5,11 @@ const utils = require('@utils');
 const path = require('path');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('Submit Photo Upload form', () => {
 
   before(async () => {
-    await commonEnketoPage.uploadForm('photo-upload');
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/photo-upload`));
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();
   });
