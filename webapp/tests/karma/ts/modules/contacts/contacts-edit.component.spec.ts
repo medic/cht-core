@@ -8,7 +8,7 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { CHTDatasourceService } from "@mm-services/cht-datasource.service";
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.component';
 import { ComponentsModule } from '@mm-components/components.module';

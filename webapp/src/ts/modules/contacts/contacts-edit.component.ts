@@ -13,7 +13,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { CHTDatasourceService } from "@mm-services/cht-datasource.service";
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 
 @Component({
@@ -237,7 +237,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     const isValidChildType = validChildTypes.some(({ id }) => id === this.contact.contact_type);
 
     if (!isValidChildType) {
-     throw new Error(`Cannot create a ${this.contact.contact_type} as a child of a ${parentType}.`);
+      throw new Error(`Cannot create a ${this.contact.contact_type} as a child of a ${parentType}.`);
     }
   }
 
