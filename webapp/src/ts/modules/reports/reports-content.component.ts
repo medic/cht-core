@@ -70,6 +70,34 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     this.reportsActions.setSelectedReport();
   }
 
+  private async findMatchingProperties(
+    object: Record<string, any>,
+    search: string,
+    skip: string[],
+    basePropertyPath = '',
+  ) {
+    const matchingProperties = new Set<string>();
+    const colonSearch = search.split(':');
+    if (colonSearch.length > 1) {
+      matchingProperties.add(`${colonSearch[0]}:$value`);
+    }
+
+    const _search = search.toLowerCase();
+    Object.entries(object).forEach(([key, value]) => {
+      const _key = key.toLowerCase();
+      if (skip.includes(_key) || _key.endsWith('_date')) {
+        return;
+      }
+
+      const propertyPath = basePropertyPath ? `${basePropertyPath}.${key}` : key;
+      if (typeof value === 'string' && value.toLowerCase().includes(_search)) {
+        matchingProperties.add(propertyPath);
+      }
+    });
+
+    return matchingProperties;
+  }
+
   private async recordSearchTelemetry(selectedReport, nextSelectedReport, nextFilters) {
     if (!nextFilters?.search || !nextSelectedReport) {
       return;
@@ -82,29 +110,10 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
         selectedReport[0]._id !== nextSelectedReport._id;
     if (hadNoReportSelected || hadDifferentReportSelected) {
       const search = nextFilters.search;
-      const matchingProperties = new Set<string>();
-      const colonSearch = search.split(':');
-      if (colonSearch.length > 1) {
-        matchingProperties.add(`${colonSearch[0]}:$value`);
-      }
-
       const skip = ['_id', '_rev', 'type', 'refid', 'content'];
-      const _search = search.toLowerCase();
-      const findMatchingProperties = (object: Record<string, any>, basePropertyPath = '') => {
-        Object.entries(object).forEach(([key, value]) => {
-          const _key = key.toLowerCase();
-          if (skip.includes(_key) || _key.endsWith('_date')) {
-            return;
-          }
-
-          const propertyPath = basePropertyPath ? `${basePropertyPath}.${key}` : key;
-          if (typeof value === 'string' && value.toLowerCase().includes(_search)) {
-            matchingProperties.add(propertyPath);
-          }
-        });
-      };
-      findMatchingProperties(nextSelectedReport.doc);
-      findMatchingProperties(nextSelectedReport.doc.fields, 'fields');
+      const matches = await this.findMatchingProperties(nextSelectedReport.doc, search, skip);
+      const fieldsMatches = await this.findMatchingProperties(nextSelectedReport.doc.fields, search, skip, 'fields');
+      const matchingProperties = new Set(...matches, ...fieldsMatches);
 
       for (const key of matchingProperties) {
         await this.telemetryService.record(`search_match:reports_by_freetext:${key}`);

@@ -18,7 +18,7 @@ import { TelemetryService } from '@mm-services/telemetry.service';
 export class Select2SearchService {
   private selectEl;
   private currentQuery: string | null = null;
-  private onceHandler;
+  private onContactSelect;
 
   constructor(
     private route: ActivatedRoute,
@@ -64,6 +64,7 @@ export class Select2SearchService {
 
   private query(params, successCb, failureCb, options, types) {
     this.currentQuery = params.data.q;
+    const search = params.data.q;
 
     const searchOptions = {
       limit: options.pageSize,
@@ -73,7 +74,7 @@ export class Select2SearchService {
 
     const filters: Filter = {
       types: { selected: types },
-      search: params.data.q,
+      search,
     };
     if (options.filterByParent) {
       filters.parent = this.getContactId();
@@ -82,54 +83,33 @@ export class Select2SearchService {
     this.searchService
       .search('contacts', filters, searchOptions)
       .then((documents) => {
-        if (this.currentQuery !== params.data.q) {
+        if (this.currentQuery !== search) {
           return;
         }
 
-        if (this.onceHandler) {
-          this.selectEl!.off('select2:select', this.onceHandler);
-          this.onceHandler = null;
+        if (this.onContactSelect) {
+          this.selectEl!.off('select2:select', this.onContactSelect);
+          this.onContactSelect = null;
         }
 
-        this.onceHandler = async (event) => {
-          this.onceHandler = null;
+        this.onContactSelect = async (event) => {
+          this.onContactSelect = null;
 
-          const search = params.data.q;
-          if (!search) {
+          const docId = event.params?.data?.id;
+          if (!search || !docId) {
             return;
           }
 
-          const matchingProperties = new Set<string>();
-          const colonSearch = search.split(':');
-          if (colonSearch.length > 1) {
-            matchingProperties.add(`${colonSearch[0]}:$value`);
-          }
-
-          const docId = event.params && event.params.data && event.params.data.id;
           const doc = await this.getDoc(docId);
           const skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
-          const _search = search.toLowerCase();
-          const findMatchingProperties = (object: Record<string, any>, basePropertyPath = '') => {
-            Object.entries(object).forEach(([key, value]) => {
-              const _key = key.toLowerCase();
-              if (skip.includes(_key) || _key.endsWith('_date')) {
-                return;
-              }
-
-              const propertyPath = basePropertyPath ? `${basePropertyPath}.${key}` : key;
-              if (typeof value === 'string' && value.toLowerCase().includes(_search)) {
-                matchingProperties.add(propertyPath);
-              }
-            });
-          };
-          findMatchingProperties(doc);
+          const matchingProperties = await this.findMatchingProperties(doc, search, skip);
 
           for (const key of matchingProperties) {
             await this.telemetryService.record(`search_match:contacts_by_type_freetext:${key}`);
             console.info('record', `search_match:contacts_by_type_freetext:${key}`);
           }
         };
-        this.selectEl!.one('select2:select', this.onceHandler);
+        this.selectEl!.one('select2:select', this.onContactSelect);
 
         this.currentQuery = null;
         successCb({
@@ -145,6 +125,34 @@ export class Select2SearchService {
           failureCb(err);
         }
       });
+  }
+
+  private async findMatchingProperties(
+    object: Record<string, any>,
+    search: string,
+    skip: string[],
+    basePropertyPath = '',
+  ) {
+    const matchingProperties = new Set<string>();
+    const colonSearch = search.split(':');
+    if (colonSearch.length > 1) {
+      matchingProperties.add(`${colonSearch[0]}:$value`);
+    }
+
+    const _search = search.toLowerCase();
+    Object.entries(object).forEach(([key, value]) => {
+      const _key = key.toLowerCase();
+      if (skip.includes(_key) || _key.endsWith('_date')) {
+        return;
+      }
+
+      const propertyPath = basePropertyPath ? `${basePropertyPath}.${key}` : key;
+      if (typeof value === 'string' && value.toLowerCase().includes(_search)) {
+        matchingProperties.add(propertyPath);
+      }
+    });
+
+    return matchingProperties;
   }
 
   private getDoc(id) {
@@ -292,5 +300,4 @@ export class Select2SearchService {
 
     return this.resolveInitialValue(selectEl, options, settings);
   }
-
 }
