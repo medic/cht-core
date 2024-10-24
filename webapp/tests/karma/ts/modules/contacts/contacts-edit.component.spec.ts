@@ -8,6 +8,7 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.component';
 import { ComponentsModule } from '@mm-components/components.module';
@@ -22,6 +23,8 @@ import { GlobalActions } from '@mm-actions/global';
 
 describe('ContactsEdit component', () => {
   let contactTypesService;
+  let chtDatasourceService;
+  let chtScriptApi;
   let translateService;
   let router;
   let route;
@@ -38,8 +41,16 @@ describe('ContactsEdit component', () => {
   beforeEach(() => {
     contactTypesService = {
       get: sinon.stub().resolves(),
+      isPerson: sinon.stub().resolves(),
+      getChildren: sinon.stub().resolves(),
       getTypeId: sinon.stub().callsFake(contact => contact?.type === 'contact' ? contact.contact_type : contact?.type),
     };
+    chtScriptApi = {
+      v1: {
+        place: { getByUuid: sinon.stub() },
+      }
+    };
+    chtDatasourceService = { get: sinon.stub().resolves(chtScriptApi) };
     translateService = { get: sinon.stub().resolvesArg(0) };
     dbGet = sinon.stub().resolves();
     router = { navigate: sinon.stub() };
@@ -86,6 +97,7 @@ describe('ContactsEdit component', () => {
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
         { provide: FormService, useValue: formService },
         { provide: ContactTypesService, useValue: contactTypesService },
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
         { provide: PerformanceService, useValue: performanceService},
       ],
       declarations: [
@@ -203,9 +215,12 @@ describe('ContactsEdit component', () => {
     });
 
     it('should respond to url changes', fakeAsync(async () => {
-      routeSnapshot.params = { type: 'random' };
-      route.params.next({ type: 'random' });
+      routeSnapshot.params = { type: 'random', parent_id: 'the_district' };
+      route.params.next({ type: 'random', parent_id: 'the_district' });
 
+      contactTypesService.getChildren.resolves([{ id: 'random' }, { id: 'other' }]);
+      contactTypesService.isPerson.resolves(false);
+      chtScriptApi.v1.place.getByUuid.resolves({ _id: 'the_district', type: 'random' });
       contactTypesService.get
         .withArgs('random')
         .resolves({
@@ -231,12 +246,12 @@ describe('ContactsEdit component', () => {
       expect(formService.render.args[0][0]).to.deep.include({
         selector: '#contact-form',
         formDoc: { _id: 'random_create', the: 'form' },
-        instanceData: { random: { type: 'contact', contact_type: 'random', parent: '' } },
+        instanceData: { random: { type: 'contact', contact_type: 'random', parent: 'the_district' } },
         titleKey: 'random',
       });
 
-      routeSnapshot = { params: { type: 'other' } };
-      route.params.next({ type: 'other' });
+      routeSnapshot = { params: { type: 'other', parent_id: 'the_district' } };
+      route.params.next({ type: 'other', parent_id: 'the_district' });
 
       await fixture.whenStable();
       flushMicrotasks();
@@ -247,7 +262,7 @@ describe('ContactsEdit component', () => {
       expect(formService.render.args[1][0]).to.deep.include({
         selector: '#contact-form',
         formDoc: { _id: 'other_create' },
-        instanceData: { other: { type: 'contact', contact_type: 'other', parent: '' } },
+        instanceData: { other: { type: 'contact', contact_type: 'other', parent: 'the_district' } },
         titleKey: 'other_key',
       });
     }));
@@ -281,8 +296,29 @@ describe('ContactsEdit component', () => {
         expect(component.enketoContact).to.deep.equal(undefined);
       });
 
+      it('should fail when new contact is not a child of the parent', async () => {
+        routeSnapshot.params = { type: 'the_place', parent_id: 'parent_id' };
+        contactTypesService.get.resolves({
+          create_form: 'the_place_create_form_id',
+          create_key: 'the_place_create_key',
+        });
+        chtScriptApi.v1.place.getByUuid.resolves({ _id: 'parent_id', type: 'the_place' });
+        contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
+
+        await createComponent();
+        await fixture.whenStable();
+
+        expect(contactTypesService.get.callCount).to.equal(1);
+        expect(contactTypesService.get.args[0]).to.deep.equal(['the_place']);
+        expect(contactTypesService.getChildren.callCount).to.equal(1);
+        expect(formService.render.callCount).to.equal(0);
+        expect(component.enketoContact).to.deep.equal(undefined);
+        expect(component.contentError).to.equal(true);
+      });
+
       it('should fail when no form', async () => {
         routeSnapshot.params = { type: 'person' };
+        contactTypesService.getChildren.resolves([{ id: 'person' }]);
         contactTypesService.get.resolves({
           create_form: 'person_create_form_id',
           create_key: 'person_create_key',
@@ -303,10 +339,13 @@ describe('ContactsEdit component', () => {
 
       it('should render form with parent', async () => {
         routeSnapshot.params = { type: 'clinic', parent_id: 'the_district' };
+        contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
         contactTypesService.get.resolves({
           create_form: 'clinic_create_form_id',
           create_key: 'clinic_create_key',
         });
+        contactTypesService.isPerson.resolves(false);
+        chtScriptApi.v1.place.getByUuid.resolves({ _id: 'parent_id', type: 'clinic' });
         dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
 
         await createComponent();
@@ -339,6 +378,7 @@ describe('ContactsEdit component', () => {
 
       it('should render form without parent', async () => {
         routeSnapshot.params = { type: 'district_hospital' };
+        contactTypesService.getChildren.resolves([{ id: 'district_hospital' }]);
         contactTypesService.get.resolves({
           create_form: 'district_create_form_id',
           create_key: 'district_create_key',
@@ -635,10 +675,12 @@ describe('ContactsEdit component', () => {
 
     it('when saving new contact', async () => {
       routeSnapshot.params = { type: 'clinic', parent_id: 'the_district' };
+      contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
       contactTypesService.get.resolves({
         create_form: 'clinic_create_form_id',
         create_key: 'clinic_create_key',
       });
+      chtScriptApi.v1.place.getByUuid.resolves({ _id: 'the_district', type: 'clinic' });
       dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
       const form = {
         validate: sinon.stub().resolves(true),

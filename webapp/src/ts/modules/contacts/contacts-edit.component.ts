@@ -13,6 +13,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 
 @Component({
@@ -29,6 +30,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private dbService:DbService,
     private performanceService:PerformanceService,
     private translateService:TranslateService,
+    private readonly chtDatasourceService:CHTDatasourceService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -162,7 +164,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         throw new Error(`Unknown contact type "${contactTypeId}"`);
       }
 
-      const formId = this.getForm(contact, contactType);
+      const formId = await this.getForm(contact, contactType);
       if (!formId) {
         throw new Error('Unknown form');
       }
@@ -200,7 +202,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       .then((result) => result.doc);
   }
 
-  private getForm(contact, contactType) {
+  private async getForm(contact, contactType) {
     let formId;
     if (contact) { // editing
       this.contact = contact;
@@ -216,9 +218,42 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       };
       this.contactId = null;
       formId = contactType.create_form;
+
+      await this.validateParentForCreateForm();
     }
 
     return formId;
+  }
+
+  private async validateParentForCreateForm() {
+    const datasource = await this.chtDatasourceService.get();
+
+    if (!this.contact.parent) {
+      const topLevelTypes = await this.contactTypesService.getChildren();
+      if (!topLevelTypes.some(({ id }) => id === this.contact.contact_type)) {
+        throw new Error(`Cannot create a ${this.contact.contact_type} at the top level. It requires a parent.`);
+      }
+      return;
+    }
+
+    const parent = await datasource.v1.place.getByUuid(this.contact.parent);
+    if (!parent) {
+      throw new Error(`Parent with UUID ${this.contact.parent} does not exist.`);
+    }
+
+    if (await this.contactTypesService.isPerson(parent)) {
+      throw new Error(`Cannot create a ${this.contact.contact_type} as a child of a person.`);
+    }
+
+    const parentType = this.contactTypesService.getTypeId(parent);
+    if (!parentType) {
+      throw new Error(`Parent type is undefined for parent UUID ${this.contact.parent}.`);
+    }
+
+    const validChildTypes = await this.contactTypesService.getChildren(parentType);
+    if (!validChildTypes.some(({ id }) => id === this.contact.contact_type)) {
+      throw new Error(`Cannot create a ${this.contact.contact_type} as a child of a ${parentType}.`);
+    }
   }
 
   private setTitle(titleKey: string) {
