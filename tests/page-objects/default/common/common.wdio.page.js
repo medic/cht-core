@@ -2,51 +2,63 @@ const modalPage = require('./modal.wdio.page');
 const constants = require('@constants');
 const aboutPage = require('@page-objects/default/about/about.wdio.page');
 
-const hamburgerMenu = () => $('aria/Application menu');
-const closeSideBarMenu = () => $('.panel-header-close');
+const tabsSelector = {
+  getAllButtonLabels: async () => await $$('.header .tabs .button-label'),
+  messagesTab: () => $('#messages-tab'),
+  getMessagesButtonLabel: () => $('#messages-tab .button-label'),
+  taskTab: () => $('#tasks-tab'),
+  getTasksButtonLabel: () => $('#tasks-tab .button-label'),
+  getReportsButtonLabel: () => $('#reports-tab .button-label'),
+  analyticsTab: () => $('#analytics-tab'),
+};
+
+const HAMBURGER_MENU_ITEM_SELECTOR = 'mat-sidenav-content';
+const hamburgerMenuSelectors = {
+  hamburgerMenu: () => $('aria/Application menu'),
+  closeSideBarMenu: () => $('.panel-header-close'),
+  syncButton: () => $('aria/Sync now'),
+  syncSuccess: () => $('aria/All reports synced'),
+  syncInProgress: () => $(HAMBURGER_MENU_ITEM_SELECTOR).$('*="Currently syncing"'),
+  syncRequired: () => $(`${HAMBURGER_MENU_ITEM_SELECTOR} .sync-status .required`),
+  userSettingsButton: () => $('aria/User settings'),
+  feedbackMenuOption: () => $('aria/Report bug'),
+  logoutButton: () => $('aria/Log out'),
+};
+
+const kebabMenuSelectors = {
+  moreOptionsMenu: () => $('aria/Actions menu'),
+};
+
 const FAST_ACTION_TRIGGER = '.fast-action-trigger';
-const fastActionFAB = () => $$(`${FAST_ACTION_TRIGGER} .fast-action-fab-button`);
-const fastActionFlat = () => $(`${FAST_ACTION_TRIGGER} .fast-action-flat-button`);
-const multipleActions = () => $(`${FAST_ACTION_TRIGGER}[test-id="multiple-actions-menu"]`);
 const FAST_ACTION_LIST_CONTAINER = '.fast-action-content-wrapper';
-const fastActionListContainer = () => $(FAST_ACTION_LIST_CONTAINER);
-const fastActionListCloseButton = () => $(`${FAST_ACTION_LIST_CONTAINER} .panel-header .panel-header-close`);
-const fastActionById = (id) => $(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item[test-id="${id}"]`);
-const fastActionItems = () => $$(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item`);
-const moreOptionsMenu = () => $('aria/Actions menu');
-const hamburgerMenuItemSelector = 'mat-sidenav-content';
-const logoutButton = () => $('aria/Log out');
-const syncButton = () => $('aria/Sync now');
-const messagesTab = () => $('#messages-tab');
-const analyticsTab = () => $('#analytics-tab');
-const taskTab = () => $('#tasks-tab');
-const getReportsButtonLabel = () => $('#reports-tab .button-label');
-const getMessagesButtonLabel = () => $('#messages-tab .button-label');
-const getTasksButtonLabel = () => $('#tasks-tab .button-label');
-const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
+const fabSelectors = {
+  fastActionFAB: () => $$(`${FAST_ACTION_TRIGGER} .fast-action-fab-button`),
+  fastActionFlat: () => $(`${FAST_ACTION_TRIGGER} .fast-action-flat-button`),
+  multipleActions: () => $(`${FAST_ACTION_TRIGGER}[test-id="multiple-actions-menu"]`),
+  fastActionListContainer: () => $(FAST_ACTION_LIST_CONTAINER),
+  fastActionListCloseButton: () => $(`${FAST_ACTION_LIST_CONTAINER} .panel-header .panel-header-close`),
+  fastActionById: (id) => $(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item[test-id="${id}"]`),
+  fastActionItems: () => $$(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item`),
+  reportsFastActionFAB: () => $('#reports-content .fast-action-fab-button mat-icon'),
+};
+
+const userSettingsSelectors = {
+  editProfileButton: () => $('.user .configuration.page i.fa-user'),
+};
+
+
+
+
+
+
 const loaders = () => $$('.container-fluid .loader');
-const syncSuccess = () => $('aria/All reports synced');
-const syncInProgress = () => $(hamburgerMenuItemSelector).$('*="Currently syncing"');
-const syncRequired = () => $(`${hamburgerMenuItemSelector} .sync-status .required`);
-const jsonError = async () => (await $('pre')).getText();
-const REPORTS_CONTENT_SELECTOR = '#reports-content';
-const reportsFastActionFAB = () => $(`${REPORTS_CONTENT_SELECTOR} .fast-action-fab-button mat-icon`);
-
-//languages
-const activeSnackbar = () => $('#snackbar.active');
-const inactiveSnackbar = () => $('#snackbar:not(.active)');
 const snackbar = () => $('#snackbar.active .snackbar-message');
-const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
-const snackbarAction = () => $('#snackbar.active .snackbar-action');
 
-// Mobile
-const mobileTopBarTitle = () => $('mm-navigation .ellipsis-title');
 
-//User settings
-const USER_SETTINGS = 'aria/User settings';
-const EDIT_PROFILE = '.user .configuration.page i.fa-user';
+
+
 // Feedback or Report bug
-const feedbackMenuOption = () => $('aria/Report bug');
+
 const FEEDBACK = '#feedback';
 //About menu
 const ABOUT_MENU = 'aria/About';
@@ -54,6 +66,9 @@ const ABOUT_MENU = 'aria/About';
 const configurationAppMenuOption = () => $('aria/App Management');
 const errorLog = () => $(`error-log`);
 const sideBarMenuTitle = () => $('aria/Menu');
+
+
+const getJsonErrorText = async () => await $('pre').getText();
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('mat-sidenav-container.mat-drawer-container-has-open')).isExisting();
@@ -192,11 +207,7 @@ const isElementByIdPresent = async (elementId) => {
   return await (await $(`#${elementId}`)).isExisting();
 };
 
-const getHeaderTitleOnMobile = async () => {
-  return {
-    name: await mobileTopBarTitle().getText(),
-  };
-};
+
 
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
@@ -426,18 +437,18 @@ const openAboutMenu = async () => {
 };
 
 const openUserSettings = async () => {
-  await (await $(USER_SETTINGS)).waitForClickable();
-  await (await $(USER_SETTINGS)).click();
+  await (await hamburgerMenuSelectors.userSettingsButton()).waitForClickable();
+  await (await hamburgerMenuSelectors.userSettingsButton()).click();
 };
 
 const openUserSettingsAndFetchProperties = async () => {
-  await (await $(USER_SETTINGS)).waitForClickable();
-  await (await $(USER_SETTINGS)).click();
-  await (await $(EDIT_PROFILE)).waitForDisplayed();
+  await openUserSettings();
+  await (await userSettingsSelectors.editProfileButton()).waitForDisplayed();
 };
 
 const openEditProfile = async () => {
-  await (await $(EDIT_PROFILE)).click();
+  await (await userSettingsSelectors.editProfileButton()).waitForClickable();
+  await (await userSettingsSelectors.editProfileButton()).click();
 };
 
 const openAppManagement = async () => {
@@ -530,12 +541,8 @@ module.exports = {
   waitForLoaderToDisappear,
   goToAboutPage,
   waitForPageLoaded,
-  activeSnackbar,
-  inactiveSnackbar,
-  snackbarMessage,
-  snackbarAction,
   getTextForElements,
-  jsonError,
+  getJsonErrorText,
   isMenuOptionEnabled,
   isMenuOptionVisible,
   moreOptionsMenu,
