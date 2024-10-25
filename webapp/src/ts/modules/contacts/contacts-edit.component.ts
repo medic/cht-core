@@ -232,8 +232,8 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     const parent = await this.dbService
-        .get()
-        .get(this.contact.parent);
+      .get()
+      .get(this.contact.parent);
 
     const parentType = this.contactTypesService.getTypeId(parent);
     if (!parentType) {

@@ -209,8 +209,8 @@ describe('ContactsEdit component', () => {
 
       contactTypesService.getChildren.resolves([{ id: 'random' }, { id: 'other' }]);
       dbGet
-          .withArgs('the_district')
-          .resolves({ _id: 'the_district', type: 'random' });
+        .withArgs('the_district')
+        .resolves({ _id: 'the_district', type: 'random' });
       contactTypesService.get
         .withArgs('random')
         .resolves({
@@ -293,8 +293,8 @@ describe('ContactsEdit component', () => {
           create_key: 'the_place_create_key',
         });
         dbGet
-            .withArgs('parent_id')
-            .resolves({ _id: 'parent_id', type: 'the_place' });
+          .withArgs('parent_id')
+          .resolves({ _id: 'parent_id', type: 'the_place' });
         contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
 
         await createComponent();
@@ -337,8 +337,8 @@ describe('ContactsEdit component', () => {
           create_key: 'clinic_create_key',
         });
         dbGet
-            .withArgs('the_district')
-            .resolves({ _id: 'the_district', type: 'clinic' });
+          .withArgs('the_district')
+          .resolves({ _id: 'the_district', type: 'clinic' });
         dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
 
         await createComponent();
@@ -675,8 +675,8 @@ describe('ContactsEdit component', () => {
         create_key: 'clinic_create_key',
       });
       dbGet
-          .withArgs('the_district')
-          .resolves({ _id: 'the_district', type: 'clinic' });
+        .withArgs('the_district')
+        .resolves({ _id: 'the_district', type: 'clinic' });
       dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
       const form = {
         validate: sinon.stub().resolves(true),
