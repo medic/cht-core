@@ -184,28 +184,28 @@ const createData = ({ healthCenter, user, nbrClinics, nbrPersons, useRealNames =
 const createHierarchy = ({ name, user = false, nbrClinics = 50, nbrPersons = 10, useRealNames = false }) => {
   const hierarchy = placeFactory.generateHierarchy();
   const healthCenter = hierarchy.get('health_center');
+  healthCenter.name = `${name}'s Area`;
   const branch = hierarchy.get('district_hospital');
+  branch.name = 'Kiambu Branch';
   const branchContact = {
     _id: 'fixture:user:user2',
     name: 'Manager Ann',
     phone: '+123456789'
   };
+  branch.contact = branchContact;
   const contact = {
     _id: 'fixture:user:user1',
     name: name,
     phone: '+12068881234'
   };
+  healthCenter.contact = contact;
+
   user = user && userFactory.build({ place: healthCenter._id, roles: ['chw'], contact: contact });
 
   const places = [...hierarchy.values()].map(place => {
     place.name = `${name} ${place.type}`;
     return place;
   });
-
-  branch.name = 'Kiambu Branch';
-  branch.contact = branchContact;
-  healthCenter.name = `${name}'s Area`;
-  healthCenter.contact = contact;
 
   const { clinics, reports, persons } = createData({ healthCenter, nbrClinics, nbrPersons, user, useRealNames });
 
