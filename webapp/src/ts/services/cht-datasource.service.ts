@@ -97,9 +97,25 @@ export class CHTDatasourceService {
     return user?.roles || this.userCtx?.roles;
   }
 
-  async bind <T>(fn: (ctx: DataContext) => T): Promise<T> {
-    await this.isInitialized();
-    return this.dataContext.bind(fn);
+  /**
+   * Binds a cht-datasource function to the data context.
+   * (e.g. `const getPersonWithLineage = this.bind(Person.v1.getWithLineage);`)
+   * @param fn the function to bind. It should accept a data context as the parameter and return another function that
+   * results in a `Promise`.
+   * @returns a "context-aware" version of the function that is bound to the data context and ready to be used
+   */
+  bind<R, F extends (arg?: unknown) => Promise<R>>(fn: (ctx: DataContext) => F):
+    (...p: Parameters<F>) => ReturnType<F> {
+    return (...p) => {
+      return new Promise((resolve, reject) => {
+        this.isInitialized().then(() => {
+          const contextualFn = this.dataContext.bind(fn);
+          contextualFn(...p)
+            .then(resolve)
+            .catch(reject);
+        });
+      }) as ReturnType<F>;
+    };
   }
 
   async get() {
