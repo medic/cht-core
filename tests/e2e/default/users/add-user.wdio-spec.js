@@ -20,22 +20,11 @@ describe('User Test Cases ->', () => {
     type: 'district_hospital',
   });
 
-  const person = personFactory.build(
-    {
-      parent: {
-        _id: districtHospital._id,
-        parent: districtHospital.parent
-      },
-      roles: [OFFLINE_USER_ROLE]
-    }
-  );
+  const person = personFactory.build({ parent: districtHospital, roles: [OFFLINE_USER_ROLE] });
 
   before(async () => {
     const settings = await utils.getSettings();
-    const permissions = {
-      ...settings.permissions,
-      can_have_multiple_places: [OFFLINE_USER_ROLE],
-    };
+    const permissions = { ...settings.permissions, can_have_multiple_places: [OFFLINE_USER_ROLE] };
     await utils.updateSettings({ permissions }, { ignoreReload: true });
     await utils.saveDocs([...places.values(), person, districtHospital2]);
     await loginPage.cookieLogin();
