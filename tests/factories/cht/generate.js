@@ -41,7 +41,6 @@ date.setDate(date.getDate() - 252);
 const LAST_MENSTRUAL_PERIOD = date.toISOString().split('T')[0]; //'YYYY-MM-DD'
 
 const getReportContext = (patient, submitter) => {
-  //const daysAgo = Math.floor(Math.random() * 10) + 1;
   const daysAgo = Faker.faker.number.int({ min: 1, max: 10 });
   const currentDate = new Date();
   currentDate.setDate(currentDate.getDate() - daysAgo);
@@ -107,6 +106,7 @@ const createClinic = (index, healthCenter) => {
     type: 'clinic',
     parent: { _id: healthCenter._id, parent: healthCenter.parent },
     name: `${personName} Family`,
+    last_name: lastName,
     contact: primaryContact
   });
 
@@ -119,10 +119,9 @@ const createAdditionalPersons = (nbrPersons, clinic) => {
   return Array
     .from({ length: nbrPersons - 1 })
     .map((_, i) => {
-      const lastName = clinic.name.split(' ')[1];
       const additionalPersonName = `${
         ADDITIONAL_PERSON_FIRST_NAMES[i % ADDITIONAL_PERSON_FIRST_NAMES.length]
-      } ${lastName}`;
+      } ${clinic.last_name}`;
       const additionalPhoneNumber = PHONE_NUMBERS[i % PHONE_NUMBERS.length];
       return personFactory.build({
         parent: { _id: clinic._id, parent: clinic.parent },
