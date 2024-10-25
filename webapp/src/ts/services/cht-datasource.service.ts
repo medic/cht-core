@@ -106,12 +106,16 @@ export class CHTDatasourceService {
    */
   bind<R, F extends (arg?: unknown) => Promise<R>>(fn: (ctx: DataContext) => F):
     (...p: Parameters<F>) => ReturnType<F> {
-    return (...p) => new Promise((resolve, reject) => this
-      .isInitialized()
-      .then(() => this.dataContext
-        .bind(fn)(...p)
-        .then(resolve)
-        .catch(reject))) as ReturnType<F>;
+    return (...p) => {
+      return new Promise((resolve, reject) => {
+        this.isInitialized().then(() => {
+          const contextualFn = this.dataContext.bind(fn);
+          contextualFn(...p)
+            .then(resolve)
+            .catch(reject);
+        });
+      }) as ReturnType<F>;
+    };
   }
 
   async get() {
