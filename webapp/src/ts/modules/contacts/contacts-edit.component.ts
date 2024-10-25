@@ -13,8 +13,6 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
-
 
 @Component({
   templateUrl: './contacts-edit.component.html'
@@ -30,7 +28,6 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private dbService:DbService,
     private performanceService:PerformanceService,
     private translateService:TranslateService,
-    private readonly chtDatasourceService:CHTDatasourceService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -226,8 +223,6 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private async validateParentForCreateForm() {
-    const datasource = await this.chtDatasourceService.get();
-
     if (!this.contact.parent) {
       const topLevelTypes = await this.contactTypesService.getChildren();
       if (!topLevelTypes.some(({ id }) => id === this.contact.contact_type)) {
@@ -236,14 +231,9 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    const parent = await datasource.v1.place.getByUuid(this.contact.parent);
-    if (!parent) {
-      throw new Error(`Parent with UUID ${this.contact.parent} does not exist.`);
-    }
-
-    if (await this.contactTypesService.isPerson(parent)) {
-      throw new Error(`Cannot create a ${this.contact.contact_type} as a child of a person.`);
-    }
+    const parent = await this.dbService
+        .get()
+        .get(this.contact.parent);
 
     const parentType = this.contactTypesService.getTypeId(parent);
     if (!parentType) {

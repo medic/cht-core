@@ -8,7 +8,6 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.component';
 import { ComponentsModule } from '@mm-components/components.module';
@@ -23,8 +22,6 @@ import { GlobalActions } from '@mm-actions/global';
 
 describe('ContactsEdit component', () => {
   let contactTypesService;
-  let chtDatasourceService;
-  let chtScriptApi;
   let translateService;
   let router;
   let route;
@@ -41,16 +38,9 @@ describe('ContactsEdit component', () => {
   beforeEach(() => {
     contactTypesService = {
       get: sinon.stub().resolves(),
-      isPerson: sinon.stub().resolves(),
       getChildren: sinon.stub().resolves(),
       getTypeId: sinon.stub().callsFake(contact => contact?.type === 'contact' ? contact.contact_type : contact?.type),
     };
-    chtScriptApi = {
-      v1: {
-        place: { getByUuid: sinon.stub() },
-      }
-    };
-    chtDatasourceService = { get: sinon.stub().resolves(chtScriptApi) };
     translateService = { get: sinon.stub().resolvesArg(0) };
     dbGet = sinon.stub().resolves();
     router = { navigate: sinon.stub() };
@@ -97,7 +87,6 @@ describe('ContactsEdit component', () => {
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
         { provide: FormService, useValue: formService },
         { provide: ContactTypesService, useValue: contactTypesService },
-        { provide: CHTDatasourceService, useValue: chtDatasourceService },
         { provide: PerformanceService, useValue: performanceService},
       ],
       declarations: [
@@ -219,8 +208,9 @@ describe('ContactsEdit component', () => {
       route.params.next({ type: 'random', parent_id: 'the_district' });
 
       contactTypesService.getChildren.resolves([{ id: 'random' }, { id: 'other' }]);
-      contactTypesService.isPerson.resolves(false);
-      chtScriptApi.v1.place.getByUuid.resolves({ _id: 'the_district', type: 'random' });
+      dbGet
+          .withArgs('the_district')
+          .resolves({ _id: 'the_district', type: 'random' });
       contactTypesService.get
         .withArgs('random')
         .resolves({
@@ -256,7 +246,7 @@ describe('ContactsEdit component', () => {
       await fixture.whenStable();
       flushMicrotasks();
 
-      expect(dbGet.callCount).to.equal(2);
+      expect(dbGet.callCount).to.equal(4);
       expect(contactTypesService.get.callCount).to.equal(2);
       expect(formService.render.callCount).to.equal(2);
       expect(formService.render.args[1][0]).to.deep.include({
@@ -302,7 +292,9 @@ describe('ContactsEdit component', () => {
           create_form: 'the_place_create_form_id',
           create_key: 'the_place_create_key',
         });
-        chtScriptApi.v1.place.getByUuid.resolves({ _id: 'parent_id', type: 'the_place' });
+        dbGet
+            .withArgs('parent_id')
+            .resolves({ _id: 'parent_id', type: 'the_place' });
         contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
 
         await createComponent();
@@ -344,8 +336,9 @@ describe('ContactsEdit component', () => {
           create_form: 'clinic_create_form_id',
           create_key: 'clinic_create_key',
         });
-        contactTypesService.isPerson.resolves(false);
-        chtScriptApi.v1.place.getByUuid.resolves({ _id: 'parent_id', type: 'clinic' });
+        dbGet
+            .withArgs('the_district')
+            .resolves({ _id: 'the_district', type: 'clinic' });
         dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
 
         await createComponent();
@@ -353,8 +346,9 @@ describe('ContactsEdit component', () => {
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['clinic']);
-        expect(dbGet.callCount).to.equal(1);
-        expect(dbGet.args[0]).to.deep.equal(['clinic_create_form_id']);
+        expect(dbGet.callCount).to.equal(2);
+        expect(dbGet.args[0]).to.deep.equal(['the_district']);
+        expect(dbGet.args[1]).to.deep.equal(['clinic_create_form_id']);
         expect(component.enketoContact).to.deep.equal({
           type: 'clinic',
           formInstance: undefined,
@@ -680,7 +674,9 @@ describe('ContactsEdit component', () => {
         create_form: 'clinic_create_form_id',
         create_key: 'clinic_create_key',
       });
-      chtScriptApi.v1.place.getByUuid.resolves({ _id: 'the_district', type: 'clinic' });
+      dbGet
+          .withArgs('the_district')
+          .resolves({ _id: 'the_district', type: 'clinic' });
       dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
       const form = {
         validate: sinon.stub().resolves(true),
@@ -706,6 +702,9 @@ describe('ContactsEdit component', () => {
         name: 'enketo:contacts:clinic_create_form_id:add:save',
         recordApdex: true,
       });
+      expect(dbGet.callCount).to.equal(2);
+      expect(dbGet.args[0]).to.deep.equal(['the_district']);
+      expect(dbGet.args[1]).to.deep.equal(['clinic_create_form_id']);
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
