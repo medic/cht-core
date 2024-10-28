@@ -16,9 +16,7 @@ import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
   providedIn: 'root'
 })
 export class Select2SearchService {
-  private selectEl;
   private currentQuery: string | null = null;
-  private onContactSelect;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -64,8 +62,6 @@ export class Select2SearchService {
 
   private query(params, successCb, failureCb, options, types) {
     this.currentQuery = params.data.q;
-    const search = params.data.q;
-
     const searchOptions = {
       limit: options.pageSize,
       skip: this.calculateSkip(params.data.page, options.pageSize),
@@ -74,7 +70,7 @@ export class Select2SearchService {
 
     const filters: Filter = {
       types: { selected: types },
-      search,
+      search: params.data.q,
     };
     if (options.filterByParent) {
       filters.parent = this.getContactId();
@@ -83,27 +79,9 @@ export class Select2SearchService {
     this.searchService
       .search('contacts', filters, searchOptions)
       .then((documents) => {
-        if (this.currentQuery !== search) {
+        if (this.currentQuery !== params.data.q) {
           return;
         }
-
-        if (this.onContactSelect) {
-          this.selectEl!.off('select2:select', this.onContactSelect);
-          this.onContactSelect = null;
-        }
-
-        this.onContactSelect = async (event) => {
-          this.onContactSelect = null;
-
-          const docId = event.params?.data?.id;
-          if (!search || !docId) {
-            return;
-          }
-
-          const doc = await this.getDoc(docId);
-          await this.searchTelemetryService.recordContactByTypeSearch(doc, search);
-        };
-        this.selectEl!.one('select2:select', this.onContactSelect);
 
         this.currentQuery = null;
         successCb({
@@ -205,16 +183,24 @@ export class Select2SearchService {
     // Hydrate and re-set real doc on change
     // !tags -> only support single values, until there is a use-case
     if (!options.tags) {
-      selectEl.on('select2:select', (e) => {
-        const docId = e.params && e.params.data && e.params.data.id;
+      selectEl.on('select2:select', async (event) => {
+        const docId = event.params?.data?.id;
 
-        if (docId) {
-          this.getDoc(docId)
-            .then(doc => {
-              this.setDoc(selectEl, doc);
-              selectEl.trigger('change');
-            })
-            .catch(err => console.error('Select2 failed to get document', err));
+        if (!docId) {
+          return;
+        }
+
+        try {
+          const doc = await this.getDoc(docId);
+          this.setDoc(selectEl, doc);
+          selectEl.trigger('change');
+
+          const search = selectEl.data('select2').dropdown.$search.val();
+          if (search) {
+            await this.searchTelemetryService.recordContactByTypeSearch(doc, search);
+          }
+        } catch (error) {
+          console.error('Select2 failed to get document', error);
         }
       });
     }
@@ -243,7 +229,6 @@ export class Select2SearchService {
   }
 
   async init(selectEl, _types, _options:any = {}) {
-    this.selectEl = selectEl;
     const settings = await this.settingsService.get();
     const types = Array.isArray(_types) ? _types : [ _types ];
     const options = {
