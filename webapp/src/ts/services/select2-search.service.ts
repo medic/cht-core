@@ -197,15 +197,25 @@ export class Select2SearchService {
           this.setDoc(selectEl, doc);
           selectEl.trigger('change');
 
-          if (search) {
-            // fire and forget, we're not interested in when it resolves
-            this.searchTelemetryService.recordContactByTypeSearch(doc, search);
-          }
+          // fire and forget, we're not interested in when it resolves
+          this.recordSearchTelemetry(doc, search, types);
         } catch (error) {
           console.error('Select2 failed to get document', error);
         }
       });
     }
+  }
+
+  private async recordSearchTelemetry(doc, search?: string, types?) {
+    if (!search) {
+      return;
+    }
+
+    if (!types || types.length === 0) {
+      return this.searchTelemetryService.recordContactSearch(doc, search);
+    }
+
+    return this.searchTelemetryService.recordContactByTypeSearch(doc, search);
   }
 
   private setDoc(selectEl, doc) {
