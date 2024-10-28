@@ -60,8 +60,8 @@ export class SearchTelemetryService {
         return;
       }
 
-      const propertyPath = basePropertyPath ? `${basePropertyPath}.${key}` : key;
       if (typeof value === 'string' && value.toLowerCase().includes(_search)) {
+        const propertyPath = basePropertyPath ? `${basePropertyPath}.${key}` : key;
         matchingProperties.add(propertyPath);
       }
     });
