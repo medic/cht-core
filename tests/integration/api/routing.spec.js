@@ -370,7 +370,7 @@ describe('routing', () => {
       });
     });
 
-    it.only('restricts _explain', () => {
+    it('restricts _explain', () => {
       const request = {
         method: 'POST',
         body: { selector: { type: 'person' }, limit: 1 },
