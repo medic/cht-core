@@ -60,10 +60,12 @@ export class SearchTelemetryService {
         return;
       }
 
-      if (typeof value === 'string' && value.toLowerCase().includes(_search)) {
-        const propertyPath = basePropertyPath ? `${basePropertyPath}.${key}` : key;
-        matchingProperties.add(propertyPath);
+      if (typeof value !== 'string' || !value.toLowerCase().includes(_search)) {
+        return;
       }
+
+      const propertyPath = basePropertyPath ? `${basePropertyPath}.${key}` : key;
+      matchingProperties.add(propertyPath);
     });
 
     return Array.from(matchingProperties);

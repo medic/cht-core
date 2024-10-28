@@ -183,6 +183,8 @@ export class Select2SearchService {
     // Hydrate and re-set real doc on change
     // !tags -> only support single values, until there is a use-case
     if (!options.tags) {
+      let search: string | undefined;
+      selectEl.on('select2:selecting', () => search = selectEl.data('select2').dropdown.$search.val());
       selectEl.on('select2:select', async (event) => {
         const docId = event.params?.data?.id;
 
@@ -195,7 +197,6 @@ export class Select2SearchService {
           this.setDoc(selectEl, doc);
           selectEl.trigger('change');
 
-          const search = selectEl.data('select2').dropdown.$search.val();
           if (search) {
             void this.searchTelemetryService.recordContactByTypeSearch(doc, search);
           }
