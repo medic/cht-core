@@ -72,7 +72,7 @@ describe('More Options Menu - Offline User - Delete permissions disabled', () =>
   describe('Report tab', () => {
     it('should hide the kebab menu when the sms report is opened', async () => {
       await reportPage.goToReportById(smsReportId);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(commonPage.isMoreOptionsMenuPresent()).to.be.false;
     });
 
     it('should enable the \'edit\' and \'review\' option and ' +

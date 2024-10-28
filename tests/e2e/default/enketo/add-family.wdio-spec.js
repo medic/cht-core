@@ -18,7 +18,7 @@ describe('Family form', () => {
     await commonPage.openFastActionReport('add-family-multiple-repeats', false);
     await familyForm.submitFamilyForm();
     await familyForm.reportCheck('test Family', 'boreholes', 'true', 'true', 'ucid');
-    await reportsPage.editReport();
+    await commonPage.accessEditOption();
     await commonEnketoPage.setInputValue('Names', 'modified');
     await genericForm.nextPage(7);
     await commonEnketoPage.selectCheckBox('What is the family\'s source of drinking water?', 'Spring');

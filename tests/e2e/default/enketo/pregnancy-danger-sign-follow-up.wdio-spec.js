@@ -44,7 +44,7 @@ describe('Pregnancy danger sign follow-up form', () => {
     expect(initialReport._attachments).to.equal(undefined);
 
     await reportsPage.openReport(reportId);
-    await reportsPage.editReport();
+    await commonPage.accessEditOption();
     await genericForm.nextPage();
     await genericForm.submitForm();
 
@@ -63,7 +63,7 @@ describe('Pregnancy danger sign follow-up form', () => {
     expect(initialReport._attachments).to.equal(undefined);
 
     await reportsPage.openReport(reportId);
-    await reportsPage.editReport();
+    await commonPage.accessEditOption();
     await fillPregnancyDangerSignFollowUpForm('No', 'Yes');
     await dangerSignPage.selectAllDangerSignsPregnancy();
     await genericForm.submitForm();

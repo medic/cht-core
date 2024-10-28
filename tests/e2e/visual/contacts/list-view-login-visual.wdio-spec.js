@@ -54,7 +54,7 @@ describe('Contact List Page', () => {
       await generateScreenshot('contact-page', 'menu-opened');
       await commonPage.closeHamburgerMenu();
       await commonPage.goToPeople();
-      expect(await commonPage.isPeopleListPresent()).to.be.true;
+      expect(commonPage.isPeopleListPresent()).to.be.true;
       await generateScreenshot('contact-page', 'people-list-visible');
       await commonPage.goToReports();
       await reportsPage.openFirstReport();
@@ -97,7 +97,7 @@ describe('Contact List Page', () => {
       await (await commonPage.contactsButton()).waitForClickable();
       await generateScreenshot('contact-page', 'menu-option-visible');
       await (await commonPage.contactsButton()).click();
-      expect(await commonPage.isPeopleListPresent()).to.be.true;
+      expect(commonPage.isPeopleListPresent()).to.be.true;
       await commonPage.waitForPageLoaded();
       await generateScreenshot('contact-page', 'contacts-in-people-list');
       await commonPage.goToReports();

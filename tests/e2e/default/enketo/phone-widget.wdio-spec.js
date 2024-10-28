@@ -57,7 +57,7 @@ describe('Phone widget', () => {
 
   it('can use duplicate phone number when editing contact with same number', async () => {
     await commonPage.goToPeople(person1._id);
-    await contactsPage.openEditContactForm();
+    await commonPage.accessEditOption();
 
     await (await genericForm.nextPage());
     // Try setting phone to number of the other person

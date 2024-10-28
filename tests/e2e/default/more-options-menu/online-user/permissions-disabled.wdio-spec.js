@@ -40,7 +40,7 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
     await utils.createUsers([onlineUser]);
     await loginPage.login(onlineUser);
     await commonPage.waitForLoaderToDisappear();
-    expect(await commonPage.isMessagesListPresent()).to.be.true;
+    expect(commonPage.isMessagesListPresent()).to.be.true;
   });
 
   after(async () => await utils.revertSettings(true));
@@ -66,7 +66,7 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
     it('should hide the \'export\' option and ' +
       'enable the \'edit\', \'delete\' and \'review\' options when a report is opened', async () => {
       await commonPage.goToReports();
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(commonPage.isMoreOptionsMenuPresent()).to.be.false;
       (await reportPage.leftPanelSelectors.firstReport()).click();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
@@ -78,8 +78,8 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
     it('should hide the kebab menu on the Message tab', async () => {
       await commonPage.goToMessages();
       await commonPage.waitForLoaderToDisappear();
-      expect(await commonPage.isMessagesListPresent()).to.be.true;
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(commonPage.isMessagesListPresent()).to.be.true;
+      expect(commonPage.isMoreOptionsMenuPresent()).to.be.false;
     });
   });
 

@@ -5,21 +5,19 @@ const aboutPage = require('@page-objects/default/about/about.wdio.page');
 const tabsSelector = {
   getAllButtonLabels: async () => await $$('.header .tabs .button-label'),
   messagesTab: () => $('#messages-tab'),
-  getMessagesButtonLabel: () => $('#messages-tab .button-label'),
   taskTab: () => $('#tasks-tab'),
-  getTasksButtonLabel: () => $('#tasks-tab .button-label'),
-  getReportsButtonLabel: () => $('#reports-tab .button-label'),
   analyticsTab: () => $('#analytics-tab'),
 };
 
-const HAMBURGER_MENU_ITEM_SELECTOR = 'mat-sidenav-content';
 const hamburgerMenuSelectors = {
   hamburgerMenu: () => $('aria/Application menu'),
   closeSideBarMenu: () => $('.panel-header-close'),
+  sideBarMenuTitle: () => $('aria/Menu'),
+  appManagementButton: () => $('aria/App Management'),
   syncButton: () => $('aria/Sync now'),
   syncSuccess: () => $('aria/All reports synced'),
-  syncInProgress: () => $(HAMBURGER_MENU_ITEM_SELECTOR).$('*="Currently syncing"'),
-  syncRequired: () => $(`${HAMBURGER_MENU_ITEM_SELECTOR} .sync-status .required`),
+  syncInProgress: () => $('mat-sidenav-content').$('*="Currently syncing"'),
+  aboutButton: () => $('aria/About'),
   userSettingsButton: () => $('aria/User settings'),
   feedbackMenuOption: () => $('aria/Report bug'),
   logoutButton: () => $('aria/Log out'),
@@ -27,6 +25,10 @@ const hamburgerMenuSelectors = {
 
 const kebabMenuSelectors = {
   moreOptionsMenu: () => $('aria/Actions menu'),
+  edit: () => $('aria/Edit'),
+  delete: () => $('aria/Delete'),
+  export: () => $('aria/Export'),
+  review: () => $('aria/Review'),
 };
 
 const FAST_ACTION_TRIGGER = '.fast-action-trigger';
@@ -46,51 +48,122 @@ const userSettingsSelectors = {
   editProfileButton: () => $('.user .configuration.page i.fa-user'),
 };
 
-
-
-
-
-
-const loaders = () => $$('.container-fluid .loader');
-const snackbar = () => $('#snackbar.active .snackbar-message');
-
-
-
-
-// Feedback or Report bug
-
-const FEEDBACK = '#feedback';
-//About menu
-const ABOUT_MENU = 'aria/About';
-//Configuration App
-const configurationAppMenuOption = () => $('aria/App Management');
-const errorLog = () => $(`error-log`);
-const sideBarMenuTitle = () => $('aria/Menu');
-
-
 const getJsonErrorText = async () => await $('pre').getText();
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('mat-sidenav-container.mat-drawer-container-has-open')).isExisting();
 };
 
+const openHamburgerMenu = async () => {
+  if (!(await isHamburgerMenuOpen())) {
+    await (await hamburgerMenuSelectors.hamburgerMenu()).waitForClickable();
+    await (await hamburgerMenuSelectors.hamburgerMenu()).click();
+  }
+
+  // Adding pause here as we have to wait for sidebar nav menu animation to load
+  await browser.pause(500);
+  await (await hamburgerMenuSelectors.sideBarMenuTitle()).waitForDisplayed();
+};
+
+const closeHamburgerMenu = async () => {
+  if (await isHamburgerMenuOpen()) {
+    await (await hamburgerMenuSelectors.closeSideBarMenu()).waitForClickable();
+    await (await hamburgerMenuSelectors.closeSideBarMenu()).click();
+  }
+
+  await (await hamburgerMenuSelectors.sideBarMenuTitle()).waitForDisplayed({ reverse: true });
+};
+
 const openMoreOptionsMenu = async () => {
-  await (await moreOptionsMenu()).waitForClickable();
-  await (await moreOptionsMenu()).click();
+  await (await kebabMenuSelectors.moreOptionsMenu()).waitForClickable();
+  await (await kebabMenuSelectors.moreOptionsMenu()).click();
+};
+
+const performMenuAction = async (actionSelector) => {
+  await openMoreOptionsMenu();
+  const actionElement = await actionSelector();
+  await actionElement.waitForClickable();
+  await actionElement.click();
+};
+
+const accessEditOption = async () => {
+  await performMenuAction(kebabMenuSelectors.edit);
+};
+
+const accessDeleteOption = async () => {
+  await performMenuAction(kebabMenuSelectors.delete);
+};
+
+const accessExportOption = async () => {
+  await performMenuAction(kebabMenuSelectors.export);
+};
+
+const accessReviewOption = async () => {
+  await performMenuAction(kebabMenuSelectors.review());
 };
 
 const waitForSnackbarToClose = async () => {
-  if (await (await snackbar()).isExisting()) {
-    await (await snackbar()).waitForDisplayed({ reverse: true });
+  const snackbar = await $('#snackbar.active .snackbar-message');
+  if (await snackbar.isExisting()) {
+    await snackbar.waitForDisplayed({ reverse: true });
   }
+};
+
+const hideSnackbar = () => {
+  // snackbar appears in the bottom of the page for 5 seconds when certain actions are made
+  // for example when filling a form, or creating a contact and intercepts all clicks in the FAB and Flat buttons
+  // this action is temporary, and will be undone with a refresh
+  return browser.execute(() => {
+    // eslint-disable-next-line no-undef
+    window.jQuery('.snackbar-content').hide();
+  });
+};
+
+const getVisibleLoaders = async () => {
+  const visible = [];
+  for (const loader of await $$('.container-fluid .loader')) {
+    if (await loader.isDisplayedInViewport()) {
+      visible.push(loader);
+    }
+  }
+
+  return visible;
+};
+
+const waitForLoaderToDisappear = async (element) => {
+  const loaderSelector = '.loader';
+  const loader = await (element ? element.$(loaderSelector) : $(loaderSelector));
+  await loader.waitForDisplayed({ reverse: true });
+};
+
+const waitForLoaders = async () => {
+  await browser.waitUntil(async () => {
+    const visibleLoaders = await getVisibleLoaders();
+    return !visibleLoaders.length;
+  }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
+};
+
+const waitForAngularLoaded = async (timeout = 40000) => {
+  await (await hamburgerMenuSelectors.hamburgerMenu()).waitForDisplayed({ timeout });
+};
+
+const waitForPageLoaded = async () => {
+  // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
+  // so waiting for the main page to load.
+  await waitForAngularLoaded();
+  // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
+  // get all loaders.
+  do {
+    await waitForLoaders();
+  } while ((await getVisibleLoaders()).length > 0);
 };
 
 const clickFastActionById = async (id) => {
   // Wait for the Angular Material's animation to complete.
   await browser.pause(500);
-  await (await fastActionListContainer()).waitForDisplayed();
-  await (await fastActionById(id)).waitForClickable();
-  await (await fastActionById(id)).click();
+  await (await fabSelectors.fastActionListContainer()).waitForDisplayed();
+  await (await fabSelectors.fastActionById(id)).waitForClickable();
+  await (await fabSelectors.fastActionById(id)).click();
 };
 
 /**
@@ -98,7 +171,7 @@ const clickFastActionById = async (id) => {
  * @returns {Promise<HTMLElement>}
  */
 const findVisibleFAB = async () => {
-  for (const button of await fastActionFAB()) {
+  for (const button of await fabSelectors.fastActionFAB()) {
     if (await button.isDisplayed()) {
       return button;
     }
@@ -109,7 +182,7 @@ const clickFastActionFAB = async ({ actionId, waitForList }) => {
   await closeHamburgerMenu();
   const fab = await findVisibleFAB();
   await fab.waitForClickable();
-  waitForList = waitForList === undefined ? await (await multipleActions()).isExisting() : waitForList;
+  waitForList = waitForList === undefined ? await (await fabSelectors.multipleActions()).isExisting() : waitForList;
   await fab.click();
   if (waitForList) {
     await clickFastActionById(actionId);
@@ -123,17 +196,17 @@ const getFastActionItemsLabels = async () => {
   await fab.click();
 
   await browser.pause(500);
-  await (await fastActionListContainer()).waitForDisplayed();
+  await (await fabSelectors.fastActionListContainer()).waitForDisplayed();
 
-  const items = await fastActionItems();
+  const items = await fabSelectors.fastActionItems();
   return await items.map(item => item.getText());
 };
 
 const clickFastActionFlat = async ({ actionId, waitForList }) => {
-  await (await fastActionFlat()).waitForDisplayed();
-  await (await fastActionFlat()).waitForClickable();
-  waitForList = waitForList === undefined ? await (await multipleActions()).isExisting() : waitForList;
-  await (await fastActionFlat()).click();
+  await (await fabSelectors.fastActionFlat()).waitForDisplayed();
+  await (await fabSelectors.fastActionFlat()).waitForClickable();
+  waitForList = waitForList === undefined ? await (await fabSelectors.multipleActions()).isExisting() : waitForList;
+  await (await fabSelectors.fastActionFlat()).click();
   if (waitForList) {
     await clickFastActionById(actionId);
   }
@@ -152,87 +225,55 @@ const openFastActionReport = async (formId, rightSideAction = true) => {
 
 const getFastActionFABTextById = async (actionId) => {
   await clickFastActionFAB({ actionId, waitForList: false });
-  await (await fastActionListContainer()).waitForDisplayed();
-  return await (await fastActionById(actionId)).getText();
+  await (await fabSelectors.fastActionListContainer()).waitForDisplayed();
+  return await (await fabSelectors.fastActionById(actionId)).getText();
 };
 
 const getFastActionFlatText = async () => {
   await waitForSnackbarToClose();
-  await (await fastActionFlat()).waitForDisplayed();
-  return await (await fastActionFlat()).getText();
+  await (await fabSelectors.fastActionFlat()).waitForDisplayed();
+  return await (await fabSelectors.fastActionFlat()).getText();
 };
 
 const closeFastActionList = async () => {
-  await (await fastActionListContainer()).waitForDisplayed();
-  await (await fastActionListCloseButton()).waitForClickable();
-  await (await fastActionListCloseButton()).click();
+  await (await fabSelectors.fastActionListContainer()).waitForDisplayed();
+  await (await fabSelectors.fastActionListCloseButton()).waitForClickable();
+  await (await fabSelectors.fastActionListCloseButton()).click();
 };
 
 const isReportActionDisplayed = async () => {
   return await browser.waitUntil(async () => {
-    const exists = await (await reportsFastActionFAB()).isExisting();
+    const exists = await (await fabSelectors.reportsFastActionFAB()).isExisting();
     if (exists) {
-      await (await reportsFastActionFAB()).waitForDisplayed();
+      await (await fabSelectors.reportsFastActionFAB()).waitForDisplayed();
     }
 
     return exists;
   });
 };
 
-const isMessagesListPresent = () => {
-  return isElementByIdPresent('message-list');
+const isElementPresent = async (selector) => {
+  return await (await $(selector)).isExisting();
 };
 
-const isTasksListPresent = () => {
-  return isElementByIdPresent('tasks-list');
-};
+const isMessagesListPresent = () => isElementPresent('#message-list');
 
-const isReportsListPresent = () => {
-  return isElementByIdPresent('reports-list');
-};
+const isTasksListPresent = () => isElementPresent('#tasks-list');
 
-const isPeopleListPresent = () => {
-  return isElementByIdPresent('contacts-list');
-};
+const isReportsListPresent = () => isElementPresent('#reports-list');
 
-const isTargetMenuItemPresent = async () => {
-  return await (await $(`=Target`)).isExisting();
-};
+const isPeopleListPresent = () => isElementPresent('#contacts-list');
 
-const isTargetAggregatesMenuItemPresent = async () => {
-  return await (await $(`=Target aggregates`)).isExisting();
-};
+const isTargetMenuItemPresent = () => isElementPresent('=Target');
 
-const isElementByIdPresent = async (elementId) => {
-  return await (await $(`#${elementId}`)).isExisting();
-};
+const isTargetAggregatesMenuItemPresent = () => isElementPresent('=Target aggregates');
 
-
-
-const openHamburgerMenu = async () => {
-  if (!(await isHamburgerMenuOpen())) {
-    await (await hamburgerMenu()).waitForClickable();
-    await (await hamburgerMenu()).click();
-  }
-
-  // Adding pause here as we have to wait for sidebar nav menu animation to load
-  await browser.pause(500);
-  await (await sideBarMenuTitle()).waitForDisplayed();
-};
-
-const closeHamburgerMenu = async () => {
-  if (await isHamburgerMenuOpen()) {
-    await (await closeSideBarMenu()).waitForClickable();
-    await (await closeSideBarMenu()).click();
-  }
-
-  await (await sideBarMenuTitle()).waitForDisplayed({ reverse: true });
-};
+const isMoreOptionsMenuPresent = () => isElementPresent(kebabMenuSelectors.moreOptionsMenu());
 
 const navigateToLogoutModal = async () => {
   await openHamburgerMenu();
-  await (await logoutButton()).waitForClickable();
-  await (await logoutButton()).click();
+  await (await hamburgerMenuSelectors.logoutButton()).waitForClickable();
+  await (await hamburgerMenuSelectors.logoutButton()).click();
   await (await modalPage.body()).waitForDisplayed();
 };
 
@@ -268,6 +309,22 @@ const goToBase = async () => {
   await waitForPageLoaded();
 };
 
+const goToAboutPage = async () => {
+  await goToUrl(`/#/about`);
+  await waitForLoaders();
+};
+
+const goToMessages = async () => {
+  await goToUrl(`/#/messages`);
+  await (await tabsSelector.messagesTab()).waitForDisplayed();
+};
+
+const goToTasks = async () => {
+  await goToUrl(`/#/tasks`);
+  await (await tabsSelector.taskTab()).waitForDisplayed();
+  await waitForPageLoaded();
+};
+
 const goToReports = async (reportId = '') => {
   await goToUrl(`/#/reports/${reportId}`);
   await waitForPageLoaded();
@@ -280,92 +337,39 @@ const goToPeople = async (contactId = '', shouldLoad = true) => {
   }
 };
 
-const goToMessages = async () => {
-  await goToUrl(`/#/messages`);
-  await (await messagesTab()).waitForDisplayed();
-};
-
-const goToTasks = async () => {
-  await goToUrl(`/#/tasks`);
-  await (await taskTab()).waitForDisplayed();
-  await waitForPageLoaded();
-};
-
 const goToAnalytics = async () => {
   await goToUrl(`/#/analytics`);
-  await (await analyticsTab()).waitForDisplayed();
+  await (await tabsSelector.analyticsTab()).waitForDisplayed();
   await waitForPageLoaded();
 };
 
-const goToAboutPage = async () => {
-  await goToUrl(`/#/about`);
-  await waitForLoaders();
-};
-
-const waitForLoaderToDisappear = async (element) => {
-  const loaderSelector = '.loader';
-  const loader = await (element ? element.$(loaderSelector) : $(loaderSelector));
-  await loader.waitForDisplayed({ reverse: true });
-};
-
-const hideSnackbar = () => {
-  // snackbar appears in the bottom of the page for 5 seconds when certain actions are made
-  // for example when filling a form, or creating a contact and intercepts all clicks in the FAB and Flat buttons
-  // this action is temporary, and will be undone with a refresh
-  return browser.execute(() => {
-    // eslint-disable-next-line no-undef
-    window.jQuery('.snackbar-content').hide();
-  });
-};
-
-const getVisibleLoaders = async () => {
-  const visible = [];
-  for (const loader of await loaders()) {
-    if (await loader.isDisplayedInViewport()) {
-      visible.push(loader);
-    }
+const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
+  try {
+    await browser.waitUntil( async () => await modalPage.modal().isDisplayed(), { timeout: 10000, interval: 500 } );
+    shouldUpdate ? await modalPage.submit(timeout) : await modalPage.cancel(timeout);
+    shouldUpdate && await waitForAngularLoaded();
+    return true;
+  } catch (err) {
+    console.error('Reload modal not showed up');
+    return false;
   }
-
-  return visible;
-};
-
-const waitForLoaders = async () => {
-  await browser.waitUntil(async () => {
-    const visibleLoaders = await getVisibleLoaders();
-    return !visibleLoaders.length;
-  }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
-};
-
-const waitForAngularLoaded = async (timeout = 40000) => {
-  await (await hamburgerMenu()).waitForDisplayed({ timeout });
-};
-
-const waitForPageLoaded = async () => {
-  // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
-  // so waiting for the main page to load.
-  await waitForAngularLoaded();
-  // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
-  // get all loaders.
-  do {
-    await waitForLoaders();
-  } while ((await getVisibleLoaders()).length > 0);
 };
 
 const syncAndNotWaitForSuccess = async () => {
   await openHamburgerMenu();
-  await (await syncButton()).click();
+  await (await hamburgerMenuSelectors.syncButton()).click();
 };
 
 const syncAndWaitForSuccess = async (timeout = 20000) => {
   await openHamburgerMenu();
-  await (await syncButton()).waitForClickable();
-  await (await syncButton()).click();
+  await (await hamburgerMenuSelectors.syncButton()).waitForClickable();
+  await (await hamburgerMenuSelectors.syncButton()).click();
   await closeReloadModal(false);
   await openHamburgerMenu();
-  if (await (await syncInProgress()).isExisting()) {
-    await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
+  if (await (await hamburgerMenuSelectors.syncInProgress()).isExisting()) {
+    await (await hamburgerMenuSelectors.syncInProgress()).waitForDisplayed({ reverse: true, timeout });
   }
-  await (await syncSuccess()).waitForDisplayed({ timeout });
+  await (await hamburgerMenuSelectors.syncSuccess()).waitForDisplayed({ timeout });
 };
 
 const hideModalOverlay = () => {
@@ -395,34 +399,13 @@ const sync = async (expectReload, timeout) => {
   await closeHamburgerMenu();
 };
 
-const syncAndWaitForFailure = async () => {
-  await openHamburgerMenu();
-  await (await syncButton()).click();
-  await openHamburgerMenu();
-  await (await syncRequired()).waitForDisplayed({ timeout: 20000 });
-};
-
-const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
-  try {
-    await browser.waitUntil( async () => await modalPage.modal().isDisplayed(), { timeout: 10000, interval: 500 } );
-    shouldUpdate ? await modalPage.submit(timeout) : await modalPage.cancel(timeout);
-    shouldUpdate && await waitForAngularLoaded();
-    return true;
-  } catch (err) {
-    console.error('Reload modal not showed up');
-    return false;
-  }
-};
-
 const openReportBugAndFetchProperties = async () => {
-  await (await feedbackMenuOption()).waitForClickable();
-  await (await feedbackMenuOption()).click();
+  await (await hamburgerMenuSelectors.feedbackMenuOption()).waitForClickable();
+  await (await hamburgerMenuSelectors.feedbackMenuOption()).click();
   return await modalPage.getModalDetails();
 };
 
-const isReportBugOpen = async () => {
-  return await (await $(FEEDBACK)).isExisting();
-};
+const isReportBugOpen = () => isElementPresent('#feedback');
 
 const closeReportBug = async () => {
   if (await isReportBugOpen()) {
@@ -431,8 +414,8 @@ const closeReportBug = async () => {
 };
 
 const openAboutMenu = async () => {
-  await (await $(ABOUT_MENU)).waitForClickable();
-  await (await $(ABOUT_MENU)).click();
+  await (await hamburgerMenuSelectors.aboutButton()).waitForClickable();
+  await (await hamburgerMenuSelectors.aboutButton()).click();
   await (await $(aboutPage.RELOAD_BUTTON)).waitForDisplayed();
 };
 
@@ -452,8 +435,8 @@ const openEditProfile = async () => {
 };
 
 const openAppManagement = async () => {
-  await (await configurationAppMenuOption()).waitForClickable();
-  await (await configurationAppMenuOption()).click();
+  await (await hamburgerMenuSelectors.appManagementButton()).waitForClickable();
+  await (await hamburgerMenuSelectors.appManagementButton()).click();
   await (await $('.navbar-brand')).waitForDisplayed();
 };
 
@@ -463,18 +446,15 @@ const getTextForElements = async (elements) => {
 };
 
 const getAllButtonLabelsNames = async () => {
-  return await getTextForElements(getAllButtonLabels);
+  return await getTextForElements(tabsSelector.getAllButtonLabels());
 };
 
-//more options menu
-const optionSelector = (action, item) => $(`[test-id="${action}-${item}"]`);
-
-const isMenuOptionEnabled = async (action, item) => {
-  return await (await optionSelector(action, item)).isEnabled();
+const isMenuOptionEnabled = async (action) => {
+  return await (await kebabMenuSelectors[action]()).isEnabled();
 };
 
-const isMenuOptionVisible = async (action, item) => {
-  return await (await optionSelector(action, item)).isDisplayed();
+const isMenuOptionVisible = async (action) => {
+  return await (await kebabMenuSelectors[action]()).isDisplayed();
 };
 
 const loadNextInfiniteScrollPage = async () => {
@@ -485,7 +465,7 @@ const loadNextInfiniteScrollPage = async () => {
 };
 
 const getErrorLog = async () => {
-  await errorLog().waitForDisplayed();
+  await (await $(`error-log`)).waitForDisplayed();
 
   const errorMessage = await (await $('.error-details span')).getText();
   const userDetails = await (await $$('.error-details dl dd'));
@@ -497,65 +477,62 @@ const getErrorLog = async () => {
 };
 
 module.exports = {
+  tabsSelector,
+  fabSelectors,
+  getJsonErrorText,
+  openHamburgerMenu,
+  closeHamburgerMenu,
   openMoreOptionsMenu,
-  closeFastActionList,
+  accessEditOption,
+  accessDeleteOption,
+  accessExportOption,
+  accessReviewOption,
+  hideSnackbar,
+  waitForLoaderToDisappear,
+  waitForLoaders,
+  waitForAngularLoaded,
+  waitForPageLoaded,
   clickFastActionFAB,
+  getFastActionItemsLabels,
   clickFastActionFlat,
   openFastActionReport,
   getFastActionFABTextById,
   getFastActionFlatText,
-  logout,
-  logoutButton,
-  getLogoutMessage,
-  messagesTab,
-  analyticsTab,
-  goToReports,
-  goToPeople,
-  getReportsButtonLabel,
-  getMessagesButtonLabel,
-  getTasksButtonLabel,
-  goToBase,
-  hideSnackbar,
-  waitForLoaders,
-  sync,
-  syncAndNotWaitForSuccess,
-  syncButton,
-  closeReloadModal,
-  goToMessages,
-  goToTasks,
-  goToAnalytics,
+  closeFastActionList,
+  isReportActionDisplayed,
+  isElementPresent,
   isMessagesListPresent,
   isTasksListPresent,
   isPeopleListPresent,
   isReportsListPresent,
   isTargetMenuItemPresent,
   isTargetAggregatesMenuItemPresent,
-  openHamburgerMenu,
-  closeHamburgerMenu,
-  openAboutMenu,
-  openUserSettingsAndFetchProperties,
-  openUserSettings,
-  openEditProfile,
-  openReportBugAndFetchProperties,
-  openAppManagement,
-  waitForLoaderToDisappear,
+  isMoreOptionsMenuPresent,
+  logout,
+  getLogoutMessage,
+  goToUrl,
+  refresh,
+  goToBase,
   goToAboutPage,
-  waitForPageLoaded,
+  goToMessages,
+  goToTasks,
+  goToReports,
+  goToPeople,
+  goToAnalytics,
+  closeReloadModal,
+  syncAndNotWaitForSuccess,
+  sync,
+  openReportBugAndFetchProperties,
+  closeReportBug,
+  openAboutMenu,
+  openUserSettings,
+  openUserSettingsAndFetchProperties,
+  openEditProfile,
+  openAppManagement,
   getTextForElements,
-  getJsonErrorText,
+  getAllButtonLabelsNames,
   isMenuOptionEnabled,
   isMenuOptionVisible,
-  moreOptionsMenu,
-  refresh,
-  syncAndWaitForFailure,
-  waitForAngularLoaded,
-  closeReportBug,
-  getAllButtonLabelsNames,
   loadNextInfiniteScrollPage,
-  goToUrl,
-  getFastActionItemsLabels,
   getErrorLog,
-  reportsFastActionFAB,
-  isReportActionDisplayed,
-  getHeaderTitleOnMobile,
 };

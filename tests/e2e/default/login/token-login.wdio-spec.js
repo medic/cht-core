@@ -67,7 +67,7 @@ describe('Token login', () => {
     await loginPage.cookieLogin();
     await browser.url(getUrl('this is a random string'));
     await commonElements.waitForLoaderToDisappear();
-    expect(await commonElements.isMessagesListPresent()).to.be.true;
+    expect(commonElements.isMessagesListPresent()).to.be.true;
   });
 
   it('should display an error when token login is disabled', async () => {
@@ -108,6 +108,6 @@ describe('Token login', () => {
     const url = await getTokenUrl(userDoc);
     await browser.url(url);
     await commonElements.waitForLoaderToDisappear();
-    expect(await commonElements.isMessagesListPresent()).to.be.true;
+    expect(commonElements.isMessagesListPresent()).to.be.true;
   });
 });
