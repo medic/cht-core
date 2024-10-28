@@ -16,17 +16,17 @@ export class SearchTelemetryService {
   public async recordContactSearch(contactDoc: Record<string, any>, search: string) {
     const matchingProperties = await this.findMatchingProperties(contactDoc, search, this.CONTACT_SKIPPED_PROPERTIES);
 
-    for (const key of matchingProperties) {
-      await this.telemetryService.record(`search_match:contacts_by_freetext:${key}`);
-    }
+    await Promise.all(
+      matchingProperties.map(key => this.telemetryService.record(`search_match:contacts_by_freetext:${key}`)),
+    );
   }
 
   public async recordContactByTypeSearch(contactDoc: Record<string, any>, search: string) {
     const matchingProperties = await this.findMatchingProperties(contactDoc, search, this.CONTACT_SKIPPED_PROPERTIES);
 
-    for (const key of matchingProperties) {
-      await this.telemetryService.record(`search_match:contacts_by_type_freetext:${key}`);
-    }
+    await Promise.all(
+      matchingProperties.map(key => this.telemetryService.record(`search_match:contacts_by_type_freetext:${key}`)),
+    );
   }
 
   public async recordReportSearch(reportDoc: Record<string, any>, search: string) {
@@ -34,11 +34,11 @@ export class SearchTelemetryService {
       this.findMatchingProperties(reportDoc, search, this.REPORT_SKIPPED_PROPERTIES),
       this.findMatchingProperties(reportDoc.fields, search, this.REPORT_SKIPPED_PROPERTIES, 'fields'),
     ]);
-    const matchingProperties = new Set([...matches, ...fieldsMatches]);
+    const matchingProperties = Array.from(new Set([...matches, ...fieldsMatches]));
 
-    for (const key of matchingProperties) {
-      await this.telemetryService.record(`search_match:reports_by_freetext:${key}`);
-    }
+    await Promise.all(
+      matchingProperties.map(key => this.telemetryService.record(`search_match:reports_by_freetext:${key}`)),
+    );
   }
 
   private async findMatchingProperties(
