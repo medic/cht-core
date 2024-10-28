@@ -88,7 +88,7 @@
     "@types/sinon": "^10.0.16",
     "@typescript-eslint/eslint-plugin": "7.5",
     "@typescript-eslint/parser": "7.5",
-    "@typescript-eslint/utils": "7.5",
+    "@typescript-eslint/utils": "8.11",
     "@wdio/allure-reporter": "^8.34.0",
     "@wdio/appium-service": "^8.36.1",
     "@wdio/cli": "^8.35.1",
