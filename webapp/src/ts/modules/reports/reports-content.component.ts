@@ -101,7 +101,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       selectedReports,
       filters
     ]) => {
-      this.recordSearchTelemetry(this.selectedReports, selectedReport, filters);
+      void this.recordSearchTelemetry(this.selectedReports, selectedReport, filters);
       if (selectedReport) {
         this.selectedReports = [ selectedReport ];
       } else {

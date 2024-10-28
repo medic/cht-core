@@ -141,7 +141,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       contactsLoadingSummary,
       filters,
     ]) => {
-      this.recordSearchTelemetry(this.selectedContact, selectedContact, filters);
+      void this.recordSearchTelemetry(this.selectedContact, selectedContact, filters);
       if (this.selectedContact?._id !== selectedContact?._id) {
         // reset view when selected contact changes
         this.resetTaskAndReportsFilter();

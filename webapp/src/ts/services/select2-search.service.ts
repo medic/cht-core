@@ -197,7 +197,7 @@ export class Select2SearchService {
 
           const search = selectEl.data('select2').dropdown.$search.val();
           if (search) {
-            await this.searchTelemetryService.recordContactByTypeSearch(doc, search);
+            void this.searchTelemetryService.recordContactByTypeSearch(doc, search);
           }
         } catch (error) {
           console.error('Select2 failed to get document', error);
