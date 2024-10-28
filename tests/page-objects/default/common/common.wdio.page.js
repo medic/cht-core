@@ -364,6 +364,7 @@ const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
     await (await syncSuccess()).waitForDisplayed({ timeout: ELEMENT_DISPLAY_PAUSE });
   } catch (err) {
     console.error(err);
+    await browser.takeScreenshot();
     await syncAndWaitForSuccess(timeout, retry - 1);
   }
 };
@@ -383,15 +384,13 @@ const sync = async (expectReload, timeout) => {
   let closedModal = false;
   if (expectReload) {
     // it's possible that sync already happened organically, and we already have the reload modal
-    closedModal = await closeReloadModal();
+    closedModal = await closeReloadModal(false, 0);
   }
 
   await syncAndWaitForSuccess(timeout);
   if (expectReload && !closedModal) {
     await closeReloadModal();
   }
-  // sync status sometimes lies when multiple changes are fired in quick succession
-  await syncAndWaitForSuccess(timeout);
   await closeHamburgerMenu();
 };
 
