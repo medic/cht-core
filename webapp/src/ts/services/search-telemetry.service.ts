@@ -34,7 +34,7 @@ export class SearchTelemetryService {
       this.findMatchingProperties(reportDoc, search, this.REPORT_SKIPPED_PROPERTIES),
       this.findMatchingProperties(reportDoc.fields, search, this.REPORT_SKIPPED_PROPERTIES, 'fields'),
     ]);
-    const matchingProperties = new Set(...matches, ...fieldsMatches);
+    const matchingProperties = new Set([...matches, ...fieldsMatches]);
 
     for (const key of matchingProperties) {
       await this.telemetryService.record(`search_match:reports_by_freetext:${key}`);
@@ -47,12 +47,12 @@ export class SearchTelemetryService {
     skip: string[],
     basePropertyPath = '',
   ) {
-    const matchingProperties = new Set<string>();
     const colonSearch = search.split(':');
     if (colonSearch.length > 1) {
       return [`${colonSearch[0]}:$value`];
     }
 
+    const matchingProperties = new Set<string>();
     const _search = search.toLowerCase();
     Object.entries(doc).forEach(([key, value]) => {
       const _key = key.toLowerCase();
