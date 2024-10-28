@@ -50,7 +50,7 @@ export class SearchTelemetryService {
     const matchingProperties = new Set<string>();
     const colonSearch = search.split(':');
     if (colonSearch.length > 1) {
-      matchingProperties.add(`${colonSearch[0]}:$value`);
+      return [`${colonSearch[0]}:$value`];
     }
 
     const _search = search.toLowerCase();
@@ -66,6 +66,6 @@ export class SearchTelemetryService {
       }
     });
 
-    return matchingProperties;
+    return Array.from(matchingProperties);
   }
 }
