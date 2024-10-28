@@ -198,7 +198,8 @@ export class Select2SearchService {
           selectEl.trigger('change');
 
           if (search) {
-            void this.searchTelemetryService.recordContactByTypeSearch(doc, search);
+            // fire and forget, we're not interested in when it resolves
+            this.searchTelemetryService.recordContactByTypeSearch(doc, search);
           }
         } catch (error) {
           console.error('Select2 failed to get document', error);
