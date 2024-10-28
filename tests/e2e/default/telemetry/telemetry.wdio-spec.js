@@ -60,6 +60,11 @@ describe('Telemetry', () => {
     await commonPage.waitForPageLoaded();
   });
 
+  after(async () => {
+    await utils.deleteUsers([user]);
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('should record telemetry', async () => {
     const yesterday = moment().subtract(1, 'day');
     const yesterdayDBName = `${TELEMETRY_PREFIX}-${yesterday.format(DATE_FORMAT)}-${user.username}`;
