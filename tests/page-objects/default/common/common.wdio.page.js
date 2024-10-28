@@ -361,7 +361,7 @@ const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
     }
 
     await (await syncInProgress()).waitForDisplayed({ timeout, reverse: true });
-    await (await syncSuccess()).waitForDisplayed({ timeout: ELEMENT_DISPLAY_PAUSE });
+    await (await syncSuccess()).waitForDisplayed({ timeout });
   } catch (err) {
     console.error(err);
     await browser.takeScreenshot();
