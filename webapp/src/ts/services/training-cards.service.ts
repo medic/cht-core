@@ -11,6 +11,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-services/modal.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
+import { TranslateService } from '@ngx-translate/core';
 
 export const TRAINING_PREFIX: string = 'training:';
 
@@ -20,14 +21,15 @@ export const TRAINING_PREFIX: string = 'training:';
 export class TrainingCardsService {
   private readonly globalActions: GlobalActions;
   private readonly STORAGE_KEY_LAST_VIEWED_DATE = 'training-cards-last-viewed-date';
+  private trainingForms;
 
   constructor(
-    private store: Store,
-    private xmlFormsService: XmlFormsService,
-    private dbService: DbService,
-    private modalService: ModalService,
-    private sessionService: SessionService,
-    private routeSnapshotService: RouteSnapshotService,
+    private readonly store: Store,
+    private readonly xmlFormsService: XmlFormsService,
+    private readonly dbService: DbService,
+    private readonly modalService: ModalService,
+    private readonly sessionService: SessionService,
+    private readonly routeSnapshotService: RouteSnapshotService,
   ) {
     this.globalActions = new GlobalActions(this.store);
   }
@@ -36,8 +38,9 @@ export class TrainingCardsService {
     const today = moment();
 
     return xForms
-      .map(xForm => ({
+      ?.map(xForm => ({
         id: xForm._id,
+        title: xForm.translation_key || xForm.title,
         code: xForm.internalId,
         startDate: xForm.context?.start_date ? moment(xForm.context.start_date) : today.clone(),
         duration: xForm.context?.duration,
@@ -139,7 +142,10 @@ export class TrainingCardsService {
     this.xmlFormsService.subscribe(
       'TrainingCards',
       { trainingCards: true },
-      (error, xForms) => this.handleTrainingCards(error, xForms)
+      (error, xForms) => {
+        this.trainingForms = xForms;
+        this.handleTrainingCards(error, this.trainingForms);
+      }
     );
   }
 
@@ -181,5 +187,19 @@ export class TrainingCardsService {
     }
 
     return `${this.STORAGE_KEY_LAST_VIEWED_DATE}-${username}`;
+  }
+
+  public async getAllAvailableTrainings() {
+    const userCtx = this.sessionService.userCtx();
+    const trainingCards = this.getAvailableTrainingCards(this.trainingForms, userCtx) || [];
+    if (!trainingCards.length) {
+      return;
+    }
+
+    const completedTrainings = await this.getCompletedTrainings(userCtx);
+    return trainingCards.map(form => ({
+      ...form,
+      isCompletedTraining: completedTrainings.has(form.code),
+    }));
   }
 }

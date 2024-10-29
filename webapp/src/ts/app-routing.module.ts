@@ -11,6 +11,7 @@ import { routes as messagesRoutes } from '@mm-modules/messages/messages.routes';
 import { routes as contactsRoutes } from '@mm-modules/contacts/contacts.routes';
 import { routes as privacyPolicyRoutes } from '@mm-modules/privacy-policy/privacy-policy.routes';
 import { routes as tasksRoutes } from '@mm-modules/tasks/tasks.routes';
+import { routes as trainingRoutes } from '@mm-modules/trainings/trainings.routes';
 import { routes as testingRoutes } from '@mm-modules/testing/testing.routes';
 
 const routes: Routes = [
@@ -24,6 +25,7 @@ const routes: Routes = [
   ...privacyPolicyRoutes,
   ...tasksRoutes,
   ...testingRoutes,
+  ...trainingRoutes,
   ...errorRoutes,
 ];
 
