@@ -87,15 +87,15 @@ const performMenuAction = async (actionSelector) => {
 };
 
 const accessEditOption = async () => {
-  await performMenuAction(kebabMenuSelectors.edit);
+  await performMenuAction(kebabMenuSelectors.edit());
 };
 
 const accessDeleteOption = async () => {
-  await performMenuAction(kebabMenuSelectors.delete);
+  await performMenuAction(kebabMenuSelectors.delete());
 };
 
 const accessExportOption = async () => {
-  await performMenuAction(kebabMenuSelectors.export);
+  await performMenuAction(kebabMenuSelectors.export());
 };
 
 const accessReviewOption = async () => {
@@ -268,7 +268,7 @@ const isTargetMenuItemPresent = () => isElementPresent('=Target');
 
 const isTargetAggregatesMenuItemPresent = () => isElementPresent('=Target aggregates');
 
-const isMoreOptionsMenuPresent = () => isElementPresent(kebabMenuSelectors.moreOptionsMenu());
+const isMoreOptionsMenuPresent = async () => await (await kebabMenuSelectors.moreOptionsMenu()).isExisting();
 
 const navigateToLogoutModal = async () => {
   await openHamburgerMenu();
@@ -450,7 +450,8 @@ const getAllButtonLabelsNames = async () => {
 };
 
 const isMenuOptionEnabled = async (action) => {
-  return await (await kebabMenuSelectors[action]()).isEnabled();
+  const parent = await (await kebabMenuSelectors[action]()).parentElement().parentElement();
+  return !await parent.getAttribute('aria-disabled');
 };
 
 const isMenuOptionVisible = async (action) => {

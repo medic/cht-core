@@ -58,7 +58,7 @@ describe('More Options Menu - Offline User', () => {
   describe('Message tab', () => {
     it('should hide the kebab menu.', async () => {
       await sms.sendSms('testing', contact.phone);
-      expect(commonPage.isMoreOptionsMenuPresent()).to.be.false;
+      expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
     });
   });
 
@@ -93,7 +93,7 @@ describe('More Options Menu - Offline User', () => {
     it('should hide the \'export\' and \'edit\' options and ' +
       'enable the \'delete\' and \'review\' options when the sms report is opened', async () => {
       await commonPage.goToReports();
-      expect(commonPage.isMoreOptionsMenuPresent()).to.be.false;
+      expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
 
       await reportPage.goToReportById(smsReportId);
       await commonPage.openMoreOptionsMenu();

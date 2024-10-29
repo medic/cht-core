@@ -66,7 +66,7 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
     it('should hide the \'export\' option and ' +
       'enable the \'edit\', \'delete\' and \'review\' options when a report is opened', async () => {
       await commonPage.goToReports();
-      expect(commonPage.isMoreOptionsMenuPresent()).to.be.false;
+      expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
       (await reportPage.leftPanelSelectors.firstReport()).click();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
@@ -79,7 +79,7 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
       await commonPage.goToMessages();
       await commonPage.waitForLoaderToDisappear();
       expect(commonPage.isMessagesListPresent()).to.be.true;
-      expect(commonPage.isMoreOptionsMenuPresent()).to.be.false;
+      expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
     });
   });
 
