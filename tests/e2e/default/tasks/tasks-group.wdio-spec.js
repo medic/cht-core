@@ -1,5 +1,4 @@
 const path = require('path');
-
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
@@ -9,188 +8,148 @@ const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page'
 const chtConfUtils = require('@utils/cht-conf');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-
-const places = [
-  {
-    _id: 'fixture:district',
-    type: 'district_hospital',
-    name: 'District',
-    place_id: 'district',
-    reported_date: new Date().getTime(),
-  },
-  {
-    _id: 'fixture:center',
-    type: 'health_center',
-    name: 'Health Center',
-    parent: { _id: 'fixture:district' },
-    place_id: 'health_center',
-    reported_date: new Date().getTime(),
-  },
-];
-
-const clinics = [
-  {
-    _id: 'fixture:politicians',
-    type: 'clinic',
-    name: 'Politicians',
-    parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' } },
-    place_id: 'politicians',
-    reported_date: new Date().getTime(),
-  },
-  {
-    _id: 'fixture:artists',
-    type: 'clinic',
-    name: 'Artists',
-    parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' } },
-    place_id: 'artists',
-    reported_date: new Date().getTime(),
-  },
-  {
-    _id: 'fixture:scientists',
-    type: 'clinic',
-    name: 'Scientists',
-    parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' } },
-    place_id: 'scientists',
-    reported_date: new Date().getTime(),
-  },
-];
-
-const people = [
-  {
-    _id: 'fixture:einstein',
-    name: 'Albert Einstenin',
-    type: 'person',
-    patient_id: 'einstein',
-    parent: { _id: 'fixture:scientists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
-    reported_date: new Date().getTime(),
-  },
-  {
-    _id: 'fixture:darwin',
-    name: 'Charles Darwin',
-    type: 'person',
-    patient_id: 'darwin',
-    parent: { _id: 'fixture:scientists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
-    reported_date: new Date().getTime(),
-  },
-  {
-    _id: 'fixture:tesla',
-    name: 'Nikola Tesla',
-    type: 'person',
-    patient_id: 'tesla',
-    parent: { _id: 'fixture:scientists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
-    reported_date: new Date().getTime(),
-  },
-  {
-    _id: 'fixture:leonardo',
-    name: 'Leonardo da Vinci',
-    type: 'person',
-    patient_id: 'leonardo',
-    parent: { _id: 'fixture:artists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
-    reported_date: new Date().getTime(),
-  },
-  {
-    _id: 'fixture:goya',
-    name: 'Francisco Goya',
-    type: 'person',
-    patient_id: 'goya',
-    parent: { _id: 'fixture:artists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
-    reported_date: new Date().getTime(),
-  },
-  {
-    _id: 'fixture:mozart',
-    name: 'Wolfgang Amadeus Mozart',
-    type: 'person',
-    patient_id: 'mozart',
-    parent: { _id: 'fixture:artists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
-    reported_date: new Date().getTime(),
-  },
-  {
-    _id: 'fixture:napoleon',
-    name: 'Napoleon Bonaparte',
-    type: 'person',
-    patient_id: 'napoleon',
-    parent: { _id: 'fixture:politicians', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
-    reported_date: new Date().getTime(),
-  },
-  {
-    _id: 'fixture:caesar',
-    name: 'Julius Caesar',
-    type: 'person',
-    patient_id: 'caesar',
-    parent: { _id: 'fixture:politicians', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
-    reported_date: new Date().getTime(),
-  },
-  {
-    _id: 'fixture:victoria',
-    name: 'Queen Victoria',
-    type: 'person',
-    patient_id: 'victoria',
-    parent: { _id: 'fixture:politicians', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
-    reported_date: new Date().getTime(),
-  },
-];
-
-const chw = {
-  username: 'bob',
-  password: 'medic.123',
-  place: 'fixture:center',
-  contact: { _id: 'fixture:user:bob', name: 'Bob' },
-  roles: ['chw'],
-  known: true,
-};
-
-const supervisor = {
-  username: 'super',
-  password: 'medic.123',
-  place: 'fixture:center',
-  contact: { _id: 'fixture:user:super', name: 'Nemo' },
-  roles: ['chw_supervisor'],
-  known: true,
-};
-
-const getTaskNamesAndTitles = async (tasks) => {
-  const tasksNamesAndTitles = [];
-  for (const task of tasks) {
-    const { contactName, formTitle } = await tasksPage.getTaskInfo(task);
-    tasksNamesAndTitles.push({ contactName, formTitle });
-  }
-  return tasksNamesAndTitles;
-};
-
-const getGroupTasksNamesAndTitles = async () => {
-  const groupTasks = await tasksPage.getTasksInGroup();
-  return getTaskNamesAndTitles(groupTasks);
-};
-
-const expectTasksGroupLeaveModal = async () => {
-  await (await modalPage.body()).waitForClickable();
-  expect(await (await modalPage.body()).getText()).to.equal(
-    'Are you sure you want to leave this page? You will no longer be able to see this household\'s other tasks.'
-  );
-  // modals have an animation, so clicking immediately on any of the buttons, mid animation, might cause the click to
-  // land in a different place, instead of the button. So wait for the animation to finish...
-  await browser.pause(500);
-};
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const userFactory = require('@factories/cht/users/users');
 
 describe('Tasks group landing page', () => {
+  const todayDate = Date.now();
+
+  const places = placeFactory.generateHierarchy(['district_hospital', 'health_center']);
+  const healthCenter = places.get('health_center');
+
+  const politiciansClinic = placeFactory.place().build({
+    type: 'clinic',
+    name: 'Politicians',
+    parent: healthCenter,
+    reported_date: todayDate
+  });
+  const artistClinic = placeFactory.place().build({
+    type: 'clinic',
+    name: 'Artists',
+    parent: healthCenter,
+    reported_date: todayDate,
+  });
+  const scientistsClinic = placeFactory.place().build({
+    type: 'clinic',
+    name: 'Scientists',
+    parent: healthCenter,
+    reported_date: todayDate,
+  });
+
+  const people = [
+    personFactory.build({
+      name: 'Albert Einstein',
+      patient_id: 'einstein',
+      parent: scientistsClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Charles Darwin',
+      patient_id: 'darwin',
+      parent: scientistsClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Nikola Tesla',
+      patient_id: 'tesla',
+      parent: scientistsClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Leonardo da Vinci',
+      patient_id: 'leonardo',
+      parent: artistClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Francisco Goya',
+      patient_id: 'goya',
+      parent: artistClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Wolfgang Amadeus Mozart',
+      patient_id: 'mozart',
+      parent: artistClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Napoleon Bonaparte',
+      patient_id: 'napoleon',
+      parent: politiciansClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Julius Caesar',
+      patient_id: 'caesar',
+      parent: politiciansClinic,
+      reported_date: todayDate
+    }),
+    personFactory.build({
+      name: 'Queen Victoria',
+      patient_id: 'victoria',
+      parent: politiciansClinic,
+      reported_date: todayDate
+    }),
+  ];
+
+  const chw = userFactory.build({
+    username: 'bob',
+    place: healthCenter._id,
+    contact: { _id: 'fixture:user:bob', name: 'Bob' }
+  });
+
+  const supervisor = userFactory.build({
+    username: 'super',
+    place: healthCenter._id,
+    contact: { _id: 'fixture:user:super', name: 'Nemo' },
+    roles: ['chw_supervisor'],
+  });
+
+  const getTaskNamesAndTitles = async (tasks) => {
+    const tasksNamesAndTitles = [];
+    for (const task of tasks) {
+      const { contactName, formTitle } = await tasksPage.getTaskInfo(task);
+      tasksNamesAndTitles.push({ contactName, formTitle });
+    }
+    return tasksNamesAndTitles;
+  };
+
+  const getGroupTasksNamesAndTitles = async () => {
+    const groupTasks = await tasksPage.getTasksInGroup();
+    return getTaskNamesAndTitles(groupTasks);
+  };
+
+  const expectTasksGroupLeaveModal = async () => {
+    await (await modalPage.body()).waitForClickable();
+    expect(await (await modalPage.body()).getText()).to.equal(
+      'Are you sure you want to leave this page? You will no longer be able to see this household\'s other tasks.'
+    );
+    // modals have an animation, so clicking immediately on any of the buttons, mid animation, might cause the click to
+    // land in a different place, instead of the button. So wait for the animation to finish...
+    await browser.pause(500);
+  };
+
   before(async () => {
-    await utils.saveDocs([...places, ...clinics, ...people]);
+    await utils.saveDocs([...places.values(), politiciansClinic, artistClinic, scientistsClinic, ...people.values()]);
     await utils.createUsers([chw, supervisor]);
     await sentinelUtils.waitForSentinel();
 
-    await chtConfUtils.initializeConfigDir();
-
     const formsPath = path.join(__dirname, 'forms');
     await chtConfUtils.compileAndUploadAppForms(formsPath);
+    await tasksPage.compileTasks('tasks-group-config.js', false);
+  });
 
-    const tasksFilePath = path.join(__dirname, 'config/tasks-group-config.js');
-    const { tasks } = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
-    await utils.updateSettings({ tasks }, { ignoreReload: 'api' });
+  after(async () => {
+    await utils.deleteUsers([ chw, supervisor ]);
+    await utils.revertDb([/^form:/], true);
+    await utils.revertSettings(true);
   });
 
   describe('for chw', () => {
     before(async () => {
-      await loginPage.login({ username: chw.username, password: chw.password, loadPage: true });
+      await loginPage.login(chw);
     });
 
     after(async () => {
@@ -199,9 +158,9 @@ describe('Tasks group landing page', () => {
     });
 
     it('should have tasks', async () => {
-      await tasksPage.goToTasksTab();
+      await commonPage.goToTasks();
       const list = await tasksPage.getTasks();
-      expect(list.length).to.equal(people.length + clinics.length + 2);
+      expect(list.length).to.equal(people.length + 5);
     });
 
     it('should display tasks group landing page after task completion', async () => {
@@ -301,7 +260,7 @@ describe('Tasks group landing page', () => {
     });
 
     it('should not show page when there are no more household tasks', async () => {
-      await tasksPage.goToTasksTab();
+      await commonPage.goToTasks();
       await (await commonPage.waitForPageLoaded());
       await tasksPage.getTasks();
       const task = await tasksPage.getTaskByContactAndForm('Napoleon Bonaparte', 'person_create');
@@ -347,7 +306,7 @@ describe('Tasks group landing page', () => {
 
   describe('for supervisor', () => {
     before(async () => {
-      await loginPage.login({ username: supervisor.username, password: supervisor.password, loadPage: true });
+      await loginPage.login(supervisor);
     });
 
     after(async () => {
@@ -356,11 +315,11 @@ describe('Tasks group landing page', () => {
     });
 
     it('should have tasks', async () => {
-      await tasksPage.goToTasksTab();
+      await commonPage.goToTasks();
       const list = await tasksPage.getTasks();
       const taskNamesAndTitles = await getTaskNamesAndTitles(list);
       expect(taskNamesAndTitles).to.include.deep.members([
-        { contactName: 'Albert Einstenin', formTitle: 'person_create' },
+        { contactName: 'Albert Einstein', formTitle: 'person_create' },
         { contactName: 'Charles Darwin', formTitle: 'person_create' },
         { contactName: 'Nikola Tesla', formTitle: 'person_create' },
         { contactName: 'Scientists', formTitle: 'clinic_create' },
@@ -368,7 +327,7 @@ describe('Tasks group landing page', () => {
     });
 
     it('should not display task landing page after task completion', async () => {
-      const task = await tasksPage.getTaskByContactAndForm('Albert Einstenin', 'person_create');
+      const task = await tasksPage.getTaskByContactAndForm('Albert Einstein', 'person_create');
       await task.click();
 
       await tasksPage.waitForTaskContentLoaded('Home Visit');

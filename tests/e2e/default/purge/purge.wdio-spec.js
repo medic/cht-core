@@ -54,7 +54,15 @@ describe('purge', function() {
   });
 
   const updatePurgeSettings = async (purgeFn, revert) => {
-    const settings = { purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds', run_every_days: -1 } };
+    const permissions = await utils.getUpdatedPermissions(['chw'], [], ['can_view_tasks', 'can_view_analytics']);
+    const settings = {
+      purge: {
+        fn: purgeFn.toString(),
+        text_expression: 'every 1 seconds',
+        run_every_days: -1
+      },
+      permissions,
+    };
     await utils.updateSettings(settings, { revert: revert, ignoreReload: true });
   };
 

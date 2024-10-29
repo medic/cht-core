@@ -9,22 +9,27 @@ const mockEmission = assigned => Object.assign(
   { _id: '123', type: 'target', pass: true, contact: { _id: 'a', reported_date: 1 } },
   assigned
 );
+const calendarInterval = require('@medic/calendar-interval');
 
 describe('target-state', () => {
+  const interval = calendarInterval.getCurrent();
   afterEach(() => sinon.restore());
 
   it('empty settings doc yields empty state', () => {
     const state = targetState.createEmptyState([]);
-    expect(state).to.deep.eq({});
+    expect(state).to.deep.eq({ targets: {}, aggregate: {} });
   });
 
   it('an empty state', () => {
     const state = targetState.createEmptyState(mockTargets());
     expect(state).to.deep.eq({
-      target: {
-        emissions: {},
-        id: 'target',
+      targets: {
+        target: {
+          emissions: {},
+          id: 'target',
+        },
       },
+      aggregate: {}
     });
   });
 
@@ -32,14 +37,14 @@ describe('target-state', () => {
     const state = targetState.createEmptyState(mockTargets());
 
     targetState.storeTargetEmissions(state, ['a'], [mockEmission()]);
-    expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+    expect(targetState.aggregateStoredTargetEmissions(state, interval).aggregate.targets).to.deep.eq([{
       id: 'target',
       value: { pass: 1, total: 1 },
     }]);
 
     const another = mockEmission({ pass: false });
     targetState.storeTargetEmissions(state, ['a'], [another]);
-    expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+    expect(targetState.aggregateStoredTargetEmissions(state, interval).aggregate.targets).to.deep.eq([{
       id: 'target',
       value: { pass: 0, total: 1 },
     }]);
@@ -54,7 +59,7 @@ describe('target-state', () => {
   it('emission without contact is ignored', () => {
     const state = targetState.createEmptyState(mockTargets());
     targetState.storeTargetEmissions(state, ['a'], [mockEmission({ contact: undefined })]);
-    expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+    expect(targetState.aggregateStoredTargetEmissions(state, interval).aggregate.targets).to.deep.eq([{
       id: 'target',
       value: { pass: 0, total: 0 },
     }]);
@@ -63,7 +68,7 @@ describe('target-state', () => {
   it('deleted emission is ignored', () => {
     const state = targetState.createEmptyState(mockTargets());
     targetState.storeTargetEmissions(state, ['a'], [mockEmission({ deleted: true })]);
-    expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+    expect(targetState.aggregateStoredTargetEmissions(state, interval).aggregate.targets).to.deep.eq([{
       id: 'target',
       value: { pass: 0, total: 0 },
     }]);
@@ -73,7 +78,7 @@ describe('target-state', () => {
     const state = targetState.createEmptyState(mockTargets());
     targetState.storeTargetEmissions(state, ['a'], [mockEmission()]);
     targetState.storeTargetEmissions(state, ['a'], []);
-    expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+    expect(targetState.aggregateStoredTargetEmissions(state, interval).aggregate.targets).to.deep.eq([{
       id: 'target',
       value: { pass: 0, total: 0 },
     }]);
@@ -86,13 +91,13 @@ describe('target-state', () => {
       pass: false, contact: { _id: 'b', reported_date: 2 }
     })]);
 
-    expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+    expect(targetState.aggregateStoredTargetEmissions(state, interval).aggregate.targets).to.deep.eq([{
       id: 'target',
       value: { pass: 0, total: 1 },
     }]);
 
     targetState.storeTargetEmissions(state, ['b'], []);
-    expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+    expect(targetState.aggregateStoredTargetEmissions(state, interval).aggregate.targets).to.deep.eq([{
       id: 'target',
       value: { pass: 1, total: 1 },
     }]);
@@ -106,13 +111,13 @@ describe('target-state', () => {
     ]);
     targetState.storeTargetEmissions(state, ['c'], [mockEmission({ contact: { _id: 'c', reported_date: 3 } })]);
 
-    expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+    expect(targetState.aggregateStoredTargetEmissions(state, interval).aggregate.targets).to.deep.eq([{
       id: 'target',
       value: { pass: 1, total: 1 },
     }]);
 
     targetState.storeTargetEmissions(state, ['a', 'dne', 'b'], []);
-    expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+    expect(targetState.aggregateStoredTargetEmissions(state, interval).aggregate.targets).to.deep.eq([{
       id: 'target',
       value: { pass: 1, total: 1 },
     }]);
@@ -129,7 +134,7 @@ describe('target-state', () => {
       mockEmission({ pass: true, contact: { _id: 'b', reported_date: 2 } })
     ]);
 
-    expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+    expect(targetState.aggregateStoredTargetEmissions(state, interval).aggregate.targets).to.deep.eq([{
       id: 'target',
       type: 'percent',
       value: {
@@ -140,7 +145,7 @@ describe('target-state', () => {
     }]);
 
     targetState.storeTargetEmissions(state, ['b', 'a'], []);
-    expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+    expect(targetState.aggregateStoredTargetEmissions(state, interval).aggregate.targets).to.deep.eq([{
       id: 'target',
       type: 'percent',
       value: {
@@ -151,7 +156,7 @@ describe('target-state', () => {
     }]);
   });
 
-  it('instanceFilter isRelevant', () => {
+  it('custom filter interval', () => {
     const state = targetState.createEmptyState(mockTargets());
     targetState.storeTargetEmissions(state, [], [
       mockEmission({ pass: false, date: 1000, }),
@@ -159,13 +164,14 @@ describe('target-state', () => {
       mockEmission({ pass: true, date: 3000, _id: 'another' })
     ]);
 
-    expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+    const interval1 = { start: 1000, end: 3000 };
+    expect(targetState.aggregateStoredTargetEmissions(state, interval1).aggregate.targets).to.deep.eq([{
       id: 'target',
       value: { pass: 2, total: 3 },
     }]);
 
-    const instanceFilter = instance => instance.date === 2000;
-    expect(targetState.aggregateStoredTargetEmissions(state, instanceFilter)).to.deep.eq([{
+    const interval2 = { start: 2000, end: 2000 };
+    expect(targetState.aggregateStoredTargetEmissions(state, interval2).aggregate.targets).to.deep.eq([{
       id: 'target',
       value: { pass: 1, total: 1 },
     }]);
@@ -186,7 +192,7 @@ describe('target-state', () => {
         mockEmission({ _id: 'e', groupBy: '3', pass: false }),
         mockEmission({ _id: 'f', groupBy: '3', pass: true }),
       ]);
-      expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+      expect(targetState.aggregateStoredTargetEmissions(state, interval).aggregate.targets).to.deep.eq([{
         id: 'target',
         value: { pass: 1, total: 3 },
       }]);
@@ -204,7 +210,7 @@ describe('target-state', () => {
         mockEmission({ _id: 'b', groupBy: '2' }),
         mockEmission({ _id: 'c', groupBy: '1' }),
       ]);
-      expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([{
+      expect(targetState.aggregateStoredTargetEmissions(state, interval).aggregate.targets).to.deep.eq([{
         id: 'target',
         value: { pass: 0, total: 3 },
       }]);
@@ -222,7 +228,8 @@ describe('target-state', () => {
         mockEmission({ _id: 'b', groupBy: '2', date: 3000 }),
         mockEmission({ _id: 'c', groupBy: '1', date: 1000 }),
       ]);
-      expect(targetState.aggregateStoredTargetEmissions(state, emission => emission.date === 1000)).to.deep.eq([{
+      const interval = { start: 1000, end: 1000 };
+      expect(targetState.aggregateStoredTargetEmissions(state, interval).aggregate.targets).to.deep.eq([{
         id: 'target',
         value: { pass: 0, total: 2 },
       }]);
@@ -250,7 +257,7 @@ describe('target-state', () => {
         mockEmission({ _id: 'b', type: 'target2' }),
         mockEmission({ _id: 'c', type: 'target3' }),
       ]);
-      expect(targetState.aggregateStoredTargetEmissions(state)).to.deep.eq([
+      expect(targetState.aggregateStoredTargetEmissions(state, interval).aggregate.targets).to.deep.eq([
         {
           id: 'target1',
           value: { pass: 1, total: 1 },
@@ -266,6 +273,39 @@ describe('target-state', () => {
           visible: false,
         },
       ]);
+    });
+  });
+
+  describe('isStale', () => {
+    it('should return true if state is invalid', () => {
+      expect(targetState.isStale()).to.equal(true);
+      expect(targetState.isStale({})).to.equal(true);
+      expect(targetState.isStale({ oldTarget: { emissions: [] } })).to.equal(true);
+      expect(targetState.isStale({ targets: {} })).to.equal(true);
+      expect(targetState.isStale({ aggregate: {} })).to.equal(true);
+    });
+    
+    it('should return false if state is valid', () => {
+      expect(targetState.isStale({ targets: {}, aggregate: {} })).to.equal(false);
+    });
+  });
+
+  describe('migrateStaleState', () => {
+    it('should migrate on stale state', () => {
+      expect(targetState.migrateStaleState({ })).to.deep.equal( { targets: {}, aggregate: {} });
+      const targets = { t1: { emissions: [] }, t2: { emissions: [] } };
+      Object.freeze(targets);
+      expect(targetState.migrateStaleState(targets)).to.deep.equal({ targets, aggregate: {}});
+    });
+
+    it('should not migrate on not stale state', () => {
+      const state = {
+        targets: { t1: { emissions: [] }, t2: { emissions: [] } },
+        aggregate: { targets: [], filterInterval: {} },
+      };
+      Object.freeze(state);
+      Object.freeze(state.targets);
+      expect(targetState.migrateStaleState(state)).to.equal(state);
     });
   });
 });

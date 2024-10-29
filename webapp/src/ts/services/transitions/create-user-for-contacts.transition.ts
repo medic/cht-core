@@ -11,13 +11,18 @@ import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
   providedIn: 'root'
 })
 export class CreateUserForContactsTransition extends Transition {
+  private readonly getPlace: ReturnType<typeof Place.v1.get>;
+  private readonly getPerson: ReturnType<typeof Person.v1.get>;
+
   constructor(
-    private chtDatasourceService: CHTDatasourceService,
+    chtDatasourceService: CHTDatasourceService,
     private createUserForContactsService: CreateUserForContactsService,
     private extractLineageService: ExtractLineageService,
     private userContactService: UserContactService,
   ) {
     super();
+    this.getPlace = chtDatasourceService.bind(Place.v1.get);
+    this.getPerson = chtDatasourceService.bind(Person.v1.get);
   }
 
   readonly name = 'create_user_for_contacts';
@@ -133,8 +138,7 @@ export class CreateUserForContactsTransition extends Transition {
       return;
     }
 
-    const getPlace = await this.chtDatasourceService.bind(Place.v1.get);
-    return getPlace(Qualifier.byUuid(doc.parent._id));
+    return this.getPlace(Qualifier.byUuid(doc.parent._id));
   }
 
   private async getNewContact(docs: Doc[], newContactId: string) {
@@ -143,8 +147,7 @@ export class CreateUserForContactsTransition extends Transition {
       return newContact as Person.v1.Person;
     }
 
-    const getPerson = await this.chtDatasourceService.bind(Person.v1.get);
-    const person = await getPerson(Qualifier.byUuid(newContactId));
+    const person = await this.getPerson(Qualifier.byUuid(newContactId));
     if (!person) {
       throw new Error(`The new contact could not be found [${newContactId}].`);
     }

@@ -24,6 +24,7 @@ const initialState: GlobalState = {
   filters: {}, // Selected criteria to filter data.
   sidebarFilter: {},
   searchBar: { isOpen: false },
+  trainingCard: { formId: null, isOpen: false, showConfirmExit: false, nextUrl: null },
   sidebarMenu: { isOpen: false },
   forms: null,
   lastChangedDoc: false,
@@ -40,7 +41,6 @@ const initialState: GlobalState = {
   translationsLoaded: false,
   userFacilityIds: [],
   userContactId: null,
-  trainingCardFormId: null,
 };
 
 const setShowContent = (state, showContent) => {
@@ -164,14 +164,14 @@ const _globalReducer = createReducer(
     return { ...state, userFacilityIds };
   }),
   on(Actions.setUserContactId, (state, { payload: { userContactId }}) => ({ ...state, userContactId })),
-  on(Actions.setTrainingCardFormId, (state, { payload: { trainingCardFormId }}) => {
-    return { ...state, trainingCardFormId };
-  }),
   on(Actions.setSidebarMenu, (state, { payload: { sidebarMenu }}) => {
     return { ...state, sidebarMenu: { ...state.sidebarMenu, ...sidebarMenu } };
   }),
   on(Actions.setSearchBar, (state, { payload: { searchBar } }) => {
     return { ...state, searchBar: { ...state.searchBar, ...searchBar } };
+  }),
+  on(Actions.setTrainingCard, (state, { payload: { trainingCard } }) => {
+    return { ...state, trainingCard: { ...state.trainingCard, ...trainingCard } };
   }),
 );
 
@@ -189,6 +189,7 @@ export interface GlobalState {
   filters: Record<string, any>; // Selected criteria to filter data.
   sidebarFilter: SidebarFilterState;
   searchBar: SearchBarState;
+  trainingCard: TrainingCardState;
   sidebarMenu: SidebarMenuState;
   forms: null | Record<string, any>[];
   lastChangedDoc: boolean | Record<string, any>;
@@ -205,7 +206,6 @@ export interface GlobalState {
   translationsLoaded: boolean;
   userFacilityIds: null | string[];
   userContactId: null | string;
-  trainingCardFormId: null | string;
 }
 
 interface SidebarMenuState {
@@ -214,6 +214,13 @@ interface SidebarMenuState {
 
 interface SearchBarState {
   isOpen: boolean;
+}
+
+interface TrainingCardState {
+  formId: null | string;
+  isOpen: boolean;
+  showConfirmExit: boolean;
+  nextUrl: null|string;
 }
 
 interface SnackbarState {

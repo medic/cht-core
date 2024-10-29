@@ -43,17 +43,17 @@ describe('RapidPro SMS Gateway', () => {
 
   before(() => startMockApp());
 
-  after(() => {
-    stopMockApp();
-    utils.revertDb([/^form:/], true);
-  });
-
   beforeEach(() => {
     broadcastsEndpointRequests = [];
     messagesEndpointRequests = [];
   });
 
-  afterEach(() => utils.revertDb([/^form:/], true));
+  after(() => stopMockApp() );
+
+  afterEach(async () => {
+    await utils.revertDb([/^form:/], true);
+    await utils.revertSettings(true);
+  });
 
   describe('Webapp Terminating messages', () => {
     const endpoint = '/api/v2/sms/rapidpro/incoming-messages';
@@ -259,14 +259,8 @@ describe('RapidPro SMS Gateway', () => {
 
     const pregnancyReportWithTasks = pregnancyReportFactory.pregnancy().build({
       tasks: [
-        {
-          messages: [{ to: 'phone1', message: 'message1', uuid: 'uuid1' }],
-          state: 'pending',
-        },
-        {
-          messages: [{ to: 'phone2', message: 'message2', uuid: 'uuid2' }],
-          state: 'sent',
-        },
+        { messages: [{ to: 'phone1', message: 'message1', uuid: 'uuid1' }], state: 'pending' },
+        { messages: [{ to: 'phone2', message: 'message2', uuid: 'uuid2' }], state: 'sent' },
       ],
       scheduled_tasks: [
         {
@@ -287,6 +281,12 @@ describe('RapidPro SMS Gateway', () => {
           group: 3,
           type: 'ANC Reminders LMP',
         },
+        {
+          messages: [{ to: 'phone6', message: 'message6', uuid: 'uuid6' }],
+          state: 'pending',
+          group: 3,
+          type: 'ANC Reminders LMP',
+        },
       ]
     });
 
@@ -300,9 +300,6 @@ describe('RapidPro SMS Gateway', () => {
       await utils.updateSettings(settings, { ignoreReload: true });
     });
 
-    afterEach(() => utils.revertDb([], true));
-
-
     it('should not call RapidPro endpoint when credentials are not set', async () => {
       await utils.saveDoc(pregnancyReportWithTasks);
       await browser.pause(1200); // interval to check the queue should run every second
@@ -313,7 +310,7 @@ describe('RapidPro SMS Gateway', () => {
       await setOutgoingKey();
 
       await utils.saveDoc(pregnancyReportWithTasks);
-      await browser.waitUntil(() => broadcastsEndpointRequests.length === 4, 1200);
+      await browser.waitUntil(() => broadcastsEndpointRequests.length === 5, 1200);
 
       const bodies = broadcastsEndpointRequests
         .map(item => item[0])
@@ -323,16 +320,17 @@ describe('RapidPro SMS Gateway', () => {
       verifyPhoneAndMessage(bodies[1], 3);
       verifyPhoneAndMessage(bodies[2], 4);
       verifyPhoneAndMessage(bodies[3], 5);
+      verifyPhoneAndMessage(bodies[4], 6);
 
       const headers = broadcastsEndpointRequests.map(item => item[1]);
-      expect(headers.length).to.equal(4);
+      expect(headers.length).to.equal(5);
       headers.forEach(header => expect(header.authorization).to.equal(`Token ${OUTGOING_KEY}`));
     });
 
     it('should set correct states from broadcast api', async () => {
       await setOutgoingKey();
 
-      const statuses = ['queued', '', 'queued', 'sent', 'failed'];
+      const statuses = ['queued', '', 'queued', 'sent', 'failed', undefined];
       broadcastsResult = (req, res) => {
         const idx = req.body.text.replace('message', '');
         res.json({
@@ -343,7 +341,7 @@ describe('RapidPro SMS Gateway', () => {
 
       const { rev } = await utils.saveDoc(pregnancyReportWithTasks);
       const revNumber = parseInt(rev);
-      await browser.waitUntil(() => broadcastsEndpointRequests.length === 4, 1200);
+      await browser.waitUntil(() => broadcastsEndpointRequests.length === 5, 1200);
       await utils.waitForDocRev([{ id: pregnancyReportWithTasks._id, rev: revNumber + 1 }]);
 
       const report = await utils.getDoc(pregnancyReportWithTasks._id);
@@ -352,6 +350,7 @@ describe('RapidPro SMS Gateway', () => {
       verifyGatewayRefAndState(report.scheduled_tasks[0], 'broadcast3', 'received-by-gateway');
       verifyGatewayRefAndState(report.scheduled_tasks[1], 'broadcast4', 'sent');
       verifyGatewayRefAndState(report.scheduled_tasks[2], 'broadcast5', 'failed');
+      verifyGatewayRefAndState(report.scheduled_tasks[3], 'broadcast6', 'received-by-gateway');
     });
 
     it('should update the states correctly from messages api', async () => {
@@ -588,4 +587,3 @@ describe('RapidPro SMS Gateway', () => {
   }); //End describe 'Webapp originating messages and state updates'
 
 });
-

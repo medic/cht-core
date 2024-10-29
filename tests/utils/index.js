@@ -655,6 +655,22 @@ const deleteLocalDocs = async () => {
 
 const hasModal = () => $('#update-available').isDisplayed();
 
+const getDefaultForms = async () => {
+  const docName = '_local/default-forms';
+  try {
+    const doc = await db.get(docName);
+    return doc.forms;
+  } catch {
+    const result = await db.allDocs({ startkey: 'form:', endkey: 'form:\ufff0' });
+    const doc = {
+      _id: docName,
+      forms: result.rows.map(row => row.id),
+    };
+    await db.put(doc);
+    return doc.forms;
+  }
+};
+
 const setUserContactDoc = (attempt = 0) => {
   const {
     USER_CONTACT_ID: docId,
@@ -1254,6 +1270,7 @@ const prepK3DServices = async (defaultSettings) => {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
+  await runAndLogApiStartupMessage('Getting default forms', getDefaultForms);
 };
 
 const prepServices = async (defaultSettings) => {
@@ -1269,6 +1286,7 @@ const prepServices = async (defaultSettings) => {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
+  await runAndLogApiStartupMessage('Getting default forms', getDefaultForms);
 };
 
 const getLogs = (container) => {
@@ -1621,4 +1639,5 @@ module.exports = {
   isK3D,
   stopCouchDb,
   startCouchDb,
+  getDefaultForms,
 };
