@@ -17,7 +17,7 @@ describe('Create user when adding contact', () => {
 
   const district = utils.deepFreeze( placeFactory.place().build({ type: 'district_hospital' }) );
 
-  const setSettings = (create_user_for_contacts) => utils.deepFreeze({
+  const createSettings = (create_user_for_contacts) => utils.deepFreeze({
     transitions: { create_user_for_contacts },
     token_login: { enabled: true },
     app_url: BASE_URL
@@ -85,7 +85,7 @@ describe('Create user when adding contact', () => {
   it('Creates a new user while offline', async () => {
     await utils.createUsers([offlineUser]);
     NEW_USERS.push(offlineUser.username);
-    await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
+    await utils.updateSettings(createSettings(true), {ignoreReload: 'sentinel'});
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
     await browser.throttle('offline');
@@ -97,7 +97,7 @@ describe('Create user when adding contact', () => {
   });
 
   it('creates a new user while online', async () => {
-    await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
+    await utils.updateSettings(createSettings(true), {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
     await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' });
@@ -105,7 +105,7 @@ describe('Create user when adding contact', () => {
   });
 
   it('Creates a new user when adding a person while adding a place', async () => {
-    await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
+    await utils.updateSettings(createSettings(true), {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
     await contactsPage.addPlace({
@@ -119,7 +119,7 @@ describe('Create user when adding contact', () => {
   });
 
   it('Does not create a new user when the transition is disabled', async () => {
-    await utils.updateSettings(setSettings(false), 'sentinel');
+    await utils.updateSettings(createSettings(false), 'sentinel');
     await cookieLogin();
     await commonPage.goToPeople(district._id);
     await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' });
@@ -128,7 +128,7 @@ describe('Create user when adding contact', () => {
   });
 
   it('creates a new user when contact is added from app form', async () => {
-    await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
+    await utils.updateSettings(createSettings(true), {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
     await createUserForContactsPage.submitAddChwForm({ name: CONTACT_NAME });
@@ -137,7 +137,7 @@ describe('Create user when adding contact', () => {
   });
 
   it('Does not create a new user when the transition fails', async () => {
-    await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
+    await utils.updateSettings(createSettings(true), {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
     // Add contact with invalid phone number
@@ -147,7 +147,7 @@ describe('Create user when adding contact', () => {
   });
 
   it('Does not create a new user when editing contact', async () => {
-    await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
+    await utils.updateSettings(createSettings(true), {ignoreReload: 'sentinel'});
     await cookieLogin();
     await commonPage.goToPeople(district._id);
     // Add contact with invalid phone number
@@ -165,7 +165,7 @@ describe('Create user when adding contact', () => {
   });
 
   it('creates a new user when Sentinel recovers from outage', async () => {
-    await utils.updateSettings(setSettings(true), {ignoreReload: 'sentinel'});
+    await utils.updateSettings(createSettings(true), {ignoreReload: 'sentinel'});
     await utils.stopSentinel();
     await cookieLogin();
     await commonPage.goToPeople(district._id);

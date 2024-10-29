@@ -1,6 +1,7 @@
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const utils = require('@utils');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 const tabSelectors = {
   unreadCount: () => $('#reports-tab .mm-badge'),
@@ -124,6 +125,8 @@ const setBikDateInput = async (name, date) => {
   await (await dateWidget.$('.dropdown-toggle')).click();
   await (await (await dateWidget.$$('.dropdown-menu li'))[date.month - 1]).click();
   await (await dateWidget.$('input[name="year"]')).setValue(date.year);
+  //To close the date widget
+  await genericForm.formTitle().click();
 };
 
 const getElementText = async (element) => {

@@ -111,14 +111,12 @@ describe('Bikram Sambat date display', () => {
     const dateBk1 = bikramSambat.toBik_text(date1);
 
     await commonEnketoPage.setDateValue('Date 1', date1);
-    await genericForm.formTitle().click();
     expect(await commonEnketoPage.getInputValue('to-bikram-sambat([date 1 path])')).to.equal(dateBk1);
 
     const date2 = '2021-02-02';
     const dateBk2 = bikramSambat.toBik_text(date2);
 
     await reportsPage.setBikDateInput('/bikram-sambat-dates/data/date2', bikramSambat.toBik(date2));
-    await genericForm.formTitle().click();
     expect(await commonEnketoPage.getInputValue('to-bikram-sambat([date 2 path])')).to.equal(dateBk2);
 
     await commonEnketoPage.validateSummaryReport([dateBk1, dateBk2]);
@@ -136,14 +134,12 @@ describe('Bikram Sambat date display', () => {
     const dateBk1 = bikramSambat.toBik_text(date1);
 
     await reportsPage.setBikDateInput('/bikram-sambat-dates/data/date1', bikramSambat.toBik(date1));
-    await genericForm.formTitle().click();
     expect(await commonEnketoPage.getInputValue('to-bikram-sambat([date 1 path])')).to.equal(dateBk1);
 
     const date2 = '2021-02-02';
     const dateBk2 = bikramSambat.toBik_text(date2);
 
     await reportsPage.setBikDateInput('/bikram-sambat-dates/data/date2', bikramSambat.toBik(date2));
-    await genericForm.formTitle().click();
     expect(await commonEnketoPage.getInputValue('to-bikram-sambat([date 2 path])')).to.equal(dateBk2);
 
     await commonEnketoPage.validateSummaryReport([dateBk1, dateBk2]);

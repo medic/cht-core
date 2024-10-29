@@ -58,6 +58,8 @@ const setInputValue = async (question, value) => {
 
 const setDateValue = async (question, value) => {
   await setValue('input.ignore.input-small', question, value);
+  //To close the date widget
+  await formTitle().click();
 };
 
 const setTextareaValue = async (question, value) => {
