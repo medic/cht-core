@@ -3,7 +3,6 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const personFactory = require('@factories/cht/contacts/person');
 const { expect } = require('chai');
