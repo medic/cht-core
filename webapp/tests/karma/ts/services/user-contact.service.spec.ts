@@ -10,15 +10,17 @@ import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 describe('UserContact service', () => {
   let service: UserContactService;
   let getPerson;
+  let getPersonWithLineage;
   let bind;
   let UserSettings;
 
   beforeEach(() => {
     UserSettings = sinon.stub();
     getPerson = sinon.stub();
-    bind = sinon
-      .stub()
-      .returns(getPerson);
+    getPersonWithLineage = sinon.stub();
+    bind = sinon.stub();
+    bind.withArgs(Person.v1.get).returns(getPerson);
+    bind.withArgs(Person.v1.getWithLineage).returns(getPersonWithLineage);
 
     TestBed.configureTestingModule({
       providers: [
@@ -30,6 +32,7 @@ describe('UserContact service', () => {
   });
 
   afterEach(() => {
+    expect(bind.args).to.deep.equal([[Person.v1.get], [Person.v1.getWithLineage]]);
     expect(UserSettings.callCount).to.equal(1);
     sinon.restore();
   });
@@ -39,8 +42,8 @@ describe('UserContact service', () => {
 
     await expect(service.get()).to.be.rejectedWith('boom');
 
-    expect(bind.notCalled).to.be.true;
     expect(getPerson.notCalled).to.be.true;
+    expect(getPersonWithLineage.notCalled).to.be.true;
   });
 
   it('returns null when no configured contact', async () => {
@@ -49,8 +52,8 @@ describe('UserContact service', () => {
     const userContact = await service.get();
 
     expect(userContact).to.be.null;
-    expect(bind.notCalled).to.be.true;
     expect(getPerson.notCalled).to.be.true;
+    expect(getPersonWithLineage.notCalled).to.be.true;
   });
 
   it('returns null when user settings not in the database', async () => {
@@ -59,41 +62,41 @@ describe('UserContact service', () => {
     const userContact = await service.get();
 
     expect(userContact).to.be.null;
-    expect(bind.notCalled).to.be.true;
     expect(getPerson.notCalled).to.be.true;
+    expect(getPersonWithLineage.notCalled).to.be.true;
   });
 
   it('returns null when configured contact not in the database', async () => {
     UserSettings.resolves({ contact_id: 'not-found' });
-    getPerson.resolves(null);
+    getPersonWithLineage.resolves(null);
 
     const userContact = await service.get();
 
     expect(userContact).to.be.null;
-    expect(bind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true;
-    expect(getPerson.calledOnceWithExactly(Qualifier.byUuid('not-found'))).to.be.true;
+    expect(getPerson.notCalled).to.be.true;
+    expect(getPersonWithLineage.calledOnceWithExactly(Qualifier.byUuid('not-found'))).to.be.true;
   });
 
   it('returns error from getting contact', async () => {
     UserSettings.resolves({ contact_id: 'nobody' });
-    getPerson.rejects(new Error('boom'));
+    getPersonWithLineage.rejects(new Error('boom'));
 
     await expect(service.get()).to.be.rejectedWith('boom');
 
-    expect(bind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true;
-    expect(getPerson.calledOnceWithExactly(Qualifier.byUuid('nobody'))).to.be.true;
+    expect(getPerson.notCalled).to.be.true;
+    expect(getPersonWithLineage.calledOnceWithExactly(Qualifier.byUuid('nobody'))).to.be.true;
   });
 
   it('returns contact with lineage', async () => {
     const expected = { _id: 'somebody', name: 'Some Body' };
     UserSettings.resolves({ contact_id: 'somebody' });
-    getPerson.resolves(expected);
+    getPersonWithLineage.resolves(expected);
 
     const actual = await service.get();
 
     expect(actual).to.equal(expected);
-    expect(bind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true;
-    expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(expected._id))).to.be.true;
+    expect(getPerson.notCalled).to.be.true;
+    expect(getPersonWithLineage.calledOnceWithExactly(Qualifier.byUuid(expected._id))).to.be.true;
   });
 
   it('returns contact without lineage', async () => {
@@ -104,7 +107,7 @@ describe('UserContact service', () => {
     const actual = await service.get({ hydrateLineage: false });
 
     expect(actual).to.equal(expected);
-    expect(bind.calledOnceWithExactly(Person.v1.get)).to.be.true;
     expect(getPerson.calledOnceWithExactly(Qualifier.byUuid(expected._id))).to.be.true;
+    expect(getPersonWithLineage.notCalled).to.be.true;
   });
 });
