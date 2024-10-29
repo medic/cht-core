@@ -291,6 +291,7 @@ app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
 app.get(routePrefix + 'login/token/:token?', login.tokenGet);
 app.get(routePrefix + 'password-reset', login.passwordResetGet);
+app.postJson(routePrefix + 'password-reset', login.passwordResetPost);
 app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
 app.get(routePrefix + 'privacy-policy', privacyPolicyController.get);
 

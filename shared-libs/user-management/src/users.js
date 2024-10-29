@@ -199,7 +199,7 @@ const validateNewUsername = username => {
 };
 
 const createUser = (data, response) => {
-  const user = getUserUpdates(data.username, data);
+  const user = getUserUpdates(data.username, data, false);
   user._id = createID(data.username);
   return db.users.put(user).then(body => {
     response.user = {
@@ -452,13 +452,17 @@ const getSettingsUpdates = (username, data) => {
   return settings;
 };
 
-const getUserUpdates = (username, data) => {
+const getUserUpdates = (username, data, isUserInitiated = false) => {
   const ignore = ['type', 'place', 'contact'];
 
   const user = {
     name: username,
     type: 'user'
   };
+
+  if (data.password && !isUserInitiated) {
+    user.password_change_required = true;
+  }
 
   USER_EDITABLE_FIELDS.forEach(key => {
     if (!_.isUndefined(data[key]) && ignore.indexOf(key) === -1) {
@@ -542,11 +546,11 @@ const missingFields = data => {
   return required.filter(prop => isInvalidProp(prop));
 };
 
-const getUpdatedUserDoc = async (username, data) => getUserDoc(username, 'users')
+const getUpdatedUserDoc = async (username, data, fullAccess) => getUserDoc(username, 'users')
   .then(doc => {
     return {
       ...doc,
-      ...getUserUpdates(username, data),
+      ...getUserUpdates(username, data, !fullAccess),
       _id: createID(username)
     };
   });

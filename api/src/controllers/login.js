@@ -54,17 +54,26 @@ const templates = {
   passwordReset: {
     file: path.join(__dirname, '..', 'templates', 'login', 'password-reset.html'),
     translationStrings: [
-      'login',
-      'Password',
-      'privacy.policy'
+      'login.show_password',
+      'login.hide_password',
+      'change.password.title',
+      'change.password',
+      'change.password.hint',
+      'change.password.submit',
+      'change.password.new.password',
+      'change.password.confirm.password',
+      'password.weak',
+      'password.length.minimum',
+      'Passwords must match'
     ],
   }
 };
 
-let password_change_required = true;
-
-const checkPasswordChange = async (userCtx) => {
-  return await auth.hasAllPermissions(userCtx, 'can_change_password_first_login');
+const skipPasswordChange = async (userCtx) => {
+  if (roles.isDbAdmin(userCtx)) {
+    return true;
+  }
+  return await auth.hasAllPermissions(userCtx, 'can_skip_password_change');
 };
 
 const getHomeUrl = userCtx => {
@@ -316,7 +325,7 @@ const renderLogin = (req) => {
 
 const renderPasswordReset = (req) => {
   return render('passwordReset', req);
-}
+};
 
 const login = async (req, res) => {
   try {
@@ -329,10 +338,12 @@ const login = async (req, res) => {
     const userCtx = await getUserCtxRetry(options);
     await setCookies(req, res, sessionRes);
 
-    const needsPasswordChange = await checkPasswordChange(userCtx);
-    if (needsPasswordChange && password_change_required) {
+    const user = await db.users.get(`org.couchdb.user:${userCtx.name}`);
+
+    if (!(await skipPasswordChange(userCtx)) && user.password_change_required){
       return res.status(302).send('/medic/password-reset');
     }
+
     const redirectUrl = getRedirectUrl(userCtx, req.body.redirect);
     res.status(302).send(redirectUrl);
   } catch (e) {
@@ -355,6 +366,7 @@ module.exports = {
           'Link',
           '</login/style.css>; rel=preload; as=style, '
           + '</login/script.js>; rel=preload; as=script, '
+          + '</login/auth-utils.js>; rel=preload; as=script, '
           + '</login/lib-bowser.js>; rel=preload; as=script'
         );
         res.send(body);
@@ -384,14 +396,42 @@ module.exports = {
 
   passwordResetGet: (req, res, next) => {
     return renderPasswordReset(req)
-        .then(body => {
-          res.setHeader(
-              'Link',
-              '</login/style.css>; rel=preload; as=style, '
-          );
-          res.send(body);
-        })
-        .catch(next);
+      .then(body => {
+        res.setHeader(
+          'Link',
+          '</login/style.css>; rel=preload; as=style, '
+              + '</login/auth-utils.js>; rel=preload; as=script, '
+              + '</login/password-reset.js>; rel=preload; as=script'
+        );
+        res.send(body);
+      })
+      .catch(next);
+  },
+  passwordResetPost: async (req, res) => {
+    try {
+      const userCtx = await auth.getUserCtx(req);
+      const user = await db.users.get(`org.couchdb.user:${userCtx.name}`);
+      user.password = req.body.password;
+      user.password_change_required = false;
+
+      await db.users.put(user);
+
+      req.body = {
+        ...req.body,
+        user: user.name,
+        password: req.body.password,
+        locale: req.body.locale,
+      };
+
+      const sessionRes = await createSessionRetry(req);
+      await setCookies(req, res, sessionRes);
+
+      const redirectUrl = getRedirectUrl(userCtx, req.body.redirect);
+      res.status(302).send(redirectUrl);
+    } catch (err) {
+      logger.error('Error updating password: %o', err);
+      res.status(500).json({ error: 'Error updating password' });
+    }
   },
   tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),
   tokenPost: async (req, res, next) => {
