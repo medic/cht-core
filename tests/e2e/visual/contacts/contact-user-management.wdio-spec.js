@@ -57,8 +57,7 @@ describe('Contact and User Management', () => {
   });
 
   describe('Contact and user overview', () => {
-    it('should show contacts list, search, profiles (person and family), '+
-      'contact summary', async function() {
+    it('should show contacts list, search, profiles (person and family), contact summary', async () => {
       await commonPage.goToPeople();
       expect(await commonPage.isPeopleListPresent()).to.be.true;
       await generateScreenshot('people', 'list');
