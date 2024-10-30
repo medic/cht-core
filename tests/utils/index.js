@@ -690,11 +690,13 @@ const setUserContactDoc = (attempt = 0) => {
     });
 };
 
+const deleteDb = async (dbName) => await request({ method: 'DELETE', path: `/${dbName}` });
+
 const deleteMetaDbs = async () => {
   const allDbs = await request({ path: '/_all_dbs' });
   const metaDbs = allDbs.filter(db => db.endsWith('-meta') && !db.endsWith('-users-meta'));
   for (const metaDb of metaDbs) {
-    await request({ method: 'DELETE', path: `/${metaDb}` });
+    await deleteDb(metaDb);
   }
 };
 
@@ -1594,6 +1596,7 @@ module.exports = {
   revertSettings,
   seedTestData,
   revertDb,
+  deleteDb,
   getOrigin,
   getBaseUrl,
   getAdminBaseUrl,

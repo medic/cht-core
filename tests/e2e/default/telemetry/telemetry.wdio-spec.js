@@ -16,9 +16,6 @@ const fs = require('fs');
 const { BRANCH, TAG } = process.env;
 
 describe('Telemetry', () => {
-  const DATE_FORMAT = 'YYYY-MM-DD';
-  const TELEMETRY_PREFIX = 'telemetry';
-
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
   const patient = personFactory.build({
@@ -53,7 +50,13 @@ describe('Telemetry', () => {
   });
   let reportDocs;
 
+  const DATE_FORMAT = 'YYYY-MM-DD';
+  const TELEMETRY_PREFIX = 'telemetry';
+  const todayDBName = `${TELEMETRY_PREFIX}-${moment().format(DATE_FORMAT)}-${user.username}`;
+
   before(async () => {
+    await utils.deleteDb(todayDBName);
+
     const selectContactTelemetryForm = utils.deepFreeze({
       _id: 'form:select_contact_telemetry',
       internalId: 'select_contact_telemetry',
@@ -121,7 +124,6 @@ describe('Telemetry', () => {
 
   describe('search matches telemetry', () => {
     const getTelemetryEntryByKey = async (key) => {
-      const todayDBName = `${TELEMETRY_PREFIX}-${moment().format(DATE_FORMAT)}-${user.username}`;
       const todayTelemetryDocs = await browser.execute(async (dbName) => {
         // eslint-disable-next-line no-undef
         const docs = await window.PouchDB(dbName).allDocs({ include_docs: true });
