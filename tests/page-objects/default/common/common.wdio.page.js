@@ -204,10 +204,9 @@ const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
     await (await hamburgerMenu()).waitForClickable();
     await (await hamburgerMenu()).click();
+    // Adding pause here as we have to wait for sidebar nav menu animation to load
+    await browser.pause(500);
   }
-
-  // Adding pause here as we have to wait for sidebar nav menu animation to load
-  await browser.pause(500);
   await (await sideBarMenuTitle()).waitForDisplayed();
 };
 
