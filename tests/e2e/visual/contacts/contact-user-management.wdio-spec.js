@@ -18,7 +18,7 @@ describe('Contact and User Management', () => {
       contactSummaryExtras: contactSummaryExtrasFile
     });
     await utils.updateSettings(
-      { contact_summary: contactSummary},
+      { contact_summary: contactSummary },
       { revert: true, ignoreReload: true, refresh: true, sync: true }
     );
     await commonPage.waitForPageLoaded();
