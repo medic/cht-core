@@ -1,26 +1,26 @@
-import { AfterViewInit, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
 import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
-import { TrainingCardsService } from '@mm-services/training-cards.service';
+import { TrainingCardsService, TrainingMaterial } from '@mm-services/training-cards.service';
+import { Selectors } from '@mm-selectors/index';
 
 // const PAGE_SIZE = 50; // ToDo -- add pagination
 
 @Component({
   templateUrl: './trainings.component.html'
 })
-export class TrainingsComponent implements AfterViewInit, OnDestroy {
+export class TrainingsComponent implements OnInit, OnDestroy {
   private globalActions: GlobalActions;
   private trackInitialLoadPerformance;
 
-  subscription: Subscription = new Subscription();
-  trainingList = null;
+  subscriptions: Subscription = new Subscription();
+  trainingList: TrainingMaterial[] | null | undefined = null;
   error = false;
   moreTrainings = false;
-  hasTrainings = false;
   loading = true;
 
   constructor(
@@ -32,19 +32,25 @@ export class TrainingsComponent implements AfterViewInit, OnDestroy {
     this.globalActions = new GlobalActions(this.store);
   }
 
-  ngAfterViewInit() {
+  ngOnInit() {
     this.trackInitialLoadPerformance = this.performanceService.track();
-    this.getTrainings();
+    this.subscribeToStore();
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    this.subscriptions.unsubscribe();
     this.globalActions.unsetSelected();
   }
 
-  async getTrainings() {
-    this.trainingList = await this.trainingCardsService.getAllAvailableTrainings();
-    console.warn(this.trainingList);
+  private subscribeToStore() {
+    const trainingSubscription = this.store
+      .select(Selectors.getTrainingMaterials)
+      .subscribe(forms => this.getTrainings(forms));
+    this.subscriptions.add(trainingSubscription);
+  }
+
+  async getTrainings(forms) {
+    this.trainingList = await this.trainingCardsService.getAllAvailableTrainings(forms);
     this.loading = false;
     await this.recordInitialLoadPerformance();
   }

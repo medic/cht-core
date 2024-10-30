@@ -21,7 +21,6 @@ export const TRAINING_PREFIX: string = 'training:';
 export class TrainingCardsService {
   private readonly globalActions: GlobalActions;
   private readonly STORAGE_KEY_LAST_VIEWED_DATE = 'training-cards-last-viewed-date';
-  private trainingForms;
 
   constructor(
     private readonly store: Store,
@@ -83,12 +82,7 @@ export class TrainingCardsService {
     return docs?.rows?.length ? new Set(docs.rows.map(row => row?.doc?.form)) : new Set();
   }
 
-  private async handleTrainingCards(error, xForms) {
-    if (error) {
-      console.error('Training Cards :: Error fetching forms.', error);
-      return;
-    }
-
+  private async handleTrainingCards(xForms) {
     try {
       const firstChronologicalTrainingCard = await this.getFirstChronologicalForm(xForms);
       if (!firstChronologicalTrainingCard) {
@@ -143,8 +137,12 @@ export class TrainingCardsService {
       'TrainingCards',
       { trainingCards: true },
       (error, xForms) => {
-        this.trainingForms = xForms;
-        this.handleTrainingCards(error, this.trainingForms);
+        if (error) {
+          console.error('Training Cards :: Error fetching forms.', error);
+          return;
+        }
+        this.globalActions.setTrainingMaterials(xForms);
+        this.handleTrainingCards(xForms);
       }
     );
   }
@@ -189,9 +187,9 @@ export class TrainingCardsService {
     return `${this.STORAGE_KEY_LAST_VIEWED_DATE}-${username}`;
   }
 
-  public async getAllAvailableTrainings() {
+  public async getAllAvailableTrainings(xForms): Promise<TrainingMaterial[] | undefined> {
     const userCtx = this.sessionService.userCtx();
-    const trainingCards = this.getAvailableTrainingCards(this.trainingForms, userCtx) || [];
+    const trainingCards = this.getAvailableTrainingCards(xForms, userCtx) || [];
     if (!trainingCards.length) {
       return;
     }
@@ -199,7 +197,19 @@ export class TrainingCardsService {
     const completedTrainings = await this.getCompletedTrainings(userCtx);
     return trainingCards.map(form => ({
       ...form,
+      selected: false,
       isCompletedTraining: completedTrainings.has(form.code),
     }));
   }
+}
+
+export interface TrainingMaterial {
+  id: string;
+  title: string;
+  code: string;
+  startDate: Date;
+  duration: number;
+  userRoles: string[];
+  selected: boolean;
+  isCompletedTraining: boolean;
 }

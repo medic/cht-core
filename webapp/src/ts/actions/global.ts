@@ -11,6 +11,7 @@ export const Actions = {
   setLoadingContent: createSingleValueAction('SET_LOADING_CONTENT', 'loadingContent'),
   setShowContent: createSingleValueAction('SET_SHOW_CONTENT', 'showContent'),
   setForms: createSingleValueAction('SET_FORMS', 'forms'),
+  setTrainingMaterials: createSingleValueAction('SET_TRAINING_MATERIALS', 'trainingMaterials'),
   clearFilters: createSingleValueAction('CLEAR_FILTERS', 'skip'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
   setSidebarFilter: createSingleValueAction('SET_SIDEBAR_FILTER', 'sidebarFilter'),
@@ -69,6 +70,10 @@ export class GlobalActions {
 
   setForms(forms) {
     return this.store.dispatch(Actions.setForms(forms));
+  }
+
+  setTrainingMaterials(trainingMaterials) {
+    return this.store.dispatch(Actions.setTrainingMaterials(trainingMaterials));
   }
 
   setShowContent(showContent) {
