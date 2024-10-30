@@ -197,8 +197,7 @@ export class Select2SearchService {
           this.setDoc(selectEl, doc);
           selectEl.trigger('change');
 
-          // fire and forget, we're not interested in when it resolves
-          this.recordSearchTelemetry(doc, search, types);
+          void this.recordSearchTelemetry(doc, search, types);
         } catch (error) {
           console.error('Select2 failed to get document', error);
         }
