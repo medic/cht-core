@@ -55,8 +55,6 @@ describe('Telemetry', () => {
   const todayDBName = `${TELEMETRY_PREFIX}-${moment().format(DATE_FORMAT)}-${user.username}`;
 
   before(async () => {
-    await utils.deleteDb(todayDBName);
-
     const selectContactTelemetryForm = utils.deepFreeze({
       _id: 'form:select_contact_telemetry',
       internalId: 'select_contact_telemetry',
@@ -123,6 +121,11 @@ describe('Telemetry', () => {
   });
 
   describe('search matches telemetry', () => {
+    afterEach(async () => {
+      // eslint-disable-next-line no-undef
+      await browser.execute((dbName) => window.PouchDB(dbName).destroy(), todayDBName);
+    });
+
     const getTelemetryEntryByKey = async (key) => {
       const todayTelemetryDocs = await browser.execute(async (dbName) => {
         // eslint-disable-next-line no-undef
