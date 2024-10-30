@@ -17,6 +17,10 @@ const translations = require('../translations');
 const template = require('../services/template');
 const rateLimitService = require('../services/rate-limit');
 const serverUtils = require('../server-utils');
+const passwordTester = require('simple-password-tester');
+
+const PASSWORD_MINIMUM_LENGTH = 8;
+const PASSWORD_MINIMUM_SCORE = 50;
 
 const templates = {
   login: {
@@ -62,6 +66,7 @@ const templates = {
       'change.password.submit',
       'change.password.new.password',
       'change.password.confirm.password',
+      'change.password.required',
       'password.weak',
       'password.length.minimum',
       'Passwords must match'
@@ -327,6 +332,30 @@ const renderPasswordReset = (req) => {
   return render('passwordReset', req);
 };
 
+const validatePassword = (password, confirmPassword) => {
+  if (!password || !confirmPassword) {
+    return { isValid: false, error: 'required'};
+  }
+
+  if (password.length < PASSWORD_MINIMUM_LENGTH) {
+    return {
+      isValid: false,
+      error: 'short',
+      params: { minimum: PASSWORD_MINIMUM_LENGTH}
+    };
+  }
+
+  if (password !== confirmPassword) {
+    return { isValid: false, error: 'mismatch' };
+  }
+
+  if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
+    return { isValid: false, error: 'weak' };
+  }
+
+  return { isValid: true };
+};
+
 const login = async (req, res) => {
   try {
     const sessionRes = await createSession(req);
@@ -409,6 +438,13 @@ module.exports = {
   },
   passwordResetPost: async (req, res) => {
     try {
+      const validation = validatePassword(req.body.password, req.body.confirmPassword);
+      if (!validation.isValid) {
+        return res.status(400).json({
+          error: `password${validation.error}`,
+          params: validation.params,
+        });
+      }
       const userCtx = await auth.getUserCtx(req);
       const user = await db.users.get(`org.couchdb.user:${userCtx.name}`);
       user.password = req.body.password;

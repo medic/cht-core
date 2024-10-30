@@ -27,6 +27,15 @@ const togglePassword = () => {
     document.getElementById('confirm-password-container').classList.toggle('hidden-password');
 };
 
+const displayPasswordValidationError = (serverResponse) => {
+    const { error, params } = JSON.parse(serverResponse);
+    setState(error);
+
+    if (params) {
+        //add translate values param
+    }
+};
+
 const submit = function(e) {
     e.preventDefault();
     if (document.getElementById('form').className === 'loading') {
@@ -38,10 +47,9 @@ const submit = function(e) {
     const password = document.getElementById(PASSWORD_INPUT_ID).value;
     const confirmPassword = document.getElementById(CONFIRM_PASSWORD_INPUT_ID).value;
 
-    // add password weak validation check
-
     const payload = JSON.stringify({
         password: password,
+        confirmPassword: confirmPassword,
     });
 
     request('POST', url, payload, function(xmlhttp) {
@@ -49,7 +57,8 @@ const submit = function(e) {
             // success - redirect to app
             window.location = xmlhttp.response;
         } else if (xmlhttp.status === 400) {
-            setState('password-weak');
+            // password validation failed
+            displayPasswordValidationError(xmlhttp.response);
         } else {
             setState('error');
             console.error('Error updating password', xmlhttp.response);
