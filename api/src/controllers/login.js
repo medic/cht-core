@@ -229,7 +229,7 @@ const setCookies = (req, res, sessionRes) => {
       cookie.setSession(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
       // Delete login=force cookie
-      res.clearCookie('login');
+      cookie.clearCookie(res, 'login');
 
       return Promise.resolve()
         .then(() => {
@@ -365,16 +365,13 @@ const login = async (req, res) => {
     const sessionCookie = getSessionCookie(sessionRes);
     const options = { headers: { Cookie: sessionCookie } };
     const userCtx = await getUserCtxRetry(options);
-
+    await setCookies(req, res, sessionRes);
     const user = await db.users.get(`org.couchdb.user:${userCtx.name}`);
 
     if (!(await skipPasswordChange(userCtx)) && user.password_change_required){
-      const selectedLocale = req.body.locale || config.get('locale');
-      cookie.setLocale(res, selectedLocale);
       return res.status(302).send('/medic/password-reset');
     }
 
-    await setCookies(req, res, sessionRes);
     const redirectUrl = getRedirectUrl(userCtx, req.body.redirect);
     res.status(302).send(redirectUrl);
   } catch (e) {
@@ -439,6 +436,11 @@ module.exports = {
       .catch(next);
   },
   passwordResetPost: async (req, res) => {
+    const limited = await rateLimitService.isLimited(req);
+    if (limited) {
+      return serverUtils.rateLimited(req, res);
+    }
+
     try {
       const validation = validatePassword(req.body.password, req.body.confirmPassword);
       if (!validation.isValid) {
@@ -459,6 +461,7 @@ module.exports = {
         user: user.name,
         password: req.body.password,
         locale: req.body.locale,
+        password_updated: true,
       };
 
       const sessionRes = await createSessionRetry(req);

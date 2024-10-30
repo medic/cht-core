@@ -28,6 +28,10 @@
     try {
       const parsedCtx = JSON.parse(unescape(decodeURI(userCtx)));
       parsedCtx.locale = locale;
+      if (parsedCtx.password_updated) {
+        setUiStatus('PASSWORD_CHANGE_SUCCESS');
+        delete parsedCtx.password_updated;
+        }
       return parsedCtx;
     } catch (e) {
       return;

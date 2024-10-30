@@ -1,5 +1,6 @@
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
+const cookie = require('../services/cookie');
 
 const FIREWALL_ERROR = {
   code: 403,
@@ -38,6 +39,11 @@ module.exports = {
 
     if (!req.userCtx) {
       return serverUtils.error('Authentication error', req, res);
+    }
+
+    if (req.userCtx.password_change_required) {
+      cookie.clearCookie(res, 'AuthSession');
+      return res.redirect('/medic/password-reset');
     }
 
     next();

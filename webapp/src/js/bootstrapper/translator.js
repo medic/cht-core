@@ -7,6 +7,7 @@ const TRANSLATIONS = {
   en: {
     FETCH_INFO: ({ count, total }) => `Fetching info (${count} of ${total} docs )…`,
     LOAD_APP: 'Loading app…',
+    PASSWORD_CHANGE_SUCCESS: 'Password Change successfully',
     PURGE_INIT: 'Checking data…',
     PURGE_INFO: ({ count }) => `Cleaned ${count} documents…`,
     PURGE_META: 'Cleaning metadata…',

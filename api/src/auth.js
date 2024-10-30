@@ -59,7 +59,12 @@ module.exports = {
       .then(auth => {
         if (auth?.userCtx?.name) {
           req.headers['X-Medic-User'] = auth.userCtx.name;
-          return auth.userCtx;
+          return db.users
+              .get(`org.couchdb.user:${auth.userCtx.name}`)
+              .then(user => ({
+                ...auth.userCtx,
+                password_change_required: user.password_change_required || false
+              }))
         }
         throw { code: 500, message: 'Failed to authenticate' };
       });
