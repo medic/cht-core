@@ -186,7 +186,7 @@ describe('Telemetry', () => {
 
       const searchField = await $('.select2-search__field');
       if (await searchField.isDisplayed()) {
-        await browser.keys(Key.Escape)
+        await browser.keys(Key.Escape);
       }
 
       for (const searchTerm of searchTerms) {
@@ -197,54 +197,6 @@ describe('Telemetry', () => {
       expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:name')).to.have.lengthOf(2);
       expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:phone')).to.have.lengthOf(1);
       expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:phone:$value')).to.have.lengthOf(1);
-    });
-
-    it('should record telemetry for contact searches ddd', async () => {
-      await browser.url(`/#/contacts/${patient._id}/report/select_contact_telemetry`);
-      await commonPage.waitForPageLoaded();
-
-      const contactName = patient.name;
-      {
-        const label = await $(`label*=Select the contact by type`)
-        const select2Selection = await label.$('.select2-selection');
-        const searchField = await $('.select2-search__field');
-        if (!await searchField.isDisplayed()) {
-          await select2Selection.click();
-        }
-
-        await searchField.setValue(contactName);
-        await $('.select2-results__option.loading-results').waitForDisplayed({ reverse: true });
-        const contact = await $(`.name*=${contactName}`);
-        await contact.waitForDisplayed();
-        await contact.click();
-
-        await browser.waitUntil(async () => {
-          return (await select2Selection.getText()).toLowerCase().endsWith(contactName.toLowerCase());
-        });
-
-        expect(await getTelemetryEntryByKey('search_match:contacts_by_type_freetext:name')).to.have.lengthOf(1);
-      }
-
-      {
-        const label = await $(`label*=Select the contact without type`)
-        const select2Selection = await label.$('.select2-selection');
-        const searchField = await $('.select2-search__field');
-        if (!await searchField.isDisplayed()) {
-          await select2Selection.click();
-        }
-
-        await searchField.setValue(contactName);
-        await $('.select2-results__option.loading-results').waitForDisplayed({ reverse: true });
-        const contact = await $(`.name*=${contactName}`);
-        await contact.waitForDisplayed();
-        await contact.click();
-
-        await browser.waitUntil(async () => {
-          return (await select2Selection.getText()).toLowerCase().endsWith(contactName.toLowerCase());
-        });
-
-        expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:name')).to.have.lengthOf(1);
-      }
     });
   });
 });
