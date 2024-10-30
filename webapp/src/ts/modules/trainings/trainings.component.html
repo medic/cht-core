@@ -1,30 +1,28 @@
 <mm-tool-bar title="training_materials.page.title"></mm-tool-bar>
 
 <div class="inner">
-  trainingList.length:{{trainingList?.length}}
-  error:{{error}}
-  loading:{{loading}}
   <div class="inbox page">
 
-    <ul *ngIf="trainingList?.length">
-      <li *ngFor="let training of trainingList; trackBy: trackBy"
-        class="content-row"
-        [attr.data-record-id]="training.id"
-        [class.selected]="training.selected">
-        <a [routerLink]="['/', 'trainings', training.id]" [state]="{ tab: 'trainings', id: training.id }">
-          <div class="content">
-            <div class="heading">
-              <h4>
-                <span *ngIf="training.title">{{ training.title | translate }}</span>
-                <span *ngIf="training.id">{{ training.id }}</span>
-              </h4>
-            </div>
-          </div>
-        </a>
-      </li>
-    </ul>
-
     <div id="trainings-list" class="col-sm-4 inbox-items left-pane">
+      <ul *ngIf="trainingList?.length">
+        <li *ngFor="let training of trainingList; trackBy: trackBy"
+          class="content-row"
+          [attr.data-record-id]="training.code"
+          [class.selected]="training.code === selectedTrainingId"
+          [class.completed]="training.isCompletedTraining">
+          <a [routerLink]="['/', 'trainings', training.code]" [state]="{ tab: 'trainings', id: training.code }">
+            <div class="content">
+              <div class="heading">
+                <h4>
+                  <span *ngIf="training.title">{{ training.title | translate }}</span>
+                  <span *ngIf="training.code">{{ training.code }}</span>
+                </h4>
+              </div>
+            </div>
+          </a>
+        </li>
+      </ul>
+
       <p class="loading-status" *ngIf="!error && !loading && !trainingList?.length">{{ 'training_materials.page.no_trainings' | translate }}</p>
       <p class="loading-status" *ngIf="!loading && trainingList?.length && !moreTrainings">{{ 'training_materials.page.no_more_trainings' | translate }}</p>
       <div class="loader" *ngIf="loading"></div>

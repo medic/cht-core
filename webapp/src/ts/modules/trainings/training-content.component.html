@@ -1,10 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Title</title>
-</head>
-<body>
+<div [class.content-pane]="isEmbedded" [class.right-pane]="isEmbedded">
 
-</body>
-</html>
+  <div class="item-content empty-selection" [class.col-sm-8]="isEmbedded">
+    <div *ngIf="loadingContent"><div class="loader"></div></div>
+    <div *ngIf="!loadingContent && contentError">{{ errorTranslationKey | translate }}</div>
+    <div *ngIf="isEmbedded && !this.trainingCardFormId && !loadingContent">{{ 'training_materials.page.no_selected' | translate }}</div>
+  </div>
+
+  <div [hidden]="showConfirmExit || loadingContent || contentError" class="item-content" [class.form-no-title]="formNoTitle" [class.col-sm-8]="isEmbedded">
+    <div class="body">
+      <mm-enketo
+        [formId]="FORM_WRAPPER_ID"
+        [status]="enketoStatus"
+        (onSubmit)="saveForm()"
+        (onCancel)="confirmExit(true)">
+      </mm-enketo>
+    </div>
+  </div>
+
+</div>

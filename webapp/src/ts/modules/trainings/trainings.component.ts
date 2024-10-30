@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
@@ -17,6 +17,7 @@ export class TrainingsComponent implements OnInit, OnDestroy {
   private globalActions: GlobalActions;
   private trackInitialLoadPerformance;
 
+  selectedTrainingId;
   subscriptions: Subscription = new Subscription();
   trainingList: TrainingMaterial[] | null | undefined = null;
   error = false;
@@ -25,7 +26,7 @@ export class TrainingsComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly store: Store,
-    private readonly router: Router,
+    private route: ActivatedRoute,
     private readonly performanceService: PerformanceService,
     private readonly trainingCardsService: TrainingCardsService,
   ) {
@@ -34,6 +35,7 @@ export class TrainingsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.trackInitialLoadPerformance = this.performanceService.track();
+    this.subscribeToRouteParams();
     this.subscribeToStore();
   }
 
@@ -47,6 +49,16 @@ export class TrainingsComponent implements OnInit, OnDestroy {
       .select(Selectors.getTrainingMaterials)
       .subscribe(forms => this.getTrainings(forms));
     this.subscriptions.add(trainingSubscription);
+  }
+
+  private subscribeToRouteParams() {
+    const routeSubscription = this.route.firstChild?.params.subscribe(params => {
+      this.selectedTrainingId = params?.id;
+      if (this.selectedTrainingId) {
+        this.globalActions.setTrainingCard({ formId: this.selectedTrainingId });
+      }
+    });
+    this.subscriptions.add(routeSubscription);
   }
 
   async getTrainings(forms) {

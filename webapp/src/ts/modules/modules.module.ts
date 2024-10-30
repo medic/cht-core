@@ -42,6 +42,7 @@ import {
   AnalyticsTargetAggregatesDetailComponent
 } from '@mm-modules/analytics/analytics-target-aggregates-detail.component';
 import { TrainingsComponent } from '@mm-modules/trainings/trainings.component';
+import { TrainingsContentComponent } from '@mm-modules/trainings/training-content.component';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
 import { TasksGroupComponent } from '@mm-modules/tasks/tasks-group.component';
@@ -76,6 +77,7 @@ import { DirectivesModule } from '@mm-directives/directives.module';
     AnalyticsTargetAggregatesDetailComponent,
     AnalyticsTargetAggregatesSidebarFilterComponent,
     TrainingsComponent,
+    TrainingsContentComponent,
     TasksComponent,
     TasksContentComponent,
     TasksGroupComponent,
@@ -107,6 +109,7 @@ import { DirectivesModule } from '@mm-directives/directives.module';
     MessagesComponent,
     ContactsComponent,
     TrainingsComponent,
+    TrainingsContentComponent,
     PrivacyPolicyComponent,
     TasksComponent,
   ]

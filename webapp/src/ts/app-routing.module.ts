@@ -24,8 +24,8 @@ const routes: Routes = [
   ...contactsRoutes,
   ...privacyPolicyRoutes,
   ...tasksRoutes,
-  ...testingRoutes,
   ...trainingRoutes,
+  ...testingRoutes,
   ...errorRoutes,
 ];
 

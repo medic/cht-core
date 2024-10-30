@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 
 import { AppRouteGuardProvider } from '../../app-route.guard.provider';
 import { TrainingsComponent } from '@mm-modules/trainings/trainings.component';
+import { TrainingsContentComponent } from '@mm-modules/trainings/training-content.component';
 
 export const routes: Routes = [
   {
@@ -10,16 +11,15 @@ export const routes: Routes = [
     data: { permissions: [ 'can_edit' ], tab: 'trainings' },
     canActivate: [ AppRouteGuardProvider ],
     children: [
-      /*{ TODO - add content component
+      {
         path: '',
         component: TrainingsContentComponent,
-        data: { },
       },
       {
         path: ':id',
         component: TrainingsContentComponent,
         data: { hideTraining: true },
-      },*/
+      },
     ]
   },
 ];

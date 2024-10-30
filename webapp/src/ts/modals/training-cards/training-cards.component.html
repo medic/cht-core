@@ -3,8 +3,7 @@
   [titleKey]="showConfirmExit ? 'training_cards.confirm.title' : modalTitleKey | translate"
   (onCancel)="confirmExit(true)"
   [hideFooter]="hideModalFooter"
-  [hasEnketoForm]="true"
->
+  [hasEnketoForm]="true">
 
   <div class="item-content empty-selection" *ngIf="loadingContent">
     <div><div class="loader"></div></div>

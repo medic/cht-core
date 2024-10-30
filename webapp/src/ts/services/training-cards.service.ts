@@ -197,7 +197,6 @@ export class TrainingCardsService {
     const completedTrainings = await this.getCompletedTrainings(userCtx);
     return trainingCards.map(form => ({
       ...form,
-      selected: false,
       isCompletedTraining: completedTrainings.has(form.code),
     }));
   }
@@ -210,6 +209,5 @@ export interface TrainingMaterial {
   startDate: Date;
   duration: number;
   userRoles: string[];
-  selected: boolean;
   isCompletedTraining: boolean;
 }
