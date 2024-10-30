@@ -1,3 +1,4 @@
+const { Key } = require('webdriverio');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const utils = require('@utils');
 const moment = require('moment');
@@ -10,7 +11,6 @@ const searchPage = require('@page-objects/default/search/search.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
-const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const fs = require('fs');
 const { BRANCH, TAG } = process.env;
@@ -168,22 +168,35 @@ describe('Telemetry', () => {
       expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:patient_id:$value')).to.have.lengthOf(1);
     });
 
-    it('should record telemetry for contact searches by type', async () => {
-      await commonPage.goToPeople();
-
-      await commonPage.clickFastActionFAB({ actionId: 'clinic' });
-      await commonEnketoPage.selectRadioButton('Set the Primary Contact', 'Select an existing person');
+    it('should record telemetry for contact searches from the select2 component', async () => {
+      await browser.url(`/#/contacts/${patient._id}/report/select_contact_telemetry`);
+      await commonPage.waitForPageLoaded();
 
       const [firstName, lastName] = patient.name.split(' ');
       const searchTerms = [firstName, lastName, patient.phone, `phone:${patient.phone}`];
+
       for (const searchTerm of searchTerms) {
-        await genericForm.selectContact(patient.name, 'Select the Primary Contact', searchTerm);
-        await genericForm.clearSelectedContact('Select the Primary Contact');
+        await genericForm.selectContact(patient.name, 'Select the contact by type', searchTerm);
+        await genericForm.clearSelectedContact('Select the contact by type');
       }
 
       expect(await getTelemetryEntryByKey('search_match:contacts_by_type_freetext:name')).to.have.lengthOf(2);
       expect(await getTelemetryEntryByKey('search_match:contacts_by_type_freetext:phone')).to.have.lengthOf(1);
       expect(await getTelemetryEntryByKey('search_match:contacts_by_type_freetext:phone:$value')).to.have.lengthOf(1);
+
+      const searchField = await $('.select2-search__field');
+      if (await searchField.isDisplayed()) {
+        await browser.keys(Key.Escape)
+      }
+
+      for (const searchTerm of searchTerms) {
+        await genericForm.selectContact(patient.name, 'Select the contact without type', searchTerm);
+        await genericForm.clearSelectedContact('Select the contact without type');
+      }
+
+      expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:name')).to.have.lengthOf(2);
+      expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:phone')).to.have.lengthOf(1);
+      expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:phone:$value')).to.have.lengthOf(1);
     });
 
     it('should record telemetry for contact searches ddd', async () => {
