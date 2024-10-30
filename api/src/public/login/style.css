@@ -101,7 +101,11 @@ form {
 .tokenmissing .error.missing,
 .tokentimeout .error.timeout,
 .tokenexpired .error.expired,
-.tokenerror .error.unknown
+.tokenerror .error.unknown,
+.passwordweak .error.password-weak,
+.passwordshort .error.password-short,
+.passwordmismatch .error.password-mismatch,
+.passwordrequired .error.password-required
 {
   display: block;
 }
