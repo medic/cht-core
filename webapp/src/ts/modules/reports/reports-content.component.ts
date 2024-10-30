@@ -92,11 +92,11 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToStore() {
-    const reportsSubscription = combineLatest(
+    const reportsSubscription = combineLatest([
       this.store.select(Selectors.getSelectedReport),
       this.store.select(Selectors.getSelectedReports),
       this.store.select(Selectors.getFilters),
-    ).subscribe(([
+    ]).subscribe(([
       selectedReport,
       selectedReports,
       filters
