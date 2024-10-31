@@ -43,13 +43,13 @@ describe('SearchTelemetryService', () => {
       expect(telemetryService.record.getCall(1).args[0]).to.equal('search_match:contacts_by_freetext:custom_field');
     });
 
-    it('should emit a single telemetry entry for key:value searches', async () => {
+    it('should emit a telemetry entry for key:value searches', async () => {
       const search = 'patient_id:12345';
       await service.recordContactSearch(contact, search);
 
       expect(telemetryService.record.callCount).to.equal(1);
       expect(telemetryService.record.getCall(0).args[0]).to.equal(
-        'search_match:contacts_by_freetext:patient_id:$value',
+        'search_match:contacts_by_freetext:patient_id',
       );
     });
 
@@ -82,13 +82,13 @@ describe('SearchTelemetryService', () => {
       );
     });
 
-    it('should emit a single telemetry entry for key:value searches', async () => {
+    it('should emit a telemetry entry for key:value searches', async () => {
       const search = 'patient_id:12345';
       await service.recordContactByTypeSearch(contact, search);
 
       expect(telemetryService.record.callCount).to.equal(1);
       expect(telemetryService.record.getCall(0).args[0]).to.equal(
-        'search_match:contacts_by_type_freetext:patient_id:$value',
+        'search_match:contacts_by_type_freetext:patient_id',
       );
     });
 
@@ -124,13 +124,13 @@ describe('SearchTelemetryService', () => {
       );
     });
 
-    it('should emit a single telemetry entry for key:value searches', async () => {
+    it('should emit a telemetry entry for key:value searches', async () => {
       const search = 'patient_id:12345';
       await service.recordReportSearch(report, search);
 
       expect(telemetryService.record.callCount).to.equal(1);
       expect(telemetryService.record.getCall(0).args[0]).to.equal(
-        'search_match:reports_by_freetext:patient_id:$value',
+        'search_match:reports_by_freetext:fields.patient_id',
       );
     });
 

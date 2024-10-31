@@ -150,8 +150,7 @@ describe('Telemetry', () => {
 
       expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:name')).to.have.lengthOf(2);
       expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:phone')).to.have.lengthOf(1);
-      expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:patient_id')).to.have.lengthOf(1);
-      expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:patient_id:$value')).to.have.lengthOf(1);
+      expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:patient_id')).to.have.lengthOf(2);
     });
 
     it('should record telemetry for reports searches', async () => {
@@ -169,8 +168,7 @@ describe('Telemetry', () => {
 
       expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:fields.name')).to.have.lengthOf(2);
       expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:from')).to.have.lengthOf(1);
-      expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:fields.patient_id')).to.have.lengthOf(1);
-      expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:patient_id:$value')).to.have.lengthOf(1);
+      expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:fields.patient_id')).to.have.lengthOf(2);
     });
 
     it('should record telemetry for contact searches from the select2 component', async () => {
@@ -186,8 +184,7 @@ describe('Telemetry', () => {
       }
 
       expect(await getTelemetryEntryByKey('search_match:contacts_by_type_freetext:name')).to.have.lengthOf(2);
-      expect(await getTelemetryEntryByKey('search_match:contacts_by_type_freetext:phone')).to.have.lengthOf(1);
-      expect(await getTelemetryEntryByKey('search_match:contacts_by_type_freetext:phone:$value')).to.have.lengthOf(1);
+      expect(await getTelemetryEntryByKey('search_match:contacts_by_type_freetext:phone')).to.have.lengthOf(2);
 
       const searchField = await $('.select2-search__field');
       if (await searchField.isDisplayed()) {
@@ -200,8 +197,7 @@ describe('Telemetry', () => {
       }
 
       expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:name')).to.have.lengthOf(2);
-      expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:phone')).to.have.lengthOf(1);
-      expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:phone:$value')).to.have.lengthOf(1);
+      expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:phone')).to.have.lengthOf(2);
     });
   });
 });
