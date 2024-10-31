@@ -504,6 +504,7 @@ describe('Reports Content Component', () => {
       store.refreshState();
       fixture.detectChanges();
 
+      // search for a report
       expect(searchTelemetryService.recordReportSearch.callCount).to.equal(0);
       const search = 'case_id:abc-1234';
       store.overrideSelector(Selectors.getFilters, { search });
@@ -511,12 +512,36 @@ describe('Reports Content Component', () => {
       fixture.detectChanges();
       expect(searchTelemetryService.recordReportSearch.callCount).to.equal(0);
 
+      // select a report, collect telemetry
       const report = { _id: 'report_id', doc: { case_id: 'abc-1234' } };
       store.overrideSelector(Selectors.getSelectedReport, report);
       store.refreshState();
       fixture.detectChanges();
       expect(searchTelemetryService.recordReportSearch.callCount).to.equal(1);
       expect(searchTelemetryService.recordReportSearch.getCall(0).args).to.deep.equal([report.doc, search]);
+
+      // re-select same report, don't re-collect telemetry
+      store.overrideSelector(Selectors.getSelectedReport, report);
+      store.refreshState();
+      fixture.detectChanges();
+      expect(searchTelemetryService.recordReportSearch.callCount).to.equal(1);
+
+      // select a different report, collect telemetry
+      const otherReport = { _id: 'other_report_id', doc: { other_case_id: 'abc-1234' } };
+      store.overrideSelector(Selectors.getSelectedReport, otherReport);
+      store.refreshState();
+      fixture.detectChanges();
+      expect(searchTelemetryService.recordReportSearch.callCount).to.equal(2);
+      expect(searchTelemetryService.recordReportSearch.getCall(1).args).to.deep.equal([otherReport.doc, search]);
+
+      // un-select report and select all reports, don't collect telemetry
+      store.overrideSelector(Selectors.getSelectedReport, undefined);
+      store.refreshState();
+      fixture.detectChanges();
+      store.overrideSelector(Selectors.getSelectedReports, [report, otherReport]);
+      store.refreshState();
+      fixture.detectChanges();
+      expect(searchTelemetryService.recordReportSearch.callCount).to.equal(2);
     }));
   });
 });
