@@ -407,14 +407,10 @@ const filterReportViewAll = async () => {
   await (await tabsContainer.$('*=View all')).click();
 };
 
-const openSelectedContact = async (listElement) => {
-  await listElement.click();
-};
-
 const openFirstContact = async () => {
   const firstContact = leftPanelSelectors.firstContact();
   await firstContact.waitForClickable();
-  await openSelectedContact(firstContact);
+  await firstContact.click();
 };
 
 const openPrimaryContactSearchDropdown = async () => {
