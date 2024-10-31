@@ -76,5 +76,10 @@ module.exports = {
   },
   setForceLogin: (res) => {
     res.cookie('login', 'force', getCookieOptions());
+  },
+  setPasswordUpdated: (res) => {
+    const options = getCookieOptions();
+    options.maxAge = ONE_YEAR_IN_MS;
+    res.cookie('passwordUpdated', 'true', options);
   }
 };

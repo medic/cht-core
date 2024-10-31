@@ -15,12 +15,17 @@
     let locale;
     document.cookie.split(';').forEach(function(c) {
       c = c.trim().split('=', 2);
+      console.log('cookies', c[0]);
       if (c[0] === 'userCtx') {
         userCtx = c[1];
       }
       if (c[0] === 'locale') {
         locale = c[1];
       }
+      // if (c[0] === 'password_updated') {
+      //   console.log('password was updated');
+      //   setUiStatus('PASSWORD_CHANGE_SUCCESS');
+      // }
     });
     if (!userCtx) {
       return;
@@ -28,10 +33,6 @@
     try {
       const parsedCtx = JSON.parse(unescape(decodeURI(userCtx)));
       parsedCtx.locale = locale;
-      if (parsedCtx.password_updated) {
-        setUiStatus('PASSWORD_CHANGE_SUCCESS');
-        delete parsedCtx.password_updated;
-        }
       return parsedCtx;
     } catch (e) {
       return;

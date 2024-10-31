@@ -368,9 +368,8 @@ const login = async (req, res) => {
       res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
     }
     const { userCtx, redirectUrl } = await setCookies(req, res, sessionRes);
-    const user = await db.users.get(`org.couchdb.user:${userCtx.name}`);
 
-    if (!(await skipPasswordChange(userCtx)) && user.password_change_required){
+    if (!(await skipPasswordChange(userCtx)) && userCtx.password_change_required){
       return res.status(302).send('/medic/password-reset');
     }
 
@@ -467,6 +466,7 @@ module.exports = {
 
       const sessionRes = await createSessionRetry(req);
       cookie.clearCookie(res, 'login');
+      cookie.setPasswordUpdated(res);
       await setCookies(req, res, sessionRes);
 
       const redirectUrl = getRedirectUrl(userCtx, req.body.redirect);
