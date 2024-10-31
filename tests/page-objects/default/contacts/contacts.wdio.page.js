@@ -105,6 +105,7 @@ const openSortMenu = async () => {
   await sortMenuSelectors.sortIcon().click();
   await sortMenuSelectors.sortDropdown().waitForDisplayed();
 };
+
 const selectSortOrder = async (sortOrder) => {
   await openSortMenu();
   const options = await sortMenuSelectors.sortMenuItems();
