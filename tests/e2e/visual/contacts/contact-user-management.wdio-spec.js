@@ -6,7 +6,7 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 const utils = require('@utils');
 const chtConfUtils = require('@utils/cht-conf');
 const path = require('path');
-const { resizeWindowForScreenshots, generateScreenshot, isMobile } = require('@utils/screenshots');
+const { generateScreenshot, isMobile } = require('@utils/screenshots');
 
 describe('Contact and User Management', () => {
   const updateContactSummarySettings = async () => {
@@ -18,7 +18,7 @@ describe('Contact and User Management', () => {
       contactSummaryExtras: contactSummaryExtrasFile
     });
     await utils.updateSettings(
-      { contact_summary: contactSummary },
+      { contact_summary: contactSummary},
       { revert: true, ignoreReload: true, refresh: true, sync: true }
     );
     await commonPage.waitForPageLoaded();
@@ -57,7 +57,8 @@ describe('Contact and User Management', () => {
   });
 
   describe('Contact and user overview', () => {
-    it('should show contacts list, search, profiles (person and family), contact summary', async () => {
+    it('should show contacts list, search, profiles (person and family), '+
+      'contact summary', async function() {
       await commonPage.goToPeople();
       expect(await commonPage.isPeopleListPresent()).to.be.true;
       await generateScreenshot('people', 'list');

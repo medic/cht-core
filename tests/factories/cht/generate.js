@@ -5,7 +5,7 @@ const deliveryFactory = require('@factories/cht/reports/delivery');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const pregnancyVisitFactory = require('@factories/cht/reports/pregnancy-visit');
 const immunizationFactory = require('@factories/cht/reports/inmunization');
-const Faker = require('@faker-js/faker');
+const { faker } = require('@faker-js/faker');
 
 // Fixed collection of real-world data
 const PRIMARY_CONTACT_FIRST_NAMES = [
@@ -41,7 +41,7 @@ date.setDate(date.getDate() - 252);
 const LAST_MENSTRUAL_PERIOD = date.toISOString().split('T')[0]; //'YYYY-MM-DD'
 
 const getReportContext = (patient, submitter) => {
-  const daysAgo = Faker.faker.number.int({ min: 1, max: 10 });
+  const daysAgo = faker.number.int({ min: 1, max: 10 });
   const currentDate = new Date();
   currentDate.setDate(currentDate.getDate() - daysAgo);
   const context = {
