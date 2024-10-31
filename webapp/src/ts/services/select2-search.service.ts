@@ -16,8 +16,6 @@ import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
   providedIn: 'root'
 })
 export class Select2SearchService {
-  private currentQuery: string | null = null;
-
   constructor(
     private readonly route: ActivatedRoute,
     private readonly formatProvider: FormatProvider,
@@ -61,7 +59,6 @@ export class Select2SearchService {
   }
 
   private query(params, successCb, failureCb, options, types) {
-    this.currentQuery = params.data.q;
     const searchOptions = {
       limit: options.pageSize,
       skip: this.calculateSkip(params.data.page, options.pageSize),
@@ -79,11 +76,6 @@ export class Select2SearchService {
     this.searchService
       .search('contacts', filters, searchOptions)
       .then((documents) => {
-        if (this.currentQuery !== params.data.q) {
-          return;
-        }
-
-        this.currentQuery = null;
         successCb({
           results: options.sendMessageExtras(this.prepareRows(documents)),
           pagination: {
@@ -91,12 +83,7 @@ export class Select2SearchService {
           }
         });
       })
-      .catch((err) => {
-        if (this.currentQuery === params.data.q) {
-          this.currentQuery = null;
-          failureCb(err);
-        }
-      });
+      .catch((err) => failureCb(err));
   }
 
   private getDoc(id) {
