@@ -87,6 +87,30 @@ const loginAsUser = async (user) => {
   await commonPage.waitForPageLoaded();
 };
 
+/**
+ * Ongoing replication can be interrupted by the user being edited on the server side.
+ * A 401 for a replication request will create a feedback doc, which will fail the test.
+ */
+const assertFeedbackDocs = async () => {
+  const feedbackDocs = await chtDbUtils.getFeedbackDocs();
+  if (!feedbackDocs.length) {
+    return;
+  }
+
+  const feedbackDocsToIgnore = [
+    'Http failure response',
+    'Server error'
+  ];
+
+  const unknownMessages = feedbackDocs
+    .map(doc => doc.info.message)
+    .filter(message => !feedbackDocsToIgnore.find(toIgnore => message.includes(toIgnore)));
+
+  if (!unknownMessages.length) {
+    await chtDbUtils.clearFeedbackDocs();
+  }
+};
+
 const loginAsOfflineUser = () => loginAsUser(ORIGINAL_USER);
 
 const loginAsOnlineUser = () => loginAsUser(ONLINE_USER);
@@ -180,30 +204,6 @@ const waitForConflicts = async (getDoc) => {
     return doc;
   }
   return utils.delayPromise(waitForConflicts(getDoc), 100);
-};
-
-/**
- * Ongoing replication can be interrupted by the user being edited on the server side.
- * A 401 for a replication request will create a feedback doc, which will fail the test.
- */
-const assertFeedbackDocs = async () => {
-  const feedbackDocs = await chtDbUtils.getFeedbackDocs();
-  if (!feedbackDocs.length) {
-    return;
-  }
-
-  const feedbackDocsToIgnore = [
-    'Http failure response',
-    'Server error'
-  ];
-
-  const unknownMessages = feedbackDocs
-    .map(doc => doc.info.message)
-    .filter(message => !feedbackDocsToIgnore.find(toIgnore => message.includes(toIgnore)));
-
-  if (!unknownMessages.length) {
-    await chtDbUtils.clearFeedbackDocs();
-  }
 };
 
 describe('Create user for contacts', () => {

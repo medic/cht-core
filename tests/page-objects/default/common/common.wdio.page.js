@@ -205,7 +205,7 @@ const openHamburgerMenu = async () => {
     await (await hamburgerMenu()).waitForClickable();
     await (await hamburgerMenu()).click();
     // Adding pause here as we have to wait for sidebar nav menu animation to load
-    await browser.pause(500);
+    await browser.pause(ELEMENT_DISPLAY_PAUSE);
   }
   await (await sideBarMenuTitle()).waitForDisplayed();
 };
@@ -363,7 +363,6 @@ const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
     await (await syncSuccess()).waitForDisplayed({ timeout });
   } catch (err) {
     console.error(err);
-    await browser.takeScreenshot();
     await syncAndWaitForSuccess(timeout, retry - 1);
   }
 };
