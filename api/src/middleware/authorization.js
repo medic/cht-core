@@ -41,11 +41,6 @@ module.exports = {
       return serverUtils.error('Authentication error', req, res);
     }
 
-    if (req.userCtx.password_change_required) {
-      cookie.clearCookie(res, 'AuthSession');
-      return res.redirect('/medic/password-reset');
-    }
-
     next();
   },
 

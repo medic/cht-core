@@ -229,7 +229,9 @@ const setCookies = (req, res, sessionRes) => {
       cookie.setSession(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
       // Delete login=force cookie
-      cookie.clearCookie(res, 'login');
+      if (!userCtx.password_change_required) {
+        cookie.clearCookie(res, 'login');
+      }
 
       return Promise.resolve()
         .then(() => {
@@ -241,7 +243,10 @@ const setCookies = (req, res, sessionRes) => {
           const selectedLocale = req.body.locale
             || config.get('locale');
           cookie.setLocale(res, selectedLocale);
-          return getRedirectUrl(userCtx, req.body.redirect);
+          return {
+            userCtx,
+            redirectUrl: getRedirectUrl(userCtx, req.body.redirect),
+          };
         });
     })
     .catch(err => {
@@ -362,18 +367,14 @@ const login = async (req, res) => {
     if (sessionRes.statusCode !== 200) {
       res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
     }
-    const sessionCookie = getSessionCookie(sessionRes);
-    const options = { headers: { Cookie: sessionCookie } };
-    const userCtx = await getUserCtxRetry(options);
-    await setCookies(req, res, sessionRes);
+    const { userCtx, redirectUrl } = await setCookies(req, res, sessionRes);
     const user = await db.users.get(`org.couchdb.user:${userCtx.name}`);
 
     if (!(await skipPasswordChange(userCtx)) && user.password_change_required){
       return res.status(302).send('/medic/password-reset');
     }
 
-    const redirectUrl = getRedirectUrl(userCtx, req.body.redirect);
-    res.status(302).send(redirectUrl);
+    return res.status(302).send(redirectUrl);
   } catch (e) {
     if (e.status === 401) {
       return res.status(401).json({ error: e.error });
@@ -465,6 +466,7 @@ module.exports = {
       };
 
       const sessionRes = await createSessionRetry(req);
+      cookie.clearCookie(res, 'login');
       await setCookies(req, res, sessionRes);
 
       const redirectUrl = getRedirectUrl(userCtx, req.body.redirect);
