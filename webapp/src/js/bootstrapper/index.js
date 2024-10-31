@@ -22,10 +22,6 @@
       if (c[0] === 'locale') {
         locale = c[1];
       }
-      // if (c[0] === 'password_updated') {
-      //   console.log('password was updated');
-      //   setUiStatus('PASSWORD_CHANGE_SUCCESS');
-      // }
     });
     if (!userCtx) {
       return;
@@ -94,8 +90,14 @@
     const dbInfo = getDbInfo();
     const userCtx = getUserCtx();
     const hasForceLoginCookie = document.cookie.includes('login=force');
+    const showPasswordUI = document.cookie.includes('passwordUpdated');
+
     if (!userCtx || hasForceLoginCookie) {
       return redirectToLogin(dbInfo);
+    }
+
+    if (showPasswordUI) {
+      setUiStatus('PASSWORD_CHANGE_SUCCESS');
     }
 
     if (hasFullDataAccess(userCtx)) {

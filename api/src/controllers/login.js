@@ -365,7 +365,7 @@ const login = async (req, res) => {
   try {
     const sessionRes = await createSession(req);
     if (sessionRes.statusCode !== 200) {
-      res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
+      return res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
     }
     const { userCtx, redirectUrl } = await setCookies(req, res, sessionRes);
 
@@ -456,6 +456,9 @@ module.exports = {
 
       await db.users.put(user);
 
+      cookie.clearCookie(res, 'login');
+      cookie.clearCookie(res, 'AuthSession');
+
       req.body = {
         ...req.body,
         user: user.name,
@@ -465,12 +468,10 @@ module.exports = {
       };
 
       const sessionRes = await createSessionRetry(req);
-      cookie.clearCookie(res, 'login');
       cookie.setPasswordUpdated(res);
-      await setCookies(req, res, sessionRes);
 
-      const redirectUrl = getRedirectUrl(userCtx, req.body.redirect);
-      res.status(302).send(redirectUrl);
+      const { redirectUrl } = await setCookies(req, res, sessionRes);
+      return res.status(302).send(redirectUrl);
     } catch (err) {
       logger.error('Error updating password: %o', err);
       res.status(500).json({ error: 'Error updating password' });
