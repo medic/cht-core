@@ -39,7 +39,6 @@ describe('Contact and User Management', () => {
   });
 
   before(async () => {
-    await resizeWindowForScreenshots();
     await utils.saveDocs([...docs.places, ...docs.clinics, ...docs.persons, ...docs.reports]);
     await utils.createUsers([docs.user]);
     await utils.addTranslations('en', {'contact.last.visit.unknown': 'Last Visited'});

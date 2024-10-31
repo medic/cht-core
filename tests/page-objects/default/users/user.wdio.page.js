@@ -252,4 +252,5 @@ module.exports = {
   backToUserList,
   closeAddUserDialog,
   scrollToRole,
+  addUserButton,
 };

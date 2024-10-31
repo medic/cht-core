@@ -1,4 +1,5 @@
 const wdioBaseConfig = require('../../wdio.conf');
+const { resizeWindowForScreenshots } = require('@utils/screenshots');
 
 const chai = require('chai');
 chai.use(require('chai-exclude'));
@@ -41,4 +42,7 @@ exports.config = Object.assign(wdioBaseConfig.config, {
     ? [mobileCapability]
     : [desktopCapability],
   maxInstances: 1,
+  beforeSuite: async function () {
+    await resizeWindowForScreenshots();
+  },
 });

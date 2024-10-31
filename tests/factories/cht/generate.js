@@ -203,7 +203,9 @@ const createHierarchy = ({ name, user = false, nbrClinics = 50, nbrPersons = 10,
   user = user && userFactory.build({ place: healthCenter._id, roles: ['chw'], contact: contact });
 
   const places = [...hierarchy.values()].map(place => {
-    place.name = `${name} ${place.type}`;
+    if (place.type === 'clinic') {
+      place.name = `${name} ${place.type}`;
+    }
     return place;
   });
 
