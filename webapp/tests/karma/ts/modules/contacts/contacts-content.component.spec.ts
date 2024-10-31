@@ -23,7 +23,6 @@ import { SessionService } from '@mm-services/session.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
-import { TelemetryService } from '@mm-services/telemetry.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
@@ -50,7 +49,6 @@ describe('Contacts content component', () => {
   let contactTypesService;
   let responsiveService;
   let contactMutedService;
-  let telemetryService: Partial<TelemetryService>;
   let fastActionButtonService;
   let searchTelemetryService;
   let mutingTransition;
@@ -90,7 +88,6 @@ describe('Contacts content component', () => {
     };
     mutingTransition = { isUnmuteForm: sinon.stub() };
     contactMutedService = { getMuted: sinon.stub() };
-    telemetryService = { record: sinon.stub() };
     fastActionButtonService = { getContactRightSideActions: sinon.stub() };
     searchTelemetryService = { recordContactSearch: sinon.stub() };
 
@@ -144,7 +141,6 @@ describe('Contacts content component', () => {
           { provide: ModalService, useValue: modalService },
           { provide: ResponsiveService, useValue: responsiveService },
           { provide: ContactMutedService, useValue: contactMutedService },
-          { provide: TelemetryService, useValue: telemetryService },
           { provide: MutingTransition, useValue: mutingTransition },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
           { provide: SearchTelemetryService, useValue: searchTelemetryService },
