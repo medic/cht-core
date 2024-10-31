@@ -55,7 +55,7 @@ const getLoginPageContents = async () => {
 
 const getPasswordResetPageContents = async () => {
   return await loginController.renderPasswordReset();
-}
+};
 
 const appendExtensionLibs = async (config) => {
   const libs = await extensionLibs.getAll();

@@ -15,7 +15,6 @@
     let locale;
     document.cookie.split(';').forEach(function(c) {
       c = c.trim().split('=', 2);
-      console.log('cookies', c[0]);
       if (c[0] === 'userCtx') {
         userCtx = c[1];
       }

@@ -361,12 +361,28 @@ const validatePassword = (password, confirmPassword) => {
   return { isValid: true };
 };
 
+const validateSession = async (req) => {
+  const sessionRes = await createSession(req);
+  if (sessionRes.statusCode !== 200) {
+    throw {
+      status: sessionRes.statusCode,
+      error: 'Not logged in'
+    };
+  }
+  return sessionRes;
+};
+
+const sendLoginErrorResponse = (e, res) => {
+  if (e.status === 401) {
+    return res.status(401).json({ error: e.error });
+  }
+  logger.error('Error logging in: %o', e);
+  return res.status(500).json({ error: 'Unexpected error logging in' });
+};
+
 const login = async (req, res) => {
   try {
-    const sessionRes = await createSession(req);
-    if (sessionRes.statusCode !== 200) {
-      return res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
-    }
+    const sessionRes = await validateSession(req, res);
     const { userCtx, redirectUrl } = await setCookies(req, res, sessionRes);
 
     if (!(await skipPasswordChange(userCtx)) && userCtx.password_change_required){
@@ -375,11 +391,7 @@ const login = async (req, res) => {
 
     return res.status(302).send(redirectUrl);
   } catch (e) {
-    if (e.status === 401) {
-      return res.status(401).json({ error: e.error });
-    }
-    logger.error('Error logging in: %o', e);
-    res.status(500).json({ error: 'Unexpected error logging in' });
+    return sendLoginErrorResponse(e, res);
   }
 };
 

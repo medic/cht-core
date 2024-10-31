@@ -15,16 +15,23 @@ export const request = function(method, url, payload, callback) {
     xmlhttp.send(payload);
 };
 
-export const getCookie = function(name) {
-    const cookies = document.cookie && document.cookie.split(';');
-    if (cookies) {
-        for (const cookie of cookies) {
-            const parts = cookie.trim().split('=');
-            if (parts[0] === name) {
-                return parts[1].trim();
-            }
+const extractCookie = function(cookies, name) {
+    for (const cookie of cookies) {
+        const [cookieName, cookieValue] = cookie.trim().split('=');
+        if (cookieName === name) {
+            return cookieValue.trim();
         }
     }
+    return null;
+};
+
+export const getCookie = function(name) {
+    if (!document.cookie) {
+        return null;
+    }
+
+    const cookies = document.cookie.split(';');
+    return extractCookie(cookies, name);
 };
 
 export const getLocale = function(translations) {
