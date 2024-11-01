@@ -67,10 +67,9 @@ const exists = async (doc, fields, options = {}) => {
   return found;
 };
 
-// const compareDate = (doc, validation, checkAfter = false) => {
-const compareDate = (doc, date, d, checkAfter = false) => {
+const compareDate = (doc, date, durationString, checkAfter = false) => {
   try {
-    const duration = parseDuration(d);
+    const duration = parseDuration(durationString);
     if (!duration.isValid()) {
       logger.error('date constraint validation: the duration is invalid');
       return false;
