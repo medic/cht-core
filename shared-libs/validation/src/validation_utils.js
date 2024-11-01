@@ -67,7 +67,17 @@ const exists = async (doc, fields, options = {}) => {
   return found;
 };
 
-const compareDate = (doc, date, durationString, checkAfter = false) => {
+const compareDateAfter = (testDate, reportedDate, duration) => {
+  const controlDate = reportedDate.add(duration);
+  return testDate.isSameOrAfter(controlDate, 'days');
+};
+
+const checkDateBefore = (testDate, reportedDate, duration) => {
+  const controlDate = reportedDate.subtract(duration);
+  return testDate.isSameOrBefore(controlDate, 'days');
+};
+
+const compareDate = (doc, date, durationString, checkAfter=false) => {
   try {
     const duration = parseDuration(durationString);
     if (!duration.isValid()) {
@@ -75,23 +85,15 @@ const compareDate = (doc, date, durationString, checkAfter = false) => {
       return false;
     }
     const testDate = moment(date);
-    const controlDate = checkAfter ?
-      moment(doc.reported_date).add(duration) :
-      moment(doc.reported_date).subtract(duration);
-    if (!testDate.isValid() || !controlDate.isValid()) {
+    if (!testDate.isValid()) {
       logger.error('date constraint validation: the date is invalid');
       return false;
     }
-
-    if (checkAfter && testDate.isSameOrAfter(controlDate, 'days')) {
-      return true;
+    const reportedDate = moment(doc.reported_date);
+    if (checkAfter) {
+      return compareDateAfter(testDate, reportedDate, duration);
     }
-    if (!checkAfter && testDate.isSameOrBefore(controlDate, 'days')) {
-      return true;
-    }
-
-    logger.error('date constraint validation failed');
-    return false;
+    return checkDateBefore(testDate, reportedDate, duration);
   } catch (err) {
     logger.error('date constraint validation: the date or duration is invalid: %o', err);
     return false;
@@ -105,17 +107,11 @@ const isISOWeek = (doc, weekFieldName, yearFieldName) => {
   }
 
   const year = yearFieldName ? doc[yearFieldName] : new Date().getFullYear();
-  const isValidISOWeek =
-    /^\d{1,2}$/.test(doc[weekFieldName]) &&
+  const week = doc[weekFieldName];
+  return /^\d{1,2}$/.test(week) &&
     /^\d{4}$/.test(year) &&
-    doc[weekFieldName] >= 1 &&
-    doc[weekFieldName] <= moment().year(year).isoWeeksInYear();
-  if (isValidISOWeek) {
-    return true;
-  }
-
-  logger.error('isISOWeek validation failed: the number of week is greater than the maximum');
-  return false;
+    week >= 1 &&
+    week <= moment().year(year).isoWeeksInYear();
 };
 
 const validPhone = (value) => {
