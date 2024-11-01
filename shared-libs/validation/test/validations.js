@@ -1113,4 +1113,48 @@ describe('validations', () => {
 
   });
   
+  describe('multiple rules on a property', () => {
+
+    // these rules are impossible to satisfy but it means we can test handling of multiple failures
+    const validations = [
+      {
+        property: 'lmp_date',
+        rule: 'isAfter("40 weeks")',
+        message: [{
+          content: 'Date should be later than 40 weeks from now.',
+          locale: 'en'
+        }]
+      },
+      {
+        property: 'lmp_date',
+        rule: 'isBefore("8 weeks")',
+        message: [{
+          content: 'Date should be older than 8 weeks ago.',
+          locale: 'en'
+        }]
+      }
+    ];
+
+    it('should pass when long enough and exists', () => {
+      const doc = {
+        _id: 'same',
+        lmp_date: moment().valueOf(),
+        reported_date: moment().valueOf()
+      };
+      return validation.validate(doc, validations).then(errors => {
+        assert.deepEqual(errors, [
+          {
+            code: 'invalid_lmp_date',
+            message: 'Date should be later than 40 weeks from now.',
+          },
+          {
+            code: 'invalid_lmp_date',
+            message: 'Date should be older than 8 weeks ago.',
+          },
+        ]);
+      });
+    });
+
+  });
+
 });

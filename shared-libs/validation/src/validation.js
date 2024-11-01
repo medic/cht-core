@@ -7,47 +7,26 @@ let settings;
 let translate;
 let inited = false;
 
-const extractErrors = (result, messages, ignores = []) => {
+const extractErrors = (results, ignores, locale) => {
   // wrap single item in array; defaults to empty array
   if (!Array.isArray(ignores)) {
     ignores = [ignores];
   }
 
-  const errors = [];
-  Object.keys(result).forEach(key => {
-    const valid = result[key];
-    if (!valid && !ignores.includes(key)) {
-      errors.push({
-        code: 'invalid_' + key,
-        message: messages[key],
-      });
-    }
-  });
-  return errors;
+  return results
+    .filter(result => !result.valid && !ignores.includes(result.validation.property))
+    .map(result => {
+      const code = 'invalid_' + result.validation.property;
+      const message = translateMessage(result.validation, locale);
+      return { code, message };
+    });
 };
 
-const getMessages = (validations, doc) => {
-  const locale = messageUtils.getLocale(settings, doc);
-  const messages = {};
-  validations.forEach(validation => {
-    if (
-      validation.property &&
-      (validation.message || validation.translation_key)
-    ) {
-      messages[validation.property] = messageUtils.getMessage(validation, translate, locale);
-    }
-  });
-  return messages;
-};
-
-const getRules = (validations) => {
-  const rules = {};
-  validations.forEach(validation => {
-    if (validation.property && validation.rule) {
-      rules[validation.property] = validation.rule;
-    }
-  });
-  return rules;
+const translateMessage = (validation, locale) => {
+  if (!validation.message && !validation.translation_key) {
+    return;
+  }
+  return messageUtils.getMessage(validation, translate, locale);
 };
 
 module.exports = {
@@ -103,17 +82,16 @@ module.exports = {
    * @param {String[]} [ignores=[]] Keys of doc that is always considered valid
    * @returns {Promise} Array of errors if validation failed, empty array otherwise.
    */
-  validate: async (doc, validations = [], ignores = []) => {
+  validate: async (doc, validations=[], ignores=[]) => {
     if (!inited) {
       throw new Error('Validation module not initialized');
     }
 
     try {
-      const rules = getRules(validations);
       const attributes = Object.assign({}, doc, doc.fields);
-      const result = await pupil.validate(rules, attributes);
-      const messages = getMessages(validations, doc);
-      return extractErrors(result.fields(), messages, ignores);
+      const result = await pupil.validate(validations, attributes);
+      const locale = messageUtils.getLocale(settings, doc);
+      return extractErrors(result, ignores, locale);
     } catch (e) {
       return ['Error on pupil validations: ' + JSON.stringify(e)];
     }

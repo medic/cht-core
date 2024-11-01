@@ -379,7 +379,7 @@ describe('pregnancy registration with weeks since LMP', () => {
     return transition.onMatch({ doc: doc }).then(function(changed) {
       assert.equal(changed, true);
       assert.equal(doc.patient_id, undefined);
-      assert.equal(getMessage(doc), 'Invalid patient name.  Invalid LMP; must be between 0-40 weeks.');
+      assert.equal(getMessage(doc), 'Invalid LMP; must be between 0-40 weeks.  Invalid patient name.');
     });
   });
 
@@ -584,9 +584,10 @@ describe('pregnancy registration with exact LMP date', () => {
       assert.equal(doc.patient_id, undefined);
       assert.equal(doc.lmp_date, null);
       assert.equal(getMessage(doc),
-        'Invalid patient name. ' +
-        ' Date should be later than 40 weeks ago. ' +
-        ' Date should be older than 8 weeks ago.');
+        'Date should be later than 40 weeks ago. ' +
+        ' Date should be older than 8 weeks ago. ' +
+        ' Invalid patient name.'
+      );
     });
   });
   
