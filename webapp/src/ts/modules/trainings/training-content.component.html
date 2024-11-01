@@ -1,12 +1,12 @@
 <div [class.content-pane]="isEmbedded" [class.right-pane]="isEmbedded">
 
-  <div class="item-content empty-selection" [class.col-sm-8]="isEmbedded">
+  <div class="item-content empty-selection" [class.col-sm-8]="isEmbedded" *ngIf="contentError || !this.trainingCardFormId">
     <div *ngIf="loadingContent"><div class="loader"></div></div>
     <div *ngIf="!loadingContent && contentError">{{ errorTranslationKey | translate }}</div>
-    <div *ngIf="isEmbedded && !this.trainingCardFormId && !loadingContent">{{ 'training_materials.page.no_selected' | translate }}</div>
+    <div *ngIf="!this.trainingCardFormId && !loadingContent">{{ 'training_materials.page.no_selected' | translate }}</div>
   </div>
 
-  <div [hidden]="showConfirmExit || loadingContent || contentError" class="item-content" [class.form-no-title]="formNoTitle" [class.col-sm-8]="isEmbedded">
+  <div [hidden]="showConfirmExit || loadingContent || contentError || !this.trainingCardFormId" class="item-content" [class.form-no-title]="formNoTitle" [class.col-sm-8]="isEmbedded">
     <div class="body">
       <mm-enketo
         [formId]="FORM_WRAPPER_ID"

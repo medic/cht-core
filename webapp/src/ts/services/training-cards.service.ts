@@ -12,6 +12,8 @@ import { ModalService } from '@mm-services/modal.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { TranslateService } from '@ngx-translate/core';
+import { Selectors } from '@mm-selectors/index';
+import { combineLatest } from 'rxjs';
 
 export const TRAINING_PREFIX: string = 'training:';
 
@@ -21,6 +23,9 @@ export const TRAINING_PREFIX: string = 'training:';
 export class TrainingCardsService {
   private readonly globalActions: GlobalActions;
   private readonly STORAGE_KEY_LAST_VIEWED_DATE = 'training-cards-last-viewed-date';
+  private trainingForms;
+  private showPrivacyPolicy;
+  private privacyPolicyAccepted;
 
   constructor(
     private readonly store: Store,
@@ -31,6 +36,20 @@ export class TrainingCardsService {
     private readonly routeSnapshotService: RouteSnapshotService,
   ) {
     this.globalActions = new GlobalActions(this.store);
+    this.subscribeToStore();
+  }
+
+  private subscribeToStore(): void {
+    combineLatest([
+      this.store.select(Selectors.getPrivacyPolicyAccepted),
+      this.store.select(Selectors.getShowPrivacyPolicy),
+      this.store.select(Selectors.getTrainingMaterials),
+    ]).subscribe(([ privacyPolicyAccepted, showPrivacyPolicy, xforms ]) => {
+      this.showPrivacyPolicy = showPrivacyPolicy;
+      this.privacyPolicyAccepted = privacyPolicyAccepted;
+      this.trainingForms = xforms;
+      this.displayTrainingCards();
+    });
   }
 
   private getAvailableTrainingCards(xForms, userCtx) {
@@ -82,9 +101,9 @@ export class TrainingCardsService {
     return docs?.rows?.length ? new Set(docs.rows.map(row => row?.doc?.form)) : new Set();
   }
 
-  private async handleTrainingCards(xForms) {
+  private async handleTrainingCards() {
     try {
-      const firstChronologicalTrainingCard = await this.getFirstChronologicalForm(xForms);
+      const firstChronologicalTrainingCard = await this.getFirstChronologicalForm(this.trainingForms);
       if (!firstChronologicalTrainingCard) {
         return;
       }
@@ -96,8 +115,11 @@ export class TrainingCardsService {
     }
   }
 
-  displayTrainingCards() {
-    if (this.hasBeenDisplayed()) {
+  async displayTrainingCards() {
+    if (!this.trainingForms?.length
+      || (this.showPrivacyPolicy && !this.privacyPolicyAccepted)
+      || this.hasBeenDisplayed()
+    ) {
       return;
     }
 
@@ -105,6 +127,8 @@ export class TrainingCardsService {
     if (routeSnapshot?.data?.hideTraining) {
       return;
     }
+
+    await this.handleTrainingCards();
 
     this.modalService
       .show(TrainingCardsComponent, { closeOnNavigation: false })
@@ -142,7 +166,6 @@ export class TrainingCardsService {
           return;
         }
         this.globalActions.setTrainingMaterials(xForms);
-        this.handleTrainingCards(xForms);
       }
     );
   }

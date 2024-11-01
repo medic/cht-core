@@ -26,7 +26,7 @@ export class TrainingsComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly store: Store,
-    private route: ActivatedRoute,
+    private readonly route: ActivatedRoute,
     private readonly performanceService: PerformanceService,
     private readonly trainingCardsService: TrainingCardsService,
   ) {
@@ -54,9 +54,7 @@ export class TrainingsComponent implements OnInit, OnDestroy {
   private subscribeToRouteParams() {
     const routeSubscription = this.route.firstChild?.params.subscribe(params => {
       this.selectedTrainingId = params?.id;
-      if (this.selectedTrainingId) {
-        this.globalActions.setTrainingCard({ formId: this.selectedTrainingId });
-      }
+      this.globalActions.setTrainingCard({ formId: this.selectedTrainingId });
     });
     this.subscriptions.add(routeSubscription);
   }

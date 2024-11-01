@@ -8,12 +8,13 @@ export const routes: Routes = [
   {
     path: 'trainings',
     component: TrainingsComponent,
-    data: { permissions: [ 'can_edit' ], tab: 'trainings' },
+    data: { permissions: [ 'can_edit' ], tab: 'trainings', hideTraining: true },
     canActivate: [ AppRouteGuardProvider ],
     children: [
       {
         path: '',
         component: TrainingsContentComponent,
+        data: { hideTraining: true },
       },
       {
         path: ':id',

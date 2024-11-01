@@ -1,4 +1,5 @@
 import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -23,23 +24,24 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
   private trackEditDuration;
   private trackSave;
   private trackMetadata = { action: '', form: '' };
+  readonly FORM_WRAPPER_ID = 'training-cards-form';
   formNoTitle = false;
   form;
   trainingCardFormId: null | string = null;
-  FORM_WRAPPER_ID = 'training-cards-form';
-  loadingContent;
+  loadingContent = true;
   contentError;
   errorTranslationKey;
   enketoError;
   enketoStatus;
   enketoSaving;
-  showConfirmExit;
-  subscription: Subscription = new Subscription();
-  isEmbedded = false;
+  showConfirmExit = false;
+  subscriptions: Subscription = new Subscription();
+  isEmbedded = true;
 
   constructor(
     private ngZone: NgZone,
     private store: Store,
+    private readonly route: ActivatedRoute,
     private xmlFormsService: XmlFormsService,
     private formService: FormService,
     private geolocationService: GeolocationService,
@@ -52,11 +54,12 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.trackRender = this.performanceService.track();
     this.reset();
+    this.subscribeToRouteParams();
     this.subscribeToStore();
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    this.subscriptions.unsubscribe();
     this.geoHandle?.cancel();
     // old code checked whether the component is reused before unloading the form
     // this is because AngularJS created the new "controller" before destroying the old one
@@ -67,6 +70,42 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
     // see https://github.com/medic/cht-core/issues/2198#issuecomment-210202785 for AngularJS behavior
     this.formService.unload(this.form);
     this.globalActions.clearEnketoStatus();
+  }
+
+  private subscribeToRouteParams() {
+    const routeSubscription = this.route.params.subscribe(params => {
+      if (!params?.id) {
+        this.loadingContent = false;
+      }
+    });
+    this.subscriptions.add(routeSubscription);
+  }
+
+  private subscribeToStore() {
+    const reduxSubscription = combineLatest([
+      this.store.select(Selectors.getEnketoStatus),
+      this.store.select(Selectors.getEnketoSavingStatus),
+      this.store.select(Selectors.getEnketoError),
+      this.store.select(Selectors.getTrainingCardFormId),
+      this.store.select(Selectors.getTrainingCard),
+    ]).subscribe(([
+      enketoStatus,
+      enketoSaving,
+      enketoError,
+      trainingCardFormId,
+      trainingCard,
+    ]) => {
+      this.enketoStatus = enketoStatus;
+      this.enketoSaving = enketoSaving;
+      this.enketoError = enketoError;
+      this.showConfirmExit = trainingCard.showConfirmExit;
+
+      if (trainingCardFormId && trainingCardFormId !== this.trainingCardFormId) {
+        this.trainingCardFormId = trainingCardFormId;
+        this.loadForm();
+      }
+    });
+    this.subscriptions.add(reduxSubscription);
   }
 
   private loadForm() {
@@ -95,38 +134,12 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
       this.form = await this.formService.render(formContext);
       this.formNoTitle = !formDoc?.title;  // ToDo fix this
       this.loadingContent = false;
+      this.globalActions.setShowContent(true);
       this.recordPerformancePostRender();
     } catch (error) {
       this.setError(error);
       console.error('Trainings Content Component :: Error rendering form.', error);
     }
-  }
-
-  private subscribeToStore() {
-    const reduxSubscription = combineLatest([
-      this.store.select(Selectors.getEnketoStatus),
-      this.store.select(Selectors.getEnketoSavingStatus),
-      this.store.select(Selectors.getEnketoError),
-      this.store.select(Selectors.getTrainingCardFormId),
-      this.store.select(Selectors.getTrainingCard),
-    ]).subscribe(([
-      enketoStatus,
-      enketoSaving,
-      enketoError,
-      trainingCardFormId,
-      trainingCard,
-    ]) => {
-      this.enketoStatus = enketoStatus;
-      this.enketoSaving = enketoSaving;
-      this.enketoError = enketoError;
-      this.showConfirmExit = trainingCard.showConfirmExit;
-
-      if (trainingCardFormId && trainingCardFormId !== this.trainingCardFormId) {
-        this.trainingCardFormId = trainingCardFormId;
-        this.loadForm();
-      }
-    });
-    this.subscription.add(reduxSubscription);
   }
 
   private reset() {
@@ -147,6 +160,7 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
     this.errorTranslationKey = error?.translationKey || 'training_cards.error.loading';
     this.loadingContent = false;
     this.contentError = true;
+    this.globalActions.setShowContent(true);
   }
 
   close() {
