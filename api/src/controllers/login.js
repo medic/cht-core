@@ -364,10 +364,9 @@ const validatePassword = (password, confirmPassword) => {
 const validateSession = async (req) => {
   const sessionRes = await createSession(req);
   if (sessionRes.statusCode !== 200) {
-    throw {
-      status: sessionRes.statusCode,
-      error: 'Not logged in'
-    };
+    const error = new Error('Not logged in');
+    error.status = sessionRes.statusCode;
+    throw error;
   }
   return sessionRes;
 };
@@ -382,7 +381,7 @@ const sendLoginErrorResponse = (e, res) => {
 
 const login = async (req, res) => {
   try {
-    const sessionRes = await validateSession(req, res);
+    const sessionRes = await validateSession(req);
     const { userCtx, redirectUrl } = await setCookies(req, res, sessionRes);
 
     if (!(await skipPasswordChange(userCtx)) && userCtx.password_change_required){

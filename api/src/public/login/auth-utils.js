@@ -45,7 +45,6 @@ export const getLocale = function(translations) {
     if (validLocales.length) {
         return validLocales[0];
     }
-    return;
 };
 
 export const parseTranslations = function() {
