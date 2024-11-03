@@ -1,3 +1,6 @@
+const logger = require('@medic/logger');
+const validationUtils = require('./validation_utils');
+
 const re = {
   alpha: /^[a-zA-Z]+$/,
   alphanumeric: /^[a-zA-Z0-9]+$/,
@@ -66,7 +69,55 @@ const ValidatorFunctions = {
 
   integer: (allValues, value) => parseInt(value, 10) === value,
 
-  equalsto: (allValues, value, equalsToKey) => value === allValues[equalsToKey]
+  equalsto: (allValues, value, equalsToKey) => value === allValues[equalsToKey],
+
+  exists: async (allValues, value, formName, fieldName) => {
+    try {
+      return await validationUtils.exists(allValues, [fieldName], { additionalFilter: `form:${formName}` });
+    } catch (e) {
+      logger.error('Error running "exists" validation: %o', e);
+    }
+  },
+
+  unique: async (allValues, value, ...fieldNames) => {
+    try {
+      const exists = await validationUtils.exists(allValues, fieldNames);
+      return !exists;
+    } catch (e) {
+      logger.error('Error running "unique" validation: %o', e);
+    }
+  },
+
+  uniquewithin: async (allValues, value, ...fields) => {
+    const duration = fields.pop();
+    try {
+      const exists = await validationUtils.exists(allValues, fields, { duration });
+      return !exists;
+    } catch (e) {
+      logger.error('Error running "uniqueWithin" validation: %o', e);
+    }
+  },
+
+  isafter: (allValues, value, duration) => {
+    return validationUtils.compareDate(allValues, value, duration, true);
+  },
+
+  isbefore: (allValues, value, duration) => {
+    return validationUtils.compareDate(allValues, value, duration, false);
+  },
+
+  isisoweek: (allValues, value, weekFieldName, yearFieldName) => {
+    return validationUtils.isISOWeek(allValues, weekFieldName, yearFieldName);
+  },
+
+  validphone: (allValues, value, phoneFieldName) => {
+    return validationUtils.validPhone(allValues[phoneFieldName]);
+  },
+
+  uniquephone: async (allValues, value, phoneFieldName) => {
+    return await validationUtils.uniquePhone(allValues[phoneFieldName]);
+  }
+
 };
 
 module.exports = ValidatorFunctions;
