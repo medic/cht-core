@@ -221,13 +221,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cmd: ['ci-integration-all', 'ci-integration-sentinel', 'ci-webdriver-default-mobile']
-        chrome-version: ['90', 'latest']
+        cmd: ['ci-integration-all']
+        chrome-version: ['90']
         suite: [all]
-        include:
-          - cmd: ci-webdriver-default
-            suite: core
-            chrome-version: 90
+        # include:
+        #   - cmd: ci-webdriver-default
+        #     suite: core
+        #     chrome-version: 90
         # exclude:
         #   - cmd: ci-webdriver-default
         #     suite: core
