@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 
 import { AppRouteGuardProvider } from '../../app-route.guard.provider';
 import { TrainingsComponent } from '@mm-modules/trainings/trainings.component';
-import { TrainingsContentComponent } from '@mm-modules/trainings/training-content.component';
+import { TrainingsContentComponent } from '@mm-modules/trainings/trainings-content.component';
 
 export const routes: Routes = [
   {

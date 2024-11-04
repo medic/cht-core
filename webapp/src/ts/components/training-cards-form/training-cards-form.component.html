@@ -1,0 +1,20 @@
+<div class="item-content empty-selection" [class.col-sm-8]="isEmbedded" *ngIf="contentError || loadingContent">
+  <div *ngIf="loadingContent"><div class="loader"></div></div>
+  <div *ngIf="!loadingContent && contentError">{{ errorTranslationKey | translate }}</div>
+</div>
+
+<div class="item-content"
+  [hidden]="loadingContent || contentError || !trainingCardFormId"
+  [class.form-no-title]="formNoTitle"
+  [class.col-sm-8]="isEmbedded">
+
+  <div class="body">
+    <mm-enketo
+      [formId]="FORM_WRAPPER_ID"
+      [status]="enketoStatus"
+      (onSubmit)="saveForm()"
+      (onCancel)="cancel()">
+    </mm-enketo>
+  </div>
+
+</div>

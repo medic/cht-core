@@ -1,5 +1,4 @@
-import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -14,36 +13,37 @@ import { EnketoFormContext } from '@mm-services/enketo.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 
 @Component({
-  selector: 'training-content',
-  templateUrl: './training-content.component.html'
+  selector: 'training-cards-form',
+  templateUrl: './training-cards-form.component.html',
 })
-export class TrainingsContentComponent implements OnInit, OnDestroy {
+export class TrainingCardsFormComponent implements OnInit, OnDestroy {
+
+  @Input() isEmbedded = true;
+  @Output() quit = new EventEmitter<boolean>();
+  @Output() save = new EventEmitter<boolean>();
 
   private geoHandle:any;
-  private globalActions;
+  private globalActions: GlobalActions;
   private trackRender;
   private trackEditDuration;
   private trackSave;
   private trackMetadata = { action: '', form: '' };
+
   readonly FORM_WRAPPER_ID = 'training-cards-form';
+  trainingCardFormId: null | string = null;
   formNoTitle = false;
   form;
-  trainingCardFormId: null | string = null;
   loadingContent = true;
   contentError;
   errorTranslationKey;
   enketoError;
   enketoStatus;
   enketoSaving;
-  showConfirmExit = false;
   subscriptions: Subscription = new Subscription();
-  isEmbedded = true;
 
   constructor(
     private readonly ngZone: NgZone,
     private readonly store: Store,
-    private readonly route: ActivatedRoute,
-    private readonly router: Router,
     private readonly xmlFormsService: XmlFormsService,
     private readonly formService: FormService,
     private readonly geolocationService: GeolocationService,
@@ -57,7 +57,6 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.trackRender = this.performanceService.track();
     this.reset();
-    this.subscribeToRouteParams();
     this.subscribeToStore();
   }
 
@@ -72,19 +71,7 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
     // for Angular behavior
     // see https://github.com/medic/cht-core/issues/2198#issuecomment-210202785 for AngularJS behavior
     this.formService.unload(this.form);
-    this.globalActions.clearNavigation();
     this.globalActions.clearEnketoStatus();
-  }
-
-  private subscribeToRouteParams() {
-    const routeSubscription = this.route.params.subscribe(params => {
-      this.globalActions.setTrainingCard({ formId: params?.id });
-      if (!params?.id) {
-        this.loadingContent = false;
-        this.globalActions.setShowContent(false);
-      }
-    });
-    this.subscriptions.add(routeSubscription);
   }
 
   private subscribeToStore() {
@@ -93,18 +80,15 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getEnketoSavingStatus),
       this.store.select(Selectors.getEnketoError),
       this.store.select(Selectors.getTrainingCardFormId),
-      this.store.select(Selectors.getTrainingCard),
     ]).subscribe(([
       enketoStatus,
       enketoSaving,
       enketoError,
       trainingCardFormId,
-      trainingCard,
     ]) => {
       this.enketoStatus = enketoStatus;
       this.enketoSaving = enketoSaving;
       this.enketoError = enketoError;
-      this.showConfirmExit = trainingCard.showConfirmExit;
 
       if (trainingCardFormId && trainingCardFormId !== this.trainingCardFormId) {
         this.trainingCardFormId = trainingCardFormId;
@@ -134,11 +118,11 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
   private async renderForm(formDoc) {
     try {
       const formContext = new EnketoFormContext(`#${this.FORM_WRAPPER_ID}`, 'training-card', formDoc);
-      formContext.isFormInModal = true; // ToDo fix this
+      formContext.isFormInModal = !this.isEmbedded;
       formContext.valuechangeListener = this.resetFormError.bind(this);
 
       this.form = await this.formService.render(formContext);
-      this.formNoTitle = !formDoc?.title;  // ToDo fix this
+      this.formNoTitle = !formDoc?.title;
       this.setNavigationTitle(formDoc);
 
       this.loadingContent = false;
@@ -189,11 +173,6 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
     this.globalActions.setShowContent(true);
   }
 
-  close() {
-    // TODO this.globalActions.setTrainingCard({ formId: null, isOpen: false, showConfirmExit: false, nextUrl: null });
-    // ToDo this.matDialogRef.close();
-  }
-
   async saveForm() {
     if (this.enketoSaving) {
       console.debug('Attempted to call TrainingsContentComponent.saveForm more than once');
@@ -212,10 +191,8 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
       this.globalActions.setEnketoSavingStatus(false);
       this.formService.unload(this.form);
       this.globalActions.unsetSelected();
-      this.globalActions.clearNavigation();
       this.recordPerformancePostSave();
-      this.close(); // ToDo fix
-      this.router.navigate([ '/', 'trainings' ]);
+      this.save.emit(true);
     } catch (error) {
       this.globalActions.setEnketoSavingStatus(false);
       console.error('Trainings Content Component :: Error submitting form data.', error);
@@ -246,11 +223,8 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
     });
   }
 
-  confirmExit(confirm) {
-    if (this.contentError) {
-      this.close();
-      return;
-    }
-    this.showConfirmExit = confirm;
+  cancel() {
+    const showConfirmMessage = !this.contentError;
+    this.quit.emit(showConfirmMessage);
   }
 }

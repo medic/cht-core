@@ -1,0 +1,11 @@
+<div class="content-pane right-pane">
+  <div class="item-content empty-selection col-sm-8" *ngIf="showNoSelection">
+    <div>{{ 'training_materials.page.no_selected' | translate }}</div>
+  </div>
+
+  <training-cards-form
+    [hidden]="showConfirmExit || showNoSelection"
+    [isEmbedded]="true"
+    (quit)="quit($event)"
+    (save)="save()"/>
+</div>
