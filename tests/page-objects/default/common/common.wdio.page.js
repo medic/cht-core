@@ -451,7 +451,7 @@ const getAllButtonLabelsNames = async () => {
 
 const isMenuOptionEnabled = async (action) => {
   const parent = await (await kebabMenuSelectors[action]()).parentElement().parentElement();
-  return await parent.getAttribute('aria-disabled') === false;
+  return await parent.getAttribute('aria-disabled') === 'false';
 };
 
 const isMenuOptionVisible = async (action) => {

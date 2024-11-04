@@ -63,9 +63,9 @@ describe('More Options Menu - Offline User - Delete permissions disabled', () =>
       await commonPage.goToPeople(contact._id);
       await commonPage.closeReloadModal();
       await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isMenuOptionEnabled('edit', 'contacts')).to.be.true;
-      expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;
-      expect(await commonPage.isMenuOptionVisible('delete', 'contacts')).to.be.false;
+      expect(await commonPage.isMenuOptionEnabled('edit')).to.be.true;
+      expect(await commonPage.isMenuOptionVisible('export')).to.be.false;
+      expect(await commonPage.isMenuOptionVisible('delete')).to.be.false;
     });
   });
 
@@ -79,10 +79,10 @@ describe('More Options Menu - Offline User - Delete permissions disabled', () =>
       'hide the \'export\' and \'delete\' options when the xml report is opened', async () => {
       await reportPage.goToReportById(xmlReportId);
       await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
-      expect(await commonPage.isMenuOptionEnabled('review', 'report')).to.be.true;
-      expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
-      expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;
+      expect(await commonPage.isMenuOptionEnabled('edit')).to.be.true;
+      expect(await commonPage.isMenuOptionEnabled('review')).to.be.true;
+      expect(await commonPage.isMenuOptionVisible('export')).to.be.false;
+      expect(await commonPage.isMenuOptionVisible('delete')).to.be.false;
     });
   });
 });
