@@ -5,9 +5,9 @@ const re = {
 };
 
 const ValidatorFunctions = {
-  equals: (allValues, value, equalsTo) => value === equalsTo,
+  equals: (allValues, value, equalsTo) => value == equalsTo, // eslint-disable-line eqeqeq
 
-  iequals: (allValues, value, equalsTo) => value.toLowerCase() === equalsTo.toLowerCase(),
+  iequals: (allValues, value, equalsTo) => value.toLowerCase() == equalsTo.toLowerCase(), // eslint-disable-line eqeqeq
 
   sequals: (allValues, value, equalsTo) => value === equalsTo,
 
@@ -28,17 +28,7 @@ const ValidatorFunctions = {
     return ((numVal >= min) && (numVal <= max));
   },
 
-  in: (allValues, value) => {
-    const args = Array.prototype.slice.call(arguments);
-    args.shift();
-    args.shift();
-    for (const arg of args) {  
-      if (arg === value) {
-        return true;
-      }
-    }
-    return false;
-  },
+  in: (allValues, value, ...args) => args.some(arg => arg == value), // eslint-disable-line eqeqeq
 
   required: (allValues, value) => !!value,
 
@@ -64,9 +54,9 @@ const ValidatorFunctions = {
     return (new RegExp(regex, flags)).test(value);
   },
 
-  integer: (allValues, value) => parseInt(value, 10) === value,
+  integer: (allValues, value) => parseInt(value, 10) == value, // eslint-disable-line eqeqeq
 
-  equalsto: (allValues, value, equalsToKey) => value === allValues[equalsToKey]
+  equalsto: (allValues, value, equalsToKey) => value == allValues[equalsToKey], // eslint-disable-line eqeqeq
 };
 
 module.exports = ValidatorFunctions;
