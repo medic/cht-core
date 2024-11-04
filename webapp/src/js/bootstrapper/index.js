@@ -97,7 +97,6 @@
 
     if (showPasswordUI) {
       setUiStatus('PASSWORD_CHANGE_SUCCESS');
-      document.cookie = 'passwordUpdated=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
     }
 
     if (hasFullDataAccess(userCtx)) {

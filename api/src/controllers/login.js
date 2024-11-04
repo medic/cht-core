@@ -60,7 +60,6 @@ const templates = {
       'login.show_password',
       'login.hide_password',
       'change.password.title',
-      'change.password',
       'change.password.hint',
       'change.password.submit',
       'change.password.new.password',
@@ -455,7 +454,7 @@ module.exports = {
       const validation = validatePassword(req.body.password, req.body.confirmPassword);
       if (!validation.isValid) {
         return res.status(400).json({
-          error: `password${validation.error}`,
+          error: `password-${validation.error}`,
           params: validation.params,
         });
       }

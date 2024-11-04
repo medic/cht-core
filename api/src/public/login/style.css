@@ -102,10 +102,10 @@ form {
 .tokentimeout .error.timeout,
 .tokenexpired .error.expired,
 .tokenerror .error.unknown,
-.passwordweak .error.password-weak,
-.passwordshort .error.password-short,
-.passwordmismatch .error.password-mismatch,
-.passwordrequired .error.password-required
+.password-weak .error.password-weak,
+.password-short .error.password-short,
+.password-mismatch .error.password-mismatch,
+.password-required .error.password-required
 {
   display: block;
 }
