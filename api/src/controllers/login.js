@@ -346,7 +346,7 @@ const validatePassword = (password, confirmPassword) => {
     return {
       isValid: false,
       error: 'short',
-      params: { minimum: PASSWORD_MINIMUM_LENGTH}
+      params: { minimum: PASSWORD_MINIMUM_LENGTH }
     };
   }
 

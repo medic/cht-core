@@ -52,13 +52,38 @@ export const parseTranslations = function() {
     return JSON.parse(decodeURIComponent(raw));
 };
 
+const replaceTranslationPlaceholders = (text, translateValues) => {
+    if (!text || !translateValues) {
+        return text;
+    }
+
+    try {
+        const values = JSON.parse(translateValues);
+        console.log(values);
+        return Object.entries(values).reduce((result, [key, value]) =>
+            result.replace(new RegExp(`{{${key}}}`, 'g'), value),
+            text
+        );
+    } catch (e) {
+        console.error('Error parsing translation placeholders', e);
+        return text;
+    }
+}
+
 export const baseTranslate = (selectedLocale, translations) => {
     if (!selectedLocale) {
         return console.error('No enabled locales found - not translating');
     }
     document
         .querySelectorAll('[translate]')
-        .forEach(elem => elem.innerText = translations[selectedLocale][elem.getAttribute('translate')]);
+        .forEach(elem => {
+            let text = translations[selectedLocale][elem.getAttribute('translate')];
+            const translateValues = elem.getAttribute('translate-values');
+            if (translateValues) {
+                text = replaceTranslationPlaceholders(text, translateValues);
+            }
+            elem.innerText = text;
+        });
     document
         .querySelectorAll('[translate-title]')
         .forEach(elem => elem.title = translations[selectedLocale][elem.getAttribute('translate-title')]);
