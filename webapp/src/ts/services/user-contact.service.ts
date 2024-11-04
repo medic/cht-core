@@ -8,10 +8,14 @@ import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
   providedIn: 'root'
 })
 export class UserContactService {
+  private readonly getPerson: ReturnType<typeof Person.v1.get>;
+  private readonly getPersonWithLineage: ReturnType<typeof Person.v1.getWithLineage>;
   constructor(
     private userSettingsService: UserSettingsService,
-    private chtDatasourceService: CHTDatasourceService,
+    chtDatasourceService: CHTDatasourceService,
   ) {
+    this.getPerson = chtDatasourceService.bind(Person.v1.get);
+    this.getPersonWithLineage = chtDatasourceService.bind(Person.v1.getWithLineage);
   }
 
   async get({ hydrateLineage = true } = {}) {
@@ -19,8 +23,8 @@ export class UserContactService {
     if (!user?.contact_id) {
       return null;
     }
-    const getPerson = await this.chtDatasourceService.bind(hydrateLineage ? Person.v1.getWithLineage : Person.v1.get);
-    return await getPerson(Qualifier.byUuid(user.contact_id));
+    const getPerson = hydrateLineage ? this.getPersonWithLineage : this.getPerson;
+    return getPerson(Qualifier.byUuid(user.contact_id));
   }
 
   private getUserSettings = async () => {

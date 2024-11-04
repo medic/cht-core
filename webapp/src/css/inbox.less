@@ -198,10 +198,16 @@ body {
     a .button-label {
       margin-top: 3px;
       position: relative;
-      overflow: hidden;
-      word-wrap: break-word;
       color: @nav-icon-gray;
       font-size: @font-XXS;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      hyphens: auto;
+      white-space: normal;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
       text-overflow: ellipsis;
     }
 
@@ -1289,9 +1295,10 @@ mm-sidebar-menu .mat-sidenav-container {
     }
   }
 
-  mm-panel-header {
+  .mat-sidenav mm-panel-header {
     background: @top-header-color;
     height: @sidebar-menu-header-desktop;
+    padding: 0;
 
     .panel-header {
       justify-content: flex-end;
@@ -1303,13 +1310,13 @@ mm-sidebar-menu .mat-sidenav-container {
       font-size: @font-XXL;
       font-weight: bold;
       line-height: @font-XXL;
-      margin-left: 15px;
+      margin-left: -15px;
       color: @text-inverse-color;
       letter-spacing: normal;
     }
 
     .panel-header-close {
-      width: 20px;
+      width: 80px;
       text-align: center;
 
       mat-icon {
@@ -1366,6 +1373,7 @@ mm-sidebar-menu .mat-sidenav-container {
     mat-icon {
       text-align: center;
       margin-right: 15px;
+      margin-left: 10px;
       flex-shrink: 0;
     }
   }
@@ -1402,10 +1410,20 @@ mm-sidebar-menu .mat-sidenav-container {
       height: calc(@sidebar-menu-height - @sidebar-menu-header-mobile);
     }
 
-    mm-panel-header {
+    .nav-item mat-icon {
+      margin-left: -6px;
+    }
+
+    .mat-sidenav mm-panel-header {
       height: @sidebar-menu-header-mobile;
+
       .panel-header-title {
         font-size: @font-extra-large;
+        margin-left: 0;
+      }
+
+      .panel-header-close {
+        width: 48px;
       }
     }
   }
@@ -1452,29 +1470,34 @@ mm-sidebar-menu .mat-sidenav-container {
         flex-direction: row;
         align-items: center;
         justify-content: center;
-        .button-label {
-          top: 0;
-          font-size: @font-XXS;
-          padding-top: 5px;
-          text-overflow: ellipsis;
-          margin-top: 0;
+    
+        a .button-label {
+            top: 0;
+            font-size: @font-XXS;
+            padding-top: 5px;
+            margin-top: 3px;
+            overflow: hidden;
+            word-wrap: break-word;
+            color: @nav-icon-gray;
+            text-overflow: ellipsis;
+            white-space: unset;
+            word-break: unset;
         }
-
+    
         a {
-          min-width: 65px;
-          margin-top: 1px;
-
-          .mm-icon {
-            padding: 8px 0;
-          }
-
-          &.selected
-          .mm-icon {
-            border-radius: 999px;
-            background-color: @tab-selected-color;
-          }
+            min-width: 65px;
+            margin-top: 1px;
+    
+            .mm-icon {
+                padding: 8px 0;
+            }
+    
+            &.selected .mm-icon {
+                border-radius: 999px;
+                background-color: @tab-selected-color;
+            }
         }
-      }
+    }
     }
 
     &.select-mode {
@@ -1883,4 +1906,3 @@ mm-sidebar-menu .mat-sidenav-container {
     display: none;
   }
 }
-
