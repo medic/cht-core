@@ -2,6 +2,9 @@ const request = require('request-promise-native');
 const isPlainObject = require('lodash/isPlainObject');
 const environment = require('@medic/environment');
 const servername = environment.host;
+let asyncLocalStorage;
+let requestIdHeader;
+
 
 const isString = value => typeof value === 'string' || value instanceof String;
 const isTrue = value => isString(value) ? value.toLowerCase() === 'true' : value === true;
@@ -19,11 +22,17 @@ const methods = {
 const mergeOptions = (target, source, exclusions = []) => {
   for (const [key, value] of Object.entries(source)) {
     if (Array.isArray(exclusions) && exclusions.includes(key)) {
-      return target;
+      continue;
     }
     target[key] = value; // locally, mutation is preferable to spreading as it doesn't
     // make new objects in memory. Assuming this is a hot path.
   }
+  const localStorage = asyncLocalStorage?.getStore();
+  if (localStorage?.clientRequest?.id) {
+    target.headers = target.headers || {};
+    target.headers[requestIdHeader] = localStorage?.clientRequest.id;
+  }
+
   return target;
 };
 
@@ -104,6 +113,11 @@ const getRequestType = (method) => {
 };
 
 module.exports = {
+  initialize: (store, header) => {
+    asyncLocalStorage = store;
+    requestIdHeader = header;
+  },
+
   get: (first, second = {}) => req(methods.GET, first, second),
   post: (first, second = {}) => req(methods.POST, first, second),
   put: (first, second = {}) => req(methods.PUT, first, second),

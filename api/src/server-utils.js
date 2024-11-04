@@ -4,6 +4,7 @@ const environment = require('@medic/environment');
 const isClientHuman = require('./is-client-human');
 const logger = require('@medic/logger');
 const MEDIC_BASIC_AUTH = 'Basic realm="Medic Web Services"';
+const REQUEST_ID_HEADER = 'X-Request-UUID';
 const cookie = require('./services/cookie');
 const {InvalidArgumentError} = require('@medic/cht-datasource');
 
@@ -49,6 +50,7 @@ const promptForBasicAuth = res => {
 
 module.exports = {
   MEDIC_BASIC_AUTH: MEDIC_BASIC_AUTH,
+  REQUEST_ID_HEADER: REQUEST_ID_HEADER,
 
   /*
    * Attempts to determine the correct response given the error code.

@@ -77,6 +77,7 @@ const dbDocHandler = require('./controllers/db-doc');
 const extensionLibs = require('./controllers/extension-libs');
 const replication = require('./controllers/replication');
 const app = express.Router({ strict: true });
+const asyncLocalStorage = require('./services/async-storage');
 const moment = require('moment');
 const MAX_REQUEST_SIZE = '32mb';
 
@@ -158,7 +159,8 @@ if (process.argv.slice(2).includes('--allow-cors')) {
 
 app.use((req, res, next) => {
   req.id = uuid.v4();
-  next();
+  req.headers[serverUtils.REQUEST_ID_HEADER] = req.id;
+  asyncLocalStorage.run({ clientRequest: req }, () => next());
 });
 app.use(getLocale);
 

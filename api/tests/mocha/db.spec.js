@@ -1,5 +1,6 @@
 const sinon = require('sinon');
 require('chai').use(require('chai-as-promised'));
+const PouchDB = require('pouchdb-core');
 const { expect } = require('chai');
 const rewire = require('rewire');
 const request = require('@medic/couch-request');
@@ -8,6 +9,7 @@ let db;
 let unitTestEnv;
 
 const env = require('@medic/environment');
+const asyncLocalStorage = require('../../src/services/async-storage');
 
 describe('db', () => {
   beforeEach(() => {
@@ -402,6 +404,41 @@ describe('db', () => {
         .to.be.rejectedWith(Error, `Cannot add security: invalid db name  or role arole`);
       await expect(db.addRoleAsMember('dbanme', ''))
         .to.be.rejectedWith(Error, `Cannot add security: invalid db name dbanme or role`);
+    });
+  });
+
+  describe('fetch extension', () => {
+    it('should set headers where there is an active client request', async () => {
+      sinon.stub(PouchDB, 'fetch').resolves({
+        json: sinon.stub().resolves({ result: true }),
+        ok: true,
+      });
+      sinon.stub(asyncLocalStorage, 'getStore').returns({ clientRequest: { id: 'the_id' } });
+      db = rewire('../../src/db');
+
+      await db.medic.info();
+      const headers = PouchDB.fetch.args.map(arg => arg[1].headers);
+      expect(headers.length).to.equal(4);
+      headers.forEach((header) => {
+        expect(header.get('X-Medic-Service')).to.equal('api');
+        expect(header.get('X-Request-UUID')).to.equal('the_id');
+      });
+    });
+
+    it('should work when call is made without an active clinet request', async () => {
+      sinon.stub(PouchDB, 'fetch').resolves({
+        json: sinon.stub().resolves({ result: true }),
+        ok: true,
+      });
+      sinon.stub(asyncLocalStorage, 'getStore').returns(undefined);
+      db = rewire('../../src/db');
+
+      await db.medic.info();
+      const headers = PouchDB.fetch.args.map(arg => arg[1].headers);
+      expect(headers.length).to.equal(4);
+      headers.forEach((header) => {
+        expect(header.get('X-Medic-Service')).to.equal('api');
+      });
     });
   });
 });

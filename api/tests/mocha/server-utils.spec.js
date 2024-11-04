@@ -282,4 +282,8 @@ describe('Server utils', () => {
       chai.expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
     });
   });
+
+  it('should export request header', () => {
+    chai.expect(serverUtils.REQUEST_ID_HEADER).to.equal('X-Request-UUID');
+  });
 });
