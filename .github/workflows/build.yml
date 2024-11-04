@@ -223,7 +223,7 @@ jobs:
       matrix:
         cmd: ['ci-webdriver-default']
         chrome-version: ['90']
-        suite: [all]
+        # suite: [all]
         # include:
         #   - cmd: ci-webdriver-default
         #     suite: core
