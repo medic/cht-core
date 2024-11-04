@@ -1157,4 +1157,27 @@ describe('validations', () => {
 
   });
 
+  it('should validate integers', () => {
+    const validations = [
+      {
+        property: 'lmp_year',
+        rule: '(integer && min(2078) && max(2090))',
+        translation_key: 'registration.lmp_date.year.incorrect'
+      },
+      {
+        property: 'lmp_month',
+        rule: '(integer && min(1) && max(12))',
+        translation_key: 'registration.lmp_date.month.incorrect'
+      }
+    ];
+    const doc = {
+      _id: 'same',
+      lmp_year: '2080',
+      lmp_month: '10'
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.deepEqual(errors, []);
+    });
+  });
+
 });
