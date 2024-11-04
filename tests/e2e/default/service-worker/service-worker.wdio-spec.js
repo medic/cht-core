@@ -120,6 +120,7 @@ describe('Service worker cache', () => {
       '/img/icon-pregnant-selected.svg',
       '/img/icon-pregnant.svg',
       '/img/icon-filter.svg',
+      '/img/icon-check.svg',
       '/img/icon.png',
       '/img/icon-back.svg',
       '/img/layers.png',

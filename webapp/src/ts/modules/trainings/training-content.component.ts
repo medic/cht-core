@@ -1,5 +1,5 @@
 import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -11,6 +11,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { EnketoFormContext } from '@mm-services/enketo.service';
+import { TranslateFromService } from '@mm-services/translate-from.service';
 
 @Component({
   selector: 'training-content',
@@ -39,14 +40,16 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
   isEmbedded = true;
 
   constructor(
-    private ngZone: NgZone,
-    private store: Store,
+    private readonly ngZone: NgZone,
+    private readonly store: Store,
     private readonly route: ActivatedRoute,
-    private xmlFormsService: XmlFormsService,
-    private formService: FormService,
-    private geolocationService: GeolocationService,
-    private translateService: TranslateService,
-    private performanceService: PerformanceService,
+    private readonly router: Router,
+    private readonly xmlFormsService: XmlFormsService,
+    private readonly formService: FormService,
+    private readonly geolocationService: GeolocationService,
+    private readonly translateService: TranslateService,
+    private readonly performanceService: PerformanceService,
+    private readonly translateFromService: TranslateFromService,
   ) {
     this.globalActions = new GlobalActions(this.store);
   }
@@ -69,13 +72,16 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
     // for Angular behavior
     // see https://github.com/medic/cht-core/issues/2198#issuecomment-210202785 for AngularJS behavior
     this.formService.unload(this.form);
+    this.globalActions.clearNavigation();
     this.globalActions.clearEnketoStatus();
   }
 
   private subscribeToRouteParams() {
     const routeSubscription = this.route.params.subscribe(params => {
+      this.globalActions.setTrainingCard({ formId: params?.id });
       if (!params?.id) {
         this.loadingContent = false;
+        this.globalActions.setShowContent(false);
       }
     });
     this.subscriptions.add(routeSubscription);
@@ -133,6 +139,8 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
 
       this.form = await this.formService.render(formContext);
       this.formNoTitle = !formDoc?.title;  // ToDo fix this
+      this.setNavigationTitle(formDoc);
+
       this.loadingContent = false;
       this.globalActions.setShowContent(true);
       this.recordPerformancePostRender();
@@ -140,6 +148,24 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
       this.setError(error);
       console.error('Trainings Content Component :: Error rendering form.', error);
     }
+  }
+
+  private setNavigationTitle(formDoc) {
+    if (!this.isEmbedded) {
+      return;
+    }
+
+    if (formDoc?.translation_key) {
+      this.globalActions.setTitle(this.translateService.instant(formDoc.translation_key));
+      return;
+    }
+
+    if (formDoc?.title) {
+      this.globalActions.setTitle(this.translateFromService.get(formDoc?.title));
+      return;
+    }
+
+    this.globalActions.setTitle(formDoc?.internalId);
   }
 
   private reset() {
@@ -185,9 +211,11 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
       this.globalActions.setSnackbarContent(snackText);
       this.globalActions.setEnketoSavingStatus(false);
       this.formService.unload(this.form);
+      this.globalActions.unsetSelected();
+      this.globalActions.clearNavigation();
       this.recordPerformancePostSave();
       this.close(); // ToDo fix
-
+      this.router.navigate([ '/', 'trainings' ]);
     } catch (error) {
       this.globalActions.setEnketoSavingStatus(false);
       console.error('Trainings Content Component :: Error submitting form data.', error);

@@ -54,7 +54,6 @@ export class TrainingsComponent implements OnInit, OnDestroy {
   private subscribeToRouteParams() {
     const routeSubscription = this.route.firstChild?.params.subscribe(params => {
       this.selectedTrainingId = params?.id;
-      this.globalActions.setTrainingCard({ formId: this.selectedTrainingId });
     });
     this.subscriptions.add(routeSubscription);
   }
@@ -64,25 +63,6 @@ export class TrainingsComponent implements OnInit, OnDestroy {
     this.loading = false;
     await this.recordInitialLoadPerformance();
   }
-
-  /*private async prepareReports(reports, isContent=false) {
-    const userLineageLevel = await this.userLineageLevel;
-    return reports.map(report => {
-      const form = _find(this.forms, { code: report.form });
-      const subTitle = form ? form.title : report.form;
-      report.summary = isContent ? { ...report } : subTitle;
-      report.expanded = false;
-      report.icon = form && form.icon;
-      report.heading = this.getReportHeading(form, report);
-      report.lineage = report.subject && report.subject.lineage || report.lineage;
-      report.unread = !report.read;
-      if (Array.isArray(report.lineage)) {
-        report.lineage = this.extractLineageService.removeUserFacility(report.lineage, userLineageLevel);
-      }
-
-      return report;
-    });
-  }*/
 
   private async recordInitialLoadPerformance() {
     if (!this.trackInitialLoadPerformance) {

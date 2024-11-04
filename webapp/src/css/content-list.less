@@ -223,8 +223,14 @@
     &.selected, &.selected-to-view {
       background-color: @training-highlight;
     }
+
     &:hover {
       border-left-color: @training-color;
+    }
+
+    &.completed .mat-icon-check {
+      padding-top: 7px;
+      color: @ok-color;
     }
   }
 }

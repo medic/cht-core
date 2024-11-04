@@ -1,4 +1,4 @@
-<mm-tool-bar title="training_materials.page.title"></mm-tool-bar>
+<mm-tool-bar title="training_materials.page.title"/>
 
 <div class="inner">
   <div class="inbox page">
@@ -10,6 +10,7 @@
           [attr.data-record-id]="training.code"
           [class.selected]="training.code === selectedTrainingId"
           [class.completed]="training.isCompletedTraining">
+
           <a [routerLink]="['/', 'trainings', training.code]" [state]="{ tab: 'trainings', id: training.code }">
             <div class="content">
               <div class="heading">
@@ -17,9 +18,11 @@
                   <span *ngIf="training.title">{{ training.title | translate }}</span>
                   <span *ngIf="training.code">{{ training.code }}</span>
                 </h4>
+                <mat-icon *ngIf="training.isCompletedTraining" class="mat-icon-check" svgIcon="icon-check"/>
               </div>
             </div>
           </a>
+
         </li>
       </ul>
 
@@ -28,7 +31,7 @@
       <div class="loader" *ngIf="loading"></div>
     </div>
 
-    <router-outlet></router-outlet>
+    <router-outlet/>
 
   </div>
 </div>

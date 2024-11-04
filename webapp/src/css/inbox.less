@@ -60,12 +60,13 @@ body {
       .tool-bar {
         background-color: @top-header-color;
 
-        .ellipsis-title {
+        .ellipsis-title,
+        .app-menu-button .mat-icon[fonticon="fa-bars"]:before {
           color: @text-inverse-color;
         }
 
-        .app-menu-button .mat-icon[fonticon="fa-bars"]:before {
-          color: @text-inverse-color;
+        .navigation .mat-icon-back path {
+          fill: @text-inverse-color;
         }
       }
 

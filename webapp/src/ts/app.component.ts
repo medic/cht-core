@@ -99,6 +99,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     ['icon-close', './img/icon-close.svg'],
     ['icon-filter', './img/icon-filter.svg'],
     ['icon-back', './img/icon-back.svg'],
+    ['icon-check', './img/icon-check.svg'],
   ]);
 
   constructor (
