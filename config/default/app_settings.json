@@ -93,6 +93,9 @@
     "can_access_gateway_api": [
       "gateway"
     ],
+    "can_aggregate_targets": [
+      "chw_supervisor"
+    ],
     "can_bulk_delete_reports": [
       "program_officer",
       "chw_supervisor",
@@ -122,6 +125,7 @@
     "can_create_users": [
       "program_officer"
     ],
+    "can_default_facility_filter": [],
     "can_delete_contacts": [
       "program_officer",
       "chw_supervisor",
@@ -156,6 +160,9 @@
       "chw_supervisor",
       "chw"
     ],
+    "can_export_devices_details": [
+      "national_admin"
+    ],
     "can_export_all": [
       "program_officer",
       "crfo"
@@ -174,7 +181,9 @@
       "chw_supervisor",
       "chw"
     ],
+    "can_have_multiple_places": [],
     "can_log_out_on_android": [],
+    "can_skip_password_change": [],
     "can_update_places": [
       "program_officer",
       "chw_supervisor",
@@ -186,6 +195,9 @@
       "chw"
     ],
     "can_update_users": [
+      "program_officer"
+    ],
+    "can_upgrade": [
       "program_officer"
     ],
     "can_export_dhis": [
@@ -264,6 +276,7 @@
     "can_view_tasks_group": [
       "chw"
     ],
+    "can_view_old_navigation": [],
     "can_view_unallocated_data_records": [
       "gateway",
       "program_officer",
@@ -273,20 +286,7 @@
     "can_view_users": [
       "program_officer"
     ],
-    "can_write_wealth_quintiles": [],
-    "can_aggregate_targets": [
-      "chw_supervisor"
-    ],
-    "can_upgrade": [
-      "program_officer"
-    ],
-    "can_view_old_navigation": [],
-    "can_default_facility_filter": [],
-    "can_have_multiple_places": [],
-    "can_skip_password_change": [],
-    "can_export_devices_details": [
-      "national_admin"
-    ]
+    "can_write_wealth_quintiles": []
   },
   "uhc": {
     "contacts_default_sort": "",

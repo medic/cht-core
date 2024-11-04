@@ -7,7 +7,7 @@ const TRANSLATIONS = {
   en: {
     FETCH_INFO: ({ count, total }) => `Fetching info (${count} of ${total} docs )…`,
     LOAD_APP: 'Loading app…',
-    PASSWORD_CHANGE_SUCCESS: 'Password Change successfully',
+    PASSWORD_CHANGE_SUCCESS: 'Password change successfully',
     PURGE_INIT: 'Checking data…',
     PURGE_INFO: ({ count }) => `Cleaned ${count} documents…`,
     PURGE_META: 'Cleaning metadata…',
@@ -26,6 +26,7 @@ const TRANSLATIONS = {
   es: {
     FETCH_INFO: ({ count, total }) => `Obteniendo información (${count} de ${total} docs)…`,
     LOAD_APP: 'Cargando aplicación…',
+    PASSWORD_CHANGE_SUCCESS: 'Cambio de contraseña exitoso',
     PURGE_INIT: 'Verificación de datos…',
     PURGE_INFO: ({ count }) => `Limpiado ${count} documentos…`,
     PURGE_META: 'Limpieza de metadatos…',

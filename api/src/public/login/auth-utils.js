@@ -59,9 +59,9 @@ const replaceTranslationPlaceholders = (text, translateValues) => {
 
     try {
         const values = JSON.parse(translateValues);
-        console.log(values);
-        return Object.entries(values).reduce((result, [key, value]) =>
-            result.replace(new RegExp(`{{${key}}}`, 'g'), value),
+        return Object
+            .entries(values)
+            .reduce((result, [key, value]) => result.replace(new RegExp(`{{${key}}}`, 'g'), value),
             text
         );
     } catch (e) {

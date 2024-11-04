@@ -19,8 +19,7 @@ const rateLimitService = require('../services/rate-limit');
 const serverUtils = require('../server-utils');
 const passwordTester = require('simple-password-tester');
 
-const PASSWORD_MINIMUM_LENGTH = 8;
-const PASSWORD_MINIMUM_SCORE = 50;
+const { PASSWORD_MINIMUM_LENGTH, PASSWORD_MINIMUM_SCORE } = require('@medic/user-management/src/users');
 
 const templates = {
   login: {
@@ -69,7 +68,7 @@ const templates = {
       'change.password.required',
       'password.weak',
       'password.length.minimum',
-      'Passwords must match'
+      'password.must.match'
     ],
   }
 };
@@ -240,8 +239,7 @@ const setCookies = (req, res, sessionRes) => {
           }
         })
         .then(() => {
-          const selectedLocale = req.body.locale
-            || config.get('locale');
+          const selectedLocale = req.body.locale || config.get('locale');
           cookie.setLocale(res, selectedLocale);
           return {
             userCtx,
@@ -384,7 +382,8 @@ const login = async (req, res) => {
     const sessionRes = await validateSession(req);
     const { userCtx, redirectUrl } = await setCookies(req, res, sessionRes);
 
-    if (!(await skipPasswordChange(userCtx)) && userCtx.password_change_required){
+    const redirectPasswordReset = !await skipPasswordChange(userCtx);
+    if (redirectPasswordReset){
       return res.status(302).send('/medic/password-reset');
     }
 
@@ -433,7 +432,7 @@ module.exports = {
       });
   },
 
-  passwordResetGet: (req, res, next) => {
+  getPasswordReset: (req, res, next) => {
     return renderPasswordReset(req)
       .then(body => {
         res.setHeader(
@@ -446,7 +445,7 @@ module.exports = {
       })
       .catch(next);
   },
-  passwordResetPost: async (req, res) => {
+  resetPassword: async (req, res) => {
     const limited = await rateLimitService.isLimited(req);
     if (limited) {
       return serverUtils.rateLimited(req, res);
@@ -475,7 +474,6 @@ module.exports = {
         user: user.name,
         password: req.body.password,
         locale: req.body.locale,
-        password_updated: true,
       };
 
       const sessionRes = await createSessionRetry(req);

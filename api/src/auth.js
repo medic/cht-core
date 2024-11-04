@@ -63,7 +63,7 @@ module.exports = {
             .get(`org.couchdb.user:${auth.userCtx.name}`)
             .then(user => ({
               ...auth.userCtx,
-              password_change_required: user.password_change_required || false
+              password_change_required: !!user.password_change_required
             }));
         }
         throw { code: 500, message: 'Failed to authenticate' };

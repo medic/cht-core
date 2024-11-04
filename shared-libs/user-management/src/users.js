@@ -1177,6 +1177,10 @@ module.exports = {
    */
   parseCsv,
 
+  PASSWORD_MINIMUM_LENGTH,
+
+  PASSWORD_MINIMUM_SCORE,
+
   createMultiFacilityUser,
 
   checkPayloadFacilityCount,

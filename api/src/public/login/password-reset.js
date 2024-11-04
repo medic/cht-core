@@ -31,12 +31,10 @@ const displayPasswordValidationError = (serverResponse) => {
     const { error, params } = JSON.parse(serverResponse);
     setState(error);
 
-    if (params?.minimum) {
-        const passwordError = document.querySelector('.error.password-short');
-        if (passwordError) {
-            passwordError.setAttribute('translate-values', JSON.stringify(params));
-            baseTranslate(selectedLocale, translations);
-        }
+    const passwordError = document.querySelector('.error.password-short');
+    if (params?.minimum && passwordError) {
+        passwordError.setAttribute('translate-values', JSON.stringify(params));
+        baseTranslate(selectedLocale, translations);
     }
 };
 
