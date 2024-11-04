@@ -97,7 +97,7 @@ describe('validator functions', () => {
       assert.isTrue(validatorFunctions.siequals(null, 'a', 'a'));
     });
 
-    it('should return false for equal values difference case', () => {
+    it('should return true for equal values difference case', () => {
       assert.isTrue(validatorFunctions.siequals(null, 'a', 'A'));
     });
 
