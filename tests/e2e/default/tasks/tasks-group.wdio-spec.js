@@ -122,8 +122,8 @@ describe('Tasks group landing page', () => {
   };
 
   const expectTasksGroupLeaveModal = async () => {
-    await (await modalPage.body()).waitForClickable();
-    expect(await (await modalPage.body()).getText()).to.equal(
+    await modalPage.body().waitForClickable();
+    expect(await modalPage.body().getText()).to.equal(
       'Are you sure you want to leave this page? You will no longer be able to see this household\'s other tasks.'
     );
     // modals have an animation, so clicking immediately on any of the buttons, mid animation, might cause the click to
@@ -260,13 +260,13 @@ describe('Tasks group landing page', () => {
       await commonPage.goToPeople('', false);
       await expectTasksGroupLeaveModal();
       await modalPage.submit();
-      await (await contactsPage.leftPanelSelectors.contactList()).waitForDisplayed();
-      await (await commonPage.waitForPageLoaded());
+      await contactsPage.leftPanelSelectors.contactList().waitForDisplayed();
+      await commonPage.waitForPageLoaded();
     });
 
     it('should not show page when there are no more household tasks', async () => {
       await commonPage.goToTasks();
-      await (await commonPage.waitForPageLoaded());
+      await commonPage.waitForPageLoaded();
       await tasksPage.getTasks();
       const task = await tasksPage.getTaskByContactAndForm('Napoleon Bonaparte', 'person_create');
       await task.click();

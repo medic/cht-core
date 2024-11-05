@@ -55,8 +55,8 @@ describe('Tasks', () => {
     expect(username).to.equal(chw.username);
     expect(url).to.equal('localhost');
     expect(errorMessage).to.equal('Error fetching tasks');
-    expect(await (await errorStack.isDisplayed())).to.be.true;
-    expect(await (await errorStack.getText())).to
+    expect(await errorStack.isDisplayed()).to.be.true;
+    expect(await errorStack.getText()).to
       .include('TypeError: Cannot read properties of undefined (reading \'name\')');
 
     const feedbackDocs = await chtDbUtils.getFeedbackDocs();

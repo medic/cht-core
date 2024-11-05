@@ -115,7 +115,7 @@ describe('Bikram Sambat date display', () => {
     await chtConfUtils.compileAndUploadAppForms(formsPath);
 
     await loginPage.cookieLogin();
-    await (await commonPage.analyticsTab()).waitForDisplayed();
+    await commonPage.analyticsTab().waitForDisplayed();
   });
 
   after(async () => {

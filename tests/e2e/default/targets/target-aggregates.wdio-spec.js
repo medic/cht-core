@@ -179,8 +179,8 @@ describe('Target aggregates', () => {
         const target = expectedTargets[2];
         await targetAggregatesPage.openTargetDetails(target);
         await browser.refresh();
-        expect(await (await targetAggregatesPage.targetDetail.title(target.title)).isDisplayed()).to.be.true;
-        expect(await (await targetAggregatesPage.targetDetail.counter()).getText()).to.equal(target.counter);
+        expect(await targetAggregatesPage.targetDetail.title(target.title).isDisplayed()).to.be.true;
+        expect(await targetAggregatesPage.targetDetail.counter().getText()).to.equal(target.counter);
 
         await targetAggregatesPage.openSidebarFilter();
         expect((await targetAggregatesPage.sidebarFilter.optionsContainer()).length).to.equal(1);
@@ -267,14 +267,14 @@ describe('Target aggregates', () => {
         await browser.back();
 
         const firstTargetItem =
-          await (await targetAggregatesPage.getTargetItem(expectedTargets[0], CURRENT_PERIOD, districtHospital1.name));
+          await targetAggregatesPage.getTargetItem(expectedTargets[0], CURRENT_PERIOD, districtHospital1.name);
         await helperFunctions.assertTitle(firstTargetItem.title, expectedTargets[0].title);
 
         await targetAggregatesPage.openTargetDetails(expectedTargets[1]);
 
         await targetAggregatesPage.clickOnTargetAggregateListItem(prometheus._id);
         // wait until contact-summary is loaded
-        await (await contactsPage.contactCardSelectors.contactCardName()).waitForDisplayed();
+        await contactsPage.contactCardSelectors.contactCardName().waitForDisplayed();
         expect(await contactsPage.getContactInfoName()).to.equal('Prometheus');
         // assert that the activity card exists and has the right fields.
         expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
@@ -282,7 +282,7 @@ describe('Target aggregates', () => {
 
         await browser.back();
         const secondTargetItem =
-          await (await targetAggregatesPage.getTargetItem(expectedTargets[1], CURRENT_PERIOD, districtHospital1.name));
+          await targetAggregatesPage.getTargetItem(expectedTargets[1], CURRENT_PERIOD, districtHospital1.name);
         await helperFunctions.assertTitle(secondTargetItem.title, expectedTargets[1].title);
       });
 

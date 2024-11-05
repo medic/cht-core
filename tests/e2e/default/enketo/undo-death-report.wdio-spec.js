@@ -45,7 +45,7 @@ describe('Submit an undo death report', () => {
     await commonPage.waitForPageLoaded();
     await commonPage.sync(true);
 
-    expect(await (await contactPage.deathCardSelectors.deathCard()).isDisplayed()).to.be.false;
+    expect(await contactPage.deathCardSelectors.deathCard().isDisplayed()).to.be.false;
 
     // Verify that the report was created successfully
     await commonPage.goToReports();

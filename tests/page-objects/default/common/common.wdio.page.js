@@ -56,7 +56,7 @@ const errorLog = () => $(`error-log`);
 const sideBarMenuTitle = () => $('aria/Menu');
 
 const isHamburgerMenuOpen = async () => {
-  return await (await $('mat-sidenav-container.mat-drawer-container-has-open')).isExisting();
+  return await $('mat-sidenav-container.mat-drawer-container-has-open').isExisting();
 };
 
 const openMoreOptionsMenu = async () => {

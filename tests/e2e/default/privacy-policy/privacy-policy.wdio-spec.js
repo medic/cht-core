@@ -36,13 +36,13 @@ describe('Privacy policy', () => {
 
       it('should show the correct privacy policy on login', async () => {
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), englishTexts, user.isOffline);
-        expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
+        expect(await commonElements.messagesTab().isDisplayed()).to.be.true;
       });
 
       it('should not show on refresh', async () => {
         await browser.url('/');
-        await (await commonElements.messagesTab()).waitForDisplayed();
-        expect(await (await privacyPage.privacyWrapper()).isDisplayed()).to.not.be.true;
+        await commonElements.messagesTab().waitForDisplayed();
+        expect(await privacyPage.privacyWrapper().isDisplayed()).to.not.be.true;
       });
 
       it('should display when navigating to the privacy policy page', async () => {
@@ -54,8 +54,8 @@ describe('Privacy policy', () => {
         await browser.reloadSession();
         await browser.url('/');
         await loginPage.login({ username: user.username, password: user.password });
-        await (await commonElements.messagesTab()).waitForDisplayed();
-        expect(await (await privacyPage.privacyWrapper()).isDisplayed()).to.not.be.true;
+        await commonElements.messagesTab().waitForDisplayed();
+        expect(await privacyPage.privacyWrapper().isDisplayed()).to.not.be.true;
       });
 
       it('should show french policy on secondary login', async () => {
@@ -63,14 +63,14 @@ describe('Privacy policy', () => {
         await browser.url('/');
         await loginPage.login({ username: user.username, password: user.password, locale: 'fr', privacyPolicy: true });
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), frenchTexts);
-        expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
+        expect(await commonElements.messagesTab().isDisplayed()).to.be.true;
       });
 
       it('should show if the user changes their language', async () => {
         await browser.setCookies({ name: 'locale', value: 'es' });
         await browser.refresh();
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), spanishTexts);
-        expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
+        expect(await commonElements.messagesTab().isDisplayed()).to.be.true;
       });
 
       it('should show if the user policy changes', async () => {
@@ -100,7 +100,7 @@ describe('Privacy policy', () => {
         await browser.refresh();
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), text);
 
-        expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
+        expect(await commonElements.messagesTab().isDisplayed()).to.be.true;
       });
     });
   });
@@ -134,7 +134,7 @@ describe('Privacy policy', () => {
       await privacyPage.waitForPolicy(await privacyPage.privacyWrapper(), englishTexts);
       await privacyPage.acceptPrivacyPolicy();
       await commonElements.sync();
-      expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
+      expect(await commonElements.messagesTab().isDisplayed()).to.be.true;
       passed = true;
     });
   });

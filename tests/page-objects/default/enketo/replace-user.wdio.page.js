@@ -12,28 +12,23 @@ const warningMsgPhone = () => $('span[data-value=" /replace_user/new_contact_pho
 const warningMsgContactName = () => $('span[data-value=" /replace_user/new_contact_name "]');
 
 const selectAdminCode = async (code) => {
-  await (await adminCodeField()).waitForDisplayed();
-  await (await adminCodeField()).setValue(code);
+  await adminCodeField().setValue(code);
 };
 
 const selectContactFullName = async (name) => {
-  await (await fullNameField()).waitForDisplayed();
-  await (await fullNameField()).setValue(name);
+  await fullNameField().setValue(name);
 };
 
 const selectContactDobUnknown = async () => {
-  await (await dobUnknownField()).waitForClickable();
-  await (await dobUnknownField()).click();
+  await dobUnknownField().click();
 };
 
 const selectContactAgeYears = async (years) => {
-  await (await yearsField()).waitForDisplayed();
-  await (await yearsField()).setValue(years);
+  await yearsField().setValue(years);
 };
 
 const selectContactSex = async (sex) => {
-  await (await sexField(sex)).waitForClickable();
-  await (await sexField(sex)).click();
+  await sexField(sex).click();
 };
 
 const getWarningMsgDetails = async () => {
