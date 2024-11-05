@@ -21,11 +21,13 @@ const checkModalHasClosed = async () => {
 };
 
 const submit = async (timeout) => {
+  await submitButton().waitForClickable({ timeout });
   await submitButton().click();
   await checkModalHasClosed();
 };
 
 const cancel = async (timeout) => {
+  await cancelButton().waitForClickable({ timeout });
   await cancelButton().click();
   await checkModalHasClosed();
 };
