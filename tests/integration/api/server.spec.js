@@ -2,7 +2,6 @@ const utils = require('@utils');
 const request = require('request');
 const constants = require('@constants');
 const _ = require('lodash');
-const uuid = require('uuid').v4;
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
@@ -311,7 +310,7 @@ describe('server', () => {
         const contact = utils.deepFreeze(personFactory.build({ name: 'contact', role: 'chw' }));
         const place = utils.deepFreeze({ ...placeMap.get('clinic'), contact: { _id: contact._id } });
         offlineUser = utils.deepFreeze(userFactory.build({
-          username: uuid(),
+          username: 'offline-uuid',
           place: place._id,
           contact: {
             _id: 'fixture:user:offline',
