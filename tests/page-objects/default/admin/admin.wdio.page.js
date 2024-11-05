@@ -7,6 +7,7 @@ const localePanelBody = (locale) => $(`#locale-${locale}-body`);
 const logoutButton = () => $('span=Log out');
 
 const toggleLanguage = async (locale, shouldEnable) => {
+  await languagesPanel().waitForDisplayed();
   await localePanelHeader(locale).click();
   const languageAccordion = await localePanelBody(locale);
   await languageAccordion.waitForDisplayed();
