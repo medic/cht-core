@@ -1,5 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
@@ -13,11 +12,11 @@ import { Selectors } from '@mm-selectors/index';
 @Component({
   templateUrl: './trainings.component.html'
 })
-export class TrainingsComponent implements OnInit, OnDestroy {
+export class TrainingsComponent implements OnInit, AfterViewInit, OnDestroy {
   private globalActions: GlobalActions;
   private trackInitialLoadPerformance;
 
-  selectedTrainingId;
+  selectedTrainingId: null | string = null;
   subscriptions: Subscription = new Subscription();
   trainingList: TrainingMaterial[] | null | undefined = null;
   error = false;
@@ -26,7 +25,6 @@ export class TrainingsComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly store: Store,
-    private readonly route: ActivatedRoute,
     private readonly performanceService: PerformanceService,
     private readonly trainingCardsService: TrainingCardsService,
   ) {
@@ -35,8 +33,11 @@ export class TrainingsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.trackInitialLoadPerformance = this.performanceService.track();
-    this.subscribeToRouteParams();
-    this.subscribeToStore();
+    this.subscribeToTrainingMaterials();
+  }
+
+  ngAfterViewInit() {
+    this.subscribeToSelectedTraining();
   }
 
   ngOnDestroy() {
@@ -44,18 +45,18 @@ export class TrainingsComponent implements OnInit, OnDestroy {
     this.globalActions.unsetSelected();
   }
 
-  private subscribeToStore() {
+  private subscribeToTrainingMaterials() {
     const trainingSubscription = this.store
       .select(Selectors.getTrainingMaterials)
       .subscribe(forms => this.getTrainings(forms));
     this.subscriptions.add(trainingSubscription);
   }
 
-  private subscribeToRouteParams() {
-    const routeSubscription = this.route.firstChild?.params.subscribe(params => {
-      this.selectedTrainingId = params?.id;
-    });
-    this.subscriptions.add(routeSubscription);
+  private subscribeToSelectedTraining() {
+    const selectedTraining = this.store
+      .select(Selectors.getTrainingCardFormId)
+      .subscribe(id => this.selectedTrainingId = id);
+    this.subscriptions.add(selectedTraining);
   }
 
   async getTrainings(forms) {

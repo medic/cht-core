@@ -1,16 +1,16 @@
 <mm-modal-layout
-  id="training-cards-modal"
-  [titleKey]="showConfirmExit ? 'training_cards.confirm.title' : modalTitleKey | translate"
+  [id]="MODAL_ID"
+  [titleKey]="showConfirmExit ? 'training_cards.confirm.title' : 'training_cards.modal.title' | translate"
   (onCancel)="quit(true)"
   [hideFooter]="hideModalFooter"
   [hasEnketoForm]="true">
 
-  <training-cards-confirm *ngIf="showConfirmExit"/>
+  <training-cards-confirm *ngIf="showConfirmExit" (stay)="continueTraining()" (exit)="exitTraining($event)"/>
 
   <training-cards-form
     [hidden]="showConfirmExit"
     [isEmbedded]="false"
     (quit)="quit($event)"
-    (save)="save()"/>
+    (save)="close()"/>
 
 </mm-modal-layout>

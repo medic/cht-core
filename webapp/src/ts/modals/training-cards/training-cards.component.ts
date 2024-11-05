@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
@@ -11,18 +12,16 @@ import { GlobalActions } from '@mm-actions/global';
   templateUrl: './training-cards.component.html'
 })
 export class TrainingCardsComponent implements OnInit, OnDestroy {
-
-  static id = 'training-cards-modal';
-  private globalActions;
-  modalTitleKey = 'training_cards.modal.title';
-  hideModalFooter = true;
-  showConfirmExit;
-  nextUrl;
+  readonly MODAL_ID = 'training-cards-modal';
+  private globalActions: GlobalActions;
+  hideModalFooter = true; // ToDo fix
+  showConfirmExit = false;
   subscriptions: Subscription = new Subscription();
 
   constructor(
-    private store: Store,
-    private matDialogRef: MatDialogRef<TrainingCardsComponent>,
+    private readonly store: Store,
+    private readonly router: Router,
+    private readonly matDialogRef: MatDialogRef<TrainingCardsComponent>,
   ) {
     this.globalActions = new GlobalActions(this.store);
   }
@@ -34,61 +33,48 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
-    this.globalActions.setTrainingCard({ formId: null, isOpen: false, showConfirmExit: false, nextUrl: null });
+    this.clearTrainingCardStore();
+  }
+
+  private clearTrainingCardStore() {
+    this.globalActions.setTrainingCard({
+      formId: null,
+      isOpen: false,
+      showConfirmExit: false,
+      nextUrl: null,
+    });
   }
 
   private subscribeToStore() {
     const reduxSubscription = this.store
       .select(Selectors.getTrainingCard)
-      .subscribe(trainingCard => {
-        this.showConfirmExit = trainingCard.showConfirmExit;
-        this.nextUrl = trainingCard.nextUrl;
-      });
+      .subscribe(trainingCard => this.showConfirmExit = trainingCard.showConfirmExit);
     this.subscriptions.add(reduxSubscription);
   }
 
-  /*setError(error) {
-    this.errorTranslationKey = error?.translationKey || 'training_cards.error.loading';
-    this.loadingContent = false;
-    this.hideModalFooter = false;
-    this.contentError = true;
-  }*/
-
   close() {
-    this.globalActions.setTrainingCard({ formId: null, isOpen: false, showConfirmExit: false, nextUrl: null });
+    this.clearTrainingCardStore();
     this.matDialogRef.close();
   }
 
-  /* private recordPerformanceQuitTraining() {
-    this.trackEditDuration?.stop({
-      name: [ 'enketo', this.trackMetadata.form, this.trackMetadata.action, 'quit' ].join(':'),
-    });
-  }*/
+  continueTraining() {
+    this.globalActions.setTrainingCard({ showConfirmExit: false });
+  }
 
-  /* confirmExit(confirm) {
-    if (this.contentError) {
-      this.close();
-      return;
+  exitTraining(nextUrl: string) {
+    // ToDo this.recordPerformanceQuitTraining();
+
+    if (nextUrl) {
+      this.router.navigateByUrl(nextUrl);
     }
-    this.showConfirmExit = confirm;
-  }*/
-
-  /*quitTraining() {
-    this.recordPerformanceQuitTraining();
-
-    if (this.nextUrl) {
-      this.router.navigateByUrl(this.nextUrl);
-    }
-
-    this.close();
-  }*/
-
-  save() {
     this.close();
   }
 
-  quit(showConfirmMessage) {
-    // ToDo showConfirmMessage
-    console.warn('showConfirmMessage', showConfirmMessage);
+  quit(showConfirmExit: boolean) {
+    if (showConfirmExit) { // todo not show confirmation if there is an error in the form
+      this.globalActions.setTrainingCard({ showConfirmExit });
+      return;
+    }
+    this.close();
   }
 }

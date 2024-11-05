@@ -48,6 +48,7 @@ import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component
 import { TasksGroupComponent } from '@mm-modules/tasks/tasks-group.component';
 import { TestingComponent } from '@mm-modules/testing/testing.component';
 import { DirectivesModule } from '@mm-directives/directives.module';
+import { ModalsModule } from '@mm-modals/modals.module';
 
 @NgModule({
   declarations: [
@@ -98,6 +99,7 @@ import { DirectivesModule } from '@mm-directives/directives.module';
     MatDialogModule,
     MatExpansionModule,
     MatMenuModule,
+    ModalsModule,
   ],
   exports: [
     HomeComponent,

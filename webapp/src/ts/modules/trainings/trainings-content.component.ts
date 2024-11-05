@@ -1,18 +1,19 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
-import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
+import { ModalService } from '@mm-services/modal.service';
 
 @Component({
   selector: 'training-content',
   templateUrl: './trainings-content.component.html'
 })
 export class TrainingsContentComponent implements OnInit, OnDestroy {
-
+  @ViewChild('confirmModal') confirmModal;
   private globalActions: GlobalActions;
+  private confirmModalRef;
   showNoSelection = false;
   showConfirmExit = false;
   subscriptions: Subscription = new Subscription();
@@ -21,13 +22,13 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
     private readonly store: Store,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
+    private readonly modalService: ModalService,
   ) {
     this.globalActions = new GlobalActions(this.store);
   }
 
   ngOnInit() {
     this.subscribeToRouteParams();
-    this.subscribeToStore();
   }
 
   ngOnDestroy() {
@@ -46,20 +47,30 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
     this.subscriptions.add(routeSubscription);
   }
 
-  private subscribeToStore() {
-    const reduxSubscription = this.store
-      .select(Selectors.getTrainingCard)
-      .subscribe(trainingCard => this.showConfirmExit = trainingCard.showConfirmExit);
-    this.subscriptions.add(reduxSubscription);
-  }
-
-  save() {
+  close(nextUrl?) {
     this.globalActions.clearNavigation();
+    if (nextUrl) {
+      return this.router.navigateByUrl(nextUrl);
+    }
     return this.router.navigate([ '/', 'trainings' ]);
   }
 
-  quit(showConfirmMessage) {
-    // ToDo showConfirmMessage
-    console.warn('showConfirmMessage', showConfirmMessage);
+  exitTraining(nextUrl) {
+    // ToDo this.recordPerformanceQuitTraining();
+    this.close(nextUrl);
+    this.confirmModalRef?.close();
+  }
+
+  continueTraining() {
+    this.showConfirmExit = false;
+    this.confirmModalRef?.close();
+  }
+
+  quit(showConfirmExit: boolean) {
+    this.showConfirmExit = showConfirmExit;
+    if (!this.showConfirmExit) {
+      return this.close();
+    }
+    this.confirmModalRef = this.modalService.show(this.confirmModal);
   }
 }

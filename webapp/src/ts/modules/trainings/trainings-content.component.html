@@ -4,8 +4,17 @@
   </div>
 
   <training-cards-form
-    [hidden]="showConfirmExit || showNoSelection"
+    [hidden]="showNoSelection"
     [isEmbedded]="true"
     (quit)="quit($event)"
-    (save)="save()"/>
+    (save)="close()"/>
 </div>
+
+<ng-template #confirmModal>
+  <mm-modal-layout
+    id="training-cards-confirm"
+    [titleKey]="'training_cards.confirm.title' | translate"
+    [hideFooter]="true">
+    <training-cards-confirm (stay)="continueTraining()" (exit)="exitTraining($event)"/>
+  </mm-modal-layout>
+</ng-template>

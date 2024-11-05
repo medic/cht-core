@@ -1,35 +1,33 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { Subscription } from 'rxjs';
+
+import { Selectors } from '@mm-selectors/index';
 
 @Component({
   selector: 'training-cards-confirm',
   templateUrl: './training-cards-confirm.component.html'
 })
-export class TrainingCardsConfirmComponent {
+export class TrainingCardsConfirmComponent implements OnInit, OnDestroy {
+  @Output() exit = new EventEmitter();
+  @Output() stay = new EventEmitter();
+  nextUrl: null | string = null;
+  subscriptions: Subscription = new Subscription();
 
-  constructor() {}
+  constructor(private readonly store: Store) {}
 
-  /* private recordPerformanceQuitTraining() {
-    this.trackEditDuration?.stop({
-      name: [ 'enketo', this.trackMetadata.form, this.trackMetadata.action, 'quit' ].join(':'),
-    });
-  }*/
-
-  confirmExit() {
-    /* if (this.contentError) {
-      this.close();
-      return;
-    }
-    this.showConfirmExit = confirm;*/
+  ngOnInit() {
+    this.subscribeToStore();
   }
 
-  quitTraining() {
-    /* this.recordPerformanceQuitTraining();
-
-    if (this.nextUrl) {
-      this.router.navigateByUrl(this.nextUrl);
-    }
-
-    this.close();*/
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
+  private subscribeToStore() {
+    const reduxSubscription = this.store
+      .select(Selectors.getTrainingCard)
+      .subscribe(trainingCard => this.nextUrl = trainingCard.nextUrl);
+    this.subscriptions.add(reduxSubscription);
+  }
 }
