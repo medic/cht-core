@@ -1,4 +1,4 @@
-name: Test CouchDB (Conditional)
+name: Test CHT-deploy (Conditional)
 on:
   pull_request:
     paths:
@@ -14,7 +14,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - run: npm ci
       - name: Test cht-deploy
         run: |
           cd scripts/deploy
+          npm ci
           npm run test
