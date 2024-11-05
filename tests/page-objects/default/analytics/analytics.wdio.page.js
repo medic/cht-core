@@ -23,20 +23,20 @@ const getTargetInfo = async (targetElement) => {
     title: await targetTitle(targetElement).getText()
   };
 
-  if (await (await targetGoal(targetElement)).isExisting()) {
+  if (await targetGoal(targetElement).isExisting()) {
     const fullText = await targetGoalValue(targetElement).getText();
     target.goal = fullText.split(' ').pop();
   }
 
-  if (await (await targetCountNumber(targetElement)).isExisting()) {
+  if (await targetCountNumber(targetElement).isExisting()) {
     target.count = await targetCountNumber(targetElement).getText();
   }
 
-  if (await (await targetCountNumberColor(targetElement)).isExisting()) {
+  if (await targetCountNumberColor(targetElement).isExisting()) {
     target.countNumberColor = (await targetCountNumberColor(targetElement).getCSSProperty('color')).parsed.hex;
   }
 
-  if (await (await targetProgressNumber(targetElement)).isExisting()) {
+  if (await targetProgressNumber(targetElement).isExisting()) {
     target.percent = await targetNumberPercent(targetElement).getText();
     target.percentCount = await targetNumberPercentCount(targetElement).getText();
   }

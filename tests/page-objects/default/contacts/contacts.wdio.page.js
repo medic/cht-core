@@ -387,7 +387,7 @@ const getCurrentPersonEditFormValues = async (sexValue, roleValue) => {
 const filterReportViewAll = async () => {
   const tabsContainer = $(`${RHS_REPORT_LIST_CARD} .action-header .table-filter`);
   await tabsContainer.scrollIntoView();
-  await (await tabsContainer.$('*=View all')).click();
+  await tabsContainer.$('*=View all').click();
 };
 
 const openFirstContact = async () => {

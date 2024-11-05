@@ -45,8 +45,8 @@ describe('Export Reports', () => {
   });
 
   it('should download export file', async () => {
-    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
-    await commonPage.accessExportOption();
+    await reportsPage.leftPanelSelectors.firstReport().waitForDisplayed();
+    await reportsPage.exportReports();
 
     const files = await fileDownloadUtils.waitForDownload(`reports-${today.format('YYYYMMDD')}`);
     expect(files).to.not.be.undefined;

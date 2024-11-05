@@ -102,7 +102,7 @@ const setPlaceSelectMultiple = async (value) => {
 
   const option = await $('.name');
   await option.click();
-  await browser.waitUntil(async () => await (await $('.select2-selection__choice')).isDisplayed(),  1000);
+  await browser.waitUntil(async () => await $('.select2-selection__choice').isDisplayed(),  1000);
 };
 
 const selectPlace = async (places) => {

@@ -110,7 +110,7 @@ describe('Contact Delivery Form', () => {
 
     //Verify the created report
     await contactPage.openReport();
-    await (await reportsPage.rightPanelSelectors.reportBodyDetails()).waitForDisplayed();
+    await reportsPage.rightPanelSelectors.reportBodyDetails().waitForDisplayed();
     const { patientName, reportName } = await reportsPage.getOpenReportInfo();
     expect(patientName).to.equal(pregnantWoman.name);
     expect(reportName).to.equal('Delivery');
@@ -183,7 +183,7 @@ describe('Contact Delivery Form', () => {
     await sentinelUtils.waitForSentinel();
 
     await contactPage.openReport();
-    await (await reportsPage.rightPanelSelectors.reportBodyDetails()).waitForDisplayed();
+    await reportsPage.rightPanelSelectors.reportBodyDetails().waitForDisplayed();
 
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
@@ -192,19 +192,19 @@ describe('Contact Delivery Form', () => {
     // Verify dead babies UUIDs are unique
     const deadBabyUUIds = [];
     for (let i = 0; i < noOfDeadBabies; i++) {
-      deadBabyUUIds.push(await (await reportsPage
+      deadBabyUUIds.push(await reportsPage
         .getDetailReportRowContent(
           `report.delivery.baby_death.baby_death_repeat.${i}.baby_death_profile_doc`
-        )).rowValues[0]);
+        ).rowValues[0]);
     }
 
     // Verify alive babies UUIDs are unique
     const aliveBabyUUIds = [];
     for (let i = 0; i < noOfAliveBabies; i++) {
-      aliveBabyUUIds.push(await (await reportsPage
+      aliveBabyUUIds.push(await reportsPage
         .getDetailReportRowContent(
           `report.delivery.babys_condition.baby_repeat.${i}.baby_details.child_doc`
-        )).rowValues[0]);
+        ).rowValues[0]);
     }
 
     expect(deadBabyUUIds.length).to.equal(noOfDeadBabies);
@@ -224,7 +224,7 @@ describe('Contact Delivery Form', () => {
     await genericForm.submitForm();
     await sentinelUtils.waitForSentinel();
     await browser.refresh();
-    await (await reportsPage.rightPanelSelectors.reportBodyDetails()).waitForDisplayed();
+    await reportsPage.rightPanelSelectors.reportBodyDetails().waitForDisplayed();
 
     const updatedReport = await utils.getDoc(reportId);
     const exclude = [
@@ -271,19 +271,19 @@ describe('Contact Delivery Form', () => {
     // Verify dead babies UUIDs are unique
     const updatedDeadBabyUUIds = [];
     for (let i = 0; i < noOfDeadBabies; i++) {
-      updatedDeadBabyUUIds.push(await (await reportsPage
+      updatedDeadBabyUUIds.push(await reportsPage
         .getDetailReportRowContent(
           `report.delivery.baby_death.baby_death_repeat.${i}.baby_death_profile_doc`
-        )).rowValues[0]);
+        ).rowValues[0]);
     }
 
     // Verify alive babies UUIDs are unique
     const updatedAliveBabyUUIds = [];
     for (let i = 0; i < noOfAliveBabies; i++) {
-      updatedAliveBabyUUIds.push(await (await reportsPage
+      updatedAliveBabyUUIds.push(await reportsPage
         .getDetailReportRowContent(
           `report.delivery.babys_condition.baby_repeat.${i}.baby_details.child_doc`
-        )).rowValues[0]);
+        ).rowValues[0]);
     }
 
     expect(updatedDeadBabyUUIds.length).to.equal(noOfDeadBabies);
@@ -332,7 +332,7 @@ describe('Contact Delivery Form', () => {
     await genericForm.nextPage();
     await genericForm.submitForm();
     await sentinelUtils.waitForSentinel();
-    await (await reportsPage.rightPanelSelectors.reportBodyDetails()).waitForDisplayed();
+    await reportsPage.rightPanelSelectors.reportBodyDetails().waitForDisplayed();
 
     const cesareanReport = await utils.getDoc(reportId);
     expect(cesareanReport.fields)
@@ -385,7 +385,7 @@ describe('Contact Delivery Form', () => {
     await sentinelUtils.waitForSentinel();
 
     await contactPage.openReport();
-    await (await reportsPage.rightPanelSelectors.reportBodyDetails()).waitForDisplayed();
+    await reportsPage.rightPanelSelectors.reportBodyDetails().waitForDisplayed();
 
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
@@ -416,7 +416,7 @@ describe('Contact Delivery Form', () => {
     await genericForm.nextPage();
     await genericForm.submitForm();
     await sentinelUtils.waitForSentinel();
-    await (await reportsPage.rightPanelSelectors.reportBodyDetails()).waitForDisplayed();
+    await reportsPage.rightPanelSelectors.reportBodyDetails().waitForDisplayed();
 
     const updatedReport = await utils.getDoc(reportId);
 

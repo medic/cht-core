@@ -96,7 +96,7 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
-    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
+    await reportsPage.leftPanelSelectors.firstReport().waitForDisplayed();
     expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(reports.length);
 
     await reportsPage.openSidebarFilter();
@@ -106,9 +106,9 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.waitForPageLoaded();
 
     expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(2);
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(pregnancyDistrictHospital._id))
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(pregnancyDistrictHospital._id)
       .isDisplayed()).to.be.true;
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(visitDistrictHospital._id))
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(visitDistrictHospital._id)
       .isDisplayed()).to.be.true;
   });
 
@@ -117,7 +117,7 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
-    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
+    await reportsPage.leftPanelSelectors.firstReport().waitForDisplayed();
     expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(reports.length);
 
     await reportsPage.openSidebarFilter();
@@ -125,8 +125,8 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.waitForPageLoaded();
 
     expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(2);
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(visitHealthCenter._id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(visitDistrictHospital._id))
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(visitHealthCenter._id).isDisplayed()).to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(visitDistrictHospital._id)
       .isDisplayed()).to.be.true;
   });
 
@@ -135,7 +135,7 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
-    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
+    await reportsPage.leftPanelSelectors.firstReport().waitForDisplayed();
     expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(reports.length);
 
     await reportsPage.openSidebarFilter();
@@ -143,9 +143,9 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.waitForPageLoaded();
 
     expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(2);
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(visitHealthCenter._id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(pregnancyHealthCenter._id))
-      .isDisplayed()).to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(visitHealthCenter._id).isDisplayed()).to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(pregnancyHealthCenter._id))
+      .isDisplayed().to.be.true;
   });
 
   it('should filter by status', async () => {
@@ -153,7 +153,7 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
-    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
+    await reportsPage.leftPanelSelectors.firstReport().waitForDisplayed();
     expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(reports.length);
 
     await reportsPage.openSidebarFilter();
@@ -161,9 +161,9 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.waitForPageLoaded();
 
     expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(2);
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(pregnancyHealthCenter._id))
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(pregnancyHealthCenter._id)
       .isDisplayed()).to.be.true;
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(visitDistrictHospital._id))
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(visitDistrictHospital._id)
       .isDisplayed()).to.be.true;
   });
 
@@ -178,12 +178,11 @@ describe('Reports Sidebar Filter', () => {
     await utils.updateSettings(newSettings);
 
     await commonPage.goToReports();
-    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
+    await reportsPage.leftPanelSelectors.firstReport().waitForDisplayed();
 
     expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(2);
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(pregnancyHealthCenter._id))
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(pregnancyHealthCenter._id)
       .isDisplayed()).to.be.true;
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(visitHealthCenter._id)).isDisplayed()).to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(visitHealthCenter._id).isDisplayed()).to.be.true;
   });
 });
-

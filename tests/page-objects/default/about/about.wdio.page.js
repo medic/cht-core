@@ -12,7 +12,7 @@ const getPartnerImage = async (name) => {
 };
 
 const getVersion = async () => {
-  return await (await version()).getText();
+  return await version().getText();
 };
 
 module.exports = {

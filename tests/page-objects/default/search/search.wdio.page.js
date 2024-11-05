@@ -14,20 +14,19 @@ const ensureSearchInputVisible = async () => {
 
 // click freetext search box
 const performSearch = async (searchString) => {
-  await ensureSearchInputVisible();
-  await (await searchBox()).click();
-  await (await searchBox()).clearValue();
-  await (await searchBox()).addValue(searchString);
+  await searchBox().click();
+  await searchBox().clearValue();
+  await searchBox().addValue(searchString);
   await browser.keys(ENTER);
   await commonElements.waitForLoaders();
 };
 
 const clearSearch = async () => {
-  if (!await (await resetSearch()).isDisplayed()) {
+  if (!await resetSearch().isDisplayed()) {
     return;
   }
 
-  await (await resetSearch()).click();
+  await resetSearch().click();
   await commonElements.waitForLoaders();
 };
 
