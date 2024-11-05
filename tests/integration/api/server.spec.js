@@ -249,6 +249,7 @@ describe('server', () => {
         const collectHaproxyLogs = await utils.collectHaproxyLogs(/\/_all_docs\?limit=1/);
 
         const result = await utils.request('/medic/_all_docs?limit=1');
+        await utils.delayPromise(500); // wait for everything to get logged
 
         const apiLogs = (await collectApiLogs()).filter(log => log.length);
         const haproxyLogs = (await collectHaproxyLogs()).filter(log => log.length);
@@ -339,6 +340,7 @@ describe('server', () => {
         const reqUuid = getReqId(apiLogs[0]);
 
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqUuid);
+        console.log(haproxyRequests);
         expect(haproxyRequests.length).to.equal(12);
         expect(haproxyRequests[0]).to.include('_session');
         expect(haproxyRequests[5]).to.include('/medic-test/_design/medic/_view/contacts_by_depth');
