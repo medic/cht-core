@@ -1,0 +1,20 @@
+name: Test CouchDB (Conditional)
+on:
+  pull_request:
+    paths:
+      - 'scripts/deploy/**'
+  push:
+    paths:
+      - 'scripts/deploy/**'
+
+jobs:
+  test:
+    name: Test CHT Deploy
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Test cht-deploy
+        run: |
+          cd scripts/deploy
+          npm run test
