@@ -101,18 +101,19 @@ export class TrainingCardsService {
     return docs?.rows?.length ? new Set(docs.rows.map(row => row?.doc?.form)) : new Set();
   }
 
-  private async handleTrainingCards() {
-    try {
-      const firstChronologicalTrainingCard = await this.getFirstChronologicalForm(this.trainingForms);
-      if (!firstChronologicalTrainingCard) {
-        return;
-      }
+  private openModal(form) {
+    this.globalActions.setTrainingCard({ formId: form.code });
 
-      this.globalActions.setTrainingCard({ formId: firstChronologicalTrainingCard.code });
-    } catch (error) {
-      console.error('Training Cards :: Error showing modal.', error);
-      return;
-    }
+    this.modalService
+      .show(TrainingCardsComponent, { closeOnNavigation: false })
+      ?.afterOpened()
+      .pipe(first())
+      .subscribe(() => {
+        const key = this.getLocalStorageKey();
+        if (key) {
+          window.localStorage.setItem(key, new Date().toISOString());
+        }
+      });
   }
 
   async displayTrainingCards() {
@@ -128,18 +129,17 @@ export class TrainingCardsService {
       return;
     }
 
-    await this.handleTrainingCards();
+    try {
+      const firstChronologicalTrainingCard = await this.getFirstChronologicalForm(this.trainingForms);
+      if (!firstChronologicalTrainingCard) {
+        return;
+      }
 
-    this.modalService
-      .show(TrainingCardsComponent, { closeOnNavigation: false })
-      ?.afterOpened()
-      .pipe(first())
-      .subscribe(() => {
-        const key = this.getLocalStorageKey();
-        if (key) {
-          window.localStorage.setItem(key, new Date().toISOString());
-        }
-      });
+      this.openModal(firstChronologicalTrainingCard);
+    } catch (error) {
+      console.error('Training Cards :: Error showing modal.', error);
+      return;
+    }
   }
 
   private async getFirstChronologicalForm(xForms) {

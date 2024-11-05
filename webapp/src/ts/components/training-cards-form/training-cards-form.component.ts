@@ -124,14 +124,20 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
       this.form = await this.formService.render(formContext);
       this.formNoTitle = !formDoc?.title;
       this.setNavigationTitle(formDoc);
-
-      this.loadingContent = false;
-      this.globalActions.setShowContent(true);
+      this.showContent();
       this.recordPerformancePostRender();
     } catch (error) {
       this.setError(error);
       console.error('Trainings Content Component :: Error rendering form.', error);
     }
+  }
+
+  private showContent() {
+    this.loadingContent = false;
+    if (!this.isEmbedded) {
+      return;
+    }
+    this.globalActions.setShowContent(true);
   }
 
   private setNavigationTitle(formDoc) {
@@ -168,9 +174,8 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
 
   setError(error) {
     this.errorTranslationKey = error?.translationKey || 'training_cards.error.loading';
-    this.loadingContent = false;
     this.contentError = true;
-    this.globalActions.setShowContent(true);
+    this.showContent();
   }
 
   async saveForm() {

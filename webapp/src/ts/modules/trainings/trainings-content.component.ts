@@ -49,6 +49,7 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
   }
 
   close(nextUrl?) {
+    this.canExit = true;
     this.globalActions.clearNavigation();
     if (nextUrl) {
       return this.router.navigateByUrl(nextUrl);
@@ -58,7 +59,6 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
 
   exitTraining(nextUrl) {
     // ToDo this.recordPerformanceQuitTraining();
-    this.canExit = true;
     this.close(nextUrl);
     this.confirmModalRef?.close();
   }
