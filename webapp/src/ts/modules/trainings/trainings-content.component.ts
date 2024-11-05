@@ -11,9 +11,10 @@ import { ModalService } from '@mm-services/modal.service';
   templateUrl: './trainings-content.component.html'
 })
 export class TrainingsContentComponent implements OnInit, OnDestroy {
-  @ViewChild('confirmModal') confirmModal;
+  @ViewChild('confirmModal') confirmModalTemplate;
   private globalActions: GlobalActions;
   private confirmModalRef;
+  private canExit = false;
   showNoSelection = false;
   showConfirmExit = false;
   subscriptions: Subscription = new Subscription();
@@ -57,12 +58,12 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
 
   exitTraining(nextUrl) {
     // ToDo this.recordPerformanceQuitTraining();
+    this.canExit = true;
     this.close(nextUrl);
     this.confirmModalRef?.close();
   }
 
   continueTraining() {
-    this.showConfirmExit = false;
     this.confirmModalRef?.close();
   }
 
@@ -71,6 +72,21 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
     if (!this.showConfirmExit) {
       return this.close();
     }
-    this.confirmModalRef = this.modalService.show(this.confirmModal);
+
+    this.confirmModalRef = this.modalService.show(this.confirmModalTemplate);
+    const subscription = this.confirmModalRef
+      .afterClosed()
+      .subscribe(() => this.showConfirmExit = false);
+    this.subscriptions.add(subscription);
+  }
+
+  canDeactivate(nextUrl) {
+    if (this.canExit) {
+      this.canExit = false;
+      return true;
+    }
+    this.globalActions.setTrainingCard({ nextUrl });
+    this.quit(true);
+    return false;
   }
 }

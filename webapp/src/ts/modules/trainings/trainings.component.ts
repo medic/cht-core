@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterContentInit, AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
@@ -12,7 +12,7 @@ import { Selectors } from '@mm-selectors/index';
 @Component({
   templateUrl: './trainings.component.html'
 })
-export class TrainingsComponent implements OnInit, AfterViewInit, OnDestroy {
+export class TrainingsComponent implements OnInit, AfterContentInit, OnDestroy {
   private globalActions: GlobalActions;
   private trackInitialLoadPerformance;
 
@@ -36,7 +36,7 @@ export class TrainingsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscribeToTrainingMaterials();
   }
 
-  ngAfterViewInit() {
+  ngAfterContentInit() {
     this.subscribeToSelectedTraining();
   }
 
