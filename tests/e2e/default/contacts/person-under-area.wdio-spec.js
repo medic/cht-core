@@ -38,7 +38,6 @@ describe('Create Person Under Area, ', () => {
     await usersAdminPage.saveUser();
 
     await browser.reloadSession();
-    await browser.debug();
     await browser.url('/');
 
     await loginPage.login({ username, password });

@@ -28,10 +28,12 @@ const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
   }
 };
 
-const selectContact = async (contactName, label, searchTerm = '') => {
+const selectContact = async (contactName) => {
+  const select2Selection = () => $('label*=What is the patient\'s name?').$('.select2-selection');
+  await select2Selection().click();
   const searchField = await $('.select2-search__field');
   if (!await searchField.isDisplayed()) {
-    await (await select2Selection(label)).click();
+    await select2Selection(label).click();
   }
 
   await searchField.setValue(searchTerm || contactName);
@@ -41,7 +43,7 @@ const selectContact = async (contactName, label, searchTerm = '') => {
   await contact.click();
 
   await browser.waitUntil(async () => {
-    return (await (await select2Selection(label)).getText()).toLowerCase().endsWith(contactName.toLowerCase());
+    return (await select2Selection(label).getText()).toLowerCase().endsWith(contactName.toLowerCase());
   });
 };
 
