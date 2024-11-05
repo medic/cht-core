@@ -65,7 +65,7 @@ const userSettingsSelectors = {
 const getJsonErrorText = async () => await $('pre').getText();
 
 const isHamburgerMenuOpen = async () => {
-  return await (await $('mat-sidenav-container.mat-drawer-container-has-open .mat-drawer-opened')).isDisplayed();
+  return await $('mat-sidenav-container.mat-drawer-container-has-open').isExisting();
 };
 
 const openHamburgerMenu = async () => {

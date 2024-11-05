@@ -26,29 +26,26 @@ const getCorrectFieldsetSection = async (section) => {
 };
 
 const isElementDisplayed = async (type, text) => {
-  return await (await getCurrentPageSection()).$(`${type}*=${text}`).isDisplayed();
+  return await getCurrentPageSection().$(`${type}*=${text}`).isDisplayed();
 };
 
 const selectRadioButton = async (question, value) => {
-  await (await radioButtonElement(question, value)).waitForClickable();
-  await (await radioButtonElement(question, value)).click();
+  await radioButtonElement(question, value).click();
 };
 
 const selectCheckBox = async (question, value) => {
   const page = await getCurrentPageSection();
-  const checkbox = await (await getCorrectFieldsetSection(page))
+  const checkbox = await getCorrectFieldsetSection(page)
     .$(`legend*=${question}`)
     .nextElement()
     .$(`label*=${value}`);
-  await checkbox.waitForClickable();
   await checkbox.click();
 };
 
 const setValue = async (typeSelector, question, value) => {
-  const element = await (await getCurrentPageSection())
+  const element = await getCurrentPageSection()
     .$(`label*=${question}`)
     .$(typeSelector);
-  await element.waitForDisplayed();
   await element.setValue(value);
 };
 
@@ -67,7 +64,7 @@ const setTextareaValue = async (question, value) => {
 };
 
 const addFileInputValue = async (question, value, { repeatIndex = 0 } = {}) => {
-  const element = await (await getCurrentPageSection())
+  const element = await getCurrentPageSection()
     .$$(`label*=${question}`)[repeatIndex]
     .$('input[type=file]');
   await element.addValue(value);
@@ -76,12 +73,12 @@ const addFileInputValue = async (question, value, { repeatIndex = 0 } = {}) => {
 const validateSummaryReport = async (textArray) => {
   const element = await getCurrentPageSection();
   for (const text of textArray) {
-    expect(await (await element.$(`span*=${text}`)).isDisplayed()).to.be.true;
+    expect(await element.$(`span*=${text}`).isDisplayed()).to.be.true;
   }
 };
 
 const getValue = async (typeSelector, question) => {
-  return await (await getCurrentPageSection())
+  return await getCurrentPageSection()
     .$(`label*=${question}`)
     .$(typeSelector)
     .getValue();
@@ -123,7 +120,7 @@ const addRepeatSection = async () => {
 };
 
 const drawShapeOnCanvas = async (question) => {
-  const canvas = await (await getCurrentPageSection())
+  const canvas = await getCurrentPageSection()
     .$(`label*=${question}`)
     .$('canvas');
   await canvas.waitForDisplayed();
@@ -140,7 +137,7 @@ const drawShapeOnCanvas = async (question) => {
 };
 
 const isRadioButtonSelected = async (question, value) => {
-  return await (await radioButtonElement(question, value)).getAttribute('data-checked');
+  return await radioButtonElement(question, value).getAttribute('data-checked');
 };
 
 module.exports = {
