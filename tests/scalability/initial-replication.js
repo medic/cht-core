@@ -6,7 +6,7 @@ const user = config.users[threadId % config.users.length];
 const rewire = require('rewire');
 const rpn = require('request-promise-native');
 
-const PouchDB = require('pouchdb');
+const PouchDB = require('pouchdb-browser');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
 const fetchJSON = async (url) => {

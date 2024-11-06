@@ -234,8 +234,14 @@ describe('Db Service', () => {
   });
 
   describe('method wrapping', () => {
+    let testDB;
+    let syncTarget;
+
     beforeEach(() => {
       window.PouchDB = require('pouchdb-browser').default;
+      testDB = window.PouchDB('testDb');
+      syncTarget = window.PouchDB(`db-${uuidv4()}`);
+      window.PouchDB = () => testDB;
       // avoid the 2dbs being initialized at the startup
       // we're just using 1 set of stubs so the calls will be mirrored if requiring 2 dbs
       sessionService.isOnlineOnly.returns(true);
@@ -310,7 +316,8 @@ describe('Db Service', () => {
     for (const method in methods) {
       if (methods[method]) {
         it(`should stub ${method}`, fakeAsync(() => {
-          const stubbedMethod = sinon.stub(window.PouchDB.prototype, method);
+          const stubbedMethod = sinon.stub(testDB, method);
+
           getService();
           const db = service.get();
 
@@ -328,7 +335,8 @@ describe('Db Service', () => {
     }
 
     it('should work with a resolving promise', fakeAsync(async () => {
-      sinon.stub(window.PouchDB.prototype, 'get').resolves({ the: 'thing' });
+      sinon.stub(testDB, 'get').resolves({ the: 'thing' });
+
       getService();
       const db = service.get();
 
@@ -337,7 +345,7 @@ describe('Db Service', () => {
     }));
 
     it('should work with a rejecting promise', fakeAsync(async () => {
-      sinon.stub(window.PouchDB.prototype, 'get').rejects({ code: 404 });
+      sinon.stub(testDB, 'get').rejects({ code: 404 });
 
       getService();
       const db = service.get();
@@ -354,7 +362,7 @@ describe('Db Service', () => {
       // because of how complex the Changes PouchDB object is, these are integration tests, not unit tests
       it('should call with correct params', fakeAsync(() => {
         const options = { live: false, include_docs: false, since: '123' };
-        const changesSpy = sinon.spy(window.PouchDB.prototype, 'changes');
+        const changesSpy = sinon.spy(testDB, 'changes');
 
         getService();
         const db = service.get();
@@ -374,7 +382,7 @@ describe('Db Service', () => {
 
       it('should return full results', fakeAsync(async () => {
         const options = { live: false, include_docs: true };
-        const changesSpy = sinon.spy(window.PouchDB.prototype, 'changes');
+        const changesSpy = sinon.spy(testDB, 'changes');
 
         getService();
         const db = service.get();
@@ -406,7 +414,7 @@ describe('Db Service', () => {
       }));
 
       it('should attach "on" events and run them in the zone', fakeAsync(async () => {
-        const changesSpy = sinon.spy(window.PouchDB.prototype, 'changes');
+        const changesSpy = sinon.spy(testDB, 'changes');
 
         getService();
         const db = service.get();
@@ -438,7 +446,7 @@ describe('Db Service', () => {
       }));
 
       it('should correctly bind catch', fakeAsync(async () => {
-        const changesSpy = sinon.spy(window.PouchDB.prototype, 'changes');
+        const changesSpy = sinon.spy(testDB, 'changes');
         const opts = {
           live: false,
           filter: () => {
@@ -474,8 +482,7 @@ describe('Db Service', () => {
       // because of how complex the Sync PouchDB object is, these are integration tests, not unit tests
       it('should call with correct params', fakeAsync(() => {
         const options = { live: false, since: '123' };
-        const syncSpy = sinon.spy(window.PouchDB.prototype, 'sync');
-        const target = window.PouchDB(`db-${uuidv4()}`);
+        const syncSpy = sinon.spy(testDB, 'sync');
 
         getService();
         const db = service.get();
@@ -485,7 +492,7 @@ describe('Db Service', () => {
 
         // can't use await, sync doesn't return a promise
         // it returns an event emitter with an attached `then` property!
-        return db.sync(target, options).then((result) => {
+        return db.sync(syncTarget, options).then((result) => {
           expect(result)
             .excludingEvery(['doc_write_failures', 'docs_read', 'docs_written', 'end_time', 'start_time'])
             .to.deep.nested.include({
@@ -503,15 +510,14 @@ describe('Db Service', () => {
               },
             });
           expect(syncSpy.callCount).to.equal(1);
-          expect(syncSpy.args[0]).to.deep.equal([target, options]);
+          expect(syncSpy.args[0]).to.deep.equal([syncTarget, options]);
           expect(runOutsideAngular.called).to.equal(true);
         });
       }));
 
       it('should do a full sync', fakeAsync(async () => {
         const options = { live: false };
-        const syncSpy = sinon.spy(window.PouchDB.prototype, 'sync');
-        const target = window.PouchDB(`db-${uuidv4()}`);
+        const syncSpy = sinon.spy(testDB, 'sync');
 
         getService();
         const db = service.get();
@@ -525,10 +531,10 @@ describe('Db Service', () => {
 
         // can't use await, sync doesn't return a promise
         // it returns an event emitter with an attached `then` property!
-        return db.sync(target, options).then((result) => {
-          expect(result)
-            .excludingEvery(['doc_write_failures', 'end_time', 'start_time'])
-            .to.deep.nested.include({
+        return db
+          .sync(syncTarget, options)
+          .then((result) => {
+            expect(result).excludingEvery(['doc_write_failures', 'end_time', 'start_time']).to.deep.nested.include({
               push: {
                 docs_read: allDocs.length,
                 docs_written: allDocs.length,
@@ -547,16 +553,15 @@ describe('Db Service', () => {
               },
             });
 
-          expect(syncSpy.callCount).to.equal(1);
-          expect(syncSpy.args[0]).to.deep.equal([target, options]);
-          // sync actually calls a bunch of underlying pouchdb methods which we have wrapped
-          expect(runOutsideAngular.called).to.equal(true);
-        });
+            expect(syncSpy.callCount).to.equal(1);
+            expect(syncSpy.args[0]).to.deep.equal([syncTarget, options]);
+            // sync actually calls a bunch of underlying pouchdb methods which we have wrapped
+            expect(runOutsideAngular.called).to.equal(true);
+          });
       }));
 
       it('should attach "on" events and run them in the zone', fakeAsync(async () => {
-        const syncSpy = sinon.spy(window.PouchDB.prototype, 'sync');
-        const target = window.PouchDB(`db-${uuidv4()}`);
+        const syncSpy = sinon.spy(testDB, 'sync');
 
         getService();
         const db = service.get();
@@ -573,12 +578,12 @@ describe('Db Service', () => {
         // can't use await, sync doesn't return a promise
         // it returns an event emitter with an attached `then` property!
         return db
-          .sync(target, { live: false, batch_size: batchSize })
+          .sync(syncTarget, { live: false, batch_size: batchSize })
           .on('change', onChange)
           .on('complete', onComplete)
           .then(results => {
             expect(syncSpy.callCount).to.equal(1);
-            expect(syncSpy.args[0]).to.deep.equal([target, { live: false, batch_size: batchSize }]);
+            expect(syncSpy.args[0]).to.deep.equal([syncTarget, { live: false, batch_size: batchSize }]);
 
             // sync actually calls a bunch of underlying pouchdb methods which we have wrapped
             expect(runOutsideAngular.called).to.equal(true);
@@ -592,19 +597,18 @@ describe('Db Service', () => {
       }));
 
       it('should catch errors', fakeAsync(async () => {
-        const target = window.PouchDB(`db-${uuidv4()}`);
         const opts = { live: false, retry: false };
 
         getService();
         const db = service.get();
         const onError = sinon.stub();
         const onComplete = sinon.stub();
-        await target.bulkDocs([{ _id: uuidv4() }]);
-        sinon.stub(target, 'allDocs').rejects({ status: 400, name: 'forbidden' });
+        await syncTarget.bulkDocs([{ _id: uuidv4() }]);
+        sinon.stub(syncTarget, 'bulkGet').rejects({ status: 400, name: 'forbidden' });
         sinon.stub(NgZone, 'isInAngularZone').returns(true);
 
         return db
-          .sync(target, opts)
+          .sync(syncTarget, opts)
           .on('error', onError)
           .on('complete', onComplete)
           .then(() => {
@@ -621,7 +625,6 @@ describe('Db Service', () => {
       describe('to', () => {
         it('should call with correct params', fakeAsync(() => {
           const options = { live: false, since: '123' };
-          const target = window.PouchDB(`db-${uuidv4()}`);
 
           getService();
           const db = service.get();
@@ -630,7 +633,7 @@ describe('Db Service', () => {
 
           // can't use await, replicate doesn't return a promise
           // it returns an event emitter with an attached `then` property!
-          return db.replicate.to(target, options).then((result) => {
+          return db.replicate.to(syncTarget, options).then((result) => {
             expect(result)
               .excludingEvery(['doc_write_failures', 'docs_read', 'docs_written', 'end_time', 'start_time'])
               .to.deep.nested.include({
@@ -644,7 +647,6 @@ describe('Db Service', () => {
 
         it('should fully replicate', fakeAsync(async () => {
           const options = { live: false };
-          const target = window.PouchDB(`db-${uuidv4()}`);
 
           getService();
           const db = service.get();
@@ -657,7 +659,7 @@ describe('Db Service', () => {
 
           // can't use await, replicate doesn't return a promise
           // it returns an event emitter with an attached `then` property!
-          return db.replicate.to(target, options).then((result) => {
+          return db.replicate.to(syncTarget, options).then((result) => {
             expect(result)
               .excludingEvery(['doc_write_failures', 'end_time', 'start_time'])
               .to.deep.nested.include({
@@ -672,8 +674,6 @@ describe('Db Service', () => {
         }));
 
         it('should attach "on" events and run them in the zone', fakeAsync(async () => {
-          const target = window.PouchDB(`db-${uuidv4()}`);
-
           getService();
           const db = service.get();
           await db.put({ _id: uuidv4() });
@@ -688,7 +688,7 @@ describe('Db Service', () => {
           // can't use await, replicate doesn't return a promise
           // it returns an event emitter with an attached `then` property!
           return db
-            .replicate.to(target, { live: false, batch_size: batchSize })
+            .replicate.to(syncTarget, { live: false, batch_size: batchSize })
             .on('change', onChange)
             .on('complete', onComplete)
             .then(results => {
@@ -699,17 +699,16 @@ describe('Db Service', () => {
         }));
 
         it('should correctly bind catch', fakeAsync(async () => {
-          const target = window.PouchDB(`db-${uuidv4()}`);
           const opts = { live: false, retry: false, };
 
           getService();
           const db = service.get();
           const onError = sinon.stub();
           sinon.stub(NgZone, 'isInAngularZone').returns(true);
-          sinon.stub(target, 'revsDiff').rejects({ code: 400 });
+          sinon.stub(syncTarget, 'revsDiff').rejects({ code: 400 });
 
           return db
-            .replicate.to(target, opts)
+            .replicate.to(syncTarget, opts)
             .on('error', onError)
             .then(() => assert.fail('should have thrown'))
             .catch((err) => {
@@ -729,7 +728,6 @@ describe('Db Service', () => {
       describe('from', () => {
         it('should call with correct params', fakeAsync(async () => {
           const options = { live: false, since: '123' };
-          const target = window.PouchDB(`db-${uuidv4()}`);
 
           getService();
           const db = service.get();
@@ -737,7 +735,7 @@ describe('Db Service', () => {
 
           // can't use await, replicate doesn't return a promise
           // it returns an event emitter with an attached `then` property!
-          return db.replicate.to(target, options).then((result) => {
+          return db.replicate.to(syncTarget, options).then((result) => {
             expect(result)
               .excludingEvery(['doc_write_failures', 'docs_read', 'docs_written', 'end_time', 'start_time'])
               .to.deep.nested.include({
@@ -751,19 +749,18 @@ describe('Db Service', () => {
 
         it('should fully replicate', fakeAsync(async () => {
           const options = { live: false };
-          const target = window.PouchDB(`db-${uuidv4()}`);
 
           getService();
           const db = service.get();
 
-          await target.bulkDocs([{ _id: uuidv4() }, { _id: uuidv4() }]);
-          const allDocs = (await target.allDocs()).rows;
-          const info = await target.info();
+          await syncTarget.bulkDocs([{ _id: uuidv4() }, { _id: uuidv4() }]);
+          const allDocs = (await syncTarget.allDocs()).rows;
+          const info = await syncTarget.info();
           sinon.stub(NgZone, 'isInAngularZone').returns(true);
 
           // can't use await, replicate doesn't return a promise
           // it returns an event emitter with an attached `then` property!
-          return db.replicate.from(target, options).then((result) => {
+          return db.replicate.from(syncTarget, options).then((result) => {
             expect(result)
               .excludingEvery(['doc_write_failures', 'end_time', 'start_time'])
               .to.deep.nested.include({
@@ -778,11 +775,9 @@ describe('Db Service', () => {
         }));
 
         it('should attach "on" events and run them in the zone', fakeAsync(async () => {
-          const target = window.PouchDB(`db-${uuidv4()}`);
-
           getService();
           const db = service.get();
-          await target.bulkDocs([{ _id: uuidv4() }, { _id: uuidv4() }]);
+          await syncTarget.bulkDocs([{ _id: uuidv4() }, { _id: uuidv4() }]);
 
           const onChange = sinon.stub();
           const onComplete = sinon.stub();
@@ -792,7 +787,7 @@ describe('Db Service', () => {
           // can't use await, replicate doesn't return a promise
           // it returns an event emitter with an attached `then` property!
           return db
-            .replicate.from(target, { live: false, batch_size: batchSize })
+            .replicate.from(syncTarget, { live: false, batch_size: batchSize })
             .on('change', onChange)
             .on('complete', onComplete)
             .then(results => {
@@ -803,20 +798,19 @@ describe('Db Service', () => {
         }));
 
         it('should correctly bind catch', fakeAsync(async () => {
-          const target = window.PouchDB(`db-${uuidv4()}`);
           const opts = { live: false, retry: false };
 
           getService();
           const db = service.get();
           const onError = sinon.stub();
-          await target.bulkDocs([{ _id: uuidv4() }, { _id: uuidv4() }]);
-          sinon.stub(target, 'allDocs').rejects({ code: 400 });
+          await syncTarget.bulkDocs([{ _id: uuidv4() }, { _id: uuidv4() }]);
+          sinon.stub(syncTarget, 'bulkGet').rejects({ code: 400 });
           sinon.stub(NgZone, 'isInAngularZone').returns(true);
 
           // can't use await, replicate doesn't return a promise
           // it returns an event emitter with an attached `then` property!
           return db
-            .replicate.from(target, opts)
+            .replicate.from(syncTarget, opts)
             .on('error', onError)
             .then(() => assert.fail('should have thrown'))
             .catch((err) => {
@@ -832,7 +826,6 @@ describe('Db Service', () => {
             });
         }));
       });
-
     });
   });
 });
