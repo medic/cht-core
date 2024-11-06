@@ -86,7 +86,7 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
   }
 
   quit() {
-    if (!this.hasError) {
+    if (this.hasError) {
       return this.close();
     }
 
