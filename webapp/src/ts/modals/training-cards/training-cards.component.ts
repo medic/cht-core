@@ -1,11 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
+import { combineLatest, Subscription } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
+import { PerformanceService } from '@mm-services/performance.service';
 
 @Component({
   selector: 'training-cards-modal',
@@ -14,6 +15,8 @@ import { GlobalActions } from '@mm-actions/global';
 export class TrainingCardsComponent implements OnInit, OnDestroy {
   readonly MODAL_ID = 'training-cards-modal';
   private globalActions: GlobalActions;
+  private trackRender;
+  private trainingCardID;
   hasError = false;
   showConfirmExit = false;
   subscriptions: Subscription = new Subscription();
@@ -22,11 +25,13 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
     private readonly store: Store,
     private readonly router: Router,
     private readonly matDialogRef: MatDialogRef<TrainingCardsComponent>,
+    private readonly performanceService: PerformanceService,
   ) {
     this.globalActions = new GlobalActions(this.store);
   }
 
   ngOnInit() {
+    this.trackRender = this.performanceService.track();
     this.subscribeToStore();
     this.globalActions.setTrainingCard({ isOpen: true });
   }
@@ -46,10 +51,14 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToStore() {
-    const reduxSubscription = this.store
-      .select(Selectors.getTrainingCard)
-      .subscribe(trainingCard => this.showConfirmExit = trainingCard.showConfirmExit);
-    this.subscriptions.add(reduxSubscription);
+    const subscription = combineLatest([
+      this.store.select(Selectors.getTrainingCard),
+      this.store.select(Selectors.getTrainingCardFormId),
+    ]).subscribe(([trainingCard, trainingCardID]) => {
+      this.showConfirmExit = trainingCard.showConfirmExit;
+      this.trainingCardID = trainingCardID;
+    });
+    this.subscriptions.add(subscription);
   }
 
   close() {
@@ -62,17 +71,20 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
   }
 
   exitTraining(nextUrl: string) {
-    // ToDo this.recordPerformanceQuitTraining();
+    this.trackRender?.stop({
+      name: [ 'enketo', this.trainingCardID, 'add', 'quit' ].join(':'),
+    });
 
     if (nextUrl) {
       this.router.navigateByUrl(nextUrl);
     }
+
     this.close();
   }
 
-  quit(showConfirmExit: boolean) {
-    if (showConfirmExit && !this.hasError) {
-      this.globalActions.setTrainingCard({ showConfirmExit });
+  quit() {
+    if (!this.hasError) {
+      this.globalActions.setTrainingCard({ showConfirmExit: true });
       return;
     }
     this.close();

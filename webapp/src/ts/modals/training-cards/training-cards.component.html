@@ -1,7 +1,7 @@
 <mm-modal-layout
   [id]="MODAL_ID"
   [titleKey]="showConfirmExit ? 'training_cards.confirm.title' : null"
-  (onCancel)="quit(true)"
+  (onCancel)="quit()"
   [hideFooter]="!hasError"
   [hasEnketoForm]="true"
   [class.has-error]="hasError">
@@ -11,7 +11,7 @@
   <training-cards-form
     [hidden]="showConfirmExit"
     [isEmbedded]="false"
-    (quit)="quit($event)"
+    (quit)="quit()"
     (save)="close()"
     (handleError)="hasError = true"/>
 

@@ -6,8 +6,9 @@
   <training-cards-form
     [hidden]="showNoSelection"
     [isEmbedded]="true"
-    (quit)="quit($event)"
-    (save)="close()"/>
+    (quit)="quit()"
+    (save)="close()"
+    (handleError)="hasError = true"/>
 </div>
 
 <ng-template #confirmModal>

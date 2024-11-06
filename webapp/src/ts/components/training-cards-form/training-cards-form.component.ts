@@ -226,9 +226,4 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
       name: [ 'enketo', this.trackMetadata.form, this.trackMetadata.action, 'save' ].join(':'),
     });
   }
-
-  cancel() {
-    const showConfirmMessage = !this.contentError;
-    this.quit.emit(showConfirmMessage);
-  }
 }

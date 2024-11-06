@@ -5,6 +5,8 @@ import { Subscription } from 'rxjs';
 
 import { GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-services/modal.service';
+import { PerformanceService } from '@mm-services/performance.service';
+import { Selectors } from '@mm-selectors/index';
 
 @Component({
   selector: 'training-content',
@@ -14,9 +16,12 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
   @ViewChild('confirmModal') confirmModalTemplate;
   private globalActions: GlobalActions;
   private confirmModalRef;
+  private trackRender;
+  private trainingCardID;
   private canExit = false;
   showNoSelection = false;
   showConfirmExit = false;
+  hasError = false;
   subscriptions: Subscription = new Subscription();
 
   constructor(
@@ -24,17 +29,27 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly modalService: ModalService,
+    private readonly performanceService: PerformanceService,
   ) {
     this.globalActions = new GlobalActions(this.store);
   }
 
   ngOnInit() {
+    this.trackRender = this.performanceService.track();
     this.subscribeToRouteParams();
+    this.subscribeToStore();
   }
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
     this.globalActions.clearNavigation();
+  }
+
+  private subscribeToStore() {
+    const reduxSubscription = this.store
+      .select(Selectors.getTrainingCardFormId)
+      .subscribe(trainingCardID => this.trainingCardID = trainingCardID);
+    this.subscriptions.add(reduxSubscription);
   }
 
   private subscribeToRouteParams() {
@@ -58,7 +73,10 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
   }
 
   exitTraining(nextUrl) {
-    // ToDo this.recordPerformanceQuitTraining();
+    this.trackRender?.stop({
+      name: [ 'enketo', this.trainingCardID, 'add', 'quit' ].join(':'),
+    });
+
     this.close(nextUrl);
     this.confirmModalRef?.close();
   }
@@ -67,12 +85,12 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
     this.confirmModalRef?.close();
   }
 
-  quit(showConfirmExit: boolean) {
-    this.showConfirmExit = showConfirmExit;
-    if (!this.showConfirmExit) {
+  quit() {
+    if (!this.hasError) {
       return this.close();
     }
 
+    this.showConfirmExit = true;
     this.confirmModalRef = this.modalService.show(this.confirmModalTemplate);
     const subscription = this.confirmModalRef
       .afterClosed()
@@ -86,7 +104,7 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
       return true;
     }
     this.globalActions.setTrainingCard({ nextUrl });
-    this.quit(true);
+    this.quit();
     return false;
   }
 }
