@@ -49,6 +49,7 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { FormService } from '@mm-services/form.service';
 import { OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
+import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -89,6 +90,7 @@ describe('AppComponent', () => {
   let trainingCardsService;
   let userSettingsService;
   let formService;
+  let updateServiceWorkerService;
   // End Services
 
   let globalActions;
@@ -123,7 +125,11 @@ describe('AppComponent', () => {
     unreadRecordsService = { init: sinon.stub() };
     setLanguageService = { set: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
-    modalService = { show: sinon.stub().resolves() };
+    modalService = {
+      show: sinon.stub().returns({
+        afterClosed: sinon.stub().returns(of())
+      })
+    };
     browserDetectorService = { isUsingOutdatedBrowser: sinon.stub().returns(false) };
     chtDatasourceService = { isInitialized: sinon.stub() };
     analyticsModulesService = { get: sinon.stub() };
@@ -175,6 +181,7 @@ describe('AppComponent', () => {
     trainingCardsService = { initTrainingCards: sinon.stub() };
     userSettingsService = { get: sinon.stub().resolves({ facility_id: ['facility'], contact_id: 'contact' }) };
     formService = { setUserContext: sinon.stub() };
+    updateServiceWorkerService = { update: sinon.stub() };
     consoleErrorStub = sinon.stub(console, 'error');
 
     const mockedSelectors = [
@@ -203,7 +210,7 @@ describe('AppComponent', () => {
           { provide: AuthService, useValue: authService },
           { provide: ResourceIconsService, useValue: resourceIconsService },
           { provide: ChangesService, useValue: changesService },
-          { provide: UpdateServiceWorkerService, useValue: {} },
+          { provide: UpdateServiceWorkerService, useValue: updateServiceWorkerService },
           { provide: LocationService, useValue: locationService },
           { provide: ModalService, useValue: modalService },
           { provide: BrowserDetectorService, useValue: browserDetectorService},
@@ -282,6 +289,19 @@ describe('AppComponent', () => {
     expect(userSettingsService.get.calledOnce).to.equal(true);
     expect(globalActions.setUserFacilityIds.calledOnceWith(['facility'])).to.equal(true);
     expect(globalActions.setUserContactId.calledOnceWith('contact')).to.equal(true);
+    expect(updateServiceWorkerService.update.callCount).to.equal(1);
+  });
+
+  it('should show reload popup when service worker is updated', async () => {
+    await getComponent();
+    await component.setupPromise;
+
+    expect(updateServiceWorkerService.update.callCount).to.equal(1);
+    const callback = updateServiceWorkerService.update.args[0][0];
+    callback();
+    expect(modalService.show.calledOnce).to.be.true;
+    expect(modalService.show.args[0]).to.have.deep.members([ReloadingComponent]);
+
   });
 
   it('should display browser compatibility modal if using outdated chrome browser', async () => {
