@@ -124,7 +124,6 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
       this.setNavigationTitle(formDoc);
       this.showContent();
       this.recordPerformancePostRender();
-      throw new Error('upps');
     } catch (error) {
       this.setError(error);
       console.error('Trainings Content Component :: Error rendering form.', error);
