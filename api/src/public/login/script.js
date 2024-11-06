@@ -4,7 +4,8 @@ import {
   getCookie,
   getLocale,
   parseTranslations,
-  baseTranslate
+  baseTranslate,
+  togglePassword
 } from './auth-utils.js';
 
 let selectedLocale;
@@ -18,15 +19,15 @@ const setTokenState = className => {
 
 const submit = function(e) {
   e.preventDefault();
-  if (document.getElementById('form').className === 'loading') {
+  if (document.getElementById('form')?.className === 'loading') {
     // debounce double clicks
     return;
   }
   setState('loading');
-  const url = document.getElementById('form').action;
+  const url = document.getElementById('form')?.action;
   const payload = JSON.stringify({
     user: getUsername(),
-    password: document.getElementById(PASSWORD_INPUT_ID).value,
+    password: document.getElementById(PASSWORD_INPUT_ID)?.value,
     redirect: getRedirectUrl(),
     locale: selectedLocale
   });
@@ -46,7 +47,7 @@ const submit = function(e) {
 };
 
 const requestTokenLogin = (retry = 20) => {
-  const url = document.getElementById('tokenLogin').action;
+  const url = document.getElementById('tokenLogin')?.action;
   const payload = JSON.stringify({ locale: selectedLocale });
   request('POST', url, payload, xmlhttp => {
     let response = {};
@@ -80,20 +81,19 @@ const requestTokenLogin = (retry = 20) => {
 const focusOnPassword = function(e) {
   if (e.keyCode === 13) {
     e.preventDefault();
-    document.getElementById(PASSWORD_INPUT_ID).focus();
+    document.getElementById(PASSWORD_INPUT_ID)?.focus();
   }
 };
 
 const focusOnSubmit = function(e) {
   if (e.keyCode === 13) {
-    document.getElementById('login').focus();
+    document.getElementById('login')?.focus();
   }
 };
 
 const highlightSelectedLocale = function() {
   const locales = document.getElementsByClassName('locale');
-  for (let i = 0; i < locales.length; i++) {
-    const elem = locales[i];
+  for (const elem of locales) {
     elem.className = (elem.name === selectedLocale) ? 'locale selected' : 'locale';
   }
 };
@@ -112,7 +112,7 @@ const translate = () => {
 };
 
 const getUsername = function() {
-  return document.getElementById('user').value.toLowerCase().trim();
+  return document.getElementById('user')?.value.toLowerCase().trim();
 };
 
 const getRedirectUrl = function() {
@@ -189,17 +189,11 @@ const checkUnsupportedBrowser = () => {
   }
 
   if (typeof outdatedComponentKey !== 'undefined') {
-    document.getElementById('unsupported-browser-update').setAttribute('translate', outdatedComponentKey);
+    document.getElementById('unsupported-browser-update')?.setAttribute('translate', outdatedComponentKey);
     document.getElementById('unsupported-browser-update').innerText =
       translations[selectedLocale][outdatedComponentKey];
-    document.getElementById('unsupported-browser').classList.remove('hidden');
+    document.getElementById('unsupported-browser')?.classList.remove('hidden');
   }
-};
-
-const togglePassword = () => {
-  const input = document.getElementById(PASSWORD_INPUT_ID);
-  input.type = input.type === 'password' ? 'text' : 'password';
-  document.getElementById('password-container').classList.toggle('hidden-password');
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -208,23 +202,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
   translate();
 
-  document.getElementById('locale').addEventListener('click', handleLocaleSelection, false);
+  document.getElementById('locale')?.addEventListener('click', handleLocaleSelection, false);
   const passwordToggle = document.getElementById('password-toggle');
   if (passwordToggle) {
-    passwordToggle.addEventListener('click', togglePassword, false);
+    passwordToggle.addEventListener('click', () => togglePassword(PASSWORD_INPUT_ID), false);
   }
 
   if (document.getElementById('tokenLogin')) {
     requestTokenLogin();
   } else {
     checkSession();
-    document.getElementById('login').addEventListener('click', submit, false);
+    document.getElementById('login')?.addEventListener('click', submit, false);
 
     const user = document.getElementById('user');
     user.addEventListener('keydown', focusOnPassword, false);
     user.focus();
 
-    document.getElementById(PASSWORD_INPUT_ID).addEventListener('keydown', focusOnSubmit, false);
+    document.getElementById(PASSWORD_INPUT_ID)?.addEventListener('keydown', focusOnSubmit, false);
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/service-worker.js');
     }

@@ -1,90 +1,107 @@
-export const setState = function(className) {
-    document.getElementById('form').className = className;
+export const setState = (className) => {
+  const form = document.getElementById('form');
+  if(!form) return;
+  form.className = className;
 };
 
-export const request = function(method, url, payload, callback) {
-    const xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function() {
-        if (xmlhttp.readyState === XMLHttpRequest.DONE) {
-            callback(xmlhttp);
-        }
-    };
-    xmlhttp.open(method, url, true);
-    xmlhttp.setRequestHeader('Content-Type', 'application/json');
-    xmlhttp.setRequestHeader('Accept', 'application/json');
-    xmlhttp.send(payload);
-};
-
-const extractCookie = function(cookies, name) {
-    for (const cookie of cookies) {
-        const [cookieName, cookieValue] = cookie.trim().split('=');
-        if (cookieName === name) {
-            return cookieValue.trim();
-        }
+export const request = (method, url, payload, callback) => {
+  const xmlhttp = new XMLHttpRequest();
+  xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState === XMLHttpRequest.DONE) {
+      callback(xmlhttp);
     }
-    return null;
+  };
+  xmlhttp.open(method, url, true);
+  xmlhttp.setRequestHeader('Content-Type', 'application/json');
+  xmlhttp.setRequestHeader('Accept', 'application/json');
+  xmlhttp.send(payload);
+};
+
+const extractCookie = (cookies, name) => {
+  for (const cookie of cookies) {
+    const [cookieName, cookieValue] = cookie.trim().split('=');
+    if (cookieName === name) {
+      return cookieValue.trim();
+    }
+  }
+  return null;
 };
 
 export const getCookie = function(name) {
-    if (!document.cookie) {
-        return null;
-    }
+  if (!document.cookie) {
+    return null;
+  }
 
-    const cookies = document.cookie.split(';');
-    return extractCookie(cookies, name);
+  const cookies = document.cookie.split(';');
+  return extractCookie(cookies, name);
 };
 
-export const getLocale = function(translations) {
-    const selectedLocale = getCookie('locale');
-    const defaultLocale = document.body.getAttribute('data-default-locale');
-    const locale = selectedLocale || defaultLocale;
-    if (translations[locale]) {
-        return locale;
-    }
-    const validLocales = Object.keys(translations);
-    if (validLocales.length) {
-        return validLocales[0];
-    }
+export const getLocale = (translations) => {
+  const selectedLocale = getCookie('locale');
+  const defaultLocale = document.body.getAttribute('data-default-locale');
+  const locale = selectedLocale || defaultLocale;
+  if (translations[locale]) {
+    return locale;
+  }
+  const validLocales = Object.keys(translations);
+  if (validLocales.length) {
+    return validLocales[0];
+  }
 };
 
-export const parseTranslations = function() {
-    const raw = document.body.getAttribute('data-translations');
-    return JSON.parse(decodeURIComponent(raw));
+export const parseTranslations = () => {
+  const raw = document.body.getAttribute('data-translations');
+  return JSON.parse(decodeURIComponent(raw));
 };
 
 const replaceTranslationPlaceholders = (text, translateValues) => {
-    if (!text || !translateValues) {
-        return text;
-    }
+  if (!text || !translateValues) {
+    return text;
+  }
 
-    try {
-        const values = JSON.parse(translateValues);
-        return Object
-            .entries(values)
-            .reduce((result, [key, value]) => result.replace(new RegExp(`{{${key}}}`, 'g'), value),
-            text
-        );
-    } catch (e) {
-        console.error('Error parsing translation placeholders', e);
-        return text;
-    }
+  try {
+    const values = JSON.parse(translateValues);
+    return Object
+      .entries(values)
+      .reduce((result, [key, value]) => result.replace(new RegExp(`{{${key}}}`, 'g'), value),
+        text
+      );
+  } catch (e) {
+    console.error('Error parsing translation placeholders', e);
+    return text;
+  }
 }
 
 export const baseTranslate = (selectedLocale, translations) => {
-    if (!selectedLocale) {
-        return console.error('No enabled locales found - not translating');
-    }
-    document
-        .querySelectorAll('[translate]')
-        .forEach(elem => {
-            let text = translations[selectedLocale][elem.getAttribute('translate')];
-            const translateValues = elem.getAttribute('translate-values');
-            if (translateValues) {
-                text = replaceTranslationPlaceholders(text, translateValues);
-            }
-            elem.innerText = text;
-        });
-    document
-        .querySelectorAll('[translate-title]')
-        .forEach(elem => elem.title = translations[selectedLocale][elem.getAttribute('translate-title')]);
+  if (!selectedLocale) {
+    return console.error('No enabled locales found - not translating');
+  }
+  document
+    .querySelectorAll('[translate]')
+    .forEach(elem => {
+      let text = translations[selectedLocale][elem.getAttribute('translate')];
+      const translateValues = elem.getAttribute('translate-values');
+      if (translateValues) {
+        text = replaceTranslationPlaceholders(text, translateValues);
+      }
+      elem.innerText = text;
+    });
+  document
+    .querySelectorAll('[translate-title]')
+    .forEach(elem => elem.title = translations[selectedLocale][elem.getAttribute('translate-title')]);
 };
+
+export const togglePassword = (passwordInputId, confirmPasswordInputId = null) => {
+  const passwordInput = document.getElementById(passwordInputId);
+  if (!passwordInput) return;
+
+  const displayType = passwordInput.type === 'password' ? 'text' : 'password';
+  passwordInput.type = displayType;
+  document.getElementById('password-container')?.classList.toggle('hidden-password');
+
+  if (confirmPasswordInputId) {
+    const confirmPasswordInput = document.getElementById(confirmPasswordInputId);
+    confirmPasswordInput.type = displayType;
+    document.getElementById('confirm-password-container')?.classList.toggle('hidden-password');
+  }
+}
