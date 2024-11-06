@@ -59,7 +59,6 @@ describe('async-storage', () => {
 
   it('getRequestId should return nothing when there is no client request', done => {
     service = rewire('../../../src/services/async-storage');
-    const req = { id: 'uuid' };
     service.set(undefined, () => {
       expect(service.getRequestId()).to.equal(undefined);
       done();
