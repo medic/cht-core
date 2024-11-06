@@ -102,17 +102,25 @@ mm-modal-layout {
       }
 
       form {
-        max-height: 65vh;
+        max-height: @enketo-modal-max-content-size;
         overflow-y: auto;
       }
     }
 
-    .form-no-title #form-title {
-      display: none;
+    #form-title {
+      font-size: @font-XXL;
+      font-weight: normal;
+      letter-spacing: normal;
+      border: none;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: @form-background-color;
+      width: 100%;
     }
 
     .form-footer {
-      padding: 24px 0;
+      padding: 24px 0 0 0;
       .btn,
       .btn:active,
       .btn:focus {
@@ -129,7 +137,7 @@ mm-modal-layout {
     .enketo-modal {
       .enketo {
         form {
-          max-height: 60vh;
+          max-height: @enketo-modal-max-content-size;
         }
 
         .form-footer {
@@ -143,13 +151,9 @@ mm-modal-layout {
         }
       }
 
-      // The form title is hidden by default for mobile devices, but in training cards, the title is optional.
-      :not(.form-no-title) #form-title {
-        display: inherit;
-      }
-
-      .form-no-title  #form-title {
-        display: none;
+      // The form's title is hidden by default for mobile devices; but in training cards, the title is displayed.
+      #form-title {
+        display: inline-block;
       }
     }
   }

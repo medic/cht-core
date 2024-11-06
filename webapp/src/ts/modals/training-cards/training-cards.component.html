@@ -1,6 +1,6 @@
 <mm-modal-layout
   [id]="MODAL_ID"
-  [titleKey]="showConfirmExit ? 'training_cards.confirm.title' : 'training_cards.modal.title' | translate"
+  [titleKey]="showConfirmExit ? 'training_cards.confirm.title' : null"
   (onCancel)="quit(true)"
   [hideFooter]="hideModalFooter"
   [hasEnketoForm]="true">

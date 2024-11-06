@@ -105,7 +105,7 @@ export class TrainingCardsService {
     this.globalActions.setTrainingCard({ formId: form.code });
 
     this.modalService
-      .show(TrainingCardsComponent, { closeOnNavigation: false })
+      .show(TrainingCardsComponent, { closeOnNavigation: false, width: '700px' })
       ?.afterOpened()
       .pipe(first())
       .subscribe(() => {

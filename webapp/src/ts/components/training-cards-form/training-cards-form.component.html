@@ -3,11 +3,7 @@
   <div *ngIf="!loadingContent && contentError">{{ errorTranslationKey | translate }}</div>
 </div>
 
-<div class="item-content"
-  [hidden]="loadingContent || contentError || !trainingCardFormId"
-  [class.form-no-title]="formNoTitle"
-  [class.col-sm-8]="isEmbedded">
-
+<div class="item-content" [hidden]="loadingContent || contentError || !trainingCardFormId" [class.col-sm-8]="isEmbedded">
   <div class="body">
     <mm-enketo
       [formId]="FORM_WRAPPER_ID"
@@ -16,5 +12,4 @@
       (onCancel)="cancel()">
     </mm-enketo>
   </div>
-
 </div>
