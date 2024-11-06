@@ -421,7 +421,7 @@ describe('db', () => {
       expect(headers.length).to.equal(4);
       headers.forEach((header) => {
         expect(header.get('X-Medic-Service')).to.equal('api');
-        expect(header.get('X-Request-UUID')).to.equal('the_id');
+        expect(header.get('X-Request-Id')).to.equal('the_id');
       });
     });
 

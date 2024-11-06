@@ -284,6 +284,6 @@ describe('Server utils', () => {
   });
 
   it('should export request header', () => {
-    chai.expect(serverUtils.REQUEST_ID_HEADER).to.equal('X-Request-UUID');
+    chai.expect(serverUtils.REQUEST_ID_HEADER).to.equal('X-Request-Id');
   });
 });
