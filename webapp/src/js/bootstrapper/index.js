@@ -89,14 +89,15 @@
     const dbInfo = getDbInfo();
     const userCtx = getUserCtx();
     const hasForceLoginCookie = document.cookie.includes('login=force');
-    const showPasswordUI = document.cookie.includes('passwordUpdated');
+    const passwordStatus = localStorage.getItem('passwordStatus');
 
     if (!userCtx || hasForceLoginCookie) {
       return redirectToLogin(dbInfo);
     }
 
-    if (showPasswordUI) {
+    if (passwordStatus === 'PASSWORD_CHANGED') {
       setUiStatus('PASSWORD_CHANGE_SUCCESS');
+      localStorage.removeItem('passwordStatus');
     }
 
     if (hasFullDataAccess(userCtx)) {

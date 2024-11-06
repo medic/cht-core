@@ -47,6 +47,7 @@ const submit = function(e) {
   request('POST', url, payload, function(xmlhttp) {
     if (xmlhttp.status === 302 || xmlhttp.status === 200) {
       // success - redirect to app
+      localStorage.setItem('passwordStatus', 'PASSWORD_CHANGED');
       window.location = xmlhttp.response;
     } else if (xmlhttp.status === 400) {
       // password validation failed

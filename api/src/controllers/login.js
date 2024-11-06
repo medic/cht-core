@@ -375,13 +375,17 @@ const sendLoginErrorResponse = (e, res) => {
 const login = async (req, res) => {
   try {
     const sessionRes = await validateSession(req);
-    const { userCtx, redirectUrl } = await setCookies(req, res, sessionRes);
+    const headers = { headers: { Cookie: getSessionCookie(sessionRes) } };
+    const userCtx = await getUserCtxRetry(headers);
 
     const redirectPasswordReset = !await skipPasswordChange(userCtx);
-    if (redirectPasswordReset){
+    if (redirectPasswordReset && userCtx.password_change_required){
+      setUserCtxCookie(res, userCtx);
+      const selectedLocale = req.body.locale || config.get('locale');
+      cookie.setLocale(res, selectedLocale);
       return res.status(302).send('/medic/password-reset');
     }
-
+    const { redirectUrl } = await setCookies(req, res, sessionRes);
     return res.status(302).send(redirectUrl);
   } catch (e) {
     return sendLoginErrorResponse(e, res);
@@ -461,9 +465,6 @@ module.exports = {
 
       await db.users.put(user);
 
-      cookie.clearCookie(res, 'login');
-      cookie.clearCookie(res, 'AuthSession');
-
       req.body = {
         ...req.body,
         user: user.name,
@@ -472,9 +473,8 @@ module.exports = {
       };
 
       const sessionRes = await createSessionRetry(req);
-      cookie.setPasswordUpdated(res);
-
       const { redirectUrl } = await setCookies(req, res, sessionRes);
+
       return res.status(302).send(redirectUrl);
     } catch (err) {
       logger.error('Error updating password: %o', err);
