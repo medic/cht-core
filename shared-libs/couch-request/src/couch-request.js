@@ -27,10 +27,10 @@ const mergeOptions = (target, source, exclusions = []) => {
     target[key] = value; // locally, mutation is preferable to spreading as it doesn't
     // make new objects in memory. Assuming this is a hot path.
   }
-  const localStorage = asyncLocalStorage?.getStore();
-  if (localStorage?.clientRequest?.id) {
+  const requestId = asyncLocalStorage?.getRequestId();
+  if (requestId) {
     target.headers = target.headers || {};
-    target.headers[requestIdHeader] = localStorage?.clientRequest.id;
+    target.headers[requestIdHeader] = requestId;
   }
 
   return target;

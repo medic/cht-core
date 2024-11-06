@@ -413,7 +413,7 @@ describe('db', () => {
         json: sinon.stub().resolves({ result: true }),
         ok: true,
       });
-      sinon.stub(asyncLocalStorage, 'getStore').returns({ clientRequest: { id: 'the_id' } });
+      sinon.stub(asyncLocalStorage, 'getRequestId').returns('the_id');
       db = rewire('../../src/db');
 
       await db.medic.info();
@@ -430,7 +430,7 @@ describe('db', () => {
         json: sinon.stub().resolves({ result: true }),
         ok: true,
       });
-      sinon.stub(asyncLocalStorage, 'getStore').returns(undefined);
+      sinon.stub(asyncLocalStorage, 'getRequestId').returns(undefined);
       db = rewire('../../src/db');
 
       await db.medic.info();

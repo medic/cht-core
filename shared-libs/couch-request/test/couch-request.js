@@ -795,7 +795,7 @@ describe('request id header', () => {
 
   it('should not add request id header when client request is not set', async () => {
     sinon.stub(request, 'get').resolves('got');
-    const asyncLocalStorage = { getStore: sinon.stub().returns({ }) };
+    const asyncLocalStorage = { getRequestId: sinon.stub().returns(false) };
     couchRequest.initialize(asyncLocalStorage, 'header-name');
 
     const response = await couchRequest.get('foobar');
@@ -811,7 +811,7 @@ describe('request id header', () => {
 
   it('should set request id header when set', async () => {
     sinon.stub(request, 'get').resolves('got');
-    const asyncLocalStorage = { getStore: sinon.stub().returns({ clientRequest: { id: 'req_uuid' } }) };
+    const asyncLocalStorage = { getRequestId: sinon.stub().returns('req_uuid') };
     couchRequest.initialize(asyncLocalStorage, 'header-name');
 
     const response = await couchRequest.get('foobar');
@@ -827,7 +827,7 @@ describe('request id header', () => {
 
   it('should add request id header when headers are already set', async () => {
     sinon.stub(request, 'get').resolves('got');
-    const asyncLocalStorage = { getStore: sinon.stub().returns({ clientRequest: { id: 'req_uuid' } }) };
+    const asyncLocalStorage = { getRequestId: sinon.stub().returns('req_uuid') };
     couchRequest.initialize(asyncLocalStorage, 'header-name');
 
     const response = await couchRequest.get('foobar', { headers: { 'Authorization': 'Basic 123' } });

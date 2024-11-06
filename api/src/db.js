@@ -76,9 +76,9 @@ if (UNIT_TEST_ENV) {
   const fetch = (url, opts) => {
     // Adding audit flag (haproxy) Service that made the request initially.
     opts.headers.set('X-Medic-Service', 'api');
-    const localStorage = asyncLocalStorage.getStore();
-    if (localStorage?.clientRequest?.id) {
-      opts.headers.set(REQUEST_ID_HEADER, localStorage.clientRequest.id);
+    const requestId = asyncLocalStorage.getRequestId();
+    if (requestId) {
+      opts.headers.set(REQUEST_ID_HEADER, requestId);
     }
     return PouchDB.fetch(url, opts);
   };

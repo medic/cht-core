@@ -157,10 +157,15 @@ if (process.argv.slice(2).includes('--allow-cors')) {
   });
 }
 
+const shortUuid = () => {
+  const ID_LENGTH = 12;
+  return uuid.v4().replace(/-/g, '').toLowerCase().slice(0, ID_LENGTH);
+};
+
 app.use((req, res, next) => {
-  req.id = uuid.v4();
+  req.id = shortUuid();
   req.headers[serverUtils.REQUEST_ID_HEADER] = req.id;
-  asyncLocalStorage.run({ clientRequest: req }, () => next());
+  asyncLocalStorage.set(req, () => next());
 });
 app.use(getLocale);
 

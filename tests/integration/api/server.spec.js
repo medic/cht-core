@@ -234,17 +234,18 @@ describe('server', () => {
     });
   });
 
-  describe('Request UUID propagated to audit layer', () => {
+  describe('Request ID propagated to audit layer', () => {
+    const ID_REGEX = /\b[0-9a-f]{12}\b/;
+
     const getReqId = (logLine) => {
-      const re = /\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b/;
-      if (re.test(logLine)) {
-        const match = logLine.match(re);
+      if (ID_REGEX.test(logLine)) {
+        const match = logLine.match(ID_REGEX);
         return match?.[0];
       }
     };
 
     describe('for online users', () => {
-      it('should propagate uuid via proxy', async () => {
+      it('should propagate ID via proxy', async () => {
         const collectApiLogs = await utils.collectApiLogs(/\/_all_docs\?limit=1/);
         const collectHaproxyLogs = await utils.collectHaproxyLogs(/\/_all_docs\?limit=1/);
 
@@ -259,11 +260,11 @@ describe('server', () => {
         const apiReqId = getReqId(apiLogs[0]);
         const haproxyReqId = getReqId(haproxyLogs[0]);
 
-        expect(apiReqId.length).to.equal(36);
+        expect(apiReqId.length).to.equal(12);
         expect(haproxyReqId).to.equal(apiReqId);
       });
 
-      it('should propagate uuid via PouchDb', async () => {
+      it('should propagate ID via PouchDb', async () => {
         const collectApiLogs = await utils.collectApiLogs(/hydrate/);
         const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
 
@@ -274,15 +275,15 @@ describe('server', () => {
         const haproxyLogs = (await collectHaproxyLogs()).filter(log => log.length);
 
         expect(result.length).to.equal(1);
-        const reqUuid = getReqId(apiLogs[0]);
+        const reqID = getReqId(apiLogs[0]);
 
-        const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqUuid);
+        const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
         expect(haproxyRequests.length).to.equal(2);
         expect(haproxyRequests[0]).to.include('_session');
         expect(haproxyRequests[1]).to.include('_design/medic-client/_view/docs_by_id_lineage');
       });
 
-      it('should propagate uuid via couch-request', async () => {
+      it('should propagate ID via couch-request', async () => {
         const collectApiLogs = await utils.collectApiLogs(/couch-config-attachments/);
         const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
 
@@ -292,13 +293,39 @@ describe('server', () => {
         const apiLogs = (await collectApiLogs()).filter(log => log.length);
         const haproxyLogs = (await collectHaproxyLogs()).filter(log => log.length);
 
-        const reqUuid = getReqId(apiLogs[0]);
+        const reqID = getReqId(apiLogs[0]);
 
-        const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqUuid);
+        const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
         expect(haproxyRequests.length).to.equal(3);
         expect(haproxyRequests[0]).to.include('_session');
         expect(haproxyRequests[1]).to.include('_session');
         expect(haproxyRequests[2]).to.include('/_node/_local/_config/attachments');
+      });
+
+      it('should use a different id for different requests', async () => {
+        const collectApiLogs = await utils.collectApiLogs(/.*/);
+        const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
+
+        await utils.request({ path: '/api/couch-config-attachments' });
+        await utils.request({ path: '/api/v1/hydrate', qs: { doc_ids: [constants.USER_CONTACT_ID] }});
+
+        const apiLogs = (await collectApiLogs()).filter(log => log.length);
+        const haproxyLogs = (await collectHaproxyLogs()).filter(log => log.length);
+
+        const configReqId = apiLogs
+          .filter(log => log.includes('couch-config-attachments'))
+          .map((log) => getReqId(log))[0];
+        const hydrateReqId = apiLogs
+          .filter(log => log.includes('hydrate'))
+          .map((log) => getReqId(log))[0];
+
+        const haproxyConfigReqs = haproxyLogs.filter(entry => getReqId(entry) === configReqId);
+        expect(haproxyConfigReqs.length).to.equal(3);
+
+        const haproxyHydrateReqs = haproxyLogs.filter(entry => getReqId(entry) === hydrateReqId);
+        expect(haproxyHydrateReqs.length).to.equal(2);
+
+        expect(hydrateReqId).not.to.equal(configReqId);
       });
     });
 
@@ -310,7 +337,7 @@ describe('server', () => {
         const contact = utils.deepFreeze(personFactory.build({ name: 'contact', role: 'chw' }));
         const place = utils.deepFreeze({ ...placeMap.get('clinic'), contact: { _id: contact._id } });
         offlineUser = utils.deepFreeze(userFactory.build({
-          username: 'offline-uuid',
+          username: 'offline-user-id',
           place: place._id,
           contact: {
             _id: 'fixture:user:offline',
@@ -327,7 +354,7 @@ describe('server', () => {
         };
       });
 
-      it('should propagate uuid via PouchDb requests', async () => {
+      it('should propagate ID via PouchDb requests', async () => {
         const collectApiLogs = await utils.collectApiLogs(/replication/);
         const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
 
@@ -337,10 +364,9 @@ describe('server', () => {
         const apiLogs = (await collectApiLogs()).filter(log => log.length);
         const haproxyLogs = (await collectHaproxyLogs()).filter(log => log.length);
 
-        const reqUuid = getReqId(apiLogs[0]);
+        const reqID = getReqId(apiLogs[0]);
 
-        const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqUuid);
-        console.log(haproxyRequests);
+        const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
         expect(haproxyRequests.length).to.equal(12);
         expect(haproxyRequests[0]).to.include('_session');
         expect(haproxyRequests[5]).to.include('/medic-test/_design/medic/_view/contacts_by_depth');
@@ -352,7 +378,7 @@ describe('server', () => {
         expect(haproxyRequests[11]).to.include('/medic-test/_all_docs');
       });
 
-      it('should propagate uuid via couch requests', async () => {
+      it('should propagate ID via couch requests', async () => {
         const collectApiLogs = await utils.collectApiLogs(/meta/);
         const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
 
@@ -366,9 +392,9 @@ describe('server', () => {
         const apiLogs = (await collectApiLogs()).filter(log => log.length);
         const haproxyLogs = (await collectHaproxyLogs()).filter(log => log.length);
 
-        const reqUuid = getReqId(apiLogs[0]);
+        const reqID = getReqId(apiLogs[0]);
 
-        const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqUuid);
+        const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
         expect(haproxyRequests.length).to.equal(7);
         expect(haproxyRequests[0]).to.include('_session');
         expect(haproxyRequests[1]).to.include('_session');
@@ -379,7 +405,7 @@ describe('server', () => {
         expect(haproxyRequests[6]).to.include(`medic-test-user-${offlineUser.username}-meta/_security`);
       });
 
-      it('should propagate uuid via proxy', async () => {
+      it('should propagate ID via proxy', async () => {
         const collectApiLogs = await utils.collectApiLogs(/meta/);
         const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
 
@@ -394,10 +420,9 @@ describe('server', () => {
         const apiLogs = (await collectApiLogs()).filter(log => log.length);
         const haproxyLogs = (await collectHaproxyLogs()).filter(log => log.length);
 
-        const reqUuid = getReqId(apiLogs[0]);
+        const reqID = getReqId(apiLogs[0]);
 
-        const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqUuid);
-        console.warn(haproxyRequests);
+        const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
         expect(haproxyRequests.length).to.equal(2);
         expect(haproxyRequests[0]).to.include('_session');
         expect(haproxyRequests[1]).to.include(`/medic-test-user-${offlineUser.username}-meta/the_doc`);
