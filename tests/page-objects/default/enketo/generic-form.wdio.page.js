@@ -11,6 +11,7 @@ const validationErrors = () => $$('.invalid-required');
 const waitForValidationErrorsToDisappear = () => browser.waitUntil(async () => !(await validationErrors()).length);
 const waitForValidationErrors = () => browser.waitUntil(async () => (await validationErrors()).length);
 const fieldByName = (formId, name) => $(`#report-form [name="/${formId}/${name}"]`);
+const select2Selection = (label) => $(`label*=${label}`).$('.select2-selection');
 
 const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
   if (waitForLoad) {
@@ -27,16 +28,25 @@ const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
   }
 };
 
-const selectContact = async (contactName) => {
-  const select2Selection = () => $('label*=What is the patient\'s name?').$('.select2-selection');
-  await select2Selection().click();
+const selectContact = async (contactName, label, searchTerm = '') => {
   const searchField = await $('.select2-search__field');
-  await searchField.setValue(contactName);
-  const contact = await $('.name');
+  if (!await searchField.isDisplayed()) {
+    await (await select2Selection(label)).click();
+  }
+
+  await searchField.setValue(searchTerm || contactName);
+  await $('.select2-results__option.loading-results').waitForDisplayed({ reverse: true });
+  const contact = await $(`.name*=${contactName}`);
+  await contact.waitForDisplayed();
   await contact.click();
+
   await browser.waitUntil(async () => {
-    return (await select2Selection()).getText().toLowerCase().endsWith(contactName.toLowerCase());
+    return (await (await select2Selection(label)).getText()).toLowerCase().endsWith(contactName.toLowerCase());
   });
+};
+
+const clearSelectedContact = async (label) => {
+  await (await select2Selection(label)).$('.select2-selection__clear').click();
 };
 
 const submitForm = async ({ waitForPageLoaded = true, ignoreValidationErrors = false } = {}) => {
@@ -95,6 +105,7 @@ module.exports = {
   nameField,
   fieldByName,
   selectContact,
+  clearSelectedContact,
   cancelForm,
   submitForm,
   currentFormView,
