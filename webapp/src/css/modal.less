@@ -127,8 +127,12 @@ mm-modal-layout {
     }
   }
 
-  .enketo-modal .modal-footer {
+  &:not(.has-error) .enketo-modal .modal-footer {
     padding: 0;
+  }
+
+  &.has-error .enketo-modal .modal-body {
+    padding-top: 40px;
   }
 }
 

@@ -14,7 +14,7 @@ import { GlobalActions } from '@mm-actions/global';
 export class TrainingCardsComponent implements OnInit, OnDestroy {
   readonly MODAL_ID = 'training-cards-modal';
   private globalActions: GlobalActions;
-  hideModalFooter = true; // ToDo fix
+  hasError = false;
   showConfirmExit = false;
   subscriptions: Subscription = new Subscription();
 
@@ -71,7 +71,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
   }
 
   quit(showConfirmExit: boolean) {
-    if (showConfirmExit) { // todo not show confirmation if there is an error in the form
+    if (showConfirmExit && !this.hasError) {
       this.globalActions.setTrainingCard({ showConfirmExit });
       return;
     }

@@ -17,18 +17,16 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
   templateUrl: './training-cards-form.component.html',
 })
 export class TrainingCardsFormComponent implements OnInit, OnDestroy {
-
   @Input() isEmbedded = true;
   @Output() quit = new EventEmitter<boolean>();
-  @Output() save = new EventEmitter<boolean>();
-
+  @Output() save = new EventEmitter<void>();
+  @Output() handleError = new EventEmitter<void>();
   private geoHandle:any;
   private globalActions: GlobalActions;
   private trackRender;
   private trackEditDuration;
   private trackSave;
   private trackMetadata = { action: '', form: '' };
-
   readonly FORM_WRAPPER_ID = 'training-cards-form';
   trainingCardFormId: null | string = null;
   formNoTitle = false;
@@ -126,6 +124,7 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
       this.setNavigationTitle(formDoc);
       this.showContent();
       this.recordPerformancePostRender();
+      throw new Error('upps');
     } catch (error) {
       this.setError(error);
       console.error('Trainings Content Component :: Error rendering form.', error);
@@ -175,6 +174,7 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
   setError(error) {
     this.errorTranslationKey = error?.translationKey || 'training_cards.error.loading';
     this.contentError = true;
+    this.handleError.emit();
     this.showContent();
   }
 
@@ -197,7 +197,7 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
       this.formService.unload(this.form);
       this.globalActions.unsetSelected();
       this.recordPerformancePostSave();
-      this.save.emit(true);
+      this.save.emit();
     } catch (error) {
       this.globalActions.setEnketoSavingStatus(false);
       console.error('Trainings Content Component :: Error submitting form data.', error);

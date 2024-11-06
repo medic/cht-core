@@ -2,8 +2,9 @@
   [id]="MODAL_ID"
   [titleKey]="showConfirmExit ? 'training_cards.confirm.title' : null"
   (onCancel)="quit(true)"
-  [hideFooter]="hideModalFooter"
-  [hasEnketoForm]="true">
+  [hideFooter]="!hasError"
+  [hasEnketoForm]="true"
+  [class.has-error]="hasError">
 
   <training-cards-confirm *ngIf="showConfirmExit" (stay)="continueTraining()" (exit)="exitTraining($event)"/>
 
@@ -11,6 +12,7 @@
     [hidden]="showConfirmExit"
     [isEmbedded]="false"
     (quit)="quit($event)"
-    (save)="close()"/>
+    (save)="close()"
+    (handleError)="hasError = true"/>
 
 </mm-modal-layout>
