@@ -53,8 +53,8 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
   }
 
   close() {
-    this.clearTrainingCardStore();
     this.matDialogRef.close();
+    this.clearTrainingCardStore();
   }
 
   continueTraining() {
