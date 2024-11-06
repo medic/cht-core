@@ -209,7 +209,8 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
     this.trackMetadata.action = 'add';
     this.trackMetadata.form = this.trainingCardFormId!;
     this.trackRender?.stop({
-      name: [ 'enketo', this.trackMetadata.form, this.trackMetadata.action, 'render' ].join(':')
+      name: [ 'enketo', this.trackMetadata.form, this.trackMetadata.action, 'render' ].join(':'),
+      recordApdex: true,
     });
     this.trackEditDuration = this.performanceService.track();
   }

@@ -11,7 +11,6 @@ import { GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-services/modal.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
-import { TranslateService } from '@ngx-translate/core';
 import { Selectors } from '@mm-selectors/index';
 import { combineLatest } from 'rxjs';
 
