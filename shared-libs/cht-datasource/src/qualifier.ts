@@ -56,3 +56,31 @@ export const byContactType = (contactType: string): ContactTypeQualifier => {
 export const isContactTypeQualifier = (contactType: unknown): contactType is ContactTypeQualifier => {
   return isRecord(contactType) && hasField(contactType, { name: 'contactType', type: 'string' });
 };
+
+/**
+ * A qualifier that identifies entities based on a freetext search string.
+ */
+export type FreetextQualifier = Readonly<{ freetext: string }>;
+
+/**
+ * Builds a qualifier for finding entities by the given freetext string.
+ * @param freetext the text to search with
+ * @returns the qualifier
+ * @throws Error if the search string is not provided or is empty
+ */
+export const byFreetext = (freetext: string): FreetextQualifier => {
+  if (!isString(freetext) || freetext.length === 0) {
+    throw new InvalidArgumentError(`Invalid freetext [${JSON.stringify(freetext)}].`);
+  }
+
+  return { freetext };
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link FreetextQualifier} otherwise `false`.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given type is a {@link FreetextQualifier}, otherwise `false`.
+ */
+export const isFreetextQualifier = (qualifier: unknown): qualifier is FreetextQualifier => {
+  return isRecord(qualifier);
+};

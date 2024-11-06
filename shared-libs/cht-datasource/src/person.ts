@@ -1,6 +1,6 @@
 import { ContactTypeQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
-import { Contact, NormalizedParent } from './libs/contact';
+import * as Contact from './contact';
 import * as Remote from './remote';
 import * as Local from './local';
 import * as Place from './place';
@@ -14,7 +14,7 @@ export namespace v1 {
   /**
    * Immutable data about a person contact.
    */
-  export interface Person extends Contact {
+  export interface Person extends Contact.v1.Contact {
     readonly date_of_birth?: Date;
     readonly phone?: string;
     readonly patient_id?: string;
@@ -25,7 +25,7 @@ export namespace v1 {
    * Immutable data about a person contact, including the full records of the parent place lineage.
    */
   export interface PersonWithLineage extends Person {
-    readonly parent?: Place.v1.PlaceWithLineage | NormalizedParent,
+    readonly parent?: Place.v1.PlaceWithLineage | Contact.v1.NormalizedParent,
   }
 
   const assertPersonQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {

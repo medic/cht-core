@@ -5,7 +5,7 @@ import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Place from '../place';
 import {fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey} from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
-import { Contact } from '../libs/contact';
+import * as Contact from '../contact';
 import logger from '@medic/logger';
 import { getLineageDocsById, getPrimaryContactIds, hydrateLineage, hydratePrimaryContact } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
@@ -56,7 +56,7 @@ export namespace v1 {
       const contactUuids = getPrimaryContactIds(places);
       const contacts = await getMedicDocsById(contactUuids);
       const [placeWithContact, ...linagePlacesWithContact] = places.map(hydratePrimaryContact(contacts));
-      const placeWithLineage = hydrateLineage(placeWithContact as Contact, linagePlacesWithContact);
+      const placeWithLineage = hydrateLineage(placeWithContact as Contact.v1.Contact, linagePlacesWithContact);
       return deepCopy(placeWithLineage);
     };
   };

@@ -1,4 +1,4 @@
-import { Contact, NormalizedParent } from './libs/contact';
+import * as Contact from './contact';
 import * as Person from './person';
 import { LocalDataContext} from './local/libs/data-context';
 import {ContactTypeQualifier, isUuidQualifier, UuidQualifier} from './qualifier';
@@ -14,8 +14,8 @@ export namespace v1 {
   /**
    * Immutable data about a place contact.
    */
-  export interface Place extends Contact {
-    readonly contact?: NormalizedParent,
+  export interface Place extends Contact.v1.Contact {
+    readonly contact?: Contact.v1.NormalizedParent,
     readonly place_id?: string,
   }
 
@@ -24,8 +24,8 @@ export namespace v1 {
    * contact for the place.
    */
   export interface PlaceWithLineage extends Place {
-    readonly contact?: Person.v1.PersonWithLineage | NormalizedParent,
-    readonly parent?: PlaceWithLineage | NormalizedParent,
+    readonly contact?: Person.v1.PersonWithLineage | Contact.v1.NormalizedParent,
+    readonly parent?: PlaceWithLineage | Contact.v1.NormalizedParent,
   }
 
   const assertPlaceQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {

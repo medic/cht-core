@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { isNormalizedParent } from '../../src/libs/contact';
+import * as Contact from '../../src/contact';
 import sinon, { SinonStub } from 'sinon';
 import * as Core from '../../src/libs/core';
 
@@ -24,7 +24,7 @@ describe('contact lib', () => {
     ] as [unknown, boolean, boolean][]).forEach(([value, dataObj, expected]) => {
       it(`evaluates ${JSON.stringify(value)}`, () => {
         isDataObject.returns(dataObj);
-        expect(isNormalizedParent(value)).to.equal(expected);
+        expect(Contact.v1.isNormalizedParent(value)).to.equal(expected);
       });
     });
   });
