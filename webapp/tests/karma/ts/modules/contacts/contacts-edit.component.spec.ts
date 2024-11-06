@@ -26,6 +26,7 @@ describe('ContactsEdit component', () => {
   let router;
   let route;
   let dbGet;
+  let viewLookup;
   let createComponent;
   let fixture;
   let component;
@@ -34,6 +35,7 @@ describe('ContactsEdit component', () => {
   let routeSnapshot;
   let stopPerformanceTrackStub;
   let performanceService;
+  let dummyFormXml;
 
   beforeEach(() => {
     contactTypesService = {
@@ -43,6 +45,7 @@ describe('ContactsEdit component', () => {
     };
     translateService = { get: sinon.stub().resolvesArg(0) };
     dbGet = sinon.stub().resolves();
+    viewLookup = sinon.stub().resolves();
     router = { navigate: sinon.stub() };
     routeSnapshot = { params: {}, queryParams: {} };
     route = {
@@ -81,7 +84,7 @@ describe('ContactsEdit component', () => {
       providers: [
         provideMockStore({ selectors: mockedSelectors }),
         { provide: TranslateService, useValue: translateService },
-        { provide: DbService, useValue: { get: () => ({ get: dbGet }) } },
+        { provide: DbService, useValue: { get: () => ({ get: dbGet, query: viewLookup }) } },
         { provide: Router, useValue: router  },
         { provide: ActivatedRoute, useValue: route },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
@@ -99,9 +102,16 @@ describe('ContactsEdit component', () => {
       return TestBed.compileComponents().then(() => {
         fixture = TestBed.createComponent(ContactsEditComponent);
         component = fixture.componentInstance;
+        component.dbLookupRef = Promise.resolve({
+          total_rows: 0,
+          offset: 0,
+          rows: []
+        });
         fixture.detectChanges();
       });
     };
+
+    dummyFormXml = `<data><health_center><name>test</name><external_id/></health_center></data>`;
   });
 
   afterEach(() => sinon.restore());
@@ -635,6 +645,7 @@ describe('ContactsEdit component', () => {
       component.enketoContact = {
         formInstance: {
           validate: sinon.stub().resolves(false),
+          getDataStr: sinon.stub().returns(dummyFormXml)
         },
       };
 
@@ -654,6 +665,7 @@ describe('ContactsEdit component', () => {
       component.enketoContact = {
         formInstance: {
           validate: sinon.stub().resolves(true),
+          getDataStr: sinon.stub().returns(dummyFormXml)
         },
         type: 'some_contact',
       };
@@ -680,6 +692,7 @@ describe('ContactsEdit component', () => {
       dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
       const form = {
         validate: sinon.stub().resolves(true),
+        getDataStr: sinon.stub().returns(dummyFormXml)
       };
       formService.render.resolves(form);
 
@@ -687,6 +700,13 @@ describe('ContactsEdit component', () => {
       await fixture.whenStable();
 
       formService.saveContact.resolves({ docId: 'new_clinic_id' });
+      
+      // TODO: figure out why this test's dbLookupRef is null despite being set in the beforeEach
+      component.dbLookupRef = Promise.resolve({
+        total_rows: 0,
+        offset: 0,
+        rows: []
+      });
 
       await component.save();
       expect(performanceService.track.calledThrice).to.be.true;
@@ -730,11 +750,19 @@ describe('ContactsEdit component', () => {
       dbGet.resolves({ _id: 'person_edit_form_id', the: 'form' });
       const form = {
         validate: sinon.stub().resolves(true),
+        getDataStr: sinon.stub().returns(dummyFormXml)
       };
       formService.render.resolves(form);
 
       await createComponent();
       await fixture.whenStable();
+
+      // TODO: figure out why this test's dbLookupRef is null despite being set in the beforeEach
+      component.dbLookupRef = Promise.resolve({
+        total_rows: 0,
+        offset: 0,
+        rows: []
+      });
 
       formService.saveContact.resolves({ docId: 'the_person' });
 
@@ -778,11 +806,19 @@ describe('ContactsEdit component', () => {
       dbGet.resolves({ _id: 'patient_create_form_id', the: 'form' });
       const form = {
         validate: sinon.stub().resolves(true),
+        getDataStr: sinon.stub().returns(dummyFormXml)
       };
       formService.render.resolves(form);
 
       await createComponent();
       await fixture.whenStable();
+
+      // TODO: figure out why this test's dbLookupRef is null despite being set in the beforeEach
+      component.dbLookupRef = Promise.resolve({
+        total_rows: 0,
+        offset: 0,
+        rows: []
+      });
 
       formService.saveContact.resolves({ docId: 'the_patient' });
 
