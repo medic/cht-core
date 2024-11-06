@@ -1,6 +1,6 @@
 name: Build and test
 
-on: [push]
+on: [push, pull_request]
 
 env:
   COUCH_URL: http://admin:pass@localhost:5984/medic-test
@@ -83,131 +83,131 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
 
-  # config-tests:
-  #   needs: build
-  #   name: ${{ matrix.cmd }}
-  #   runs-on: ubuntu-22.04
-  #   timeout-minutes: 60
+  config-tests:
+    needs: build
+    name: ${{ matrix.cmd }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
     
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       cmd: ['test-config-default']
+    strategy:
+      fail-fast: false
+      matrix:
+        cmd: ['test-config-default']
 
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - name: Use Node.js ${{ env.NODE_VERSION }}
-  #     uses: actions/setup-node@v4
-  #     with:
-  #       node-version: ${{ env.NODE_VERSION }}
-  #   - run: sudo apt-get install -y xsltproc
-  #   - run: npm ci
-  #   - name: Run Tests
-  #     run: npm run ${{ matrix.cmd }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    - run: sudo apt-get install -y xsltproc
+    - run: npm ci
+    - name: Run Tests
+      run: npm run ${{ matrix.cmd }}
 
-  # test-cht-form:
-  #   needs: build
-  #   runs-on: ubuntu-22.04
+  test-cht-form:
+    needs: build
+    runs-on: ubuntu-22.04
 
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Use Node.js ${{ env.NODE_VERSION }}
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ env.NODE_VERSION }}
-  #     - run: sudo apt-get install -y xsltproc
-  #     - run: npm ci
-  #     - name: Build cht-form Web Component
-  #       run: npm run build-cht-form
-  #     - name: Run Tests
-  #       run: npm run integration-cht-form
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: sudo apt-get install -y xsltproc
+      - run: npm ci
+      - name: Build cht-form Web Component
+        run: npm run build-cht-form
+      - name: Run Tests
+        run: npm run integration-cht-form
 
-  # tests-k3d:
-  #   needs: build
-  #   name: ${{ matrix.cmd }}
-  #   runs-on: ubuntu-22.04
-  #   timeout-minutes: 60
+  tests-k3d:
+    needs: build
+    name: ${{ matrix.cmd }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
 
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       cmd: ['ci-integration-all-k3d', 'ci-integration-sentinel-k3d']
+    strategy:
+      fail-fast: false
+      matrix:
+        cmd: ['ci-integration-all-k3d', 'ci-integration-sentinel-k3d']
 
-  #   steps:
-  #     - name: Login to Docker Hub
-  #       uses: docker/login-action@v3
-  #       with:
-  #         username: ${{ env.DOCKERHUB_USERNAME }}
-  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
-  #       if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-  #     - name: Configure AWS credentials
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-  #         aws-region: eu-west-2
-  #       if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-  #     - name: Login to Amazon ECR
-  #       id: login-ecr
-  #       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #       uses: aws-actions/amazon-ecr-login@v2
-  #       with:
-  #         mask-password: 'true'
+      - name: Login to Amazon ECR
+        id: login-ecr
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'true'
 
-  #     - name: Use Node.js ${{ env.NODE_VERSION }}
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ env.NODE_VERSION }}
-  #     - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: actions/checkout@v4
 
-  #     - name: Download docker images artifacts
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: cht-images
-  #         path: images/
-  #       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
-  #     - name: Load docker images
-  #       run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
-  #       working-directory: images/
-  #       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+      - name: Download docker images artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: cht-images
+          path: images/
+        if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+      - name: Load docker images
+        run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
+        working-directory: images/
+        if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
-  #     - run: mkdir tests/logs
-  #     - run: python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-  #     - run: npm install -g cht-conf
-  #     - run: npm ci
+      - run: mkdir tests/logs
+      - run: python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
+      - run: npm install -g cht-conf
+      - run: npm ci
 
-  #     - uses: nolar/setup-k3d-k3s@v1
-  #     - uses: azure/setup-helm@v4.1.0
-  #     - uses: azure/setup-kubectl@v4
-  #     - name: Run tests
-  #       run: npm run ${{ matrix.cmd }}
-  #     - name: Archive Results
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: ${{ matrix.cmd }}
-  #         path: |
-  #           allure-results
-  #           allure-report
-  #           tests/logs
-  #           tests/results/
-  #       if: ${{ failure() }}
+      - uses: nolar/setup-k3d-k3s@v1
+      - uses: azure/setup-helm@v4.1.0
+      - uses: azure/setup-kubectl@v4
+      - name: Run tests
+        run: npm run ${{ matrix.cmd }}
+      - name: Archive Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.cmd }}
+          path: |
+            allure-results
+            allure-report
+            tests/logs
+            tests/results/
+        if: ${{ failure() }}
 
-  # translations:
-  #   needs: build
-  #   name: Lint translations
-  #   runs-on: ubuntu-22.04
-  #   strategy:
-  #     fail-fast: false
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Use Node.js ${{ env.NODE_VERSION }}
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ env.NODE_VERSION }}
-  #     - run: npm ci
-  #     - run: npm run lint-translations
+  translations:
+    needs: build
+    name: Lint translations
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm ci
+      - run: npm run lint-translations
 
   tests:
     needs: build
@@ -222,36 +222,35 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cmd: ['ci-webdriver-default']
-        chrome-version: ['90']
-        # suite: [all]
-        # include:
-        #   - cmd: ci-webdriver-default
-        #     suite: core
-        #     chrome-version: 90
-        # exclude:
-        #   - cmd: ci-webdriver-default
-        #     suite: core
-        #     chrome-version: latest
-        #   - cmd: ci-webdriver-default
-        #     suite: data
-        #   - cmd: ci-webdriver-default
-        #     suite: enketo
-        #     chrome-version: 90
-        #   - cmd: ci-webdriver-default
-        #     suite: enketo
-        #     chrome-version: latest
-        #   - cmd: ci-webdriver-default
-        #     suite: lowLevel
-        #   - cmd: ci-webdriver-default
-        #     suite: workflows
-        # exclude: # temporary until all suites run on Chrome 90
-          # - cmd: ci-integration-all
-          #   chrome-version: 90
-          # - cmd: ci-integration-sentinel
-          #   chrome-version: 90
-          # - cmd: ci-webdriver-default-mobile
-          #   chrome-version: 90
+        cmd: ['ci-integration-all', 'ci-integration-sentinel', 'ci-webdriver-default-mobile']
+        chrome-version: ['90', 'latest']
+        suite: [all]
+        include:
+          - cmd: ci-webdriver-default
+            suite: core
+            chrome-version: 90
+          - cmd: ci-webdriver-default
+            suite: core
+            chrome-version: latest
+          - cmd: ci-webdriver-default
+            suite: data
+          - cmd: ci-webdriver-default
+            suite: enketo
+            chrome-version: 90
+          - cmd: ci-webdriver-default
+            suite: enketo
+            chrome-version: latest
+          - cmd: ci-webdriver-default
+            suite: lowLevel
+          - cmd: ci-webdriver-default
+            suite: workflows
+        exclude: # temporary until all suites run on Chrome 90
+          - cmd: ci-integration-all
+            chrome-version: 90
+          - cmd: ci-integration-sentinel
+            chrome-version: 90
+          - cmd: ci-webdriver-default-mobile
+            chrome-version: 90
     steps:
     - name: Login to Docker Hub
       uses: docker/login-action@v3
@@ -370,129 +369,129 @@ jobs:
           tests/results/
       if: ${{ failure() }}
 
-  # publish:
-  #   needs: [tests, config-tests, test-cht-form, translations]
-  #   name: Publish branch build
-  #   runs-on: ubuntu-22.04
-  #   timeout-minutes: 60
+  publish:
+    needs: [tests, config-tests, test-cht-form, translations]
+    name: Publish branch build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
     
-  #   if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' }}
 
-  #   steps:
-  #   - name: Install regctl
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     uses: regclient/actions/regctl-installer@main
+    steps:
+    - name: Install regctl
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: regclient/actions/regctl-installer@main
 
-  #   - name: Configure AWS credentials
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     uses: aws-actions/configure-aws-credentials@v4
-  #     with:
-  #       aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-  #       aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-  #       aws-region: eu-west-2
-  #   - name: Login to Amazon ECR
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     id: login-ecr
-  #     uses: aws-actions/amazon-ecr-login@v2
-  #     with:
-  #       mask-password: 'true'
+    - name: Configure AWS credentials
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+    - name: Login to Amazon ECR
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+      with:
+        mask-password: 'true'
 
-  #   - name: Configure AWS credentials Public
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     uses: aws-actions/configure-aws-credentials@v4
-  #     with:
-  #       aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-  #       aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-  #       aws-region: us-east-1
-  #   - name: Login to Public Amazon ECR
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     id: login-ecr-public
-  #     uses: aws-actions/amazon-ecr-login@v2
-  #     with:
-  #       registry-type: public
-  #       mask-password: 'true'
+    - name: Configure AWS credentials Public
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    - name: Login to Public Amazon ECR
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      id: login-ecr-public
+      uses: aws-actions/amazon-ecr-login@v2
+      with:
+        registry-type: public
+        mask-password: 'true'
 
-  #   - uses: actions/checkout@v4
-  #   - name: Publish
-  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #     run: |
-  #       npm ci
-  #       cd scripts/ci
-  #       node ./publish.js
-  #       node ./tag-docker-images.js
+    - uses: actions/checkout@v4
+    - name: Publish
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      run: |
+        npm ci
+        cd scripts/ci
+        node ./publish.js
+        node ./tag-docker-images.js
 
-  # publish-generated-docs:
-  #   needs: [publish]
-  #   name: Publish generated docs
-  #   runs-on: ubuntu-22.04
-  #   timeout-minutes: 5
-  #   if: ${{ github.event_name != 'pull_request' }}
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Use Node.js ${{ env.NODE_VERSION }}
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ env.NODE_VERSION }}
-  #     - run: npm ci
-  #     - name: Generate TypeDoc
-  #       run: npm run --prefix shared-libs/cht-datasource gen-docs
-  #     - name: Main Branch Only - Deploy to GH pages
-  #       uses: peaceiris/actions-gh-pages@v4
-  #       if: github.ref == 'refs/heads/master'
-  #       with:
-  #         personal_token: ${{ secrets.DEPLOY_TO_GITHUB_PAGES }}
-  #         external_repository: medic/cht-datasource
-  #         publish_dir: ./shared-libs/cht-datasource/docs
-  #         user_name: medic-ci
-  #         user_email: medic-ci@github
-  #         publish_branch: main
+  publish-generated-docs:
+    needs: [publish]
+    name: Publish generated docs
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    if: ${{ github.event_name != 'pull_request' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm ci
+      - name: Generate TypeDoc
+        run: npm run --prefix shared-libs/cht-datasource gen-docs
+      - name: Main Branch Only - Deploy to GH pages
+        uses: peaceiris/actions-gh-pages@v4
+        if: github.ref == 'refs/heads/master'
+        with:
+          personal_token: ${{ secrets.DEPLOY_TO_GITHUB_PAGES }}
+          external_repository: medic/cht-datasource
+          publish_dir: ./shared-libs/cht-datasource/docs
+          user_name: medic-ci
+          user_email: medic-ci@github
+          publish_branch: main
 
-  # upgrade:
-  #   needs: [publish]
-  #   name: Upgrade from ${{ matrix.version }}
-  #   runs-on: ubuntu-22.04
-  #   timeout-minutes: 60
+  upgrade:
+    needs: [publish]
+    name: Upgrade from ${{ matrix.version }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
 
-  #   if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' }}
 
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       version: [ '4.2.4', 'latest' ]
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [ '4.2.4', 'latest' ]
 
-  #   steps:
-  #     - name: Configure AWS credentials Public
-  #       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-  #         aws-region: us-east-1
-  #     - name: Login to Public Amazon ECR
-  #       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #       id: login-ecr-public
-  #       uses: aws-actions/amazon-ecr-login@v2
-  #       with:
-  #         registry-type: public
-  #         mask-password: 'true'
-  #     - uses: actions/checkout@v4
-  #     - name: Set ENV
-  #       run: |
-  #         echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
-  #         echo "BASE_VERSION=${{ matrix.version }}" >> $GITHUB_ENV
-  #     - run: npm ci
-  #     - name: Create logs directory
-  #       run: mkdir tests/logs
-  #     - name: Upgrade
-  #       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-  #       run: npm run upgrade-wdio
-  #     - name: Archive Results
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: upgrade-${{ matrix.version }}
-  #         path: |
-  #           allure-results
-  #           allure-report
-  #           tests/logs
-  #           tests/results/
-  #       if: ${{ failure() }}
+    steps:
+      - name: Configure AWS credentials Public
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Login to Public Amazon ECR
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        id: login-ecr-public
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+          mask-password: 'true'
+      - uses: actions/checkout@v4
+      - name: Set ENV
+        run: |
+          echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
+          echo "BASE_VERSION=${{ matrix.version }}" >> $GITHUB_ENV
+      - run: npm ci
+      - name: Create logs directory
+        run: mkdir tests/logs
+      - name: Upgrade
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        run: npm run upgrade-wdio
+      - name: Archive Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: upgrade-${{ matrix.version }}
+          path: |
+            allure-results
+            allure-report
+            tests/logs
+            tests/results/
+        if: ${{ failure() }}
