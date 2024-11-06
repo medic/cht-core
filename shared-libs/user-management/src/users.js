@@ -494,7 +494,22 @@ const deleteUser = id => {
   return Promise.all([ usersDbPromise, medicDbPromise ]);
 };
 
-const validatePassword = (password) => {
+const validatePassword = (password, confirmPassword = null) => {
+  if (confirmPassword) {
+    if (!password || !confirmPassword) {
+      return error400(
+          'Password and confirm password fields are required',
+          'password.required'
+      );
+    }
+
+    if (password !== confirmPassword) {
+      return error400(
+          'Password and confirm password must match',
+          'password.must.match'
+      );
+    }
+  }
   if (password.length < PASSWORD_MINIMUM_LENGTH) {
     return error400(
       `The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`,
@@ -1170,16 +1185,14 @@ module.exports = {
 
   validateNewUsername,
 
+  validatePassword,
+
   /**
    * Parses a CSV of users to an array of objects.
    *
    * @param {string} csv CSV of users.
    */
   parseCsv,
-
-  PASSWORD_MINIMUM_LENGTH,
-
-  PASSWORD_MINIMUM_SCORE,
 
   createMultiFacilityUser,
 

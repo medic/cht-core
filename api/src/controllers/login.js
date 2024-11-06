@@ -17,9 +17,15 @@ const translations = require('../translations');
 const template = require('../services/template');
 const rateLimitService = require('../services/rate-limit');
 const serverUtils = require('../server-utils');
-const passwordTester = require('simple-password-tester');
 
-const { PASSWORD_MINIMUM_LENGTH, PASSWORD_MINIMUM_SCORE } = require('@medic/user-management/src/users');
+const { validatePassword } = require('@medic/user-management/src/users');
+
+const ERROR_KEY_MAPPING = {
+  'password.must.match': 'password-mismatch',
+  'password.weak': 'password-weak',
+  'password.length.minimum': 'password-short',
+  'password.required': 'password-required'
+};
 
 const templates = {
   login: {
@@ -334,28 +340,18 @@ const renderPasswordReset = (req) => {
   return render('passwordReset', req);
 };
 
-const validatePassword = (password, confirmPassword) => {
-  if (!password || !confirmPassword) {
-    return { isValid: false, error: 'required'};
+const validatePasswordReset = (password, confirmPassword) => {
+  const error = validatePassword(password, confirmPassword);
+
+  if (!error) {
+    return { isValid: true };
   }
 
-  if (password.length < PASSWORD_MINIMUM_LENGTH) {
-    return {
-      isValid: false,
-      error: 'short',
-      params: { minimum: PASSWORD_MINIMUM_LENGTH }
-    };
+  return {
+    isValid: false,
+    error: ERROR_KEY_MAPPING[error.message.translationKey],
+    params: error.message.translationParams
   }
-
-  if (password !== confirmPassword) {
-    return { isValid: false, error: 'mismatch' };
-  }
-
-  if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
-    return { isValid: false, error: 'weak' };
-  }
-
-  return { isValid: true };
 };
 
 const validateSession = async (req) => {
@@ -451,10 +447,10 @@ module.exports = {
     }
 
     try {
-      const validation = validatePassword(req.body.password, req.body.confirmPassword);
+      const validation = validatePasswordReset(req.body.password, req.body.confirmPassword);
       if (!validation.isValid) {
         return res.status(400).json({
-          error: `password-${validation.error}`,
+          error: validation.error,
           params: validation.params,
         });
       }
