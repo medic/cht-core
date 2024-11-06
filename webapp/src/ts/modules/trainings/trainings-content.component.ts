@@ -43,6 +43,7 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
     this.globalActions.clearNavigation();
+    this.globalActions.clearTrainingCard();
   }
 
   private subscribeToStore() {
@@ -66,13 +67,14 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
   close(nextUrl?) {
     this.canExit = true;
     this.globalActions.clearNavigation();
+    this.globalActions.clearTrainingCard();
     if (nextUrl) {
       return this.router.navigateByUrl(nextUrl);
     }
     return this.router.navigate([ '/', 'trainings' ]);
   }
 
-  exitTraining(nextUrl) {
+  exitTraining(nextUrl: string) {
     this.trackRender?.stop({
       name: [ 'enketo', this.trainingCardID, 'add', 'quit' ].join(':'),
     });

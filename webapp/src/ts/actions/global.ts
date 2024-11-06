@@ -39,6 +39,7 @@ export const Actions = {
   openSidebarMenu: createAction('OPEN_SIDEBAR_MENU'),
   setSearchBar: createSingleValueAction('SET_SEARCH_BAR', 'searchBar'),
   setTrainingCard: createSingleValueAction('SET_TRAINING_CARD', 'trainingCard'),
+  clearTrainingCard: createAction('CLEAR_TRAINING_CARD'),
 };
 
 export class GlobalActions {
@@ -103,6 +104,15 @@ export class GlobalActions {
 
   setTrainingCard(trainingCard) {
     return this.store.dispatch(Actions.setTrainingCard(trainingCard));
+  }
+
+  clearTrainingCard() {
+    this.setTrainingCard({
+      formId: null,
+      isOpen: false,
+      showConfirmExit: false,
+      nextUrl: null,
+    });
   }
 
   clearSidebarFilter() {
