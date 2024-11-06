@@ -38,12 +38,6 @@ describe('Testing Incorrect locale', () => {
   beforeEach(() => {
     contact = createContact();
   });
-
-  // afterEach(async () => {
-  //   await utils.deleteDocs([ contact._id, `messages-${languageCode}` ]);
-  //   await utils.revertSettings(true);
-  //   await browser.setCookies({ name: 'locale', value: 'en' });
-  // });
   
   it('should work with incorrect locale', async () => {
     await loginPage.cookieLogin();
