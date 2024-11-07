@@ -1,26 +1,26 @@
 function (doc) {
-  const skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
+  var skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
   let toIndex = '';
 
-  const types = ['district_hospital', 'health_center', 'clinic', 'person'];
-  let idx;
+  var types = ['district_hospital', 'health_center', 'clinic', 'person'];
+  var idx;
+  var type;
   if (doc.type === 'contact') {
-    idx = types.indexOf(doc.contact_type);
+    type = doc.contact_type;
+    idx = types.indexOf(type);
     if (idx === -1) {
-      idx = doc.contact_type;
+      idx = type;
     }
   } else {
-    idx = types.indexOf(doc.type);
+    type = doc.type;
+    idx = types.indexOf(type);
   }
-
-  const isContactDoc = idx !== -1;
-  if (isContactDoc) {
+  if (idx !== -1) {
     Object.keys(doc).forEach(function (key) {
-      const value = doc[key];
+      var value = doc[key];
       if (!key || !value) {
         return;
       }
-
       key = key.toLowerCase();
       if (skip.indexOf(key) !== -1 || /_date$/.test(key)) {
         return;
@@ -40,10 +40,10 @@ function (doc) {
         console.log(`key "${key}" doesn't pass regex`);
       }*/
     });
+  }
 
-    toIndex = toIndex.trim();
-    if (toIndex) {
-      index('text', 'default', toIndex, { store: true });
-    }
+  toIndex = toIndex.trim();
+  if (toIndex) {
+    index('text', 'default', toIndex, { store: true });
   }
 }
