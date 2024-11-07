@@ -57,7 +57,7 @@ const getRequestOptions = ({ apiToken, host }={}) => ({
   },
 });
 
-const remoteStatusToLocalState = (result) => result.status && STATUS_MAP[result.status];
+const remoteStatusToLocalState = (result) => (result.status && STATUS_MAP[result.status]) || STATUS_MAP.queued;
 
 /**
  * @typedef {Object} stateUpdate
@@ -107,8 +107,14 @@ const sendMessage = (credentials, message) => {
       return getStateUpdate(state, message.id, result.id);
     })
     .catch(err => {
-      // ignore error, sending the message will be retried later
       logger.error(`Error thrown when trying to send message: %o`, err);
+      if (err?.statusCode === 400) {
+        // source https://rapidpro.io/api/v2/
+        // 400: The request failed due to invalid parameters.
+        // Do not retry with the same values, and the body of the response will contain details.
+        return getStateUpdate(STATUS_MAP.failed, message.id, undefined);
+      }
+      // ignore error, sending the message will be retried later
     });
 };
 

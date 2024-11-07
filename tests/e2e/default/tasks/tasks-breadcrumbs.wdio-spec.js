@@ -79,14 +79,9 @@ describe('Tasks tab breadcrumbs', () => {
     await utils.createUsers([ chw, supervisor ]);
     await sentinelUtils.waitForSentinel();
 
-    await chtConfUtils.initializeConfigDir();
-
     const formsPath = path.join(__dirname, 'forms');
     await chtConfUtils.compileAndUploadAppForms(formsPath);
-
-    const tasksFilePath = path.join(__dirname, 'config/tasks-breadcrumbs-config.js');
-    const { tasks } = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
-    await utils.updateSettings({ tasks }, { ignoreReload: 'api' });
+    await tasksPage.compileTasks('tasks-breadcrumbs-config.js', false);
   });
 
   after(async () => {

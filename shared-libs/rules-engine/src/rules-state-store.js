@@ -42,6 +42,7 @@ const self = {
 
     const rulesConfigHash = hashRulesConfig(settings);
     if (state.rulesConfigHash !== rulesConfigHash || targetState.isStale(state.targetState)) {
+      state.targetState = targetState.migrateStaleState(state.targetState);
       state.stale = true;
     }
 

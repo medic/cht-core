@@ -1,7 +1,7 @@
 const Entity = require('./entities.js');
 const ValidatorFunctions = require('./validator_functions.js');
 
-const validate = (entities, values, valueKey) => {
+const validate = async (entities, values, valueKey) => {
   if (entities === null || typeof entities === 'undefined') {
     return true;
   }
@@ -44,19 +44,19 @@ const validate = (entities, values, valueKey) => {
       funcArgs.unshift(values);
 
       if (ValidatorFunctions[funcName]) {
-        tempResult = ValidatorFunctions[funcName].apply(this, funcArgs);
+        tempResult = await ValidatorFunctions[funcName].apply(this, funcArgs);
       }
       useTempResult = true;
     } else if (thisEntity.type === Entity.Block) {
-      tempResult = validate(thisEntity.sub, values, valueKey);
+      tempResult = await validate(thisEntity.sub, values, valueKey);
       useTempResult = true;
     } else if (thisEntity.type === Entity.Ternary) {
-      const ternaryCondition = validate(thisEntity.conditions, values, valueKey);
+      const ternaryCondition = await validate(thisEntity.conditions, values, valueKey);
 
       if (ternaryCondition) {
-        tempResult = validate(thisEntity.ifThen, values, valueKey);
+        tempResult = await validate(thisEntity.ifThen, values, valueKey);
       } else {
-        tempResult = validate(thisEntity.ifElse, values, valueKey);
+        tempResult = await validate(thisEntity.ifElse, values, valueKey);
       }
 
       useTempResult = true;

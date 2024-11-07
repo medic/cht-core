@@ -8,6 +8,7 @@
         <a *ngFor="let module of moduleOptions"
           class="nav-item"
           [routerLink]="module.routerLink"
+          (click)="close()"
           [mmAuth]="module.hasPermissions">
           <mat-icon [fontIcon]="module.icon"></mat-icon>
           <span>{{ module.translationKey | translate }}</span>
@@ -54,7 +55,7 @@
             *ngIf="option.hasPermissions"
             [routerLink]="option.routerLink"
             [mmAuth]="option.hasPermissions"
-            (click)="option.click && option.click()">
+            (click)="option.click && option.click(); close()">
             <mat-icon [fontIcon]="option.icon"></mat-icon>
             <span>{{ option.translationKey | translate }}</span>
           </a>
@@ -62,7 +63,7 @@
           <a class="nav-item"
             *ngIf="!option.hasPermissions && option.canDisplay"
             [routerLink]="option.routerLink"
-            (click)="option.click && option.click()">
+            (click)="option.click && option.click(); close()">
             <mat-icon [fontIcon]="option.icon"></mat-icon>
             <span>{{ option.translationKey | translate }}</span>
           </a>

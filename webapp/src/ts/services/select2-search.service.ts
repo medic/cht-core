@@ -10,21 +10,22 @@ import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Select2SearchService {
-
   constructor(
-    private route: ActivatedRoute,
-    private formatProvider: FormatProvider,
-    private translateService: TranslateService,
-    private lineageModelGeneratorService: LineageModelGeneratorService,
-    private searchService: SearchService,
-    private sessionService: SessionService,
-    private settingsService: SettingsService,
-    private contactMutedService: ContactMutedService
+    private readonly route: ActivatedRoute,
+    private readonly formatProvider: FormatProvider,
+    private readonly translateService: TranslateService,
+    private readonly lineageModelGeneratorService: LineageModelGeneratorService,
+    private readonly searchService: SearchService,
+    private readonly sessionService: SessionService,
+    private readonly settingsService: SettingsService,
+    private readonly contactMutedService: ContactMutedService,
+    private readonly searchTelemetryService: SearchTelemetryService,
   ) { }
 
   private defaultTemplateResult(row) {
@@ -58,8 +59,6 @@ export class Select2SearchService {
   }
 
   private query(params, successCb, failureCb, options, types) {
-    const currentQuery = params.data.q;
-
     const searchOptions = {
       limit: options.pageSize,
       skip: this.calculateSkip(params.data.page, options.pageSize),
@@ -77,20 +76,14 @@ export class Select2SearchService {
     this.searchService
       .search('contacts', filters, searchOptions)
       .then((documents) => {
-        if (currentQuery === params.data.q) {
-          successCb({
-            results: options.sendMessageExtras(this.prepareRows(documents)),
-            pagination: {
-              more: documents.length === options.pageSize
-            }
-          });
-        }
+        successCb({
+          results: options.sendMessageExtras(this.prepareRows(documents)),
+          pagination: {
+            more: documents.length === options.pageSize
+          }
+        });
       })
-      .catch((err) => {
-        if (currentQuery === params.data.q) {
-          failureCb(err);
-        }
-      });
+      .catch((err) => failureCb(err));
   }
 
   private getDoc(id) {
@@ -177,19 +170,38 @@ export class Select2SearchService {
     // Hydrate and re-set real doc on change
     // !tags -> only support single values, until there is a use-case
     if (!options.tags) {
-      selectEl.on('select2:select', (e) => {
-        const docId = e.params && e.params.data && e.params.data.id;
+      let search: string | undefined;
+      selectEl.on('select2:selecting', () => search = selectEl.data('select2').dropdown.$search.val());
+      selectEl.on('select2:select', async (event) => {
+        const docId = event.params?.data?.id;
 
-        if (docId) {
-          this.getDoc(docId)
-            .then(doc => {
-              this.setDoc(selectEl, doc);
-              selectEl.trigger('change');
-            })
-            .catch(err => console.error('Select2 failed to get document', err));
+        if (!docId) {
+          return;
+        }
+
+        try {
+          const doc = await this.getDoc(docId);
+          this.setDoc(selectEl, doc);
+          selectEl.trigger('change');
+
+          void this.recordSearchTelemetry(doc, search, types);
+        } catch (error) {
+          console.error('Select2 failed to get document', error);
         }
       });
     }
+  }
+
+  private async recordSearchTelemetry(doc, search?: string, types?) {
+    if (!search) {
+      return;
+    }
+
+    if (!types || types.length === 0) {
+      return this.searchTelemetryService.recordContactSearch(doc, search);
+    }
+
+    return this.searchTelemetryService.recordContactByTypeSearch(doc, search);
   }
 
   private setDoc(selectEl, doc) {
@@ -237,5 +249,4 @@ export class Select2SearchService {
 
     return this.resolveInitialValue(selectEl, options, settings);
   }
-
 }

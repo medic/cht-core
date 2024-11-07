@@ -1,53 +1,37 @@
-const validator_functions = require('./validator_functions.js');
-const validation_result = require('./validation_result.js');
-
 const lexer = require('./lexer.js');
 const parser = require('./parser.js');
 const validator = require('./validator.js');
 
 const ruleCache = {};
 
-const addFunction = function(name, callable) {
-  validator_functions[name.toLowerCase()] = callable;
+const getEntities = (rule) => {
+  if (!ruleCache[rule]) {
+    const tokens = lexer.tokenize(rule);
+    const entities = parser.parse(tokens);
+    ruleCache[rule] = entities;
+  }
+  return ruleCache[rule];
 };
 
-const validate = function(rules, values) {
-  const results = {};
+const validate = async function(validations, values) {
+  const results = [];
 
-  // Start by defaulting all given values' validation results to "passing"
-  Object.keys(values).forEach((key) => {
-    results[key] = true;
-  });
-
-  // And then run the rules
-  Object.keys(rules).forEach((index) => {
-    if (typeof values[index] === 'undefined' || values[index] === null) {
-      values[index] = '';
+  for (const validation of validations) {
+    const key = validation.property;
+    if (typeof values[key] === 'undefined' || values[key] === null) {
+      values[key] = '';
     }
 
-    const rule = rules[index];
-    let tokens;
-    let entities;
+    const rule = validation.rule;
+    const entities = getEntities(rule);
+    const valid = await validator.validate(entities, values, key);
+    results.push({ valid, validation });
+  }
 
-    if (ruleCache[rule]) {
-      entities = ruleCache[rule];
-    } else {
-      tokens = lexer.tokenize(rule);
-      entities = parser.parse(tokens);
-
-      ruleCache[rule] = entities;
-    }
-
-    results[index] = validator.validate(entities, values, index);
-  });
-
-  return validation_result.create(results);
+  return results;
 };
 
 
 module.exports = {
-  addFunction,
-  lexer,
-  parser,
   validate
 };

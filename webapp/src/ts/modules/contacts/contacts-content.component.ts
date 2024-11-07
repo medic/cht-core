@@ -16,12 +16,12 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { ModalService } from '@mm-services/modal.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { SessionService } from '@mm-services/session.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
 
 @Component({
   selector: 'contacts-content',
@@ -55,21 +55,21 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   DISPLAY_LIMIT = 50;
 
   constructor(
-    private store: Store,
-    private route: ActivatedRoute,
-    private router: Router,
-    private changesService: ChangesService,
-    private contactChangeFilterService: ContactChangeFilterService,
-    private xmlFormsService: XmlFormsService,
-    private modalService: ModalService,
-    private contactTypesService: ContactTypesService,
-    private settingsService: SettingsService,
-    private userSettingsService: UserSettingsService,
-    private responsiveService: ResponsiveService,
-    private fastActionButtonService: FastActionButtonService,
-    private sessionService: SessionService,
-    private mutingTransition: MutingTransition,
-    private contactMutedService: ContactMutedService,
+    private readonly store: Store,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly changesService: ChangesService,
+    private readonly contactChangeFilterService: ContactChangeFilterService,
+    private readonly xmlFormsService: XmlFormsService,
+    private readonly modalService: ModalService,
+    private readonly contactTypesService: ContactTypesService,
+    private readonly settingsService: SettingsService,
+    private readonly responsiveService: ResponsiveService,
+    private readonly fastActionButtonService: FastActionButtonService,
+    private readonly sessionService: SessionService,
+    private readonly mutingTransition: MutingTransition,
+    private readonly contactMutedService: ContactMutedService,
+    private readonly searchTelemetryService: SearchTelemetryService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -112,15 +112,28 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscriptions.add(subscription);
   }
 
+  private async recordSearchTelemetry(selectedContact, nextSelectedContact, nextFilters) {
+    if (!nextFilters?.search || !nextSelectedContact) {
+      return;
+    }
+
+    const hasSelectedNewContact = selectedContact === null || selectedContact._id !== nextSelectedContact._id;
+    if (!hasSelectedNewContact) {
+      return;
+    }
+
+    await this.searchTelemetryService.recordContactSearch(nextSelectedContact.doc, nextFilters.search);
+  }
+
   private subscribeToStore() {
-    const reduxSubscription = combineLatest(
+    const reduxSubscription = combineLatest([
       this.store.select(Selectors.getSelectedContact),
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getLoadingSelectedContactReports),
       this.store.select(Selectors.getContactsLoadingSummary),
       this.store.select(Selectors.getFilters),
-    ).subscribe(([
+    ]).subscribe(([
       selectedContact,
       forms,
       loadingContent,
@@ -128,6 +141,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       contactsLoadingSummary,
       filters,
     ]) => {
+      void this.recordSearchTelemetry(this.selectedContact, selectedContact, filters);
       if (this.selectedContact?._id !== selectedContact?._id) {
         // reset view when selected contact changes
         this.resetTaskAndReportsFilter();
@@ -264,16 +278,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       ...childType,
       permission: childType.type?.person ? 'can_create_people' : 'can_create_places',
     }));
-  }
-
-  private setUserSettings() {
-    if (this.userSettings) {
-      return;
-    }
-    return this.userSettingsService
-      .get()
-      .then(userSettings => this.userSettings = userSettings)
-      .catch(error => console.error('Error fetching user settings', error));
   }
 
   private setSettings() {

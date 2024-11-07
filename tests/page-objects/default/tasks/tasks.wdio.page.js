@@ -1,3 +1,7 @@
+const path = require('path');
+const utils = require('@utils');
+const chtConfUtils = require('@utils/cht-conf');
+
 const TASK_LIST_SELECTOR = '#tasks-list';
 const TASK_FORM_SELECTOR = '#task-report';
 const TASKS_GROUP_SELECTOR = '#tasks-group .item-content';
@@ -75,6 +79,17 @@ const openTaskById = async (id, taskType) => {
   await $(TASK_FORM_SELECTOR).waitForDisplayed();
 };
 
+const compileTasks = async (tasksFileName, sync) => {
+  await chtConfUtils.initializeConfigDir();
+  const tasksFilePath = path.join(__dirname, `../../../e2e/default/tasks/config/${tasksFileName}`);
+  const settings = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
+  await utils.updateSettings(settings, { ignoreReload: 'api', sync });
+};
+
+const isTaskElementDisplayed = async (type, text) => {
+  return await (await $(TASK_LIST_SELECTOR)).$(`${type}*=${text}`).isDisplayed();
+};
+
 module.exports = {
   getTasks,
   getTaskByContactAndForm,
@@ -86,4 +101,6 @@ module.exports = {
   getTasksInGroup,
   noSelectedTask,
   openTaskById,
+  compileTasks,
+  isTaskElementDisplayed,
 };

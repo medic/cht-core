@@ -16,6 +16,7 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { DbService } from '@mm-services/db.service';
+import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
 
 @Component({
   templateUrl: './reports-content.component.html'
@@ -33,16 +34,17 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   fastActionList?: FastAction[];
 
   constructor(
-    private changesService:ChangesService,
-    private store:Store,
-    private dbService: DbService,
-    private route:ActivatedRoute,
-    private router:Router,
-    private searchFiltersService:SearchFiltersService,
-    private fastActionButtonService:FastActionButtonService,
-    private messageStateService:MessageStateService,
-    private responsiveService:ResponsiveService,
-    private modalService:ModalService,
+    private readonly changesService:ChangesService,
+    private readonly store:Store,
+    private readonly dbService: DbService,
+    private readonly route:ActivatedRoute,
+    private readonly router:Router,
+    private readonly searchFiltersService:SearchFiltersService,
+    private readonly fastActionButtonService:FastActionButtonService,
+    private readonly messageStateService:MessageStateService,
+    private readonly responsiveService:ResponsiveService,
+    private readonly modalService:ModalService,
+    private readonly searchTelemetryService: SearchTelemetryService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -68,14 +70,38 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     this.reportsActions.setSelectedReport();
   }
 
+  private hasSelectedNewReport(selectedReport, nextSelectedReport): boolean {
+    const hadNoReportSelected = selectedReport === null || selectedReport.length === 0;
+    const hadDifferentReportSelected = Array.isArray(selectedReport) &&
+        selectedReport.length === 1 &&
+        selectedReport[0]._id !== nextSelectedReport._id;
+
+    return hadNoReportSelected || hadDifferentReportSelected;
+  }
+
+  private async recordSearchTelemetry(selectedReport, nextSelectedReport, nextFilters) {
+    if (!nextFilters?.search || !nextSelectedReport) {
+      return;
+    }
+
+    if (!this.hasSelectedNewReport(selectedReport, nextSelectedReport)) {
+      return;
+    }
+
+    await this.searchTelemetryService.recordReportSearch(nextSelectedReport.doc, nextFilters.search);
+  }
+
   private subscribeToStore() {
-    const reportsSubscription = combineLatest(
+    const reportsSubscription = combineLatest([
       this.store.select(Selectors.getSelectedReport),
       this.store.select(Selectors.getSelectedReports),
-    ).subscribe(([
+      this.store.select(Selectors.getFilters),
+    ]).subscribe(([
       selectedReport,
       selectedReports,
+      filters
     ]) => {
+      void this.recordSearchTelemetry(this.selectedReports, selectedReport, filters);
       if (selectedReport) {
         this.selectedReports = [ selectedReport ];
       } else {

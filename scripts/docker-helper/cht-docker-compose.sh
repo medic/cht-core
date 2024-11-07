@@ -61,6 +61,16 @@ required_apps_installed(){
   echo "${error}"
 }
 
+docker_not_installed(){
+  # special check for docker.  We want to be sure both "docker" is installed AND
+  # that "docker compose" is installed.  We deprecated "docker-compose" in CHT Core #8781
+  if [ -n "$(required_apps_installed "docker")" ];then
+    echo "Docker not installed"
+  else
+    docker compose &>/dev/null || echo "Docker Compose not installed"
+  fi
+}
+
 port_open(){
   ip=$1
   port=$2
@@ -186,9 +196,9 @@ docker_up_or_restart(){
   sleep 3
 
   # haproxy never starts on first "up" call, so you know, call it twice ;)
-  docker-compose --env-file "${envFile}" -f "${composeFile}" down >/dev/null 2>&1
-  docker-compose --env-file "${envFile}" -f "${composeFile}" up -d >/dev/null 2>&1
-  docker-compose --env-file "${envFile}" -f "${composeFile}" up -d >/dev/null 2>&1
+  docker compose --env-file "${envFile}" -f "${composeFile}" down >/dev/null 2>&1
+  docker compose --env-file "${envFile}" -f "${composeFile}" up -d >/dev/null 2>&1
+  docker compose --env-file "${envFile}" -f "${composeFile}" up -d >/dev/null 2>&1
 }
 
 install_local_ip_cert(){
@@ -237,7 +247,7 @@ local_ip_cert_expired(){
 docker_down(){
   envFile=$1
   composeFile=$2
-  docker-compose --env-file "${envFile}" -f "${composeFile}" down >/dev/null 2>&1
+  docker compose --env-file "${envFile}" -f "${composeFile}" down >/dev/null 2>&1
 }
 
 docker_destroy(){
@@ -406,14 +416,16 @@ main (){
   fi
 
   # after valid env file is loaded, let's set all our constants
-  declare -r APP_STRING="docker;docker-compose;grep;head;cut;tr;nc;curl;file;wc;awk;tail;dirname"
+  declare -r APP_STRING="grep;head;cut;tr;nc;curl;file;wc;awk;tail;dirname"
   declare -r MAX_REBOOTS=5
   declare -r DEFAULT_SLEEP=$((60 * $((reboot_count + 1))))
   declare -r ALL_IMAGES="medicmobile/medic-os:cht-3.9.0-rc.2 medicmobile/haproxy:rc-1.17"
 
   # with constants set, let's ensure all the apps are present, exit if not
   appStatus=$(required_apps_installed "$APP_STRING")
-  if [ -n "$appStatus" ]; then
+  dockerStatus=$(docker_not_installed)
+  allStatus="${appStatus}${dockerStatus}"
+  if [ -n "$allStatus" ]; then
     window "WARNING: Missing Apps  -  (USE WITH CHT 3.x ONLY!)" "red" "100%"
     append "Install before proceeding:"
     append "$appStatus"

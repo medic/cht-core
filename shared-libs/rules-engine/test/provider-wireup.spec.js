@@ -833,6 +833,51 @@ describe('provider-wireup integration tests', () => {
         ]);
       });
 
+      it('should work with old format of the rules state store', async () => {
+        clock.setSystemTime(moment('2020-04-14').valueOf());
+        const rules = simpleNoolsTemplate('');
+        const settings = {
+          rules,
+          enableTargets: true,
+          targets: [{
+            id: 'uhc',
+          }],
+          monthStartDate: 15, // the target doc will be calculated using the current month start date value
+        };
+
+        // with monthStartDate = 15, and today being April 28th,
+        // the current interval is Apr 15 - May 14 and the previous interval is Mar 15 - Apr 14
+        const emissions = [
+          mockTargetEmission('uhc', 'doc4', moment('2020-02-23').valueOf(), true), // passes outside interval
+          mockTargetEmission('uhc', 'doc2', moment('2020-03-29').valueOf(), true), // passes within interval
+          mockTargetEmission('uhc', 'doc1', moment('2020-04-12').valueOf(), true), // passes within interval
+          mockTargetEmission('uhc', 'doc3', moment('2020-04-16').valueOf(), true), // passes outside interval
+        ];
+
+        const staleState = {
+          rulesConfigHash: 'not the same hash!!',
+          contactState: {},
+          targetState: { uhc: { id: 'uhc', emissions: {} }},
+          calculatedAt: moment('2020-04-14').valueOf(),
+          monthStartDate: 1,
+        };
+
+        await prepareExistentState(staleState);
+        await loadState(settings);
+        await rulesStateStore.storeTargetEmissions([], emissions);
+        rulesStateStore.restore();
+
+        clock.setSystemTime(moment('2020-04-28').valueOf()); // next interval
+        await wireup.initialize(provider, settings, {});
+        expect(provider.commitTargetDoc.callCount).to.equal(1);
+        expect(provider.commitTargetDoc.args[0]).to.deep.equal([
+          [{ id: 'uhc', value: { pass: 2, total: 2 } }],
+          '2020-04',
+          { userSettingsDoc: { _id: 'org.couchdb.user:username' }, userContactDoc: { _id: 'mock_user_id' } },
+          true,
+        ]);
+      });
+
       it('should use inclusive operator when comparing dates (left)', async () => {
         clock.setSystemTime(moment('2020-05-28').valueOf());
         const rules = simpleNoolsTemplate('');
