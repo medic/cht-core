@@ -8,6 +8,22 @@
     padding-top: 0;
   }
 
+  &.trainings {
+    .content .inner .page {
+      padding-top: 0;
+      padding-left: 0;
+      top: @top-without-filter;
+    }
+
+    .tool-bar .inner {
+      background-color: @top-header-color;
+    }
+
+    &.show-content .content .inner .page {
+      top: @toolbar-mobile-height;
+    }
+  }
+
   .app-menu-button {
     display: none;
   }
@@ -58,7 +74,6 @@
   &.about,
   &.testing,
   &.privacy-policy,
-  &.trainings,
   &.user {
     .tool-bar {
       height: 0;
@@ -349,7 +364,6 @@
   .app-root.old-nav {
     &.about,
     &.testing,
-    &.trainings,
     &.privacy-policy,
     &.user {
       .content {
