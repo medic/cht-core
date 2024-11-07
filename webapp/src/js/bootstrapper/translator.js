@@ -83,7 +83,7 @@ const TRANSLATIONS = {
   fr: {
     FETCH_INFO: ({ count, total }) => `Récupération des données  (${count} sur ${total} documents)…`,
     LOAD_APP: 'Chargement de l’application…',
-    PASSWORD_CHANGE_SUCCESS: 'Changement de mot de passe réussi',
+    PASSWORD_CHANGE_SUCCESS: 'Mot de passe modifié avec succès',
     PURGE_INIT: 'Vérification des données…',
     PURGE_INFO: ({ count }) => `${count} document(s) nettoyé(s)…`,
     PURGE_META: 'Cleaning meta data…',
