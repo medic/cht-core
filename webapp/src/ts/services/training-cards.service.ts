@@ -115,16 +115,20 @@ export class TrainingCardsService {
       });
   }
 
-  async displayTrainingCards() {
+  async canDisplayTrainingCards() {
     if (!this.trainingForms?.length
       || (this.showPrivacyPolicy && !this.privacyPolicyAccepted)
       || this.hasBeenDisplayed()
     ) {
-      return;
+      return false;
     }
 
     const routeSnapshot = this.routeSnapshotService.get();
-    if (routeSnapshot?.data?.hideTraining) {
+    return !routeSnapshot?.data?.hideTraining;
+  }
+
+  async displayTrainingCards() {
+    if (!this.canDisplayTrainingCards()) {
       return;
     }
 

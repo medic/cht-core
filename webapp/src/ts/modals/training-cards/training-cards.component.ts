@@ -14,7 +14,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 })
 export class TrainingCardsComponent implements OnInit, OnDestroy {
   readonly MODAL_ID = 'training-cards-modal';
-  private globalActions: GlobalActions;
+  private readonly globalActions: GlobalActions;
   private trackRender;
   private trainingCardID;
   hasError = false;

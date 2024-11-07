@@ -14,7 +14,7 @@ const PAGE_SIZE = 50;
   templateUrl: './trainings.component.html'
 })
 export class TrainingsComponent implements OnInit, OnDestroy {
-  private globalActions: GlobalActions;
+  private readonly globalActions: GlobalActions;
   private trackInitialLoadPerformance;
   private isInitialized;
   private trainingForms;

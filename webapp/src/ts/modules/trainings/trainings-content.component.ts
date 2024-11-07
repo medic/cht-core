@@ -14,7 +14,7 @@ import { Selectors } from '@mm-selectors/index';
 })
 export class TrainingsContentComponent implements OnInit, OnDestroy {
   @ViewChild('confirmModal') confirmModalTemplate;
-  private globalActions: GlobalActions;
+  private readonly globalActions: GlobalActions;
   private confirmModalRef;
   private trackRender;
   private trainingCardID;

@@ -22,7 +22,7 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
   @Output() save = new EventEmitter<void>();
   @Output() handleError = new EventEmitter<void>();
   private geoHandle:any;
-  private globalActions: GlobalActions;
+  private readonly globalActions: GlobalActions;
   private trackRender;
   private trackEditDuration;
   private trackSave;
@@ -103,7 +103,7 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
   private async _loadForm() {
     try {
       this.loadingContent = true;
-      this.geoHandle && this.geoHandle.cancel();
+      this.geoHandle?.cancel();
       this.geoHandle = this.geolocationService.init();
       const form = await this.xmlFormsService.get(this.trainingCardFormId);
       await this.ngZone.run(() => this.renderForm(form));
