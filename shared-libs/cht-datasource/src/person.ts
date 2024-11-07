@@ -25,7 +25,7 @@ export namespace v1 {
    * Immutable data about a person contact, including the full records of the parent place lineage.
    */
   export interface PersonWithLineage extends Person {
-    readonly parent?: Place.v1.PlaceWithLineage | Contact.v1.NormalizedParent,
+    readonly parent?: Place.v1.PlaceWithLineage | Contact.v1.NormalizedParent;
   }
 
   const assertPersonQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
@@ -34,10 +34,11 @@ export namespace v1 {
     }
   };
 
-  const getPerson = <T>(
-    localFn: (c: LocalDataContext) => (qualifier: UuidQualifier) => Promise<T>,
-    remoteFn: (c: RemoteDataContext) => (qualifier: UuidQualifier) => Promise<T>
-  ) => (context: DataContext) => {
+  const getPerson =
+    <T>(
+      localFn: (c: LocalDataContext) => (qualifier: UuidQualifier) => Promise<T>,
+      remoteFn: (c: RemoteDataContext) => (qualifier: UuidQualifier) => Promise<T>
+    ) => (context: DataContext) => {
       assertDataContext(context);
       const fn = adapt(context, localFn, remoteFn);
       return async (qualifier: UuidQualifier): Promise<T> => {
@@ -69,9 +70,7 @@ export namespace v1 {
    * @throws Error if a data context is not provided
    * @see {@link getAll} which provides the same data, but without having to manually account for paging
    */
-  export const getPage = (
-    context: DataContext
-  ): typeof curriedFn => {
+  export const getPage = (context: DataContext): typeof curriedFn => {
     assertDataContext(context);
     const fn = adapt(context, Local.Person.v1.getPage, Remote.Person.v1.getPage);
 
@@ -89,7 +88,7 @@ export namespace v1 {
     const curriedFn = async (
       personType: ContactTypeQualifier,
       cursor: Nullable<string> = null,
-      limit = 100,
+      limit = 100
     ): Promise<Page<Person>> => {
       assertTypeQualifier(personType);
       assertCursor(cursor);
@@ -106,9 +105,7 @@ export namespace v1 {
    * @returns a function for getting a generator that fetches people
    * @throws Error if a data context is not provided
    */
-  export const getAll = (
-    context: DataContext
-  ): typeof curriedGen => {
+  export const getAll = (context: DataContext): typeof curriedGen => {
     assertDataContext(context);
     const getPage = context.bind(v1.getPage);
 

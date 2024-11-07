@@ -1,22 +1,21 @@
 import * as Contact from './contact';
 import * as Person from './person';
-import { LocalDataContext} from './local/libs/data-context';
-import {ContactTypeQualifier, isUuidQualifier, UuidQualifier} from './qualifier';
+import { LocalDataContext } from './local/libs/data-context';
+import { ContactTypeQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
-import {assertCursor, assertLimit, assertTypeQualifier, getPagedGenerator, Nullable, Page} from './libs/core';
+import { assertCursor, assertLimit, assertTypeQualifier, getPagedGenerator, Nullable, Page } from './libs/core';
 
 /** */
 export namespace v1 {
-
   /**
    * Immutable data about a place contact.
    */
   export interface Place extends Contact.v1.Contact {
-    readonly contact?: Contact.v1.NormalizedParent,
-    readonly place_id?: string,
+    readonly contact?: Contact.v1.NormalizedParent;
+    readonly place_id?: string;
   }
 
   /**
@@ -24,8 +23,8 @@ export namespace v1 {
    * contact for the place.
    */
   export interface PlaceWithLineage extends Place {
-    readonly contact?: Person.v1.PersonWithLineage | Contact.v1.NormalizedParent,
-    readonly parent?: PlaceWithLineage | Contact.v1.NormalizedParent,
+    readonly contact?: Person.v1.PersonWithLineage | Contact.v1.NormalizedParent;
+    readonly parent?: PlaceWithLineage | Contact.v1.NormalizedParent;
   }
 
   const assertPlaceQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
@@ -34,10 +33,11 @@ export namespace v1 {
     }
   };
 
-  const getPlace = <T>(
-    localFn: (c: LocalDataContext) => (qualifier: UuidQualifier) => Promise<T>,
-    remoteFn: (c: RemoteDataContext) => (qualifier: UuidQualifier) => Promise<T>
-  ) => (context: DataContext) => {
+  const getPlace =
+    <T>(
+      localFn: (c: LocalDataContext) => (qualifier: UuidQualifier) => Promise<T>,
+      remoteFn: (c: RemoteDataContext) => (qualifier: UuidQualifier) => Promise<T>
+    ) => (context: DataContext) => {
       assertDataContext(context);
       const fn = adapt(context, localFn, remoteFn);
       return async (qualifier: UuidQualifier): Promise<T> => {
@@ -69,9 +69,7 @@ export namespace v1 {
    * @throws Error if a data context is not provided
    * @see {@link getAll} which provides the same data, but without having to manually account for paging
    */
-  export const getPage = (
-    context: DataContext
-  ): typeof curriedFn => {
+  export const getPage = (context: DataContext): typeof curriedFn => {
     assertDataContext(context);
     const fn = adapt(context, Local.Place.v1.getPage, Remote.Place.v1.getPage);
 
@@ -106,9 +104,7 @@ export namespace v1 {
    * @returns a function for getting a generator that fetches places
    * @throws Error if a data context is not provided
    */
-  export const getAll = (
-    context: DataContext
-  ): typeof curriedGen => {
+  export const getAll = (context: DataContext): typeof curriedGen => {
     assertDataContext(context);
     const getPage = context.bind(v1.getPage);
 

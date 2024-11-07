@@ -38,6 +38,7 @@ export { DataContext } from './libs/data-context';
 export { getLocalDataContext } from './local';
 export { getRemoteDataContext } from './remote';
 export { InvalidArgumentError } from './libs/error';
+export * as Contact from './contact';
 export * as Person from './person';
 export * as Place from './place';
 export * as Qualifier from './qualifier';
@@ -143,7 +144,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws InvalidArgumentError if no type is provided or if the type is not for a person
          */
         getByType: (personType: string) => ctx.bind(Person.v1.getAll)(Qualifier.byContactType(personType)),
-      }
-    }
+      },
+    },
   };
 };

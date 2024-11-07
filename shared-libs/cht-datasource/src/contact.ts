@@ -1,7 +1,12 @@
 import {Doc} from './libs/doc';
 import {DataObject, Identifiable, isDataObject, isIdentifiable, Nullable, Page} from './libs/core';
-import {ContactTypeQualifier, FreetextQualifier, UuidQualifier} from './qualifier';
-import {DataContext} from './libs/data-context';
+import {ContactTypeQualifier, FreetextQualifier, isUuidQualifier, UuidQualifier} from './qualifier';
+import {adapt, assertDataContext, DataContext} from './libs/data-context';
+import {LocalDataContext} from './local/libs/data-context';
+import {RemoteDataContext} from './remote/libs/data-context';
+import {InvalidArgumentError} from './libs/error';
+import * as Local from './local';
+import * as Remote from './remote';
 
 export namespace v1 {
   /** @internal */
@@ -23,6 +28,33 @@ export namespace v1 {
   }
 
   /**
+   *
+   */
+  const assertContactQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
+    if (!isUuidQualifier(qualifier)) {
+      throw new InvalidArgumentError(`Invalid identifier [${JSON.stringify(qualifier)}].`);
+    }
+  };
+
+  /**
+   *
+   */
+  const getContact = <T>(
+    localFn: (c: LocalDataContext) => (qualifier: UuidQualifier) => Promise<T>,
+    remoteFn: (c: RemoteDataContext) => (qualifier: UuidQualifier) => Promise<T>
+  ) => (context: DataContext) => {
+      assertDataContext(context);
+      /**
+       *
+       */
+      const fn = adapt(context, localFn, remoteFn);
+      return async (qualifier: UuidQualifier): Promise<T> => {
+        assertContactQualifier(qualifier);
+        return fn(qualifier);
+      };
+    };
+
+  /**
    * Returns a function for retrieving a contact from the given data context.
    * @param context the current data context
    * @returns a function for retrieving a contact
@@ -34,7 +66,7 @@ export namespace v1 {
    * @returns the contact or `null` if no contact is found for the qualifier
    * @throws Error if the qualifier is invalid
    */
-  export const get = (context: DataContext) => (qualifier: UuidQualifier) => Promise<Nullable<Contact>>;
+  export const get = getContact(Local.Contact.v1.get, Remote.Contact.v1.get);
 
   /**
    * Returns a function for retrieving a contact from the given data context with the contact's parent lineage.
@@ -48,7 +80,7 @@ export namespace v1 {
    * @returns the contact or `null` if no contact is found for the qualifier
    * @throws Error if the qualifier is invalid
    */
-  const getWithLineage = (context: DataContext) => (qualifier: UuidQualifier) => Promise<Nullable<ContactWithLineage>>;
+  // const getWithLineage = (context: DataContext) => (qualifier: UuidQualifier) => Promise<Nullable<ContactWithLineage>>;
 
   // New REST api: /api/v1/contact/id
   /**
@@ -69,10 +101,10 @@ export namespace v1 {
    * @throws Error if the provided `limit` value is `<=0`
    * @throws Error if the provided cursor is not a valid page token or `null`
    */
-  const getIdsPage = (context: DataContext) => (
-    qualifier: ContactTypeQualifier | FreetextQualifier,
-    cursor: Nullable<string>, limit: number
-  ) => Promise<Page<string>>;
+  // const getIdsPage = (context: DataContext) => (
+  //   qualifier: ContactTypeQualifier | FreetextQualifier,
+  //   cursor: Nullable<string>, limit: number
+  // ) => Promise<Page<string>>;
 
   /**
    * Returns a function for getting a generator that fetches contact identifiers from the given data context.
@@ -86,7 +118,7 @@ export namespace v1 {
    * @returns a generator for fetching all contact identifiers that match the given qualifier
    * @throws Error if no qualifier is provided or if the qualifier is invalid
    */
-  const getIdsAll = (context: DataContext) => (
-    qualifier: ContactTypeQualifier | FreetextQualifier
-  ) => AsyncGenerator<string, null>;
+  // const getIdsAll = (context: DataContext) => (
+  //   qualifier: ContactTypeQualifier | FreetextQualifier
+  // ) => AsyncGenerator<string, null>;
 }

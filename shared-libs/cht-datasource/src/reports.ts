@@ -1,7 +1,7 @@
-import {Doc} from './libs/doc';
-import {DataObject, Nullable, Page} from './libs/core';
-import {DataContext} from './libs/data-context';
-import {FreetextQualifier, UuidQualifier} from './qualifier';
+import { Doc } from './libs/doc';
+import { DataObject, Nullable, Page } from './libs/core';
+import { DataContext } from './libs/data-context';
+import { FreetextQualifier, UuidQualifier } from './qualifier';
 
 export namespace v1 {
   /**
@@ -26,7 +26,7 @@ export namespace v1 {
    * @returns the report or `null` if no report is found for the qualifier
    * @throws Error if the qualifier is invalid
    */
-  const get = (context: DataContext) => (qualifier: UuidQualifier) => Promise<Nullable<Report>>;
+  // const get = (context: DataContext) => (qualifier: UuidQualifier) => Promise<Nullable<Report>>;
 
   // New REST api: /api/v1/report/id
   /**
@@ -47,11 +47,9 @@ export namespace v1 {
    * @throws Error if the provided `limit` value is `<=0`
    * @throws Error if the provided cursor is not a valid page token or `null`
    */
-  const getIdsPage = (context: DataContext) => (
-    qualifier: FreetextQualifier, 
-    cursor: Nullable<string>, 
-    limit: number
-  ) => Promise<Page<string>>;
+  // const getIdsPage =
+  //   (context: DataContext) => (qualifier: FreetextQualifier, cursor: Nullable<string>, limit: number) =>
+  //     Promise<Page<string>>;
 
   /**
    * Returns a function for getting a generator that fetches report identifiers from the given data context.
@@ -65,5 +63,5 @@ export namespace v1 {
    * @returns a generator for fetching all report identifiers that match the given qualifier
    * @throws Error if no qualifier is provided or if the qualifier is invalid
    */
-  const getIdsAll = (context: DataContext) => (qualifier: FreetextQualifier) => AsyncGenerator<string, null>;
+  // const getIdsAll = (context: DataContext) => (qualifier: FreetextQualifier) => AsyncGenerator<string, null>;
 }
