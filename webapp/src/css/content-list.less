@@ -217,21 +217,18 @@
   }
 }
 
-.trainings,
-.contacts .trainings {
-  .content-row {
-    &.selected, &.selected-to-view {
-      background-color: @training-highlight;
-    }
+.trainings .content-row {
+  &.selected, &.selected-to-view {
+    background-color: @training-highlight;
+  }
 
-    &:hover {
-      border-left-color: @training-color;
-    }
+  &:hover {
+    border-left-color: @training-color;
+  }
 
-    &.completed .mat-icon-check {
-      padding-top: 6px;
-      color: @sent-state-color;
-    }
+  &.completed .mat-icon-check {
+    padding-top: 6px;
+    color: @sent-state-color;
   }
 }
 
