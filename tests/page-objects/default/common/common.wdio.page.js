@@ -199,7 +199,7 @@ const openHamburgerMenu = async () => {
     // Adding pause here as we have to wait for sidebar nav menu animation to load
     await browser.pause(ELEMENT_DISPLAY_PAUSE);
   }
-  await (await sideBarMenuTitle()).waitForDisplayed();
+  await sideBarMenuTitle().waitForDisplayed();
 };
 
 const closeHamburgerMenu = async () => {
