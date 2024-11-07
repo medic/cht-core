@@ -43,7 +43,7 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
     this.globalActions.clearNavigation();
-    this.globalActions.clearTrainingCard();
+    this.globalActions.clearTrainingCards();
   }
 
   private subscribeToStore() {
@@ -67,7 +67,7 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
   close(nextUrl?) {
     this.canExit = true;
     this.globalActions.clearNavigation();
-    this.globalActions.clearTrainingCard();
+    this.globalActions.clearTrainingCards();
     if (nextUrl) {
       return this.router.navigateByUrl(nextUrl);
     }

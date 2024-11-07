@@ -39,7 +39,7 @@ export const Actions = {
   openSidebarMenu: createAction('OPEN_SIDEBAR_MENU'),
   setSearchBar: createSingleValueAction('SET_SEARCH_BAR', 'searchBar'),
   setTrainingCard: createSingleValueAction('SET_TRAINING_CARD', 'trainingCard'),
-  clearTrainingCard: createAction('CLEAR_TRAINING_CARD'),
+  clearTrainingCards: createAction('CLEAR_TRAINING_CARDS'),
 };
 
 export class GlobalActions {
@@ -106,7 +106,7 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setTrainingCard(trainingCard));
   }
 
-  clearTrainingCard() {
+  clearTrainingCards() {
     this.setTrainingCard({
       formId: null,
       isOpen: false,

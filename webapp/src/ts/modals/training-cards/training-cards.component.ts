@@ -38,7 +38,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
-    this.globalActions.clearTrainingCard();
+    this.globalActions.clearTrainingCards();
   }
 
   private subscribeToStore() {
@@ -54,7 +54,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
 
   close() {
     this.matDialogRef.close();
-    this.globalActions.clearTrainingCard();
+    this.globalActions.clearTrainingCards();
   }
 
   continueTraining() {
