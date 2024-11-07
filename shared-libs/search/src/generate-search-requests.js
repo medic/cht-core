@@ -191,7 +191,7 @@ const sortByLastVisitedDate = () => {
 const makeCombinedParams = (freetextRequest, typeKey) => {
   const type = typeKey[0];
   const params = {};
-  if (freetextRequest.key) {
+  if (freetextRequest.params.key) {
     params.key = [ type, freetextRequest.params.key[0] ];
   } else {
     params.startkey = [ type, freetextRequest.params.startkey[0] ];

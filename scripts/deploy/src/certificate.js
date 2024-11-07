@@ -13,9 +13,9 @@ const CERT_SOURCES = {
 const cert = config.CERT_FILE;
 const key = config.KEY_FILE;
 
-const obtainCertificateAndKey = async function(values) {
+const obtainCertificateAndKey = async (values) => {
   console.log('Obtaining certificate...');
-  const certSource = values.cert_source || '';
+  const certSource = values?.cert_source || '';
 
   const handlers = {
     [CERT_SOURCES.FILE]: () => handleFileSource(values),
@@ -31,7 +31,7 @@ const obtainCertificateAndKey = async function(values) {
   await handler();
 };
 
-const handleFileSource = function({ certificate_crt_file_path, certificate_key_file_path }) {
+const handleFileSource = ({ certificate_crt_file_path, certificate_key_file_path }) => {
   if (!certificate_crt_file_path || !certificate_key_file_path) {
     throw new CertificateError('certificate_crt_file_path and certificate_key_file_path must be set for file source');
   }
@@ -40,7 +40,7 @@ const handleFileSource = function({ certificate_crt_file_path, certificate_key_f
   copyFile(certificate_key_file_path, key);
 };
 
-const handleMyIpSource = async function() {
+const handleMyIpSource = async () => {
   const [crtData, keyData] = await Promise.all([
     fetchData(`${config.CERT_API_URL}/fullchain`),
     fetchData(`${config.CERT_API_URL}/key`)
@@ -50,7 +50,7 @@ const handleMyIpSource = async function() {
   writeFile(key, keyData);
 };
 
-const copyFile = function(src, dest) {
+const copyFile = (src, dest) => {
   try {
     fs.copyFileSync(src, dest);
   } catch (error) {
@@ -58,7 +58,7 @@ const copyFile = function(src, dest) {
   }
 };
 
-const writeFile = function(filename, data) {
+const writeFile = (filename, data) => {
   try {
     fs.writeFileSync(filename, data);
   } catch (error) {
@@ -66,11 +66,14 @@ const writeFile = function(filename, data) {
   }
 };
 
-const fetchData = async function(url) {
+const fetchData = async (url) => {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), config.FETCH_TIMEOUT);
     const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) {
+      throw response;
+    }
     clearTimeout(timeoutId);
     return await response.text();
   } catch (error) {
@@ -104,12 +107,12 @@ const createSecret = async function (namespace, values) {
   cleanupFiles();
 };
 
-const cleanupFiles = function() {
+const cleanupFiles = () => {
   deleteFile(cert);
   deleteFile(key);
 };
 
-const deleteFile = function(filename) {
+const deleteFile = (filename) => {
   try {
     if (fs.existsSync(filename)) {
       fs.unlinkSync(filename);
