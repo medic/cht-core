@@ -416,7 +416,7 @@ const closeReportBug = async () => {
 const openAboutMenu = async () => {
   await (await hamburgerMenuSelectors.aboutButton()).waitForClickable();
   await (await hamburgerMenuSelectors.aboutButton()).click();
-  await (await $(aboutPage.RELOAD_BUTTON)).waitForDisplayed();
+  await (await $('.about.page .mat-primary')).waitForDisplayed();
 };
 
 const openUserSettings = async () => {
