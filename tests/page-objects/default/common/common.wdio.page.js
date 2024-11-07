@@ -52,6 +52,8 @@ const FEEDBACK = '#feedback';
 //About menu
 const ABOUT_MENU = 'aria/About';
 //Configuration App
+const ELEMENT_DISPLAY_PAUSE = 500; // 500ms
+
 const configurationAppMenuOption = () => $('aria/App Management');
 const errorLog = () => $(`error-log`);
 const sideBarMenuTitle = () => $('aria/Menu');
@@ -73,7 +75,7 @@ const waitForSnackbarToClose = async () => {
 
 const clickFastActionById = async (id) => {
   // Wait for the Angular Material's animation to complete.
-  await browser.pause(500);
+  await browser.pause(ELEMENT_DISPLAY_PAUSE);
   await (await fastActionListContainer()).waitForDisplayed();
   await (await fastActionById(id)).waitForClickable();
   await (await fastActionById(id)).click();
@@ -108,7 +110,7 @@ const getFastActionItemsLabels = async () => {
   await fab.waitForClickable();
   await fab.click();
 
-  await browser.pause(500);
+  await browser.pause(ELEMENT_DISPLAY_PAUSE);
   await (await fastActionListContainer()).waitForDisplayed();
 
   const items = await fastActionItems();
@@ -203,10 +205,9 @@ const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
     await (await hamburgerMenu()).waitForClickable();
     await (await hamburgerMenu()).click();
+    // Adding pause here as we have to wait for sidebar nav menu animation to load
+    await browser.pause(ELEMENT_DISPLAY_PAUSE);
   }
-
-  // Adding pause here as we have to wait for sidebar nav menu animation to load
-  await browser.pause(500);
   await (await sideBarMenuTitle()).waitForDisplayed();
 };
 
@@ -346,16 +347,25 @@ const syncAndNotWaitForSuccess = async () => {
   await (await syncButton()).click();
 };
 
-const syncAndWaitForSuccess = async (timeout = 20000) => {
-  await openHamburgerMenu();
-  await (await syncButton()).waitForClickable();
-  await (await syncButton()).click();
-  await closeReloadModal(false);
-  await openHamburgerMenu();
-  if (await (await syncInProgress()).isExisting()) {
-    await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
+const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
+  if (retry < 0) {
+    throw new Error('Failed to sync after 10 retries');
   }
-  await (await syncSuccess()).waitForDisplayed({ timeout });
+  await closeReloadModal(false, 0);
+
+  try {
+    await openHamburgerMenu();
+    if (!await (await syncInProgress()).isExisting()) {
+      await (await syncButton()).click();
+      await openHamburgerMenu();
+    }
+
+    await (await syncInProgress()).waitForDisplayed({ timeout, reverse: true });
+    await (await syncSuccess()).waitForDisplayed({ timeout });
+  } catch (err) {
+    console.error(err);
+    await syncAndWaitForSuccess(timeout, retry - 1);
+  }
 };
 
 const hideModalOverlay = () => {
@@ -373,15 +383,13 @@ const sync = async (expectReload, timeout) => {
   let closedModal = false;
   if (expectReload) {
     // it's possible that sync already happened organically, and we already have the reload modal
-    closedModal = await closeReloadModal();
+    closedModal = await closeReloadModal(false, 0);
   }
 
   await syncAndWaitForSuccess(timeout);
   if (expectReload && !closedModal) {
     await closeReloadModal();
   }
-  // sync status sometimes lies when multiple changes are fired in quick succession
-  await syncAndWaitForSuccess(timeout);
   await closeHamburgerMenu();
 };
 
@@ -394,12 +402,11 @@ const syncAndWaitForFailure = async () => {
 
 const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
   try {
-    await browser.waitUntil( async () => await modalPage.modal().isDisplayed(), { timeout: 10000, interval: 500 } );
     shouldUpdate ? await modalPage.submit(timeout) : await modalPage.cancel(timeout);
     shouldUpdate && await waitForAngularLoaded();
     return true;
   } catch (err) {
-    console.error('Reload modal not showed up');
+    timeout && console.error('Reload modal has not showed up');
     return false;
   }
 };

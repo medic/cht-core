@@ -121,7 +121,7 @@ export class RulesEngineService implements OnDestroy {
 
     const rulesSettings = this.getRulesSettings(rulesEngineContext);
     const trackPerformance = this.performanceService.track();
-    const trackName = { name: [ 'rules-engine', 'initialize' ].join(':') };
+    const trackName = { name: this.getTelemetryTrackName('initialize') };
 
     await this.rulesEngineCore.initialize(rulesSettings);
     const isEnabled = this.rulesEngineCore.isEnabled();
@@ -142,7 +142,7 @@ export class RulesEngineService implements OnDestroy {
     this.debounceActive[this.FRESHNESS_KEY] = {
       active: true,
       performance: {
-        name: [ 'rules-engine', 'ensureFreshness', 'cancel' ],
+        name: this.getTelemetryTrackName( 'background-refresh', 'cancel'),
         track: this.performanceService.track()
       },
       debounceRef: rulesDebounceRef
@@ -162,7 +162,7 @@ export class RulesEngineService implements OnDestroy {
     }
 
     if (debounceInfo.active) { // Debounced function is not executed or cancelled yet.
-      debounceInfo.performance.track.stop({ name: debounceInfo.performance.name.join(':') });
+      debounceInfo.performance.track.stop({ name: debounceInfo.performance.name });
     }
 
     debounceInfo.debounceRef.cancel();
@@ -234,9 +234,12 @@ export class RulesEngineService implements OnDestroy {
       this.debounceActive[this.CHANGE_WATCHER_KEY].active = false;
       this.debounceActive[this.CHANGE_WATCHER_KEY].resolve();
 
-      await this.rulesEngineCore.updateEmissionsFor(this.debounceActive[this.CHANGE_WATCHER_KEY].params);
-      this.observable.next(this.debounceActive[this.CHANGE_WATCHER_KEY].params);
-      trackPerformance?.stop({ name: [ 'rules-engine', 'update-emissions' ].join(':') });
+      const contactIds = this.debounceActive[this.CHANGE_WATCHER_KEY].params;
+      this.telemetryService.record(this.getTelemetryTrackName('refresh', 'dirty-contacts'), contactIds.length);
+
+      await this.rulesEngineCore.updateEmissionsFor(contactIds);
+      this.observable.next(contactIds);
+      trackPerformance?.stop({ name: this.getTelemetryTrackName('refresh') });
     }, this.DEBOUNCE_CHANGE_MILLIS);
 
     this.debounceActive[this.CHANGE_WATCHER_KEY] = {
@@ -244,7 +247,7 @@ export class RulesEngineService implements OnDestroy {
       promise: promise,
       resolve: resolve,
       performance: {
-        name: [ 'rules-engine', 'update-emissions', 'cancel' ],
+        name: this.getTelemetryTrackName('refresh', 'cancel'),
         track: this.performanceService.track()
       },
       debounceRef: debounceRef,
@@ -355,13 +358,13 @@ export class RulesEngineService implements OnDestroy {
   }
 
   private async _refreshEmissions() {
-    const trackName = [ 'rules-engine', 'emissions', 'all-contacts' ];
+    const trackName = this.getTelemetryTrackName('background-refresh');
     let trackPerformanceQueueing;
     let trackPerformanceRunning;
 
     await this.initialized;
     this.telemetryService.record(
-      'rules-engine:emissions:dirty-contacts',
+      this.getTelemetryTrackName('background-refresh', 'dirty-contacts'),
       this.rulesEngineCore.getDirtyContacts().length
     );
     this.cancelDebounce(this.FRESHNESS_KEY);
@@ -371,13 +374,13 @@ export class RulesEngineService implements OnDestroy {
       .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
       .on('running', () => {
         trackPerformanceRunning = this.performanceService.track();
-        trackPerformanceQueueing?.stop({ name: [ ...trackName, 'queued' ].join(':') });
+        trackPerformanceQueueing?.stop({ name: `${trackName}:queued` });
       });
 
     if (!trackPerformanceRunning) {
       trackPerformanceRunning = this.performanceService.track();
     }
-    trackPerformanceRunning.stop({ name: trackName.join(':') });
+    trackPerformanceRunning.stop({ name: trackName });
   }
 
   fetchTaskDocsForAllContacts() {
@@ -385,13 +388,13 @@ export class RulesEngineService implements OnDestroy {
   }
 
   private async _fetchTaskDocsForAllContacts() {
-    const trackName = [ 'rules-engine', 'tasks', 'all-contacts' ];
+    const trackName = this.getTelemetryTrackName('tasks', 'all-contacts');
     let trackPerformanceQueueing;
     let trackPerformanceRunning;
 
     await this.initialized;
     this.telemetryService.record(
-      'rules-engine:tasks:dirty-contacts',
+      this.getTelemetryTrackName('tasks', 'dirty-contacts'),
       this.rulesEngineCore.getDirtyContacts().length
     );
     this.cancelDebounce(this.FRESHNESS_KEY);
@@ -401,13 +404,13 @@ export class RulesEngineService implements OnDestroy {
       .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
       .on('running', () => {
         trackPerformanceRunning = this.performanceService.track();
-        trackPerformanceQueueing?.stop({ name: [ ...trackName, 'queued' ].join(':') });
+        trackPerformanceQueueing?.stop({ name: `${trackName}:queued` });
       });
 
     if (!trackPerformanceRunning) {
       trackPerformanceRunning = this.performanceService.track();
     }
-    trackPerformanceRunning.stop({ name: trackName.join(':') });
+    trackPerformanceRunning.stop({ name: trackName });
     return this.hydrateTaskDocs(taskDocs);
   }
 
@@ -416,13 +419,13 @@ export class RulesEngineService implements OnDestroy {
   }
 
   private async _fetchTaskDocsFor(contactIds) {
-    const trackName = [ 'rules-engine', 'tasks', 'some-contacts' ];
+    const trackName = this.getTelemetryTrackName('tasks', 'some-contacts');
     let trackPerformanceQueueing;
     let trackPerformanceRunning;
 
     await this.initialized;
     this.telemetryService.record(
-      'rules-engine:tasks:dirty-contacts',
+      this.getTelemetryTrackName('tasks', 'dirty-contacts'),
       this.rulesEngineCore.getDirtyContacts().length
     );
     await this.waitForDebounce(this.CHANGE_WATCHER_KEY);
@@ -431,13 +434,13 @@ export class RulesEngineService implements OnDestroy {
       .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
       .on('running', () => {
         trackPerformanceRunning = this.performanceService.track();
-        trackPerformanceQueueing?.stop({ name: [ ...trackName, 'queued' ].join(':') });
+        trackPerformanceQueueing?.stop({ name: `${trackName}:queued` });
       });
 
     if (!trackPerformanceRunning) {
       trackPerformanceRunning = this.performanceService.track();
     }
-    trackPerformanceRunning?.stop({ name: trackName.join(':') });
+    trackPerformanceRunning?.stop({ name: trackName });
     return this.hydrateTaskDocs(taskDocs);
   }
 
@@ -446,16 +449,12 @@ export class RulesEngineService implements OnDestroy {
   }
 
   private _fetchTasksBreakdown(contactIds?) {
-    const trackName = [
-      'rules-engine',
-      'tasks-breakdown',
-      contactIds ? 'some-contacts' : 'all-contacts'
-    ];
+    const trackName = this.getTelemetryTrackName('tasks-breakdown', contactIds ? 'some-contacts' : 'all-contacts');
     const trackPerformance = this.performanceService.track();
     return this.initialized
       .then(() => this.rulesEngineCore.fetchTasksBreakdown(contactIds))
       .then(taskBreakdown => {
-        trackPerformance?.stop({ name: trackName.join(':') });
+        trackPerformance?.stop({ name: trackName });
         return taskBreakdown;
       });
   }
@@ -465,7 +464,7 @@ export class RulesEngineService implements OnDestroy {
   }
 
   private async _fetchTargets(): Promise<Target[]> {
-    const trackName = [ 'rules-engine', 'targets' ];
+    const trackName = this.getTelemetryTrackName('targets');
     let trackPerformanceQueueing;
     let trackPerformanceRunning;
 
@@ -483,27 +482,29 @@ export class RulesEngineService implements OnDestroy {
       .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
       .on('running', () => {
         trackPerformanceRunning = this.performanceService.track();
-        trackPerformanceQueueing?.stop({ name: [ ...trackName, 'queued' ].join(':') });
+        trackPerformanceQueueing?.stop({ name: `${trackName}:queued` });
       });
 
     if (!trackPerformanceRunning) {
       trackPerformanceRunning = this.performanceService.track();
     }
-    trackPerformanceRunning?.stop({ name: trackName.join(':') });
+    trackPerformanceRunning?.stop({ name: trackName });
     return targets;
   }
 
-  monitorExternalChanges(replicationResult?) {
-    return this.initialized.then(() => {
-      return replicationResult
-        && replicationResult.docs
-        && this.updateEmissionExternalChanges(replicationResult.docs);
-    });
+  async monitorExternalChanges(replicationResult?) {
+    await this.initialized;
+    return replicationResult?.docs && this.updateEmissionExternalChanges(replicationResult.docs);
   }
 
   contactsMarkedAsDirty(callback) {
     return this.observable.subscribe(callback);
   }
+
+  private getTelemetryTrackName(...params:string[]) {
+    return ['rules-engine', ...params].join(':');
+  }
+
 }
 
 export enum TargetType {

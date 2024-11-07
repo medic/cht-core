@@ -1,3 +1,6 @@
+const logger = require('@medic/logger');
+const validationUtils = require('./validation_utils');
+
 const re = {
   alpha: /^[a-zA-Z]+$/,
   alphanumeric: /^[a-zA-Z0-9]+$/,
@@ -5,9 +8,9 @@ const re = {
 };
 
 const ValidatorFunctions = {
-  equals: (allValues, value, equalsTo) => value === equalsTo,
+  equals: (allValues, value, equalsTo) => value == equalsTo, // eslint-disable-line eqeqeq
 
-  iequals: (allValues, value, equalsTo) => value.toLowerCase() === equalsTo.toLowerCase(),
+  iequals: (allValues, value, equalsTo) => value.toLowerCase() == equalsTo.toLowerCase(), // eslint-disable-line eqeqeq
 
   sequals: (allValues, value, equalsTo) => value === equalsTo,
 
@@ -28,17 +31,7 @@ const ValidatorFunctions = {
     return ((numVal >= min) && (numVal <= max));
   },
 
-  in: (allValues, value) => {
-    const args = Array.prototype.slice.call(arguments);
-    args.shift();
-    args.shift();
-    for (const arg of args) {  
-      if (arg === value) {
-        return true;
-      }
-    }
-    return false;
-  },
+  in: (allValues, value, ...args) => args.some(arg => arg == value), // eslint-disable-line eqeqeq
 
   required: (allValues, value) => !!value,
 
@@ -64,9 +57,57 @@ const ValidatorFunctions = {
     return (new RegExp(regex, flags)).test(value);
   },
 
-  integer: (allValues, value) => parseInt(value, 10) === value,
+  integer: (allValues, value) => parseInt(value, 10) == value, // eslint-disable-line eqeqeq
 
-  equalsto: (allValues, value, equalsToKey) => value === allValues[equalsToKey]
+  equalsto: (allValues, value, equalsToKey) => value == allValues[equalsToKey], // eslint-disable-line eqeqeq
+
+  exists: async (allValues, value, formName, fieldName) => {
+    try {
+      return await validationUtils.exists(allValues, [fieldName], { additionalFilter: `form:${formName}` });
+    } catch (e) {
+      logger.error('Error running "exists" validation: %o', e);
+    }
+  },
+
+  unique: async (allValues, value, ...fieldNames) => {
+    try {
+      const exists = await validationUtils.exists(allValues, fieldNames);
+      return !exists;
+    } catch (e) {
+      logger.error('Error running "unique" validation: %o', e);
+    }
+  },
+
+  uniquewithin: async (allValues, value, ...fields) => {
+    const duration = fields.pop();
+    try {
+      const exists = await validationUtils.exists(allValues, fields, { duration });
+      return !exists;
+    } catch (e) {
+      logger.error('Error running "uniqueWithin" validation: %o', e);
+    }
+  },
+
+  isafter: (allValues, value, duration) => {
+    return validationUtils.compareDate(allValues, value, duration, true);
+  },
+
+  isbefore: (allValues, value, duration) => {
+    return validationUtils.compareDate(allValues, value, duration, false);
+  },
+
+  isisoweek: (allValues, value, weekFieldName, yearFieldName) => {
+    return validationUtils.isISOWeek(allValues, weekFieldName, yearFieldName);
+  },
+
+  validphone: (allValues, value, phoneFieldName) => {
+    return validationUtils.validPhone(allValues[phoneFieldName]);
+  },
+
+  uniquephone: async (allValues, value, phoneFieldName) => {
+    return await validationUtils.uniquePhone(allValues[phoneFieldName]);
+  }
+
 };
 
 module.exports = ValidatorFunctions;
