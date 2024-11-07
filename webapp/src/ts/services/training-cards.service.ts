@@ -115,7 +115,7 @@ export class TrainingCardsService {
       });
   }
 
-  async canDisplayTrainingCards() {
+  canDisplayTrainingCards() {
     if (!this.trainingForms?.length
       || (this.showPrivacyPolicy && !this.privacyPolicyAccepted)
       || this.hasBeenDisplayed()
