@@ -165,7 +165,7 @@ const waitForLoaders = async () => {
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
-  await (await hamburgerMenuSelectors.hamburgerMenu()).waitForDisplayed({ timeout });
+  await hamburgerMenuSelectors.hamburgerMenu().waitForDisplayed({ timeout });
 };
 
 const waitForPageLoaded = async () => {
@@ -176,7 +176,7 @@ const waitForPageLoaded = async () => {
   // get all loaders.
   do {
     await waitForLoaders();
-  } while ((await getVisibleLoaders()).length > 0);
+  } while (await getVisibleLoaders().length > 0);
 };
 
 const clickFastActionById = async (id) => {
