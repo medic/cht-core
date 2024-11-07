@@ -87,19 +87,19 @@ const performMenuAction = async (actionSelector) => {
 };
 
 const accessEditOption = async () => {
-  await performMenuAction(kebabMenuSelectors.edit());
+  await performMenuAction(kebabMenuSelectors.edit);
 };
 
 const accessDeleteOption = async () => {
-  await performMenuAction(kebabMenuSelectors.delete());
+  await performMenuAction(kebabMenuSelectors.delete);
 };
 
 const accessExportOption = async () => {
-  await performMenuAction(kebabMenuSelectors.export());
+  await performMenuAction(kebabMenuSelectors.export);
 };
 
 const accessReviewOption = async () => {
-  await performMenuAction(kebabMenuSelectors.review());
+  await performMenuAction(kebabMenuSelectors.review);
 };
 
 const waitForSnackbarToClose = async () => {
