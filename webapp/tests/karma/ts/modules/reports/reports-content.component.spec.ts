@@ -30,6 +30,9 @@ import { FastActionButtonComponent } from '@mm-components/fast-action-button/fas
 import { CommonModule } from '@angular/common';
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
+import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
+import { SenderComponent } from '@mm-components/sender/sender.component';
+import { ReportVerifyInvalidIconComponent } from '@mm-components/status-icons/status-icons.template';
 
 describe('Reports Content Component', () => {
   let component: ReportsContentComponent;
@@ -47,6 +50,7 @@ describe('Reports Content Component', () => {
   let modalService;
   let authService;
   let sessionService;
+  let searchTelemetryService;
 
   beforeEach(waitForAsync(() => {
     const mockedSelectors = [
@@ -74,6 +78,7 @@ describe('Reports Content Component', () => {
       has: sinon.stub()
     };
     sessionService = { isAdmin: sinon.stub() };
+    searchTelemetryService = { recordReportSearch: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
@@ -88,7 +93,9 @@ describe('Reports Content Component', () => {
           FormIconPipe,
           TitlePipe,
           RelativeDatePipe,
-          FastActionButtonComponent
+          FastActionButtonComponent,
+          SenderComponent,
+          ReportVerifyInvalidIconComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
@@ -105,6 +112,7 @@ describe('Reports Content Component', () => {
           { provide: DbService, useValue: dbService },
           { provide: AuthService, useValue: authService },
           { provide: SessionService, useValue: sessionService },
+          { provide: SearchTelemetryService, useValue: searchTelemetryService },
           { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
           { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
@@ -489,6 +497,51 @@ describe('Reports Content Component', () => {
 
       expect(component.selectMode).to.be.false;
       expect(searchFiltersService.freetextSearch.calledOnce).to.be.true;
+    }));
+
+    it('should collect telemetry for the selected search results', fakeAsync(() => {
+      store.overrideSelector(Selectors.getSelectMode, true);
+      store.refreshState();
+      fixture.detectChanges();
+
+      // search for a report
+      expect(searchTelemetryService.recordReportSearch.callCount).to.equal(0);
+      const search = 'case_id:abc-1234';
+      store.overrideSelector(Selectors.getFilters, { search });
+      store.refreshState();
+      fixture.detectChanges();
+      expect(searchTelemetryService.recordReportSearch.callCount).to.equal(0);
+
+      // select a report, collect telemetry
+      const report = { _id: 'report_id', doc: { case_id: 'abc-1234' } };
+      store.overrideSelector(Selectors.getSelectedReport, report);
+      store.refreshState();
+      fixture.detectChanges();
+      expect(searchTelemetryService.recordReportSearch.callCount).to.equal(1);
+      expect(searchTelemetryService.recordReportSearch.getCall(0).args).to.deep.equal([report.doc, search]);
+
+      // re-select same report, don't re-collect telemetry
+      store.overrideSelector(Selectors.getSelectedReport, report);
+      store.refreshState();
+      fixture.detectChanges();
+      expect(searchTelemetryService.recordReportSearch.callCount).to.equal(1);
+
+      // select a different report, collect telemetry
+      const otherReport = { _id: 'other_report_id', doc: { other_case_id: 'abc-1234' } };
+      store.overrideSelector(Selectors.getSelectedReport, otherReport);
+      store.refreshState();
+      fixture.detectChanges();
+      expect(searchTelemetryService.recordReportSearch.callCount).to.equal(2);
+      expect(searchTelemetryService.recordReportSearch.getCall(1).args).to.deep.equal([otherReport.doc, search]);
+
+      // un-select report and select all reports, don't collect telemetry
+      store.overrideSelector(Selectors.getSelectedReport, undefined);
+      store.refreshState();
+      fixture.detectChanges();
+      store.overrideSelector(Selectors.getSelectedReports, [report, otherReport]);
+      store.refreshState();
+      fixture.detectChanges();
+      expect(searchTelemetryService.recordReportSearch.callCount).to.equal(2);
     }));
   });
 });
