@@ -26,7 +26,7 @@
         </li>
       </ul>
 
-      <p class="loading-status" *ngIf="!error && !loading && !trainingList?.length">{{ 'training_materials.page.no_trainings' | translate }}</p>
+      <p class="loading-status" *ngIf="!loading && !trainingList?.length">{{ 'training_materials.page.no_trainings' | translate }}</p>
       <p class="loading-status" *ngIf="!loading && trainingList?.length && !moreTrainings">{{ 'training_materials.page.no_more_trainings' | translate }}</p>
       <div class="loader" *ngIf="loading"></div>
     </div>

@@ -55,7 +55,7 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
 
   private subscribeToRouteParams() {
     const routeSubscription = this.route.params.subscribe(params => {
-      this.globalActions.setTrainingCard({ formId: params?.id });
+      this.globalActions.setTrainingCard({ formId: params?.id || null });
       if (!params?.id) {
         this.showNoSelection = true;
         this.globalActions.setShowContent(false);

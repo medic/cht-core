@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
@@ -7,19 +7,16 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { TrainingCardsService, TrainingMaterial } from '@mm-services/training-cards.service';
 import { Selectors } from '@mm-selectors/index';
 
-// const PAGE_SIZE = 50; // ToDo -- add pagination
-
 @Component({
   templateUrl: './trainings.component.html'
 })
-export class TrainingsComponent implements OnInit, AfterContentInit, OnDestroy {
+export class TrainingsComponent implements OnInit, OnDestroy {
   private globalActions: GlobalActions;
   private trackInitialLoadPerformance;
-
+  private isInitialized;
   selectedTrainingId: null | string = null;
   subscriptions: Subscription = new Subscription();
   trainingList: TrainingMaterial[] | null | undefined = null;
-  error = false;
   moreTrainings = false;
   loading = true;
 
@@ -34,9 +31,6 @@ export class TrainingsComponent implements OnInit, AfterContentInit, OnDestroy {
   ngOnInit() {
     this.trackInitialLoadPerformance = this.performanceService.track();
     this.subscribeToTrainingMaterials();
-  }
-
-  ngAfterContentInit() {
     this.subscribeToSelectedTraining();
   }
 
@@ -48,21 +42,30 @@ export class TrainingsComponent implements OnInit, AfterContentInit, OnDestroy {
   private subscribeToTrainingMaterials() {
     const trainingSubscription = this.store
       .select(Selectors.getTrainingMaterials)
-      .subscribe(forms => this.getTrainings(forms));
+      .subscribe(forms => this.isInitialized = this.getTrainings(forms));
     this.subscriptions.add(trainingSubscription);
   }
 
   private subscribeToSelectedTraining() {
     const selectedTraining = this.store
       .select(Selectors.getTrainingCardFormId)
-      .subscribe(id => this.selectedTrainingId = id);
+      .subscribe(id => this.isInitialized?.then(() => this.selectedTrainingId = id));
     this.subscriptions.add(selectedTraining);
   }
 
   async getTrainings(forms) {
-    this.trainingList = await this.trainingCardsService.getAllAvailableTrainings(forms);
-    this.loading = false;
-    await this.recordInitialLoadPerformance();
+    if (!forms?.length) {
+      return;
+    }
+
+    try {
+      this.trainingList = await this.trainingCardsService.getAllAvailableTrainings(forms);
+      await this.recordInitialLoadPerformance();
+    } catch (error) {
+      console.error('Error getting training materials.', error);
+    } finally {
+      this.loading = false;
+    }
   }
 
   private async recordInitialLoadPerformance() {
