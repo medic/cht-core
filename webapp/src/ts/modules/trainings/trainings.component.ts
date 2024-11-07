@@ -20,8 +20,8 @@ export class TrainingsComponent implements OnInit, OnDestroy {
   private trainingForms;
   selectedTrainingId: null | string = null;
   subscriptions: Subscription = new Subscription();
-  trainingList: TrainingMaterial[] | null | undefined = null;
-  moreTrainings = false;
+  trainingList: TrainingMaterial[] = [];
+  moreTrainings = true;
   loading = true;
 
   constructor(
@@ -63,21 +63,20 @@ export class TrainingsComponent implements OnInit, OnDestroy {
 
   async getTrainings() {
     if (!this.trainingForms?.length) {
+      this.loading = false;
       return;
     }
 
     try {
+      this.loading = true;
       const list = await this.trainingCardsService.getNextTrainings(
         this.trainingForms,
         PAGE_SIZE,
-        this.trainingList?.length ?? 0,
-      );
+        this.trainingList.length,
+      ) ?? [];
 
-      if (list?.length) {
-        this.trainingList = this.trainingList?.length ? [ ...this.trainingList, ...list ] : list;
-      } else {
-        this.moreTrainings = false;
-      }
+      this.moreTrainings = list.length >= PAGE_SIZE;
+      this.trainingList = [ ...this.trainingList, ...list ];
 
       await this.recordInitialLoadPerformance();
       this.initScroll();

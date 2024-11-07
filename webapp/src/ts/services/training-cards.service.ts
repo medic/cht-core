@@ -212,8 +212,7 @@ export class TrainingCardsService {
   public async getNextTrainings(xForms, pageSize, skip): Promise<TrainingMaterial[] | undefined> {
     const userCtx = this.sessionService.userCtx();
     const availableTrainingCards = this.getAvailableTrainingCards(xForms, userCtx);
-    const nextIndex = skip ? skip + 1 : 0;
-    const trainingCards = availableTrainingCards?.slice(nextIndex, nextIndex + pageSize);
+    const trainingCards = availableTrainingCards?.slice(skip, skip + pageSize);
     if (!trainingCards.length) {
       return;
     }
