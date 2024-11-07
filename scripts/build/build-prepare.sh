@@ -2,10 +2,6 @@
 
 set -e
 
-echo "build-prepare: cleaning build directories"
-rm -rf build api/build
-mkdir build api/build
-
 node scripts/build/cli npmCiModules
 
 echo "build-prepare: building ddocs"
