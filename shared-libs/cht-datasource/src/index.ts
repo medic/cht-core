@@ -29,6 +29,7 @@
 import { hasAnyPermission, hasPermissions } from './auth';
 import { Nullable } from './libs/core';
 import { assertDataContext, DataContext } from './libs/data-context';
+import * as Contact from './contact';
 import * as Person from './person';
 import * as Place from './place';
 import * as Qualifier from './qualifier';
@@ -55,6 +56,13 @@ export const getDatasource = (ctx: DataContext) => {
     v1: {
       hasPermissions,
       hasAnyPermission,
+      contact: {
+        /** TODO */
+        getByUuid: (uuid: string) => ctx.bind(Contact.v1.get)(Qualifier.byUuid(uuid)),
+
+        /** TODO */
+        getByUuidWithLineage: (uuid: string) => ctx.bind(Contact.v1.getWithLineage)(Qualifier.byUuid(uuid)),
+      },
       place: {
         /**
          * Returns a place by its UUID.

@@ -1,13 +1,14 @@
-import {Doc} from './libs/doc';
-import {DataObject, Identifiable, isDataObject, isIdentifiable, Nullable, Page} from './libs/core';
-import {ContactTypeQualifier, FreetextQualifier, isUuidQualifier, UuidQualifier} from './qualifier';
-import {adapt, assertDataContext, DataContext} from './libs/data-context';
-import {LocalDataContext} from './local/libs/data-context';
-import {RemoteDataContext} from './remote/libs/data-context';
-import {InvalidArgumentError} from './libs/error';
+import { Doc } from './libs/doc';
+import { DataObject, Identifiable, isDataObject, isIdentifiable } from './libs/core';
+import { isUuidQualifier, UuidQualifier } from './qualifier';
+import { adapt, assertDataContext, DataContext } from './libs/data-context';
+import { LocalDataContext } from './local/libs/data-context';
+import { RemoteDataContext } from './remote/libs/data-context';
+import { InvalidArgumentError } from './libs/error';
 import * as Local from './local';
 import * as Remote from './remote';
 
+/** */
 export namespace v1 {
   /** @internal */
   export interface NormalizedParent extends DataObject, Identifiable {
@@ -19,7 +20,9 @@ export namespace v1 {
     return isDataObject(value) && isIdentifiable(value) && (!value.parent || isNormalizedParent(value.parent));
   };
 
-  /** @internal */
+  /**
+   * Immutable data about a Contact.
+   */
   export interface Contact extends Doc, NormalizedParent {
     readonly contact_type?: string;
     readonly name?: string;
@@ -28,25 +31,23 @@ export namespace v1 {
   }
 
   /**
-   *
+   * Immutable data about a contact, including the full records of the parent's lineage.
    */
+  export interface ContactWithLineage extends Contact {
+    readonly parent?: ContactWithLineage | NormalizedParent;
+  }
+
   const assertContactQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
     if (!isUuidQualifier(qualifier)) {
       throw new InvalidArgumentError(`Invalid identifier [${JSON.stringify(qualifier)}].`);
     }
   };
 
-  /**
-   *
-   */
   const getContact = <T>(
     localFn: (c: LocalDataContext) => (qualifier: UuidQualifier) => Promise<T>,
     remoteFn: (c: RemoteDataContext) => (qualifier: UuidQualifier) => Promise<T>
   ) => (context: DataContext) => {
       assertDataContext(context);
-      /**
-       *
-       */
       const fn = adapt(context, localFn, remoteFn);
       return async (qualifier: UuidQualifier): Promise<T> => {
         assertContactQualifier(qualifier);
@@ -80,7 +81,7 @@ export namespace v1 {
    * @returns the contact or `null` if no contact is found for the qualifier
    * @throws Error if the qualifier is invalid
    */
-  // const getWithLineage = (context: DataContext) => (qualifier: UuidQualifier) => Promise<Nullable<ContactWithLineage>>;
+  export const getWithLineage = getContact(Local.Contact.v1.getWithLineage, Remote.Contact.v1.getWithLineage);
 
   // New REST api: /api/v1/contact/id
   /**

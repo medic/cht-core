@@ -3,7 +3,7 @@ import contactTypeUtils from '@medic/contact-types-utils';
 import { deepCopy, isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Place from '../place';
-import {fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey} from './libs/doc';
+import { fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import * as Contact from '../contact';
 import logger from '@medic/logger';
