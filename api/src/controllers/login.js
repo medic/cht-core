@@ -258,6 +258,12 @@ const setCookies = (req, res, sessionRes) => {
     });
 };
 
+const setBasicCookies = (res, userCtx, req) => {
+  setUserCtxCookie(res, userCtx);
+  const selectedLocale = req.body.locale || config.get('locale');
+  cookie.setLocale(res, selectedLocale);
+};
+
 const renderTokenLogin = (req, res) => {
   return render('tokenLogin', req, { tokenUrl: req.url })
     .then(body => res.send(body));
@@ -378,11 +384,8 @@ const login = async (req, res) => {
     const headers = { headers: { Cookie: getSessionCookie(sessionRes) } };
     const userCtx = await getUserCtxRetry(headers);
 
-    const redirectPasswordReset = !await skipPasswordChange(userCtx);
-    if (redirectPasswordReset && userCtx.password_change_required){
-      setUserCtxCookie(res, userCtx);
-      const selectedLocale = req.body.locale || config.get('locale');
-      cookie.setLocale(res, selectedLocale);
+    if (userCtx.password_change_required && !await skipPasswordChange(userCtx)){
+      setBasicCookies(res, userCtx, req);
       return res.status(302).send('/medic/password-reset');
     }
     const { redirectUrl } = await setCookies(req, res, sessionRes);
