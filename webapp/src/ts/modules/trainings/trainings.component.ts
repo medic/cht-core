@@ -6,6 +6,9 @@ import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TrainingCardsService, TrainingMaterial } from '@mm-services/training-cards.service';
 import { Selectors } from '@mm-selectors/index';
+import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
+
+const PAGE_SIZE = 50;
 
 @Component({
   templateUrl: './trainings.component.html'
@@ -14,6 +17,7 @@ export class TrainingsComponent implements OnInit, OnDestroy {
   private globalActions: GlobalActions;
   private trackInitialLoadPerformance;
   private isInitialized;
+  private trainingForms;
   selectedTrainingId: null | string = null;
   subscriptions: Subscription = new Subscription();
   trainingList: TrainingMaterial[] | null | undefined = null;
@@ -24,6 +28,7 @@ export class TrainingsComponent implements OnInit, OnDestroy {
     private readonly store: Store,
     private readonly performanceService: PerformanceService,
     private readonly trainingCardsService: TrainingCardsService,
+    private readonly scrollLoaderProvider: ScrollLoaderProvider,
   ) {
     this.globalActions = new GlobalActions(this.store);
   }
@@ -42,7 +47,10 @@ export class TrainingsComponent implements OnInit, OnDestroy {
   private subscribeToTrainingMaterials() {
     const trainingSubscription = this.store
       .select(Selectors.getTrainingMaterials)
-      .subscribe(forms => this.isInitialized = this.getTrainings(forms));
+      .subscribe(forms => {
+        this.trainingForms = forms;
+        this.isInitialized = this.getTrainings();
+      });
     this.subscriptions.add(trainingSubscription);
   }
 
@@ -53,14 +61,26 @@ export class TrainingsComponent implements OnInit, OnDestroy {
     this.subscriptions.add(selectedTraining);
   }
 
-  async getTrainings(forms) {
-    if (!forms?.length) {
+  async getTrainings() {
+    if (!this.trainingForms?.length) {
       return;
     }
 
     try {
-      this.trainingList = await this.trainingCardsService.getAllAvailableTrainings(forms);
+      const list = await this.trainingCardsService.getNextTrainings(
+        this.trainingForms,
+        PAGE_SIZE,
+        this.trainingList?.length ?? 0,
+      );
+
+      if (list?.length) {
+        this.trainingList = this.trainingList?.length ? [ ...this.trainingList, ...list ] : list;
+      } else {
+        this.moreTrainings = false;
+      }
+
       await this.recordInitialLoadPerformance();
+      this.initScroll();
     } catch (error) {
       console.error('Error getting training materials.', error);
     } finally {
@@ -78,5 +98,13 @@ export class TrainingsComponent implements OnInit, OnDestroy {
 
   trackBy(index, training) {
     return training._id + training._rev + training.selected;
+  }
+
+  private initScroll() {
+    this.scrollLoaderProvider.init(() => {
+      if (!this.loading && this.moreTrainings) {
+        this.getTrainings();
+      }
+    });
   }
 }

@@ -209,18 +209,17 @@ export class TrainingCardsService {
     return `${this.STORAGE_KEY_LAST_VIEWED_DATE}-${username}`;
   }
 
-  public async getAllAvailableTrainings(xForms): Promise<TrainingMaterial[] | undefined> {
+  public async getNextTrainings(xForms, pageSize, skip): Promise<TrainingMaterial[] | undefined> {
     const userCtx = this.sessionService.userCtx();
-    const trainingCards = this.getAvailableTrainingCards(xForms, userCtx) || [];
+    const availableTrainingCards = this.getAvailableTrainingCards(xForms, userCtx);
+    const nextIndex = skip ? skip + 1 : 0;
+    const trainingCards = availableTrainingCards?.slice(nextIndex, nextIndex + pageSize);
     if (!trainingCards.length) {
       return;
     }
 
     const completedTrainings = await this.getCompletedTrainings(userCtx);
-    return trainingCards.map(form => ({
-      ...form,
-      isCompletedTraining: completedTrainings.has(form.code),
-    }));
+    return trainingCards.map(form => ({ ...form, isCompletedTraining: completedTrainings.has(form.code) }));
   }
 }
 
