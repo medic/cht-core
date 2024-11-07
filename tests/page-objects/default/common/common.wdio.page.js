@@ -452,7 +452,7 @@ const getTextForElements = async (elements) => {
 };
 
 const getAllButtonLabelsNames = async () => {
-  return await getTextForElements(tabsSelector.getAllButtonLabels());
+  return await getTextForElements(tabsSelector.getAllButtonLabels);
 };
 
 const isMenuOptionEnabled = async (action) => {
