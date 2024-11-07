@@ -63,7 +63,6 @@ describe('Testing Incorrect locale', () => {
     const tasksFilter = await contactElements.getReportTaskFiltersText();
     expect(tasksFilter.sort()).to.deep.equal(['1 saptamana', '2 saptamani', 'View all'].sort());
 
-    await commonElements.logout();
     await utils.revertSettings(true);
     await utils.deleteDocs([ contact._id, `messages-${languageCode}` ]);
     await browser.setCookies({ name: 'locale', value: 'en' });
