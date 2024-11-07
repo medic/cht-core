@@ -235,12 +235,11 @@ describe('server', () => {
   });
 
   describe('Request ID propagated to audit layer', () => {
-    const ID_REGEX = /[,\s]([0-9a-f]{12})[,\s]/;
+    const ID_REGEX = /[,|\s]([0-9a-f]{12})[,|\s]/;
 
     const getReqId = (logLine) => {
       if (ID_REGEX.test(logLine)) {
         const match = logLine.match(ID_REGEX);
-        console.warn(match);
         return match?.[1];
       }
     };
@@ -368,7 +367,6 @@ describe('server', () => {
         const reqID = getReqId(apiLogs[0]);
 
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
-        console.warn(haproxyRequests);
         expect(haproxyRequests.length).to.equal(12);
         expect(haproxyRequests[0]).to.include('_session');
         expect(haproxyRequests[5]).to.include('/medic-test/_design/medic/_view/contacts_by_depth');
