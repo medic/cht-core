@@ -4,7 +4,8 @@ import {
   getLocale,
   parseTranslations,
   baseTranslate,
-  togglePassword
+  togglePassword,
+  getUserCtx
 } from './auth-utils.js';
 
 let selectedLocale;
@@ -38,8 +39,10 @@ const submit = function(e) {
   const url = document.getElementById('form')?.action;
   const password = document.getElementById(PASSWORD_INPUT_ID)?.value;
   const confirmPassword = document.getElementById(CONFIRM_PASSWORD_INPUT_ID)?.value;
+  const userCtx = getUserCtx();
 
   const payload = JSON.stringify({
+    user: userCtx.name,
     password: password,
     confirmPassword: confirmPassword,
   });

@@ -6,7 +6,7 @@ export const setState = (className) => {
 
 export const request = (method, url, payload, callback) => {
   const xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function() {
+  xmlhttp.onreadystatechange = () => {
     if (xmlhttp.readyState === XMLHttpRequest.DONE) {
       callback(xmlhttp);
     }
@@ -27,13 +27,24 @@ const extractCookie = (cookies, name) => {
   return null;
 };
 
-export const getCookie = function(name) {
+export const getCookie = (name) => {
   if (!document.cookie) {
     return null;
   }
 
   const cookies = document.cookie.split(';');
   return extractCookie(cookies, name);
+};
+
+export const getUserCtx = () => {
+  const cookie = getCookie('userCtx');
+  if (cookie) {
+    try {
+      return JSON.parse(decodeURIComponent(cookie));
+    } catch (e) {
+      console.error('Error parsing cookie', e);
+    }
+  }
 };
 
 export const getLocale = (translations) => {

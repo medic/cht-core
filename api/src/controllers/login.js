@@ -461,21 +461,17 @@ module.exports = {
           params: validation.params,
         });
       }
-      const userCtx = await auth.getUserCtx(req);
-      const user = await db.users.get(`org.couchdb.user:${userCtx.name}`);
+      const user = await db.users.get(`org.couchdb.user:${req.body.user}`);
       user.password = req.body.password;
       user.password_change_required = false;
 
       await db.users.put(user);
-
-      req.body = {
-        ...req.body,
-        user: user.name,
-        password: req.body.password,
-        locale: req.body.locale,
-      };
-
-      const sessionRes = await createSessionRetry(req);
+      const sessionRes = await createSessionRetry({
+        body: {
+          user: user.name,
+          password: req.body.password,
+        }
+      });
       const { redirectUrl } = await setCookies(req, res, sessionRes);
 
       return res.status(302).send(redirectUrl);
