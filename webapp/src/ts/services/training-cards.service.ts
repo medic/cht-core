@@ -3,6 +3,7 @@ import { Store } from '@ngrx/store';
 import * as moment from 'moment';
 import { v4 as uuid } from 'uuid';
 import { first } from 'rxjs/operators';
+import { combineLatest } from 'rxjs';
 
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TrainingCardsComponent } from '@mm-modals/training-cards/training-cards.component';
@@ -12,7 +13,6 @@ import { ModalService } from '@mm-services/modal.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { Selectors } from '@mm-selectors/index';
-import { combineLatest } from 'rxjs';
 
 export const TRAINING_PREFIX: string = 'training:';
 
