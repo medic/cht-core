@@ -1,13 +1,5 @@
-FROM couchdb:3.4.1-nouveau AS base
+FROM couchdb:3.4.2-nouveau
 
-# temporary fix https://github.com/apache/couchdb/issues/5262
-RUN apt-get update && apt-get install -y wget unzip
-RUN wget https://github.com/user-attachments/files/17186496/nouveau-1.0-SNAPSHOT-4299acf4.jar.zip -O /tmp/nouveau-4299acf4.jar.zip
-RUN unzip /tmp/nouveau-4299acf4.jar.zip -d /tmp
-
-FROM couchdb:3.4.1-nouveau
-
-COPY --chown=nouveau:nouveau --from=base /tmp/nouveau-1.0-SNAPSHOT-4299acf4.jar /opt/nouveau/lib/nouveau-1.0-SNAPSHOT.jar
 COPY --chown=nouveau:nouveau nouveau.yaml /opt/nouveau/etc/nouveau.yaml
 
 VOLUME /data/nouveau
