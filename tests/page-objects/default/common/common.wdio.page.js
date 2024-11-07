@@ -327,7 +327,7 @@ const waitForPageLoaded = async () => {
   // get all loaders.
   do {
     await waitForLoaders();
-  } while ((await getVisibleLoaders()).length > 0);
+  } while (await getVisibleLoaders().length > 0);
 };
 
 const syncAndNotWaitForSuccess = async () => {
