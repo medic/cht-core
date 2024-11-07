@@ -199,7 +199,7 @@ const validateNewUsername = username => {
 };
 
 const createUser = (data, response) => {
-  const user = getUserUpdates(data.username, data, false);
+  const user = getUserUpdates(data.username, data);
   user._id = createID(data.username);
   return db.users.put(user).then(body => {
     response.user = {
@@ -460,8 +460,8 @@ const getUserUpdates = (username, data, isUserInitiated = false) => {
     type: 'user'
   };
 
-  if (data.password && !isUserInitiated) {
-    user.password_change_required = true;
+  if (data.password) {
+    user.password_change_required = !isUserInitiated;
   }
 
   USER_EDITABLE_FIELDS.forEach(key => {

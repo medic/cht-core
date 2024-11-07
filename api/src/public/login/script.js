@@ -5,7 +5,8 @@ import {
   getLocale,
   parseTranslations,
   baseTranslate,
-  togglePassword
+  togglePassword,
+  getUserCtx
 } from './auth-utils.js';
 
 let selectedLocale;
@@ -121,17 +122,6 @@ const getRedirectUrl = function() {
   const usernameEntered = getUsername();
   if (usernameQueryParam === usernameEntered) {
     return urlParams.get('redirect');
-  }
-};
-
-const getUserCtx = function() {
-  const cookie = getCookie('userCtx');
-  if (cookie) {
-    try {
-      return JSON.parse(decodeURIComponent(cookie));
-    } catch (e) {
-      console.error('Error parsing cookie', e);
-    }
   }
 };
 

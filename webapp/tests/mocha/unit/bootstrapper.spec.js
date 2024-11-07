@@ -99,6 +99,12 @@ describe('bootstrapper', () => {
       return promise;
     });
 
+    global.localStorage = {
+      getItem: sinon.stub(),
+      setItem: sinon.stub(),
+      removeItem: sinon.stub(),
+    }
+
     $ = sinon.stub().returns({
       text: sinon.stub(),
       click: sinon.stub(),

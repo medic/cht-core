@@ -2285,7 +2285,8 @@ describe('Users service', () => {
         type: 'user',
         _id: 'org.couchdb.user:x',
         name: 'x',
-        password: 'password.123'
+        password: 'password.123',
+        password_change_required: true
       }]]);
       chai.expect(roles.hasAllPermissions.args).to.deep.equal([[['national-manager'], ['can_have_multiple_places']]]);
     });
@@ -2323,7 +2324,8 @@ describe('Users service', () => {
         type: 'user',
         _id: 'org.couchdb.user:x',
         name: 'x',
-        password: 'password.123'
+        password: 'password.123',
+        password_change_required: true
       }]]);
     });
   });
@@ -3168,6 +3170,7 @@ describe('Users service', () => {
         name: 'anne',
         type: 'user',
         password: COMPLEX_PASSWORD,
+        password_change_required: false
       });
       chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
       chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
