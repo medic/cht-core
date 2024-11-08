@@ -77,6 +77,7 @@ const dbDocHandler = require('./controllers/db-doc');
 const extensionLibs = require('./controllers/extension-libs');
 const replication = require('./controllers/replication');
 const app = express.Router({ strict: true });
+const asyncLocalStorage = require('./services/async-storage');
 const moment = require('moment');
 const MAX_REQUEST_SIZE = '32mb';
 
@@ -156,9 +157,15 @@ if (process.argv.slice(2).includes('--allow-cors')) {
   });
 }
 
+const shortUuid = () => {
+  const ID_LENGTH = 12;
+  return uuid.v4().replace(/-/g, '').toLowerCase().slice(0, ID_LENGTH);
+};
+
 app.use((req, res, next) => {
-  req.id = uuid.v4();
-  next();
+  req.id = shortUuid();
+  req.headers[serverUtils.REQUEST_ID_HEADER] = req.id;
+  asyncLocalStorage.set(req, () => next());
 });
 app.use(getLocale);
 

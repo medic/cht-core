@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+    <h:head>
+        <h:title>Select contact by type and without type</h:title>
+        <model>
+            <itext>
+                <translation lang="en">
+                    <text id="/data/select_contact_by_type:label">
+                        <value>Select the contact by type</value>
+                    </text>
+                    <text id="/data/select_contact_without_type:label">
+                        <value>Select the contact without type</value>
+                    </text>
+                </translation>
+            </itext>
+            <instance>
+                <data id="select_contact_telemetry" prefix="J1!select_contact_telemetry!" delimiter="#" version="2024-10-30 16-00">
+                   <select_contact_by_type/>
+                   <select_contact_without_type/>
+                    <meta tag="hidden">
+                        <instanceID/>
+                    </meta>
+                </data>
+            </instance>
+            <bind nodeset="/data/select_contact_by_type" type="db:person"/>
+            <bind nodeset="/data/select_contactselect_contact_without_type"/>
+        </model>
+    </h:head>
+    <h:body class="pages">
+        <group appearance="field-list" ref="/data">
+            <input appearance="select-contact" ref="/data/select_contact_by_type">
+                <label ref="jr:itext('/data/select_contact_by_type:label')"/>
+            </input>
+            <input appearance="select-contact" ref="/data/select_contact_without_type">
+                <label ref="jr:itext('/data/select_contact_without_type:label')"/>
+            </input>
+        </group>
+    </h:body>
+</h:html>
