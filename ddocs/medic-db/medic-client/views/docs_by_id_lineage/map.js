@@ -1,6 +1,6 @@
 function(doc) {
 
-  var emitLineage = function(contact, depth) {
+  var emitLineages = function(contact, depth) {
     while (contact && contact._id) {
       emit([ doc._id, depth++ ], { _id: contact._id });
       contact = contact.parent;
@@ -11,10 +11,10 @@ function(doc) {
 
   if (types.indexOf(doc.type) !== -1) {
     // contact
-    emitLineage(doc, 0);
+    emitLineages(doc, 0);
   } else if (doc.type === 'data_record' && doc.form) {
     // report
-    emitLineage(doc.contact, 1);
     emit([ doc._id, 0 ]);
+    emitLineages(doc.contact, 1);
   }
 }
