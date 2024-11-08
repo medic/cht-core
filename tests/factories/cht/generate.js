@@ -54,7 +54,7 @@ const getReportContext = (patient, submitter) => {
       patient_name: patient.name,
       visited_contact_uuid: patient.parent._id,
       visited_date: currentDate,
-      lmp_date_8601: LAST_MENSTRUAL_PERIOD,
+      lmp_date_8601: lastMestrualPeriod,
     },
   };
   if (submitter) {
