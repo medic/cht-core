@@ -27,7 +27,6 @@ const desktopCapability = {
 };
 
 exports.config = Object.assign(wdioBaseConfig.config, {
-  specs: ['**/*.wdio-spec.js'],
   suites: {
     desktopTests: [
       'contacts/contact-user-management.wdio-spec.js',
