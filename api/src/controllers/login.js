@@ -17,8 +17,9 @@ const translations = require('../translations');
 const template = require('../services/template');
 const rateLimitService = require('../services/rate-limit');
 const serverUtils = require('../server-utils');
-
 const { validatePassword } = require('@medic/user-management/src/users');
+
+const PASSWORD_RESET_URL = '/medic/password-reset';
 
 const ERROR_KEY_MAPPING = {
   'password.must.match': 'password-mismatch',
@@ -80,6 +81,9 @@ const templates = {
 
 const skipPasswordChange = async (userCtx) => {
   if (roles.isDbAdmin(userCtx)) {
+    return true;
+  }
+  if (!userCtx.password_change_required) {
     return true;
   }
   return await auth.hasAllPermissions(userCtx, 'can_skip_password_change');
@@ -222,44 +226,53 @@ const setUserCtxCookie = (res, userCtx) => {
   cookie.setUserCtx(res, JSON.stringify(content));
 };
 
-const setCookies = (req, res, sessionRes) => {
+const setCookies = async (req, res, sessionRes) => {
   const sessionCookie = getSessionCookie(sessionRes);
   if (!sessionCookie) {
     throw { status: 401, error: 'Not logged in' };
   }
   const options = { headers: { Cookie: sessionCookie } };
-  return getUserCtxRetry(options)
-    .then(userCtx => {
-      cookie.setSession(res, sessionCookie);
-      setUserCtxCookie(res, userCtx);
-      // Delete login=force cookie
-      if (!userCtx.password_change_required) {
-        cookie.clearCookie(res, 'login');
-      }
+  try {
+    const userCtx = await getUserCtxRetry(options);
+    if (await skipPasswordChange(userCtx)) {
+      return redirectToApp(req, res, sessionRes, sessionCookie, userCtx);
+    }
 
-      return Promise.resolve()
-        .then(() => {
-          if (roles.isDbAdmin(userCtx)) {
-            return users.createAdmin(userCtx);
-          }
-        })
-        .then(() => {
-          const selectedLocale = req.body.locale || config.get('locale');
-          cookie.setLocale(res, selectedLocale);
-          return {
-            userCtx,
-            redirectUrl: getRedirectUrl(userCtx, req.body.redirect),
-          };
-        });
-    })
-    .catch(err => {
-      logger.error(`Error getting authCtx %o`, err);
-      throw { status: 401, error: 'Error getting authCtx' };
-    });
+    if (userCtx.password_change_required) {
+      return redirectToPasswordReset(req, res, userCtx);
+    }
+
+    return redirectToApp(req, res, sessionRes, sessionCookie, userCtx);
+  } catch (err) {
+    logger.error(`Error getting authCtx %o`, err);
+    throw { status: 401, error: 'Error getting authCtx' };
+  }
 };
 
-const setBasicCookies = (res, userCtx, req) => {
+const redirectToApp = async (req, res, sessionRes, sessionCookie, userCtx) => {
+  cookie.setSession(res, sessionCookie);
   setUserCtxCookie(res, userCtx);
+  cookie.clearCookie(res, 'login');
+
+  await Promise.resolve()
+    .then(() => {
+      if (roles.isDbAdmin(userCtx)) {
+        return users.createAdmin(userCtx);
+      }
+    });
+  setUserLocale(req, res);
+
+  return getRedirectUrl(userCtx, req.body.redirect);
+};
+
+const redirectToPasswordReset = (req, res, userCtx) => {
+  setUserCtxCookie(res, userCtx);
+  setUserLocale(req, res);
+
+  return PASSWORD_RESET_URL;
+};
+
+const setUserLocale = (req, res) => {
   const selectedLocale = req.body.locale || config.get('locale');
   cookie.setLocale(res, selectedLocale);
 };
@@ -380,18 +393,19 @@ const sendLoginErrorResponse = (e, res) => {
 
 const login = async (req, res) => {
   try {
-    const sessionRes = await validateSession(req);
-    const headers = { headers: { Cookie: getSessionCookie(sessionRes) } };
-    const userCtx = await getUserCtxRetry(headers);
-
-    if (userCtx.password_change_required && !await skipPasswordChange(userCtx)){
-      setBasicCookies(res, userCtx, req);
-      return res.status(302).send('/medic/password-reset');
+    const sessionRes = await createSession(req);
+    if (sessionRes.statusCode !== 200) {
+      res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
+    } else {
+      const redirectUrl = await setCookies(req, res, sessionRes);
+      res.status(302).send(redirectUrl);
     }
-    const { redirectUrl } = await setCookies(req, res, sessionRes);
-    return res.status(302).send(redirectUrl);
   } catch (e) {
-    return sendLoginErrorResponse(e, res);
+    if (e.status === 401) {
+      return res.status(401).json({ error: e.error });
+    }
+    logger.error('Error logging in: %o', e);
+    res.status(500).json({ error: 'Unexpected error logging in' });
   }
 };
 
@@ -464,15 +478,26 @@ module.exports = {
       const user = await db.users.get(`org.couchdb.user:${req.body.user}`);
       user.password = req.body.password;
       user.password_change_required = false;
-
       await db.users.put(user);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       const sessionRes = await createSessionRetry({
         body: {
           user: user.name,
           password: req.body.password,
         }
       });
-      const { redirectUrl } = await setCookies(req, res, sessionRes);
+
+      const sessionCookie = getSessionCookie(sessionRes);
+      const userCtx = await getUserCtxRetry({ headers: { Cookie: sessionCookie }});
+
+      const redirectUrl = await redirectToApp(
+        req,
+        res,
+        sessionRes,
+        sessionCookie,
+        userCtx
+      );
 
       return res.status(302).send(redirectUrl);
     } catch (err) {
