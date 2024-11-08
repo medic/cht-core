@@ -39,7 +39,7 @@ describe('Creating and editing contacts and users', () => {
 
     //create chw area and chw
     await commonPage.clickFastActionFAB({ waitForList: false });
-    await browser.pause(500);
+    await browser.pause(150);
     await generateScreenshot('new-chw-area', 'new-chw-area');
     await commonPage.closeFastActionList();
     await commonPage.clickFastActionFAB({ actionId: 'health_center' });
@@ -67,7 +67,7 @@ describe('Creating and editing contacts and users', () => {
     await contactPage.selectLHSRowByText(healthFacilityName);
     await searchPage.clearSearch();
     await commonPage.clickFastActionFAB({ waitForList: false });
-    await browser.pause(500);
+    await browser.pause(150);
     await generateScreenshot('new-chw-supervisor', 'new-person');
     await commonPage.closeFastActionList();
     await commonPage.clickFastActionFAB({ actionId: 'person' });
@@ -79,7 +79,7 @@ describe('Creating and editing contacts and users', () => {
     await contactPage.selectLHSRowByText(healthFacilityName);
     await searchPage.clearSearch();
     await commonPage.openMoreOptionsMenu();
-    await browser.pause(500);
+    await browser.pause(150);
     await generateScreenshot('new-chw-supervisor', 'edit-facility');
     await (await contactPage.menuSelectors.editContactButton()).waitForClickable();
     await (await contactPage.menuSelectors.editContactButton()).click();
