@@ -2,6 +2,9 @@ const utils = require('@utils');
 const request = require('request');
 const constants = require('@constants');
 const _ = require('lodash');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const userFactory = require('@factories/cht/users/users');
 
 describe('server', () => {
   describe('JSON-only endpoints', () => {
@@ -229,5 +232,202 @@ describe('server', () => {
 
       await utils.listenForApi();
     });
+  });
+
+  describe('Request ID propagated to audit layer', () => {
+    const ID_REGEX = /[,|\s]([0-9a-f]{12})[,|\s]/;
+
+    const getReqId = (logLine) => {
+      if (ID_REGEX.test(logLine)) {
+        const match = logLine.match(ID_REGEX);
+        return match?.[1];
+      }
+    };
+
+    describe('for online users', () => {
+      it('should propagate ID via proxy', async () => {
+        const collectApiLogs = await utils.collectApiLogs(/\/_all_docs\?limit=1/);
+        const collectHaproxyLogs = await utils.collectHaproxyLogs(/\/_all_docs\?limit=1/);
+
+        const result = await utils.request('/medic/_all_docs?limit=1');
+        await utils.delayPromise(500); // wait for everything to get logged
+
+        const apiLogs = (await collectApiLogs()).filter(log => log.length);
+        const haproxyLogs = (await collectHaproxyLogs()).filter(log => log.length);
+
+        expect(result.rows.length).to.equal(1);
+        expect(apiLogs.length).to.equal(2);
+        const apiReqId = getReqId(apiLogs[0]);
+        const haproxyReqId = getReqId(haproxyLogs[0]);
+
+        expect(apiReqId.length).to.equal(12);
+        expect(haproxyReqId).to.equal(apiReqId);
+      });
+
+      it('should propagate ID via PouchDb', async () => {
+        const collectApiLogs = await utils.collectApiLogs(/hydrate/);
+        const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
+
+        const result = await utils.request({ path: '/api/v1/hydrate', qs: { doc_ids: [constants.USER_CONTACT_ID] }});
+        await utils.delayPromise(500); // wait for everything to get logged
+
+        const apiLogs = (await collectApiLogs()).filter(log => log.length);
+        const haproxyLogs = (await collectHaproxyLogs()).filter(log => log.length);
+
+        expect(result.length).to.equal(1);
+        const reqID = getReqId(apiLogs[0]);
+
+        const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
+        expect(haproxyRequests.length).to.equal(2);
+        expect(haproxyRequests[0]).to.include('_session');
+        expect(haproxyRequests[1]).to.include('_design/medic-client/_view/docs_by_id_lineage');
+      });
+
+      it('should propagate ID via couch-request', async () => {
+        const collectApiLogs = await utils.collectApiLogs(/couch-config-attachments/);
+        const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
+
+        await utils.request({ path: '/api/couch-config-attachments' });
+        await utils.delayPromise(500); // wait for everything to get logged
+
+        const apiLogs = (await collectApiLogs()).filter(log => log.length);
+        const haproxyLogs = (await collectHaproxyLogs()).filter(log => log.length);
+
+        const reqID = getReqId(apiLogs[0]);
+
+        const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
+        expect(haproxyRequests.length).to.equal(3);
+        expect(haproxyRequests[0]).to.include('_session');
+        expect(haproxyRequests[1]).to.include('_session');
+        expect(haproxyRequests[2]).to.include('/_node/_local/_config/attachments');
+      });
+
+      it('should use a different id for different requests', async () => {
+        const collectApiLogs = await utils.collectApiLogs(/.*/);
+        const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
+
+        await utils.request({ path: '/api/couch-config-attachments' });
+        await utils.request({ path: '/api/v1/hydrate', qs: { doc_ids: [constants.USER_CONTACT_ID] }});
+
+        const apiLogs = (await collectApiLogs()).filter(log => log.length);
+        const haproxyLogs = (await collectHaproxyLogs()).filter(log => log.length);
+
+        const configReqId = apiLogs
+          .filter(log => log.includes('couch-config-attachments'))
+          .map((log) => getReqId(log))[0];
+        const hydrateReqId = apiLogs
+          .filter(log => log.includes('hydrate'))
+          .map((log) => getReqId(log))[0];
+
+        const haproxyConfigReqs = haproxyLogs.filter(entry => getReqId(entry) === configReqId);
+        expect(haproxyConfigReqs.length).to.equal(3);
+
+        const haproxyHydrateReqs = haproxyLogs.filter(entry => getReqId(entry) === hydrateReqId);
+        expect(haproxyHydrateReqs.length).to.equal(2);
+
+        expect(hydrateReqId).not.to.equal(configReqId);
+      });
+    });
+
+    describe('for offline users', () => {
+      let reqOptions;
+      let offlineUser;
+      before(async () => {
+        const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
+        const contact = utils.deepFreeze(personFactory.build({ name: 'contact', role: 'chw' }));
+        const place = utils.deepFreeze({ ...placeMap.get('clinic'), contact: { _id: contact._id } });
+        offlineUser = utils.deepFreeze(userFactory.build({
+          username: 'offline-user-id',
+          place: place._id,
+          contact: {
+            _id: 'fixture:user:offline',
+            name: 'Offline User',
+          },
+          roles: ['chw']
+        }));
+
+        await utils.saveDocs([contact, ...placeMap.values()]);
+        await utils.createUsers([offlineUser]);
+
+        reqOptions = {
+          auth: { username: offlineUser.username, password: offlineUser.password },
+        };
+      });
+
+      it('should propagate ID via PouchDb requests', async () => {
+        const collectApiLogs = await utils.collectApiLogs(/replication/);
+        const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
+
+        await utils.request({ path: '/api/v1/initial-replication/get-ids', ...reqOptions });
+        await utils.delayPromise(500); // wait for everything to get logged
+
+        const apiLogs = (await collectApiLogs()).filter(log => log.length);
+        const haproxyLogs = (await collectHaproxyLogs()).filter(log => log.length);
+
+        const reqID = getReqId(apiLogs[0]);
+
+        const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
+        expect(haproxyRequests.length).to.equal(12);
+        expect(haproxyRequests[0]).to.include('_session');
+        expect(haproxyRequests[5]).to.include('/medic-test/_design/medic/_view/contacts_by_depth');
+        expect(haproxyRequests[6]).to.include('/medic-test/_design/medic/_view/docs_by_replication_key');
+        expect(haproxyRequests[7]).to.include('/medic-test-purged-cache/purged-docs-');
+        expect(haproxyRequests[8]).to.include('/medic-test-purged-role-');
+        expect(haproxyRequests[9]).to.include('/medic-test-logs/replication-count-');
+        expect(haproxyRequests[10]).to.include('/medic-test-logs/replication-count-');
+        expect(haproxyRequests[11]).to.include('/medic-test/_all_docs');
+      });
+
+      it('should propagate ID via couch requests', async () => {
+        const collectApiLogs = await utils.collectApiLogs(/meta/);
+        const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
+
+        await utils.request({
+          path: `/medic-user-${offlineUser.username}-meta/`,
+          method: 'PUT',
+          ...reqOptions,
+        });
+        await utils.delayPromise(500); // wait for everything to get logged
+
+        const apiLogs = (await collectApiLogs()).filter(log => log.length);
+        const haproxyLogs = (await collectHaproxyLogs()).filter(log => log.length);
+
+        const reqID = getReqId(apiLogs[0]);
+
+        const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
+        expect(haproxyRequests.length).to.equal(7);
+        expect(haproxyRequests[0]).to.include('_session');
+        expect(haproxyRequests[1]).to.include('_session');
+        expect(haproxyRequests[2]).to.include(`medic-test-user-${offlineUser.username}-meta`);
+        expect(haproxyRequests[3]).to.include(`medic-test-user-${offlineUser.username}-meta`);
+        expect(haproxyRequests[4]).to.include(`medic-test-user-${offlineUser.username}-meta`);
+        expect(haproxyRequests[5]).to.include(`medic-test-user-${offlineUser.username}-meta/_design/medic-user`);
+        expect(haproxyRequests[6]).to.include(`medic-test-user-${offlineUser.username}-meta/_security`);
+      });
+
+      it('should propagate ID via proxy', async () => {
+        const collectApiLogs = await utils.collectApiLogs(/meta/);
+        const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
+
+        await utils.request({
+          path: `/medic-user-${offlineUser.username}-meta/the_doc`,
+          method: 'PUT',
+          body: { _id: 'the_doc', value: true },
+          ...reqOptions,
+        });
+        await utils.delayPromise(500); // wait for everything to get logged
+
+        const apiLogs = (await collectApiLogs()).filter(log => log.length);
+        const haproxyLogs = (await collectHaproxyLogs()).filter(log => log.length);
+
+        const reqID = getReqId(apiLogs[0]);
+
+        const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
+        expect(haproxyRequests.length).to.equal(2);
+        expect(haproxyRequests[0]).to.include('_session');
+        expect(haproxyRequests[1]).to.include(`/medic-test-user-${offlineUser.username}-meta/the_doc`);
+      });
+    });
+
   });
 });
