@@ -36,9 +36,11 @@ const calculateDateOfBirth = (age) => {
 };
 const AGES = [25, 2, 10, 7];
 const DATE_OF_BIRTHS = AGES.map(calculateDateOfBirth);
-const date = new Date();
-date.setDate(date.getDate() - 252);
-const LAST_MENSTRUAL_PERIOD = date.toISOString().split('T')[0]; //'YYYY-MM-DD'
+calculateLastMenstrualPeriod = (date) => {
+  PREGNANCY_DAYS = 252;
+  date.setDate(date.getDate() - PREGNANCY_DAYS);
+  return date.toISOString().split('T')[0]; // YYYY-MM-DD
+}
 
 const getReportContext = (patient, submitter) => {
   const daysAgo = faker.number.int({ min: 1, max: 10 });
