@@ -46,6 +46,7 @@ const getReportContext = (patient, submitter) => {
   const daysAgo = faker.number.int({ min: 1, max: 10 });
   const currentDate = new Date();
   currentDate.setDate(currentDate.getDate() - daysAgo);
+  const lastMestrualPeriod = calculateLastMenstrualPeriod(new Date());
   const context = {
     fields: {
       patient_id: patient._id,
