@@ -38,7 +38,7 @@ describe('Contact List Page', () => {
 
   it('should show contacts page tab '+
     'when can_view_contact and can_view_contacts_tab permissions are enabled', async () => {
-    expect(await commonPage.isContactTabPresent());
+    expect(await commonPage.isContactTabPresent()).to.be.true;
     await generateScreenshot('contact-page', 'tab-visible');
     await commonPage.openHamburgerMenu();
     await generateScreenshot('contact-page', 'menu-opened');
