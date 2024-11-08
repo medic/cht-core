@@ -122,9 +122,8 @@ const createAdditionalPersons = (nbrPersons, clinic) => {
   return Array
     .from({ length: nbrPersons - 1 })
     .map((_, i) => {
-      const additionalPersonName = `${
-        ADDITIONAL_PERSON_FIRST_NAMES[i % ADDITIONAL_PERSON_FIRST_NAMES.length]
-      } ${clinic.last_name}`;
+       const name = ADDITIONAL_PERSON_FIRST_NAMES[i % ADDITIONAL_PERSON_FIRST_NAMES.length];
+       const additionalPersonName = `${name} ${clinic.last_name}`;
       const additionalPhoneNumber = PHONE_NUMBERS[i % PHONE_NUMBERS.length];
       return personFactory.build({
         parent: { _id: clinic._id, parent: clinic.parent },
