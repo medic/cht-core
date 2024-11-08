@@ -33,6 +33,7 @@ import * as Contact from './contact';
 import * as Person from './person';
 import * as Place from './place';
 import * as Qualifier from './qualifier';
+import * as Report from './report';
 
 export { Nullable, NonEmptyArray } from './libs/core';
 export { DataContext } from './libs/data-context';
@@ -43,6 +44,7 @@ export * as Contact from './contact';
 export * as Person from './person';
 export * as Place from './place';
 export * as Qualifier from './qualifier';
+export * as Report from './report';
 
 /**
  * Returns the source for CHT data.
@@ -152,6 +154,10 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws InvalidArgumentError if no type is provided or if the type is not for a person
          */
         getByType: (personType: string) => ctx.bind(Person.v1.getAll)(Qualifier.byContactType(personType)),
+      },
+      report: {
+        /** TODO */
+        getByUuid: (uuid: string) => ctx.bind(Report.v1.get)(Qualifier.byUuid(uuid)),
       },
     },
   };
