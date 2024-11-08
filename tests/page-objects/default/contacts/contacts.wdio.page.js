@@ -419,7 +419,7 @@ const openPrimaryContactSearchDropdown = async () => {
 const inputPrimaryContactSearchValue = async (searchQuery) => {
   await editDistrictHospitalSelectors.primaryContactSearchInput().waitForDisplayed();
   await editDistrictHospitalSelectors.primaryContactSearchInput().setValue(searchQuery);
-  await browser.pause(1000);
+  await editDistrictHospitalSelectors.primaryContactSearchFirstResult().waitForDisplayed();
 };
 
 const selectPrimaryContactSearchFirstResult = async () => {
