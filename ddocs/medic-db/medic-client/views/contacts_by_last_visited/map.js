@@ -1,7 +1,7 @@
 function(doc) {
   if (doc.type === 'data_record' &&
-      doc.form &&
       doc.fields &&
+      doc.form &&
       doc.fields.visited_contact_uuid) {
 
     var date = doc.fields.visited_date ? Date.parse(doc.fields.visited_date) : doc.reported_date;

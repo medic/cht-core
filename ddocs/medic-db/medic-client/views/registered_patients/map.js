@@ -5,8 +5,8 @@
 //     For a view with all patients by their shortcode, use:
 //        medic/docs_by_shortcode
 function(doc) {
-  var patientId = doc.patient_id || (doc.fields && doc.fields.patient_id);
   var placeId = doc.place_id || (doc.fields && doc.fields.place_id);
+  var patientId = doc.patient_id || (doc.fields && doc.fields.patient_id);
 
   if (!doc.form || doc.type !== 'data_record' || (doc.errors && doc.errors.length)) {
     return;

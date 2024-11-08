@@ -1,7 +1,7 @@
 function(doc) {
   if (['contact', 'person', 'clinic', 'health_center', 'district_hospital'].indexOf(doc.type) !== -1) {
-    var value = doc.patient_id || doc.place_id;
     var parent = doc;
+    var value = doc.patient_id || doc.place_id;
     var depth = 0;
     while (parent) {
       if (parent._id) {

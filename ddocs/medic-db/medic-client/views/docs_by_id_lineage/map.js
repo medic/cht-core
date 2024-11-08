@@ -14,7 +14,7 @@ function(doc) {
     emitLineage(doc, 0);
   } else if (doc.type === 'data_record' && doc.form) {
     // report
-    emit([ doc._id, 0 ]);
     emitLineage(doc.contact, 1);
+    emit([ doc._id, 0 ]);
   }
 }

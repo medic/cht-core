@@ -13,8 +13,8 @@ function(doc) {
     idx = types.indexOf(type);
   }
   if (idx !== -1) {
-    var dead = !!doc.date_of_death;
     var muted = !!doc.muted;
+    var dead = !!doc.date_of_death;
     var order = dead + ' ' + muted + ' ' + idx + ' ' + (doc.name && doc.name.toLowerCase());
     emit([ type ], order);
   }

@@ -2,14 +2,6 @@ function(doc) {
   var skip = [ '_id', '_rev', 'type', 'refid', 'geolocation' ];
 
   var usedKeys = [];
-  var emitMaybe = function(key, value) {
-    if (usedKeys.indexOf(key) === -1 && // Not already used
-        key.length > 2 // Not too short
-    ) {
-      usedKeys.push(key);
-      emit([key], value);
-    }
-  };
 
   var emitField = function(key, value, order) {
     if (!key || !value) {
@@ -27,6 +19,15 @@ function(doc) {
     }
     if (typeof value === 'number' || typeof value === 'string') {
       emitMaybe(key + ':' + value, order);
+    }
+  };
+
+  var emitMaybe = function(key, value) {
+    if (usedKeys.indexOf(key) === -1 && // Not already used
+        key.length > 2 // Not too short
+    ) {
+      usedKeys.push(key);
+      emit([key], value);
     }
   };
 

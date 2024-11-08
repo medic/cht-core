@@ -4,17 +4,6 @@
 // https://github.com/medic/medic/issues/4666
 
 function(doc) {
-  var getLineage = function(contact) {
-    var parts = [];
-    while (contact) {
-      if (contact._id) {
-        parts.push(contact._id);
-      }
-      contact = contact.parent;
-    }
-    return parts;
-  };
-
   var isMissingSubjectError = function(error) {
     if (error.code !== 'sys.missing_fields' || !error.fields) {
       return false;
@@ -28,6 +17,17 @@ function(doc) {
     }
 
     return false;
+  };
+
+  var getLineage = function(contact) {
+    var parts = [];
+    while (contact) {
+      if (contact._id) {
+        parts.push(contact._id);
+      }
+      contact = contact.parent;
+    }
+    return parts;
   };
 
   var getSubject = function(doc) {

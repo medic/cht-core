@@ -66,10 +66,10 @@ function (doc) {
         }
       }
       return;
-    case 'task':
-      return emit(doc.user, value);
     case 'target':
       return emit(doc.owner, value);
+    case 'task':
+      return emit(doc.user, value);
     case 'contact':
     case 'clinic':
     case 'district_hospital':

@@ -31,8 +31,8 @@ function(doc) {
   };
 
   var types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
-  var idx;
   var type;
+  var idx;
   if (doc.type === 'contact') {
     type = doc.contact_type;
     idx = types.indexOf(type);

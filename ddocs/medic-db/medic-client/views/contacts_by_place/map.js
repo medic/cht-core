@@ -10,8 +10,8 @@ function(doc) {
     idx = types.indexOf(doc.type);
   }
   if (idx !== -1) {
-    var place = doc.parent;
     var order = idx + ' ' + (doc.name && doc.name.toLowerCase());
+    var place = doc.parent;
     while (place) {
       if (place._id) {
         emit([ place._id ], order);

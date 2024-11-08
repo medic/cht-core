@@ -1,8 +1,8 @@
 function(doc) {
   if (doc.type === 'translations') {
     emit([ 'translations', doc.enabled ], {
+      name: doc.name,
       code: doc.code,
-      name: doc.name
     });
     return;
   }
