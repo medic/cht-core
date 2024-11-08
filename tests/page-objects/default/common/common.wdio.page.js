@@ -51,7 +51,6 @@ const hamburgerMenuItemSelector = 'mat-sidenav-content';
 const logoutButton = () => $('aria/Log out');
 const syncButton = () => $('aria/Sync now');
 const contactsButton = () => $(hamburgerMenuItemSelector).$('//span[text()="People"]');
-const contactsTab = () => $('#contacts-tab');
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
@@ -568,7 +567,7 @@ module.exports = {
   isReportActionDisplayed,
   isElementPresent,
   logoutButton,
-  contactsTab,
+  isContactTabPresent,
   messagesTab,
   analyticsTab,
   getReportsButtonLabel,
