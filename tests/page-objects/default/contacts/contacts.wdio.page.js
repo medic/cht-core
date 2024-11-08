@@ -106,15 +106,13 @@ const openSortMenu = async () => {
   await sortMenuSelectors.sortDropdown().waitForDisplayed();
 };
 
-const selectSortOrder = async (sortOrder) => {
+const selectSortOrder = async (sortLabel) => {
   await openSortMenu();
-  const options = await sortMenuSelectors.sortMenuItems();
-  for (const option of options) {
-    const optionText = await option.getText();
-    if (optionText.trim() === sortOrder) {
-      await option.click();
-      break;
-    }
+  const option = await sortMenuSelectors.sortDropdown().$(`a[role="menuitem"]*=${sortLabel}`);
+  if (await option.isExisting()) {
+    await option.click();
+  } else {
+    throw new Error(`Sort option "${sortLabel}" not found`);
   }
 };
 
