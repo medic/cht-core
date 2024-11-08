@@ -109,7 +109,7 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
       await this.ngZone.run(() => this.renderForm(form));
     } catch (error) {
       this.setError(error);
-      console.error('Trainings Content Component :: Error fetching form.', error);
+      console.error('TrainingCardsFormComponent :: Error fetching form.', error);
     }
   }
 
@@ -126,7 +126,7 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
       this.recordPerformancePostRender();
     } catch (error) {
       this.setError(error);
-      console.error('Trainings Content Component :: Error rendering form.', error);
+      console.error('TrainingCardsFormComponent :: Error rendering form.', error);
     }
   }
 
@@ -179,7 +179,7 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
 
   async saveForm() {
     if (this.enketoSaving) {
-      console.debug('Attempted to call TrainingsContentComponent.saveForm more than once');
+      console.debug('Attempted to call TrainingCardsFormComponent:saveForm more than once');
       return;
     }
 
@@ -199,7 +199,7 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
       this.save.emit();
     } catch (error) {
       this.globalActions.setEnketoSavingStatus(false);
-      console.error('Trainings Content Component :: Error submitting form data.', error);
+      console.error('TrainingCardsFormComponent :: Error submitting form data.', error);
       const friendlyMessage = await this.translateService.get('training_cards.error.save');
       this.globalActions.setEnketoError(friendlyMessage);
     }
