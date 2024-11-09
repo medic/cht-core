@@ -973,6 +973,7 @@ module.exports = {
     const facilities = await facility.list([user]);
     return mapUser(user, userSettings, facilities);
   },
+  getUserDoc: (username) => getUserDoc(username, 'users'),
   getUserSettings,
   /* eslint-disable max-len */
   /**

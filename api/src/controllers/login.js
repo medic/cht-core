@@ -83,9 +83,6 @@ const skipPasswordChange = async (userCtx) => {
   if (roles.isDbAdmin(userCtx)) {
     return true;
   }
-  if (!userCtx.password_change_required) {
-    return true;
-  }
   return await auth.hasAllPermissions(userCtx, 'can_skip_password_change');
 };
 
@@ -234,14 +231,14 @@ const setCookies = async (req, res, sessionRes) => {
   const options = { headers: { Cookie: sessionCookie } };
   try {
     const userCtx = await getUserCtxRetry(options);
-    if (await skipPasswordChange(userCtx)) {
-      return redirectToApp(req, res, sessionRes, sessionCookie, userCtx);
+    if (roles.isDbAdmin(userCtx)) {
+      await users.createAdmin(userCtx);
     }
 
-    if (userCtx.password_change_required) {
+    const user = await users.getUserDoc(userCtx.name);
+    if (user?.password_change_required && !await skipPasswordChange(userCtx)) {
       return redirectToPasswordReset(req, res, userCtx);
     }
-
     return redirectToApp(req, res, sessionRes, sessionCookie, userCtx);
   } catch (err) {
     logger.error(`Error getting authCtx %o`, err);
@@ -253,22 +250,13 @@ const redirectToApp = async (req, res, sessionRes, sessionCookie, userCtx) => {
   cookie.setSession(res, sessionCookie);
   setUserCtxCookie(res, userCtx);
   cookie.clearCookie(res, 'login');
-
-  await Promise.resolve()
-    .then(() => {
-      if (roles.isDbAdmin(userCtx)) {
-        return users.createAdmin(userCtx);
-      }
-    });
   setUserLocale(req, res);
-
   return getRedirectUrl(userCtx, req.body.redirect);
 };
 
 const redirectToPasswordReset = (req, res, userCtx) => {
   setUserCtxCookie(res, userCtx);
   setUserLocale(req, res);
-
   return PASSWORD_RESET_URL;
 };
 
@@ -393,19 +381,11 @@ const sendLoginErrorResponse = (e, res) => {
 
 const login = async (req, res) => {
   try {
-    const sessionRes = await createSession(req);
-    if (sessionRes.statusCode !== 200) {
-      res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
-    } else {
-      const redirectUrl = await setCookies(req, res, sessionRes);
-      res.status(302).send(redirectUrl);
-    }
+    const sessionRes = await validateSession(req);
+    const redirectUrl = await setCookies(req, res, sessionRes);
+    res.status(302).send(redirectUrl);
   } catch (e) {
-    if (e.status === 401) {
-      return res.status(401).json({ error: e.error });
-    }
-    logger.error('Error logging in: %o', e);
-    res.status(500).json({ error: 'Unexpected error logging in' });
+    return sendLoginErrorResponse(e, res);
   }
 };
 
