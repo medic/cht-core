@@ -64,7 +64,7 @@ const TRANSLATIONS = {
   ne: {
     FETCH_INFO: ({ count, total }) => eurodigit.to_non_euro.devanagari(`${total} मध्ये ${count} डकुमेन्ट लोड हुँदै  …`),
     LOAD_APP: 'एप लोड गर्दै…',
-    PASSWORD_CHANGE_SUCCESS: 'पासवर्ड सफलतापूर्वक परिवर्तन',
+    PASSWORD_CHANGE_SUCCESS: 'पासवर्ड सफलतापूर्वक परिवर्तन भयो',
     PURGE_INIT: 'डाटा जाँच गर्दै…',
     PURGE_INFO: ({ count }) => eurodigit.to_non_euro.devanagari(`${count} वटा डकुमेन्ट सफा गरीयो…`),
     PURGE_META: 'मेटा डाटा सफा गर्दै…',
