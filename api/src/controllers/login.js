@@ -389,6 +389,36 @@ const login = async (req, res) => {
   }
 };
 
+const updatePassword = async (user, newPassword) => {
+  const updatedUser = {
+    ...user,
+    password: newPassword,
+    password_change_required: false
+  }
+  await db.users.put(updatedUser);
+  // creating new session immediately after changing a password might 401
+  await new Promise(resolve => setTimeout(resolve, 50));
+  return updatedUser;
+};
+
+const createNewSession = async (username, password) => {
+  const sessionRes = await createSessionRetry({
+    body: {
+      user: username,
+      password: password,
+    }
+  });
+
+  const sessionCookie = getSessionCookie(sessionRes);
+  const userCtx = await getUserCtxRetry({ headers: { Cookie: sessionCookie }});
+
+  return {
+    sessionRes,
+    sessionCookie,
+    userCtx
+  };
+}
+
 module.exports = {
   renderLogin,
   renderPasswordReset,
@@ -456,20 +486,12 @@ module.exports = {
         });
       }
       const user = await db.users.get(`org.couchdb.user:${req.body.user}`);
-      user.password = req.body.password;
-      user.password_change_required = false;
-      await db.users.put(user);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await updatePassword(user, req.body.password);
 
-      const sessionRes = await createSessionRetry({
-        body: {
-          user: user.name,
-          password: req.body.password,
-        }
-      });
-
-      const sessionCookie = getSessionCookie(sessionRes);
-      const userCtx = await getUserCtxRetry({ headers: { Cookie: sessionCookie }});
+      const { sessionRes, sessionCookie, userCtx } = await createNewSession(
+        user.name,
+        req.body.password
+      );
 
       const redirectUrl = await redirectToApp(
         req,
