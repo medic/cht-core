@@ -1,4 +1,4 @@
-import {LocalDataContext, SettingsService} from './libs/data-context';
+import { LocalDataContext } from './libs/data-context';
 import { getDocById } from './libs/doc';
 import { UuidQualifier } from '../qualifier';
 import { Nullable } from '../libs/core';
@@ -14,6 +14,8 @@ export namespace v1 {
         logger.warn(`No report found for identifier [${uuid}].`);
         return false;
       }
+    } else if (doc.type !== 'data_record' && !doc.form) {
+      logger.warn(`Document [${doc._id}] is not a valid report.`);
     }
 
     return true;
