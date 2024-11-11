@@ -186,17 +186,19 @@ const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPerso
       return { clinic, persons: allPersons, kids, adults };
     });
 
-    const allPersons = clinicsData.flatMap(data => data.persons);
-    const clinicList = clinicsData.map(data => data.clinic);
+  const allPersons = clinicsData.flatMap(data => data.persons);
+  const clinicList = clinicsData.map(data => data.clinic);
 
-    const reportsForKids = clinicsData.flatMap(data => data.kids).flatMap(person => createReportsForKid(person, user));
-    const reportsForWoman = clinicsData.flatMap(data => data.adults).flatMap(person => createReportsForWoman(person, user));
+  const reportsForKids = clinicsData.flatMap(data => data.kids).flatMap(person => createReportsForKid(person, user));
+  const reportsForWoman = clinicsData
+    .flatMap(data => data.adults)
+    .flatMap(person => createReportsForWoman(person, user));
 
-    return {
-      clinics: clinicList,
-      reports: [...reportsForKids, ...reportsForWoman],
-      persons: [...allPersons]
-    };
+  return {
+    clinics: clinicList,
+    reports: [...reportsForKids, ...reportsForWoman],
+    persons: [...allPersons]
+  };
 };
 
 const createData = ({ healthCenter, user, nbrClinics, nbrPersons, useRealNames = false }) => {
