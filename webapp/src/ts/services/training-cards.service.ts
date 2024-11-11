@@ -22,9 +22,6 @@ export const TRAINING_PREFIX: string = 'training:';
 export class TrainingCardsService {
   private readonly globalActions: GlobalActions;
   private readonly STORAGE_KEY_LAST_VIEWED_DATE = 'training-cards-last-viewed-date';
-  private trainingForms;
-  private showPrivacyPolicy;
-  private privacyPolicyAccepted;
 
   constructor(
     private readonly store: Store,
@@ -44,10 +41,7 @@ export class TrainingCardsService {
       this.store.select(Selectors.getShowPrivacyPolicy),
       this.store.select(Selectors.getTrainingMaterials),
     ]).subscribe(([ privacyPolicyAccepted, showPrivacyPolicy, xforms ]) => {
-      this.showPrivacyPolicy = showPrivacyPolicy;
-      this.privacyPolicyAccepted = privacyPolicyAccepted;
-      this.trainingForms = xforms;
-      this.displayTrainingCards();
+      this.displayTrainingCards(xforms, showPrivacyPolicy, privacyPolicyAccepted);
     });
   }
 
@@ -101,7 +95,7 @@ export class TrainingCardsService {
   }
 
   private openModal(form) {
-    this.globalActions.setTrainingCard({ formId: form.code });
+    this.globalActions.setTrainingCard({ formId: form?.code });
 
     this.modalService
       .show(TrainingCardsComponent, { closeOnNavigation: false, width: '700px' })
@@ -115,9 +109,9 @@ export class TrainingCardsService {
       });
   }
 
-  private canDisplayTrainingCards() {
-    if (!this.trainingForms?.length
-      || (this.showPrivacyPolicy && !this.privacyPolicyAccepted)
+  private canDisplayTrainingCards(trainingForms, showPrivacyPolicy, privacyPolicyAccepted) {
+    if (!trainingForms?.length
+      || (showPrivacyPolicy && !privacyPolicyAccepted)
       || this.hasBeenDisplayed()
     ) {
       return false;
@@ -127,13 +121,13 @@ export class TrainingCardsService {
     return !routeSnapshot?.data?.hideTraining;
   }
 
-  async displayTrainingCards() {
-    if (!this.canDisplayTrainingCards()) {
+  async displayTrainingCards(trainingForms, showPrivacyPolicy, privacyPolicyAccepted) {
+    if (!this.canDisplayTrainingCards(trainingForms, showPrivacyPolicy, privacyPolicyAccepted)) {
       return;
     }
 
     try {
-      const firstChronologicalTrainingCard = await this.getFirstChronologicalForm(this.trainingForms);
+      const firstChronologicalTrainingCard = await this.getFirstChronologicalForm(trainingForms);
       if (!firstChronologicalTrainingCard) {
         return;
       }
