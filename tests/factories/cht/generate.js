@@ -36,11 +36,11 @@ const calculateDateOfBirth = (age) => {
 };
 const AGES = [25, 2, 10, 7];
 const DATE_OF_BIRTHS = AGES.map(calculateDateOfBirth);
-calculateLastMenstrualPeriod = (date) => {
-  PREGNANCY_DAYS = 252;
+const calculateLastMenstrualPeriod = (date) => {
+  const PREGNANCY_DAYS = 252;
   date.setDate(date.getDate() - PREGNANCY_DAYS);
   return date.toISOString().split('T')[0]; // YYYY-MM-DD
-}
+};
 
 const getReportContext = (patient, submitter) => {
   const daysAgo = faker.number.int({ min: 1, max: 10 });
@@ -122,8 +122,8 @@ const createAdditionalPersons = (nbrPersons, clinic) => {
   return Array
     .from({ length: nbrPersons - 1 })
     .map((_, i) => {
-       const name = ADDITIONAL_PERSON_FIRST_NAMES[i % ADDITIONAL_PERSON_FIRST_NAMES.length];
-       const additionalPersonName = `${name} ${clinic.last_name}`;
+      const name = ADDITIONAL_PERSON_FIRST_NAMES[i % ADDITIONAL_PERSON_FIRST_NAMES.length];
+      const additionalPersonName = `${name} ${clinic.last_name}`;
       const additionalPhoneNumber = PHONE_NUMBERS[i % PHONE_NUMBERS.length];
       return personFactory.build({
         parent: { _id: clinic._id, parent: clinic.parent },
