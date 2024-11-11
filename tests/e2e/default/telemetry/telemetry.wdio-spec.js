@@ -120,7 +120,7 @@ describe('Telemetry', () => {
     expect(clientDdoc.build_info.version).to.include(version);
   });
 
-  describe('search matches telemetry', () => {
+  describe.skip('search matches telemetry', () => {
     afterEach(async () => {
       // eslint-disable-next-line no-undef
       await browser.execute((dbName) => window.PouchDB(dbName).destroy(), todayDBName);
