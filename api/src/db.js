@@ -6,6 +6,8 @@ PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-session-authentication'));
 PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
+const asyncLocalStorage = require('./services/async-storage');
+const { REQUEST_ID_HEADER } = require('./server-utils');
 
 const { UNIT_TEST_ENV } = process.env;
 
@@ -74,6 +76,10 @@ if (UNIT_TEST_ENV) {
   const fetch = (url, opts) => {
     // Adding audit flag (haproxy) Service that made the request initially.
     opts.headers.set('X-Medic-Service', 'api');
+    const requestId = asyncLocalStorage.getRequestId();
+    if (requestId) {
+      opts.headers.set(REQUEST_ID_HEADER, requestId);
+    }
     return PouchDB.fetch(url, opts);
   };
 

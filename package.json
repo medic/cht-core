@@ -152,7 +152,7 @@
     "nodemon": "^3.0.1",
     "nyc": "^15.1.0",
     "patch-package": "^8.0.0",
-    "postcss": "^8.4.29",
+    "postcss": "^8.4.47",
     "pouchdb-adapter-memory": "^7.3.1",
     "raw-loader": "^4.0.2",
     "rewire": "^7.0.0",
