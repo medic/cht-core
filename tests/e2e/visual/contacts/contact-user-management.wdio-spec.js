@@ -85,7 +85,7 @@ describe('Contact and User Management', () => {
       await generateScreenshot('people', 'condition-card-active-pregnancy');
       await commonPage.goToBase();
       await commonPage.goToPeople();
-      await contactPage.selectLHSRowByText('Hawa Bass');
+      await contactPage.selectLHSRowByText('John Bass');
       await (await contactPage.inmunizationCardSelectors.inmunizationCard()).scrollIntoView();
       await generateScreenshot('people', 'condition-card-inmunization');
     });

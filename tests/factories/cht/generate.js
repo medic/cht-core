@@ -13,7 +13,8 @@ const PRIMARY_CONTACT_FIRST_NAMES = [
   'Gina', 'Helen', 'Isabelle', 'Jessica',
   'Ivy', 'Sara'
 ];
-const ADDITIONAL_PERSON_FIRST_NAMES = ['John', 'Hawa', 'Timmy', 'Ana'];
+const ADDITIONAL_KID_FIRST_NAMES = ['John', 'Timmy', 'Elias'];
+const ADDITIONAL_WOMAN_FIRST_NAMES = ['Hawa', 'Ana', 'Tania'];
 const FAMILY_LAST_NAMES = [
   'Allen', 'Bass', 'Dearborn', 'Flair',
   'Gorman', 'Hamburg', 'Ivanas', 'James',
@@ -34,8 +35,11 @@ const calculateDateOfBirth = (age) => {
   const birthDay = today.getDate();
   return `${birthYear}-${String(birthMonth).padStart(2, '0')}-${String(birthDay).padStart(2, '0')}`;
 };
-const AGES = [25, 2, 10, 7];
-const DATE_OF_BIRTHS = AGES.map(calculateDateOfBirth);
+const KIDS_AGES = [2, 7, 10];
+const ADULTS_AGES = [25, 35];
+const DATE_OF_BIRTHS_KIDS = KIDS_AGES.map(calculateDateOfBirth);
+const DATE_OF_BIRTHS_ADULTS = ADULTS_AGES.map(calculateDateOfBirth);
+
 const calculateLastMenstrualPeriod = (date) => {
   const PREGNANCY_DAYS = 252;
   date.setDate(date.getDate() - PREGNANCY_DAYS);
@@ -118,41 +122,53 @@ const createClinic = (index, healthCenter) => {
   return { clinic, primaryContact };
 };
 
-const createAdditionalPersons = (nbrPersons, clinic) => {
+const createAdditionalPersons = (nbrPersons, clinic, ageType) => {
   return Array
-    .from({ length: nbrPersons - 1 })
+    .from({ length: nbrPersons })
     .map((_, i) => {
-      const name = ADDITIONAL_PERSON_FIRST_NAMES[i % ADDITIONAL_PERSON_FIRST_NAMES.length];
-      const additionalPersonName = `${name} ${clinic.last_name}`;
       const additionalPhoneNumber = PHONE_NUMBERS[i % PHONE_NUMBERS.length];
+      let name;
+      let additionalPersonName;
+      let date_of_birth;
+      if (ageType === 'kid') {
+        name = ADDITIONAL_KID_FIRST_NAMES[i % ADDITIONAL_KID_FIRST_NAMES.length];
+        additionalPersonName = `${name} ${clinic.last_name}`;
+        date_of_birth = DATE_OF_BIRTHS_KIDS[i % DATE_OF_BIRTHS_KIDS.length];
+      } else if (ageType === 'adult') {
+        name = ADDITIONAL_WOMAN_FIRST_NAMES[i % ADDITIONAL_WOMAN_FIRST_NAMES.length];
+        additionalPersonName = `${name} ${clinic.last_name}`;
+        date_of_birth = DATE_OF_BIRTHS_ADULTS[i % DATE_OF_BIRTHS_ADULTS.length];
+      }
+
       return personFactory.build({
         parent: { _id: clinic._id, parent: clinic.parent },
         name: additionalPersonName,
         patient_id: PATIENT_IDS[i % PATIENT_IDS.length],
         phone: additionalPhoneNumber,
-        date_of_birth: DATE_OF_BIRTHS[i % DATE_OF_BIRTHS.length],
+        date_of_birth: date_of_birth,
       });
     });
 };
 
-const createReportsForPerson = (person, user) => {
-  const reports = [];
-  const isWoman = person.sex === 'female';
-  const age = new Date().getFullYear() - new Date(person.date_of_birth).getFullYear();
-  const isInPregnancyAgeRange = age >= 12 && age <= 49;
-  if (isWoman && isInPregnancyAgeRange) {
-    reports.push(
-      pregnancyFactory.build(getReportContext(person, user)),
-      pregnancyVisitFactory.build(getReportContext(person, user))
-    );
-  }
-  const isChild = age < 5;
-  if (isChild) {
-    reports.push(
-      immunizationFactory.build({ contact: user, patient: person })
-    );
-  }
-  return reports;
+const createAdditionalKid = (nbrPersons, clinic) => {
+  return createAdditionalPersons(nbrPersons, clinic, 'kid');
+};
+
+const createAdditionalWoman = (nbrPersons, clinic) => {
+  return createAdditionalPersons(nbrPersons, clinic, 'adult');
+};
+
+const createReportsForWoman = (person, user) => {
+  return [
+    pregnancyFactory.build(getReportContext(person, user)),
+    pregnancyVisitFactory.build(getReportContext(person, user)),
+  ];
+};
+
+const createReportsForKid = (person, user) => {
+  return [
+    immunizationFactory.build({ contact: user, patient: person })
+  ];
 };
 
 const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
@@ -161,19 +177,26 @@ const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPerso
     .map((_, index) => {
       const { clinic, primaryContact } = createClinic(index, healthCenter);
 
-      const additionalPersons = createAdditionalPersons(nbrPersons, clinic);
+      const kids = createAdditionalKid( Math.floor(nbrPersons / 2), clinic);
+      const adults = createAdditionalWoman( Math.floor(nbrPersons / 2), clinic);
+      adults.unshift(primaryContact);
 
-      const allPersons = [primaryContact, ...additionalPersons];
+      const allPersons = [...kids, ...adults];
 
-      return { clinic, persons: allPersons };
+      return { clinic, persons: allPersons, kids, adults };
     });
 
-  const allPersons = clinicsData.flatMap(data => data.persons);
-  const clinicList = clinicsData.map(data => data.clinic);
+    const allPersons = clinicsData.flatMap(data => data.persons);
+    const clinicList = clinicsData.map(data => data.clinic);
 
-  const reports = allPersons.flatMap(person => createReportsForPerson(person, user));
+    const reportsForKids = clinicsData.flatMap(data => data.kids).flatMap(person => createReportsForKid(person, user));
+    const reportsForWoman = clinicsData.flatMap(data => data.adults).flatMap(person => createReportsForWoman(person, user));
 
-  return { clinics: clinicList, reports, persons: allPersons };
+    return {
+      clinics: clinicList,
+      reports: [...reportsForKids, ...reportsForWoman],
+      persons: [...allPersons]
+    };
 };
 
 const createData = ({ healthCenter, user, nbrClinics, nbrPersons, useRealNames = false }) => {
