@@ -3,7 +3,7 @@ FROM alpine:3.19 AS base_build
 RUN apk add --update --no-cache \
   build-base \
   curl \
-  nodejs~=20 \
+  nodejs~=22 \
   npm~=10 \
   tzdata \
   libxslt \
