@@ -1,4 +1,4 @@
-import { fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import sinon from 'sinon';
 import { assert, expect } from 'chai';
@@ -111,7 +111,7 @@ describe('TrainingCardsService', () => {
       startkey: 'training:a_user:',
       endkey: 'training:a_user:\ufff0',
     });
-    expect(globalActions.setTrainingCard.calledOnce).to.be.true;;
+    expect(globalActions.setTrainingCard.calledOnce).to.be.true;
     expect(globalActions.setTrainingCard.args[0]).to.deep.equal([ { formId: 'training:form-b' } ]);
     expect(consoleErrorSpy.notCalled).to.be.true;
   });
@@ -506,33 +506,33 @@ describe('TrainingCardsService', () => {
     expect(consoleErrorSpy.args[0][1].message).to.equal('some error');
   });
 
-   it('should catch exception', async () => {
-     sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
-     localDb.allDocs.rejects(new Error('some error'));
-     clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
-     const xforms = [{
-       _id: 'form:training:abc-123',
-       internalId: 'training:form-a',
-       context: {
-         start_date: '2022-05-21',
-         duration: 3,
-         user_roles: [ 'chw' ],
-       },
-     }];
+  it('should catch exception', async () => {
+    sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
+    localDb.allDocs.rejects(new Error('some error'));
+    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    const xforms = [{
+      _id: 'form:training:abc-123',
+      internalId: 'training:form-a',
+      context: {
+        start_date: '2022-05-21',
+        duration: 3,
+        user_roles: [ 'chw' ],
+      },
+    }];
 
-     await service.displayTrainingCards(xforms, true, true);
+    await service.displayTrainingCards(xforms, true, true);
 
-     expect(sessionService.hasRole.calledOnce).to.be.true;
-     expect(sessionService.userCtx.calledTwice).to.be.true;
-     expect(localDb.allDocs.calledOnce).to.be.true;
-     expect(globalActions.setTrainingCard.notCalled).to.be.true;
-     expect(modalService.show.notCalled).to.be.true;
-     expect(consoleErrorSpy.calledOnce).to.be.true;
-     expect(consoleErrorSpy.args[0][0]).to.equal('Training Cards :: Error showing modal.');
-     expect(consoleErrorSpy.args[0][1].message).to.equal('some error');
-   });
+    expect(sessionService.hasRole.calledOnce).to.be.true;
+    expect(sessionService.userCtx.calledTwice).to.be.true;
+    expect(localDb.allDocs.calledOnce).to.be.true;
+    expect(globalActions.setTrainingCard.notCalled).to.be.true;
+    expect(modalService.show.notCalled).to.be.true;
+    expect(consoleErrorSpy.calledOnce).to.be.true;
+    expect(consoleErrorSpy.args[0][0]).to.equal('Training Cards :: Error showing modal.');
+    expect(consoleErrorSpy.args[0][1].message).to.equal('some error');
+  });
 
-   it('should display training if route has hideTraining false', async () => {
+  it('should display training if route has hideTraining false', async () => {
     sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
     localDb.allDocs.resolves({ rows: [ { doc: { form: 'training:form-b' } } ] });
     clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
@@ -551,215 +551,215 @@ describe('TrainingCardsService', () => {
     await service.displayTrainingCards(xforms, true, true);
 
     expect(modalService.show.calledOnce).to.be.true;
-   });
+  });
 
-   it('should show uncompleted training form based on user role', async () => {
-     sessionService.userCtx.returns({ roles: [ 'role_a' ], name: 'a_user' });
-     localDb.allDocs.resolves({ rows: [
-       { doc: { form: 'training:form-b' } },
-     ]});
-     clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
-     const xforms = [
-       {
-         _id: 'form:training:abc-098',
-         internalId: 'training:form-e',
-         context: {
-           start_date: '2022-05-21',
-           duration: 9,
-           user_roles: [ 'role_a', 'role_c' ],
-         },
-       },
-       {
-         _id: 'form:training:abc-456',
-         internalId: 'training:form-b',
-         context: {
-           start_date: '2022-05-18',
-           duration: 2,
-           user_roles: [ 'role_a', 'role_c' ],
-         },
-       },
-       {
-         _id: 'form:training:abc-123',
-         internalId: 'training:form-a',
-         context: {
-           start_date: '2022-05-21',
-           duration: 3,
-           user_roles: [ 'role_b', 'role_c' ],
-         },
-       },
-       {
-         _id: 'form:training:abc-789',
-         internalId: 'training:form-c',
-         context: {
-           start_date: '2022-05-28',
-           duration: 6,
-           user_roles: [ 'role_a' ],
-         },
-       },
-       {
-         _id: 'form:training:abc-098',
-         internalId: 'training:form-d',
-         context: {
-           start_date: '2022-05-21',
-           duration: 19,
-         },
-       },
-     ];
+  it('should show uncompleted training form based on user role', async () => {
+    sessionService.userCtx.returns({ roles: [ 'role_a' ], name: 'a_user' });
+    localDb.allDocs.resolves({ rows: [
+      { doc: { form: 'training:form-b' } },
+    ]});
+    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    const xforms = [
+      {
+        _id: 'form:training:abc-098',
+        internalId: 'training:form-e',
+        context: {
+          start_date: '2022-05-21',
+          duration: 9,
+          user_roles: [ 'role_a', 'role_c' ],
+        },
+      },
+      {
+        _id: 'form:training:abc-456',
+        internalId: 'training:form-b',
+        context: {
+          start_date: '2022-05-18',
+          duration: 2,
+          user_roles: [ 'role_a', 'role_c' ],
+        },
+      },
+      {
+        _id: 'form:training:abc-123',
+        internalId: 'training:form-a',
+        context: {
+          start_date: '2022-05-21',
+          duration: 3,
+          user_roles: [ 'role_b', 'role_c' ],
+        },
+      },
+      {
+        _id: 'form:training:abc-789',
+        internalId: 'training:form-c',
+        context: {
+          start_date: '2022-05-28',
+          duration: 6,
+          user_roles: [ 'role_a' ],
+        },
+      },
+      {
+        _id: 'form:training:abc-098',
+        internalId: 'training:form-d',
+        context: {
+          start_date: '2022-05-21',
+          duration: 19,
+        },
+      },
+    ];
 
-     await service.displayTrainingCards(xforms, true, true);
+    await service.displayTrainingCards(xforms, true, true);
 
-     expect(sessionService.userCtx.calledTwice).to.be.true;
-     expect(sessionService.hasRole.callCount).to.equal(5);
-     expect(localDb.allDocs.calledOnce).to.be.true;
-     expect(localDb.allDocs.args[0][0]).to.deep.equal({
-       include_docs: true,
-       startkey: 'training:a_user:',
-       endkey: 'training:a_user:\ufff0',
-     });
-     expect(globalActions.setTrainingCard.calledOnce).to.be.true;
-     expect(globalActions.setTrainingCard.args[0]).to.deep.equal([ { formId: 'training:form-e' } ]);
-     expect(modalService.show.calledOnce).to.be.true;
-     expect(consoleErrorSpy.notCalled).to.be.true;
-   });
+    expect(sessionService.userCtx.calledTwice).to.be.true;
+    expect(sessionService.hasRole.callCount).to.equal(5);
+    expect(localDb.allDocs.calledOnce).to.be.true;
+    expect(localDb.allDocs.args[0][0]).to.deep.equal({
+      include_docs: true,
+      startkey: 'training:a_user:',
+      endkey: 'training:a_user:\ufff0',
+    });
+    expect(globalActions.setTrainingCard.calledOnce).to.be.true;
+    expect(globalActions.setTrainingCard.args[0]).to.deep.equal([ { formId: 'training:form-e' } ]);
+    expect(modalService.show.calledOnce).to.be.true;
+    expect(consoleErrorSpy.notCalled).to.be.true;
+  });
 
-   it('should show uncompleted training when form does not have user_roles defined', async () => {
-     sessionService.userCtx.returns({ roles: [ 'role_a' ], name: 'a_user' });
-     localDb.allDocs.resolves({ rows: [
-       { doc: { form: 'training:form-b' } },
-     ]});
-     clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
-     const xforms = [
-       {
-         _id: 'form:training:abc-098',
-         internalId: 'training:form-d',
-         context: {
-           start_date: '2022-05-21',
-           duration: 19,
-         },
-       },
-       {
-         _id: 'form:training:abc-098',
-         internalId: 'training:form-e',
-         context: {
-           start_date: '2022-05-21',
-           duration: 9,
-           user_roles: [ 'role_a', 'role_c' ],
-         },
-       },
-     ];
+  it('should show uncompleted training when form does not have user_roles defined', async () => {
+    sessionService.userCtx.returns({ roles: [ 'role_a' ], name: 'a_user' });
+    localDb.allDocs.resolves({ rows: [
+      { doc: { form: 'training:form-b' } },
+    ]});
+    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    const xforms = [
+      {
+        _id: 'form:training:abc-098',
+        internalId: 'training:form-d',
+        context: {
+          start_date: '2022-05-21',
+          duration: 19,
+        },
+      },
+      {
+        _id: 'form:training:abc-098',
+        internalId: 'training:form-e',
+        context: {
+          start_date: '2022-05-21',
+          duration: 9,
+          user_roles: [ 'role_a', 'role_c' ],
+        },
+      },
+    ];
 
-     await service.displayTrainingCards(xforms, true, true);
+    await service.displayTrainingCards(xforms, true, true);
 
-     expect(sessionService.userCtx.calledTwice).to.be.true;
-     expect(sessionService.hasRole.calledOnce).to.be.true;
-     expect(localDb.allDocs.calledOnce).to.be.true;
-     expect(localDb.allDocs.args[0][0]).to.deep.equal({
-       include_docs: true,
-       startkey: 'training:a_user:',
-       endkey: 'training:a_user:\ufff0',
-     });
-     expect(globalActions.setTrainingCard.calledOnce).to.be.true;
-     expect(globalActions.setTrainingCard.args[0]).to.deep.equal([ { formId: 'training:form-d' } ]);
-     expect(modalService.show.calledOnce).to.be.true;
-     expect(consoleErrorSpy.notCalled).to.be.true;
-   });
+    expect(sessionService.userCtx.calledTwice).to.be.true;
+    expect(sessionService.hasRole.calledOnce).to.be.true;
+    expect(localDb.allDocs.calledOnce).to.be.true;
+    expect(localDb.allDocs.args[0][0]).to.deep.equal({
+      include_docs: true,
+      startkey: 'training:a_user:',
+      endkey: 'training:a_user:\ufff0',
+    });
+    expect(globalActions.setTrainingCard.calledOnce).to.be.true;
+    expect(globalActions.setTrainingCard.args[0]).to.deep.equal([ { formId: 'training:form-d' } ]);
+    expect(modalService.show.calledOnce).to.be.true;
+    expect(consoleErrorSpy.notCalled).to.be.true;
+  });
 
-   it('should evaluate if the internalID is from a training card', () => {
-     expect(service.isTrainingCardForm('training:my_new_feature')).to.be.true;
-     expect(service.isTrainingCardForm(':training:my_new_feature')).to.be.false;
-     expect(service.isTrainingCardForm('form:training:my_new_feature')).to.be.false;
-     expect(service.isTrainingCardForm('my_new_feature')).to.be.false;
-     expect(service.isTrainingCardForm('contact:my_new_feature')).to.be.false;
-     expect(service.isTrainingCardForm(':my_new_feature')).to.be.false;
-     expect(service.isTrainingCardForm('')).to.be.false;
-     expect(service.isTrainingCardForm(undefined)).to.be.false;
-   });
+  it('should evaluate if the internalID is from a training card', () => {
+    expect(service.isTrainingCardForm('training:my_new_feature')).to.be.true;
+    expect(service.isTrainingCardForm(':training:my_new_feature')).to.be.false;
+    expect(service.isTrainingCardForm('form:training:my_new_feature')).to.be.false;
+    expect(service.isTrainingCardForm('my_new_feature')).to.be.false;
+    expect(service.isTrainingCardForm('contact:my_new_feature')).to.be.false;
+    expect(service.isTrainingCardForm(':my_new_feature')).to.be.false;
+    expect(service.isTrainingCardForm('')).to.be.false;
+    expect(service.isTrainingCardForm(undefined)).to.be.false;
+  });
 
-   it('should return a doc id properly formatted', () => {
-     sessionService.userCtx.returns({ name: 'ronald' });
-     expect(service.getTrainingCardDocId().startsWith('training:ronald:')).to.be.true;
-   });
+  it('should return a doc id properly formatted', () => {
+    sessionService.userCtx.returns({ name: 'ronald' });
+    expect(service.getTrainingCardDocId().startsWith('training:ronald:')).to.be.true;
+  });
 
-   it('should throw exception if it cannot create a doc id', () => {
-     try {
-       sessionService.userCtx.returns({});
-       service.getTrainingCardDocId().startsWith('training:ronald:');
-       assert.fail('should have thrown');
-     } catch (error) {
-       expect(error.message)
-         .to.equal('Training Cards :: Cannot create document ID, user context does not have the "name" property.');
-     }
-   });
+  it('should throw exception if it cannot create a doc id', () => {
+    try {
+      sessionService.userCtx.returns({});
+      service.getTrainingCardDocId().startsWith('training:ronald:');
+      assert.fail('should have thrown');
+    } catch (error) {
+      expect(error.message)
+        .to.equal('Training Cards :: Cannot create document ID, user context does not have the "name" property.');
+    }
+  });
 
-   describe('Display training cards once', () => {
-     afterEach(() => window.localStorage.removeItem('training-cards-last-viewed-date'));
+  describe('Display training cards once', () => {
+    afterEach(() => window.localStorage.removeItem('training-cards-last-viewed-date'));
 
-     it('should display training when it has not been displayed today', async () => {
-       routeSnapshotService.get.returns({ data: { hideTraining: false } });
-       sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'ronald' });
-       window.localStorage.setItem('training-cards-last-viewed-date-ronald', '2024-05-23 20:29:25');
-       clock = sinon.useFakeTimers(new Date('2025-05-25 20:29:25'));
-       localDb.allDocs.resolves({ rows: [] });
-       const xforms = [ {
-         _id: 'form:training:abc-100',
-         internalId: 'training:form-c',
-         context: { duration: 9, user_roles: [ 'chw' ] },
-       }];
+    it('should display training when it has not been displayed today', async () => {
+      routeSnapshotService.get.returns({ data: { hideTraining: false } });
+      sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'ronald' });
+      window.localStorage.setItem('training-cards-last-viewed-date-ronald', '2024-05-23 20:29:25');
+      clock = sinon.useFakeTimers(new Date('2025-05-25 20:29:25'));
+      localDb.allDocs.resolves({ rows: [] });
+      const xforms = [ {
+        _id: 'form:training:abc-100',
+        internalId: 'training:form-c',
+        context: { duration: 9, user_roles: [ 'chw' ] },
+      }];
 
-       await service.displayTrainingCards(xforms, true, true);
+      await service.displayTrainingCards(xforms, true, true);
 
-       expect(modalService.show.calledOnce).to.be.true;
-     });
+      expect(modalService.show.calledOnce).to.be.true;
+    });
 
-     it('should display training when last viewed date is empty', async () => {
-       sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'ronald' });
-       routeSnapshotService.get.returns({ data: { hideTraining: false } });
-       window.localStorage.setItem('training-cards-last-viewed-date-ronald', '');
-       clock = sinon.useFakeTimers(new Date('2025-05-25 20:29:25'));
-       localDb.allDocs.resolves({ rows: [] });
-       const xforms = [ {
-         _id: 'form:training:abc-100',
-         internalId: 'training:form-c',
-         context: { duration: 9, user_roles: [ 'chw' ] },
-       }];
+    it('should display training when last viewed date is empty', async () => {
+      sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'ronald' });
+      routeSnapshotService.get.returns({ data: { hideTraining: false } });
+      window.localStorage.setItem('training-cards-last-viewed-date-ronald', '');
+      clock = sinon.useFakeTimers(new Date('2025-05-25 20:29:25'));
+      localDb.allDocs.resolves({ rows: [] });
+      const xforms = [ {
+        _id: 'form:training:abc-100',
+        internalId: 'training:form-c',
+        context: { duration: 9, user_roles: [ 'chw' ] },
+      }];
 
-       await service.displayTrainingCards(xforms, true, true);
+      await service.displayTrainingCards(xforms, true, true);
 
-       expect(modalService.show.calledOnce).to.be.true;
-     });
+      expect(modalService.show.calledOnce).to.be.true;
+    });
 
-     it('should not display training when it has been displayed today for the same user', async () => {
-       routeSnapshotService.get.returns({ data: { hideTraining: false } });
-       sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'ronald' });
-       window.localStorage.setItem('training-cards-last-viewed-date-ronald', '2024-05-23 20:29:25');
-       clock = sinon.useFakeTimers(new Date('2024-05-23 06:29:25'));
-       localDb.allDocs.resolves({ rows: [] });
-       const xforms = [ {
-         _id: 'form:training:abc-100',
-         internalId: 'training:form-c',
-         context: { duration: 9, user_roles: [ 'chw' ] },
-       }];
+    it('should not display training when it has been displayed today for the same user', async () => {
+      routeSnapshotService.get.returns({ data: { hideTraining: false } });
+      sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'ronald' });
+      window.localStorage.setItem('training-cards-last-viewed-date-ronald', '2024-05-23 20:29:25');
+      clock = sinon.useFakeTimers(new Date('2024-05-23 06:29:25'));
+      localDb.allDocs.resolves({ rows: [] });
+      const xforms = [ {
+        _id: 'form:training:abc-100',
+        internalId: 'training:form-c',
+        context: { duration: 9, user_roles: [ 'chw' ] },
+      }];
 
-       await service.displayTrainingCards(xforms, true, true);
+      await service.displayTrainingCards(xforms, true, true);
 
-       expect(modalService.show.notCalled).to.be.true;
-     });
+      expect(modalService.show.notCalled).to.be.true;
+    });
 
-     it('should display training when it has not been displayed for a different user', async () => {
-       routeSnapshotService.get.returns({ data: { hideTraining: false } });
-       sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'sarah' });
-       window.localStorage.setItem('training-cards-last-viewed-date-ronald', '2024-05-23 20:29:25');
-       clock = sinon.useFakeTimers(new Date('2024-05-23 06:29:25'));
-       localDb.allDocs.resolves({ rows: [ { doc: { form: 'training:form-b' } } ] });
-       const xforms = [ {
-         _id: 'form:training:abc-100',
-         internalId: 'training:form-c',
-         context: { duration: 9, user_roles: [ 'chw' ] },
-       }];
+    it('should display training when it has not been displayed for a different user', async () => {
+      routeSnapshotService.get.returns({ data: { hideTraining: false } });
+      sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'sarah' });
+      window.localStorage.setItem('training-cards-last-viewed-date-ronald', '2024-05-23 20:29:25');
+      clock = sinon.useFakeTimers(new Date('2024-05-23 06:29:25'));
+      localDb.allDocs.resolves({ rows: [ { doc: { form: 'training:form-b' } } ] });
+      const xforms = [ {
+        _id: 'form:training:abc-100',
+        internalId: 'training:form-c',
+        context: { duration: 9, user_roles: [ 'chw' ] },
+      }];
 
-       await service.displayTrainingCards(xforms, true, true);
+      await service.displayTrainingCards(xforms, true, true);
 
-       expect(modalService.show.calledOnce).to.be.true;
-     });
-   });
+      expect(modalService.show.calledOnce).to.be.true;
+    });
+  });
 });
