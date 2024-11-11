@@ -7,6 +7,22 @@ window.startupTimes.firstCodeExecution = performance.now();
 
 window.PouchDB = require('pouchdb-browser').default;
 window.$ = window.jQuery = require('jquery');
+window._phdcChanges = {
+  hierarchyDuplicatePrevention: {
+    health_center: {
+      ...Levenshtein,
+      props: [
+        {form_prop_path: `/data/health_center/name`, db_doc_ref: 'name'},
+        {form_prop_path: '/data/health_center/external_id', db_doc_ref: 'external_id'}
+      ],
+      queryParams: {
+        valuePaths: ['/data/health_center/is_user_flagged_duplicate', '/data/health_center/duplicate/action'],
+        // eslint-disable-next-line eqeqeq
+        query: (duplicate, action) => duplicate === 'yes' && action != null
+      }
+    }
+  }
+};
 
 import { enableProdMode } from '@angular/core';
 import '@angular/compiler';
@@ -19,6 +35,7 @@ import { environment } from '@mm-environments/environment';
 import { POUCHDB_OPTIONS } from './constants';
 
 import * as bootstrapper from '../js/bootstrapper';
+import { Levenshtein } from './polyfills';
 
 // Moment additional locales
 require('../js/moment-locales/tl');

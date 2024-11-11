@@ -14,6 +14,22 @@ import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
 
+import * as moment from 'moment';
+import * as Levenshtein from 'levenshtein';
+type HierarchyDuplicatePreventionType = typeof window._phdcChanges.hierarchyDuplicatePrevention;
+type StrategyForContactType<T extends keyof HierarchyDuplicatePreventionType> = HierarchyDuplicatePreventionType[T];
+type KeysType = keyof HierarchyDuplicatePreventionType;
+type ConfType = StrategyForContactType<KeysType>;
+type Strategy = Exclude<ConfType, undefined>;
+type PropsToCheckType = Strategy['props'];
+type QueryParamsInfoType = Strategy['queryParams'];
+// Each record WILL have the following props, but could have more
+type Sibling = {_id: string; name: string; reported_date: number; [key: string]: any};
+type Duplicate = {_id: string; name: string; reported_date: number; score: number};
+type SuccessType = { status: 'fulfilled'; value: any };
+type FailureType = { status: 'rejected'; reason: any };
+type ReturnType = SuccessType | FailureType;
+
 @Component({
   templateUrl: './contacts-edit.component.html'
 })
@@ -54,6 +70,22 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private trackEditDuration;
   private trackSave;
   private trackMetadata = { action: '', form: '' };
+
+  private duplicateThreshold = 0; // Default is exact matches
+  private formPropPathsToCheck: PropsToCheckType = []; // Name is checked by default
+  private queryParams: QueryParamsInfoType;
+  private isEdit!: boolean;
+  private parentId!: string;
+  private contactType!: string;
+  private dbLookupRef; // sibling database request
+  private needsCleanup = false;
+  private readonly parser = new DOMParser(); // Used to parse the xml content & easily grab values
+  private readonly strategies = {
+    NormalizedLevenshtein: this.normalizedLevenshtein,
+    Levenshtein: this.levenshteinDistance
+  };
+
+  private strategy = this.levenshteinDistance;
 
   ngOnInit() {
     this.trackRender = this.performanceService.track();
@@ -170,6 +202,51 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       this.setTitle(titleKey);
       const formInstance = await this.renderForm(formId, titleKey);
       this.setEnketoContact(formInstance);
+
+      // When using the link to go to another form, we need to clean up the duplicate section
+      if (this.needsCleanup){
+        this.cleanUpDuplicateSection();
+        this.needsCleanup = false;
+      }
+
+      const docId = this.enketoContact.docId;
+      // eslint-disable-next-line eqeqeq
+      this.isEdit = docId != null;
+      this.parentId = contact?.parent?._id ?? this.routeSnapshot.params.parent_id;
+      this.contactType = contactType?.id ?? this.enketoContact?.type;
+
+      if (window?._phdcChanges?.hierarchyDuplicatePrevention){
+        if (this.contactType in window._phdcChanges.hierarchyDuplicatePrevention){
+          const ct: KeysType = (this.contactType as KeysType);
+          const conf: StrategyForContactType<typeof ct> = window._phdcChanges.hierarchyDuplicatePrevention[ct];
+
+          if (conf){
+            const strategyType = conf.type;
+            this.strategy = this.strategies[strategyType];
+            this.formPropPathsToCheck = conf.props ? conf.props: 
+              [{form_prop_path: `/data/${this.contactType}/name`, db_doc_ref: 'name'}];
+            this.duplicateThreshold = conf.threshold;
+            this.queryParams = conf.queryParams;
+          } else {
+            console.error('No config has been loaded!');
+          }
+        } else {
+          console.warn(`Setup omitted contact type "${this.contactType}" from duplicate check.`);
+        }
+      } else {
+        console.log('Namespace does not contain config');
+      }
+
+      // We're kicking off the sibling lookup in the form init to give the request a chance 
+      // to make headway in the background before the submit function needs to process the results.
+      // The impact should only really be felt by bigger calls.
+      this.dbLookupRef = this.dbService
+        .get()
+        .query('medic-client/contacts_by_parent', { // Existing CHT view
+          startkey: [this.parentId, this.contactType],
+          endkey: [this.parentId, this.contactType, {}],
+          include_docs: true
+        });
 
       this.globalActions.setLoadingContent(false);
     } catch (error) {
@@ -299,6 +376,152 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     };
   }
 
+  private parseXmlForm(form): Document | undefined {
+    // Below line is taken from enketo-core form-model line 114
+    const xmlDoc = this.parser.parseFromString(form.getDataStr({ irrelevant: false }), 'text/xml');
+    if (xmlDoc.getElementsByTagName('parsererror').length > 0) {
+      console.error('Error parsing XML:', xmlDoc.getElementsByTagName('parsererror')[0].textContent);
+      this.globalActions.setEnketoError('Error parsing xml document');
+      return;
+    } 
+    return xmlDoc; 
+  }
+
+  private getFormValues(xmlDoc: Document, propPaths: string[]){
+    const values:string[] = [];
+    for (const path of propPaths){
+      try {
+        const value = xmlDoc.evaluate(
+          path,
+          xmlDoc,
+          null,
+          XPathResult.STRING_TYPE,
+          null
+        ).stringValue;
+        values.push(value);
+      } catch (error) {
+        console.error(`Path ${path} value could not be resolved!`);
+      }
+    }
+    return values;
+  }
+
+  private queryPropInfo(xmlDoc: Document, info: Exclude<QueryParamsInfoType, undefined>){
+    const propPaths = info.valuePaths;
+    const values = this.getFormValues(xmlDoc, propPaths);
+    const result = info.query(...values);
+    return result;
+  }
+
+  private calculateSiblingLikenessScore(sibling: Sibling, props: { value: string; compareToDocProp: string }[]) {
+    let totalScore = 0;
+    let count = 0;
+
+    for (const field of props) {
+      if (Object.prototype.hasOwnProperty.call(sibling, field.compareToDocProp)) {
+        const test = this.strategy(field.value.toLowerCase(), sibling[field.compareToDocProp].toLowerCase());
+        totalScore += test;
+        count++;
+      }
+    }
+
+    return count > 0 ? totalScore / count : null;
+  }
+
+  private getLikelyDuplicates(siblings: Sibling[], props: {value: string; compareToDocProp: string}[]){
+    const duplicates: Array<Duplicate> = [];
+    for (const sibling of siblings){
+      const score = this.calculateSiblingLikenessScore(sibling, props);
+      if (score !== null && score < this.duplicateThreshold){
+        duplicates.push({_id: sibling._id, name: sibling.name, reported_date: sibling.reported_date, score});
+      }
+    }
+
+    return duplicates;
+  }
+
+  // Normalize the distance by dividing by the length of the longer string. 
+  // This can make the metric more adaptable across different string lengths
+  private normalizedLevenshtein(str1: string, str2: string) {
+    const distance = this.levenshteinDistance(str1, str2);
+    const maxLen = Math.max(str1.length, str2.length);
+    return (maxLen === 0) ? 0 : (distance / maxLen);
+  }
+
+  // The Levenshtein distance is a measure of the number of edits (insertions, deletions, and substitutions) 
+  // required to change one string into another.
+  private levenshteinDistance(str1: string, str2: string) {
+    return new Levenshtein(str1, str2).distance;
+  }
+
+  // Note: Look into 'https://www.npmjs.com/package/fuzzball' to perform various matching calculations
+
+  private cleanUpDuplicateSection() {
+    const $duplicateInfoElement = $('#contact-form').find('#duplicate_info');
+    $duplicateInfoElement.empty(); // Remove all child nodes
+    $duplicateInfoElement.hide();
+  }
+
+  // Promise.allSettled is not available due to the app's javascript version
+  private allSettledFallback(promises: Promise<Exclude<any, null | undefined>>[]): Promise<ReturnType[]> {
+    return Promise.all(
+      promises.map(promise => promise
+        .then((value): SuccessType => ({ status: 'fulfilled', value }))
+        .catch((reason): FailureType => ({ status: 'rejected', reason })))
+    );
+  }
+
+  private buildDuplicateHeader(count: number){
+    return `<p>${count} potential duplicate item(s) found:</p>`;
+  }
+
+  private buildDuplicateItem(d: Duplicate, count: number){
+    const link = `#/contacts/${d._id}/edit`;
+    const date = moment(d.reported_date).format('ddd MMM DD YYYY HH:mm:ss');
+    return `
+      <p>${count}) "${d.name}" <br>
+      Created on: ${date} <br>
+      <a class="duplicate-navigate-link" href="${link}" rel="noopener">Take me there</a> 
+      </p>`;
+  }
+
+  private outputDuplicates(duplicates: Duplicate[]){
+    const $duplicateInfoElement = $('#contact-form').find('#duplicate_info');
+    $duplicateInfoElement.empty(); // Remove all child nodes
+    $duplicateInfoElement.show();
+    // TODO: create a template component where these values are fed into.
+    // TODO: Use angular instead of jQuery?
+    let content = this.buildDuplicateHeader(duplicates.length);
+    let count = 0;
+    for (const d of duplicates){
+      content += this.buildDuplicateItem(d, count+1);
+      count++;
+    }
+    $duplicateInfoElement.append(content);
+    $duplicateInfoElement.on('click', '.duplicate-navigate-link', () => {
+      this.needsCleanup = true;
+    });
+  }
+
+  private ensureUniqueItem(xmlDoc: Document, docId: string, docs: Sibling[]) {
+    const siblings : Sibling[] = docs.filter((element) => !((this.isEdit && element._id === docId)));
+    
+    const additionalFieldsValues:string[] = this.formPropPathsToCheck ? 
+      this.getFormValues(xmlDoc, this.formPropPathsToCheck.map((e) => e.form_prop_path)) : [];
+    const additionalPropValuesToCheck = this.formPropPathsToCheck!.map((obj, i) => { 
+      return { value: additionalFieldsValues[i], compareToDocProp: obj.db_doc_ref}; 
+    });
+    const duplicates = this.getLikelyDuplicates(siblings, additionalPropValuesToCheck);
+
+    if (duplicates.length > 0){
+      this.globalActions.setEnketoError('Duplicates found');
+      this.outputDuplicates(duplicates);
+      return false;
+    }
+
+    return true;
+  }
+
   save() {
     if (this.enketoSaving) {
       console.debug('Attempted to call contacts-edit:save more than once');
@@ -315,8 +538,30 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     this.globalActions.setEnketoSavingStatus(true);
     this.globalActions.setEnketoError(null);
 
-    return Promise
-      .resolve(form.validate())
+    const xmlDoc = this.parseXmlForm(form);
+    if (!xmlDoc){
+      throw new Error('Could not parse form');
+    }
+
+    const shouldCircumventDuplicateCheck = this.queryParams ? this.queryPropInfo(xmlDoc, this.queryParams) : false;
+
+    return this.allSettledFallback([form.validate(), this.dbLookupRef])
+      .then((results) => {
+        let valid = results[0].status === 'fulfilled'? results[0].value : false;
+        
+        if (valid && !shouldCircumventDuplicateCheck) {
+          if (results[1].status === 'fulfilled'){
+            const additionalCheckResult = results[1].value;
+            const map = additionalCheckResult.rows.map((row: { doc: Sibling }) => row.doc);
+            valid = this.ensureUniqueItem(xmlDoc, docId, map);
+          } else {
+            valid = false;
+            this.globalActions.setEnketoError('Sibling lookup failed');
+          }
+        }
+        
+        return valid;
+      })
       .then((valid) => {
         if (!valid) {
           throw new Error('Validation failed.');

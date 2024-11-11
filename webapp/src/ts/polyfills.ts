@@ -88,7 +88,14 @@ declare global {
     CHTCore: any;
     angular: any;
     EnketoForm:any;
+    _phdcChanges: { // Additional namespace
+      // Specify your own contact_types here
+      hierarchyDuplicatePrevention: Partial<{[key in 'person' | 'health_center']: Strategy;}>;
+      // The Partial utility ensures that only the allowed keys (health_center, clinic, person, etc) are used, 
+      // but none are mandatory.
+    };
   }
+
   interface JQuery {
     daterangepicker(options?: any, callback?: Function) : any;
     select2(event?:any, options?:any):any;
@@ -97,6 +104,39 @@ declare global {
     _couchId: any;
   }
 }
+
+type Strategy = {
+  // Name is used by default (since it's hardcoded in the system) if no props are specified.
+  // Should props be specified, only those items will be considered
+  props?: {form_prop_path: string; db_doc_ref: string}[]; // TODO: perhaps add a weight to each property
+  queryParams?: { // Usage example - see main.ts
+    valuePaths: string[];
+    //https://stackoverflow.com/questions/76130608/in-typescript-can-you-define-a-function-type-where-each-argument-can-be-one-of
+    query: (...valuesAtPaths: string[]) => boolean;
+    // TODO: ^ pass back tuple key & value ^
+  };
+} & (LevenshteinType | NormalizedLevenshteinType);
+// https://dev.to/darkmavis1980/what-are-typescript-discriminated-unions-5hbb
+
+type LevenshteinType = {
+  type: 'Levenshtein';
+  threshold: number;
+}
+
+type NormalizedLevenshteinType = {
+  type: 'NormalizedLevenshtein';
+  threshold: number; // TODO: Enforce range between 0 and 1 here
+}
+
+export const Levenshtein: Strategy = {
+  type: 'Levenshtein',
+  threshold: 1.5,
+};
+
+export const NormalizedLevenshtein: Strategy = {
+  type: 'NormalizedLevenshtein',
+  threshold: 0.334,
+};
 
 (window as any).process = {
   env: { DEBUG: undefined },
