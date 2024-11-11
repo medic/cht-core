@@ -3,8 +3,10 @@ const utils = require('@utils');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 const loginButton = () => $('#login');
+const updatePasswordButton = () => $('#update-password');
 const userField = () => $('#user');
 const passwordField = () => $('#password');
+const confirmPasswordField = () => $('#confirm-password');
 const passwordToggleButton = () => $('#password-toggle');
 const labelForUser = () => $('label[for="user"]');
 const labelForPassword = () => $('label[for="password"]');
@@ -17,7 +19,7 @@ const getErrorMessage = async () => {
   return await (await errorMessageField()).getText();
 };
 
-const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
+const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp, resetPassword = true }) => {
   if (utils.isMinimumChromeVersion) {
     await browser.url('/');
   }
@@ -32,6 +34,10 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
       return cookies.some(cookie => cookie.name === 'userCtx');
     });
     await utils.setupUserDoc(username);
+  }
+
+  if(resetPassword) {
+    await passwordReset(password, password);
   }
 
   if (!loadPage) {
@@ -132,6 +138,14 @@ const setPasswordValue = async (password) => {
   await (await passwordField()).waitForDisplayed();
   await (await passwordField()).setValue(password);
 };
+
+const passwordReset = async (password, confirmPassword) => {
+  await (await passwordField()).waitForDisplayed();
+  await (await passwordField()).setValue(password);
+  await (await confirmPasswordField()).waitForDisplayed();
+  await (await confirmPasswordField()).setValue(confirmPassword);
+  await (await updatePasswordButton()).click();
+}
 
 module.exports = {
   login,

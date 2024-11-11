@@ -200,6 +200,7 @@ const validateNewUsername = username => {
 
 const createUser = (data, response) => {
   const user = getUserUpdates(data.username, data);
+  user.password_change_required = true;
   user._id = createID(data.username);
   return db.users.put(user).then(body => {
     response.user = {
