@@ -461,7 +461,7 @@ const getUserUpdates = (username, data, isUserInitiated = false) => {
   };
 
   if (data.password) {
-    user.password_change_required = !isUserInitiated;
+    user.password_change_required = isUserInitiated;
   }
 
   USER_EDITABLE_FIELDS.forEach(key => {
@@ -569,7 +569,7 @@ const getUpdatedUserDoc = async (username, data, fullAccess) => getUserDoc(usern
   .then(doc => {
     return {
       ...doc,
-      ...getUserUpdates(username, data, !fullAccess),
+      ...getUserUpdates(username, data, fullAccess),
       _id: createID(username)
     };
   });
@@ -1156,7 +1156,7 @@ module.exports = {
     hydratePayload(data);
 
     const [user, userSettings] = await Promise.all([
-      getUpdatedUserDoc(username, data),
+      getUpdatedUserDoc(username, data, fullAccess),
       getUpdatedSettingsDoc(username, data),
     ]);
 
