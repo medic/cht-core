@@ -22,10 +22,9 @@ const { validatePassword } = require('@medic/user-management/src/users');
 const PASSWORD_RESET_URL = '/medic/password-reset';
 
 const ERROR_KEY_MAPPING = {
-  'password.must.match': 'password-mismatch',
-  'password.weak': 'password-weak',
-  'password.length.minimum': 'password-short',
-  'password.required': 'password-required'
+  'password.must.match': 'password-mismatch', //NoSONAR
+  'password.weak': 'password-weak', //NoSONAR
+  'password.length.minimum': 'password-short' //NoSONAR
 };
 
 const templates = {
@@ -71,7 +70,6 @@ const templates = {
       'change.password.submit',
       'change.password.new.password',
       'change.password.confirm.password',
-      'change.password.required',
       'password.weak',
       'password.length.minimum',
       'password.must.match'

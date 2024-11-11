@@ -494,22 +494,16 @@ const deleteUser = id => {
   return Promise.all([ usersDbPromise, medicDbPromise ]);
 };
 
-const validatePassword = (password, confirmPassword = null) => {
-  if (confirmPassword) {
-    if (!password || !confirmPassword) {
-      return error400(
-          'Password and confirm password fields are required',
-          'password.required'
-      );
-    }
-
-    if (password !== confirmPassword) {
-      return error400(
-          'Password and confirm password must match',
-          'password.must.match'
-      );
-    }
+const validateConfirmPassword = (password, confirmPassword) => {
+  if (password !== confirmPassword) {
+    return error400(
+      'Password and confirm password must match',
+      'password.must.match'
+    );
   }
+}
+
+const validatePasswordStrength = (password) => {
   if (password.length < PASSWORD_MINIMUM_LENGTH) {
     return error400(
       `The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`,
@@ -517,11 +511,21 @@ const validatePassword = (password, confirmPassword = null) => {
       { 'minimum': PASSWORD_MINIMUM_LENGTH }
     );
   }
+
   if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
     return error400(
       'The password is too easy to guess. Include a range of types of characters to increase the score.',
       'password.weak'
     );
+  }
+}
+
+const validatePassword = (password, confirmPassword = null) => {
+  const strengthError = validatePasswordStrength(password);
+  if (strengthError) return strengthError;
+
+  if (confirmPassword != null) {
+    return validateConfirmPassword(password, confirmPassword);
   }
 };
 
