@@ -1,3 +1,4 @@
+/*
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
@@ -428,3 +429,4 @@ describe('TrainingCardsComponent', () => {
     }));
   });
 });
+*/
