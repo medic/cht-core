@@ -1302,6 +1302,41 @@ describe('Users service', () => {
 
   describe('createUser', () => {
 
+    it('should set password_change_required to true for new user creation', () => {
+      const data = {
+        username: 'newuser',
+        password: COMPLEX_PASSWORD,
+        place: 'x',
+        contact: { parent: 'x' },
+        type: 'national-manager'
+      };
+
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('setContactParent', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
+
+      couchSettings.getCouchConfig.resolves({
+        admin1: 'password_1',
+        admin2: 'password_2'
+      });
+
+      db.users.put.resolves({ id: 'org.couchdb.user:newuser' });
+      db.medic.put.resolves({ id: 'org.couchdb.user:newuser' });
+
+      return service.createUser(data).then(() => {
+        chai.expect(db.users.put.callCount).to.equal(1);
+        chai.expect(db.users.put.args[0][0]).to.deep.include({
+          name: 'newuser',
+          type: 'user',
+          password: COMPLEX_PASSWORD,
+          password_change_required: true
+        });
+      });
+    });
+
     it('returns error if missing fields', () => {
       return service.createUser({})
         .catch(err => chai.expect(err.code).to.equal(400)) // empty
@@ -3110,7 +3145,7 @@ describe('Users service', () => {
         chai.expect(e.code).to.equal(400);
         chai.expect(db.medic.put.callCount).to.equal(0);
         chai.expect(db.users.put.callCount).to.equal(0);
-        chai.expect(couchSettings.getCouchConfig.calledOnce).to.be.true;
+        chai.expect(couchSettings.getCouchConfig.callCount).to.equal(2);
         chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
       }
 
@@ -3142,7 +3177,7 @@ describe('Users service', () => {
         name: 'admin2',
         type: 'user',
       });
-      chai.expect(couchSettings.getCouchConfig.callCount).to.equal(0);
+      chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
     });
 
     it('should not update the password in CouchDB config if user is not admin', async () => {
@@ -3170,10 +3205,56 @@ describe('Users service', () => {
         name: 'anne',
         type: 'user',
         password: COMPLEX_PASSWORD,
+        password_change_required: true
+      });
+      chai.expect(couchSettings.getCouchConfig.callCount).to.equal(2);
+      chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
+    });
+
+    it('should set password_change_required to true when admin updates user password', async () => {
+      const data = { password: COMPLEX_PASSWORD };
+      couchSettings.getCouchConfig.resolves({
+        admin1: 'password_1',
+        admin2: 'password_2',
+      });
+      db.users.get.resolves({
+        name: 'user',
+        type: 'user',
+        roles: ['district_admin']
+      });
+      db.medic.get.resolves({});
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
+
+      await service.updateUser('user', data, true);
+
+      chai.expect(db.users.put.callCount).to.equal(1);
+      chai.expect(db.users.put.args[0][0]).to.deep.include({
+        name: 'user',
+        password: COMPLEX_PASSWORD,
+        password_change_required: true
+      });
+    });
+
+    it('should set password_change_required to false when user changes their own password', async () => {
+      const data = { password: COMPLEX_PASSWORD };
+      db.users.get.resolves({
+        name: 'user',
+        type: 'user',
+        roles: ['district_admin']
+      });
+      db.medic.get.resolves({});
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
+
+      await service.updateUser('user', data, false);
+
+      chai.expect(db.users.put.callCount).to.equal(1);
+      chai.expect(db.users.put.args[0][0]).to.deep.include({
+        name: 'user',
+        password: COMPLEX_PASSWORD,
         password_change_required: false
       });
-      chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
-      chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
     });
   });
 
@@ -3251,7 +3332,7 @@ describe('Users service', () => {
           chai.expect(err).to.deep.equal({ some: 'err' });
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0]).to.deep.equal([
-            { name: 'agatha', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
+            { name: 'agatha', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:agatha', password_change_required: true }
           ]);
         });
     });
@@ -3269,7 +3350,7 @@ describe('Users service', () => {
           chai.expect(err).to.deep.equal({ some: 'err' });
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0]).to.deep.equal([
-            { name: 'agatha', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
+            { name: 'agatha', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:agatha', password_change_required: true }
           ]);
           chai.expect(db.medic.put.callCount).to.equal(1);
           chai.expect(db.medic.put.args[0]).to.deep.equal([
@@ -3302,7 +3383,7 @@ describe('Users service', () => {
       return service.createAdmin({ name: 'perseus' }).then(() => {
         chai.expect(db.users.put.callCount).to.equal(1);
         chai.expect(db.users.put.args[0]).to.deep.equal([
-          { name: 'perseus', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:perseus' }
+          { name: 'perseus', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:perseus', password_change_required: true }
         ]);
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.medic.put.args[0]).to.deep.equal([
@@ -3745,7 +3826,7 @@ describe('Users service', () => {
       chai.expect(db.users.get.callCount).to.equal(1);
       chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
       chai.expect(db.users.put.callCount).to.equal(1);
-      chai.expect(db.users.put.args[0][0]).to.include({ password: expectedPassword, });
+      chai.expect(db.users.put.args[0][0]).to.include({ password: expectedPassword, password_change_required: true });
     });
 
     it('should throw for admin user', async () => {
@@ -3771,7 +3852,7 @@ describe('Users service', () => {
         chai.expect(db.users.get.callCount).to.equal(1);
         chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
         chai.expect(db.users.put.callCount).to.equal(0);
-        chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
+        chai.expect(couchSettings.getCouchConfig.callCount).to.equal(2);
         chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
       }
 

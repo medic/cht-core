@@ -200,14 +200,19 @@ const validateNewUsername = username => {
 
 const createUser = (data, response) => {
   const user = getUserUpdates(data.username, data);
-  user.password_change_required = true;
   user._id = createID(data.username);
-  return db.users.put(user).then(body => {
-    response.user = {
-      id: body.id,
-      rev: body.rev
-    };
-  });
+
+  return isTargetAdminUser(data.username)
+    .then(isAdmin => {
+      user.password_change_required = !isAdmin;
+      return db.users.put(user);
+    })
+    .then(body => {
+      response.user = {
+        id: body.id,
+        rev: body.rev
+      };
+    });
 };
 
 const hasUserCreateFlag = doc => doc?.user_for_contact?.create;
@@ -453,7 +458,20 @@ const getSettingsUpdates = (username, data) => {
   return settings;
 };
 
-const getUserUpdates = (username, data, isUserInitiated = false) => {
+const isTargetAdminUser = async (username) => {
+  const admins = await couchSettings.getCouchConfig('admins');
+  return admins && !!admins[username];
+};
+
+const requirePasswordChange = async (username, fullAccess) => {
+  if (!fullAccess) {
+    return false;
+  }
+
+  return !(await isTargetAdminUser(username));
+};
+
+const getUserUpdates = (username, data, requirePasswordChange = false) => {
   const ignore = ['type', 'place', 'contact'];
 
   const user = {
@@ -462,7 +480,7 @@ const getUserUpdates = (username, data, isUserInitiated = false) => {
   };
 
   if (data.password) {
-    user.password_change_required = isUserInitiated;
+    user.password_change_required = requirePasswordChange;
   }
 
   USER_EDITABLE_FIELDS.forEach(key => {
@@ -568,14 +586,17 @@ const missingFields = data => {
   return required.filter(prop => isInvalidProp(prop));
 };
 
-const getUpdatedUserDoc = async (username, data, fullAccess) => getUserDoc(username, 'users')
-  .then(doc => {
-    return {
-      ...doc,
-      ...getUserUpdates(username, data, fullAccess),
-      _id: createID(username)
-    };
-  });
+const getUpdatedUserDoc = async (username, data, fullAccess) => {
+  const passwordChange = await requirePasswordChange(username, fullAccess);
+  return getUserDoc(username, 'users')
+    .then(doc => {
+      return {
+        ...doc,
+        ...getUserUpdates(username, data, passwordChange),
+        _id: createID(username)
+      };
+    });
+};
 
 
 const getUpdatedSettingsDoc = (username, data) => getUserDoc(username, 'medic')
@@ -1186,7 +1207,7 @@ module.exports = {
    */
   resetPassword: async (username) => {
     const password = passwords.generate();
-    const user = await getUpdatedUserDoc(username, { password });
+    const user = await getUpdatedUserDoc(username, { password }, true);
     await saveUserUpdates(user);
     return password;
   },
