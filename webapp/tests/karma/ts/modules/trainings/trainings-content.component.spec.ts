@@ -136,7 +136,7 @@ describe('TrainingsContentComponent', () => {
     expect(globalActions.clearTrainingCards.calledOnce).to.be.true;
     expect(component.showConfirmExit).to.be.false;
     expect(modalService.show.notCalled).to.be.true;
-  })
+  });
 
   it('should show confirm modal if there are not errors', () => {
     component.hasError = false;
@@ -148,7 +148,7 @@ describe('TrainingsContentComponent', () => {
     expect(globalActions.clearTrainingCards.notCalled).to.be.true;
     expect(component.showConfirmExit).to.be.true;
     expect(modalService.show.calledOnce).to.be.true;
-  })
+  });
 
   it('should not deactivate navigation when it cannot exit', () => {
     const result = component.canDeactivate('/next/url');
@@ -157,7 +157,7 @@ describe('TrainingsContentComponent', () => {
     expect(globalActions.setTrainingCard.calledOnceWith({ nextUrl: '/next/url' })).to.be.true;
     expect(component.showConfirmExit).to.be.true;
     expect(modalService.show.calledOnce).to.be.true;
-  })
+  });
 
   it('should deactivate navigation when it cannot exit', () => {
     component.close();
@@ -168,6 +168,6 @@ describe('TrainingsContentComponent', () => {
     expect(globalActions.setTrainingCard.notCalled).to.be.true;
     expect(component.showConfirmExit).to.be.false;
     expect(modalService.show.notCalled).to.be.true;
-  })
+  });
 });
 

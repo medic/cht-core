@@ -102,7 +102,7 @@ describe('TrainingsComponent', () => {
   }));
 
   it('should load trainings when there are forms', fakeAsync(async () => {
-    trainingCardsService.getNextTrainings.returns([ { code: 'form-1' } ])
+    trainingCardsService.getNextTrainings.returns([ { code: 'form-1' } ]);
     store.overrideSelector(Selectors.getTrainingMaterials, [ { _id: 'form-1' }, { _id: 'form-2' } ]);
     store.refreshState();
     flush();
@@ -145,7 +145,7 @@ describe('TrainingsComponent', () => {
         isCompletedTraining: true,
       }));
     component.trainingList = [...previousPage];
-    trainingCardsService.getNextTrainings.returns(nextPage)
+    trainingCardsService.getNextTrainings.returns(nextPage);
     store.overrideSelector(Selectors.getTrainingMaterials, [ { _id: 'form-3' }, { _id: 'form-4' } ]);
     store.refreshState();
     flush();
@@ -174,7 +174,7 @@ describe('TrainingsComponent', () => {
       userRoles: [ 'chw' ],
       isCompletedTraining: true,
     }];
-    trainingCardsService.getNextTrainings.throws(new Error('Ups an error'))
+    trainingCardsService.getNextTrainings.throws(new Error('Ups an error'));
     store.overrideSelector(Selectors.getTrainingMaterials, [ { _id: 'form-3' } ]);
     store.refreshState();
     flush();
