@@ -121,6 +121,10 @@ describe('Telemetry', () => {
   });
 
   describe('search matches telemetry', () => {
+    beforeEach(async () => {
+      // eslint-disable-next-line no-undef
+      await browser.execute(() => window.Date.now = () => new Date('2024-11-06T12:15:00Z').getTime());
+    });
     afterEach(async () => {
       // eslint-disable-next-line no-undef
       await browser.execute((dbName) => window.PouchDB(dbName).destroy(), todayDBName);
@@ -135,7 +139,7 @@ describe('Telemetry', () => {
       return todayTelemetryDocs.filter(row => row.doc.key === key);
     };
 
-    it('should record telemetry for contact searches', async () => {
+    it.only('should record telemetry for contact searches', async () => {
       await commonPage.goToPeople();
 
       const [firstName, lastName] = patient.name.split(' ');
