@@ -64,6 +64,15 @@ export const getDatasource = (ctx: DataContext) => {
 
         /** TODO */
         getByUuidWithLineage: (uuid: string) => ctx.bind(Contact.v1.getWithLineage)(Qualifier.byUuid(uuid)),
+
+        /** TODO */
+        getPageByType: (
+          qualifier: string,
+          cursor: Nullable<string> = null,
+          limit = 100
+        ) => ctx.bind(Contact.v1.getIdsPage)(
+          Qualifier.byFreetext(qualifier), cursor, limit
+        ),
       },
       place: {
         /**

@@ -1,6 +1,15 @@
 import { Doc } from './libs/doc';
-import { DataObject, Identifiable, isDataObject, isIdentifiable } from './libs/core';
-import { isUuidQualifier, UuidQualifier } from './qualifier';
+import {
+  assertCursor,
+  assertLimit,
+  DataObject,
+  Identifiable,
+  isDataObject,
+  isIdentifiable,
+  Nullable,
+  Page,
+} from './libs/core';
+import { ContactTypeQualifier, FreetextQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
@@ -20,6 +29,15 @@ export namespace v1 {
     return isDataObject(value) && isIdentifiable(value) && (!value.parent || isNormalizedParent(value.parent));
   };
 
+  /** @internal */
+  export const isContactType = (value: ContactTypeQualifier | FreetextQualifier): value is ContactTypeQualifier => {
+    return 'contactType' in value;
+  };
+
+  /** @internal */
+  export const isFreetextType = (value: ContactTypeQualifier | FreetextQualifier): value is FreetextQualifier => {
+    return 'freetext' in value;
+  };
   /**
    * Immutable data about a Contact.
    */
@@ -83,7 +101,6 @@ export namespace v1 {
    */
   export const getWithLineage = getContact(Local.Contact.v1.getWithLineage, Remote.Contact.v1.getWithLineage);
 
-  // New REST api: /api/v1/contact/id
   /**
    * Returns a function for retrieving a paged array of contact identifiers from the given data context.
    * @param context the current data context
@@ -91,21 +108,33 @@ export namespace v1 {
    * @throws Error if a data context is not provided
    * @see {@link getIdsAll} which provides the same data, but without having to manually account for paging
    */
-  /**
-   * Returns an array of contact identifiers for the provided page specifications.
-   * @param qualifier the limiter defining which identifiers to return
-   * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
-   * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
-   * @param limit the maximum number of identifiers to return. Default is 10000.
-   * @returns a page of contact identifiers for the provided specification
-   * @throws Error if no qualifier is provided or if the qualifier is invalid
-   * @throws Error if the provided `limit` value is `<=0`
-   * @throws Error if the provided cursor is not a valid page token or `null`
-   */
-  // const getIdsPage = (context: DataContext) => (
-  //   qualifier: ContactTypeQualifier | FreetextQualifier,
-  //   cursor: Nullable<string>, limit: number
-  // ) => Promise<Page<string>>;
+  export const getIdsPage = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Contact.v1.getPage, Remote.Contact.v1.getPage);
+
+    /**
+     * Returns an array of contact identifiers for the provided page specifications.
+     * @param qualifier the limiter defining which identifiers to return
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of identifiers to return. Default is 10000.
+     * @returns a page of contact identifiers for the provided specification
+     * @throws Error if no qualifier is provided or if the qualifier is invalid
+     * @throws Error if the provided `limit` value is `<=0`
+     * @throws Error if the provided cursor is not a valid page token or `null`
+     */
+    const curriedFn = async (
+      qualifier: ContactTypeQualifier | FreetextQualifier,
+      cursor: Nullable<string>,
+      limit = 100
+    ): Promise<Page<string>> => {
+      assertCursor(cursor);
+      assertLimit(limit);
+
+      return fn(qualifier, cursor, limit);
+    };
+    return curriedFn;
+  };
 
   /**
    * Returns a function for getting a generator that fetches contact identifiers from the given data context.
