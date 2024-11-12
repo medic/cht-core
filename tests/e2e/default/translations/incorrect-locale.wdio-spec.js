@@ -35,12 +35,6 @@ describe('Testing Incorrect locale', () => {
     await utils.saveDoc(place);
     await sentinelUtils.waitForSentinel();
   });
-
-  after(async () => {
-    await utils.deleteDocs([ place._id, `messages-${LANGUAGE_CODE}` ]);
-    await utils.revertSettings(true);
-    await browser.setCookies({ name: 'locale', value: 'en' });
-  });
   
   it('should work with incorrect locale', async () => {
     const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
@@ -62,5 +56,9 @@ describe('Testing Incorrect locale', () => {
 
     const tasksFilter = await contactElements.getReportTaskFiltersText();
     expect(tasksFilter.sort()).to.deep.equal(['1 saptamana', '2 saptamani', 'View all'].sort());
+
+    await utils.revertSettings(true);
+    await utils.deleteDocs([ place._id, `messages-${LANGUAGE_CODE}` ]);
+    await browser.setCookies({ name: 'locale', value: 'en' });
   });
 });
