@@ -24,7 +24,6 @@ const patientNameErrorLabel = (formId = FORM) => $(`${formId} label.invalid-cons
 
 const openDropdown = async (element) => {
   const dropdownButton = element.nextElement().$('.dropdown-toggle');
-  await dropdownButton.waitForClickable();
   await dropdownButton.click();
 };
 
@@ -41,7 +40,6 @@ const getDropdownTotalOptions = async (element) => {
 
 const selectDropdownOptions = async (element, type, value) => {
   const dropdownOption = element.nextElement().$(`.dropdown-menu input[type="${type}"][value="${value}"]`);
-  await dropdownOption.waitForClickable();
   await dropdownOption.click();
 };
 
@@ -49,7 +47,6 @@ const clickTimer = async (formId) => {
   const noteTimerSelector = `form[data-form-id="${formId}"] .current .or-appearance-countdown-timer canvas`;
   const triggerTimerSelector = `form[data-form-id="${formId}"] .current.or-appearance-countdown-timer canvas`;
   const timer = await $(`${noteTimerSelector}, ${triggerTimerSelector}`);
-  await timer.waitForClickable();
   await timer.click();
 };
 

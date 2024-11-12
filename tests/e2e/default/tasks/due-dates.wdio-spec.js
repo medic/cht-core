@@ -28,7 +28,7 @@ describe('Task list due dates', () => {
     await sentinelUtils.waitForSentinel();
 
     await loginPage.login(chw);
-    await (await commonPage.analyticsTab()).waitForDisplayed();
+    await commonPage.analyticsTab().waitForDisplayed();
   });
 
   after(async () => {

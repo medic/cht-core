@@ -13,8 +13,7 @@ const localeByName = (locale) => $(`.locale[name="${locale}"]`);
 const tokenLoginError = (reason) => $(`.error.${reason}`);
 
 const getErrorMessage = async () => {
-  await (await errorMessageField()).waitForDisplayed();
-  return await (await errorMessageField()).getText();
+  return await errorMessageField().getText();
 };
 
 const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
@@ -22,9 +21,9 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
     await browser.url('/');
   }
   await setPasswordValue(password);
-  await (await userField()).setValue(username);
+  await userField().setValue(username);
   await changeLocale(locale);
-  await (await loginButton()).click();
+  await loginButton().click();
 
   if (createUser) {
     await browser.waitUntil(async () => {
@@ -99,17 +98,16 @@ const changeLocale = async locale => {
 
 const changeLanguage = async (languageCode, userTranslation) => {
   await changeLocale(languageCode);
-  await browser.waitUntil(async () => await (await labelForUser()).getText() === userTranslation);
+  await browser.waitUntil(async () => await labelForUser().getText() === userTranslation);
   return {
-    user: await (await labelForUser()).getText(),
-    pass: await (await labelForPassword()).getText(),
-    error: await (await errorMessageField()).getHTML(false),
+    user: await labelForUser().getText(),
+    pass: await labelForPassword().getText(),
+    error: await errorMessageField().getHTML(false),
   };
 };
 
 const getTokenError = async (reason) => {
-  await (await tokenLoginError(reason)).waitForDisplayed();
-  return await (await tokenLoginError(reason)).getText();
+  return await tokenLoginError(reason).getText();
 };
 
 const getToLoginLinkText = async () => {
@@ -118,19 +116,17 @@ const getToLoginLinkText = async () => {
 };
 
 const togglePassword = async () => {
-  await (await passwordField()).waitForDisplayed();
-  await (await passwordToggleButton()).waitForClickable();
-  await (await passwordToggleButton()).click();
+  await passwordField().waitForDisplayed();
+  await passwordToggleButton().click();
 
   return {
-    type: await (await passwordField()).getAttribute('type'),
-    value: await (await passwordField()).getValue(),
+    type: await passwordField().getAttribute('type'),
+    value: await passwordField().getValue(),
   };
 };
 
 const setPasswordValue = async (password) => {
-  await (await passwordField()).waitForDisplayed();
-  await (await passwordField()).setValue(password);
+  await passwordField().setValue(password);
 };
 
 module.exports = {

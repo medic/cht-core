@@ -164,8 +164,8 @@ describe('Service worker cache', () => {
     await browser.throttle('offline'); // make sure we load the login page from cache
     await commonPage.logout();
 
-    expect(await (await loginPage.labelForUser()).getText()).to.equal('NotUsername');
-    expect(await (await loginPage.loginButton()).getText()).to.equal('NotLogin');
+    expect(await loginPage.labelForUser().getText()).to.equal('NotUsername');
+    expect(await loginPage.loginButton().getText()).to.equal('NotLogin');
   });
 
   it('adding new languages triggers login page refresh', async () => {
@@ -187,9 +187,9 @@ describe('Service worker cache', () => {
 
     await loginPage.changeLanguage(languageCode, 'Utilizator');
 
-    expect(await (await loginPage.labelForUser()).getText()).to.equal('Utilizator');
-    expect(await (await loginPage.loginButton()).getText()).to.equal('Autentificare');
-    expect(await (await loginPage.labelForPassword()).getText()).to.equal('Parola');
+    expect(await loginPage.labelForUser().getText()).to.equal('Utilizator');
+    expect(await loginPage.loginButton().getText()).to.equal('Autentificare');
+    expect(await loginPage.labelForPassword().getText()).to.equal('Parola');
 
     await utils.revertSettings(true);
   });
@@ -219,7 +219,7 @@ describe('Service worker cache', () => {
   it('should load the page while offline', async () => {
     await browser.throttle('offline');
     await browser.refresh();
-    await (await commonPage.analyticsTab()).waitForDisplayed();
+    await commonPage.analyticsTab().waitForDisplayed();
     await browser.throttle('online');
   });
 
