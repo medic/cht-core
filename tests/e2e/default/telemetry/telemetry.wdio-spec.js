@@ -139,7 +139,7 @@ describe('Telemetry', () => {
       return todayTelemetryDocs.filter(row => row.doc.key === key);
     };
 
-    it.only('should record telemetry for contact searches', async () => {
+    it('should record telemetry for contact searches', async () => {
       await commonPage.goToPeople();
 
       const [firstName, lastName] = patient.name.split(' ');
