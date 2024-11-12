@@ -92,6 +92,24 @@ describe('Tasks', () => {
     expect(list).to.have.length(2);
   });
 
+  it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
+    await tasksPage.compileTasks('tasks-breadcrumbs-config.js', false);
+    
+    await commonPage.goToTasks();
+    let list = await tasksPage.getTasks();
+    expect(list).to.have.length(2);
+    let task = await tasksPage.getTaskByContactAndForm('Megan Spice', 'person_create');
+    await task.click();
+    await tasksPage.waitForTaskContentLoaded('Home Visit');
+    const taskElement = await tasksPage.getOpenTaskElement();
+    await genericForm.submitForm();
+    await taskElement.waitForDisplayed();
+    await commonPage.sync(true);
+    task = await tasksPage.getTaskByContactAndForm('Megan Spice', 'person_create_follow_up');
+    list = await tasksPage.getTasks();
+    expect(list).to.have.length(3);
+  });
+
   it('should load multiple pages of tasks on infinite scrolling', async () => {
     await tasksPage.compileTasks('tasks-multiple-config.js', true);
 
