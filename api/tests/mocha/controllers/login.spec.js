@@ -655,7 +655,7 @@ describe('login controller', () => {
       });
     });
 
-    it('logs in successfully and redirects to password-reset when required', () => {
+    it('logs in successfully and redirects to password-reset for new users', () => {
       req.body = { user: 'sharon', password: 'p4ss', locale: 'es' };
       const postResponse = {
         statusCode: 200,

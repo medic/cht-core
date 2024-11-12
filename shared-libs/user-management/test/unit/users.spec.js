@@ -3332,7 +3332,13 @@ describe('Users service', () => {
           chai.expect(err).to.deep.equal({ some: 'err' });
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0]).to.deep.equal([
-            { name: 'agatha', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:agatha', password_change_required: true }
+            {
+              name: 'agatha',
+              type: 'user',
+              roles: ['admin'], _id:
+              'org.couchdb.user:agatha',
+              password_change_required: true,
+            }
           ]);
         });
     });
@@ -3350,7 +3356,13 @@ describe('Users service', () => {
           chai.expect(err).to.deep.equal({ some: 'err' });
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0]).to.deep.equal([
-            { name: 'agatha', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:agatha', password_change_required: true }
+            {
+              name: 'agatha',
+              type: 'user',
+              roles: ['admin'],
+              _id: 'org.couchdb.user:agatha',
+              password_change_required: true,
+            }
           ]);
           chai.expect(db.medic.put.callCount).to.equal(1);
           chai.expect(db.medic.put.args[0]).to.deep.equal([
@@ -3383,7 +3395,13 @@ describe('Users service', () => {
       return service.createAdmin({ name: 'perseus' }).then(() => {
         chai.expect(db.users.put.callCount).to.equal(1);
         chai.expect(db.users.put.args[0]).to.deep.equal([
-          { name: 'perseus', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:perseus', password_change_required: true }
+          {
+            name: 'perseus',
+            type: 'user',
+            roles: ['admin'],
+            _id: 'org.couchdb.user:perseus',
+            password_change_required: true,
+          }
         ]);
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.medic.put.args[0]).to.deep.equal([

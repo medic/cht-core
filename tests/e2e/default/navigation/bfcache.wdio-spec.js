@@ -10,6 +10,7 @@ describe('bfcache', () => {
       username: constants.USERNAME,
       password: constants.PASSWORD,
       createUser: true,
+      resetPassword: false,
     });
   });
 

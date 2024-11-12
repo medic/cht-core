@@ -1,7 +1,9 @@
 /* eslint-disable */
 export const setState = (className) => {
   const form = document.getElementById('form');
-  if(!form) return;
+  if (!form) {
+    return;
+  }
   form.className = className;
 };
 
@@ -75,14 +77,12 @@ const replaceTranslationPlaceholders = (text, translateValues) => {
     const values = JSON.parse(translateValues);
     return Object
       .entries(values)
-      .reduce((result, [key, value]) => result.replace(new RegExp(`{{${key}}}`, 'g'), value),
-        text
-      );
+      .reduce((result, [key, value]) => result.replace(new RegExp(`{{${key}}}`, 'g'), value), text);
   } catch (e) {
     console.error('Error parsing translation placeholders', e);
     return text;
   }
-}
+};
 
 export const baseTranslate = (selectedLocale, translations) => {
   if (!selectedLocale) {
@@ -105,7 +105,9 @@ export const baseTranslate = (selectedLocale, translations) => {
 
 export const togglePassword = (passwordInputId, confirmPasswordInputId = null) => {
   const passwordInput = document.getElementById(passwordInputId);
-  if (!passwordInput) return;
+  if (!passwordInput) {
+    return;
+  }
 
   const displayType = passwordInput.type === 'password' ? 'text' : 'password';
   passwordInput.type = displayType;
@@ -116,4 +118,4 @@ export const togglePassword = (passwordInputId, confirmPasswordInputId = null) =
     confirmPasswordInput.type = displayType;
     document.getElementById('confirm-password-container')?.classList.toggle('hidden-password');
   }
-}
+};

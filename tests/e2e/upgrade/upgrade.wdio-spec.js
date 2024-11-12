@@ -59,11 +59,21 @@ describe('Performing an upgrade', () => {
       // are not compatible with older versions of the app.
       await loginPage.login({ username: docs.user.username, password: docs.user.password });
       await commonPage.logout();
-      await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
+      await loginPage.login({
+        username: constants.USERNAME,
+        password: constants.PASSWORD,
+        adminApp: true,
+        resetPassword: false,
+      });
       return;
     }
 
-    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, loadPage: false });
+    await loginPage.login({
+      username: constants.USERNAME,
+      password: constants.PASSWORD,
+      loadPage: false,
+      resetPassword: false,
+    });
     await oldNavigationPage.goToBase();
   });
 
@@ -131,7 +141,12 @@ describe('Performing an upgrade', () => {
   });
 
   it('should display upgrade page even without upgrade logs', async () => {
-    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
+    await loginPage.login({
+      username: constants.USERNAME,
+      password: constants.PASSWORD,
+      adminApp: true,
+      resetPassword: false,
+    });
     await deleteUpgradeLogs();
     await upgradePage.goToUpgradePage();
 

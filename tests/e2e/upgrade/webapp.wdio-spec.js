@@ -34,7 +34,12 @@ describe('Webapp after upgrade', () => {
   });
 
   it('should login with admin account', async () => {
-    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
+    await loginPage.login({
+      username: constants.USERNAME,
+      password: constants.PASSWORD,
+      adminApp: true,
+      resetPassword: false,
+    });
   });
 
   it('report page should display one report', async () => {
