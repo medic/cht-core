@@ -207,7 +207,7 @@ export class TelemetryService {
    * Moment when the aggregation starts (i.e. the beginning of the current day)
    */
   private getToday(): TodayMoment {
-    const today = new Date(Date.now());
+    const today = new Date();
     return {
       today,
       formatted: `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`,
