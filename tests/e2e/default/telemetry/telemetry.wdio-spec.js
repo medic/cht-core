@@ -55,7 +55,7 @@ describe('Telemetry', () => {
     const formattedDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
     return `${TELEMETRY_PREFIX}-${formattedDate}-${user.username}`;
   };
-  const today = new Date('2024-11-06T12:15:00Z');
+  const today = new Date();
   const todayDBName = formatDbName(today);
 
   before(async () => {
@@ -125,10 +125,6 @@ describe('Telemetry', () => {
   });
 
   describe('search matches telemetry', () => {
-    beforeEach(async () => {
-      // eslint-disable-next-line no-undef
-      await browser.execute(() => window.Date.now = () => new Date('2024-11-06T12:15:00Z').getTime());
-    });
     afterEach(async () => {
       // eslint-disable-next-line no-undef
       await browser.execute((dbName) => window.PouchDB(dbName).destroy(), todayDBName);
