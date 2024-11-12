@@ -46,7 +46,7 @@ export class TrainingCardsComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getTrainingCard),
       this.store.select(Selectors.getTrainingCardFormId),
     ]).subscribe(([trainingCard, trainingCardID]) => {
-      this.showConfirmExit = trainingCard.showConfirmExit;
+      this.showConfirmExit = trainingCard?.showConfirmExit;
       this.trainingCardID = trainingCardID;
     });
     this.subscriptions.add(subscription);
