@@ -95,7 +95,7 @@ export class TrainingsContentComponent implements OnInit, OnDestroy {
     this.showConfirmExit = true;
     this.confirmModalRef = this.modalService.show(this.confirmModalTemplate);
     const subscription = this.confirmModalRef
-      .afterClosed()
+      ?.afterClosed()
       .subscribe(() => this.showConfirmExit = false);
     this.subscriptions.add(subscription);
   }

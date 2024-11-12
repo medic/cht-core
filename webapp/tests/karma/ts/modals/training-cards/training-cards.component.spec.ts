@@ -105,6 +105,7 @@ describe('TrainingCardsComponent', () => {
 
     component.exitTraining(nextUrl);
 
+    expect(stopPerformanceTrackStub.calledOnce).to.be.true;
     expect(matDialogRef.close.calledOnce).to.be.true;
     expect(globalActions.clearTrainingCards.calledOnce).to.be.true;
     expect(routerMock.navigateByUrl.calledOnce).to.be.true;
@@ -114,6 +115,7 @@ describe('TrainingCardsComponent', () => {
   it('should exit training and not navigate to nextUrl if not present', () => {
     component.exitTraining('');
 
+    expect(stopPerformanceTrackStub.calledOnce).to.be.true;
     expect(matDialogRef.close.calledOnce).to.be.true;
     expect(globalActions.clearTrainingCards.calledOnce).to.be.true;
     expect(routerMock.navigateByUrl.notCalled).to.be.true;

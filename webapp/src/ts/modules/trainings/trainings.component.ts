@@ -96,7 +96,7 @@ export class TrainingsComponent implements OnInit, OnDestroy {
   }
 
   trackBy(index, training) {
-    return training._id + training._rev + training.selected;
+    return training._id + index + training._rev + training.selected;
   }
 
   private initScroll() {
