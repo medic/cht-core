@@ -411,7 +411,6 @@ const createNewSession = async (username, password) => {
   const userCtx = await getUserCtxRetry({ headers: { Cookie: sessionCookie }});
 
   return {
-    sessionRes,
     sessionCookie,
     userCtx
   };
@@ -486,7 +485,7 @@ module.exports = {
       const user = await db.users.get(`org.couchdb.user:${req.body.user}`);
       await updatePassword(user, req.body.password);
 
-      const { sessionRes, sessionCookie, userCtx } = await createNewSession(
+      const { sessionCookie, userCtx } = await createNewSession(
         user.name,
         req.body.password
       );

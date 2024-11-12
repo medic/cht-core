@@ -70,26 +70,55 @@ const login = async ({
   await commonPage.hideSnackbar();
 };
 
-const cookieLogin = async (options = {}) => {
-  const {
-    username = constants.USERNAME,
-    password = constants.PASSWORD,
-    createUser = true,
-    locale = 'en',
-  } = options;
+const loginRequest = async (username, password, locale) => {
   const opts = {
     path: '/medic/login',
     body: { user: username, password: password, locale },
     method: 'POST',
     simple: false,
   };
-  const resp = await utils.request(opts);
-  const cookieArray = utils.parseCookieResponse(resp.headers['set-cookie']);
+  return await utils.request(opts);
+};
 
+const passwordResetRequest = async (username, password) => {
+  const opts = {
+    path: '/medic/password-reset',
+    body: {
+      user: username,
+      password: password,
+      confirmPassword: password
+    },
+    method: 'POST',
+    simple: false,
+  };
+  return await utils.request(opts);
+};
+
+const setCookiesFromResponse = async (response) => {
+  const cookieArray = utils.parseCookieResponse(response.headers['set-cookie']);
   await browser.url('/');
   await browser.setCookies(cookieArray);
+};
+
+const cookieLogin = async (options = {}) => {
+  const {
+    username = constants.USERNAME,
+    password = constants.PASSWORD,
+    createUser = true,
+    locale = 'en',
+    resetPassword = true,
+  } = options;
+
+  const loginResp = await loginRequest(username, password, locale);
+  await setCookiesFromResponse(loginResp);
+
   if (createUser) {
     await utils.setupUserDoc(username);
+  }
+
+  if (resetPassword) {
+    const resetResp = await passwordResetRequest(username, password);
+    await setCookiesFromResponse(resetResp);
   }
   await commonPage.goToBase();
 };
