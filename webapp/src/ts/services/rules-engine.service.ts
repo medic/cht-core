@@ -214,6 +214,7 @@ export class RulesEngineService implements OnDestroy {
 
   private dirtyContactCallback(change) {
     const subjectIds = [this.isReport(change.doc) ? RegistrationUtils.getSubjectId(change.doc) : change.id];
+    this.observable.next(subjectIds);
 
     if (this.debounceActive[this.CHANGE_WATCHER_KEY]?.active) {
       const oldSubjectIds = this.debounceActive[this.CHANGE_WATCHER_KEY].params;
@@ -238,7 +239,6 @@ export class RulesEngineService implements OnDestroy {
       this.telemetryService.record(this.getTelemetryTrackName('refresh', 'dirty-contacts'), contactIds.length);
 
       await this.rulesEngineCore.updateEmissionsFor(contactIds);
-      this.observable.next(contactIds);
       trackPerformance?.stop({ name: this.getTelemetryTrackName('refresh') });
     }, this.DEBOUNCE_CHANGE_MILLIS);
 

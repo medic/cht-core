@@ -238,9 +238,12 @@ describe('TasksComponent', () => {
     expect(rulesEngineService.contactsMarkedAsDirty.callCount).to.equal(1);
     expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.equal(1);
 
+    expect(component.loading).to.be.false;
     const callback = rulesEngineService.contactsMarkedAsDirty.args[0][0];
     callback();
+    expect(component.loading).to.be.true;
     tick(1000); // the refresh tasks call is debounced for 1 second
+    expect(component.loading).to.be.false;
 
     expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.equal(2);
   }));

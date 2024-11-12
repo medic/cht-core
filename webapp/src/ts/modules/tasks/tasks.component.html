@@ -4,7 +4,7 @@
   <div class="inbox page">
 
     <div id="tasks-list" class="col-sm-4 inbox-items left-pane">
-      <ul *ngIf="!errorStack && hasTasks">
+      <ul *ngIf="!errorStack && !loading && hasTasks">
         <li *ngFor="let task of tasksList; trackBy: listTrackBy"
             [attr.data-record-id]="task._id"
             [class.selected] = "task.selected"

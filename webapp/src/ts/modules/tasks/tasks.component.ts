@@ -40,8 +40,8 @@ export class TasksComponent implements OnInit, OnDestroy {
   tasksList;
   selectedTask;
   errorStack;
-  hasTasks;
   loading;
+  hasTasks;
   tasksDisabled;
   userLineageLevel;
 
@@ -87,6 +87,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   private subscribeToRulesEngine() {
     const rulesEngineSubscription = this.rulesEngineService.contactsMarkedAsDirty(() => {
+      this.loading = true;
       this.debouncedReload.cancel();
       return this.debouncedReload();
     });
@@ -133,6 +134,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   private async refreshTasks() {
     try {
+      this.loading = true;
       if (this.tasksLoaded) {
         this.trackRefreshPerformance = this.performanceService.track();
       }
