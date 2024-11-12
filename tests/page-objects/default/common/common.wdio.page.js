@@ -472,7 +472,7 @@ const loadNextInfiniteScrollPage = async () => {
 };
 
 const getErrorLog = async () => {
-  await (await $(`error-log`)).waitForDisplayed();
+  await (await $('error-log')).waitForDisplayed();
 
   const errorMessage = await (await $('.error-details span')).getText();
   const userDetails = await (await $$('.error-details dl dd'));
