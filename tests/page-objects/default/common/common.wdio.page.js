@@ -1,4 +1,5 @@
-const modalPage = require('./modal.wdio.page');
+const fs = require('fs');
+const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const constants = require('@constants');
 
 const ELEMENT_DISPLAY_PAUSE = 500; // 500ms
@@ -483,6 +484,27 @@ const getErrorLog = async () => {
   return { errorMessage, url, username, errorStack };
 };
 
+const createFormDoc = (path, formId) => {
+  const id = formId || path.split('/').pop();
+  const formXML = fs.readFileSync(`${path}.xml`, 'utf8');
+  return {
+    _id: `form:${id}`,
+    internalId: id,
+    title: id,
+    type: 'form',
+    context: {
+      person: true,
+      place: true,
+    },
+    _attachments: {
+      xml: {
+        content_type: 'application/octet-stream',
+        data: Buffer.from(formXML).toString('base64'),
+      },
+    },
+  };
+};
+
 module.exports = {
   tabsSelector,
   fabSelectors,
@@ -542,4 +564,5 @@ module.exports = {
   isMenuOptionVisible,
   loadNextInfiniteScrollPage,
   getErrorLog,
+  createFormDoc,
 };
