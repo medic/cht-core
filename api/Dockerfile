@@ -1,10 +1,8 @@
-FROM alpine:3.20 AS base_build
+FROM node:22-alpine AS base_build
 
 RUN apk add --update --no-cache \
   build-base \
   curl \
-  nodejs~=22 \
-  npm~=10 \
   tzdata \
   libxslt \
   bash \
