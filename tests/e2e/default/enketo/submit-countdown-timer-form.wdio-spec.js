@@ -4,12 +4,11 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('Countdown timer widget', () => {
 
   before(async () => {
-    await commonEnketoPage.uploadForm('countdown-timer');
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/countdown-timer`));
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();
   });
