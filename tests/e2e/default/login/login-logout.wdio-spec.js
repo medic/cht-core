@@ -56,7 +56,7 @@ describe('Login page functionality tests', () => {
 
   describe('Log out', () => {
     it('should show a warning before log out', async () => {
-      await loginPage.cookieLogin(auth);
+      await loginPage.cookieLogin({ auth, resetPassword: false });
       expect(await commonPage.getLogoutMessage()).to.equal('You will need an internet connection to log back in.');
     });
   });
@@ -169,7 +169,7 @@ describe('Login page functionality tests', () => {
       expect(revealedPassword.type).to.equal('text');
       expect(revealedPassword.value).to.equal('pass-456');
 
-      await loginPage.login(auth);
+      await loginPage.login({ auth, resetPassword: false });
       await (await commonPage.messagesTab()).waitForDisplayed();
     });
   });
