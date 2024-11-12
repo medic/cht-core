@@ -32,7 +32,7 @@ describe('Accessing the admin app', () => {
     const error = '{"code":403,"error":"forbidden","details":"Offline users are not allowed access to this endpoint"}';
     await utils.saveDocs([parent]);
     await utils.createUsers([offlineUser]);
-    await loginPage.cookieLogin({ ...offlineUser, createUser: false });
+    await loginPage.cookieLogin({ ...offlineUser, createUser: false, resetPassword: true });
 
     await common.waitForLoaders();
     await browser.url('/admin/#/forms');
@@ -53,7 +53,7 @@ describe('Accessing the admin app', () => {
   });
 
   it('should allow admins to access the page', async () => {
-    await loginPage.cookieLogin({ createUser: false, resetPassword: false });
+    await loginPage.cookieLogin({ createUser: false });
 
     await browser.url('/admin');
     await (await adminPage.adminNavbarLogo()).waitForDisplayed();

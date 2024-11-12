@@ -6,7 +6,7 @@ const partnersFactory = require('@factories/cht/config/partners');
 
 describe('About page', () => {
   beforeEach(async () => {
-    await loginPage.cookieLogin({ resetPassword: false });
+    await loginPage.cookieLogin();
   });
 
   afterEach(async () => {

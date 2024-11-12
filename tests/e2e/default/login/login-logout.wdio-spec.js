@@ -242,7 +242,6 @@ describe('Login page functionality tests', () => {
       await (await loginPage.updatePasswordButton()).click();
       await commonPage.waitForPageLoaded();
       await (await commonPage.messagesTab()).waitForDisplayed();
-      expect(await commonPage.isMessagesListPresent());
     });
   });
 });

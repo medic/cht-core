@@ -106,7 +106,7 @@ const cookieLogin = async (options = {}) => {
     password = constants.PASSWORD,
     createUser = true,
     locale = 'en',
-    resetPassword = true,
+    resetPassword = false,
   } = options;
 
   const loginResp = await loginRequest(username, password, locale);
