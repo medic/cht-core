@@ -3,8 +3,10 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const constants = require('@constants');
 const utils = require('@utils');
+const placeFactory = require('@factories/cht/contacts/place');
+const userFactory = require('@factories/cht/users/users');
 
-describe('Login page funcionality tests', () => {
+describe('Login page functionality tests', () => {
   const auth = {
     username: constants.USERNAME,
     password: constants.PASSWORD
@@ -70,13 +72,13 @@ describe('Login page funcionality tests', () => {
     });
 
     it('should log in using username and password fields', async () => {
-      await loginPage.login(auth);
+      await loginPage.login({ username: auth.username, password: auth.password, resetPassword: false });
       await (await commonPage.analyticsTab()).waitForDisplayed();
       await (await commonPage.messagesTab()).waitForDisplayed();
     });
 
     it('should set correct cookies', async () => {
-      await loginPage.login(auth);
+      await loginPage.login({ username: auth.username, password: auth.password, resetPassword: false });
       await (await commonPage.analyticsTab()).waitForDisplayed();
 
       const cookies = await browser.getCookies();
@@ -115,7 +117,7 @@ describe('Login page funcionality tests', () => {
 
     it('should display the "session expired" modal and redirect to login page', async () => {
       // Login and ensure it's redirected to webapp
-      await loginPage.login(auth);
+      await loginPage.login({ username: auth.username, password: auth.password, resetPassword: false });
       await (await commonPage.messagesTab()).waitForDisplayed();
       // Delete cookies and trigger a request to the server
       await browser.deleteCookies('AuthSession');
@@ -133,17 +135,22 @@ describe('Login page funcionality tests', () => {
     });
 
     it('should try to sign in with blank password and verify that credentials were incorrect', async () => {
-      await loginPage.login({ username: WRONG_USERNAME, password: '', loadPage: false });
+      await loginPage.login({ username: WRONG_USERNAME, password: '', loadPage: false, resetPassword: false });
       expect(await loginPage.getErrorMessage()).to.equal(INCORRECT_CREDENTIALS_TEXT);
     });
 
     it('should try to sign in with blank auth and verify that credentials were incorrect', async () => {
-      await loginPage.login({ username: '', password: '', loadPage: false });
+      await loginPage.login({ username: '', password: '', loadPage: false, resetPassword: false });
       expect(await loginPage.getErrorMessage()).to.equal(INCORRECT_CREDENTIALS_TEXT);
     });
 
     it('should try to sign in and verify that credentials were incorrect', async () => {
-      await loginPage.login({ username: WRONG_USERNAME, password: WRONG_PASSWORD, loadPage: false });
+      await loginPage.login({
+        username: WRONG_USERNAME,
+        password: WRONG_PASSWORD,
+        loadPage: false,
+        resetPassword: false
+      });
       expect(await loginPage.getErrorMessage()).to.equal(INCORRECT_CREDENTIALS_TEXT);
     });
 
@@ -164,6 +171,78 @@ describe('Login page funcionality tests', () => {
 
       await loginPage.login(auth);
       await (await commonPage.messagesTab()).waitForDisplayed();
+    });
+  });
+
+  describe('Password Reset', () => {
+    const PASSWORD_MISSING = 'The password must be at least 8 characters long.';
+    const PASSWORD_WEAK = 'The password is too easy to guess. Include a range of characters to make it more complex.';
+    const PASSWORD_MISMATCH = 'Password and confirm password must match'
+    const places = placeFactory.generateHierarchy();
+    const districtHospital = places.get('district_hospital');
+    const user = userFactory.build({ place: districtHospital._id, roles: ['chw'] });
+
+    before(async () => {
+      await utils.saveDocs([...places.values()]);
+      await utils.createUsers([user]);
+    });
+
+    after(async () => {
+      await utils.deleteUsers([user]);
+    });
+
+    it('should try to reset password and verify password is missing', async () => {
+      await browser.url('/');
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setUsernameValue(user.username);
+      await (await loginPage.loginButton()).click();
+      await browser.url('/medic/password-reset');
+      await loginPage.getPasswordResetTranslations();
+      await loginPage.setPasswordValue('');
+      await loginPage.setConfirmPasswordValue(user.password);
+      await (await loginPage.updatePasswordButton()).click();
+      expect(await loginPage.getPasswordResetErrorMessage('password-short')).to.equal(PASSWORD_MISSING);
+    });
+
+    it('should try to reset password and verify confirm password is missing', async () => {
+      await browser.url('/');
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setUsernameValue(user.username);
+      await (await loginPage.loginButton()).click();
+      await browser.url('/medic/password-reset');
+      await loginPage.getPasswordResetTranslations();
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setConfirmPasswordValue('');
+      await (await loginPage.updatePasswordButton()).click();
+      expect(await loginPage.getPasswordResetErrorMessage('password-mismatch')).to.equal(PASSWORD_MISMATCH);
+    });
+
+    it('should try to reset password and verify password strength', async () => {
+      await browser.url('/');
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setUsernameValue(user.username);
+      await (await loginPage.loginButton()).click();
+      await browser.url('/medic/password-reset');
+      await loginPage.getPasswordResetTranslations();
+      await loginPage.setPasswordValue('12345678');
+      await loginPage.setConfirmPasswordValue('12345678');
+      await (await loginPage.updatePasswordButton()).click();
+      expect(await loginPage.getPasswordResetErrorMessage('password-weak')).to.equal(PASSWORD_WEAK);
+    });
+
+    it('should reset password successfully and redirect to webapp', async () => {
+      await browser.url('/');
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setUsernameValue(user.username);
+      await (await loginPage.loginButton()).click();
+      await browser.url('/medic/password-reset');
+      await loginPage.getPasswordResetTranslations();
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setConfirmPasswordValue(user.password);
+      await (await loginPage.updatePasswordButton()).click();
+      await commonPage.waitForPageLoaded();
+      await (await commonPage.messagesTab()).waitForDisplayed();
+      expect(await commonPage.isMessagesListPresent());
     });
   });
 });

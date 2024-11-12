@@ -103,7 +103,7 @@ describe('bootstrapper', () => {
       getItem: sinon.stub(),
       setItem: sinon.stub(),
       removeItem: sinon.stub(),
-    }
+    };
 
     $ = sinon.stub().returns({
       text: sinon.stub(),

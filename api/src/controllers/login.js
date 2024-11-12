@@ -237,14 +237,14 @@ const setCookies = async (req, res, sessionRes) => {
     if (user?.password_change_required && !await skipPasswordChange(userCtx)) {
       return redirectToPasswordReset(req, res, userCtx);
     }
-    return redirectToApp(req, res, sessionRes, sessionCookie, userCtx);
+    return redirectToApp({ req, res, sessionCookie, userCtx });
   } catch (err) {
     logger.error(`Error getting authCtx %o`, err);
     throw { status: 401, error: 'Error getting authCtx' };
   }
 };
 
-const redirectToApp = async (req, res, sessionRes, sessionCookie, userCtx) => {
+const redirectToApp = async ({ req, res, sessionCookie, userCtx }) => {
   cookie.setSession(res, sessionCookie);
   setUserCtxCookie(res, userCtx);
   cookie.clearCookie(res, 'login');
@@ -356,7 +356,7 @@ const validatePasswordReset = (password, confirmPassword) => {
     isValid: false,
     error: ERROR_KEY_MAPPING[error.message.translationKey],
     params: error.message.translationParams
-  }
+  };
 };
 
 const validateSession = async (req) => {
@@ -392,7 +392,7 @@ const updatePassword = async (user, newPassword) => {
     ...user,
     password: newPassword,
     password_change_required: false
-  }
+  };
   await db.users.put(updatedUser);
   // creating new session immediately after changing a password might 401
   await new Promise(resolve => setTimeout(resolve, 50));
@@ -415,7 +415,7 @@ const createNewSession = async (username, password) => {
     sessionCookie,
     userCtx
   };
-}
+};
 
 module.exports = {
   renderLogin,
@@ -491,13 +491,7 @@ module.exports = {
         req.body.password
       );
 
-      const redirectUrl = await redirectToApp(
-        req,
-        res,
-        sessionRes,
-        sessionCookie,
-        userCtx
-      );
+      const redirectUrl = await redirectToApp({ req, res, sessionCookie, userCtx });
 
       return res.status(302).send(redirectUrl);
     } catch (err) {

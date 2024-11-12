@@ -424,7 +424,7 @@ const getCommonFieldsUpdates = (userDoc, data) => {
   if (data.roles) {
     userDoc.roles = data.roles;
   }
-  
+
   if (!_.isUndefined(data.place)) {
     userDoc.facility_id = data.facility_id;
   }
@@ -502,7 +502,7 @@ const validateConfirmPassword = (password, confirmPassword) => {
       'password.must.match'
     );
   }
-}
+};
 
 const validatePasswordStrength = (password) => {
   if (password.length < PASSWORD_MINIMUM_LENGTH) {
@@ -519,13 +519,15 @@ const validatePasswordStrength = (password) => {
       'password.weak'
     );
   }
-}
+};
 
 const validatePassword = (password, confirmPassword = null) => {
   const strengthError = validatePasswordStrength(password);
-  if (strengthError) return strengthError;
+  if (strengthError) {
+    return strengthError;
+  }
 
-  if (confirmPassword != null) {
+  if (confirmPassword !== null) {
     return validateConfirmPassword(password, confirmPassword);
   }
 };

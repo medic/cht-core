@@ -13,18 +13,34 @@ const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
 const localeByName = (locale) => $(`.locale[name="${locale}"]`);
 const tokenLoginError = (reason) => $(`.error.${reason}`);
+const passwordResetTitle = () => $('p.title');
+const passwordResetHint = () => $('p.help-text');
+const passwordResetMessageField = (errorMsg) => $(`p.error.${errorMsg}`);
 
 const getErrorMessage = async () => {
   await (await errorMessageField()).waitForDisplayed();
   return await (await errorMessageField()).getText();
 };
 
-const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp, resetPassword = true }) => {
+const getPasswordResetErrorMessage = async (errorMsg) => {
+  await (await passwordResetMessageField(errorMsg)).waitForDisplayed();
+  return await (await passwordResetMessageField(errorMsg)).getText();
+};
+
+const login = async ({
+  username,
+  password,
+  createUser = false,
+  locale, loadPage = true,
+  privacyPolicy,
+  adminApp,
+  resetPassword = true
+}) => {
   if (utils.isMinimumChromeVersion) {
     await browser.url('/');
   }
   await setPasswordValue(password);
-  await (await userField()).setValue(username);
+  await setUsernameValue(username);
   await changeLocale(locale);
   await (await loginButton()).click();
 
@@ -36,7 +52,7 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
     await utils.setupUserDoc(username);
   }
 
-  if(resetPassword) {
+  if (resetPassword) {
     await passwordReset(password, password);
   }
 
@@ -139,13 +155,28 @@ const setPasswordValue = async (password) => {
   await (await passwordField()).setValue(password);
 };
 
-const passwordReset = async (password, confirmPassword) => {
-  await (await passwordField()).waitForDisplayed();
-  await (await passwordField()).setValue(password);
+const setConfirmPasswordValue = async (confirmPassword) => {
   await (await confirmPasswordField()).waitForDisplayed();
   await (await confirmPasswordField()).setValue(confirmPassword);
+};
+
+const setUsernameValue = async (username) => {
+  await (await userField()).waitForDisplayed();
+  await (await userField()).setValue(username);
+};
+
+const passwordReset = async (password, confirmPassword) => {
+  await setPasswordValue(password);
+  await setConfirmPasswordValue(confirmPassword);
   await (await updatePasswordButton()).click();
-}
+};
+
+const getPasswordResetTranslations = async () => {
+  return {
+    passwordResetTitle: await (await passwordResetTitle()).getText(),
+    passwordResetHint: await (await passwordResetHint()).getText(),
+  };
+};
 
 module.exports = {
   login,
@@ -161,4 +192,10 @@ module.exports = {
   getErrorMessage,
   togglePassword,
   setPasswordValue,
+  setUsernameValue,
+  setConfirmPasswordValue,
+  passwordReset,
+  updatePasswordButton,
+  getPasswordResetTranslations,
+  getPasswordResetErrorMessage,
 };
