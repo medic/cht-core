@@ -13,7 +13,7 @@ describe('Phone widget', () => {
   const person1 = personFactory.build({ phone: '+254712345679'  });
 
   before(async () => {
-    await commonEnketoPage.uploadForm('phone_widget');
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/phone_widget`));
     await utils.saveDocs([person0, person1]);
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();

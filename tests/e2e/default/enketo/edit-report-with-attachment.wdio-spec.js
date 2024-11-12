@@ -10,7 +10,7 @@ const { editReportWithAttachmentDoc } = require('@page-objects/default/enketo/cu
 describe('Edit report with attachment', () => {  
 
   before(async () => {
-    const formDoc = await commonEnketoPage.uploadForm('one-text-form', false);
+    const formDoc = commonPage.createFormDoc(`${__dirname}/forms/one-text-form`);
     formDoc.context = {
       expression: 'summary.alive',
     };

@@ -75,7 +75,7 @@ describe('Submit Z-Score form', () => {
       _id: 'zscore-charts',
       charts: charts
     };
-    await commonEnketoPage.uploadForm('z-score');
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/z-score`));
     await utils.saveDoc(chartsDoc);
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();

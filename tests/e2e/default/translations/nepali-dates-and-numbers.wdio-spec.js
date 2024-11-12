@@ -11,103 +11,83 @@ const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page'
 const chtConfUtils = require('@utils/cht-conf');
 const gatewayApiUtils = require('@utils/gateway-api');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-
-const NEPALI_LOCALE_CODE = 'ne';
-
-const setLanguage = async (locale) => {
-  const localeCookie = 'locale';
-  const existentCookie = await browser.getCookies(localeCookie);
-  if (existentCookie && existentCookie[0] && existentCookie[0].value === locale) {
-    return;
-  }
-  await browser.setCookies({ name: localeCookie, value: locale });
-  await browser.refresh();
-};
-
-const getReports = async () => {
-  const options = {
-    path: '/_design/medic-client/_view/reports_by_date',
-    qs: { include_docs: true },
-  };
-  const response = await utils.requestOnMedicDb(options);
-  return response.rows.map(row => row.doc);
-};
-
-const setExistentReportDates = async (dates) => {
-  const reports = await getReports();
-  dates.forEach((date, idx) => reports[idx].reported_date = moment(date).valueOf());
-  return utils.saveDocs(reports);
-};
-
-const momentToBikParts = (mDate) => {
-  return bikramSambat.toBik(moment(mDate).format('YYYY-MM-DD'));
-};
-
-const momentToBikYMD = (mDate) => {
-  const bsDate = momentToBikParts(mDate);
-  return `${bsDate.year}-${bsDate.month}-${bsDate.day}`;
-};
-
-const formIdBS = 'B';
-const formIdBSParts = 'C';
-const nineWeeksAgo = moment().subtract({ weeks: 9 }).startOf('day');
-const tenWeeksAgo = moment().subtract({ weeks: 10 }).startOf('day');
-
-const forms = {
-  B: {
-    meta: {
-      code: formIdBS,
-      label: 'LMP with BS Date',
-    },
-    fields: {
-      name: {
-        type: 'string',
-        labels: { short: 'Name' }
-      },
-      lmp_date: {
-        type: 'bsDate',
-        labels: { short: 'LMP Date' }
-      }
-    }
-  },
-  C: {
-    meta: {
-      code: formIdBSParts,
-      label: 'LMP with BS date parts'
-    },
-    fields: {
-      name: { type: 'string', labels: { short: 'Name' } },
-      lmp_year: { type: 'bsYear' },
-      lmp_month: { type: 'bsMonth' },
-      lmp_day: { type: 'bsDay' },
-      lmp_date: { type: 'bsAggreDate', labels: { short: 'LMP Date' } }
-    }
-  }
-};
-
-const registrations = [
-  {
-    form: formIdBS,
-    events: [{ name: 'on_create', trigger: 'add_expected_date' }]
-  },
-  {
-    form: formIdBSParts,
-    events: [{ name: 'on_create', trigger: 'add_expected_date' }]
-  }
-];
-
-const transitions = {
-  registration: true
-};
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('Bikram Sambat date display', () => {
+  const NEPALI_LOCALE_CODE = 'ne';
+  const FORM_ID_BS = 'B';
+  const FORM_ID_BS_PARTS = 'C';
+  const NINE_WEEKS_AGO = moment().subtract({ weeks: 9 }).startOf('day');
+  const TEN_WEEKS_AGO = moment().subtract({ weeks: 10 }).startOf('day');
+
+  const FORMS = {
+    B: {
+      meta: { code: FORM_ID_BS, label: 'LMP with BS Date' },
+      fields: {
+        name: { type: 'string', labels: { short: 'Name' } },
+        lmp_date: { type: 'bsDate', labels: { short: 'LMP Date' } }
+      }
+    },
+    C: {
+      meta: { code: FORM_ID_BS_PARTS, label: 'LMP with BS date parts' },
+      fields: {
+        name: { type: 'string', labels: { short: 'Name' } },
+        lmp_year: { type: 'bsYear' },
+        lmp_month: { type: 'bsMonth' },
+        lmp_day: { type: 'bsDay' },
+        lmp_date: { type: 'bsAggreDate', labels: { short: 'LMP Date' } }
+      }
+    }
+  };
+
+  const REGISTRATIONS = [
+    { form: FORM_ID_BS, events: [{ name: 'on_create', trigger: 'add_expected_date' }] },
+    { form: FORM_ID_BS_PARTS, events: [{ name: 'on_create', trigger: 'add_expected_date' }] }
+  ];
+
+  const TRANSITIONS = { registration: true };
+
+  const setLanguage = async (locale) => {
+    const localeCookie = 'locale';
+    const existentCookie = await browser.getCookies(localeCookie);
+    if (existentCookie && existentCookie[0] && existentCookie[0].value === locale) {
+      return;
+    }
+    await browser.setCookies({ name: localeCookie, value: locale });
+    await browser.refresh();
+  };
+
+  const getReports = async () => {
+    const options = {
+      path: '/_design/medic-client/_view/reports_by_date',
+      qs: { include_docs: true },
+    };
+    const response = await utils.requestOnMedicDb(options);
+    return response.rows.map(row => row.doc);
+  };
+
+  const setExistentReportDates = async (dates) => {
+    const reports = await getReports();
+    dates.forEach((date, idx) => reports[idx].reported_date = moment(date).valueOf());
+    return utils.saveDocs(reports);
+  };
+
+  const momentToBikParts = (mDate) => {
+    return bikramSambat.toBik(moment(mDate).format('YYYY-MM-DD'));
+  };
+
+  const momentToBikYMD = (mDate) => {
+    const bsDate = momentToBikParts(mDate);
+    return `${bsDate.year}-${bsDate.month}-${bsDate.day}`;
+  };
+
   before(async () => {
     await chtConfUtils.initializeConfigDir();
-    const contactSummaryFile = path.join(__dirname, 'bikram-sambat-contact-template-config.js');
+    const contactSummaryFile = path.join(__dirname, 'config', 'bikram-sambat-contact-template-config.js');
 
     const { contactSummary } = await chtConfUtils.compileNoolsConfig({ contactSummary: contactSummaryFile });
     await utils.updateSettings(
-      { contact_summary: contactSummary, forms, registrations, transitions },
+      { contact_summary: contactSummary, forms: FORMS, registrations: REGISTRATIONS, transitions: TRANSITIONS },
       { ignoreReload: true }
     );
 
@@ -120,6 +100,7 @@ describe('Bikram Sambat date display', () => {
 
   after(async () => {
     await utils.revertDb([/^form:/], true);
+    await utils.revertSettings(true);
   });
 
   it('enketo xpath extension function should display correct values when Nepali is not selected', async () => {
@@ -129,16 +110,16 @@ describe('Bikram Sambat date display', () => {
     const date1 = '2021-01-01';
     const dateBk1 = bikramSambat.toBik_text(date1);
 
-    await reportsPage.setDateInput('/bikram-sambat-dates/data/date1', date1);
-    expect(await reportsPage.getFieldValue('/bikram-sambat-dates/data/date1_text')).to.equal(dateBk1);
-    expect(await reportsPage.getSummaryField('/bikram-sambat-dates/summary/field1')).to.equal(`date1 = ${dateBk1}`);
+    await commonEnketoPage.setDateValue('Date 1', date1);
+    expect(await commonEnketoPage.getInputValue('to-bikram-sambat([date 1 path])')).to.equal(dateBk1);
 
-    const date2 = '2021-01-01';
+    const date2 = '2021-02-02';
     const dateBk2 = bikramSambat.toBik_text(date2);
 
     await reportsPage.setBikDateInput('/bikram-sambat-dates/data/date2', bikramSambat.toBik(date2));
-    expect(await reportsPage.getFieldValue('/bikram-sambat-dates/data/date2_text')).to.equal(dateBk2);
-    expect(await reportsPage.getSummaryField('/bikram-sambat-dates/summary/field2')).to.equal(`date2 = ${dateBk2}`);
+    expect(await commonEnketoPage.getInputValue('to-bikram-sambat([date 2 path])')).to.equal(dateBk2);
+
+    await commonEnketoPage.validateSummaryReport([dateBk1, dateBk2]);
 
     await genericForm.submitForm();
   });
@@ -153,15 +134,15 @@ describe('Bikram Sambat date display', () => {
     const dateBk1 = bikramSambat.toBik_text(date1);
 
     await reportsPage.setBikDateInput('/bikram-sambat-dates/data/date1', bikramSambat.toBik(date1));
-    expect(await reportsPage.getFieldValue('/bikram-sambat-dates/data/date1_text')).to.equal(dateBk1);
-    expect(await reportsPage.getSummaryField('/bikram-sambat-dates/summary/field1')).to.equal(`date1 = ${dateBk1}`);
+    expect(await commonEnketoPage.getInputValue('to-bikram-sambat([date 1 path])')).to.equal(dateBk1);
 
-    const date2 = '2021-01-01';
+    const date2 = '2021-02-02';
     const dateBk2 = bikramSambat.toBik_text(date2);
 
     await reportsPage.setBikDateInput('/bikram-sambat-dates/data/date2', bikramSambat.toBik(date2));
-    expect(await reportsPage.getFieldValue('/bikram-sambat-dates/data/date2_text')).to.equal(dateBk2);
-    expect(await reportsPage.getSummaryField('/bikram-sambat-dates/summary/field2')).to.equal(`date2 = ${dateBk2}`);
+    expect(await commonEnketoPage.getInputValue('to-bikram-sambat([date 2 path])')).to.equal(dateBk2);
+
+    await commonEnketoPage.validateSummaryReport([dateBk1, dateBk2]);
 
     await genericForm.submitForm();
   });
@@ -243,7 +224,7 @@ describe('Bikram Sambat date display', () => {
     await gatewayApiUtils.api.postMessage({
       id: 'lmp-id-bs',
       from: '+9779876543210',
-      content: `${formIdBS} Shrestha ${momentToBikYMD(tenWeeksAgo)}`
+      content: `${FORM_ID_BS} Shrestha ${momentToBikYMD(TEN_WEEKS_AGO)}`
     });
 
     await commonPage.goToPeople();
@@ -251,8 +232,8 @@ describe('Bikram Sambat date display', () => {
     const firstReport = await reportsPage.leftPanelSelectors.firstReport();
     await firstReport.click();
 
-    const dateFormat = bikramSambat.toBik_text(tenWeeksAgo);
-    const relativeFormat = moment(tenWeeksAgo.toDate()).fromNow();
+    const dateFormat = bikramSambat.toBik_text(TEN_WEEKS_AGO);
+    const relativeFormat = moment(TEN_WEEKS_AGO.toDate()).fromNow();
     const lmpDateValue = await reportsPage.getReportDetailFieldValueByLabel('LMP Date');
     expect(lmpDateValue).to.equal(`${dateFormat} (${relativeFormat})`);
   });
@@ -260,12 +241,12 @@ describe('Bikram Sambat date display', () => {
   it('SMS report shows bsAggreDate type as date field correctly', async () => {
     await setLanguage(NEPALI_LOCALE_CODE);
     moment.locale(NEPALI_LOCALE_CODE);
-    const lmpBSParts = momentToBikParts(nineWeeksAgo);
+    const lmpBSParts = momentToBikParts(NINE_WEEKS_AGO);
 
     await gatewayApiUtils.api.postMessage({
       id: 'lmp-id-bs-parts',
       from: '+9779876543210',
-      content: `${formIdBSParts} Shrestha ` +
+      content: `${FORM_ID_BS_PARTS} Shrestha ` +
         `${lmpBSParts.year} ${lmpBSParts.month} ${lmpBSParts.day}`
     });
 
@@ -274,8 +255,8 @@ describe('Bikram Sambat date display', () => {
     const firstReport = await reportsPage.leftPanelSelectors.firstReport();
     await firstReport.click();
 
-    const dateFormat = bikramSambat.toBik_text(nineWeeksAgo);
-    const relativeFormat = moment(nineWeeksAgo.toDate()).fromNow();
+    const dateFormat = bikramSambat.toBik_text(NINE_WEEKS_AGO);
+    const relativeFormat = moment(NINE_WEEKS_AGO.toDate()).fromNow();
     const lmpDateValue = await reportsPage.getReportDetailFieldValueByLabel('LMP Date');
     expect(lmpDateValue).to.equal(`${dateFormat} (${relativeFormat})`);
   });
