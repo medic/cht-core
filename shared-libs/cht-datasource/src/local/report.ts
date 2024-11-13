@@ -1,10 +1,11 @@
 import { LocalDataContext } from './libs/data-context';
-import { getDocById } from './libs/doc';
-import { UuidQualifier } from '../qualifier';
-import { Nullable } from '../libs/core';
+import { fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
+import { FreetextQualifier, UuidQualifier } from '../qualifier';
+import { Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
+import { InvalidArgumentError } from '../libs/error';
 
 /** @internal */
 export namespace v1 {
@@ -31,6 +32,34 @@ export namespace v1 {
         return null;
       }
       return doc;
+    };
+  };
+
+  /** @internal */
+  export const getPage = ({ medicDb }: LocalDataContext) => {
+    const getDocsByKey = queryDocsByKey(medicDb, 'medic-client/reports_by_freetext');
+
+    return async (
+      qualifier: FreetextQualifier,
+      cursor: Nullable<string>,
+      limit:  number
+    ): Promise<Page<string>> => {
+      const word = qualifier.freetext;
+
+      // Adding a number skip variable here so as not to confuse ourselves
+      const skip = Number(cursor);
+      if (isNaN(skip) || skip < 0 || !Number.isInteger(skip)) {
+        throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}].`);
+      }
+
+      const getDocsFn = (limit: number, skip: number) => getDocsByKey([ word ], limit, skip);
+
+      const pagedDocs = await fetchAndFilter(getDocsFn, isReport(), limit)(limit, skip);
+
+      return {
+        data: pagedDocs.data.map((doc) => doc._id),
+        cursor: pagedDocs.cursor
+      };
     };
   };
 }

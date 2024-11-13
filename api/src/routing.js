@@ -491,6 +491,7 @@ app.get('/api/v1/contact/:uuid', contact.v1.get);
 app.get('/api/v1/contact/id', contact.v1.getIds);
 
 app.get('/api/v1/report/:uuid', report.v1.get);
+app.get('/api/v1/report/id', report.v1.getIds);
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 

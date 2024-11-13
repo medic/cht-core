@@ -167,6 +167,15 @@ export const getDatasource = (ctx: DataContext) => {
       report: {
         /** TODO */
         getByUuid: (uuid: string) => ctx.bind(Report.v1.get)(Qualifier.byUuid(uuid)),
+
+        /** TODO */
+        getPageByType: (
+          qualifier: string,
+          cursor: Nullable<string> = null,
+          limit = 100
+        ) => ctx.bind(Report.v1.getIdsPage)(
+          Qualifier.byFreetext(qualifier), cursor, limit
+        ),
       },
     },
   };

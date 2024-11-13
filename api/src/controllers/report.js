@@ -4,6 +4,7 @@ const serverUtils = require('../server-utils');
 const { Report, Qualifier } = require('@medic/cht-datasource');
 
 const getReport = () => ctx.bind(Report.v1.get);
+const getReportIds = () => ctx.bind(Report.v1.getIdsPage);
 
 const checkUserPermissions = async (req) => {
   const userCtx = await auth.getUserCtx(req);
@@ -24,6 +25,16 @@ module.exports = {
       }
 
       return res.json(report);
+    }),
+    getIds: serverUtils.doOrError(async (req, res) => {
+      await checkUserPermissions(req);
+
+      const qualifier = Qualifier.byFreetext(req.query.freetext);
+      const limit = req.query.limit ? Number(req.query.limit) : req.query.limit;
+
+      const docs = await getReportIds()(qualifier, req.query.cursor, limit);
+
+      return res.json(docs);
     })
   }
 };
