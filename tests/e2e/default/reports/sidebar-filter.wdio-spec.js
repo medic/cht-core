@@ -144,8 +144,8 @@ describe('Reports Sidebar Filter', () => {
 
     expect((await reportsPage.leftPanelSelectors.allReports()).length).to.equal(2);
     expect(await reportsPage.leftPanelSelectors.reportByUUID(visitHealthCenter._id).isDisplayed()).to.be.true;
-    expect(await reportsPage.leftPanelSelectors.reportByUUID(pregnancyHealthCenter._id))
-      .isDisplayed().to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(pregnancyHealthCenter._id)
+      .isDisplayed()).to.be.true;
   });
 
   it('should filter by status', async () => {

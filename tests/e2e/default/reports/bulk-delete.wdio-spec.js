@@ -70,7 +70,7 @@ describe('Bulk delete reports', () => {
     await reportsPage.collapseSelectedReportSummary();
 
     await reportsPage.deleteSelectedReports();
-    expect(await reportsPage.reportsListDetails().length).to.equal(2);
+    expect((await reportsPage.reportsListDetails()).length).to.equal(2);
     expect(await reportsPage.leftPanelSelectors.reportByUUID(savedUuids[0]).isDisplayed()).to.be.true;
     expect(await reportsPage.leftPanelSelectors.reportByUUID(savedUuids[1]).isDisplayed()).to.be.true;
     expect(await reportsPage.leftPanelSelectors.reportByUUID(savedUuids[2]).isDisplayed()).to.be.false;

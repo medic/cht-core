@@ -53,6 +53,6 @@ describe('Generating short codes', () => {
     expect(openReportInfo.senderPhone).to.contain(contact.phone);
     expect(openReportInfo.lineage).to.contain(clinic.name);
     expect(await reportsPage.rightPanelSelectors.selectedCaseIdLabel().getText()).to.contain('Case ID');
-    expect(await reportsPage.rightPanelSelectors.selectedCaseId()).getText().to.match(/^\d{5}$/);
+    expect(await reportsPage.rightPanelSelectors.selectedCaseId().getText()).to.match(/^\d{5}$/);
   });
 });
