@@ -80,6 +80,7 @@ const app = express.Router({ strict: true });
 const asyncLocalStorage = require('./services/async-storage');
 const moment = require('moment');
 const MAX_REQUEST_SIZE = '32mb';
+const fhir = require('./controllers/fhir');
 
 // requires content-type application/x-www-form-urlencoded header
 const formParser = bodyParser.urlencoded({ limit: MAX_REQUEST_SIZE, extended: false });
@@ -529,6 +530,7 @@ app.post(
 app.get(`${appPrefix}app_settings/${environment.ddoc}/:path?`, settings.getV0); // deprecated
 app.get('/api/v1/settings', settings.get);
 app.get('/api/v1/settings/deprecated-transitions', settings.getDeprecatedTransitions);
+app.get('/api/v1/fhir/patient/:id', fhir.patient.get);
 
 app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); // deprecated
 app.putJson('/api/v1/settings', settings.put);
