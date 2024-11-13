@@ -26,16 +26,16 @@ const getCorrectFieldsetSection = async (section) => {
 };
 
 const isElementDisplayed = async (type, text) => {
-  return await getCurrentPageSection().$(`${type}*=${text}`).isDisplayed();
+  return await (await getCurrentPageSection()).$(`${type}*=${text}`).isDisplayed();
 };
 
 const selectRadioButton = async (question, value) => {
-  await radioButtonElement(question, value).click();
+  await (await radioButtonElement(question, value)).click();
 };
 
 const selectCheckBox = async (question, value) => {
   const page = await getCurrentPageSection();
-  const checkbox = await getCorrectFieldsetSection(page)
+  const checkbox = await (await getCorrectFieldsetSection(page))
     .$(`legend*=${question}`)
     .nextElement()
     .$(`label*=${value}`);
@@ -43,7 +43,7 @@ const selectCheckBox = async (question, value) => {
 };
 
 const setValue = async (typeSelector, question, value) => {
-  const element = await getCurrentPageSection()
+  const element = await (await getCurrentPageSection())
     .$(`label*=${question}`)
     .$(typeSelector);
   await element.setValue(value);
@@ -64,7 +64,7 @@ const setTextareaValue = async (question, value) => {
 };
 
 const addFileInputValue = async (question, value, { repeatIndex = 0 } = {}) => {
-  const element = await getCurrentPageSection()
+  const element = await (await getCurrentPageSection())
     .$$(`label*=${question}`)[repeatIndex]
     .$('input[type=file]');
   await element.addValue(value);
@@ -78,7 +78,7 @@ const validateSummaryReport = async (textArray) => {
 };
 
 const getValue = async (typeSelector, question) => {
-  return await getCurrentPageSection()
+  return await (await getCurrentPageSection())
     .$(`label*=${question}`)
     .$(typeSelector)
     .getValue();
@@ -100,7 +100,7 @@ const scrollToQuestion = async (label) => {
 
 const isRequiredMessageDisplayed = async (question) => {
   await formTitle().click();
-  const requiredMsg = (await getCurrentPageSection())
+  const requiredMsg = await (await getCurrentPageSection())
     .$(`label*=${question}`)
     .$('.or-required-msg.active');
   return await requiredMsg.isDisplayed();
@@ -108,7 +108,7 @@ const isRequiredMessageDisplayed = async (question) => {
 
 const isConstraintMessageDisplayed = async (question) => {
   await formTitle().click();
-  const requiredMsg = (await getCurrentPageSection())
+  const requiredMsg = await (await getCurrentPageSection())
     .$(`label*=${question}`)
     .$('.or-constraint-msg.active');
   return await requiredMsg.isDisplayed();
@@ -120,7 +120,7 @@ const addRepeatSection = async () => {
 };
 
 const drawShapeOnCanvas = async (question) => {
-  const canvas = await getCurrentPageSection()
+  const canvas = await (await getCurrentPageSection())
     .$(`label*=${question}`)
     .$('canvas');
   await canvas.waitForDisplayed();
