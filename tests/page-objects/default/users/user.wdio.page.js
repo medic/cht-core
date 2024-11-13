@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const commonElements = require('../common/common.wdio.page');
+
 const addUserButton = () => $('a#add-user');
 const cancelButton = () => $('a[test-id="modal-cancel-btn"]');
 const addUserDialog = () => $('div#edit-user-profile');
@@ -21,7 +22,7 @@ const uploadUsersButton = () => $('a#add-users');
 const uploadUsersDialog = () => $('div#bulk-user-upload');
 const confirmUploadUsersButton = () => $('a#upload-btn');
 const uploadSummaryDialog = () => $('#finish-summary');
-const successfulyUploadedUsers = () => $('p.text-success');
+const successfullyUploadedUsers = () => $('p.text-success');
 const previouslyUploadedUsers = () => $('p.text-muted');
 const failedUploadedUsers = () => $('p.text-danger');
 const backToUserListButton = () => $('a#back-to-app-btn');
@@ -187,8 +188,8 @@ const getContactErrorText = async () => {
   return await (await contactErrorMessage()).getText();
 };
 
-const getSuccessfulyUploadedUsers = async () => {
-  return await (await successfulyUploadedUsers()).getText();
+const getSuccessfullyUploadedUsers = async () => {
+  return await (await successfullyUploadedUsers()).getText();
 };
 
 const getPreviouslyUploadedUsers = async () => {
@@ -243,7 +244,7 @@ module.exports = {
   inputUploadUsersFields,
   uploadUsers,
   waitForUploadSummary,
-  getSuccessfulyUploadedUsers,
+  getSuccessfullyUploadedUsers,
   getPreviouslyUploadedUsers,
   getFailedUploadedUsers,
   backToUserList,

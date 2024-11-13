@@ -26,7 +26,7 @@ describe('Bulk User Creation ->', () => {
     await usersAdminPage.inputUploadUsersFields(filePath);
     await usersAdminPage.uploadUsers();
     await usersAdminPage.waitForUploadSummary();
-    const successfulUploads = await usersAdminPage.getSuccessfulyUploadedUsers();
+    const successfulUploads = await usersAdminPage.getSuccessfullyUploadedUsers();
     const previouslyUploadedUsers = await usersAdminPage.getPreviouslyUploadedUsers();
     const failedUploads = await usersAdminPage.getFailedUploadedUsers();
 
@@ -39,7 +39,7 @@ describe('Bulk User Creation ->', () => {
     await usersAdminPage.inputUploadUsersFields(filePath);
     await usersAdminPage.uploadUsers();
     await usersAdminPage.waitForUploadSummary();
-    const successfulUploadsSecondTime = await usersAdminPage.getSuccessfulyUploadedUsers();
+    const successfulUploadsSecondTime = await usersAdminPage.getSuccessfullyUploadedUsers();
     const previouslyUploadedUsersSecondTime = await usersAdminPage.getPreviouslyUploadedUsers();
     const failedUploadsSecondTime = await usersAdminPage.getFailedUploadedUsers();
 

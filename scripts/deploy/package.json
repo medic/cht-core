@@ -7,8 +7,8 @@
     "test": "tests"
   },
   "engines": {
-    "node": ">=20.11.0",
-    "npm": ">=10.2.4"
+    "node": ">=22.11.0",
+    "npm": ">=10.9.0"
   },
   "bin": {
     "cht-deploy": "./cht-deploy",
