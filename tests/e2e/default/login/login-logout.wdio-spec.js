@@ -169,7 +169,7 @@ describe('Login page functionality tests', () => {
       expect(revealedPassword.type).to.equal('text');
       expect(revealedPassword.value).to.equal('pass-456');
 
-      await loginPage.login({ auth, resetPassword: false });
+      await loginPage.login({ username: auth.username, password: auth.password, resetPassword: false });
       await (await commonPage.messagesTab()).waitForDisplayed();
     });
   });

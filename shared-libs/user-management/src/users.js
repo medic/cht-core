@@ -201,10 +201,11 @@ const validateNewUsername = username => {
 const createUser = (data, response) => {
   const user = getUserUpdates(data.username, data);
   user._id = createID(data.username);
-
   return isTargetAdminUser(data.username)
     .then(isAdmin => {
-      user.password_change_required = !isAdmin;
+      if (!data.token_login) {
+        user.password_change_required = !isAdmin;
+      }
       return db.users.put(user);
     })
     .then(body => {
@@ -479,7 +480,7 @@ const getUserUpdates = (username, data, requirePasswordChange = false) => {
     type: 'user'
   };
 
-  if (data.password) {
+  if (data.password && !tokenLogin.shouldEnableTokenLogin(data)) {
     user.password_change_required = requirePasswordChange;
   }
 
@@ -1207,7 +1208,7 @@ module.exports = {
    */
   resetPassword: async (username) => {
     const password = passwords.generate();
-    const user = await getUpdatedUserDoc(username, { password }, true);
+    const user = await getUpdatedUserDoc(username, { password });
     await saveUserUpdates(user);
     return password;
   },

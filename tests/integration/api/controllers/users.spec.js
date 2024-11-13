@@ -25,19 +25,34 @@ const randomIp = () => {
 
 describe('Users API', () => {
 
-  const expectPasswordLoginToWork = (user) => {
-    const opts = {
-      path: '/login',
-      method: 'POST',
-      simple: false,
-      noAuth: true,
-      body: { user: user.username, password: user.password },
-      followRedirect: false,
-      headers: { 'X-Forwarded-For': randomIp() },
-    };
+  const getUser = (user) => {
+    const opts = { path: `/_users/${getUserId(user.username)}` };
+    return utils.request(opts);
+  };
 
-    return utils
-      .requestOnMedicDb(opts)
+  const expectPasswordLoginToWork = (user) => {
+    return getUser(user)
+      .then(userDoc => {
+        userDoc.password_change_required = false;
+        return utils.request({
+          path: `/_users/${userDoc._id}`,
+          method: 'PUT',
+          body: userDoc
+        });
+      })
+      .then(() => {
+        const opts = {
+          path: '/login',
+          method: 'POST',
+          simple: false,
+          noAuth: true,
+          body: { user: user.username, password: user.password },
+          followRedirect: false,
+          headers: { 'X-Forwarded-For': randomIp() },
+        };
+
+        return utils.requestOnMedicDb(opts);
+      })
       .then(response => {
         chai.expect(response).to.include({
           statusCode: 302,
@@ -621,10 +636,6 @@ describe('Users API', () => {
   describe('token-login', () => {
     let user;
 
-    const getUser = (user) => {
-      const opts = { path: `/_users/${getUserId(user.username)}` };
-      return utils.request(opts);
-    };
     const getUserSettings = (user) => {
       return utils.requestOnMedicDb({ path: `/${getUserId(user.username)}` });
     };
