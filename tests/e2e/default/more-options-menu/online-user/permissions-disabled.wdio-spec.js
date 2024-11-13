@@ -40,7 +40,7 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
     await utils.createUsers([onlineUser]);
     await loginPage.login(onlineUser);
     await commonPage.waitForLoaderToDisappear();
-    expect(commonPage.isMessagesListPresent()).to.be.true;
+    expect(await commonPage.isMessagesListPresent()).to.be.true;
   });
 
   after(async () => await utils.revertSettings(true));
@@ -78,7 +78,7 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
     it('should hide the kebab menu on the Message tab', async () => {
       await commonPage.goToMessages();
       await commonPage.waitForLoaderToDisappear();
-      expect(commonPage.isMessagesListPresent()).to.be.true;
+      expect(await commonPage.isMessagesListPresent()).to.be.true;
       expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
     });
   });
