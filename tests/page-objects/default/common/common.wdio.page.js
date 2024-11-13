@@ -322,6 +322,7 @@ const getVisibleLoaders = async () => {
 const waitForLoaders = async () => {
   await browser.waitUntil(async () => {
     const visibleLoaders = await getVisibleLoaders();
+    console.warn(visibleLoaders);
     return !visibleLoaders.length;
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
@@ -346,7 +347,15 @@ const syncAndNotWaitForSuccess = async () => {
   await (await syncButton()).click();
 };
 
-const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
+const waitForSyncSuccess = async (timeout) => {
+  await browser.waitUntil(async () => {
+    await closeReloadModal(false, 0);
+    await openHamburgerMenu();
+    return await (await syncSuccess()).isDisplayed();
+  }, timeout);
+};
+
+const syncAndWaitForSuccess = async (timeout = 5000, retry = 10) => {
   if (retry < 0) {
     throw new Error('Failed to sync after 10 retries');
   }
@@ -360,7 +369,7 @@ const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
     }
 
     await (await syncInProgress()).waitForDisplayed({ timeout, reverse: true });
-    await (await syncSuccess()).waitForDisplayed({ timeout });
+    await waitForSyncSuccess(timeout);
   } catch (err) {
     console.error(err);
     await syncAndWaitForSuccess(timeout, retry - 1);

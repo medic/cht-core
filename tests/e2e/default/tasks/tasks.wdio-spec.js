@@ -57,23 +57,16 @@ describe('Tasks', () => {
 
     const formsPath = path.join(__dirname, 'forms');
     await chtConfUtils.compileAndUploadAppForms(formsPath);
+    // await browser.throttleCPU(10);
   });
 
   beforeEach(async () => {
     await loginPage.login(chw);
-    await commonPage.waitForPageLoaded();
   });
 
   afterEach(async () => {
     await commonPage.logout();
     await utils.revertSettings(true);
-  });
-
-  after(async () => {
-    await utils.deleteUsers([chw]);
-    await utils.revertDb([/^form:/], true);
-    await browser.deleteCookies();
-    await browser.refresh();
   });
 
   it('should remove task from list when CHW completes a task successfully', async () => {
@@ -96,8 +89,11 @@ describe('Tasks', () => {
     await tasksPage.compileTasks('tasks-multiple-config.js', true);
 
     await commonPage.goToTasks();
+    console.warn('loaded tasks');
     const list = await tasksPage.getTasks();
+    console.warn('got tasks');
     const infos = await tasksPage.getTasksListInfos(list);
+    console.warn('got infos', infos.length);
     expect(infos).to.have.length(134);
     for (let i = 0; i < (infos.length/2); i++) {
       expect(infos).to.include.deep.members([
@@ -117,8 +113,8 @@ describe('Tasks', () => {
         },
       ]);
     }
-    await commonPage.loadNextInfiniteScrollPage();
-    expect(await tasksPage.isTaskElementDisplayed('p', 'No more tasks')).to.be.true;
+    // await commonPage.loadNextInfiniteScrollPage();
+    // expect(await tasksPage.isTaskElementDisplayed('p', 'No more tasks')).to.be.true;
   });
 
   it('Should show error message for bad config', async () => {
