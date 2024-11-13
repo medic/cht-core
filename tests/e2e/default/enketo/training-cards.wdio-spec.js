@@ -4,7 +4,6 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const trainingCardsPage = require('@page-objects/default/enketo/training-cards.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
-const personFactory = require('@factories/cht/contacts/person');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const privacyPolicyFactory = require('@factories/cht/settings/privacy-policy');
