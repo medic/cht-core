@@ -52,13 +52,6 @@ const rightPanelSelectors = {
   sentTask: () => $(`${REPORT_BODY_DETAILS} ul .task-list .task-state .state`),
 };
 
-const kebabMenuSelectors = {
-  edit: () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-reports"]'),
-  delete: () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-reports"]'),
-  export: () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-reports"]'),
-  review: () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="review-report"]'),
-};
-
 const REVIEW_REPORT_CONTAINER = '.verify-report-options-wrapper';
 const reviewDialogSelectors = {
   container: () => $(REVIEW_REPORT_CONTAINER),
@@ -403,29 +396,8 @@ const fieldByIndex = async (index) => {
   return await (await $(`${REPORT_BODY_DETAILS} li:nth-child(${index}) p`)).getText();
 };
 
-const performMenuAction = async (actionSelector) => {
-  await commonElements.openMoreOptionsMenu();
-  const actionElement = await actionSelector();
-  await actionElement.waitForClickable();
-  await actionElement.click();
-};
-
-const editReport = async () => {
-  await performMenuAction(kebabMenuSelectors.edit);
-};
-
-const exportReports = async () => {
-  await performMenuAction(kebabMenuSelectors.export);
-};
-
-const deleteReport = async () => {
-  await performMenuAction(kebabMenuSelectors.delete);
-};
-
 const openReview = async () => {
-  await commonElements.openMoreOptionsMenu();
-  await (await kebabMenuSelectors.review()).waitForClickable();
-  await (await kebabMenuSelectors.review()).click();
+  await commonElements.accessReviewOption();
   await (await reviewDialogSelectors.container()).waitForDisplayed();
 };
 
@@ -524,9 +496,6 @@ module.exports = {
   getOpenReportInfo,
   getListReportInfo,
   openReport,
-  editReport,
-  deleteReport,
-  exportReports,
   fieldByIndex,
   clickOnCaseId,
   getReportListLoadingStatus,

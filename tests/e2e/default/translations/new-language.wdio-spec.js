@@ -57,7 +57,7 @@ describe('Adding new language', () => {
     await addTranslations(NEW_LANG_CODE, NEW_TRANSLATIONS);
     await commonPage.goToBase();
     await userSettingsElements.setLanguage(NEW_LANG_CODE);
-    await browser.waitUntil(async () => await (await commonPage.analyticsTab()).getText() === 'Analytiks');
+    await browser.waitUntil(async () => await (await commonPage.tabsSelector.analyticsTab()).getText() === 'Analytiks');
 
     // Check for translations in the UI
     await commonPage.goToMessages();

@@ -119,7 +119,7 @@ describe('Submit Z-Score form', () => {
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
 
-    await reportsPage.editReport();
+    await commonPage.accessEditOption();
     await genericForm.submitForm();
 
     const updatedReport = await utils.getDoc(reportId);

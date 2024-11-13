@@ -6,7 +6,6 @@ const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const oldNavigationPage = require('@page-objects/default/old-navigation/old-navigation.wdio.page');
 const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
-const commonPage = require('@page-objects/default/common/common.wdio.page');
 const taskPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
@@ -56,7 +55,7 @@ describe('Old Navigation', () => {
     await messagesPage.sendMessageOnMobile(message, person.name, person.phone );
     await messagesPage.openMessage(person._id);
 
-    const { name } = await commonPage.getHeaderTitleOnMobile();
+    const { name } = await oldNavigationPage.getHeaderTitleOnMobile();
     expect(name).to.equal(person.name);
 
     const messages = await messagesPage.getAmountOfMessagesByPhone();
@@ -71,7 +70,7 @@ describe('Old Navigation', () => {
       pregnancyReport._id,
       '~pregnancy-danger-sign-follow-up~anc.pregnancy_danger_sign_followup'
     );
-    const { name } = await commonPage.getHeaderTitleOnMobile();
+    const { name } = await oldNavigationPage.getHeaderTitleOnMobile();
     expect(name).to.equal('Pregnancy danger sign follow-up');
   });
 
