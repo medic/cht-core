@@ -28,7 +28,6 @@ describe('Training Cards', () => {
   before(async () => {
     const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
     const user = userFactory.build({ roles: [ 'nurse', 'chw' ] });
-    const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
     const formDoc = await commonEnketoPage.uploadForm('training-cards-text-only', false);
     formDoc._id = `form:${formDocId}`;
     formDoc.internalId = formDocId;
@@ -38,8 +37,7 @@ describe('Training Cards', () => {
       duration: 5,
     };
 
-    await utils.saveDocs([ parent, patient ]);
-    await utils.saveDoc(formDoc);
+    await utils.saveDocs([ parent, formDoc ]);
     await utils.createUsers([ user ]);
     await loginPage.login(user);
     await commonElements.waitForPageLoaded();

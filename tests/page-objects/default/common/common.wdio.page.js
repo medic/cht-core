@@ -45,11 +45,17 @@ const mobileTopBarTitle = () => $('mm-navigation .ellipsis-title');
 //User settings
 const USER_SETTINGS = 'aria/User settings';
 const EDIT_PROFILE = '.user .configuration.page i.fa-user';
+
 // Feedback or Report bug
 const feedbackMenuOption = () => $('aria/Report bug');
 const FEEDBACK = '#feedback';
+
 //About menu
 const ABOUT_MENU = 'aria/About';
+
+// Training Material
+const TRAINING_MATERIALS_MENU = 'aria/Training Materials';
+
 //Configuration App
 const ELEMENT_DISPLAY_PAUSE = 500; // 500ms
 
@@ -443,6 +449,12 @@ const openUserSettingsAndFetchProperties = async () => {
   await (await $(EDIT_PROFILE)).waitForDisplayed();
 };
 
+const openTrainingMaterials = async () => {
+  await (await $(TRAINING_MATERIALS_MENU)).waitForClickable();
+  await (await $(TRAINING_MATERIALS_MENU)).click();
+  await waitForPageLoaded();
+};
+
 const openEditProfile = async () => {
   await (await $(EDIT_PROFILE)).click();
 };
@@ -531,6 +543,7 @@ module.exports = {
   openAboutMenu,
   openUserSettingsAndFetchProperties,
   openUserSettings,
+  openTrainingMaterials,
   openEditProfile,
   openReportBugAndFetchProperties,
   openAppManagement,
