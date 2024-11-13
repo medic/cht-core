@@ -37,7 +37,7 @@ const waitAndAcceptPolicy = async (elm, { header, paragraph, language }, sync = 
     timeout: 15 * 1000,
     timeoutMsg: `Timed out waiting for messages tag to be displayed`
   };
-  await browser.waitUntil(async () => (await commonElements.messagesTab()).isDisplayed(), timeoutOpts);
+  await browser.waitUntil(async () => (await commonElements.tabsSelector.messagesTab()).isDisplayed(), timeoutOpts);
   if (sync) {
     await commonElements.sync();
   }

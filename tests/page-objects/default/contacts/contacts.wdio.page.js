@@ -11,12 +11,6 @@ const searchSelectors = {
   searchBox: () => $('.mm-search-bar-container input#freetext'),
 };
 
-const menuSelectors = {
-  exportButton: () => $(`.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-contacts"]`),
-  editContactButton: () => $(`.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-contacts"]`),
-  deleteContactButton: () => $(`.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-contacts"]`),
-};
-
 const CONTACT_LIST_SELECTOR = '#contacts-list';
 const CONTENT_ROW_SELECTOR =  `${CONTACT_LIST_SELECTOR} .content-row`;
 const leftPanelSelectors = {
@@ -206,16 +200,9 @@ const addPerson = async ({
   return (await contactCardSelectors.contactCardName()).getText();
 };
 
-const openEditContactForm = async () => {
-  await waitForContactLoaded();
-  await commonPage.openMoreOptionsMenu();
-  await (await menuSelectors.editContactButton()).waitForClickable();
-  await (await menuSelectors.editContactButton()).click();
-};
-
 const editPerson = async (currentName, { name, phone, dob }) => {
   await selectLHSRowByText(currentName);
-  await openEditContactForm();
+  await commonPage.accessEditOption();
   await (await genericForm.nextPage());
 
   if (name !== undefined) {
@@ -237,9 +224,7 @@ const editPersonName = async (name, updatedName) => {
 };
 
 const deletePerson = async () => {
-  await commonPage.openMoreOptionsMenu();
-  await (await menuSelectors.deleteContactButton()).waitForClickable();
-  await (await menuSelectors.deleteContactButton()).click();
+  await commonPage.accessDeleteOption();
   await modalPage.submit();
 };
 
@@ -284,7 +269,7 @@ const allContactsList = async () => {
 
 const editPlace = async (currentName, editedName) => {
   await selectLHSRowByText(currentName, true);
-  await openEditContactForm();
+  await commonPage.accessEditOption();
 
   await commonEnketoPage.setInputValue('Name of this', editedName);
   await genericForm.submitForm();
@@ -337,12 +322,6 @@ const getDeathCardInfo = async () => {
     deathDate: await deathCardSelectors.deathDate().getText(),
     deathPlace: await deathCardSelectors.deathPlace().getText(),
   };
-};
-
-const exportContacts = async () => {
-  await commonPage.openMoreOptionsMenu();
-  await (await menuSelectors.exportButton()).waitForClickable();
-  await (await menuSelectors.exportButton()).click();
 };
 
 const getCurrentContactId = async () => {
@@ -407,11 +386,9 @@ module.exports = {
   getAllRHSPeopleNames,
   waitForContactLoaded,
   waitForContactUnloaded,
-  openEditContactForm,
   editPerson,
   editPersonName,
   editPlace,
-  exportContacts,
   getContactSummaryField,
   getAllRHSReportsNames,
   getAllRHSTaskNames,

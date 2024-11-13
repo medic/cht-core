@@ -5,6 +5,7 @@ const contactElements = require('@page-objects/default/contacts/contacts.wdio.pa
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const sentinelUtils = require('@utils/sentinel');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 describe('Testing Incorrect locale', () => {
   const LANGUAGE_CODE = 'hil';
@@ -44,8 +45,8 @@ describe('Testing Incorrect locale', () => {
 
     await userSettingsElements.setLanguage(LANGUAGE_CODE);
 
-    const text = await commonElements.getReportsButtonLabel().getText();
-    expect(text).to.equal('HilReports');
+    const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
+    expect(tabsButtonLabelsNames).to.include('HilReports');
 
     await commonElements.goToPeople();
     await commonElements.waitForPageLoaded();

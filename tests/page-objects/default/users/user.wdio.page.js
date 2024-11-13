@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const commonElements = require('../common/common.wdio.page');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
 
 const addUserButton = () => $('a#add-user');
 const cancelButton = () => $('a[test-id="modal-cancel-btn"]');
@@ -222,7 +222,6 @@ const closeAddUserDialog = async () => {
   await (await cancelButton()).click();
   await (await addUserDialog()).waitForDisplayed({ reverse: true });
 };
-
 
 module.exports = {
   addUserDialog,

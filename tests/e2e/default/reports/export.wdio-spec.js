@@ -3,7 +3,7 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const reportFactory = require('@factories/cht/reports/generic-report');
-const commonElements = require('@page-objects/default/common/common.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const fileDownloadUtils = require('@utils/file-download');
@@ -35,8 +35,8 @@ describe('Export Reports', () => {
     (await utils.saveDocs(reports)).forEach(savedReport => savedReportIds.push(savedReport.id));
     await utils.createUsers([ onlineUser ]);
     await loginPage.login(onlineUser);
-    await commonElements.waitForPageLoaded();
-    await commonElements.goToReports();
+    await commonPage.waitForPageLoaded();
+    await commonPage.goToReports();
   });
 
   after(async () => {
@@ -46,7 +46,7 @@ describe('Export Reports', () => {
 
   it('should download export file', async () => {
     await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
-    await reportsPage.exportReports();
+    await commonPage.accessExportOption();
 
     const files = await fileDownloadUtils.waitForDownload(`reports-${today.format('YYYYMMDD')}`);
     expect(files).to.not.be.undefined;
