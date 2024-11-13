@@ -64,11 +64,13 @@ mm-modal-layout {
     .item-content {
       padding: 0;
       background: none;
+      & > .body {
+        margin: 0;
+      }
     }
 
     .modal-body {
       overflow: hidden;
-      margin-bottom: 11px;
     }
 
     .enketo {
@@ -98,8 +100,10 @@ mm-modal-layout {
       }
 
       form {
-        max-height: @enketo-modal-max-content-size;
         overflow-y: auto;
+        max-height: 75vh;
+        padding-bottom: 70px;
+        margin: 0;
       }
     }
 
@@ -116,7 +120,11 @@ mm-modal-layout {
     }
 
     .form-footer {
-      padding: 24px 0 0 0;
+      position: absolute;
+      bottom: 0;
+      margin: 0;
+      background: @form-background-color;
+      padding: 20px 0;
       .btn,
       .btn:active,
       .btn:focus {
@@ -134,16 +142,16 @@ mm-modal-layout {
   &.has-error .enketo-modal .modal-body {
     padding-top: 40px;
   }
+
+  .modal-body training-cards-confirm .modal-footer {
+    margin-bottom: 20px;
+  }
 }
 
 @media (max-width: @media-mobile) {
   mm-modal-layout {
     .enketo-modal {
       .enketo {
-        form {
-          max-height: @enketo-modal-max-content-size;
-        }
-
         .form-footer {
           .btn.btn-link.cancel {
             display: inline-block;
