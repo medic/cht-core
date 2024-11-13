@@ -52,7 +52,7 @@ describe('Telemetry', () => {
 
   const TELEMETRY_PREFIX = 'telemetry';
   const formatDbName = (date) => {
-    const formattedDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    const formattedDate = moment(date).format('YYYY-M-D');
     return `${TELEMETRY_PREFIX}-${formattedDate}-${user.username}`;
   };
   const today = new Date();
