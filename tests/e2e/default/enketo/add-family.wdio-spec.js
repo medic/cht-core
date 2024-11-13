@@ -9,7 +9,7 @@ const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdi
 describe('Family form', () => {
 
   before(async () => {
-    await commonEnketoPage.uploadForm('add-family-multiple-repeats');
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/add-family-multiple-repeats`));
     await cookieLogin();
   });
 

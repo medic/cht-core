@@ -1,5 +1,3 @@
-const fs = require('fs');
-const utils = require('@utils');
 const { formTitle } = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 const currentSection =  () => $('section[class*="current"]');
@@ -60,6 +58,8 @@ const setInputValue = async (question, value) => {
 
 const setDateValue = async (question, value) => {
   await setValue('input.ignore.input-small', question, value);
+  //To close the date widget
+  await formTitle().click();
 };
 
 const setTextareaValue = async (question, value) => {
@@ -78,30 +78,6 @@ const validateSummaryReport = async (textArray) => {
   for (const text of textArray) {
     expect(await (await element.$(`span*=${text}`)).isDisplayed()).to.be.true;
   }
-};
-
-const uploadForm = async (formName, saveDoc = true) => {
-  const formXML = fs.readFileSync(`${__dirname}/../../../e2e/default/enketo/forms/${formName}.xml`, 'utf8');
-  const formDoc = {
-    _id: `form:${formName}`,
-    internalId: formName,
-    title: formName,
-    type: 'form',
-    context: {
-      person: true,
-      place: true,
-    },
-    _attachments: {
-      xml: {
-        content_type: 'application/octet-stream',
-        data: Buffer.from(formXML).toString('base64'),
-      },
-    },
-  };
-  if (saveDoc) {
-    await utils.saveDoc(formDoc);
-  }
-  return formDoc;
 };
 
 const getValue = async (typeSelector, question) => {
@@ -170,7 +146,6 @@ module.exports = {
   setTextareaValue,
   addFileInputValue,
   validateSummaryReport,
-  uploadForm,
   getInputValue,
   getTextareaValue,
   isRequiredMessageDisplayed,

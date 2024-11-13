@@ -1,6 +1,7 @@
 const modalPage = require('./modal.wdio.page');
 const constants = require('@constants');
 const aboutPage = require('@page-objects/default/about/about.wdio.page');
+const fs = require('fs');
 
 const hamburgerMenu = () => $('aria/Application menu');
 const closeSideBarMenu = () => $('.panel-header-close');
@@ -504,6 +505,28 @@ const getErrorLog = async () => {
   return { errorMessage, url, username, errorStack };
 };
 
+const createFormDoc = (path, formId) => {
+  const id = formId ? formId : path.split('/').pop();
+  const formXML = fs.readFileSync(`${path}.xml`, 'utf8');
+  const formDoc = {
+    _id: `form:${id}`,
+    internalId: id,
+    title: id,
+    type: 'form',
+    context: {
+      person: true,
+      place: true,
+    },
+    _attachments: {
+      xml: {
+        content_type: 'application/octet-stream',
+        data: Buffer.from(formXML).toString('base64'),
+      },
+    },
+  };
+  return formDoc;
+};
+
 module.exports = {
   openMoreOptionsMenu,
   closeFastActionList,
@@ -571,4 +594,5 @@ module.exports = {
   reportsFastActionFAB,
   isReportActionDisplayed,
   getHeaderTitleOnMobile,
+  createFormDoc,
 };
