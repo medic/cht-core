@@ -430,4 +430,28 @@ describe('server', () => {
     });
 
   });
+
+  describe('api startup', () => {
+    it('should start up with broken forms', async () => {
+      const waitForLogs = await utils.waitForApiLogs(/Failed to update xform/);
+
+      const formName = 'broken';
+      const formDoc = {
+        _id: `form:${formName}`,
+        title: formName,
+        type: 'form',
+        _attachments: {
+          xml: {
+            content_type: 'application/octet-stream',
+            data: btoa('this is totally not an xml'),
+          },
+        },
+      };
+      await utils.db.put(formDoc); // don't use utils.saveDoc because that actually waits for good forms
+      await waitForLogs.promise;
+
+      await utils.stopApi();
+      await utils.startApi();
+    }); 
+  });
 });
