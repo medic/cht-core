@@ -66,6 +66,8 @@ describe('Tasks', () => {
 
   afterEach(async () => {
     await commonPage.logout();
+    await browser.reloadSession();
+    await browser.url('/');
     await utils.revertSettings(true);
   });
 
@@ -89,11 +91,8 @@ describe('Tasks', () => {
     await tasksPage.compileTasks('tasks-multiple-config.js', true);
 
     await commonPage.goToTasks();
-    console.warn('loaded tasks');
     const list = await tasksPage.getTasks();
-    console.warn('got tasks');
     const infos = await tasksPage.getTasksListInfos(list);
-    console.warn('got infos', infos.length);
     expect(infos).to.have.length(134);
     for (let i = 0; i < (infos.length/2); i++) {
       expect(infos).to.include.deep.members([
@@ -113,8 +112,8 @@ describe('Tasks', () => {
         },
       ]);
     }
-    // await commonPage.loadNextInfiniteScrollPage();
-    // expect(await tasksPage.isTaskElementDisplayed('p', 'No more tasks')).to.be.true;
+    await commonPage.loadNextInfiniteScrollPage();
+    expect(await tasksPage.isTaskElementDisplayed('p', 'No more tasks')).to.be.true;
   });
 
   it('Should show error message for bad config', async () => {

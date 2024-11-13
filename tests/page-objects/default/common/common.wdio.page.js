@@ -322,7 +322,6 @@ const getVisibleLoaders = async () => {
 const waitForLoaders = async () => {
   await browser.waitUntil(async () => {
     const visibleLoaders = await getVisibleLoaders();
-    console.warn(visibleLoaders);
     return !visibleLoaders.length;
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
