@@ -234,7 +234,7 @@ const setCookies = async (req, res, sessionRes) => {
     }
 
     const user = await users.getUserDoc(userCtx.name);
-    if (user?.password_change_required && !await skipPasswordChange(userCtx)) {
+    if (user?.password_change_required && !user?.token_login?.active && !await skipPasswordChange(userCtx)) {
       return redirectToPasswordReset(req, res, userCtx);
     }
     return redirectToApp({ req, res, sessionCookie, userCtx });
@@ -362,7 +362,10 @@ const validatePasswordReset = (password, confirmPassword) => {
 const validateSession = async (req) => {
   const sessionRes = await createSession(req);
   if (sessionRes.statusCode !== 200) {
-    throw { status: sessionRes.statusCode, error: 'Not logged in' };
+    const error = new Error('Not logged in');
+    error.status = sessionRes.statusCode;
+    error.error = 'Not logged in';
+    throw error;
   }
   return sessionRes;
 };

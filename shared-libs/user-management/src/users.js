@@ -1208,7 +1208,7 @@ module.exports = {
    */
   resetPassword: async (username) => {
     const password = passwords.generate();
-    const user = await getUpdatedUserDoc(username, { password });
+    const user = await getUpdatedUserDoc(username, { password }, true);
     await saveUserUpdates(user);
     return password;
   },
