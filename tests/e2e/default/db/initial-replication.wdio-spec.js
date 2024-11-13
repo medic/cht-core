@@ -150,7 +150,7 @@ describe('initial-replication', () => {
   });
 
   it('should support "disconnects"', async () => {
-    await loginPage.login({ ...userAllowedDocs.user, loadPage: false });
+    await loginPage.login({ ...userAllowedDocs.user, loadPage: false, resetPassword: false });
     setTimeout(() => browser.refresh(), 1000);
     setTimeout(() => browser.refresh(), 3000);
     setTimeout(() => browser.refresh(), 5000);

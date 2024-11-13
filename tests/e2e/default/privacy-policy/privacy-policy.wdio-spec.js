@@ -53,7 +53,7 @@ describe('Privacy policy', () => {
       it('should not show on subsequent login', async () => {
         await browser.reloadSession();
         await browser.url('/');
-        await loginPage.login({ username: user.username, password: user.password });
+        await loginPage.login({ username: user.username, password: user.password, resetPassword: false });
         await (await commonElements.messagesTab()).waitForDisplayed();
         expect(await (await privacyPage.privacyWrapper()).isDisplayed()).to.not.be.true;
       });
@@ -61,7 +61,13 @@ describe('Privacy policy', () => {
       it('should show french policy on secondary login', async () => {
         await browser.reloadSession();
         await browser.url('/');
-        await loginPage.login({ username: user.username, password: user.password, locale: 'fr', privacyPolicy: true });
+        await loginPage.login({
+          username: user.username,
+          password: user.password,
+          locale: 'fr',
+          privacyPolicy: true,
+          resetPassword: false
+        });
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), frenchTexts);
         expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
       });

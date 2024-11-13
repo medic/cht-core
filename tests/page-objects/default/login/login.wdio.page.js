@@ -5,7 +5,8 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginButton = () => $('#login');
 const updatePasswordButton = () => $('#update-password');
 const userField = () => $('#user');
-const passwordField = () => $('#password');
+const passwordField = () => $('#form[action="/medic/login"] #password');
+const resetPasswordField = () => $('#form[action="/medic/password-reset"] #password');
 const confirmPasswordField = () => $('#confirm-password');
 const passwordToggleButton = () => $('#password-toggle');
 const labelForUser = () => $('label[for="user"]');
@@ -195,7 +196,8 @@ const setUsernameValue = async (username) => {
 };
 
 const passwordReset = async (password, confirmPassword) => {
-  await setPasswordValue(password);
+  await (await resetPasswordField()).waitForDisplayed();
+  await (await resetPasswordField()).setValue(password);
   await setConfirmPasswordValue(confirmPassword);
   await (await updatePasswordButton()).click();
 };
