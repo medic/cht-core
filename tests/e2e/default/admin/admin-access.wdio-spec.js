@@ -4,14 +4,14 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const adminPage = require('@page-objects/default/admin/admin.wdio.page');
 const common = require('@page-objects/default/common/common.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 describe('Acessing the admin app', () => {
   const offlineUser = userFactory.build({ username: 'offline-user-admin', isOffline: true });
   const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
 
   afterEach(async () => {
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonPage.reloadSession();
   });
 
   it('should redirect to login when not logged in', async () => {

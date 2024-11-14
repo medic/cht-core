@@ -57,7 +57,6 @@ describe('Tasks', () => {
 
     const formsPath = path.join(__dirname, 'forms');
     await chtConfUtils.compileAndUploadAppForms(formsPath);
-    // await browser.throttleCPU(10);
   });
 
   beforeEach(async () => {
@@ -65,9 +64,7 @@ describe('Tasks', () => {
   });
 
   afterEach(async () => {
-    await commonPage.logout();
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonPage.reloadSession();
     await utils.revertSettings(true);
   });
 

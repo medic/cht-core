@@ -6,6 +6,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const genericReportFactory = require('@factories/cht/reports/generic-report');
 const sentinelUtils = require('@utils/sentinel');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 /* global window */
 
@@ -79,8 +80,7 @@ describe('purge', function() {
     await utils.deleteUsers([user]);
     await utils.revertDb([/^form:/], true);
 
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonPage.reloadSession();
   });
 
   it('purging runs on sync', async () => {
