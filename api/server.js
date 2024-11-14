@@ -82,7 +82,6 @@ process
     await migrations.run();
     logger.info('Database migrations completed successfully');
 
-    startupLog.start('forms');
     logger.info('Generating manifest');
     await manifest.generate();
     logger.info('Manifest generated successfully');
@@ -90,15 +89,20 @@ process
     logger.info('Generating service worker');
     await generateServiceWorker.run(true);
     logger.info('Service worker generated successfully');
-
-    logger.info('Updating xforms…');
-    await generateXform.updateAll();
-    logger.info('xforms updated successfully');
-
   } catch (err) {
     logger.error('Fatal error initialising API');
     logger.error('%o', err);
     process.exit(1);
+  }
+
+  try {
+    startupLog.start('forms');
+    logger.info('Updating xforms…');
+    await generateXform.updateAll();
+    logger.info('xforms updated successfully');
+  } catch (err) {
+    logger.error('Error initialising API');
+    logger.error('%o', err);
   }
 
   startupLog.complete();
