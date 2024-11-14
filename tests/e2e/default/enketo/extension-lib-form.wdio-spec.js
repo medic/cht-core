@@ -8,7 +8,7 @@ const { extensionLibDoc } = require('@page-objects/default/enketo/custom-doc.wdi
 describe('Extension lib xpath function', () => {
 
   before(async () => {
-    await commonEnketoPage.uploadForm('extension-lib-average-calculator');
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/extension-lib-average-calculator`));
     await utils.saveDoc(extensionLibDoc);
 
     const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);

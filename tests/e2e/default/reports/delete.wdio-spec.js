@@ -53,7 +53,7 @@ describe('Delete Reports', () => {
     expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[1])).isDisplayed()).to.be.true;
 
     await reportsPage.openReport(savedReportIds[1]);
-    await reportsPage.deleteReport();
+    await commonElements.accessDeleteOption();
     await commonElements.goToReports();
 
     expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[0])).isDisplayed()).to.be.true;

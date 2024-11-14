@@ -3,15 +3,12 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactElements = require('@page-objects/default/contacts/contacts.wdio.page');
-const district_hospital = placeFactory.generateHierarchy(['district_hospital']).get('district_hospital');
 
 describe('MessageFormat', () => {
-  const createContact = async () => {
-    await utils.saveDoc(district_hospital);
-  };
+  const district_hospital = placeFactory.generateHierarchy(['district_hospital']).get('district_hospital');
 
   before(async () => {
-    await createContact();
+    await utils.saveDoc(district_hospital);
     await loginPage.cookieLogin();
   });
 
@@ -37,14 +34,13 @@ describe('MessageFormat', () => {
 
     // wait for language to load
     await browser.waitUntil(async () => {
-      return await (await commonPage.getReportsButtonLabel()).getText() === 'Reports {{thing}}';
+      return await commonPage.isElementPresent('div*=Reports {{thing}}');
     }, {
       timeout: 2000,
       timeoutMsg: 'Timed out waiting for translations to update'
     });
 
-    expect(await (await commonPage.getReportsButtonLabel()).getText()).to.equal('Reports {{thing}}');
-    expect(await (await commonPage.getTasksButtonLabel()).getText()).to.equal('Tasks {thing');
-    expect(await (await commonPage.getMessagesButtonLabel()).getText()).to.equal('Messages {thing}');
+    const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
+    expect(tabsButtonLabelsNames).to.include.members(['Reports {{thing}}', 'Tasks {thing', 'Messages {thing}']);
   });
 });

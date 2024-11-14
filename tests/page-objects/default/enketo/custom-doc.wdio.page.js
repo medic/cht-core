@@ -46,7 +46,6 @@ const reportModelXml = `
   </meta>
 </one_text_form>`;
 
-
 const editReportWithAttachmentDoc ={
   _id: uuid(),
   form: 'one-text-form',
@@ -70,8 +69,6 @@ const editReportWithAttachmentDoc ={
     }
   }
 };
-
-
 
 module.exports = {
   extensionLibDoc,

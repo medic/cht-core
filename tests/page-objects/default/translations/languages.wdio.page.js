@@ -28,8 +28,7 @@ const addNewLanguage = async (code, name) => {
 
 const languageDisplayed = async (code) => {
   const languageDiv = () => $(`#locale-${code}`);
-  const languageName = await (await languageDiv()).getText();
-  return languageName;
+  return await (await languageDiv()).getText();
 };
 
 const selectLanguage = async (element, code) => {

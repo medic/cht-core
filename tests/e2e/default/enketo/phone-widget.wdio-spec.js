@@ -3,7 +3,6 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const personFactory = require('@factories/cht/contacts/person');
 const { expect } = require('chai');
@@ -14,7 +13,7 @@ describe('Phone widget', () => {
   const person1 = personFactory.build({ phone: '+254712345679'  });
 
   before(async () => {
-    await commonEnketoPage.uploadForm('phone_widget');
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/phone_widget`));
     await utils.saveDocs([person0, person1]);
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();
@@ -57,7 +56,7 @@ describe('Phone widget', () => {
 
   it('can use duplicate phone number when editing contact with same number', async () => {
     await commonPage.goToPeople(person1._id);
-    await contactsPage.openEditContactForm();
+    await commonPage.accessEditOption();
 
     await (await genericForm.nextPage());
     // Try setting phone to number of the other person

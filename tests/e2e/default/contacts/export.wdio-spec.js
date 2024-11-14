@@ -1,9 +1,8 @@
 const moment = require('moment');
-const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const commonElements = require('@page-objects/default/common/common.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const fileDownloadUtils = require('@utils/file-download');
 const utils = require('@utils');
@@ -23,12 +22,12 @@ describe('Export Contacts ', () => {
     contactDocs.forEach(savedContact => savedContactIds.push(savedContact.id));
     await utils.createUsers([ onlineUser ]);
     await loginPage.login(onlineUser);
-    await commonElements.waitForPageLoaded();
-    await commonElements.goToPeople();
+    await commonPage.waitForPageLoaded();
+    await commonPage.goToPeople();
   });
 
   it('should download export file', async () => {
-    await contactPage.exportContacts();
+    await commonPage.accessExportOption();
 
     const files = await fileDownloadUtils.waitForDownload(`contacts-${today.format('YYYYMMDD')}`);
     expect(files).to.not.be.undefined;
