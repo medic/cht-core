@@ -38,17 +38,17 @@ export class MessagesComponent implements OnInit, OnDestroy {
   userLineageLevel;
 
   constructor(
-    private router: Router,
-    private store: Store,
-    private changesService: ChangesService,
-    private fastActionButtonService:FastActionButtonService,
-    private messageContactService: MessageContactService,
-    private exportService: ExportService,
-    private modalService: ModalService,
-    private responsiveService: ResponsiveService,
-    private performanceService: PerformanceService,
-    private extractLineageService: ExtractLineageService,
-    private userContactService: UserContactService
+    private readonly router: Router,
+    private readonly store: Store,
+    private readonly changesService: ChangesService,
+    private readonly fastActionButtonService:FastActionButtonService,
+    private readonly messageContactService: MessageContactService,
+    private readonly exportService: ExportService,
+    private readonly modalService: ModalService,
+    private readonly responsiveService: ResponsiveService,
+    private readonly performanceService: PerformanceService,
+    private readonly extractLineageService: ExtractLineageService,
+    private readonly userContactService: UserContactService
   ) {
     this.globalActions = new GlobalActions(store);
     this.messagesActions = new MessagesActions(store);

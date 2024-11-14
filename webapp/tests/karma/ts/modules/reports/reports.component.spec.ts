@@ -37,7 +37,6 @@ import { FastActionButtonService } from '@mm-services/fast-action-button.service
 import { FeedbackService } from '@mm-services/feedback.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
-import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;

@@ -20,14 +20,14 @@ import { UserContactService } from '@mm-services/user-contact.service';
 })
 export class TasksComponent implements OnInit, OnDestroy {
   constructor(
-    private store: Store,
-    private changesService: ChangesService,
-    private contactTypesService: ContactTypesService,
-    private rulesEngineService: RulesEngineService,
-    private performanceService: PerformanceService,
-    private lineageModelGeneratorService: LineageModelGeneratorService,
-    private extractLineageService: ExtractLineageService,
-    private userContactService: UserContactService
+    private readonly store: Store,
+    private readonly changesService: ChangesService,
+    private readonly contactTypesService: ContactTypesService,
+    private readonly rulesEngineService: RulesEngineService,
+    private readonly performanceService: PerformanceService,
+    private readonly lineageModelGeneratorService: LineageModelGeneratorService,
+    private readonly extractLineageService: ExtractLineageService,
+    private readonly userContactService: UserContactService
   ) {
     this.tasksActions = new TasksActions(store);
     this.globalActions = new GlobalActions(store);

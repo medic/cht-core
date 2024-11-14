@@ -12,8 +12,8 @@ export class UserContactService {
   private readonly getPerson: ReturnType<typeof Person.v1.get>;
   private readonly getPersonWithLineage: ReturnType<typeof Person.v1.getWithLineage>;
   constructor(
-    private userSettingsService: UserSettingsService,
-    private authService: AuthService,
+    private readonly userSettingsService: UserSettingsService,
+    private readonly authService: AuthService,
     chtDatasourceService: CHTDatasourceService,
   ) {
     this.getPerson = chtDatasourceService.bind(Person.v1.get);
