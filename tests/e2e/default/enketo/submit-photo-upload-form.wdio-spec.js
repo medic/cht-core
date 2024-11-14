@@ -31,7 +31,7 @@ describe('Submit Photo Upload form', () => {
     expect(attachmentNames[0]).to.match(/^user-file-photo-for-upload-form-\d\d?_\d\d?_\d\d?\.png$/);
 
     await reportsPage.openReport(reportId);
-    await reportsPage.editReport();
+    await commonPage.accessEditOption();
     await (enketoWidgetsPage.imagePreview('photo-upload')).waitForDisplayed();
     await genericForm.submitForm();
 
@@ -50,7 +50,7 @@ describe('Submit Photo Upload form', () => {
     expect(attachmentNames[0]).to.match(/^user-file-photo-for-upload-form-\d\d?_\d\d?_\d\d?\.png$/);
 
     await reportsPage.openReport(reportId);
-    await reportsPage.editReport();
+    await commonPage.accessEditOption();
     await (enketoWidgetsPage.imagePreview('photo-upload')).waitForDisplayed();
     await enketoWidgetsPage.selectImage('photo-upload', path.join(__dirname, '../../../../webapp/src/img/layers.png'));
     await (enketoWidgetsPage.imagePreview('photo-upload')).waitForDisplayed();

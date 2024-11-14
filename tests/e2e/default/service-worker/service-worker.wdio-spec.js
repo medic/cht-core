@@ -73,7 +73,7 @@ describe('Service worker cache', () => {
   };
 
   const isLoggedIn = async () => {
-    const tab = await commonPage.messagesTab();
+    const tab = await commonPage.tabsSelector.messagesTab();
     return await tab.isExisting();
   };
 
@@ -220,7 +220,7 @@ describe('Service worker cache', () => {
   it('should load the page while offline', async () => {
     await browser.throttle('offline');
     await browser.refresh();
-    await (await commonPage.analyticsTab()).waitForDisplayed();
+    await (await commonPage.tabsSelector.analyticsTab()).waitForDisplayed();
     await browser.throttle('online');
   });
 

@@ -37,19 +37,19 @@ describe('Acessing the admin app', () => {
     await common.waitForLoaders();
     await browser.url('/admin/#/forms');
     expect(await (await adminPage.adminNavbarLogo()).isDisplayed()).to.equal(false);
-    expect(await common.jsonError()).to.equal(error);
+    expect(await common.getJsonErrorText()).to.equal(error);
 
     await browser.url('/admin');
     expect(await (await adminPage.adminNavbarLogo()).isDisplayed()).to.equal(false);
-    expect(await common.jsonError()).to.equal(error);
+    expect(await common.getJsonErrorText()).to.equal(error);
 
     await browser.url('/medic/_design/medic-admin/_rewrite/');
     expect(await (await adminPage.adminNavbarLogo()).isDisplayed()).to.equal(false);
-    expect(await common.jsonError()).to.equal(error);
+    expect(await common.getJsonErrorText()).to.equal(error);
 
     await browser.url('/medic/_design/medic-admin/_rewrite/#/authorization/permissions');
     expect(await (await adminPage.adminNavbarLogo()).isDisplayed()).to.equal(false);
-    expect(await common.jsonError()).to.equal(error);
+    expect(await common.getJsonErrorText()).to.equal(error);
   });
 
   it('should allow admins to access the page', async () => {

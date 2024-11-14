@@ -65,6 +65,6 @@ describe('User Test Cases -> Creating Users ->', () => {
     await contactPage.selectLHSRowByText(districtHospital2.name);
     await commonPage.openMoreOptionsMenu();
 
-    expect(await commonPage.isMenuOptionEnabled('delete', 'contacts')).to.be.false;
+    expect(await commonPage.isMenuOptionEnabled('delete')).to.be.false;
   });
 });
