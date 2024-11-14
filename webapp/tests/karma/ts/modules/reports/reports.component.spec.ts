@@ -56,7 +56,6 @@ describe('Reports Component', () => {
   let xmlFormsService;
   let feedbackService;
   let performanceService;
-  let extractLineageService;
   let stopPerformanceTrackStub;
   let store;
   let route;
@@ -108,6 +107,7 @@ describe('Reports Component', () => {
     modalService = { show: sinon.stub() };
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
+      getUserLineageToRemove: sinon.stub(),
     };
     fastActionButtonService = {
       getReportLeftSideActions: sinon.stub(),
@@ -115,10 +115,6 @@ describe('Reports Component', () => {
     };
     xmlFormsService = { subscribe: sinon.stub() };
     feedbackService = { submit: sinon.stub() };
-    extractLineageService = {
-      getUserLineageToRemove: sinon.stub(),
-      removeUserFacility: ExtractLineageService.prototype.removeUserFacility,
-    };
     route = { snapshot: { queryParams: { query: '' } } };
     router = {
       navigate: sinon.stub(),
@@ -169,7 +165,6 @@ describe('Reports Component', () => {
           { provide: FastActionButtonService, useValue: fastActionButtonService },
           { provide: FeedbackService, useValue: feedbackService },
           { provide: XmlFormsService, useValue: xmlFormsService },
-          { provide: ExtractLineageService, useValue: extractLineageService },
         ]
       })
       .compileComponents()
@@ -788,7 +783,7 @@ describe('Reports Component', () => {
 
     it('should not remove the lineage when user lineage level is undefined', fakeAsync(() => {
       sinon.resetHistory();
-      extractLineageService.getUserLineageToRemove.resolves(undefined);
+      userContactService.getUserLineageToRemove.resolves(undefined);
       const expectedReports = [
         {
           _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
@@ -855,7 +850,7 @@ describe('Reports Component', () => {
     }));
 
     it('should remove lineage when user lineage level is defined', fakeAsync(() => {
-      extractLineageService.getUserLineageToRemove.resolves('CHW Bettys Area');
+      userContactService.getUserLineageToRemove.resolves('CHW Bettys Area');
       const expectedReports = [
         {
           _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
