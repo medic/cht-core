@@ -11,6 +11,7 @@ import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { FeedbackService } from '@mm-services/feedback.service';
+import { getProperty } from '../../../../src/ts/libs/schema';
 
 describe('TrainingCardsService', () => {
   let service: TrainingCardsService;
@@ -767,7 +768,7 @@ describe('TrainingCardsService', () => {
       service.getTrainingCardDocId().startsWith('training:ronald:');
       assert.fail('should have thrown');
     } catch (error) {
-      expect(error.message)
+      expect(getProperty(error, 'message'))
         .to.equal('Training Cards :: Cannot create document ID, user context does not have the "name" property.');
     }
   });

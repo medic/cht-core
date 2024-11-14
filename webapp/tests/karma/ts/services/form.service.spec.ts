@@ -36,6 +36,7 @@ import { EnketoTranslationService } from '@mm-services/enketo-translation.servic
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
+import { getProperty } from '../../../../src/ts/libs/schema';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -297,7 +298,7 @@ describe('Form service', () => {
           { doc: { _id: '123-patient-contact' }, contactSummary: { pregnant: false }, shouldEvaluateExpression: true },
         ]);
         expect(enketoInit.callCount).to.equal(1);
-        expect(error.message).to.equal(expectedErrorMessage);
+        expect(getProperty(error, 'message')).to.equal(expectedErrorMessage);
         expect(consoleErrorMock.callCount).to.equal(0);
       }
     }));
@@ -585,7 +586,7 @@ describe('Form service', () => {
         flush();
         expect.fail('Should throw error');
       } catch (error) {
-        expect(error.message).to.equal('Failed during the form "myform" rendering : invalid user');
+        expect(getProperty(error, 'message')).to.equal('Failed during the form "myform" rendering : invalid user');
         expect(UserContact.calledOnce).to.be.true;
         expect(renderForm.notCalled).to.be.true;
         expect(enketoInit.notCalled).to.be.true;

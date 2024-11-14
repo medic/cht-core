@@ -65,7 +65,7 @@ export class UpdatePasswordComponent {
       try {
         await this.userLoginService.login(username, newPassword);
       } catch (err) {
-        if (typeof err === 'object' && err !== null && 'status' in err && err.status === 302) {
+        if (getProperty(err, 'status') === 302) {
           this.close();
           const snackText = await this.translateService.get('password.updated');
           this.globalActions.setSnackbarContent(snackText);

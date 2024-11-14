@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions.js';
+import { getProperty } from '../../../../src/ts/libs/schema';
 
 describe('Medic XPath Extensions', () => {
   it('should have expected attributes', () => {
@@ -78,7 +79,7 @@ describe('Medic XPath Extensions', () => {
       try {
         extensionLib({ v: 'myfunc' }, { t: 'string', v: 'hello' });
       } catch (e) {
-        expect(e.message).to.equal('Form configuration error: no extension-lib with ID "myfunc" found');
+        expect(getProperty(e, 'message')).to.equal('Form configuration error: no extension-lib with ID "myfunc" found');
         return;
       }
       throw new Error('Expected exception to be thrown.');

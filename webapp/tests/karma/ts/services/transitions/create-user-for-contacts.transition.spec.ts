@@ -8,6 +8,7 @@ import { expect } from 'chai';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { getProperty } from '../../../../../src/ts/libs/schema';
 
 const deepFreeze = obj => {
   Object
@@ -395,7 +396,7 @@ describe('Create User for Contacts Transition', () => {
             await transition.run([replaceUserDoc]);
             expect(true).to.equal('should have thrown an error');
           } catch (err) {
-            expect(err.message).to.equal(
+            expect(getProperty(err, 'message')).to.equal(
               'Only the contact associated with the currently logged in user can be replaced.'
             );
           }
@@ -417,8 +418,10 @@ describe('Create User for Contacts Transition', () => {
             await transition.run([replaceUserDoc]);
             expect(true).to.equal('should have thrown an error');
           } catch (err) {
-            expect(err.message).to.equal('The form for replacing a user must include a replacement_contact_id field ' +
-              'containing the id of the new contact.');
+            expect(getProperty(err, 'message')).to.equal(
+              'The form for replacing a user must include a replacement_contact_id field ' +
+              'containing the id of the new contact.'
+            );
           }
 
           expect(userContactService.get.callCount).to.equal(1);
@@ -437,7 +440,7 @@ describe('Create User for Contacts Transition', () => {
           await transition.run([REPLACE_USER_DOC]);
           expect(true).to.equal('should have thrown an error');
         } catch (err) {
-          expect(err.message).to.equal(`The new contact could not be found [${NEW_CONTACT._id}].`);
+          expect(getProperty(err, 'message')).to.equal(`The new contact could not be found [${NEW_CONTACT._id}].`);
         }
 
         expect(userContactService.get.callCount).to.equal(1);
@@ -455,7 +458,7 @@ describe('Create User for Contacts Transition', () => {
           await transition.run([REPLACE_USER_DOC]);
           expect(true).to.equal('should have thrown an error');
         } catch (err) {
-          expect(err.message).to.equal(`Server Error`);
+          expect(getProperty(err, 'message')).to.equal(`Server Error`);
         }
 
         expect(userContactService.get.callCount).to.equal(1);
@@ -475,7 +478,9 @@ describe('Create User for Contacts Transition', () => {
           await transition.run([REPLACE_USER_DOC, NEW_CONTACT, REPLACE_USER_DOC]);
           expect(true).to.equal('should have thrown an error');
         } catch (err) {
-          expect(err.message).to.equal(`Only one user replace form is allowed to be submitted per transaction.`);
+          expect(getProperty(err, 'message')).to.equal(
+            `Only one user replace form is allowed to be submitted per transaction.`
+          );
         }
 
         expect(userContactService.get.callCount).to.equal(1);
