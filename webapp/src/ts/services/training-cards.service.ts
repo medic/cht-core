@@ -13,6 +13,8 @@ import { ModalService } from '@mm-services/modal.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { Selectors } from '@mm-selectors/index';
+import { TranslateService } from '@ngx-translate/core';
+import { TranslateFromService } from '@mm-services/translate-from.service';
 
 export const TRAINING_PREFIX: string = 'training:';
 
@@ -30,6 +32,8 @@ export class TrainingCardsService {
     private readonly modalService: ModalService,
     private readonly sessionService: SessionService,
     private readonly routeSnapshotService: RouteSnapshotService,
+    private readonly translateService: TranslateService,
+    private readonly translateFromService: TranslateFromService,
   ) {
     this.globalActions = new GlobalActions(this.store);
     this.subscribeToStore();
@@ -45,13 +49,23 @@ export class TrainingCardsService {
     });
   }
 
+  private getFormTitle(labelKey?: string, label?: string): string|undefined {
+    if (labelKey) {
+      return this.translateService.instant(labelKey);
+    }
+
+    if (label) {
+      return this.translateFromService.get(label);
+    }
+  }
+
   private getAvailableTrainingCards(xForms, userCtx) {
     const today = moment();
 
     return xForms
       ?.map(xForm => ({
         id: xForm._id,
-        title: xForm.translation_key || xForm.title,
+        title: this.getFormTitle(xForm.titleKey, xForm.title),
         code: xForm.internalId,
         startDate: xForm.context?.start_date ? moment(xForm.context.start_date) : today.clone(),
         duration: xForm.context?.duration,
@@ -216,7 +230,9 @@ export class TrainingCardsService {
     }
 
     const completedTrainings = await this.getCompletedTrainings(userCtx);
-    return trainingCards.map(form => ({ ...form, isCompletedTraining: completedTrainings.has(form.code) }));
+    return trainingCards
+      .map(form => ({ ...form, isCompletedTraining: completedTrainings.has(form.code) }))
+      .sort((a, b) => a.startDate.diff(b.startDate));
   }
 }
 

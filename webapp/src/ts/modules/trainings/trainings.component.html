@@ -16,7 +16,7 @@
               <div class="content">
                 <div class="heading">
                   <h4>
-                    <span *ngIf="training.title">{{ training.title | translate }}</span>
+                    <span *ngIf="training.title">{{ training.title }}</span>
                     <span *ngIf="!training.title">{{ training.code }}</span>
                   </h4>
                   <mat-icon *ngIf="training.isCompletedTraining" class="mat-icon-check" svgIcon="icon-check"/>

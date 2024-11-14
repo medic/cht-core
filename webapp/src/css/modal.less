@@ -100,11 +100,12 @@ mm-modal-layout {
         }
       }
 
-      form {
-        overflow-y: auto;
-        max-height: 75vh;
-        padding-bottom: 70px;
+      form.pages [role=page].current {
         margin: 0;
+        display: block;
+        max-height: @training-cards-page-height;
+        overflow-y: auto;
+        padding-bottom: @training-cards-footer-height;
       }
     }
 
@@ -113,9 +114,6 @@ mm-modal-layout {
       font-weight: normal;
       letter-spacing: normal;
       border: none;
-      position: sticky;
-      top: 0;
-      z-index: 5;
       background: @form-background-color;
       width: 100%;
     }
@@ -126,6 +124,7 @@ mm-modal-layout {
       margin: 0;
       background: @form-background-color;
       padding: 20px 0;
+      z-index: 20;
       .btn,
       .btn:active,
       .btn:focus {
