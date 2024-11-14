@@ -16,7 +16,6 @@ const updateAggregateTargetsSettings = async (targetsConfig, user, contactSummar
     { tasks: settings.tasks, permissions: settings.permissions, contact_summary: contactSummary },
     { ignoreReload: true }
   );
-  await commonPage.closeReloadModal();
   await commonPage.goToBase();
 };
 

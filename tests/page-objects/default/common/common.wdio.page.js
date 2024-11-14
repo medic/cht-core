@@ -344,13 +344,14 @@ const goToAnalytics = async () => {
   await waitForPageLoaded();
 };
 
-const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
+const closeReloadModal = async (shouldUpdate = false, timeout = ELEMENT_DISPLAY_PAUSE) => {
   try {
     shouldUpdate ? await modalPage.submit(timeout) : await modalPage.cancel(timeout);
     shouldUpdate && await waitForAngularLoaded();
     return true;
   } catch (err) {
-    timeout && console.error('Reload modal has not showed up');
+    (timeout > ELEMENT_DISPLAY_PAUSE) && console.error(err);
+    (timeout > ELEMENT_DISPLAY_PAUSE) && console.error('Reload modal has not showed up');
     return false;
   }
 };
@@ -360,19 +361,11 @@ const syncAndNotWaitForSuccess = async () => {
   await (await hamburgerMenuSelectors.syncButton()).click();
 };
 
-const waitForSyncSuccess = async (timeout) => {
-  await browser.waitUntil(async () => {
-    await closeReloadModal(false, 0);
-    await openHamburgerMenu();
-    await (await hamburgerMenuSelectors.syncSuccess()).isDisplayed();
-  }, timeout);
-};
-
 const syncAndWaitForSuccess = async (timeout = 5000, retry = 10) => {
   if (retry < 0) {
     throw new Error('Failed to sync after 10 retries');
   }
-  await closeReloadModal(false, 0);
+  await closeReloadModal(false, ELEMENT_DISPLAY_PAUSE);
 
   try {
     await openHamburgerMenu();
@@ -382,7 +375,12 @@ const syncAndWaitForSuccess = async (timeout = 5000, retry = 10) => {
     }
 
     await (await hamburgerMenuSelectors.syncInProgress()).waitForDisplayed({ timeout, reverse: true });
-    await waitForSyncSuccess(timeout);
+    await browser.pause(1000);
+    if (!await isHamburgerMenuOpen()) {
+      await closeReloadModal(false, timeout);
+      await openHamburgerMenu();
+    }
+    await (await hamburgerMenuSelectors.syncSuccess()).waitForDisplayed({ timeout });
   } catch (err) {
     console.error(err);
     await syncAndWaitForSuccess(timeout, retry - 1);
@@ -401,16 +399,9 @@ const hideModalOverlay = () => {
 
 const sync = async (expectReload, timeout) => {
   await hideModalOverlay();
-  let closedModal = false;
-  if (expectReload) {
-    // it's possible that sync already happened organically, and we already have the reload modal
-    closedModal = await closeReloadModal(false, 0);
-  }
 
   await syncAndWaitForSuccess(timeout);
-  if (expectReload && !closedModal) {
-    await closeReloadModal();
-  }
+  expectReload && await closeReloadModal(false, ELEMENT_DISPLAY_PAUSE);
   await closeHamburgerMenu();
 };
 

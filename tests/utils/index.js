@@ -559,7 +559,7 @@ const updateSettings = async (updates, options = {}) => {
   }
   const watcher = ignoreReload && Object.keys(updates).length && await waitForSettingsUpdateLogs(ignoreReload);
   await updateCustomSettings(updates);
-  if (!ignoreReload) {
+  if (!ignoreReload && !sync) {
     return await commonElements.closeReloadModal(true);
   }
   if (watcher) {
