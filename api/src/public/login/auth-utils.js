@@ -103,7 +103,7 @@ export const baseTranslate = (selectedLocale, translations) => {
     .forEach(elem => elem.title = translations[selectedLocale][elem.getAttribute('translate-title')]);
 };
 
-export const togglePassword = (passwordInputId, confirmPasswordInputId = null) => {
+export const togglePassword = (passwordInputId, confirmPasswordInputId = null, currentPasswordInputId = null) => {
   const passwordInput = document.getElementById(passwordInputId);
   if (!passwordInput) {
     return;
@@ -117,5 +117,11 @@ export const togglePassword = (passwordInputId, confirmPasswordInputId = null) =
     const confirmPasswordInput = document.getElementById(confirmPasswordInputId);
     confirmPasswordInput.type = displayType;
     document.getElementById('confirm-password-container')?.classList.toggle('hidden-password');
+  }
+
+  if (currentPasswordInputId) {
+    const currentPasswordInput = document.getElementById(currentPasswordInputId);
+    currentPasswordInput.type = displayType;
+    document.getElementById('current-password-container')?.classList.toggle('hidden-password');
   }
 };

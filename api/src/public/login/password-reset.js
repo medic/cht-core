@@ -14,6 +14,7 @@ let translations;
 
 const PASSWORD_INPUT_ID = 'password';
 const CONFIRM_PASSWORD_INPUT_ID = 'confirm-password';
+const CURRENT_PASSWORD_INPUT_ID = 'current-password';
 
 const translate = () => {
   baseTranslate(selectedLocale, translations);
@@ -30,22 +31,39 @@ const displayPasswordValidationError = (serverResponse) => {
   }
 };
 
+const validatePasswordMatch = (password, confirmPassword) => {
+  if (password !== confirmPassword) {
+    return {
+      isValid: false,
+      error: 'password-mismatch',
+    };
+  }
+  return { isValid: true };
+};
+
 const submit = function(e) {
   e.preventDefault();
   if (document.getElementById('form')?.className === 'loading') {
     // debounce double clicks
     return;
   }
-  setState('loading');
-  const url = document.getElementById('form')?.action;
+  const currentPassword = document.getElementById(CURRENT_PASSWORD_INPUT_ID)?.value;
   const password = document.getElementById(PASSWORD_INPUT_ID)?.value;
   const confirmPassword = document.getElementById(CONFIRM_PASSWORD_INPUT_ID)?.value;
+  const validation = validatePasswordMatch(password, confirmPassword);
+  if (!validation.isValid) {
+    displayPasswordValidationError(JSON.stringify({ error: validation.error }));
+    return;
+  }
+
+  setState('loading');
+  const url = document.getElementById('form')?.action;
   const userCtx = getUserCtx();
 
   const payload = JSON.stringify({
-    user: userCtx.name,
+    username: userCtx.name,
     password: password,
-    confirmPassword: confirmPassword,
+    currentPassword: currentPassword,
   });
 
   request('POST', url, payload, function(xmlhttp) {
@@ -72,6 +90,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const passwordToggle = document.getElementById('password-toggle');
   if (passwordToggle) {
-    passwordToggle.addEventListener('click', () => togglePassword(PASSWORD_INPUT_ID, CONFIRM_PASSWORD_INPUT_ID), false);
+    passwordToggle.addEventListener('click', () => togglePassword(
+      PASSWORD_INPUT_ID,
+      CONFIRM_PASSWORD_INPUT_ID,
+      CURRENT_PASSWORD_INPUT_ID), false);
   }
 });
