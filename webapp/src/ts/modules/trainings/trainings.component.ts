@@ -48,6 +48,7 @@ export class TrainingsComponent implements OnInit, OnDestroy {
     const trainingSubscription = this.store
       .select(Selectors.getTrainingMaterials)
       .subscribe(forms => {
+        this.trainingList = [];
         this.trainingForms = forms;
         this.isInitialized = this.getTrainings();
       });
