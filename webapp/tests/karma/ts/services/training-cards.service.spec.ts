@@ -10,6 +10,8 @@ import { ModalService } from '@mm-services/modal.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
+import { TranslateService } from '@ngx-translate/core';
+import { TranslateFromService } from '@mm-services/translate-from.service';
 
 describe('TrainingCardsService', () => {
   let service: TrainingCardsService;
@@ -44,6 +46,8 @@ describe('TrainingCardsService', () => {
         { provide: ModalService, useValue: modalService },
         { provide: SessionService, useValue: sessionService },
         { provide: RouteSnapshotService, useValue: routeSnapshotService },
+        { provide: TranslateService, useValue: { instant: sinon.stub() } },
+        { provide: TranslateFromService, useValue: { get: sinon.stub().returnsArg(0) } },
       ],
     });
 
