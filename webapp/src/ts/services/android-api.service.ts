@@ -177,9 +177,9 @@ export class AndroidApiService {
     try {
       this.mrdtService.respond(JSON.parse(response));
     } catch (e) {
-      return console.error(
-        new Error(`Unable to parse JSON response from android app: "${response}", error message: "${getProperty(e, 'message')}"`)
-      );
+      return console.error(new Error(
+        `Unable to parse JSON response from android app: "${response}", error message: "${getProperty(e, 'message')}"`
+      ));
     }
   }
 
@@ -191,9 +191,9 @@ export class AndroidApiService {
     try {
       this.mrdtService.respondTimeTaken(JSON.parse(response));
     } catch (e) {
-      return console.error(
-        new Error(`Unable to parse JSON response from android app: "${response}", error message: "${getProperty(e, 'message')}"`)
-      );
+      return console.error(new Error(
+        `Unable to parse JSON response from android app: "${response}", error message: "${getProperty(e, 'message')}"`
+      ));
     }
   }
 

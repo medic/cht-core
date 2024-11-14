@@ -13,7 +13,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { getProperty, hasProperty } from '../../libs/schema';
+import { getProperty } from '../../libs/schema';
 
 @Component({
   templateUrl: './contacts-edit.component.html'
