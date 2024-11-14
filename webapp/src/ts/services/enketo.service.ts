@@ -224,14 +224,6 @@ export class EnketoService {
     } // else the title is hardcoded in the form definition - leave it alone
   }
 
-  private scrollToTop(form) {
-    const element = form?.view?.html;
-    if (!element) {
-      return;
-    }
-    $(element)?.scrollTop(0);
-  }
-
   private setNavigation(form, $wrapper, useWindowHistory = true) {
     if (useWindowHistory) {
       // Handle page turning using browser history
@@ -245,8 +237,6 @@ export class EnketoService {
         form.pages
           ._next()
           .then(valid => {
-            this.scrollToTop(form);
-
             if (valid) {
               const currentIndex = form.pages._getCurrentIndex();
               if (useWindowHistory) {
@@ -270,8 +260,6 @@ export class EnketoService {
           pageIndex = form.pages._getCurrentIndex() - 1;
         } else {
           form.pages._prev();
-          // The _prev() doesn't return a promise like _next(), so wait a bit for the page navigation to scroll.
-          setTimeout(() => this.scrollToTop(form));
           pageIndex = form.pages._getCurrentIndex();
         }
 
