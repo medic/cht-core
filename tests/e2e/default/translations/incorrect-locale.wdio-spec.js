@@ -36,12 +36,16 @@ describe('Testing Incorrect locale', () => {
     await utils.saveDoc(place);
     await sentinelUtils.waitForSentinel();
   });
+
+  afterEach(async () => {
+    await utils.revertSettings(true);
+  });
   
   it('should work with incorrect locale', async () => {
     const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await createLanguage();
     await waitForServiceWorker.promise;
-    await commonElements.closeReloadModal(true);
+    await commonElements.closeReloadModal(true, 5000);
 
     await userSettingsElements.setLanguage(LANGUAGE_CODE);
 

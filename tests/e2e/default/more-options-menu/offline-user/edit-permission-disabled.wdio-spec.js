@@ -51,9 +51,8 @@ describe('More Options Menu - Offline User - Edit permissions disabled', () => {
     result = await utils.saveDoc(smsReport);
     smsReportId = result.id;
     await utils.createUsers([offlineUser]);
-    await loginPage.login(offlineUser);
     await utils.updatePermissions(offlineUser.roles, [], ['can_edit']);
-    await commonPage.closeReloadModal();
+    await loginPage.login(offlineUser);
   });
 
   after(async () => await utils.revertSettings(true));

@@ -91,7 +91,6 @@ describe('Contact details page.', () => {
       await utils.createUsers([user]);
 
       await loginPage.login(user);
-      await commonElements.waitForPageLoaded();
     });
 
     after(async () => {
