@@ -8,6 +8,7 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { UpdatePasswordService } from '@mm-services/update-password.service';
 import { UserLoginService } from '@mm-services/user-login.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { getProperty } from '../../libs/schema';
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
@@ -64,7 +65,7 @@ export class UpdatePasswordComponent {
       try {
         await this.userLoginService.login(username, newPassword);
       } catch (err) {
-        if (err.status === 302) {
+        if (typeof err === 'object' && err !== null && 'status' in err && err.status === 302) {
           this.close();
           const snackText = await this.translateService.get('password.updated');
           this.globalActions.setSnackbarContent(snackText);
@@ -73,12 +74,13 @@ export class UpdatePasswordComponent {
         }
       }
     } catch (error) {
-      if (error.status === 0) { // Offline status
+      const status = getProperty(error, 'status');
+      if (status === 0) { // Offline status
         const message = await this.translateService.get('online.action.message');
         this.setError(ErrorType.SUBMIT, message);
         return;
       }
-      if (error.status === 401) {
+      if (status === 401) {
         const message = await this.translateService.get('password.incorrect');
         this.setError(ErrorType.CURRENT_PASSWORD, message);
         return;

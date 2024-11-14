@@ -3,6 +3,7 @@ import { default as generateReplicationId } from 'pouchdb-generate-replication-i
 
 import { Migration } from './migration';
 import { DbService } from '@mm-services/db.service';
+import { getProperty } from '../../libs/schema';
 
 @Injectable({
   providedIn: 'root'
@@ -30,7 +31,7 @@ export class TargetCheckpointerMigration extends Migration {
     try {
       return await this.dbService.get().get(replicationId);
     } catch (err) {
-      if (err?.status === 404) {
+      if (getProperty(err, 'status') === 404) {
         return;
       }
       throw err;
@@ -48,7 +49,7 @@ export class TargetCheckpointerMigration extends Migration {
       await this.dbService.get({ remote: true }).put(localDoc);
       return true;
     } catch (err) {
-      if (err?.status === 409) {
+      if (getProperty(err, 'status') === 409) {
         // dont fail on conflicts
         return true;
       }

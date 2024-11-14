@@ -25,6 +25,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
+import { getProperty } from '../../libs/schema';
 
 const PAGE_SIZE = 50;
 const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
@@ -335,7 +336,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       const userContact = await this.userContactService.get();
       return userContact?.parent;
     } catch (error) {
-      console.error(error.message, error);
+      console.error(getProperty(error, 'message'), error);
     }
   }
 

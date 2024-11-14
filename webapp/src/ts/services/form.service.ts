@@ -26,6 +26,7 @@ import { reduce as _reduce } from 'lodash-es';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
+import { getProperty } from '../libs/schema';
 
 /**
  * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
@@ -176,11 +177,11 @@ export class FormService {
       }
       return await this.enketoService.renderForm(formContext, doc, userSettings);
     } catch (error) {
-      if (error.translationKey) {
+      if (getProperty(error, 'translationKey')) {
         throw error;
       }
       const errorMessage = `Failed during the form "${formDoc.internalId}" rendering : `;
-      throw new Error(errorMessage + error.message);
+      throw new Error(errorMessage + getProperty(error, 'message'));
     }
   }
 

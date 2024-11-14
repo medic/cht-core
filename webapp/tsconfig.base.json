@@ -36,6 +36,7 @@
     "noImplicitThis": true,
     "strictBindCallApply": true,
     "strictPropertyInitialization": true,
+    "useUnknownInCatchVariables": true
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

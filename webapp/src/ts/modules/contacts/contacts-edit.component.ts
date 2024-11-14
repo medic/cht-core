@@ -13,6 +13,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { getProperty, hasProperty } from '../../libs/schema';
 
 @Component({
   templateUrl: './contacts-edit.component.html'
@@ -173,7 +174,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
       this.globalActions.setLoadingContent(false);
     } catch (error) {
-      this.errorTranslationKey = error.translationKey || 'error.loading.form';
+      this.errorTranslationKey = getProperty(error, 'translationKey') || 'error.loading.form';
       this.globalActions.setLoadingContent(false);
       this.contentError = true;
       console.error('Error loading contact form.', error);
