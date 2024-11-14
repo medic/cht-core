@@ -64,7 +64,8 @@ describe('Training Materials Page', () => {
     await commonElements.waitForPageLoaded();
   });
 
-  it('should complete training after it was quit, the completed training is still displayed in the list', async () => {
+  it('should quit training in modal, and be able to complete it later in the Training Material page,' +
+    ' verify completed trainings display in the list', async () => {
     await trainingCardsPage.waitForTrainingCards();
     const trainingModalTitle = await trainingCardsPage.getTrainingTitle();
     expect(trainingModalTitle).to.equal(FIRST_TRAINING_NAME);
@@ -108,7 +109,7 @@ describe('Training Materials Page', () => {
     expect(firstReport.form).to.equal(FIRST_TRAINING_ID);
   });
 
-  it('should load and quit completed and uncompleted trainings', async () => {
+  it('should revisit completed and load uncompleted trainings', async () => {
     await commonPage.openHamburgerMenu();
     await commonPage.openTrainingMaterials();
 
