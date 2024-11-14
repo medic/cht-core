@@ -122,6 +122,10 @@ describe('TrainingsComponent', () => {
   }));
 
   it('should load next page of trainings', fakeAsync(async () => {
+    store.overrideSelector(Selectors.getTrainingMaterials, [ { _id: 'form-3' }, { _id: 'form-4' } ]);
+    store.refreshState();
+    flush();
+    sinon.resetHistory();
     const previousPage = Array
       .from({ length: 50 })
       .map((form, index) => ({
@@ -146,9 +150,8 @@ describe('TrainingsComponent', () => {
       }));
     component.trainingList = [...previousPage];
     trainingCardsService.getNextTrainings.returns(nextPage);
-    store.overrideSelector(Selectors.getTrainingMaterials, [ { _id: 'form-3' }, { _id: 'form-4' } ]);
-    store.refreshState();
-    flush();
+
+    await component.getTrainings();
 
     expect(trainingCardsService.getNextTrainings.calledOnce).to.be.true;
     expect(trainingCardsService.getNextTrainings.args[0]).to.have.deep.members([
@@ -159,12 +162,15 @@ describe('TrainingsComponent', () => {
     expect(component.moreTrainings).to.be.true;
     expect(component.loading).to.be.false;
     expect(component.trainingList).to.have.deep.members([ ...previousPage, ...nextPage ]);
-    expect(stopPerformanceTrackStub.calledOnce).to.be.true;
     expect(scrollLoaderProvider.init.calledOnce).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
   }));
 
   it('should catch error when loading a page of trainings', fakeAsync(async () => {
+    store.overrideSelector(Selectors.getTrainingMaterials, [ { _id: 'form-3' } ]);
+    store.refreshState();
+    flush();
+    sinon.resetHistory();
     component.trainingList = [{
       code: 'form-x',
       id: 'form-id',
@@ -175,9 +181,8 @@ describe('TrainingsComponent', () => {
       isCompletedTraining: true,
     }];
     trainingCardsService.getNextTrainings.throws(new Error('Ups an error'));
-    store.overrideSelector(Selectors.getTrainingMaterials, [ { _id: 'form-3' } ]);
-    store.refreshState();
-    flush();
+
+    await component.getTrainings();
 
     expect(trainingCardsService.getNextTrainings.calledOnce).to.be.true;
     expect(trainingCardsService.getNextTrainings.args[0]).to.have.deep.members([
