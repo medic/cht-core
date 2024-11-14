@@ -58,8 +58,27 @@ export class TrainingsComponent implements OnInit, OnDestroy {
   private subscribeToSelectedTraining() {
     const selectedTraining = this.store
       .select(Selectors.getTrainingCardFormId)
-      .subscribe(id => this.isInitialized?.then(() => this.selectedTrainingId = id));
+      .subscribe(newSelectedId => this.isInitialized?.then(() => {
+        this.refreshList(this.selectedTrainingId, newSelectedId);
+        this.selectedTrainingId = newSelectedId;
+      }));
     this.subscriptions.add(selectedTraining);
+  }
+
+  private refreshList(oldSelectedId, newSelectedId) {
+    const isTrainingClosing = oldSelectedId && !newSelectedId;
+    if (!isTrainingClosing) {
+      return;
+    }
+
+    const isUncompletedTraining = this.trainingList?.find(training => {
+      return training.code === oldSelectedId && !training.isCompletedTraining;
+    });
+
+    if (isUncompletedTraining) {
+      this.trainingList = [];
+      this.getTrainings();
+    }
   }
 
   async getTrainings() {
