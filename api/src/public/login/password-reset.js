@@ -1,4 +1,4 @@
-import {
+const {
   setState,
   request,
   getLocale,
@@ -6,7 +6,7 @@ import {
   baseTranslate,
   togglePassword,
   getUserCtx
-} from './auth-utils.js';
+} = window.AuthUtils;
 
 let selectedLocale;
 let translations;
@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
     passwordToggle.addEventListener('click', () => togglePassword(
       PASSWORD_INPUT_ID,
       CONFIRM_PASSWORD_INPUT_ID,
-      CURRENT_PASSWORD_INPUT_ID), false);
+      CURRENT_PASSWORD_INPUT_ID), false
+    );
   }
 });

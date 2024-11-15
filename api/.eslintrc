@@ -20,9 +20,6 @@
       "files": [
         "src/public/**/*.js"
       ],
-      "parserOptions": {
-        "sourceType": "module"
-      },
       "rules": {
         "no-console": "off",
         "compat/compat": "error"

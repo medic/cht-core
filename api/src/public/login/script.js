@@ -1,4 +1,4 @@
-import {
+const {
   setState,
   request,
   getCookie,
@@ -7,7 +7,7 @@ import {
   baseTranslate,
   togglePassword,
   getUserCtx
-} from './auth-utils.js';
+} = window.AuthUtils;
 
 let selectedLocale;
 let translations;
