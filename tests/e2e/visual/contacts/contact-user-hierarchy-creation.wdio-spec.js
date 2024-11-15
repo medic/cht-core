@@ -67,7 +67,7 @@ describe('Creating and editing contacts and users', () => {
     await contactPage.selectLHSRowByText(healthFacilityName);
     await searchPage.clearSearch();
     await commonPage.clickFastActionFAB({ waitForList: false });
-    await browser.pause(150);
+    await browser.pause(150); // Waiting for animation to avoid blurry screenshots
     await generateScreenshot('new-chw-supervisor', 'new-person');
     await commonPage.closeFastActionList();
     await commonPage.clickFastActionFAB({ actionId: 'person' });
