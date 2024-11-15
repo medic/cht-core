@@ -39,7 +39,7 @@ describe('Creating and editing contacts and users', () => {
 
     //create chw area and chw
     await commonPage.clickFastActionFAB({ waitForList: false });
-    await browser.pause(150);
+    await browser.pause(150); // Waiting for animation to avoid blurry screenshots
     await generateScreenshot('new-chw-area', 'new-chw-area');
     await commonPage.closeFastActionList();
     await commonPage.clickFastActionFAB({ actionId: 'health_center' });
