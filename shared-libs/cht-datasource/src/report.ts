@@ -1,4 +1,4 @@
-import { assertCursor, assertLimit, DataObject, Nullable, Page } from './libs/core';
+import { assertCursor, assertFreetextQualifier, assertLimit, DataObject, Nullable, Page } from './libs/core';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { Doc } from './libs/doc';
 import { InvalidArgumentError } from './libs/error';
@@ -72,11 +72,12 @@ export namespace v1 {
      */
     const curriedFn = async (
       qualifier: FreetextQualifier,
-      cursor: Nullable<string>,
+      cursor: Nullable<string> = null,
       limit = 100
     ): Promise<Page<string>> => {
+      assertFreetextQualifier(qualifier);
       assertCursor(cursor);
-      assertLimit(cursor);
+      assertLimit(limit);
 
       return fn(qualifier, cursor, limit);
     };

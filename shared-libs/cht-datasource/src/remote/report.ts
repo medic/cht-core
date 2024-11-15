@@ -1,7 +1,7 @@
-import {getResource, RemoteDataContext, getResources} from './libs/data-context';
-import {FreetextQualifier, UuidQualifier} from '../qualifier';
+import { getResource, RemoteDataContext, getResources } from './libs/data-context';
+import { FreetextQualifier, UuidQualifier } from '../qualifier';
 import * as Report from '../report';
-import {Nullable, Page} from '../libs/core';
+import { Nullable, Page } from '../libs/core';
 
 /** @internal */
 export namespace v1 {

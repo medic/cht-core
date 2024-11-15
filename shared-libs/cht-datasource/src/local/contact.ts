@@ -8,6 +8,7 @@ import logger from '@medic/logger';
 import contactTypeUtils from '@medic/contact-types-utils';
 import { getLineageDocsById, getPrimaryContactIds, hydrateLineage, hydratePrimaryContact } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
+import { validateCursor } from './libs/core';
 
 /** @internal */
 export namespace v1 {
@@ -148,10 +149,7 @@ export namespace v1 {
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
-      const skip = Number(cursor);
-      if (isNaN(skip) || skip < 0 || !Number.isInteger(skip)) {
-        throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}].`);
-      }
+      const skip = validateCursor(cursor);
 
       const getDocsFn = determineGetDocsFn(qualifier);
       if (!getDocsFn) {

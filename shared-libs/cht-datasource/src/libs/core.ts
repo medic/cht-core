@@ -1,5 +1,5 @@
 import { DataContext } from './data-context';
-import {ContactTypeQualifier, FreetextQualifier, isContactTypeQualifier, isFreetextQualifier} from '../qualifier';
+import { ContactTypeQualifier, FreetextQualifier, isContactTypeQualifier, isFreetextQualifier } from '../qualifier';
 import { InvalidArgumentError } from './error';
 
 /**

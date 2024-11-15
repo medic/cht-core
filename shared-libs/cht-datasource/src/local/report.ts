@@ -1,14 +1,15 @@
 import { LocalDataContext } from './libs/data-context';
-import { fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
+import { fetchAndFilter, getDocById, queryDocsByKey, queryDocsByRange } from './libs/doc';
 import { FreetextQualifier, UuidQualifier } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
-import { InvalidArgumentError } from '../libs/error';
+import { validateCursor } from './libs/core';
 
 /** @internal */
 export namespace v1 {
+  const END_OF_ALPHABET = '\ufff0';
   const isReport = () => (doc: Nullable<Doc>, uuid?: string): doc is Report.v1.Report => {
     if (!doc) {
       if (uuid) {
@@ -37,23 +38,30 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = ({ medicDb }: LocalDataContext) => {
-    const getDocsByKey = queryDocsByKey(medicDb, 'medic-client/reports_by_freetext');
+    const getReportsByFreeText = queryDocsByKey(medicDb, 'medic-client/reports_by_freetext');
+    const getReportsByFreeTextRange = queryDocsByRange(medicDb, 'medic-client/reports_by_freetext');
+
+    const getDocsFnForFreetextType = (
+      qualifier: FreetextQualifier
+    ): (limit: number, skip: number) => Promise<Nullable<Doc>[]> => {
+      if (qualifier.freetext.includes(':')) {
+        return (limit, skip) => getReportsByFreeText([qualifier.freetext], limit, skip);
+      }
+      return (limit, skip) => getReportsByFreeTextRange(
+        [qualifier.freetext],
+        [qualifier.freetext + END_OF_ALPHABET],
+        limit,
+        skip
+      );
+    };
 
     return async (
       qualifier: FreetextQualifier,
       cursor: Nullable<string>,
       limit:  number
     ): Promise<Page<string>> => {
-      const word = qualifier.freetext;
-
-      // Adding a number skip variable here so as not to confuse ourselves
-      const skip = Number(cursor);
-      if (isNaN(skip) || skip < 0 || !Number.isInteger(skip)) {
-        throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}].`);
-      }
-
-      const getDocsFn = (limit: number, skip: number) => getDocsByKey([ word ], limit, skip);
-
+      const skip = validateCursor(cursor);
+      const getDocsFn = getDocsFnForFreetextType(qualifier);
       const pagedDocs = await fetchAndFilter(getDocsFn, isReport(), limit)(limit, skip);
 
       return {
