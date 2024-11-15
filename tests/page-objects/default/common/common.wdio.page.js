@@ -365,7 +365,9 @@ const syncAndWaitForSuccess = async (expectReload, timeout = 5000, retry = 10) =
   if (retry < 0) {
     throw new Error('Failed to sync after 10 retries');
   }
-  expectReload && await closeReloadModal(false, ELEMENT_DISPLAY_PAUSE);
+  if (expectReload) {
+    expectReload = !(await closeReloadModal(false, ELEMENT_DISPLAY_PAUSE));
+  }
 
   try {
     await openHamburgerMenu();
@@ -378,13 +380,16 @@ const syncAndWaitForSuccess = async (expectReload, timeout = 5000, retry = 10) =
     // two animations can happen: closing the menu and showing the modal
     expectReload && await browser.pause(ELEMENT_DISPLAY_PAUSE * 2);
     if (!await isHamburgerMenuOpen()) {
-      await closeReloadModal(false, timeout);
+      if (expectReload) {
+        expectReload = !(await closeReloadModal(false, timeout));
+      }
       await openHamburgerMenu();
     }
     await (await hamburgerMenuSelectors.syncSuccess()).waitForDisplayed({ timeout });
+    return expectReload;
   } catch (err) {
     console.error(err);
-    await syncAndWaitForSuccess(expectReload, timeout, retry - 1);
+    return await syncAndWaitForSuccess(expectReload, timeout, retry - 1);
   }
 };
 
@@ -401,8 +406,10 @@ const hideModalOverlay = () => {
 const sync = async (expectReload, timeout) => {
   await hideModalOverlay();
 
-  await syncAndWaitForSuccess(expectReload, timeout);
-  expectReload && await closeReloadModal(false, ELEMENT_DISPLAY_PAUSE);
+  const reloaded = await syncAndWaitForSuccess(expectReload, timeout);
+  if (expectReload) {
+    await closeReloadModal(false, reloaded ? ELEMENT_DISPLAY_PAUSE : expectReload);
+  }
   await closeHamburgerMenu();
 };
 
