@@ -1,15 +1,25 @@
 import { Doc } from './libs/doc';
 import {
-  assertCursor, assertFreetextQualifier,
-  assertLimit, assertTypeQualifier,
+  assertCursor,
+  assertFreetextQualifier,
+  assertLimit,
+  assertTypeQualifier,
   DataObject,
+  getPagedGenerator,
   Identifiable,
   isDataObject,
   isIdentifiable,
   Nullable,
   Page,
 } from './libs/core';
-import { ContactTypeQualifier, FreetextQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
+import {
+  byContactType,
+  byFreetext,
+  ContactTypeQualifier,
+  FreetextQualifier,
+  isUuidQualifier,
+  UuidQualifier
+} from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
@@ -59,6 +69,27 @@ export namespace v1 {
     if (!isUuidQualifier(qualifier)) {
       throw new InvalidArgumentError(`Invalid identifier [${JSON.stringify(qualifier)}].`);
     }
+  };
+
+  /** @internal */
+  export const createQualifier = (
+    freetext: Nullable<string> = null,
+    type: Nullable<string> = null
+  ): ContactTypeQualifier | FreetextQualifier => {
+    if (!freetext && !type) {
+      throw new InvalidArgumentError('Either "freetext" or "type" is required');
+    }
+
+    const qualifier = {};
+    if (freetext) {
+      Object.assign(qualifier, byFreetext(freetext));
+    }
+
+    if (type) {
+      Object.assign(qualifier, byContactType(type));
+    }
+
+    return qualifier as ContactTypeQualifier | FreetextQualifier;
   };
 
   const getContact =
@@ -151,13 +182,28 @@ export namespace v1 {
    * @returns a function for getting a generator that fetches contact identifiers
    * @throws Error if a data context is not provided
    */
-  /**
-   * Returns a generator for fetching all contact identifiers that match the given qualifier
-   * @param qualifier the limiter defining which identifiers to return
-   * @returns a generator for fetching all contact identifiers that match the given qualifier
-   * @throws Error if no qualifier is provided or if the qualifier is invalid
-   */
-  // const getIdsAll = (context: DataContext) => (
-  //   qualifier: ContactTypeQualifier | FreetextQualifier
-  // ) => AsyncGenerator<string, null>;
+  export const getIdsAll = (context: DataContext): typeof curriedGen => {
+    assertDataContext(context);
+    const getPage = context.bind(v1.getIdsPage);
+
+    /**
+     * Returns a generator for fetching all contact identifiers that match the given qualifier
+     * @param qualifier the limiter defining which identifiers to return
+     * @returns a generator for fetching all contact identifiers that match the given qualifier
+     * @throws Error if no qualifier is provided or if the qualifier is invalid
+     */
+    const curriedGen = (
+      qualifier: ContactTypeQualifier | FreetextQualifier
+    ): AsyncGenerator<string, null> => {
+      if (isContactType(qualifier)) {
+        assertTypeQualifier(qualifier);
+      }
+
+      if (isFreetextType(qualifier)) {
+        assertFreetextQualifier(qualifier);
+      }
+      return getPagedGenerator(getPage, qualifier);
+    };
+    return curriedGen;
+  };
 }

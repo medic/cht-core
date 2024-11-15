@@ -66,13 +66,20 @@ export const getDatasource = (ctx: DataContext) => {
         getByUuidWithLineage: (uuid: string) => ctx.bind(Contact.v1.getWithLineage)(Qualifier.byUuid(uuid)),
 
         /** TODO */
-        getPageByType: (
-          qualifier: string,
+        getIdsPage: (
+          freetext: Nullable<string> = null,
+          type: Nullable<string> = null,
           cursor: Nullable<string> = null,
           limit = 100
         ) => ctx.bind(Contact.v1.getIdsPage)(
-          Qualifier.byFreetext(qualifier), cursor, limit
+          Contact.v1.createQualifier(freetext, type), cursor, limit
         ),
+
+        /** TODO */
+        getIds: (
+          freetext: Nullable<string> = null,
+          type: Nullable<string> = null
+        ) => ctx.bind(Contact.v1.getIdsAll)(Contact.v1.createQualifier(freetext, type)),
       },
       place: {
         /**
@@ -169,7 +176,7 @@ export const getDatasource = (ctx: DataContext) => {
         getByUuid: (uuid: string) => ctx.bind(Report.v1.get)(Qualifier.byUuid(uuid)),
 
         /** TODO */
-        getPageByType: (
+        getIdsPage: (
           qualifier: string,
           cursor: Nullable<string> = null,
           limit = 100
