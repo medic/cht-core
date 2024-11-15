@@ -14,6 +14,7 @@ describe('Authorization middleware', () => {
     sinon.stub(auth, 'getUserCtx');
     sinon.stub(auth, 'isOnlineOnly');
     sinon.stub(auth, 'getUserSettings');
+    sinon.stub(auth, 'checkPasswordChange').resolves(true);
     sinon.stub(serverUtils, 'error');
     proxy = { web: sinon.stub().resolves() };
     next = sinon.stub().resolves();
@@ -72,57 +73,69 @@ describe('Authorization middleware', () => {
   });
 
   describe('handleAuthErrors', () => {
-    it('should not allow authorized with no userCtx', () => {
+    it('should not allow authorized with no userCtx', async () => {
       testReq.authorized = true;
-      middleware.handleAuthErrors(testReq, testRes, next);
+      await middleware.handleAuthErrors(testReq, testRes, next);
       next.callCount.should.equal(0);
       serverUtils.error.callCount.should.equal(1);
     });
 
-    it('should allow authorized when request has no error and has userctx', () => {
+    it('should allow authorized when request has no error and has userctx', async () => {
       testReq.authorized = true;
       testReq.userCtx = { };
-      middleware.handleAuthErrors(testReq, testRes, next);
+      await middleware.handleAuthErrors(testReq, testRes, next);
       next.callCount.should.equal(1);
       serverUtils.error.callCount.should.equal(0);
     });
 
-    it('should allow non-authorized when request has no auth error', () => {
+    it('should allow non-authorized when request has no auth error', async () => {
       testReq.authorized = false;
       testReq.userCtx = {};
-      middleware.handleAuthErrors(testReq, testRes, next);
+      await middleware.handleAuthErrors(testReq, testRes, next);
       next.callCount.should.equal(1);
       serverUtils.error.callCount.should.equal(0);
     });
 
-    it('should write the auth error', () => {
+    it('should write the auth error', async () => {
       testReq.authErr = { some: 'error' };
-      middleware.handleAuthErrors(testReq, testRes, next);
+      await middleware.handleAuthErrors(testReq, testRes, next);
       next.callCount.should.equal(0);
       serverUtils.error.callCount.should.equal(1);
       serverUtils.error.args[0].should.deep.equal([{ some: 'error' }, testReq, testRes]);
     });
 
-    it('should error when no authErr and no userCtx', () => {
-      middleware.handleAuthErrors(testReq, testRes, next);
+    it('should error when no authErr and no userCtx', async () => {
+      await middleware.handleAuthErrors(testReq, testRes, next);
       next.callCount.should.equal(0);
       serverUtils.error.callCount.should.equal(1);
       serverUtils.error.args[0].should.deep.equal(['Authentication error', testReq, testRes]);
     });
+    it('should error when user password change is required', async () => {
+      testReq.userCtx = {};
+      auth.checkPasswordChange.rejects({ code: 403, message: 'Password change required'});
+      await middleware.handleAuthErrors(testReq, testRes, next);
+      next.callCount.should.equal(0);
+      serverUtils.error.callCount.should.equal(1);
+      serverUtils.error.args[0].should.deep.equal([
+        { code: 403, message: 'Password change required' },
+        testReq,
+        testRes
+      ]);
+    });
   });
 
   describe('handleAuthErrorsAllowingAuthorized', () => {
-    it('should allow authorized', () => {
+    it('should allow authorized',  () => {
       testReq.authorized = true;
       middleware.handleAuthErrorsAllowingAuthorized(testReq, testRes, next);
       next.callCount.should.equal(1);
       serverUtils.error.callCount.should.equal(0);
     });
 
-    it('should allow non-authorized when the request has no error', () => {
+    it('should allow non-authorized when the request has no error', async () => {
       testReq.authorized = false;
       testReq.userCtx = { };
-      middleware.handleAuthErrorsAllowingAuthorized(testReq, testRes, next);
+      await middleware.handleAuthErrorsAllowingAuthorized(testReq, testRes, next);
       next.callCount.should.equal(1);
       serverUtils.error.callCount.should.equal(0);
     });

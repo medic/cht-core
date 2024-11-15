@@ -56,7 +56,7 @@ describe('Login page functionality tests', () => {
 
   describe('Log out', () => {
     it('should show a warning before log out', async () => {
-      await loginPage.cookieLogin({ auth, resetPassword: false });
+      await loginPage.cookieLogin(auth);
       expect(await commonPage.getLogoutMessage()).to.equal('You will need an internet connection to log back in.');
     });
   });
@@ -72,13 +72,13 @@ describe('Login page functionality tests', () => {
     });
 
     it('should log in using username and password fields', async () => {
-      await loginPage.login({ username: auth.username, password: auth.password, resetPassword: false });
+      await loginPage.login(auth);
       await (await commonPage.analyticsTab()).waitForDisplayed();
       await (await commonPage.messagesTab()).waitForDisplayed();
     });
 
     it('should set correct cookies', async () => {
-      await loginPage.login({ username: auth.username, password: auth.password, resetPassword: false });
+      await loginPage.login(auth);
       await (await commonPage.analyticsTab()).waitForDisplayed();
 
       const cookies = await browser.getCookies();
@@ -117,7 +117,7 @@ describe('Login page functionality tests', () => {
 
     it('should display the "session expired" modal and redirect to login page', async () => {
       // Login and ensure it's redirected to webapp
-      await loginPage.login({ username: auth.username, password: auth.password, resetPassword: false });
+      await loginPage.login(auth);
       await (await commonPage.messagesTab()).waitForDisplayed();
       // Delete cookies and trigger a request to the server
       await browser.deleteCookies('AuthSession');

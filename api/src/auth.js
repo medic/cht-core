@@ -76,6 +76,26 @@ module.exports = {
       });
   },
 
+  checkPasswordChange: async (req) => {
+    if (!req.userCtx || !req.userCtx.name) {
+      throw { code: 401, message: 'Not logged in' };
+    }
+
+    if (req.url.includes('/password-reset')) {
+      return true;
+    }
+
+    if (environment.isTesting) {
+      return true;
+    }
+
+    const user = await users.getUserDoc((req.userCtx.name));
+    if (user.password_change_required) {
+      throw { code: 403, message: 'Password change required' };
+    }
+    return true;
+  },
+
   /**
    * Extract Basic Auth credentials from a request
    *

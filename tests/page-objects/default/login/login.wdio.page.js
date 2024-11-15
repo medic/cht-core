@@ -84,20 +84,6 @@ const loginRequest = async (username, password, locale) => {
   return await utils.request(opts);
 };
 
-const passwordResetRequest = async (username, password) => {
-  const opts = {
-    path: '/medic/password-reset',
-    body: {
-      user: username,
-      password: password,
-      confirmPassword: password
-    },
-    method: 'POST',
-    simple: false,
-  };
-  return await utils.request(opts);
-};
-
 const setCookiesFromResponse = async (response) => {
   const cookieArray = utils.parseCookieResponse(response.headers['set-cookie']);
   await browser.url('/');
@@ -110,7 +96,6 @@ const cookieLogin = async (options = {}) => {
     password = constants.PASSWORD,
     createUser = true,
     locale = 'en',
-    resetPassword = false,
   } = options;
 
   const loginResp = await loginRequest(username, password, locale);
@@ -120,10 +105,6 @@ const cookieLogin = async (options = {}) => {
     await utils.setupUserDoc(username);
   }
 
-  if (resetPassword) {
-    const resetResp = await passwordResetRequest(username, password);
-    await setCookiesFromResponse(resetResp);
-  }
   await commonPage.goToBase();
 };
 
