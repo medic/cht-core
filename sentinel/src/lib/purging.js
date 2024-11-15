@@ -112,21 +112,19 @@ const getAlreadyPurgedDocs = (roleHashes, ids) => {
   }
 
   const purgeIds = ids.map(id => serverSidePurgeUtils.getPurgedId(id));
-  const changesOpts = {
+  const reqOpts = {
     doc_ids: purgeIds,
-    batch_size: purgeIds.length + 1,
-    seq_interval: purgeIds.length
+    include_docs: false,
   };
 
-  // requesting _changes instead of _all_docs because it's roughly twice faster
   return Promise
-    .all(roleHashes.map(hash => getPurgeDb(hash).changes(changesOpts)))
+    .all(roleHashes.map(hash => getPurgeDb(hash).allDocs(reqOpts)))
     .then(results => {
       results.forEach((result, idx) => {
         const hash = roleHashes[idx];
-        result.results.forEach(change => {
-          if (!change.deleted) {
-            purged[hash][serverSidePurgeUtils.extractId(change.id)] = change.changes[0].rev;
+        result.rows.forEach(row => {
+          if (!row.deleted && row.value?.rev) {
+            purged[hash][serverSidePurgeUtils.extractId(row.id)] = row.value?.rev;
           }
         });
       });
