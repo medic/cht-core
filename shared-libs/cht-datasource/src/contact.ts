@@ -1,7 +1,7 @@
 import { Doc } from './libs/doc';
 import {
-  assertCursor,
-  assertLimit,
+  assertCursor, assertFreetextQualifier,
+  assertLimit, assertTypeQualifier,
   DataObject,
   Identifiable,
   isDataObject,
@@ -61,10 +61,11 @@ export namespace v1 {
     }
   };
 
-  const getContact = <T>(
-    localFn: (c: LocalDataContext) => (qualifier: UuidQualifier) => Promise<T>,
-    remoteFn: (c: RemoteDataContext) => (qualifier: UuidQualifier) => Promise<T>
-  ) => (context: DataContext) => {
+  const getContact =
+    <T>(
+      localFn: (c: LocalDataContext) => (qualifier: UuidQualifier) => Promise<T>,
+      remoteFn: (c: RemoteDataContext) => (qualifier: UuidQualifier) => Promise<T>
+    ) => (context: DataContext) => {
       assertDataContext(context);
       const fn = adapt(context, localFn, remoteFn);
       return async (qualifier: UuidQualifier): Promise<T> => {
@@ -125,11 +126,19 @@ export namespace v1 {
      */
     const curriedFn = async (
       qualifier: ContactTypeQualifier | FreetextQualifier,
-      cursor: Nullable<string>,
+      cursor: Nullable<string> = null,
       limit = 100
     ): Promise<Page<string>> => {
       assertCursor(cursor);
       assertLimit(limit);
+
+      if (isContactType(qualifier)) {
+        assertTypeQualifier(qualifier);
+      }
+
+      if (isFreetextType(qualifier)) {
+        assertFreetextQualifier(qualifier);
+      }
 
       return fn(qualifier, cursor, limit);
     };

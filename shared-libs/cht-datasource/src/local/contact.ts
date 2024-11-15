@@ -1,5 +1,5 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
-import { fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey } from './libs/doc';
+import { fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey, queryDocsByRange } from './libs/doc';
 import { ContactTypeQualifier, FreetextQualifier, UuidQualifier } from '../qualifier';
 import * as Contact from '../contact';
 import { deepCopy, isNonEmptyArray, Nullable, Page } from '../libs/core';
@@ -11,6 +11,7 @@ import { InvalidArgumentError } from '../libs/error';
 
 /** @internal */
 export namespace v1 {
+  const END_OF_ALPHABET = '\ufff0';
   const getContactTypes = (settings: SettingsService): string[] => {
     const contactTypesObjects = contactTypeUtils.getContactTypes(settings.getAll());
     return contactTypesObjects.map((item) => item.id) as string[];
@@ -71,29 +72,91 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = ({ medicDb, settings }: LocalDataContext) => {
-    // TODO: change `medic-client` to the actual ddoc later on
-    const getDocsByKey = queryDocsByKey(medicDb, 'medic-client/medic-offline-freetext');
+    // Define query functions
+    const getContactsByTypeFreetext = queryDocsByKey(medicDb, 'medic-client/contacts_by_type_freetext');
+    const getContactsByFreetext = queryDocsByKey(medicDb, 'medic-client/contacts_by_freetext');
+    const getContactsByType = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
+    const getContactsByTypeFreetextRange = queryDocsByRange(medicDb, 'medic-client/contacts_by_type_freetext');
+    const getContactsByFreetextRange = queryDocsByRange(medicDb, 'medic-client/contacts_by_freetext');
+
+    const determineGetDocsFn = (
+      qualifier: ContactTypeQualifier | FreetextQualifier
+    ): ((limit: number, skip: number) => Promise<Nullable<Doc>[]>) | null => {
+      if (isContactTypeAndFreetextType(qualifier)) {
+        return getDocsFnForContactTypeAndFreetext(qualifier);
+      }
+
+      if (Contact.v1.isContactType(qualifier)) {
+        return getDocsFnForContactType(qualifier);
+      }
+
+      if (Contact.v1.isFreetextType(qualifier)) {
+        return getDocsFnForFreetextType(qualifier);
+      }
+
+      return null;
+    };
+
+    const isContactTypeAndFreetextType = (
+      qualifier: ContactTypeQualifier | FreetextQualifier
+    ): qualifier is ContactTypeQualifier & FreetextQualifier => {
+      return Contact.v1.isContactType(qualifier) && Contact.v1.isFreetextType(qualifier);
+    };
+
+    const getDocsFnForContactTypeAndFreetext = (
+      qualifier: ContactTypeQualifier & FreetextQualifier
+    ): (limit: number, skip: number) => Promise<Nullable<Doc>[]> => {
+      if (qualifier.freetext.includes(':')) {
+        return (limit, skip) => getContactsByTypeFreetext(
+          [qualifier.contactType, qualifier.freetext],
+          limit,
+          skip
+        );
+      }
+
+      return (limit, skip) => getContactsByTypeFreetextRange(
+        [qualifier.contactType, qualifier.freetext],
+        [qualifier.contactType, qualifier.freetext + END_OF_ALPHABET],
+        limit,
+        skip
+      );
+    };
+
+    const getDocsFnForContactType = (
+      qualifier: ContactTypeQualifier
+    ): (limit: number, skip: number) => Promise<Nullable<Doc>[]> => (
+      limit,
+      skip
+    ) => getContactsByType([qualifier.contactType], limit, skip);
+
+    const getDocsFnForFreetextType = (
+      qualifier: FreetextQualifier
+    ): (limit: number, skip: number) => Promise<Nullable<Doc>[]> => {
+      if (qualifier.freetext.includes(':')) {
+        return (limit, skip) => getContactsByFreetext([qualifier.freetext], limit, skip);
+      }
+      return (limit, skip) => getContactsByFreetextRange(
+        [qualifier.freetext],
+        [qualifier.freetext + END_OF_ALPHABET],
+        limit,
+        skip
+      );
+    };
 
     return async (
       qualifier: ContactTypeQualifier | FreetextQualifier,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
-      let word = '';
-
-      if (Contact.v1.isContactType(qualifier)) {
-        word = qualifier.contactType;
-      } else if (Contact.v1.isFreetextType(qualifier)) {
-        word = qualifier.freetext;
-      }
-
-      // Adding a number skip variable here so as not to confuse ourselves
       const skip = Number(cursor);
       if (isNaN(skip) || skip < 0 || !Number.isInteger(skip)) {
         throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}].`);
       }
 
-      const getDocsFn = (limit: number, skip: number) => getDocsByKey([word], limit, skip);
+      const getDocsFn = determineGetDocsFn(qualifier);
+      if (!getDocsFn) {
+        throw new InvalidArgumentError(`Unsupported qualifier type: ${JSON.stringify(qualifier)}`);
+      }
 
       const pagedDocs = await fetchAndFilter(getDocsFn, isContact(settings), limit)(limit, skip);
 

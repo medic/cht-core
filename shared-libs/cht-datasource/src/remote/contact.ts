@@ -30,21 +30,27 @@ export namespace v1 {
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
-      let word = '';
+      let freetext = '';
+      let contactType = '';
 
       if (Contact.v1.isContactType(qualifier)) {
-        word = qualifier.contactType;
-      } else if (Contact.v1.isFreetextType(qualifier)) {
-        word = qualifier.freetext;
+        freetext = qualifier.contactType;
       }
+
+      if (Contact.v1.isFreetextType(qualifier)) {
+        contactType = qualifier.freetext;
+      }
+
       const queryParams = {
         limit: limit.toString(),
-        freetext: word,
         ...(cursor
           ? {
             cursor,
           }
           : {}),
+        ...(contactType ? { contactType: contactType } : {}),
+        ...(freetext ? { freetext: freetext } : {}),
+
       };
       return getContacts(remoteContext)(queryParams);
     };

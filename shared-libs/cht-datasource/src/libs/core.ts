@@ -1,5 +1,5 @@
 import { DataContext } from './data-context';
-import { ContactTypeQualifier, isContactTypeQualifier } from '../qualifier';
+import {ContactTypeQualifier, FreetextQualifier, isContactTypeQualifier, isFreetextQualifier} from '../qualifier';
 import { InvalidArgumentError } from './error';
 
 /**
@@ -167,5 +167,14 @@ export const assertLimit: (limit: unknown) => asserts limit is number = (limit: 
 export const assertCursor: (cursor: unknown) => asserts cursor is Nullable<string> = (cursor: unknown) => {
   if (cursor !== null && (typeof cursor !== 'string' || !cursor.length)) {
     throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}].`);
+  }
+};
+
+/** @internal */
+export const assertFreetextQualifier: (qualifier: unknown) => asserts qualifier is FreetextQualifier = (
+  qualifier: unknown
+) => {
+  if (!isFreetextQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid invalid freetext [${JSON.stringify(qualifier)}].`);
   }
 };

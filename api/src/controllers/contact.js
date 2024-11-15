@@ -29,7 +29,19 @@ module.exports = {
     getIds: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req);
 
-      const qualifier = Qualifier.byFreetext(req.query.freetext);
+      if (!req.query.freetext && !req.query.type) {
+        return serverUtils.error({ status: 400, message: 'Either query param freetext or type is required' }, req, res);
+      }
+      const qualifier = {};
+
+      if (req.query.freetext) {
+        Object.assign(qualifier, Qualifier.byFreetext(req.query.freetext));
+      }
+
+      if (req.query.type) {
+        Object.assign(qualifier, Qualifier.byContactType(req.query.type));
+      }
+
       const limit = req.query.limit ? Number(req.query.limit) : req.query.limit;
 
       const docs = await getContactIds()(qualifier, req.query.cursor, limit);
