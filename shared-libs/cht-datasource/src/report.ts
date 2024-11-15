@@ -1,4 +1,12 @@
-import { assertCursor, assertFreetextQualifier, assertLimit, DataObject, Nullable, Page } from './libs/core';
+import {
+  assertCursor,
+  assertFreetextQualifier,
+  assertLimit,
+  DataObject,
+  getPagedGenerator,
+  Nullable,
+  Page
+} from './libs/core';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { Doc } from './libs/doc';
 import { InvalidArgumentError } from './libs/error';
@@ -82,5 +90,31 @@ export namespace v1 {
       return fn(qualifier, cursor, limit);
     };
     return curriedFn;
+  };
+
+  /**
+   * Returns a function for getting a generator that fetches report identifiers from the given data context.
+   * @param context the current data context
+   * @returns a function for getting a generator that fetches report identifiers
+   * @throws Error if a data context is not provided
+   */
+  export const getIdsAll = (context: DataContext): typeof curriedGen => {
+    assertDataContext(context);
+    const getPage = context.bind(v1.getIdsPage);
+
+    /**
+     * Returns a generator for fetching all report identifiers that match the given qualifier
+     * @param qualifier the limiter defining which identifiers to return
+     * @returns a generator for fetching all report identifiers that match the given qualifier
+     * @throws Error if no qualifier is provided or if the qualifier is invalid
+     */
+    const curriedGen = (
+      qualifier: FreetextQualifier
+    ): AsyncGenerator<string, null> => {
+      assertFreetextQualifier(qualifier);
+
+      return getPagedGenerator(getPage, qualifier);
+    };
+    return curriedGen;
   };
 }

@@ -183,6 +183,11 @@ export const getDatasource = (ctx: DataContext) => {
         ) => ctx.bind(Report.v1.getIdsPage)(
           Qualifier.byFreetext(qualifier), cursor, limit
         ),
+
+        /** TODO */
+        getIds: (
+          qualifier: string,
+        ) => ctx.bind(Report.v1.getIdsAll)(Qualifier.byFreetext(qualifier)),
       },
     },
   };
