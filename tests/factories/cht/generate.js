@@ -142,7 +142,7 @@ const createAdditionalPersons = (nbrPersons, clinic, ageType) => {
 
       return personFactory.build({
         parent: { _id: clinic._id, parent: clinic.parent },
-        name: additionalPersonName,
+        name: `${name} ${clinic.last_name}`,
         patient_id: PATIENT_IDS[i % PATIENT_IDS.length],
         phone: additionalPhoneNumber,
         date_of_birth: date_of_birth,
