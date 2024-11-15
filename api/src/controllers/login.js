@@ -23,7 +23,8 @@ const PASSWORD_RESET_URL = '/medic/password-reset';
 const ERROR_KEY_MAPPING = {
   'password.weak': 'password-weak', //NoSONAR
   'password.length.minimum': 'password-short', //NoSONAR
-  'password.current.incorrect': 'current-password-incorrect' //NoSONAR
+  'password.current.incorrect': 'current-password-incorrect', //NoSONAR
+  'password.same': 'password-same' //NoSonar
 };
 
 const templates = {
@@ -73,7 +74,8 @@ const templates = {
       'password.length.minimum',
       'password.must.match',
       'user.password.current',
-      'password.current.incorrect'
+      'password.current.incorrect',
+      'password.same'
     ],
   }
 };
@@ -424,7 +426,7 @@ const createNewSession = async (username, password) => {
   };
 };
 
-const validateCurrentPassword = async (username, currentPassword) => {
+const validateCurrentPassword = async (username, currentPassword, newPassword) => {
   try {
     await request.get({
       url: new URL('/_session', environment.serverUrlNoAuth).toString(),
@@ -432,6 +434,13 @@ const validateCurrentPassword = async (username, currentPassword) => {
       resolveWithFullResponse: true,
       auth: { user: username, pass: currentPassword },
     });
+
+    if (currentPassword === newPassword) {
+      return {
+        isValid: false,
+        error: ERROR_KEY_MAPPING['password.same'],
+      };
+    }
     return { isValid: true };
   } catch (err) {
     return {
@@ -508,7 +517,7 @@ module.exports = {
           params: validation.params,
         });
       }
-      const currentPasswordValidation = await validateCurrentPassword(username, currentPassword);
+      const currentPasswordValidation = await validateCurrentPassword(username, currentPassword, password);
       if (!currentPasswordValidation.isValid) {
         return res.status(400).json({
           error: currentPasswordValidation.error
@@ -524,9 +533,8 @@ module.exports = {
       return res.status(302).send(redirectUrl);
     } catch (err) {
       logger.error('Error updating password: %o', err);
-      return res.status(err.status || 500).json({
-        error: err.message || 'Error updating password'
-      });
+      const status = err.status || 500;
+      res.status(status).json({ error: err.error || 'Error updating password' });
     }
   },
   tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),

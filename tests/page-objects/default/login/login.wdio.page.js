@@ -5,9 +5,10 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginButton = () => $('#login');
 const updatePasswordButton = () => $('#update-password');
 const userField = () => $('#user');
-const passwordField = () => $('#form[action="/medic/login"] #password');
+const passwordField = () => $('#password');
 const resetPasswordField = () => $('#form[action="/medic/password-reset"] #password');
 const confirmPasswordField = () => $('#confirm-password');
+const currentPasswordField = () => $('#current-password');
 const passwordToggleButton = () => $('#password-toggle');
 const labelForUser = () => $('label[for="user"]');
 const labelForPassword = () => $('label[for="password"]');
@@ -27,6 +28,8 @@ const getPasswordResetErrorMessage = async (errorMsg) => {
   await (await passwordResetMessageField(errorMsg)).waitForDisplayed();
   return await (await passwordResetMessageField(errorMsg)).getText();
 };
+
+const NEW_PASSWORD = 'Pa33word1';
 
 const login = async ({
   username,
@@ -54,7 +57,7 @@ const login = async ({
   }
 
   if (resetPassword) {
-    await passwordReset(password, password);
+    await passwordReset(password, NEW_PASSWORD, NEW_PASSWORD);
   }
 
   if (!loadPage) {
@@ -190,12 +193,18 @@ const setConfirmPasswordValue = async (confirmPassword) => {
   await (await confirmPasswordField()).setValue(confirmPassword);
 };
 
+const setCurrentPasswordValue = async (currentPassword) => {
+  await (await currentPasswordField()).waitForDisplayed();
+  await (await currentPasswordField()).setValue(currentPassword);
+};
+
 const setUsernameValue = async (username) => {
   await (await userField()).waitForDisplayed();
   await (await userField()).setValue(username);
 };
 
-const passwordReset = async (password, confirmPassword) => {
+const passwordReset = async (currentPassword, password, confirmPassword) => {
+  await setCurrentPasswordValue(currentPassword);
   await (await resetPasswordField()).waitForDisplayed();
   await (await resetPasswordField()).setValue(password);
   await setConfirmPasswordValue(confirmPassword);
@@ -225,6 +234,7 @@ module.exports = {
   setPasswordValue,
   setUsernameValue,
   setConfirmPasswordValue,
+  setCurrentPasswordValue,
   passwordReset,
   updatePasswordButton,
   getPasswordResetTranslations,

@@ -175,9 +175,12 @@ describe('Login page functionality tests', () => {
   });
 
   describe('Password Reset', () => {
+    const CURRENT_PASSWORD_INCORRECT = 'Current password is not correct';
     const PASSWORD_MISSING = 'The password must be at least 8 characters long.';
     const PASSWORD_WEAK = 'The password is too easy to guess. Include a range of characters to make it more complex.';
     const PASSWORD_MISMATCH = 'Password and confirm password must match';
+    const PASSWORD_SAME = 'New password must be different from current password';
+    const NEW_PASSWORD = 'Pa33word1';
     const places = placeFactory.generateHierarchy();
     const districtHospital = places.get('district_hospital');
     const user = userFactory.build({ place: districtHospital._id, roles: ['chw'] });
@@ -196,10 +199,9 @@ describe('Login page functionality tests', () => {
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
       await (await loginPage.loginButton()).click();
-      await browser.url('/medic/password-reset');
       await loginPage.getPasswordResetTranslations();
       await loginPage.setPasswordValue('');
-      await loginPage.setConfirmPasswordValue(user.password);
+      await loginPage.setConfirmPasswordValue('');
       await (await loginPage.updatePasswordButton()).click();
       expect(await loginPage.getPasswordResetErrorMessage('password-short')).to.equal(PASSWORD_MISSING);
     });
@@ -209,7 +211,6 @@ describe('Login page functionality tests', () => {
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
       await (await loginPage.loginButton()).click();
-      await browser.url('/medic/password-reset');
       await loginPage.getPasswordResetTranslations();
       await loginPage.setPasswordValue(user.password);
       await loginPage.setConfirmPasswordValue('');
@@ -222,7 +223,6 @@ describe('Login page functionality tests', () => {
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
       await (await loginPage.loginButton()).click();
-      await browser.url('/medic/password-reset');
       await loginPage.getPasswordResetTranslations();
       await loginPage.setPasswordValue('12345678');
       await loginPage.setConfirmPasswordValue('12345678');
@@ -230,15 +230,41 @@ describe('Login page functionality tests', () => {
       expect(await loginPage.getPasswordResetErrorMessage('password-weak')).to.equal(PASSWORD_WEAK);
     });
 
+    it('should try to reset password and verify current password is correct', async () => {
+      await browser.url('/');
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setUsernameValue(user.username);
+      await (await loginPage.loginButton()).click();
+      await loginPage.getPasswordResetTranslations();
+      await loginPage.setCurrentPasswordValue('12');
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setConfirmPasswordValue(user.password);
+      await (await loginPage.updatePasswordButton()).click();
+      expect(await loginPage.getPasswordResetErrorMessage('current-password-incorrect')).to.equal(
+        CURRENT_PASSWORD_INCORRECT
+      );
+    });
+
+    it('should try to reset password and verify current password is not same as new password', async () => {
+      await browser.url('/');
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setUsernameValue(user.username);
+      await (await loginPage.loginButton()).click();
+      await loginPage.getPasswordResetTranslations();
+      await loginPage.setCurrentPasswordValue(user.password);
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setConfirmPasswordValue(user.password);
+      await (await loginPage.updatePasswordButton()).click();
+      expect(await loginPage.getPasswordResetErrorMessage('password-same')).to.equal(PASSWORD_SAME);
+    });
+
     it('should reset password successfully and redirect to webapp', async () => {
       await browser.url('/');
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
       await (await loginPage.loginButton()).click();
-      await browser.url('/medic/password-reset');
       await loginPage.getPasswordResetTranslations();
-      await loginPage.setPasswordValue(user.password);
-      await loginPage.setConfirmPasswordValue(user.password);
+      await loginPage.passwordReset(user.password, NEW_PASSWORD, NEW_PASSWORD);
       await (await loginPage.updatePasswordButton()).click();
       await commonPage.waitForPageLoaded();
       await (await commonPage.messagesTab()).waitForDisplayed();

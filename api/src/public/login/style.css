@@ -106,6 +106,7 @@ form {
 .password-short .error.password-short,
 .password-mismatch .error.password-mismatch,
 .password-required .error.password-required,
+.password-same .error.password-same,
 .current-password-incorrect .error.current-password-incorrect
 {
   display: block;

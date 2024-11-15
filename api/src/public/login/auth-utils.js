@@ -1,4 +1,3 @@
-/* eslint-disable */
 export const setState = (className) => {
   const form = document.getElementById('form');
   if (!form) {
