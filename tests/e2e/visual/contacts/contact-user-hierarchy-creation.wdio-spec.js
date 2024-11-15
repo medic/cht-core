@@ -79,7 +79,7 @@ describe('Creating and editing contacts and users', () => {
     await contactPage.selectLHSRowByText(healthFacilityName);
     await searchPage.clearSearch();
     await commonPage.openMoreOptionsMenu();
-    await browser.pause(150);
+    await browser.pause(150); // Waiting for animation to avoid blurry screenshots
     await generateScreenshot('new-chw-supervisor', 'edit-facility');
     await (await contactPage.menuSelectors.editContactButton()).waitForClickable();
     await (await contactPage.menuSelectors.editContactButton()).click();
