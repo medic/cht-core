@@ -78,9 +78,8 @@ const deathCardSelectors = {
   deathPlace: () => $(`${DEATH_CARD_TEST_ID} div[test-id="contact.profile.death.place"] p.card-field-value`),
 };
 
-const INMUNIZATION_CARD_TEST_ID = `div[test-id="contact.profile.immunizations"]`;
 const inmunizationCardSelectors = {
-  inmunizationCard: () => $(INMUNIZATION_CARD_TEST_ID),
+  inmunizationCard: () => $('div[test-id="contact.profile.immunizations"]'),
 };
 
 const PRIMARY_CONTACT_SEARCH_DROPDOWN =
