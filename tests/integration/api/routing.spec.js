@@ -403,7 +403,7 @@ describe('routing', () => {
           if (idx === 0) {
             // online user request
             expect(result.limit).to.equal(1);
-            expect(result.fields).to.equal([]);
+            expect(result.fields).to.deep.equal([]);
           } else {
             // offline user requests
             expect(result.statusCode).to.equal(403);
