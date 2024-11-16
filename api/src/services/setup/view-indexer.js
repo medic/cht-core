@@ -66,7 +66,6 @@ const indexView = async (dbName, ddocId, viewName) => {
         uri: `${environment.serverUrl}/${dbName}/${ddocId}/_view/${viewName}`,
         json: true,
         qs: { limit: 1 },
-        timeout: 2000,
       });
     } catch (requestError) {
       if (!continueIndexing) {
