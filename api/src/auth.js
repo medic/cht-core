@@ -78,7 +78,10 @@ module.exports = {
 
   checkPasswordChange: async (req) => {
     if (!req.userCtx || !req.userCtx.name) {
-      throw { code: 401, message: 'Not logged in' };
+      const error = new Error('Not logged in');
+      error.code = 401;
+      error.error = 'Not logged in';
+      throw error;
     }
 
     if (req.url.includes('/password-reset')) {
@@ -91,7 +94,10 @@ module.exports = {
 
     const user = await users.getUserDoc((req.userCtx.name));
     if (user.password_change_required) {
-      throw { code: 403, message: 'Password change required' };
+      const error = new Error('Password change required');
+      error.code = 403;
+      error.error = 'Password change required';
+      throw error;
     }
     return true;
   },

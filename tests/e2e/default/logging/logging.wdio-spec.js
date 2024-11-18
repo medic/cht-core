@@ -10,7 +10,7 @@ describe('audit log', () => {
 
   it('should mask password on login', async () => {
     const collectAuditLogs = await utils.collectHaproxyLogs(/POST,\/_session/);
-    await loginPage.login({ auth, resetPassword: false });
+    await loginPage.login({ username: auth.username, password: auth.password, resetPassword: false });
     const auditLogs = (await collectAuditLogs()).filter(log => log.length);
     expect(auditLogs.length).to.equal(1);
     expect(auditLogs[0]).to.contain(`{"name":"${constants.USERNAME}","password":"***"}`);

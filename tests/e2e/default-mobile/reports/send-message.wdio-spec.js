@@ -3,7 +3,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const personFactory = require('@factories/cht/contacts/person');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
-const commonElements = require('@page-objects/default/common/common.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 
@@ -39,12 +39,12 @@ describe('Report - Send message action', () => {
   });
 
   it('should display option to send message', async () => {
-    await commonElements.goToReports();
+    await commonPage.goToReports();
     const firstReport = await reportsPage.leftPanelSelectors.firstReport();
     await reportsPage.openSelectedReport(firstReport);
 
-    expect(await commonElements.isReportActionDisplayed()).to.equal(true);
-    expect(await commonElements.reportsFastActionFAB().getAttribute('class'))
+    expect(await commonPage.isReportActionDisplayed()).to.equal(true);
+    expect(await commonPage.fabSelectors.reportsFastActionFAB().getAttribute('class'))
       .to.include('fa-envelope');
   });
 });

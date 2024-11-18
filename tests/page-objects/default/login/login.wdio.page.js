@@ -220,4 +220,5 @@ module.exports = {
   updatePasswordButton,
   getPasswordResetTranslations,
   getPasswordResetErrorMessage,
+  NEW_PASSWORD,
 };

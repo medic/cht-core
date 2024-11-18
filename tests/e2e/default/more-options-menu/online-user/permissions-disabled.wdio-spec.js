@@ -58,28 +58,28 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
       'enable the \'edit\' and \'delete\' options when a contact is opened', async () => {
       await commonPage.goToPeople(contact._id);
       await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;
-      expect(await commonPage.isMenuOptionEnabled('edit', 'contacts')).to.be.true;
-      expect(await commonPage.isMenuOptionEnabled('delete', 'contacts')).to.be.true;
+      expect(await commonPage.isMenuOptionVisible('export')).to.be.false;
+      expect(await commonPage.isMenuOptionEnabled('edit')).to.be.true;
+      expect(await commonPage.isMenuOptionEnabled('delete')).to.be.true;
     });
 
     it('should hide the \'export\' option and ' +
       'enable the \'edit\', \'delete\' and \'review\' options when a report is opened', async () => {
       await commonPage.goToReports();
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
       (await reportPage.leftPanelSelectors.firstReport()).click();
       await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
-      expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
-      expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;
-      expect(await commonPage.isMenuOptionEnabled('review', 'report')).to.be.true;
+      expect(await commonPage.isMenuOptionVisible('export')).to.be.false;
+      expect(await commonPage.isMenuOptionEnabled('edit')).to.be.true;
+      expect(await commonPage.isMenuOptionEnabled('delete')).to.be.true;
+      expect(await commonPage.isMenuOptionEnabled('review')).to.be.true;
     });
 
     it('should hide the kebab menu on the Message tab', async () => {
       await commonPage.goToMessages();
       await commonPage.waitForLoaderToDisappear();
       expect(await commonPage.isMessagesListPresent()).to.be.true;
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
     });
   });
 
@@ -95,9 +95,9 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
       'enable the \'edit\' and \'export\' options when a contact is opened', async () => {
       await commonPage.goToPeople(contact._id);
       await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isMenuOptionVisible('delete', 'contacts')).to.be.false;
-      expect(await commonPage.isMenuOptionEnabled('edit', 'contacts')).to.be.true;
-      expect(await commonPage.isMenuOptionEnabled('export', 'contacts')).to.be.true;
+      expect(await commonPage.isMenuOptionVisible('delete')).to.be.false;
+      expect(await commonPage.isMenuOptionEnabled('edit')).to.be.true;
+      expect(await commonPage.isMenuOptionEnabled('export')).to.be.true;
     });
 
     it('should hide the \'delete\' option and ' +
@@ -105,10 +105,10 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
       await commonPage.goToReports();
       (await reportPage.leftPanelSelectors.firstReport()).click();
       await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;
-      expect(await commonPage.isMenuOptionEnabled('export', 'reports')).to.be.true;
-      expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
-      expect(await commonPage.isMenuOptionEnabled('review', 'report')).to.be.true;
+      expect(await commonPage.isMenuOptionVisible('delete')).to.be.false;
+      expect(await commonPage.isMenuOptionEnabled('export')).to.be.true;
+      expect(await commonPage.isMenuOptionEnabled('edit')).to.be.true;
+      expect(await commonPage.isMenuOptionEnabled('review')).to.be.true;
     });
   });
 
@@ -124,9 +124,9 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
       'enable the \'export\' option when a contact is opened', async () => {
       await commonPage.goToPeople(contact._id);
       await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isMenuOptionVisible('edit', 'contacts')).to.be.false;
-      expect(await commonPage.isMenuOptionVisible('delete', 'contacts')).to.be.false;
-      expect(await commonPage.isMenuOptionEnabled('export', 'contacts')).to.be.true;
+      expect(await commonPage.isMenuOptionVisible('edit')).to.be.false;
+      expect(await commonPage.isMenuOptionVisible('delete')).to.be.false;
+      expect(await commonPage.isMenuOptionEnabled('export')).to.be.true;
     });
 
     it('should hide the \'edit\', \'delete\' and \'review\' options and ' +
@@ -134,10 +134,10 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
       await commonPage.goToReports();
       (await reportPage.leftPanelSelectors.firstReport()).click();
       await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isMenuOptionVisible('edit', 'reports')).to.be.false;
-      expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;
-      expect(await commonPage.isMenuOptionVisible('review', 'report')).to.be.false;
-      expect(await commonPage.isMenuOptionEnabled('export', 'reports')).to.be.true;
+      expect(await commonPage.isMenuOptionVisible('edit')).to.be.false;
+      expect(await commonPage.isMenuOptionVisible('delete')).to.be.false;
+      expect(await commonPage.isMenuOptionVisible('review')).to.be.false;
+      expect(await commonPage.isMenuOptionEnabled('export')).to.be.true;
     });
   });
 });

@@ -450,6 +450,30 @@ const validateCurrentPassword = async (username, currentPassword, newPassword) =
   }
 };
 
+const passwordResetValidation = async (username, currentPassword, password) => {
+  const validation = validatePasswordReset(password);
+  if (!validation.isValid) {
+    return {
+      isValid: false,
+      status: 400,
+      error: validation.error,
+      params: validation.params
+    };
+  }
+
+  const currentPasswordValidation = await validateCurrentPassword(username, currentPassword, password);
+  if (!currentPasswordValidation.isValid) {
+    return {
+      isValid: false,
+      status: 400,
+      error: currentPasswordValidation.error
+    };
+  }
+
+  return { isValid: true };
+};
+
+
 module.exports = {
   renderLogin,
   renderPasswordReset,
@@ -510,26 +534,19 @@ module.exports = {
 
     try {
       const { username, currentPassword, password } = req.body;
-      const validation = validatePasswordReset(password);
-      if (!validation.isValid) {
-        return res.status(400).json({
-          error: validation.error,
-          params: validation.params,
+      const validationResult = await passwordResetValidation(username, currentPassword, password);
+      if (!validationResult.isValid) {
+        return res.status(validationResult.status).json({
+          error: validationResult.error,
+          params: validationResult.params
         });
       }
-      const currentPasswordValidation = await validateCurrentPassword(username, currentPassword, password);
-      if (!currentPasswordValidation.isValid) {
-        return res.status(400).json({
-          error: currentPasswordValidation.error
-        });
-      }
+
       const userDoc = await db.users.get(`org.couchdb.user:${username}`);
       await updatePassword(userDoc, password);
 
       const { sessionCookie, userCtx } = await createNewSession(username, password);
-
       const redirectUrl = await redirectToApp({ req, res, sessionCookie, userCtx });
-
       return res.status(302).send(redirectUrl);
     } catch (err) {
       logger.error('Error updating password: %o', err);
