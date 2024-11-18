@@ -50,7 +50,7 @@ describe('initial-replication', () => {
     const localAllDocsPreSync = await chtDbUtils.getDocs();
     const docIdsPreSync = dataFactory.ids(localAllDocsPreSync);
 
-    await commonPage.sync(false, 7000);
+    await commonPage.sync();
 
     const localAllDocs = await chtDbUtils.getDocs();
     const localDocIds = dataFactory.ids(localAllDocs);

@@ -10,7 +10,7 @@ describe('Acessing the admin app', () => {
   const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
 
   afterEach(async () => {
-    await commonPage.reloadSession();
+    await common.reloadSession();
   });
 
   it('should redirect to login when not logged in', async () => {

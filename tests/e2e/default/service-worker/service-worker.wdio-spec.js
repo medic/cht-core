@@ -147,7 +147,7 @@ describe('Service worker cache', () => {
     await utils.saveDoc(branding);
     await waitForLogs.promise;
 
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
     await browser.throttle('offline'); // make sure we load the login page from cache
     await commonPage.logout();
     expect(await browser.getTitle()).to.equal('Not Medic');
@@ -161,7 +161,7 @@ describe('Service worker cache', () => {
     });
     await waitForLogs.promise;
 
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
     await browser.throttle('offline'); // make sure we load the login page from cache
     await commonPage.logout();
 
@@ -172,7 +172,7 @@ describe('Service worker cache', () => {
   it('adding new languages triggers login page refresh', async () => {
     const languageCode = 'ro';
     await utils.enableLanguage(languageCode);
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
 
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations(languageCode, {
@@ -183,7 +183,7 @@ describe('Service worker cache', () => {
     });
     await waitForLogs.promise;
 
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
     await commonPage.logout();
 
     await loginPage.changeLanguage(languageCode, 'Utilizator');
@@ -196,7 +196,7 @@ describe('Service worker cache', () => {
   });
 
   it('other translation updates do not trigger a login page refresh', async () => {
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
 
     const cacheDetails = await getCachedRequests(true);
 
@@ -207,7 +207,7 @@ describe('Service worker cache', () => {
       'some': 'thing',
     });
     await waitForLogs.promise;
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
 
     const updatedCacheDetails = await getCachedRequests(true);
 

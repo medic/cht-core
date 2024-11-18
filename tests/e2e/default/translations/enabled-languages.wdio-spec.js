@@ -1,6 +1,7 @@
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const adminPage = require('@page-objects/default/admin/admin.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 describe('Enabling/disabling languages', () => {
   const SETTINGS = {

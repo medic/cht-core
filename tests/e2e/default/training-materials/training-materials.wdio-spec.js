@@ -61,7 +61,6 @@ describe('Training Materials Page', () => {
     await utils.saveDocs([ facility, firstTraining, expiredTraining, secondTraining ]);
     await utils.createUsers([ user ]);
     await loginPage.login(user);
-    await commonElements.waitForPageLoaded();
   });
 
   it('should quit training in modal, and be able to complete it later in the Training Material page,' +

@@ -68,7 +68,7 @@ describe('Mute/Unmute contacts using a specific form - ', () => {
 
   it('should show a popup when trying to submit a non-unmuting form against a muted contact', async () => {
     await utils.revertSettings(true);
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true });
     await commonPage.goToPeople(mutePerson._id);
 
     const modalDetails = await contactPage.openFormWithWarning('death_report');

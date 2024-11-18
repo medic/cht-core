@@ -36,6 +36,10 @@ describe('Testing Incorrect locale', () => {
     await utils.saveDoc(place);
     await sentinelUtils.waitForSentinel();
   });
+
+  afterEach(async () => {
+    await utils.revertSettings(true);
+  });
   
   it('should work with incorrect locale', async () => {
     const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
