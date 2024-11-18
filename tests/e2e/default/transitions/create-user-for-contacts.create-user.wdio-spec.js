@@ -78,8 +78,7 @@ describe('Create user when adding contact', () => {
     NEW_USERS.length = 0;
     await utils.revertDb([/^form:/], true);
     await sentinelUtils.waitForSentinel();
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonPage.reloadSession();
   });
 
   it('Creates a new user while offline', async () => {

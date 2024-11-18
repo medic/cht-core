@@ -512,6 +512,11 @@ const createFormDoc = (path, formId) => {
   };
 };
 
+const reloadSession = async () => {
+  await browser.reloadSession();
+  await browser.url('/');
+};
+
 module.exports = {
   tabsSelector,
   fabSelectors,
@@ -573,4 +578,5 @@ module.exports = {
   loadNextInfiniteScrollPage,
   getErrorLog,
   createFormDoc,
+  reloadSession,
 };

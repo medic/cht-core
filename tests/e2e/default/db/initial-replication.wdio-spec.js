@@ -122,8 +122,7 @@ describe('initial-replication', () => {
   });
 
   afterEach(async () => {
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonPage.reloadSession();
   });
 
   it('should log user in', async () => {

@@ -169,8 +169,7 @@ describe('Create user for contacts', () => {
     NEW_USERS.length = 0;
     await utils.revertDb([/^form:/], true);
     await sentinelUtils.waitForSentinel();
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonPage.reloadSession();
   });
 
   describe('user replace', () => {
@@ -758,8 +757,7 @@ describe('Create user for contacts', () => {
         expect(districtFromRemote.contact._id).to.equal(replacementContactId);
 
         // Subsequent form reports are *not* re-parented to the new contact
-        await browser.reloadSession();
-        await browser.url('/');
+        await commonPage.reloadSession();
         await loginPage.login(ORIGINAL_USER);
         await commonPage.waitForPageLoaded();
         await browser.throttle('offline');

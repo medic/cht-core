@@ -79,8 +79,7 @@ describe('purge', function() {
     await utils.deleteUsers([user]);
     await utils.revertDb([/^form:/], true);
 
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonPage.reloadSession();
   });
 
   it('purging runs on sync', async () => {
