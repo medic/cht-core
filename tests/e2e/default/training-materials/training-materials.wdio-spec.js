@@ -82,6 +82,8 @@ describe('Training Materials Page', () => {
     const trainings = await trainingCardsPage.getAllTrainingsText();
     expect(trainings.length).to.equal(2);
     expect(trainings).to.have.members([ FIRST_TRAINING_NAME, SECOND_TRAINING_NAME ]);
+    expect(await trainingCardsPage.isTrainingComplete(FIRST_TRAINING_ID)).to.be.false;
+    expect(await trainingCardsPage.isTrainingComplete(SECOND_TRAINING_ID)).to.be.false;
 
     await trainingCardsPage.openTrainingMaterial(FIRST_TRAINING_ID);
     const trainingMaterialTitle = await trainingCardsPage.getTrainingTitle();
@@ -103,19 +105,23 @@ describe('Training Materials Page', () => {
     const allTrainings = await trainingCardsPage.getAllTrainingsText();
     expect(allTrainings.length).to.equal(2);
     expect(allTrainings).to.have.members([ FIRST_TRAINING_NAME, SECOND_TRAINING_NAME ]);
+    expect(await trainingCardsPage.isTrainingComplete(FIRST_TRAINING_ID)).to.be.true;
+    expect(await trainingCardsPage.isTrainingComplete(SECOND_TRAINING_ID)).to.be.false;
 
     await commonPage.goToReports();
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.leftPanelSelectors.firstReport());
     expect(firstReport.form).to.equal(FIRST_TRAINING_ID);
   });
 
-  it('should revisit completed and load uncompleted trainings', async () => {
+  it('should revisit completed trainings and load uncompleted trainings', async () => {
     await commonPage.openHamburgerMenu();
     await commonPage.openTrainingMaterials();
 
     const trainings = await trainingCardsPage.getAllTrainingsText();
     expect(trainings.length).to.equal(2);
     expect(trainings).to.have.members([ FIRST_TRAINING_NAME, SECOND_TRAINING_NAME ]);
+    expect(await trainingCardsPage.isTrainingComplete(FIRST_TRAINING_ID)).to.be.true;
+    expect(await trainingCardsPage.isTrainingComplete(SECOND_TRAINING_ID)).to.be.false;
 
     await trainingCardsPage.openTrainingMaterial(FIRST_TRAINING_ID);
     const trainingMaterialTitle = await trainingCardsPage.getTrainingTitle();
@@ -154,5 +160,7 @@ describe('Training Materials Page', () => {
     const allTrainings = await trainingCardsPage.getAllTrainingsText();
     expect(allTrainings.length).to.equal(2);
     expect(allTrainings).to.have.members([ FIRST_TRAINING_NAME, SECOND_TRAINING_NAME ]);
+    expect(await trainingCardsPage.isTrainingComplete(FIRST_TRAINING_ID)).to.be.true;
+    expect(await trainingCardsPage.isTrainingComplete(SECOND_TRAINING_ID)).to.be.false;
   });
 });

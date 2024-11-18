@@ -65,15 +65,20 @@ const getAllTrainingsText = async () => {
   return commonElements.getTextForElements(leftPanelSelectors.trainingRowsText);
 };
 
+const isTrainingComplete = async (formId) => {
+  return (await $(`[data-record-id="${formId}"] .mat-icon-check`)).isExisting();
+};
+
 module.exports = {
-  getTrainingTitle,
-  openTrainingMaterial,
   checkTrainingCardIsNotDisplayed,
-  waitForTrainingCards,
+  confirmQuitTraining,
   getAllTrainingsText,
   getCardContent,
   getNextCardContent,
+  getTrainingTitle,
+  isTrainingComplete,
+  openTrainingMaterial,
   quitTraining,
-  confirmQuitTraining,
   submitTraining,
+  waitForTrainingCards,
 };

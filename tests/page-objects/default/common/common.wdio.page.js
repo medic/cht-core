@@ -20,7 +20,7 @@ const hamburgerMenuSelectors = {
   syncSuccess: () => $('aria/All reports synced'),
   syncInProgress: () => $('mat-sidenav-content').$('*="Currently syncing"'),
   aboutButton: () => $('aria/About'),
-  trainingMaterialsButton: () => $('aria/Training Materials'),
+  trainingMaterialsButton: () => $('aria/Training materials'),
   userSettingsButton: () => $('aria/User settings'),
   feedbackMenuOption: () => $('aria/Report bug'),
   logoutButton: () => $('aria/Log out'),
