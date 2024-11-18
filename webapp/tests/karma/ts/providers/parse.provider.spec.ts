@@ -11,6 +11,7 @@ import { PhonePipe } from '@mm-pipes/phone.pipe';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
+import { getProperty } from '../../../../src/ts/libs/schema';
 
 describe('Parse provider', () => {
   let provider:ParseProvider;
@@ -47,7 +48,7 @@ describe('Parse provider', () => {
         result = parse('2 ===== 3');
         assert.fail('should have thrown');
       } catch (e) {
-        expect(e.message.startsWith('Parser Error: Unexpected token')).to.equal(true);
+        expect((getProperty(e, 'message') as string).startsWith('Parser Error: Unexpected token')).to.equal(true);
         expect(result).to.equal(undefined);
       }
     });

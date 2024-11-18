@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { IndexedDbService } from '@mm-services/indexed-db.service';
+import { getProperty } from '../libs/schema';
 
 @Injectable({
   providedIn: 'root'
@@ -196,7 +197,7 @@ export class TelemetryService {
         .get({ meta: true })
         .put(aggregateDoc);
     } catch (error) {
-      if (error.status === 409) {
+      if (getProperty(error, 'status') === 409) {
         return this.storeConflictedAggregate(aggregateDoc);
       }
       throw error;

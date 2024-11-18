@@ -5,6 +5,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
 import { NavigationService } from '@mm-services/navigation.service';
+import { getProperty } from '../libs/schema';
 
 /**
  * An API to provide integration with the medic-android app.
@@ -176,9 +177,9 @@ export class AndroidApiService {
     try {
       this.mrdtService.respond(JSON.parse(response));
     } catch (e) {
-      return console.error(
-        new Error(`Unable to parse JSON response from android app: "${response}", error message: "${e.message}"`)
-      );
+      return console.error(new Error(
+        `Unable to parse JSON response from android app: "${response}", error message: "${getProperty(e, 'message')}"`
+      ));
     }
   }
 
@@ -190,9 +191,9 @@ export class AndroidApiService {
     try {
       this.mrdtService.respondTimeTaken(JSON.parse(response));
     } catch (e) {
-      return console.error(
-        new Error(`Unable to parse JSON response from android app: "${response}", error message: "${e.message}"`)
-      );
+      return console.error(new Error(
+        `Unable to parse JSON response from android app: "${response}", error message: "${getProperty(e, 'message')}"`
+      ));
     }
   }
 
