@@ -12,6 +12,7 @@ const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="
 const getTasks = () => $$(`${TASK_LIST_SELECTOR} li.content-row`);
 
 const getTaskInfo = async (taskElement) => {
+  await taskElement.scrollIntoView();
   const contactName = await (await taskElement.$('h4 span')).getText();
   const formTitle = await (await taskElement.$('.summary p')).getText();
   let lineage = '';
