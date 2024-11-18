@@ -20,6 +20,7 @@ const hamburgerMenuSelectors = {
   syncSuccess: () => $('aria/All reports synced'),
   syncInProgress: () => $('mat-sidenav-content').$('*="Currently syncing"'),
   aboutButton: () => $('aria/About'),
+  trainingMaterialsButton: () => $('aria/Training materials'),
   userSettingsButton: () => $('aria/User settings'),
   feedbackMenuOption: () => $('aria/Report bug'),
   logoutButton: () => $('aria/Log out'),
@@ -436,6 +437,12 @@ const openUserSettingsAndFetchProperties = async () => {
   await (await userSettingsSelectors.editProfileButton()).waitForDisplayed();
 };
 
+const openTrainingMaterials = async () => {
+  await (await hamburgerMenuSelectors.trainingMaterialsButton()).waitForClickable();
+  await (await hamburgerMenuSelectors.trainingMaterialsButton()).click();
+  await waitForPageLoaded();
+};
+
 const openEditProfile = async () => {
   await (await userSettingsSelectors.editProfileButton()).waitForClickable();
   await (await userSettingsSelectors.editProfileButton()).click();
@@ -555,6 +562,7 @@ module.exports = {
   closeReportBug,
   openAboutMenu,
   openUserSettings,
+  openTrainingMaterials,
   openUserSettingsAndFetchProperties,
   openEditProfile,
   openAppManagement,

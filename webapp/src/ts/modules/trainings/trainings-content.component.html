@@ -1,0 +1,21 @@
+<div class="content-pane right-pane">
+  <div class="item-content empty-selection col-sm-8" *ngIf="showNoSelection">
+    <div>{{ 'training_materials.page.no_selected' | translate }}</div>
+  </div>
+
+  <training-cards-form
+    [hidden]="showNoSelection"
+    [isEmbedded]="true"
+    (quit)="quit()"
+    (save)="close()"
+    (handleError)="hasError = true"/>
+</div>
+
+<ng-template #confirmModal>
+  <mm-modal-layout
+    id="training-cards-confirm"
+    [titleKey]="'training_cards.confirm.title' | translate"
+    [hideFooter]="true">
+    <training-cards-confirm (stay)="continueTraining()" (exit)="exitTraining($event)"/>
+  </mm-modal-layout>
+</ng-template>

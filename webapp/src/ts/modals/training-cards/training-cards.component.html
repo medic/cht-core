@@ -1,36 +1,18 @@
 <mm-modal-layout
-  id="training-cards-modal"
-  [titleKey]="showConfirmExit ? 'training_cards.confirm.title' : modalTitleKey | translate"
-  (onCancel)="confirmExit(true)"
-  [hideFooter]="hideModalFooter"
+  [id]="MODAL_ID"
+  [titleKey]="showConfirmExit ? 'training_cards.confirm.title' : null"
+  (onCancel)="quit()"
+  [hideFooter]="!hasError"
   [hasEnketoForm]="true"
->
+  [class.has-error]="hasError">
 
-  <div class="item-content empty-selection" *ngIf="loadingContent">
-    <div><div class="loader"></div></div>
-  </div>
+  <training-cards-confirm *ngIf="showConfirmExit" (stay)="continueTraining()" (exit)="exitTraining($event)"/>
 
-  <div class="item-content empty-selection" *ngIf="!loadingContent && contentError">
-    <div>{{ errorTranslationKey | translate }}</div>
-  </div>
-
-  <div class="item-content" *ngIf="showConfirmExit && !loadingContent && !contentError">
-    <div>{{ 'training_cards.confirm.exit' | translate }}</div>
-    <div class="modal-footer">
-      <button test-id="cancel" mat-button color="primary" (click)="confirmExit(false)">{{ 'training_cards.confirm.button.no' | translate }}</button>
-      <button test-id="quit-training" mat-button color="primary" (click)="quitTraining()">{{ 'training_cards.confirm.button.yes' | translate }}</button>
-    </div>
-  </div>
-
-  <div class="item-content" [hidden]="showConfirmExit || loadingContent || contentError" [class.form-no-title]="formNoTitle">
-    <div class="body">
-      <mm-enketo
-        [formId]="formWrapperId"
-        [status]="enketoStatus"
-        (onSubmit)="saveForm()"
-        (onCancel)="confirmExit(true)">
-      </mm-enketo>
-    </div>
-  </div>
+  <training-cards-form
+    [hidden]="showConfirmExit"
+    [isEmbedded]="false"
+    (quit)="quit()"
+    (save)="close()"
+    (handleError)="hasError = true"/>
 
 </mm-modal-layout>

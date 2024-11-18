@@ -83,7 +83,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   private analyticsActions: AnalyticsActions;
   setupPromise;
   translationsLoaded;
-
   currentTab = '';
   privacyPolicyAccepted;
   isSidebarFilterOpen = false;
@@ -94,14 +93,13 @@ export class AppComponent implements OnInit, AfterViewInit {
   canLogOut;
   replicationStatus;
   androidAppVersion;
-  unreadCount = {};
   hasOldNav = false;
   initialisationComplete = false;
-  trainingCardFormId = '';
   private readonly SVG_ICONS = new Map([
     ['icon-close', './img/icon-close.svg'],
     ['icon-filter', './img/icon-filter.svg'],
     ['icon-back', './img/icon-back.svg'],
+    ['icon-check', './img/icon-check.svg'],
   ]);
 
   constructor (
@@ -482,16 +480,9 @@ export class AppComponent implements OnInit, AfterViewInit {
     combineLatest([
       this.store.select(Selectors.getPrivacyPolicyAccepted),
       this.store.select(Selectors.getShowPrivacyPolicy),
-      this.store.select(Selectors.getTrainingCardFormId),
-    ]).subscribe(([
-      privacyPolicyAccepted,
-      showPrivacyPolicy,
-      trainingCardFormId,
-    ]) => {
+    ]).subscribe(([ privacyPolicyAccepted, showPrivacyPolicy ]) => {
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.privacyPolicyAccepted = privacyPolicyAccepted;
-      this.trainingCardFormId = trainingCardFormId || '';
-      this.displayTrainingCards();
     });
 
     combineLatest([
@@ -500,14 +491,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     ]).subscribe(([ userContactId, userFacilityIds ]) => {
       this.formService.setUserContext(userFacilityIds, userContactId);
     });
-  }
-
-  private displayTrainingCards() {
-    if (!this.trainingCardFormId || (this.showPrivacyPolicy && !this.privacyPolicyAccepted)) {
-      return;
-    }
-
-    this.trainingCardsService.displayTrainingCards();
   }
 
   private async subscribeToSideFilterStore() {
