@@ -81,9 +81,9 @@ export namespace v1 {
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of people to return. Default is 100.
      * @returns a page of people for the provided specification
-     * @throws Error if no type is provided or if the type is not for a person
-     * @throws Error if the provided `limit` value is `<=0`
-     * @throws Error if the provided cursor is not a valid page token or `null`
+     * @throws InvalidArgumentError if no type is provided or if the type is not for a person
+     * @throws InvalidArgumentError if the provided `limit` value is `<=0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     const curriedFn = async (
       personType: ContactTypeQualifier,
@@ -113,7 +113,7 @@ export namespace v1 {
      * Returns a generator for fetching all people with the given type
      * @param personType the type of people to return
      * @returns a generator for fetching all people with the given type
-     * @throws Error if no type is provided or if the type is not for a person
+     * @throws InvalidArgumentError if no type is provided or if the type is not for a person
      */
     const curriedGen = (personType: ContactTypeQualifier): AsyncGenerator<Person, null> => {
       assertTypeQualifier(personType);

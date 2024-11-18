@@ -34,17 +34,17 @@ export namespace v1 {
     readonly parent?: NormalizedParent;
   }
 
-  /** @internal */
+  /** @ignore */
   export const isNormalizedParent = (value: unknown): value is NormalizedParent => {
     return isDataObject(value) && isIdentifiable(value) && (!value.parent || isNormalizedParent(value.parent));
   };
 
-  /** @internal */
+  /** @ignore */
   export const isContactType = (value: ContactTypeQualifier | FreetextQualifier): value is ContactTypeQualifier => {
     return 'contactType' in value;
   };
 
-  /** @internal */
+  /** @ignore */
   export const isFreetextType = (value: ContactTypeQualifier | FreetextQualifier): value is FreetextQualifier => {
     return 'freetext' in value;
   };
@@ -71,7 +71,7 @@ export namespace v1 {
     }
   };
 
-  /** @internal */
+  /** @ignore */
   export const createQualifier = (
     freetext: Nullable<string> = null,
     type: Nullable<string> = null
@@ -151,9 +151,9 @@ export namespace v1 {
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.
      * @returns a page of contact identifiers for the provided specification
-     * @throws Error if no qualifier is provided or if the qualifier is invalid
-     * @throws Error if the provided `limit` value is `<=0`
-     * @throws Error if the provided cursor is not a valid page token or `null`
+     * @throws InvalidArrgumentError if no qualifier is provided or if the qualifier is invalid
+     * @throws InvalidArgumentError if the provided `limit` value is `<=0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     const curriedFn = async (
       qualifier: ContactTypeQualifier | FreetextQualifier,
@@ -190,7 +190,7 @@ export namespace v1 {
      * Returns a generator for fetching all contact identifiers that match the given qualifier
      * @param qualifier the limiter defining which identifiers to return
      * @returns a generator for fetching all contact identifiers that match the given qualifier
-     * @throws Error if no qualifier is provided or if the qualifier is invalid
+     * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
     const curriedGen = (
       qualifier: ContactTypeQualifier | FreetextQualifier

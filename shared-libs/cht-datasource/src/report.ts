@@ -74,9 +74,9 @@ export namespace v1 {
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.
      * @returns a page of report identifiers for the provided specification
-     * @throws Error if no qualifier is provided or if the qualifier is invalid
-     * @throws Error if the provided `limit` value is `<=0`
-     * @throws Error if the provided cursor is not a valid page token or `null`
+     * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
+     * @throws InvalidArgumentError if the provided `limit` value is `<=0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     const curriedFn = async (
       qualifier: FreetextQualifier,
@@ -106,7 +106,7 @@ export namespace v1 {
      * Returns a generator for fetching all report identifiers that match the given qualifier
      * @param qualifier the limiter defining which identifiers to return
      * @returns a generator for fetching all report identifiers that match the given qualifier
-     * @throws Error if no qualifier is provided or if the qualifier is invalid
+     * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
     const curriedGen = (
       qualifier: FreetextQualifier

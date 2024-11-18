@@ -7,6 +7,7 @@ import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
 import { assertCursor, assertLimit, assertTypeQualifier, getPagedGenerator, Nullable, Page } from './libs/core';
+import { InvalidArgumentError } from './libs/error';
 
 /** */
 export namespace v1 {
@@ -29,7 +30,7 @@ export namespace v1 {
 
   const assertPlaceQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
     if (!isUuidQualifier(qualifier)) {
-      throw new Error(`Invalid identifier [${JSON.stringify(qualifier)}].`);
+      throw new InvalidArgumentError(`Invalid identifier [${JSON.stringify(qualifier)}].`);
     }
   };
 
@@ -80,9 +81,9 @@ export namespace v1 {
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of places to return. Default is 100.
      * @returns a page of places for the provided specification
-     * @throws Error if no type is provided or if the type is not for a place
-     * @throws Error if the provided `limit` value is `<=0`
-     * @throws Error if the provided cursor is not a valid page token or `null`
+     * @throws InvalidArgumentError if no type is provided or if the type is not for a place
+     * @throws InvalidArgumentError if the provided `limit` value is `<=0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     const curriedFn = async (
       placeType: ContactTypeQualifier,
@@ -112,7 +113,7 @@ export namespace v1 {
      * Returns a generator for fetching all places with the given type
      * @param placeType the type of places to return
      * @returns a generator for fetching all places with the given type
-     * @throws Error if no type is provided or if the type is not for a place
+     * @throws InvaidArgumentError if no type is provided or if the type is not for a place
      */
     const curriedGen = (placeType: ContactTypeQualifier) => {
       assertTypeQualifier(placeType);
