@@ -6,7 +6,6 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
-const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('DB Object Widget', () => {
   const places = placeFactory.generateHierarchy();
@@ -25,7 +24,7 @@ describe('DB Object Widget', () => {
   const personArea2 = personFactory.build({ name: 'Patricio', parent: { _id: area2._id, parent: area2.parent } });
 
   before(async () => {
-    await commonEnketoPage.uploadForm('db-object-form');
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/db-object-form`));
     await utils.saveDocs([ ...places.values(), area2, personArea1, personArea2 ]);
     await utils.createUsers([ offlineUser ]);
     await loginPage.login(offlineUser);

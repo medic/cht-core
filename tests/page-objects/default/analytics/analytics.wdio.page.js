@@ -1,35 +1,21 @@
 const TARGET_MET_COLOR = '#76b0b0';
-
 const TARGET_UNMET_COLOR = '#000000';
 
 const goToTargets = () => browser.url('/#/analytics/targets');
-
 const noSelectedTarget = () => $('.empty-selection');
-
 const targets = () => $$('.target');
-
 const targetWrap = () => $('.page .targets');
-
 const targetTitle = (targetElement) => targetElement.$('.heading .title h2');
-
 const targetGoal = (targetElement) => targetElement.$('.body .count .goal');
-
 const targetCountNumber = (targetElement) => targetElement.$('.body .count .number');
-
 const targetCountNumberColor = (targetElement) => targetElement.$('.body .count .number:not(.goal-met)');
-
 const targetProgressNumber = (targetElement) => targetElement.$('.body .target-progress .number');
-
 const targetNumberPercent = (targetElement) => targetElement.$('.body .target-progress .number .value');
-
 const targetNumberPercentCount = (targetElement) => targetElement.$('.body .target-progress .number span:nth-child(2)');
-
 const targetGoalValue = (targetElement) => targetElement.$('.body .count .goal');
 
 const EMPTY_SELECTION = '.content-pane .item-content.empty-selection';
-
 const emptySelectionError = () => $(`${EMPTY_SELECTION}.selection-error`);
-
 const emptySelectionNoError = () => $(`${EMPTY_SELECTION}:not(.selection-error)`);
 
 const getTargetInfo = async (targetElement) => {

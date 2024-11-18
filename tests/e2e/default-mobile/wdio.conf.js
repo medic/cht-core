@@ -12,6 +12,7 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       '../default/navigation/navigation.wdio-spec.js',
       '../default/reports/delete.wdio-spec.js',
       '../default/enketo/training-cards.wdio-spec.js',
+      './**/more-options-menu.wdio-spec.js',
     ]
   },
   beforeSuite: async () => {

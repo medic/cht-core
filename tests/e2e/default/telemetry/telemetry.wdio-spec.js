@@ -50,9 +50,13 @@ describe('Telemetry', () => {
   });
   let reportDocs;
 
-  const DATE_FORMAT = 'YYYY-MM-DD';
   const TELEMETRY_PREFIX = 'telemetry';
-  const todayDBName = `${TELEMETRY_PREFIX}-${moment().format(DATE_FORMAT)}-${user.username}`;
+  const formatDbName = (date) => {
+    const formattedDate = moment(date).format('YYYY-M-D');
+    return `${TELEMETRY_PREFIX}-${formattedDate}-${user.username}`;
+  };
+  const today = new Date();
+  const todayDBName = formatDbName(today);
 
   before(async () => {
     const selectContactTelemetryForm = utils.deepFreeze({
@@ -85,7 +89,7 @@ describe('Telemetry', () => {
 
   it('should record telemetry', async () => {
     const yesterday = moment().subtract(1, 'day');
-    const yesterdayDBName = `${TELEMETRY_PREFIX}-${yesterday.format(DATE_FORMAT)}-${user.username}`;
+    const yesterdayDBName = formatDbName(yesterday.toDate());
     const telemetryRecord = {
       key: 'a-telemetry-record',
       value: 3,

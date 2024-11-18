@@ -65,7 +65,7 @@ describe('Submit a death report', () => {
     expect((await reportsPage.getDetailReportRowContent('place_of_death')).rowValues[0]).to.equal('health_facility');
 
     // Edit the report created
-    await reportsPage.editReport();
+    await commonPage.accessEditOption();
     await commonEnketoPage.selectRadioButton('Place of death', 'Home');
     await genericForm.nextPage();
     await genericForm.submitForm();
