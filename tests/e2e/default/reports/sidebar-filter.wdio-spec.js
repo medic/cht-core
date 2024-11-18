@@ -10,6 +10,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const reportFactory = require('@factories/cht/reports/generic-report');
 
 describe('Reports Sidebar Filter', () => {
+  const newPassword = loginPage.NEW_PASSWORD;
   const places = placeFactory.generateHierarchy();
 
   const districtHospital = places.get('district_hospital');
@@ -113,7 +114,7 @@ describe('Reports Sidebar Filter', () => {
   });
 
   it('should filter by form', async () => {
-    await loginPage.login(districtHospitalUser);
+    await loginPage.login({ username: districtHospitalUser.username, password: newPassword, resetPassword:false });
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
@@ -131,7 +132,7 @@ describe('Reports Sidebar Filter', () => {
   });
 
   it('should filter by place', async () => {
-    await loginPage.login(districtHospitalUser);
+    await loginPage.login({ username: districtHospitalUser.username, password: newPassword, resetPassword:false });
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
@@ -149,7 +150,7 @@ describe('Reports Sidebar Filter', () => {
   });
 
   it('should filter by status', async () => {
-    await loginPage.login(districtHospitalUser);
+    await loginPage.login({ username: districtHospitalUser.username, password: newPassword, resetPassword:false });
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();

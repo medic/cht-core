@@ -72,21 +72,13 @@ describe('Login page functionality tests', () => {
     });
 
     it('should log in using username and password fields', async () => {
-<<<<<<< HEAD
       await loginPage.login({ username: auth.username, password: auth.password, resetPassword: false });
-=======
-      await loginPage.login(auth);
->>>>>>> 58dcfb6d746fee5c5640e35ccf16e95b53f3057f
       await (await commonPage.tabsSelector.analyticsTab()).waitForDisplayed();
       await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
     });
 
     it('should set correct cookies', async () => {
-<<<<<<< HEAD
       await loginPage.login({ username: auth.username, password: auth.password, resetPassword: false });
-=======
-      await loginPage.login(auth);
->>>>>>> 58dcfb6d746fee5c5640e35ccf16e95b53f3057f
       await (await commonPage.tabsSelector.analyticsTab()).waitForDisplayed();
 
       const cookies = await browser.getCookies();
@@ -125,11 +117,7 @@ describe('Login page functionality tests', () => {
 
     it('should display the "session expired" modal and redirect to login page', async () => {
       // Login and ensure it's redirected to webapp
-<<<<<<< HEAD
       await loginPage.login({ username: auth.username, password: auth.password, resetPassword: false });
-=======
-      await loginPage.login(auth);
->>>>>>> 58dcfb6d746fee5c5640e35ccf16e95b53f3057f
       await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
       // Delete cookies and trigger a request to the server
       await browser.deleteCookies('AuthSession');

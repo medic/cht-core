@@ -91,6 +91,7 @@ describe('Tasks tab breadcrumbs', () => {
   });
 
   describe('for chw', () => {
+    const newPassword = loginPage.NEW_PASSWORD;
     afterEach(async () => await commonElements.logout());
 
     after(async () => {
@@ -99,7 +100,7 @@ describe('Tasks tab breadcrumbs', () => {
     });
 
     it('should not remove facility from breadcrumbs when offline user has many facilities associated', async () => {
-      await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
+      await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name, resetPassword: false });
       await commonPage.waitForPageLoaded();
       await commonPage.goToTasks();
       const infos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
@@ -161,7 +162,7 @@ describe('Tasks tab breadcrumbs', () => {
     });
 
     it('should open task with expression', async () => {
-      await loginPage.login(chw);
+      await loginPage.login({ username: chw.username, password: newPassword, resetPassword: false });
       await commonPage.waitForPageLoaded();
       await commonPage.goToTasks();
       const task = await tasksPage.getTaskByContactAndForm('patient1', 'person_create');

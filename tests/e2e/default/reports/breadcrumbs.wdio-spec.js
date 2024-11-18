@@ -115,7 +115,7 @@ describe('Reports tab breadcrumbs', () => {
   });
 
   it('should not remove facility from breadcrumbs when offline user has many facilities associated', async () => {
-    await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
+    await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name, resetPassword: false });
     await commonElements.waitForPageLoaded();
     await commonElements.goToReports();
     await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
