@@ -54,6 +54,7 @@ describe('Target aggregates', () => {
   });
 
   describe('User with one or more places assigned', () => {
+    const newPassword = loginPage.NEW_PASSWORD;
     const CURRENT_PERIOD = 'This month';
     const NAMES_DH1 = ['Clarissa', 'Prometheus', 'Alabama', 'Jasmine', 'Danielle'];
     const NAMES_DH2 = ['Viviana', 'Ximena', 'Esteban', 'Luis', 'Marta'];
@@ -123,12 +124,9 @@ describe('Target aggregates', () => {
     });
 
     describe('Online user with one place associated', () => {
-      beforeEach(async () => {
+      it('should display no data when no targets are uploaded', async () => {
         await loginPage.login(onlineUser);
         await commonPage.waitForPageLoaded();
-      });
-
-      it('should display no data when no targets are uploaded', async () => {
         await helperFunctions.updateAggregateTargetsSettings(
           targetAggregatesConfig.TARGETS_CONFIG_WITH_AND_WITHOUT_AGGREGATES, onlineUser
         );
@@ -155,6 +153,8 @@ describe('Target aggregates', () => {
       });
 
       it('should display correct data', async () => {
+        await loginPage.login({ username: onlineUser.username, password: newPassword, resetPassword: false});
+        await commonPage.waitForPageLoaded();
         const expectedTargets = targetAggregatesConfig.EXPECTED_DEFAULTS_TARGETS;
 
         await utils.saveDocs(targetDocs);
@@ -195,6 +195,8 @@ describe('Target aggregates', () => {
       });
 
       it('should route to contact-detail on list item click and display contact summary target card', async () => {
+        await loginPage.login({ username: onlineUser.username, password: newPassword, resetPassword: false});
+        await commonPage.waitForPageLoaded();
         const targetsConfig = [
           { id: 'a_target', type: 'count', title: { en: 'what a target!' }, aggregate: true },
           { id: 'b_target', type: 'percent', title: { en: 'the most target' }, aggregate: true },
@@ -287,6 +289,8 @@ describe('Target aggregates', () => {
       });
 
       it('should display targets of current user on home place', async () => {
+        await loginPage.login({ username: onlineUser.username, password: newPassword, resetPassword: false});
+        await commonPage.waitForPageLoaded();
         const targetsConfig = [
           { id: 'a_target', type: 'count', title: { en: 'what a target!' }, aggregate: true },
           { id: 'b_target', type: 'percent', title: { en: 'the most target' }, aggregate: true },
@@ -347,7 +351,11 @@ describe('Target aggregates', () => {
 
     describe('Offline user with multiple places associated', () => {
       beforeEach(async () => {
-        await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
+        await loginPage.login({
+          password: userWithManyPlacesPass,
+          username: userWithManyPlaces.name,
+          resetPassword: false
+        });
         await commonPage.waitForPageLoaded();
       });
 

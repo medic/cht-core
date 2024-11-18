@@ -199,7 +199,6 @@ describe('Login page functionality tests', () => {
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
       await (await loginPage.loginButton()).click();
-      await loginPage.getPasswordResetTranslations();
       await loginPage.setPasswordValue('');
       await loginPage.setConfirmPasswordValue('');
       await (await loginPage.updatePasswordButton()).click();
@@ -211,7 +210,6 @@ describe('Login page functionality tests', () => {
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
       await (await loginPage.loginButton()).click();
-      await loginPage.getPasswordResetTranslations();
       await loginPage.setPasswordValue(user.password);
       await loginPage.setConfirmPasswordValue('');
       await (await loginPage.updatePasswordButton()).click();
@@ -223,19 +221,17 @@ describe('Login page functionality tests', () => {
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
       await (await loginPage.loginButton()).click();
-      await loginPage.getPasswordResetTranslations();
       await loginPage.setPasswordValue('12345678');
       await loginPage.setConfirmPasswordValue('12345678');
       await (await loginPage.updatePasswordButton()).click();
       expect(await loginPage.getPasswordResetErrorMessage('password-weak')).to.equal(PASSWORD_WEAK);
     });
 
-    it('should try to reset password and verify current password is correct', async () => {
+    it('should try to reset password and verify current password is not correct', async () => {
       await browser.url('/');
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
       await (await loginPage.loginButton()).click();
-      await loginPage.getPasswordResetTranslations();
       await loginPage.setCurrentPasswordValue('12');
       await loginPage.setPasswordValue(user.password);
       await loginPage.setConfirmPasswordValue(user.password);
@@ -250,7 +246,6 @@ describe('Login page functionality tests', () => {
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
       await (await loginPage.loginButton()).click();
-      await loginPage.getPasswordResetTranslations();
       await loginPage.setCurrentPasswordValue(user.password);
       await loginPage.setPasswordValue(user.password);
       await loginPage.setConfirmPasswordValue(user.password);
@@ -263,7 +258,6 @@ describe('Login page functionality tests', () => {
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
       await (await loginPage.loginButton()).click();
-      await loginPage.getPasswordResetTranslations();
       await loginPage.passwordReset(user.password, NEW_PASSWORD, NEW_PASSWORD);
       await (await loginPage.updatePasswordButton()).click();
       await commonPage.waitForPageLoaded();

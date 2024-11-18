@@ -65,10 +65,17 @@ describe('Service worker cache', () => {
 
   const district = placeFactory.generateHierarchy(['district_hospital']).get('district_hospital');
   const chw = userFactory.build({ place: district._id });
+  const newPassword = loginPage.NEW_PASSWORD;
+  let passwordChangeRequired = true;
 
   const login = async () => {
     await browser.throttle('online');
-    await loginPage.login(chw);
+    const loginParams = passwordChangeRequired
+      ? chw
+      : { ...chw, password: newPassword, resetPassword: false };
+
+    passwordChangeRequired = false;
+    await loginPage.login(loginParams);
     await commonPage.waitForPageLoaded();
   };
 
@@ -100,7 +107,6 @@ describe('Service worker cache', () => {
 
   it('confirm initial list of cached resources', async () => {
     const cacheDetails = await getCachedRequests();
-
     expect(cacheDetails.name.startsWith('cht-precache-v2-')).to.be.true;
     expect(cacheDetails.urls.sort()).to.have.members([
       '/',
@@ -123,15 +129,18 @@ describe('Service worker cache', () => {
       '/img/icon.png',
       '/img/icon-back.svg',
       '/img/layers.png',
+      '/login/auth-utils.js',
       '/login/images/hide-password.svg',
       '/login/images/show-password.svg',
       '/login/lib-bowser.js',
+      '/login/password-reset.js',
       '/login/script.js',
       '/login/style.css',
       '/main.js',
       '/manifest.json',
       '/medic/_design/medic/_rewrite/',
       '/medic/login',
+      '/medic/password-reset',
       '/polyfills.js',
       '/runtime.js',
       '/scripts.js',

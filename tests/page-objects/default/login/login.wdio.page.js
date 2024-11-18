@@ -15,8 +15,6 @@ const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
 const localeByName = (locale) => $(`.locale[name="${locale}"]`);
 const tokenLoginError = (reason) => $(`.error.${reason}`);
-const passwordResetTitle = () => $('p.title');
-const passwordResetHint = () => $('p.help-text');
 const passwordResetMessageField = (errorMsg) => $(`p.error.${errorMsg}`);
 
 const getErrorMessage = async () => {
@@ -29,7 +27,7 @@ const getPasswordResetErrorMessage = async (errorMsg) => {
   return await (await passwordResetMessageField(errorMsg)).getText();
 };
 
-const NEW_PASSWORD = 'Pa33word1';
+const NEW_PASSWORD = constants.NEW_PASSWORD;
 
 const login = async ({
   username,
@@ -192,13 +190,6 @@ const passwordReset = async (currentPassword, password, confirmPassword) => {
   await (await updatePasswordButton()).click();
 };
 
-const getPasswordResetTranslations = async () => {
-  return {
-    passwordResetTitle: await (await passwordResetTitle()).getText(),
-    passwordResetHint: await (await passwordResetHint()).getText(),
-  };
-};
-
 module.exports = {
   login,
   cookieLogin,
@@ -218,7 +209,6 @@ module.exports = {
   setCurrentPasswordValue,
   passwordReset,
   updatePasswordButton,
-  getPasswordResetTranslations,
   getPasswordResetErrorMessage,
   NEW_PASSWORD,
 };

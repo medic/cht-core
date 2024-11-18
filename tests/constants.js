@@ -2,6 +2,7 @@ const USERNAME = 'admin';
 const PASSWORD = 'pass';
 const API_HOST = `localhost${process.env.NGINX_HTTPS_PORT ? `:${process.env.NGINX_HTTPS_PORT}` : ''}`;
 const PROTOCOL = 'https://';
+const NEW_PASSWORD = 'Pa33word';
 
 module.exports = {
   IS_CI: !!process.env.CI,
@@ -34,4 +35,6 @@ module.exports = {
 
   USERNAME,
   PASSWORD,
+  //  After first login, the user's password is updated to this NEW_PASSWORD
+  NEW_PASSWORD,
 };

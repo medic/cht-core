@@ -10,8 +10,10 @@ describe('Create user meta db : ', () => {
   const FULL_NAME = 'Roger Milla';
   const PASSWORD = 'StrongP@ssword1';
 
+  // After first login, the user's password is updated, we use the newPassword
+  const newPassword = loginPage.NEW_PASSWORD;
   const OPTIONS = {
-    auth: { username: USERNAME, password: PASSWORD },
+    auth: { username: USERNAME, password: newPassword },
     method: 'GET',
     userName: USERNAME
   };

@@ -7,6 +7,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 
 describe('RepeatForm', () => {
   const hierarchy = hierarchyFactory.createHierarchy({ name: 'test', user: true, nbrClinics: 1, nbrPersons: 1 });
+  const newPassword = loginPage.NEW_PASSWORD;
 
   const assertLabels = async ({ selector, count, labelText }) => {
     const labels = await $$(selector);
@@ -64,7 +65,12 @@ describe('RepeatForm', () => {
     it('should display the initial form and its repeated content in English', async () => {
       const enUserName = 'User name';
       await loginPage.changeLanguage('en', enUserName);
-      await loginPage.login({ username: hierarchy.user.username, password: hierarchy.user.password, locale: 'en' });
+      await loginPage.login({
+        username: hierarchy.user.username,
+        password: newPassword,
+        locale: 'en',
+        resetPassword: false
+      });
       await openRepeatForm('repeat-translation-count');
 
       expect(await commonEnketoPage.isElementDisplayed('span', 'Select a state:')).to.be.true;
@@ -91,7 +97,12 @@ describe('RepeatForm', () => {
       await browser.url('/');
       const swUserName = 'Jina la mtumizi';
       await loginPage.changeLanguage('sw', swUserName);
-      await loginPage.login({ username: hierarchy.user.username, password: hierarchy.user.password, locale: 'sw' });
+      await loginPage.login({
+        username: hierarchy.user.username,
+        password: newPassword,
+        locale: 'sw',
+        resetPassword: false
+      });
       await openRepeatForm('repeat-translation-button');
 
       expect(await commonEnketoPage.isElementDisplayed('span', 'Select a state: - SV')).to.be.true;
@@ -109,7 +120,12 @@ describe('RepeatForm', () => {
     it('should display the initial form and its repeated content in English', async () => {
       const enUserName = 'User name';
       await loginPage.changeLanguage('en', enUserName);
-      await loginPage.login({ username: hierarchy.user.username, password: hierarchy.user.password, locale: 'en' });
+      await loginPage.login({
+        username: hierarchy.user.username,
+        password: newPassword,
+        locale: 'en',
+        resetPassword: false
+      });
       await openRepeatForm('repeat-translation-button');
 
       expect(await commonEnketoPage.isElementDisplayed('span', 'Select a state:')).to.be.true;
@@ -131,7 +147,12 @@ describe('RepeatForm', () => {
       await browser.url('/');
       const swUserName = 'Jina la mtumizi';
       await loginPage.changeLanguage('sw', swUserName);
-      await loginPage.login({ username: hierarchy.user.username, password: hierarchy.user.password, locale: 'sw' });
+      await loginPage.login({
+        username: hierarchy.user.username,
+        password: newPassword,
+        locale: 'sw',
+        resetPassword: false
+      });
       await openRepeatForm('repeat-translation-select');
 
       expect(await commonEnketoPage.isElementDisplayed('label', 'Washington')).to.be.true;

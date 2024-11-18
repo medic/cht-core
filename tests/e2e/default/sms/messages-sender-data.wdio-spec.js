@@ -82,7 +82,11 @@ describe('Message Tab - Sender Data', () => {
   });
 
   it('should not remove facility from breadcrumbs when offline user has many facilities associated', async () => {
-    await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
+    await loginPage.login({
+      password: userWithManyPlacesPass,
+      username: userWithManyPlaces.name,
+      resetPassword: false
+    });
     await commonElements.waitForPageLoaded();
     await commonElements.goToMessages();
     await messagesPage.sendMessageDesktop('Contact', patient.phone, patient.name);
@@ -105,7 +109,8 @@ describe('Message Tab - Sender Data', () => {
   });
 
   it('should display conversation with link and navigate to contact', async () => {
-    await loginPage.login(offlineUser);
+    const newPassword = loginPage.NEW_PASSWORD;
+    await loginPage.login({ password: newPassword, username: offlineUser.username, resetPassword: false });
     await commonElements.waitForPageLoaded();
     await commonElements.goToMessages();
 
@@ -118,5 +123,4 @@ describe('Message Tab - Sender Data', () => {
     const title = await contactsPage.getContactInfoName();
     expect(title).to.equal(patient.name);
   });
-
 });
