@@ -114,7 +114,7 @@ describe('Reports Sidebar Filter', () => {
   });
 
   it('should filter by form', async () => {
-    await loginPage.login({ username: districtHospitalUser.username, password: newPassword, resetPassword:false });
+    await loginPage.login({ username: districtHospitalUser.username, password: newPassword, resetPassword: false });
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
@@ -132,7 +132,7 @@ describe('Reports Sidebar Filter', () => {
   });
 
   it('should filter by place', async () => {
-    await loginPage.login({ username: districtHospitalUser.username, password: newPassword, resetPassword:false });
+    await loginPage.login({ username: districtHospitalUser.username, password: newPassword, resetPassword: false });
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
@@ -150,7 +150,7 @@ describe('Reports Sidebar Filter', () => {
   });
 
   it('should filter by status', async () => {
-    await loginPage.login({ username: districtHospitalUser.username, password: newPassword, resetPassword:false });
+    await loginPage.login({ username: districtHospitalUser.username, password: newPassword, resetPassword: false });
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();

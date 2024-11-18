@@ -100,7 +100,11 @@ describe('Tasks tab breadcrumbs', () => {
     });
 
     it('should not remove facility from breadcrumbs when offline user has many facilities associated', async () => {
-      await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name, resetPassword: false });
+      await loginPage.login({
+        password: userWithManyPlacesPass,
+        username: userWithManyPlaces.name,
+        resetPassword: false
+      });
       await commonPage.waitForPageLoaded();
       await commonPage.goToTasks();
       const infos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
