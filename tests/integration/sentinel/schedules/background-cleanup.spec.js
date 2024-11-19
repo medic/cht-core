@@ -51,11 +51,11 @@ describe('Background cleanup', () => {
     });
 
     // Delete while stopped
-    await utils.stopSentinel();
+    await utils.toggleSentinelTransitions();
     await utils.deleteDoc(docToDelete._id);
 
     // Boot up sentinel again and let the background cleanup finish
-    await utils.startSentinel();
+    await utils.runSentinelTasks();
     await sentinelUtils.waitForBackgroundCleanup();
 
     // Check infodoc deletion

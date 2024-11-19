@@ -6,7 +6,7 @@ const rpn = require('request-promise-native');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { execSync, spawn } = require('child_process');
+const { execSync, spawn, exec } = require('child_process');
 const mustache = require('mustache');
 // by default, mustache escapes slashes, which messes with paths and urls.
 mustache.escape = (text) => text;
@@ -866,6 +866,28 @@ const listenForApi = async () => {
   }
 };
 
+const dockerComposeCmdExec = (params) => {
+  const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
+  params = ['docker compose', ...composeFiles, '-p', PROJECT_NAME].join(' ') + ' ' + params;
+
+  return new Promise((resolve, reject) => {
+    exec(params, { env }, (error, stdout, stderr) => {
+      if (error) {
+        console.error(error);
+        return reject(error);
+      }
+
+      if (stderr) {
+        console.error(stderr);
+        return reject(stderr);
+      }
+
+      resolve(stdout);
+    });
+  });
+
+};
+
 const dockerComposeCmd = (params) => {
   params = params.split(' ').filter(String);
   const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
@@ -891,12 +913,20 @@ const dockerComposeCmd = (params) => {
   });
 };
 
+const sendSignal = async (service, signal) => {
+  if (isDocker()) {
+    return await dockerComposeCmdExec(`exec ${service} /bin/bash -c "kill -s ${signal} 7"`);
+  }
+
+  await runCommand(`kubectl ${KUBECTL_CONTEXT} exec deployments/cht-${service} -- /bin/sh -c "kill -s ${signal} 1"`);
+};
+
 const stopService = async (service) => {
   if (isDocker()) {
     return await dockerComposeCmd(`stop -t 0 ${service}`);
   }
   await saveLogs(); // we lose logs when a pod crashes or is stopped.
-  await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=0`);
+  await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment  --replicas=0`);
   let tries = 100;
   do {
     try {
@@ -1562,6 +1592,9 @@ const isMinimumChromeVersion = process.env.CHROME_VERSION === MINIMUM_BROWSER_VE
 
 const escapeBranchName = (branch) => branch?.replace(/[/|_]/g, '-');
 
+const toggleSentinelTransitions = () => sendSignal('sentinel', 'USR1');
+const runSentinelTasks = () => sendSignal('sentinel', 'CONT');
+
 module.exports = {
   db,
   sentinelDb,
@@ -1640,4 +1673,6 @@ module.exports = {
   stopCouchDb,
   startCouchDb,
   getDefaultForms,
+  toggleSentinelTransitions,
+  runSentinelTasks,
 };

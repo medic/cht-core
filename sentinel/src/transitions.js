@@ -20,8 +20,5 @@ module.exports = {
   /**
    * Loads the transitions and starts watching for db changes.
    */
-  loadTransitions: loadTransitions,
-
-  // exposed for testing
-  _transitionsLib: transitionsLib,
+  loadTransitions,
 };
