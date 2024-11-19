@@ -137,7 +137,7 @@ const drawShapeOnCanvas = async (question) => {
 };
 
 const isRadioButtonSelected = async (question, value) => {
-  return await radioButtonElement(question, value).getAttribute('data-checked');
+  return await (await radioButtonElement(question, value)).getAttribute('data-checked');
 };
 
 module.exports = {
