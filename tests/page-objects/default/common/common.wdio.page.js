@@ -11,6 +11,7 @@ const tabsSelector = {
   taskTab: () => $('#tasks-tab'),
   analyticsTab: () => $('#analytics-tab'),
 };
+const { generateScreenshot } = require('@utils/screenshots');
 
 const hamburgerMenuSelectors = {
   hamburgerMenu: () => $('aria/Application menu'),
@@ -50,7 +51,7 @@ const fabSelectors = {
 const hamburgerMenuItemSelector = 'mat-sidenav-content';
 const logoutButton = () => $('aria/Log out');
 const syncButton = () => $('aria/Sync now');
-const contactsButton = () => $(hamburgerMenuItemSelector).$('//span[text()="People"]');
+const hamburguerMenuItemByOption = (menuOption) => $(hamburgerMenuItemSelector).$(`//span[text()="${menuOption}"]`);
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
@@ -111,6 +112,17 @@ const accessExportOption = async () => {
 
 const accessReviewOption = async () => {
   await performMenuAction(kebabMenuSelectors.review);
+};
+
+const toggleMenuAndCaptureScreenshot = async (menuOption, reverse, pageName, screenshotName) => {
+  await openHamburgerMenu();
+  await hamburguerMenuItemByOption(menuOption).waitForClickable({ reverse });
+  await generateScreenshot(pageName, screenshotName);
+  if (reverse) {
+    await closeHamburgerMenu();
+  } else {
+    await hamburguerMenuItemByOption(menuOption).click();
+  }
 };
 
 const waitForSnackbarToClose = async () => {
@@ -576,7 +588,11 @@ module.exports = {
   hideSnackbar,
   waitForLoaders,
   syncButton,
-  contactsButton,
+  toggleMenuAndCaptureScreenshot,
+  closeReloadModal,
+  goToMessages,
+  goToTasks,
+  goToAnalytics,
   isMessagesListPresent,
   isTasksListPresent,
   isPeopleListPresent,

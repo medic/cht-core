@@ -70,10 +70,7 @@ describe('Contact List Page', () => {
     await commonPage.goToMessages();
     expect(await commonPage.isContactTabPresent()).to.be.false;
     await generateScreenshot('contact-page', 'no-tab-visible');
-    await commonPage.openHamburgerMenu();
-    await (await commonPage.contactsButton()).waitForClickable({ reverse: true });
-    await generateScreenshot('contact-page', 'no-menu-option');
-    await commonPage.closeHamburgerMenu();
+    await commonPage.toggleMenuAndCaptureScreenshot('People', true, 'contact-page', 'no-menu-option');
     await commonPage.goToReports();
     await searchPage.performSearch('Amanda Allen');
     await commonPage.waitForLoaders();
@@ -97,10 +94,7 @@ describe('Contact List Page', () => {
     await commonPage.goToMessages();
     expect(await commonPage.isContactTabPresent()).to.be.false;
     await generateScreenshot('contact-page', 'no-tab-visible');
-    await commonPage.openHamburgerMenu();
-    await (await commonPage.contactsButton()).waitForClickable();
-    await generateScreenshot('contact-page', 'menu-option-visible');
-    await (await commonPage.contactsButton()).click();
+    await commonPage.toggleMenuAndCaptureScreenshot('People', false, 'contact-page', 'menu-option-visible');
     expect(await commonPage.isPeopleListPresent()).to.be.true;
     await commonPage.waitForPageLoaded();
     await generateScreenshot('contact-page', 'contacts-in-people-list');
@@ -128,10 +122,7 @@ describe('Contact List Page', () => {
     await commonPage.goToMessages();
     expect(await commonPage.isContactTabPresent()).to.be.false;
     await generateScreenshot('contact-page', 'no-tab-visible-oPerms');
-    await commonPage.openHamburgerMenu();
-    await (await commonPage.contactsButton()).waitForClickable({ reverse: true });
-    await generateScreenshot('contact-page', 'no-menu-option-no-Perms');
-    await commonPage.closeHamburgerMenu();
+    await commonPage.toggleMenuAndCaptureScreenshot('People', true, 'contact-page', 'no-menu-option-no-Perms');
     await commonPage.goToReports();
     await searchPage.performSearch('Amanda Allen');
     await commonPage.waitForLoaders();
