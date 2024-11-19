@@ -193,7 +193,7 @@ const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPerso
       return { clinic, kids, adults };
     });
 
-  const allPersons = clinicsData.flatMap(data => data.persons);
+  const allPersons = clinicsData.flatMap(data => ([...data.kids, ...data.adults]));
   const clinicList = clinicsData.map(data => data.clinic);
 
   const reportsForKids = clinicsData.flatMap(data => data.kids).flatMap(person => createReportsForKid(person, user));
