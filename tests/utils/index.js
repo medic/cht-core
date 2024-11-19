@@ -890,7 +890,7 @@ const dockerComposeCmdExec = (params) => {
 const dockerComposeCmd = (params) => {
   return dockerComposeCmdExec(params);
 
-  params = params.split(' ').filter(String);
+  /*params = params.split(' ').filter(String);
   const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
   params.unshift('compose', ...composeFiles, '-p', PROJECT_NAME);
 
@@ -911,7 +911,7 @@ const dockerComposeCmd = (params) => {
     cmd.stderr.on('data', log);
 
     cmd.on('close', () => resolve(output));
-  });
+  });*/
 };
 
 const sendSignal = async (service, signal) => {
