@@ -868,7 +868,7 @@ const listenForApi = async () => {
 
 const dockerComposeCmdExec = (params) => {
   const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
-  params = ['docker compose', ...composeFiles, '-p', PROJECT_NAME].join(' ') + ' ' + params;
+  params = `docker compose ${composeFiles.join(' ')} -p ${PROJECT_NAME} ${params}`;
 
   return new Promise((resolve, reject) => {
     exec(params, { env }, (error, stdout, stderr) => {
@@ -885,10 +885,11 @@ const dockerComposeCmdExec = (params) => {
       resolve(stdout);
     });
   });
-
 };
 
 const dockerComposeCmd = (params) => {
+  return dockerComposeCmdExec(params);
+
   params = params.split(' ').filter(String);
   const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
   params.unshift('compose', ...composeFiles, '-p', PROJECT_NAME);
@@ -1144,8 +1145,8 @@ const generateK3DValuesFile = async () => {
     db_name: constants.DB_NAME,
     user: constants.USERNAME,
     password: constants.PASSWORD,
-    secret: '',
-    uuid: '',
+    secret: 'dsadada',
+    uuid: 'dsadadada',
     namespace: PROJECT_NAME,
     data_path: K3D_DATA_PATH,
   };
@@ -1210,28 +1211,20 @@ const startServices = async () => {
 };
 
 const runCommand = (command, silent) => {
-  const [cmd, ...params] = command.split(' ');
   return new Promise((resolve, reject) => {
-    const proc = spawn(cmd, params, { env });
-    const output = [];
-    const log = (data, error) => {
-      data = data.toString();
-      output.push(data);
-      if (!silent) {
-        error ? console.error(data) : console.log(data);
+    exec(command, { env }, (error, stdout, stderr) => {
+      if (error) {
+        !silent && console.error(error);
+        return reject(error);
       }
-    };
 
-    proc.on('error', (err) => {
-      console.error(err);
-      reject(err);
-    });
-    proc.stdout.on('data', log);
-    proc.stderr.on('data', log);
+      if (stderr) {
+        !silent && console.error(stderr);
+        return reject(stderr);
+      }
 
-    proc.on('close', (exitCode) => {
-      const outString = output.join('\n');
-      return exitCode ? reject(outString) : resolve(outString);
+      !silent && console.log(stdout);
+      resolve(stdout);
     });
   });
 };
