@@ -62,10 +62,8 @@ const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
     await (await hamburgerMenuSelectors.hamburgerMenu()).waitForClickable();
     await (await hamburgerMenuSelectors.hamburgerMenu()).click();
-    // Adding pause here as we have to wait for sidebar nav menu animation to load
-    await browser.pause(ELEMENT_DISPLAY_PAUSE);
   }
-  await (await hamburgerMenuSelectors.sideBarMenuTitle()).waitForDisplayed();
+  await browser.waitUntil(isHamburgerMenuOpen);
 };
 
 const closeHamburgerMenu = async () => {
@@ -348,7 +346,7 @@ const goToAnalytics = async () => {
 
 const closeReloadModal = async (shouldUpdate, timeout) => {
   try {
-    timeout = shouldUpdate ? RELOAD_SYNC_TIMEOUT : ELEMENT_DISPLAY_PAUSE;
+    timeout = timeout || shouldUpdate ? RELOAD_SYNC_TIMEOUT : ELEMENT_DISPLAY_PAUSE;
     if (shouldUpdate) {
       await modalPage.submit(timeout);
       await waitForAngularLoaded();
@@ -372,26 +370,33 @@ const syncAndWaitForSuccess = async (expectReload, timeout = RELOAD_SYNC_TIMEOUT
   if (retry < 0) {
     throw new Error('Failed to sync after 10 retries');
   }
-  if (expectReload) {
-    expectReload = !(await closeReloadModal(false, ELEMENT_DISPLAY_PAUSE));
-  }
 
+  expectReload && await closeReloadModal();
   try {
     await openHamburgerMenu();
     if (!await (await hamburgerMenuSelectors.syncInProgress()).isDisplayedInViewport()) {
       await (await hamburgerMenuSelectors.syncButton()).click();
-      await openHamburgerMenu();
     }
 
     await (await hamburgerMenuSelectors.syncInProgress()).waitForDisplayed({ timeout, reverse: true });
-    if (!await isHamburgerMenuOpen()) {
-      if (expectReload) {
-        expectReload = !(await closeReloadModal(false, timeout));
-      }
-      await openHamburgerMenu();
+    await browser.waitUntil(async () => {
+      return (await (await hamburgerMenuSelectors.syncSuccess()).isDisplayedInViewport()) ||
+             (await modalPage.isDisplayed());
+    });
+    console.warn('promise done');
+
+    await closeReloadModal();
+    await openHamburgerMenu();
+
+    if (!await (await hamburgerMenuSelectors.syncSuccess()).isDisplayedInViewport()) {
+      throw new Error('Failed to sync');
     }
-    await (await hamburgerMenuSelectors.syncSuccess()).waitForDisplayed({ timeout });
-    return expectReload;
+    // expectReload && await closeReloadModal(false, ELEMENT_DISPLAY_PAUSE);
+    // if (!await isHamburgerMenuOpen()) {
+    //   expectReload && await closeReloadModal(false, timeout);
+    //   await openHamburgerMenu();
+    // }
+    // await (await hamburgerMenuSelectors.syncSuccess()).waitForDisplayed({ timeout });
   } catch (err) {
     console.error(err);
     return await syncAndWaitForSuccess(expectReload, timeout, retry - 1);
@@ -417,7 +422,9 @@ const sync = async ({
   await hideModalOverlay();
 
   await syncAndWaitForSuccess(expectReload, timeout);
-  await closeReloadModal(false, serviceWorkerUpdate? timeout : ELEMENT_DISPLAY_PAUSE);
+  // await closeReloadModal(false, serviceWorkerUpdate ? timeout : ELEMENT_DISPLAY_PAUSE);
+  serviceWorkerUpdate && await closeReloadModal();
+
   if (reload) {
     await browser.refresh();
     return await waitForPageLoaded();
