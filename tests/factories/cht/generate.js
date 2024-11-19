@@ -196,7 +196,9 @@ const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPerso
   const allPersons = clinicsData.flatMap(data => ([...data.kids, ...data.adults]));
   const clinicList = clinicsData.map(data => data.clinic);
 
-  const reportsForKids = clinicsData.flatMap(data => data.kids).flatMap(person => createReportsForKid(person, user));
+  const reportsForKids = clinicsData
+    .flatMap(data => data.kids)
+    .flatMap(person => createReportsForKid(person, user));
   const reportsForWoman = clinicsData
     .flatMap(data => data.adults)
     .flatMap(person => createReportsForWoman(person, user));
