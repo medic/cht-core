@@ -148,7 +148,12 @@ const createAdditionalPersons = (nbrPersons, clinic, nameList, dateOfBirthList) 
 };
 
 const createAdditionalKid = (nbrPersons, clinic) => {
-  return createAdditionalPersons(nbrPersons, clinic, 'kid');
+  return createAdditionalPersons(
+    nbrPersons, 
+    clinic, 
+    ADDITIONAL_KID_FIRST_NAMES, 
+    DATE_OF_BIRTHS_KIDS
+  );
 };
 
 const createAdditionalWoman = (nbrPersons, clinic) => {
