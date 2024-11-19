@@ -421,7 +421,6 @@ describe('Server side purge', () => {
   it('should purge correct docs', async () => {
     const seq = await sentinelUtils.getCurrentSeq();
     await utils.updateSettings({ purge: purgeSettings }, { ignoreReload: true });
-    await utils.runSentinelTasks();
     await sentinelUtils.waitForPurgeCompletion(seq);
 
     const purgeLog = await getPurgeLog();
@@ -503,7 +502,6 @@ describe('Server side purge', () => {
         purgeSettings.fn = reversePurgeFn.toString();
         return utils.updateSettings({ purge: purgeSettings }, { ignoreReload: true });
       })
-      .then(() => utils.runSentinelTasks())
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))
       .then(() => Promise.all([requestDeletes('user1', purgedIdsUser1), requestDeletes('user2', purgedIdsUser2)]))
       .then(([purgedDocsUser1, purgedDocsUser2]) => {
@@ -541,7 +539,6 @@ describe('Server side purge', () => {
     const seq = await sentinelUtils.getCurrentSeq();
     purgeSettings.fn = purgeFn.toString();
     await utils.updateSettings({ purge: purgeSettings }, { ignoreReload: true });
-    await utils.runSentinelTasks();
     await sentinelUtils.waitForPurgeCompletion(seq);
 
     let responseDocsUser1 = await requestDocs('user1');

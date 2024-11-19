@@ -866,21 +866,17 @@ const listenForApi = async () => {
   }
 };
 
-const dockerComposeCmdExec = (params) => {
+const dockerComposeCmd = (params) => {
   const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
   params = `docker compose ${composeFiles.join(' ')} -p ${PROJECT_NAME} ${params}`;
 
   return runCommand(params);
 };
 
-const dockerComposeCmd = (params) => {
-  return dockerComposeCmdExec(params);
-};
-
 const sendSignal = async (service, signal) => {
   const cmd = `/bin/bash -c "kill -s ${signal} 7"`;
   if (isDocker()) {
-    return await dockerComposeCmdExec(`exec ${service} ${cmd}`);
+    return await dockerComposeCmd(`exec ${service} ${cmd}`);
   }
 
   await runCommand(`kubectl ${KUBECTL_CONTEXT} exec deployments/cht-${service} -- ${cmd}`);

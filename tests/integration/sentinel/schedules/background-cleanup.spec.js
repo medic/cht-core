@@ -50,11 +50,7 @@ describe('Background cleanup', () => {
       body: {docs: userReadDocs}
     });
 
-    // Delete while stopped
-    await utils.toggleSentinelTransitions();
     await utils.deleteDoc(docToDelete._id);
-
-    // Boot up sentinel again and let the background cleanup finish
     await utils.runSentinelTasks();
     await sentinelUtils.waitForBackgroundCleanup();
 
