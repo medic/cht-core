@@ -122,7 +122,7 @@ const createClinic = (index, healthCenter) => {
   return { clinic, primaryContact };
 };
 
-const createAdditionalPersons = (nbrPersons, clinic, ageType) => {
+const createAdditionalPersons = (nbrPersons, clinic, nameList, dateOfBirthList) => {
   return Array
     .from({ length: nbrPersons })
     .map((_, i) => {
