@@ -1089,7 +1089,6 @@ describe('replication', () => {
         { purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } },
         { ignoreReload: true }
       );
-      await utils.runSentinelTasks();
       await sentinelUtils.waitForPurgeCompletion(seq);
 
       const response = await requestDeletes('bob', getIds(reports));
@@ -1114,7 +1113,6 @@ describe('replication', () => {
         { purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } },
         { ignoreReload: true }
       );
-      await utils.runSentinelTasks();
       await sentinelUtils.waitForPurgeCompletion(seq);
 
       const response = await requestDeletes('bob', [...savedIds, ...deletedIds, ...getIds(reports)]);

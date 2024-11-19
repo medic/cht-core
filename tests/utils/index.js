@@ -870,56 +870,20 @@ const dockerComposeCmdExec = (params) => {
   const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
   params = `docker compose ${composeFiles.join(' ')} -p ${PROJECT_NAME} ${params}`;
 
-  return new Promise((resolve, reject) => {
-    exec(params, { env }, (error, stdout, stderr) => {
-      if (error) {
-        console.error(error);
-        return reject(error);
-      }
-
-      if (stderr) {
-        console.error(stderr);
-        return reject(stderr);
-      }
-
-      resolve(stdout);
-    });
-  });
+  return runCommand(params);
 };
 
 const dockerComposeCmd = (params) => {
   return dockerComposeCmdExec(params);
-
-  /*params = params.split(' ').filter(String);
-  const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
-  params.unshift('compose', ...composeFiles, '-p', PROJECT_NAME);
-
-  return new Promise((resolve, reject) => {
-    const cmd = spawn('docker', params, { env });
-    const output = [];
-    const log = (data, error) => {
-      data = data.toString();
-      output.push(data);
-      error ? console.error(data) : console.log(data);
-    };
-
-    cmd.on('error', (err) => {
-      console.error(err);
-      reject(err);
-    });
-    cmd.stdout.on('data', log);
-    cmd.stderr.on('data', log);
-
-    cmd.on('close', () => resolve(output));
-  });*/
 };
 
 const sendSignal = async (service, signal) => {
+  const cmd = `/bin/bash -c "kill -s ${signal} 7"`;
   if (isDocker()) {
-    return await dockerComposeCmdExec(`exec ${service} /bin/bash -c "kill -s ${signal} 7"`);
+    return await dockerComposeCmdExec(`exec ${service} ${cmd}`);
   }
 
-  await runCommand(`kubectl ${KUBECTL_CONTEXT} exec deployments/cht-${service} -- /bin/sh -c "kill -s ${signal} 1"`);
+  await runCommand(`kubectl ${KUBECTL_CONTEXT} exec deployments/cht-${service} -- ${cmd}`);
 };
 
 const stopService = async (service) => {
@@ -927,7 +891,7 @@ const stopService = async (service) => {
     return await dockerComposeCmd(`stop -t 0 ${service}`);
   }
   await saveLogs(); // we lose logs when a pod crashes or is stopped.
-  await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment  --replicas=0`);
+  await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=0`);
   let tries = 100;
   do {
     try {
@@ -1211,6 +1175,7 @@ const startServices = async () => {
 };
 
 const runCommand = (command, silent) => {
+  console.warn(command);
   return new Promise((resolve, reject) => {
     exec(command, { env }, (error, stdout, stderr) => {
       if (error) {
@@ -1218,13 +1183,9 @@ const runCommand = (command, silent) => {
         return reject(error);
       }
 
-      if (stderr) {
-        !silent && console.error(stderr);
-        return reject(stderr);
-      }
-
+      !silent && console.error(stderr);
       !silent && console.log(stdout);
-      resolve(stdout);
+      resolve(stderr + stdout);
     });
   });
 };
