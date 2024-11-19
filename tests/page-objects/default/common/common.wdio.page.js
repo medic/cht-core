@@ -332,12 +332,12 @@ const goToAboutPage = async () => {
 
 const goToMessages = async () => {
   await goToUrl(`/#/messages`);
-  await (await tabsSelector.messagesTab()).waitForDisplayed();
+  await tabsSelector.messagesTab().waitForDisplayed();
 };
 
 const goToTasks = async () => {
   await goToUrl(`/#/tasks`);
-  await (await tabsSelector.taskTab()).waitForDisplayed();
+  await tabsSelector.taskTab().waitForDisplayed();
   await waitForPageLoaded();
 };
 
@@ -351,17 +351,6 @@ const goToPeople = async (contactId = '', shouldLoad = true) => {
   if (shouldLoad) {
     await waitForPageLoaded();
   }
-};
-
-const goToMessages = async () => {
-  await goToUrl(`/#/messages`);
-  await messagesTab().waitForDisplayed();
-};
-
-const goToTasks = async () => {
-  await goToUrl(`/#/tasks`);
-  await taskTab().waitForDisplayed();
-  await waitForPageLoaded();
 };
 
 const goToAnalytics = async () => {
