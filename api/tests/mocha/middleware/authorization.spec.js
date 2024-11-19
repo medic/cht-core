@@ -125,7 +125,7 @@ describe('Authorization middleware', () => {
   });
 
   describe('handleAuthErrorsAllowingAuthorized', () => {
-    it('should allow authorized',  () => {
+    it('should allow authorized', () => {
       testReq.authorized = true;
       middleware.handleAuthErrorsAllowingAuthorized(testReq, testRes, next);
       next.callCount.should.equal(1);

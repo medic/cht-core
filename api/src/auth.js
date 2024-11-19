@@ -92,7 +92,7 @@ module.exports = {
       return true;
     }
 
-    const user = await users.getUserDoc((req.userCtx.name));
+    const user = await users.getUserDoc(req.userCtx.name);
     if (user.password_change_required) {
       const error = new Error('Password change required');
       error.code = 403;
