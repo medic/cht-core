@@ -157,7 +157,12 @@ const createAdditionalKid = (nbrPersons, clinic) => {
 };
 
 const createAdditionalWoman = (nbrPersons, clinic) => {
-  return createAdditionalPersons(nbrPersons, clinic, 'adult');
+  return createAdditionalPersons(
+    nbrPersons, 
+    clinic, 
+    ADDITIONAL_WOMAN_FIRST_NAMES,
+    DATE_OF_BIRTHS_ADULTS,
+  );
 };
 
 const createReportsForWoman = (person, user) => {
