@@ -129,14 +129,11 @@ const createAdditionalPersons = (nbrPersons, clinic, ageType) => {
       const additionalPhoneNumber = PHONE_NUMBERS[i % PHONE_NUMBERS.length];
       let name;
       let date_of_birth;
-      let additionalPersonName;
       if (ageType === 'kid') {
         name = ADDITIONAL_KID_FIRST_NAMES[i % ADDITIONAL_KID_FIRST_NAMES.length];
-        additionalPersonName = `${name} ${clinic.last_name}`;
         date_of_birth = DATE_OF_BIRTHS_KIDS[i % DATE_OF_BIRTHS_KIDS.length];
       } else if (ageType === 'adult') {
         name = ADDITIONAL_WOMAN_FIRST_NAMES[i % ADDITIONAL_WOMAN_FIRST_NAMES.length];
-        additionalPersonName = `${name} ${clinic.last_name}`;
         date_of_birth = DATE_OF_BIRTHS_ADULTS[i % DATE_OF_BIRTHS_ADULTS.length];
       }
 
