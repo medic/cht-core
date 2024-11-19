@@ -304,6 +304,7 @@ const getVisibleLoaders = async () => {
     // Adding this here as a temporary solution to avoid the index out of bounds error
     // TODO: to revisit when we understand what causes the error
     const loadersTemp = await loaders();
+    console.log(loadersTemp.length);
     if (await loader.isDisplayed({ withinViewport: true })) {
       visible.push(loader);
     }
