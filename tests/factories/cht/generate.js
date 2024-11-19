@@ -190,7 +190,7 @@ const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPerso
 
       const allPersons = [...kids, ...adults];
 
-      return { clinic, persons: allPersons, kids, adults };
+      return { clinic, kids, adults };
     });
 
   const allPersons = clinicsData.flatMap(data => data.persons);
