@@ -301,6 +301,9 @@ const hideSnackbar = () => {
 const getVisibleLoaders = async () => {
   const visible = [];
   for (const loader of await loaders()) {
+    // Adding this here as a temporary solution to avoid the index out of bounds error
+    // TODO: to revisit when we understand what causes the error
+    const loadersTemp = await loaders();
     if (await loader.isDisplayed({ withinViewport: true })) {
       visible.push(loader);
     }
