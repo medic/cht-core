@@ -127,16 +127,8 @@ const createAdditionalPersons = (nbrPersons, clinic, nameList, dateOfBirthList) 
     .from({ length: nbrPersons })
     .map((_, i) => {
       const additionalPhoneNumber = PHONE_NUMBERS[i % PHONE_NUMBERS.length];
-      let name;
-      let date_of_birth;
-      if (ageType === 'kid') {
-        name = ADDITIONAL_KID_FIRST_NAMES[i % ADDITIONAL_KID_FIRST_NAMES.length];
-        date_of_birth = DATE_OF_BIRTHS_KIDS[i % DATE_OF_BIRTHS_KIDS.length];
-      } else if (ageType === 'adult') {
-        name = ADDITIONAL_WOMAN_FIRST_NAMES[i % ADDITIONAL_WOMAN_FIRST_NAMES.length];
-        date_of_birth = DATE_OF_BIRTHS_ADULTS[i % DATE_OF_BIRTHS_ADULTS.length];
-      }
-
+      const name = nameList[i % nameList.length];
+      const date_of_birth = dateOfBirthList[i % dateOfBirthList.length];
       return personFactory.build({
         parent: { _id: clinic._id, parent: clinic.parent },
         name: `${name} ${clinic.last_name}`,
@@ -149,17 +141,17 @@ const createAdditionalPersons = (nbrPersons, clinic, nameList, dateOfBirthList) 
 
 const createAdditionalKid = (nbrPersons, clinic) => {
   return createAdditionalPersons(
-    nbrPersons, 
-    clinic, 
-    ADDITIONAL_KID_FIRST_NAMES, 
+    nbrPersons,
+    clinic,
+    ADDITIONAL_KID_FIRST_NAMES,
     DATE_OF_BIRTHS_KIDS
   );
 };
 
 const createAdditionalWoman = (nbrPersons, clinic) => {
   return createAdditionalPersons(
-    nbrPersons, 
-    clinic, 
+    nbrPersons,
+    clinic,
     ADDITIONAL_WOMAN_FIRST_NAMES,
     DATE_OF_BIRTHS_ADULTS,
   );
