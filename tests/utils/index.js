@@ -1070,6 +1070,8 @@ const addTranslations = (languageCode, translations = {}) => {
           generic: {}
         };
       }
+
+      throw err;
     });
   };
 

@@ -67,7 +67,6 @@ describe('Service worker cache', () => {
   const chw = userFactory.build({ place: district._id });
 
   const login = async () => {
-    await browser.throttle('online');
     await loginPage.login(chw);
     await commonPage.waitForPageLoaded();
   };
@@ -78,6 +77,7 @@ describe('Service worker cache', () => {
   };
 
   const loginIfNeeded = async () => {
+    await browser.throttle('online');
     if (!await isLoggedIn()) {
       await login();
     }
@@ -91,6 +91,10 @@ describe('Service worker cache', () => {
 
   beforeEach(async () => {
     await loginIfNeeded();
+  });
+
+  afterEach(async () => {
+    await utils.revertSettings(true);
   });
 
   after(async () => {
@@ -191,8 +195,6 @@ describe('Service worker cache', () => {
     expect(await (await loginPage.labelForUser()).getText()).to.equal('Utilizator');
     expect(await (await loginPage.loginButton()).getText()).to.equal('Autentificare');
     expect(await (await loginPage.labelForPassword()).getText()).to.equal('Parola');
-
-    await utils.revertSettings(true);
   });
 
   it('other translation updates do not trigger a login page refresh', async () => {

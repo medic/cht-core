@@ -60,6 +60,7 @@ const isHamburgerMenuOpen = async () => {
 
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
+    await closeReloadModal();
     await (await hamburgerMenuSelectors.hamburgerMenu()).waitForClickable();
     await (await hamburgerMenuSelectors.hamburgerMenu()).click();
   }
