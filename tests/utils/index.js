@@ -848,7 +848,7 @@ const getUserSettings = ({ contactId, name }) => {
 };
 
 const listenForApi = async () => {
-  let retryCount = 100;
+  let retryCount = 120;
   do {
     try {
       console.log('Checking API');
@@ -859,7 +859,7 @@ const listenForApi = async () => {
       await delayPromise(1000);
     }
   } while (--retryCount > 0);
-  throw new Error('API failed to start after 100 seconds');
+  throw new Error('API failed to start after 2 minutes');
 };
 
 const dockerComposeCmd = (params) => {
