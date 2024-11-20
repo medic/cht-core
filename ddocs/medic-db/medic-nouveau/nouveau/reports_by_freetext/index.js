@@ -13,16 +13,6 @@ function (doc) {
 
     if (typeof value === 'string') {
       toIndex += ' ' + value;
-      // index('text', key, value, { store: true });
-    }
-
-    if (typeof value === 'number') {
-      // index('double', key, value, { store: true });
-    }
-
-    const fieldNameRegex = /^\$?[a-zA-Z][a-zA-Z0-9_]*$/g
-    if (fieldNameRegex.test(key)) {
-      console.log(`key "${key}" doesn't pass regex`);
     }
   };
 
@@ -35,17 +25,12 @@ function (doc) {
         emitField(key, doc.fields[key]);
       });
     }
-    if (doc.contact && doc.contact._id) {
-      // index('text', 'contact', doc.contact._id.toLowerCase(), { store: true });
-      /*const fieldNameRegex = /^\$?[a-zA-Z][a-zA-Z0-9_]*$/g
-      if (fieldNameRegex.test('contact')) {
-        console.log(`key "contact" doesn't pass regex`);
-      }*/
-    }
-  }
 
-  toIndex = toIndex.trim();
-  if (toIndex) {
-    index('text', 'default', toIndex, { store: true });
+    toIndex = toIndex.trim();
+    if (toIndex) {
+      index('text', 'default', toIndex, { store: true });
+    } else {
+      log(`******* empty toIndex "${toIndex}" "${doc._id}"`);
+    }
   }
 }

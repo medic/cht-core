@@ -28,17 +28,7 @@ function (doc) {
 
       if (typeof value === 'string') {
         toIndex += ' ' + value;
-        // index('text', key, value, { store: true });
       }
-
-      if (typeof value === 'number') {
-        // index('double', key, value, { store: true });
-      }
-
-      /*const fieldNameRegex = /^\$?[a-zA-Z][a-zA-Z0-9_]*$/g
-      if (fieldNameRegex.test(key)) {
-        console.log(`key "${key}" doesn't pass regex`);
-      }*/
     });
 
     toIndex = toIndex.trim();
