@@ -6,7 +6,7 @@ module.exports = {
     process.on('SIGUSR1', () => {
       feed.toggle();
     });
-    process.on('SIGCONT', () => {
+    process.on('SIGUSR2', () => {
       schedule.runTasks();
     });
   }

@@ -894,7 +894,7 @@ const stopService = async (service) => {
   let tries = 100;
   do {
     try {
-      await getPodName(service, true);
+      await getPodName(service, false);
       await delayPromise(100);
       tries--;
     } catch {
@@ -912,15 +912,15 @@ const waitForService = async (service) => {
   let tries = 100;
   do {
     try {
-      const podName = await getPodName(service, true);
+      const podName = await getPodName(service);
       await runCommand(
         `kubectl ${KUBECTL_CONTEXT} wait --for jsonpath={.status.containerStatuses[0].started}=true ${podName}`,
-        true
+        false
       );
       return;
     } catch {
       tries--;
-      await delayPromise(100);
+      await delayPromise(500);
     }
   } while (tries > 0);
 };
@@ -1173,17 +1173,17 @@ const startServices = async () => {
   }
 };
 
-const runCommand = (command, silent) => {
-  console.warn(command);
+const runCommand = (command, verbose = true) => {
+  verbose && console.warn(command);
   return new Promise((resolve, reject) => {
     exec(command, { env }, (error, stdout, stderr) => {
       if (error) {
-        !silent && console.error(error);
+        verbose && console.error(error);
         return reject(error);
       }
 
-      !silent && console.error(stderr);
-      !silent && console.log(stdout);
+      verbose && console.error(stderr);
+      verbose && console.log(stdout);
       resolve(stderr + stdout);
     });
   });
@@ -1211,7 +1211,7 @@ const importImages = async () => {
     // authentication to private repos is weird to set up in k3d.
     // https://k3d.io/v5.2.0/usage/registries/#authenticated-registries
     try {
-      await runCommand(`docker image inspect ${image}`, true);
+      await runCommand(`docker image inspect ${image}`, false);
     } catch {
       await runCommand(`docker pull ${image}`);
     }
@@ -1506,10 +1506,10 @@ const updatePermissions = async (roles, addPermissions, removePermissions, ignor
 };
 
 const getSentinelDate = () => getContainerDate('sentinel');
-const getPodName = async (service, silent) => {
+const getPodName = async (service, verbose) => {
   const cmd = await runCommand(
     `kubectl get pods ${KUBECTL_CONTEXT} -l cht.service=${service} --field-selector=status.phase==Running -o name`,
-    silent
+    verbose
   );
   return cmd.replace(/[^A-Za-z0-9-/]/g, '');
 };
@@ -1546,7 +1546,7 @@ const isMinimumChromeVersion = process.env.CHROME_VERSION === MINIMUM_BROWSER_VE
 const escapeBranchName = (branch) => branch?.replace(/[/|_]/g, '-');
 
 const toggleSentinelTransitions = () => sendSignal('sentinel', 'USR1');
-const runSentinelTasks = () => sendSignal('sentinel', 'CONT');
+const runSentinelTasks = () => sendSignal('sentinel', 'USR2');
 
 module.exports = {
   db,
