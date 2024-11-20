@@ -263,7 +263,7 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPagedGenerator.returns(mockGenerator);
 
-        const generator =   Person.v1.getAll(dataContext)(personTypeQualifier);
+        const generator = Person.v1.getAll(dataContext)(personTypeQualifier);
 
         expect(generator).to.deep.equal(mockGenerator);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
