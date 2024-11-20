@@ -851,7 +851,7 @@ const listenForApi = async () => {
   let retryCount = 180;
   do {
     try {
-      console.log('Checking API');
+      console.log(`Checking API, retries left ${retryCount}`);
       return await request({ path: '/api/info' });
     } catch (err) {
       console.log('API check failed, trying again in 1 second');
