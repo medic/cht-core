@@ -874,12 +874,15 @@ const dockerComposeCmd = (params) => {
 };
 
 const sendSignal = async (service, signal) => {
-  const cmd = `/bin/bash -c "kill -s ${signal} 7"`;
+  const getPIDcmd = `/bin/bash -c "pgrep -n node"`;
+  const killCmd = (pid) => `/bin/bash -c "kill -s ${signal} ${pid.trim()}"`;
   if (isDocker()) {
-    return await dockerComposeCmd(`exec ${service} ${cmd}`);
+    const pid = await dockerComposeCmd(`exec ${service} ${getPIDcmd}`);
+    return await dockerComposeCmd(`exec ${service} ${killCmd(pid)}`);
   }
 
-  await runCommand(`kubectl ${KUBECTL_CONTEXT} exec deployments/cht-${service} -- ${cmd}`);
+  const pid = await runCommand(`kubectl ${KUBECTL_CONTEXT} exec deployments/cht-${service} -- ${getPIDcmd}`);
+  await runCommand(`kubectl ${KUBECTL_CONTEXT} exec deployments/cht-${service} -- ${killCmd(pid)}`);
 };
 
 const stopService = async (service) => {
