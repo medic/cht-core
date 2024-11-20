@@ -21,6 +21,11 @@ function (doc) {
         return;
       }
 
+      const fieldNameRegex = /^\$?[a-zA-Z][a-zA-Z0-9_]*$/g
+      if (!fieldNameRegex.test(key)) {
+        log(`key "${key}" doesn't pass regex - "${doc.id}"`);
+      }
+
       key = key.toLowerCase();
       if (skip.indexOf(key) !== -1 || /_date$/.test(key)) {
         return;
@@ -28,6 +33,7 @@ function (doc) {
 
       if (typeof value === 'string') {
         toIndex += ' ' + value;
+        index('text', key, value, { store: true });
       }
     });
 
