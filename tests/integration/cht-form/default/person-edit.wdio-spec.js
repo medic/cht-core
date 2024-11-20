@@ -40,9 +40,6 @@ describe('cht-form web component - Edit Person Form', () => {
             created_by_place_uuid: ''
           }
         },
-        meta: {
-          instanceID: 'uuid:c558e232-0951-4ed8-8392-5ed8ac3c81b3'
-        }
       };
     });
 
