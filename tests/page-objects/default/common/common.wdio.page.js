@@ -303,8 +303,7 @@ const getVisibleLoaders = async () => {
   for (const loader of await loaders()) {
     // Adding this here as a temporary solution to avoid the index out of bounds error
     // TODO: to revisit when we understand what causes the error
-    const loadersTemp = await loaders();
-    console.log(loadersTemp.length);
+    console.log(loader.sessionId);
     if (await loader.isDisplayed({ withinViewport: true })) {
       visible.push(loader);
     }
@@ -314,10 +313,10 @@ const getVisibleLoaders = async () => {
 };
 
 const waitForLoaders = async () => {
-  await browser.waitUntil(async () => {
+  await (await browser.waitUntil(async () => {
     const visibleLoaders = await getVisibleLoaders();
     return !visibleLoaders.length;
-  }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
+  }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' }));
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
