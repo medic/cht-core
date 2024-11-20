@@ -1,96 +1,39 @@
-import { Doc } from './libs/doc';
 import {
   assertCursor,
   assertFreetextQualifier,
   assertLimit,
   assertTypeQualifier,
-  DataObject,
   getPagedGenerator,
-  Identifiable,
-  isDataObject,
-  isIdentifiable,
   Nullable,
   Page,
 } from './libs/core';
 import {
-  byContactType,
-  byFreetext,
   ContactTypeQualifier,
   FreetextQualifier,
-  isUuidQualifier,
   UuidQualifier
 } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
-import { InvalidArgumentError } from './libs/error';
 import * as Local from './local';
 import * as Remote from './remote';
+import * as ContactTypes from './contact-types';
 
 /** */
 export namespace v1 {
   /** @internal */
-  export interface NormalizedParent extends DataObject, Identifiable {
-    readonly parent?: NormalizedParent;
-  }
-
-  /** @ignore */
-  export const isNormalizedParent = (value: unknown): value is NormalizedParent => {
-    return isDataObject(value) && isIdentifiable(value) && (!value.parent || isNormalizedParent(value.parent));
-  };
-
-  /** @ignore */
-  export const isContactType = (value: ContactTypeQualifier | FreetextQualifier): value is ContactTypeQualifier => {
-    return 'contactType' in value;
-  };
-
-  /** @ignore */
-  export const isFreetextType = (value: ContactTypeQualifier | FreetextQualifier): value is FreetextQualifier => {
-    return 'freetext' in value;
-  };
+  export type NormalizedParent = ContactTypes.v1.NormalizedParent;
   /**
    * Immutable data about a Contact.
    */
-  export interface Contact extends Doc, NormalizedParent {
-    readonly contact_type?: string;
-    readonly name?: string;
-    readonly reported_date?: Date;
-    readonly type: string;
-  }
-
+  export type Contact = ContactTypes.v1.Contact;
   /**
    * Immutable data about a contact, including the full records of the parent's lineage.
    */
-  export interface ContactWithLineage extends Contact {
-    readonly parent?: ContactWithLineage | NormalizedParent;
-  }
-
-  const assertContactQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
-    if (!isUuidQualifier(qualifier)) {
-      throw new InvalidArgumentError(`Invalid identifier [${JSON.stringify(qualifier)}].`);
-    }
-  };
+  export type ContactWithLineage = ContactTypes.v1.ContactWithLineage;
 
   /** @ignore */
-  export const createQualifier = (
-    freetext: Nullable<string> = null,
-    type: Nullable<string> = null
-  ): ContactTypeQualifier | FreetextQualifier => {
-    if (!freetext && !type) {
-      throw new InvalidArgumentError('Either "freetext" or "type" is required');
-    }
-
-    const qualifier = {};
-    if (freetext) {
-      Object.assign(qualifier, byFreetext(freetext));
-    }
-
-    if (type) {
-      Object.assign(qualifier, byContactType(type));
-    }
-
-    return qualifier as ContactTypeQualifier | FreetextQualifier;
-  };
+  export const createQualifier = ContactTypes.v1.createQualifier;
 
   const getContact =
     <T>(
@@ -100,7 +43,7 @@ export namespace v1 {
       assertDataContext(context);
       const fn = adapt(context, localFn, remoteFn);
       return async (qualifier: UuidQualifier): Promise<T> => {
-        assertContactQualifier(qualifier);
+        ContactTypes.v1.assertContactQualifier(qualifier);
         return fn(qualifier);
       };
     };
@@ -163,11 +106,11 @@ export namespace v1 {
       assertCursor(cursor);
       assertLimit(limit);
 
-      if (isContactType(qualifier)) {
+      if (ContactTypes.v1.isContactType(qualifier)) {
         assertTypeQualifier(qualifier);
       }
 
-      if (isFreetextType(qualifier)) {
+      if (ContactTypes.v1.isFreetextType(qualifier)) {
         assertFreetextQualifier(qualifier);
       }
 
@@ -195,11 +138,11 @@ export namespace v1 {
     const curriedGen = (
       qualifier: ContactTypeQualifier | FreetextQualifier
     ): AsyncGenerator<string, null> => {
-      if (isContactType(qualifier)) {
+      if (ContactTypes.v1.isContactType(qualifier)) {
         assertTypeQualifier(qualifier);
       }
 
-      if (isFreetextType(qualifier)) {
+      if (ContactTypes.v1.isFreetextType(qualifier)) {
         assertFreetextQualifier(qualifier);
       }
       return getPagedGenerator(getPage, qualifier);

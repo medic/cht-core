@@ -1,7 +1,7 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import { fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey, queryDocsByRange } from './libs/doc';
 import { ContactTypeQualifier, FreetextQualifier, UuidQualifier } from '../qualifier';
-import * as Contact from '../contact';
+import * as ContactType from '../contact-types';
 import { deepCopy, isNonEmptyArray, Nullable, Page } from '../libs/core';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
@@ -19,7 +19,7 @@ export namespace v1 {
   };
 
   const isContact =
-    (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is Contact.v1.Contact => {
+    (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is ContactType.v1.Contact => {
       if (!doc) {
         if (uuid) {
           logger.warn(`No contact found for identifier [${uuid}].`);
@@ -38,7 +38,7 @@ export namespace v1 {
   /** @internal */
   export const get = ({ medicDb, settings }: LocalDataContext) => {
     const getMedicDocById = getDocById(medicDb);
-    return async (identifier: UuidQualifier): Promise<Nullable<Contact.v1.Contact>> => {
+    return async (identifier: UuidQualifier): Promise<Nullable<ContactType.v1.Contact>> => {
       const doc = await getMedicDocById(identifier.uuid);
       if (!isContact(settings)(doc, identifier.uuid)) {
         return null;
@@ -52,7 +52,7 @@ export namespace v1 {
   export const getWithLineage = ({ medicDb, settings }: LocalDataContext) => {
     const getLineageDocs = getLineageDocsById(medicDb);
     const getMedicDocsById = getDocsByIds(medicDb);
-    return async (identifier: UuidQualifier): Promise<Nullable<Contact.v1.Contact>> => {
+    return async (identifier: UuidQualifier): Promise<Nullable<ContactType.v1.Contact>> => {
       const [contact, ...lineageContacts] = await getLineageDocs(identifier.uuid);
       if (!isContact(settings)(contact, identifier.uuid)) {
         return null;
@@ -87,11 +87,11 @@ export namespace v1 {
         return getDocsFnForContactTypeAndFreetext(qualifier);
       }
 
-      if (Contact.v1.isContactType(qualifier)) {
+      if (ContactType.v1.isContactType(qualifier)) {
         return getDocsFnForContactType(qualifier);
       }
 
-      if (Contact.v1.isFreetextType(qualifier)) {
+      if (ContactType.v1.isFreetextType(qualifier)) {
         return getDocsFnForFreetextType(qualifier);
       }
 
@@ -101,7 +101,7 @@ export namespace v1 {
     const isContactTypeAndFreetextType = (
       qualifier: ContactTypeQualifier | FreetextQualifier
     ): qualifier is ContactTypeQualifier & FreetextQualifier => {
-      return Contact.v1.isContactType(qualifier) && Contact.v1.isFreetextType(qualifier);
+      return ContactType.v1.isContactType(qualifier) && ContactType.v1.isFreetextType(qualifier);
     };
 
     const getDocsFnForContactTypeAndFreetext = (

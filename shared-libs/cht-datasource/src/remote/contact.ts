@@ -1,7 +1,7 @@
 import { getResource, getResources, RemoteDataContext } from './libs/data-context';
 import { ContactTypeQualifier, FreetextQualifier, UuidQualifier } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
-import * as Contact from '../contact';
+import * as ContactType from '../contact-types';
 
 /** @internal */
 export namespace v1 {
@@ -12,14 +12,14 @@ export namespace v1 {
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (
     identifier: UuidQualifier
-  ): Promise<Nullable<Contact.v1.Contact>> => getContact(remoteContext)(identifier.uuid);
+  ): Promise<Nullable<ContactType.v1.Contact>> => getContact(remoteContext)(identifier.uuid);
 
   /** @internal */
   export const getWithLineage = (
     remoteContext: RemoteDataContext
   ) => (
     identifier: UuidQualifier
-  ): Promise<Nullable<Contact.v1.ContactWithLineage>> => getContact(remoteContext)(identifier.uuid, {
+  ): Promise<Nullable<ContactType.v1.ContactWithLineage>> => getContact(remoteContext)(identifier.uuid, {
     with_lineage: 'true',
   });
 
@@ -33,11 +33,11 @@ export namespace v1 {
       let freetext = '';
       let contactType = '';
 
-      if (Contact.v1.isContactType(qualifier)) {
+      if (ContactType.v1.isContactType(qualifier)) {
         freetext = qualifier.contactType;
       }
 
-      if (Contact.v1.isFreetextType(qualifier)) {
+      if (ContactType.v1.isFreetextType(qualifier)) {
         contactType = qualifier.freetext;
       }
 

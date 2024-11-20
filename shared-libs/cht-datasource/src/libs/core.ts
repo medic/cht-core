@@ -175,6 +175,6 @@ export const assertFreetextQualifier: (qualifier: unknown) => asserts qualifier 
   qualifier: unknown
 ) => {
   if (!isFreetextQualifier(qualifier)) {
-    throw new InvalidArgumentError(`Invalid invalid freetext [${JSON.stringify(qualifier)}].`);
+    throw new InvalidArgumentError(`Invalid freetext [${JSON.stringify(qualifier)}].`);
   }
 };

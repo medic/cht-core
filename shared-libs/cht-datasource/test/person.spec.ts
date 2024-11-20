@@ -202,7 +202,7 @@ describe('person', () => {
       ].forEach((limitValue) => {
         it(`throws an error if limit is invalid: ${String(limitValue)}`, async () => {
           isContactTypeQualifier.returns(true);
-          getPage.resolves(people);
+          getPage.resolves(pageData);
 
           await expect(Person.v1.getPage(dataContext)(personTypeQualifier, cursor, limitValue as number))
             .to.be.rejectedWith(`The limit must be a positive number: [${String(limitValue)}]`);
@@ -223,7 +223,7 @@ describe('person', () => {
       ].forEach((skipValue) => {
         it('throws an error if cursor is invalid', async () => {
           isContactTypeQualifier.returns(true);
-          getPage.resolves(people);
+          getPage.resolves(pageData);
 
           await expect(Person.v1.getPage(dataContext)(personTypeQualifier, skipValue as string, limit))
             .to.be.rejectedWith(`Invalid cursor token: [${String(skipValue)}]`);
