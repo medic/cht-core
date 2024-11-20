@@ -16,7 +16,6 @@ const userSettings = require('@factories/cht/users/user-settings');
 const buildVersions = require('../../scripts/build/versions');
 const PouchDB = require('pouchdb-core');
 const chtDbUtils = require('@utils/cht-db');
-const allure = require('allure-commandline');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-session-authentication'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
@@ -1545,30 +1544,6 @@ const escapeBranchName = (branch) => branch?.replace(/[/|_]/g, '-');
 const toggleSentinelTransitions = () => sendSignal('sentinel', 'USR1');
 const runSentinelTasks = () => sendSignal('sentinel', 'USR2');
 
-const generateAllureReport = () => {
-  const reportError = new Error('Could not generate Allure report');
-  const timeoutError = new Error('Timeout generating report');
-  const generation = allure(['generate', 'allure-results', '--clean']);
-
-  return new Promise((resolve, reject) => {
-    const generationTimeout = setTimeout(
-      () => reject(timeoutError),
-      60 * 1000
-    );
-
-    generation.on('exit', (exitCode) => {
-      clearTimeout(generationTimeout);
-
-      if (exitCode !== 0) {
-        return reject(reportError);
-      }
-
-      console.log('Allure report successfully generated');
-      resolve();
-    });
-  });
-};
-
 module.exports = {
   db,
   sentinelDb,
@@ -1650,5 +1625,4 @@ module.exports = {
   toggleSentinelTransitions,
   runSentinelTasks,
   runCommand,
-  generateAllureReport,
 };

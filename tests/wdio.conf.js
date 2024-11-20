@@ -9,6 +9,7 @@ const constants = require('@constants');
 const utils = require('@utils');
 const fileDownloadUtils = require('@utils/file-download');
 const browserLogsUtils = require('@utils/browser-logs');
+const { generateReport } = require('@utils/allure');
 const ALLURE_OUTPUT = 'allure-results';
 const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
 const logLevels = ['error', 'warning', 'debug'];
@@ -360,7 +361,7 @@ const baseConfig = {
   onComplete: async () => {
     fileDownloadUtils.deleteDownloadDirectory();
     await utils.tearDownServices();
-    await utils.generateAllureReport();
+    await generateReport();
   },
   /**
   * Gets executed when a refresh happens.

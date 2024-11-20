@@ -12,6 +12,7 @@ const semver = require('semver');
 
 const utils = require('@utils');
 const wdioBaseConfig = require('../../wdio.conf');
+const { generateReport } = require('@utils/allure');
 
 const {
   MARKET_URL_READ = 'https://staging.dev.medicmobile.org',
@@ -154,7 +155,7 @@ const upgradeConfig = Object.assign(wdioBaseConfig.config, {
 
   onComplete: async () => {
     await tearDownServices();
-    await utils.generateAllureReport();
+    await generateReport();
   },
 
   mochaOpts: {
