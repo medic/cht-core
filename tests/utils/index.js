@@ -16,6 +16,7 @@ const userSettings = require('@factories/cht/users/user-settings');
 const buildVersions = require('../../scripts/build/versions');
 const PouchDB = require('pouchdb-core');
 const chtDbUtils = require('@utils/cht-db');
+const allure = require('allure-commandline');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-session-authentication'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
@@ -69,6 +70,7 @@ const env = {
   ...process.env,
   CHT_NETWORK: NETWORK,
   COUCHDB_SECRET: 'monkey',
+  COUCHDB_UUID: 'the_uuid',
 };
 
 const dockerPlatformName = () => {
@@ -846,24 +848,19 @@ const getUserSettings = ({ contactId, name }) => {
     }));
 };
 
-const apiRetry = () => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(listenForApi());
-    }, 1000);
-  });
-};
-
 const listenForApi = async () => {
-  console.log('Checking API');
-  try {
-    await request({ path: '/api/info' });
-    console.log('API is up');
-  } catch (err) {
-    console.log('API check failed, trying again in 1 second');
-    console.log(err.message);
-    await apiRetry();
-  }
+  let retryCount = 100;
+  do {
+    try {
+      console.log('Checking API');
+      return await request({ path: '/api/info' });
+    } catch (err) {
+      console.log('API check failed, trying again in 1 second');
+      console.log(err.message);
+      await delayPromise(1000);
+    }
+  } while (--retryCount > 0);
+  throw new Error('API failed to start after 100 seconds');
 };
 
 const dockerComposeCmd = (params) => {
@@ -1108,8 +1105,8 @@ const generateK3DValuesFile = async () => {
     db_name: constants.DB_NAME,
     user: constants.USERNAME,
     password: constants.PASSWORD,
-    secret: 'dsadada',
-    uuid: 'dsadadada',
+    secret: env.COUCHDB_SECRET,
+    uuid: env.COUCHDB_UUID,
     namespace: PROJECT_NAME,
     data_path: K3D_DATA_PATH,
   };
@@ -1173,10 +1170,10 @@ const startServices = async () => {
   }
 };
 
-const runCommand = (command, verbose = true) => {
+const runCommand = (command, verbose = true, overrideEnv = false) => {
   verbose && console.warn(command);
   return new Promise((resolve, reject) => {
-    exec(command, { env }, (error, stdout, stderr) => {
+    exec(command, { env: overrideEnv || env }, (error, stdout, stderr) => {
       if (error) {
         verbose && console.error(error);
         return reject(error);
@@ -1184,7 +1181,7 @@ const runCommand = (command, verbose = true) => {
 
       verbose && console.error(stderr);
       verbose && console.log(stdout);
-      resolve(stderr + stdout);
+      resolve(stdout);
     });
   });
 };
@@ -1548,6 +1545,30 @@ const escapeBranchName = (branch) => branch?.replace(/[/|_]/g, '-');
 const toggleSentinelTransitions = () => sendSignal('sentinel', 'USR1');
 const runSentinelTasks = () => sendSignal('sentinel', 'USR2');
 
+const generateAllureReport = () => {
+  const reportError = new Error('Could not generate Allure report');
+  const timeoutError = new Error('Timeout generating report');
+  const generation = allure(['generate', 'allure-results', '--clean']);
+
+  return new Promise((resolve, reject) => {
+    const generationTimeout = setTimeout(
+      () => reject(timeoutError),
+      60 * 1000
+    );
+
+    generation.on('exit', (exitCode) => {
+      clearTimeout(generationTimeout);
+
+      if (exitCode !== 0) {
+        return reject(reportError);
+      }
+
+      console.log('Allure report successfully generated');
+      resolve();
+    });
+  });
+};
+
 module.exports = {
   db,
   sentinelDb,
@@ -1628,4 +1649,6 @@ module.exports = {
   getDefaultForms,
   toggleSentinelTransitions,
   runSentinelTasks,
+  runCommand,
+  generateAllureReport,
 };
