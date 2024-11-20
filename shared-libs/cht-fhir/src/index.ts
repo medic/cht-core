@@ -43,7 +43,7 @@ export const isPatient = (doc: any, filterExpression: string): boolean => {
 };
 
 const applyMapping = (fhirPatient: FHIRPatient, fhirField: string, value: any) => {
-  const pathSegments = fhirField.split(/[\.\[\]]/).filter(segment => segment);
+  const pathSegments = fhirField.split(/[.[\]]/).filter(segment => segment);
   let current: any = fhirPatient;
 
   pathSegments.forEach((segment, index) => {
