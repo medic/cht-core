@@ -1440,7 +1440,14 @@ const collectLogs = (container, ...regex) => {
     errors.push(err.toString());
   });
 
+  const timeout = setTimeout(() => {
+    receivedFirstLine();
+    errors.push('Timed out waiting for first log line');
+    killSpawnedProcess(proc);
+  }, 180000);
+
   const collect = () => {
+    clearTimeout(timeout);
     if (errors.length) {
       const error = new Error('CollectLogs errored');
       error.errors = errors;
@@ -1462,9 +1469,14 @@ const collectHaproxyLogs = (...regex) => collectLogs('haproxy', ...regex);
 
 const normalizeTestName = name => name.replace(/\s/g, '_');
 
-const apiLogTestStart = (name) => {
-  return requestOnTestDb(`/?start=${normalizeTestName(name)}`)
-    .catch(() => console.warn('Error logging test start - ignoring'));
+const apiLogTestStart = async (name) => {
+  try {
+    await requestOnTestDb(`/?start=${normalizeTestName(name)}`);
+  } catch (err) {
+    console.error('Api is not up. Cancelling workflow', err);
+    await saveLogs();
+    process.exit(1);
+  }
 };
 
 const apiLogTestEnd = (name) => {
