@@ -11,6 +11,17 @@ const logPath = path.join('tests', 'logs');
 const browserLogPath = path.join(logPath, 'browser.console.log');
 const mockConfig = require('./mock-config');
 
+const ALLOWED_LOG_MSGS = [
+  'favicon.ico - Failed to load resource: the server responded with a status of 404 (Not Found)',
+  'tag was parsed inside of a <select> which was not inserted into the document. This is not valid ' +
+  'HTML and the behavior may be changed in future versions of chrome.',
+  'invalid phone number',
+  'Error submitting form data:'
+];
+const notAllowedLog = (msg) => {
+  return !ALLOWED_LOG_MSGS.some(allowedMsg => msg.includes(allowedMsg));
+};
+
 // Override specific properties from wdio base config
 const defaultConfig = {
   ...wdioBaseConfig.config,
@@ -48,7 +59,14 @@ const defaultConfig = {
     mockConfig.stopMockApp();
   },
 
-  afterTest: () => { },
+  afterTest: async (test) => {
+    const logs = (await browser.getLogs('browser'))
+      .map(({ message }) => message)
+      .filter(notAllowedLog);
+    if (logs.length) {
+      test.callback(new Error(`Browser console logs are not empty: ${logs.join('\n')}`));
+    }
+  },
 
   onComplete: () => { },
 };
