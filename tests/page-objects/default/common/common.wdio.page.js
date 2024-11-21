@@ -371,8 +371,6 @@ const syncAndWaitForSuccess = async (expectReload, timeout = RELOAD_SYNC_TIMEOUT
   if (retry < 0) {
     throw new Error('Failed to sync after 10 retries');
   }
-
-  expectReload && await closeReloadModal();
   try {
     await openHamburgerMenu();
     if (!await (await hamburgerMenuSelectors.syncInProgress()).isDisplayedInViewport()) {
@@ -384,20 +382,11 @@ const syncAndWaitForSuccess = async (expectReload, timeout = RELOAD_SYNC_TIMEOUT
       return (await (await hamburgerMenuSelectors.syncSuccess()).isDisplayedInViewport()) ||
              (await modalPage.isDisplayed());
     });
-    console.warn('promise done');
-
-    await closeReloadModal();
     await openHamburgerMenu();
 
     if (!await (await hamburgerMenuSelectors.syncSuccess()).isDisplayedInViewport()) {
       throw new Error('Failed to sync');
     }
-    // expectReload && await closeReloadModal(false, ELEMENT_DISPLAY_PAUSE);
-    // if (!await isHamburgerMenuOpen()) {
-    //   expectReload && await closeReloadModal(false, timeout);
-    //   await openHamburgerMenu();
-    // }
-    // await (await hamburgerMenuSelectors.syncSuccess()).waitForDisplayed({ timeout });
   } catch (err) {
     console.error(err);
     return await syncAndWaitForSuccess(expectReload, timeout, retry - 1);
@@ -423,8 +412,7 @@ const sync = async ({
   await hideModalOverlay();
 
   await syncAndWaitForSuccess(expectReload, timeout);
-  // await closeReloadModal(false, serviceWorkerUpdate ? timeout : ELEMENT_DISPLAY_PAUSE);
-  serviceWorkerUpdate && await closeReloadModal();
+  serviceWorkerUpdate && await closeReloadModal(false, RELOAD_SYNC_TIMEOUT);
 
   if (reload) {
     await browser.refresh();
