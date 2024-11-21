@@ -27,15 +27,26 @@ describe('medic-offline-freetext', () => {
       ['contact', 3, 'person']
     ].forEach(([type, typeIndex, contactType]) => it('emits numerical index for default type', () => {
       const doc = { type, hello: 'world', contact_type: contactType };
+
       const emitted = mapFn(doc, true);
-      expect(emitted).to.deep.equal([{ key: ['world'], value: expectedValue({ typeIndex }) }]);
+
+      const value = expectedValue({ typeIndex });
+      expect(emitted).to.deep.equal([
+        { key: ['world'], value },
+        { key: ['hello:world'], value }
+      ]);
     }));
 
     it('emits contact_type index for custom type', () => {
       const typeIndex = 'my_custom_type';
       const doc = { contact_type: typeIndex, type: 'contact', hello: 'world' };
       const emitted = mapFn(doc, true);
-      expect(emitted).to.deep.equal([{ key: ['world'], value: expectedValue({ typeIndex }) }]);
+
+      const value = expectedValue({ typeIndex });
+      expect(emitted).to.deep.equal([
+        { key: ['world'], value },
+        { key: ['hello:world'], value }
+      ]);
     });
 
     it('emits nothing when type is invalid', () => {
@@ -46,41 +57,75 @@ describe('medic-offline-freetext', () => {
 
     it('emits death status in value', () => {
       const doc = { type: 'district_hospital', date_of_death: '2021-01-01' };
+
       const emitted = mapFn(doc, true);
-      expect(emitted).to.deep.equal([{ key: ['2021-01-01'], value: expectedValue({ typeIndex: 0, dead: true }) }]);
+
+      const value = expectedValue({ typeIndex: 0, dead: true });
+      expect(emitted).to.deep.equal([
+        { key: ['2021-01-01'], value },
+        { key: ['date_of_death:2021-01-01'], value }
+      ]);
     });
 
     it('emits muted status in value', () => {
       const doc = { type: 'district_hospital', muted: true, hello: 'world' };
+
       const emitted = mapFn(doc, true);
-      expect(emitted).to.deep.equal([{ key: ['world'], value: expectedValue({ typeIndex: 0, muted: true }) }]);
+
+      const value = expectedValue({ typeIndex: 0, muted: true });
+      expect(emitted).to.deep.equal([
+        { key: ['world'], value },
+        { key: ['hello:world'], value }
+      ]);
     });
 
     [
       'hello', 'HeLlO'
     ].forEach(name => it('emits name in value', () => {
       const doc = { type: 'district_hospital', name };
+
       const emitted = mapFn(doc, true);
+
+      const value = expectedValue({ typeIndex: 0, name: name.toLowerCase() });
       expect(emitted).to.deep.equal([
-        { key: [name.toLowerCase()], value: expectedValue({ typeIndex: 0, name: name.toLowerCase() }) }
+        { key: [name.toLowerCase()], value },
+        { key: [`name:${name}`], value }
       ]);
     }));
 
     [
-      null, undefined, { hello: 'world' }, {}, 1, true
-    ].forEach(hello => it('emits nothing when value is not a string', () => {
+      null, undefined, { hello: 'world' }, {}, true
+    ].forEach(hello => it('emits nothing when value is not a string or number', () => {
       const doc = { type: 'district_hospital', hello };
       const emitted = mapFn(doc, true);
       expect(emitted).to.be.empty;
     }));
 
+    it('emits only key:value when value is number', () => {
+      const doc = { type: 'district_hospital', hello: 1234 };
+
+      const emitted = mapFn(doc, true);
+
+      const value = expectedValue({ typeIndex: 0 });
+      expect(emitted).to.deep.equal([{ key: ['hello:1234'], value }]);
+    });
+
     [
-      '', 't', 'to'
-    ].forEach(hello => it('emits nothing when value is too short', () => {
+      't', 'to'
+    ].forEach(hello => it('emits nothing but key:value when value is too short', () => {
       const doc = { type: 'district_hospital', hello };
+
+      const emitted = mapFn(doc, true);
+
+      const value = expectedValue({ typeIndex: 0 });
+      expect(emitted).to.deep.equal([{ key: [`hello:${hello}`], value }]);
+    }));
+
+    it('emits nothing when value is empty', () => {
+      const doc = { type: 'district_hospital', hello: '' };
       const emitted = mapFn(doc, true);
       expect(emitted).to.be.empty;
-    }));
+    });
 
     [
       '_id', '_rev', 'type', 'contact_type', 'refid', 'geolocation'
@@ -103,8 +148,16 @@ describe('medic-offline-freetext', () => {
         hello1: 'world',
         hello3: 'world',
       };
+
       const emitted = mapFn(doc, true);
-      expect(emitted).to.deep.equal([{ key: ['world'], value: expectedValue({ typeIndex: 0 }) }]);
+
+      const value = expectedValue({ typeIndex: 0 });
+      expect(emitted).to.deep.equal([
+        { key: ['world'], value },
+        { key: ['hello:world world'], value },
+        { key: ['hello1:world'], value },
+        { key: ['hello3:world'], value }
+      ]);
     });
 
     it('emits each word in a string', () => {
@@ -120,6 +173,7 @@ describe('medic-offline-freetext', () => {
         { key: ['quick'], value },
         { key: ['brown'], value },
         { key: ['fox'], value },
+        { key: ['hello:the quick\nbrown\tfox'], value },
       ]);
     });
   });

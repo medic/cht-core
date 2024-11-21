@@ -25,6 +25,9 @@ module.exports.map = function(doc) {
         .split(/\s+/)
         .forEach((word) => emitMaybe(word, order));
     }
+    if (typeof value === 'number' || typeof value === 'string') {
+      emitMaybe(lowerKey + ':' + value, order);
+    }
   };
 
   const getTypeIndex = () => {
@@ -42,12 +45,14 @@ module.exports.map = function(doc) {
   };
 
   const idx = getTypeIndex();
-  if (idx !== -1) {
-    const dead = !!doc.date_of_death;
-    const muted = !!doc.muted;
-    const order = dead + ' ' + muted + ' ' + idx + ' ' + (doc.name && doc.name.toLowerCase());
-    Object.keys(doc).forEach(function(key) {
-      emitField(key, doc[key], order);
-    });
+  if (idx === -1) {
+    return;
   }
+
+  const dead = !!doc.date_of_death;
+  const muted = !!doc.muted;
+  const order = `${dead} ${muted} ${idx} ${(doc.name && doc.name.toLowerCase())}`;
+  Object
+    .keys(doc)
+    .forEach((key) => emitField(key, doc[key], order));
 };
