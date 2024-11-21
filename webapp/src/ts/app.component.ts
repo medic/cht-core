@@ -279,7 +279,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
   }
 
-  async ngOnInit() {
+  ngOnInit(): void {
     this.recordStartupTelemetry();
     this.subscribeToStore();
     this.setupRouter();
