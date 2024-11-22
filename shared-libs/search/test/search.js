@@ -14,7 +14,8 @@ describe('Search service', function() {
     GenerateSearchRequests.generate = sinon.stub();
     GenerateSearchRequests.shouldSortByLastVisitedDate = sinon.stub();
     DB = {
-      query: sinon.stub()
+      query: sinon.stub(),
+      get: sinon.stub().rejects()
     };
 
     service = Search(Promise, DB);

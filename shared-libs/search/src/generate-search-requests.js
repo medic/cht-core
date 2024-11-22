@@ -258,10 +258,10 @@ const requestBuilders = {
     }
     return requests;
   },
-  contacts: (filters, extensions) => {
+  contacts: (filters, freetextDdocName, extensions) => {
     const shouldSortByLastVisitedDate = module.exports.shouldSortByLastVisitedDate(extensions);
 
-    const freetextRequests = freetextRequest(filters, 'medic-client/contacts_by_freetext');
+    const freetextRequests = freetextRequest(filters, `${freetextDdocName}/contacts_by_freetext`);
     const contactsByParentRequest = getContactsByParentRequest(filters);
     const typeRequest = contactTypeRequest(filters, shouldSortByLastVisitedDate);
     const hasTypeRequest = typeRequest?.params.keys.length;
@@ -313,12 +313,13 @@ const requestBuilders = {
 //
 // NB: options is not required: it is an optimisation shortcut
 module.exports = {
-  generate: (type, filters, extensions) => {
+  generate: (type, filters, extensions, offline) => {
+    const freetextDdocName = offline ? 'medic-offline-freetext' : 'medic-client';
     const builder = requestBuilders[type];
     if (!builder) {
       throw new Error('Unknown type: ' + type);
     }
-    return builder(filters, extensions);
+    return builder(filters, freetextDdocName, extensions);
   },
   shouldSortByLastVisitedDate: (extensions) => {
     return Boolean(extensions?.sortByLastVisitedDate);
