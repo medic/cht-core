@@ -66,11 +66,14 @@ describe('contacts_by_freetext', () => {
         ]);
       });
 
-      it('emits nothing when type is invalid', () => {
-        const doc = { type: 'invalid', hello: 'world' };
+      [
+        undefined,
+        'invalid'
+      ].forEach(type => it('emits nothing when type is invalid', () => {
+        const doc = { type, hello: 'world' };
         const emitted = mapFn(doc, true);
         expect(emitted).to.be.empty;
-      });
+      }));
 
       it('emits death status in value', () => {
         const doc = { type: 'district_hospital', date_of_death: '2021-01-01' };
@@ -191,6 +194,19 @@ describe('contacts_by_freetext', () => {
           { key: ['brown'], value },
           { key: ['fox'], value },
           { key: ['hello:the quick\nbrown\tfox'], value },
+        ]);
+      });
+
+      it('emits non-ascii values', () => {
+        const doc = { type: 'district_hospital', name: 'बुद्ध Élève' };
+
+        const emitted = mapFn(doc, true);
+
+        const value = expectedValue({ typeIndex: 0, name: 'बुद्ध élève' });
+        expect(emitted).to.deep.equal([
+          { key: ['बुद्ध'], value },
+          { key: ['élève'], value },
+          { key: ['name:बुद्ध élève'], value }
         ]);
       });
     });
