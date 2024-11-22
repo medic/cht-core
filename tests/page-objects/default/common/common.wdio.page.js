@@ -3,7 +3,7 @@ const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const constants = require('@constants');
 
 const ELEMENT_DISPLAY_PAUSE = 500; // 500ms
-const RELOAD_SYNC_TIMEOUT = 5000;
+const RELOAD_SYNC_TIMEOUT = 10000;
 
 const tabsSelector = {
   getAllButtonLabels: async () => await $$('.header .tabs .button-label'),
@@ -412,6 +412,8 @@ const sync = async ({
   await hideModalOverlay();
 
   await syncAndWaitForSuccess(expectReload, timeout);
+  // service worker updates require downloading all resources, and then it triggers the update modal.
+  // sometimes this action is not timely with a quick sync.
   serviceWorkerUpdate && await closeReloadModal(false, RELOAD_SYNC_TIMEOUT);
 
   if (reload) {
