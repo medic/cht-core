@@ -36,6 +36,7 @@ const isDisplayed = async () => {
   return await (await modal()).isDisplayedInViewport();
 };
 
+
 module.exports = {
   modal,
   body,
