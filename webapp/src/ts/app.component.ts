@@ -292,7 +292,6 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     // initialisation tasks that can occur after the UI has been rendered
     this.setupPromise = Promise.resolve()
-      .then(() => this.dbSyncService.init())
       .then(() => this.chtDatasourceService.isInitialized())
       .then(() => this.checkPrivacyPolicy())
       .then(() => (this.initialisationComplete = true))

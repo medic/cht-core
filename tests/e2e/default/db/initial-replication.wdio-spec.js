@@ -6,6 +6,8 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const dataFactory = require('@factories/cht/generate');
 
+const LOCAL_ONLY_DOC_IDS = ['_design/medic-offline-freetext'];
+
 describe('initial-replication', () => {
   const LOCAL_LOG = '_local/initial-replication';
 
@@ -52,11 +54,11 @@ describe('initial-replication', () => {
 
     await commonPage.sync(false, 7000);
 
-    const localAllDocs = await chtDbUtils.getDocs();
+    const localAllDocs = (await chtDbUtils.getDocs()).filter(doc => !LOCAL_ONLY_DOC_IDS.includes(doc.id));
     const localDocIds = dataFactory.ids(localAllDocs);
 
     // no additional docs to download
-    expect(docIdsPreSync).to.have.members(localDocIds);
+    expect(docIdsPreSync).to.have.members([...localDocIds, ...LOCAL_ONLY_DOC_IDS]);
 
     const serverAllDocs = await getServerDocs(localDocIds);
 

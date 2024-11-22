@@ -11,6 +11,7 @@ const bootstrapper = rewire('../../../src/js/bootstrapper');
 const purger = require('../../../src/js/bootstrapper/purger');
 const utils = require('../../../src/js/bootstrapper/utils');
 const initialReplication = require('../../../src/js/bootstrapper/initial-replication');
+const offlineDdocs = require('../../../src/js/bootstrapper/offline-ddocs');
 
 let originalDocument;
 let originalWindow;
@@ -25,6 +26,7 @@ let localAllDocs;
 let localId;
 let purgeOn;
 let localMetaClose;
+let offlineDdocsInit;
 
 let localMedicDb;
 let remoteMedicDb;
@@ -41,6 +43,7 @@ describe('bootstrapper', () => {
     localAllDocs = sinon.stub();
     localId = sinon.stub().resolves();
     localMetaClose = sinon.stub();
+    offlineDdocsInit = sinon.stub(offlineDdocs, 'init').resolves();
 
     localMedicDb = {
       get: localGet,
@@ -126,6 +129,7 @@ describe('bootstrapper', () => {
     setUserCtxCookie({ name: 'jimbo', roles: [ '_admin' ] });
     await bootstrapper(pouchDbOptions);
     assert.equal(pouchDb.callCount, 0);
+    assert.isTrue(offlineDdocsInit.notCalled);
   });
 
   it('should initialize replication header with local db id', async () => {
@@ -149,6 +153,7 @@ describe('bootstrapper', () => {
     });
     assert.equal(utils.setOptions.callCount, 1);
     assert.equal(purger.purgeMeta.callCount, 1);
+    assert.isTrue(offlineDdocsInit.calledOnce);
   });
 
   it('should initialize purger with correct options', async () => {
@@ -163,6 +168,7 @@ describe('bootstrapper', () => {
 
     assert.equal(utils.setOptions.callCount, 1);
     assert.deepEqual(utils.setOptions.args[0], [pouchDbOptions]);
+    assert.isTrue(offlineDdocsInit.calledOnce);
   });
 
   it('returns if initial replication is not needed', async () => {
@@ -183,6 +189,7 @@ describe('bootstrapper', () => {
       localMedicDb,
       { locale: undefined,  name: 'jim' },
     ]]);
+    assert.isTrue(offlineDdocsInit.calledOnce);
   });
 
   it('performs initial replication', async () => {
@@ -207,6 +214,7 @@ describe('bootstrapper', () => {
     ]);
     expect(initialReplication.replicate.callCount).to.equal(1);
     expect(initialReplication.replicate.args).to.deep.equal([[ remoteMedicDb, localMedicDb ]]);
+    assert.isTrue(offlineDdocsInit.calledOnce);
   });
 
   it('should redirect to login when no userCtx cookie found', async () => {
@@ -224,6 +232,7 @@ describe('bootstrapper', () => {
       window.location.href,
       '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
     );
+    assert.isTrue(offlineDdocsInit.notCalled);
   });
 
   it('should redirect to login when initial replication returns unauthorized', async () => {
@@ -240,6 +249,7 @@ describe('bootstrapper', () => {
       window.location.href,
       '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
     );
+    assert.isTrue(offlineDdocsInit.calledOnce);
   });
 
   it('returns other errors in initial replication', async () => {
@@ -250,6 +260,7 @@ describe('bootstrapper', () => {
     sinon.stub(initialReplication, 'replicate').rejects(new Error('message'));
 
     await expect(bootstrapper(pouchDbOptions)).to.be.rejectedWith(Error, 'message');
+    assert.isTrue(offlineDdocsInit.calledOnce);
   });
 
   it('returns error if initial replication is still needed', async () => {
@@ -266,6 +277,7 @@ describe('bootstrapper', () => {
     assert.equal(remoteClose.callCount, 1);
     assert.equal(utils.setOptions.callCount, 1);
     expect(initialReplication.isReplicationNeeded.callCount).to.equal(2);
+    assert.isTrue(offlineDdocsInit.calledOnce);
   });
 
   it('error results if service worker fails registration', async () => {
@@ -276,6 +288,7 @@ describe('bootstrapper', () => {
     window.navigator.serviceWorker.register = failingRegister;
 
     await expect(bootstrapper(pouchDbOptions)).to.be.rejectedWith(Error, 'redundant');
+    assert.isTrue(offlineDdocsInit.calledOnce);
   });
 
   it('should run meta purge on startup', async () => {
@@ -288,6 +301,7 @@ describe('bootstrapper', () => {
     await bootstrapper(pouchDbOptions);
 
     assert.equal(purger.purgeMeta.callCount, 1);
+    assert.isTrue(offlineDdocsInit.calledOnce);
   });
 
   it('should catch meta purge errors', async () => {
@@ -308,5 +322,6 @@ describe('bootstrapper', () => {
 
     assert.equal(purger.purgeMeta.callCount, 1);
     assert.deepEqual(purger.purgeMeta.args[0], [localMetaDb]);
+    assert.isTrue(offlineDdocsInit.calledOnce);
   });
 });

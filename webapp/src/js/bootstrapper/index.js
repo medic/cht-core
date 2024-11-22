@@ -7,6 +7,7 @@
   const utils = require('./utils');
   const purger = require('./purger');
   const initialReplicationLib = require('./initial-replication');
+  const offlineDdocs = require('./offline-ddocs');
 
   const ONLINE_ROLE = 'mm-online';
 
@@ -112,7 +113,8 @@
       .all([
         initialReplicationLib.isReplicationNeeded(localDb, userCtx),
         swRegistration,
-        setReplicationId(POUCHDB_OPTIONS, localDb)
+        setReplicationId(POUCHDB_OPTIONS, localDb),
+        offlineDdocs.init(localDb)
       ])
       .then(([isInitialReplicationNeeded]) => {
         utils.setOptions(POUCHDB_OPTIONS);

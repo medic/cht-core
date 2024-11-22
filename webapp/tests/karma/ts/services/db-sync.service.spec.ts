@@ -15,7 +15,6 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { MigrationsService } from '@mm-services/migrations.service';
 import { ReplicationService } from '@mm-services/replication.service';
-import medicOfflineDdoc from '@mm-services/offline-ddocs/medic-offline-freetext.ddoc';
 
 describe('DBSync service', () => {
   let service:DBSyncService;
@@ -103,8 +102,6 @@ describe('DBSync service', () => {
       replicate: { to: to },
       info: sinon.stub().resolves({ update_seq: 99 }),
       allDocs: sinon.stub(),
-      get: sinon.stub(),
-      put: sinon.stub(),
     };
     localMetaDb = {
       replicate: { to: metaTo, from: metaFrom },
@@ -149,62 +146,6 @@ describe('DBSync service', () => {
   afterEach(() => {
     sinon.restore();
     clock.restore();
-  });
-
-  describe('init', () => {
-    it('adds new ddoc to database', async () => {
-      isOnlineOnly.returns(false);
-      localMedicDb.get.rejects({ status: 404 });
-
-      await service.init();
-
-      expect(isOnlineOnly.calledOnceWithExactly()).to.be.true;
-      expect(db.calledOnceWithExactly()).to.be.true;
-      expect(localMedicDb.get.calledOnceWithExactly(medicOfflineDdoc._id)).to.be.true;
-      expect(localMedicDb.put.calledOnceWithExactly({
-        ...medicOfflineDdoc,
-        _rev: undefined,
-      })).to.be.true;
-    });
-
-    it('updates existing ddoc in database', async () => {
-      isOnlineOnly.returns(false);
-      localMedicDb.get.resolves({ _rev: '1-abc' });
-
-      await service.init();
-
-      expect(isOnlineOnly.calledOnceWithExactly()).to.be.true;
-      expect(db.calledOnceWithExactly()).to.be.true;
-      expect(localMedicDb.get.calledOnceWithExactly(medicOfflineDdoc._id)).to.be.true;
-      expect(localMedicDb.put.calledOnceWithExactly({
-        ...medicOfflineDdoc,
-        _rev: '1-abc',
-      })).to.be.true;
-    });
-
-    it('rejects when there is an error getting the ddoc', async () => {
-      isOnlineOnly.returns(false);
-      const expectedError = new Error('Error getting ddoc');
-      localMedicDb.get.rejects(expectedError);
-
-      await expect(service.init()).to.be.rejectedWith(expectedError);
-
-      expect(isOnlineOnly.calledOnceWithExactly()).to.be.true;
-      expect(db.calledOnceWithExactly()).to.be.true;
-      expect(localMedicDb.get.calledOnceWithExactly(medicOfflineDdoc._id)).to.be.true;
-      expect(localMedicDb.put.notCalled).to.be.true;
-    });
-
-    it('does nothing when online only', async () => {
-      isOnlineOnly.returns(true);
-
-      await service.init();
-
-      expect(isOnlineOnly.calledOnceWithExactly()).to.be.true;
-      expect(db.notCalled).to.be.true;
-      expect(localMedicDb.get.notCalled).to.be.true;
-      expect(localMedicDb.put.notCalled).to.be.true;
-    });
   });
 
   describe('sync', () => {

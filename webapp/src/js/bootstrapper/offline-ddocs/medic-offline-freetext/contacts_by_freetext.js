@@ -1,5 +1,5 @@
 module.exports.map = function(doc) {
-  const skip = [ '_id', '_rev', 'type', 'contact_type', 'refid', 'geolocation' ];
+  const skip = [ '_id', '_rev', 'type', 'refid', 'geolocation' ];
 
   const usedKeys = [];
   const emitMaybe = (key, value) => {
@@ -20,13 +20,13 @@ module.exports.map = function(doc) {
       return;
     }
     if (typeof value === 'string') {
-      value
-        .toLowerCase()
+      const lowerValue = value.toLowerCase();
+      lowerValue
         .split(/\s+/)
         .forEach((word) => emitMaybe(word, order));
-    }
-    if (typeof value === 'number' || typeof value === 'string') {
-      emitMaybe(lowerKey + ':' + value, order);
+      emitMaybe(`${lowerKey}:${lowerValue}`, order);
+    } else if (typeof value === 'number') {
+      emitMaybe(`${lowerKey}:${value}`, order);
     }
   };
 
