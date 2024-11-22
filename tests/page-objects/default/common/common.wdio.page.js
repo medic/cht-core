@@ -381,7 +381,7 @@ const syncAndWaitForSuccess = async (expectReload, timeout = RELOAD_SYNC_TIMEOUT
     await browser.waitUntil(async () => {
       return (await (await hamburgerMenuSelectors.syncSuccess()).isDisplayedInViewport()) ||
              (await modalPage.isDisplayed());
-    });
+    }, { timeout });
     await openHamburgerMenu();
 
     if (!await (await hamburgerMenuSelectors.syncSuccess()).isDisplayedInViewport()) {
