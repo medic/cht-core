@@ -911,7 +911,7 @@ const waitForService = async (service) => {
       const podName = await getPodName(service);
       await runCommand(
         `kubectl ${KUBECTL_CONTEXT} wait --for jsonpath={.status.containerStatuses[0].started}=true ${podName}`,
-        false
+        { verbose: false }
       );
       return;
     } catch {
@@ -1169,8 +1169,8 @@ const startServices = async () => {
   }
 };
 
-const runCommand = (command, verbose = true, overrideEnv = false) => {
-  verbose && console.warn(command);
+const runCommand = (command, { verbose = true, overrideEnv = false } = {}) => {
+  verbose && console.log(command);
   return new Promise((resolve, reject) => {
     exec(command, { env: overrideEnv || env }, (error, stdout, stderr) => {
       if (error) {
@@ -1207,7 +1207,7 @@ const importImages = async () => {
     // authentication to private repos is weird to set up in k3d.
     // https://k3d.io/v5.2.0/usage/registries/#authenticated-registries
     try {
-      await runCommand(`docker image inspect ${image}`, false);
+      await runCommand(`docker image inspect ${image}`, { verbose: false });
     } catch {
       await runCommand(`docker pull ${image}`);
     }
@@ -1517,7 +1517,7 @@ const getSentinelDate = () => getContainerDate('sentinel');
 const getPodName = async (service, verbose) => {
   const cmd = await runCommand(
     `kubectl get pods ${KUBECTL_CONTEXT} -l cht.service=${service} --field-selector=status.phase==Running -o name`,
-    verbose
+    { verbose }
   );
   return cmd.replace(/[^A-Za-z0-9-/]/g, '');
 };

@@ -106,6 +106,7 @@ changeQueue.drain(() => {
  * automatically on error.
  */
 const listen = () => {
+  logger.info('Starting transition processing');
   processing = true;
   changeQueue.resume();
   return resumeProcessing();
@@ -116,6 +117,7 @@ const listen = () => {
  * by calling listen.
  */
 const cancel =  () => {
+  logger.info('Suspending transition processing');
   processing = false;
   changeQueue.pause();
   if (request) {

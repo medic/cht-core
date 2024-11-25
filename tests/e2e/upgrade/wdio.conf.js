@@ -90,7 +90,7 @@ const env = {
 const upgradeServiceCmd = (command) => {
   command = `docker compose -f ${UPGRADE_SERVICE_DC} -p upgrade ${command}`;
 
-  return utils.runCommand(command, true, env);
+  return utils.runCommand(command, { verbose: true, overrideEnv: env });
 };
 const exit = () => upgradeServiceCmd('down');
 
@@ -99,7 +99,6 @@ const startUpgradeService = async () => {
   let retries = 20;
   do {
     const response = await upgradeServiceCmd('ps -q');
-    console.log(response);
     if (response.length) {
       return;
     }
@@ -112,7 +111,7 @@ const tearDownServices = async () => {
     .map(composeFile => '-f ' + path.join(CHT_DOCKER_COMPOSE_FOLDER, `${composeFile}.yml`))
     .join(' ');
   const cmd = `docker compose ${composeFilesParam} -p ${CHT_COMPOSE_PROJECT_NAME} down -t 0 --remove-orphans --volumes`;
-  await utils.runCommand(cmd, true, env);
+  await utils.runCommand(cmd, { verbose: true, overrideEnv: env });
 
   await exit();
 };
