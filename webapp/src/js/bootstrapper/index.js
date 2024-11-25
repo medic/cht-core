@@ -85,7 +85,7 @@
   };
 
   /* pouch db set up function */
-  module.exports = (POUCHDB_OPTIONS) => {
+  module.exports = async (POUCHDB_OPTIONS) => {
 
     const dbInfo = getDbInfo();
     const userCtx = getUserCtx();
@@ -109,59 +109,50 @@
 
     const localMetaDb = window.PouchDB(getLocalMetaDbName(dbInfo, userCtx.name), POUCHDB_OPTIONS.local);
 
-    return Promise
-      .all([
-        initialReplicationLib.isReplicationNeeded(localDb, userCtx),
-        swRegistration,
-        setReplicationId(POUCHDB_OPTIONS, localDb),
-        offlineDdocs.init(localDb)
-      ])
-      .then(([isInitialReplicationNeeded]) => {
-        utils.setOptions(POUCHDB_OPTIONS);
+    try {
+      const [isInitialReplicationNeeded] = await Promise
+        .all([
+          initialReplicationLib.isReplicationNeeded(localDb, userCtx),
+          swRegistration,
+          setReplicationId(POUCHDB_OPTIONS, localDb),
+          offlineDdocs.init(localDb)
+        ]);
 
-        if (isInitialReplicationNeeded) {
-          const replicationStarted = performance.now();
-          // Polling the document count from the db.
-          return initialReplicationLib
-            .replicate(remoteDb, localDb)
-            .then(() => initialReplicationLib.isReplicationNeeded(localDb, userCtx))
-            .then(isReplicationStillNeeded => {
-              if (isReplicationStillNeeded) {
-                throw new Error('Initial replication failed');
-              }
-            })
-            .then(() => window.startupTimes.replication = performance.now() - replicationStarted);
+      utils.setOptions(POUCHDB_OPTIONS);
+
+      if (isInitialReplicationNeeded) {
+        const replicationStarted = performance.now();
+        // Polling the document count from the db.
+        await initialReplicationLib.replicate(remoteDb, localDb);
+        if (await initialReplicationLib.isReplicationNeeded(localDb, userCtx)) {
+          throw new Error('Initial replication failed');
         }
-      })
-      .then(() => {
-        const purgeMetaStarted = performance.now();
-        return purger
-          .purgeMeta(localMetaDb)
-          .on('should-purge', shouldPurge => window.startupTimes.purgingMeta = shouldPurge)
-          .on('start', () => setUiStatus('PURGE_META'))
-          .on('done', () => window.startupTimes.purgeMeta = performance.now() - purgeMetaStarted)
-          .catch(err => {
-            console.error('Error attempting to purge meta db - continuing', err);
-            window.startupTimes.purgingMetaFailed = err.message;
-          });
-      })
-      .then(() => setUiStatus('STARTING_APP'))
-      .catch(err => err)
-      .then(err => {
-        localDb.close();
-        remoteDb.close();
-        localMetaDb.close();
+        window.startupTimes.replication = performance.now() - replicationStarted;
+      }
 
-        if (err) {
-          const errorCode = err.status || err.code;
-          if (errorCode === 401) {
-            return redirectToLogin(dbInfo);
-          }
-          setUiError(err);
-          throw (err);
-        }
-      });
+      const purgeMetaStarted = performance.now();
+      await purger
+        .purgeMeta(localMetaDb)
+        .on('should-purge', shouldPurge => window.startupTimes.purgingMeta = shouldPurge)
+        .on('start', () => setUiStatus('PURGE_META'))
+        .on('done', () => window.startupTimes.purgeMeta = performance.now() - purgeMetaStarted)
+        .catch(err => {
+          console.error('Error attempting to purge meta db - continuing', err);
+          window.startupTimes.purgingMetaFailed = err.message;
+        });
 
+      setUiStatus('STARTING_APP');
+    } catch (err) {
+      const errorCode = err.status || err.code;
+      if (errorCode === 401) {
+        return redirectToLogin(dbInfo);
+      }
+      setUiError(err);
+      throw (err);
+    } finally {
+      localDb.close();
+      remoteDb.close();
+      localMetaDb.close();
+    }
   };
-
 }());
