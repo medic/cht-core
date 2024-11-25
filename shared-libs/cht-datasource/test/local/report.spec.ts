@@ -5,14 +5,11 @@ import logger from '@medic/logger';
 import * as LocalDoc from '../../src/local/libs/doc';
 import * as Report from '../../src/local/report';
 import { expect } from 'chai';
-import * as Contact from '../../src/local/contact';
-import { getContactTypes } from '@medic/contact-types-utils';
 
 describe('local report', () => {
   let localContext: LocalDataContext;
   let settingsGetAll: SinonStub;
   let warn: SinonStub;
-  let debug: SinonStub;
 
   beforeEach(() => {
     settingsGetAll = sinon.stub();
@@ -21,7 +18,6 @@ describe('local report', () => {
       settings: {getAll: settingsGetAll}
     } as unknown as LocalDataContext;
     warn = sinon.stub(logger, 'warn');
-    debug = sinon.stub(logger, 'debug');
   });
 
   afterEach(() => sinon.restore());
@@ -86,7 +82,6 @@ describe('local report', () => {
       const cursor = null;
       const notNullCursor = '5';
       const reportType = 'data_record';
-      const invalidReportTypeQualifier = { type: 'invalid_dat_record' } as const;
       let queryDocsByKeyInner: SinonStub;
       let queryDocsByKeyOuter: SinonStub;
       let queryDocsByRangeInner: SinonStub;
