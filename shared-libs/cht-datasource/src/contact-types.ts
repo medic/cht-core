@@ -59,7 +59,8 @@ export namespace v1 {
     freetext: Nullable<string> = null,
     type: Nullable<string> = null
   ): ContactTypeQualifier | FreetextQualifier => {
-    if (!freetext && !type) {
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    if (!(freetext || type)) {
       throw new InvalidArgumentError('Either "freetext" or "type" is required');
     }
 
