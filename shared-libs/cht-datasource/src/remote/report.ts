@@ -7,7 +7,7 @@ import { Nullable, Page } from '../libs/core';
 export namespace v1 {
   const getReport = (remoteContext: RemoteDataContext) => getResource(remoteContext, 'api/v1/report');
 
-  const getReports = (remoteContext: RemoteDataContext) => getResources(remoteContext, '/api/v1/report/id');
+  const getReports = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/report/id');
   
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (

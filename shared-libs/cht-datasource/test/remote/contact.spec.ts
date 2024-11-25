@@ -4,7 +4,7 @@ import * as RemoteEnv from '../../src/remote/libs/data-context';
 import * as Contact from '../../src/remote/contact';
 import { expect } from 'chai';
 
-describe('remote person', () => {
+describe('remote contact', () => {
   const remoteContext = {} as RemoteDataContext;
   let getResourceInner: SinonStub;
   let getResourceOuter: SinonStub;
@@ -24,7 +24,7 @@ describe('remote person', () => {
     const identifier = {uuid: 'uuid'} as const;
 
     describe('get', () => {
-      it('returns a person by UUID', async () => {
+      it('returns a contact by UUID', async () => {
         const doc = { type: 'person' };
         getResourceInner.resolves(doc);
 
