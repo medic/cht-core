@@ -231,10 +231,8 @@ describe('local contact', () => {
       const limit = 3;
       const cursor = null;
       const notNullCursor = '5';
-      const personIdentifier = 'person';
       const contactType = 'person';
       const invalidContactTypeQualifier = { contactType: 'invalid' } as const;
-      const personType = [{person: true, id: personIdentifier}] as Record<string, unknown>[];
       const validContactTypes = [{ id: 'person' }, { id: 'place' }];
       let queryDocsByKeyInner: SinonStub;
       let queryDocsByKeyOuter: SinonStub;
@@ -865,49 +863,49 @@ describe('local contact', () => {
           expect(fetchAndFilterInner.notCalled).to.be.true;
           expect(fetchAndFilterOuter.notCalled).to.be.true;
         });
+      });
+      
+      it('returns empty array if contacts do not exist', async () => {
+        const qualifier = {
+          contactType
+        };
+        const expectedResult = {
+          data: [],
+          cursor
+        };
+        fetchAndFilterInner.resolves(expectedResult);
 
-        it('returns empty array if contacts do not exist', async () => {
-          const qualifier = {
-            contactType
-          };
-          const expectedResult = {
-            data: [],
-            cursor
-          };
-          fetchAndFilterInner.resolves(expectedResult);
+        const res = await Contact.v1.getPage(localContext)(qualifier, cursor, limit);
+        const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
+        const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
-          const res = await Contact.v1.getPage(localContext)(qualifier, cursor, limit);
-          const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-          const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
-
-          expect(res).to.deep.equal(expectedResult);
-          expect(settingsGetAll.calledOnce).to.be.true;
-          expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
-          expect(queryDocsByKeyOuter.callCount).to.be.equal(3);
-          expect(
-            queryDocsByKeyOuter.getCall(0).args
-          ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type_freetext']);
-          expect(
-            queryDocsByKeyOuter.getCall(1).args
-          ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
-          expect(
-            queryDocsByKeyOuter.getCall(2).args
-          ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
-          expect(queryDocsByKeyInner.notCalled).to.be.true;
-          expect(queryDocsByRangeInner.notCalled).to.be.true;
-          expect(queryDocsByRangeOuter.callCount).to.be.equal(2);
-          expect(
-            queryDocsByRangeOuter.getCall(0).args
-          ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type_freetext']);
-          expect(
-            queryDocsByRangeOuter.getCall(1).args
-          ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
-          expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-          expect(fetchAndFilterOuterString.includes('getContactsByType(')).to.be.true;
-          expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
-          expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
-          expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
-        });
+        expect(res).to.deep.equal(expectedResult);
+        expect(settingsGetAll.calledOnce).to.be.true;
+        expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(queryDocsByKeyOuter.callCount).to.be.equal(3);
+        expect(
+          queryDocsByKeyOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type_freetext']);
+        expect(
+          queryDocsByKeyOuter.getCall(1).args
+        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
+        expect(
+          queryDocsByKeyOuter.getCall(2).args
+        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+        expect(queryDocsByKeyInner.notCalled).to.be.true;
+        expect(queryDocsByRangeInner.notCalled).to.be.true;
+        expect(queryDocsByRangeOuter.callCount).to.be.equal(2);
+        expect(
+          queryDocsByRangeOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type_freetext']);
+        expect(
+          queryDocsByRangeOuter.getCall(1).args
+        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
+        expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterOuterString.includes('getContactsByType(')).to.be.true;
+        expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
+        expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
       });
     });
   });

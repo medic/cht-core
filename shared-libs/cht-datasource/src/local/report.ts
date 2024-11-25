@@ -18,6 +18,7 @@ export namespace v1 {
       }
     } else if (doc.type !== 'data_record' && !doc.form) {
       logger.warn(`Document [${doc._id}] is not a valid report.`);
+      return false;
     }
 
     return true;
@@ -38,16 +39,16 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = ({ medicDb }: LocalDataContext) => {
-    const getReportsByFreeText = queryDocsByKey(medicDb, 'medic-client/reports_by_freetext');
-    const getReportsByFreeTextRange = queryDocsByRange(medicDb, 'medic-client/reports_by_freetext');
+    const getReportsByFreetext = queryDocsByKey(medicDb, 'medic-client/reports_by_freetext');
+    const getReportsByFreetextRange = queryDocsByRange(medicDb, 'medic-client/reports_by_freetext');
 
     const getDocsFnForFreetextType = (
       qualifier: FreetextQualifier
     ): (limit: number, skip: number) => Promise<Nullable<Doc>[]> => {
       if (qualifier.freetext.includes(':')) {
-        return (limit, skip) => getReportsByFreeText([qualifier.freetext], limit, skip);
+        return (limit, skip) => getReportsByFreetext([qualifier.freetext], limit, skip);
       }
-      return (limit, skip) => getReportsByFreeTextRange(
+      return (limit, skip) => getReportsByFreetextRange(
         [qualifier.freetext],
         [qualifier.freetext + END_OF_ALPHABET],
         limit,
