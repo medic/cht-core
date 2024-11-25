@@ -180,8 +180,6 @@ const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPerso
       const adults = createAdditionalWoman( Math.floor(nbrPersons / 2), clinic);
       adults.unshift(primaryContact);
 
-      const allPersons = [...kids, ...adults];
-
       return { clinic, kids, adults };
     });
 
