@@ -34,11 +34,11 @@ export namespace v1 {
       let contactType = '';
 
       if (ContactType.v1.isContactType(qualifier)) {
-        freetext = qualifier.contactType;
+        contactType = qualifier.contactType;
       }
 
       if (ContactType.v1.isFreetextType(qualifier)) {
-        contactType = qualifier.freetext;
+        freetext = qualifier.freetext;
       }
 
       const queryParams = {
@@ -48,7 +48,7 @@ export namespace v1 {
             cursor,
           }
           : {}),
-        ...(contactType ? { contactType: contactType } : {}),
+        ...(contactType ? { type: contactType } : {}),
         ...(freetext ? { freetext: freetext } : {}),
 
       };
