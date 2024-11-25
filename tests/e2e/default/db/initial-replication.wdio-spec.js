@@ -102,7 +102,7 @@ describe('initial-replication', () => {
   };
 
   before(async () => {
-    await utils.stopSentinel();
+    await utils.toggleSentinelTransitions();
 
     // we're creating ~2000 docs
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
@@ -115,7 +115,7 @@ describe('initial-replication', () => {
 
   after(async () => {
     await sentinelUtils.skipToSeq();
-    await utils.startSentinel();
+    await utils.toggleSentinelTransitions();
     await utils.deleteUsers([userAllowedDocs.user]);
     await utils.revertDb([/^form:/], true);
     await utils.revertSettings(true);

@@ -6,7 +6,7 @@ const rpn = require('request-promise-native');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { execSync, spawn } = require('child_process');
+const { execSync, spawn, exec } = require('child_process');
 const mustache = require('mustache');
 // by default, mustache escapes slashes, which messes with paths and urls.
 mustache.escape = (text) => text;
@@ -69,6 +69,7 @@ const env = {
   ...process.env,
   CHT_NETWORK: NETWORK,
   COUCHDB_SECRET: 'monkey',
+  COUCHDB_UUID: 'the_uuid',
 };
 
 const dockerPlatformName = () => {
@@ -846,49 +847,38 @@ const getUserSettings = ({ contactId, name }) => {
     }));
 };
 
-const apiRetry = () => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(listenForApi());
-    }, 1000);
-  });
-};
-
 const listenForApi = async () => {
-  console.log('Checking API');
-  try {
-    await request({ path: '/api/info' });
-    console.log('API is up');
-  } catch (err) {
-    console.log('API check failed, trying again in 1 second');
-    console.log(err.message);
-    await apiRetry();
-  }
+  let retryCount = 180;
+  do {
+    try {
+      console.log(`Checking API, retries left ${retryCount}`);
+      return await request({ path: '/api/info' });
+    } catch (err) {
+      console.log('API check failed, trying again in 1 second');
+      console.log(err.message);
+      await delayPromise(1000);
+    }
+  } while (--retryCount > 0);
+  throw new Error('API failed to start after 3 minutes');
 };
 
 const dockerComposeCmd = (params) => {
-  params = params.split(' ').filter(String);
   const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
-  params.unshift('compose', ...composeFiles, '-p', PROJECT_NAME);
+  params = `docker compose ${composeFiles.join(' ')} -p ${PROJECT_NAME} ${params}`;
 
-  return new Promise((resolve, reject) => {
-    const cmd = spawn('docker', params, { env });
-    const output = [];
-    const log = (data, error) => {
-      data = data.toString();
-      output.push(data);
-      error ? console.error(data) : console.log(data);
-    };
+  return runCommand(params);
+};
 
-    cmd.on('error', (err) => {
-      console.error(err);
-      reject(err);
-    });
-    cmd.stdout.on('data', log);
-    cmd.stderr.on('data', log);
+const sendSignal = async (service, signal) => {
+  const getPIDcmd = `/bin/bash -c "pgrep -n node"`;
+  const killCmd = (pid) => `/bin/bash -c "kill -s ${signal} ${pid.trim()}"`;
+  if (isDocker()) {
+    const pid = await dockerComposeCmd(`exec ${service} ${getPIDcmd}`);
+    return await dockerComposeCmd(`exec ${service} ${killCmd(pid)}`);
+  }
 
-    cmd.on('close', () => resolve(output));
-  });
+  const pid = await runCommand(`kubectl ${KUBECTL_CONTEXT} exec deployments/cht-${service} -- ${getPIDcmd}`);
+  await runCommand(`kubectl ${KUBECTL_CONTEXT} exec deployments/cht-${service} -- ${killCmd(pid)}`);
 };
 
 const stopService = async (service) => {
@@ -900,7 +890,7 @@ const stopService = async (service) => {
   let tries = 100;
   do {
     try {
-      await getPodName(service, true);
+      await getPodName(service, false);
       await delayPromise(100);
       tries--;
     } catch {
@@ -918,15 +908,15 @@ const waitForService = async (service) => {
   let tries = 100;
   do {
     try {
-      const podName = await getPodName(service, true);
+      const podName = await getPodName(service);
       await runCommand(
         `kubectl ${KUBECTL_CONTEXT} wait --for jsonpath={.status.containerStatuses[0].started}=true ${podName}`,
-        true
+        { verbose: false }
       );
       return;
     } catch {
       tries--;
-      await delayPromise(100);
+      await delayPromise(500);
     }
   } while (tries > 0);
 };
@@ -1116,8 +1106,8 @@ const generateK3DValuesFile = async () => {
     db_name: constants.DB_NAME,
     user: constants.USERNAME,
     password: constants.PASSWORD,
-    secret: '',
-    uuid: '',
+    secret: env.COUCHDB_SECRET,
+    uuid: env.COUCHDB_UUID,
     namespace: PROJECT_NAME,
     data_path: K3D_DATA_PATH,
   };
@@ -1181,29 +1171,18 @@ const startServices = async () => {
   }
 };
 
-const runCommand = (command, silent) => {
-  const [cmd, ...params] = command.split(' ');
+const runCommand = (command, { verbose = true, overrideEnv = false } = {}) => {
+  verbose && console.log(command);
   return new Promise((resolve, reject) => {
-    const proc = spawn(cmd, params, { env });
-    const output = [];
-    const log = (data, error) => {
-      data = data.toString();
-      output.push(data);
-      if (!silent) {
-        error ? console.error(data) : console.log(data);
+    exec(command, { env: overrideEnv || env }, (error, stdout, stderr) => {
+      if (error) {
+        verbose && console.error(error);
+        return reject(error);
       }
-    };
 
-    proc.on('error', (err) => {
-      console.error(err);
-      reject(err);
-    });
-    proc.stdout.on('data', log);
-    proc.stderr.on('data', log);
-
-    proc.on('close', (exitCode) => {
-      const outString = output.join('\n');
-      return exitCode ? reject(outString) : resolve(outString);
+      verbose && console.error(stderr);
+      verbose && console.log(stdout);
+      resolve(stdout);
     });
   });
 };
@@ -1230,7 +1209,7 @@ const importImages = async () => {
     // authentication to private repos is weird to set up in k3d.
     // https://k3d.io/v5.2.0/usage/registries/#authenticated-registries
     try {
-      await runCommand(`docker image inspect ${image}`, true);
+      await runCommand(`docker image inspect ${image}`, { verbose: false });
     } catch {
       await runCommand(`docker pull ${image}`);
     }
@@ -1463,7 +1442,14 @@ const collectLogs = (container, ...regex) => {
     errors.push(err.toString());
   });
 
+  const timeout = setTimeout(() => {
+    receivedFirstLine();
+    errors.push('Timed out waiting for first log line');
+    killSpawnedProcess(proc);
+  }, 180000);
+
   const collect = () => {
+    clearTimeout(timeout);
     if (errors.length) {
       const error = new Error('CollectLogs errored');
       error.errors = errors;
@@ -1485,9 +1471,14 @@ const collectHaproxyLogs = (...regex) => collectLogs('haproxy', ...regex);
 
 const normalizeTestName = name => name.replace(/\s/g, '_');
 
-const apiLogTestStart = (name) => {
-  return requestOnTestDb(`/?start=${normalizeTestName(name)}`)
-    .catch(() => console.warn('Error logging test start - ignoring'));
+const apiLogTestStart = async (name) => {
+  try {
+    await requestOnTestDb(`/?start=${normalizeTestName(name)}`);
+  } catch (err) {
+    console.error('Api is not up. Cancelling workflow', err);
+    await saveLogs();
+    process.exit(1);
+  }
 };
 
 const apiLogTestEnd = (name) => {
@@ -1525,10 +1516,10 @@ const updatePermissions = async (roles, addPermissions, removePermissions, ignor
 };
 
 const getSentinelDate = () => getContainerDate('sentinel');
-const getPodName = async (service, silent) => {
+const getPodName = async (service, verbose) => {
   const cmd = await runCommand(
     `kubectl get pods ${KUBECTL_CONTEXT} -l cht.service=${service} --field-selector=status.phase==Running -o name`,
-    silent
+    { verbose }
   );
   return cmd.replace(/[^A-Za-z0-9-/]/g, '');
 };
@@ -1563,6 +1554,9 @@ const logFeedbackDocs = async (test) => {
 const isMinimumChromeVersion = process.env.CHROME_VERSION === MINIMUM_BROWSER_VERSION;
 
 const escapeBranchName = (branch) => branch?.replace(/[/|_]/g, '-');
+
+const toggleSentinelTransitions = () => sendSignal('sentinel', 'USR1');
+const runSentinelTasks = () => sendSignal('sentinel', 'USR2');
 
 module.exports = {
   db,
@@ -1642,4 +1636,7 @@ module.exports = {
   stopCouchDb,
   startCouchDb,
   getDefaultForms,
+  toggleSentinelTransitions,
+  runSentinelTasks,
+  runCommand,
 };

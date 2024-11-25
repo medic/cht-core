@@ -116,9 +116,8 @@ describe('Outbound', () => {
       .then(() => utils.saveDocs(docs))
       // pushes will fail if destination server is not up, so tasks will get created
       .then(() => waitForPushes(3))
-      .then(() => utils.stopSentinel())
       .then(() => server = destinationApp.listen(port)) // and they will generate tasks
-      .then(() => utils.startSentinel())
+      .then(() => utils.runSentinelTasks())
       // waiting for 1 task left should imply that the first task, which should stay because it points
       // to a broken endpoint, has executed, since the second task has executed successfully and been
       // deleted

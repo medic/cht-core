@@ -42,8 +42,6 @@ describe('purge', function() {
 
   const pregnancies = generateReports(125, 'pregnancy');
 
-  const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
-
   const getAllReports = () => browser.executeAsync(callback => {
     window.CHTCore.DB
       .get()
@@ -68,7 +66,7 @@ describe('purge', function() {
 
   const runPurging = async () => {
     const seq = await sentinelUtils.getCurrentSeq();
-    await restartSentinel();
+    await utils.runSentinelTasks();
     await sentinelUtils.waitForPurgeCompletion(seq);
     await utils.delayPromise(1000);  // API has to pick up on purging completing
   };

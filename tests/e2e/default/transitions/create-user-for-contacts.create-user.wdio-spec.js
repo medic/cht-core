@@ -165,7 +165,7 @@ describe('Create user when adding contact', () => {
 
   it('creates a new user when Sentinel recovers from outage', async () => {
     await utils.updateSettings(createSettings(true), {ignoreReload: 'sentinel'});
-    await utils.stopSentinel();
+    await utils.toggleSentinelTransitions();
     await cookieLogin();
     await commonPage.goToPeople(district._id);
     await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' }, false);
@@ -181,7 +181,7 @@ describe('Create user when adding contact', () => {
     const userSettings = await utils.getUserSettings({ contactId: chwContactId });
     expect(userSettings).to.be.empty;
 
-    await utils.startSentinel();
+    await utils.toggleSentinelTransitions();
     await verifyUserCreation();
   });
 });
