@@ -35,6 +35,10 @@ function (doc) {
         toIndex += ' ' + value;
         index('text', key, value, { store: true });
       }
+
+      if (typeof value === 'number') {
+        index('double', key, value, { store: true });
+      }
     });
 
     toIndex = toIndex.trim();
