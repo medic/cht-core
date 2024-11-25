@@ -8,7 +8,6 @@ import * as Contact from '../src/contact';
 import * as ContactType from '../src/contact-types';
 import { expect } from 'chai';
 import * as Core from '../src/libs/core';
-import * as Person from "../src/person";
 
 describe('contact', () => {
   const dataContext = { } as DataContext;

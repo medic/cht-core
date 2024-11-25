@@ -59,7 +59,7 @@ export namespace v1 {
       }
 
       if (!isNonEmptyArray(lineageContacts)) {
-        logger.debug(`No lineage places found for person [${identifier.uuid}].`);
+        logger.debug(`No lineage contacts found for ${contact.type} [${identifier.uuid}].`);
         return contact;
       }
 
@@ -82,7 +82,7 @@ export namespace v1 {
 
     const determineGetDocsFn = (
       qualifier: ContactTypeQualifier | FreetextQualifier
-    ): ((limit: number, skip: number) => Promise<Nullable<Doc>[]>) | null => {
+    ): ((limit: number, skip: number) => Promise<Nullable<Doc>[]>) => {
       if (isContactTypeAndFreetextType(qualifier)) {
         return getDocsFnForContactTypeAndFreetext(qualifier);
       }
@@ -95,7 +95,9 @@ export namespace v1 {
         return getDocsFnForFreetextType(qualifier);
       }
 
-      return null;
+      // This code should never be reached due to the type system,
+      // but TypeScript requires it for exhaustiveness checking
+      throw new InvalidArgumentError(`Unsupported qualifier type: ${JSON.stringify(qualifier)}`);
     };
 
     const isContactTypeAndFreetextType = (
@@ -149,12 +151,16 @@ export namespace v1 {
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
+      if (ContactType.v1.isContactType(qualifier)) {
+        const contactTypesIds = getContactTypes(settings);
+        if (!contactTypesIds.includes(qualifier.contactType)) {
+          throw new InvalidArgumentError(`Invalid contact type [${qualifier.contactType}].`);
+        }
+      }
+
       const skip = validateCursor(cursor);
 
       const getDocsFn = determineGetDocsFn(qualifier);
-      if (!getDocsFn) {
-        throw new InvalidArgumentError(`Unsupported qualifier type: ${JSON.stringify(qualifier)}`);
-      }
 
       const pagedDocs = await fetchAndFilter(getDocsFn, isContact(settings), limit)(limit, skip);
 

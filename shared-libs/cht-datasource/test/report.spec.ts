@@ -6,8 +6,7 @@ import * as Report from '../src/report';
 import { expect } from 'chai';
 import * as Local from '../src/local';
 import * as Remote from '../src/remote';
-import * as Person from "../src/person";
-import * as Core from "../src/libs/core";
+import * as Core from '../src/libs/core';
 
 describe('report', () => {
   const dataContext = { } as DataContext;
