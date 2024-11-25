@@ -26,7 +26,7 @@ describe('Submit an undo death report', () => {
     await commonPage.goToPeople(person._id);
     await commonPage.openFastActionReport('death_report');
     await deathReportForm.submitDeathReport();
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true });
   });
 
   it('should submit an undo death report, ' +
@@ -43,7 +43,7 @@ describe('Submit an undo death report', () => {
     );
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true });
 
     expect(await (await contactPage.deathCardSelectors.deathCard()).isDisplayed()).to.be.false;
 

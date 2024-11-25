@@ -79,8 +79,7 @@ describe('purge', function() {
     await utils.deleteUsers([user]);
     await utils.revertDb([/^form:/], true);
 
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonElements.reloadSession();
   });
 
   it('purging runs on sync', async () => {
@@ -104,7 +103,7 @@ describe('purge', function() {
     await updatePurgeSettings(filterHomeVisitReports, true);
     await runPurging();
 
-    await commonElements.sync(true);
+    await commonElements.sync({ expectReload: true });
 
     allReports = await getAllReports();
     // this only works because the client didn't have to "purge" these docs and the revs didn't have

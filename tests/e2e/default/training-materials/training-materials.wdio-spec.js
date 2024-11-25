@@ -5,7 +5,6 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const trainingCardsPage = require('@page-objects/default/enketo/training-cards.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
-const commonElements = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 
 describe('Training Materials Page', () => {
@@ -61,7 +60,6 @@ describe('Training Materials Page', () => {
     await utils.saveDocs([ facility, firstTraining, expiredTraining, secondTraining ]);
     await utils.createUsers([ user ]);
     await loginPage.login(user);
-    await commonElements.waitForPageLoaded();
   });
 
   it('should quit training in modal, and be able to complete it later in the Training Material page,' +

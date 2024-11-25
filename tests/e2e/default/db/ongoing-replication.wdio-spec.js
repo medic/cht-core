@@ -42,7 +42,7 @@ describe('ongoing replication', function() {
     const isRevertingSettings = utils.revertSettings(true);
     if (isRevertingSettings) {
       await isRevertingSettings;
-      await commonPage.sync(true, 30000);
+      await commonPage.sync({ expectReload: true, timeout: 30000 });
     }
   });
 
@@ -72,7 +72,7 @@ describe('ongoing replication', function() {
     await saveData(additionalDenied);
 
     await browser.throttle('online');
-    await commonPage.sync(false, 30000);
+    await commonPage.sync({ expectReload: true, timeout: 30000 });
 
     const localDocsPostSync = await chtDbUtils.getDocs();
     const localDocIds = dataFactory.ids(localDocsPostSync);
@@ -132,7 +132,7 @@ describe('ongoing replication', function() {
     await utils.addTranslations('rnd', {});
     await waitForServiceWorker.promise;
 
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true });
     const [rnd] = await chtDbUtils.getDocs(['messages-rnd']);
     expect(rnd).to.include({
       type: 'translations',
@@ -144,7 +144,7 @@ describe('ongoing replication', function() {
     await utils.saveDoc(rnd);
     await waitForServiceWorker.promise;
 
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true });
     const [updatedRnd] = await chtDbUtils.getDocs(['messages-rnd']);
     expect(updatedRnd.updated).to.equal(rnd.updated);
   });
@@ -161,7 +161,7 @@ describe('ongoing replication', function() {
     await utils.deleteDocs(docIdsToDelete);
     await waitForServiceWorker.promise;
 
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true });
     const localDocsPostSync = await chtDbUtils.getDocs();
     const localDocIds = dataFactory.ids(localDocsPostSync);
 
@@ -171,7 +171,7 @@ describe('ongoing replication', function() {
   it('should download settings updates', async () => {
     await commonPage.sync();
     await utils.updateSettings({ test: true }, { ignoreReload: 'api' });
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true });
     const [settings] = await chtDbUtils.getDocs(['settings']);
     expect(settings.settings.test).to.equal(true);
   });
