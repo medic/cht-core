@@ -200,9 +200,9 @@ const makeCombinedParams = (freetextRequest, typeKey) => {
   return params;
 };
 
-const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest) => {
+const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest, freetextDdocName) => {
   const result = {
-    view: 'medic-client/contacts_by_type_freetext',
+    view: `${freetextDdocName}/contacts_by_type_freetext`,
     union: typeRequests.params.keys.length > 1
   };
 
@@ -217,9 +217,9 @@ const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest) => {
   return result;
 };
 
-const getCombinedContactsRequests = (freetextRequests, contactsByParentRequest, typeRequest) => {
+const getCombinedContactsRequests = (freetextRequests, contactsByParentRequest, typeRequest, freetextDdocName) => {
   const combinedRequests = freetextRequests.map(freetextRequest => {
-    return getContactsByTypeAndFreetextRequest(typeRequest, freetextRequest);
+    return getContactsByTypeAndFreetextRequest(typeRequest, freetextRequest, freetextDdocName);
   });
   if (contactsByParentRequest) {
     combinedRequests.unshift(contactsByParentRequest);
@@ -272,7 +272,7 @@ const requestBuilders = {
     }
 
     if (hasTypeRequest && freetextRequests?.length) {
-      return getCombinedContactsRequests(freetextRequests, contactsByParentRequest, typeRequest);
+      return getCombinedContactsRequests(freetextRequests, contactsByParentRequest, typeRequest, freetextDdocName);
     }
 
     const requests = _.compact(_.flatten([ freetextRequests, typeRequest, contactsByParentRequest ]));

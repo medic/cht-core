@@ -1,4 +1,4 @@
-module.exports.map = function(doc) {
+module.exports.map = (doc) => {
   const skip = [ '_id', '_rev', 'type', 'refid', 'geolocation' ];
 
   const usedKeys = [];
