@@ -15,6 +15,7 @@ const globalState: GlobalState = {
   showContent: true,
   selectMode: false,
   forms: [ { _id: 'these' } ],
+  trainingMaterials: [ { _id: 'these' } ],
   filters: { some: 'filters' },
   sidebarFilter: {
     isOpen: false,

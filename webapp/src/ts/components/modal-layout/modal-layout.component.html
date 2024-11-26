@@ -1,5 +1,5 @@
 <div class="modal-layout" role="document" [class.enketo-modal]="hasEnketoForm" [class.content-pane]="hasEnketoForm">
-  <mm-panel-header [headerTitle]="titleKey" (onClose)="cancel()" [hideCloseButton]="true"></mm-panel-header>
+  <mm-panel-header *ngIf="titleKey" [headerTitle]="titleKey" (onClose)="cancel()" [hideCloseButton]="true"/>
 
   <div class="modal-body"><ng-content></ng-content></div>
 

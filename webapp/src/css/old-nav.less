@@ -8,6 +8,18 @@
     padding-top: 0;
   }
 
+  &.trainings {
+    .content .inner .page {
+      padding-top: 0;
+      padding-left: 0;
+      top: @top-without-filter;
+    }
+
+    .tool-bar .inner {
+      background-color: @top-header-color;
+    }
+  }
+
   .app-menu-button {
     display: none;
   }
@@ -434,6 +446,10 @@
 
     .targets .target:last-child {
       margin-bottom: 10px;
+    }
+
+    &.trainings.show-content .content .inner .page {
+      top: @toolbar-mobile-height;
     }
   }
 

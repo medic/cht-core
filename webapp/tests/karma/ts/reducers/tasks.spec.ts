@@ -277,6 +277,7 @@ describe('Tasks reducer', () => {
         tasksList: [
           { _id: 'task1', dueDate: 22, state: 'Ready' },
           { _id: 'task2', dueDate: 33, state: 'Ready' },
+          { _id: 'task_id2', due: '33', field: 2 }
         ],
         loaded: true,
         taskGroup: {

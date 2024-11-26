@@ -13,8 +13,7 @@ describe('Extension lib xpath function', () => {
 
     const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await waitForServiceWorker.promise;
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonPage.reloadSession();
   });
 
   it('calculate average', async () => {

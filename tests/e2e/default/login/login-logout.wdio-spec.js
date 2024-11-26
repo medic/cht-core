@@ -11,8 +11,7 @@ describe('Login page funcionality tests', () => {
   };
 
   afterEach(async () => {
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonPage.reloadSession();
   });
 
   describe('Locale', () => {
