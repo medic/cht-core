@@ -1,5 +1,6 @@
 module.exports.map = (doc) => {
   const skip = [ '_id', '_rev', 'type', 'refid', 'geolocation' ];
+  const keyShouldBeSkipped = key => skip.indexOf(key) !== -1 || /_date$/.test(key);
 
   const usedKeys = [];
   const emitMaybe = function(type, key, value) {
@@ -16,7 +17,7 @@ module.exports.map = (doc) => {
       return;
     }
     const lowerKey = key.toLowerCase();
-    if (skip.indexOf(lowerKey) !== -1 || /_date$/.test(lowerKey)) {
+    if (keyShouldBeSkipped(lowerKey)) {
       return;
     }
     if (typeof value === 'string') {

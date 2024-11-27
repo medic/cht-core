@@ -68,6 +68,15 @@
     window.location.href = '/' + dbInfo.name + '/login?redirect=' + currentUrl;
   };
 
+  const handleBootstrappingError = (err, dbInfo) => {
+    const errorCode = err.status || err.code;
+    if (errorCode === 401) {
+      return redirectToLogin(dbInfo);
+    }
+    setUiError(err);
+    throw (err);
+  };
+
   // TODO Use a shared library for this duplicated code #4021
   const hasRole = function(userCtx, role) {
     if (userCtx.roles) {
@@ -82,6 +91,16 @@
 
   const hasFullDataAccess = function(userCtx) {
     return hasRole(userCtx, '_admin') || hasRole(userCtx, ONLINE_ROLE);
+  };
+
+  const doInitialReplication = async (remoteDb, localDb, userCtx) => {
+    const replicationStarted = performance.now();
+    // Polling the document count from the db.
+    await initialReplicationLib.replicate(remoteDb, localDb);
+    if (await initialReplicationLib.isReplicationNeeded(localDb, userCtx)) {
+      throw new Error('Initial replication failed');
+    }
+    window.startupTimes.replication = performance.now() - replicationStarted;
   };
 
   /* pouch db set up function */
@@ -121,13 +140,7 @@
       utils.setOptions(POUCHDB_OPTIONS);
 
       if (isInitialReplicationNeeded) {
-        const replicationStarted = performance.now();
-        // Polling the document count from the db.
-        await initialReplicationLib.replicate(remoteDb, localDb);
-        if (await initialReplicationLib.isReplicationNeeded(localDb, userCtx)) {
-          throw new Error('Initial replication failed');
-        }
-        window.startupTimes.replication = performance.now() - replicationStarted;
+        await doInitialReplication(remoteDb, localDb, userCtx);
       }
 
       const purgeMetaStarted = performance.now();
@@ -143,12 +156,7 @@
 
       setUiStatus('STARTING_APP');
     } catch (err) {
-      const errorCode = err.status || err.code;
-      if (errorCode === 401) {
-        return redirectToLogin(dbInfo);
-      }
-      setUiError(err);
-      throw (err);
+      return handleBootstrappingError(err, dbInfo);
     } finally {
       localDb.close();
       remoteDb.close();
