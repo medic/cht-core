@@ -107,7 +107,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async ngAfterViewInit() {
-    this.userLineageLevel = this.extractLineageService.getUserLineageToRemove();
+    this.userLineageLevel = this.userContactService.getUserLineageToRemove();
     await this.checkPermissions();
     this.subscribeSidebarFilter();
     this.doInitialSearch();

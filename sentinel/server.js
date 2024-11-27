@@ -35,20 +35,26 @@ const waitForApi = () => new Promise(resolve => {
 });
 
 logger.info('Running server checks...');
-serverChecks
-  .check(environment.couchUrl)
-  .then(waitForApi)
-  .then(() => {
-    // Even requiring this boots translations, so has to be required after
-    // api has booted
+
+(async () => {
+  try {
+    await serverChecks.check(environment.couchUrl);
+    await waitForApi();
+
     const config = require('./src/config');
-    return config.init().then(() => {
-      require('./src/schedule').init();
-      logger.info('startup complete.');
-    });
-  })
-  .catch(err => {
-    logger.error('Fatal error intialising sentinel');
+    await config.init();
+
+    const schedule = require('./src/schedule');
+    schedule.init();
+
+    logger.info('startup complete.');
+
+    const processHooks = require('./src/process-hooks');
+    processHooks.init();
+
+  } catch (err) {
+    logger.error('Fatal error initialising sentinel');
     logger.error('%o', err);
     process.exit(1);
-  });
+  }
+})();

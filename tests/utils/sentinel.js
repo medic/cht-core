@@ -93,6 +93,7 @@ const getPurgeDbs = () => {
 
 const waitForPurgeCompletion = async (seq) => {
   const waitForWipe = await utils.waitForApiLogs(/Wiping purged docs cache/);
+  await utils.runSentinelTasks();
   await waitForPurgeLog(seq);
   await waitForWipe.promise;
 };

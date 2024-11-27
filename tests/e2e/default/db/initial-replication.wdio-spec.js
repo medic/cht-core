@@ -50,7 +50,7 @@ describe('initial-replication', () => {
     const localAllDocsPreSync = await chtDbUtils.getDocs();
     const docIdsPreSync = dataFactory.ids(localAllDocsPreSync);
 
-    await commonPage.sync(false, 7000);
+    await commonPage.sync();
 
     const localAllDocs = await chtDbUtils.getDocs();
     const localDocIds = dataFactory.ids(localAllDocs);
@@ -102,7 +102,7 @@ describe('initial-replication', () => {
   };
 
   before(async () => {
-    await utils.stopSentinel();
+    await utils.toggleSentinelTransitions();
 
     // we're creating ~2000 docs
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
@@ -115,15 +115,14 @@ describe('initial-replication', () => {
 
   after(async () => {
     await sentinelUtils.skipToSeq();
-    await utils.startSentinel();
+    await utils.toggleSentinelTransitions();
     await utils.deleteUsers([userAllowedDocs.user]);
     await utils.revertDb([/^form:/], true);
     await utils.revertSettings(true);
   });
 
   afterEach(async () => {
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonPage.reloadSession();
   });
 
   it('should log user in', async () => {
@@ -155,6 +154,7 @@ describe('initial-replication', () => {
     setTimeout(() => browser.refresh(), 3000);
     setTimeout(() => browser.refresh(), 5000);
 
+    await utils.delayPromise(5000); // wait for above timers to expire
     await commonPage.waitForPageLoaded();
     await validateReplication();
   });

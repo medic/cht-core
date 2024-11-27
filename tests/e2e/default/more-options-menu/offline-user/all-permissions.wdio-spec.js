@@ -63,7 +63,7 @@ describe('More Options Menu - Offline User', () => {
       it('should hide the kebab menu.', async () => {
         await commonPage.goToMessages();
         await sms.sendSms('testing', contact.phone);
-        expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+        expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
       });
     });
 
@@ -72,27 +72,27 @@ describe('More Options Menu - Offline User', () => {
         'disable the \'delete\' option when no contact is opened', async () => {
         await commonPage.goToPeople();
         await commonPage.openMoreOptionsMenu();
-        expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;
-        expect(await commonPage.isMenuOptionVisible('edit', 'contacts')).to.be.false;
-        expect(await commonPage.isMenuOptionEnabled('delete', 'contacts')).to.be.false;
+        expect(await commonPage.isMenuOptionVisible('export')).to.be.false;
+        expect(await commonPage.isMenuOptionVisible('edit')).to.be.false;
+        expect(await commonPage.isMenuOptionEnabled('delete')).to.be.false;
       });
 
       it('should hide the \'export\' option and ' +
         'enable the \'edit\' and \'delete\' options when a contact is opened', async () => {
         await commonPage.goToPeople(patient._id);
         await commonPage.openMoreOptionsMenu();
-        expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;
-        expect(await commonPage.isMenuOptionEnabled('edit', 'contacts')).to.be.true;
-        expect(await commonPage.isMenuOptionEnabled('delete', 'contacts')).to.be.true;
+        expect(await commonPage.isMenuOptionVisible('export')).to.be.false;
+        expect(await commonPage.isMenuOptionEnabled('edit')).to.be.true;
+        expect(await commonPage.isMenuOptionEnabled('delete')).to.be.true;
       });
 
       it('should hide the \'export\' and \'edit\' options and ' +
         'disable the \'delete\' option when the offline user\'s place is selected', async () => {
         await commonPage.goToPeople(offlineUser.place);
         await commonPage.openMoreOptionsMenu();
-        expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;
-        expect(await commonPage.isMenuOptionVisible('edit', 'contacts')).to.be.false;
-        expect(await commonPage.isMenuOptionEnabled('delete', 'contacts')).to.be.false;
+        expect(await commonPage.isMenuOptionVisible('export')).to.be.false;
+        expect(await commonPage.isMenuOptionVisible('edit')).to.be.false;
+        expect(await commonPage.isMenuOptionEnabled('delete')).to.be.false;
       });
     });
 
@@ -100,24 +100,24 @@ describe('More Options Menu - Offline User', () => {
       it('should hide the \'export\' and \'edit\' options and ' +
         'enable the \'delete\' and \'review\' options when the sms report is opened', async () => {
         await commonPage.goToReports();
-        expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+        expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
 
         await reportPage.goToReportById(smsReportId);
         await commonPage.openMoreOptionsMenu();
-        expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
-        expect(await commonPage.isMenuOptionVisible('edit', 'reports')).to.be.false;
-        expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;
-        expect(await commonPage.isMenuOptionEnabled('review', 'report')).to.be.true;
+        expect(await commonPage.isMenuOptionVisible('export')).to.be.false;
+        expect(await commonPage.isMenuOptionVisible('edit')).to.be.false;
+        expect(await commonPage.isMenuOptionEnabled('delete')).to.be.true;
+        expect(await commonPage.isMenuOptionEnabled('review')).to.be.true;
       });
 
       it('should hide the \'export\' option and ' +
         'enable the \'edit\', \'delete\' and \'review\' options when the xml report is opened', async () => {
         await reportPage.goToReportById(xmlReportId);
         await commonPage.openMoreOptionsMenu();
-        expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
-        expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
-        expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;
-        expect(await commonPage.isMenuOptionEnabled('review', 'report')).to.be.true;
+        expect(await commonPage.isMenuOptionVisible('export')).to.be.false;
+        expect(await commonPage.isMenuOptionEnabled('edit')).to.be.true;
+        expect(await commonPage.isMenuOptionEnabled('delete')).to.be.true;
+        expect(await commonPage.isMenuOptionEnabled('review')).to.be.true;
       });
     });
   });
@@ -128,7 +128,7 @@ describe('More Options Menu - Offline User', () => {
         'can_export_contacts', 'can_export_messages',
         'can_delete_reports', 'can_update_reports'];
       await utils.updatePermissions(offlineUser.roles, [], allPermissions, true);
-      await commonPage.sync(true);
+      await commonPage.sync({ expectReload: true });
     });
 
     after(async () => await utils.revertSettings(true));
@@ -136,20 +136,20 @@ describe('More Options Menu - Offline User', () => {
     it('should hide the kebab menu in Messages, People and Reports tabs', async () => {
       await commonPage.goToMessages();
       await sms.sendSms('testing', contact.phone);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
 
       await commonPage.goToPeople();
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
 
       await contactPage.selectLHSRowByText(contact.name);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
 
       await commonPage.goToReports();
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
       await reportPage.goToReportById(smsReportId);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
       await reportPage.goToReportById(xmlReportId);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
     });
   });
 });

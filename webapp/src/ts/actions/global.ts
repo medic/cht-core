@@ -11,6 +11,7 @@ export const Actions = {
   setLoadingContent: createSingleValueAction('SET_LOADING_CONTENT', 'loadingContent'),
   setShowContent: createSingleValueAction('SET_SHOW_CONTENT', 'showContent'),
   setForms: createSingleValueAction('SET_FORMS', 'forms'),
+  setTrainingMaterials: createSingleValueAction('SET_TRAINING_MATERIALS', 'trainingMaterials'),
   clearFilters: createSingleValueAction('CLEAR_FILTERS', 'skip'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
   setSidebarFilter: createSingleValueAction('SET_SIDEBAR_FILTER', 'sidebarFilter'),
@@ -38,6 +39,7 @@ export const Actions = {
   openSidebarMenu: createAction('OPEN_SIDEBAR_MENU'),
   setSearchBar: createSingleValueAction('SET_SEARCH_BAR', 'searchBar'),
   setTrainingCard: createSingleValueAction('SET_TRAINING_CARD', 'trainingCard'),
+  clearTrainingCards: createAction('CLEAR_TRAINING_CARDS'),
 };
 
 export class GlobalActions {
@@ -71,6 +73,10 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setForms(forms));
   }
 
+  setTrainingMaterials(trainingMaterials) {
+    return this.store.dispatch(Actions.setTrainingMaterials(trainingMaterials));
+  }
+
   setShowContent(showContent) {
     return this.store.dispatch(Actions.setShowContent(showContent));
   }
@@ -98,6 +104,15 @@ export class GlobalActions {
 
   setTrainingCard(trainingCard) {
     return this.store.dispatch(Actions.setTrainingCard(trainingCard));
+  }
+
+  clearTrainingCards() {
+    this.setTrainingCard({
+      formId: null,
+      isOpen: false,
+      showConfirmExit: false,
+      nextUrl: null,
+    });
   }
 
   clearSidebarFilter() {

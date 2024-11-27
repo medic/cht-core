@@ -1,6 +1,6 @@
 {
   "name": "medic",
-  "version": "4.14.0",
+  "version": "4.15.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "repository": {
@@ -8,8 +8,8 @@
     "url": "git://github.com/medic/cht-core.git"
   },
   "engines": {
-    "node": ">=20.11.0",
-    "npm": ">=10.2.4"
+    "node": ">=22.11.0",
+    "npm": ">=10.9.0"
   },
   "workspaces": [
     "./shared-libs/*"
@@ -18,8 +18,9 @@
     "postinstall": "patch-package",
     "prepare": "husky install",
     "-- DEV BUILD SCRIPTS": "-----------------------------------------------------------------------------------------------",
+    "clean": "rm -rf build api/build",
     "build-ddocs": "mkdir -p build/ddocs && cp -r ddocs/* build/ddocs/ && node scripts/build/cli setDdocsVersion && node scripts/build/cli setBuildInfo && node ./scripts/build/ddoc-compile.js primary && mkdir -p api/build/ddocs && cp build/ddocs/*.json api/build/ddocs/",
-    "build-dev": "./scripts/build/build-prepare.sh && npm run --prefix shared-libs/cht-datasource build && npm run build-webapp-dev && ./scripts/build/copy-static-files.sh",
+    "build-dev": "npm run clean && ./scripts/build/build-prepare.sh && npm run --prefix shared-libs/cht-datasource build && npm run build-webapp-dev && ./scripts/build/copy-static-files.sh",
     "build-dev-watch": "npm run build-dev && (npm run --prefix shared-libs/cht-datasource build-watch & npm run --prefix webapp build-watch & node ./scripts/build/watch.js)",
     "build-documentation": "./scripts/build/build-documentation.sh",
     "build-webapp-dev": "cd webapp && npm run build -- --configuration=development && npm run compile",
@@ -152,7 +153,7 @@
     "nodemon": "^3.0.1",
     "nyc": "^15.1.0",
     "patch-package": "^8.0.0",
-    "postcss": "^8.4.29",
+    "postcss": "^8.4.47",
     "pouchdb-adapter-memory": "^7.3.1",
     "raw-loader": "^4.0.2",
     "rewire": "^7.0.0",
@@ -178,7 +179,7 @@
     "bowser": "^2.11.0",
     "buffer-shims": "^1.0.0",
     "cht-nootils": "^4.2.0",
-    "compression": "^1.7.4",
+    "compression": "^1.7.5",
     "cron-validator": "^1.3.1",
     "epi-week": "^0.0.1",
     "express": "^4.21.1",

@@ -130,6 +130,12 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
   private setSecondaryOptions(showPrivacyPolicy = false) {
     this.secondaryOptions = [
       {
+        routerLink: 'trainings',
+        icon: 'fa-graduation-cap',
+        translationKey: 'training_materials.page.title',
+        canDisplay: true,
+      },
+      {
         routerLink: 'about',
         icon: 'fa-question',
         translationKey: 'about',

@@ -29,6 +29,7 @@ import { FastActionButtonComponent } from '@mm-components/fast-action-button/fas
 import { AuthService } from '@mm-services/auth.service';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
+import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
 
 describe('Contacts content component', () => {
   let component: ContactsContentComponent;
@@ -49,6 +50,7 @@ describe('Contacts content component', () => {
   let responsiveService;
   let contactMutedService;
   let fastActionButtonService;
+  let searchTelemetryService;
   let mutingTransition;
   let settings;
 
@@ -87,6 +89,7 @@ describe('Contacts content component', () => {
     mutingTransition = { isUnmuteForm: sinon.stub() };
     contactMutedService = { getMuted: sinon.stub() };
     fastActionButtonService = { getContactRightSideActions: sinon.stub() };
+    searchTelemetryService = { recordContactSearch: sinon.stub() };
 
     selectedContact = {
       doc: {},
@@ -140,6 +143,7 @@ describe('Contacts content component', () => {
           { provide: ContactMutedService, useValue: contactMutedService },
           { provide: MutingTransition, useValue: mutingTransition },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
+          { provide: SearchTelemetryService, useValue: searchTelemetryService },
           { provide: AuthService, useValue: { has: sinon.stub() } },
           { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
           { provide: MatDialog, useValue: { open: sinon.stub() } },
@@ -239,6 +243,33 @@ describe('Contacts content component', () => {
     expect(globalActions.unsetSelected.calledOnce).to.be.true;
     expect(clearSelectionStub.calledOnce).to.be.true;
     expect(!!component.summaryErrorStack).to.be.false;
+  }));
+
+  it('should collect telemetry for the selected search results', fakeAsync(() => {
+    // perform search
+    const search = 'abc-1234';
+    store.overrideSelector(Selectors.getFilters, { search });
+    store.refreshState();
+    expect(searchTelemetryService.recordContactSearch.callCount).to.equal(0);
+
+    // select contact, collect telemetry
+    const contact = { _id: 'contact_id', doc: { case_id: 'abc-1234' } };
+    store.overrideSelector(Selectors.getSelectedContact, contact);
+    store.refreshState();
+    expect(searchTelemetryService.recordContactSearch.callCount).to.equal(1);
+    expect(searchTelemetryService.recordContactSearch.getCall(0).args).to.deep.equal([contact.doc, search]);
+
+    // re-select same contact, don't re-collect telemetry
+    store.overrideSelector(Selectors.getSelectedContact, contact);
+    store.refreshState();
+    expect(searchTelemetryService.recordContactSearch.callCount).to.equal(1);
+
+    // select different contact, collect telemetry
+    const otherContact = { id_: 'other_contact_id', doc: { not_case_id: 'abc-1234' } };
+    store.overrideSelector(Selectors.getSelectedContact, otherContact);
+    store.refreshState();
+    expect(searchTelemetryService.recordContactSearch.callCount).to.equal(2);
+    expect(searchTelemetryService.recordContactSearch.getCall(1).args).to.deep.equal([otherContact.doc, search]);
   }));
 
   describe('Change feed process', () => {

@@ -6,10 +6,10 @@
     <div id="tasks-list" class="col-sm-4 inbox-items left-pane">
       <ul *ngIf="!errorStack && hasTasks">
         <li *ngFor="let task of tasksList; trackBy: listTrackBy"
-            [attr.data-record-id]="task._id"
-            [class.selected] = "task.selected"
-            [class.overdue]="task.overdue"
-            class="content-row">
+          [attr.data-record-id]="task._id"
+          [class.selected]="task.selected"
+          [class.overdue]="task.overdue"
+          class="content-row">
           <a [routerLink]="['/', 'tasks', task._id]" [state]="{ tab: 'tasks', id: task._id }">
             <div *ngIf="task.icon" class="icon" [innerHTML]="task.icon | resourceIcon"></div>
             <div class="content">

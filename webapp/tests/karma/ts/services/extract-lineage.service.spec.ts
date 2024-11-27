@@ -3,28 +3,11 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
-import { UserContactService } from '@mm-services/user-contact.service';
-import { AuthService } from '@mm-services/auth.service';
 
 describe('ExtractLineageService', () => {
   let service: ExtractLineageService;
-  let userSettingsService;
-  let userContactService;
-  let authService;
 
   beforeEach(() => {
-    userSettingsService = { get: sinon.stub() };
-    userContactService = { get: sinon.stub() };
-    authService = { online: sinon.stub() };
-
-    TestBed.configureTestingModule({
-      providers: [
-        { provide: UserContactService, useValue: userContactService },
-        { provide: UserSettingsService, useValue: userSettingsService },
-        { provide: AuthService, useValue: authService },
-      ]
-    });
     service = TestBed.inject(ExtractLineageService);
   });
 
@@ -78,52 +61,6 @@ describe('ExtractLineageService', () => {
       expect(service.extract(contact)).to.deep.equal(expected);
       // ensure the original contact is unchanged
       expect(contact.parent.age).to.equal(55);
-    });
-  });
-
-  describe('getUserLineageToRemove()', () => {
-    it('should return null when user is type online', async () => {
-      authService.online.returns(true);
-
-      const result = await service.getUserLineageToRemove();
-
-      expect(result).to.be.null;
-    });
-
-    it('should return null when user has more than one assigned facility', async () => {
-      authService.online.returns(false);
-      userSettingsService.get.resolves({ facility_id: [ 'id-1', 'id-2' ] });
-
-      const result = await service.getUserLineageToRemove();
-
-      expect(result).to.be.null;
-    });
-
-    it('should return null when parent is not defined', async () => {
-      authService.online.returns(false);
-      userSettingsService.get.resolves({ facility_id: [ 'id-1', 'id-2' ] });
-      userContactService.get.resolves({ parent: undefined });
-
-      const result = await service.getUserLineageToRemove();
-
-      expect(result).to.be.null;
-    });
-
-    it('should return facility name when user is type offline and has only one assigned facility', async () => {
-      authService.online.returns(false);
-      userSettingsService.get.resolves({ facility_id: 'id-1' });
-      userContactService.get.resolves({ parent: { name: 'Kisumu Area' } });
-
-      const resultWithString = await service.getUserLineageToRemove();
-
-      expect(resultWithString).to.equal('Kisumu Area');
-
-      userSettingsService.get.resolves({ facility_id: [ 'id-5' ] });
-      userContactService.get.resolves({ parent: { name: 'Kakamega Area' } });
-
-      const resultWithArray = await service.getUserLineageToRemove();
-
-      expect(resultWithArray).to.equal('Kakamega Area');
     });
   });
 

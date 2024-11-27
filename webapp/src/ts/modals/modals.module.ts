@@ -23,6 +23,7 @@ import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-me
 import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expired.component';
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
 import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted.component';
+import { TrainingCardsConfirmComponent } from '@mm-modals/training-cards-confirm/training-cards-confirm.component';
 import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 
 
@@ -45,6 +46,7 @@ import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/
     SessionExpiredComponent,
     DatabaseClosedComponent,
     ContactsMutedComponent,
+    TrainingCardsConfirmComponent,
     BrowserCompatibilityComponent,
   ],
   imports: [
@@ -69,6 +71,7 @@ import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/
     CheckDateComponent,
     EditMessageGroupComponent,
     SessionExpiredComponent,
+    TrainingCardsConfirmComponent,
     BrowserCompatibilityComponent,
   ]
 })
