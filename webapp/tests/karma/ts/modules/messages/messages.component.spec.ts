@@ -16,7 +16,6 @@ import { SettingsService } from '@mm-services/settings.service';
 import { ModalService } from '@mm-services/modal.service';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { NavigationService } from '@mm-services/navigation.service';
-import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { MessagesMoreMenuComponent } from '@mm-modules/messages/messages-more-menu.component';
@@ -26,6 +25,7 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ExportService } from '@mm-services/export.service';
 import { AuthService } from '@mm-services/auth.service';
+import { UserContactService } from '@mm-services/user-contact.service';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -37,7 +37,7 @@ describe('Messages Component', () => {
   let authService;
   let sessionService;
   let performanceService;
-  let extractLineageService;
+  let userContactService;
   let stopPerformanceTrackStub;
 
   beforeEach(waitForAsync(() => {
@@ -59,9 +59,8 @@ describe('Messages Component', () => {
       has: sinon.stub()
     };
     sessionService = { isAdmin: sinon.stub() };
-    extractLineageService = {
+    userContactService = {
       getUserLineageToRemove: sinon.stub(),
-      removeUserFacility: ExtractLineageService.prototype.removeUserFacility,
     };
     const mockedSelectors = [
       { selector: 'getSelectedConversation', value: {} },
@@ -96,7 +95,7 @@ describe('Messages Component', () => {
           { provide: AuthService, useValue: authService },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
           { provide: PerformanceService, useValue: performanceService },
-          { provide: ExtractLineageService, useValue: extractLineageService },
+          { provide: UserContactService, useValue: userContactService },
           { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
           { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
@@ -262,7 +261,7 @@ describe('Messages Component', () => {
     ];
 
     it('it should retrieve the hierarchy level of the connected user', fakeAsync(async () => {
-      extractLineageService.getUserLineageToRemove.resolves('CHW Bettys Area');
+      userContactService.getUserLineageToRemove.resolves('CHW Bettys Area');
 
       component.ngOnInit();
       tick();
@@ -274,7 +273,7 @@ describe('Messages Component', () => {
       sinon.resetHistory();
 
       messageContactService.getList.resolves(conversations);
-      extractLineageService.getUserLineageToRemove.resolves(undefined);
+      userContactService.getUserLineageToRemove.resolves(undefined);
       component.ngOnInit();
       tick();
       component.updateConversations({ merge: true });
@@ -307,7 +306,7 @@ describe('Messages Component', () => {
         },
       ];
 
-      extractLineageService.getUserLineageToRemove.resolves('CHW Bettys Area');
+      userContactService.getUserLineageToRemove.resolves('CHW Bettys Area');
       messageContactService.getList.resolves(conversations);
       component.ngOnInit();
       tick();

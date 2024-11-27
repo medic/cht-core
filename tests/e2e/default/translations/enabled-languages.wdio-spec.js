@@ -1,6 +1,7 @@
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const adminPage = require('@page-objects/default/admin/admin.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 describe('Enabling/disabling languages', () => {
   const SETTINGS = {
@@ -17,8 +18,7 @@ describe('Enabling/disabling languages', () => {
 
   it('should disable a language and enable another', async () => {
     await utils.updateSettings(SETTINGS, { ignoreReload: true });
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonPage.reloadSession();
 
     // assert English, Spanish, and French are available on the login page
     let locales = await loginPage.getAllLocales();

@@ -76,6 +76,12 @@
           <li role="separator" class="divider" *ngIf="!replicationStatus.disabled"></li>
 
           <li role="presentation">
+            <a routerLink="trainings" role="menuitem" tabindex="-1">
+              <i class="fa fa-fw fa-graduation-cap"></i>
+              <span>{{'training_materials.page.title' | translate}}</span>
+            </a>
+          </li>
+          <li role="presentation">
             <a routerLink="about" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-question"></i>
               <span>{{'about' | translate}}</span>

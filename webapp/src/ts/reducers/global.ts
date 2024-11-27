@@ -27,6 +27,7 @@ const initialState: GlobalState = {
   trainingCard: { formId: null, isOpen: false, showConfirmExit: false, nextUrl: null },
   sidebarMenu: { isOpen: false },
   forms: null,
+  trainingMaterials: null,
   lastChangedDoc: false,
   loadingContent: false,
   processingReportVerification: false,
@@ -76,6 +77,9 @@ const _globalReducer = createReducer(
   }),
   on(Actions.setForms, (state, { payload: { forms } }) => {
     return { ...state, forms };
+  }),
+  on(Actions.setTrainingMaterials, (state, { payload: { trainingMaterials } }) => {
+    return { ...state, trainingMaterials };
   }),
   on(Actions.clearFilters, (state, { payload: { skip } }) => {
     const newValue = skip && state.filters[skip] ? { [skip]: state.filters[skip] } : {};
@@ -192,6 +196,7 @@ export interface GlobalState {
   trainingCard: TrainingCardState;
   sidebarMenu: SidebarMenuState;
   forms: null | Record<string, any>[];
+  trainingMaterials: null | Record<string, any>[];
   lastChangedDoc: boolean | Record<string, any>;
   loadingContent: boolean;
   processingReportVerification: boolean;
