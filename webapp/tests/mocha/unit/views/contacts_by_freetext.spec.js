@@ -148,7 +148,7 @@ describe('contacts_by_freetext', () => {
       });
 
       [
-        '_id', '_rev', 'type', 'refid', 'geolocation'
+        '_id', '_rev', 'type', 'refid', 'geolocation', 'Refid'
       ].forEach(key => it('emits nothing for a skipped field', () => {
         const doc = { type: 'district_hospital', [key]: 'world' };
         const emitted = mapFn(doc, true);
@@ -183,7 +183,7 @@ describe('contacts_by_freetext', () => {
       it('emits each word in a string', () => {
         const doc = {
           type: 'district_hospital',
-          hello: `the quick\nbrown\tfox`,
+          hello: `the quick\nBrown\tfox`,
         };
         const emitted = mapFn(doc, true);
 

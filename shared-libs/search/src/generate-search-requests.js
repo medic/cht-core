@@ -241,14 +241,14 @@ const setDefaultContactsRequests = (requests, shouldSortByLastVisitedDate) => {
 };
 
 const requestBuilders = {
-  reports: (filters) => {
+  reports: (filters, freetextDdocName) => {
     let requests = [
       reportedDateRequest(filters),
       formRequest(filters),
       validityRequest(filters),
       verificationRequest(filters),
       placeRequest(filters),
-      freetextRequest(filters, 'medic-client/reports_by_freetext'),
+      freetextRequest(filters, `${freetextDdocName}/reports_by_freetext`),
       subjectRequest(filters)
     ];
 
