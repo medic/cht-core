@@ -1,5 +1,4 @@
 const packageJson = require('../../package.json');
-const buildTime = new Date().getTime();
 const { execSync } = require('child_process');
 
 const {
