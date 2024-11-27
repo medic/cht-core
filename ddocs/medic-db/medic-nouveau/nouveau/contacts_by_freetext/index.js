@@ -36,6 +36,11 @@ function (doc) {
       }
     });
 
+    var dead = !!doc.date_of_death;
+    var muted = !!doc.muted;
+    var order = dead + ' ' + muted + ' ' + idx + ' ' + (doc.name && doc.name.toLowerCase());
+    index('string', 'cht_sort_order', order, { store: false });
+
     toIndex = toIndex.trim();
     if (toIndex) {
       index('text', 'default', toIndex, { store: true });
