@@ -12,11 +12,6 @@ function (doc) {
       return;
     }
 
-    var fieldNameRegex = /^\$?[a-zA-Z][a-zA-Z0-9_]*$/g
-    if (!fieldNameRegex.test(key)) {
-      log(`key "${key}" doesn't pass regex - "${doc._id}"`);
-    }
-
     if (typeof value === 'string') {
       toIndex += ' ' + value;
       index('text', key, value, { store: true });
@@ -40,8 +35,6 @@ function (doc) {
     toIndex = toIndex.trim();
     if (toIndex) {
       index('text', 'default', toIndex, { store: true });
-    } else {
-      log(`******* empty toIndex "${toIndex}" "${doc._id}"`);
     }
   }
 }

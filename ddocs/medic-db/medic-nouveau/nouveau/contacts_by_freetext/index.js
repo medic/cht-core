@@ -1,9 +1,9 @@
 function (doc) {
-  const skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
-  let toIndex = '';
+  var skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
+  var toIndex = '';
 
-  const types = ['district_hospital', 'health_center', 'clinic', 'person'];
-  let idx;
+  var types = ['district_hospital', 'health_center', 'clinic', 'person'];
+  var idx;
   if (doc.type === 'contact') {
     idx = types.indexOf(doc.contact_type);
     if (idx === -1) {
@@ -13,10 +13,10 @@ function (doc) {
     idx = types.indexOf(doc.type);
   }
 
-  const isContactDoc = idx !== -1;
+  var isContactDoc = idx !== -1;
   if (isContactDoc) {
     Object.keys(doc).forEach(function (key) {
-      const value = doc[key];
+      var value = doc[key];
       if (!key || !value) {
         return;
       }
@@ -24,11 +24,6 @@ function (doc) {
       key = key.toLowerCase().trim();
       if (skip.indexOf(key) !== -1 || /_date$/.test(key)) {
         return;
-      }
-
-      const fieldNameRegex = /^\$?[a-zA-Z][a-zA-Z0-9_]*$/g
-      if (!fieldNameRegex.test(key)) {
-        log(`key "${key}" doesn't pass regex - "${doc.id}"`);
       }
 
       if (typeof value === 'string') {

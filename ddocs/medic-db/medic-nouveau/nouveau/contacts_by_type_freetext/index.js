@@ -1,6 +1,6 @@
 function (doc) {
   var skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
-  let toIndex = '';
+  var toIndex = '';
 
   var types = ['district_hospital', 'health_center', 'clinic', 'person'];
   var idx;
@@ -15,7 +15,9 @@ function (doc) {
     type = doc.type;
     idx = types.indexOf(type);
   }
-  if (idx !== -1) {
+
+  var isContactDoc = idx !== -1;
+  if (isContactDoc) {
     Object.keys(doc).forEach(function (key) {
       var value = doc[key];
       if (!key || !value) {
@@ -27,11 +29,6 @@ function (doc) {
         return;
       }
 
-      const fieldNameRegex = /^\$?[a-zA-Z][a-zA-Z0-9_]*$/g
-      if (!fieldNameRegex.test(key)) {
-        log(`key "${key}" doesn't pass regex - "${doc.id}"`);
-      }
-
       if (typeof value === 'string') {
         toIndex += ' ' + value;
         index('text', key, value, { store: true });
@@ -41,10 +38,10 @@ function (doc) {
         index('double', key, value, { store: true });
       }
     });
-  }
 
-  toIndex = toIndex.trim();
-  if (toIndex) {
-    index('text', 'default', toIndex, { store: true });
+    toIndex = toIndex.trim();
+    if (toIndex) {
+      index('text', 'default', toIndex, { store: true });
+    }
   }
 }
