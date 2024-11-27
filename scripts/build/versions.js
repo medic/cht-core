@@ -1,5 +1,6 @@
 const packageJson = require('../../package.json');
 const buildTime = new Date().getTime();
+const { execSync } = require('child_process');
 
 const {
   ECR_REPO,
@@ -46,7 +47,7 @@ const getVersion = (release) => {
     return process.env.VERSION;
   }
 
-  return `${packageJson.version}-dev.${buildTime}`;
+  return execSync('git branch --show-current', { encoding: 'utf-8' }).trim();
 };
 
 const getImageTag = (service, release = false) => {
