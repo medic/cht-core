@@ -802,7 +802,7 @@ describe('Create user for contacts', () => {
       const updatedOriginalContact = await utils.getDoc(originalContactId);
       expect(updatedOriginalContact.user_for_contact).to.be.undefined;
       // Can still login as original user
-      const resp1 = await submitLoginRequest({ username : ONLINE_USER.username, password: newPassword });
+      const resp1 = await submitLoginRequest({ username: ONLINE_USER.username, password: newPassword });
       expect(resp1.statusCode).to.equal(302);
       // New user not created
       const newUserSettings = await utils.getUserSettings({ contactId: replacementContactId });

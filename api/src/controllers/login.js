@@ -21,10 +21,12 @@ const serverUtils = require('../server-utils');
 const PASSWORD_RESET_URL = '/medic/password-reset';
 
 const ERROR_KEY_MAPPING = {
-  'password.weak': 'strength-low',
-  'password.length.minimum': 'input-short',
-  'password.current.incorrect': 'auth-incorrect',
-  'password.same': 'duplicate'
+  // Ignore Sonar false positive that these are hard-coded credentials.
+  // These are css error classes for password reset html
+  'password.weak': 'password-weak', //NoSONAR
+  'password.length.minimum': 'password-short', //NoSONAR
+  'password.current.incorrect': 'current-password-incorrect', //NoSONAR
+  'password.same': 'password-same', //NoSONAR
 };
 
 const templates = {
