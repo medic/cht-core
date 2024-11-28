@@ -201,7 +201,7 @@ describe('Login page functionality tests', () => {
       await loginPage.setPasswordValue('');
       await loginPage.setConfirmPasswordValue('');
       await (await loginPage.updatePasswordButton()).click();
-      expect(await loginPage.getPasswordResetErrorMessage('password-short')).to.equal(PASSWORD_MISSING);
+      expect(await loginPage.getPasswordResetErrorMessage('input-short')).to.equal(PASSWORD_MISSING);
     });
 
     it('should try to reset password and verify confirm password is missing', async () => {
@@ -223,7 +223,7 @@ describe('Login page functionality tests', () => {
       await loginPage.setPasswordValue('12345678');
       await loginPage.setConfirmPasswordValue('12345678');
       await (await loginPage.updatePasswordButton()).click();
-      expect(await loginPage.getPasswordResetErrorMessage('password-weak')).to.equal(PASSWORD_WEAK);
+      expect(await loginPage.getPasswordResetErrorMessage('strength-low')).to.equal(PASSWORD_WEAK);
     });
 
     it('should try to reset password and verify current password is not correct', async () => {
@@ -235,7 +235,7 @@ describe('Login page functionality tests', () => {
       await loginPage.setPasswordValue(user.password);
       await loginPage.setConfirmPasswordValue(user.password);
       await (await loginPage.updatePasswordButton()).click();
-      expect(await loginPage.getPasswordResetErrorMessage('current-password-incorrect')).to.equal(
+      expect(await loginPage.getPasswordResetErrorMessage('auth-incorrect')).to.equal(
         CURRENT_PASSWORD_INCORRECT
       );
     });
@@ -249,7 +249,7 @@ describe('Login page functionality tests', () => {
       await loginPage.setPasswordValue(user.password);
       await loginPage.setConfirmPasswordValue(user.password);
       await (await loginPage.updatePasswordButton()).click();
-      expect(await loginPage.getPasswordResetErrorMessage('password-same')).to.equal(PASSWORD_SAME);
+      expect(await loginPage.getPasswordResetErrorMessage('duplicate')).to.equal(PASSWORD_SAME);
     });
 
     it('should reset password successfully and redirect to webapp', async () => {

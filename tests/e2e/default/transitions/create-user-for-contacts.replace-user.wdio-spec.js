@@ -18,6 +18,7 @@ describe('Create user for contacts', () => {
   const REPLACE_USER_FORM_ID = 'replace_user';
   const OTHER_REPLACE_FORM_ID = 'other_replace_form';
   const DISABLED_USER_PASSWORD = 'n3wPassword!';
+  const newPassword = loginPage.NEW_PASSWORD;
 
   const USER_CONTACT = utils.deepFreeze(personFactory.build({ role: 'chw' }));
 
@@ -255,6 +256,8 @@ describe('Create user for contacts', () => {
         await commonPage.sync();
         await commonPage.goToReports();
         const basicReportId3 = await createUserForContactsPage.submitBasicForm();
+        await commonPage.sync();
+        await sentinelUtils.waitForSentinel();
         const basicReport3 = await utils.getDoc(basicReportId3);
         // New reports written by the old user are not re-parented
         expect(basicReport3.contact._id).to.equal(originalContactId);
@@ -628,7 +631,7 @@ describe('Create user for contacts', () => {
         await commonPage.logout();
 
         // Log back in as original user and sync
-        await loginPage.login(ORIGINAL_USER);
+        await loginPage.login({ username: ORIGINAL_USER.username, password: newPassword, resetPassword: false });
         await commonPage.sync();
         // The user should not be logged out since the replacement was in conflict
         await commonPage.goToPeople(originalContactId);
@@ -758,8 +761,9 @@ describe('Create user for contacts', () => {
 
         // Subsequent form reports are *not* re-parented to the new contact
         await commonPage.reloadSession();
-        await loginPage.login(ORIGINAL_USER);
+        await loginPage.login({ username: ORIGINAL_USER.username, password: newPassword, resetPassword: false });
         await commonPage.waitForPageLoaded();
+        await commonPage.sync();
         await browser.throttle('offline');
         const finalOriginalContactLocal = await chtDbUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(finalOriginalContactLocal, ORIGINAL_USER.username, replacementContactId, 'ERROR');
@@ -798,7 +802,7 @@ describe('Create user for contacts', () => {
       const updatedOriginalContact = await utils.getDoc(originalContactId);
       expect(updatedOriginalContact.user_for_contact).to.be.undefined;
       // Can still login as original user
-      const resp1 = await submitLoginRequest(ONLINE_USER);
+      const resp1 = await submitLoginRequest({ username : ONLINE_USER.username, password: newPassword });
       expect(resp1.statusCode).to.equal(302);
       // New user not created
       const newUserSettings = await utils.getUserSettings({ contactId: replacementContactId });

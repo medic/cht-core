@@ -51,14 +51,14 @@ describe('Privacy policy', () => {
       });
 
       it('should not show on subsequent login', async () => {
-        await browser.reloadSession();
+        await commonPage.reloadSession();
         await loginPage.login({ username: user.username, password: newPassword, resetPassword: false });
         await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
         expect(await (await privacyPage.privacyWrapper()).isDisplayed()).to.not.be.true;
       });
 
       it('should show french policy on secondary login', async () => {
-        await browser.reloadSession();
+        await commonPage.reloadSession();
         await loginPage.login({
           username: user.username,
           password: newPassword,

@@ -102,12 +102,12 @@ form {
 .tokentimeout .error.timeout,
 .tokenexpired .error.expired,
 .tokenerror .error.unknown,
-.password-weak .error.password-weak,
-.password-short .error.password-short,
+.strength-low .error.strength-low,
+.input-short .error.input-short,
 .password-mismatch .error.password-mismatch,
 .password-required .error.password-required,
-.password-same .error.password-same,
-.current-password-incorrect .error.current-password-incorrect
+.duplicate .error.duplicate,
+.auth-incorrect .error.auth-incorrect
 {
   display: block;
 }

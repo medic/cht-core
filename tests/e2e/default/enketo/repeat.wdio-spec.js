@@ -40,36 +40,13 @@ describe('RepeatForm', () => {
   const melbourneLabelPath = `${selectorPrefix}[data-itext-id="/repeat_translation/basic/rep/city_1/melbourne:label"]`;
 
   describe('Repeat form with count input', () => {
-
-    it('should display the initial form and its repeated content in Nepali', async () => {
-      await browser.url('/');
-      const neUserName = 'प्रयोगकर्ताको नाम';
-      await loginPage.changeLanguage('ne', neUserName);
-      await loginPage.login({ username: hierarchy.user.username, password: hierarchy.user.password, locale: 'ne' });
-      await openRepeatForm('repeat-translation-count');
-
-      expect(await commonEnketoPage.isElementDisplayed('span', 'Select a state: - NE')).to.be.true;
-      expect(await commonEnketoPage.getInputValue('How many? NE')).to.equal('1');
-
-
-      await assertLabels({ selector: cityLabelPath, count: 1, labelText: 'Select a city: - NE' });
-      await assertLabels({ selector: melbourneLabelPath, count: 1, labelText: 'ML (NE)' });
-
-      await commonEnketoPage.setInputValue('How many? NE', 3);
-      await (await genericForm.formTitle()).click();
-
-      await assertLabels({ selector: cityLabelPath, count: 3, labelText: 'Select a city: - NE' });
-      await assertLabels({ selector: melbourneLabelPath, count: 3, labelText: 'ML (NE)' });
-    });
-
     it('should display the initial form and its repeated content in English', async () => {
       const enUserName = 'User name';
       await loginPage.changeLanguage('en', enUserName);
       await loginPage.login({
         username: hierarchy.user.username,
-        password: newPassword,
-        locale: 'en',
-        resetPassword: false
+        password: hierarchy.user.password,
+        locale: 'en'
       });
       await openRepeatForm('repeat-translation-count');
 
@@ -84,6 +61,31 @@ describe('RepeatForm', () => {
 
       await assertLabels({ selector: cityLabelPath, count: 3, labelText: 'Select a city:' });
       await assertLabels({ selector: melbourneLabelPath, count: 3, labelText: 'Melbourne' });
+    });
+
+    it('should display the initial form and its repeated content in Nepali', async () => {
+      await browser.url('/');
+      const neUserName = 'प्रयोगकर्ताको नाम';
+      await loginPage.changeLanguage('ne', neUserName);
+      await loginPage.login({
+        username: hierarchy.user.username,
+        password: newPassword,
+        locale: 'ne',
+        resetPassword: false
+      });
+      await openRepeatForm('repeat-translation-count');
+
+      expect(await commonEnketoPage.isElementDisplayed('span', 'Select a state: - NE')).to.be.true;
+      expect(await commonEnketoPage.getInputValue('How many? NE')).to.equal('1');
+
+      await assertLabels({ selector: cityLabelPath, count: 1, labelText: 'Select a city: - NE' });
+      await assertLabels({ selector: melbourneLabelPath, count: 1, labelText: 'ML (NE)' });
+
+      await commonEnketoPage.setInputValue('How many? NE', 3);
+      await (await genericForm.formTitle()).click();
+
+      await assertLabels({ selector: cityLabelPath, count: 3, labelText: 'Select a city: - NE' });
+      await assertLabels({ selector: melbourneLabelPath, count: 3, labelText: 'ML (NE)' });
     });
   });
 

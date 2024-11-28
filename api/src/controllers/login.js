@@ -21,10 +21,10 @@ const serverUtils = require('../server-utils');
 const PASSWORD_RESET_URL = '/medic/password-reset';
 
 const ERROR_KEY_MAPPING = {
-  'password.weak': 'password-weak',
-  'password.length.minimum': 'password-short',
-  'password.current.incorrect': 'current-password-incorrect',
-  'password.same': 'password-same'
+  'password.weak': 'strength-low',
+  'password.length.minimum': 'input-short',
+  'password.current.incorrect': 'auth-incorrect',
+  'password.same': 'duplicate'
 };
 
 const templates = {
