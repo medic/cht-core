@@ -143,7 +143,6 @@ describe('Contact and User Management', () => {
       await contactPage.selectLHSRowByText('Dana Dearborn');
       await commonPage.clickFastActionFAB({ waitForList: false });
       await generateScreenshot('people', 'care-guides');
-      await commonPage.goToBase();
     });
   });
 });

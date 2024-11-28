@@ -22,6 +22,10 @@ describe('Creating and editing contacts and users', () => {
     await utils.revertDb([/^form:/], true);
   });
 
+  afterEach(async () => {
+    await commonPage.goToPeople();
+  });
+
   it('should create health facility, chw area and chw '+
     'chw supervisor and chw user', async () => {
     //create health facility

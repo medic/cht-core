@@ -87,8 +87,14 @@ const closeHamburgerMenu = async () => {
 };
 
 const openMoreOptionsMenu = async () => {
-  await (await kebabMenuSelectors.moreOptionsMenu()).waitForClickable();
-  await (await kebabMenuSelectors.moreOptionsMenu()).click();
+  const moreOptionsMenu = await kebabMenuSelectors.moreOptionsMenu();
+
+  if (await moreOptionsMenu.isExisting()) {
+    if (await moreOptionsMenu.isClickable()) {
+      await moreOptionsMenu.waitForClickable();
+      await moreOptionsMenu.click();
+    }
+  }
 };
 
 const performMenuAction = async (actionSelector) => {
