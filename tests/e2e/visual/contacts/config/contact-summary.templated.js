@@ -1,47 +1,120 @@
 const moment = require('moment');
 const extras = require('./contact-summary-extras');
-const { today, isHighRiskPregnancy, getNewestReport, getSubsequentPregnancyFollowUps,
-  isAlive, isReadyForNewPregnancy, isReadyForDelivery, isActivePregnancy,
-  countANCFacilityVisits, getAllRiskFactors, getLatestDangerSignsForPregnancy, getNextANCVisitDate,
-  getMostRecentLMPDateForPregnancy, getMostRecentEDDForPregnancy, getRecentANCVisitWithEvent, getAllRiskFactorExtra,
-  getField, now, IMMUNIZATION_LIST, addImmunizations, getAgeInMonths, initImmunizations,
-  isSingleDose, countDosesReceived, countDosesPossible, countReportsSubmittedInWindow, immunizationForms } = extras;
 
-//contact, reports, lineage are globally available for contact-summary
+const {
+  today,
+  isHighRiskPregnancy,
+  getNewestReport,
+  getSubsequentPregnancyFollowUps,
+  isAlive,
+  isReadyForNewPregnancy,
+  isReadyForDelivery,
+  isActivePregnancy,
+  countANCFacilityVisits,
+  getAllRiskFactors,
+  getLatestDangerSignsForPregnancy,
+  getNextANCVisitDate,
+  getMostRecentLMPDateForPregnancy,
+  getMostRecentEDDForPregnancy,
+  getRecentANCVisitWithEvent,
+  getAllRiskFactorExtra,
+  getField,
+  now,
+  IMMUNIZATION_LIST,
+  addImmunizations,
+  getAgeInMonths,
+  initImmunizations,
+  isSingleDose,
+  countDosesReceived,
+  countDosesPossible,
+  countReportsSubmittedInWindow,
+  immunizationForms,
+} = extras;
+
+// contact, reports, lineage are globally available for contact-summary
 // eslint-disable-next-line no-undef
 const thisContact = contact;
 // eslint-disable-next-line no-undef
 const thisLineage = lineage;
 // eslint-disable-next-line no-undef
 const allReports = reports;
+
 const context = {
   alive: isAlive(thisContact),
   muted: false,
-  show_pregnancy_form: isReadyForNewPregnancy(thisContact, allReports),
-  show_delivery_form: isReadyForDelivery(thisContact, allReports),
+  showPregnancyForm: isReadyForNewPregnancy(thisContact, allReports),
+  showDeliveryForm: isReadyForDelivery(thisContact, allReports),
 };
 
 const fields = [
-  { appliesToType: 'person', label: 'patient_id', value: thisContact.patient_id, width: 4 },
-  { appliesToType: 'person', label: 'contact.age', value: thisContact.date_of_birth, width: 4, filter: 'age' },
-  { appliesToType: 'person', label: 'contact.sex', value: 'contact.sex.' + thisContact.sex, translate: true, width: 4 },
-  { appliesToType: 'person', label: 'person.field.phone', value: thisContact.phone, width: 4 },
-  { appliesToType: 'person', label: 'contact.parent', value: thisLineage, filter: 'lineage' },
-  { appliesToType: '!person', label: 'contact', value: thisContact.contact && thisContact.contact.name, width: 4 },
+  {
+    appliesToType: 'person',
+    label: 'patient_id',
+    value: thisContact.patient_id,
+    width: 4,
+  },
+  {
+    appliesToType: 'person',
+    label: 'contact.age',
+    value: thisContact.date_of_birth,
+    width: 4,
+    filter: 'age',
+  },
+  {
+    appliesToType: 'person',
+    label: 'contact.sex',
+    value: `contact.sex.${thisContact.sex}`,
+    translate: true,
+    width: 4,
+  },
+  {
+    appliesToType: 'person',
+    label: 'person.field.phone',
+    value: thisContact.phone,
+    width: 4,
+  },
+  {
+    appliesToType: 'person',
+    label: 'contact.parent',
+    value: thisLineage,
+    filter: 'lineage',
+  },
+  {
+    appliesToType: '!person',
+    label: 'contact',
+    value: thisContact.contact && thisContact.contact.name,
+    width: 4,
+  },
   {
     appliesToType: '!person',
     label: 'contact.phone',
     value: thisContact.contact && thisContact.contact.phone,
-    width: 4
+    width: 4,
   },
-  { appliesToType: 'clinic', label: 'Last Visited', value: '36 days ago', width: 4 },
-  { appliesToType: '!person', appliesIf: function () {
-    return thisContact.parent && thisLineage[0];
-  }, label: 'contact.parent', value: thisLineage, filter: 'lineage' }
+  {
+    appliesToType: 'clinic',
+    label: 'Last Visited',
+    value: '36 days ago',
+    width: 4,
+  },
+  {
+    appliesToType: '!person',
+    appliesIf: function () {
+      return thisContact.parent && thisLineage[0];
+    },
+    label: 'contact.parent',
+    value: thisLineage,
+    filter: 'lineage',
+  },
 ];
 
 if (thisContact.short_name) {
-  fields.unshift({ appliesToType: 'person', label: 'contact.short_name', value: thisContact.short_name, width: 4 });
+  fields.unshift({
+    appliesToType: 'person',
+    label: 'contact.short_name',
+    value: thisContact.short_name,
+    width: 4,
+  });
 }
 
 const cards = [
@@ -63,10 +136,11 @@ const cards = [
       const edd_ms = getMostRecentEDDForPregnancy(allReports, report);
       const nextAncVisitDate = getNextANCVisitDate(allReports, report);
       const weeksPregnant = lmp_date ? today.diff(lmp_date, 'weeks') : null;
+
       let lmp_approx = getField(report, 'lmp_approx');
       let reportDate = report.reported_date;
+
       getSubsequentPregnancyFollowUps(allReports, report).forEach(function (followUpReport) {
-        //check if LMP was updated
         if (followUpReport.reported_date > reportDate && getField(followUpReport, 'lmp_updated') === 'yes') {
           reportDate = followUpReport.reported_date;
           if (getField(followUpReport, 'lmp_method_approx')) {
@@ -74,9 +148,11 @@ const cards = [
           }
         }
       });
+
       const migratedReport = getRecentANCVisitWithEvent(allReports, report, 'migrated');
       const refusedReport = getRecentANCVisitWithEvent(allReports, report, 'refused');
       const stopReport = migratedReport || refusedReport;
+
       if (stopReport) {
         const clearAll = getField(stopReport, 'pregnancy_ended.clear_option') === 'clear_all';
         fields.push(
@@ -88,6 +164,7 @@ const cards = [
           { label: 'contact.profile.tasks_on_off', value: clearAll ? 'Off' : 'On', width: 6 }
         );
       }
+
       fields.push(
         {
           label: 'Weeks Pregnant',
@@ -111,7 +188,7 @@ const cards = [
         let riskValue = '';
         if (!riskFactors && riskFactorsCustom) {
           riskValue = riskFactorsCustom.join(', ');
-        } else if (riskFactors.length > 1 || riskFactors && riskFactorsCustom) {
+        } else if (riskFactors.length > 1 || (riskFactors && riskFactorsCustom)) {
           riskValue = 'contact.profile.risk.multiple';
         } else {
           riskValue = 'contact.profile.danger_sign.' + riskFactors[0];
@@ -161,8 +238,7 @@ const cards = [
       const riskFactorsCustom = getAllRiskFactorExtra(allReports, report);
       let pregnancyFollowupDateRecent = getField(report, 't_pregnancy_follow_up_date');
 
-      const followUps = getSubsequentPregnancyFollowUps(allReports, report);
-      followUps.forEach(function (followUpReport) {
+      getSubsequentPregnancyFollowUps(allReports, report).forEach(function (followUpReport) {
         if (getField(followUpReport, 'lmp_updated') === 'yes') {
           lmpDate = getField(followUpReport, 'lmp_date_8601');
           lmpMethodApprox = getField(followUpReport, 'lmp_method_approx');
@@ -173,8 +249,8 @@ const cards = [
         if (getField(followUpReport, 't_pregnancy_follow_up') === 'yes') {
           pregnancyFollowupDateRecent = getField(followUpReport, 't_pregnancy_follow_up_date');
         }
-
       });
+
       ctx.lmp_date_8601 = lmpDate;
       ctx.lmp_method_approx = lmpMethodApprox;
       ctx.is_active_pregnancy = true;
@@ -194,27 +270,20 @@ const cards = [
       return getAgeInMonths() < 144;
     },
     fields: function() {
-      let i;
-      let report;
       const immunizations = initImmunizations();
-      // eslint-disable-next-line no-undef
-      for (i=0; i<reports.length; ++i) {
-        // eslint-disable-next-line no-undef
-        report = reports[i];
+      reports.forEach(function(report) {
         if (report.form === 'immunization_visit') {
-          if (report && report.fields && report.fields.vaccines_received) {
+          if (report.fields && report.fields.vaccines_received) {
             addImmunizations(immunizations, report.fields.vaccines_received);
           }
         } else if (report.form === 'C_IMM') {
           addImmunizations(immunizations, report.fields);
-        }  else {
+        } else {
           addImmunizations(immunizations, report.form);
         }
-      }
+      });
 
-      const fields = [];
-
-      IMMUNIZATION_LIST.forEach(function(imm) {
+      const fields = IMMUNIZATION_LIST.map(function(imm) {
         const field = {
           label: 'contact.profile.imm.' + imm,
           translate: true,
@@ -229,8 +298,9 @@ const cards = [
             total: countDosesPossible(imm),
           };
         }
-        fields.push(field);
+        return field;
       });
+
       if (!fields.length) {
         fields.push({
           label: 'contact.profile.imm.generic',
@@ -239,10 +309,10 @@ const cards = [
           width: 12,
         });
       }
+
       return fields;
     },
   },
-
 ];
 
 module.exports = {
