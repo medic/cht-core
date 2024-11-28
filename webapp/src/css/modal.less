@@ -36,6 +36,7 @@ mm-modal-layout {
 
     .modal-footer {
       padding: 24px 0;
+      margin-bottom: 0;
     }
   }
 
@@ -55,7 +56,8 @@ mm-modal-layout {
     text-align: left;
   }
 
-  .enketo-modal {
+  .enketo-modal,
+  .modal-body training-cards-confirm {
     &.content-pane {
       position: relative;
     }
@@ -63,15 +65,13 @@ mm-modal-layout {
     .item-content {
       padding: 0;
       background: none;
+      & > .body {
+        margin: 0;
+      }
     }
 
     .modal-body {
       overflow: hidden;
-      margin-bottom: 11px;
-    }
-
-    .modal-footer {
-      padding: 0;
     }
 
     .enketo {
@@ -100,18 +100,31 @@ mm-modal-layout {
         }
       }
 
-      form {
-        max-height: 65vh;
+      form.pages [role=page].current {
+        margin: 0;
+        display: block;
+        max-height: @training-cards-page-height;
         overflow-y: auto;
+        padding-bottom: @training-cards-footer-height;
       }
     }
 
-    .form-no-title #form-title {
-      display: none;
+    #form-title {
+      font-size: @font-XXL;
+      font-weight: normal;
+      letter-spacing: normal;
+      border: none;
+      background: @form-background-color;
+      width: 100%;
     }
 
     .form-footer {
-      padding: 24px 0;
+      position: absolute;
+      bottom: 0;
+      margin: 0;
+      background: @form-background-color;
+      padding: 20px 0;
+      z-index: 20;
       .btn,
       .btn:active,
       .btn:focus {
@@ -121,16 +134,24 @@ mm-modal-layout {
       }
     }
   }
+
+  &:not(.has-error) .enketo-modal .modal-footer {
+    padding: 0;
+  }
+
+  &.has-error .enketo-modal .modal-body {
+    padding-top: 40px;
+  }
+
+  .enketo-modal training-cards-confirm .modal-footer {
+    margin-bottom: 20px;
+  }
 }
 
 @media (max-width: @media-mobile) {
   mm-modal-layout {
     .enketo-modal {
       .enketo {
-        form {
-          max-height: 60vh;
-        }
-
         .form-footer {
           .btn.btn-link.cancel {
             display: inline-block;
@@ -142,13 +163,9 @@ mm-modal-layout {
         }
       }
 
-      // The form title is hidden by default for mobile devices, but in training cards, the title is optional.
-      :not(.form-no-title) #form-title {
-        display: inherit;
-      }
-
-      .form-no-title  #form-title {
-        display: none;
+      // The form's title is hidden by default for mobile devices; but in training cards, the title is displayed.
+      #form-title {
+        display: inline-block;
       }
     }
   }

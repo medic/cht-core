@@ -128,7 +128,7 @@ describe('More Options Menu - Offline User', () => {
         'can_export_contacts', 'can_export_messages',
         'can_delete_reports', 'can_update_reports'];
       await utils.updatePermissions(offlineUser.roles, [], allPermissions, true);
-      await commonPage.sync(true);
+      await commonPage.sync({ expectReload: true });
     });
 
     after(async () => await utils.revertSettings(true));

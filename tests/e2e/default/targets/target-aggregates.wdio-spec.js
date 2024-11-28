@@ -382,8 +382,7 @@ describe('Target aggregates', () => {
           targetAggregatesConfig.TARGETS_DEFAULT_CONFIG,
           userWithManyPlaces
         );
-        await commonPage.sync(true);
-        await browser.refresh();
+        await commonPage.sync({ reload: true, expectReload: true });
 
         await commonPage.goToAnalytics();
         await targetAggregatesPage.goToTargetAggregates(true);

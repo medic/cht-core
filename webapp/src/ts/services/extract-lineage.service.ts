@@ -1,19 +1,12 @@
 import { Injectable } from '@angular/core';
 
-import { UserSettingsService } from '@mm-services/user-settings.service';
-import { UserContactService } from '@mm-services/user-contact.service';
-import { AuthService } from '@mm-services/auth.service';
-
 @Injectable({
   providedIn: 'root'
 })
 export class ExtractLineageService {
 
-  constructor(
-    private userSettingsService: UserSettingsService,
-    private userContactService: UserContactService,
-    private authService: AuthService,
-  ) { }
+  constructor() {
+  }
 
   extract(contact) {
     if (!contact) {
@@ -30,20 +23,6 @@ export class ExtractLineageService {
     }
 
     return result;
-  }
-
-  async getUserLineageToRemove(): Promise<string | null> {
-    if (this.authService.online(true)) {
-      return null;
-    }
-
-    const { facility_id }:any = await this.userSettingsService.get();
-    if (!facility_id || (Array.isArray(facility_id) && facility_id.length > 1)) {
-      return null;
-    }
-
-    const user = await this.userContactService.get();
-    return user?.parent?.name as string;
   }
 
   removeUserFacility(lineage: string[], userLineageLevel: string): string[] | undefined {

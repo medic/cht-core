@@ -4,7 +4,6 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const trainingCardsPage = require('@page-objects/default/enketo/training-cards.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
-const personFactory = require('@factories/cht/contacts/person');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const privacyPolicyFactory = require('@factories/cht/settings/privacy-policy');
 const privacyPage = require('@page-objects/default/privacy-policy/privacy-policy.wdio.page');
@@ -26,7 +25,6 @@ describe('Training Cards', () => {
   before(async () => {
     const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
     const user = userFactory.build({ roles: [ 'nurse', 'chw' ] });
-    const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
     const formDoc = commonPage.createFormDoc(`${__dirname}/forms/training-cards-text-only`);
     formDoc._id = `form:${formDocId}`;
     formDoc.internalId = formDocId;
@@ -36,8 +34,7 @@ describe('Training Cards', () => {
       duration: 5,
     };
 
-    await utils.saveDocs([ parent, patient ]);
-    await utils.saveDoc(formDoc);
+    await utils.saveDocs([ parent, formDoc ]);
     await utils.createUsers([ user ]);
     await loginPage.login(user);
     await commonPage.waitForPageLoaded();

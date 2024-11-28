@@ -369,9 +369,10 @@ describe('Due Tasks', () => {
 
   it('should process scheduled messages correctly', async () => {
     await sentinelUtils.waitForSentinel();
-    await utils.stopSentinel();
+    await utils.toggleSentinelTransitions();
     await utils.saveDocs(reports);
-    await utils.startSentinel();
+    await utils.toggleSentinelTransitions();
+    await utils.runSentinelTasks();
     await sentinelUtils.waitForSentinel(ids);
     // we can't reliably *know* when the scheduler has finished processing the docs,
     // so I'm just waiting for the revs to change

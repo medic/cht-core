@@ -13,8 +13,7 @@ describe('Login page functionality tests', () => {
   };
 
   afterEach(async () => {
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonPage.reloadSession();
   });
 
   describe('Locale', () => {

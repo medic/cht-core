@@ -23,8 +23,7 @@ describe('Privacy policy', () => {
   users.forEach((user) => {
     describe(`for an ${user.isOffline ? 'offline':'online'} user`, () => {
       before(async () => {
-        await browser.reloadSession();
-        await browser.url('/');
+        await commonPage.reloadSession();
         await utils.saveDocs([parent, privacyPolicy]);
         await utils.createUsers([user]);
         await loginPage.login({ username: user.username, password: user.password, privacyPolicy: true });
@@ -53,7 +52,6 @@ describe('Privacy policy', () => {
 
       it('should not show on subsequent login', async () => {
         await browser.reloadSession();
-        await browser.url('/');
         await loginPage.login({ username: user.username, password: newPassword, resetPassword: false });
         await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
         expect(await (await privacyPage.privacyWrapper()).isDisplayed()).to.not.be.true;
@@ -61,7 +59,6 @@ describe('Privacy policy', () => {
 
       it('should show french policy on secondary login', async () => {
         await browser.reloadSession();
-        await browser.url('/');
         await loginPage.login({
           username: user.username,
           password: newPassword,
@@ -123,8 +120,7 @@ describe('Privacy policy', () => {
     before(async () => {
       await utils.saveDocs([parent, privacyPolicy]);
       await utils.createUsers([conflictUser]);
-      await browser.reloadSession();
-      await browser.url('/');
+      await commonPage.reloadSession();
       await loginPage.login({ username: conflictUser.username, password: conflictUser.password, privacyPolicy: true });
     });
 

@@ -85,6 +85,7 @@ describe('Service worker cache', () => {
   };
 
   const loginIfNeeded = async () => {
+    await browser.throttle('online');
     if (!await isLoggedIn()) {
       await login();
     }
@@ -98,6 +99,10 @@ describe('Service worker cache', () => {
 
   beforeEach(async () => {
     await loginIfNeeded();
+  });
+
+  afterEach(async () => {
+    await utils.revertSettings(true);
   });
 
   after(async () => {
@@ -126,6 +131,7 @@ describe('Service worker cache', () => {
       '/img/icon-pregnant-selected.svg',
       '/img/icon-pregnant.svg',
       '/img/icon-filter.svg',
+      '/img/icon-check.svg',
       '/img/icon.png',
       '/img/icon-back.svg',
       '/img/layers.png',
@@ -155,7 +161,7 @@ describe('Service worker cache', () => {
     await utils.saveDoc(branding);
     await waitForLogs.promise;
 
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
     await browser.throttle('offline'); // make sure we load the login page from cache
     await commonPage.logout();
     expect(await browser.getTitle()).to.equal('Not Medic');
@@ -169,7 +175,7 @@ describe('Service worker cache', () => {
     });
     await waitForLogs.promise;
 
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
     await browser.throttle('offline'); // make sure we load the login page from cache
     await commonPage.logout();
 
@@ -180,7 +186,7 @@ describe('Service worker cache', () => {
   it('adding new languages triggers login page refresh', async () => {
     const languageCode = 'ro';
     await utils.enableLanguage(languageCode);
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
 
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations(languageCode, {
@@ -191,7 +197,7 @@ describe('Service worker cache', () => {
     });
     await waitForLogs.promise;
 
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
     await commonPage.logout();
 
     await loginPage.changeLanguage(languageCode, 'Utilizator');
@@ -199,12 +205,10 @@ describe('Service worker cache', () => {
     expect(await (await loginPage.labelForUser()).getText()).to.equal('Utilizator');
     expect(await (await loginPage.loginButton()).getText()).to.equal('Autentificare');
     expect(await (await loginPage.labelForPassword()).getText()).to.equal('Parola');
-
-    await utils.revertSettings(true);
   });
 
   it('other translation updates do not trigger a login page refresh', async () => {
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
 
     const cacheDetails = await getCachedRequests(true);
 
@@ -215,7 +219,7 @@ describe('Service worker cache', () => {
       'some': 'thing',
     });
     await waitForLogs.promise;
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
 
     const updatedCacheDetails = await getCachedRequests(true);
 

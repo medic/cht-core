@@ -25,6 +25,7 @@ export const Selectors = {
   getShowContent: createSelector(getGlobalState, (globalState) => globalState.showContent),
   getSelectMode: createSelector(getGlobalState, (globalState) => globalState.selectMode),
   getForms: createSelector(getGlobalState, (globalState) => globalState.forms),
+  getTrainingMaterials: createSelector(getGlobalState, (globalState) => globalState.trainingMaterials),
   getFilters: createSelector(getGlobalState, (globalState) => globalState.filters),
   getSidebarFilter: createSelector(getGlobalState, (globalState) => globalState.sidebarFilter),
   getSearchBar: createSelector(getGlobalState, (globalState) => globalState.searchBar),

@@ -72,3 +72,4 @@ exports.init = () => {
   runTasks();
   interval = setInterval(runTasks, RUN_EVERY_MS);
 };
+exports.runTasks = runTasks;

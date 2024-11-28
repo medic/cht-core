@@ -1,0 +1,42 @@
+<mm-tool-bar title="training_materials.page.title"/>
+
+<div class="inner">
+  <div class="inbox page">
+
+    <div id="trainings-list" class="col-sm-4 inbox-items left-pane">
+      <div class="items-container">
+        <ul *ngIf="trainingList?.length">
+          <li *ngFor="let training of trainingList; trackBy: trackBy"
+            class="content-row"
+            [attr.data-record-id]="training.code"
+            [class.selected]="training.code === selectedTrainingId"
+            [class.completed]="training.isCompletedTraining">
+
+            <a [routerLink]="['/', 'trainings', training.code]" [state]="{ tab: 'trainings', id: training.code }">
+              <div class="content">
+                <div class="heading">
+                  <h4>
+                    <span *ngIf="training.title">{{ training.title }}</span>
+                    <span *ngIf="!training.title">{{ training.code }}</span>
+                  </h4>
+                  <mat-icon *ngIf="training.isCompletedTraining" class="mat-icon-check" svgIcon="icon-check"/>
+                </div>
+              </div>
+            </a>
+
+          </li>
+        </ul>
+
+        <p class="loading-status" *ngIf="!loading && !trainingList?.length">{{ 'training_materials.page.no_trainings' | translate }}</p>
+        <p class="loading-status" *ngIf="!loading && trainingList?.length && !moreTrainings">
+          {{ 'training_materials.page.no_more_trainings' | translate }}
+        </p>
+        <div class="loader" *ngIf="loading"></div>
+        <div class="padding"></div>
+      </div>
+    </div>
+
+    <router-outlet/>
+
+  </div>
+</div>

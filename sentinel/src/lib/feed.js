@@ -15,6 +15,7 @@ const MAX_QUEUE_SIZE = 100;
 
 let request;
 let processed = 0;
+let processing;
 
 const enqueue = change => changeQueue.push(change);
 
@@ -100,33 +101,34 @@ changeQueue.drain(() => {
   resumeProcessing();
 });
 
+/**
+ * Start listening from the last processed seq. Will restart
+ * automatically on error.
+ */
 const listen = () => {
+  logger.info('Starting transition processing');
+  processing = true;
   changeQueue.resume();
   return resumeProcessing();
 };
 
+/**
+ * Stops listening for changes. Must be restarted manually
+ * by calling listen.
+ */
+const cancel =  () => {
+  logger.info('Suspending transition processing');
+  processing = false;
+  changeQueue.pause();
+  if (request) {
+    request.cancel && request.cancel();
+    request = null;
+  }
+};
+
 module.exports = {
-
-  /**
-   * Start listening from the last processed seq. Will restart
-   * automatically on error.
-   */
   listen,
+  cancel,
 
-  /**
-   * Stops listening for changes. Must be restarted manually
-   * by calling listen.
-   */
-  cancel: () => {
-    changeQueue.pause();
-    if (request) {
-      request.cancel && request.cancel();
-      request = null;
-    }
-  },
-
-  // exposed for testing
-  _changeQueue: changeQueue,
-  _transitionsLib: transitionsLib,
-  _enqueue: enqueue,
+  toggle: () => processing ? cancel() : listen()
 };

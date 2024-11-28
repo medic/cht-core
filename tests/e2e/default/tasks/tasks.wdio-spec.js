@@ -64,13 +64,6 @@ describe('Tasks', () => {
     await utils.revertSettings(true);
   });
 
-  after(async () => {
-    await utils.deleteUsers([chw]);
-    await utils.revertDb([/^form:/], true);
-    await browser.deleteCookies();
-    await browser.refresh();
-  });
-
   it('should remove task from list when CHW completes a task successfully', async () => {
     await loginPage.login(chw);
     await commonPage.waitForPageLoaded();
@@ -103,7 +96,7 @@ describe('Tasks', () => {
     const taskElement = await tasksPage.getOpenTaskElement();
     await genericForm.submitForm();
     await taskElement.waitForDisplayed();
-    await commonPage.sync(true);
+    await commonPage.sync({ expectReload: true });
     task = await tasksPage.getTaskByContactAndForm('Megan Spice', 'person_create_follow_up');
     list = await tasksPage.getTasks();
     expect(list).to.have.length(3);
