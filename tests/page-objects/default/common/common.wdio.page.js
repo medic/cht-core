@@ -287,6 +287,8 @@ const isReportsListPresent = () => isElementPresent('#reports-list');
 
 const isPeopleListPresent = () => isElementPresent('#contacts-list');
 
+const isContactTabPresent = () => isElementPresent('#contacts-tab');
+
 const isTargetMenuItemPresent = () => isElementPresent('=Target');
 
 const isTargetAggregatesMenuItemPresent = () => isElementPresent('=Target aggregates');
@@ -606,12 +608,8 @@ module.exports = {
   refresh,
   goToBase,
   goToAboutPage,
-  goToMessages,
-  goToTasks,
   goToReports,
   goToPeople,
-  goToAnalytics,
-  closeReloadModal,
   syncAndNotWaitForSuccess,
   sync,
   openReportBugAndFetchProperties,

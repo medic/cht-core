@@ -466,7 +466,6 @@ module.exports = {
   getCurrentPersonEditFormValues,
   filterReportViewAll,
   openFirstContact,
-  menuSelectors,
   openPrimaryContactSearchDropdown,
   inputPrimaryContactSearchValue,
   selectPrimaryContactSearchFirstResult,
