@@ -4,13 +4,16 @@ function (doc) {
 
   var types = ['district_hospital', 'health_center', 'clinic', 'person'];
   var idx;
+  var type;
   if (doc.type === 'contact') {
-    idx = types.indexOf(doc.contact_type);
+    type = doc.contact_type;
+    idx = types.indexOf(type);
     if (idx === -1) {
-      idx = doc.contact_type;
+      idx = type;
     }
   } else {
-    idx = types.indexOf(doc.type);
+    type = doc.type;
+    idx = types.indexOf(type);
   }
 
   var isContactDoc = idx !== -1;
@@ -40,6 +43,7 @@ function (doc) {
     var muted = !!doc.muted;
     var order = dead + ' ' + muted + ' ' + idx + ' ' + (doc.name && doc.name.toLowerCase());
     index('string', 'cht_sort_order', order, { store: false });
+    index('text', 'cht_contact_type', type, { store: false });
 
     toIndex = toIndex.trim();
     if (toIndex) {
