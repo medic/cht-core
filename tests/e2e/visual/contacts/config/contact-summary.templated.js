@@ -271,6 +271,7 @@ const cards = [
     },
     fields: function() {
       const immunizations = initImmunizations();
+      // eslint-disable-next-line no-undef
       reports.forEach(function(report) {
         if (report.form === 'immunization_visit') {
           if (report.fields && report.fields.vaccines_received) {
