@@ -47,6 +47,16 @@ const fabSelectors = {
   fastActionItems: () => $$(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item`),
   reportsFastActionFAB: () => $('#reports-content .fast-action-fab-button mat-icon'),
 };
+const hamburgerMenuItemSelector = 'mat-sidenav-content';
+const logoutButton = () => $('aria/Log out');
+const syncButton = () => $('aria/Sync now');
+const contactsButton = () => $(hamburgerMenuItemSelector).$('//span[text()="People"]');
+const contactsTab = () => $('#contacts-tab');
+const messagesTab = () => $('#messages-tab');
+const analyticsTab = () => $('#analytics-tab');
+const getReportsButtonLabel = () => $('#reports-tab .button-label');
+const getMessagesButtonLabel = () => $('#messages-tab .button-label');
+const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 
 const userSettingsSelectors = {
   editProfileButton: () => $('.user .configuration.page i.fa-user'),
@@ -545,9 +555,7 @@ module.exports = {
   accessDeleteOption,
   accessExportOption,
   accessReviewOption,
-  hideSnackbar,
   waitForLoaderToDisappear,
-  waitForLoaders,
   waitForAngularLoaded,
   waitForPageLoaded,
   clickFastActionFAB,
@@ -559,6 +567,17 @@ module.exports = {
   closeFastActionList,
   isReportActionDisplayed,
   isElementPresent,
+  logoutButton,
+  contactsTab,
+  messagesTab,
+  analyticsTab,
+  getReportsButtonLabel,
+  getMessagesButtonLabel,
+  getTasksButtonLabel,
+  hideSnackbar,
+  waitForLoaders,
+  syncButton,
+  contactsButton,
   isMessagesListPresent,
   isTasksListPresent,
   isPeopleListPresent,

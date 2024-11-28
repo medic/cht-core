@@ -114,7 +114,7 @@ describe('Contact and User Management', () => {
       if (!await isMobile()){
         this.skip();
       }
-      await utils.updatePermissions('chw', ['can_view_uhc_stats', 'can_view_last_visited_date'], [], {
+      await utils.updatePermissions(docs.user.roles, ['can_view_uhc_stats', 'can_view_last_visited_date'], [], {
         ignoreReload: true,
         revert: true,
         refresh: true,
@@ -132,7 +132,7 @@ describe('Contact and User Management', () => {
         this.skip();
       }
       await compileAndUploadForms();
-      await utils.updatePermissions('chw', [], ['can_view_call_action', 'can_view_message_action'], {
+      await utils.updatePermissions(docs.user.roles, [], ['can_view_call_action', 'can_view_message_action'], {
         ignoreReload: true,
         revert: true,
         refresh: true,
@@ -143,7 +143,7 @@ describe('Contact and User Management', () => {
       expect(await commonPage.isPeopleListPresent()).to.be.true;
       await contactPage.selectLHSRowByText('Dana Dearborn');
       await commonPage.clickFastActionFAB({ waitForList: false });
-      await generateScreenshot('people', 'care_guides');
+      await generateScreenshot('people', 'care-guides');
       await commonPage.goToBase();
     });
   });
