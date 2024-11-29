@@ -204,7 +204,6 @@ describe('Contact API', () => {
     const twoLimit = 2;
     const cursor = null;
     const invalidContactType = 'invalidPerson';
-    const invalidFreetext = 123;
     const freetext = 'contact';
     const placeFreetext = 'clinic';
 

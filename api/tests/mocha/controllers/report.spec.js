@@ -53,7 +53,7 @@ describe('Report Controller Tests', () => {
       it('returns a report', async () => {
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
-        const report = { name: 'John Doe\'s Report' , type: 'data_record', form: 'yes' };
+        const report = { name: 'John Doe\'s Report', type: 'data_record', form: 'yes' };
         reportGet.resolves(report);
 
         await controller.v1.get(req, res);

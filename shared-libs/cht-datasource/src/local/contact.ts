@@ -69,7 +69,10 @@ export namespace v1 {
       const [contactWithContact, ...lineageContactsWithContact] = combinedContacts.map(
         hydratePrimaryContact(contacts)
       ).filter(item => item ?? false);
-      const contactWithLineage = hydrateLineage(contactWithContact as ContactType.v1.Contact, lineageContactsWithContact);
+      const contactWithLineage = hydrateLineage(
+        contactWithContact as ContactType.v1.Contact,
+        lineageContactsWithContact
+      );
       return deepCopy(contactWithLineage);
     };
   };

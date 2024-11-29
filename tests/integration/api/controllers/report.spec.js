@@ -100,7 +100,10 @@ describe('Report API', () => {
       expect(report).to.be.null;
     });
 
-    [ [ 'does not have can_view_contacts permission', userNoPerms ], [ 'is not an online user', offlineUser ] ].forEach(([ description, user ]) => {
+    [
+      [ 'does not have can_view_contacts permission', userNoPerms ],
+      [ 'is not an online user', offlineUser ]
+    ].forEach(([ description, user ]) => {
       it(`throws error when user ${description}`, async () => {
         const opts = {
           path: `/api/v1/report/${patient._id}`, auth: {username: user.username, password: user.password},
