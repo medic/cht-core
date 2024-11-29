@@ -2,7 +2,7 @@ import { LocalDataContext, SettingsService } from './libs/data-context';
 import { fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey, queryDocsByRange } from './libs/doc';
 import { ContactTypeQualifier, FreetextQualifier, UuidQualifier } from '../qualifier';
 import * as ContactType from '../contact-types';
-import { deepCopy, isNonEmptyArray, Nullable, Page } from '../libs/core';
+import { deepCopy, isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
 import contactTypeUtils from '@medic/contact-types-utils';
@@ -63,10 +63,13 @@ export namespace v1 {
         return contact;
       }
 
-      const contactUuids = getPrimaryContactIds(lineageContacts).filter((uuid) => uuid !== identifier.uuid);
-      const contacts = [contact, ...(await getMedicDocsById(contactUuids))];
-      const lineageContactsWithContact = lineageContacts.map(hydratePrimaryContact(contacts));
-      const contactWithLineage = hydrateLineage(contact, lineageContactsWithContact);
+      const combinedContacts: NonEmptyArray<Nullable<Doc>> = [contact, ...lineageContacts];
+      const contactUuids = getPrimaryContactIds(combinedContacts);
+      const contacts = await getMedicDocsById(contactUuids);
+      const [contactWithContact, ...lineageContactsWithContact] = combinedContacts.map(
+        hydratePrimaryContact(contacts)
+      ).filter(item => item ?? false);
+      const contactWithLineage = hydrateLineage(contactWithContact as ContactType.v1.Contact, lineageContactsWithContact);
       return deepCopy(contactWithLineage);
     };
   };

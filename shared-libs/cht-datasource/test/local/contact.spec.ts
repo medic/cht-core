@@ -152,14 +152,14 @@ describe('local contact', () => {
         expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.notCalled).to.be.true;
-        expect(getPrimaryContactIds.calledOnceWithExactly([place0, place1, place2])).to.be.true;
-        expect(getDocsByIdsInner.calledOnceWithExactly([contact0._id, contact1._id])).to.be.true;
-        expect(hydratePrimaryContactOuter.calledOnceWithExactly([person, contact0, contact1])).to.be.true;
-        expect(hydratePrimaryContactInner.calledThrice).to.be.true;
+        expect(getPrimaryContactIds.calledOnceWithExactly([person, place0, place1, place2])).to.be.true;
+        expect(getDocsByIdsInner.calledOnceWithExactly([contact0._id, contact1._id, person._id])).to.be.true;
+        expect(hydratePrimaryContactOuter.calledOnceWithExactly([contact0, contact1])).to.be.true;
+        expect(hydratePrimaryContactInner.callCount).to.be.equal(4);
         expect(hydratePrimaryContactInner.calledWith(place0)).to.be.true;
         expect(hydratePrimaryContactInner.calledWith(place1)).to.be.true;
         expect(hydratePrimaryContactInner.calledWith(place2)).to.be.true;
-        expect(hydrateLineage.calledOnceWithExactly(person, [place0WithContact, place1WithContact, place2])).to.be.true;
+        expect(hydrateLineage.calledOnceWithExactly(place0WithContact, [place1WithContact, place2])).to.be.true;
         expect(deepCopy.calledOnceWithExactly(personWithLineage)).to.be.true;
       });
 
