@@ -16,7 +16,7 @@ export namespace v1 {
         logger.warn(`No report found for identifier [${uuid}].`);
         return false;
       }
-    } else if (doc.type !== 'data_record' && !doc.form) {
+    } else if (doc.type !== 'data_record' || !doc.form) {
       logger.warn(`Document [${doc._id}] is not a valid report.`);
       return false;
     }

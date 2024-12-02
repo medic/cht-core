@@ -252,7 +252,7 @@ describe('local contact', () => {
         fetchAndFilterOuter = sinon.stub(LocalDoc, 'fetchAndFilter').returns(fetchAndFilterInner);
       });
 
-      it('returns a page of contacts for contactType only qualifier', async () => {
+      it('returns a page of contact identifiers for contactType only qualifier', async () => {
         const qualifier = { contactType } as const;
         const docs = [
           { type: contactType, _id: '1' },
@@ -303,7 +303,7 @@ describe('local contact', () => {
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
       });
 
-      it('returns a page of contacts for freetext only qualifier with : delimiter', async () => {
+      it('returns a page of contact identifiers for freetext only qualifier with : delimiter', async () => {
         const freetext = 'has : delimiter';
         const qualifier = {
           freetext
@@ -357,7 +357,7 @@ describe('local contact', () => {
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
       });
 
-      it('returns a page of contacts for freetext only qualifier without : delimiter', async () => {
+      it('returns a page of contact identifiers for freetext only qualifier without : delimiter', async () => {
         const freetext = 'does not have colon delimiter';
         const qualifier = {
           freetext
@@ -411,7 +411,7 @@ describe('local contact', () => {
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
       });
 
-      it('returns a page of contacts for contactType and freetext qualifier with : delimiter', async () => {
+      it('returns a page of contact identifiers for contactType and freetext qualifier with : delimiter', async () => {
         const freetext = 'has : delimiter';
         const qualifier = {
           contactType,
@@ -466,7 +466,7 @@ describe('local contact', () => {
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
       });
 
-      it('returns a page of contacts for contactType and freetext qualifier without delimiter', async () => {
+      it('returns a page of contact identifiers for contactType and freetext qualifier without delimiter', async () => {
         const freetext = 'does not have colon delimiter';
         const qualifier = {
           contactType,
@@ -521,7 +521,7 @@ describe('local contact', () => {
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
       });
 
-      it('returns a page of contacts for contactType only qualifier for not-null cursor', async () => {
+      it('returns a page of contact identifiers for contactType only qualifier for not-null cursor', async () => {
         const qualifier = { contactType } as const;
         const docs = [
           { type: contactType, _id: '1' },
@@ -572,7 +572,8 @@ describe('local contact', () => {
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
       });
 
-      it('returns a page of contacts for freetext only qualifier with : delimiter for not-null cursor', async () => {
+      it('returns a page of contact identifiers for freetext only' +
+        'qualifier with : delimiter for not-null cursor', async () => {
         const freetext = 'has : delimiter';
         const qualifier = {
           freetext
@@ -626,7 +627,8 @@ describe('local contact', () => {
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
       });
 
-      it('returns a page of contacts for freetext only qualifier without : delimiter for not-null cursor', async () => {
+      it('returns a page of contact identifiers for freetext only qualifier' +
+        ' without : delimiter for not-null cursor', async () => {
         const freetext = 'does not have colon delimiter';
         const qualifier = {
           freetext
@@ -681,8 +683,8 @@ describe('local contact', () => {
       });
 
       it(
-        'returns a page of contacts for contactType and freetext qualifier with : delimiter for not-null cursor',
-        async () => {
+        'returns a page of contact identifiers for contactType and freetext qualifier' +
+        'with : delimiter for not-null cursor', async () => {
           const freetext = 'has : delimiter';
           const qualifier = {
             contactType,
@@ -739,7 +741,7 @@ describe('local contact', () => {
       );
 
       it(
-        'returns a page of contacts for contactType and freetext qualifier without delimiter for not-null cursor',
+        'returns a page of contact identifiers for contactType and freetext qualifier without delimiter for not-null cursor',
         async () => {
           const freetext = 'does not have colon delimiter';
           const qualifier = {

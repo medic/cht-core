@@ -61,7 +61,7 @@ describe('remote report', () => {
         cursor,
       };
 
-      it('returns reports', async () => {
+      it('returns an array of report identifiers', async () => {
         const doc = [{ type: 'data_record', form: 'yes' }, {type: 'data_record', form: 'yes'}];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);

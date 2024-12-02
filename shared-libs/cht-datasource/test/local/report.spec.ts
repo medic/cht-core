@@ -63,6 +63,20 @@ describe('local report', () => {
         expect(warn.calledOnceWithExactly(`Document [${doc._id}] is not a valid report.`)).to.be.true;
       });
 
+      it('returns null if the identified doc does not have a form field', async () => {
+        const doc = { type: 'data_record', _id: '_id' };
+        getDocByIdInner.resolves(doc);
+        settingsGetAll.returns(settings);
+
+        // eslint-disable-next-line compat/compat
+        const result = await Report.v1.get(localContext)(identifier);
+
+        expect(result).to.be.null;
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(warn.calledOnceWithExactly(`Document [${doc._id}] is not a valid report.`)).to.be.true;
+      });
+
       it('returns null if the identified doc is not found', async () => {
         getDocByIdInner.resolves(null);
 
@@ -98,7 +112,7 @@ describe('local report', () => {
         fetchAndFilterOuter = sinon.stub(LocalDoc, 'fetchAndFilter').returns(fetchAndFilterInner);
       });
 
-      it('returns a page of reports for freetext only qualifier with : delimiter', async () => {
+      it('returns a page of report identifiers for freetext only qualifier with : delimiter', async () => {
         const freetext = 'has : delimiter';
         const qualifier = {
           freetext
@@ -142,7 +156,7 @@ describe('local report', () => {
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
       });
 
-      it('returns a page of reports for freetext only qualifier without : delimiter', async () => {
+      it('returns a page of report identifiers for freetext only qualifier without : delimiter', async () => {
         const freetext = 'does not have colon delimiter';
         const qualifier = {
           freetext
@@ -186,7 +200,8 @@ describe('local report', () => {
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
       });
 
-      it('returns a page of reports for freetext only qualifier with : delimiter for not-null cursor', async () => {
+      it('returns a page of report identifiers for freetext only qualifier' +
+        'with : delimiter for not-null cursor', async () => {
         const freetext = 'has : delimiter';
         const qualifier = {
           freetext
@@ -230,7 +245,8 @@ describe('local report', () => {
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
       });
 
-      it('returns a page of reports for freetext only qualifier without : delimiter for not-null cursor', async () => {
+      it('returns a page of report identifiers for freetext only qualifier' +
+        'without : delimiter for not-null cursor', async () => {
         const freetext = 'does not have colon delimiter';
         const qualifier = {
           freetext
