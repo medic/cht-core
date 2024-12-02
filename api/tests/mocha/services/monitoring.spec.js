@@ -69,7 +69,6 @@ const VIEW_INDEXES_BY_DB = {
     'medic-admin',
     'medic-client',
     'medic-conflicts',
-    'medic-nouveau',
     'medic-scripts',
     'medic-sms',
   ],
@@ -251,6 +250,7 @@ const getExpectedViewIndexes = (dbName) => {
 
 const getCurrentDdocNames = (db) => getBundledDdocs(db)
   .then(ddocs => ddocs
+    .filter(ddoc => !!ddoc.views)
     .map(ddoc => ddoc._id)
     .map(ddocId => ddocId.split('/')[1]));
 
