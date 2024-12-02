@@ -85,7 +85,7 @@ describe('Creating and editing contacts and users', () => {
     await commonPage.openMoreOptionsMenu();
     await browser.pause(150); // Waiting for animation to avoid blurry screenshots
     await generateScreenshot('new-chw-supervisor', 'edit-facility');
-    await commonPage.accessEditOption();
+    await commonPage.accessEditOption(openMoreOptionsMenu = false);
     await contactPage.openPrimaryContactSearchDropdown();
     await contactPage.inputPrimaryContactSearchValue('John');
     await generateScreenshot('new-chw-supervisor', 'set-primary-contact');
