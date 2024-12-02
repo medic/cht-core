@@ -84,12 +84,8 @@ module.exports = {
       throw error;
     }
 
-    if (req.url.includes('/password-reset')) {
-      return true;
-    }
-
-    if (environment.isTesting) {
-      return true;
+    if (roles.isDbAdmin(req.userCtx)) {
+      return;
     }
 
     const user = await users.getUserDoc(req.userCtx.name);
@@ -99,7 +95,6 @@ module.exports = {
       error.error = 'Password change required';
       throw error;
     }
-    return true;
   },
 
   /**

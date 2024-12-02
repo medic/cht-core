@@ -800,6 +800,48 @@ const getCreatedUsers = async () => {
     .map((user) => ({ ...user, username: user.id.replace(COUCH_USER_ID_PREFIX, '') }));
 };
 
+const resetPassword = async (username, password) => {
+  const loginResponse = await request({
+    path: '/medic/login',
+    method: 'POST',
+    body: { user: username, password },
+    noAuth: true,
+    followRedirect: false,
+    simple: false,
+    headers: { 'X-Forwarded-For': randomIp() }
+  });
+
+  if (loginResponse.statusCode === 302 && loginResponse.body === '/medic/password-reset') {
+    const cookies = loginResponse.headers['set-cookie'];
+
+    await request({
+      path: '/medic/password-reset',
+      method: 'POST',
+      headers: {
+        Cookie: cookies.join('; '),
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Forwarded-For': randomIp()
+      },
+      body: {
+        username: username,
+        currentPassword: password,
+        password: 'Pa33word1'
+      },
+      followRedirect: false,
+      simple: false,
+      json: true
+    });
+  }
+};
+
+const resetUserPassword = async (users) => {
+  for (const user of users) {
+    await resetPassword(user.username, user.password);
+    cookieJar._jar.removeAllCookiesSync();
+  }
+};
+
 /**
  * Creates users - optionally also creating their meta dbs
  * @param {Array} users - list of users to be created
@@ -1639,4 +1681,5 @@ module.exports = {
   toggleSentinelTransitions,
   runSentinelTasks,
   runCommand,
+  resetUserPassword,
 };

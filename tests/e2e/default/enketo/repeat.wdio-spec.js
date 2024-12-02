@@ -167,7 +167,6 @@ describe('RepeatForm', () => {
 
       expect(await commonEnketoPage.isElementDisplayed('label', 'Seattle')).to.be.true;
       expect(await commonEnketoPage.isElementDisplayed('label', 'Redmond')).to.be.true;
-
     });
   });
 });
