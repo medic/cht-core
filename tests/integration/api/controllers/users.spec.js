@@ -1944,7 +1944,7 @@ describe('Users API', () => {
     });
 
     it('should create users with multiple facilities', async () => {
-      await utils.updatePermissions(['national_admin', 'chw'], ['can_have_multiple_places'], [], true);
+      await utils.updatePermissions(['national_admin', 'chw'], ['can_have_multiple_places'], [], { ignoreReload: true });
       const onlineUserPayload = {
         username: uuid(),
         password: password,
