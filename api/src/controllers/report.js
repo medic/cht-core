@@ -8,7 +8,7 @@ const getReportIds = () => ctx.bind(Report.v1.getIdsPage);
 
 const checkUserPermissions = async (req) => {
   const userCtx = await auth.getUserCtx(req);
-  if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, 'can_view_contacts')) {
+  if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, 'can_view_reports')) {
     return Promise.reject({ code: 403, message: 'Insufficient privileges' });
   }
 };

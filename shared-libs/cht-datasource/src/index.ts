@@ -92,7 +92,7 @@ export const getDatasource = (ctx: DataContext) => {
           freetext: Nullable<string> = null,
           type: Nullable<string> = null,
           cursor: Nullable<string> = null,
-          limit = 100
+          limit = 10000
         ) => ctx.bind(Contact.v1.getIdsPage)(
           Contact.v1.createQualifier(freetext, type), cursor, limit
         ),
@@ -225,7 +225,7 @@ export const getDatasource = (ctx: DataContext) => {
         getIdsPage: (
           qualifier: string,
           cursor: Nullable<string> = null,
-          limit = 100
+          limit = 10000
           // eslint-disable-next-line compat/compat
         ) => ctx.bind(Report.v1.getIdsPage)(
           Qualifier.byFreetext(qualifier), cursor, limit

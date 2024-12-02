@@ -101,7 +101,7 @@ export namespace v1 {
     const curriedFn = async (
       qualifier: ContactTypeQualifier | FreetextQualifier,
       cursor: Nullable<string> = null,
-      limit = 100
+      limit = 10000
     ): Promise<Page<string>> => {
       assertCursor(cursor);
       assertLimit(limit);

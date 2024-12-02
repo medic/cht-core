@@ -101,7 +101,7 @@ describe('Report API', () => {
     });
 
     [
-      [ 'does not have can_view_contacts permission', userNoPerms ],
+      [ 'does not have can_view_reports permission', userNoPerms ],
       [ 'is not an online user', offlineUser ]
     ].forEach(([ description, user ]) => {
       it(`throws error when user ${description}`, async () => {
@@ -141,7 +141,7 @@ describe('Report API', () => {
       expect(secondPage.cursor).to.be.equal(null);
     });
 
-    it(`throws error when user does not have can_view_contacts permission`, async () => {
+    it(`throws error when user does not have can_view_reports permission`, async () => {
       const opts = {
         path: `/api/v1/report/id`, auth: {username: userNoPerms.username, password: userNoPerms.password},
       };
