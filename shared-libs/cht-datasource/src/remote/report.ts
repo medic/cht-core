@@ -23,11 +23,7 @@ export namespace v1 {
     const queryParams = {
       limit: limit.toString(),
       freetext: qualifier.freetext,
-      ...(cursor
-        ? {
-          cursor,
-        }
-        : {}),
+      ...(cursor ? { cursor } : {}),
     };
     return getReports(remoteContext)(queryParams);
   };

@@ -43,14 +43,9 @@ export namespace v1 {
 
       const queryParams = {
         limit: limit.toString(),
-        ...(cursor
-          ? {
-            cursor,
-          }
-          : {}),
+        ...(cursor ? { cursor } : {}),
         ...(contactType ? { type: contactType } : {}),
         ...(freetext ? { freetext: freetext } : {}),
-
       };
       return getContacts(remoteContext)(queryParams);
     };
