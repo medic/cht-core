@@ -69,6 +69,7 @@ const VIEW_INDEXES_BY_DB = {
     'medic-admin',
     'medic-client',
     'medic-conflicts',
+    'medic-nouveau',
     'medic-scripts',
     'medic-sms',
   ],
