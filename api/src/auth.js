@@ -89,7 +89,7 @@ module.exports = {
     }
 
     const user = await users.getUserDoc(req.userCtx.name);
-    if (user.password_change_required) {
+    if (user.password_change_required && !user.token_login) {
       const error = new Error('Password change required');
       error.code = 403;
       error.error = 'Password change required';

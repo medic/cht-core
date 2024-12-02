@@ -7,7 +7,7 @@ chai.use(chaiExclude);
 const expect = chai.expect;
 
 const password = 'passwordSUP3RS3CR37!';
-const newPassword = constants.NEW_PASSWORD;
+const newPassword = 'Pa33word1';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
