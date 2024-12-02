@@ -583,6 +583,7 @@ describe('Server side purge', () => {
       roles: ['district_admin', 'purge_regular'],
     };
     await updateUser(updatedUser2);
+    await utils.resetUserPassword([updatedUser2]);
 
     responseDocsUser1 = await requestDocs('user1');
     responseDocsUser2 = await requestDocs('user2');
