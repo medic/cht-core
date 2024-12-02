@@ -91,8 +91,8 @@ const openMoreOptionsMenu = async () => {
   await (await kebabMenuSelectors.moreOptionsMenu()).click();
 };
 
-const performMenuAction = async (actionSelector, openMoreOptionsMenu = true) => {
-  if (openMoreOptionsMenu){
+const performMenuAction = async (actionSelector, isOptionsMenuOpen = false) => {
+  if (!isOptionsMenuOpen){
     await openMoreOptionsMenu();
   }
   const actionElement = await actionSelector();
@@ -100,8 +100,8 @@ const performMenuAction = async (actionSelector, openMoreOptionsMenu = true) => 
   await actionElement.click();
 };
 
-const accessEditOption = async (openMoreOptionsMenu = true) => {
-  await performMenuAction(kebabMenuSelectors.edit, openMoreOptionsMenu);
+const accessEditOption = async (isOptionsMenuOpen = false) => {
+  await performMenuAction(kebabMenuSelectors.edit, isOptionsMenuOpen);
 };
 
 const accessDeleteOption = async () => {
