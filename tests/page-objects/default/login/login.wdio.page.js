@@ -132,6 +132,9 @@ const changeLocale = async locale => {
 };
 
 const changeLanguage = async (languageCode, userTranslation) => {
+  if (utils.isMinimumChromeVersion) {
+    await browser.url('/');
+  }
   await changeLocale(languageCode);
   await browser.waitUntil(async () => await (await labelForUser()).getText() === userTranslation);
   return {
