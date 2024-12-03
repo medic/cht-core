@@ -6,6 +6,7 @@ const SUITES = {
     './more-options-menu/**/*.wdio-spec.js',
     './users/**/*.wdio-spec.js',
     './about/**/*.wdio-spec.js',
+    './training-materials/**/*.wdio-spec.js',
     './navigation/**/*.wdio-spec.js',
     './old-navigation/**/*.wdio-spec.js',
     './privacy-policy/**/*.wdio-spec.js',

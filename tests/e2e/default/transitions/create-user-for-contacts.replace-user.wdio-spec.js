@@ -1,4 +1,3 @@
-const fs = require('fs');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const chtDbUtils = require('@utils/cht-db');
@@ -10,206 +9,155 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const replaceUserForm = require('@page-objects/default/enketo/replace-user.wdio.page');
+const createUserForContactsPage = require('@page-objects/default/enketo/create-user-for-contacts');
 const { BASE_URL, DEFAULT_USER_CONTACT_DOC } = require('@constants');
 
-const USER_CONTACT = utils.deepFreeze(personFactory.build({ role: 'chw' }));
+describe('Create user for contacts', () => {
+  const NEW_USERS = [];
+  const REPLACE_USER_FORM_TITLE = 'Replace User';
+  const REPLACE_USER_FORM_ID = 'replace_user';
+  const OTHER_REPLACE_FORM_ID = 'other_replace_form';
+  const DISABLED_USER_PASSWORD = 'n3wPassword!';
 
-const DISTRICT = utils.deepFreeze(placeFactory
-  .place()
-  .build({
-    type: 'district_hospital',
-    contact: {
-      _id: USER_CONTACT._id,
-    }
+  const USER_CONTACT = utils.deepFreeze(personFactory.build({ role: 'chw' }));
+
+  const DISTRICT = utils.deepFreeze(placeFactory
+    .place()
+    .build({
+      type: 'district_hospital',
+      contact: {
+        _id: USER_CONTACT._id,
+      }
+    }));
+
+  const ORIGINAL_USER = utils.deepFreeze(userFactory.build({
+    username: `user_for_contacts_original_person`,
+    place: DISTRICT._id,
+    contact: USER_CONTACT,
   }));
 
-const ORIGINAL_USER = utils.deepFreeze(userFactory.build({
-  username: `user_for_contacts_original_person`,
-  place: DISTRICT._id,
-  contact: USER_CONTACT,
-}));
+  const ONLINE_USER = utils.deepFreeze(userFactory.build({
+    username: `user_for_contacts_online_user`,
+    place: DISTRICT._id,
+    contact: USER_CONTACT,
+    roles: ['program_officer', 'mm-online'],
+  }));
 
-const ONLINE_USER = utils.deepFreeze(userFactory.build({
-  username: `user_for_contacts_online_user`,
-  place: DISTRICT._id,
-  contact: USER_CONTACT,
-  roles: ['program_officer', 'mm-online'],
-}));
-
-const newUsers = [];
-
-const REPLACE_USER_FORM_TITLE = 'Replace User';
-const REPLACE_USER_FORM_ID = 'replace_user';
-
-const BASIC_FORM_DOC = utils.deepFreeze({
-  _id: 'form:basic_form',
-  internalId: 'basic_form',
-  title: 'Form basic_form',
-  type: 'form',
-  _attachments: {
-    xml: {
-      content_type: 'application/octet-stream',
-      data: Buffer
-        .from(fs.readFileSync(`${__dirname}/forms/basic_form.xml`, 'utf8'))
-        .toString('base64')
-    }
-  }
-});
-
-const OTHER_REPLACE_FORM_DOC = utils.deepFreeze({
-  _id: 'form:other_replace_form',
-  internalId: 'other_replace_form',
-  title: 'Replace User Again',
-  type: 'form',
-  _attachments: {
-    xml: {
-      content_type: 'application/octet-stream',
-      data: Buffer
-        .from(fs.readFileSync(`${__dirname}/../../../../config/default/forms/app/replace_user.xml`, 'utf8'))
-        .toString('base64')
-    }
-  }
-});
-
-const SETTINGS = utils.deepFreeze({
-  transitions: { create_user_for_contacts: true },
-  create_user_for_contacts: { replace_forms: [REPLACE_USER_FORM_ID, OTHER_REPLACE_FORM_DOC.internalId] },
-  token_login: { enabled: true },
-  app_url: BASE_URL
-});
-
-const loginAsUser = async (user) => {
-  await utils.createUsers([user]);
-  newUsers.push(user.username);
-  await loginPage.login(user);
-  await commonPage.waitForPageLoaded();
-};
-
-/**
- * Ongoing replication can be interrupted by the user being edited on the server side.
- * A 401 for a replication request will create a feedback doc, which will fail the test.
- */
-const assertFeedbackDocs = async () => {
-  const feedbackDocs = await chtDbUtils.getFeedbackDocs();
-  if (!feedbackDocs.length) {
-    return;
-  }
-
-  const feedbackDocsToIgnore = [
-    'Http failure response',
-    'Server error'
-  ];
-
-  const unknownMessages = feedbackDocs
-    .map(doc => doc.info.message)
-    .filter(message => !feedbackDocsToIgnore.find(toIgnore => message.includes(toIgnore)));
-
-  if (!unknownMessages.length) {
-    await chtDbUtils.clearFeedbackDocs();
-  }
-};
-
-const loginAsOfflineUser = () => loginAsUser(ORIGINAL_USER);
-
-const loginAsOnlineUser = () => loginAsUser(ONLINE_USER);
-
-const populateReplaceUserForm = async (formID) => {
-  await commonPage.openFastActionReport(formID);
-  await replaceUserForm.selectAdminCode('1234');
-  await genericForm.nextPage();
-  await replaceUserForm.selectContactFullName('Replacement User');
-  await replaceUserForm.selectContactSex(replaceUserForm.SEX.female);
-  await replaceUserForm.selectContactDobUnknown();
-  await replaceUserForm.selectContactAgeYears(22);
-  await genericForm.nextPage();
-};
-
-const submitBasicForm = async () => {
-  await commonPage.openFastActionReport('basic_form', false);
-  await genericForm.submitForm();
-  return reportsPage.getCurrentReportId();
-};
-
-const assertReplaceUserReport = (replaceUserReport, originalContactId) => {
-  expect(replaceUserReport.fields.replacement_contact_id).to.not.be.empty;
-  expect(replaceUserReport.contact._id).to.equal(originalContactId);
-};
-
-const assertOriginalContactUpdated = (originalContact, originalUsername, newContactId, status) => {
-  expect(originalContact.user_for_contact).to.deep.equal({
-    replace: {
-      [originalUsername]: {
-        status,
-        replacement_contact_id: newContactId,
-      }
-    }
+  const SETTINGS = utils.deepFreeze({
+    transitions: { create_user_for_contacts: true },
+    create_user_for_contacts: { replace_forms: [REPLACE_USER_FORM_ID, OTHER_REPLACE_FORM_ID] },
+    token_login: { enabled: true },
+    app_url: BASE_URL
   });
-};
 
-const assertNewContact = (newContact, originalUser, originalContact) => {
-  expect(newContact.phone).to.equal(originalUser.phone);
-  expect(newContact.parent._id).to.equal(originalContact.parent._id);
-  expect(newContact.name).to.equal('Replacement User');
-  expect(newContact.sex).to.equal('female');
-};
-
-const submitLoginRequest = ({ username, password }) => {
-  const opts = {
-    path: '/medic/login',
-    body: { user: username, password, locale: 'en' },
-    method: 'POST',
-    simple: false,
-    noAuth: true,
+  const loginAsUser = async (user) => {
+    await utils.createUsers([user]);
+    NEW_USERS.push(user.username);
+    await loginPage.login(user);
+    await commonPage.waitForPageLoaded();
   };
-  return utils.request(opts);
-};
 
-const DISABLED_USER_PASSWORD = 'n3wPassword!';
+  /**
+   * Ongoing replication can be interrupted by the user being edited on the server side.
+   * A 401 for a replication request will create a feedback doc, which will fail the test.
+   */
+  const assertFeedbackDocs = async () => {
+    const feedbackDocs = await chtDbUtils.getFeedbackDocs();
+    if (!feedbackDocs.length) {
+      return;
+    }
 
-const assertUserPasswordChanged = async (user) => {
-  // Cannot login because user's password has been automatically reset
-  const resp0 = await submitLoginRequest(user);
-  expect(resp0.statusCode).to.equal(401);
+    const feedbackDocsToIgnore = [ 'Http failure response', 'Server error' ];
 
-  // Update user's password to something we know
-  await utils.request({
-    path: `/api/v1/users/${user.username}`,
-    method: 'POST',
-    body: { password: DISABLED_USER_PASSWORD }
-  });
+    const unknownMessages = feedbackDocs
+      .map(doc => doc.info.message)
+      .filter(message => !feedbackDocsToIgnore.find(toIgnore => message.includes(toIgnore)));
 
-  // Can login with new password
-  const resp1 = await submitLoginRequest({ ...user, password: DISABLED_USER_PASSWORD });
-  expect(resp1.statusCode).to.equal(302);
-};
+    if (!unknownMessages.length) {
+      await chtDbUtils.clearFeedbackDocs();
+    }
+  };
 
-const assertNewUserSettings = (newUserSettings, newContact, originalUser) => {
-  expect(newUserSettings).to.deep.include({
-    roles: originalUser.roles,
-    phone: newContact.phone,
-    facility_id: [newContact.parent._id],
-    contact_id: newContact._id,
-    fullname: newContact.name,
-  });
-  expect(newUserSettings.token_login.active).to.be.true;
-  expect(newUserSettings._id).to.match(/^org\.couchdb\.user:replacement-user-\d\d\d\d$/);
-  expect(newUserSettings.name).to.match(/^replacement-user-\d\d\d\d$/);
-};
+  const loginAsOfflineUser = () => loginAsUser(ORIGINAL_USER);
+  const loginAsOnlineUser = () => loginAsUser(ONLINE_USER);
 
-const waitForConflicts = async (getDoc) => {
-  const doc = await getDoc();
-  if (doc._conflicts) {
-    return doc;
-  }
-  return utils.delayPromise(waitForConflicts(getDoc), 100);
-};
+  const assertReplaceUserReport = (replaceUserReport, originalContactId) => {
+    expect(replaceUserReport.fields.replacement_contact_id).to.not.be.empty;
+    expect(replaceUserReport.contact._id).to.equal(originalContactId);
+  };
 
-describe('Create user for contacts', () => {
+  const assertOriginalContactUpdated = (originalContact, originalUsername, newContactId, status) => {
+    expect(originalContact.user_for_contact).to.deep.equal({
+      replace: {
+        [originalUsername]: {
+          status,
+          replacement_contact_id: newContactId,
+        }
+      }
+    });
+  };
+
+  const assertNewContact = (newContact, originalUser, originalContact) => {
+    expect(newContact.phone).to.equal(originalUser.phone);
+    expect(newContact.parent._id).to.equal(originalContact.parent._id);
+    expect(newContact.name).to.equal('Replacement User');
+    expect(newContact.sex).to.equal('female');
+  };
+
+  const submitLoginRequest = ({ username, password }) => {
+    const opts = {
+      path: '/medic/login',
+      body: { user: username, password, locale: 'en' },
+      method: 'POST',
+      simple: false,
+      noAuth: true,
+    };
+    return utils.request(opts);
+  };
+
+  const assertUserPasswordChanged = async (user) => {
+    // Cannot login because user's password has been automatically reset
+    const resp0 = await submitLoginRequest(user);
+    expect(resp0.statusCode).to.equal(401);
+
+    // Update user's password to something we know
+    await utils.request({
+      path: `/api/v1/users/${user.username}`,
+      method: 'POST',
+      body: { password: DISABLED_USER_PASSWORD }
+    });
+
+    // Can login with new password
+    const resp1 = await submitLoginRequest({ ...user, password: DISABLED_USER_PASSWORD });
+    expect(resp1.statusCode).to.equal(302);
+  };
+
+  const assertNewUserSettings = (newUserSettings, newContact, originalUser) => {
+    expect(newUserSettings).to.deep.include({
+      roles: originalUser.roles,
+      phone: newContact.phone,
+      facility_id: [newContact.parent._id],
+      contact_id: newContact._id,
+      fullname: newContact.name,
+    });
+    expect(newUserSettings.token_login.active).to.be.true;
+    expect(newUserSettings._id).to.match(/^org\.couchdb\.user:replacement-user-\d\d\d\d$/);
+    expect(newUserSettings.name).to.match(/^replacement-user-\d\d\d\d$/);
+  };
+
+  const waitForConflicts = async (getDoc) => {
+    const doc = await getDoc();
+    if (doc._conflicts) {
+      return doc;
+    }
+    return utils.delayPromise(waitForConflicts(getDoc), 100);
+  };
+
   before(async () => {
-    await utils.saveDocIfNotExists(BASIC_FORM_DOC);
-    await utils.saveDocIfNotExists(OTHER_REPLACE_FORM_DOC);
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/basic_form`));
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(
+      `${__dirname}/../../../../config/default/forms/app/replace_user`, 'other_replace_form'
+    ));
   });
 
   beforeEach(async () => {
@@ -217,12 +165,11 @@ describe('Create user for contacts', () => {
   });
 
   afterEach(async () => {
-    await utils.deleteUsers(newUsers.map(username => ({ username })));
-    newUsers.length = 0;
+    await utils.deleteUsers(NEW_USERS.map(username => ({ username })));
+    NEW_USERS.length = 0;
     await utils.revertDb([/^form:/], true);
     await sentinelUtils.waitForSentinel();
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonPage.reloadSession();
   });
 
   describe('user replace', () => {
@@ -236,18 +183,17 @@ describe('Create user for contacts', () => {
 
         // Create existing report (before user is replaced)
         await commonPage.goToReports();
-        const existingBasicReportId = await submitBasicForm();
+        const existingBasicReportId = await createUserForContactsPage.submitBasicForm();
 
         await commonPage.goToPeople(originalContactId, true);
-        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
-        await genericForm.submitForm();
+        await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID);
         const reportNames = await contactsPage.getAllRHSReportsNames();
         expect(reportNames.filter(name => name === REPLACE_USER_FORM_TITLE)).to.have.lengthOf(1);
         await commonPage.goToReports();
         const reportId = await reportsPage.getLastSubmittedReportId();
         // Submit several forms to be re-parented
-        const basicReportId0 = await submitBasicForm();
-        const basicReportId1 = await submitBasicForm();
+        const basicReportId0 = await createUserForContactsPage.submitBasicForm();
+        const basicReportId1 = await createUserForContactsPage.submitBasicForm();
 
         // Replace user report created
         const replaceUserReport = await chtDbUtils.getDoc(reportId);
@@ -288,7 +234,7 @@ describe('Create user for contacts', () => {
         // New user created
         const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: replacementContactId });
         expect(additionalUsers).to.be.empty;
-        newUsers.push(newUserSettings.name);
+        NEW_USERS.push(newUserSettings.name);
         assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
         const loginLink = await messagesUtils.getTextedLoginLink(newUserSettings);
 
@@ -308,7 +254,7 @@ describe('Create user for contacts', () => {
         await commonPage.waitForPageLoaded();
         await commonPage.sync();
         await commonPage.goToReports();
-        const basicReportId3 = await submitBasicForm();
+        const basicReportId3 = await createUserForContactsPage.submitBasicForm();
         const basicReport3 = await utils.getDoc(basicReportId3);
         // New reports written by the old user are not re-parented
         expect(basicReport3.contact._id).to.equal(originalContactId);
@@ -322,8 +268,7 @@ describe('Create user for contacts', () => {
         const originalContactId = ORIGINAL_USER.contact._id;
 
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
-        await genericForm.submitForm({ waitForPageLoaded: false });
+        await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID, false);
 
         // Logout triggered immediately
         await (await loginPage.loginButton()).waitForDisplayed();
@@ -352,12 +297,13 @@ describe('Create user for contacts', () => {
         // New user created
         const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: replacementContactId });
         expect(additionalUsers).to.be.empty;
-        newUsers.push(newUserSettings.name);
+        NEW_USERS.push(newUserSettings.name);
         assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
         const loginLink = await messagesUtils.getTextedLoginLink(newUserSettings);
 
         // Open the texted link
         await commonPage.logout();
+
         await browser.url(loginLink);
         await commonPage.waitForPageLoaded();
         const [cookie] = await browser.getCookies('userCtx');
@@ -376,8 +322,7 @@ describe('Create user for contacts', () => {
         const originalContactId = ORIGINAL_USER.contact._id;
 
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
-        await genericForm.submitForm();
+        await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID);
 
         // Logout triggered immediately
         await (await loginPage.loginButton()).waitForDisplayed();
@@ -406,7 +351,7 @@ describe('Create user for contacts', () => {
         // New user created
         const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: replacementContactId });
         expect(additionalUsers).to.be.empty;
-        newUsers.push(newUserSettings.name);
+        NEW_USERS.push(newUserSettings.name);
         assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
         const loginLink = await messagesUtils.getTextedLoginLink(newUserSettings);
 
@@ -429,15 +374,14 @@ describe('Create user for contacts', () => {
         await browser.throttle('offline');
 
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
-        await genericForm.submitForm();
+        await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID);
         let reportNames = await contactsPage.getAllRHSReportsNames();
         expect(reportNames.filter(name => name === REPLACE_USER_FORM_TITLE)).to.have.lengthOf(1);
         await commonPage.goToReports();
         const reportId = await reportsPage.getLastSubmittedReportId();
         // Submit several forms to be re-parented
-        const basicReportId0 = await submitBasicForm();
-        const basicReportId1 = await submitBasicForm();
+        const basicReportId0 = await createUserForContactsPage.submitBasicForm();
+        const basicReportId1 = await createUserForContactsPage.submitBasicForm();
 
         // Replace user report created
         const replaceUserReport = await chtDbUtils.getDoc(reportId);
@@ -457,15 +401,14 @@ describe('Create user for contacts', () => {
 
         // Submit another replace user form
         await commonPage.goToPeople(replacementContactId0);
-        await populateReplaceUserForm(OTHER_REPLACE_FORM_DOC.internalId);
-        await genericForm.submitForm();
+        await createUserForContactsPage.submitReplaceUserForm(OTHER_REPLACE_FORM_ID);
         reportNames = await contactsPage.getAllRHSReportsNames();
-        expect(reportNames.filter(name => name === OTHER_REPLACE_FORM_DOC.title)).to.have.lengthOf(1);
+        expect(reportNames.filter(name => name === OTHER_REPLACE_FORM_ID)).to.have.lengthOf(1);
         await commonPage.goToReports();
         const reportId1 = await reportsPage.getLastSubmittedReportId();
         // Submit several forms to be re-parented
-        const basicReportId2 = await submitBasicForm();
-        const basicReportId3 = await submitBasicForm();
+        const basicReportId2 = await createUserForContactsPage.submitBasicForm();
+        const basicReportId3 = await createUserForContactsPage.submitBasicForm();
 
         const replaceUserReport1 = await chtDbUtils.getDoc(reportId1);
         const { replacement_contact_id: replacementContactId1 } = replaceUserReport1.fields;
@@ -502,7 +445,7 @@ describe('Create user for contacts', () => {
         // New user created
         const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: replacementContactId1 });
         expect(additionalUsers).to.be.empty;
-        newUsers.push(newUserSettings.name);
+        NEW_USERS.push(newUserSettings.name);
         assertNewUserSettings(newUserSettings, newContact1, ORIGINAL_USER);
         const loginLink = await messagesUtils.getTextedLoginLink(newUserSettings);
 
@@ -534,13 +477,12 @@ describe('Create user for contacts', () => {
           contact: ORIGINAL_USER.contact._id
         };
         await utils.createUsers([otherUser]);
-        newUsers.push(otherUser.username);
+        NEW_USERS.push(otherUser.username);
 
         const originalContactId = ORIGINAL_USER.contact._id;
 
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
-        await genericForm.submitForm({ waitForPageLoaded: false });
+        await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID, false);
 
         // Logout triggered immediately
         await (await loginPage.loginButton()).waitForDisplayed();
@@ -569,7 +511,7 @@ describe('Create user for contacts', () => {
         // New user created
         const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: replacementContactId });
         expect(additionalUsers).to.be.empty;
-        newUsers.push(newUserSettings.name);
+        NEW_USERS.push(newUserSettings.name);
         assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
         const loginLink = await messagesUtils.getTextedLoginLink(newUserSettings);
 
@@ -604,13 +546,12 @@ describe('Create user for contacts', () => {
           contact: ORIGINAL_USER.contact._id
         };
         await utils.createUsers([otherUser]);
-        newUsers.push(otherUser.username);
+        NEW_USERS.push(otherUser.username);
 
         await browser.throttle('offline');
 
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
-        await genericForm.submitForm();
+        await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID);
         const reportNames = await contactsPage.getAllRHSReportsNames();
         expect(reportNames.filter(name => name === REPLACE_USER_FORM_TITLE)).to.have.lengthOf(1);
         await commonPage.goToReports();
@@ -630,8 +571,8 @@ describe('Create user for contacts', () => {
         expect(district.contact._id).to.equal(replacementContactId);
 
         // Submit several forms to be re-parented
-        const basicReportId0 = await submitBasicForm();
-        const basicReportId1 = await submitBasicForm();
+        const basicReportId0 = await createUserForContactsPage.submitBasicForm();
+        const basicReportId1 = await createUserForContactsPage.submitBasicForm();
         // Basic form reports re-parented
         const basicReports = await chtDbUtils.getDocs([basicReportId0, basicReportId1]);
         basicReports.forEach((report) => expect(report.contact._id).to.equal(replacementContactId));
@@ -644,8 +585,7 @@ describe('Create user for contacts', () => {
         await loginPage.login(otherUser);
         await commonPage.waitForPageLoaded();
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
-        await genericForm.submitForm();
+        await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID);
 
         // Logout triggered immediately
         await (await loginPage.loginButton()).waitForDisplayed();
@@ -675,7 +615,7 @@ describe('Create user for contacts', () => {
         const [newUserSettings, ...additionalUsers] =
           await utils.getUserSettings({ contactId: otherReplacementContactId });
         expect(additionalUsers).to.be.empty;
-        newUsers.push(newUserSettings.name);
+        NEW_USERS.push(newUserSettings.name);
         assertNewUserSettings(newUserSettings, otherNewContact, otherUser);
         const loginLink = await messagesUtils.getTextedLoginLink(newUserSettings);
 
@@ -721,12 +661,11 @@ describe('Create user for contacts', () => {
         const originalContactId = ORIGINAL_USER.contact._id;
 
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
-        await genericForm.submitForm();
+        await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID);
         // No logout triggered
         await commonPage.goToReports();
         const reportId = await reportsPage.getLastSubmittedReportId();
-        const basicReportId = await submitBasicForm();
+        const basicReportId = await createUserForContactsPage.submitBasicForm();
 
         // Replace user report created
         const replaceUserReport = await utils.getDoc(reportId);
@@ -759,15 +698,14 @@ describe('Create user for contacts', () => {
         await browser.throttle('offline');
 
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
-        await genericForm.submitForm();
+        await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID);
         const reportNames = await contactsPage.getAllRHSReportsNames();
         expect(reportNames.filter(name => name === REPLACE_USER_FORM_TITLE)).to.have.lengthOf(1);
         await commonPage.goToReports();
         const reportId = await reportsPage.getLastSubmittedReportId();
         // Submit several forms to be re-parented
-        const basicReportId0 = await submitBasicForm();
-        const basicReportId1 = await submitBasicForm();
+        const basicReportId0 = await createUserForContactsPage.submitBasicForm();
+        const basicReportId1 = await createUserForContactsPage.submitBasicForm();
 
         // Replace user report created
         const replaceUserReport = await chtDbUtils.getDoc(reportId);
@@ -819,16 +757,15 @@ describe('Create user for contacts', () => {
         expect(districtFromRemote.contact._id).to.equal(replacementContactId);
 
         // Subsequent form reports are *not* re-parented to the new contact
-        await browser.reloadSession();
-        await browser.url('/');
+        await commonPage.reloadSession();
         await loginPage.login(ORIGINAL_USER);
         await commonPage.waitForPageLoaded();
         await browser.throttle('offline');
         const finalOriginalContactLocal = await chtDbUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(finalOriginalContactLocal, ORIGINAL_USER.username, replacementContactId, 'ERROR');
         await commonPage.goToReports();
-        const basicReportId2 = await submitBasicForm();
-        const basicReportId3 = await submitBasicForm();
+        const basicReportId2 = await createUserForContactsPage.submitBasicForm();
+        const basicReportId3 = await createUserForContactsPage.submitBasicForm();
         const subsequentBasicReports = await chtDbUtils.getDocs([basicReportId2, basicReportId3]);
         subsequentBasicReports.forEach((report) => expect(report.contact._id).to.equal(originalContactId));
 
@@ -842,8 +779,7 @@ describe('Create user for contacts', () => {
       const originalContactId = ONLINE_USER.contact._id;
       await commonPage.goToPeople(originalContactId);
 
-      await populateReplaceUserForm(REPLACE_USER_FORM_ID);
-      await genericForm.submitForm();
+      await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID);
       // No logout triggered
       await commonPage.goToReports();
       const reportId = await reportsPage.getLastSubmittedReportId();

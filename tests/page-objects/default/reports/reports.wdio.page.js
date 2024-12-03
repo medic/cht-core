@@ -1,6 +1,7 @@
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const utils = require('@utils');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 const tabSelectors = {
   unreadCount: () => $('#reports-tab .mm-badge'),
@@ -49,13 +50,6 @@ const rightPanelSelectors = {
   deleteAllButton: () => $('.desktop.multiselect-bar-container .bulk-delete'),
   selectedReportsCount: () => $('.desktop.multiselect-bar-container .count-label'),
   sentTask: () => $(`${REPORT_BODY_DETAILS} ul .task-list .task-state .state`),
-};
-
-const kebabMenuSelectors = {
-  edit: () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-reports"]'),
-  delete: () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-reports"]'),
-  export: () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-reports"]'),
-  review: () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="review-report"]'),
 };
 
 const REVIEW_REPORT_CONTAINER = '.verify-report-options-wrapper';
@@ -124,18 +118,8 @@ const setBikDateInput = async (name, date) => {
   await (await dateWidget.$('.dropdown-toggle')).click();
   await (await (await dateWidget.$$('.dropdown-menu li'))[date.month - 1]).click();
   await (await dateWidget.$('input[name="year"]')).setValue(date.year);
-};
-
-const getSummaryField = async (name) => {
-  const input = await $(`input[name="${name}"]`);
-  const summaryElement = await input.previousElement();
-  return summaryElement.getText();
-};
-
-const getFieldValue = async (name) => {
-  const input = await $(`input[name="${name}"]`);
-  await input.click();
-  return input.getValue();
+  //To close the date widget
+  await genericForm.formTitle().click();
 };
 
 const getElementText = async (element) => {
@@ -412,29 +396,8 @@ const fieldByIndex = async (index) => {
   return await (await $(`${REPORT_BODY_DETAILS} li:nth-child(${index}) p`)).getText();
 };
 
-const performMenuAction = async (actionSelector) => {
-  await commonElements.openMoreOptionsMenu();
-  const actionElement = await actionSelector();
-  await actionElement.waitForClickable();
-  await actionElement.click();
-};
-
-const editReport = async () => {
-  await performMenuAction(kebabMenuSelectors.edit);
-};
-
-const exportReports = async () => {
-  await performMenuAction(kebabMenuSelectors.export);
-};
-
-const deleteReport = async () => {
-  await performMenuAction(kebabMenuSelectors.delete);
-};
-
 const openReview = async () => {
-  await commonElements.openMoreOptionsMenu();
-  await (await kebabMenuSelectors.review()).waitForClickable();
-  await (await kebabMenuSelectors.review()).click();
+  await commonElements.accessReviewOption();
   await (await reviewDialogSelectors.container()).waitForDisplayed();
 };
 
@@ -514,9 +477,7 @@ module.exports = {
   filterByFacility,
   filterByStatus,
   setDateInput,
-  getFieldValue,
   setBikDateInput,
-  getSummaryField,
   reportsListDetails,
   selectAll,
   deselectAll,
@@ -535,9 +496,6 @@ module.exports = {
   getOpenReportInfo,
   getListReportInfo,
   openReport,
-  editReport,
-  deleteReport,
-  exportReports,
   fieldByIndex,
   clickOnCaseId,
   getReportListLoadingStatus,

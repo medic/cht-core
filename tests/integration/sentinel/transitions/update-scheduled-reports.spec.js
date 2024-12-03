@@ -289,8 +289,7 @@ describe('update_scheduled_reports', () => {
         expect(updated[3].type).to.equal('data_record');
         expect(updated[4].type).to.equal('data_record');
       })
-      .then(() => utils.stopSentinel())
-      .then(() => utils.startSentinel())
+      .then(() => utils.runSentinelTasks())
       .then(() => sentinelUtils.waitForBackgroundCleanup())
       .then(() => sentinelUtils.getInfoDocs([ doc1._id, doc2._id, doc3._id, doc4._id, doc5._id ]))
       .then(infos => {

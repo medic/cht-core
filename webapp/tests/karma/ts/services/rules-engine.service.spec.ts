@@ -468,11 +468,15 @@ describe('RulesEngineService', () => {
 
       const change = changesService.subscribe.args[0][0];
       await change.callback(changeFeedFormat({ type: 'data_record', form: 'f', fields: { patient_id: 'p1' } }));
+      expect(callback.callCount).to.equal(1);
       await change.callback(changeFeedFormat({ _id: '2', type: 'person', patient_id: 'p2' }));
+      expect(callback.callCount).to.equal(2);
       tick(500);
       await change.callback(changeFeedFormat({ _id: '3', type: 'person', patient_id: 'p3' }));
+      expect(callback.callCount).to.equal(3);
       tick(900);
       await change.callback(changeFeedFormat({ type: 'data_record', form: 'f', fields: { patient_id: 'p3' }}));
+      expect(callback.callCount).to.equal(4);
 
       expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.equal(0);
 
@@ -480,7 +484,7 @@ describe('RulesEngineService', () => {
 
       expect(rulesEngineCoreStubs.updateEmissionsFor.callCount).to.equal(1);
       expect(rulesEngineCoreStubs.updateEmissionsFor.args[0][0]).to.have.members([ 'p3', '3', '2', 'p1' ]);
-      expect(callback.callCount).to.equal(1);
+      expect(callback.callCount).to.equal(4);
       subscription.unsubscribe();
 
       expect(telemetryService.record.calledOnce).to.be.true;

@@ -10,8 +10,7 @@ describe('Acessing the admin app', () => {
   const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
 
   afterEach(async () => {
-    await browser.reloadSession();
-    await browser.url('/');
+    await common.reloadSession();
   });
 
   it('should redirect to login when not logged in', async () => {
@@ -37,19 +36,19 @@ describe('Acessing the admin app', () => {
     await common.waitForLoaders();
     await browser.url('/admin/#/forms');
     expect(await (await adminPage.adminNavbarLogo()).isDisplayed()).to.equal(false);
-    expect(await common.jsonError()).to.equal(error);
+    expect(await common.getJsonErrorText()).to.equal(error);
 
     await browser.url('/admin');
     expect(await (await adminPage.adminNavbarLogo()).isDisplayed()).to.equal(false);
-    expect(await common.jsonError()).to.equal(error);
+    expect(await common.getJsonErrorText()).to.equal(error);
 
     await browser.url('/medic/_design/medic-admin/_rewrite/');
     expect(await (await adminPage.adminNavbarLogo()).isDisplayed()).to.equal(false);
-    expect(await common.jsonError()).to.equal(error);
+    expect(await common.getJsonErrorText()).to.equal(error);
 
     await browser.url('/medic/_design/medic-admin/_rewrite/#/authorization/permissions');
     expect(await (await adminPage.adminNavbarLogo()).isDisplayed()).to.equal(false);
-    expect(await common.jsonError()).to.equal(error);
+    expect(await common.getJsonErrorText()).to.equal(error);
   });
 
   it('should allow admins to access the page', async () => {

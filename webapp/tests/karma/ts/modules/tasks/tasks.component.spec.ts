@@ -18,7 +18,7 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { Selectors } from '@mm-selectors/index';
 import { NavigationService } from '@mm-services/navigation.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { UserContactService } from '@mm-services/user-contact.service';
 
 describe('TasksComponent', () => {
   let getComponent;
@@ -27,7 +27,7 @@ describe('TasksComponent', () => {
   let performanceService;
   let stopPerformanceTrackStub;
   let contactTypesService;
-  let extractLineageService;
+  let userContactService;
   let clock;
   let store;
   let lineageModelGeneratorService;
@@ -48,9 +48,8 @@ describe('TasksComponent', () => {
       includes: sinon.stub(),
     };
     lineageModelGeneratorService = { reportSubjects: sinon.stub().resolves([]) };
-    extractLineageService = {
+    userContactService = {
       getUserLineageToRemove: sinon.stub(),
-      removeUserFacility: ExtractLineageService.prototype.removeUserFacility,
     };
 
     TestBed.configureTestingModule({
@@ -66,7 +65,7 @@ describe('TasksComponent', () => {
         { provide: PerformanceService, useValue: performanceService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: NavigationService, useValue: {} },
-        { provide: ExtractLineageService, useValue: extractLineageService },
+        { provide: UserContactService, useValue: userContactService },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
       ],
       declarations: [
@@ -342,7 +341,7 @@ describe('TasksComponent', () => {
           owner: 'b',
         },
       ];
-      extractLineageService.getUserLineageToRemove.resolves(undefined);
+      userContactService.getUserLineageToRemove.resolves(undefined);
       rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
       lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
 
@@ -374,7 +373,7 @@ describe('TasksComponent', () => {
           owner: 'b',
         },
       ];
-      extractLineageService.getUserLineageToRemove.resolves('CHW Bettys Area');
+      userContactService.getUserLineageToRemove.resolves('CHW Bettys Area');
       rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
       lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
 

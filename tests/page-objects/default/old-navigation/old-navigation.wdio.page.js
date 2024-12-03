@@ -137,6 +137,13 @@ const logout = async () => {
   await browser.pause(100); // wait for login page js to execute
 };
 
+const mobileTopBarTitle = () => $('mm-navigation .ellipsis-title');
+const getHeaderTitleOnMobile = async () => {
+  return {
+    name: await mobileTopBarTitle().getText(),
+  };
+};
+
 module.exports = {
   goToBase,
   goToMessages,
@@ -147,4 +154,5 @@ module.exports = {
   sync,
   waitForPageLoaded,
   logout,
+  getHeaderTitleOnMobile,
 };
