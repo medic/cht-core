@@ -410,11 +410,11 @@ describe('Contact API', () => {
     });
   });
 
-  describe('Contact.v1.getIdsAll', async () => {
+  describe('Contact.v1.getIds', async () => {
     it('fetches all data by iterating through generator', async () => {
       const docs = [];
 
-      const generator = Contact.v1.getIdsAll(dataContext)(Qualifier.byContactType(personType));
+      const generator = Contact.v1.getIds(dataContext)(Qualifier.byContactType(personType));
 
       for await (const doc of generator) {
         docs.push(doc);

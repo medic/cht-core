@@ -109,7 +109,7 @@ export const getDatasource = (ctx: DataContext) => {
         getIds: (
           freetext: Nullable<string> = null,
           type: Nullable<string> = null
-        ) => ctx.bind(Contact.v1.getIdsAll)(Contact.v1.createQualifier(freetext, type)),
+        ) => ctx.bind(Contact.v1.getIds)(Contact.v1.createQualifier(freetext, type)),
       },
       place: {
         /**
@@ -240,7 +240,7 @@ export const getDatasource = (ctx: DataContext) => {
         getIds: (
           qualifier: string,
           // eslint-disable-next-line compat/compat
-        ) => ctx.bind(Report.v1.getIdsAll)(Qualifier.byFreetext(qualifier)),
+        ) => ctx.bind(Report.v1.getIds)(Qualifier.byFreetext(qualifier)),
       },
     },
   };

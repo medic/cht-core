@@ -335,7 +335,7 @@ describe('contact', () => {
         isFreetextQualifier.returns(true);
         getPagedGenerator.returns(mockGenerator);
 
-        const generator =   Contact.v1.getIdsAll(dataContext)(qualifier);
+        const generator =   Contact.v1.getIds(dataContext)(qualifier);
 
         expect(generator).to.deep.equal(mockGenerator);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -350,7 +350,7 @@ describe('contact', () => {
         isFreetextQualifier.returns(true);
         assertDataContext.throws(new Error(errMsg));
 
-        expect(() => Contact.v1.getIdsAll(dataContext)).to.throw(errMsg);
+        expect(() => Contact.v1.getIds(dataContext)).to.throw(errMsg);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(contactGetIdsPage.notCalled).to.be.true;
         expect(isContactTypeQualifier.notCalled).to.be.true;
@@ -360,7 +360,7 @@ describe('contact', () => {
       it('should throw an error for invalid contactType', () => {
         isContactTypeQualifier.returns(false);
 
-        expect(() => Contact.v1.getIdsAll(dataContext)(invalidContactTypeQualifier))
+        expect(() => Contact.v1.getIds(dataContext)(invalidContactTypeQualifier))
           .to.throw(`Invalid contact type [${JSON.stringify(invalidContactTypeQualifier)}]`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(contactGetIdsPage.notCalled).to.be.true;
@@ -372,7 +372,7 @@ describe('contact', () => {
         isContactTypeQualifier.returns(false);
         isFreetextQualifier.returns(false);
 
-        expect(() => Contact.v1.getIdsAll(dataContext)(invalidFreetextQualifier))
+        expect(() => Contact.v1.getIds(dataContext)(invalidFreetextQualifier))
           .to.throw(`Invalid freetext [${JSON.stringify(invalidFreetextQualifier)}]`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(contactGetIdsPage.notCalled).to.be.true;

@@ -81,7 +81,7 @@ export namespace v1 {
    * @param context the current data context
    * @returns a function for retrieving a paged array of contact identifiers
    * @throws Error if a data context is not provided
-   * @see {@link getIdsAll} which provides the same data, but without having to manually account for paging
+   * @see {@link getIds} which provides the same data, but without having to manually account for paging
    */
   export const getIdsPage = (context: DataContext): typeof curriedFn => {
     assertDataContext(context);
@@ -125,7 +125,7 @@ export namespace v1 {
    * @returns a function for getting a generator that fetches contact identifiers
    * @throws Error if a data context is not provided
    */
-  export const getIdsAll = (context: DataContext): typeof curriedGen => {
+  export const getIds = (context: DataContext): typeof curriedGen => {
     assertDataContext(context);
     const getPage = context.bind(v1.getIdsPage);
 

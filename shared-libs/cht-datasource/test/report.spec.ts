@@ -215,7 +215,7 @@ describe('report', () => {
         getPagedGenerator.returns(mockGenerator);
 
         // eslint-disable-next-line compat/compat
-        const generator = Report.v1.getIdsAll(dataContext)(freetextQualifier);
+        const generator = Report.v1.getIds(dataContext)(freetextQualifier);
 
         expect(generator).to.deep.equal(mockGenerator);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -229,7 +229,7 @@ describe('report', () => {
         assertDataContext.throws(new Error(errMsg));
 
         // eslint-disable-next-line compat/compat
-        expect(() => Report.v1.getIdsAll(dataContext)).to.throw(errMsg);
+        expect(() => Report.v1.getIds(dataContext)).to.throw(errMsg);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(reportGetIdsPage.notCalled).to.be.true;
         expect(isFreetextQualifier.notCalled).to.be.true;
@@ -239,7 +239,7 @@ describe('report', () => {
         isFreetextQualifier.returns(false);
 
         // eslint-disable-next-line compat/compat
-        expect(() => Report.v1.getIdsAll(dataContext)(freetextQualifier))
+        expect(() => Report.v1.getIds(dataContext)(freetextQualifier))
           .to.throw(`Invalid freetext [${JSON.stringify(freetextQualifier)}]`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(reportGetIdsPage.notCalled).to.be.true;

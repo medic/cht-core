@@ -281,7 +281,7 @@ describe('CHT Script API - getDatasource', () => {
         const res =  contact.getIds(freetext, contactType);
 
         expect(res).to.deep.equal(mockAsyncGenerator);
-        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getIdsAll)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getIds)).to.be.true;
         expect(contactGetIds.calledOnceWithExactly(qualifier)).to.be.true;
         expect(createQualifier.calledOnceWithExactly(freetext, contactType)).to.be.true;
       });
@@ -349,7 +349,7 @@ describe('CHT Script API - getDatasource', () => {
 
         expect(res).to.deep.equal(mockAsyncGenerator);
         // eslint-disable-next-line compat/compat
-        expect(dataContextBind.calledOnceWithExactly(Report.v1.getIdsAll)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getIds)).to.be.true;
         expect(contactGetIds.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
       });

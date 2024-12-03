@@ -195,12 +195,12 @@ describe('Report API', () => {
     });
   });
 
-  describe('Report.v1.getIdsAll', async () => {
+  describe('Report.v1.getIds', async () => {
     it('fetches all data by iterating through generator', async () => {
       const freetext = 'report';
       const docs = [];
 
-      const generator = Report.v1.getIdsAll(dataContext)(Qualifier.byFreetext(freetext));
+      const generator = Report.v1.getIds(dataContext)(Qualifier.byFreetext(freetext));
 
       for await (const doc of generator) {
         docs.push(doc);
