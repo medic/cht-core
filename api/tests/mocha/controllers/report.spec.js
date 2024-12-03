@@ -163,6 +163,50 @@ describe('Report Controller Tests', () => {
         expect(serverUtilsError.notCalled).to.be.true;
       });
 
+      it('returns a page of report ids for undefined limit', async () => {
+        req = {
+          query: {
+            freetext,
+            cursor,
+          }
+        };
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        reportGetIdsPage.resolves(reports);
+
+        await controller.v1.getIds(req, res);
+
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
+        expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getIdsPage)).to.be.true;
+        expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, undefined)).to.be.true;
+        expect(res.json.calledOnceWithExactly(reports)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('returns error for null limit', async () => {
+        req = {
+          query: {
+            freetext,
+            cursor,
+            limit: null
+          }
+        };
+        const err = new InvalidArgumentError(`The limit must be a positive number: [NaN].`);
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        reportGetIdsPage.throws(err);
+
+        await controller.v1.getIds(req, res);
+
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
+        expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getIdsPage)).to.be.true;
+        expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, null)).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+      });
+
       it('returns error if user does not have can_view_reports permission', async () => {
         req = {
           query: {

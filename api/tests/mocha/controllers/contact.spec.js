@@ -255,6 +255,54 @@ describe('Contact Controller', () => {
         expect(serverUtilsError.notCalled).to.be.true;
       });
 
+      it('returns a page of contact ids with both contactType and freetext param and undefined limit', async () => {
+        req = {
+          query: {
+            type: contactType,
+            freetext,
+            cursor,
+          }
+        };
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        contactGetIdsPage.resolves(contacts);
+
+        await controller.v1.getIds(req, res);
+
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
+        expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getIdsPage)).to.be.true;
+        expect(contactGetIdsPage.calledOnceWithExactly(bothQualifier, cursor, undefined)).to.be.true;
+        expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('returns error in case of null limit', async () => {
+        req = {
+          query: {
+            type: contactType,
+            freetext,
+            cursor,
+            limit: null
+          }
+        };
+        const err = new InvalidArgumentError(`The limit must be a positive number: [NaN].`);
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        contactGetIdsPage.throws(err);
+
+        await controller.v1.getIds(req, res);
+
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
+        expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getIdsPage)).to.be.true;
+        expect(contactGetIdsPage.calledOnceWithExactly(bothQualifier, cursor, null)).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+      });
+
       it('returns error if user does not have can_view_contacts permission', async () => {
         req = {
           query: {
