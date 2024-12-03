@@ -398,7 +398,7 @@ if [[ -z "$projectName" ]]; then
 
   echo
   # thanks for the pr vs rp!! https://unix.stackexchange.com/a/677805
-  read -rp "Would you like to initialize a new project [y/N]?" yn
+  read -rp "Would you like to initialize a new project [y/N]? " yn
   case $yn in
   [Yy]*)
     while [[ -z "$projectName" ]]; do
@@ -408,10 +408,19 @@ if [[ -z "$projectName" ]]; then
       case $runLatest in
       [nN]*)
         allKnownVersions=$(get_all_known_versions)
+        optionCount=$(wc -l <<< "$allKnownVersions")
         echo
-        echo "Which version to you want to run? (ctrl + c to quit)"
-        select preferredRelease in $allKnownVersions; do
-          break
+        echo "Enter 1 through ${optionCount} or 'ctrl + c' to quit: "
+        while true; do
+          select preferredRelease in $allKnownVersions; do
+            if [[ "$REPLY" =~ ^[0-9]+$ && "$REPLY" -gt 0 && "$REPLY" -lt $optionCount ]]; then
+              echo
+              echo "Selected version ${preferredRelease}";
+              break 2;
+            else
+              echo "Invalid choice. Enter 1 through ${optionCount} or 'ctrl + c' to quit"
+            fi
+          done
         done
       esac
       echo
