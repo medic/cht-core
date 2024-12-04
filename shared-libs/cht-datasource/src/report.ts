@@ -13,6 +13,7 @@ import { InvalidArgumentError } from './libs/error';
 import * as Local from './local';
 import { FreetextQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
 import * as Remote from './remote';
+import { DEFAULT_REPORT_PAGE_LIMIT } from "./constants";
 
 /** */
 export namespace v1 {
@@ -81,7 +82,7 @@ export namespace v1 {
     const curriedFn = async (
       qualifier: FreetextQualifier,
       cursor: Nullable<string> = null,
-      limit = 10000
+      limit = DEFAULT_REPORT_PAGE_LIMIT
     ): Promise<Page<string>> => {
       assertFreetextQualifier(qualifier);
       assertCursor(cursor);

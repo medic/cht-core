@@ -18,6 +18,7 @@ import { RemoteDataContext } from './remote/libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
 import * as ContactTypes from './contact-types';
+import { DEFAULT_CONTACT_PAGE_LIMIT } from './constants';
 
 /** */
 export namespace v1 {
@@ -101,7 +102,7 @@ export namespace v1 {
     const curriedFn = async (
       qualifier: ContactTypeQualifier | FreetextQualifier,
       cursor: Nullable<string> = null,
-      limit = 10000
+      limit = DEFAULT_CONTACT_PAGE_LIMIT
     ): Promise<Page<string>> => {
       assertCursor(cursor);
       assertLimit(limit);

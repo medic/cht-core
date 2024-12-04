@@ -8,6 +8,7 @@ import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { InvalidArgumentError } from './libs/error';
 import { assertCursor, assertLimit, assertTypeQualifier, getPagedGenerator, Nullable, Page } from './libs/core';
+import { DEFAULT_PEOPLE_PAGE_LIMIT } from "./constants";
 
 /** */
 export namespace v1 {
@@ -88,7 +89,7 @@ export namespace v1 {
     const curriedFn = async (
       personType: ContactTypeQualifier,
       cursor: Nullable<string> = null,
-      limit = 100
+      limit = DEFAULT_PEOPLE_PAGE_LIMIT
     ): Promise<Page<Person>> => {
       assertTypeQualifier(personType);
       assertCursor(cursor);

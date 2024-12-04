@@ -6,10 +6,10 @@ import * as Report from '../report';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
 import { validateCursor } from './libs/core';
+import { END_OF_ALPHABET_MARKER } from '../constants';
 
 /** @internal */
 export namespace v1 {
-  const END_OF_ALPHABET = '\ufff0';
   const isReport = () => (doc: Nullable<Doc>, uuid?: string): doc is Report.v1.Report => {
     if (!doc) {
       if (uuid) {
@@ -50,7 +50,7 @@ export namespace v1 {
       }
       return (limit, skip) => getReportsByFreetextRange(
         [qualifier.freetext],
-        [qualifier.freetext + END_OF_ALPHABET],
+        [qualifier.freetext + END_OF_ALPHABET_MARKER],
         limit,
         skip
       );

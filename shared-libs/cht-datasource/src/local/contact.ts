@@ -9,10 +9,10 @@ import contactTypeUtils from '@medic/contact-types-utils';
 import { getLineageDocsById, getPrimaryContactIds, hydrateLineage, hydratePrimaryContact } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
 import { validateCursor } from './libs/core';
+import { END_OF_ALPHABET_MARKER } from '../constants';
 
 /** @internal */
 export namespace v1 {
-  const END_OF_ALPHABET = '\ufff0';
   const getContactTypes = (settings: SettingsService): string[] => {
     const contactTypesObjects = contactTypeUtils.getContactTypes(settings.getAll());
     return contactTypesObjects.map((item) => item.id) as string[];
@@ -125,7 +125,7 @@ export namespace v1 {
 
       return (limit, skip) => getContactsByTypeFreetextRange(
         [qualifier.contactType, qualifier.freetext],
-        [qualifier.contactType, qualifier.freetext + END_OF_ALPHABET],
+        [qualifier.contactType, qualifier.freetext + END_OF_ALPHABET_MARKER],
         limit,
         skip
       );
@@ -146,7 +146,7 @@ export namespace v1 {
       }
       return (limit, skip) => getContactsByFreetextRange(
         [qualifier.freetext],
-        [qualifier.freetext + END_OF_ALPHABET],
+        [qualifier.freetext + END_OF_ALPHABET_MARKER],
         limit,
         skip
       );
