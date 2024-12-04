@@ -410,7 +410,7 @@ if [[ -z "$projectName" ]]; then
         allKnownVersions=$(get_all_known_versions)
         optionCount=$(wc -l <<< "$allKnownVersions")
         echo
-        echo "Enter 1 through ${optionCount} or 'ctrl + c' to quit: "
+        echo "Select a version by entering 1 through ${optionCount} or 'ctrl + c' to quit: "
         while true; do
           select preferredRelease in $allKnownVersions; do
             if [[ "$REPLY" =~ ^[0-9]+$ && "$REPLY" -gt 0 && "$REPLY" -lt $optionCount ]]; then
