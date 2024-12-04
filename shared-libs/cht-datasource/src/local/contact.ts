@@ -1,6 +1,6 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import { fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey, queryDocsByRange } from './libs/doc';
-import { ContactTypeQualifier, FreetextQualifier, UuidQualifier } from '../qualifier';
+import { ContactTypeQualifier, FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
 import * as ContactType from '../contact-types';
 import { deepCopy, isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
 import { Doc } from '../libs/doc';
@@ -115,7 +115,7 @@ export namespace v1 {
     const getDocsFnForContactTypeAndFreetext = (
       qualifier: ContactTypeQualifier & FreetextQualifier
     ): (limit: number, skip: number) => Promise<Nullable<Doc>[]> => {
-      if (qualifier.freetext.includes(':')) {
+      if (isKeyedFreetextQualifier(qualifier)) {
         return (limit, skip) => getContactsByTypeFreetext(
           [qualifier.contactType, qualifier.freetext],
           limit,
@@ -141,7 +141,7 @@ export namespace v1 {
     const getDocsFnForFreetextType = (
       qualifier: FreetextQualifier
     ): (limit: number, skip: number) => Promise<Nullable<Doc>[]> => {
-      if (qualifier.freetext.includes(':')) {
+      if (isKeyedFreetextQualifier(qualifier)) {
         return (limit, skip) => getContactsByFreetext([qualifier.freetext], limit, skip);
       }
       return (limit, skip) => getContactsByFreetextRange(

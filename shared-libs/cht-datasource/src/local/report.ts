@@ -1,6 +1,6 @@
 import { LocalDataContext } from './libs/data-context';
 import { fetchAndFilter, getDocById, queryDocsByKey, queryDocsByRange } from './libs/doc';
-import { FreetextQualifier, UuidQualifier } from '../qualifier';
+import { FreetextQualifier, UuidQualifier, isKeyedFreetextQualifier } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import { Doc } from '../libs/doc';
@@ -45,7 +45,7 @@ export namespace v1 {
     const getDocsFnForFreetextType = (
       qualifier: FreetextQualifier
     ): (limit: number, skip: number) => Promise<Nullable<Doc>[]> => {
-      if (qualifier.freetext.includes(':')) {
+      if (isKeyedFreetextQualifier(qualifier)) {
         return (limit, skip) => getReportsByFreetext([qualifier.freetext], limit, skip);
       }
       return (limit, skip) => getReportsByFreetextRange(

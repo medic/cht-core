@@ -84,3 +84,12 @@ export const byFreetext = (freetext: string): FreetextQualifier => {
 export const isFreetextQualifier = (qualifier: unknown): qualifier is FreetextQualifier => {
   return isRecord(qualifier);
 };
+
+/**
+ * Returns `true` if the given FreetextQualifier is also a Key-Value based qualifier in the pattern "key:value"
+ * @param qualifier the FreetextQualifier to check
+ * @returns `true` if the given FreetextQualifier is also a Key-Value based qualifier
+ */
+export const isKeyedFreetextQualifier = (qualifier: FreetextQualifier): boolean => {
+  return qualifier.freetext.includes(':');
+};

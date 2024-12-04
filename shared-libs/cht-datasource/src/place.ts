@@ -8,7 +8,7 @@ import * as Local from './local';
 import * as Remote from './remote';
 import { assertCursor, assertLimit, assertTypeQualifier, getPagedGenerator, Nullable, Page } from './libs/core';
 import { InvalidArgumentError } from './libs/error';
-import { DEFAULT_PLACE_PAGE_LIMIT } from "./constants";
+import { DEFAULT_PLACE_PAGE_LIMIT } from './constants';
 
 /** */
 export namespace v1 {
