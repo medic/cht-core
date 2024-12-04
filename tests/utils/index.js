@@ -1521,9 +1521,13 @@ const getUpdatedPermissions = async (roles, addPermissions, removePermissions) =
   return settings.permissions;
 };
 
-const updatePermissions = async (roles, addPermissions, removePermissions) => {
+const updatePermissions = async (roles, addPermissions, removePermissions, options = {}) => {
   const permissions = await getUpdatedPermissions(roles, addPermissions, removePermissions);
-  await updateSettings({ permissions }, { ignoreReload: true });
+  const { ignoreReload = false, revert = false, refresh = false, sync = false } = options;
+  await updateSettings(
+    { permissions },
+    { ignoreReload, revert, refresh, sync }
+  );
 };
 
 const getSentinelDate = () => getContainerDate('sentinel');

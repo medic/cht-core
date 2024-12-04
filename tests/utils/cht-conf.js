@@ -36,7 +36,7 @@ const initializeConfigDir = async () => {
   await fs.promises.writeFile(eslintPath, JSON.stringify(eslintRules));
 };
 
-const compileNoolsConfig = async ({ tasks, targets, contactSummary }) => {
+const compileNoolsConfig = async ({ tasks, targets, contactSummary, contactSummaryExtras }) => {
   const dir = getDirPath();
 
   if (tasks && fs.existsSync(tasks)) {
@@ -47,6 +47,9 @@ const compileNoolsConfig = async ({ tasks, targets, contactSummary }) => {
   }
   if (contactSummary && fs.existsSync(contactSummary)) {
     fs.copyFileSync(contactSummary, path.join(dir, 'contact-summary.templated.js'));
+  }
+  if (contactSummaryExtras && fs.existsSync(contactSummaryExtras)) {
+    fs.copyFileSync(contactSummaryExtras, path.join(dir, 'contact-summary-extras.js'));
   }
 
   await runCommand('compile-app-settings', dir);
