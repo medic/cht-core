@@ -11,6 +11,7 @@ describe('Privacy policy', () => {
   const englishTexts = privacyPolicyFactory.english;
   const frenchTexts = privacyPolicyFactory.french;
   const spanishTexts = privacyPolicyFactory.spanish;
+  const newPassword = loginPage.NEW_PASSWORD;
 
   const users = [
     userFactory.build({ username: 'offlineuser', isOffline: true }),
@@ -51,14 +52,20 @@ describe('Privacy policy', () => {
 
       it('should not show on subsequent login', async () => {
         await commonPage.reloadSession();
-        await loginPage.login({ username: user.username, password: user.password });
+        await loginPage.login({ username: user.username, password: newPassword, resetPassword: false });
         await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
         expect(await (await privacyPage.privacyWrapper()).isDisplayed()).to.not.be.true;
       });
 
       it('should show french policy on secondary login', async () => {
         await commonPage.reloadSession();
-        await loginPage.login({ username: user.username, password: user.password, locale: 'fr', privacyPolicy: true });
+        await loginPage.login({
+          username: user.username,
+          password: newPassword,
+          locale: 'fr',
+          privacyPolicy: true,
+          resetPassword: false
+        });
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), frenchTexts);
         expect(await (await commonPage.tabsSelector.messagesTab()).isDisplayed()).to.be.true;
       });

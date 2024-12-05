@@ -40,7 +40,9 @@ module.exports = {
       return serverUtils.error('Authentication error', req, res);
     }
 
-    next();
+    return auth.checkPasswordChange(req)
+      .then(() => next())
+      .catch(err => serverUtils.error(err, req, res));
   },
 
   handleAuthErrorsAllowingAuthorized: (req, res, next) => {

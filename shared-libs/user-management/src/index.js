@@ -17,7 +17,8 @@ module.exports = (sourceConfig, sourceDb, sourceDataContext) => {
     bulkUploadLog,
     roles,
     tokenLogin,
-    users
+    users,
+    validatePassword: users.validatePassword
   };
 };
 

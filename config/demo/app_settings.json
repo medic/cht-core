@@ -90,6 +90,9 @@
     "can_access_gateway_api": [
       "gateway"
     ],
+    "can_aggregate_targets": [
+      "chw_supervisor"
+    ],
     "can_bulk_delete_reports": [
       "program_officer",
       "chw_supervisor",
@@ -162,6 +165,9 @@
       "chw_supervisor",
       "chw"
     ],
+    "can_export_dhis": [
+      "crfo"
+    ],
     "can_export_feedback": [
       "program_officer"
     ],
@@ -172,6 +178,7 @@
       "chw"
     ],
     "can_log_out_on_android": [],
+    "can_skip_password_change": [],
     "can_update_places": [
       "program_officer",
       "chw_supervisor",
@@ -185,8 +192,8 @@
     "can_update_users": [
       "program_officer"
     ],
-    "can_export_dhis": [
-      "crfo"
+    "can_upgrade": [
+      "program_officer"
     ],
     "can_verify_reports": [
       "program_officer",
@@ -269,14 +276,8 @@
     "can_view_users": [
       "program_officer"
     ],
-    "can_write_wealth_quintiles": [],
-    "can_aggregate_targets": [
-      "chw_supervisor"
-    ],
-    "can_upgrade": [
-      "program_officer"
-    ],
-    "can_view_old_navigation": []
+    "can_view_old_navigation": [],
+    "can_write_wealth_quintiles": []
   },
   "uhc": {
     "contacts_default_sort": "",

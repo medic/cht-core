@@ -12,6 +12,7 @@ const userFactory = require('@factories/cht/users/users');
 
 const getUserId = n => `org.couchdb.user:${n}`;
 const password = 'passwordSUP3RS3CR37!';
+const newPassword = 'Pa33word1';
 const parentPlace = {
   _id: 'PARENT_PLACE',
   type: 'district_hospital',
@@ -25,19 +26,34 @@ const randomIp = () => {
 
 describe('Users API', () => {
 
-  const expectPasswordLoginToWork = (user) => {
-    const opts = {
-      path: '/login',
-      method: 'POST',
-      simple: false,
-      noAuth: true,
-      body: { user: user.username, password: user.password },
-      followRedirect: false,
-      headers: { 'X-Forwarded-For': randomIp() },
-    };
+  const getUser = (user) => {
+    const opts = { path: `/_users/${getUserId(user.username)}` };
+    return utils.request(opts);
+  };
 
-    return utils
-      .requestOnMedicDb(opts)
+  const expectPasswordLoginToWork = (user) => {
+    return getUser(user)
+      .then(userDoc => {
+        userDoc.password_change_required = false;
+        return utils.request({
+          path: `/_users/${userDoc._id}`,
+          method: 'PUT',
+          body: userDoc
+        });
+      })
+      .then(() => {
+        const opts = {
+          path: '/login',
+          method: 'POST',
+          simple: false,
+          noAuth: true,
+          body: { user: user.username, password: user.password },
+          followRedirect: false,
+          headers: { 'X-Forwarded-For': randomIp() },
+        };
+
+        return utils.requestOnMedicDb(opts);
+      })
       .then(response => {
         chai.expect(response).to.include({
           statusCode: 302,
@@ -446,6 +462,7 @@ describe('Users API', () => {
     before(async () => {
       await utils.saveDoc(parentPlace);
       await utils.createUsers(users);
+      await utils.resetUserPassword(users);
       const docs = Array.from(Array(nbrOfflineDocs), () => ({
         _id: `random_contact_${uuid()}`,
         type: `clinic`,
@@ -470,13 +487,13 @@ describe('Users API', () => {
     beforeEach(() => {
       offlineRequestOptions = {
         path: '/api/v1/users-info',
-        auth: { username: 'offline', password },
+        auth: { username: 'offline', password: newPassword },
         method: 'GET'
       };
 
       onlineRequestOptions = {
         path: '/api/v1/users-info',
-        auth: { username: 'online', password },
+        auth: { username: 'online', password: newPassword },
         method: 'GET'
       };
     });
@@ -507,7 +524,7 @@ describe('Users API', () => {
     it('auth should check for mm-online role when requesting other user docs', () => {
       const requestOptions = {
         path: '/api/v1/users-info?role=district_admin&facility_id=fixture:offline',
-        auth: { username: 'offlineonline', password },
+        auth: { username: 'offlineonline', password: newPassword },
         method: 'GET'
       };
 
@@ -526,7 +543,7 @@ describe('Users API', () => {
     it('auth should check for mm-online role when requesting with missing params', () => {
       const requestOptions = {
         path: '/api/v1/users-info',
-        auth: { username: 'offlineonline', password },
+        auth: { username: 'offlineonline', password: newPassword },
         method: 'GET'
       };
 
@@ -621,10 +638,6 @@ describe('Users API', () => {
   describe('token-login', () => {
     let user;
 
-    const getUser = (user) => {
-      const opts = { path: `/_users/${getUserId(user.username)}` };
-      return utils.request(opts);
-    };
     const getUserSettings = (user) => {
       return utils.requestOnMedicDb({ path: `/${getUserId(user.username)}` });
     };
@@ -1599,7 +1612,8 @@ describe('Users API', () => {
       return utils
         .updateSettings(settings, { ignoreReload: true })
         .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }))
-        .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: onlineUser }))
+        .then(() => utils.createUsers([onlineUser]))
+        .then(() => utils.resetUserPassword([onlineUser]))
         .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
         .then(() => getUser(user))
         .then(user => {
@@ -1610,7 +1624,7 @@ describe('Users API', () => {
           chai.expect(tokenLoginDoc.user).to.equal('org.couchdb.user:testuser');
 
           const onlineRequestOpts = {
-            auth: { user: 'onlineuser', password },
+            auth: { user: 'onlineuser', password: newPassword },
             method: 'PUT',
             path: `/${tokenLoginDoc._id}`,
             body: tokenLoginDoc,
@@ -1654,6 +1668,10 @@ describe('Users API', () => {
 
       await utils.saveDocs([ facility, person ]);
       await utils.createUsers([{ ...user, password }, { ...userProgramOfficer, password }]);
+      await utils.resetUserPassword([
+        { ...user, password },
+        { ...userProgramOfficer, password },
+      ]);
 
       await utils.updatePermissions(['program_officer'], ['can_view_users'], [], { ignoreReload: true });
     });
@@ -1679,7 +1697,7 @@ describe('Users API', () => {
     it('retrieves a user with can_view_users permission', async () => {
       const users = await utils.request({
         path: `/api/v2/users/${user.username}`,
-        auth: { username: userProgramOfficer.username, password },
+        auth: { username: userProgramOfficer.username, password: newPassword },
       });
 
       expect(users).excludingEvery(['_rev']).to.deep.include({
@@ -1708,7 +1726,7 @@ describe('Users API', () => {
       try {
         await utils.request({
           path: `/api/v2/users/${userProgramOfficer.username}`,
-          auth: { username: user.username, password },
+          auth: { username: user.username, password: newPassword },
         });
       } catch ({ error }) {
         expect(error.code).to.equal(403);
@@ -1722,7 +1740,7 @@ describe('Users API', () => {
     it('retrieves self even when user does not have can_view_users permission', async () => {
       const users = await utils.request({
         path: `/api/v2/users/${user.username}`,
-        auth: { username: user.username, password },
+        auth: { username: user.username, password: newPassword },
       });
 
       expect(users).excludingEvery(['_rev']).to.deep.include({

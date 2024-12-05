@@ -3,26 +3,46 @@ const utils = require('@utils');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 const loginButton = () => $('#login');
+const updatePasswordButton = () => $('#update-password');
 const userField = () => $('#user');
 const passwordField = () => $('#password');
+const resetPasswordField = () => $('#form[action="/medic/password-reset"] #password');
+const confirmPasswordField = () => $('#confirm-password');
+const currentPasswordField = () => $('#current-password');
 const passwordToggleButton = () => $('#password-toggle');
 const labelForUser = () => $('label[for="user"]');
 const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
 const localeByName = (locale) => $(`.locale[name="${locale}"]`);
 const tokenLoginError = (reason) => $(`.error.${reason}`);
+const passwordResetMessageField = (errorMsg) => $(`p.error.${errorMsg}`);
 
 const getErrorMessage = async () => {
   await (await errorMessageField()).waitForDisplayed();
   return await (await errorMessageField()).getText();
 };
 
-const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
+const getPasswordResetErrorMessage = async (errorMsg) => {
+  await (await passwordResetMessageField(errorMsg)).waitForDisplayed();
+  return await (await passwordResetMessageField(errorMsg)).getText();
+};
+
+const NEW_PASSWORD = constants.NEW_PASSWORD;
+
+const login = async ({
+  username,
+  password,
+  createUser = false,
+  locale, loadPage = true,
+  privacyPolicy,
+  adminApp,
+  resetPassword = true
+}) => {
   if (utils.isMinimumChromeVersion) {
     await browser.url('/');
   }
   await setPasswordValue(password);
-  await (await userField()).setValue(username);
+  await setUsernameValue(username);
   await changeLocale(locale);
   await (await loginButton()).click();
 
@@ -32,6 +52,10 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
       return cookies.some(cookie => cookie.name === 'userCtx');
     });
     await utils.setupUserDoc(username);
+  }
+
+  if (resetPassword) {
+    await passwordReset(password, NEW_PASSWORD, NEW_PASSWORD);
   }
 
   if (!loadPage) {
@@ -48,6 +72,22 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
   await commonPage.hideSnackbar();
 };
 
+const loginRequest = async (username, password, locale) => {
+  const opts = {
+    path: '/medic/login',
+    body: { user: username, password: password, locale },
+    method: 'POST',
+    simple: false,
+  };
+  return await utils.request(opts);
+};
+
+const setCookiesFromResponse = async (response) => {
+  const cookieArray = utils.parseCookieResponse(response.headers['set-cookie']);
+  await browser.url('/');
+  await browser.setCookies(cookieArray);
+};
+
 const cookieLogin = async (options = {}) => {
   const {
     username = constants.USERNAME,
@@ -55,20 +95,14 @@ const cookieLogin = async (options = {}) => {
     createUser = true,
     locale = 'en',
   } = options;
-  const opts = {
-    path: '/medic/login',
-    body: { user: username, password: password, locale },
-    method: 'POST',
-    simple: false,
-  };
-  const resp = await utils.request(opts);
-  const cookieArray = utils.parseCookieResponse(resp.headers['set-cookie']);
 
-  await browser.url('/');
-  await browser.setCookies(cookieArray);
+  const loginResp = await loginRequest(username, password, locale);
+  await setCookiesFromResponse(loginResp);
+
   if (createUser) {
     await utils.setupUserDoc(username);
   }
+
   await commonPage.goToBase();
 };
 
@@ -98,6 +132,9 @@ const changeLocale = async locale => {
 };
 
 const changeLanguage = async (languageCode, userTranslation) => {
+  if (utils.isMinimumChromeVersion) {
+    await browser.url('/');
+  }
   await changeLocale(languageCode);
   await browser.waitUntil(async () => await (await labelForUser()).getText() === userTranslation);
   return {
@@ -133,6 +170,29 @@ const setPasswordValue = async (password) => {
   await (await passwordField()).setValue(password);
 };
 
+const setConfirmPasswordValue = async (confirmPassword) => {
+  await (await confirmPasswordField()).waitForDisplayed();
+  await (await confirmPasswordField()).setValue(confirmPassword);
+};
+
+const setCurrentPasswordValue = async (currentPassword) => {
+  await (await currentPasswordField()).waitForDisplayed();
+  await (await currentPasswordField()).setValue(currentPassword);
+};
+
+const setUsernameValue = async (username) => {
+  await (await userField()).waitForDisplayed();
+  await (await userField()).setValue(username);
+};
+
+const passwordReset = async (currentPassword, password, confirmPassword) => {
+  await setCurrentPasswordValue(currentPassword);
+  await (await resetPasswordField()).waitForDisplayed();
+  await (await resetPasswordField()).setValue(password);
+  await setConfirmPasswordValue(confirmPassword);
+  await (await updatePasswordButton()).click();
+};
+
 module.exports = {
   login,
   cookieLogin,
@@ -147,4 +207,11 @@ module.exports = {
   getErrorMessage,
   togglePassword,
   setPasswordValue,
+  setUsernameValue,
+  setConfirmPasswordValue,
+  setCurrentPasswordValue,
+  passwordReset,
+  updatePasswordButton,
+  getPasswordResetErrorMessage,
+  NEW_PASSWORD,
 };

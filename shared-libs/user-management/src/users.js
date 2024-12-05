@@ -201,12 +201,19 @@ const validateNewUsername = username => {
 const createUser = (data, response) => {
   const user = getUserUpdates(data.username, data);
   user._id = createID(data.username);
-  return db.users.put(user).then(body => {
-    response.user = {
-      id: body.id,
-      rev: body.rev
-    };
-  });
+  return isTargetAdminUser(data.username)
+    .then(isAdmin => {
+      if (!data.token_login) {
+        user.password_change_required = !isAdmin;
+      }
+      return db.users.put(user);
+    })
+    .then(body => {
+      response.user = {
+        id: body.id,
+        rev: body.rev
+      };
+    });
 };
 
 const hasUserCreateFlag = doc => doc?.user_for_contact?.create;
@@ -423,7 +430,7 @@ const getCommonFieldsUpdates = (userDoc, data) => {
   if (data.roles) {
     userDoc.roles = data.roles;
   }
-  
+
   if (!_.isUndefined(data.place)) {
     userDoc.facility_id = data.facility_id;
   }
@@ -452,13 +459,30 @@ const getSettingsUpdates = (username, data) => {
   return settings;
 };
 
-const getUserUpdates = (username, data) => {
+const isTargetAdminUser = async (username) => {
+  const admins = await couchSettings.getCouchConfig('admins');
+  return admins && !!admins[username];
+};
+
+const requirePasswordChange = async (username, fullAccess) => {
+  if (!fullAccess) {
+    return false;
+  }
+
+  return !(await isTargetAdminUser(username));
+};
+
+const getUserUpdates = (username, data, requirePasswordChange = false) => {
   const ignore = ['type', 'place', 'contact'];
 
   const user = {
     name: username,
     type: 'user'
   };
+
+  if (data.password && !tokenLogin.shouldEnableTokenLogin(data)) {
+    user.password_change_required = requirePasswordChange;
+  }
 
   USER_EDITABLE_FIELDS.forEach(key => {
     if (!_.isUndefined(data[key]) && ignore.indexOf(key) === -1) {
@@ -542,14 +566,17 @@ const missingFields = data => {
   return required.filter(prop => isInvalidProp(prop));
 };
 
-const getUpdatedUserDoc = async (username, data) => getUserDoc(username, 'users')
-  .then(doc => {
-    return {
-      ...doc,
-      ...getUserUpdates(username, data),
-      _id: createID(username)
-    };
-  });
+const getUpdatedUserDoc = async (username, data, fullAccess) => {
+  const passwordChange = await requirePasswordChange(username, fullAccess);
+  return getUserDoc(username, 'users')
+    .then(doc => {
+      return {
+        ...doc,
+        ...getUserUpdates(username, data, passwordChange),
+        _id: createID(username)
+      };
+    });
+};
 
 
 const getUpdatedSettingsDoc = (username, data) => getUserDoc(username, 'medic')
@@ -954,6 +981,7 @@ module.exports = {
     const facilities = await facility.list([user]);
     return mapUser(user, userSettings, facilities);
   },
+  getUserDoc: (username) => getUserDoc(username, 'users'),
   getUserSettings,
   /* eslint-disable max-len */
   /**
@@ -1132,7 +1160,7 @@ module.exports = {
     hydratePayload(data);
 
     const [user, userSettings] = await Promise.all([
-      getUpdatedUserDoc(username, data),
+      getUpdatedUserDoc(username, data, fullAccess),
       getUpdatedSettingsDoc(username, data),
     ]);
 
@@ -1159,12 +1187,14 @@ module.exports = {
    */
   resetPassword: async (username) => {
     const password = passwords.generate();
-    const user = await getUpdatedUserDoc(username, { password });
+    const user = await getUpdatedUserDoc(username, { password }, true);
     await saveUserUpdates(user);
     return password;
   },
 
   validateNewUsername,
+
+  validatePassword,
 
   /**
    * Parses a CSV of users to an array of objects.
