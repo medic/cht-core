@@ -1,7 +1,6 @@
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { getRemoteDataContext, Place, Qualifier } = require('@medic/cht-datasource');
 const { expect } = require('chai');
 const userFactory = require('@factories/cht/users/users');
 
@@ -44,6 +43,10 @@ describe('Place API', () => {
     contact: {}
   }));
 
+  const adminUser = {
+    username: 'admin',
+    password: 'pass'
+  };
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms',
     place: place1._id,
@@ -62,7 +65,6 @@ describe('Place API', () => {
     },
     roles: ['chw']
   }));
-  const dataContext = getRemoteDataContext(utils.getOrigin());
   const expectedPlaces = [place0, clinic1, clinic2];
 
   before(async () => {
@@ -76,16 +78,23 @@ describe('Place API', () => {
   });
 
   describe('GET /api/v1/place/:uuid', async () => {
-    const getPlace = Place.v1.get(dataContext);
-    const getPlaceWithLineage = Place.v1.getWithLineage(dataContext);
+    const endpoint = '/api/v1/place';
 
     it('returns the place matching the provided UUID', async () => {
-      const place = await getPlace(Qualifier.byUuid(place0._id));
+      const opts = {
+        path: `${endpoint}/${place0._id}`,
+        auth: adminUser,
+      };
+      const place = await utils.request(opts);
       expect(place).excluding(['_rev', 'reported_date']).to.deep.equal(place0);
     });
 
     it('returns the place with lineage when the withLineage query parameter is provided', async () => {
-      const place = await getPlaceWithLineage(Qualifier.byUuid(place0._id));
+      const opts = {
+        path: `${endpoint}/${place0._id}?with_lineage=true`,
+        auth: adminUser,
+      };
+      const place = await utils.request(opts);
       expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
         ...place0,
         contact: contact0,
@@ -101,8 +110,11 @@ describe('Place API', () => {
     });
 
     it('returns null when no place is found for the UUID', async () => {
-      const place = await getPlace(Qualifier.byUuid('invalid-uuid'));
-      expect(place).to.be.null;
+      const opts = {
+        path: `${endpoint}/invalid-uuid`,
+        auth: adminUser,
+      };
+      await expect(utils.request(opts)).to.be.rejectedWith('404 - {"code":404,"error":"Place not found"}');
     });
 
     [
@@ -120,13 +132,20 @@ describe('Place API', () => {
   });
 
   describe('GET /api/v1/place', async () => {
-    const getPage = Place.v1.getPage(dataContext);
     const limit = 2;
-    const cursor = null;
     const invalidContactType = 'invalidPlace';
+    const endpoint = '/api/v1/place';
 
     it('returns a page of places for no limit and cursor passed', async () => {
-      const responsePage = await getPage(Qualifier.byContactType(placeType));
+      const queryParams = {
+        type: placeType
+      };
+      const stringQueryParams = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `${endpoint}?${stringQueryParams}`,
+        auth: adminUser,
+      };
+      const responsePage = await utils.request(opts);
       const responsePlaces = responsePage.data;
       const responseCursor = responsePage.cursor;
 
@@ -136,8 +155,26 @@ describe('Place API', () => {
     });
 
     it('returns a page of places when limit and cursor is passed and cursor can be reused', async () => {
-      const firstPage = await getPage(Qualifier.byContactType(placeType), cursor, limit);
-      const secondPage = await getPage(Qualifier.byContactType(placeType), firstPage.cursor, limit);
+      // first request
+      const queryParams = {
+        type: placeType,
+        limit: limit
+      };
+      let stringQueryParams = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `${endpoint}?${stringQueryParams}`,
+        auth: adminUser
+      };
+      const firstPage = await utils.request(opts);
+
+      // second request
+      queryParams.cursor = firstPage.cursor;
+      stringQueryParams = new URLSearchParams(queryParams).toString();
+      const opts2 = {
+        path: `${endpoint}?${stringQueryParams}`,
+        auth: adminUser
+      };
+      const secondPage = await utils.request(opts2);
 
       const allPeople = [...firstPage.data, ...secondPage.data];
 
@@ -205,20 +242,6 @@ describe('Place API', () => {
         .to.be.rejectedWith(
           `400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`
         );
-    });
-  });
-
-  describe('Place.v1.getAll', async () => {
-    it('fetches all data by iterating through generator', async () => {
-      const docs = [];
-
-      const generator = Place.v1.getAll(dataContext)(Qualifier.byContactType(placeType));
-
-      for await (const doc of generator) {
-        docs.push(doc);
-      }
-
-      expect(docs).excluding(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPlaces);
     });
   });
 });

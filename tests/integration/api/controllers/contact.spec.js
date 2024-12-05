@@ -2,7 +2,6 @@ const utils = require('@utils');
 const personFactory = require('@factories/cht/contacts/person');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
-const {getRemoteDataContext, Qualifier, Contact } = require('@medic/cht-datasource');
 const {expect} = require('chai');
 
 describe('Contact API', () => {
@@ -60,6 +59,10 @@ describe('Contact API', () => {
     name: 'clinic2'
   }));
 
+  const adminUser = {
+    username: 'admin',
+    password: 'pass'
+  };
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms',
     place: place1._id,
@@ -79,7 +82,6 @@ describe('Contact API', () => {
     roles: ['chw']
   }));
   const allDocItems = [contact0, contact1, contact2, place0, place1, place2, clinic1, clinic2, patient];
-  const dataContext = getRemoteDataContext(utils.getOrigin());
   const personType = 'person';
   const e2eTestUser = {
     '_id': 'e2e_contact_test_id',
@@ -131,21 +133,32 @@ describe('Contact API', () => {
   });
 
   describe('GET /api/v1/contact/:uuid', async () => {
-    const getContact = Contact.v1.get(dataContext);
-    const getContactWithLineage = Contact.v1.getWithLineage(dataContext);
+    const endpoint = '/api/v1/contact';
 
     it('returns the person contact matching the provided UUID', async () => {
-      const person = await getContact(Qualifier.byUuid(patient._id));
+      const opts = {
+        path: `${endpoint}/${patient._id}`,
+        auth: adminUser,
+      };
+      const person = await utils.request(opts);
       expect(person).excluding([ '_rev', 'reported_date' ]).to.deep.equal(patient);
     });
 
     it('returns the place contact matching the provided UUID', async () => {
-      const place = await getContact(Qualifier.byUuid(place0._id));
+      const opts = {
+        path: `${endpoint}/${place0._id}`,
+        auth: adminUser,
+      };
+      const place = await utils.request(opts);
       expect(place).excluding(['_rev', 'reported_date']).to.deep.equal(place0);
     });
 
     it('returns the person contact with lineage when the withLineage query parameter is provided', async () => {
-      const person = await getContactWithLineage(Qualifier.byUuid(patient._id));
+      const opts = {
+        path: `${endpoint}/${patient._id}?with_lineage=true`,
+        auth: adminUser,
+      };
+      const person = await utils.request(opts);
       expect(person).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
         ...patient,
         parent: {
@@ -164,7 +177,11 @@ describe('Contact API', () => {
     });
 
     it('returns the place contact with lineage when the withLineage query parameter is provided', async () => {
-      const place = await getContactWithLineage(Qualifier.byUuid(place0._id));
+      const opts = {
+        path: `${endpoint}/${place0._id}?with_lineage=true`,
+        auth: adminUser,
+      };
+      const place = await utils.request(opts);
       expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
         ...place0,
         contact: contact0,
@@ -180,8 +197,11 @@ describe('Contact API', () => {
     });
 
     it('returns null when no contact is found for the UUID', async () => {
-      const contact = await getContact(Qualifier.byUuid('invalid-uuid'));
-      expect(contact).to.be.null;
+      const opts = {
+        path: `${endpoint}/invalid-uuid`,
+        auth: adminUser,
+      };
+      await expect(utils.request(opts)).to.be.rejectedWith('404 - {"code":404,"error":"Contact not found"}');
     });
 
     [
@@ -190,7 +210,7 @@ describe('Contact API', () => {
     ].forEach(([description, user]) => {
       it(`throws error when user ${description}`, async () => {
         const opts = {
-          path: `/api/v1/contact/${patient._id}`,
+          path: `${endpoint}/${patient._id}`,
           auth: {username: user.username, password: user.password},
         };
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
@@ -199,16 +219,23 @@ describe('Contact API', () => {
   });
 
   describe('GET /api/v1/contact/id', async () => {
-    const getIdsPage = Contact.v1.getIdsPage(dataContext);
     const fourLimit = 4;
     const twoLimit = 2;
-    const cursor = null;
     const invalidContactType = 'invalidPerson';
     const freetext = 'contact';
     const placeFreetext = 'clinic';
+    const endpoint = '/api/v1/contact/id';
 
     it('returns a page of people type contact ids for no limit and cursor passed', async () => {
-      const responsePage = await getIdsPage(Qualifier.byContactType(personType));
+      const queryParams = {
+        type: personType
+      };
+      const stringQueryParams = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `${endpoint}?${stringQueryParams}`,
+        auth: adminUser,
+      };
+      const responsePage = await utils.request(opts);
       const responsePeople = responsePage.data;
       const responseCursor = responsePage.cursor;
 
@@ -217,7 +244,15 @@ describe('Contact API', () => {
     });
 
     it('returns a page of place type contact for no limit and cursor passed', async () => {
-      const responsePage = await getIdsPage(Qualifier.byContactType(placeType));
+      const queryParams = {
+        type: placeType
+      };
+      const stringQueryParams = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `${endpoint}?${stringQueryParams}`,
+        auth: adminUser,
+      };
+      const responsePage = await utils.request(opts);
       const responsePlaces = responsePage.data;
       const responseCursor = responsePage.cursor;
 
@@ -227,8 +262,17 @@ describe('Contact API', () => {
     });
 
     it('returns a page of contact ids for freetext with no limit and cursor passed', async () => {
+      const queryParams = {
+        freetext
+      };
+      const stringQueryParams = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `${endpoint}?${stringQueryParams}`,
+        auth: adminUser
+      };
       const expectedContactIds = [contact0._id, contact1._id, contact2._id];
-      const responsePage = await getIdsPage(Qualifier.byFreetext(freetext));
+
+      const responsePage = await utils.request(opts);
       const responsePeople = responsePage.data;
       const responseCursor = responsePage.cursor;
 
@@ -237,11 +281,18 @@ describe('Contact API', () => {
     });
 
     it('returns a page of people type contact ids and freetext for no limit and cursor passed', async () => {
-      const responsePage = await getIdsPage({
-        ...Qualifier.byContactType(personType),
-        ...Qualifier.byFreetext(freetext),
-      });
+      const queryParams = {
+        type: personType,
+        freetext
+      };
+      const stringQueryParams = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `${endpoint}?${stringQueryParams}`,
+        auth: adminUser
+      };
       const expectedContactIds = [contact0._id, contact1._id, contact2._id];
+
+      const responsePage = await utils.request(opts);
       const responsePeople = responsePage.data;
       const responseCursor = responsePage.cursor;
 
@@ -250,24 +301,48 @@ describe('Contact API', () => {
     });
 
     it('returns a page of place type contact with freetext for no limit and cursor passed', async () => {
-      const freetext = 'clinic';
-      const responsePage = await getIdsPage({
-        ...Qualifier.byContactType(placeType),
-        ...Qualifier.byFreetext(freetext)
-      });
+      const queryParams = {
+        type: placeType,
+        freetext: placeFreetext
+      };
+      const stringQueryParams = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `${endpoint}?${stringQueryParams}`,
+        auth: adminUser
+      };
+      const expectedContactIds = [place0._id, clinic1._id, clinic2._id];
+
+      const responsePage = await utils.request(opts);
       const responsePlaces = responsePage.data;
       const responseCursor = responsePage.cursor;
-      const expectedContactIds = [place0._id, clinic1._id, clinic2._id];
 
       expect(responsePlaces).excludingEvery(['_rev', 'reported_date'])
         .to.deep.equalInAnyOrder(expectedContactIds);
       expect(responseCursor).to.be.equal(null);
     });
 
-    it('returns a page of people type contact ids when limit and cursor is passed and cursor can be reused', 
+    it('returns a page of people type contact ids when limit and cursor is passed and cursor can be reused',
       async () => {
-        const firstPage = await getIdsPage(Qualifier.byContactType(personType), cursor, fourLimit);
-        const secondPage = await getIdsPage(Qualifier.byContactType(personType), firstPage.cursor, fourLimit);
+        // first request
+        const queryParams = {
+          type: personType,
+          limit: fourLimit
+        };
+        let stringQueryParams = new URLSearchParams(queryParams).toString();
+        const opts = {
+          path: `${endpoint}?${stringQueryParams}`,
+          auth: adminUser
+        };
+        const firstPage = await utils.request(opts);
+
+        // second request
+        queryParams.cursor = firstPage.cursor;
+        stringQueryParams = new URLSearchParams(queryParams).toString();
+        const opts2 = {
+          path: `${endpoint}?${stringQueryParams}`,
+          auth: adminUser
+        };
+        const secondPage = await utils.request(opts2);
 
         const allData = [...firstPage.data, ...secondPage.data];
 
@@ -278,10 +353,28 @@ describe('Contact API', () => {
         expect(secondPage.cursor).to.be.equal(null);
       });
 
-    it('returns a page of place type contact ids when limit and cursor is passed and cursor can be reused', 
+    it('returns a page of place type contact ids when limit and cursor is passed and cursor can be reused',
       async () => {
-        const firstPage = await getIdsPage(Qualifier.byContactType(placeType), cursor, twoLimit);
-        const secondPage = await getIdsPage(Qualifier.byContactType(placeType), firstPage.cursor, twoLimit);
+        // first request
+        const queryParams = {
+          type: placeType,
+          limit: twoLimit
+        };
+        let stringQueryParams = new URLSearchParams(queryParams).toString();
+        const opts = {
+          path: `${endpoint}?${stringQueryParams}`,
+          auth: adminUser
+        };
+        const firstPage = await utils.request(opts);
+
+        // second request
+        queryParams.cursor = firstPage.cursor;
+        stringQueryParams = new URLSearchParams(queryParams).toString();
+        const opts2 = {
+          path: `${endpoint}?${stringQueryParams}`,
+          auth: adminUser
+        };
+        const secondPage = await utils.request(opts2);
 
         const allData = [...firstPage.data, ...secondPage.data];
 
@@ -294,9 +387,27 @@ describe('Contact API', () => {
 
     it('returns a page of contact ids with freetext when limit and cursor is passed and cursor can be reused',
       async () => {
+        // first request
         const expectedContactIds = [contact0._id, contact1._id, contact2._id];
-        const firstPage = await getIdsPage(Qualifier.byFreetext(freetext), cursor, twoLimit);
-        const secondPage = await getIdsPage(Qualifier.byFreetext(freetext), firstPage.cursor, twoLimit);
+        const queryParams = {
+          freetext,
+          limit: twoLimit
+        };
+        let stringQueryParams = new URLSearchParams(queryParams).toString();
+        const opts = {
+          path: `${endpoint}?${stringQueryParams}`,
+          auth: adminUser
+        };
+        const firstPage = await utils.request(opts);
+
+        // second request
+        queryParams.cursor = firstPage.cursor;
+        stringQueryParams = new URLSearchParams(queryParams).toString();
+        const opts2 = {
+          path: `${endpoint}?${stringQueryParams}`,
+          auth: adminUser
+        };
+        const secondPage = await utils.request(opts2);
 
         const allData = [...firstPage.data, ...secondPage.data];
 
@@ -310,15 +421,28 @@ describe('Contact API', () => {
     it('returns a page of people type contact ids with freetext when limit and cursor is passed' +
       'and cursor can be reused',
     async () => {
-      const firstPage = await getIdsPage({
-        ...Qualifier.byContactType(personType),
-        ...Qualifier.byFreetext(freetext),
-      }, cursor, twoLimit);
-      const secondPage = await getIdsPage({
-        ...Qualifier.byContactType(personType),
-        ...Qualifier.byFreetext(freetext),
-      }, firstPage.cursor, twoLimit);
+      // first request
       const expectedContactIds = [contact0._id, contact1._id, contact2._id];
+      const queryParams = {
+        freetext,
+        type: personType,
+        limit: twoLimit
+      };
+      let stringQueryParams = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `${endpoint}?${stringQueryParams}`,
+        auth: adminUser
+      };
+      const firstPage = await utils.request(opts);
+
+      // second request
+      queryParams.cursor = firstPage.cursor;
+      stringQueryParams = new URLSearchParams(queryParams).toString();
+      const opts2 = {
+        path: `${endpoint}?${stringQueryParams}`,
+        auth: adminUser
+      };
+      const secondPage = await utils.request(opts2);
 
       const allData = [...firstPage.data, ...secondPage.data];
 
@@ -331,15 +455,28 @@ describe('Contact API', () => {
 
     it('returns a page of place type contact ids when limit and cursor is passed and cursor can be reused',
       async () => {
-        const firstPage = await getIdsPage({
-          ...Qualifier.byContactType(placeType),
-          ...Qualifier.byFreetext(placeFreetext),
-        }, cursor, twoLimit);
-        const secondPage = await getIdsPage({
-          ...Qualifier.byContactType(placeType),
-          ...Qualifier.byFreetext(placeFreetext),
-        }, firstPage.cursor, twoLimit);
+        // first request
         const expectedContactIds = [place0._id, clinic1._id, clinic2._id];
+        const queryParams = {
+          freetext: placeFreetext,
+          type: placeType,
+          limit: twoLimit
+        };
+        let stringQueryParams = new URLSearchParams(queryParams).toString();
+        const opts = {
+          path: `${endpoint}?${stringQueryParams}`,
+          auth: adminUser
+        };
+        const firstPage = await utils.request(opts);
+
+        // second request
+        queryParams.cursor = firstPage.cursor;
+        stringQueryParams = new URLSearchParams(queryParams).toString();
+        const opts2 = {
+          path: `${endpoint}?${stringQueryParams}`,
+          auth: adminUser
+        };
+        const secondPage = await utils.request(opts2);
 
         const allData = [...firstPage.data, ...secondPage.data];
 
@@ -407,20 +544,6 @@ describe('Contact API', () => {
         .to.be.rejectedWith(
           `400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`
         );
-    });
-  });
-
-  describe('Contact.v1.getIds', async () => {
-    it('fetches all data by iterating through generator', async () => {
-      const docs = [];
-
-      const generator = Contact.v1.getIds(dataContext)(Qualifier.byContactType(personType));
-
-      for await (const doc of generator) {
-        docs.push(doc);
-      }
-
-      expect(docs).excluding(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPeopleIds);
     });
   });
 });
