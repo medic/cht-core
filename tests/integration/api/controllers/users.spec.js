@@ -114,7 +114,7 @@ describe('Users API', () => {
     ];
 
     before(async () => {
-      await utils.updatePermissions(['chw'], ['can_edit']);
+      await utils.updatePermissions(['chw'], ['can_edit'], [], { ignoreReload: true });
 
       await utils.request({
         path: '/_users',
@@ -1655,7 +1655,7 @@ describe('Users API', () => {
       await utils.saveDocs([ facility, person ]);
       await utils.createUsers([{ ...user, password }, { ...userProgramOfficer, password }]);
 
-      await utils.updatePermissions(['program_officer'], ['can_view_users']);
+      await utils.updatePermissions(['program_officer'], ['can_view_users'], [], { ignoreReload: true });
     });
 
     after(async () => {
@@ -2018,7 +2018,7 @@ describe('Users API', () => {
     });
 
     it('should edit users to add multiple facilities', async () => {
-      await utils.updatePermissions(['national_admin'], ['can_have_multiple_places']);
+      await utils.updatePermissions(['national_admin'], ['can_have_multiple_places'], [], { ignoreReload: true });
       const onlineUserPayload = {
         username: uuid(),
         password: password,
@@ -2054,7 +2054,12 @@ describe('Users API', () => {
     });
 
     it('should fail when facilities are malformed', async () => {
-      await utils.updatePermissions(['national_admin', 'chw'], ['can_have_multiple_places'], [], true);
+      await utils.updatePermissions(
+        ['national_admin', 'chw'],
+        ['can_have_multiple_places'],
+        [],
+        { ignoreReload: true }
+      );
       const onlineUserPayload = {
         username: uuid(),
         password: password,
