@@ -250,6 +250,7 @@ const getExpectedViewIndexes = (dbName) => {
 
 const getCurrentDdocNames = (db) => getBundledDdocs(db)
   .then(ddocs => ddocs
+    .filter(ddoc => !!ddoc.views)
     .map(ddoc => ddoc._id)
     .map(ddocId => ddocId.split('/')[1]));
 

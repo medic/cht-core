@@ -1,0 +1,27 @@
+diff --git a/node_modules/eslint-plugin-couchdb/lib/index.js b/node_modules/eslint-plugin-couchdb/lib/index.js
+index 3399a8f..418f58b 100644
+--- a/node_modules/eslint-plugin-couchdb/lib/index.js
++++ b/node_modules/eslint-plugin-couchdb/lib/index.js
+@@ -18,12 +18,14 @@ var front = function(functions, jsonObject) {
+ }
+ 
+ // https://docs.couchdb.org/en/stable/query-server/javascript.html#
++var indexFront = front(['index', 'isArray', 'log', 'require', 'sum', 'toJSON'], true);
+ var mapFront = front(['emit', 'isArray', 'log', 'require', 'sum', 'toJSON'], true);
+ var reduceFront = front(['isArray', 'log', 'sum', 'toJSON'], true);
+ var vdoFront = front(['isArray', 'log', 'require', 'sum', 'toJSON'], true);
+ var showFront = front(['isArray', 'log', 'provides', 'registerType', 'require', 'sum', 'toJSON'], true);
+ var listFront = front(['getRow', 'isArray', 'log', 'provides', 'registerType', 'require', 'send', 'start', 'sum', 'toJSON'], true);
+ 
++var indexTest = /nouveau\/[^\/]+\/index\.js$/;
+ var mapTest = /views\/[^\/]+\/map\.js$/;
+ var reduceTest = /views\/[^\/]+\/reduce\.js$/;
+ var vdoTest = /validate_doc_update.js$/;
+@@ -31,6 +33,7 @@ var showTest = /shows\/.*.js$/;
+ var listTest = /lists\/.*.js$/;
+ 
+ var FN_TYPES = [
++  {test: indexTest, front: indexFront},
+   {test: mapTest, front: mapFront},
+   {test: reduceTest, front: reduceFront},
+   {test: vdoTest, front: vdoFront},
