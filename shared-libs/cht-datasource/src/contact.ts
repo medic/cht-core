@@ -18,7 +18,7 @@ import { RemoteDataContext } from './remote/libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
 import * as ContactTypes from './contact-types';
-import { DEFAULT_CONTACT_PAGE_LIMIT } from './constants';
+import { DEFAULT_CONTACT_PAGE_LIMIT } from './libs/constants';
 
 /** */
 export namespace v1 {

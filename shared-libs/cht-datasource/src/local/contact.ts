@@ -9,7 +9,7 @@ import contactTypeUtils from '@medic/contact-types-utils';
 import { getLineageDocsById, getPrimaryContactIds, hydrateLineage, hydratePrimaryContact } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
 import { validateCursor } from './libs/core';
-import { END_OF_ALPHABET_MARKER } from '../constants';
+import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 
 /** @internal */
 export namespace v1 {

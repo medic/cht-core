@@ -39,7 +39,7 @@ import {
   DEFAULT_PEOPLE_PAGE_LIMIT,
   DEFAULT_PLACE_PAGE_LIMIT,
   DEFAULT_REPORT_PAGE_LIMIT
-} from './constants';
+} from './libs/constants';
 
 export { Nullable, NonEmptyArray } from './libs/core';
 export { DataContext } from './libs/data-context';

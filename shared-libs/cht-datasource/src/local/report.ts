@@ -6,7 +6,7 @@ import * as Report from '../report';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
 import { validateCursor } from './libs/core';
-import { END_OF_ALPHABET_MARKER } from '../constants';
+import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 
 /** @internal */
 export namespace v1 {

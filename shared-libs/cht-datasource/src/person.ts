@@ -8,7 +8,7 @@ import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { InvalidArgumentError } from './libs/error';
 import { assertCursor, assertLimit, assertTypeQualifier, getPagedGenerator, Nullable, Page } from './libs/core';
-import { DEFAULT_PEOPLE_PAGE_LIMIT } from './constants';
+import { DEFAULT_PEOPLE_PAGE_LIMIT } from './libs/constants';
 
 /** */
 export namespace v1 {
