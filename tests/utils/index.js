@@ -32,8 +32,8 @@ const isDocker = () => infrastructure === 'docker';
 const isK3D = () => !isDocker();
 const K3D_DATA_PATH = '/data';
 const K3D_REGISTRY = 'registry.localhost';
-const K3D_REGISTRY_PORT = 12345;
-const K3D_REPO = `k3d-${K3D_REGISTRY}:${K3D_REGISTRY_PORT}`;
+let K3D_REGISTRY_PORT;
+const K3D_REPO = () => `k3d-${K3D_REGISTRY}:${K3D_REGISTRY_PORT}`;
 
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
@@ -1104,7 +1104,7 @@ const getTestComposeFilePath = file => path.resolve(__dirname, `../${file}-test.
 
 const generateK3DValuesFile = async () => {
   const view = {
-    repo: `${K3D_REPO}/${buildVersions.getRepo()}`,
+    repo: `${K3D_REPO()}/${buildVersions.getRepo()}`,
     tag: buildVersions.getImageTag(),
     db_name: constants.DB_NAME,
     user: constants.USERNAME,
@@ -1192,12 +1192,16 @@ const runCommand = (command, { verbose = true, overrideEnv = false } = {}) => {
 
 const createCluster = async (dataDir) => {
   const hostPort = process.env.NGINX_HTTPS_PORT ? `${process.env.NGINX_HTTPS_PORT}` : '443';
-  await runCommand(`k3d registry create ${K3D_REGISTRY} --port ${K3D_REGISTRY_PORT}`);
+  await runCommand(`k3d registry create ${K3D_REGISTRY}`);
+
+  const port = await runCommand(`docker container port k3d-${K3D_REGISTRY}`);
+  K3D_REGISTRY_PORT = port.trim().replace('5000/tcp -> 0.0.0.0:', '');
+
   await runCommand(
     `k3d cluster create ${PROJECT_NAME} ` +
     `--port ${hostPort}:443@loadbalancer ` +
     `--volume ${dataDir}:${K3D_DATA_PATH} --kubeconfig-switch-context=false ` +
-    `--registry-use k3d-${K3D_REGISTRY}:${K3D_REGISTRY_PORT}`
+    `--registry-use ${K3D_REPO()}`
   );
 };
 
@@ -1218,8 +1222,8 @@ const importImages = async () => {
     } catch {
       await runCommand(`docker pull ${image}`);
     }
-    await runCommand(`docker tag ${image} ${K3D_REPO}/${image}`);
-    await runCommand(`docker push ${K3D_REPO}/${image}`);
+    await runCommand(`docker tag ${image} ${K3D_REPO()}/${image}`);
+    await runCommand(`docker push ${K3D_REPO()}/${image}`);
   }
 };
 
