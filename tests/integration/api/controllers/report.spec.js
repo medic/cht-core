@@ -1,7 +1,6 @@
 const reportFactory = require('@factories/cht/reports/generic-report');
 const utils = require('@utils');
 const userFactory = require('@factories/cht/users/users');
-const {getRemoteDataContext, Report, Qualifier} = require('@medic/cht-datasource');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const {expect} = require('chai');
@@ -78,7 +77,6 @@ describe('Report API', () => {
   const allDocItems = [ contact0, contact1, contact2, place0, place1, place2, patient ];
   const allReports = [ report0, report1, report2, report3, report4, report5 ];
   const allReportsIds = allReports.map(report => report._id);
-  const dataContext = getRemoteDataContext(utils.getOrigin());
 
   before(async () => {
     await utils.saveDocs(allDocItems);
@@ -92,7 +90,6 @@ describe('Report API', () => {
   });
 
   describe('GET /api/v1/report/:uuid', async () => {
-    const getReport = Report.v1.get(dataContext);
     const endpoint = '/api/v1/report';
 
     it('should return the report matching the provided UUID', async () => {
@@ -126,10 +123,8 @@ describe('Report API', () => {
   });
 
   describe('GET /api/v1/report/id', async () => {
-    const getReport = Report.v1.getIdsPage(dataContext);
     const freetext = 'report';
     const limit = 4;
-    const cursor = null;
     const endpoint = '/api/v1/report/id';
 
     it('returns a page of report ids for no limit and cursor passed', async () => {
