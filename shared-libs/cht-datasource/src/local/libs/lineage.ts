@@ -1,4 +1,4 @@
-import { Contact, NormalizedParent } from '../../libs/contact';
+import * as Contact from '../../contact';
 import {
   DataObject,
   findById,
@@ -47,7 +47,7 @@ export const hydratePrimaryContact = (contacts: Doc[]) => (place: Nullable<Doc>)
   };
 };
 
-const getParentUuid = (index: number, contact?: NormalizedParent): Nullable<string> => {
+const getParentUuid = (index: number, contact?: Contact.v1.NormalizedParent): Nullable<string> => {
   if (!contact) {
     return null;
   }
@@ -71,9 +71,9 @@ const mergeLineage = (lineage: DataObject[], parent: DataObject): DataObject => 
 
 /** @internal */
 export const hydrateLineage = (
-  contact: Contact,
+  contact: Contact.v1.Contact,
   lineage: Nullable<Doc>[]
-): Contact => {
+): Contact.v1.Contact => {
   const fullLineage = lineage
     .map((place, index) => {
       if (place) {
@@ -87,5 +87,5 @@ export const hydrateLineage = (
       return { _id: parentId };
     });
   const hierarchy: NonEmptyArray<DataObject> = [contact, ...fullLineage];
-  return mergeLineage(hierarchy.slice(0, -1), getLastElement(hierarchy)) as Contact;
+  return mergeLineage(hierarchy.slice(0, -1), getLastElement(hierarchy)) as Contact.v1.Contact;
 };

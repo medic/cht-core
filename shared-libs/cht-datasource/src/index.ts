@@ -29,18 +29,28 @@
 import { hasAnyPermission, hasPermissions } from './auth';
 import { Nullable } from './libs/core';
 import { assertDataContext, DataContext } from './libs/data-context';
+import * as Contact from './contact';
 import * as Person from './person';
 import * as Place from './place';
 import * as Qualifier from './qualifier';
+import * as Report from './report';
+import {
+  DEFAULT_CONTACT_PAGE_LIMIT,
+  DEFAULT_PEOPLE_PAGE_LIMIT,
+  DEFAULT_PLACE_PAGE_LIMIT,
+  DEFAULT_REPORT_PAGE_LIMIT
+} from './libs/constants';
 
 export { Nullable, NonEmptyArray } from './libs/core';
 export { DataContext } from './libs/data-context';
 export { getLocalDataContext } from './local';
 export { getRemoteDataContext } from './remote';
 export { InvalidArgumentError } from './libs/error';
+export * as Contact from './contact';
 export * as Person from './person';
 export * as Place from './place';
 export * as Qualifier from './qualifier';
+export * as Report from './report';
 
 /**
  * Returns the source for CHT data.
@@ -54,12 +64,65 @@ export const getDatasource = (ctx: DataContext) => {
     v1: {
       hasPermissions,
       hasAnyPermission,
+      contact: {
+        /**
+         * Returns a contact by their UUID.
+         * @param uuid the UUID of the contact to retrieve
+         * @returns the contact or `null` if no contact is found for the UUID
+         * @throws InvalidArgumentError if no UUID is provided
+         */
+        getByUuid: (uuid: string) => ctx.bind(Contact.v1.get)(Qualifier.byUuid(uuid)),
+
+        /**
+         * Returns a contact by their UUID along with the contact's parent lineage.
+         * @param uuid the UUID of the contact to retrieve
+         * @returns the contact or `null` if no contact is found the UUID
+         * @throws InvalidArgumentError if no UUID is provided
+         */
+        getByUuidWithLineage: (uuid: string) => ctx.bind(Contact.v1.getWithLineage)(Qualifier.byUuid(uuid)),
+
+        /**
+         * Returns an array of contact identifiers for the provided page specifications.
+         * @param freetext the search keyword(s)
+         * @param type the type of contact to search for
+         * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+         * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+         * @param limit the maximum number of identifiers to return. Default is 10000.
+         * @returns a page of contact identifiers for the provided specifications
+         * @throws InvalidArgumentError if either `freetext` or `type` is not provided
+         * @throws InvalidArgumentError if the `freetext` is empty or if the `type is invalid for a contact
+         * @throws InvalidArgumentError if the provided limit is `<= 0`
+         * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+         */
+        getIdsPage: (
+          freetext: Nullable<string> = null,
+          type: Nullable<string> = null,
+          cursor: Nullable<string> = null,
+          limit: number | `${number}` = DEFAULT_CONTACT_PAGE_LIMIT
+        ) => ctx.bind(Contact.v1.getIdsPage)(
+          Contact.v1.createQualifier(freetext, type), cursor, limit
+        ),
+
+        /**
+         * Returns a generator for fetching all the contact identifiers for given
+         * `freetext` and `type`.
+         * @param freetext the search keyword(s)
+         * @param type the type of contact identifiers to return
+         * @returns a generator for fetching all the contact identifiers matching the given `freetext` and `type`.
+         * @throws InvalidArgumentError if either `freetext` or `type` is not provided
+         * @throws InvalidArgumentError if the `freetext` is empty or if the `type is invalid for a contact
+         */
+        getIds: (
+          freetext: Nullable<string> = null,
+          type: Nullable<string> = null
+        ) => ctx.bind(Contact.v1.getIds)(Contact.v1.createQualifier(freetext, type)),
+      },
       place: {
         /**
          * Returns a place by its UUID.
          * @param uuid the UUID of the place to retrieve
          * @returns the place or `null` if no place is found for the UUID
-         * @throws Error if no UUID is provided
+         * @throws InvalidArgumentError if no UUID is provided
          */
         getByUuid: (uuid: string) => ctx.bind(Place.v1.get)(Qualifier.byUuid(uuid)),
 
@@ -67,7 +130,7 @@ export const getDatasource = (ctx: DataContext) => {
          * Returns a place by its UUID along with the place's parent lineage.
          * @param uuid the UUID of the place to retrieve
          * @returns the place or `null` if no place is found for the UUID
-         * @throws Error if no UUID is provided
+         * @throws InvalidArgumentError if no UUID is provided
          */
         getByUuidWithLineage: (uuid: string) => ctx.bind(Place.v1.getWithLineage)(Qualifier.byUuid(uuid)),
 
@@ -86,7 +149,7 @@ export const getDatasource = (ctx: DataContext) => {
         getPageByType: (
           placeType: string,
           cursor: Nullable<string> = null,
-          limit = 100
+          limit: number | `${number}` = DEFAULT_PLACE_PAGE_LIMIT
         ) => ctx.bind(Place.v1.getPage)(
           Qualifier.byContactType(placeType), cursor, limit
         ),
@@ -104,7 +167,7 @@ export const getDatasource = (ctx: DataContext) => {
          * Returns a person by their UUID.
          * @param uuid the UUID of the person to retrieve
          * @returns the person or `null` if no person is found for the UUID
-         * @throws Error if no UUID is provided
+         * @throws InvalidArgumentError if no UUID is provided
          */
         getByUuid: (uuid: string) => ctx.bind(Person.v1.get)(Qualifier.byUuid(uuid)),
 
@@ -112,7 +175,7 @@ export const getDatasource = (ctx: DataContext) => {
          * Returns a person by their UUID along with the person's parent lineage.
          * @param uuid the UUID of the person to retrieve
          * @returns the person or `null` if no person is found for the UUID
-         * @throws Error if no UUID is provided
+         * @throws InvalidArgumentError if no UUID is provided
          */
         getByUuidWithLineage: (uuid: string) => ctx.bind(Person.v1.getWithLineage)(Qualifier.byUuid(uuid)),
 
@@ -131,7 +194,7 @@ export const getDatasource = (ctx: DataContext) => {
         getPageByType: (
           personType: string,
           cursor: Nullable<string> = null,
-          limit = 100
+          limit: number | `${number}` = DEFAULT_PEOPLE_PAGE_LIMIT
         ) => ctx.bind(Person.v1.getPage)(
           Qualifier.byContactType(personType), cursor, limit
         ),
@@ -143,7 +206,48 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws InvalidArgumentError if no type is provided or if the type is not for a person
          */
         getByType: (personType: string) => ctx.bind(Person.v1.getAll)(Qualifier.byContactType(personType)),
-      }
-    }
+      },
+      report: {
+        /**
+         * Returns a report by their UUID.
+         * @param uuid the UUID of the report to retrieve
+         * @returns the report or `null` if no report is found for the UUID
+         * @throws InvalidArgumentError if no UUID is provided
+         */
+        // eslint-disable-next-line compat/compat
+        getByUuid: (uuid: string) => ctx.bind(Report.v1.get)(Qualifier.byUuid(uuid)),
+
+        /**
+         * Returns a paged array of report identifiers from the given data context.
+         * @param qualifier the limiter defining which identifiers to return
+         * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+         * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+         * @param limit the maximum number of identifiers to return. Default is 10000.
+         * @returns a page of report identifiers for the provided specification
+         * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
+         * @throws InvalidArgumentError if the provided `limit` value is `<=0`
+         * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+         */
+        getIdsPage: (
+          qualifier: string,
+          cursor: Nullable<string> = null,
+          limit: number | `${number}` = DEFAULT_REPORT_PAGE_LIMIT
+          // eslint-disable-next-line compat/compat
+        ) => ctx.bind(Report.v1.getIdsPage)(
+          Qualifier.byFreetext(qualifier), cursor, limit
+        ),
+
+        /**
+         * Returns a generator for fetching all the contact identifiers for given qualifier
+         * @param qualifier the limiter defining which identifiers to return
+         * @returns a generator for fetching all report identifiers that match the given qualifier
+         * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
+         */
+        getIds: (
+          qualifier: string,
+          // eslint-disable-next-line compat/compat
+        ) => ctx.bind(Report.v1.getIds)(Qualifier.byFreetext(qualifier)),
+      },
+    },
   };
 };
