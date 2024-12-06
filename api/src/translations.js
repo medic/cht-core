@@ -23,7 +23,8 @@ const LOCAL_NAME_MAP = {
   sw: 'Kiswahili (Swahili)',
   hi: 'हिन्दी (Hindi)',
   id: 'Bahasa Indonesia (Indonesian)',
-  lg: 'Luganda (Ganda)'
+  lg: 'Luganda (Ganda)',
+  ar: 'عربي (Arabic)'
 };
 
 const extractLocaleCode = filename => {
