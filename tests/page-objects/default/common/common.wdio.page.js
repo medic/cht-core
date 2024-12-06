@@ -11,6 +11,7 @@ const tabsSelector = {
   taskTab: () => $('#tasks-tab'),
   analyticsTab: () => $('#analytics-tab'),
 };
+const { generateScreenshot } = require('@utils/screenshots');
 
 const hamburgerMenuSelectors = {
   hamburgerMenu: () => $('aria/Application menu'),
@@ -47,6 +48,15 @@ const fabSelectors = {
   fastActionItems: () => $$(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item`),
   reportsFastActionFAB: () => $('#reports-content .fast-action-fab-button mat-icon'),
 };
+const hamburgerMenuItemSelector = 'mat-sidenav-content';
+const logoutButton = () => $('aria/Log out');
+const syncButton = () => $('aria/Sync now');
+const hamburguerMenuItemByOption = (menuOption) => $(hamburgerMenuItemSelector).$(`//span[text()="${menuOption}"]`);
+const messagesTab = () => $('#messages-tab');
+const analyticsTab = () => $('#analytics-tab');
+const getReportsButtonLabel = () => $('#reports-tab .button-label');
+const getMessagesButtonLabel = () => $('#messages-tab .button-label');
+const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 
 const userSettingsSelectors = {
   editProfileButton: () => $('.user .configuration.page i.fa-user'),
@@ -81,15 +91,17 @@ const openMoreOptionsMenu = async () => {
   await (await kebabMenuSelectors.moreOptionsMenu()).click();
 };
 
-const performMenuAction = async (actionSelector) => {
-  await openMoreOptionsMenu();
+const performMenuAction = async (actionSelector, isOptionsMenuOpen = false) => {
+  if (!isOptionsMenuOpen){
+    await openMoreOptionsMenu();
+  }
   const actionElement = await actionSelector();
   await actionElement.waitForClickable();
   await actionElement.click();
 };
 
-const accessEditOption = async () => {
-  await performMenuAction(kebabMenuSelectors.edit);
+const accessEditOption = async (isOptionsMenuOpen = false) => {
+  await performMenuAction(kebabMenuSelectors.edit, isOptionsMenuOpen);
 };
 
 const accessDeleteOption = async () => {
@@ -102,6 +114,17 @@ const accessExportOption = async () => {
 
 const accessReviewOption = async () => {
   await performMenuAction(kebabMenuSelectors.review);
+};
+
+const toggleMenuAndCaptureScreenshot = async (menuOption, reverse, pageName, screenshotName) => {
+  await openHamburgerMenu();
+  await hamburguerMenuItemByOption(menuOption).waitForClickable({ reverse });
+  await generateScreenshot(pageName, screenshotName);
+  if (reverse) {
+    await closeHamburgerMenu();
+  } else {
+    await hamburguerMenuItemByOption(menuOption).click();
+  }
 };
 
 const waitForSnackbarToClose = async () => {
@@ -265,6 +288,8 @@ const isTasksListPresent = () => isElementPresent('#tasks-list');
 const isReportsListPresent = () => isElementPresent('#reports-list');
 
 const isPeopleListPresent = () => isElementPresent('#contacts-list');
+
+const isContactTabPresent = () => isElementPresent('#contacts-tab');
 
 const isTargetMenuItemPresent = () => isElementPresent('=Target');
 
@@ -545,9 +570,7 @@ module.exports = {
   accessDeleteOption,
   accessExportOption,
   accessReviewOption,
-  hideSnackbar,
   waitForLoaderToDisappear,
-  waitForLoaders,
   waitForAngularLoaded,
   waitForPageLoaded,
   clickFastActionFAB,
@@ -559,6 +582,21 @@ module.exports = {
   closeFastActionList,
   isReportActionDisplayed,
   isElementPresent,
+  logoutButton,
+  isContactTabPresent,
+  messagesTab,
+  analyticsTab,
+  getReportsButtonLabel,
+  getMessagesButtonLabel,
+  getTasksButtonLabel,
+  hideSnackbar,
+  waitForLoaders,
+  syncButton,
+  toggleMenuAndCaptureScreenshot,
+  closeReloadModal,
+  goToMessages,
+  goToTasks,
+  goToAnalytics,
   isMessagesListPresent,
   isTasksListPresent,
   isPeopleListPresent,
@@ -572,12 +610,8 @@ module.exports = {
   refresh,
   goToBase,
   goToAboutPage,
-  goToMessages,
-  goToTasks,
   goToReports,
   goToPeople,
-  goToAnalytics,
-  closeReloadModal,
   syncAndNotWaitForSuccess,
   sync,
   openReportBugAndFetchProperties,
