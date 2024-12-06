@@ -146,6 +146,7 @@ describe('Person', () => {
     describe('getPage', async () => {
       const getPage = Person.v1.getPage(dataContext);
       const limit = 4;
+      const stringifiedLimit = '7';
       const cursor = null;
       const invalidContactType = 'invalidPerson';
 
@@ -156,6 +157,15 @@ describe('Person', () => {
 
         expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeople);
         expect(responseCursor).to.be.equal(null);
+      });
+
+      it('returns a page of people for stringified limit and null cursor passed', async () => {
+        const responsePage = await getPage(Qualifier.byContactType(personType), null, stringifiedLimit);
+        const responsePeople = responsePage.data;
+        const responseCursor = responsePage.cursor;
+
+        expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeople);
+        expect(responseCursor).to.be.equal('7');
       });
 
       it('returns a page of people when limit and cursor is passed and cursor can be reused', async () => {

@@ -89,13 +89,13 @@ export namespace v1 {
     const curriedFn = async (
       personType: ContactTypeQualifier,
       cursor: Nullable<string> = null,
-      limit = DEFAULT_PEOPLE_PAGE_LIMIT
+      limit: number | `${number}` = DEFAULT_PEOPLE_PAGE_LIMIT
     ): Promise<Page<Person>> => {
       assertTypeQualifier(personType);
       assertCursor(cursor);
       assertLimit(limit);
 
-      return fn(personType, cursor, limit);
+      return fn(personType, cursor, Number(limit));
     };
     return curriedFn;
   };

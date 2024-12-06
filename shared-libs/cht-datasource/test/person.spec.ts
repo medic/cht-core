@@ -132,6 +132,7 @@ describe('person', () => {
       const cursor = '1';
       const pageData = { data: people, cursor };
       const limit = 3;
+      const stringifiedLimit = '3';
       const personTypeQualifier = {contactType: 'person'} as const;
       const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;
@@ -159,6 +160,20 @@ describe('person', () => {
         getPage.resolves(pageData);
 
         const result = await Person.v1.getPage(dataContext)(personTypeQualifier, cursor, limit);
+
+        expect(result).to.equal(pageData);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
+        expect(getPage.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
+        expect(isContactTypeQualifier.calledOnceWithExactly((personTypeQualifier))).to.be.true;
+      });
+
+      it('retrieves people from the data context when cursor is not null and ' +
+        'limit is stringified number', async () => {
+        isContactTypeQualifier.returns(true);
+        getPage.resolves(pageData);
+
+        const result = await Person.v1.getPage(dataContext)(personTypeQualifier, cursor, stringifiedLimit);
 
         expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;

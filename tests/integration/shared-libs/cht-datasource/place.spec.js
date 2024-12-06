@@ -123,6 +123,7 @@ describe('Place', () => {
     describe('getPage', async () => {
       const getPage = Place.v1.getPage(dataContext);
       const limit = 2;
+      const stringifiedLimit = '3';
       const cursor = null;
       const invalidContactType = 'invalidPlace';
 
@@ -134,6 +135,16 @@ describe('Place', () => {
         expect(responsePlaces).excludingEvery([ '_rev', 'reported_date' ])
           .to.deep.equalInAnyOrder(expectedPlaces);
         expect(responseCursor).to.be.equal(null);
+      });
+
+      it('returns a page of places for stringified limit and null cursor passed', async () => {
+        const responsePage = await getPage(Qualifier.byContactType(placeType), null, stringifiedLimit);
+        const responsePlaces = responsePage.data;
+        const responseCursor = responsePage.cursor;
+
+        expect(responsePlaces).excludingEvery([ '_rev', 'reported_date' ])
+          .to.deep.equalInAnyOrder(expectedPlaces);
+        expect(responseCursor).to.be.equal('3');
       });
 
       it('returns a page of places when limit and cursor is passed and cursor can be reused', async () => {

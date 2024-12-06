@@ -118,6 +118,7 @@ describe('Report', () => {
       const getReport = Report.v1.getIdsPage(dataContext);
       const freetext = 'report';
       const limit = 4;
+      const stringifiedLimit = '6';
       const cursor = null;
 
       it('returns a page of report ids for no limit and cursor passed', async () => {
@@ -127,6 +128,15 @@ describe('Report', () => {
 
         expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(allReportsIds);
         expect(responseCursor).to.be.equal(null);
+      });
+
+      it('returns a page of report ids for stringified limit and cursor passed', async () => {
+        const responsePage = await getReport(Qualifier.byFreetext(freetext), null, stringifiedLimit);
+        const responsePeople = responsePage.data;
+        const responseCursor = responsePage.cursor;
+
+        expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(allReportsIds);
+        expect(responseCursor).to.be.equal('6');
       });
 
       it('returns a page of report ids when limit and cursor is passed and cursor can be reused', async () => {

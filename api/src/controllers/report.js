@@ -30,9 +30,8 @@ module.exports = {
       await checkUserPermissions(req);
 
       const qualifier = Qualifier.byFreetext(req.query.freetext);
-      const limit = req.query.limit ? Number(req.query.limit) : req.query.limit;
 
-      const docs = await getReportIds()(qualifier, req.query.cursor, limit);
+      const docs = await getReportIds()(qualifier, req.query.cursor, req.query.limit);
 
       return res.json(docs);
     })

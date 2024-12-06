@@ -152,6 +152,7 @@ describe('Contact', () => {
       const getIdsPage = Contact.v1.getIdsPage(dataContext);
       const fourLimit = 4;
       const twoLimit = 2;
+      const stringifiedLimit = '7';
       const cursor = null;
       const invalidContactType = 'invalidPerson';
       const freetext = 'contact';
@@ -210,6 +211,16 @@ describe('Contact', () => {
         expect(responsePlaces).excludingEvery([ '_rev', 'reported_date' ])
           .to.deep.equalInAnyOrder(expectedContactIds);
         expect(responseCursor).to.be.equal(null);
+      });
+
+      it('returns a page of people type contact ids ' +
+      'when stringified limit and null cursor is passed', async () => {
+        const responsePage = await getIdsPage(Qualifier.byContactType(personType), null, stringifiedLimit);
+        const responsePeople = responsePage.data;
+        const responseCursor = responsePage.cursor;
+
+        expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeopleIds);
+        expect(responseCursor).to.be.equal('7');
       });
 
       it('returns a page of people type contact ids' +

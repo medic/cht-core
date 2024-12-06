@@ -42,9 +42,7 @@ module.exports = {
         Object.assign(qualifier, Qualifier.byContactType(req.query.type));
       }
 
-      const limit = req.query.limit ? Number(req.query.limit) : req.query.limit;
-
-      const docs = await getContactIds()(qualifier, req.query.cursor, limit);
+      const docs = await getContactIds()(qualifier, req.query.cursor, req.query.limit);
 
       return res.json(docs);
     }),

@@ -102,7 +102,7 @@ export namespace v1 {
     const curriedFn = async (
       qualifier: ContactTypeQualifier | FreetextQualifier,
       cursor: Nullable<string> = null,
-      limit = DEFAULT_CONTACT_PAGE_LIMIT
+      limit: number | `${number}` = DEFAULT_CONTACT_PAGE_LIMIT
     ): Promise<Page<string>> => {
       assertCursor(cursor);
       assertLimit(limit);
@@ -115,7 +115,7 @@ export namespace v1 {
         assertFreetextQualifier(qualifier);
       }
 
-      return fn(qualifier, cursor, limit);
+      return fn(qualifier, cursor, Number(limit));
     };
     return curriedFn;
   };

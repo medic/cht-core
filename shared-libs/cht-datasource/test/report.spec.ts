@@ -80,6 +80,7 @@ describe('report', () => {
       const cursor = '1';
       const pageData = { data: ids, cursor };
       const limit = 3;
+      const stringifiedLimit = '3';
       const freetextQualifier = { freetext: 'freetext'} as const;
       const invalidFreetextQualifier = { freetext: 'invalid_freetext'} as const;
       let getIdsPage: SinonStub;
@@ -109,6 +110,21 @@ describe('report', () => {
 
         // eslint-disable-next-line compat/compat
         const result = await Report.v1.getIdsPage(dataContext)(freetextQualifier, cursor, limit);
+
+        expect(result).to.equal(pageData);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getPage, Remote.Report.v1.getPage)).to.be.true;
+        expect(getIdsPage.calledOnceWithExactly(freetextQualifier, cursor, limit)).to.be.true;
+        expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
+      });
+
+      it('retrieves report ids from the data context when cursor is not null and ' +
+        'limit is stringified number', async () => {
+        isFreetextQualifier.returns(true);
+        getIdsPage.resolves(pageData);
+
+        // eslint-disable-next-line compat/compat
+        const result = await Report.v1.getIdsPage(dataContext)(freetextQualifier, cursor, stringifiedLimit);
 
         expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;

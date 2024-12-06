@@ -157,8 +157,9 @@ export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is C
 };
 
 /** @internal */
-export const assertLimit: (limit: unknown) => asserts limit is number = (limit: unknown) => {
-  if (typeof limit !== 'number' || !Number.isInteger(limit) || limit <= 0) {
+export const assertLimit: (limit: unknown) => asserts limit is number | `${number}` = (limit: unknown) => {
+  const numberLimit = Number(limit);
+  if (!Number.isInteger(numberLimit) || numberLimit <= 0) {
     throw new InvalidArgumentError(`The limit must be a positive number: [${String(limit)}].`);
   }
 };

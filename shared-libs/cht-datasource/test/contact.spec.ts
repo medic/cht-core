@@ -160,6 +160,7 @@ describe('contact', () => {
       const cursor = '1';
       const pageData = { data: contactIds, cursor };
       const limit = 3;
+      const stringifiedLimit = '3';
       const contactTypeQualifier = { contactType: 'person' } as const;
       const freetextQualifier = { freetext: 'freetext'} as const;
       const qualifier = {
@@ -198,6 +199,24 @@ describe('contact', () => {
         getIdsPage.resolves(pageData);
 
         const result = await Contact.v1.getIdsPage(dataContext)(qualifier, cursor, limit);
+
+        expect(result).to.equal(pageData);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(
+          adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getPage, Remote.Contact.v1.getPage)
+        ).to.be.true;
+        expect(getIdsPage.calledOnceWithExactly(qualifier, cursor, limit)).to.be.true;
+        expect(isContactTypeQualifier.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(isFreetextQualifier.calledOnceWithExactly(qualifier)).to.be.true;
+      });
+
+      it('retrieves contact id page from the data context when cursor is not null and ' +
+        'limit is stringified number', async () => {
+        isContactTypeQualifier.returns(true);
+        isFreetextQualifier.returns(true);
+        getIdsPage.resolves(pageData);
+
+        const result = await Contact.v1.getIdsPage(dataContext)(qualifier, cursor, stringifiedLimit);
 
         expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;

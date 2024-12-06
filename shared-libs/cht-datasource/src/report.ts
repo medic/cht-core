@@ -82,13 +82,13 @@ export namespace v1 {
     const curriedFn = async (
       qualifier: FreetextQualifier,
       cursor: Nullable<string> = null,
-      limit = DEFAULT_REPORT_PAGE_LIMIT
+      limit: number | `${number}` = DEFAULT_REPORT_PAGE_LIMIT
     ): Promise<Page<string>> => {
       assertFreetextQualifier(qualifier);
       assertCursor(cursor);
       assertLimit(limit);
 
-      return fn(qualifier, cursor, limit);
+      return fn(qualifier, cursor, Number(limit));
     };
     return curriedFn;
   };

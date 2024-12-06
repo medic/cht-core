@@ -98,7 +98,7 @@ export const getDatasource = (ctx: DataContext) => {
           freetext: Nullable<string> = null,
           type: Nullable<string> = null,
           cursor: Nullable<string> = null,
-          limit = DEFAULT_CONTACT_PAGE_LIMIT
+          limit: number | `${number}` = DEFAULT_CONTACT_PAGE_LIMIT
         ) => ctx.bind(Contact.v1.getIdsPage)(
           Contact.v1.createQualifier(freetext, type), cursor, limit
         ),
@@ -149,7 +149,7 @@ export const getDatasource = (ctx: DataContext) => {
         getPageByType: (
           placeType: string,
           cursor: Nullable<string> = null,
-          limit = DEFAULT_PLACE_PAGE_LIMIT
+          limit: number | `${number}` = DEFAULT_PLACE_PAGE_LIMIT
         ) => ctx.bind(Place.v1.getPage)(
           Qualifier.byContactType(placeType), cursor, limit
         ),
@@ -194,7 +194,7 @@ export const getDatasource = (ctx: DataContext) => {
         getPageByType: (
           personType: string,
           cursor: Nullable<string> = null,
-          limit = DEFAULT_PEOPLE_PAGE_LIMIT
+          limit: number | `${number}` = DEFAULT_PEOPLE_PAGE_LIMIT
         ) => ctx.bind(Person.v1.getPage)(
           Qualifier.byContactType(personType), cursor, limit
         ),
@@ -231,7 +231,7 @@ export const getDatasource = (ctx: DataContext) => {
         getIdsPage: (
           qualifier: string,
           cursor: Nullable<string> = null,
-          limit = DEFAULT_REPORT_PAGE_LIMIT
+          limit: number | `${number}` = DEFAULT_REPORT_PAGE_LIMIT
           // eslint-disable-next-line compat/compat
         ) => ctx.bind(Report.v1.getIdsPage)(
           Qualifier.byFreetext(qualifier), cursor, limit
