@@ -16,7 +16,7 @@
     "font-awesome": "^4.7.0",
     "jquery": "^3.5.1",
     "ng-redux": "^4.4.5",
-    "redux": "^4.2.0",
+    "redux": "^5.0.1",
     "select2": "^4.0.13"
   },
   "resolutions": {
