@@ -27,6 +27,15 @@ const VIEW_INDEXES_TO_MONITOR = {
   users: ['users'],
 };
 
+const NOUVEAU_INDEXES_TO_MONITOR = {
+  medic: {
+    'medic-nouveau': [
+      'contacts_by_freetext',
+      'reports_by_freetext',
+    ],
+  },
+};
+
 const MESSAGE_QUEUE_STATUS_KEYS = ['due', 'scheduled', 'muted', 'failed', 'delivered'];
 const fromEntries = (keys, value) => {
   // "shim" of Object.fromEntries
@@ -169,11 +178,41 @@ const fetchAllViewIndexInfos = () => Promise.all(Object.keys(VIEW_INDEXES_TO_MON
 
 const getDbInfos = async () => {
   const [dbInfos, viewIndexInfos] = await Promise.all([fetchDbsInfo(), fetchAllViewIndexInfos()]);
+  console.log("dbInfos", dbInfos);
+  console.log("viewIndexInfos", viewIndexInfos);
   const result = {};
   Object.keys(DBS_TO_MONITOR).forEach((dbKey, i) => {
     result[dbKey] = mapDbInfo(dbInfos[i], viewIndexInfos[i]);
   });
+  console.log("result", result);
   return result;
+};
+
+const fetchNouveauIndexInfo = (db, designDoc, indexName) => request
+  .get({
+    url: `${environment.serverUrl}/${db}/_design/${designDoc}/_nouveau_info/${indexName}`,
+    json: true
+  })
+  .catch(err => {
+    logger.error('Error fetching nouveau index info: %o', err);
+    return null;
+  });
+
+const fetchNouveauIndexInfosForDdoc = (db, ddoc) => NOUVEAU_INDEXES_TO_MONITOR[db][ddoc].map(
+  indexName => fetchNouveauIndexInfo(DBS_TO_MONITOR[db], ddoc, indexName),
+);
+
+const fetchNouveauIndexInfosForDb = (db) => Object.keys(NOUVEAU_INDEXES_TO_MONITOR[db]).flatMap(
+  ddoc => fetchNouveauIndexInfosForDdoc(db, ddoc),
+);
+
+const fetchAllNouveauIndexInfos = () => Promise.all(
+  Object.keys(NOUVEAU_INDEXES_TO_MONITOR).flatMap(fetchNouveauIndexInfosForDb),
+);
+
+const getNouveauInfos = async () => {
+  const nouveauInfo = await fetchAllNouveauIndexInfos();
+  console.log("nouveauInfo", nouveauInfo);
 };
 
 const getResultCount = result => result.rows.length ? result.rows[0].value : 0;
@@ -319,6 +358,7 @@ const jsonV1 = (connectedUserInterval) => {
       getAppVersion(),
       getCouchVersion(),
       getDbInfos(),
+      getNouveauInfos(),
       getSentinelBacklog(),
       getOutboundPushQueueLength(),
       getOutgoingMessageStatusCounts(),
@@ -331,6 +371,7 @@ const jsonV1 = (connectedUserInterval) => {
       appVersion,
       couchVersion,
       dbInfos,
+      nouveauInfos,
       sentinelBacklog,
       outboundPushBacklog,
       outgoingMessageStatus,
@@ -346,6 +387,7 @@ const jsonV1 = (connectedUserInterval) => {
           couchdb: couchVersion
         },
         couchdb: dbInfos,
+        nouveau: nouveauInfos,
         date: {
           current: (new Date()).valueOf(),
           uptime: process.uptime()
