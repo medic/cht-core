@@ -124,7 +124,7 @@ const getFragmentation = ({ sizes }, viewIndexInfos) => {
   return totalFile / totalActive;
 };
 
-const mapDbInfo = (dbInfo, viewIndexInfos) => {
+const mapDbInfo = (dbInfo, viewIndexInfos, nouveauIndexInfos) => {
   return {
     name: dbInfo.db_name || '',
     update_sequence: getSequenceNumber(dbInfo.update_seq),
@@ -140,8 +140,14 @@ const mapDbInfo = (dbInfo, viewIndexInfos) => {
       sizes: {
         active: defaultNumber(viewIndexInfo.view_index?.sizes?.active),
         file: defaultNumber(viewIndexInfo.view_index?.sizes?.file),
-      }
-    }))
+      },
+    })),
+    nouveau_indexes: nouveauIndexInfos ? nouveauIndexInfos.map(nouveauIndexInfo => ({
+      name: nouveauIndexInfo.name || '',
+      update_sequence: nouveauIndexInfo.search_index.update_seq,
+      num_docs: defaultNumber(nouveauIndexInfo.search_index.num_docs),
+      disk_size: defaultNumber(nouveauIndexInfo.search_index.disk_size),
+    })) : undefined,
   };
 };
 
@@ -176,18 +182,6 @@ const fetchViewIndexInfosForDb = (db) => Promise.all(
 
 const fetchAllViewIndexInfos = () => Promise.all(Object.keys(VIEW_INDEXES_TO_MONITOR).map(fetchViewIndexInfosForDb));
 
-const getDbInfos = async () => {
-  const [dbInfos, viewIndexInfos] = await Promise.all([fetchDbsInfo(), fetchAllViewIndexInfos()]);
-  console.log("dbInfos", dbInfos);
-  console.log("viewIndexInfos", viewIndexInfos);
-  const result = {};
-  Object.keys(DBS_TO_MONITOR).forEach((dbKey, i) => {
-    result[dbKey] = mapDbInfo(dbInfos[i], viewIndexInfos[i]);
-  });
-  console.log("result", result);
-  return result;
-};
-
 const fetchNouveauIndexInfo = (db, designDoc, indexName) => request
   .get({
     url: `${environment.serverUrl}/${db}/_design/${designDoc}/_nouveau_info/${indexName}`,
@@ -202,17 +196,31 @@ const fetchNouveauIndexInfosForDdoc = (db, ddoc) => NOUVEAU_INDEXES_TO_MONITOR[d
   indexName => fetchNouveauIndexInfo(DBS_TO_MONITOR[db], ddoc, indexName),
 );
 
-const fetchNouveauIndexInfosForDb = (db) => Object.keys(NOUVEAU_INDEXES_TO_MONITOR[db]).flatMap(
+const fetchNouveauIndexInfosForDb = (db) => Promise.all(Object.keys(NOUVEAU_INDEXES_TO_MONITOR[db]).flatMap(
   ddoc => fetchNouveauIndexInfosForDdoc(db, ddoc),
-);
+));
 
 const fetchAllNouveauIndexInfos = () => Promise.all(
-  Object.keys(NOUVEAU_INDEXES_TO_MONITOR).flatMap(fetchNouveauIndexInfosForDb),
+  Object.keys(NOUVEAU_INDEXES_TO_MONITOR).map(fetchNouveauIndexInfosForDb),
 );
 
-const getNouveauInfos = async () => {
-  const nouveauInfo = await fetchAllNouveauIndexInfos();
-  console.log("nouveauInfo", nouveauInfo);
+const getDbInfos = async () => {
+  const [dbInfos, viewIndexInfos, nouveauIndexInfos] = await Promise.all([
+    fetchDbsInfo(),
+    fetchAllViewIndexInfos(),
+    fetchAllNouveauIndexInfos(),
+  ]);
+  // console.log("dbInfos", dbInfos);
+  // console.log("viewIndexInfos", viewIndexInfos);
+  // console.log("nouveauInfos", nouveauIndexInfos);
+  const result = {};
+  Object.keys(DBS_TO_MONITOR).forEach((dbKey, i) => {
+    // console.log("dbInfos[i]", dbInfos[i]);
+    // console.log("viewIndexInfos[i]", viewIndexInfos[i]);
+    result[dbKey] = mapDbInfo(dbInfos[i], viewIndexInfos[i], nouveauIndexInfos[i]);
+  });
+  // console.log("result", result);
+  return result;
 };
 
 const getResultCount = result => result.rows.length ? result.rows[0].value : 0;
@@ -358,7 +366,6 @@ const jsonV1 = (connectedUserInterval) => {
       getAppVersion(),
       getCouchVersion(),
       getDbInfos(),
-      getNouveauInfos(),
       getSentinelBacklog(),
       getOutboundPushQueueLength(),
       getOutgoingMessageStatusCounts(),
@@ -371,7 +378,6 @@ const jsonV1 = (connectedUserInterval) => {
       appVersion,
       couchVersion,
       dbInfos,
-      nouveauInfos,
       sentinelBacklog,
       outboundPushBacklog,
       outgoingMessageStatus,
@@ -387,7 +393,6 @@ const jsonV1 = (connectedUserInterval) => {
           couchdb: couchVersion
         },
         couchdb: dbInfos,
-        nouveau: nouveauInfos,
         date: {
           current: (new Date()).valueOf(),
           uptime: process.uptime()
