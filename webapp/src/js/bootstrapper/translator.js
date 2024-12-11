@@ -130,6 +130,24 @@ const TRANSLATIONS = {
     SESSION_EXPIRED_DESCRIPTION: 'Sesi Anda telah berakhir dan Anda telah keluar. Silakan masuk kembali untuk melanjutkan.',
     LOGIN: 'Login',
   },
+  ar: {
+    FETCH_INFO: ({ count, total }) => `جارٍ جلب المعلومات (${count} من مستندات ${total})...`,
+    LOAD_APP: 'جارٍ تحميل التطبيق…',
+    PURGE_INIT: 'جارٍ التحقق من البيانات…',
+    PURGE_INFO: ({ count }) => `تم تنظيف ${count} من المستندات...`,
+    PURGE_META: 'جارٍ تنظيف البيانات التعريفية…',
+    STARTING_APP: 'جارٍ بدء التطبيق…',
+    DOWNLOAD_APP: 'جارٍ تنزيل التطبيق…',
+    ERROR_MESSAGE: 'حدث خطأ أثناء التحميل، يرجى التحقق من اتصالك.',
+    TRY_AGAIN: 'حاول ثانية',
+    POLL_REPLICATION: 'استقصاء بيانات النسخ المتماثل...',
+    TOO_MANY_DOCS: ({ count, limit }) => `تحذير! أنت على وشك تنزيل مستندات ${count}، وهو ما يتجاوز الحد الموصى به وهو ${limit}. هل ترغب في الاستمرار؟`,
+    CONTINUE: 'متابعة',
+    ABORT: 'إلغاء',
+    SESSION_EXPIRED_TITLE: 'انتهت صلاحية الجلسة',
+    SESSION_EXPIRED_DESCRIPTION: 'لقد انتهت جلستك وتم تسجيل خروجك. الرجاء تسجيل الدخول للمتابعة.',
+    LOGIN: 'تسجيل الدخول',
+  },
 };
 /* eslint-enable max-len */
 
