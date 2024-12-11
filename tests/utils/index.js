@@ -227,7 +227,7 @@ const request = async (options, { debug } = {}) => {
   };
 
   if (debug) {
-    console.debug('RESPONSE', response.status, response.responseBody);
+    console.debug('RESPONSE', response.status, response.body);
   }
 
   if (resolveWithFullResponse) {

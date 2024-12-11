@@ -31,7 +31,7 @@ describe('manifest.json', () => {
       try {
         await utils.deleteDoc('branding');
       } catch (err) {
-        if (err.statusCode === 404) {
+        if (err.status === 404) {
           return; // already not there - success!
         }
         throw err;
@@ -53,7 +53,7 @@ describe('manifest.json', () => {
     try {
       return await utils.getDoc('branding');
     } catch (e) {
-      if (e.statusCode === 404) {
+      if (e.status === 404) {
         return { _id: 'branding' };
       }
       throw e;

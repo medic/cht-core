@@ -31,6 +31,7 @@ describe('Edit ', () => {
     contact: onlineUserContact
   });
 
+  // todo circular structure???
   before(async () => {
     await utils.saveDocs([...places.values()]);
     await utils.createUsers([offlineUser, onlineUser]);
