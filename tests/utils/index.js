@@ -2,7 +2,6 @@
 
 const _ = require('lodash');
 const constants = require('@constants');
-const rpn = require('request-promise-native');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -62,10 +61,6 @@ const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { 
 const existingFeedbackDocIds = [];
 const MINIMUM_BROWSER_VERSION = '90';
 const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
-const cookieJar = rpn.jar();
-
-// Cookies from the jar will be included on Node `fetch` calls
-global.fetch = require('fetch-cookie').default(global.fetch, cookieJar);
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const env = {
@@ -77,7 +72,7 @@ const env = {
 
 const dockerPlatformName = () => {
   try {
-    return JSON.parse(execSync(`docker version --format '{{json .Server.Platform.Name}}'`));
+    return JSON.parse(execSync(`docker version --format '{{json .Server.Platform.Name}}'`).toString());
   } catch (error) {
     console.log('docker version failed. NOTE this error is not relevant if running outside of docker');
     console.log(error.message);
@@ -92,7 +87,7 @@ const isDockerDesktop = () => {
 const dockerGateway = () => {
   const network = isDocker() ? NETWORK : `k3d-${PROJECT_NAME}`;
   try {
-    return JSON.parse(execSync(`docker network inspect ${network} --format='{{json .IPAM.Config}}'`));
+    return JSON.parse(execSync(`docker network inspect ${network} --format='{{json .IPAM.Config}}'`).toString());
   } catch (error) {
     console.log('docker network inspect failed. NOTE this error is not relevant if running outside of docker');
     console.log(error.message);
@@ -138,81 +133,115 @@ const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.buil
     });
 };
 
-const getSession = async () => {
-  if (cookieJar.getCookies(constants.BASE_URL).length) {
-    return;
-  }
-
-  const options = {
-    method: 'POST',
-    uri: `${constants.BASE_URL}/_session`,
-    json: true,
-    body: { name: auth.username, password: auth.password },
-    auth,
-    resolveWithFullResponse: true,
-  };
-  const response = await rpn(options);
-  const setCookie = response.headers?.['set-cookie'];
-  const header = Array.isArray(setCookie) ? setCookie.find(header => header.startsWith('AuthSession')) : setCookie;
-  if (header) {
-    try {
-      cookieJar.setCookie(rpn.cookie(header), constants.BASE_URL);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-};
-
-const isLoginRequest = options => {
-  return options.path === '/medic/login' && options.body.user !== auth.username;
-};
-
 const randomIp = () => {
   const section = () => (Math.floor(Math.random() * 255) + 1);
   return `${section()}.${section()}.${section()}.${section()}`;
 };
 
+const getRequestUri = (options) => {
+  let uri = (options.uri || `${constants.BASE_URL}${options.path}`);
+  if (options.qs) {
+    Object.keys(options.qs).forEach((key) => {
+      if (Array.isArray(options.qs[key])) {
+        options.qs[key] = JSON.stringify(options.qs[key]);
+      }
+    });
+    uri = `${uri}?${new URLSearchParams(options.qs).toString()}`;
+  }
+
+  return uri;
+};
+
+const setRequestContentType = (options) => {
+  let sendJson = true;
+  if (options.json === false ||
+      (options.headers['Content-Type'] && options.headers['Content-Type'] !== 'application/json')
+  ) {
+    sendJson = false;
+  }
+
+  if (sendJson) {
+    options.headers.Accept = 'application/json';
+    options.headers['Content-Type'] = 'application/json';
+    options.body = JSON.stringify(options.body);
+  }
+
+  return sendJson;
+};
+
+const setRequestEncoding = (options) => {
+  if (options.gzip) {
+    options.headers['Accept-Encoding'] = 'gzip';
+  }
+
+  if (options.gzip === false && !options.headers['Accept-Encoding']) {
+    options.headers['Accept-Encoding'] = 'identity';
+  }
+};
+
+const setRequestAuth = (options) => {
+  if (options.noAuth) {
+    return;
+  }
+
+  const auth = options.auth || { username: constants.USERNAME, password: constants.PASSWORD };
+  const basicAuth = btoa(`${auth.username}:${auth.password}`);
+  options.headers.Authorization = `Basic ${basicAuth}`;
+};
+
+const getRequestOptions = (options) => {
+  options = typeof options === 'string' ? { path: options } : _.clone(options);
+  options.headers = options.headers || {};
+  options.headers['X-Forwarded-For'] = randomIp();
+
+  const uri = getRequestUri(options);
+  const sendJson = setRequestContentType(options);
+
+  setRequestAuth(options);
+  setRequestEncoding(options);
+
+  return { uri, options, resolveWithFullResponse: options.resolveWithFullResponse, sendJson };
+};
+
+const getResponseBody = async (response, sendJson) => {
+  const receiveJson =  (!response.headers.get('content-type') && sendJson) ||
+                       response.headers.get('content-type')?.startsWith('application/json');
+  return receiveJson ? await response.json() : await response.text();
+};
+
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = async (options, { debug } = {}) => { //NOSONAR
-  options = typeof options === 'string' ? { path: options } : _.clone(options);
-  if (!options.noAuth && !options.auth && !isLoginRequest(options)) {
-    await getSession();
-    options.jar = cookieJar;
-  } else {
-    options.headers = options.headers || {};
-    options.headers['X-Forwarded-For'] = randomIp();
-  }
-  options.uri = options.uri || `${constants.BASE_URL}${options.path}`;
-  options.json = options.json === undefined ? true : options.json;
-
+const request = async (options, { debug } = {}) => {
+  const  { uri, options: requestInit, resolveWithFullResponse, sendJson } = getRequestOptions(options);
   if (debug) {
-    console.log('SENDING REQUEST');
-    console.log(JSON.stringify(options, null, 2));
+    console.debug('SENDING REQUEST', JSON.stringify({ ...options, body: null }, null, 2));
   }
 
-  options.transform = (body, response, resolveWithFullResponse) => {
-    if (debug) {
-      console.log('RESPONSE');
-      console.log(response.statusCode);
-      console.log(response.body);
-    }
-    // we might get a json response for a non-json request.
-    const contentType = response.headers['content-type'];
-    if (contentType?.startsWith('application/json') && !options.json) {
-      response.body = JSON.parse(response.body);
-    }
-    // return full response if `resolveWithFullResponse` or if non-2xx status code (so errors can be inspected)
-    return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
+  const response = await fetch(uri, requestInit);
+  const responseObj = {
+    ...response,
+    body: await getResponseBody(response, sendJson),
+    status: response.status,
+    ok: response.ok,
+    headers: response.headers
   };
 
-  try {
-    return await rpn(options);
-  } catch (err) {
-    err.responseBody = err?.response?.body;
-    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri} ${err.statusCode}`);
-    throw err;
+  if (debug) {
+    console.debug('RESPONSE', response.status, response.responseBody);
   }
+
+  if (resolveWithFullResponse) {
+    return responseObj;
+  }
+
+  if (response.ok || (response.status > 300 && response.status < 399)) {
+    return responseObj.body;
+  }
+
+  console.warn(`Error with request: ${options.method || 'GET'} ${uri} ${responseObj.status}`);
+  const err = new Error(response.error || `${response.status} - ${JSON.stringify(responseObj.body)}`);
+  Object.assign(err, responseObj);
+  throw err;
 };
 
 const requestOnTestDb = (options, debug) => {
