@@ -19,7 +19,7 @@ const waitForSeq = (metadataId, docIds) => {
   return utils.sentinelDb
     .get(metadataId)
     .catch(err => {
-      if (err.statusCode === 404) { // maybe Sentinel hasn't started yet
+      if (err.status === 404) { // maybe Sentinel hasn't started yet
         return { value: 0 };
       }
       throw err;

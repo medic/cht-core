@@ -206,7 +206,6 @@ describe('all_docs handler', () => {
     const request = {
       method: 'POST',
       body: { keys },
-      headers: { 'Content-Type': 'application/json' }
     };
 
     return utils

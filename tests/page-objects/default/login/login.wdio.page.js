@@ -59,10 +59,10 @@ const cookieLogin = async (options = {}) => {
     path: '/medic/login',
     body: { user: username, password: password, locale },
     method: 'POST',
-    simple: false,
+    resolveWithFullResponse: true,
   };
   const resp = await utils.request(opts);
-  const cookieArray = utils.parseCookieResponse(resp.headers['set-cookie']);
+  const cookieArray = utils.parseCookieResponse(resp.headers.getSetCookie());
 
   await browser.url('/');
   await browser.setCookies(cookieArray);

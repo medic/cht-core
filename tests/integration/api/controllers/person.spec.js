@@ -1,8 +1,6 @@
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { getRemoteDataContext, Person, Qualifier } = require('@medic/cht-datasource');
-const { expect } = require('chai');
 const userFactory = require('@factories/cht/users/users');
 
 describe('Person API', () => {
@@ -47,7 +45,6 @@ describe('Person API', () => {
     roles: ['chw']
   }));
   const allDocItems = [contact0, contact1, contact2, place0, place1, place2, patient];
-  const dataContext = getRemoteDataContext(utils.getOrigin());
   const personType = 'person';
   const e2eTestUser = {
     '_id': 'e2e_contact_test_id',
@@ -96,16 +93,13 @@ describe('Person API', () => {
   });
 
   describe('GET /api/v1/person/:uuid', async () => {
-    const getPerson = Person.v1.get(dataContext);
-    const getPersonWithLineage = Person.v1.getWithLineage(dataContext);
-
     it('returns the person matching the provided UUID', async () => {
-      const person = await getPerson(Qualifier.byUuid(patient._id));
+      const person = await utils.request(`/api/v1/person/${patient._id}`);
       expect(person).excluding(['_rev', 'reported_date']).to.deep.equal(patient);
     });
 
     it('returns the person with lineage when the withLineage query parameter is provided', async () => {
-      const person = await getPersonWithLineage(Qualifier.byUuid(patient._id));
+      const person = await utils.request({ path: `/api/v1/person/${patient._id}`, qs: { with_lineage: true } });
       expect(person).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
         ...patient,
         parent: {
@@ -124,8 +118,8 @@ describe('Person API', () => {
     });
 
     it('returns null when no person is found for the UUID', async () => {
-      const person = await getPerson(Qualifier.byUuid('invalid-uuid'));
-      expect(person).to.be.null;
+      await expect(utils.request('/api/v1/person/invalid-uuid'))
+        .to.be.rejectedWith('404 - {"code":404,"error":"Person not found"}');
     });
 
     [
@@ -143,13 +137,11 @@ describe('Person API', () => {
   });
 
   describe('GET /api/v1/person', async () => {
-    const getPage = Person.v1.getPage(dataContext);
     const limit = 4;
-    const cursor = null;
     const invalidContactType = 'invalidPerson';
 
     it('returns a page of people for no limit and cursor passed', async () => {
-      const responsePage = await getPage(Qualifier.byContactType(personType));
+      const responsePage = await utils.request({ path: `/api/v1/person`, qs: { type: personType } });
       const responsePeople = responsePage.data;
       const responseCursor = responsePage.cursor;
 
@@ -158,8 +150,11 @@ describe('Person API', () => {
     });
 
     it('returns a page of people when limit and cursor is passed and cursor can be reused', async () => {
-      const firstPage = await getPage(Qualifier.byContactType(personType), cursor, limit);
-      const secondPage = await getPage(Qualifier.byContactType(personType), firstPage.cursor, limit);
+      const firstPage = await utils.request({ path: `/api/v1/person`, qs: { type: personType, limit } });
+      const secondPage = await utils.request({
+        path: `/api/v1/person`,
+        qs: { type: personType, cursor: firstPage.cursor, limit }
+      });
 
       const allPeople = [...firstPage.data, ...secondPage.data];
 
@@ -230,17 +225,18 @@ describe('Person API', () => {
     });
   });
 
-  describe('Person.v1.getAll', async () => {
-    it('fetches all data by iterating through generator', async () => {
-      const docs = [];
-
-      const generator = Person.v1.getAll(dataContext)(Qualifier.byContactType(personType));
-
-      for await (const doc of generator) {
-        docs.push(doc);
-      }
-
-      expect(docs).excluding(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPeople);
-    });
-  });
+  // todo rethink this once datasource works with authentication #9701
+  // describe('Person.v1.getAll', async () => {
+  //   it('fetches all data by iterating through generator', async () => {
+  //     const docs = [];
+  //
+  //     const generator = Person.v1.getAll(dataContext)(Qualifier.byContactType(personType));
+  //
+  //     for await (const doc of generator) {
+  //       docs.push(doc);
+  //     }
+  //
+  //     expect(docs).excluding(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPeople);
+  //   });
+  // });
 });

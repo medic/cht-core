@@ -1,10 +1,6 @@
-const constants = require('@constants');
-const https = require('https');
 const utils = require('@utils');
 const uuid = require('uuid').v4;
 const querystring = require('querystring');
-const chai = require('chai');
-chai.use(require('chai-shallow-deep-equal'));
 const sentinelUtils = require('@utils/sentinel');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
@@ -29,10 +25,10 @@ describe('Users API', () => {
     const opts = {
       path: '/login',
       method: 'POST',
-      simple: false,
+      resolveWithFullResponse: true,
       noAuth: true,
       body: { user: user.username, password: user.password },
-      followRedirect: false,
+      redirect: 'manual',
       headers: { 'X-Forwarded-For': randomIp() },
     };
 
@@ -40,12 +36,12 @@ describe('Users API', () => {
       .requestOnMedicDb(opts)
       .then(response => {
         chai.expect(response).to.include({
-          statusCode: 302,
+          status: 302,
           body: '/',
         });
-        chai.expect(response.headers['set-cookie']).to.be.an('array');
-        chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
-        chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
+        chai.expect(response.headers.getSetCookie()).to.be.an('array');
+        chai.expect(response.headers.getSetCookie().find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
+        chai.expect(response.headers.getSetCookie().find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
       });
   };
 
@@ -53,7 +49,7 @@ describe('Users API', () => {
     const opts = {
       path: '/login',
       method: 'POST',
-      simple: false,
+      resolveWithFullResponse: true,
       noAuth: true,
       body: { user: user.username, password: user.password },
       headers: { 'X-Forwarded-For': randomIp() },
@@ -62,7 +58,7 @@ describe('Users API', () => {
     return utils
       .requestOnMedicDb(opts)
       .then(response => {
-        chai.expect(response).to.deep.include({ statusCode: 401, body: { error: 'Not logged in' } });
+        chai.expect(response).to.deep.include({ status: 401, body: { error: 'Not logged in' } });
       });
   };
 
@@ -119,61 +115,33 @@ describe('Users API', () => {
       await utils.request({
         path: '/_users',
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: _usersUser
       });
 
       await utils.saveDocs(medicData);
 
-      return new Promise((resolve, reject) => {
-        const options = {
-          hostname: constants.API_HOST,
-          path: '/_session',
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          auth: `${username}:${password}`
-        };
-
-        // Use http service to extract cookie
-        const req = https.request(options, res => {
-          if (res.statusCode !== 200) {
-            return reject(new Error(`Expected 200 from _session authing, but got ${res.statusCode}`));
-          }
-
-          // Example header:
-          // AuthSession=cm9vdDo1MEJDMDEzRTp7Vu5GKCkTxTVxwXbpXsBARQWnhQ; Version=1; Path=/; HttpOnly
-          try {
-            cookie = res.headers['set-cookie'][0].match(/^(AuthSession=[^;]+)/)[0];
-          } catch (err) {
-            return reject(err);
-          }
-
-          resolve(cookie);
-        });
-
-        req.write(JSON.stringify({
+      const res = await utils.request({
+        path: '/_session',
+        auth: { username, password },
+        method: 'POST',
+        resolveWithFullResponse: true,
+        body: {
           name: username,
           password: password
-        }));
-        req.end();
+        }
       });
+      if (!res.ok) {
+        throw new Error(`Expected 200 from _session authing, but got ${res.status}`);
+      }
+
+      cookie = res.headers.getSetCookie().find(cookie => cookie.startsWith('AuthSession'));
+      if (!cookie) {
+        throw new Error('Expected auth cookie from _session authing');
+      }
     });
 
     after(async () => {
-      const { _rev } = await utils.request(`/_users/${getUserId(username)}`);
-      await utils.request({
-        path: `/_users/${getUserId(username)}`,
-        method: 'PUT',
-        body: {
-          _id: getUserId(username),
-          _rev,
-          _deleted: true,
-        }
-      });
+      await utils.deleteUsers([{ username }]);
       await utils.revertSettings(true);
       await utils.revertDb([], true);
     });
@@ -214,7 +182,7 @@ describe('Users API', () => {
         })
         .then(() => fail('You should get a 401 in this situation'))
         .catch(err => {
-          chai.expect(err.responseBody.error).to.equal('You do not have permissions to modify this person');
+          chai.expect(err.body.error).to.equal('You do not have permissions to modify this person');
         });
     });
 
@@ -230,7 +198,7 @@ describe('Users API', () => {
         })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
-          chai.expect(err.responseBody.error).to.equal('unauthorized');
+          chai.expect(err.body.error).to.equal('unauthorized');
         });
     });
 
@@ -268,7 +236,7 @@ describe('Users API', () => {
         })
         .then(() => fail('You should get an error in this situation'))
         .catch(err => {
-          chai.expect(err.responseBody.error).to.equal('You must authenticate with Basic Auth to modify your password');
+          chai.expect(err.body.error).to.equal('You must authenticate with Basic Auth to modify your password');
         });
     });
 
@@ -516,7 +484,7 @@ describe('Users API', () => {
         .then(() => chai.expect.fail('should have thrown'))
         .catch(err => {
           // online users require the "can_update_users" permission to be able to access this endpoint
-          chai.expect(err.error).to.deep.equal({
+          chai.expect(err.body).to.deep.equal({
             code: 403,
             error: 'Insufficient privileges',
           });
@@ -535,7 +503,7 @@ describe('Users API', () => {
         .then(() => chai.expect.fail('should have thrown'))
         .catch(err => {
           // online users require the "can_update_users" permission to be able to access this endpoint
-          chai.expect(err.error).to.deep.equal({
+          chai.expect(err.body).to.deep.equal({
             code: 403,
             error: 'Insufficient privileges',
           });
@@ -580,12 +548,11 @@ describe('Users API', () => {
         facility_id: 'fixture:offline'
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
-      onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
       return utils
         .request(onlineRequestOptions)
         .then(resp => chai.expect(resp).to.equal('should have thrown'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(400);
+          chai.expect(err.status).to.equal(400);
         });
     });
 
@@ -599,7 +566,7 @@ describe('Users API', () => {
         .request(onlineRequestOptions)
         .then(resp => chai.expect(resp).to.equal('should have thrown'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(400);
+          chai.expect(err.status).to.equal(400);
         });
     });
 
@@ -609,7 +576,6 @@ describe('Users API', () => {
         facility_id: 'IdonTExist'
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
-      onlineRequestOptions.headers = { 'Content-Type': 'application/json' };
       return utils
         .request(onlineRequestOptions)
         .then(resp => {
@@ -682,18 +648,17 @@ describe('Users API', () => {
       const opts = {
         uri: url,
         method: 'POST',
-        simple: false,
         resolveWithFullResponse: true,
         noAuth: true,
-        followRedirect: false,
+        redirect: 'manual',
         body: {},
         headers: { 'X-Forwarded-For': randomIp() },
       };
       return utils.request(opts).then(response => {
-        chai.expect(response).to.include({ statusCode: 302, body: '/' });
-        chai.expect(response.headers['set-cookie']).to.be.an('array');
-        chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
-        chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
+        chai.expect(response).to.include({ status: 302, body: '/' });
+        chai.expect(response.headers.getSetCookie()).to.be.an('array');
+        chai.expect(response.headers.getSetCookie().find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
+        chai.expect(response.headers.getSetCookie().find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
       });
     };
 
@@ -701,16 +666,15 @@ describe('Users API', () => {
       const opts = {
         uri: url,
         method: 'POST',
-        simple: false,
         noAuth: true,
-        followRedirect: false,
+        redirect: 'manual',
         resolveWithFullResponse: true,
         body: {},
         headers: { 'X-Forwarded-For': randomIp() },
       };
       return utils.request(opts).then(response => {
-        chai.expect(response.headers['set-cookie']).to.be.undefined;
-        chai.expect(response).to.deep.include({ statusCode: 401, body: { error: expired ? 'expired': 'invalid' } });
+        chai.expect(response.headers.getSetCookie()).to.deep.equal([]);
+        chai.expect(response).to.deep.include({ status: 401, body: { error: expired ? 'expired': 'invalid' } });
       });
     };
 
@@ -1253,8 +1217,8 @@ describe('Users API', () => {
           })
           .then(() => chai.assert.fail('should have thrown'))
           .catch(err => {
-            chai.expect(err.response).to.shallowDeepEqual({
-              statusCode: 400,
+            chai.expect(err).to.shallowDeepEqual({
+              status: 400,
               body: { code: 400, error: { message: 'Missing required fields: phone' }}
             });
           });
@@ -1273,8 +1237,8 @@ describe('Users API', () => {
           })
           .then(() => chai.assert.fail('should have thrown'))
           .catch(err => {
-            chai.expect(err.response).to.shallowDeepEqual({
-              statusCode: 400,
+            chai.expect(err).to.shallowDeepEqual({
+              status: 400,
               body: { code: 400, error: { message: 'Missing required fields: phone' }}
             });
 
@@ -1610,7 +1574,7 @@ describe('Users API', () => {
           chai.expect(tokenLoginDoc.user).to.equal('org.couchdb.user:testuser');
 
           const onlineRequestOpts = {
-            auth: { user: 'onlineuser', password },
+            auth: { username: 'onlineuser', password },
             method: 'PUT',
             path: `/${tokenLoginDoc._id}`,
             body: tokenLoginDoc,
@@ -1618,8 +1582,8 @@ describe('Users API', () => {
           return utils.requestOnTestDb(onlineRequestOpts).catch(err => err);
         })
         .then(err => {
-          chai.expect(err.response).to.deep.include({
-            statusCode: 403,
+          chai.expect(err).to.deep.include({
+            status: 403,
             body: {
               error: 'forbidden',
               reason: 'Insufficient privileges'
@@ -1694,9 +1658,9 @@ describe('Users API', () => {
         await utils.request({
           path: `/api/v2/users/invalidUsername`,
         });
-      } catch ({ error }) {
-        expect(error.code).to.equal(404);
-        expect(error.error).to
+      } catch ({ body }) {
+        expect(body.code).to.equal(404);
+        expect(body.error).to
           .match(/Failed to find user with name \[invalidUsername\] in the \[(users|medic)\] database./);
         return;
       }
@@ -1710,9 +1674,9 @@ describe('Users API', () => {
           path: `/api/v2/users/${userProgramOfficer.username}`,
           auth: { username: user.username, password },
         });
-      } catch ({ error }) {
-        expect(error.code).to.equal(403);
-        expect(error.error).to.equal('Insufficient privileges');
+      } catch ({ body }) {
+        expect(body.code).to.equal(403);
+        expect(body.error).to.equal('Insufficient privileges');
         return;
       }
 
@@ -2012,8 +1976,8 @@ describe('Users API', () => {
         await utils.request({ path: '/api/v3/users', method: 'POST', body: offlineUserPayload });
         expect.fail('Should have thrown');
       } catch (error) {
-        expect(error.statusCode).to.equal(400);
-        expect(error.error.error.message).to.equal('This user cannot have multiple places');
+        expect(error.status).to.equal(400);
+        expect(error.body.error.message).to.equal('This user cannot have multiple places');
       }
     });
 
@@ -2072,8 +2036,8 @@ describe('Users API', () => {
         await utils.request({ path: '/api/v3/users', method: 'POST', body: onlineUserPayload });
         expect.expect.fail('Should have thrown');
       } catch (err) {
-        expect(err.responseBody.code).to.equal(400);
-        expect(err.responseBody.error.message).to.equal('Invalid facilities list');
+        expect(err.body.code).to.equal(400);
+        expect(err.body.error.message).to.equal('Invalid facilities list');
       }
 
       const offlineUserPayload = {
@@ -2088,8 +2052,8 @@ describe('Users API', () => {
         await utils.request({ path: '/api/v3/users', method: 'POST', body: offlineUserPayload });
         expect.expect.fail('Should have thrown');
       } catch (err) {
-        expect(err.responseBody.code).to.equal(400);
-        expect(err.responseBody.error.message).to.equal('Missing required fields: place');
+        expect(err.body.code).to.equal(400);
+        expect(err.body.error.message).to.equal('Missing required fields: place');
       }
     });
   });

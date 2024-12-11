@@ -185,8 +185,8 @@ describe('Contacts by phone API', () => {
         .request(noAuthRequestOptions)
         .then(() => chai.assert.fail('Should not allow unauthenticated requests'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(401);
-          chai.expect(err.error).to.deep.include({ code: 401, error: 'unauthorized' });
+          chai.expect(err.status).to.equal(401);
+          chai.expect(err.body).to.deep.include({ code: 401, error: 'unauthorized' });
         });
     });
 
@@ -197,8 +197,8 @@ describe('Contacts by phone API', () => {
         .request(noAuthRequestOptions)
         .then(() => chai.assert.fail('Should not allow unauthenticated requests'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(401);
-          chai.expect(err.error).to.deep.include({ code: 401, error: 'unauthorized' });
+          chai.expect(err.status).to.equal(401);
+          chai.expect(err.body).to.deep.include({ code: 401, error: 'unauthorized' });
         });
     });
   });
@@ -210,8 +210,8 @@ describe('Contacts by phone API', () => {
         .request(offlineRequestOptions)
         .then(() => chai.assert.fail('Should not allow offline users'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(403);
-          chai.expect(err.error).to.deep.include({ code: 403, error: 'forbidden' });
+          chai.expect(err.status).to.equal(403);
+          chai.expect(err.body).to.deep.include({ code: 403, error: 'forbidden' });
         });
     });
 
@@ -222,8 +222,8 @@ describe('Contacts by phone API', () => {
         .request(offlineRequestOptions)
         .then(() => chai.assert.fail('Should not allow offline users'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(403);
-          chai.expect(err.error).to.deep.include({ code: 403, error: 'forbidden' });
+          chai.expect(err.status).to.equal(403);
+          chai.expect(err.body).to.deep.include({ code: 403, error: 'forbidden' });
         });
     });
   });
@@ -234,8 +234,8 @@ describe('Contacts by phone API', () => {
         .request(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail when no params'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(400);
-          chai.expect(err.error).to.deep.equal({
+          chai.expect(err.status).to.equal(400);
+          chai.expect(err.body).to.deep.equal({
             error: 'bad_request',
             reason: '`phone` parameter is required and must be a valid phone number'
           });
@@ -248,8 +248,8 @@ describe('Contacts by phone API', () => {
         .request(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail when no params'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(400);
-          chai.expect(err.error).to.deep.equal({
+          chai.expect(err.status).to.equal(400);
+          chai.expect(err.body).to.deep.equal({
             error: 'bad_request',
             reason: '`phone` parameter is required and must be a valid phone number'
           });
@@ -284,7 +284,7 @@ describe('Contacts by phone API', () => {
         .request(onlineRequestOptions)
         .then(() => chai.assert.fail('Should 404 when not found'))
         .catch(result => {
-          chai.expect(result.error).to.deep.equal({ error: 'not_found', reason: 'no matches found' });
+          chai.expect(result.body).to.deep.equal({ error: 'not_found', reason: 'no matches found' });
         });
     });
 
@@ -309,8 +309,8 @@ describe('Contacts by phone API', () => {
         .request(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail when no params'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(400);
-          chai.expect(err.error).to.deep.equal({
+          chai.expect(err.status).to.equal(400);
+          chai.expect(err.body).to.deep.equal({
             error: 'bad_request',
             reason: '`phone` parameter is required and must be a valid phone number'
           });
@@ -323,8 +323,8 @@ describe('Contacts by phone API', () => {
         .request(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail with incorrect params'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(400);
-          chai.expect(err.error).to.deep.equal({
+          chai.expect(err.status).to.equal(400);
+          chai.expect(err.body).to.deep.equal({
             error: 'bad_request',
             reason: '`phone` parameter is required and must be a valid phone number'
           });
@@ -369,7 +369,7 @@ describe('Contacts by phone API', () => {
         .request(onlineRequestOptions)
         .then(() => chai.assert.fail('Should 404 when not found'))
         .catch(result => {
-          chai.expect(result.error).to.deep.equal({ error: 'not_found', reason: 'no matches found' });
+          chai.expect(result.body).to.deep.equal({ error: 'not_found', reason: 'no matches found' });
         });
     });
 

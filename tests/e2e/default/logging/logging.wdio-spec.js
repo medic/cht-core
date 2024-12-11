@@ -41,7 +41,6 @@ describe('audit log', () => {
       continuous: false
     };
     const requestOptions = {
-      resolveWithFullResponse: true,
       path: '/_replicator',
       method: 'POST',
       body

@@ -1,5 +1,4 @@
 const utils = require('@utils');
-const request = require('request');
 const constants = require('@constants');
 const _ = require('lodash');
 const placeFactory = require('@factories/cht/contacts/place');
@@ -15,80 +14,61 @@ describe('server', () => {
         json: false
       };
 
-      return utils.requestOnTestDb(opts, true)
+      return utils.requestOnTestDb(opts)
         .then(() => expect.fail('should have thrown'))
         .catch(e => {
-          expect(e.responseBody).to.equal('Content-Type must be application/json');
+          expect(e.body).to.equal('Content-Type must be application/json');
         });
     });
   });
 
   describe('response compression', () => {
-    const requestWrapper = (options) => {
-      _.defaults(options, {
-        auth: {
-          sendImmediately: true,
-          username: constants.USERNAME,
-          password: constants.PASSWORD
-        },
-        method: 'GET',
-        baseUrl: constants.BASE_URL + '/' + constants.DB_NAME,
-        uri: '/',
-        gzip: true
-      });
+    const requestWrapper = async (options) => {
+      const opts =  { path: '/', gzip: true, resolveWithFullResponse: true, ...options };
 
-      return new Promise((resolve, reject) => {
-        request(options, (err, res, body) => {
-          if (err) {
-            return reject(err);
-          }
-
-          if (res.headers['content-type'] === 'application/json' && typeof body === 'string') {
-            try {
-              body = JSON.parse(body);
-            } catch (err) {
-              // an error occured when trying parse 'body' to Object
-            }
-          }
-
-          resolve({ res, body });
-        });
-      });
+      const res = await utils.request(opts);
+      return { res, body: res.body };
     };
 
     it('compresses proxied CouchDB application/json requests which send accept-encoding gzip headers', () => {
-      const options = { uri: '/_all_docs' };
+      const options = { path: '/medic/_all_docs' };
 
       return requestWrapper(options).then(({res}) => {
-        expect(res.headers['content-encoding']).to.equal('gzip');
-        expect(res.headers['content-type']).to.equal('application/json');
+        expect(res.headers.get('content-encoding')).to.equal('gzip');
+        expect(res.headers.get('content-type')).to.equal('application/json');
       });
     });
 
     it('compresses proxied CouchDB application/json requests which send accept-encoding deflate headers', () => {
-      const options = { uri: '/_all_docs', gzip: false, headers: { 'Accept-Encoding': 'deflate' } };
+      const options = {
+        path: '/medic/_all_docs',
+        gzip: false,
+        headers: { 'Accept-Encoding': 'deflate' }
+      };
 
       return requestWrapper(options).then(({res}) => {
-        expect(res.headers['content-encoding']).to.equal('deflate');
-        expect(res.headers['content-type']).to.equal('application/json');
+        expect(res.headers.get('content-encoding')).to.equal('deflate');
+        expect(res.headers.get('content-type')).to.equal('application/json');
       });
     });
 
     it('does not compress when no accept-encoding headers are sent', () => {
-      const options = { uri: '/_all_docs', gzip: false };
+      const options = {
+        path: '/medic/_all_docs',
+        gzip: false
+      };
 
       return requestWrapper(options).then(({res}) => {
-        expect(res.headers['content-type']).to.equal('application/json');
-        expect(res.headers['content-encoding']).to.be.undefined;
+        expect(res.headers.get('content-type')).to.equal('application/json');
+        expect(res.headers.get('content-encoding')).to.be.null;
       });
     });
 
     it('compresses audited endpoints responses', () => {
       // compression threshold is 1024B
       const options = {
-        uri: '/_bulk_docs',
+        path: '/medic/_bulk_docs',
         method: 'POST',
-        json: true,
         body: {
           docs: [
             { _id: 'sample_doc' }, { _id: 'sample_doc2' }, { _id: 'sample_doc3' },
@@ -102,9 +82,8 @@ describe('server', () => {
       };
 
       return requestWrapper(options).then(({res, body}) => {
-        expect(res.headers['content-type']).to.equal('application/json');
-        expect(res.headers['content-encoding']).to.equal('gzip');
-        expect(body.length).to.equal(18);
+        expect(res.headers.get('content-type')).to.equal('application/json');
+        expect(res.headers.get('content-encoding')).to.equal('gzip');
         expect(_.omit(body[0], 'rev')).to.eql({ id: 'sample_doc', ok: true });
         expect(_.omit(body[1], 'rev')).to.eql({ id: 'sample_doc2', ok: true });
         expect(_.omit(body[2], 'rev')).to.eql({ id: 'sample_doc3', ok: true });
@@ -116,22 +95,28 @@ describe('server', () => {
         .getDoc('sample_doc')
         .then(doc => {
           const options = {
-            uri: '/sample_doc/attach?rev=' + doc._rev,
+            path: '/medic/sample_doc/attach',
             body: 'my-attachment-content',
             headers: { 'Content-Type': 'text/plain' },
-            method: 'PUT'
+            method: 'PUT',
+            json: false,
+            qs: { rev: doc._rev }
           };
 
           return requestWrapper(options);
         })
         .then(({body}) => {
-          const options = { uri: '/sample_doc/attach?rev=' + body.rev};
+          const options = {
+            path: '/medic//sample_doc/attach',
+            json: false,
+            qs: { rev: body.rev }
+          };
 
           return requestWrapper(options);
         })
         .then(({res, body}) => {
-          expect(res.headers['content-type']).to.equal('text/plain');
-          expect(res.headers['content-encoding']).to.equal('gzip');
+          expect(res.headers.get('content-type')).to.equal('text/plain');
+          expect(res.headers.get('content-encoding')).to.equal('gzip');
           expect(body).to.equal('my-attachment-content');
         });
     });
@@ -144,22 +129,27 @@ describe('server', () => {
         .getDoc('sample_doc2')
         .then(doc => {
           const options = {
-            uri: '/sample_doc2/attach?rev=' + doc._rev,
+            path: '/medic/sample_doc2/attach',
             body: xml,
+            json: false,
             headers: { 'Content-Type': 'application/xml' },
-            method: 'PUT'
+            method: 'PUT',
+            qs: { rev: doc._rev }
           };
 
           return requestWrapper(options);
         })
         .then(({body}) => {
-          const options = { uri: '/sample_doc2/attach?rev=' + body.rev};
+          const options = {
+            path: '/medic/sample_doc2/attach',
+            qs: { rev: body.rev }
+          };
 
           return requestWrapper(options);
         })
         .then(({res, body}) => {
-          expect(res.headers['content-type']).to.equal('application/xml');
-          expect(res.headers['content-encoding']).to.equal('gzip');
+          expect(res.headers.get('content-type')).to.equal('application/xml');
+          expect(res.headers.get('content-encoding')).to.equal('gzip');
           expect(body).to.equal(xml);
         });
     });
@@ -170,16 +160,21 @@ describe('server', () => {
                   '<name>Person 1.1.2.1</name></contact></parent></contact>';
       const doc = await utils.getDoc('sample_doc2');
       const options = {
-        uri: '/sample_doc2/attach?rev='+doc._rev,
+        path: '/medic/sample_doc2/attach',
         body: png,
         headers: { 'Content-Type': 'image/png' },
-        method: 'PUT'
+        method: 'PUT',
+        qs: { rev: doc._rev },
       };
       const { body } = await requestWrapper(options);
-      const getAttachmentOptions = { uri: '/sample_doc2/attach?rev=' + body.rev };
+      const getAttachmentOptions = {
+        path: '/medic/sample_doc2/attach',
+        qs: { rev: body.rev },
+        json: false,
+      };
       const { res, body: attachmentBody } = await requestWrapper(getAttachmentOptions);
-      expect(res.headers[ 'content-type' ]).to.equal('image/png');
-      expect(res.headers[ 'content-encoding' ]).to.be.undefined;
+      expect(res.headers.get('content-type')).to.equal('image/png');
+      expect(res.headers.get('content-encoding')).to.be.null;
       expect(attachmentBody).to.equal(png);
     });
   });

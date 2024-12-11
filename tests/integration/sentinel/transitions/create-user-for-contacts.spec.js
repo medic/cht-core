@@ -47,10 +47,10 @@ const loginAsUser = ({ username, password }) => {
   const opts = {
     path: '/medic/login',
     method: 'POST',
-    simple: false,
+    resolveWithFullResponse: true,
     noAuth: true,
     body: { user: username, password },
-    followRedirect: false,
+    redirect: 'manual',
   };
   return utils.request(opts);
 };
@@ -124,7 +124,7 @@ describe('create_user_for_contacts', () => {
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
     // Can log in as user
-    assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 302 });
+    assert.include(await loginAsUser(ORIGINAL_USER), { status: 302 });
     await utils.saveDoc(NEW_PERSON);
     // Write another contact that has a user being created and another user being replaced
     // (This is an approximation of behavior that could happen if Sentinel was down when the
@@ -154,11 +154,11 @@ describe('create_user_for_contacts', () => {
     // Transition successful
     assert.isTrue(transitions.create_user_for_contacts.ok);
     // Can no longer log in as user
-    assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 401 });
+    assert.include(await loginAsUser(ORIGINAL_USER), { status: 401 });
     // User's password was automatically reset. Change it to something we know.
     await updateUserPassword(ORIGINAL_USER.username, 'n3wPassword!');
     // Can still login as original user with new password
-    assert.include(await loginAsUser({ ...ORIGINAL_USER, password: 'n3wPassword!' }), { statusCode: 302 });
+    assert.include(await loginAsUser({ ...ORIGINAL_USER, password: 'n3wPassword!' }), { status: 302 });
 
     // New replacement user created
     const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: NEW_PERSON._id });
@@ -217,7 +217,7 @@ describe('create_user_for_contacts', () => {
       await utils.createUsers([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       // Can log in as user
-      assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 302 });
+      assert.include(await loginAsUser(ORIGINAL_USER), { status: 302 });
       await utils.saveDoc(NEW_PERSON);
       const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
       originalContact.user_for_contact = {
@@ -235,11 +235,11 @@ describe('create_user_for_contacts', () => {
       // Transition successful
       assert.isTrue(transitions.create_user_for_contacts.ok);
       // Can no longer log in as user
-      assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 401 });
+      assert.include(await loginAsUser(ORIGINAL_USER), { status: 401 });
       // User's password was automatically reset. Change it to something we know.
       await updateUserPassword(ORIGINAL_USER.username, 'n3wPassword!');
       // Can still login as original user with new password
-      assert.include(await loginAsUser({ ...ORIGINAL_USER, password: 'n3wPassword!' }), { statusCode: 302 });
+      assert.include(await loginAsUser({ ...ORIGINAL_USER, password: 'n3wPassword!' }), { status: 302 });
 
       // New user created
       const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: NEW_PERSON._id });
@@ -273,7 +273,7 @@ describe('create_user_for_contacts', () => {
       await utils.createUsers([otherUser]);
       newUsers.push(otherUser.username);
       // Can log in as user
-      assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 302 });
+      assert.include(await loginAsUser(ORIGINAL_USER), { status: 302 });
       await utils.saveDoc(NEW_PERSON);
       const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
       originalContact.user_for_contact = {
@@ -291,11 +291,11 @@ describe('create_user_for_contacts', () => {
       // Transition successful
       assert.isTrue(transitions.create_user_for_contacts.ok);
       // Can no longer log in as user
-      assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 401 });
+      assert.include(await loginAsUser(ORIGINAL_USER), { status: 401 });
       // User's password was automatically reset. Change it to something we know.
       await updateUserPassword(ORIGINAL_USER.username, 'n3wPassword!');
       // Can still login as original user with new password
-      assert.include(await loginAsUser({ ...ORIGINAL_USER, password: 'n3wPassword!' }), { statusCode: 302 });
+      assert.include(await loginAsUser({ ...ORIGINAL_USER, password: 'n3wPassword!' }), { status: 302 });
       // New user created
       const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: NEW_PERSON._id });
       assert.isEmpty(additionalUsers);
@@ -323,7 +323,7 @@ describe('create_user_for_contacts', () => {
       const [otherUserSettings] = await utils.getUserSettings({ name: otherUser.username });
       assert.equal(otherUserSettings.contact_id, ORIGINAL_PERSON._id);
       // Can still log in as other user
-      assert.include(await loginAsUser(otherUser), { statusCode: 302 });
+      assert.include(await loginAsUser(otherUser), { status: 302 });
     });
 
     it('replaces multiple users for a contact', async () => {
@@ -334,8 +334,8 @@ describe('create_user_for_contacts', () => {
       await utils.createUsers([otherUser]);
       newUsers.push(otherUser.username);
       // Can log in as users
-      assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 302 });
-      assert.include(await loginAsUser(otherUser), { statusCode: 302 });
+      assert.include(await loginAsUser(ORIGINAL_USER), { status: 302 });
+      assert.include(await loginAsUser(otherUser), { status: 302 });
       await utils.saveDoc(NEW_PERSON);
       const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
       originalContact.user_for_contact = {
@@ -357,14 +357,14 @@ describe('create_user_for_contacts', () => {
       // Transition successful
       assert.isTrue(transitions.create_user_for_contacts.ok);
       // Can no longer log in as users
-      assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 401 });
-      assert.include(await loginAsUser(otherUser), { statusCode: 401 });
+      assert.include(await loginAsUser(ORIGINAL_USER), { status: 401 });
+      assert.include(await loginAsUser(otherUser), { status: 401 });
       // User's password was automatically reset. Change it to something we know.
       await updateUserPassword(ORIGINAL_USER.username, 'n3wPassword!');
       await updateUserPassword(otherUser.username, 'n3wPassword!');
       // Can still login as original user with new password
-      assert.include(await loginAsUser({ ...ORIGINAL_USER, password: 'n3wPassword!' }), { statusCode: 302 });
-      assert.include(await loginAsUser({ ...otherUser, password: 'n3wPassword!' }), { statusCode: 302 });
+      assert.include(await loginAsUser({ ...ORIGINAL_USER, password: 'n3wPassword!' }), { status: 302 });
+      assert.include(await loginAsUser({ ...otherUser, password: 'n3wPassword!' }), { status: 302 });
       // New users created
       const [newUserSettings0, newUserSettings1, ...additionalUsers] =
         await utils.getUserSettings({ contactId: NEW_PERSON._id });

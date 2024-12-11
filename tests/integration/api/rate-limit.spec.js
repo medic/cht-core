@@ -18,7 +18,7 @@ describe('rate limit', () => {
       await requestThat401s();
       expect.fail('should have been rate limited');
     } catch (e) {
-      expect(e.statusCode).to.equal(429);
+      expect(e.status).to.equal(429);
     }
 
     await new Promise((resolve) => {
@@ -30,7 +30,7 @@ describe('rate limit', () => {
       expect.fail('should have rejected due to no auth');
     } catch (e) {
       // the rate limit period has passed, so we're back to 401s
-      expect(e.statusCode).to.equal(401);
+      expect(e.status).to.equal(401);
     }
   });
  

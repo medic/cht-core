@@ -504,7 +504,7 @@ describe('bulk-get handler', () => {
           if (result.results) {
             chai.expect(result.results.length).to.equal(0);
           } else {
-            chai.expect(result.responseBody).to.equal('Server error');
+            chai.expect(result.body).to.equal('Server error');
           }
         });
       });

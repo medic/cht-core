@@ -214,8 +214,8 @@ describe('changes handler', () => {
         })
         .then(response => {
           expect(response.headers).to.be.ok;
-          expect(response.headers['content-type']).to.equal('application/json');
-          expect(response.headers.server).to.be.ok;
+          expect(response.headers.get('content-type')).to.equal('application/json');
+          expect(response.headers.get('server')).to.be.ok;
         });
     });
   });
@@ -316,7 +316,7 @@ describe('changes handler', () => {
             if (result.results) {
               return assertChangeIds(result, ...changesIDs, bobUserId);
             }
-            expect(result.responseBody.error).to.equal('forbidden');
+            expect(result.body.error).to.equal('forbidden');
           });
         });
     });
