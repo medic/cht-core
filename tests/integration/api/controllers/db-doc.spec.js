@@ -6,6 +6,7 @@ const constants = require('@constants');
 const uuid = require('uuid').v4;
 
 const password = 'passwordSUP3RS3CR37!';
+const newPassword = 'Pa33word1';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
@@ -163,6 +164,7 @@ describe('db-doc handler', () => {
   before(async () => {
     await utils.saveDoc(parentPlace);
     await utils.createUsers(users);
+    await utils.resetUserPassword(users);
     await utils.saveDocs([...clinics, ...patients]);
   });
 
@@ -174,8 +176,8 @@ describe('db-doc handler', () => {
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
 
   beforeEach(() => {
-    offlineRequestOptions = { auth: { username: 'offline', password }, };
-    onlineRequestOptions = { auth: { username: 'online', password }, };
+    offlineRequestOptions = { auth: { username: 'offline', password: newPassword }, };
+    onlineRequestOptions = { auth: { username: 'online', password: newPassword }, };
   });
 
   describe('does not restrict online users', () => {
@@ -1031,7 +1033,7 @@ describe('db-doc handler', () => {
     });
 
     it('GET tasks and targets', () => {
-      const supervisorRequestOptions = { auth: { username: 'supervisor', password }, };
+      const supervisorRequestOptions = { auth: { username: 'supervisor', password: newPassword }, };
       const allowedTask = {
         _id: 'task1',
         type: 'task',

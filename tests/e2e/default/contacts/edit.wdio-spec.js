@@ -30,6 +30,7 @@ describe('Edit ', () => {
     roles: ['program_officer'],
     contact: onlineUserContact
   });
+  const newPassword = loginPage.NEW_PASSWORD;
 
   before(async () => {
     await utils.saveDocs([...places.values()]);
@@ -61,7 +62,7 @@ describe('Edit ', () => {
   });
 
   it('should sync and update the offline user\'s home place', async () => {
-    await loginPage.login(offlineUser);
+    await loginPage.login({ username: offlineUser.username, password: newPassword, resetPassword: false });
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople();
     await commonPage.logout();
@@ -73,7 +74,7 @@ describe('Edit ', () => {
     await commonPage.waitForPageLoaded();
     await commonPage.logout();
 
-    await loginPage.login(offlineUser);
+    await loginPage.login({ username: offlineUser.username, password: newPassword, resetPassword: false });
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople();
 

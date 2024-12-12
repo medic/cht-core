@@ -20,6 +20,7 @@ describe('generate service worker', () => {
     sinon.stub(resources, 'staticPath').value('/absolute/path/to/build/static/');
     sinon.stub(resources, 'webappPath').value('/absolute/path/to/build/static/webapp/');
     sinon.stub(loginController, 'renderLogin');
+    sinon.stub(loginController, 'renderPasswordReset');
     sinon.stub(db.medic, 'get');
     sinon.stub(db.medic, 'put');
     sinon.stub(extensionLibsService, 'getAll');
@@ -46,6 +47,7 @@ describe('generate service worker', () => {
 
   it('should generate the service worker file and update the service worker meta doc', async () => {
     loginController.renderLogin.resolves('loginpage html');
+    loginController.renderPasswordReset.resolves('passwordresetpage html');
     extensionLibsService.getAll.resolves([{ name: 'bar.js', data: 'barcode' }]);
     sinon.stub(workbox, 'generateSW').returns();
     db.medic.get.resolves({ _id: 'service-worker-meta' });
@@ -84,6 +86,7 @@ describe('generate service worker', () => {
       templatedURLs: {
         '/': [ 'webapp/index.html' ],
         '/medic/login': 'loginpage html',
+        '/medic/password-reset': 'passwordresetpage html',
         '/medic/_design/medic/_rewrite/': [
           'webapp/appcache-upgrade.html'
         ],

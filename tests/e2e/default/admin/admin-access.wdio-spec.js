@@ -5,7 +5,7 @@ const adminPage = require('@page-objects/default/admin/admin.wdio.page');
 const common = require('@page-objects/default/common/common.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 
-describe('Acessing the admin app', () => {
+describe('Accessing the admin app', () => {
   const offlineUser = userFactory.build({ username: 'offline-user-admin', isOffline: true });
   const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
 
@@ -31,7 +31,8 @@ describe('Acessing the admin app', () => {
     const error = '{"code":403,"error":"forbidden","details":"Offline users are not allowed access to this endpoint"}';
     await utils.saveDocs([parent]);
     await utils.createUsers([offlineUser]);
-    await loginPage.cookieLogin({ ...offlineUser, createUser: false });
+
+    await loginPage.login({ username: offlineUser.username, password: offlineUser.password });
 
     await common.waitForLoaders();
     await browser.url('/admin/#/forms');

@@ -24,7 +24,8 @@ describe('admin users', () => {
     await loginPage.login({
       username: adminUser.username,
       password: adminUser.password,
-      adminApp: true
+      adminApp: true,
+      resetPassword: false,
     });
 
     await utils.deleteUsers([adminUser]);

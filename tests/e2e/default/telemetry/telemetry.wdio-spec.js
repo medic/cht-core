@@ -107,8 +107,10 @@ describe('Telemetry', () => {
     await commonPage.sync();
 
     const clientDdoc = await utils.getDoc('_design/medic-client');
-
-    const options = { auth: { username: user.username, password: user.password }, userName: user.username };
+    
+    // After first login, the user's password is updated, we use the newPassword
+    const newPassword = loginPage.NEW_PASSWORD;
+    const options = { auth: { username: user.username, password: newPassword }, userName: user.username };
     const metaDocs = await utils.requestOnTestMetaDb({ ...options, path: '/_all_docs?include_docs=true' });
 
     const telemetryEntry = metaDocs.rows.find(row => row.id.startsWith(TELEMETRY_PREFIX));

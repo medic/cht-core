@@ -76,6 +76,27 @@ module.exports = {
       });
   },
 
+  checkPasswordChange: async (req) => {
+    if (!req.userCtx || !req.userCtx.name) {
+      const error = new Error('Not logged in');
+      error.code = 401;
+      error.error = 'Not logged in';
+      throw error;
+    }
+
+    if (roles.isDbAdmin(req.userCtx)) {
+      return;
+    }
+
+    const user = await users.getUserDoc(req.userCtx.name);
+    if (user.password_change_required && !user.token_login) {
+      const error = new Error('Password change required');
+      error.code = 403;
+      error.error = 'Password change required';
+      throw error;
+    }
+  },
+
   /**
    * Extract Basic Auth credentials from a request
    *

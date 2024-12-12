@@ -13,7 +13,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const chtDbUtils = require('@utils/cht-db');
 
 describe('Tasks', () => {
-
+  const newPassword = loginPage.NEW_PASSWORD;
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
   const healthCenter1 = places.get('health_center');
@@ -59,17 +59,14 @@ describe('Tasks', () => {
     await chtConfUtils.compileAndUploadAppForms(formsPath);
   });
 
-  beforeEach(async () => {
-    await loginPage.login(chw);
-    await commonPage.waitForPageLoaded();
-  });
-
   afterEach(async () => {
     await commonPage.logout();
     await utils.revertSettings(true);
   });
 
   it('should remove task from list when CHW completes a task successfully', async () => {
+    await loginPage.login(chw);
+    await commonPage.waitForPageLoaded();
     await tasksPage.compileTasks('tasks-breadcrumbs-config.js', true);
     
     await commonPage.goToTasks();
@@ -86,6 +83,8 @@ describe('Tasks', () => {
   });
 
   it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
+    await loginPage.login({ username: chw.username, password: newPassword, resetPassword: false });
+    await commonPage.waitForPageLoaded();
     await tasksPage.compileTasks('tasks-breadcrumbs-config.js', false);
     
     await commonPage.goToTasks();
@@ -104,6 +103,8 @@ describe('Tasks', () => {
   });
 
   it('should load multiple pages of tasks on infinite scrolling', async () => {
+    await loginPage.login({ username: chw.username, password: newPassword, resetPassword: false });
+    await commonPage.waitForPageLoaded();
     await tasksPage.compileTasks('tasks-multiple-config.js', true);
 
     await commonPage.goToTasks();
@@ -133,6 +134,8 @@ describe('Tasks', () => {
   });
 
   it('Should show error message for bad config', async () => {
+    await loginPage.login({ username: chw.username, password: newPassword, resetPassword: false });
+    await commonPage.waitForPageLoaded();
     await tasksPage.compileTasks('tasks-error-config.js', true);
     await commonPage.goToTasks();
 
