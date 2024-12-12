@@ -144,7 +144,6 @@ const mapDbInfo = (dbInfo, viewIndexInfos, nouveauIndexInfos) => {
     })),
     nouveau_indexes: nouveauIndexInfos?.map(nouveauIndexInfo => ({
       name: nouveauIndexInfo.name || '',
-      update_sequence: nouveauIndexInfo.search_index.update_seq,
       num_docs: defaultNumber(nouveauIndexInfo.search_index.num_docs),
       disk_size: defaultNumber(nouveauIndexInfo.search_index.disk_size),
     })),
