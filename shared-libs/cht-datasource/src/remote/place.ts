@@ -1,5 +1,5 @@
 import { Nullable, Page } from '../libs/core';
-import {ContactTypeQualifier, UuidQualifier} from '../qualifier';
+import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Place from '../place';
 import { getResource, getResources, RemoteDataContext } from './libs/data-context';
 

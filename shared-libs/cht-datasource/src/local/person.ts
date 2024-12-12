@@ -3,11 +3,11 @@ import contactTypeUtils from '@medic/contact-types-utils';
 import { deepCopy, isNonEmptyArray, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
-import {fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey} from './libs/doc';
+import { fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
 import { getLineageDocsById, getPrimaryContactIds, hydrateLineage, hydratePrimaryContact } from './libs/lineage';
-import {InvalidArgumentError} from '../libs/error';
+import { InvalidArgumentError } from '../libs/error';
 
 /** @internal */
 export namespace v1 {

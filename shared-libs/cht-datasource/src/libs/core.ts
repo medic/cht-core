@@ -1,5 +1,5 @@
 import { DataContext } from './data-context';
-import { ContactTypeQualifier, isContactTypeQualifier } from '../qualifier';
+import { ContactTypeQualifier, FreetextQualifier, isContactTypeQualifier, isFreetextQualifier } from '../qualifier';
 import { InvalidArgumentError } from './error';
 
 /**
@@ -157,8 +157,9 @@ export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is C
 };
 
 /** @internal */
-export const assertLimit: (limit: unknown) => asserts limit is number = (limit: unknown) => {
-  if (typeof limit !== 'number' || !Number.isInteger(limit) || limit <= 0) {
+export const assertLimit: (limit: unknown) => asserts limit is number | `${number}` = (limit: unknown) => {
+  const numberLimit = Number(limit);
+  if (!Number.isInteger(numberLimit) || numberLimit <= 0) {
     throw new InvalidArgumentError(`The limit must be a positive number: [${String(limit)}].`);
   }
 };
@@ -167,5 +168,14 @@ export const assertLimit: (limit: unknown) => asserts limit is number = (limit: 
 export const assertCursor: (cursor: unknown) => asserts cursor is Nullable<string> = (cursor: unknown) => {
   if (cursor !== null && (typeof cursor !== 'string' || !cursor.length)) {
     throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}].`);
+  }
+};
+
+/** @internal */
+export const assertFreetextQualifier: (qualifier: unknown) => asserts qualifier is FreetextQualifier = (
+  qualifier: unknown
+) => {
+  if (!isFreetextQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid freetext [${JSON.stringify(qualifier)}].`);
   }
 };

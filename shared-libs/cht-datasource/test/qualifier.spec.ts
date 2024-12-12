@@ -1,4 +1,11 @@
-import {byContactType, byUuid, isContactTypeQualifier, isUuidQualifier} from '../src/qualifier';
+import {
+  byContactType,
+  byFreetext,
+  byUuid,
+  isContactTypeQualifier,
+  isFreetextQualifier,
+  isUuidQualifier
+} from '../src/qualifier';
 import { expect } from 'chai';
 
 describe('qualifier', () => {
@@ -60,6 +67,38 @@ describe('qualifier', () => {
     ].forEach(([ contactType, expected ]) => {
       it(`evaluates ${JSON.stringify(contactType)}`, () => {
         expect(isContactTypeQualifier(contactType)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byFreetext', () => {
+    it('builds a qualifier for searching an entity by freetext', () => {
+      expect(byFreetext('freetext')).to.deep.equal({ freetext: 'freetext' });
+    });
+
+    [
+      null,
+      '',
+      { },
+    ].forEach(freetext => {
+      it(`throws an error for ${JSON.stringify(freetext)}`, () => {
+        expect(() => byFreetext(freetext as string)).to.throw(
+          `Invalid freetext [${JSON.stringify(freetext)}].`
+        );
+      });
+    });
+  });
+
+  describe('isFreetextQualifier', () => {
+    [
+      [ null, false ],
+      [ 'freetext', false ],
+      [ { freetext: { } }, true ],
+      [ { freetext: 'freetext' }, true ],
+      [ { freetext: 'freetext', other: 'other' }, true ]
+    ].forEach(([ freetext, expected ]) => {
+      it(`evaluates ${JSON.stringify(freetext)}`, () => {
+        expect(isFreetextQualifier(freetext)).to.equal(expected);
       });
     });
   });

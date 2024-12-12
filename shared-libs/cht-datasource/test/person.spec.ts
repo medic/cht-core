@@ -132,6 +132,7 @@ describe('person', () => {
       const cursor = '1';
       const pageData = { data: people, cursor };
       const limit = 3;
+      const stringifiedLimit = '3';
       const personTypeQualifier = {contactType: 'person'} as const;
       const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;
@@ -159,6 +160,20 @@ describe('person', () => {
         getPage.resolves(pageData);
 
         const result = await Person.v1.getPage(dataContext)(personTypeQualifier, cursor, limit);
+
+        expect(result).to.equal(pageData);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage)).to.be.true;
+        expect(getPage.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
+        expect(isContactTypeQualifier.calledOnceWithExactly((personTypeQualifier))).to.be.true;
+      });
+
+      it('retrieves people from the data context when cursor is not null and ' +
+        'limit is stringified number', async () => {
+        isContactTypeQualifier.returns(true);
+        getPage.resolves(pageData);
+
+        const result = await Person.v1.getPage(dataContext)(personTypeQualifier, cursor, stringifiedLimit);
 
         expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -202,7 +217,7 @@ describe('person', () => {
       ].forEach((limitValue) => {
         it(`throws an error if limit is invalid: ${String(limitValue)}`, async () => {
           isContactTypeQualifier.returns(true);
-          getPage.resolves(people);
+          getPage.resolves(pageData);
 
           await expect(Person.v1.getPage(dataContext)(personTypeQualifier, cursor, limitValue as number))
             .to.be.rejectedWith(`The limit must be a positive number: [${String(limitValue)}]`);
@@ -223,7 +238,7 @@ describe('person', () => {
       ].forEach((skipValue) => {
         it('throws an error if cursor is invalid', async () => {
           isContactTypeQualifier.returns(true);
-          getPage.resolves(people);
+          getPage.resolves(pageData);
 
           await expect(Person.v1.getPage(dataContext)(personTypeQualifier, skipValue as string, limit))
             .to.be.rejectedWith(`Invalid cursor token: [${String(skipValue)}]`);
@@ -263,7 +278,7 @@ describe('person', () => {
         isContactTypeQualifier.returns(true);
         getPagedGenerator.returns(mockGenerator);
 
-        const generator =   Person.v1.getAll(dataContext)(personTypeQualifier);
+        const generator = Person.v1.getAll(dataContext)(personTypeQualifier);
 
         expect(generator).to.deep.equal(mockGenerator);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
