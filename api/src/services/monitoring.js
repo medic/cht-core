@@ -142,12 +142,12 @@ const mapDbInfo = (dbInfo, viewIndexInfos, nouveauIndexInfos) => {
         file: defaultNumber(viewIndexInfo.view_index?.sizes?.file),
       },
     })),
-    nouveau_indexes: nouveauIndexInfos ? nouveauIndexInfos.map(nouveauIndexInfo => ({
+    nouveau_indexes: nouveauIndexInfos?.map(nouveauIndexInfo => ({
       name: nouveauIndexInfo.name || '',
       update_sequence: nouveauIndexInfo.search_index.update_seq,
       num_docs: defaultNumber(nouveauIndexInfo.search_index.num_docs),
       disk_size: defaultNumber(nouveauIndexInfo.search_index.disk_size),
-    })) : undefined,
+    })),
   };
 };
 
@@ -198,7 +198,7 @@ const fetchNouveauIndexInfosForDdoc = (db, ddoc) => NOUVEAU_INDEXES_TO_MONITOR[d
 
 const fetchNouveauIndexInfosForDb = (db) => Promise.all(Object.keys(NOUVEAU_INDEXES_TO_MONITOR[db]).flatMap(
   ddoc => fetchNouveauIndexInfosForDdoc(db, ddoc),
-));
+)).then((nouveauIndexInfos) => nouveauIndexInfos.filter(info => info));
 
 const fetchAllNouveauIndexInfos = () => Promise.all(
   Object.keys(NOUVEAU_INDEXES_TO_MONITOR).map(fetchNouveauIndexInfosForDb),
@@ -210,16 +210,10 @@ const getDbInfos = async () => {
     fetchAllViewIndexInfos(),
     fetchAllNouveauIndexInfos(),
   ]);
-  // console.log("dbInfos", dbInfos);
-  // console.log("viewIndexInfos", viewIndexInfos);
-  // console.log("nouveauInfos", nouveauIndexInfos);
   const result = {};
   Object.keys(DBS_TO_MONITOR).forEach((dbKey, i) => {
-    // console.log("dbInfos[i]", dbInfos[i]);
-    // console.log("viewIndexInfos[i]", viewIndexInfos[i]);
     result[dbKey] = mapDbInfo(dbInfos[i], viewIndexInfos[i], nouveauIndexInfos[i]);
   });
-  // console.log("result", result);
   return result;
 };
 
