@@ -109,7 +109,7 @@ describe('Create user for contacts', () => {
       path: '/medic/login',
       body: { user: username, password, locale: 'en' },
       method: 'POST',
-      simple: false,
+      resolveWithFullResponse: true,
       noAuth: true,
     };
     return utils.request(opts);
