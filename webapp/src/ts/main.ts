@@ -32,6 +32,7 @@ require('moment/locale/hi');
 require('moment/locale/id');
 require('moment/locale/ne');
 require('moment/locale/sw');
+require('moment/locale/ar');
 
 require('select2');
 require('../js/enketo/main');
