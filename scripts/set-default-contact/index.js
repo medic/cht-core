@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-const request = require('request-promise-native');
+console.log(`   Using COUCH_URL env var: ${process.env.COUCH_URL}\n`);
+const url = new URL(process.env.COUCH_URL);
 
 const compileUrl = path => {
   try {
@@ -10,37 +11,36 @@ const compileUrl = path => {
   }
 };
 
+const options = {
+  headers: {
+    'Authorization': 'Basic ' + btoa(`${url.username}:${url.password}`),
+    'Content-Type': 'application/json'
+  }
+};
+
+const fetchUrl = async (url, options) => {
+  const response = await fetch(url.href, options);
+  if (response.ok) {
+    return await response.json();
+  }
+
+  response.message = await response.text();
+  throw response;
+};
+
 const getChtUsers = async () => {
-  console.log('   Using COUCH_URL env var:', process.env.COUCH_URL);
-  console.log('');
   //  pin  to v1 of API so it is backwards compatible with CHT 3.x
   const url = compileUrl('/api/v1/users');
-  const options = {
-    uri: url.href,
-    json: true
-  };
-
-  return request.get(options)
-    .then(users => {
-      if (typeof users === 'object' ){
-        console.log('   Found', users.length, 'users\n');
-        return users;
-      }
-    });
+  const users = await fetchUrl(url, options);
+  if (typeof users === 'object') {
+    console.log(`   Found ${users.length} users\n`);
+    return users;
+  }
 };
 
 const getObjectFromMedicDb = async id => {
   const url = compileUrl('/medic/' + id);
-  const options = {
-    uri: url.href,
-    json: true
-  };
-
-  return request.get(options)
-    .then(object => {
-      return object;
-    });
-
+  return fetchUrl(url, options);
 };
 
 const hasDefaultContact = async user => {
@@ -72,12 +72,7 @@ const savePlace = async (placeId, contactId) => {
   }
   placeObj.contact._id = contactId;
   placeObj.contact.parent = {_id: placeId};
-  const options = {
-    uri: url.href,
-    json: true,
-    body: placeObj
-  };
-  return request.put(options);
+  return fetchUrl(url.href, { ...options, body: JSON.stringify(placeObj), method: 'PUT' });
 };
 
 
@@ -99,17 +94,12 @@ const go = async () => {
     const updatedCount = await setContactsAsPlacesDefaults(filteredUsers);
     console.log('\n   Updated', updatedCount, 'users');
   } catch (e) {
-    if (e.statusCode === 401) {
+    if (e.status === 401) {
       console.log('   Bad authentication for CouchDB. Check that COUCH_URL has correct username and password.');
       return;
     }
 
     console.log('   ' + e.message);
-    if (process.env.DEBUG === 'True'){
-      console.log('\n   ' + e.stack);
-    } else {
-      console.log('\n   Pass DEBUG=True to see stack trace');
-    }
   }
 };
 

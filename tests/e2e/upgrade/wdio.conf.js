@@ -7,7 +7,6 @@ const fs = require('fs');
 const os = require('os');
 const chai = require('chai');
 chai.use(require('chai-exclude'));
-const rpn = require('request-promise-native');
 const semver = require('semver');
 
 const utils = require('@utils');
@@ -31,8 +30,12 @@ const MAIN_BRANCH = 'medic:medic:master';
 
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb'];
 const getUpgradeServiceDockerCompose = async () => {
-  const contents = (await rpn.get('https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml'));
-  await fs.promises.writeFile(UPGRADE_SERVICE_DC, contents);
+  const response = await fetch('https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml');
+  const contents = await response.text();
+  if (response.ok) {
+    await fs.promises.writeFile(UPGRADE_SERVICE_DC, contents);
+  }
+  throw new Error(contents);
 };
 
 const getReleasesQuery = () => {
