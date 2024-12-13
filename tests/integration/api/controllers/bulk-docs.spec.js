@@ -286,13 +286,13 @@ describe('bulk-docs handler', () => {
           }).then(result => {
             chai.expect(result.length).to.equal(8);
             chai.expect(result[0]).excluding('_rev').to.deep.equal(docs[0]);
-            chai.expect(result[1]).to.deep.nested.include({ 'responseBody.error': 'not_found' });
+            chai.expect(result[1]).to.deep.nested.include({ 'body.error': 'not_found' });
             chai.expect(result[2]).excluding('_rev').to.deep.equal(existentDocs[2]);
             chai.expect(result[3]).excluding('_rev').to.deep.equal(existentDocs[3]);
             chai.expect(result[4]).excluding('_rev').to.deep.equal(existentDocs[0]);
 
             chai.expect(result[5]).excluding('_rev').to.deep.equal(docs[5]);
-            chai.expect(result[6]).to.deep.nested.include({ 'responseBody.error': 'not_found' });
+            chai.expect(result[6]).to.deep.nested.include({ 'body.error': 'not_found' });
             chai.expect(result[7]).excluding( ['_rev', '_id']).to.deep.equal(docs[7]);
 
             return sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
@@ -757,12 +757,12 @@ describe('bulk-docs handler', () => {
         chai.expect(results.length).to.equal(8);
 
         chai.expect(results[0]).excluding('_rev').to.deep.equal(docs[0]);
-        chai.expect(results[1]).to.deep.nested.include({ 'responseBody.error': 'not_found' });
+        chai.expect(results[1]).to.deep.nested.include({ 'body.error': 'not_found' });
         chai.expect(results[2]).excluding('_rev').to.deep.equal(existentDocs[2]);
         chai.expect(results[3]).excluding('_rev').to.deep.equal(existentDocs[3]);
         chai.expect(results[4]).excluding('_rev').to.deep.equal(existentDocs[0]);
         chai.expect(results[5]).excluding('_rev').to.deep.equal(docs[5]);
-        chai.expect(results[6]).to.deep.nested.include({ 'responseBody.error': 'not_found' });
+        chai.expect(results[6]).to.deep.nested.include({ 'body.error': 'not_found' });
         chai.expect(results[7]).excluding(['_rev', '_id']).to.deep.equal(docs[7]);
       });
   });
@@ -804,7 +804,7 @@ describe('bulk-docs handler', () => {
           chai.expect(result[0]).to.include({ id: 'denied_report', error: 'forbidden' });
         } else {
           // CouchDB interprets this as an attachment POST request
-          chai.expect(result).to.deep.nested.include({ 'responseBody.error': 'method_not_allowed' });
+          chai.expect(result).to.deep.nested.include({ 'body.error': 'method_not_allowed' });
         }
       });
     });
@@ -862,9 +862,9 @@ describe('bulk-docs handler', () => {
       })
       .then(results => {
         chai.expect(results[0]).to.deep.equal(docs[0]);
-        chai.expect(results[1]).to.include({ statusCode: 404 });
+        chai.expect(results[1]).to.include({ status: 404 });
         chai.expect(results[2]).to.deep.equal(docs[2]);
-        chai.expect(results[3]).to.include({ statusCode: 404 });
+        chai.expect(results[3]).to.include({ status: 404 });
       });
   });
 
