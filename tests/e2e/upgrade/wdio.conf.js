@@ -30,12 +30,12 @@ const MAIN_BRANCH = 'medic:medic:master';
 
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb'];
 const getUpgradeServiceDockerCompose = async () => {
-  const response = await fetch('https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml');
-  const contents = await response.text();
-  if (response.ok) {
-    await fs.promises.writeFile(UPGRADE_SERVICE_DC, contents);
-  }
-  throw new Error(contents);
+  const contents = await utils.request({
+    uri: 'https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml',
+    json: false,
+    noAuth: true,
+  });
+  await fs.promises.writeFile(UPGRADE_SERVICE_DC, contents);
 };
 
 const getReleasesQuery = () => {
@@ -59,7 +59,12 @@ const getRelease = async () => {
   }
 
   const url = `${MARKET_URL_READ}/${STAGING_SERVER}/_design/builds/_view/releases`;
-  const releases = await rpn.get({ url: url, qs: getReleasesQuery(), json: true });
+  const releases = await utils.request({
+    url: url,
+    qs: getReleasesQuery(),
+    noAuth: true,
+  });
+
   if (!releases.rows.length) {
     return MAIN_BRANCH;
   }
@@ -71,7 +76,11 @@ const getMainCHTDockerCompose = async () => {
   const release = await getRelease();
   for (const composeFile of COMPOSE_FILES) {
     const composeFileUrl = `${MARKET_URL_READ}/${STAGING_SERVER}/${release}/docker-compose/${composeFile}.yml`;
-    const contents = await rpn.get(composeFileUrl);
+    const contents = await utils.request({
+      uri: composeFileUrl,
+      json: false,
+      noAuth: true,
+    });
     const filePath = path.join(CHT_DOCKER_COMPOSE_FOLDER, `${composeFile}.yml`);
     await fs.promises.writeFile(filePath, contents);
   }
