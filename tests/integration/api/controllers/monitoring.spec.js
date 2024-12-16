@@ -5,7 +5,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 
 const VIEW_INDEXES_BY_DB = {
-  ['medic-test']: [
+  'medic-test': [
     'medic',
     'medic-admin',
     'medic-client',
@@ -13,9 +13,15 @@ const VIEW_INDEXES_BY_DB = {
     'medic-scripts',
     'medic-sms',
   ],
-  ['medic-test-sentinel']: ['sentinel'],
-  ['medic-test-users-meta']: ['users-meta'],
+  'medic-test-sentinel': ['sentinel'],
+  'medic-test-users-meta': ['users-meta'],
   _users: ['users'],
+};
+
+const NOUVEAU_INDEXES_BY_DB = {
+  ['medic-test']: {
+    'medic-nouveau': ['contacts_by_freetext', 'reports_by_freetext'],
+  },
 };
 
 const getAppVersion = async () => {
@@ -37,7 +43,18 @@ const getExpectedViewIndexes = (db) => {
   }));
 };
 
-const INDETERMINATE_FIELDS = ['current', 'uptime', 'date', 'fragmentation', 'node', 'sizes'];
+const getExpectedNouveauIndexes = (db) => {
+  if (!NOUVEAU_INDEXES_BY_DB[db]) {
+    return;
+  }
+
+  const ddocs = Object.entries(NOUVEAU_INDEXES_BY_DB[db]);
+  return ddocs.flatMap(([ddocName, indexes]) => indexes.map(indexName => ({
+    name: `_design/${ddocName}/${indexName}`,
+  })));
+};
+
+const INDETERMINATE_FIELDS = ['current', 'uptime', 'date', 'fragmentation', 'node', 'sizes', 'disk_size', 'num_docs'];
 
 const assertCouchDbDataSizeFields = (couchData) => {
   chai.expect(couchData.fragmentation).to.be.gte(0);
@@ -86,6 +103,7 @@ describe('monitoring', () => {
             doc_count: medicInfo.doc_count,
             doc_del_count: medicInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test'),
+            nouveau_indexes: getExpectedNouveauIndexes('medic-test'),
           },
           sentinel: {
             name: 'medic-test-sentinel',
@@ -164,6 +182,7 @@ describe('monitoring', () => {
             doc_count: medicInfo.doc_count,
             doc_del_count: medicInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test'),
+            nouveau_indexes: getExpectedNouveauIndexes('medic-test'),
           },
           sentinel: {
             name: 'medic-test-sentinel',
