@@ -34,6 +34,8 @@ const getApiUrl = (pathname = '') => {
   apiUrl.port = API_PORT || DEFAULT_API_PORT;
   apiUrl.pathname = pathname;
   const basicAuth = btoa(`${apiUrl.username}:${apiUrl.password}`);
+  apiUrl.username = '';
+  apiUrl.password = '';
 
   return {
     url: apiUrl.toString(),

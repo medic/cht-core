@@ -11,15 +11,18 @@ const compileUrl = path => {
   }
 };
 
-const options = {
-  headers: {
-    'Authorization': 'Basic ' + btoa(`${url.username}:${url.password}`),
-    'Content-Type': 'application/json'
-  }
-};
-
 const fetchUrl = async (url, options) => {
-  const response = await fetch(url.href, options);
+  options = {
+    ...options,
+    headers: {
+      'Authorization': 'Basic ' + btoa(`${url.username}:${url.password}`),
+      'Content-Type': 'application/json'
+    }
+  };
+  url.username = '';
+  url.password = '';
+
+  const response = await fetch(url.toString(), options);
   if (response.ok) {
     return await response.json();
   }
@@ -31,7 +34,7 @@ const fetchUrl = async (url, options) => {
 const getChtUsers = async () => {
   //  pin  to v1 of API so it is backwards compatible with CHT 3.x
   const url = compileUrl('/api/v1/users');
-  const users = await fetchUrl(url, options);
+  const users = await fetchUrl(url);
   if (typeof users === 'object') {
     console.log(`   Found ${users.length} users\n`);
     return users;
@@ -40,7 +43,7 @@ const getChtUsers = async () => {
 
 const getObjectFromMedicDb = async id => {
   const url = compileUrl('/medic/' + id);
-  return fetchUrl(url, options);
+  return fetchUrl(url);
 };
 
 const hasDefaultContact = async user => {
@@ -72,7 +75,7 @@ const savePlace = async (placeId, contactId) => {
   }
   placeObj.contact._id = contactId;
   placeObj.contact.parent = {_id: placeId};
-  return fetchUrl(url.href, { ...options, body: JSON.stringify(placeObj), method: 'PUT' });
+  return fetchUrl(url, { body: JSON.stringify(placeObj), method: 'PUT' });
 };
 
 
