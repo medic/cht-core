@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 console.log(`   Using COUCH_URL env var: ${process.env.COUCH_URL}\n`);
-const url = new URL(process.env.COUCH_URL);
 
 const compileUrl = path => {
   try {
