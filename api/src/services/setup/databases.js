@@ -5,12 +5,21 @@ const db = require('../../db');
  * @property {string} name
  * @property {PouchDB} db
  * @property {string} jsonFileName
+ * @property {string[]?} ddocs
  */
 
 const MEDIC_DATABASE = {
   name: environment.db,
   db: db.medic,
   jsonFileName: 'medic.json',
+  ddocs: [
+    'medic',
+    'medic-admin',
+    'medic-client',
+    'medic-conflicts',
+    'medic-scripts',
+    'medic-sms',
+  ],
 };
 
 /**
@@ -22,6 +31,7 @@ const DATABASES = [
     name: `${environment.db}-sentinel`,
     db: db.sentinel,
     jsonFileName: 'sentinel.json',
+    ddocs: ['sentinel'],
   },
   {
     name: `${environment.db}-logs`,
@@ -32,11 +42,13 @@ const DATABASES = [
     name: `${environment.db}-users-meta`,
     db: db.medicUsersMeta,
     jsonFileName: 'users-meta.json',
+    ddocs: ['users-meta'],
   },
   {
     name: `_users`,
     db: db.users,
     jsonFileName: 'users.json',
+    ddocs: ['users'],
   },
 ];
 

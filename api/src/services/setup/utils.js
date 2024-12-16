@@ -55,15 +55,20 @@ const deleteStagedDdocs = async () => {
 const cleanup = () => {
   for (const database of DATABASES) {
     logger.info(`Running DB compact and view cleanup for ${database.name}`);
+    const ddocs = database.ddocs ?? [];
     Promise
       .all([
         database.db.compact(),
         database.db.viewCleanup(),
+        ...ddocs.map((ddoc) => db.compactView(database.name, ddoc)),
       ])
       .catch(err => {
         logger.error('Error while running cleanup: %o', err);
       });
   }
+  db.compactNouveau().catch(err => {
+    logger.error('Error while running cleanup: %o', err);
+  });
 };
 /**
  * Updates json ddocs to add the :staged: ddoc name prefix
