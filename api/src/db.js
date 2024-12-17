@@ -149,6 +149,17 @@ if (UNIT_TEST_ENV) {
       });
   };
 
+  // TODO: couch is complaining about `Content-Type must be application/json`
+  module.exports.compactView = (db, ddoc) => request.post({
+    url: `${environment.serverUrl}/${db}/_compact/${ddoc}`,
+    json: true,
+  });
+
+  module.exports.compactNouveau = () => request.post({
+    url: `${environment.couchUrl}/_nouveau_cleanup`,
+    json: true,
+  });
+
   const saveDocs = async (db, docs) => {
     try {
       return await db.bulkDocs(docs);

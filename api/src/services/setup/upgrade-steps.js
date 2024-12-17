@@ -102,7 +102,8 @@ const indexStagedViews = async () => {
   const viewsToIndex = await viewIndexer.getViewsToIndex();
   const viewIndexingPromise = viewIndexer.indexViews(viewsToIndex);
   const stopQueryingIndexers = viewIndexerProgress.log();
-  await viewIndexingPromise;
+  const nouveauIndexingPromise = Promise.resolve(); // TODO
+  await Promise.all([viewIndexingPromise, nouveauIndexingPromise]);
   stopQueryingIndexers();
 };
 

@@ -5,15 +5,16 @@ const ddocsService = require('./ddocs');
 const { DATABASES } = require('./databases');
 const startupLog = require('./startup-log');
 
-
+// TODO
 const checkInstallForDb = async (database) => {
   const check = {};
   const allDdocs = await ddocsService.getDdocs(database);
+  // console.log("allDdocs", allDdocs);
   const bundledDdocs = await upgradeUtils.getBundledDdocs(database);
+  console.log("bundledDdocs", bundledDdocs);
 
   const liveDdocs = allDdocs.filter(ddoc => !ddocsService.isStaged(ddoc._id));
   const stagedDdocs = allDdocs.filter(ddoc => ddocsService.isStaged(ddoc._id));
-
 
   const liveDdocsCheck = ddocsService.compareDdocs(bundledDdocs, liveDdocs);
   check.missing = liveDdocsCheck.missing;
@@ -69,7 +70,7 @@ const checkInstall = async () => {
     ddocValidation.push(await checkInstallForDb(database));
   }
 
-  const allDbsUpToDate = ddocValidation.every(check => check.upToDate);
+  const allDbsUpToDate = ddocValidation.every(check => console.log({check}) || check.upToDate);
   if (allDbsUpToDate) {
     logger.info('Installation valid.');
     await upgradeUtils.interruptPreviousUpgrade();
