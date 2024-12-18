@@ -58,7 +58,7 @@ describe('infodocs', () => {
       await utils.requestOnTestDb({ path, method, body: doc });
       assert.fail('request should fail with conflict');
     } catch (err) {
-      assert.equal(err.statusCode, 409);
+      assert.equal(err.status, 409);
     }
 
     const [newInfoDoc] = await delayedInfoDocsOf(doc._id);
@@ -70,8 +70,7 @@ describe('infodocs', () => {
 
     await utils.requestOnTestDb({ path, method, body: doc });
 
-    await utils.stopSentinel();
-    await utils.startSentinel(true);
+    await utils.runSentinelTasks();
 
     const waitForLogs = await utils.waitForSentinelLogs(false, /Task backgroundCleanup completed/);
     await waitForLogs.promise;
@@ -148,12 +147,12 @@ describe('infodocs', () => {
         }
       };
 
-      await utils.stopSentinel();
+      await utils.toggleSentinelTransitions();
       const result = await utils.db.post(testDoc);
       testDoc._rev = result.rev;
 
       await utils.setTransitionSeqToNow();
-      await utils.startSentinel(true);
+      await utils.toggleSentinelTransitions();
 
       testDoc.data = 'data changed';
       await utils.saveDoc(testDoc);
@@ -181,7 +180,7 @@ describe('infodocs', () => {
         latest_replication_date: 2000
       };
 
-      await utils.stopSentinel();
+      await utils.toggleSentinelTransitions();
       const result = await utils.db.post(testDoc);
       testDoc._rev = result.rev;
       testDoc._id = result.id;
@@ -191,7 +190,7 @@ describe('infodocs', () => {
 
       await utils.db.put(legacyInfodoc);
       await utils.setTransitionSeqToNow();
-      await utils.startSentinel(true);
+      await utils.toggleSentinelTransitions();
 
       testDoc.data = 'data changed';
       await utils.saveDoc(testDoc);

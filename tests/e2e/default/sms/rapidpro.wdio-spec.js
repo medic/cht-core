@@ -75,7 +75,7 @@ describe('RapidPro SMS Gateway', () => {
         });
         throw new Error('should have thrown');
       } catch (err) {
-        expect(err.responseBody).to.eql({ code: 403, error: 'No incoming key configured' });
+        expect(err.body).to.eql({ code: 403, error: 'No incoming key configured' });
       }
     });
 
@@ -91,7 +91,7 @@ describe('RapidPro SMS Gateway', () => {
         });
         throw new Error('should have thrown');
       } catch (err) {
-        expect(err.responseBody).to.eql({ code: 403, error: 'Missing authorization token' });
+        expect(err.body).to.eql({ code: 403, error: 'Missing authorization token' });
       }
     });
 
@@ -108,7 +108,7 @@ describe('RapidPro SMS Gateway', () => {
         });
         throw new Error('should have thrown');
       } catch (err) {
-        expect(err.responseBody).to.eql({ code: 403, error: 'Incorrect token' });
+        expect(err.body).to.eql({ code: 403, error: 'Incorrect token' });
       }
     });
 
@@ -125,7 +125,7 @@ describe('RapidPro SMS Gateway', () => {
         });
         throw new Error('should have thrown');
       } catch (err) {
-        expect(err.responseBody).to.eql({ code: 403, error: 'Missing authorization token' });
+        expect(err.body).to.eql({ code: 403, error: 'Missing authorization token' });
       }
     });
 
@@ -143,7 +143,7 @@ describe('RapidPro SMS Gateway', () => {
         });
         throw new Error('should have thrown');
       } catch (err) {
-        expect(err.responseBody).to.eql({ code: 400, error: 'Message was not saved' });
+        expect(err.body).to.eql({ code: 400, error: 'Message was not saved' });
       }
     });
 

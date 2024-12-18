@@ -1,6 +1,5 @@
 require('./aliases');
 const path = require('path');
-const allure = require('allure-commandline');
 const fs = require('fs');
 
 const chai = require('chai');
@@ -10,6 +9,7 @@ const constants = require('@constants');
 const utils = require('@utils');
 const fileDownloadUtils = require('@utils/file-download');
 const browserLogsUtils = require('@utils/browser-logs');
+const { generateReport } = require('@utils/allure');
 const ALLURE_OUTPUT = 'allure-results';
 const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
 const logLevels = ['error', 'warning', 'debug'];
@@ -361,27 +361,7 @@ const baseConfig = {
   onComplete: async () => {
     fileDownloadUtils.deleteDownloadDirectory();
     await utils.tearDownServices();
-    const reportError = new Error('Could not generate Allure report');
-    const timeoutError = new Error('Timeout generating report');
-    const generation = allure(['generate', 'allure-results', '--clean']);
-
-    return new Promise((resolve, reject) => {
-      const generationTimeout = setTimeout(
-        () => reject(timeoutError),
-        60 * 1000
-      );
-
-      generation.on('exit', (exitCode) => {
-        clearTimeout(generationTimeout);
-
-        if (exitCode !== 0) {
-          return reject(reportError);
-        }
-
-        console.log('Allure report successfully generated');
-        resolve();
-      });
-    });
+    await generateReport();
   },
   /**
   * Gets executed when a refresh happens.

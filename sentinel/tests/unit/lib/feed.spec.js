@@ -3,9 +3,9 @@ config.initTransitionLib();
 
 const sinon = require('sinon');
 const chai = require('chai');
-const assert = require('chai').assert;
+const rewire = require('rewire');
+
 const db = require('../../../src/db');
-const feed = require('../../../src/lib/feed');
 const metadata = require('../../../src/lib/metadata');
 const logger = require('@medic/logger');
 const tombstoneUtils = require('@medic/tombstone-utils');
@@ -14,6 +14,12 @@ const changeRetryHistory = require('../../../src/lib/change-retry-history');
 describe('feed', () => {
 
   let handler;
+  let feed;
+  let changeQueue;
+  const realSetTimeout = setTimeout;
+  const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
+
+  let clock;
 
   beforeEach(() => {
     handler = {
@@ -22,7 +28,10 @@ describe('feed', () => {
     handler.catch = sinon.stub().returns(handler);
     handler.on = sinon.stub().returns(handler);
     sinon.stub(db.medic, 'changes').returns(handler);
-    feed._changeQueue.resume();
+    clock = sinon.useFakeTimers();
+    feed = rewire('../../../src/lib/feed');
+    changeQueue = feed.__get__('changeQueue');
+    changeQueue.resume();
   });
 
   afterEach(() => {
@@ -61,15 +70,12 @@ describe('feed', () => {
     });
 
     it('restarts listener after db error', () => {
-      const realSetTimeout = setTimeout;
-      const nextTick = () => new Promise(resolve => realSetTimeout(() => resolve()));
-      const clock = sinon.useFakeTimers();
       const change = { id: 'some-uuid' };
       sinon.stub(metadata, 'getTransitionSeq')
         .onCall(0).resolves('123')
         .onCall(1).resolves('456');
 
-      const push = sinon.stub(feed._changeQueue, 'push');
+      const push = sinon.stub(changeQueue, 'push');
       return feed
         .listen()
         .then(() => {
@@ -106,8 +112,9 @@ describe('feed', () => {
       const change = { id: 'some-uuid' };
       sinon.stub(metadata, 'getTransitionSeq').resolves('123');
       sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
-      sinon.stub(feed._changeQueue, 'length').returns(0);
-      const push = sinon.stub(feed._changeQueue, 'push');
+      
+      sinon.stub(changeQueue, 'length').returns(0);
+      const push = sinon.stub(changeQueue, 'push');
 
       return feed
         .listen()
@@ -126,8 +133,8 @@ describe('feed', () => {
       const edoc = { id: 'some-uuid' };
       sinon.stub(metadata, 'getTransitionSeq').resolves('123');
       sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
-      sinon.stub(feed._changeQueue, 'length').returns(0);
-      const push = sinon.stub(feed._changeQueue, 'push');
+      sinon.stub(changeQueue, 'length').returns(0);
+      const push = sinon.stub(changeQueue, 'push');
       return feed
         .listen()
         .then(() => {
@@ -147,7 +154,7 @@ describe('feed', () => {
       sinon.stub(metadata, 'getTransitionSeq').resolves('123');
       sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
 
-      const push = sinon.stub(feed._changeQueue, 'push');
+      const push = sinon.stub(changeQueue, 'push');
       return feed
         .listen()
         .then(() => {
@@ -169,7 +176,7 @@ describe('feed', () => {
         .withArgs(tombstone.id).returns(true)
         .withArgs(doc.id).returns(false);
 
-      const push = sinon.stub(feed._changeQueue, 'push');
+      const push = sinon.stub(changeQueue, 'push');
       return feed
         .listen()
         .then(() => {
@@ -192,7 +199,7 @@ describe('feed', () => {
         .withArgs(doc1).returns(false)
         .withArgs(doc2).returns(true);
 
-      const push = sinon.stub(feed._changeQueue, 'push');
+      const push = sinon.stub(changeQueue, 'push');
       return feed
         .listen()
         .then(() => {
@@ -211,8 +218,8 @@ describe('feed', () => {
       sinon.stub(metadata, 'getTransitionSeq').resolves('123');
       sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
 
-      sinon.stub(feed._changeQueue, 'length').returns(101);
-      const push = sinon.stub(feed._changeQueue, 'push');
+      sinon.stub(changeQueue, 'length').returns(101);
+      const push = sinon.stub(changeQueue, 'push');
 
       return feed
         .listen()
@@ -232,8 +239,8 @@ describe('feed', () => {
       sinon.stub(metadata, 'getTransitionSeq').resolves('123');
       sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
       const change = { id: 'some-uuid' };
-      sinon.stub(feed._changeQueue, 'push');
-      sinon.spy(feed._changeQueue, 'resume');
+      sinon.stub(changeQueue, 'push');
+      sinon.spy(changeQueue, 'resume');
 
       return feed
         .listen()
@@ -242,9 +249,9 @@ describe('feed', () => {
           callbackFn(change);
         })
         .then(() => {
-          chai.expect(feed._changeQueue.resume.callCount).to.equal(1);
-          chai.expect(feed._changeQueue.push.callCount).to.equal(1);
-          chai.expect(feed._changeQueue.push.args[0][0]).to.deep.equal(change);
+          chai.expect(changeQueue.resume.callCount).to.equal(1);
+          chai.expect(changeQueue.push.callCount).to.equal(1);
+          chai.expect(changeQueue.push.args[0][0]).to.deep.equal(change);
         });
     });
   });
@@ -253,16 +260,17 @@ describe('feed', () => {
 
     it('cancels the couch request', () => {
       sinon.stub(metadata, 'getTransitionSeq').resolves('123');
-
-      const push = sinon.stub(feed._changeQueue, 'push');
+      const changeQueue = feed.__get__('changeQueue');
+      sinon.stub(changeQueue, 'push');
+      
       const change = { id: 'some-uuid' };
-      sinon.spy(feed._changeQueue, 'pause');
+      sinon.spy(changeQueue, 'pause');
 
       return feed
         .listen()
         .then(() => feed.cancel())
         .then(() => {
-          chai.expect(feed._changeQueue.pause.callCount).to.equal(1);
+          chai.expect(changeQueue.pause.callCount).to.equal(1);
           chai.expect(handler.cancel.callCount).to.equal(1);
           // resume listening
           return feed.listen();
@@ -272,32 +280,53 @@ describe('feed', () => {
           callbackFn(change);
         })
         .then(() => {
-          chai.expect(push.callCount).to.equal(1);
-          chai.expect(push.args[0][0]).to.deep.equal(change);
+          chai.expect(changeQueue.push.callCount).to.equal(1);
+          chai.expect(changeQueue.push.args[0][0]).to.deep.equal(change);
         });
     });
 
+  });
+
+  describe('toggle', () => {
+    beforeEach(() => {
+      feed.__set__('cancel', sinon.stub());
+      feed.__set__('listen', sinon.stub());
+    });
+
+    it('should stop feed if started', () => {
+      feed.__set__('processing', true);
+      feed.toggle();
+      chai.expect(feed.__get__('cancel').called).to.equal(true);
+      chai.expect(feed.__get__('listen').called).to.equal(false);
+    });
+
+    it('should start feed if stopped', () => {
+      feed.toggle();
+      chai.expect(feed.__get__('cancel').called).to.equal(false);
+      chai.expect(feed.__get__('listen').called).to.equal(true);
+    });
   });
 
   describe('changeQueue', () => {
     it('should not resume feed if drain happens while queue is paused', (done) => {
       let resolvePromise;
       const delayedPromise = new Promise(resolve => resolvePromise = resolve);
-      sinon.stub(feed._transitionsLib, 'processChange').callsFake((change, cb) => {
+      const transitionsLib = feed.__get__('transitionsLib');
+      sinon.stub(transitionsLib, 'processChange').callsFake((change, cb) => {
         return delayedPromise.then(() => cb());
       });
       sinon.spy(logger, 'debug');
-      sinon.spy(feed._changeQueue, 'resume');
+      sinon.spy(changeQueue, 'resume');
       sinon.stub(metadata, 'getTransitionSeq').resolves();
       sinon.stub(metadata, 'setTransitionSeq').resolves();
 
-      feed._enqueue({ id: 'somechange', seq: 65558 });
-      feed._changeQueue.process();
+      feed.__get__('enqueue')({ id: 'somechange', seq: 65558 });
+      changeQueue.process();
       feed.cancel(); // feed is now canceled
       resolvePromise(); // queue is now drained
-      setTimeout(() => {
+      realSetTimeout(() => {
         chai.expect(logger.debug.withArgs('transitions: queue drained').callCount).to.equal(1);
-        chai.expect(feed._changeQueue.resume.callCount).to.equal(0);
+        chai.expect(changeQueue.resume.callCount).to.equal(0);
         chai.expect(metadata.setTransitionSeq.callCount).to.equal(1);
         chai.expect(metadata.setTransitionSeq.args[0]).to.deep.equal([65558]);
         chai.expect(metadata.getTransitionSeq.callCount).to.equal(1); // we get the seq anyway
@@ -307,20 +336,19 @@ describe('feed', () => {
     });
 
     it('handles an empty change', done => {
-      sinon.stub(feed._changeQueue, 'length').returns(0);
+      sinon.stub(changeQueue, 'length').returns(0);
       sinon.stub(metadata, 'setTransitionSeq').resolves();
-      sinon.stub(feed._transitionsLib, 'processChange').callsArgWith(1);
+      const transitionsLib = feed.__get__('transitionsLib');
+      sinon.stub(transitionsLib, 'processChange').callsArgWith(1);
 
-      feed._enqueue();
+      feed.__get__('enqueue')();
 
-      feed._changeQueue.drain(() => {
-        return Promise.resolve().then(() => {
-          assert.equal(feed._transitionsLib.processChange.callCount, 0);
-          return Promise.resolve().then(() => {
-            assert.equal(metadata.setTransitionSeq.callCount, 0);
-            done();
-          });
-        });
+      changeQueue.drain(async () => {
+        await Promise.resolve();
+        chai.expect(transitionsLib.processChange.called).to.equal(false);
+        await Promise.resolve();
+        chai.expect(metadata.setTransitionSeq.called).to.equal(false);
+        done();
       });
     });
 
@@ -328,33 +356,36 @@ describe('feed', () => {
       sinon.stub(metadata, 'setTransitionSeq').resolves();
       sinon.stub(db, 'allDbs').resolves([]);
 
-      feed._enqueue({ id: 'somechange', seq: 55, deleted: true });
+      feed.__get__('enqueue')({ id: 'somechange', seq: 55, deleted: true });
 
-      feed._changeQueue.drain(() => {
-        return Promise.resolve().then(() => {
-          assert.equal(metadata.setTransitionSeq.callCount, 1);
-          assert.equal(metadata.setTransitionSeq.args[0][0], 55);
-          done();
-        });
+      changeQueue.drain(async () => {
+        await Promise.resolve();
+
+        chai.expect(metadata.setTransitionSeq.calledOnce).to.equal(true);
+        chai.expect(metadata.setTransitionSeq.args[0][0]).to.deep.equal(55);
+        done();
       });
     });
 
     it('runs transitions lib over changes', done => {
       sinon.stub(metadata, 'setTransitionSeq').resolves();
-      sinon.stub(feed._transitionsLib, 'processChange').callsArgWith(1);
+      sinon.stub(feed.__get__('transitionsLib'), 'processChange').callsArgWith(1);
 
-      feed._enqueue({ id: 'somechange', seq: 55 });
+      feed.__get__('enqueue')({ id: 'somechange', seq: 55 });
 
-      feed._changeQueue.drain(() => {
-        return Promise.resolve().then(() => {
-          assert.equal(feed._transitionsLib.processChange.callCount, 1);
-          assert.deepEqual(feed._transitionsLib.processChange.args[0][0], { id: 'somechange', seq: 55 });
-          return Promise.resolve().then(() => {
-            assert.equal(metadata.setTransitionSeq.callCount, 1);
-            assert.equal(metadata.setTransitionSeq.args[0][0], 55);
-            done();
-          });
-        });
+      changeQueue.drain(async () => {
+        await Promise.resolve();
+
+        chai.expect(feed.__get__('transitionsLib').processChange.calledOnce).to.equal(true);
+        chai.expect(feed.__get__('transitionsLib').processChange.args[0][0])
+          .to.deep.equal({ id: 'somechange', seq: 55 });
+
+        await Promise.resolve();
+
+        chai.expect(metadata.setTransitionSeq.calledOnce).to.equal(true);
+        chai.expect(metadata.setTransitionSeq.args[0][0]).to.deep.equal(55);
+
+        done();
       });
     });
   });

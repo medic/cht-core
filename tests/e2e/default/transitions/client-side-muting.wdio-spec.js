@@ -141,7 +141,7 @@ describe.skip('Muting', () => {
   };
 
   const restartSentinel = async (sync = false) => {
-    await utils.startSentinel();
+    await utils.toggleSentinelTransitions();
     await sentinelUtils.waitForSentinel();
     await browser.refresh();
     sync && await commonPage.sync();
@@ -195,7 +195,7 @@ describe.skip('Muting', () => {
 
     it('should not process client-side when muting as an online user', async () => {
       await loginPage.login({username: onlineUser.username, password: onlineUser.password});
-      await utils.stopSentinel();
+      await utils.toggleSentinelTransitions();
       await utils.updateSettings(settings);
 
       await muteClinic(clinic1);
@@ -274,7 +274,7 @@ describe.skip('Muting', () => {
       const settingsWithDisabled = _.cloneDeep(settings);
       settingsWithDisabled.transitions.muting = { client_side: false };
 
-      await utils.stopSentinel();
+      await utils.toggleSentinelTransitions();
       await updateClientSideMutingSettings(settingsWithDisabled);
 
       await muteClinic(clinic2, true);
@@ -292,7 +292,7 @@ describe.skip('Muting', () => {
 
     // for simplicity, offline means sentinel is stopped
     it( 'should mute and unmute a person while "offline", with processing in between', async () => {
-      await utils.stopSentinel();
+      await utils.toggleSentinelTransitions();
       await updateClientSideMutingSettings(settings);
 
       await mutePerson(patient1, true);
@@ -333,7 +333,7 @@ describe.skip('Muting', () => {
       await commonPage.waitForLoaders();
       expectUnmutedNoHistory(await utils.getDoc(clinic1._id));
 
-      await utils.stopSentinel();
+      await utils.toggleSentinelTransitions();
 
       await unmutePerson(patient1, true);
 
@@ -382,7 +382,7 @@ describe.skip('Muting', () => {
     });
 
     it( 'should mute and unmute a person while "offline", without processing in between', async () => {
-      await utils.stopSentinel();
+      await utils.toggleSentinelTransitions();
       await updateClientSideMutingSettings(settings);
 
       await mutePerson(patient1, true);
@@ -448,7 +448,7 @@ describe.skip('Muting', () => {
     });
 
     it( 'should mute and unmute a clinic while "offline", with processing in between', async () => {
-      await utils.stopSentinel();
+      await utils.toggleSentinelTransitions();
       await updateClientSideMutingSettings(settings);
 
       await muteClinic(clinic1, true);
@@ -520,7 +520,7 @@ describe.skip('Muting', () => {
       const patient1ServerMutingDate = updatedPatient1.muted;
       const clinic1ServerMutingDate = updatedClinic1.muted;
 
-      await utils.stopSentinel();
+      await utils.toggleSentinelTransitions();
 
       await unmuteClinic(clinic1, true);
 
@@ -594,7 +594,7 @@ describe.skip('Muting', () => {
     });
 
     it( 'should mute and unmute a clinic while "offline", without processing in between', async () => {
-      await utils.stopSentinel();
+      await utils.toggleSentinelTransitions();
       await updateClientSideMutingSettings(settings);
 
       await muteClinic(clinic1, true);
@@ -695,7 +695,7 @@ describe.skip('Muting', () => {
     });
 
     it( 'should mute a clinic and unmute a patient while "offline", without processing in between', async () => {
-      await utils.stopSentinel();
+      await utils.toggleSentinelTransitions();
       await updateClientSideMutingSettings(settings);
 
       await muteClinic(clinic1, true);
@@ -826,7 +826,7 @@ describe.skip('Muting', () => {
 
     it( 'should handle offline multiple muting/unmuting events gracefully', async () => {
       // this test has value after it ran for at least 100 times
-      await utils.stopSentinel();
+      await utils.toggleSentinelTransitions();
       await updateClientSideMutingSettings(settings);
       await commonPage.waitForLoaders();
       await muteClinic(clinic1);
@@ -885,7 +885,7 @@ describe.skip('Muting', () => {
         ],
       };
 
-      await utils.stopSentinel();
+      await utils.toggleSentinelTransitions();
       await updateClientSideMutingSettings(settingsWithValidations);
 
       await mutePerson(patient1);
@@ -914,7 +914,7 @@ describe.skip('Muting', () => {
     });
 
     it( 'should work with composite forms', async () => {
-      await utils.stopSentinel();
+      await utils.toggleSentinelTransitions();
       await updateClientSideMutingSettings(settings);
 
       await commonPage.goToPeople(healthCenter._id);

@@ -80,7 +80,6 @@ describe('Contact details page.', () => {
         { roles: settings.roles, permissions: settings.permissions },
         { revert: true, ignoreReload: true }
       );
-
     };
 
     before(async () => {
@@ -91,7 +90,6 @@ describe('Contact details page.', () => {
       await utils.createUsers([user]);
 
       await loginPage.login(user);
-      await commonElements.waitForPageLoaded();
     });
 
     after(async () => {
@@ -124,8 +122,7 @@ describe('Contact details page.', () => {
 
     it('should not show reports when permission is disabled', async () => {
       await updatePermissions(ROLE, [], ['can_view_reports']);
-      await commonElements.sync(true);
-      await browser.refresh();
+      await commonElements.sync({ expectReload: true, reload: true });
       await waitForContactLoaded(true);
 
       expect(await (await contactPage.reportsCardSelectors.rhsReportListElement()).isDisplayed()).to.equal(false);
@@ -135,8 +132,7 @@ describe('Contact details page.', () => {
 
     it('should not show tasks when permission is disabled', async () => {
       await updatePermissions(ROLE, ['can_view_reports'], ['can_view_tasks']);
-      await commonElements.sync(true);
-      await browser.refresh();
+      await commonElements.sync({ reload: true, expectReload: true });
       await waitForContactLoaded(false);
 
       expect(await (await contactPage.reportsCardSelectors.rhsReportListElement()).isDisplayed()).to.equal(true);
@@ -160,7 +156,7 @@ describe('Contact details page.', () => {
       const contactSummaryFile = path.join(__dirname, 'config/contact-summary-error-config.js');
 
       const { contactSummary } = await chtConfUtils.compileNoolsConfig({ contactSummary: contactSummaryFile });
-      await utils.updateSettings({ contact_summary: contactSummary }, true);
+      await utils.updateSettings({ contact_summary: contactSummary }, { ignoreReload: true });
 
       await utils.saveDocs([...places.values(), patient]);
     });

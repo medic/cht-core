@@ -32,6 +32,11 @@ const cancel = async (timeout) => {
   await checkModalHasClosed();
 };
 
+const isDisplayed = async () => {
+  return await (await modal()).isDisplayedInViewport();
+};
+
+
 module.exports = {
   modal,
   body,
@@ -39,4 +44,5 @@ module.exports = {
   cancel,
   getModalDetails,
   checkModalHasClosed,
+  isDisplayed,
 };

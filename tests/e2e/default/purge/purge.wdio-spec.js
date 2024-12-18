@@ -42,8 +42,6 @@ describe('purge', function() {
 
   const pregnancies = generateReports(125, 'pregnancy');
 
-  const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
-
   const getAllReports = () => browser.executeAsync(callback => {
     window.CHTCore.DB
       .get()
@@ -68,7 +66,7 @@ describe('purge', function() {
 
   const runPurging = async () => {
     const seq = await sentinelUtils.getCurrentSeq();
-    await restartSentinel();
+    await utils.runSentinelTasks();
     await sentinelUtils.waitForPurgeCompletion(seq);
     await utils.delayPromise(1000);  // API has to pick up on purging completing
   };
@@ -79,8 +77,7 @@ describe('purge', function() {
     await utils.deleteUsers([user]);
     await utils.revertDb([/^form:/], true);
 
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonElements.reloadSession();
   });
 
   it('purging runs on sync', async () => {
@@ -104,7 +101,7 @@ describe('purge', function() {
     await updatePurgeSettings(filterHomeVisitReports, true);
     await runPurging();
 
-    await commonElements.sync(true);
+    await commonElements.sync({ expectReload: true });
 
     allReports = await getAllReports();
     // this only works because the client didn't have to "purge" these docs and the revs didn't have

@@ -1,3 +1,4 @@
+const cloneDeep = require('lodash/cloneDeep');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
@@ -16,7 +17,7 @@ describe('Edit ', () => {
 
   const offlineUserContact = personFactory.build({ name: CONTACT_NAME, parent: healthCenter });
   const onlineUserContact = personFactory.build({ parent: healthCenter });
-  healthCenter.contact = offlineUserContact;
+  healthCenter.contact = cloneDeep(offlineUserContact);
 
   const offlineUser = userFactory.build({
     username: 'offline_user',

@@ -3,6 +3,7 @@ const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const constants = require('@constants');
 
 const ELEMENT_DISPLAY_PAUSE = 500; // 500ms
+const RELOAD_SYNC_TIMEOUT = 10000;
 
 const tabsSelector = {
   getAllButtonLabels: async () => await $$('.header .tabs .button-label'),
@@ -10,6 +11,7 @@ const tabsSelector = {
   taskTab: () => $('#tasks-tab'),
   analyticsTab: () => $('#analytics-tab'),
 };
+const { generateScreenshot } = require('@utils/screenshots');
 
 const hamburgerMenuSelectors = {
   hamburgerMenu: () => $('aria/Application menu'),
@@ -46,6 +48,15 @@ const fabSelectors = {
   fastActionItems: () => $$(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item`),
   reportsFastActionFAB: () => $('#reports-content .fast-action-fab-button mat-icon'),
 };
+const hamburgerMenuItemSelector = 'mat-sidenav-content';
+const logoutButton = () => $('aria/Log out');
+const syncButton = () => $('aria/Sync now');
+const hamburguerMenuItemByOption = (menuOption) => $(hamburgerMenuItemSelector).$(`//span[text()="${menuOption}"]`);
+const messagesTab = () => $('#messages-tab');
+const analyticsTab = () => $('#analytics-tab');
+const getReportsButtonLabel = () => $('#reports-tab .button-label');
+const getMessagesButtonLabel = () => $('#messages-tab .button-label');
+const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 
 const userSettingsSelectors = {
   editProfileButton: () => $('.user .configuration.page i.fa-user'),
@@ -54,17 +65,16 @@ const userSettingsSelectors = {
 const getJsonErrorText = async () => await $('pre').getText();
 
 const isHamburgerMenuOpen = async () => {
-  return await (await $('mat-sidenav-container.mat-drawer-container-has-open')).isExisting();
+  return await (await $('mat-sidenav-container.mat-drawer-container-has-open .mat-drawer-opened')).isDisplayed();
 };
 
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
+    await closeReloadModal();
     await (await hamburgerMenuSelectors.hamburgerMenu()).waitForClickable();
     await (await hamburgerMenuSelectors.hamburgerMenu()).click();
-    // Adding pause here as we have to wait for sidebar nav menu animation to load
-    await browser.pause(ELEMENT_DISPLAY_PAUSE);
   }
-  await (await hamburgerMenuSelectors.sideBarMenuTitle()).waitForDisplayed();
+  await browser.waitUntil(isHamburgerMenuOpen);
 };
 
 const closeHamburgerMenu = async () => {
@@ -81,15 +91,17 @@ const openMoreOptionsMenu = async () => {
   await (await kebabMenuSelectors.moreOptionsMenu()).click();
 };
 
-const performMenuAction = async (actionSelector) => {
-  await openMoreOptionsMenu();
+const performMenuAction = async (actionSelector, isOptionsMenuOpen = false) => {
+  if (!isOptionsMenuOpen){
+    await openMoreOptionsMenu();
+  }
   const actionElement = await actionSelector();
   await actionElement.waitForClickable();
   await actionElement.click();
 };
 
-const accessEditOption = async () => {
-  await performMenuAction(kebabMenuSelectors.edit);
+const accessEditOption = async (isOptionsMenuOpen = false) => {
+  await performMenuAction(kebabMenuSelectors.edit, isOptionsMenuOpen);
 };
 
 const accessDeleteOption = async () => {
@@ -102,6 +114,17 @@ const accessExportOption = async () => {
 
 const accessReviewOption = async () => {
   await performMenuAction(kebabMenuSelectors.review);
+};
+
+const toggleMenuAndCaptureScreenshot = async (menuOption, reverse, pageName, screenshotName) => {
+  await openHamburgerMenu();
+  await hamburguerMenuItemByOption(menuOption).waitForClickable({ reverse });
+  await generateScreenshot(pageName, screenshotName);
+  if (reverse) {
+    await closeHamburgerMenu();
+  } else {
+    await hamburguerMenuItemByOption(menuOption).click();
+  }
 };
 
 const waitForSnackbarToClose = async () => {
@@ -266,11 +289,13 @@ const isReportsListPresent = () => isElementPresent('#reports-list');
 
 const isPeopleListPresent = () => isElementPresent('#contacts-list');
 
+const isContactTabPresent = () => isElementPresent('#contacts-tab');
+
 const isTargetMenuItemPresent = () => isElementPresent('=Target');
 
 const isTargetAggregatesMenuItemPresent = () => isElementPresent('=Target aggregates');
 
-const isMoreOptionsMenuPresent = async () => await (await kebabMenuSelectors.moreOptionsMenu()).isExisting();
+const isMoreOptionsMenuPresent = async () => await (await kebabMenuSelectors.moreOptionsMenu()).isDisplayed();
 
 const navigateToLogoutModal = async () => {
   await openHamburgerMenu();
@@ -345,13 +370,20 @@ const goToAnalytics = async () => {
   await waitForPageLoaded();
 };
 
-const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
+const closeReloadModal = async (shouldUpdate, timeout) => {
   try {
-    shouldUpdate ? await modalPage.submit(timeout) : await modalPage.cancel(timeout);
-    shouldUpdate && await waitForAngularLoaded();
+    timeout = timeout || shouldUpdate ? RELOAD_SYNC_TIMEOUT : ELEMENT_DISPLAY_PAUSE;
+    if (shouldUpdate) {
+      await modalPage.submit(timeout);
+      await waitForAngularLoaded();
+    } else {
+      await modalPage.cancel(timeout);
+    }
+
     return true;
   } catch (err) {
-    timeout && console.error('Reload modal has not showed up');
+    (timeout > ELEMENT_DISPLAY_PAUSE) && console.error(err);
+    (timeout > ELEMENT_DISPLAY_PAUSE) && console.error('Reload modal has not showed up');
     return false;
   }
 };
@@ -360,25 +392,29 @@ const syncAndNotWaitForSuccess = async () => {
   await openHamburgerMenu();
   await (await hamburgerMenuSelectors.syncButton()).click();
 };
-
-const syncAndWaitForSuccess = async (timeout = 20000, retry = 10) => {
+const syncAndWaitForSuccess = async (expectReload, timeout = RELOAD_SYNC_TIMEOUT, retry = 10) => {
   if (retry < 0) {
     throw new Error('Failed to sync after 10 retries');
   }
-  await closeReloadModal(false, 0);
-
   try {
     await openHamburgerMenu();
-    if (!await (await hamburgerMenuSelectors.syncInProgress()).isExisting()) {
+    if (!await (await hamburgerMenuSelectors.syncInProgress()).isDisplayedInViewport()) {
       await (await hamburgerMenuSelectors.syncButton()).click();
-      await openHamburgerMenu();
     }
 
     await (await hamburgerMenuSelectors.syncInProgress()).waitForDisplayed({ timeout, reverse: true });
-    await (await hamburgerMenuSelectors.syncSuccess()).waitForDisplayed({ timeout });
+    await browser.waitUntil(async () => {
+      return (await (await hamburgerMenuSelectors.syncSuccess()).isDisplayedInViewport()) ||
+             (await modalPage.isDisplayed());
+    }, { timeout });
+    await openHamburgerMenu();
+
+    if (!await (await hamburgerMenuSelectors.syncSuccess()).isDisplayedInViewport()) {
+      throw new Error('Failed to sync');
+    }
   } catch (err) {
     console.error(err);
-    await syncAndWaitForSuccess(timeout, retry - 1);
+    return await syncAndWaitForSuccess(expectReload, timeout, retry - 1);
   }
 };
 
@@ -392,18 +428,24 @@ const hideModalOverlay = () => {
   });
 };
 
-const sync = async (expectReload, timeout) => {
+const sync = async ({
+  reload = false,
+  expectReload = false,
+  serviceWorkerUpdate = false,
+  timeout = RELOAD_SYNC_TIMEOUT
+} = {}) => {
   await hideModalOverlay();
-  let closedModal = false;
-  if (expectReload) {
-    // it's possible that sync already happened organically, and we already have the reload modal
-    closedModal = await closeReloadModal(false, 0);
+
+  await syncAndWaitForSuccess(expectReload, timeout);
+  // service worker updates require downloading all resources, and then it triggers the update modal.
+  // sometimes this action is not timely with a quick sync.
+  serviceWorkerUpdate && await closeReloadModal(false, RELOAD_SYNC_TIMEOUT);
+
+  if (reload) {
+    await browser.refresh();
+    return await waitForPageLoaded();
   }
 
-  await syncAndWaitForSuccess(timeout);
-  if (expectReload && !closedModal) {
-    await closeReloadModal();
-  }
   await closeHamburgerMenu();
 };
 
@@ -512,6 +554,11 @@ const createFormDoc = (path, formId) => {
   };
 };
 
+const reloadSession = async () => {
+  await browser.reloadSession();
+  await browser.url('/');
+};
+
 module.exports = {
   tabsSelector,
   fabSelectors,
@@ -523,9 +570,7 @@ module.exports = {
   accessDeleteOption,
   accessExportOption,
   accessReviewOption,
-  hideSnackbar,
   waitForLoaderToDisappear,
-  waitForLoaders,
   waitForAngularLoaded,
   waitForPageLoaded,
   clickFastActionFAB,
@@ -537,6 +582,21 @@ module.exports = {
   closeFastActionList,
   isReportActionDisplayed,
   isElementPresent,
+  logoutButton,
+  isContactTabPresent,
+  messagesTab,
+  analyticsTab,
+  getReportsButtonLabel,
+  getMessagesButtonLabel,
+  getTasksButtonLabel,
+  hideSnackbar,
+  waitForLoaders,
+  syncButton,
+  toggleMenuAndCaptureScreenshot,
+  closeReloadModal,
+  goToMessages,
+  goToTasks,
+  goToAnalytics,
   isMessagesListPresent,
   isTasksListPresent,
   isPeopleListPresent,
@@ -550,12 +610,8 @@ module.exports = {
   refresh,
   goToBase,
   goToAboutPage,
-  goToMessages,
-  goToTasks,
   goToReports,
   goToPeople,
-  goToAnalytics,
-  closeReloadModal,
   syncAndNotWaitForSuccess,
   sync,
   openReportBugAndFetchProperties,
@@ -573,4 +629,5 @@ module.exports = {
   loadNextInfiniteScrollPage,
   getErrorLog,
   createFormDoc,
+  reloadSession,
 };

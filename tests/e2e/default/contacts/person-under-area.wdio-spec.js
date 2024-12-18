@@ -37,9 +37,7 @@ describe('Create Person Under Area, ', () => {
     await usersAdminPage.inputAddUserFields(username, 'Jack', 'chw', healthCenter2.name, person2.name, password);
     await usersAdminPage.saveUser();
 
-    await browser.reloadSession();
-    await browser.url('/');
-
+    await commonPage.reloadSession();
     await loginPage.login({ username, password });
 
     await commonPage.goToPeople();

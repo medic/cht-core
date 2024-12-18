@@ -66,7 +66,7 @@ describe('Target accuracy', () => {
     await commonPage.goToPeople(chwContact._id);
     await browser.takeScreenshot();
 
-    await commonPage.sync(false, 2000);
+    await commonPage.sync();
     const serverDoc = await utils.getDoc(targetDocId);
 
     expect(serverDoc._rev).to.match(/^1-/);
@@ -84,7 +84,7 @@ describe('Target accuracy', () => {
     await contactsPage.addPerson({ name: 'Jody' }, false);
     await commonPage.waitForPageLoaded();
 
-    await commonPage.sync(false, 2000);
+    await commonPage.sync();
     const serverDoc = await utils.getDoc(targetDocId);
 
     expect(serverDoc._rev).to.match(/^2-/);
@@ -102,7 +102,7 @@ describe('Target accuracy', () => {
     await contactsPage.editPersonName('Jody', 'Jody Ash');
     await commonPage.waitForPageLoaded();
 
-    await commonPage.sync(false, 2000);
+    await commonPage.sync();
     const serverDoc = await utils.getDoc(targetDocId);
     expect(serverDoc._rev).to.match(/^2-/);
   });
@@ -121,7 +121,7 @@ describe('Target accuracy', () => {
     await contactsPage.selectLHSRowByText('Jody Ash');
     await commonPage.waitForPageLoaded();
 
-    await commonPage.sync(false, 2000);
+    await commonPage.sync();
     const serverDoc = await utils.getDoc(targetDocId);
     expect(serverDoc._rev).to.match(/^2-/);
   });
@@ -134,7 +134,7 @@ describe('Target accuracy', () => {
     await commonPage.waitForPageLoaded();
 
     await browser.pause(1500); // wait for debounced calculation
-    await commonPage.sync(false, 2000);
+    await commonPage.sync();
 
     const serverDoc = await utils.getDoc(targetDocId);
     expect(serverDoc._rev).to.match(/^3-/);
@@ -153,7 +153,7 @@ describe('Target accuracy', () => {
     const contacts = Array.from({ length: 20 }).map(() => personFactory.build(parent));
     await utils.saveDocs(contacts);
 
-    await commonPage.sync(false, 2000);
+    await commonPage.sync();
     await browser.pause(1500); // wait for debounced calculation
 
     const serverDoc = await utils.getDoc(targetDocId);

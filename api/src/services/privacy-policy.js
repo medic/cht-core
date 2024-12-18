@@ -2,6 +2,7 @@ const sanitizeHtml = require('sanitize-html');
 const db = require('../db');
 const logger = require('@medic/logger');
 const config = require('../config');
+const { NotFoundError } = require('../errors');
 
 const PRIVACY_POLICY_DOC_ID = 'privacy-policies';
 
@@ -22,7 +23,7 @@ const getDoc = (options=({})) => {
     .then(doc => {
       const policies = doc.privacy_policies;
       if (!policies || !Object.keys(policies).length) { // invalid doc
-        throw new Error(`Invalid ${PRIVACY_POLICY_DOC_ID} doc: missing required "privacy_policies" property`);
+        throw new NotFoundError(`Invalid ${PRIVACY_POLICY_DOC_ID} doc: missing required "privacy_policies" property`);
       }
       return doc;
     })
