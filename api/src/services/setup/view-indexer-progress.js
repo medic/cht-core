@@ -56,6 +56,7 @@ const updateRunningTasks = (indexers, activeTasks = []) => {
       indexers.push(indexer);
     }
 
+    console.log(`${task.node}-${task.pid} progress`, task.progress);
     indexer.tasks[`${task.node}-${task.pid}`] = task.progress;
   });
 };
@@ -89,11 +90,23 @@ const logIndexersProgress = (indexers) => {
 const getIndexers = async (indexers = []) => {
   try {
     const activeTasks = await db.activeTasks();
-    const tasks = activeTasks.filter(task => task.type === 'indexer' && DDOC_PREFIX.test(String(task.design_document)));
+    const tasks = activeTasks.filter(task => {
+      const isFirstNouveauIndexingTask = task.type === 'search_indexer' &&
+        task.design_document === '_design/medic-nouveau';
+      if (isFirstNouveauIndexingTask) {
+        return true;
+      }
+
+      return DDOC_PREFIX.test(String(task.design_document));
+    });
     // We assume all previous tasks have finished.
+    console.log("indexers 1", indexers);
     indexers.forEach(setTasksToComplete);
+    console.log("indexers 2", indexers);
     updateRunningTasks(indexers, tasks);
+    console.log("indexers 3", indexers);
     indexers.forEach(calculateAverageProgress);
+    console.log("indexers 4", indexers);
     return indexers;
   } catch (err) {
     logger.error('Error while querying active tasks: %o', err);
