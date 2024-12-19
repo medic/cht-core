@@ -56,6 +56,7 @@ const updateRunningTasks = (indexers, activeTasks = []) => {
       indexers.push(indexer);
     }
 
+    console.log(`${task.node}-${task.pid} progress`, task.progress);
     indexer.tasks[`${task.node}-${task.pid}`] = task.progress;
   });
 };
@@ -90,17 +91,13 @@ const getIndexers = async (indexers = []) => {
   try {
     const activeTasks = await db.activeTasks();
     const tasks = activeTasks.filter(task => {
-      const isViewIndexingTask = task.type === 'indexer';
-      if (isViewIndexingTask) {
-        return DDOC_PREFIX.test(String(task.design_document));
+      const isFirstNouveauIndexingTask = task.type === 'search_indexer' &&
+        task.design_document === '_design/medic-nouveau';
+      if (isFirstNouveauIndexingTask) {
+        return true;
       }
 
-      const isNouveauIndexingTask = task.type === 'search_indexer';
-      if (isNouveauIndexingTask) {
-        return task.design_document === '_design/medic-nouveau';
-      }
-
-      return false;
+      return DDOC_PREFIX.test(String(task.design_document));
     });
     // We assume all previous tasks have finished.
     console.log("indexers 1", indexers);

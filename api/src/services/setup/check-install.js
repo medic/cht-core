@@ -9,14 +9,13 @@ const startupLog = require('./startup-log');
 const checkInstallForDb = async (database) => {
   const check = {};
   const allDdocs = await ddocsService.getDdocs(database);
-  // console.log("allDdocs", allDdocs);
   const bundledDdocs = await upgradeUtils.getBundledDdocs(database);
-  console.log("bundledDdocs", bundledDdocs);
 
   const liveDdocs = allDdocs.filter(ddoc => !ddocsService.isStaged(ddoc._id));
   const stagedDdocs = allDdocs.filter(ddoc => ddocsService.isStaged(ddoc._id));
 
   const liveDdocsCheck = ddocsService.compareDdocs(bundledDdocs, liveDdocs);
+  console.log("liveDdocsCheck.different", liveDdocsCheck.different);
   check.missing = liveDdocsCheck.missing;
   check.different = liveDdocsCheck.different;
 

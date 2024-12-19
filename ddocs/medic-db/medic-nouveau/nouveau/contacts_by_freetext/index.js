@@ -1,4 +1,5 @@
 function (doc) {
+  'different 2';
   var skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
   var toIndex = '';
 
