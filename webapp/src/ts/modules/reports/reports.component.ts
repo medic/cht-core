@@ -25,6 +25,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
+import { Directionality } from '@angular/cdk/bidi';
 
 const PAGE_SIZE = 50;
 const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
@@ -65,6 +66,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   userParentPlace;
   fastActionList?: FastAction[];
   userLineageLevel;
+  isRtl;
 
   LIMIT_SELECT_ALL_REPORTS = 500;
 
@@ -88,9 +90,11 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private xmlFormsService:XmlFormsService,
     private performanceService: PerformanceService,
     private extractLineageService: ExtractLineageService,
+    dir: Directionality,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
+    this.isRtl = dir.value === 'rtl';
   }
 
   ngOnInit() {

@@ -41,6 +41,7 @@ import { GlobalEffects } from '@mm-effects/global.effects';
 import { ReportsEffects } from '@mm-effects/reports.effects';
 import { ContactsEffects } from '@mm-effects/contacts.effects';
 import { reducers } from '@mm-reducers/index';
+import { LanguageService } from '@mm-services/language.service';
 
 const logger = reducer => {
   // default, no options
@@ -74,8 +75,9 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
-        useFactory: (db: DbService) => new TranslationLoaderProvider(db),
-        deps: [DbService],
+        useFactory:
+          (db: DbService, languageService: LanguageService) => new TranslationLoaderProvider(db, languageService),
+        deps: [DbService, LanguageService],
       },
       missingTranslationHandler: {
         provide: MissingTranslationHandler,

@@ -28,6 +28,7 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   iconTypeResource = IconType.RESOURCE;
   iconTypeFontAwesome = IconType.FONT_AWESOME;
   buttonTypeFlat = ButtonType.FLAT;
+  direction;
 
   constructor(
     private store: Store,
@@ -35,7 +36,11 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
     private responsiveService: ResponsiveService,
     private matBottomSheet: MatBottomSheet,
     private matDialog: MatDialog,
-  ) { }
+  ) {
+    this.store.select(Selectors.getDirection).subscribe(direction => {
+      this.direction = direction;
+    });
+  }
 
   ngOnInit() {
     this.subscribeToStore();
@@ -87,6 +92,7 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
       autoFocus: false,
       minWidth: 300,
       minHeight: 150,
+      direction: this.direction,
     });
   }
 

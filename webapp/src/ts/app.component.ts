@@ -50,6 +50,7 @@ import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserSettings, UserSettingsService } from '@mm-services/user-settings.service';
 import { OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
+import { Directionality } from '@angular/cdk/bidi';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -95,6 +96,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   androidAppVersion;
   hasOldNav = false;
   initialisationComplete = false;
+  direction;
   private readonly SVG_ICONS = new Map([
     ['icon-close', './img/icon-close.svg'],
     ['icon-filter', './img/icon-filter.svg'],
@@ -463,18 +465,21 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.store.select(Selectors.getCurrentTab),
       this.store.select(Selectors.getSelectMode),
       this.store.select(Selectors.getSearchBar),
+      this.store.select(Selectors.getDirection),
     ]).subscribe(([
       replicationStatus,
       androidAppVersion,
       currentTab,
       selectMode,
       searchBar,
+      direction,
     ]) => {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
       this.currentTab = currentTab || '';
       this.selectMode = selectMode;
       this.openSearch = !!searchBar?.isOpen;
+      this.direction = direction;
     });
 
     combineLatest([

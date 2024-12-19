@@ -1,0 +1,103 @@
+@import "variables";
+
+.app-root:not(.old-nav).rtl {
+  direction: rtl;
+   * {
+     direction: rtl;
+   }
+
+  mm-header {
+    right: 0;
+    left: auto;
+  }
+
+  .content .page {
+    padding-right: 80px;
+    padding-left: 0;
+  }
+
+  .left-pane {
+    float: right;
+  }
+
+  .fast-action-trigger:not(.embed-fast-action) {
+    top: 60px;
+    left: 5px;
+    right: auto;
+  }
+
+  .content-row {
+    border-left: 0;
+    border-right: 5px solid transparent;
+
+    a {
+      padding: 10px 8px 10px 20px;
+      .icon {
+        margin: 5px 0 5px 7px;
+      }
+    }
+
+    input[type="checkbox"] {
+      float: right;
+      margin: 20px 10px 20px 7px;
+    }
+  }
+
+  &.reports .content-row:hover {
+    border-right-color: @reports-color;
+  }
+
+  .select-mode-available .select-all .select-all-label {
+    margin-right: 15px;
+  }
+
+  .item-summary .icon {
+    float: right;
+    margin-left: 4px;
+    margin-right: 0;
+  }
+
+  .sidebar-filter .sidebar-main .sidebar-header .sidebar-reset {
+    margin-right: 0;
+    margin-left: 20px;
+  }
+
+  .sidebar-filter .sidebar-main .sidebar-body mat-expansion-panel mat-expansion-panel-header .chip {
+    margin-right: 10px;
+  }
+
+  mm-search-bar .mm-search-bar-container .btn.open-filter .open-filter-label {
+    margin-left: 6px;
+  }
+
+  .item-content .deselect {
+    float: left;
+    clear: left;
+    margin-right: -10px;
+  }
+
+  &.contacts .action-header {
+    h3 {
+      float: right;
+    }
+    .table-filter {
+      float: left;
+    }
+  }
+
+  .targets .target .heading .icon {
+    margin-left: 10px;
+    margin-right: 0;
+  }
+
+  .enketo .or h2, .enketo .or h3, .enketo .or h4 {
+    text-align: right;
+  }
+}
+
+[dir="rtl"] {
+  .fast-action-body .fast-action-item .fast-action-item-icon {
+    margin-left: 20px;
+    margin-right: 0;
+  }
+}
