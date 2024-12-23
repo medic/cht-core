@@ -82,7 +82,7 @@ export const byFreetext = (freetext: string): FreetextQualifier => {
  * @returns `true` if the given type is a {@link FreetextQualifier}, otherwise `false`.
  */
 export const isFreetextQualifier = (qualifier: unknown): qualifier is FreetextQualifier => {
-  return isRecord(qualifier);
+  return isRecord(qualifier) && hasField(qualifier, { name: 'freetext', type: 'string' });
 };
 
 /**
