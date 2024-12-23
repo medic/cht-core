@@ -330,15 +330,7 @@ describe('contact', () => {
       };
       const invalidContactTypeQualifier = { contactType: 'invalidContactType' } as const;
       const invalidFreetextQualifier = { freetext: 'invalidFreetext' } as const;
-      const firstContact = 'contact1';
-      const secondContact = 'contact2';
-      const thirdContact = 'contact3';
-      const contactIds = [firstContact, secondContact, thirdContact];
-      const mockGenerator = function* () {
-        for (const id of contactIds) {
-          yield id;
-        }
-      };
+      const mockGenerator = {} as Generator<string, void>;
 
       let contactGetIdsPage: sinon.SinonStub;
       let getPagedGenerator: sinon.SinonStub;
