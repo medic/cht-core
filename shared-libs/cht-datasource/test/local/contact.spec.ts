@@ -227,7 +227,7 @@ describe('local contact', () => {
       });
     });
 
-    describe('getPage', () => {
+    describe('getUuidsPage', () => {
       const limit = 3;
       const cursor = null;
       const notNullCursor = '5';
@@ -269,7 +269,7 @@ describe('local contact', () => {
         };
         fetchAndFilterInner.resolves(fetchAndFilterResult);
 
-        const res = await Contact.v1.getPage(localContext)(qualifier, cursor, limit);
+        const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
         const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
@@ -323,7 +323,7 @@ describe('local contact', () => {
         };
         fetchAndFilterInner.resolves(fetchAndFilterResult);
 
-        const res = await Contact.v1.getPage(localContext)(qualifier, cursor, limit);
+        const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
         const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
@@ -377,7 +377,7 @@ describe('local contact', () => {
         };
         fetchAndFilterInner.resolves(fetchAndFilterResult);
 
-        const res = await Contact.v1.getPage(localContext)(qualifier, cursor, limit);
+        const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
         const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
@@ -432,7 +432,7 @@ describe('local contact', () => {
         };
         fetchAndFilterInner.resolves(fetchAndFilterResult);
 
-        const res = await Contact.v1.getPage(localContext)(qualifier, cursor, limit);
+        const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
         const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
@@ -487,7 +487,7 @@ describe('local contact', () => {
         };
         fetchAndFilterInner.resolves(fetchAndFilterResult);
 
-        const res = await Contact.v1.getPage(localContext)(qualifier, cursor, limit);
+        const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
         const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
@@ -538,7 +538,7 @@ describe('local contact', () => {
         };
         fetchAndFilterInner.resolves(fetchAndFilterResult);
 
-        const res = await Contact.v1.getPage(localContext)(qualifier, notNullCursor, limit);
+        const res = await Contact.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
         const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
@@ -593,7 +593,7 @@ describe('local contact', () => {
         };
         fetchAndFilterInner.resolves(fetchAndFilterResult);
 
-        const res = await Contact.v1.getPage(localContext)(qualifier, notNullCursor, limit);
+        const res = await Contact.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
         const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
@@ -648,7 +648,7 @@ describe('local contact', () => {
         };
         fetchAndFilterInner.resolves(fetchAndFilterResult);
 
-        const res = await Contact.v1.getPage(localContext)(qualifier, notNullCursor, limit);
+        const res = await Contact.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
         const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
@@ -705,7 +705,7 @@ describe('local contact', () => {
           };
           fetchAndFilterInner.resolves(fetchAndFilterResult);
 
-          const res = await Contact.v1.getPage(localContext)(qualifier, notNullCursor, limit);
+          const res = await Contact.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
           const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
           const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
@@ -762,7 +762,7 @@ describe('local contact', () => {
         };
         fetchAndFilterInner.resolves(fetchAndFilterResult);
 
-        const res = await Contact.v1.getPage(localContext)(qualifier, notNullCursor, limit);
+        const res = await Contact.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
         const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
@@ -797,7 +797,7 @@ describe('local contact', () => {
       });
 
       it('throws an error if contact type is invalid', async () => {
-        await expect(Contact.v1.getPage(localContext)(invalidContactTypeQualifier, cursor, limit)).to.be.rejectedWith(
+        await expect(Contact.v1.getUuidsPage(localContext)(invalidContactTypeQualifier, cursor, limit)).to.be.rejectedWith(
           `Invalid contact type [${invalidContactTypeQualifier.contactType}].`
         );
 
@@ -836,7 +836,7 @@ describe('local contact', () => {
             contactType,
           };
 
-          await expect(Contact.v1.getPage(localContext)(qualifier, invalidSkip as string, limit))
+          await expect(Contact.v1.getUuidsPage(localContext)(qualifier, invalidSkip as string, limit))
             .to.be.rejectedWith(`Invalid cursor token: [${String(invalidSkip)}]`);
 
           expect(settingsGetAll.calledOnce).to.be.true;
@@ -875,7 +875,7 @@ describe('local contact', () => {
         };
         fetchAndFilterInner.resolves(expectedResult);
 
-        const res = await Contact.v1.getPage(localContext)(qualifier, cursor, limit);
+        const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
         const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 

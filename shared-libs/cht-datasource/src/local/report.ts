@@ -38,7 +38,7 @@ export namespace v1 {
   };
 
   /** @internal */
-  export const getPage = ({ medicDb }: LocalDataContext) => {
+  export const getUuidsPage = ({ medicDb }: LocalDataContext) => {
     const getReportsByFreetext = queryDocsByKey(medicDb, 'medic-client/reports_by_freetext');
     const getReportsByFreetextRange = queryDocsByRange(medicDb, 'medic-client/reports_by_freetext');
 

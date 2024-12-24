@@ -28,7 +28,6 @@ describe('remote report', () => {
         const doc = { type: 'data_record', form: 'yes' };
         getResourceInner.resolves(doc);
 
-        // eslint-disable-next-line compat/compat
         const result = await Report.v1.get(remoteContext)(identifier);
 
         expect(result).to.equal(doc);
@@ -39,7 +38,6 @@ describe('remote report', () => {
       it('returns null if the identified doc is not found', async () => {
         getResourceInner.resolves(null);
 
-        // eslint-disable-next-line compat/compat
         const result = await Report.v1.get(remoteContext)(identifier);
 
         expect(result).to.be.null;
@@ -48,7 +46,7 @@ describe('remote report', () => {
       });
     });
 
-    describe('getPage', () => {
+    describe('getUuidsPage', () => {
       const limit = 3;
       const cursor = '1';
       const freetext = 'report';
@@ -66,22 +64,20 @@ describe('remote report', () => {
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
-        // eslint-disable-next-line compat/compat
-        const result = await Report.v1.getPage(remoteContext)(qualifier, cursor, limit);
+        const result = await Report.v1.getUuidsPage(remoteContext)(qualifier, cursor, limit);
 
         expect(result).to.equal(expectedResponse);
-        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/id')).to.be.true;
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
       });
 
       it('returns empty array if docs are not found', async () => {
         getResourcesInner.resolves([]);
 
-        // eslint-disable-next-line compat/compat
-        const result = await Report.v1.getPage(remoteContext)(qualifier, cursor, limit);
+        const result = await Report.v1.getUuidsPage(remoteContext)(qualifier, cursor, limit);
 
         expect(result).to.deep.equal([]);
-        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/id')).to.be.true;
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
       });
     });

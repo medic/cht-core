@@ -211,7 +211,7 @@ describe('Report', () => {
         const freetext = 'report';
         const docs = [];
 
-        const generator = Report.v1.getIds(dataContext)(Qualifier.byFreetext(freetext));
+        const generator = Report.v1.getUuids(dataContext)(Qualifier.byFreetext(freetext));
 
         for await (const doc of generator) {
           docs.push(doc);

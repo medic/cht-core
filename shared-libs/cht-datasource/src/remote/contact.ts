@@ -7,7 +7,7 @@ import * as ContactType from '../contact-types';
 export namespace v1 {
   const getContact = (remoteContext: RemoteDataContext) => getResource(remoteContext, 'api/v1/contact');
 
-  const getContacts = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/contact/id');
+  const getContactUuids = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/contact/uuid');
 
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (
@@ -24,7 +24,7 @@ export namespace v1 {
   });
 
   /** @internal */
-  export const getPage =
+  export const getUuidsPage =
     (remoteContext: RemoteDataContext) => (
       qualifier: ContactTypeQualifier | FreetextQualifier,
       cursor: Nullable<string>,
@@ -47,6 +47,6 @@ export namespace v1 {
         ...(contactType ? { type: contactType } : {}),
         ...(freetext ? { freetext: freetext } : {}),
       };
-      return getContacts(remoteContext)(queryParams);
+      return getContactUuids(remoteContext)(queryParams);
     };
 }

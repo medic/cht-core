@@ -179,3 +179,16 @@ export const assertFreetextQualifier: (qualifier: unknown) => asserts qualifier 
     throw new InvalidArgumentError(`Invalid freetext [${JSON.stringify(qualifier)}].`);
   }
 };
+
+/** @internal */
+export const assertContactTypeFreetextQualifier: (
+  qualifier: unknown
+) => asserts qualifier is ContactTypeQualifier | FreetextQualifier = (
+  qualifier: unknown
+) => {
+  if (!(isContactTypeQualifier(qualifier) || isFreetextQualifier(qualifier))) {
+    throw new InvalidArgumentError(
+      `Invalid qualifier [${JSON.stringify(qualifier)}]. Must be a contact type and/or freetext qualifier.`
+    );
+  }
+};

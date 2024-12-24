@@ -1,4 +1,5 @@
 import * as Contact from './contact';
+import * as ContactTypes from './contact-types';
 import * as Person from './person';
 import { LocalDataContext } from './local/libs/data-context';
 import { ContactTypeQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
@@ -8,7 +9,7 @@ import * as Local from './local';
 import * as Remote from './remote';
 import { assertCursor, assertLimit, assertTypeQualifier, getPagedGenerator, Nullable, Page } from './libs/core';
 import { InvalidArgumentError } from './libs/error';
-import { DEFAULT_PLACE_PAGE_LIMIT } from './libs/constants';
+import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 
 /** */
 export namespace v1 {
@@ -16,7 +17,7 @@ export namespace v1 {
    * Immutable data about a place contact.
    */
   export interface Place extends Contact.v1.Contact {
-    readonly contact?: Contact.v1.NormalizedParent;
+    readonly contact?: ContactTypes.v1.NormalizedParent;
     readonly place_id?: string;
   }
 
@@ -25,8 +26,8 @@ export namespace v1 {
    * contact for the place.
    */
   export interface PlaceWithLineage extends Place {
-    readonly contact?: Person.v1.PersonWithLineage | Contact.v1.NormalizedParent;
-    readonly parent?: PlaceWithLineage | Contact.v1.NormalizedParent;
+    readonly contact?: Person.v1.PersonWithLineage | ContactTypes.v1.NormalizedParent;
+    readonly parent?: PlaceWithLineage | ContactTypes.v1.NormalizedParent;
   }
 
   const assertPlaceQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
@@ -89,7 +90,7 @@ export namespace v1 {
     const curriedFn = async (
       placeType: ContactTypeQualifier,
       cursor: Nullable<string> = null,
-      limit: number | `${number}` = DEFAULT_PLACE_PAGE_LIMIT
+      limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
     ): Promise<Page<Place>> => {
       assertTypeQualifier(placeType);
       assertCursor(cursor);

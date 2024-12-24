@@ -39,7 +39,6 @@ describe('report', () => {
         isUuidQualifier.returns(true);
         getReport.resolves(report);
 
-        // eslint-disable-next-line compat/compat
         const result = await Report.v1.get(dataContext)(qualifier);
 
         expect(result).to.equal(report);
@@ -52,7 +51,6 @@ describe('report', () => {
       it('throws an error if the qualifier is invalid', async () => {
         isUuidQualifier.returns(false);
 
-        // eslint-disable-next-line compat/compat
         await expect(Report.v1.get(dataContext)(qualifier))
           .to.be.rejectedWith(`Invalid identifier [${JSON.stringify(qualifier)}].`);
 
@@ -65,7 +63,6 @@ describe('report', () => {
       it('throws an error if the data context is invalid', () => {
         assertDataContext.throws(new Error(`Invalid data context [null].`));
 
-        // eslint-disable-next-line compat/compat
         expect(() => Report.v1.get(dataContext)).to.throw(`Invalid data context [null].`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -75,7 +72,7 @@ describe('report', () => {
       });
     });
 
-    describe('getIdsPage', () => {
+    describe('getUuidsPage', () => {
       const ids = ['report1', 'report2', 'report3'];
       const cursor = '1';
       const pageData = { data: ids, cursor };
@@ -94,12 +91,11 @@ describe('report', () => {
         isFreetextQualifier.returns(true);
         getIdsPage.resolves(pageData);
 
-        // eslint-disable-next-line compat/compat
-        const result = await Report.v1.getIdsPage(dataContext)(freetextQualifier, null, limit);
+        const result = await Report.v1.getUuidsPage(dataContext)(freetextQualifier, null, limit);
 
         expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getPage, Remote.Report.v1.getPage)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage)).to.be.true;
         expect(getIdsPage.calledOnceWithExactly(freetextQualifier, null, limit)).to.be.true;
         expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
       });
@@ -108,12 +104,11 @@ describe('report', () => {
         isFreetextQualifier.returns(true);
         getIdsPage.resolves(pageData);
 
-        // eslint-disable-next-line compat/compat
-        const result = await Report.v1.getIdsPage(dataContext)(freetextQualifier, cursor, limit);
+        const result = await Report.v1.getUuidsPage(dataContext)(freetextQualifier, cursor, limit);
 
         expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getPage, Remote.Report.v1.getPage)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage)).to.be.true;
         expect(getIdsPage.calledOnceWithExactly(freetextQualifier, cursor, limit)).to.be.true;
         expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
       });
@@ -123,12 +118,11 @@ describe('report', () => {
         isFreetextQualifier.returns(true);
         getIdsPage.resolves(pageData);
 
-        // eslint-disable-next-line compat/compat
-        const result = await Report.v1.getIdsPage(dataContext)(freetextQualifier, cursor, stringifiedLimit);
+        const result = await Report.v1.getUuidsPage(dataContext)(freetextQualifier, cursor, stringifiedLimit);
 
         expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getPage, Remote.Report.v1.getPage)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage)).to.be.true;
         expect(getIdsPage.calledOnceWithExactly(freetextQualifier, cursor, limit)).to.be.true;
         expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
       });
@@ -137,8 +131,7 @@ describe('report', () => {
         isFreetextQualifier.returns(true);
         assertDataContext.throws(new Error(`Invalid data context [null].`));
 
-        // eslint-disable-next-line compat/compat
-        expect(() => Report.v1.getIdsPage(dataContext)).to.throw(`Invalid data context [null].`);
+        expect(() => Report.v1.getUuidsPage(dataContext)).to.throw(`Invalid data context [null].`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.notCalled).to.be.true;
@@ -149,12 +142,11 @@ describe('report', () => {
       it('throws an error if the qualifier is invalid', async () => {
         isFreetextQualifier.returns(false);
 
-        // eslint-disable-next-line compat/compat
-        await expect(Report.v1.getIdsPage(dataContext)(invalidFreetextQualifier, cursor, limit))
+        await expect(Report.v1.getUuidsPage(dataContext)(invalidFreetextQualifier, cursor, limit))
           .to.be.rejectedWith(`Invalid freetext [${JSON.stringify(invalidFreetextQualifier)}].`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getPage, Remote.Report.v1.getPage)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage)).to.be.true;
         expect(isFreetextQualifier.calledOnceWithExactly(invalidFreetextQualifier)).to.be.true;
         expect(getIdsPage.notCalled).to.be.true;
       });
@@ -172,12 +164,11 @@ describe('report', () => {
           isFreetextQualifier.returns(true);
           getIdsPage.resolves(pageData);
 
-          // eslint-disable-next-line compat/compat
-          await expect(Report.v1.getIdsPage(dataContext)(freetextQualifier, cursor, limitValue as number))
+          await expect(Report.v1.getUuidsPage(dataContext)(freetextQualifier, cursor, limitValue as number))
             .to.be.rejectedWith(`The limit must be a positive number: [${String(limitValue)}]`);
 
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-          expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getPage, Remote.Report.v1.getPage))
+          expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage))
             .to.be.true;
           expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
           expect(getIdsPage.notCalled).to.be.true;
@@ -194,12 +185,11 @@ describe('report', () => {
           isFreetextQualifier.returns(true);
           getIdsPage.resolves(pageData);
 
-          // eslint-disable-next-line compat/compat
-          await expect(Report.v1.getIdsPage(dataContext)(freetextQualifier, skipValue as string, limit))
+          await expect(Report.v1.getUuidsPage(dataContext)(freetextQualifier, skipValue as string, limit))
             .to.be.rejectedWith(`Invalid cursor token: [${String(skipValue)}]`);
 
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-          expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getPage, Remote.Report.v1.getPage))
+          expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage))
             .to.be.true;
           expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
           expect(getIdsPage.notCalled).to.be.true;
@@ -207,7 +197,7 @@ describe('report', () => {
       });
     });
 
-    describe('getIdsAll', () => {
+    describe('getUuids', () => {
       const freetextQualifier = { freetext: 'freetext' } as const;
       const reportIds = ['report1', 'report2', 'report3'];
       const mockGenerator = function* () {
@@ -220,8 +210,7 @@ describe('report', () => {
       let getPagedGenerator: sinon.SinonStub;
 
       beforeEach(() => {
-        // eslint-disable-next-line compat/compat
-        reportGetIdsPage = sinon.stub(Report.v1, 'getIdsPage');
+        reportGetIdsPage = sinon.stub(Report.v1, 'getUuidsPage');
         dataContext.bind = sinon.stub().returns(reportGetIdsPage);
         getPagedGenerator = sinon.stub(Core, 'getPagedGenerator');
       });
@@ -230,8 +219,7 @@ describe('report', () => {
         isFreetextQualifier.returns(true);
         getPagedGenerator.returns(mockGenerator);
 
-        // eslint-disable-next-line compat/compat
-        const generator = Report.v1.getIds(dataContext)(freetextQualifier);
+        const generator = Report.v1.getUuids(dataContext)(freetextQualifier);
 
         expect(generator).to.deep.equal(mockGenerator);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -244,8 +232,7 @@ describe('report', () => {
         isFreetextQualifier.returns(true);
         assertDataContext.throws(new Error(errMsg));
 
-        // eslint-disable-next-line compat/compat
-        expect(() => Report.v1.getIds(dataContext)).to.throw(errMsg);
+        expect(() => Report.v1.getUuids(dataContext)).to.throw(errMsg);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(reportGetIdsPage.notCalled).to.be.true;
         expect(isFreetextQualifier.notCalled).to.be.true;
@@ -254,8 +241,7 @@ describe('report', () => {
       it('should throw an error for invalid freetext', () => {
         isFreetextQualifier.returns(false);
 
-        // eslint-disable-next-line compat/compat
-        expect(() => Report.v1.getIds(dataContext)(freetextQualifier))
+        expect(() => Report.v1.getUuids(dataContext)(freetextQualifier))
           .to.throw(`Invalid freetext [${JSON.stringify(freetextQualifier)}]`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(reportGetIdsPage.notCalled).to.be.true;

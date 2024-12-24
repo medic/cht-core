@@ -26,7 +26,7 @@ module.exports = {
 
       return res.json(report);
     }),
-    getIds: serverUtils.doOrError(async (req, res) => {
+    getUuids: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req);
 
       const qualifier = Qualifier.byFreetext(req.query.freetext);

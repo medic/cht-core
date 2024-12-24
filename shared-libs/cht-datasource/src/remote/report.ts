@@ -7,7 +7,7 @@ import { Nullable, Page } from '../libs/core';
 export namespace v1 {
   const getReport = (remoteContext: RemoteDataContext) => getResource(remoteContext, 'api/v1/report');
 
-  const getReports = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/report/id');
+  const getReports = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/report/uuid');
   
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (
@@ -15,7 +15,7 @@ export namespace v1 {
   ): Promise<Nullable<Report.v1.Report>> => getReport(remoteContext)(identifier.uuid);
 
   /** @internal */
-  export const getPage = (remoteContext: RemoteDataContext) => (
+  export const getUuidsPage = (remoteContext: RemoteDataContext) => (
     qualifier: FreetextQualifier,
     cursor: Nullable<string>,
     limit: number

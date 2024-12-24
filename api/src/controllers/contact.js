@@ -26,7 +26,7 @@ module.exports = {
 
       return res.json(contact);
     }),
-    getIds: serverUtils.doOrError(async (req, res) => {
+    getUuids: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req);
 
       if (!req.query.freetext && !req.query.type) {

@@ -40,7 +40,6 @@ describe('local report', () => {
         getDocByIdInner.resolves(doc);
         settingsGetAll.returns(settings);
 
-        // eslint-disable-next-line compat/compat
         const result = await Report.v1.get(localContext)(identifier);
 
         expect(result).to.equal(doc);
@@ -54,7 +53,6 @@ describe('local report', () => {
         getDocByIdInner.resolves(doc);
         settingsGetAll.returns(settings);
 
-        // eslint-disable-next-line compat/compat
         const result = await Report.v1.get(localContext)(identifier);
 
         expect(result).to.be.null;
@@ -68,7 +66,6 @@ describe('local report', () => {
         getDocByIdInner.resolves(doc);
         settingsGetAll.returns(settings);
 
-        // eslint-disable-next-line compat/compat
         const result = await Report.v1.get(localContext)(identifier);
 
         expect(result).to.be.null;
@@ -80,7 +77,6 @@ describe('local report', () => {
       it('returns null if the identified doc is not found', async () => {
         getDocByIdInner.resolves(null);
 
-        // eslint-disable-next-line compat/compat
         const result = await Report.v1.get(localContext)(identifier);
 
         expect(result).to.be.null;
@@ -91,7 +87,7 @@ describe('local report', () => {
       });
     });
 
-    describe('getPage', () => {
+    describe('getUuidsPage', () => {
       const limit = 3;
       const cursor = null;
       const notNullCursor = '5';
@@ -132,8 +128,7 @@ describe('local report', () => {
         };
         fetchAndFilterInner.resolves(fetchAndFilterResult);
 
-        // eslint-disable-next-line compat/compat
-        const res = await Report.v1.getPage(localContext)(qualifier, cursor, limit);
+        const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
         const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
@@ -176,8 +171,7 @@ describe('local report', () => {
         };
         fetchAndFilterInner.resolves(fetchAndFilterResult);
 
-        // eslint-disable-next-line compat/compat
-        const res = await Report.v1.getPage(localContext)(qualifier, cursor, limit);
+        const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
         const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
@@ -221,8 +215,7 @@ describe('local report', () => {
         };
         fetchAndFilterInner.resolves(fetchAndFilterResult);
 
-        // eslint-disable-next-line compat/compat
-        const res = await Report.v1.getPage(localContext)(qualifier, notNullCursor, limit);
+        const res = await Report.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
         const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
@@ -266,8 +259,7 @@ describe('local report', () => {
         };
         fetchAndFilterInner.resolves(fetchAndFilterResult);
 
-        // eslint-disable-next-line compat/compat
-        const res = await Report.v1.getPage(localContext)(qualifier, notNullCursor, limit);
+        const res = await Report.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
         const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
@@ -301,8 +293,7 @@ describe('local report', () => {
             freetext,
           };
 
-          // eslint-disable-next-line compat/compat
-          await expect(Report.v1.getPage(localContext)(qualifier, invalidSkip as string, limit))
+          await expect(Report.v1.getUuidsPage(localContext)(qualifier, invalidSkip as string, limit))
             .to.be.rejectedWith(`Invalid cursor token: [${String(invalidSkip)}]`);
 
           expect(queryDocsByKeyOuter.callCount).to.be.equal(1);
@@ -331,8 +322,7 @@ describe('local report', () => {
         };
         fetchAndFilterInner.resolves(expectedResult);
 
-        // eslint-disable-next-line compat/compat
-        const res = await Report.v1.getPage(localContext)(qualifier, cursor, limit);
+        const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
         const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 

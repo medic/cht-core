@@ -1,6 +1,7 @@
 import { ContactTypeQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Contact from './contact';
+import * as ContactTypes from './contact-types';
 import * as Remote from './remote';
 import * as Local from './local';
 import * as Place from './place';
@@ -8,7 +9,7 @@ import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { InvalidArgumentError } from './libs/error';
 import { assertCursor, assertLimit, assertTypeQualifier, getPagedGenerator, Nullable, Page } from './libs/core';
-import { DEFAULT_PEOPLE_PAGE_LIMIT } from './libs/constants';
+import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 
 /** */
 export namespace v1 {
@@ -26,7 +27,7 @@ export namespace v1 {
    * Immutable data about a person contact, including the full records of the parent place lineage.
    */
   export interface PersonWithLineage extends Person {
-    readonly parent?: Place.v1.PlaceWithLineage | Contact.v1.NormalizedParent;
+    readonly parent?: Place.v1.PlaceWithLineage | ContactTypes.v1.NormalizedParent;
   }
 
   const assertPersonQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
@@ -89,7 +90,7 @@ export namespace v1 {
     const curriedFn = async (
       personType: ContactTypeQualifier,
       cursor: Nullable<string> = null,
-      limit: number | `${number}` = DEFAULT_PEOPLE_PAGE_LIMIT
+      limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
     ): Promise<Page<Person>> => {
       assertTypeQualifier(personType);
       assertCursor(cursor);

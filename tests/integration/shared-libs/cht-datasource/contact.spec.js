@@ -362,7 +362,7 @@ describe('Contact', () => {
       it('fetches all data by iterating through generator', async () => {
         const docs = [];
 
-        const generator = Contact.v1.getIds(dataContext)(Qualifier.byContactType(personType));
+        const generator = Contact.v1.getUuids(dataContext)(Qualifier.byContactType(personType));
 
         for await (const doc of generator) {
           docs.push(doc);

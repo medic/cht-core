@@ -69,7 +69,7 @@ describe('remote contact', () => {
       });
     });
 
-    describe('getPage', () => {
+    describe('getUuidsPage', () => {
       const limit = 3;
       const cursor = '1';
       const contactType = 'person';
@@ -90,20 +90,20 @@ describe('remote contact', () => {
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
-        const result = await Contact.v1.getPage(remoteContext)(qualifier, cursor, limit);
+        const result = await Contact.v1.getUuidsPage(remoteContext)(qualifier, cursor, limit);
 
         expect(result).to.equal(expectedResponse);
-        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/id')).to.be.true;
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/uuid')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
       });
 
       it('returns empty array if docs are not found', async () => {
         getResourcesInner.resolves([]);
 
-        const result = await Contact.v1.getPage(remoteContext)(qualifier, cursor, limit);
+        const result = await Contact.v1.getUuidsPage(remoteContext)(qualifier, cursor, limit);
 
         expect(result).to.deep.equal([]);
-        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/id')).to.be.true;
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/uuid')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
       });
     });

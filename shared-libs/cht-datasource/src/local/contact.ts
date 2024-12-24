@@ -78,7 +78,7 @@ export namespace v1 {
   };
 
   /** @internal */
-  export const getPage = ({ medicDb, settings }: LocalDataContext) => {
+  export const getUuidsPage = ({ medicDb, settings }: LocalDataContext) => {
     // Define query functions
     const getContactsByTypeFreetext = queryDocsByKey(medicDb, 'medic-client/contacts_by_type_freetext');
     const getContactsByFreetext = queryDocsByKey(medicDb, 'medic-client/contacts_by_freetext');

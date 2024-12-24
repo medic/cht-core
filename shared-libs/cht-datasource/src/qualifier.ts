@@ -1,4 +1,4 @@
-import { isString, hasField, isRecord } from './libs/core';
+import { isString, hasField, isRecord, Nullable } from './libs/core';
 import { InvalidArgumentError } from './libs/error';
 
 /**
@@ -91,5 +91,33 @@ export const isFreetextQualifier = (qualifier: unknown): qualifier is FreetextQu
  * @returns `true` if the given FreetextQualifier is also a Key-Value based qualifier
  */
 export const isKeyedFreetextQualifier = (qualifier: FreetextQualifier): boolean => {
-  return qualifier.freetext.includes(':');
+  if (isFreetextQualifier(qualifier)) {
+    return qualifier.freetext.includes(':');
+  }
+
+  return false;
+};
+
+/**
+ * Combines multiple qualifiers into a single object.
+ * @returns the combined qualifier
+ * @throws Error if any of the qualifiers contain intersecting property names
+ */
+export const and = <
+  A,
+  B,
+  C = Nullable<object>,
+  D = Nullable<object>
+>(
+    qualifierA: A,
+    qualifierB: B,
+    qualifierC?: C,
+    qualifierD?: D
+  ): A & B & Partial<C> & Partial<D> => {
+  return {
+    ...qualifierA,
+    ...qualifierB,
+    ...(qualifierC ?? {}),
+    ...(qualifierD ?? {}),
+  };
 };

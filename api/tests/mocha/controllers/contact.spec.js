@@ -197,7 +197,7 @@ describe('Contact Controller', () => {
         hasAllPermissions.returns(true);
         contactGetIdsPage.resolves(contacts);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
@@ -220,7 +220,7 @@ describe('Contact Controller', () => {
         hasAllPermissions.returns(true);
         contactGetIdsPage.resolves(contacts);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.notCalled).to.be.true;
@@ -244,7 +244,7 @@ describe('Contact Controller', () => {
         hasAllPermissions.returns(true);
         contactGetIdsPage.resolves(contacts);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
@@ -267,7 +267,7 @@ describe('Contact Controller', () => {
         hasAllPermissions.returns(true);
         contactGetIdsPage.resolves(contacts);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
@@ -292,7 +292,7 @@ describe('Contact Controller', () => {
         hasAllPermissions.returns(true);
         contactGetIdsPage.throws(err);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
@@ -316,7 +316,7 @@ describe('Contact Controller', () => {
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(false);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
@@ -339,7 +339,7 @@ describe('Contact Controller', () => {
         const error = { code: 403, message: 'Insufficient privileges' };
         isOnlineOnly.returns(false);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.notCalled).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
@@ -363,7 +363,7 @@ describe('Contact Controller', () => {
         hasAllPermissions.returns(true);
         contactGetIdsPage.throws(err);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
@@ -387,7 +387,7 @@ describe('Contact Controller', () => {
         hasAllPermissions.returns(true);
         contactGetIdsPage.throws(err);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.notCalled).to.be.true;
@@ -410,7 +410,7 @@ describe('Contact Controller', () => {
         hasAllPermissions.returns(true);
         contactGetIdsPage.throws(err);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.notCalled).to.be.true;
@@ -435,7 +435,7 @@ describe('Contact Controller', () => {
         hasAllPermissions.returns(true);
         contactGetIdsPage.throws(err);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;

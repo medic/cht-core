@@ -1,14 +1,25 @@
 import { expect } from 'chai';
 import {
-  AbstractDataContext, deepCopy, findById, getLastElement, getPagedGenerator,
+  AbstractDataContext,
+  assertCursor, assertFreetextQualifier,
+  assertLimit,
+  assertTypeQualifier,
+  deepCopy,
+  findById,
+  getLastElement,
+  getPagedGenerator,
   hasField,
-  hasFields, isDataObject, isIdentifiable,
+  hasFields,
+  isDataObject,
+  isIdentifiable,
   isNonEmptyArray,
   isRecord,
   isString,
   NonEmptyArray
 } from '../../src/libs/core';
 import sinon, { SinonStub } from 'sinon';
+import { ContactTypeQualifier, FreetextQualifier } from '../../src/qualifier';
+import { InvalidArgumentError } from '../../src';
 
 describe('core lib', () => {
   afterEach(() => sinon.restore());
@@ -266,6 +277,100 @@ describe('core lib', () => {
       expect(result.done).to.be.true;
       expect(result.value).to.be.equal(null);
       expect(fetchFunctionStub.calledOnce).to.be.true;
+    });
+  });
+
+  describe('assertTypeQualifier', () => {
+    it('should not throw for valid contact type qualifier', () => {
+      const validQualifier: ContactTypeQualifier = { contactType: 'person' };
+      expect(() => assertTypeQualifier(validQualifier)).to.not.throw();
+    });
+
+    [
+      null,
+      undefined,
+      '',
+      123,
+      {},
+      { wrongProp: 'value' }
+    ].forEach((typeValue) => {
+      it(`should throw for invalid contact type qualifier: ${typeValue as string}`, () => {
+        expect(() => assertTypeQualifier(typeValue))
+          .to.throw(InvalidArgumentError)
+          .with.property('message')
+          .that.includes('Invalid contact type');
+      });
+    });
+  });
+
+  describe('assertLimit', () => {
+    it('should not throw for valid number limits', () => {
+      const validLimits = [1, 10, '1', '10'];
+      validLimits.forEach(limit => {
+        expect(() => assertLimit(limit)).to.not.throw();
+      });
+    });
+
+    [
+      0,
+      -1,
+      '0',
+      '-1',
+      'abc',
+      null,
+      undefined,
+      {},
+      [],
+      1.5,
+      '1.5'
+    ].forEach(limit => {
+      it(`should throw for invalid limits: ${JSON.stringify(limit)}`, () => {
+        expect(() => assertLimit(limit))
+          .to.throw(InvalidArgumentError)
+          .with.property('message')
+          .that.includes('The limit must be a positive number');
+      });
+    });
+  });
+
+  describe('assertCursor', () => {
+    it('should not throw for valid cursors', () => {
+      const validCursors = ['valid-cursor', 'abc123', null];
+      validCursors.forEach(cursor => {
+        expect(() => assertCursor(cursor)).to.not.throw();
+      });
+    });
+
+    ['', undefined, {}, [], 123].forEach(cursor => {
+      it(`should throw for invalid cursors: ${JSON.stringify(cursor)}`, () => {
+        expect(() => assertCursor(cursor))
+          .to.throw(InvalidArgumentError)
+          .with.property('message')
+          .that.includes('Invalid cursor token');
+      });
+    });
+  });
+
+  describe('assertFreetextQualifier', () => {
+    it('should not throw for valid freetext qualifier', () => {
+      const validQualifier: FreetextQualifier = { freetext: 'search text' };
+      expect(() => assertFreetextQualifier(validQualifier)).to.not.throw();
+    });
+
+    [
+      null,
+      undefined,
+      '',
+      123,
+      {},
+      { wrongProp: 'value' }
+    ].forEach(freetext => {
+      it(`should throw for invalid freetext qualifier: ${JSON.stringify(freetext)}`, () => {
+        expect(() => assertFreetextQualifier(freetext))
+          .to.throw(InvalidArgumentError)
+          .with.property('message')
+          .that.includes('Invalid freetext');
+      });
     });
   });
 });

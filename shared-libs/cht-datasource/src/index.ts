@@ -35,10 +35,8 @@ import * as Place from './place';
 import * as Qualifier from './qualifier';
 import * as Report from './report';
 import {
-  DEFAULT_CONTACT_PAGE_LIMIT,
-  DEFAULT_PEOPLE_PAGE_LIMIT,
-  DEFAULT_PLACE_PAGE_LIMIT,
-  DEFAULT_REPORT_PAGE_LIMIT
+  DEFAULT_DOCS_PAGE_LIMIT,
+  DEFAULT_IDS_PAGE_LIMIT,
 } from './libs/constants';
 
 export { Nullable, NonEmptyArray } from './libs/core';
@@ -94,13 +92,13 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws InvalidArgumentError if the provided limit is `<= 0`
          * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
          */
-        getIdsPage: (
-          freetext: Nullable<string> = null,
-          type: Nullable<string> = null,
+        getUuidsPageByTypeFreetext: (
+          freetext: string,
+          type: string,
           cursor: Nullable<string> = null,
-          limit: number | `${number}` = DEFAULT_CONTACT_PAGE_LIMIT
-        ) => ctx.bind(Contact.v1.getIdsPage)(
-          Contact.v1.createQualifier(freetext, type), cursor, limit
+          limit: number | `${number}` = DEFAULT_IDS_PAGE_LIMIT
+        ) => ctx.bind(Contact.v1.getUuidsPage)(
+          Qualifier.and(Qualifier.byFreetext(freetext), Qualifier.byContactType(type)), cursor, limit
         ),
 
         /**
@@ -112,10 +110,10 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws InvalidArgumentError if either `freetext` or `type` is not provided
          * @throws InvalidArgumentError if the `freetext` is empty or if the `type is invalid for a contact
          */
-        getIds: (
+        getUuids: (
           freetext: Nullable<string> = null,
           type: Nullable<string> = null
-        ) => ctx.bind(Contact.v1.getIds)(Contact.v1.createQualifier(freetext, type)),
+        ) => ctx.bind(Contact.v1.getUuids)(Contact.v1.createQualifier(freetext, type)),
       },
       place: {
         /**
@@ -149,7 +147,7 @@ export const getDatasource = (ctx: DataContext) => {
         getPageByType: (
           placeType: string,
           cursor: Nullable<string> = null,
-          limit: number | `${number}` = DEFAULT_PLACE_PAGE_LIMIT
+          limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
         ) => ctx.bind(Place.v1.getPage)(
           Qualifier.byContactType(placeType), cursor, limit
         ),
@@ -194,7 +192,7 @@ export const getDatasource = (ctx: DataContext) => {
         getPageByType: (
           personType: string,
           cursor: Nullable<string> = null,
-          limit: number | `${number}` = DEFAULT_PEOPLE_PAGE_LIMIT
+          limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
         ) => ctx.bind(Person.v1.getPage)(
           Qualifier.byContactType(personType), cursor, limit
         ),
@@ -214,7 +212,6 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the report or `null` if no report is found for the UUID
          * @throws InvalidArgumentError if no UUID is provided
          */
-        // eslint-disable-next-line compat/compat
         getByUuid: (uuid: string) => ctx.bind(Report.v1.get)(Qualifier.byUuid(uuid)),
 
         /**
@@ -228,12 +225,11 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws InvalidArgumentError if the provided `limit` value is `<=0`
          * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
          */
-        getIdsPage: (
+        getUuidsPage: (
           qualifier: string,
           cursor: Nullable<string> = null,
-          limit: number | `${number}` = DEFAULT_REPORT_PAGE_LIMIT
-          // eslint-disable-next-line compat/compat
-        ) => ctx.bind(Report.v1.getIdsPage)(
+          limit: number | `${number}` = DEFAULT_IDS_PAGE_LIMIT
+        ) => ctx.bind(Report.v1.getUuidsPage)(
           Qualifier.byFreetext(qualifier), cursor, limit
         ),
 
@@ -243,10 +239,9 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns a generator for fetching all report identifiers that match the given qualifier
          * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
          */
-        getIds: (
+        getUuids: (
           qualifier: string,
-          // eslint-disable-next-line compat/compat
-        ) => ctx.bind(Report.v1.getIds)(Qualifier.byFreetext(qualifier)),
+        ) => ctx.bind(Report.v1.getUuids)(Qualifier.byFreetext(qualifier)),
       },
     },
   };

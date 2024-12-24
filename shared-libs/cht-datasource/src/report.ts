@@ -13,7 +13,7 @@ import { InvalidArgumentError } from './libs/error';
 import * as Local from './local';
 import { FreetextQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
 import * as Remote from './remote';
-import { DEFAULT_REPORT_PAGE_LIMIT } from './libs/constants';
+import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 
 /** */
 export namespace v1 {
@@ -62,11 +62,11 @@ export namespace v1 {
    * @param context the current data context
    * @returns a function for retrieving a paged array of report identifiers
    * @throws Error if a data context is not provided
-   * @see {@link getIds} which provides the same data, but without having to manually account for paging
+   * @see {@link getUuids} which provides the same data, but without having to manually account for paging
    */
-  export const getIdsPage = (context: DataContext): typeof curriedFn => {
+  export const getUuidsPage = (context: DataContext): typeof curriedFn => {
     assertDataContext(context);
-    const fn = adapt(context, Local.Report.v1.getPage, Remote.Report.v1.getPage);
+    const fn = adapt(context, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage);
 
     /**
      * Returns an array of report identifiers for the provided page specifications.
@@ -82,7 +82,7 @@ export namespace v1 {
     const curriedFn = async (
       qualifier: FreetextQualifier,
       cursor: Nullable<string> = null,
-      limit: number | `${number}` = DEFAULT_REPORT_PAGE_LIMIT
+      limit: number | `${number}` = DEFAULT_IDS_PAGE_LIMIT
     ): Promise<Page<string>> => {
       assertFreetextQualifier(qualifier);
       assertCursor(cursor);
@@ -99,9 +99,9 @@ export namespace v1 {
    * @returns a function for getting a generator that fetches report identifiers
    * @throws Error if a data context is not provided
    */
-  export const getIds = (context: DataContext): typeof curriedGen => {
+  export const getUuids = (context: DataContext): typeof curriedGen => {
     assertDataContext(context);
-    const getPage = context.bind(v1.getIdsPage);
+    const getPage = context.bind(v1.getUuidsPage);
 
     /**
      * Returns a generator for fetching all report identifiers that match the given qualifier

@@ -1,8 +1,7 @@
 import {
-  assertCursor,
-  assertFreetextQualifier,
-  assertLimit,
-  assertTypeQualifier,
+  assertContactTypeFreetextQualifier,
+  assertCursor, assertFreetextQualifier,
+  assertLimit, assertTypeQualifier,
   getPagedGenerator,
   Nullable,
   Page,
@@ -18,12 +17,10 @@ import { RemoteDataContext } from './remote/libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
 import * as ContactTypes from './contact-types';
-import { DEFAULT_CONTACT_PAGE_LIMIT } from './libs/constants';
+import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 
 /** */
 export namespace v1 {
-  /** @internal */
-  export type NormalizedParent = ContactTypes.v1.NormalizedParent;
   /**
    * Immutable data about a Contact.
    */
@@ -55,12 +52,6 @@ export namespace v1 {
    * @returns a function for retrieving a contact
    * @throws Error if a data context is not provided
    */
-  /**
-   * Returns a contact for the given qualifier.
-   * @param qualifier identifier for the contact to retrieve
-   * @returns the contact or `null` if no contact is found for the qualifier
-   * @throws Error if the qualifier is invalid
-   */
   export const get = getContact(Local.Contact.v1.get, Remote.Contact.v1.get);
 
   /**
@@ -69,12 +60,6 @@ export namespace v1 {
    * @returns a function for retrieving a contact with the contact's parent lineage
    * @throws Error if a data context is not provided
    */
-  /**
-   * Returns a contact for the given qualifier with the contact's parent lineage.
-   * @param qualifier identifier for the contact to retrieve
-   * @returns the contact or `null` if no contact is found for the qualifier
-   * @throws Error if the qualifier is invalid
-   */
   export const getWithLineage = getContact(Local.Contact.v1.getWithLineage, Remote.Contact.v1.getWithLineage);
 
   /**
@@ -82,11 +67,11 @@ export namespace v1 {
    * @param context the current data context
    * @returns a function for retrieving a paged array of contact identifiers
    * @throws Error if a data context is not provided
-   * @see {@link getIds} which provides the same data, but without having to manually account for paging
+   * @see {@link getUuids} which provides the same data, but without having to manually account for paging
    */
-  export const getIdsPage = (context: DataContext): typeof curriedFn => {
+  export const getUuidsPage = (context: DataContext): typeof curriedFn => {
     assertDataContext(context);
-    const fn = adapt(context, Local.Contact.v1.getPage, Remote.Contact.v1.getPage);
+    const fn = adapt(context, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage);
 
     /**
      * Returns an array of contact identifiers for the provided page specifications.
@@ -102,16 +87,16 @@ export namespace v1 {
     const curriedFn = async (
       qualifier: ContactTypeQualifier | FreetextQualifier,
       cursor: Nullable<string> = null,
-      limit: number | `${number}` = DEFAULT_CONTACT_PAGE_LIMIT
+      limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
     ): Promise<Page<string>> => {
       assertCursor(cursor);
       assertLimit(limit);
 
-      if (ContactTypes.v1.isContactType(qualifier)) {
+      if (ContactTypes.v1.isContactType(qualifier) && ContactTypes.v1.isFreetextType(qualifier)) {
+        assertContactTypeFreetextQualifier(qualifier);
+      } else if (ContactTypes.v1.isContactType(qualifier)) {
         assertTypeQualifier(qualifier);
-      }
-
-      if (ContactTypes.v1.isFreetextType(qualifier)) {
+      } else if (ContactTypes.v1.isFreetextType(qualifier)) {
         assertFreetextQualifier(qualifier);
       }
 
@@ -126,9 +111,9 @@ export namespace v1 {
    * @returns a function for getting a generator that fetches contact identifiers
    * @throws Error if a data context is not provided
    */
-  export const getIds = (context: DataContext): typeof curriedGen => {
+  export const getUuids = (context: DataContext): typeof curriedGen => {
     assertDataContext(context);
-    const getPage = context.bind(v1.getIdsPage);
+    const getPage = context.bind(v1.getUuidsPage);
 
     /**
      * Returns a generator for fetching all contact identifiers that match the given qualifier
@@ -139,13 +124,14 @@ export namespace v1 {
     const curriedGen = (
       qualifier: ContactTypeQualifier | FreetextQualifier
     ): AsyncGenerator<string, null> => {
-      if (ContactTypes.v1.isContactType(qualifier)) {
+      if (ContactTypes.v1.isContactType(qualifier) && ContactTypes.v1.isFreetextType(qualifier)) {
+        assertContactTypeFreetextQualifier(qualifier);
+      } else if (ContactTypes.v1.isContactType(qualifier)) {
         assertTypeQualifier(qualifier);
-      }
-
-      if (ContactTypes.v1.isFreetextType(qualifier)) {
+      } else if (ContactTypes.v1.isFreetextType(qualifier)) {
         assertFreetextQualifier(qualifier);
       }
+
       return getPagedGenerator(getPage, qualifier);
     };
     return curriedGen;

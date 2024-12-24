@@ -1,4 +1,5 @@
 import * as Contact from '../../contact';
+import * as ContactTypes from '../../contact-types';
 import {
   DataObject,
   findById,
@@ -47,7 +48,7 @@ export const hydratePrimaryContact = (contacts: Doc[]) => (place: Nullable<Doc>)
   };
 };
 
-const getParentUuid = (index: number, contact?: Contact.v1.NormalizedParent): Nullable<string> => {
+const getParentUuid = (index: number, contact?: ContactTypes.v1.NormalizedParent): Nullable<string> => {
   if (!contact) {
     return null;
   }

@@ -153,7 +153,7 @@ describe('Report Controller Tests', () => {
         hasAllPermissions.returns(true);
         reportGetIdsPage.resolves(reports);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
@@ -174,7 +174,7 @@ describe('Report Controller Tests', () => {
         hasAllPermissions.returns(true);
         reportGetIdsPage.resolves(reports);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
@@ -197,7 +197,7 @@ describe('Report Controller Tests', () => {
         hasAllPermissions.returns(true);
         reportGetIdsPage.throws(err);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
@@ -219,7 +219,7 @@ describe('Report Controller Tests', () => {
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(false);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
@@ -240,7 +240,7 @@ describe('Report Controller Tests', () => {
         const error = { code: 403, message: 'Insufficient privileges' };
         isOnlineOnly.returns(false);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.notCalled).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
@@ -263,7 +263,7 @@ describe('Report Controller Tests', () => {
         hasAllPermissions.returns(true);
         reportGetIdsPage.throws(err);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
@@ -286,7 +286,7 @@ describe('Report Controller Tests', () => {
         hasAllPermissions.returns(true);
         reportGetIdsPage.throws(err);
 
-        await controller.v1.getIds(req, res);
+        await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;

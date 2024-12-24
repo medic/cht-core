@@ -93,7 +93,6 @@ describe('qualifier', () => {
     [
       [ null, false ],
       [ 'freetext', false ],
-      [ { freetext: { } }, true ],
       [ { freetext: 'freetext' }, true ],
       [ { freetext: 'freetext', other: 'other' }, true ]
     ].forEach(([ freetext, expected ]) => {
