@@ -9,7 +9,6 @@ const sinon = require('sinon');
 
 const RulesEngine = require('../src');
 const rulesEmitter = require('../src/rules-emitter');
-const calendarInterval = require('@medic/calendar-interval');
 
 const { expect } = chai;
 chai.use(chaiExclude);
@@ -259,18 +258,10 @@ describe(`Rules Engine Integration Tests`, () => {
         clock.setSystemTime(TEST_START + MS_IN_DAY * 39);
         const monthLater = await rulesEngine.fetchTasksFor(['patient']);
         expect(monthLater).to.have.property('length', 0);
-        expect(db.bulkDocs.callCount).to.eq(5);
-
-        // interval turnover
-        expect(db.bulkDocs.args[3][0].docs[0]).to.deep.include({
-          _id: `target~${TARGET_INTERVAL}~user~org.couchdb.user:username`,
-          type: 'target',
-          owner: 'user',
-          reporting_period: TARGET_INTERVAL,
-        });
+        expect(db.bulkDocs.callCount).to.eq(4);
 
         const dateNext = moment(TEST_START + MS_IN_DAY * 39).format('YYYY-MM');
-        expect(db.bulkDocs.args[4][0].docs[0]).to.deep.include({
+        expect(db.bulkDocs.args[3][0].docs[0]).to.deep.include({
           _id: `target~${dateNext}~user~org.couchdb.user:username`,
           type: 'target',
           owner: 'user',
@@ -691,70 +682,6 @@ describe(`Rules Engine Integration Tests`, () => {
           total: 1,
           pass: 1,
         });
-      });
-
-      it('targets on interval turnover only recalculates targets when interval changes', async () => {
-        const targetsSaved = () => {
-          const targets = [];
-          db.bulkDocs.args.forEach(([docs]) => {
-            if (!docs) {
-              return;
-            }
-
-            if (docs && docs.docs) {
-              docs = docs.docs;
-            }
-            docs.forEach(doc => doc._id.startsWith('target') && targets.push(doc));
-          });
-
-          return targets;
-        };
-
-        clock.setSystemTime(TEST_START);
-        const patientContact2 = Object.assign({}, patientContact, { _id: 'patient2', patient_id: 'patient_id2', });
-        const pregnancyRegistrationReport2 = Object.assign(
-          {},
-          pregnancyRegistrationReport,
-          {
-            _id: 'pregReg2',
-            fields: { lmp_date_8601: TEST_START, patient_id: patientContact2.patient_id },
-            reported_date: TEST_START+1
-          },
-        );
-        await db.bulkDocs([patientContact, patientContact2, pregnancyRegistrationReport, pregnancyRegistrationReport2]);
-        await rulesEngine.updateEmissionsFor(['patient']);
-        // we're in THE_FUTURE and our state is fresh
-
-        sinon.spy(db, 'bulkDocs');
-        sinon.spy(db, 'query');
-        const targets = await fetchTargets();
-        expect(db.query.callCount).to.eq(expectedQueriesForAllFreshData.length);
-        expect(targets[['pregnancy-registrations-this-month']].value).to.deep.eq({
-          total: 2,
-          pass: 2,
-        });
-        expect(targetsSaved().length).to.equal(1);
-
-        const sameTargets = await fetchTargets();
-        expect(db.query.callCount).to.eq(expectedQueriesForAllFreshData.length);
-        expect(sameTargets).to.deep.eq(targets);
-        expect(targetsSaved().length).to.equal(1);
-
-        // fast forward one month
-        clock.tick(moment(TEST_START).add(1, 'month').diff(moment(TEST_START)) + 2);
-        const newTargets = await fetchTargets(calendarInterval.getCurrent());
-        expect(newTargets[['pregnancy-registrations-this-month']].value).to.deep.eq({
-          total: 0,
-          pass: 0,
-        });
-        const savedTargets = targetsSaved();
-        expect(savedTargets.length).to.equal(3);
-
-        const firstTargetInterval = calendarInterval.getInterval(1, TEST_START);
-        const secondTargetInterval = calendarInterval.getCurrent();
-        expect(savedTargets[0].reporting_period).to.equal(moment(firstTargetInterval.end).format('YYYY-MM'));
-        expect(savedTargets[1].reporting_period).to.equal(moment(firstTargetInterval.end).format('YYYY-MM'));
-        expect(savedTargets[2].reporting_period).to.equal(moment(secondTargetInterval.end).format('YYYY-MM'));
       });
     });
   }

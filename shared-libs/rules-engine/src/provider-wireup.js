@@ -12,7 +12,6 @@ const refreshRulesEmissions = require('./refresh-rules-emissions');
 const rulesEmitter = require('./rules-emitter');
 const rulesStateStore = require('./rules-state-store');
 const updateTemporalStates = require('./update-temporal-states');
-const calendarInterval = require('@medic/calendar-interval');
 
 let wireupOptions;
 
@@ -31,7 +30,7 @@ module.exports = {
    * @param {number} settings.monthStartDate reporting interval start date
    * @param {Object} userDoc User's hydrated contact document
    */
-  initialize: (provider, settings) => {
+  initialize: async (provider, settings) => {
     const isEnabled = rulesEmitter.initialize(settings);
     if (!isEnabled) {
       return Promise.resolve();
@@ -40,26 +39,21 @@ module.exports = {
     const { enableTasks=true, enableTargets=true } = settings;
     wireupOptions = { enableTasks, enableTargets };
 
-    return provider
-      .existingRulesStateStore()
-      .then(existingStateDoc => {
-        if (!rulesEmitter.isLatestNoolsSchema()) {
-          throw Error('Rules Engine: Updates to the nools schema are required');
-        }
+    const existingStateDoc = await provider.existingRulesStateStore();
+    if (!rulesEmitter.isLatestNoolsSchema()) {
+      throw Error('Rules Engine: Updates to the nools schema are required');
+    }
 
-        const contactClosure = updatedState => provider.stateChangeCallback(
-          existingStateDoc,
-          { rulesStateStore: updatedState }
-        );
-        const needsBuilding = rulesStateStore.load(existingStateDoc.rulesStateStore, settings, contactClosure);
-        return handleIntervalTurnover(provider, settings).then(() => {
-          if (!needsBuilding) {
-            return;
-          }
+    const contactClosure = updatedState => provider.stateChangeCallback(
+      existingStateDoc,
+      { rulesStateStore: updatedState }
+    );
+    const needsBuilding = rulesStateStore.load(existingStateDoc.rulesStateStore, settings, contactClosure);
+    if (!needsBuilding) {
+      return;
+    }
 
-          rulesStateStore.build(settings, contactClosure);
-        });
-      });
+    rulesStateStore.build(settings, contactClosure);
   },
 
   /**
@@ -273,20 +267,18 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
       });
   };
 
-  return handleIntervalTurnover(provider, { monthStartDate: rulesStateStore.getMonthStartDate() }).then(() => {
-    if (contactIds) {
-      return refreshForKnownContacts(calculationTimestamp, contactIds);
-    }
+  if (contactIds) {
+    return refreshForKnownContacts(calculationTimestamp, contactIds);
+  }
 
-    // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in
-    // reports/tasks)
-    if (!rulesStateStore.hasAllContacts()) {
-      return refreshForAllContacts(calculationTimestamp);
-    }
+  // If the contact state store does not contain all contacts, build up that list (contact doc ids + headless ids in
+  // reports/tasks)
+  if (!rulesStateStore.hasAllContacts()) {
+    return refreshForAllContacts(calculationTimestamp);
+  }
 
-    // Once the contact state store has all contacts, trust it and only refresh those marked dirty
-    return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
-  });
+  // Once the contact state store has all contacts, trust it and only refresh those marked dirty
+  return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
 };
 
 const storeTargetsDoc = (provider, aggregate, updatedTargets) => {
@@ -305,28 +297,3 @@ const storeTargetsDoc = (provider, aggregate, updatedTargets) => {
   );
 };
 
-// This function takes the last saved state (which may be stale) and generates the targets doc for the corresponding
-// reporting interval (that includes the date when the state was calculated).
-// We don't recalculate the state prior to this because we support targets that count events infinitely to emit `now`,
-// which means that they would all be excluded from the emission filter (being outside the past reporting interval).
-// https://github.com/medic/cht-core/issues/6209
-const handleIntervalTurnover = async (provider, { monthStartDate }) => {
-  if (!rulesStateStore.isLoaded() || !wireupOptions.enableTargets) {
-    return Promise.resolve();
-  }
-
-  const stateCalculatedAt = rulesStateStore.stateLastUpdatedAt();
-  if (!stateCalculatedAt) {
-    return Promise.resolve();
-  }
-
-  const currentInterval = calendarInterval.getCurrent(monthStartDate);
-  // 4th parameter of isBetween represents inclusivity. By default or using ( is exclusive, [ is inclusive
-  if (moment(stateCalculatedAt).isBetween(currentInterval.start, currentInterval.end, null, '[]')) {
-    return Promise.resolve();
-  }
-
-  const filterInterval = calendarInterval.getInterval(monthStartDate, stateCalculatedAt);
-  const aggregate = await rulesStateStore.getTargetAggregates(filterInterval);
-  return storeTargetsDoc(provider, aggregate, true);
-};
