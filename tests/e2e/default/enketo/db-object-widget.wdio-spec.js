@@ -18,81 +18,107 @@ describe('DB Object Widget', () => {
     parent: { _id: districtHospital._id }
   });
 
-  const offlineUser = userFactory.build({ place: districtHospital._id, roles: [ 'chw' ] });
+  const offlineUser = userFactory.build({
+    username: 'offline-db-object-widget-user',
+    place: districtHospital._id,
+    roles: [ 'chw' ]
+  });
   offlineUser.contact.sex = 'female';
-  const personArea1 = personFactory.build({ parent: { _id: area1._id, parent: area1.parent } });
-  const personArea2 = personFactory.build({ name: 'Patricio', parent: { _id: area2._id, parent: area2.parent } });
+  offlineUser.contact.name = 'offline user pat';
+  const onlineUser = userFactory.build({
+    username: 'online-db-object-widget-user',
+    place: districtHospital._id,
+    roles: [ 'program_officer' ],
+    contact: offlineUser.contact._id
+  });
+  const personArea1 = personFactory.build({ name: 'Patricio1', parent: { _id: area1._id, parent: area1.parent } });
+  const personArea2 = personFactory.build({ name: 'Patricio2', parent: { _id: area2._id, parent: area2.parent } });
 
   before(async () => {
     await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/db-object-form`));
     await utils.saveDocs([ ...places.values(), area2, personArea1, personArea2 ]);
-    await utils.createUsers([ offlineUser ]);
-    await loginPage.login(offlineUser);
+    await utils.createUsers([ offlineUser, onlineUser ]);
   });
 
-  it('should load contacts in non-relevant inputs group and from calculations', async () => {
-    await commonPage.goToReports();
-    await commonPage.openFastActionReport('db-object-form', false);
+  after(() => utils.deleteUsers([offlineUser, onlineUser]));
 
-    await genericForm.submitForm();
-
-    const reportId = await reportsPage.getCurrentReportId();
-    await commonPage.sync();
-    const { fields } = await utils.getDoc(reportId);
-    expect(fields).excluding(['meta']).to.deep.equal({
-      inputs: {
-        meta: { location: { lat: '', long: '', error: '', message: '' } },
-        user: {
-          contact_id: offlineUser.contact._id,
-          name: offlineUser.contact.name,
-          sex: offlineUser.contact.sex
-        },
-        user_contact: {
-          _id: offlineUser.contact._id,
-          name: offlineUser.contact.name,
-          sex: offlineUser.contact.sex
-        },
-      },
-      people: {
-        user_contact: {
-          _id: offlineUser.contact._id,
-          name: offlineUser.contact.name,
-          sex: offlineUser.contact.sex
-        },
-        person_test_same_parent: '',
-        person_test_all: ''
-      },
+  [
+    ['online', onlineUser],
+    ['offline', offlineUser],
+  ].forEach(([userType, user]) => describe(`Logged in as an ${userType} user`, () => {
+    before(async () => {
+      await loginPage.login(user);
     });
-  });
 
-  it('should display only the contacts from the parent contact', async () => {
-    await commonPage.goToPeople(area1._id);
-    await commonPage.openFastActionReport('db-object-form');
+    after(commonPage.logout);
 
-    const sameParent = await genericForm.getDBObjectWidgetValues('/db-object-form/people/person_test_same_parent');
-    await sameParent[0].click();
-    expect(sameParent.length).to.equal(1);
-    expect(sameParent[0].name).to.equal(personArea1.name);
+    it('should load contacts in non-relevant inputs group and from calculations', async () => {
+      await commonPage.goToReports();
+      await commonPage.openFastActionReport('db-object-form', false);
 
-    const allContacts = await genericForm.getDBObjectWidgetValues('/db-object-form/people/person_test_all');
-    await allContacts[2].click();
-    expect(allContacts.length).to.equal(3);
-    expect(allContacts[0].name).to.equal(personArea1.name);
-    expect(allContacts[1].name).to.equal(offlineUser.contact.name);
-    expect(allContacts[2].name).to.equal(personArea2.name);
+      await genericForm.submitForm();
 
-    await genericForm.submitForm();
-    await commonPage.goToReports();
+      const reportId = await reportsPage.getCurrentReportId();
+      if (userType === 'offline') {
+        await commonPage.sync();
+      }
+      const { fields } = await utils.getDoc(reportId);
+      expect(fields).excluding(['meta']).to.deep.equal({
+        inputs: {
+          meta: { location: { lat: '', long: '', error: '', message: '' } },
+          user: {
+            contact_id: offlineUser.contact._id,
+            name: offlineUser.contact.name,
+            sex: offlineUser.contact.sex
+          },
+          user_contact: {
+            _id: offlineUser.contact._id,
+            name: offlineUser.contact.name,
+            sex: offlineUser.contact.sex
+          },
+        },
+        people: {
+          user_contact: {
+            _id: offlineUser.contact._id,
+            name: offlineUser.contact.name,
+            sex: offlineUser.contact.sex
+          },
+          person_test_same_parent: '',
+          person_test_all: ''
+        },
+      });
+    });
 
-    const firstReport = await reportsPage.getListReportInfo(await reportsPage.leftPanelSelectors.firstReport());
-    expect(firstReport.heading).to.equal(offlineUser.contact.name);
-    expect(firstReport.form).to.equal('db-object-form');
+    it('should display only the contacts from the parent contact', async () => {
+      await commonPage.goToPeople(area1._id);
+      await commonPage.openFastActionReport('db-object-form');
 
-    await reportsPage.openReport(firstReport.dataId);
-    expect((await reportsPage.getDetailReportRowContent('report.db-object-form.people.person_test_same_parent'))
-      .rowValues[0]).to.equal(personArea1._id);
-    expect((await reportsPage.getDetailReportRowContent('report.db-object-form.people.person_test_all'))
-      .rowValues[0]).to.equal(personArea2._id);
-  });
+      await genericForm.searchContact('Select a person from the same parent', 'pat');
+      const sameParent = await genericForm.getDBObjectWidgetValues();
+      await sameParent[0].click();
+      expect(sameParent.length).to.equal(1);
+      expect(sameParent[0].name).to.equal(personArea1.name);
 
+      await genericForm.searchContact('Select a person from all', 'pat');
+      const allContacts = await genericForm.getDBObjectWidgetValues();
+      await allContacts[1].click();
+      expect(allContacts.length).to.equal(3);
+      expect(allContacts[0].name).to.equal(personArea1.name);
+      expect(allContacts[1].name).to.equal(personArea2.name);
+      expect(allContacts[2].name).to.equal(offlineUser.contact.name);
+
+      await genericForm.submitForm();
+      await commonPage.goToReports();
+
+      const firstReport = await reportsPage.getListReportInfo(await reportsPage.leftPanelSelectors.firstReport());
+      expect(firstReport.heading).to.equal(offlineUser.contact.name);
+      expect(firstReport.form).to.equal('db-object-form');
+
+      await reportsPage.openReport(firstReport.dataId);
+      expect((await reportsPage.getDetailReportRowContent('report.db-object-form.people.person_test_same_parent'))
+        .rowValues[0]).to.equal(personArea1._id);
+      expect((await reportsPage.getDetailReportRowContent('report.db-object-form.people.person_test_all'))
+        .rowValues[0]).to.equal(personArea2._id);
+    });
+  }));
 });

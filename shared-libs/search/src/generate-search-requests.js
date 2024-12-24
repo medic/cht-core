@@ -200,9 +200,9 @@ const makeCombinedParams = (freetextRequest, typeKey) => {
   return params;
 };
 
-const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest) => {
+const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest, freetextDdocName) => {
   const result = {
-    view: 'medic-client/contacts_by_type_freetext',
+    view: `${freetextDdocName}/contacts_by_type_freetext`,
     union: typeRequests.params.keys.length > 1
   };
 
@@ -217,9 +217,9 @@ const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest) => {
   return result;
 };
 
-const getCombinedContactsRequests = (freetextRequests, contactsByParentRequest, typeRequest) => {
+const getCombinedContactsRequests = (freetextRequests, contactsByParentRequest, typeRequest, freetextDdocName) => {
   const combinedRequests = freetextRequests.map(freetextRequest => {
-    return getContactsByTypeAndFreetextRequest(typeRequest, freetextRequest);
+    return getContactsByTypeAndFreetextRequest(typeRequest, freetextRequest, freetextDdocName);
   });
   if (contactsByParentRequest) {
     combinedRequests.unshift(contactsByParentRequest);
@@ -241,14 +241,14 @@ const setDefaultContactsRequests = (requests, shouldSortByLastVisitedDate) => {
 };
 
 const requestBuilders = {
-  reports: (filters) => {
+  reports: (filters, freetextDdocName) => {
     let requests = [
       reportedDateRequest(filters),
       formRequest(filters),
       validityRequest(filters),
       verificationRequest(filters),
       placeRequest(filters),
-      freetextRequest(filters, 'medic-client/reports_by_freetext'),
+      freetextRequest(filters, `${freetextDdocName}/reports_by_freetext`),
       subjectRequest(filters)
     ];
 
@@ -258,10 +258,10 @@ const requestBuilders = {
     }
     return requests;
   },
-  contacts: (filters, extensions) => {
+  contacts: (filters, freetextDdocName, extensions) => {
     const shouldSortByLastVisitedDate = module.exports.shouldSortByLastVisitedDate(extensions);
 
-    const freetextRequests = freetextRequest(filters, 'medic-client/contacts_by_freetext');
+    const freetextRequests = freetextRequest(filters, `${freetextDdocName}/contacts_by_freetext`);
     const contactsByParentRequest = getContactsByParentRequest(filters);
     const typeRequest = contactTypeRequest(filters, shouldSortByLastVisitedDate);
     const hasTypeRequest = typeRequest?.params.keys.length;
@@ -272,7 +272,7 @@ const requestBuilders = {
     }
 
     if (hasTypeRequest && freetextRequests?.length) {
-      return getCombinedContactsRequests(freetextRequests, contactsByParentRequest, typeRequest);
+      return getCombinedContactsRequests(freetextRequests, contactsByParentRequest, typeRequest, freetextDdocName);
     }
 
     const requests = _.compact(_.flatten([ freetextRequests, typeRequest, contactsByParentRequest ]));
@@ -313,12 +313,13 @@ const requestBuilders = {
 //
 // NB: options is not required: it is an optimisation shortcut
 module.exports = {
-  generate: (type, filters, extensions) => {
+  generate: (type, filters, extensions, offline) => {
+    const freetextDdocName = offline ? 'medic-offline-freetext' : 'medic-client';
     const builder = requestBuilders[type];
     if (!builder) {
       throw new Error('Unknown type: ' + type);
     }
-    return builder(filters, extensions);
+    return builder(filters, freetextDdocName, extensions);
   },
   shouldSortByLastVisitedDate: (extensions) => {
     return Boolean(extensions?.sortByLastVisitedDate);
