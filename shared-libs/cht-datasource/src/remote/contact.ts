@@ -30,22 +30,18 @@ export namespace v1 {
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
-      let freetext = '';
-      let contactType = '';
-
-      if (ContactType.v1.isContactType(qualifier)) {
-        contactType = qualifier.contactType;
-      }
-
-      if (ContactType.v1.isFreetextType(qualifier)) {
-        freetext = qualifier.freetext;
-      }
+      const freetextParams: Record<string, string> = ContactType.v1.isFreetextType(qualifier)
+        ? { freetext: qualifier.freetext }
+        : {};
+      const typeParams: Record<string, string> = ContactType.v1.isContactType(qualifier)
+        ? { type: qualifier.contactType }
+        : {};
 
       const queryParams = {
         limit: limit.toString(),
         ...(cursor ? { cursor } : {}),
-        ...(contactType ? { type: contactType } : {}),
-        ...(freetext ? { freetext: freetext } : {}),
+        ...typeParams,
+        ...freetextParams,
       };
       return getContacts(remoteContext)(queryParams);
     };
