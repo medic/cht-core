@@ -1,7 +1,6 @@
 const fs = require('fs');
 const spawn = require('child_process').spawn;
 const path = require('path');
-const rpn = require('request-promise-native');
 const mustache = require('mustache');
 
 const packageJson = require('../../package.json');
@@ -34,8 +33,18 @@ const getApiUrl = (pathname = '') => {
   const apiUrl = new URL(COUCH_URL);
   apiUrl.port = API_PORT || DEFAULT_API_PORT;
   apiUrl.pathname = pathname;
+  const basicAuth = btoa(`${apiUrl.username}:${apiUrl.password}`);
+  apiUrl.username = '';
+  apiUrl.password = '';
 
-  return apiUrl.toString();
+  return {
+    url: apiUrl.toString(),
+    options: {
+      headers: {
+        Authorization: `Basic ${basicAuth}`,
+      }
+    }
+  };
 };
 
 const releaseName = TAG || versions.escapeBranchName(BRANCH) || `${packageJson.version}-local-development`;
@@ -157,24 +166,28 @@ const saveServiceTags = () => {
   fs.writeFileSync(tagsFilePath, JSON.stringify(tags));
 };
 
-const updateServiceWorker = () => {
-  const updateSWUrl = getApiUrl('/api/v2/upgrade/service-worker');
+const updateServiceWorker = async () => {
+  const { url, options } = getApiUrl('/api/v2/upgrade/service-worker');
 
-  return rpn.get(updateSWUrl).catch(err => {
-    if (err.status === 401) {
-      throw new Error('Environment variable COUCH_URL has invalid authentication');
-    }
-    if (err.status === 403) {
-      throw new Error('Environment variable COUCH_URL must have admin authentication');
+  try {
+    const response = await fetch(url, options);
+    if (response.ok) {
+      return;
     }
 
-    if (err.error && err.error.code === 'ECONNREFUSED') {
+    throw response;
+  } catch (err) {
+    if (err.status === 401 || err.status === 403) {
+      throw new Error('Environment variable COUCH_URL does not have valid authentication');
+    }
+
+    if (err.cause?.code === 'ECONNREFUSED') {
       console.warn('API could not be reached, so the service-worker has not been updated. ');
       return;
     }
 
     throw err;
-  });
+  }
 };
 
 const setDdocsVersion = () => {

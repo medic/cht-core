@@ -3,7 +3,6 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED=0;
 const minimist = require('minimist');
 const {promises: fsPromises} = require('fs');
 const readline = require('readline');
-const rpn = require('request-promise-native');
 const {randomInt} = require('crypto');
 const csvSync = require('csv-parse/sync');
 
@@ -46,10 +45,10 @@ const user = argv.user;
 const password = argv.password;
 
 const options = {
-  uri: url.href,
-  json: true,
+  method: 'POST',
   headers: {
-    'Authorization': 'Basic ' + Buffer.from(`${user}:${password}`).toString('base64')
+    'Authorization': 'Basic ' + btoa(`${user}:${password}`),
+    'Content-Type': 'application/json'
   }
 };
 
@@ -73,10 +72,8 @@ Do you want to continue? [y/N]
 
 const changeUserPass = async (user, options) => {
   const postOptions = {...options};
-  postOptions.body = {
-    'password': user.pass
-  };
-  postOptions.uri = `${options.uri}/${user.name}`;
+  postOptions.body = JSON.stringify({ password: user.pass });
+  const uri = `${url.href}/${user.name}`;
   try {
     if (admins.includes(user.name)) {
       throw new Error(`403 - Password change for "${user.name}" not allowed .`);
@@ -84,7 +81,7 @@ const changeUserPass = async (user, options) => {
     if (user.name.toString().trim() === '') {
       throw new Error(`404 - Username is blank - check CSV and run again.`);
     }
-    await rpn.post(postOptions);
+    await fetch(uri, postOptions);
     console.log('SUCCESS', user.name, user.pass);
   } catch (e) {
     console.log('ERROR', user.name, e.message);
