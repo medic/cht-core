@@ -310,8 +310,9 @@ describe('contact', () => {
             .to.be.rejectedWith(`The limit must be a positive number: [${String(limitValue)}]`);
 
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-          expect(adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage))
-            .to.be.true;
+          expect(
+            adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
+          ).to.be.true;
           expect(isContactTypeQualifier.notCalled).to.be.true;
           expect(isFreetextQualifier.notCalled).to.be.true;
           expect(getIdsPage.notCalled).to.be.true;
@@ -332,8 +333,9 @@ describe('contact', () => {
             .to.be.rejectedWith(`Invalid cursor token: [${String(skipValue)}]`);
 
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-          expect(adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage))
-            .to.be.true;
+          expect(
+            adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
+          ).to.be.true;
           expect(isContactTypeQualifier.notCalled).to.be.true;
           expect(isFreetextQualifier.notCalled).to.be.true;
           expect(getIdsPage.notCalled).to.be.true;

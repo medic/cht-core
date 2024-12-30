@@ -122,10 +122,10 @@ describe('Report API', () => {
     });
   });
 
-  describe('GET /api/v1/report/id', async () => {
+  describe('GET /api/v1/report/uuid', async () => {
     const freetext = 'report';
     const limit = 4;
-    const endpoint = '/api/v1/report/id';
+    const endpoint = '/api/v1/report/uuid';
 
     it('returns a page of report ids for no limit and cursor passed', async () => {
       const queryParams = {
@@ -177,14 +177,14 @@ describe('Report API', () => {
 
     it(`throws error when user does not have can_view_reports permission`, async () => {
       const opts = {
-        path: `/api/v1/report/id`, auth: {username: userNoPerms.username, password: userNoPerms.password},
+        path: endpoint, auth: {username: userNoPerms.username, password: userNoPerms.password},
       };
       await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
     });
 
     it(`throws error when user is not an online user`, async () => {
       const opts = {
-        path: `/api/v1/report/id`, auth: {username: offlineUser.username, password: offlineUser.password},
+        path: endpoint, auth: {username: offlineUser.username, password: offlineUser.password},
       };
       await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
     });
@@ -195,7 +195,7 @@ describe('Report API', () => {
       };
       const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `/api/v1/report/id?${queryString}`,
+        path: `${endpoint}?${queryString}`,
       };
 
       await expect(utils.request(opts))
@@ -208,7 +208,7 @@ describe('Report API', () => {
       };
       const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `/api/v1/report/id?${queryString}`,
+        path: `${endpoint}?${queryString}`,
       };
 
       await expect(utils.request(opts))
@@ -221,7 +221,7 @@ describe('Report API', () => {
       };
       const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `/api/v1/report/id?${queryString}`,
+        path: `${endpoint}?${queryString}`,
       };
 
       await expect(utils.request(opts))

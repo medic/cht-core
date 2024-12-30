@@ -4,7 +4,7 @@ const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 
 const getContact = ({ with_lineage }) => ctx.bind(with_lineage === 'true' ? Contact.v1.getWithLineage : Contact.v1.get);
-const getContactIds = () => ctx.bind(Contact.v1.getIdsPage);
+const getContactIds = () => ctx.bind(Contact.v1.getUuidsPage);
 
 const checkUserPermissions = async (req) => {
   const userCtx = await auth.getUserCtx(req);

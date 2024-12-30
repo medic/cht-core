@@ -798,7 +798,9 @@ describe('local contact', () => {
       });
 
       it('throws an error if contact type is invalid', async () => {
-        await expect(Contact.v1.getUuidsPage(localContext)(invalidContactTypeQualifier, cursor, limit)).to.be.rejectedWith(
+        await expect(
+          Contact.v1.getUuidsPage(localContext)(invalidContactTypeQualifier, cursor, limit)
+        ).to.be.rejectedWith(
           `Invalid contact type [${invalidContactTypeQualifier.contactType}].`
         );
 

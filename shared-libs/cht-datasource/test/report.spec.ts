@@ -95,7 +95,9 @@ describe('report', () => {
 
         expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage)).to.be.true;
+        expect(
+          adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage)
+        ).to.be.true;
         expect(getIdsPage.calledOnceWithExactly(freetextQualifier, null, limit)).to.be.true;
         expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
       });
@@ -108,7 +110,9 @@ describe('report', () => {
 
         expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage)).to.be.true;
+        expect(
+          adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage)
+        ).to.be.true;
         expect(getIdsPage.calledOnceWithExactly(freetextQualifier, cursor, limit)).to.be.true;
         expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
       });
@@ -122,7 +126,9 @@ describe('report', () => {
 
         expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage)).to.be.true;
+        expect(
+          adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage)
+        ).to.be.true;
         expect(getIdsPage.calledOnceWithExactly(freetextQualifier, cursor, limit)).to.be.true;
         expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
       });
@@ -146,7 +152,9 @@ describe('report', () => {
           .to.be.rejectedWith(`Invalid freetext [${JSON.stringify(invalidFreetextQualifier)}].`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage)).to.be.true;
+        expect(
+          adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage)
+        ).to.be.true;
         expect(isFreetextQualifier.calledOnceWithExactly(invalidFreetextQualifier)).to.be.true;
         expect(getIdsPage.notCalled).to.be.true;
       });

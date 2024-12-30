@@ -4,7 +4,7 @@ const serverUtils = require('../server-utils');
 const { Report, Qualifier } = require('@medic/cht-datasource');
 
 const getReport = () => ctx.bind(Report.v1.get);
-const getReportIds = () => ctx.bind(Report.v1.getIdsPage);
+const getReportIds = () => ctx.bind(Report.v1.getUuidsPage);
 
 const checkUserPermissions = async (req) => {
   const userCtx = await auth.getUserCtx(req);

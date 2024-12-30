@@ -107,19 +107,20 @@ describe('Report', () => {
       ].forEach(([ description, user ]) => {
         it(`throws error when user ${description}`, async () => {
           const opts = {
-            path: `/api/v1/report/${patient._id}`, auth: {username: user.username, password: user.password},
+            path: `/api/v1/report/${report0._id}`, auth: {username: user.username, password: user.password},
           };
           await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
         });
       });
     });
 
-    describe('getIdsPage', async () => {
-      const getReport = Report.v1.getIdsPage(dataContext);
+    describe('getUuidsPage', async () => {
+      const getReport = Report.v1.getUuidsPage(dataContext);
       const freetext = 'report';
       const limit = 4;
       const stringifiedLimit = '6';
       const cursor = null;
+      const endpoint = '/api/v1/report/uuid';
 
       it('returns a page of report ids for no limit and cursor passed', async () => {
         const responsePage = await getReport(Qualifier.byFreetext(freetext));
@@ -154,14 +155,14 @@ describe('Report', () => {
 
       it(`throws error when user does not have can_view_reports permission`, async () => {
         const opts = {
-          path: `/api/v1/report/id`, auth: {username: userNoPerms.username, password: userNoPerms.password},
+          path: endpoint, auth: {username: userNoPerms.username, password: userNoPerms.password},
         };
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
       });
 
       it(`throws error when user is not an online user`, async () => {
         const opts = {
-          path: `/api/v1/report/id`, auth: {username: offlineUser.username, password: offlineUser.password},
+          path: endpoint, auth: {username: offlineUser.username, password: offlineUser.password},
         };
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
       });
@@ -172,7 +173,7 @@ describe('Report', () => {
         };
         const queryString = new URLSearchParams(queryParams).toString();
         const opts = {
-          path: `/api/v1/report/id?${queryString}`,
+          path: `${endpoint}?${queryString}`,
         };
 
         await expect(utils.request(opts))
@@ -185,7 +186,7 @@ describe('Report', () => {
         };
         const queryString = new URLSearchParams(queryParams).toString();
         const opts = {
-          path: `/api/v1/report/id?${queryString}`,
+          path: `${endpoint}?${queryString}`,
         };
 
         await expect(utils.request(opts))
@@ -198,7 +199,7 @@ describe('Report', () => {
         };
         const queryString = new URLSearchParams(queryParams).toString();
         const opts = {
-          path: `/api/v1/report/id?${queryString}`,
+          path: `${endpoint}?${queryString}`,
         };
 
         await expect(utils.request(opts))
@@ -206,7 +207,7 @@ describe('Report', () => {
       });
     });
 
-    describe('getIds', async () => {
+    describe('getUuids', async () => {
       it('fetches all data by iterating through generator', async () => {
         const freetext = 'report';
         const docs = [];

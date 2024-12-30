@@ -218,13 +218,13 @@ describe('Contact API', () => {
     });
   });
 
-  describe('GET /api/v1/contact/id', async () => {
+  describe('GET /api/v1/contact/uuid', async () => {
     const fourLimit = 4;
     const twoLimit = 2;
     const invalidContactType = 'invalidPerson';
     const freetext = 'contact';
     const placeFreetext = 'clinic';
-    const endpoint = '/api/v1/contact/id';
+    const endpoint = '/api/v1/contact/uuid';
 
     it('returns a page of people type contact ids for no limit and cursor passed', async () => {
       const queryParams = {
@@ -489,7 +489,7 @@ describe('Contact API', () => {
 
     it(`throws error when user does not have can_view_contacts permission`, async () => {
       const opts = {
-        path: `/api/v1/contact/id`,
+        path: endpoint,
         auth: { username: userNoPerms.username, password: userNoPerms.password },
       };
       await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
@@ -497,7 +497,7 @@ describe('Contact API', () => {
 
     it(`throws error when user is not an online user`, async () => {
       const opts = {
-        path: `/api/v1/contact/id`,
+        path: endpoint,
         auth: { username: offlineUser.username, password: offlineUser.password },
       };
       await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
@@ -509,7 +509,7 @@ describe('Contact API', () => {
       };
       const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `/api/v1/contact/id?${queryString}`,
+        path: `${endpoint}?${queryString}`,
       };
 
       await expect(utils.request(opts))
@@ -523,7 +523,7 @@ describe('Contact API', () => {
       };
       const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `/api/v1/contact/id?${queryString}`,
+        path: `${endpoint}?${queryString}`,
       };
 
       await expect(utils.request(opts))
@@ -537,7 +537,7 @@ describe('Contact API', () => {
       };
       const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `/api/v1/contact/id?${queryString}`,
+        path: `${endpoint}?${queryString}`,
       };
 
       await expect(utils.request(opts))
