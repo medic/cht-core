@@ -9,6 +9,7 @@ import * as Contact from '../contact';
 import logger from '@medic/logger';
 import { getLineageDocsById, getPrimaryContactIds, hydrateLineage, hydratePrimaryContact } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
+import { validateCursor } from './libs/core';
 
 /** @internal */
 export namespace v1 {
@@ -77,11 +78,7 @@ export namespace v1 {
         throw new InvalidArgumentError(`Invalid contact type [${placeType.contactType}].`);
       }
 
-      // Adding a number skip variable here so as not to confuse ourselves
-      const skip = Number(cursor);
-      if (isNaN(skip) || skip < 0 || !Number.isInteger(skip)) {
-        throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}].`);
-      }
+      const skip = validateCursor(cursor);
 
       const getDocsByPageWithPlaceType = (
         limit: number,

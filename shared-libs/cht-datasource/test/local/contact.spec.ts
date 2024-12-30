@@ -15,6 +15,7 @@ describe('local contact', () => {
   let warn: SinonStub;
   let debug: SinonStub;
   let getContactTypes: SinonStub;
+  let isContact: SinonStub;
 
   beforeEach(() => {
     settingsGetAll = sinon.stub();
@@ -25,6 +26,7 @@ describe('local contact', () => {
     warn = sinon.stub(logger, 'warn');
     debug = sinon.stub(logger, 'debug');
     getContactTypes = sinon.stub(contactTypeUtils, 'getContactTypes');
+    isContact = sinon.stub(contactTypeUtils, 'isContact');
   });
   
   afterEach(() => sinon.restore());
@@ -34,7 +36,6 @@ describe('local contact', () => {
     
     describe('get', () => {
       const identifier = { uuid: 'uuid' } as const;
-      const contactTypes = [{ id: 'person' }, { id: 'place' }];
       let getDocByIdOuter: SinonStub;
       let getDocByIdInner: SinonStub;
 
@@ -47,14 +48,14 @@ describe('local contact', () => {
         const doc = { type: 'person' };
         getDocByIdInner.resolves(doc);
         settingsGetAll.returns(settings);
-        getContactTypes.returns(contactTypes);
+        isContact.returns(true);
 
         const result = await Contact.v1.get(localContext)(identifier);
 
         expect(result).to.equal(doc);
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(isContact.calledOnceWithExactly(settingsGetAll(), doc)).to.be.true;
         expect(warn.notCalled).to.be.true;
       });
 
@@ -62,14 +63,14 @@ describe('local contact', () => {
         const doc = { type: 'not-contact', _id: '_id' };
         getDocByIdInner.resolves(doc);
         settingsGetAll.returns(settings);
-        getContactTypes.returns(contactTypes);
+        isContact.returns(false);
 
         const result = await Contact.v1.get(localContext)(identifier);
 
         expect(result).to.be.null;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(isContact.calledOnceWithExactly(settingsGetAll(), doc)).to.be.true;
         expect(warn.calledOnceWithExactly(`Document [${doc._id}] is not a valid contact.`)).to.be.true;
       });
 
@@ -82,14 +83,13 @@ describe('local contact', () => {
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(settingsGetAll.notCalled).to.be.true;
-        expect(getContactTypes.notCalled).to.be.true;
+        expect(isContact.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No contact found for identifier [${identifier.uuid}].`)).to.be.true;
       });
     });
 
     describe('getWithLineage', () => {
       const identifier = { uuid: 'uuid' } as const;
-      const validContactTypes = [{ id: 'person' }, { id: 'place' }];
       let getLineageDocsByIdInner: SinonStub;
       let getLineageDocsByIdOuter: SinonStub;
       let getDocsByIdsInner: SinonStub;
@@ -131,7 +131,7 @@ describe('local contact', () => {
         const contact0 = { _id: 'contact0', _rev: 'rev' };
         const contact1 = { _id: 'contact1', _rev: 'rev' };
         getLineageDocsByIdInner.resolves([person, place0, place1, place2]);
-        getContactTypes.returns(validContactTypes);
+        isContact.returns(true);
         settingsGetAll.returns(settings);
         getPrimaryContactIds.returns([contact0._id, contact1._id, person._id]);
         getDocsByIdsInner.resolves([contact0, contact1]);
@@ -149,7 +149,7 @@ describe('local contact', () => {
 
         expect(result).to.equal(copiedPerson);
         expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(isContact.calledOnceWithExactly(settingsGetAll(), person)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.notCalled).to.be.true;
         expect(getPrimaryContactIds.calledOnceWithExactly([person, place0, place1, place2])).to.be.true;
@@ -171,6 +171,7 @@ describe('local contact', () => {
         expect(result).to.be.null;
         expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(getContactTypes.notCalled).to.be.true;
+        expect(isContact.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No contact found for identifier [${identifier.uuid}].`)).to.be.true;
         expect(debug.notCalled).to.be.true;
         expect(getPrimaryContactIds.notCalled).to.be.true;
@@ -187,14 +188,14 @@ describe('local contact', () => {
         const place1 = { _id: 'place1', _rev: 'rev' };
         const place2 = { _id: 'place2', _rev: 'rev' };
         getLineageDocsByIdInner.resolves([person, place0, place1, place2]);
-        getContactTypes.returns(validContactTypes);
+        isContact.returns(false);
         settingsGetAll.returns(settings);
 
         const result = await Contact.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.be.null;
         expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(isContact.calledOnceWithExactly(settingsGetAll(), person)).to.be.true;
         expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid contact.`)).to.be.true;
         expect(debug.notCalled).to.be.true;
         expect(getPrimaryContactIds.notCalled).to.be.true;
@@ -208,14 +209,14 @@ describe('local contact', () => {
       it('returns a contact if no lineage is found', async () => {
         const person = { type: 'person', _id: 'uuid', _rev: 'rev' };
         getLineageDocsByIdInner.resolves([person]);
-        getContactTypes.returns(validContactTypes);
+        isContact.returns(true);
         settingsGetAll.returns(settings);
 
         const result = await Contact.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.equal(person);
         expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(isContact.calledOnceWithExactly(settingsGetAll(), person)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.calledOnceWithExactly(`No lineage contacts found for person [${identifier.uuid}].`)).to.be.true;
         expect(getPrimaryContactIds.notCalled).to.be.true;

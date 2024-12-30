@@ -67,6 +67,10 @@ const isPlace = (config, contact) => {
   return isPlaceType(type);
 };
 
+const isContact = (config, contact) => {
+  return isPlace(config, contact) || isPerson(config, contact);
+};
+
 const isSameContactType = (contacts) => {
   const contactTypes = new Set(contacts.map(contact => getTypeId(contact)));
   return contactTypes.size === 1;
@@ -98,6 +102,7 @@ module.exports = {
   getContactType,
   isPerson,
   isPlace,
+  isContact,
   isSameContactType,
   isHardcodedType,
   HARDCODED_TYPES,

@@ -42,8 +42,8 @@ export const queryDocsByRange = (
 ) => async (
   startkey: unknown,
   endkey: unknown,
-  limit: Nullable<number> = null,
-  skip: Nullable<number> = null
+  limit?: number,
+  skip = 0
 ): Promise<Nullable<Doc>[]> => queryDocs(
   db,
   view,
@@ -51,8 +51,8 @@ export const queryDocsByRange = (
     include_docs: true,
     startkey,
     endkey,
-    ...(limit !== null && { limit }),
-    ...(skip !== null && { skip })
+    limit,
+    skip,
   }
 );
 

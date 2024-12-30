@@ -27,8 +27,7 @@ export namespace v1 {
         return false;
       }
 
-      const contactTypesIds = getContactTypes(settings);
-      if (!contactTypesIds.includes(doc.type as string)) {
+      if (!contactTypeUtils.isContact(settings.getAll(), doc)) {
         logger.warn(`Document [${doc._id}] is not a valid contact.`);
         return false;
       }
@@ -52,7 +51,7 @@ export namespace v1 {
   export const getWithLineage = ({ medicDb, settings }: LocalDataContext) => {
     const getLineageDocs = getLineageDocsById(medicDb);
     const getMedicDocsById = getDocsByIds(medicDb);
-    return async (identifier: UuidQualifier): Promise<Nullable<ContactType.v1.Contact>> => {
+    return async (identifier: UuidQualifier): Promise<Nullable<ContactType.v1.ContactWithLineage>> => {
       const [contact, ...lineageContacts] = await getLineageDocs(identifier.uuid);
       if (!isContact(settings)(contact, identifier.uuid)) {
         return null;

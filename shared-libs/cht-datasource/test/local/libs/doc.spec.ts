@@ -150,6 +150,9 @@ describe('local doc lib', () => {
   });
 
   describe('queryDocsByRange', () => {
+    const limit = 3;
+    const skip = 2;
+
     it('returns lineage docs for the given id', async () => {
       const doc0 = { _id: 'doc0' };
       const doc1 = { _id: 'doc1' };
@@ -170,7 +173,9 @@ describe('local doc lib', () => {
       expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
         include_docs: true,
         startkey: doc0._id,
-        endkey: doc1._id
+        endkey: doc1._id,
+        limit: undefined,
+        skip: 0
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0], [doc1], [doc2]]);
     });
@@ -187,13 +192,15 @@ describe('local doc lib', () => {
       });
       isDoc.returns(true);
 
-      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc2._id);
+      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc2._id, limit, skip);
 
       expect(result).to.deep.equal([doc0, null, doc2]);
       expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
         startkey: doc0._id,
         endkey: doc2._id,
-        include_docs: true
+        include_docs: true,
+        limit,
+        skip,
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0], [null], [doc2]]);
     });
@@ -205,13 +212,15 @@ describe('local doc lib', () => {
       });
       isDoc.returns(false);
 
-      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc0._id);
+      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc0._id, limit, skip);
 
       expect(result).to.deep.equal([null]);
       expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
         startkey: doc0._id,
         endkey: doc0._id,
-        include_docs: true
+        include_docs: true,
+        limit,
+        skip
       })).to.be.true;
       expect(isDoc.calledOnceWithExactly(doc0)).to.be.true;
     });

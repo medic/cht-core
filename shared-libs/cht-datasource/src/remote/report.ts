@@ -7,7 +7,7 @@ import { Nullable, Page } from '../libs/core';
 export namespace v1 {
   const getReport = (remoteContext: RemoteDataContext) => getResource(remoteContext, 'api/v1/report');
 
-  const getReports = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/report/uuid');
+  const getReportUuids = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/report/uuid');
   
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (
@@ -25,6 +25,6 @@ export namespace v1 {
       freetext: qualifier.freetext,
       ...(cursor ? { cursor } : {}),
     };
-    return getReports(remoteContext)(queryParams);
+    return getReportUuids(remoteContext)(queryParams);
   };
 }

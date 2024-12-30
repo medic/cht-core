@@ -8,6 +8,7 @@ export function getLeafPlaceTypes(config: Record<string, unknown>): Record<strin
 export function getContactType(config: Record<string, unknown>, contact: Record<string, unknown>): Record<string, unknown> | undefined;
 export function isPerson(config: Record<string, unknown>, contact: Record<string, unknown>): boolean;
 export function isPlace(config: Record<string, unknown>, contact: Record<string, unknown>): boolean;
+export function isContact(config: Record<string, unknown>, contact: Record<string, unknown>): boolean;
 export function isHardcodedType(type: string): boolean;
 export declare const HARDCODED_TYPES: string[];
 export function getContactTypes(config?: Record<string, unknown>): Record<string, unknown>[];
