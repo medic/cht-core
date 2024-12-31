@@ -155,8 +155,8 @@ describe('Contact Controller', () => {
       });
     });
 
-    describe('getIds', () => {
-      let contactGetIdsPage;
+    describe('getUuids', () => {
+      let contactGetUuidsPage;
       let qualifierByContactType;
       let qualifierByFreetext;
       const contactType = 'person';
@@ -172,10 +172,10 @@ describe('Contact Controller', () => {
       const contacts = Array.from({ length: 3 }, () => ({ ...contact }));
 
       beforeEach(() => {
-        contactGetIdsPage = sinon.stub();
+        contactGetUuidsPage = sinon.stub();
         qualifierByContactType = sinon.stub(Qualifier, 'byContactType');
         qualifierByFreetext = sinon.stub(Qualifier, 'byFreetext');
-        dataContextBind.withArgs(Contact.v1.getIdsPage).returns(contactGetIdsPage);
+        dataContextBind.withArgs(Contact.v1.getUuidsPage).returns(contactGetUuidsPage);
         qualifierByContactType.returns(contactTypeOnlyQualifier);
         qualifierByFreetext.returns(freetextOnlyQualifier);
       });
@@ -195,15 +195,15 @@ describe('Contact Controller', () => {
         };
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
-        contactGetIdsPage.resolves(contacts);
+        contactGetUuidsPage.resolves(contacts);
 
         await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(qualifierByFreetext.notCalled).to.be.true;
-        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getIdsPage)).to.be.true;
-        expect(contactGetIdsPage.calledOnceWithExactly(contactTypeOnlyQualifier, cursor, limit)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuidsPage)).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(contactTypeOnlyQualifier, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });
@@ -218,15 +218,15 @@ describe('Contact Controller', () => {
         };
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
-        contactGetIdsPage.resolves(contacts);
+        contactGetUuidsPage.resolves(contacts);
 
         await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
-        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getIdsPage)).to.be.true;
-        expect(contactGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuidsPage)).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });
@@ -242,15 +242,15 @@ describe('Contact Controller', () => {
         };
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
-        contactGetIdsPage.resolves(contacts);
+        contactGetUuidsPage.resolves(contacts);
 
         await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
-        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getIdsPage)).to.be.true;
-        expect(contactGetIdsPage.calledOnceWithExactly(bothQualifier, cursor, limit)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuidsPage)).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(bothQualifier, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });
@@ -265,15 +265,15 @@ describe('Contact Controller', () => {
         };
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
-        contactGetIdsPage.resolves(contacts);
+        contactGetUuidsPage.resolves(contacts);
 
         await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
-        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getIdsPage)).to.be.true;
-        expect(contactGetIdsPage.calledOnceWithExactly(bothQualifier, cursor, undefined)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuidsPage)).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(bothQualifier, cursor, undefined)).to.be.true;
         expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });
@@ -290,15 +290,15 @@ describe('Contact Controller', () => {
         const err = new InvalidArgumentError(`The limit must be a positive number: [NaN].`);
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
-        contactGetIdsPage.throws(err);
+        contactGetUuidsPage.throws(err);
 
         await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
-        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getIdsPage)).to.be.true;
-        expect(contactGetIdsPage.calledOnceWithExactly(bothQualifier, cursor, null)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuidsPage)).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(bothQualifier, cursor, null)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
       });
@@ -322,7 +322,7 @@ describe('Contact Controller', () => {
         expect(dataContextBind.notCalled).to.be.true;
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(qualifierByFreetext.notCalled).to.be.true;
-        expect(contactGetIdsPage.notCalled).to.be.true;
+        expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
       });
@@ -345,7 +345,7 @@ describe('Contact Controller', () => {
         expect(dataContextBind.notCalled).to.be.true;
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(qualifierByFreetext.notCalled).to.be.true;
-        expect(contactGetIdsPage.notCalled).to.be.true;
+        expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
       });
@@ -361,15 +361,15 @@ describe('Contact Controller', () => {
         const err = new InvalidArgumentError(`Invalid contact type: [${invalidContactType}]`);
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
-        contactGetIdsPage.throws(err);
+        contactGetUuidsPage.throws(err);
 
         await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(qualifierByFreetext.notCalled).to.be.true;
-        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getIdsPage)).to.be.true;
-        expect(contactGetIdsPage.calledOnceWithExactly(contactTypeOnlyQualifier, cursor, limit)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuidsPage)).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(contactTypeOnlyQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
       });
@@ -385,15 +385,15 @@ describe('Contact Controller', () => {
         const err = new InvalidArgumentError(`Invalid freetext: [${invalidFreetext}]`);
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
-        contactGetIdsPage.throws(err);
+        contactGetUuidsPage.throws(err);
 
         await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
-        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getIdsPage)).to.be.true;
-        expect(contactGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuidsPage)).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
       });
@@ -408,7 +408,7 @@ describe('Contact Controller', () => {
         const err = { status: 400, message: 'Either query param freetext or type is required' };
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
-        contactGetIdsPage.throws(err);
+        contactGetUuidsPage.throws(err);
 
         await controller.v1.getUuids(req, res);
 
@@ -416,7 +416,7 @@ describe('Contact Controller', () => {
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(qualifierByFreetext.notCalled).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
-        expect(contactGetIdsPage.notCalled).to.be.true;
+        expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
       });
@@ -433,15 +433,15 @@ describe('Contact Controller', () => {
         const err = new Error('error');
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
-        contactGetIdsPage.throws(err);
+        contactGetUuidsPage.throws(err);
 
         await controller.v1.getUuids(req, res);
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
-        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getIdsPage)).to.be.true;
-        expect(contactGetIdsPage.calledOnceWithExactly(bothQualifier, cursor, limit)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuidsPage)).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(bothQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
       });

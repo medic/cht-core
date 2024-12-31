@@ -111,7 +111,7 @@ describe('Report Controller Tests', () => {
       });
     });
 
-    describe('getIds', () => {
+    describe('getUuids', () => {
       let reportGetIdsPage;
       let qualifierByFreetext;
       const freetext = 'report';
@@ -132,7 +132,7 @@ describe('Report Controller Tests', () => {
         };
         reportGetIdsPage = sinon.stub();
         qualifierByFreetext = sinon.stub(Qualifier, 'byFreetext');
-        dataContextBind.withArgs(Report.v1.getIdsPage).returns(reportGetIdsPage);
+        dataContextBind.withArgs(Report.v1.getUuidsPage).returns(reportGetIdsPage);
         qualifierByFreetext.returns(freetextOnlyQualifier);
       });
 
@@ -157,7 +157,7 @@ describe('Report Controller Tests', () => {
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
-        expect(dataContextBind.calledOnceWithExactly(Report.v1.getIdsPage)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
         expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly(reports)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
@@ -178,7 +178,7 @@ describe('Report Controller Tests', () => {
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
-        expect(dataContextBind.calledOnceWithExactly(Report.v1.getIdsPage)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
         expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, undefined)).to.be.true;
         expect(res.json.calledOnceWithExactly(reports)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
@@ -201,7 +201,7 @@ describe('Report Controller Tests', () => {
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
-        expect(dataContextBind.calledOnceWithExactly(Report.v1.getIdsPage)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
         expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, null)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
@@ -267,7 +267,7 @@ describe('Report Controller Tests', () => {
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
-        expect(dataContextBind.calledOnceWithExactly(Report.v1.getIdsPage)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
         expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
@@ -290,7 +290,7 @@ describe('Report Controller Tests', () => {
 
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
-        expect(dataContextBind.calledOnceWithExactly(Report.v1.getIdsPage)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
         expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
