@@ -1,12 +1,12 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
-import { fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey, queryDocsByRange } from './libs/doc';
+import { fetchAndFilter, getDocById, queryDocsByKey, queryDocsByRange } from './libs/doc';
 import { ContactTypeQualifier, FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
 import * as ContactType from '../contact-types';
-import { deepCopy, isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
+import { isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
 import contactTypeUtils from '@medic/contact-types-utils';
-import { getLineageDocsById, getPrimaryContactIds, hydrateLineage, hydratePrimaryContact } from './libs/lineage';
+import { getContactLineage, getLineageDocsById } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
 import { validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
@@ -50,7 +50,7 @@ export namespace v1 {
   /** @internal */
   export const getWithLineage = ({ medicDb, settings }: LocalDataContext) => {
     const getLineageDocs = getLineageDocsById(medicDb);
-    const getMedicDocsById = getDocsByIds(medicDb);
+
     return async (identifier: UuidQualifier): Promise<Nullable<ContactType.v1.ContactWithLineage>> => {
       const [contact, ...lineageContacts] = await getLineageDocs(identifier.uuid);
       if (!isContact(settings)(contact, identifier.uuid)) {
@@ -63,16 +63,12 @@ export namespace v1 {
       }
 
       const combinedContacts: NonEmptyArray<Nullable<Doc>> = [contact, ...lineageContacts];
-      const contactUuids = getPrimaryContactIds(combinedContacts);
-      const contacts = await getMedicDocsById(contactUuids);
-      const [contactWithContact, ...lineageContactsWithContact] = combinedContacts.map(
-        hydratePrimaryContact(contacts)
-      ).filter(item => item ?? false);
-      const contactWithLineage = hydrateLineage(
-        contactWithContact as ContactType.v1.Contact,
-        lineageContactsWithContact
-      );
-      return deepCopy(contactWithLineage);
+      
+      if (contactTypeUtils.isPerson(settings.getAll(), contact)) {
+        return await getContactLineage(medicDb)(lineageContacts, contact, true);
+      }
+
+      return await getContactLineage(medicDb)(combinedContacts);
     };
   };
 

@@ -1,12 +1,15 @@
 import { Doc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
-import { deepCopy, isNonEmptyArray, Nullable, Page } from '../libs/core';
+import { isNonEmptyArray, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
-import { fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey } from './libs/doc';
+import { fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
-import { getLineageDocsById, getPrimaryContactIds, hydrateLineage, hydratePrimaryContact } from './libs/lineage';
+import {
+  getContactLineage,
+  getLineageDocsById,
+} from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
 import { validateCursor } from './libs/core';
 
@@ -42,7 +45,7 @@ export namespace v1 {
   /** @internal */
   export const getWithLineage = ({ medicDb, settings }: LocalDataContext) => {
     const getLineageDocs = getLineageDocsById(medicDb);
-    const getMedicDocsById = getDocsByIds(medicDb);
+
     return async (identifier: UuidQualifier): Promise<Nullable<Person.v1.PersonWithLineage>> => {
       const [person, ...lineagePlaces] = await getLineageDocs(identifier.uuid);
       if (!isPerson(settings)(person, identifier.uuid)) {
@@ -54,12 +57,7 @@ export namespace v1 {
         return person;
       }
 
-      const contactUuids = getPrimaryContactIds(lineagePlaces)
-        .filter(uuid => uuid !== person._id);
-      const contacts = [person, ...await getMedicDocsById(contactUuids)];
-      const linagePlacesWithContact = lineagePlaces.map(hydratePrimaryContact(contacts));
-      const personWithLineage = hydrateLineage(person, linagePlacesWithContact);
-      return deepCopy(personWithLineage);
+      return await getContactLineage(medicDb)(lineagePlaces, person, true) as Nullable<Person.v1.PersonWithLineage>;
     };
   };
 

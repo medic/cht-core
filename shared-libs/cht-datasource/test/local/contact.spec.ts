@@ -7,7 +7,6 @@ import * as LocalDoc from '../../src/local/libs/doc';
 import * as Contact from '../../src/local/contact';
 import { expect } from 'chai';
 import * as Lineage from '../../src/local/libs/lineage';
-import * as Core from '../../src/libs/core';
 
 describe('local contact', () => {
   let localContext: LocalDataContext;
@@ -92,58 +91,38 @@ describe('local contact', () => {
       const identifier = { uuid: 'uuid' } as const;
       let getLineageDocsByIdInner: SinonStub;
       let getLineageDocsByIdOuter: SinonStub;
-      let getDocsByIdsInner: SinonStub;
-      let getDocsByIdsOuter: SinonStub;
-      let getPrimaryContactIds: SinonStub;
-      let hydratePrimaryContactInner: SinonStub;
-      let hydratePrimaryContactOuter: SinonStub;
-      let hydrateLineage: SinonStub;
-      let deepCopy: SinonStub;
+      let getContactLineageInner: SinonStub;
+      let getContactLineageOuter: SinonStub;
+      let isPerson: SinonStub;
 
       beforeEach(() => {
         getLineageDocsByIdInner = sinon.stub();
         getLineageDocsByIdOuter = sinon
           .stub(Lineage, 'getLineageDocsById')
           .returns(getLineageDocsByIdInner);
-        getDocsByIdsInner = sinon.stub();
-        getDocsByIdsOuter = sinon
-          .stub(LocalDoc, 'getDocsByIds')
-          .returns(getDocsByIdsInner);
-        getPrimaryContactIds = sinon.stub(Lineage, 'getPrimaryContactIds');
-        hydratePrimaryContactInner = sinon.stub();
-        hydratePrimaryContactOuter = sinon
-          .stub(Lineage, 'hydratePrimaryContact')
-          .returns(hydratePrimaryContactInner);
-        hydrateLineage = sinon.stub(Lineage, 'hydrateLineage');
-        deepCopy = sinon.stub(Core, 'deepCopy');
+        getContactLineageInner = sinon.stub();
+        getContactLineageOuter = sinon
+          .stub(Lineage, 'getContactLineage')
+          .returns(getContactLineageInner);
       });
 
       afterEach(() => {
         expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
-      it('returns a contact with lineage', async () => {
+      it('returns a contact with lineage for person type contact', async () => {
         const person = { type: 'person', _id: 'uuid', _rev: 'rev' };
         const place0 = { _id: 'place0', _rev: 'rev' };
         const place1 = { _id: 'place1', _rev: 'rev' };
         const place2 = { _id: 'place2', _rev: 'rev' };
-        const contact0 = { _id: 'contact0', _rev: 'rev' };
-        const contact1 = { _id: 'contact1', _rev: 'rev' };
-        getLineageDocsByIdInner.resolves([person, place0, place1, place2]);
+        const lineageDocs = [place0, place1, place2];
+        getLineageDocsByIdInner.resolves([person, ...lineageDocs]);
         isContact.returns(true);
         settingsGetAll.returns(settings);
-        getPrimaryContactIds.returns([contact0._id, contact1._id, person._id]);
-        getDocsByIdsInner.resolves([contact0, contact1]);
-        const place0WithContact = { ...place0, contact: contact0 };
-        const place1WithContact = { ...place1, contact: contact1 };
-        hydratePrimaryContactInner.onFirstCall().returns(place0WithContact);
-        hydratePrimaryContactInner.onSecondCall().returns(place1WithContact);
-        hydratePrimaryContactInner.onThirdCall().returns(place2);
         const personWithLineage = { ...person, lineage: true };
-        hydrateLineage.returns(personWithLineage);
         const copiedPerson = { ...personWithLineage };
-        deepCopy.returns(copiedPerson);
+        getContactLineageInner.returns(copiedPerson);
+        isPerson = sinon.stub(contactTypeUtils, 'isPerson').returns(true);
 
         const result = await Contact.v1.getWithLineage(localContext)(identifier);
 
@@ -152,15 +131,34 @@ describe('local contact', () => {
         expect(isContact.calledOnceWithExactly(settingsGetAll(), person)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.notCalled).to.be.true;
-        expect(getPrimaryContactIds.calledOnceWithExactly([person, place0, place1, place2])).to.be.true;
-        expect(getDocsByIdsInner.calledOnceWithExactly([contact0._id, contact1._id, person._id])).to.be.true;
-        expect(hydratePrimaryContactOuter.calledOnceWithExactly([contact0, contact1])).to.be.true;
-        expect(hydratePrimaryContactInner.callCount).to.be.equal(4);
-        expect(hydratePrimaryContactInner.calledWith(place0)).to.be.true;
-        expect(hydratePrimaryContactInner.calledWith(place1)).to.be.true;
-        expect(hydratePrimaryContactInner.calledWith(place2)).to.be.true;
-        expect(hydrateLineage.calledOnceWithExactly(place0WithContact, [place1WithContact, place2])).to.be.true;
-        expect(deepCopy.calledOnceWithExactly(personWithLineage)).to.be.true;
+        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getContactLineageInner.calledOnceWithExactly(lineageDocs, person, true)).to.be.true;
+      });
+
+      it('returns a contact with lineage for place type contact', async () => {
+        const place0 = {_id: 'place0', _rev: 'rev'};
+        const place1 = {_id: 'place1', _rev: 'rev'};
+        const place2 = {_id: 'place2', _rev: 'rev'};
+        const contact0 = { _id: 'contact0', _rev: 'rev' };
+        const lineageDocs = [ place0, place1, place2 ];
+        getLineageDocsByIdInner.resolves(lineageDocs);
+        isContact.returns(true);
+        settingsGetAll.returns(settings);
+        const place0WithContact = { ...place0, contact: contact0 };
+        const place0WithLineage = { ...place0WithContact, lineage: true };
+        const copiedPlace = { ...place0WithLineage };
+        getContactLineageInner.returns(copiedPlace);
+        isPerson = sinon.stub(contactTypeUtils, 'isPerson').returns(false);
+
+        const result = await Contact.v1.getWithLineage(localContext)(identifier);
+
+        expect(result).to.equal(copiedPlace);
+        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(isContact.calledOnceWithExactly(settingsGetAll(), place0)).to.be.true;
+        expect(warn.notCalled).to.be.true;
+        expect(debug.notCalled).to.be.true;
+        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getContactLineageInner.calledOnceWithExactly(lineageDocs)).to.be.true;
       });
 
       it('returns null when no contact or lineage is found', async () => {
@@ -174,12 +172,8 @@ describe('local contact', () => {
         expect(isContact.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No contact found for identifier [${identifier.uuid}].`)).to.be.true;
         expect(debug.notCalled).to.be.true;
-        expect(getPrimaryContactIds.notCalled).to.be.true;
-        expect(getDocsByIdsInner.notCalled).to.be.true;
-        expect(hydratePrimaryContactOuter.notCalled).to.be.true;
-        expect(hydratePrimaryContactInner.notCalled).to.be.true;
-        expect(hydrateLineage.notCalled).to.be.true;
-        expect(deepCopy.notCalled).to.be.true;
+        expect(getContactLineageInner.notCalled).to.be.true;
+        expect(getContactLineageOuter.notCalled).to.be.true;
       });
 
       it('returns null if the doc returned is not a contact', async () => {
@@ -198,12 +192,8 @@ describe('local contact', () => {
         expect(isContact.calledOnceWithExactly(settingsGetAll(), person)).to.be.true;
         expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid contact.`)).to.be.true;
         expect(debug.notCalled).to.be.true;
-        expect(getPrimaryContactIds.notCalled).to.be.true;
-        expect(getDocsByIdsInner.notCalled).to.be.true;
-        expect(hydratePrimaryContactOuter.notCalled).to.be.true;
-        expect(hydratePrimaryContactInner.notCalled).to.be.true;
-        expect(hydrateLineage.notCalled).to.be.true;
-        expect(deepCopy.notCalled).to.be.true;
+        expect(getContactLineageInner.notCalled).to.be.true;
+        expect(getContactLineageOuter.notCalled).to.be.true;
       });
 
       it('returns a contact if no lineage is found', async () => {
@@ -219,12 +209,8 @@ describe('local contact', () => {
         expect(isContact.calledOnceWithExactly(settingsGetAll(), person)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.calledOnceWithExactly(`No lineage contacts found for person [${identifier.uuid}].`)).to.be.true;
-        expect(getPrimaryContactIds.notCalled).to.be.true;
-        expect(getDocsByIdsInner.notCalled).to.be.true;
-        expect(hydratePrimaryContactOuter.notCalled).to.be.true;
-        expect(hydratePrimaryContactInner.notCalled).to.be.true;
-        expect(hydrateLineage.notCalled).to.be.true;
-        expect(deepCopy.notCalled).to.be.true;
+        expect(getContactLineageInner.notCalled).to.be.true;
+        expect(getContactLineageOuter.notCalled).to.be.true;
       });
     });
 

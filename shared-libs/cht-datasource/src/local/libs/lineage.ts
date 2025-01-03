@@ -1,7 +1,9 @@
 import * as Contact from '../../contact';
 import * as ContactTypes from '../../contact-types';
+import * as Person from '../../person';
 import {
   DataObject,
+  deepCopy,
   findById,
   getLastElement,
   isIdentifiable,
@@ -11,7 +13,7 @@ import {
   Nullable
 } from '../../libs/core';
 import { Doc } from '../../libs/doc';
-import { queryDocsByRange } from './doc';
+import { getDocsByIds, queryDocsByRange } from './doc';
 import logger from '@medic/logger';
 
 /**
@@ -89,4 +91,30 @@ export const hydrateLineage = (
     });
   const hierarchy: NonEmptyArray<DataObject> = [contact, ...fullLineage];
   return mergeLineage(hierarchy.slice(0, -1), getLastElement(hierarchy)) as Contact.v1.Contact;
+};
+
+/** @internal */
+export const getContactLineage = (medicDb: PouchDB.Database<Doc>) => {
+  const getMedicDocsById = getDocsByIds(medicDb);
+
+  return async (
+    contacts: NonEmptyArray<Nullable<Doc>>,
+    person?: Person.v1.Person,
+    filterSelf = false,
+  ): Promise<Nullable<ContactTypes.v1.ContactWithLineage>>  => {
+    const contactUuids = getPrimaryContactIds(contacts);
+    const uuidsToFetch = filterSelf ? contactUuids.filter(uuid => uuid !== person?._id) : contactUuids;
+    const fetchedContacts = await getMedicDocsById(uuidsToFetch);
+    const allContacts = person ? [person, ...fetchedContacts] : fetchedContacts;
+    const contactsWithHydratedPrimaryContact = contacts.map(
+      hydratePrimaryContact(allContacts)
+    ).filter(item => item ?? false);
+    const [mainContact, ...lineageContacts] = contactsWithHydratedPrimaryContact;
+    const contactWithLineage = hydrateLineage(
+      (person ?? mainContact) as ContactTypes.v1.Contact,
+      person ? contactsWithHydratedPrimaryContact : lineageContacts
+    );
+
+    return deepCopy(contactWithLineage);
+  };
 };
