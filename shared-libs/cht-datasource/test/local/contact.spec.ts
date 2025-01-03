@@ -131,6 +131,7 @@ describe('local contact', () => {
         expect(isContact.calledOnceWithExactly(settingsGetAll(), person)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.notCalled).to.be.true;
+        expect(isPerson.calledOnceWithExactly(settingsGetAll(), person)).to.be.true;
         expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getContactLineageInner.calledOnceWithExactly(lineageDocs, person, true)).to.be.true;
       });
@@ -157,6 +158,7 @@ describe('local contact', () => {
         expect(isContact.calledOnceWithExactly(settingsGetAll(), place0)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.notCalled).to.be.true;
+        expect(isPerson.calledOnceWithExactly(settingsGetAll(), place0)).to.be.true;
         expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getContactLineageInner.calledOnceWithExactly(lineageDocs)).to.be.true;
       });
