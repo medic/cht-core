@@ -24,7 +24,7 @@ describe('reports_by_freetext', () => {
         'invalid',
         'contact',
         'person',
-      ].forEach(type => it('emits nothing when type is invalid', () => {
+      ].forEach(type => it(`emits nothing when type is invalid [${type}]`, () => {
         const doc = createReport({ type });
         const emitted = mapFn(doc, true);
         expect(emitted).to.be.empty;
@@ -34,7 +34,7 @@ describe('reports_by_freetext', () => {
         undefined,
         null,
         '',
-      ].forEach(form => it('emits nothing when form is not valued', () => {
+      ].forEach(form => it(`emits nothing when form is not valued [${form}]`, () => {
         const doc = createReport({ form });
         const emitted = mapFn(doc, true);
         expect(emitted).to.be.empty;
@@ -42,16 +42,19 @@ describe('reports_by_freetext', () => {
 
       [
         null, undefined, { hello: 'world' }, {}, true
-      ].forEach(hello => it('emits nothing for a field when value is not a string or number', () => {
-        const doc = createReport({ hello });
+      ].forEach(hello => it(
+        `emits nothing for a field when value is not a string or number [${JSON.stringify(hello)}]`,
+        () => {
+          const doc = createReport({ hello });
 
-        const emitted = mapFn(doc, true);
+          const emitted = mapFn(doc, true);
 
-        expect(emitted).to.deep.equal([
-          { key: ['test'], value: doc.reported_date },
-          { key: ['form:test'], value: doc.reported_date },
-        ]);
-      }));
+          expect(emitted).to.deep.equal([
+            { key: ['test'], value: doc.reported_date },
+            { key: ['form:test'], value: doc.reported_date },
+          ]);
+        }
+      ));
 
       it('emits only key:value for field when value is number', () => {
         const doc = createReport({ hello: 1234 });
@@ -67,7 +70,7 @@ describe('reports_by_freetext', () => {
 
       [
         't', 'to'
-      ].forEach(hello => it('emits nothing but key:value when value is too short', () => {
+      ].forEach(hello => it(`emits nothing but key:value when value is too short [${hello}]`, () => {
         const doc = createReport({ hello });
 
         const emitted = mapFn(doc, true);
@@ -92,7 +95,7 @@ describe('reports_by_freetext', () => {
 
       [
         '_id', '_rev', 'refid', 'content', 'Refid',
-      ].forEach(key => it(`emits nothing for a skipped field: ${key}`, () => {
+      ].forEach(key => it(`emits nothing for a skipped field: [${key}]`, () => {
         const doc = createReport({ [key]: 'world' });
 
         const emitted = mapFn(doc, true);

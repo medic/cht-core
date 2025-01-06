@@ -18,7 +18,7 @@ describe('contacts_by_freetext', () => {
         ['health_center', 1],
         ['clinic', 2],
         ['person', 3],
-      ].forEach(([type, typeIndex]) => it('emits numerical index for default type', () => {
+      ].forEach(([type, typeIndex]) => it(`emits numerical index [${typeIndex}] for default type`, () => {
         const doc = { type, hello: 'world' };
 
         const emitted = mapFn(doc, true);
@@ -36,7 +36,7 @@ describe('contacts_by_freetext', () => {
         ['contact', 2, 'clinic'],
         ['contact', 3, 'person']
       ].forEach(([type, typeIndex, contactType]) => it(
-        'emits numerical index for default type when used as custom type',
+        `emits numerical index [${typeIndex}] for default type when used as custom type`,
         () => {
           const doc = { type, hello: 'world', contact_type: contactType };
 
@@ -69,7 +69,7 @@ describe('contacts_by_freetext', () => {
       [
         undefined,
         'invalid'
-      ].forEach(type => it('emits nothing when type is invalid', () => {
+      ].forEach(type => it(`emits nothing when type is invalid [${type}]`, () => {
         const doc = { type, hello: 'world' };
         const emitted = mapFn(doc, true);
         expect(emitted).to.be.empty;
@@ -101,7 +101,7 @@ describe('contacts_by_freetext', () => {
 
       [
         'hello', 'HeLlO'
-      ].forEach(name => it('emits name in value', () => {
+      ].forEach(name => it(`emits name in value [${name}]`, () => {
         const doc = { type: 'district_hospital', name };
 
         const emitted = mapFn(doc, true);
@@ -115,7 +115,7 @@ describe('contacts_by_freetext', () => {
 
       [
         null, undefined, { hello: 'world' }, {}, true
-      ].forEach(hello => it('emits nothing when value is not a string or number', () => {
+      ].forEach(hello => it(`emits nothing when value is not a string or number [${JSON.stringify(hello)}]`, () => {
         const doc = { type: 'district_hospital', hello };
         const emitted = mapFn(doc, true);
         expect(emitted).to.be.empty;
@@ -132,7 +132,7 @@ describe('contacts_by_freetext', () => {
 
       [
         't', 'to'
-      ].forEach(hello => it('emits nothing but key:value when value is too short', () => {
+      ].forEach(hello => it(`emits nothing but key:value when value is too short [${hello}]`, () => {
         const doc = { type: 'district_hospital', hello };
 
         const emitted = mapFn(doc, true);
@@ -149,7 +149,7 @@ describe('contacts_by_freetext', () => {
 
       [
         '_id', '_rev', 'type', 'refid', 'geolocation', 'Refid'
-      ].forEach(key => it('emits nothing for a skipped field', () => {
+      ].forEach(key => it(`emits nothing for a skipped field [${key}]`, () => {
         const doc = { type: 'district_hospital', [key]: 'world' };
         const emitted = mapFn(doc, true);
         expect(emitted).to.be.empty;
