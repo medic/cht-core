@@ -7,7 +7,9 @@ const deepEqualInAnyOrder = require('deep-equal-in-any-order');
 chai.use(chaiExclude);
 chai.use(chaiAsPromised);
 chai.use(deepEqualInAnyOrder);
+chai.use(require('chai-shallow-deep-equal'));
 global.expect = chai.expect;
+global.chai = chai;
 
 module.exports = {
   allowUncaught: false,

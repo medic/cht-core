@@ -46,9 +46,6 @@ describe('Import Records', () => {
         .then(() => utils.request({
           method: 'POST',
           path: '/api/v2/records',
-          headers: {
-            'Content-type': 'application/json'
-          },
           body: {
             _meta: {
               form: 'TEST',
@@ -94,9 +91,6 @@ describe('Import Records', () => {
         .then(() => utils.request({
           method: 'POST',
           path: '/api/v2/records',
-          headers: {
-            'Content-type': 'application/json'
-          },
           body: {
             _meta: {
               form: 'TEST'
@@ -134,9 +128,6 @@ describe('Import Records', () => {
         .then(() => utils.request({
           method: 'POST',
           path: '/api/v2/records',
-          headers: {
-            'Content-type': 'application/json'
-          },
           body: {
             _meta: {
               form: 'TEST',

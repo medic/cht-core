@@ -29,7 +29,6 @@ describe('Settings API', () => {
         path: uri,
         method: 'PUT',
         body: updates,
-        headers: { 'Content-Type': 'application/json' }
       });
     };
 
@@ -124,7 +123,6 @@ describe('Settings API', () => {
         path: '/api/v1/settings',
         method: 'PUT',
         body: updates,
-        headers: { 'Content-Type': 'application/json' },
         qs,
       });
     };

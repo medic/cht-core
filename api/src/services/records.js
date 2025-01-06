@@ -3,7 +3,7 @@ const phoneNumber = require('@medic/phone-number');
 const config = require('../config');
 const smsparser = require('./report/smsparser');
 const validate = require('./report/validate');
-const PublicError = require('../public-error');
+const { PublicError } = require('../errors');
 const DATE_NUMBER_STRING = /(\d{13,})/;
 
 // matches invisible characters that can mess up our parsing

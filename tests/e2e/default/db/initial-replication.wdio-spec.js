@@ -52,7 +52,7 @@ describe('initial-replication', () => {
     const localAllDocsPreSync = await chtDbUtils.getDocs();
     const docIdsPreSync = dataFactory.ids(localAllDocsPreSync);
 
-    await commonPage.sync(false, 7000);
+    await commonPage.sync();
 
     const localAllDocs = (await chtDbUtils.getDocs()).filter(doc => !LOCAL_ONLY_DOC_IDS.includes(doc.id));
     const localDocIds = dataFactory.ids(localAllDocs);
@@ -104,7 +104,7 @@ describe('initial-replication', () => {
   };
 
   before(async () => {
-    await utils.stopSentinel();
+    await utils.toggleSentinelTransitions();
 
     // we're creating ~2000 docs
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
@@ -117,15 +117,14 @@ describe('initial-replication', () => {
 
   after(async () => {
     await sentinelUtils.skipToSeq();
-    await utils.startSentinel();
+    await utils.toggleSentinelTransitions();
     await utils.deleteUsers([userAllowedDocs.user]);
     await utils.revertDb([/^form:/], true);
     await utils.revertSettings(true);
   });
 
   afterEach(async () => {
-    await browser.reloadSession();
-    await browser.url('/');
+    await commonPage.reloadSession();
   });
 
   it('should log user in', async () => {

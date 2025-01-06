@@ -6,6 +6,7 @@ require('bootstrap-datepicker/js/locales/bootstrap-datepicker.sw');
 require('bootstrap-datepicker/js/locales/bootstrap-datepicker.id');
 require('bootstrap-datepicker/js/locales/bootstrap-datepicker.bm');
 require('bootstrap-datepicker/js/locales/bootstrap-datepicker.hi');
+require('bootstrap-datepicker/js/locales/bootstrap-datepicker.ar');
 require('./bootstrap-datepicker.ceb');
 require('./bootstrap-datepicker.hil');
 require('./bootstrap-datepicker.tl');
