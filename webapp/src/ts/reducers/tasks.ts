@@ -47,6 +47,7 @@ const _tasksReducer = createReducer(
 
   on(Actions.setLastSubmittedTask, (state, { payload: { task } }) => ({
     ...state,
+    tasksList: state.tasksList.filter(t => task?._id !== t._id),
     taskGroup: {
       ...state.taskGroup,
       lastSubmittedTask: task

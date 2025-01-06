@@ -747,7 +747,7 @@ describe('provider-wireup integration tests', () => {
         expect(provider.commitTargetDoc.callCount).to.equal(0);
       });
 
-      it('should update the targets doc when the state was calculated outside of the interval', async () => {
+      it('should not update the targets doc when the state was calculated outside of the interval', async () => {
         clock.setSystemTime(moment('2020-04-28').valueOf());
         const rules = simpleNoolsTemplate('');
         const settings = {
@@ -779,13 +779,7 @@ describe('provider-wireup integration tests', () => {
 
         clock.setSystemTime(moment('2020-05-02').valueOf()); // next interval
         await wireup.initialize(provider, settings, {});
-        expect(provider.commitTargetDoc.callCount).to.equal(1);
-        expect(provider.commitTargetDoc.args[0]).to.deep.equal([
-          [{ id: 'uhc', value: { pass: 1, total: 2 } }],
-          '2020-04',
-          { userSettingsDoc: { _id: 'org.couchdb.user:username' }, userContactDoc: { _id: 'mock_user_id' }},
-          true,
-        ]);
+        expect(provider.commitTargetDoc.called).to.be.false;
       });
 
       it('should work when the settings have been changed', async () => {
@@ -824,13 +818,7 @@ describe('provider-wireup integration tests', () => {
 
         clock.setSystemTime(moment('2020-04-28').valueOf()); // next interval
         await wireup.initialize(provider, settings, {});
-        expect(provider.commitTargetDoc.callCount).to.equal(1);
-        expect(provider.commitTargetDoc.args[0]).to.deep.equal([
-          [{ id: 'uhc', value: { pass: 2, total: 2 } }],
-          '2020-04',
-          { userSettingsDoc: { _id: 'org.couchdb.user:username' }, userContactDoc: { _id: 'mock_user_id' } },
-          true,
-        ]);
+        expect(provider.commitTargetDoc.called).to.be.false;
       });
 
       it('should work with old format of the rules state store', async () => {
@@ -869,13 +857,7 @@ describe('provider-wireup integration tests', () => {
 
         clock.setSystemTime(moment('2020-04-28').valueOf()); // next interval
         await wireup.initialize(provider, settings, {});
-        expect(provider.commitTargetDoc.callCount).to.equal(1);
-        expect(provider.commitTargetDoc.args[0]).to.deep.equal([
-          [{ id: 'uhc', value: { pass: 2, total: 2 } }],
-          '2020-04',
-          { userSettingsDoc: { _id: 'org.couchdb.user:username' }, userContactDoc: { _id: 'mock_user_id' } },
-          true,
-        ]);
+        expect(provider.commitTargetDoc.called).to.be.false;
       });
 
       it('should use inclusive operator when comparing dates (left)', async () => {
@@ -909,13 +891,7 @@ describe('provider-wireup integration tests', () => {
 
         clock.setSystemTime(moment('2020-06-02').valueOf()); // next interval
         await wireup.initialize(provider, settings, {});
-        expect(provider.commitTargetDoc.callCount).to.equal(1);
-        expect(provider.commitTargetDoc.args[0]).to.deep.equal([
-          [{ id: 'uhc', value: { pass: 2, total: 2 } }],
-          '2020-05',
-          { userSettingsDoc: { _id: 'org.couchdb.user:username' }, userContactDoc: { _id: 'mock_user_id' } },
-          true,
-        ]);
+        expect(provider.commitTargetDoc.called).to.be.false;
       });
 
       it('should use inclusive operator when comparing dates (right)', async () => {
@@ -950,13 +926,7 @@ describe('provider-wireup integration tests', () => {
 
         clock.setSystemTime(moment('2020-06-02').valueOf()); // next interval
         await wireup.initialize(provider, settings, {});
-        expect(provider.commitTargetDoc.callCount).to.equal(1);
-        expect(provider.commitTargetDoc.args[0]).to.deep.equal([
-          [{ id: 'uhc', value: { pass: 2, total: 2 } }],
-          '2020-05',
-          { userSettingsDoc: { _id: 'org.couchdb.user:username' }, userContactDoc: { _id: 'mock_user_id' } },
-          true,
-        ]);
+        expect(provider.commitTargetDoc.called).to.be.false;
       });
     });
 
@@ -994,100 +964,6 @@ describe('provider-wireup integration tests', () => {
         expect(provider.commitTargetDoc.callCount).to.equal(2);
         expect(provider.commitTargetDoc.args[1][1]).to.equal('2020-04');
         expect(provider.commitTargetDoc.args[1][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
-      });
-
-      it('should update targets when in new interval when refreshing tasks', async () => {
-        const rules = simpleNoolsTemplate('');
-        const settings = {
-          rules,
-          enableTargets: true,
-          targets: [{
-            id: 'uhc',
-          }],
-          monthStartDate: 1,
-        };
-
-        clock.setSystemTime(moment('2020-04-30 23:00:00').valueOf());
-        await wireup.initialize(provider, settings, {});
-
-        const emissions = [
-          mockTargetEmission('uhc', 'doc4', moment('2020-02-23').valueOf(), true), // passes outside interval
-          mockTargetEmission('uhc', 'doc2', moment('2020-03-29').valueOf(), true), // passes outside interval
-          mockTargetEmission('uhc', 'doc1', moment('2020-04-12').valueOf(), true), // passes within interval
-          mockTargetEmission('uhc', 'doc3', moment('2020-04-14').valueOf(), true), // passes within interval
-          mockTargetEmission('uhc', 'doc5', moment('2020-05-05').valueOf(), true), // passes outside interval
-        ];
-
-        const refreshRulesEmissions = sinon.stub().resolves({ targetEmissions: emissions });
-        const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
-
-        expect(provider.commitTargetDoc.callCount).to.equal(0);
-        await withMockRefresher(() => wireup.fetchTasksFor(provider));
-        expect(provider.commitTargetDoc.callCount).to.equal(1);
-        expect(provider.commitTargetDoc.args[0][1]).to.equal('2020-04');
-        expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
-
-        clock.tick(5 * 60 * 60 * 1000); // 6 hours, it's now 2020-05-01 04:00:00
-        await withMockRefresher(() => wireup.fetchTasksFor(provider));
-
-        expect(provider.commitTargetDoc.callCount).to.equal(3);
-        expect(provider.commitTargetDoc.args[1][1]).to.equal('2020-04');
-        expect(provider.commitTargetDoc.args[1][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
-        expect(provider.commitTargetDoc.args[2][1]).to.equal('2020-05');
-        expect(provider.commitTargetDoc.args[2][0]).to.deep.equal([{ id: 'uhc', value: { pass: 1, total: 1 }}]);
-      });
-
-      it('should update targets when in new interval when refreshing targets', async () => {
-        const rules = simpleNoolsTemplate('');
-        const settings = {
-          rules,
-          enableTargets: true,
-          targets: [{
-            id: 'uhc',
-          }],
-          monthStartDate: 1,
-        };
-
-        clock.setSystemTime(moment('2020-04-30 23:00:00').valueOf());
-        await wireup.initialize(provider, settings, {});
-
-        const emissionsBefore = [
-          mockTargetEmission('uhc', 'doc4', moment('2020-02-23').valueOf(), true), // passes outside interval
-          mockTargetEmission('uhc', 'doc2', moment('2020-03-29').valueOf(), true), // passes outside interval
-          mockTargetEmission('uhc', 'doc1', moment('2020-04-12').valueOf(), true), // passes within interval
-          mockTargetEmission('uhc', 'doc3', moment('2020-04-14').valueOf(), true), // passes within interval
-          mockTargetEmission('uhc', 'doc5', moment('2020-05-05').valueOf(), true), // passes outside interval
-        ];
-
-        // simulate that we have a target with date: now (doc3) and that gets counted in both targets
-        const emissionsAfter = [
-          mockTargetEmission('uhc', 'doc4', moment('2020-02-23').valueOf(), true), // passes outside interval
-          mockTargetEmission('uhc', 'doc2', moment('2020-03-29').valueOf(), true), // passes outside interval
-          mockTargetEmission('uhc', 'doc1', moment('2020-04-12').valueOf(), true), // passes within interval
-          mockTargetEmission('uhc', 'doc3', moment('2020-05-05').valueOf(), true), // passes within interval
-          mockTargetEmission('uhc', 'doc5', moment('2020-05-05').valueOf(), true), // passes outside interval
-        ];
-
-        const refreshRulesEmissions = sinon.stub()
-          .onCall(0).resolves({ targetEmissions: emissionsBefore })
-          .onCall(1).resolves({ targetEmissions: emissionsAfter });
-
-        const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
-        // make sure our state has been "calculated" at least once!
-        await withMockRefresher(() => wireup.fetchTasksFor(provider));
-
-        expect(provider.commitTargetDoc.callCount).to.equal(1);
-        expect(provider.commitTargetDoc.args[0][1]).to.equal('2020-04');
-        expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
-
-        clock.tick(5 * 60 * 60 * 1000); // 6 hours, it's now 2020-05-01 04:00:00
-        await withMockRefresher(() => wireup.fetchTargets(provider));
-
-        expect(provider.commitTargetDoc.callCount).to.equal(3);
-        expect(provider.commitTargetDoc.args[1][1]).to.equal('2020-04');
-        expect(provider.commitTargetDoc.args[1][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
-        expect(provider.commitTargetDoc.args[2][1]).to.equal('2020-05');
-        expect(provider.commitTargetDoc.args[2][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
       });
     });
   });

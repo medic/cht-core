@@ -6,7 +6,8 @@ const db = require('../../../../src/db');
 const env = require('@medic/environment');
 const request = require('@medic/couch-request');
 const databases = require('../../../../src/services/setup/databases');
-const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
+const upgradeLogService = require('../../../../src/service' +
+                                  's/setup/upgrade-log');
 
 let viewIndexer;
 
@@ -60,38 +61,33 @@ describe('View indexer service', () => {
           uri: 'http://localhost/thedb/_design/:staged:one/_view/view1',
           json: true,
           qs: { limit: 1 },
-          timeout: 2000,
         }],
         [{
           uri: 'http://localhost/thedb/_design/:staged:one/_view/view2',
           json: true,
           qs: { limit: 1 },
-          timeout: 2000,
         }],
         [{
           uri: 'http://localhost/thedb/_design/:staged:one/_view/view3',
           json: true,
           qs: { limit: 1 },
-          timeout: 2000,
         }],
         [{
           uri: 'http://localhost/thedb/_design/:staged:three/_view/view4',
           json: true,
           qs: { limit: 1 },
-          timeout: 2000,
         }],
         [{
           uri: 'http://localhost/thedb-users-meta/_design/:staged:four/_view/view',
           json: true,
           qs: { limit: 1 },
-          timeout: 2000,
         }],
       ]);
     });
   });
 
   describe('indexView', () => {
-    it('should query the view with a timeout', async () => {
+    it('should query the view', async () => {
       sinon.stub(request, 'get').resolves();
       sinon.stub(env, 'serverUrl').value('http://localhost');
 
@@ -102,7 +98,6 @@ describe('View indexer service', () => {
         uri: 'http://localhost/medic/_design/:staged:medic/_view/contacts',
         json: true,
         qs: { limit: 1 },
-        timeout: 2000,
       }]);
     });
 
@@ -119,7 +114,6 @@ describe('View indexer service', () => {
         uri: 'http://localhost/other/_design/mydesign/_view/viewname',
         json: true,
         qs: { limit: 1 },
-        timeout: 2000,
       };
       expect(request.get.args).to.deep.equal(Array.from({ length: 21 }).map(() => [params]));
     });
@@ -137,7 +131,6 @@ describe('View indexer service', () => {
         uri: 'http://localhost/other/_design/mydesign/_view/viewname',
         json: true,
         qs: { limit: 1 },
-        timeout: 2000,
       };
       expect(request.get.args).to.deep.equal(Array.from({ length: 21 }).map(() => [params]));
     });

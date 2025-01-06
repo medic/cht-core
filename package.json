@@ -1,6 +1,6 @@
 {
   "name": "medic",
-  "version": "4.14.0",
+  "version": "4.15.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "repository": {
@@ -53,7 +53,8 @@
     "unit-haproxy-healthcheck": "cd haproxy-healthcheck && make test",
     "unit-cht-deploy": "cd scripts/deploy && npm test",
     "wdio-default-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/default-mobile/wdio.conf.js --suite=all",
-    "wdio-visual-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/visual/wdio.conf.js --suite=all",
+    "wdio-visual-desktop": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/visual/wdio.conf.js --suite=desktopTests",
+    "wdio-visual-mobile": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/visual/wdio.conf.js --suite=mobileTests",
     "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/default/wdio.conf.js",
     "apdex-test": "wdio run ./tests/performance/apdex-score/wdio.conf.js",
     "-- CI SCRIPTS ": "-----------------------------------------------------------------------------------------------",
@@ -179,7 +180,7 @@
     "bowser": "^2.11.0",
     "buffer-shims": "^1.0.0",
     "cht-nootils": "^4.2.0",
-    "compression": "^1.7.4",
+    "compression": "^1.7.5",
     "cron-validator": "^1.3.1",
     "epi-week": "^0.0.1",
     "express": "^4.21.1",
