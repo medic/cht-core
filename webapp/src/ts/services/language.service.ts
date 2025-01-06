@@ -7,7 +7,6 @@ import { SettingsService } from '@mm-services/settings.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { Store } from '@ngrx/store';
-import { ServicesActions } from '@mm-actions/services';
 import { GlobalActions } from '@mm-actions/global';
 
 @Injectable({

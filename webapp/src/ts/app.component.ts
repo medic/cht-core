@@ -50,7 +50,6 @@ import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserSettings, UserSettingsService } from '@mm-services/user-settings.service';
 import { OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
-import { Directionality } from '@angular/cdk/bidi';
 
 const SYNC_STATUS = {
   inProgress: {
