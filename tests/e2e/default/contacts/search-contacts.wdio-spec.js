@@ -71,7 +71,7 @@ describe('Contact Search', () => {
 
     after(commonPage.logout);
 
-    it('search by NON empty string should display results with contains match and clears search', async () => {
+    it('search by NON empty string should display results which contains match and clears search', async () => {
       await contactPage.getAllLHSContactsNames();
 
       await searchPage.performSearch('sittu');
