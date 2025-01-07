@@ -42,6 +42,10 @@ const extractCookieAttributes = (cookieString) => {
 };
 
 module.exports = {
+  clearCookie: (res, name) => {
+    const options = getCookieOptions({ httpOnly: true });
+    res.clearCookie(name, options);
+  },
   get: (req, name) => {
     const cookies = req.headers && req.headers.cookie;
     if (!cookies) {

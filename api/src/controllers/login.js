@@ -9,7 +9,7 @@ const privacyPolicy = require('../services/privacy-policy');
 const logger = require('@medic/logger');
 const db = require('../db');
 const dataContext = require('../services/data-context');
-const { tokenLogin, roles, users } = require('@medic/user-management')(config, db, dataContext);
+const { tokenLogin, roles, users, validatePassword } = require('@medic/user-management')(config, db, dataContext);
 const localeUtils = require('locale');
 const cookie = require('../services/cookie');
 const brandingService = require('../services/branding');
@@ -17,6 +17,17 @@ const translations = require('../translations');
 const template = require('../services/template');
 const rateLimitService = require('../services/rate-limit');
 const serverUtils = require('../server-utils');
+
+const PASSWORD_RESET_URL = '/medic/password-reset';
+
+const ERROR_KEY_MAPPING = {
+  // Ignore Sonar false positive that these are hard-coded credentials.
+  // These are css error classes for password reset html
+  'password.weak': 'password-weak', //NoSONAR
+  'password.length.minimum': 'password-short', //NoSONAR
+  'password.current.incorrect': 'current-password-incorrect', //NoSONAR
+  'password.same': 'password-same', //NoSONAR
+};
 
 const templates = {
   login: {
@@ -51,6 +62,28 @@ const templates = {
       'privacy.policy'
     ],
   },
+  passwordReset: {
+    file: path.join(__dirname, '..', 'templates', 'login', 'password-reset.html'),
+    translationStrings: [
+      'login.show_password',
+      'login.hide_password',
+      'change.password.title',
+      'change.password.hint',
+      'change.password.submit',
+      'change.password.new.password',
+      'change.password.confirm.password',
+      'password.weak',
+      'password.length.minimum',
+      'password.must.match',
+      'user.password.current',
+      'password.current.incorrect',
+      'password.same'
+    ],
+  }
+};
+
+const skipPasswordChange = (user) => {
+  return !user?.password_change_required;
 };
 
 const getHomeUrl = userCtx => {
@@ -190,36 +223,46 @@ const setUserCtxCookie = (res, userCtx) => {
   cookie.setUserCtx(res, JSON.stringify(content));
 };
 
-const setCookies = (req, res, sessionRes) => {
+const setCookies = async (req, res, sessionRes) => {
   const sessionCookie = getSessionCookie(sessionRes);
   if (!sessionCookie) {
     throw { status: 401, error: 'Not logged in' };
   }
   const options = { headers: { Cookie: sessionCookie } };
-  return getUserCtxRetry(options)
-    .then(userCtx => {
-      cookie.setSession(res, sessionCookie);
-      setUserCtxCookie(res, userCtx);
-      // Delete login=force cookie
-      res.clearCookie('login');
+  try {
+    const userCtx = await getUserCtxRetry(options);
+    if (roles.isDbAdmin(userCtx)) {
+      await users.createAdmin(userCtx);
+    }
 
-      return Promise.resolve()
-        .then(() => {
-          if (roles.isDbAdmin(userCtx)) {
-            return users.createAdmin(userCtx);
-          }
-        })
-        .then(() => {
-          const selectedLocale = req.body.locale
-            || config.get('locale');
-          cookie.setLocale(res, selectedLocale);
-          return getRedirectUrl(userCtx, req.body.redirect);
-        });
-    })
-    .catch(err => {
-      logger.error(`Error getting authCtx %o`, err);
-      throw { status: 401, error: 'Error getting authCtx' };
-    });
+    const user = await users.getUserDoc(userCtx.name);
+    if (!skipPasswordChange(user)) {
+      return redirectToPasswordReset(req, res, userCtx);
+    }
+    return redirectToApp({ req, res, sessionCookie, userCtx });
+  } catch (err) {
+    logger.error(`Error getting authCtx %o`, err);
+    throw { status: 401, error: 'Error getting authCtx' };
+  }
+};
+
+const redirectToApp = async ({ req, res, sessionCookie, userCtx }) => {
+  cookie.setSession(res, sessionCookie);
+  setUserCtxCookie(res, userCtx);
+  cookie.clearCookie(res, 'login');
+  setUserLocale(req, res);
+  return getRedirectUrl(userCtx, req.body.redirect);
+};
+
+const redirectToPasswordReset = (req, res, userCtx) => {
+  setUserCtxCookie(res, userCtx);
+  setUserLocale(req, res);
+  return PASSWORD_RESET_URL;
+};
+
+const setUserLocale = (req, res) => {
+  const selectedLocale = req.body.locale || config.get('locale');
+  cookie.setLocale(res, selectedLocale);
 };
 
 const renderTokenLogin = (req, res) => {
@@ -300,26 +343,122 @@ const renderLogin = (req) => {
   return render('login', req);
 };
 
+const renderPasswordReset = (req) => {
+  return render('passwordReset', req);
+};
+
+const validatePasswordReset = (password) => {
+  const error = validatePassword(password);
+
+  if (!error) {
+    return { isValid: true };
+  }
+
+  return {
+    isValid: false,
+    error: ERROR_KEY_MAPPING[error.message.translationKey],
+    params: error.message.translationParams
+  };
+};
+
+const validateSession = async (req) => {
+  const sessionRes = await createSession(req);
+  if (sessionRes.statusCode !== 200) {
+    const error = new Error('Not logged in');
+    error.status = sessionRes.statusCode;
+    error.error = 'Not logged in';
+    throw error;
+  }
+  return sessionRes;
+};
+
+const sendLoginErrorResponse = (e, res) => {
+  if (e.status === 401) {
+    return res.status(401).json({ error: e.error });
+  }
+  logger.error('Error logging in: %o', e);
+  return res.status(500).json({ error: 'Unexpected error logging in' });
+};
+
 const login = async (req, res) => {
   try {
-    const sessionRes = await createSession(req);
-    if (sessionRes.statusCode !== 200) {
-      res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
-    } else {
-      const redirectUrl = await setCookies(req, res, sessionRes);
-      res.status(302).send(redirectUrl);
-    }
+    const sessionRes = await validateSession(req);
+    const redirectUrl = await setCookies(req, res, sessionRes);
+    res.status(302).send(redirectUrl);
   } catch (e) {
-    if (e.status === 401) {
-      return res.status(401).json({ error: e.error });
-    }
-    logger.error('Error logging in: %o', e);
-    res.status(500).json({ error: 'Unexpected error logging in' });
+    return sendLoginErrorResponse(e, res);
   }
 };
 
+const updatePassword = async (user, newPassword, retry = 10) => {
+  const updatedUser = {
+    ...user,
+    password: newPassword,
+    password_change_required: false
+  };
+  try {
+    await db.users.put(updatedUser);
+    return updatedUser;
+  } catch (err) {
+    if (retry > 0 && err && err.code === 401) {
+      await new Promise(r => setTimeout(r, 20));
+      return updatePassword(user, newPassword, --retry);
+    }
+    throw err;
+  }
+};
+
+const validateCurrentPassword = async (username, currentPassword, newPassword) => {
+  try {
+    await request.get({
+      url: new URL('/_session', environment.serverUrlNoAuth).toString(),
+      json: true,
+      resolveWithFullResponse: true,
+      auth: { user: username, pass: currentPassword },
+    });
+
+    if (currentPassword === newPassword) {
+      return {
+        isValid: false,
+        error: ERROR_KEY_MAPPING['password.same'],
+      };
+    }
+    return { isValid: true };
+  } catch (err) {
+    if (err.statusCode === 401) {
+      return {
+        isValid: false,
+        error: ERROR_KEY_MAPPING['password.current.incorrect'],
+      };
+    }
+    throw err;
+  }
+};
+
+const passwordResetValidation = async (username, currentPassword, password) => {
+  const validation = validatePasswordReset(password);
+  if (!validation.isValid) {
+    return {
+      status: 400,
+      ...validation,
+    };
+  }
+
+  const currentPasswordValidation = await validateCurrentPassword(username, currentPassword, password);
+  if (!currentPasswordValidation.isValid) {
+    return {
+      status: 400,
+      ...currentPasswordValidation,
+    };
+  }
+
+  return { isValid: true };
+};
+
+
 module.exports = {
   renderLogin,
+  renderPasswordReset,
 
   get: (req, res, next) => {
     return renderLogin(req)
@@ -328,6 +467,7 @@ module.exports = {
           'Link',
           '</login/style.css>; rel=preload; as=style, '
           + '</login/script.js>; rel=preload; as=script, '
+          + '</login/auth-utils.js>; rel=preload; as=script, '
           + '</login/lib-bowser.js>; rel=preload; as=script'
         );
         res.send(body);
@@ -355,6 +495,48 @@ module.exports = {
       });
   },
 
+  getPasswordReset: (req, res, next) => {
+    return renderPasswordReset(req)
+      .then(body => {
+        res.setHeader(
+          'Link',
+          '</login/style.css>; rel=preload; as=style, '
+          + '</login/auth-utils.js>; rel=preload; as=script, '
+          + '</login/password-reset.js>; rel=preload; as=script'
+        );
+        res.send(body);
+      })
+      .catch(next);
+  },
+  resetPassword: async (req, res) => {
+    const limited = await rateLimitService.isLimited(req);
+    if (limited) {
+      return serverUtils.rateLimited(req, res);
+    }
+
+    try {
+      const { username, currentPassword, password, locale } = req.body;
+      const validationResult = await passwordResetValidation(username, currentPassword, password);
+      if (!validationResult.isValid) {
+        return res.status(validationResult.status).json({
+          error: validationResult.error,
+          params: validationResult.params
+        });
+      }
+
+      const userDoc = await users.getUserDoc(username);
+      await updatePassword(userDoc, password);
+
+      req.body = { user: username, password, locale };
+      const sessionRes = await createSessionRetry(req);
+      const redirectUrl = await setCookies(req, res, sessionRes);
+      return res.status(302).send(redirectUrl);
+    } catch (err) {
+      logger.error('Error updating password: %o', err);
+      const status = err.status || 500;
+      res.status(status).json({ error: err.error || 'Error updating password' });
+    }
+  },
   tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),
   tokenPost: async (req, res, next) => {
     const limited = await rateLimitService.isLimited(req);

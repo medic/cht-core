@@ -198,15 +198,16 @@ const validateNewUsername = username => {
   ]);
 };
 
-const createUser = (data, response) => {
-  const user = getUserUpdates(data.username, data);
+const createUser = async (data, response) => {
+  const user = await getUserUpdates(data.username, data, true);
   user._id = createID(data.username);
-  return db.users.put(user).then(body => {
-    response.user = {
-      id: body.id,
-      rev: body.rev
-    };
-  });
+  return db.users.put(user)
+    .then(body => {
+      response.user = {
+        id: body.id,
+        rev: body.rev
+      };
+    });
 };
 
 const hasUserCreateFlag = doc => doc?.user_for_contact?.create;
@@ -423,7 +424,7 @@ const getCommonFieldsUpdates = (userDoc, data) => {
   if (data.roles) {
     userDoc.roles = data.roles;
   }
-  
+
   if (!_.isUndefined(data.place)) {
     userDoc.facility_id = data.facility_id;
   }
@@ -452,13 +453,42 @@ const getSettingsUpdates = (username, data) => {
   return settings;
 };
 
-const getUserUpdates = (username, data) => {
+const requirePasswordChange = async (username, fullAccess) => {
+  if (!fullAccess) {
+    return false;
+  }
+
+  return !(await isDbAdmin(username));
+};
+
+const isPasswordChangeRequired = async (username, data, fullAccess) => {
+  if (!data.password || tokenLogin.shouldEnableTokenLogin(data)) {
+    return false;
+  }
+
+  const passwordChange = await requirePasswordChange(username, fullAccess);
+  if (!passwordChange) {
+    return false;
+  }
+
+  const canSkip = roles.hasAllPermissions(data.roles, ['can_skip_password_change']) ||
+    roles.isDbAdmin(data.roles) ||
+    (data.token_login && data.token_login.active);
+
+  return !canSkip;
+};
+
+const getUserUpdates = async (username, data, fullAccess = false) => {
   const ignore = ['type', 'place', 'contact'];
 
   const user = {
     name: username,
     type: 'user'
   };
+
+  if (data.password) {
+    user.password_change_required = await isPasswordChangeRequired(username, data, fullAccess);
+  }
 
   USER_EDITABLE_FIELDS.forEach(key => {
     if (!_.isUndefined(data[key]) && ignore.indexOf(key) === -1) {
@@ -491,6 +521,12 @@ const deleteUser = id => {
 };
 
 const validatePassword = (password) => {
+  if (!password) {
+    return error400(
+      'Password is not correct.',
+      'password-incorrect'
+    );
+  }
   if (password.length < PASSWORD_MINIMUM_LENGTH) {
     return error400(
       `The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`,
@@ -542,15 +578,16 @@ const missingFields = data => {
   return required.filter(prop => isInvalidProp(prop));
 };
 
-const getUpdatedUserDoc = async (username, data) => getUserDoc(username, 'users')
-  .then(doc => {
-    return {
-      ...doc,
-      ...getUserUpdates(username, data),
-      _id: createID(username)
-    };
-  });
-
+const getUpdatedUserDoc = async (username, data, fullAccess) => {
+  return getUserDoc(username, 'users')
+    .then(async doc => {
+      return {
+        ...doc,
+        ...(await getUserUpdates(username, data, fullAccess)),
+        _id: createID(username)
+      };
+    });
+};
 
 const getUpdatedSettingsDoc = (username, data) => getUserDoc(username, 'medic')
   .then(doc => {
@@ -561,14 +598,14 @@ const getUpdatedSettingsDoc = (username, data) => getUserDoc(username, 'medic')
     };
   });
 
-const isDbAdmin = user => {
+const isDbAdmin = username => {
   return couchSettings
     .getCouchConfig('admins')
-    .then(admins => admins && !!admins[user.name]);
+    .then(admins => admins && !!admins[username]);
 };
 
 const saveUserUpdates = async (user) => {
-  if (user.password && await isDbAdmin(user)) {
+  if (user.password && await isDbAdmin(user.name)) {
     throw error400('Admin passwords must be changed manually in the database');
   }
   const savedDoc = await db.users.put(user);
@@ -954,6 +991,7 @@ module.exports = {
     const facilities = await facility.list([user]);
     return mapUser(user, userSettings, facilities);
   },
+  getUserDoc: (username) => getUserDoc(username, 'users'),
   getUserSettings,
   /* eslint-disable max-len */
   /**
@@ -1132,7 +1170,7 @@ module.exports = {
     hydratePayload(data);
 
     const [user, userSettings] = await Promise.all([
-      getUpdatedUserDoc(username, data),
+      getUpdatedUserDoc(username, data, fullAccess),
       getUpdatedSettingsDoc(username, data),
     ]);
 
@@ -1159,12 +1197,14 @@ module.exports = {
    */
   resetPassword: async (username) => {
     const password = passwords.generate();
-    const user = await getUpdatedUserDoc(username, { password });
+    const user = await getUpdatedUserDoc(username, { password }, true);
     await saveUserUpdates(user);
     return password;
   },
 
   validateNewUsername,
+
+  validatePassword,
 
   /**
    * Parses a CSV of users to an array of objects.
