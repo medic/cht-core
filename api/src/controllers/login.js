@@ -82,11 +82,8 @@ const templates = {
   }
 };
 
-const skipPasswordChange = async (user, userCtx) => {
-  return !user?.password_change_required ||
-    user?.token_login?.active ||
-    roles.isDbAdmin(userCtx) ||
-    await auth.hasAllPermissions(userCtx, 'can_skip_password_change');
+const skipPasswordChange = (user) => {
+  return !user?.password_change_required;
 };
 
 const getHomeUrl = userCtx => {
@@ -239,7 +236,7 @@ const setCookies = async (req, res, sessionRes) => {
     }
 
     const user = await users.getUserDoc(userCtx.name);
-    if (!await skipPasswordChange(user, userCtx)) {
+    if (!skipPasswordChange(user)) {
       return redirectToPasswordReset(req, res, userCtx);
     }
     return redirectToApp({ req, res, sessionCookie, userCtx });
@@ -411,23 +408,6 @@ const updatePassword = async (user, newPassword, retry = 10) => {
   }
 };
 
-const createNewSession = async (username, password) => {
-  const sessionRes = await createSessionRetry({
-    body: {
-      user: username,
-      password: password,
-    }
-  });
-
-  const sessionCookie = getSessionCookie(sessionRes);
-  const userCtx = await getUserCtxRetry({ headers: { Cookie: sessionCookie }});
-
-  return {
-    sessionCookie,
-    userCtx
-  };
-};
-
 const validateCurrentPassword = async (username, currentPassword, newPassword) => {
   try {
     await request.get({
@@ -445,10 +425,13 @@ const validateCurrentPassword = async (username, currentPassword, newPassword) =
     }
     return { isValid: true };
   } catch (err) {
-    return {
-      isValid: false,
-      error: ERROR_KEY_MAPPING['password.current.incorrect'],
-    };
+    if (err.statusCode === 401) {
+      return {
+        isValid: false,
+        error: ERROR_KEY_MAPPING['password.current.incorrect'],
+      };
+    }
+    throw err;
   }
 };
 
@@ -456,19 +439,16 @@ const passwordResetValidation = async (username, currentPassword, password) => {
   const validation = validatePasswordReset(password);
   if (!validation.isValid) {
     return {
-      isValid: false,
       status: 400,
-      error: validation.error,
-      params: validation.params
+      ...validation,
     };
   }
 
   const currentPasswordValidation = await validateCurrentPassword(username, currentPassword, password);
   if (!currentPasswordValidation.isValid) {
     return {
-      isValid: false,
       status: 400,
-      error: currentPasswordValidation.error
+      ...currentPasswordValidation,
     };
   }
 
@@ -535,7 +515,7 @@ module.exports = {
     }
 
     try {
-      const { username, currentPassword, password } = req.body;
+      const { username, currentPassword, password, locale } = req.body;
       const validationResult = await passwordResetValidation(username, currentPassword, password);
       if (!validationResult.isValid) {
         return res.status(validationResult.status).json({
@@ -544,11 +524,12 @@ module.exports = {
         });
       }
 
-      const userDoc = await db.users.get(`org.couchdb.user:${username}`);
+      const userDoc = await users.getUserDoc(username);
       await updatePassword(userDoc, password);
 
-      const { sessionCookie, userCtx } = await createNewSession(username, password);
-      const redirectUrl = await redirectToApp({ req, res, sessionCookie, userCtx });
+      req.body = { user: username, password, locale };
+      const sessionRes = await createSessionRetry(req);
+      const redirectUrl = await setCookies(req, res, sessionRes);
       return res.status(302).send(redirectUrl);
     } catch (err) {
       logger.error('Error updating password: %o', err);

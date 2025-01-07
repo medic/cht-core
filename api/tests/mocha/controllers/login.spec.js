@@ -283,6 +283,121 @@ describe('login controller', () => {
     });
   });
 
+  describe('passwordReset', () => {
+    it('getPasswordReset should render password reset page', () => {
+      sinon.stub(translations, 'getEnabledLocales').resolves([]);
+      const linkResources = '</login/style.css>; rel=preload; as=style, '
+        + '</login/auth-utils.js>; rel=preload; as=script, '
+        + '</login/password-reset.js>; rel=preload; as=script';
+      const brandingGet = sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
+      const send = sinon.stub(res, 'send');
+      const setHeader = sinon.stub(res, 'setHeader');
+      sinon.stub(fs.promises, 'readFile').resolves('PASSWORD RESET PAGE GOES HERE. {{ translations }}');
+      sinon.stub(config, 'getTranslations').returns({ en: { password: 'Password' } });
+      return controller.getPasswordReset(req, res).then(() => {
+        chai.expect(brandingGet.callCount).to.equal(1);
+        chai.expect(send.callCount).to.equal(1);
+        chai.expect(send.args[0][0])
+          .to.equal('PASSWORD RESET PAGE GOES HERE. %7B%22en%22%3A%7B%22password%22%3A%22Password%22%7D%7D');
+        chai.expect(setHeader.callCount).to.equal(1);
+        chai.expect(setHeader.args[0][0]).to.equal('Link');
+        chai.expect(setHeader.args[0][1]).to.equal(linkResources);
+        chai.expect(fs.promises.readFile.callCount).to.equal(1);
+        chai.expect(translations.getEnabledLocales.callCount).to.equal(1);
+      });
+    });
+
+    it('should return 429 when rate limited', () => {
+      rateLimit.isLimited.returns(true);
+      return controller.resetPassword(req, res).then(() => {
+        chai.expect(rateLimit.isLimited.callCount).to.equal(1);
+        chai.expect(rateLimit.isLimited.args[0][0]).to.equal(req);
+        chai.expect(serverUtils.rateLimited.callCount).to.equal(1);
+      });
+    });
+
+    it('should return 400 if new password is invalid', () => {
+      req.body = {
+        username: 'user1',
+        currentPassword: 'current',
+        password: 'weak',
+        locale: 'en'
+      };
+
+      const status = sinon.stub(res, 'status').returns(res);
+      const json = sinon.stub(res, 'json').returns(res);
+
+      return controller.resetPassword(req, res).then(() => {
+        chai.expect(status.callCount).to.equal(1);
+        chai.expect(status.args[0][0]).to.equal(400);
+        chai.expect(json.callCount).to.equal(1);
+        chai.expect(json.args[0][0]).to.deep.equal({
+          error: 'password-short',
+          params: { minimum: 8 }
+        });
+      });
+    });
+
+    it('should reset password when it is valid', () => {
+      req.body = {
+        username: 'sharon',
+        currentPassword: 'oldPass',
+        password: 'newPass123',
+        locale: 'en'
+      };
+
+      const postResponse = {
+        statusCode: 200,
+        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+      };
+      const post = sinon.stub(request, 'post').resolves(postResponse);
+      const send = sinon.stub(res, 'send');
+      const status = sinon.stub(res, 'status').returns(res);
+      const cookie = sinon.stub(res, 'cookie').returns(res);
+
+      const userCtx = { name: 'sharon', roles: [ 'project-stuff' ] };
+      const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
+
+      const userDoc = {
+        name: 'sharon',
+        type: 'user',
+        password: 'oldPass'
+      };
+      sinon.stub(users, 'getUserDoc').resolves(userDoc);
+      sinon.stub(db.users, 'put').resolves();
+      sinon.stub(request, 'get').resolves({
+        statusCode: 200,
+        body: { userCtx: { name: 'sharon' } }
+      });
+
+      return controller.resetPassword(req, res).then(() => {
+        chai.expect(status.callCount).to.equal(1);
+        chai.expect(status.args[0][0]).to.equal(302);
+        chai.expect(send.args[0][0]).to.equal('/');
+        chai.expect(post.callCount).to.equal(1);
+        chai.expect(post.args[0][0].url).to.equal('http://test.com:1234/_session');
+        chai.expect(post.args[0][0].body.name).to.equal('sharon');
+        chai.expect(post.args[0][0].body.password).to.equal('newPass123');
+        chai.expect(getUserCtx.callCount).to.equal(1);
+        chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
+        chai.expect(cookie.callCount).to.equal(3);
+        chai.expect(cookie.args[0][0]).to.equal('AuthSession');
+        chai.expect(cookie.args[0][1]).to.equal('abc');
+        chai.expect(cookie.args[1][0]).to.equal('userCtx');
+        chai.expect(cookie.args[1][1]).to.equal(JSON.stringify(userCtx));
+        chai.expect(cookie.args[2][0]).to.equal('locale');
+        chai.expect(cookie.args[2][1]).to.equal('en');
+        chai.expect(db.users.put.callCount).to.equal(1);
+        chai.expect(db.users.put.args[0][0]).to.deep.include({
+          name: 'sharon',
+          type: 'user',
+          password: 'newPass123',
+          password_change_required: false
+        });
+      });
+    });
+  });
+
   describe('get login/token', () => {
     it('should render the token login page', () => {
       sinon.stub(translations, 'getEnabledLocales').resolves([]);
@@ -666,8 +781,6 @@ describe('login controller', () => {
       const status = sinon.stub(res, 'status').returns(res);
       const cookie = sinon.stub(res, 'cookie').returns(res);
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
-      sinon.stub(roles, 'isDbAdmin').returns(false);
-      sinon.stub(auth, 'hasAllPermissions').returns(false);
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
       sinon.stub(users, 'getUserDoc').resolves({
         name: 'sharon',
@@ -685,9 +798,6 @@ describe('login controller', () => {
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(302);
         chai.expect(send.args[0][0]).to.deep.equal('/medic/password-reset');
-        chai.expect(auth.hasAllPermissions.callCount).to.equal(1);
-        chai.expect(auth.hasAllPermissions.args[0][0]).to.equal(userCtx);
-        chai.expect(auth.hasAllPermissions.args[0][1]).to.equal('can_skip_password_change');
         chai.expect(cookie.callCount).to.equal(2);
         chai.expect(cookie.args[0][0]).to.equal('userCtx');
         chai.expect(cookie.args[0][1]).to.equal(JSON.stringify(userCtx));
@@ -710,13 +820,11 @@ describe('login controller', () => {
       const cookie = sinon.stub(res, 'cookie').returns(res);
       const clearCookie = sinon.stub(res, 'clearCookie').returns(res);
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
-      sinon.stub(roles, 'isDbAdmin').returns(false);
-      sinon.stub(auth, 'hasAllPermissions').returns(true);
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
       sinon.stub(users, 'getUserDoc').resolves({
         name: 'sharon',
         type: 'user',
-        password_change_required: true
+        password_change_required: false
       });
       sinon.stub(auth, 'getUserSettings').resolves({});
       return controller.post(req, res).then(() => {

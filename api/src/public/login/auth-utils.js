@@ -104,7 +104,7 @@ window.AuthUtils = (function() {
       .forEach(elem => elem.title = translations[selectedLocale][elem.getAttribute('translate-title')]);
   };
 
-  const togglePassword = (passwordInputId, confirmPasswordInputId = null, currentPasswordInputId = null) => {
+  const togglePassword = (passwordInputId, passwordContainerId) => {
     const passwordInput = document.getElementById(passwordInputId);
     if (!passwordInput) {
       return;
@@ -112,19 +112,7 @@ window.AuthUtils = (function() {
 
     const displayType = passwordInput.type === 'password' ? 'text' : 'password';
     passwordInput.type = displayType;
-    document.getElementById('password-container')?.classList.toggle('hidden-password');
-
-    if (confirmPasswordInputId) {
-      const confirmPasswordInput = document.getElementById(confirmPasswordInputId);
-      confirmPasswordInput.type = displayType;
-      document.getElementById('confirm-password-container')?.classList.toggle('hidden-password');
-    }
-
-    if (currentPasswordInputId) {
-      const currentPasswordInput = document.getElementById(currentPasswordInputId);
-      currentPasswordInput.type = displayType;
-      document.getElementById('current-password-container')?.classList.toggle('hidden-password');
-    }
+    document.getElementById(passwordContainerId)?.classList.toggle('hidden-password');
   };
 
   return {

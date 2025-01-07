@@ -15,6 +15,14 @@ const PASSWORD_INPUT_ID = 'password';
 const CONFIRM_PASSWORD_INPUT_ID = 'confirm-password';
 const CURRENT_PASSWORD_INPUT_ID = 'current-password';
 
+const checkSession = function() {
+  const userCtx = getUserCtx();
+  if (!userCtx || !userCtx.name) {
+    // only logged-in users should access password reset page
+    window.location = '/medic/login';
+  }
+};
+
 const translate = () => {
   baseTranslate(selectedLocale, translations);
 };
@@ -63,6 +71,7 @@ const submit = function(e) {
     username: userCtx.name,
     password: password,
     currentPassword: currentPassword,
+    locale: selectedLocale
   });
 
   request('POST', url, payload, function(xmlhttp) {
@@ -84,15 +93,16 @@ document.addEventListener('DOMContentLoaded', function() {
   translations = parseTranslations();
   selectedLocale = getLocale(translations);
   translate();
+  checkSession();
 
   document.getElementById('update-password')?.addEventListener('click', submit, false);
 
   const passwordToggle = document.getElementById('password-toggle');
   if (passwordToggle) {
-    passwordToggle.addEventListener('click', () => togglePassword(
-      PASSWORD_INPUT_ID,
-      CONFIRM_PASSWORD_INPUT_ID,
-      CURRENT_PASSWORD_INPUT_ID
-    ), false);
+    passwordToggle.addEventListener('click', () => {
+      togglePassword('password', 'password-container');
+      togglePassword('confirm-password', 'confirm-password-container');
+      togglePassword('current-password', 'current-password-container');
+    }, false);
   }
 });

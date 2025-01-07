@@ -198,16 +198,10 @@ const validateNewUsername = username => {
   ]);
 };
 
-const createUser = (data, response) => {
-  const user = getUserUpdates(data.username, data);
+const createUser = async (data, response) => {
+  const user = await getUserUpdates(data.username, data, true);
   user._id = createID(data.username);
-  return isTargetAdminUser(data.username)
-    .then(isAdmin => {
-      if (!data.token_login) {
-        user.password_change_required = !isAdmin;
-      }
-      return db.users.put(user);
-    })
+  return db.users.put(user)
     .then(body => {
       response.user = {
         id: body.id,
@@ -459,20 +453,32 @@ const getSettingsUpdates = (username, data) => {
   return settings;
 };
 
-const isTargetAdminUser = async (username) => {
-  const admins = await couchSettings.getCouchConfig('admins');
-  return admins && !!admins[username];
-};
-
 const requirePasswordChange = async (username, fullAccess) => {
   if (!fullAccess) {
     return false;
   }
 
-  return !(await isTargetAdminUser(username));
+  return !(await isDbAdmin(username));
 };
 
-const getUserUpdates = (username, data, requirePasswordChange = false) => {
+const isPasswordChangeRequired = async (username, data, fullAccess) => {
+  if (!data.password || tokenLogin.shouldEnableTokenLogin(data)) {
+    return false;
+  }
+
+  const passwordChange = await requirePasswordChange(username, fullAccess);
+  if (!passwordChange) {
+    return false;
+  }
+
+  const canSkip = roles.hasAllPermissions(data.roles, ['can_skip_password_change']) ||
+    roles.isDbAdmin(data.roles) ||
+    (data.token_login && data.token_login.active);
+
+  return !canSkip;
+};
+
+const getUserUpdates = async (username, data, fullAccess = false) => {
   const ignore = ['type', 'place', 'contact'];
 
   const user = {
@@ -480,8 +486,8 @@ const getUserUpdates = (username, data, requirePasswordChange = false) => {
     type: 'user'
   };
 
-  if (data.password && !tokenLogin.shouldEnableTokenLogin(data)) {
-    user.password_change_required = requirePasswordChange;
+  if (data.password) {
+    user.password_change_required = await isPasswordChangeRequired(username, data, fullAccess);
   }
 
   USER_EDITABLE_FIELDS.forEach(key => {
@@ -515,6 +521,12 @@ const deleteUser = id => {
 };
 
 const validatePassword = (password) => {
+  if (!password) {
+    return error400(
+      'Password is not correct.',
+      'password-incorrect'
+    )
+  }
   if (password.length < PASSWORD_MINIMUM_LENGTH) {
     return error400(
       `The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`,
@@ -567,17 +579,15 @@ const missingFields = data => {
 };
 
 const getUpdatedUserDoc = async (username, data, fullAccess) => {
-  const passwordChange = await requirePasswordChange(username, fullAccess);
   return getUserDoc(username, 'users')
-    .then(doc => {
+    .then(async doc => {
       return {
         ...doc,
-        ...getUserUpdates(username, data, passwordChange),
+        ...(await getUserUpdates(username, data, fullAccess)),
         _id: createID(username)
       };
     });
 };
-
 
 const getUpdatedSettingsDoc = (username, data) => getUserDoc(username, 'medic')
   .then(doc => {
@@ -588,14 +598,14 @@ const getUpdatedSettingsDoc = (username, data) => getUserDoc(username, 'medic')
     };
   });
 
-const isDbAdmin = user => {
+const isDbAdmin = username => {
   return couchSettings
     .getCouchConfig('admins')
-    .then(admins => admins && !!admins[user.name]);
+    .then(admins => admins && !!admins[username]);
 };
 
 const saveUserUpdates = async (user) => {
-  if (user.password && await isDbAdmin(user)) {
+  if (user.password && await isDbAdmin(user.name)) {
     throw error400('Admin passwords must be changed manually in the database');
   }
   const savedDoc = await db.users.put(user);

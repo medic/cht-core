@@ -77,13 +77,6 @@ module.exports = {
   },
 
   checkPasswordChange: async (req) => {
-    if (!req.userCtx || !req.userCtx.name) {
-      const error = new Error('Not logged in');
-      error.code = 401;
-      error.error = 'Not logged in';
-      throw error;
-    }
-
     if (roles.isDbAdmin(req.userCtx)) {
       return;
     }

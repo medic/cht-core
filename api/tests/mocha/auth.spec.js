@@ -5,6 +5,9 @@ const sinon = require('sinon');
 const auth = require('../../src/auth');
 const config = require('../../src/config');
 const environment = require('@medic/environment');
+const db = require('../../src/db');
+const dataContext = require('../../src/services/data-context');
+const { roles, users } = require('@medic/user-management')(config, db, dataContext);
 
 let req;
 
@@ -202,4 +205,84 @@ describe('Auth', () => {
     });
   });
 
+  describe('checkPasswordChange', () => {
+    it('should return immediately for db admin users', () => {
+      const req = {
+        userCtx: {
+          name: 'admin',
+          roles: ['admin']
+        }
+      };
+
+      sinon.stub(roles, 'isDbAdmin').returns(true);
+
+      return auth.checkPasswordChange(req).then(() => {
+        chai.expect(roles.isDbAdmin.callCount).to.equal(1);
+        chai.expect(roles.isDbAdmin.args[0][0]).to.deep.equal(req.userCtx);
+      });
+    });
+
+    it('returns error when password change is required', () => {
+      const req = {
+        userCtx: {
+          name: 'user',
+          roles: ['district_admin']
+        }
+      };
+
+      sinon.stub(roles, 'isDbAdmin').returns(false);
+      const getUserDoc = sinon.stub(users, 'getUserDoc').resolves({
+        password_change_required: true,
+      });
+
+      return auth.checkPasswordChange(req).catch(err => {
+        chai.expect(err.message).to.equal('Password change required');
+        chai.expect(err.code).to.equal(403);
+        chai.expect(err.error).to.equal('Password change required');
+        chai.expect(getUserDoc.callCount).to.equal(1);
+        chai.expect(getUserDoc.args[0][0]).to.equal('user');
+      });
+    });
+
+    it('return no error when password change is not required', () => {
+      const req = {
+        userCtx: {
+          name: 'user',
+          roles: ['district_admin']
+        }
+      };
+
+      sinon.stub(roles, 'isDbAdmin').returns(false);
+      const getUserDoc = sinon.stub(users, 'getUserDoc').resolves({
+        password_change_required: false
+      });
+
+      return auth.checkPasswordChange(req)
+        .then(() => {
+          chai.expect(getUserDoc.callCount).to.equal(1);
+          chai.expect(getUserDoc.args[0][0]).to.equal('user');
+        });
+    });
+
+    it('succeeds when using token login despite password change being required', () => {
+      const req = {
+        userCtx: {
+          name: 'user',
+          roles: ['district_admin']
+        }
+      };
+
+      sinon.stub(roles, 'isDbAdmin').returns(false);
+      const getUserDoc = sinon.stub(users, 'getUserDoc').resolves({
+        password_change_required: true,
+        token_login: true
+      });
+
+      return auth.checkPasswordChange(req)
+        .then(() => {
+          chai.expect(getUserDoc.callCount).to.equal(1);
+          chai.expect(getUserDoc.args[0][0]).to.equal('user');
+        });
+    });
+  });
 });
