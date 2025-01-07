@@ -27,6 +27,7 @@ const ERROR_KEY_MAPPING = {
   'password.length.minimum': 'password-short', //NoSONAR
   'password.current.incorrect': 'current-password-incorrect', //NoSONAR
   'password.same': 'password-same', //NoSONAR
+  'fields.required': 'fields-required', //NoSONAR
 };
 
 const templates = {
@@ -77,7 +78,8 @@ const templates = {
       'password.must.match',
       'user.password.current',
       'password.current.incorrect',
-      'password.same'
+      'password.same',
+      'fields.required'
     ],
   }
 };

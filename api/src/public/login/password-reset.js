@@ -31,11 +31,35 @@ const displayPasswordValidationError = (serverResponse) => {
   const { error, params } = JSON.parse(serverResponse);
   setState(error);
 
-  const passwordError = document.querySelector('.error.password-short');
-  if (params?.minimum && passwordError) {
-    passwordError.setAttribute('translate-values', JSON.stringify(params));
-    baseTranslate(selectedLocale, translations);
+  const errorElement = document.querySelector(`.error.${error}`);
+  if (params && errorElement) {
+    errorElement.setAttribute('translate-values', JSON.stringify(params));
+    translate();
   }
+};
+
+const validateRequiredFields = (currentPassword, password, confirmPassword) => {
+  const missingFields = [];
+
+  if (!currentPassword) {
+    missingFields.push(translations[selectedLocale]['user.password.current']);
+  }
+  if (!password) {
+    missingFields.push(translations[selectedLocale]['change.password.new.password']);
+  }
+  if (!confirmPassword) {
+    missingFields.push(translations[selectedLocale]['change.password.confirm.password']);
+  }
+
+  if (missingFields.length > 0) {
+    return {
+      isValid: false,
+      error: 'fields-required',
+      params: { fields: missingFields.join(', ') }
+    };
+  }
+
+  return { isValid: true };
 };
 
 const validatePasswordMatch = (password, confirmPassword) => {
@@ -54,13 +78,24 @@ const submit = function(e) {
     // debounce double clicks
     return;
   }
+
   const currentPassword = document.getElementById(CURRENT_PASSWORD_INPUT_ID)?.value;
   const password = document.getElementById(PASSWORD_INPUT_ID)?.value;
   const confirmPassword = document.getElementById(CONFIRM_PASSWORD_INPUT_ID)?.value;
-  const validation = validatePasswordMatch(password, confirmPassword);
-  if (!validation.isValid) {
-    displayPasswordValidationError(JSON.stringify({ error: validation.error }));
-    return;
+
+  const validations = [
+    validateRequiredFields(currentPassword, password, confirmPassword),
+    validatePasswordMatch(password, confirmPassword)
+  ];
+
+  for (const validation of validations) {
+    if (!validation.isValid) {
+      displayPasswordValidationError(JSON.stringify({
+        error: validation.error,
+        params: validation.params
+      }));
+      return;
+    }
   }
 
   setState('loading');

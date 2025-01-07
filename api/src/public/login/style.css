@@ -107,7 +107,8 @@ form {
 .password-mismatch .error.password-mismatch,
 .password-required .error.password-required,
 .password-same .error.password-same,
-.current-password-incorrect .error.current-password-incorrect
+.current-password-incorrect .error.current-password-incorrect,
+.fields-required .error.fields-required
 {
   display: block;
 }
