@@ -3,7 +3,9 @@ const constants = require('@constants');
 const _ = require('lodash');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const userFactory = require('@factories/cht/users/users');
+const userFactory = require('@factories/cht/users/users')
+
+const newPassword = 'Pa33word1';
 
 describe('server', () => {
   describe('JSON-only endpoints', () => {
@@ -343,9 +345,10 @@ describe('server', () => {
 
         await utils.saveDocs([contact, ...placeMap.values()]);
         await utils.createUsers([offlineUser]);
+        await utils.resetUserPassword([offlineUser]);
 
         reqOptions = {
-          auth: { username: offlineUser.username, password: offlineUser.password },
+          auth: { username: offlineUser.username, password: newPassword },
         };
       });
 
@@ -362,15 +365,15 @@ describe('server', () => {
         const reqID = getReqId(apiLogs[0]);
 
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
-        expect(haproxyRequests.length).to.equal(12);
+        expect(haproxyRequests.length).to.equal(13);
         expect(haproxyRequests[0]).to.include('_session');
-        expect(haproxyRequests[5]).to.include('/medic-test/_design/medic/_view/contacts_by_depth');
-        expect(haproxyRequests[6]).to.include('/medic-test/_design/medic/_view/docs_by_replication_key');
-        expect(haproxyRequests[7]).to.include('/medic-test-purged-cache/purged-docs-');
-        expect(haproxyRequests[8]).to.include('/medic-test-purged-role-');
-        expect(haproxyRequests[9]).to.include('/medic-test-logs/replication-count-');
+        expect(haproxyRequests[6]).to.include('/medic-test/_design/medic/_view/contacts_by_depth');
+        expect(haproxyRequests[7]).to.include('/medic-test/_design/medic/_view/docs_by_replication_key');
+        expect(haproxyRequests[8]).to.include('/medic-test-purged-cache/purged-docs-');
+        expect(haproxyRequests[9]).to.include('/medic-test-purged-role-');
         expect(haproxyRequests[10]).to.include('/medic-test-logs/replication-count-');
-        expect(haproxyRequests[11]).to.include('/medic-test/_all_docs');
+        expect(haproxyRequests[11]).to.include('/medic-test-logs/replication-count-');
+        expect(haproxyRequests[12]).to.include('/medic-test/_all_docs');
       });
 
       it('should propagate ID via couch requests', async () => {

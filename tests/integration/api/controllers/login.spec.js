@@ -50,6 +50,13 @@ const expectLoginToWork = (response) => {
   chai.expect(response.body).to.equal('/');
 };
 
+const expectRedirectToPasswordReset = (response) => {
+  chai.expect(response).to.include({ statusCode: 302 });
+  chai.expect(response.headers['set-cookie']).to.be.an('array');
+  chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
+  chai.expect(response.body).to.equal('/medic/password-reset');
+};
+
 const expectLoginToFail = (response) => {
   chai.expect(response.headers.getSetCookie()).to.deep.equal([]);
   chai.expect(response.status).to.equal(401);
@@ -117,7 +124,29 @@ describe('login', () => {
         .then(response => expectLoginToFail(response));
     });
 
-    it('should succeed with right credentials', () => {
+    it('should succeed with right credentials without redirecting to password-reset', () => {
+      const opts = {
+        path: '/api/v1/users',
+        method: 'POST',
+        body: user
+      };
+      return utils
+        .request(opts)
+        .then(() => getUser(user))
+        .then(userDoc => {
+          // Overriding password_change_required for new user
+          userDoc.password_change_required = false;
+          return utils.request({
+            path: `/_users/${userDoc._id}`,
+            method: 'PUT',
+            body: userDoc
+          });
+        })
+        .then(() => loginWithData({ user: user.username, password }))
+        .then(response => expectLoginToWork(response));
+    });
+
+    it('should succeed with right credentials and redirect to password-reset for new users', () => {
       const opts = {
         path: '/api/v1/users',
         method: 'POST',
@@ -126,7 +155,7 @@ describe('login', () => {
       return utils
         .request(opts)
         .then(() => loginWithData({ user: user.username, password }))
-        .then(response => expectLoginToWork(response));
+        .then(response => expectRedirectToPasswordReset(response));
     });
   });
 

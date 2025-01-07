@@ -7,6 +7,7 @@ const sUtils = require('@utils/sentinel');
 const constants = require('@constants');
 
 const password = 'passwordSUP3RS3CR37!';
+const newPassword = 'Pa33word1';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
@@ -86,6 +87,7 @@ describe('bulk-docs handler', () => {
     await sUtils.waitForSentinel();
     await utils.updatePermissions(['district_admin'], ['can_have_multiple_places'], [], { ignoreReload: true });
     await utils.createUsers(users);
+    await utils.resetUserPassword(users);
   });
 
   after(async () => {
@@ -97,19 +99,19 @@ describe('bulk-docs handler', () => {
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_bulk_docs',
-      auth: { username: 'offline', password },
+      auth: { username: 'offline', password: newPassword },
       method: 'POST',
     };
 
     multiRequestOptions = {
       path: '/_bulk_docs',
-      auth: { username: 'multi', password },
+      auth: { username: 'multi', password: newPassword },
       method: 'POST',
     };
 
     onlineRequestOptions = {
       path: '/_bulk_docs',
-      auth: { username: 'online', password },
+      auth: { username: 'online', password: newPassword },
       method: 'POST',
     };
   });

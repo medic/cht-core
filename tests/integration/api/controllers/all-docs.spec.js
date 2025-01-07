@@ -7,6 +7,7 @@ chai.use(chaiExclude);
 const expect = chai.expect;
 
 const password = 'passwordSUP3RS3CR37!';
+const newPassword = 'Pa33word1';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
@@ -107,6 +108,7 @@ describe('all_docs handler', () => {
   before(async () => {
     await utils.saveDoc(parentPlace);
     await utils.createUsers(users);
+    await utils.resetUserPassword(users);
   });
 
   after(async () => {
@@ -118,13 +120,13 @@ describe('all_docs handler', () => {
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_all_docs',
-      auth: { username: 'offline', password },
+      auth: { username: 'offline', password: newPassword },
       method: 'GET'
     };
 
     onlineRequestOptions = {
       path: '/_all_docs',
-      auth: { username: 'online', password },
+      auth: { username: 'online', password: newPassword },
       method: 'GET'
     };
   });
@@ -145,7 +147,7 @@ describe('all_docs handler', () => {
   it('filters offline users results', () => {
     const supervisorRequestOptions = {
       path: '/_all_docs',
-      auth: { username: 'supervisor', password },
+      auth: { username: 'supervisor', password: newPassword },
       method: 'GET'
     };
     const lineage = { _id: 'PARENT_PLACE' };
@@ -572,7 +574,7 @@ describe('all_docs handler', () => {
 
       const supervisorRequestOptions = {
         path: '/_all_docs',
-        auth: { username: 'supervisor', password },
+        auth: { username: 'supervisor', password: newPassword },
         method: 'GET'
       };
 
