@@ -9,3 +9,10 @@ export const validateCursor = (cursor: Nullable<string>): number => {
   }
   return skip;
 };
+
+/** @internal */
+export const normalizeFreetext = (
+  freetext: string,
+): string => {
+  return freetext.trim().toLowerCase();
+};

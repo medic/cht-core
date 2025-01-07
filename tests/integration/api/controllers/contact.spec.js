@@ -5,14 +5,33 @@ const userFactory = require('@factories/cht/users/users');
 const {expect} = require('chai');
 
 describe('Contact API', () => {
-  const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
-  const contact1 = utils.deepFreeze(personFactory.build({ name: 'contact1', role: 'chw_supervisor' }));
-  const contact2 = utils.deepFreeze(personFactory.build({ name: 'contact2', role: 'program_officer' }));
+  // just a random string to be added to every doc so that it can be used to retrieve all the docs
+  const commonWord = 'freetext';
+  const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw', notes: commonWord }));
+  const contact1 = utils.deepFreeze(personFactory.build({
+    name: 'contact1',
+    role: 'chw_supervisor',
+    notes: commonWord
+  }));
+  const contact2 = utils.deepFreeze(personFactory.build({
+    name: 'contact2',
+    role: 'program_officer',
+    notes: commonWord
+  }));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
-  const place1 = utils.deepFreeze({ ...placeMap.get('health_center'), contact: { _id: contact1._id } });
-  const place2 = utils.deepFreeze({ ...placeMap.get('district_hospital'), contact: { _id: contact2._id } });
+  const place1 = utils.deepFreeze({
+    ...placeMap.get('health_center'),
+    contact: { _id: contact1._id },
+    notes: commonWord
+  });
+  const place2 = utils.deepFreeze({
+    ...placeMap.get('district_hospital'),
+    contact: { _id: contact2._id },
+    notes: commonWord
+  });
   const place0 = utils.deepFreeze({
     ...placeMap.get('clinic'),
+    notes: commonWord,
     contact: { _id: contact0._id },
     parent: {
       _id: place1._id,
@@ -59,10 +78,6 @@ describe('Contact API', () => {
     name: 'clinic2'
   }));
 
-  const adminUser = {
-    username: 'admin',
-    password: 'pass'
-  };
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms',
     place: place1._id,
@@ -138,7 +153,6 @@ describe('Contact API', () => {
     it('returns the person contact matching the provided UUID', async () => {
       const opts = {
         path: `${endpoint}/${patient._id}`,
-        auth: adminUser,
       };
       const person = await utils.request(opts);
       expect(person).excluding([ '_rev', 'reported_date' ]).to.deep.equal(patient);
@@ -147,7 +161,6 @@ describe('Contact API', () => {
     it('returns the place contact matching the provided UUID', async () => {
       const opts = {
         path: `${endpoint}/${place0._id}`,
-        auth: adminUser,
       };
       const place = await utils.request(opts);
       expect(place).excluding(['_rev', 'reported_date']).to.deep.equal(place0);
@@ -156,7 +169,6 @@ describe('Contact API', () => {
     it('returns the person contact with lineage when the withLineage query parameter is provided', async () => {
       const opts = {
         path: `${endpoint}/${patient._id}?with_lineage=true`,
-        auth: adminUser,
       };
       const person = await utils.request(opts);
       expect(person).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
@@ -179,7 +191,6 @@ describe('Contact API', () => {
     it('returns the place contact with lineage when the withLineage query parameter is provided', async () => {
       const opts = {
         path: `${endpoint}/${place0._id}?with_lineage=true`,
-        auth: adminUser,
       };
       const place = await utils.request(opts);
       expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
@@ -196,10 +207,9 @@ describe('Contact API', () => {
       });
     });
 
-    it('returns null when no contact is found for the UUID', async () => {
+    it('throws 404 error when no contact is found for the UUID', async () => {
       const opts = {
         path: `${endpoint}/invalid-uuid`,
-        auth: adminUser,
       };
       await expect(utils.request(opts)).to.be.rejectedWith('404 - {"code":404,"error":"Contact not found"}');
     });
@@ -220,9 +230,10 @@ describe('Contact API', () => {
 
   describe('GET /api/v1/contact/uuid', async () => {
     const fourLimit = 4;
+    const threeLimit = 3;
     const twoLimit = 2;
     const invalidContactType = 'invalidPerson';
-    const freetext = 'contact';
+    const freetext = 'freetext';
     const placeFreetext = 'clinic';
     const endpoint = '/api/v1/contact/uuid';
 
@@ -233,7 +244,6 @@ describe('Contact API', () => {
       const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser,
       };
       const responsePage = await utils.request(opts);
       const responsePeople = responsePage.data;
@@ -250,7 +260,6 @@ describe('Contact API', () => {
       const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser,
       };
       const responsePage = await utils.request(opts);
       const responsePlaces = responsePage.data;
@@ -268,9 +277,8 @@ describe('Contact API', () => {
       const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser
       };
-      const expectedContactIds = [contact0._id, contact1._id, contact2._id];
+      const expectedContactIds = [contact0._id, contact1._id, contact2._id, place0._id, place1._id, place2._id];
 
       const responsePage = await utils.request(opts);
       const responsePeople = responsePage.data;
@@ -288,7 +296,6 @@ describe('Contact API', () => {
       const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser
       };
       const expectedContactIds = [contact0._id, contact1._id, contact2._id];
 
@@ -308,7 +315,6 @@ describe('Contact API', () => {
       const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser
       };
       const expectedContactIds = [place0._id, clinic1._id, clinic2._id];
 
@@ -331,7 +337,6 @@ describe('Contact API', () => {
         let stringQueryParams = new URLSearchParams(queryParams).toString();
         const opts = {
           path: `${endpoint}?${stringQueryParams}`,
-          auth: adminUser
         };
         const firstPage = await utils.request(opts);
 
@@ -340,7 +345,6 @@ describe('Contact API', () => {
         stringQueryParams = new URLSearchParams(queryParams).toString();
         const opts2 = {
           path: `${endpoint}?${stringQueryParams}`,
-          auth: adminUser
         };
         const secondPage = await utils.request(opts2);
 
@@ -363,7 +367,6 @@ describe('Contact API', () => {
         let stringQueryParams = new URLSearchParams(queryParams).toString();
         const opts = {
           path: `${endpoint}?${stringQueryParams}`,
-          auth: adminUser
         };
         const firstPage = await utils.request(opts);
 
@@ -372,7 +375,6 @@ describe('Contact API', () => {
         stringQueryParams = new URLSearchParams(queryParams).toString();
         const opts2 = {
           path: `${endpoint}?${stringQueryParams}`,
-          auth: adminUser
         };
         const secondPage = await utils.request(opts2);
 
@@ -388,15 +390,14 @@ describe('Contact API', () => {
     it('returns a page of contact ids with freetext when limit and cursor is passed and cursor can be reused',
       async () => {
         // first request
-        const expectedContactIds = [contact0._id, contact1._id, contact2._id];
+        const expectedContactIds = [contact0._id, contact1._id, contact2._id, place0._id, place1._id, place2._id];
         const queryParams = {
           freetext,
-          limit: twoLimit
+          limit: threeLimit
         };
         let stringQueryParams = new URLSearchParams(queryParams).toString();
         const opts = {
           path: `${endpoint}?${stringQueryParams}`,
-          auth: adminUser
         };
         const firstPage = await utils.request(opts);
 
@@ -405,17 +406,16 @@ describe('Contact API', () => {
         stringQueryParams = new URLSearchParams(queryParams).toString();
         const opts2 = {
           path: `${endpoint}?${stringQueryParams}`,
-          auth: adminUser
         };
         const secondPage = await utils.request(opts2);
 
         const allData = [...firstPage.data, ...secondPage.data];
 
         expect(allData).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedContactIds);
-        expect(firstPage.data.length).to.be.equal(2);
-        expect(secondPage.data.length).to.be.equal(1);
-        expect(firstPage.cursor).to.be.equal('2');
-        expect(secondPage.cursor).to.be.equal(null);
+        expect(firstPage.data.length).to.be.equal(3);
+        expect(secondPage.data.length).to.be.equal(3);
+        expect(firstPage.cursor).to.be.equal('3');
+        expect(secondPage.cursor).to.be.equal('6');
       });
 
     it('returns a page of people type contact ids with freetext when limit and cursor is passed' +
@@ -431,7 +431,6 @@ describe('Contact API', () => {
       let stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser
       };
       const firstPage = await utils.request(opts);
 
@@ -440,7 +439,6 @@ describe('Contact API', () => {
       stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts2 = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser
       };
       const secondPage = await utils.request(opts2);
 
@@ -465,7 +463,6 @@ describe('Contact API', () => {
         let stringQueryParams = new URLSearchParams(queryParams).toString();
         const opts = {
           path: `${endpoint}?${stringQueryParams}`,
-          auth: adminUser
         };
         const firstPage = await utils.request(opts);
 
@@ -474,7 +471,6 @@ describe('Contact API', () => {
         stringQueryParams = new URLSearchParams(queryParams).toString();
         const opts2 = {
           path: `${endpoint}?${stringQueryParams}`,
-          auth: adminUser
         };
         const secondPage = await utils.request(opts2);
 
@@ -514,6 +510,19 @@ describe('Contact API', () => {
 
       await expect(utils.request(opts))
         .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid contact type [${invalidContactType}]."}`);
+    });
+
+    it('should 400 error when freetext is invalid', async () => {
+      const queryParams = {
+        freetext: ' '
+      };
+      const queryString = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `${endpoint}?${queryString}`,
+      };
+
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid freetext [\\" \\"]."}`);
     });
 
     it('throws 400 error when limit is invalid', async () => {

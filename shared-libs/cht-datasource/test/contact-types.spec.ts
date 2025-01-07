@@ -43,9 +43,9 @@ describe('contact-types', () => {
     });
 
     it('should handle falsy but valid values', () => {
-      const result = createQualifier('0', 'email');
+      const result = createQualifier('000', 'email');
       expect(result).to.deep.equal({
-        freetext: '0',
+        freetext: '000',
         contactType: 'email'
       });
     });

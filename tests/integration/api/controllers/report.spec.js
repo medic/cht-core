@@ -59,10 +59,6 @@ describe('Report API', () => {
     patient, submitter: contact0
   }));
 
-  const adminUser = {
-    username: 'admin',
-    password: 'pass'
-  };
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms', place: place1._id, contact: {
       _id: 'fixture:user:online-no-perms', name: 'Online User',
@@ -95,16 +91,14 @@ describe('Report API', () => {
     it('should return the report matching the provided UUID', async () => {
       const opts = {
         path: `${endpoint}/${report0._id}`,
-        auth: adminUser,
       };
       const resReport = await utils.request(opts);
       expect(resReport).excluding([ '_rev', 'reported_date' ]).to.deep.equal(report0);
     });
 
-    it('returns null when no report is found for the UUID', async () => {
+    it('throws 404 error when no report is found for the UUID', async () => {
       const opts = {
         path: `${endpoint}/invalid-uuid`,
-        auth: adminUser,
       };
       await expect(utils.request(opts)).to.be.rejectedWith('404 - {"code":404,"error":"Report not found"}');
     });
@@ -134,7 +128,6 @@ describe('Report API', () => {
       const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser,
       };
       const responsePage = await utils.request(opts);
       const responsePeople = responsePage.data;
@@ -153,7 +146,6 @@ describe('Report API', () => {
       let stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser
       };
       const firstPage = await utils.request(opts);
 
@@ -162,7 +154,6 @@ describe('Report API', () => {
       stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts2 = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser
       };
       const secondPage = await utils.request(opts2);
 

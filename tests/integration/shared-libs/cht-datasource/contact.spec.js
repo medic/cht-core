@@ -134,33 +134,20 @@ describe('Contact', () => {
         const contact = await getContact(Qualifier.byUuid('invalid-uuid'));
         expect(contact).to.be.null;
       });
-
-      [
-        [ 'does not have can_view_contacts permission', userNoPerms ],
-        [ 'is not an online user', offlineUser ]
-      ].forEach(([ description, user ]) => {
-        it(`throws error when user ${description}`, async () => {
-          const opts = {
-            path: `/api/v1/contact/${patient._id}`, auth: {username: user.username, password: user.password},
-          };
-          await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
-        });
-      });
     });
 
     describe('getUuidsPage', async () => {
-      const getIdsPage = Contact.v1.getUuidsPage(dataContext);
+      const getUuidsPage = Contact.v1.getUuidsPage(dataContext);
       const fourLimit = 4;
       const twoLimit = 2;
-      const stringifiedLimit = '7';
       const cursor = null;
-      const invalidContactType = 'invalidPerson';
       const freetext = 'contact';
       const placeFreetext = 'clinic';
-      const endpoint = '/api/v1/contact/uuid';
+      const invalidLimit = 'invalidLimit';
+      const invalidCursor = 'invalidCursor';
 
       it('returns a page of people type contact ids for no limit and cursor passed', async () => {
-        const responsePage = await getIdsPage(Qualifier.byContactType(personType));
+        const responsePage = await getUuidsPage(Qualifier.byContactType(personType));
         const responsePeople = responsePage.data;
         const responseCursor = responsePage.cursor;
 
@@ -169,7 +156,7 @@ describe('Contact', () => {
       });
 
       it('returns a page of place type contact for no limit and cursor passed', async () => {
-        const responsePage = await getIdsPage(Qualifier.byContactType(placeType));
+        const responsePage = await getUuidsPage(Qualifier.byContactType(placeType));
         const responsePlaces = responsePage.data;
         const responseCursor = responsePage.cursor;
 
@@ -180,7 +167,7 @@ describe('Contact', () => {
 
       it('returns a page of contact ids for freetext with no limit and cursor passed', async () => {
         const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
-        const responsePage = await getIdsPage(Qualifier.byFreetext(freetext));
+        const responsePage = await getUuidsPage(Qualifier.byFreetext(freetext));
         const responsePeople = responsePage.data;
         const responseCursor = responsePage.cursor;
 
@@ -189,7 +176,7 @@ describe('Contact', () => {
       });
 
       it('returns a page of people type contact ids and freetext for no limit and cursor passed', async () => {
-        const responsePage = await getIdsPage({
+        const responsePage = await getUuidsPage({
           ...Qualifier.byContactType(personType), ...Qualifier.byFreetext(freetext),
         });
         const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
@@ -202,7 +189,7 @@ describe('Contact', () => {
 
       it('returns a page of place type contact with freetext for no limit and cursor passed', async () => {
         const freetext = 'clinic';
-        const responsePage = await getIdsPage({
+        const responsePage = await getUuidsPage({
           ...Qualifier.byContactType(placeType), ...Qualifier.byFreetext(freetext)
         });
         const responsePlaces = responsePage.data;
@@ -214,20 +201,10 @@ describe('Contact', () => {
         expect(responseCursor).to.be.equal(null);
       });
 
-      it('returns a page of people type contact ids ' +
-      'when stringified limit and null cursor is passed', async () => {
-        const responsePage = await getIdsPage(Qualifier.byContactType(personType), null, stringifiedLimit);
-        const responsePeople = responsePage.data;
-        const responseCursor = responsePage.cursor;
-
-        expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeopleIds);
-        expect(responseCursor).to.be.equal('7');
-      });
-
       it('returns a page of people type contact ids' +
         ' when limit and cursor is passed and cursor can be reused', async () => {
-        const firstPage = await getIdsPage(Qualifier.byContactType(personType), cursor, fourLimit);
-        const secondPage = await getIdsPage(Qualifier.byContactType(personType), firstPage.cursor, fourLimit);
+        const firstPage = await getUuidsPage(Qualifier.byContactType(personType), cursor, fourLimit);
+        const secondPage = await getUuidsPage(Qualifier.byContactType(personType), firstPage.cursor, fourLimit);
 
         const allData = [ ...firstPage.data, ...secondPage.data ];
 
@@ -240,8 +217,8 @@ describe('Contact', () => {
 
       it('returns a page of place type contact ids' +
         ' when limit and cursor is passed and cursor can be reused', async () => {
-        const firstPage = await getIdsPage(Qualifier.byContactType(placeType), cursor, twoLimit);
-        const secondPage = await getIdsPage(Qualifier.byContactType(placeType), firstPage.cursor, twoLimit);
+        const firstPage = await getUuidsPage(Qualifier.byContactType(placeType), cursor, twoLimit);
+        const secondPage = await getUuidsPage(Qualifier.byContactType(placeType), firstPage.cursor, twoLimit);
 
         const allData = [ ...firstPage.data, ...secondPage.data ];
 
@@ -255,8 +232,8 @@ describe('Contact', () => {
       it('returns a page of contact ids with freetext' +
         ' when limit and cursor is passed and cursor can be reused', async () => {
         const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
-        const firstPage = await getIdsPage(Qualifier.byFreetext(freetext), cursor, twoLimit);
-        const secondPage = await getIdsPage(Qualifier.byFreetext(freetext), firstPage.cursor, twoLimit);
+        const firstPage = await getUuidsPage(Qualifier.byFreetext(freetext), cursor, twoLimit);
+        const secondPage = await getUuidsPage(Qualifier.byFreetext(freetext), firstPage.cursor, twoLimit);
 
         const allData = [ ...firstPage.data, ...secondPage.data ];
 
@@ -269,10 +246,10 @@ describe('Contact', () => {
 
       it('returns a page of people type contact ids with freetext' +
         ' when limit and cursor is passed' + 'and cursor can be reused', async () => {
-        const firstPage = await getIdsPage({
+        const firstPage = await getUuidsPage({
           ...Qualifier.byContactType(personType), ...Qualifier.byFreetext(freetext),
         }, cursor, twoLimit);
-        const secondPage = await getIdsPage({
+        const secondPage = await getUuidsPage({
           ...Qualifier.byContactType(personType), ...Qualifier.byFreetext(freetext),
         }, firstPage.cursor, twoLimit);
         const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
@@ -288,10 +265,10 @@ describe('Contact', () => {
 
       it('returns a page of place type contact ids' +
         ' when limit and cursor is passed and cursor can be reused', async () => {
-        const firstPage = await getIdsPage({
+        const firstPage = await getUuidsPage({
           ...Qualifier.byContactType(placeType), ...Qualifier.byFreetext(placeFreetext),
         }, cursor, twoLimit);
-        const secondPage = await getIdsPage({
+        const secondPage = await getUuidsPage({
           ...Qualifier.byContactType(placeType), ...Qualifier.byFreetext(placeFreetext),
         }, firstPage.cursor, twoLimit);
         const expectedContactIds = [ place0._id, clinic1._id, clinic2._id ];
@@ -305,57 +282,26 @@ describe('Contact', () => {
         expect(secondPage.cursor).to.be.equal(null);
       });
 
-      it(`throws error when user does not have can_view_contacts permission`, async () => {
-        const opts = {
-          path: endpoint, auth: {username: userNoPerms.username, password: userNoPerms.password},
-        };
-        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      it('throws error when limit is invalid', async () => {
+        await expect(
+          getUuidsPage({
+            ...Qualifier.byContactType(placeType),
+            ...Qualifier.byFreetext(placeFreetext)
+          }, cursor, invalidLimit)
+        ).to.be.rejectedWith(
+          `The limit must be a positive number: [${invalidLimit}].`
+        );
       });
 
-      it(`throws error when user is not an online user`, async () => {
-        const opts = {
-          path: endpoint, auth: {username: offlineUser.username, password: offlineUser.password},
-        };
-        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
-      });
-
-      it('throws 400 error when contactType is invalid', async () => {
-        const queryParams = {
-          type: invalidContactType
-        };
-        const queryString = new URLSearchParams(queryParams).toString();
-        const opts = {
-          path: `${endpoint}?${queryString}`,
-        };
-
-        await expect(utils.request(opts))
-          .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid contact type [${invalidContactType}]."}`);
-      });
-
-      it('throws 400 error when limit is invalid', async () => {
-        const queryParams = {
-          type: personType, limit: -1
-        };
-        const queryString = new URLSearchParams(queryParams).toString();
-        const opts = {
-          path: `${endpoint}?${queryString}`,
-        };
-
-        await expect(utils.request(opts))
-          .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive number: [${-1}]."}`);
-      });
-
-      it('throws 400 error when cursor is invalid', async () => {
-        const queryParams = {
-          type: personType, cursor: '-1'
-        };
-        const queryString = new URLSearchParams(queryParams).toString();
-        const opts = {
-          path: `${endpoint}?${queryString}`,
-        };
-
-        await expect(utils.request(opts))
-          .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`);
+      it('throws error when cursor is invalid', async () => {
+        await expect(
+          getUuidsPage({
+            ...Qualifier.byContactType(placeType),
+            ...Qualifier.byFreetext(placeFreetext),
+          }, invalidCursor, twoLimit)
+        ).to.be.rejectedWith(
+          `Invalid cursor token: [${invalidCursor}].`
+        );
       });
     });
 

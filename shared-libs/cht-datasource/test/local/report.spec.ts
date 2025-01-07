@@ -5,6 +5,7 @@ import logger from '@medic/logger';
 import * as LocalDoc from '../../src/local/libs/doc';
 import * as Report from '../../src/local/report';
 import { expect } from 'chai';
+import { END_OF_ALPHABET_MARKER } from '../../src/libs/constants';
 
 describe('local report', () => {
   let localContext: LocalDataContext;
@@ -130,7 +131,6 @@ describe('local report', () => {
 
         const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-        const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
         expect(res).to.deep.equal(expectedResult);
         expect(queryDocsByKeyOuter.callCount).to.be.equal(1);
@@ -145,10 +145,13 @@ describe('local report', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterOuterString.includes('getReportsByFreetext(')).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterOuterFirstArg(limit, Number(cursor));
+        expect(queryDocsByKeyInner.calledWithExactly([qualifier.freetext], limit, Number(cursor))).to.be.true;
+        expect(queryDocsByRangeInner.notCalled).to.be.true;
       });
 
       it('returns a page of report identifiers for freetext only qualifier without : delimiter', async () => {
@@ -173,7 +176,6 @@ describe('local report', () => {
 
         const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-        const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
         expect(res).to.deep.equal(expectedResult);
         expect(queryDocsByKeyOuter.callCount).to.be.equal(1);
@@ -188,10 +190,18 @@ describe('local report', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterOuterString.includes('getReportsByFreetextRange(')).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterOuterFirstArg(limit, Number(cursor));
+        expect(queryDocsByRangeInner.calledWithExactly(
+          [qualifier.freetext],
+          [qualifier.freetext + END_OF_ALPHABET_MARKER],
+          limit,
+          Number(cursor)
+        )).to.be.true;
+        expect(queryDocsByKeyInner.notCalled).to.be.true;
       });
 
       it('returns a page of report identifiers for freetext only qualifier' +
@@ -217,7 +227,6 @@ describe('local report', () => {
 
         const res = await Report.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-        const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
         expect(res).to.deep.equal(expectedResult);
         expect(queryDocsByKeyOuter.callCount).to.be.equal(1);
@@ -232,10 +241,13 @@ describe('local report', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterOuterString.includes('getReportsByFreetext(')).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterOuterFirstArg(limit, Number(cursor));
+        expect(queryDocsByKeyInner.calledWithExactly([qualifier.freetext], limit, Number(cursor))).to.be.true;
+        expect(queryDocsByRangeInner.notCalled).to.be.true;
       });
 
       it('returns a page of report identifiers for freetext only qualifier' +
@@ -261,7 +273,6 @@ describe('local report', () => {
 
         const res = await Report.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-        const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
         expect(res).to.deep.equal(expectedResult);
         expect(queryDocsByKeyOuter.callCount).to.be.equal(1);
@@ -276,10 +287,18 @@ describe('local report', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterOuterString.includes('getReportsByFreetextRange(')).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterOuterFirstArg(limit, Number(cursor));
+        expect(queryDocsByRangeInner.calledWithExactly(
+          [qualifier.freetext],
+          [qualifier.freetext + END_OF_ALPHABET_MARKER],
+          limit,
+          Number(cursor)
+        )).to.be.true;
+        expect(queryDocsByKeyInner.notCalled).to.be.true;
       });
 
       [
@@ -312,7 +331,7 @@ describe('local report', () => {
       });
 
       it('returns empty array if reports do not exist', async () => {
-        const freetext = 'non-existent report';
+        const freetext = 'non-existent-report';
         const qualifier = {
           freetext
         };
@@ -324,7 +343,6 @@ describe('local report', () => {
 
         const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-        const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
         expect(res).to.deep.equal(expectedResult);
         expect(queryDocsByKeyOuter.callCount).to.be.equal(1);
@@ -338,10 +356,18 @@ describe('local report', () => {
           queryDocsByRangeOuter.getCall(0).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterOuterString.includes('getReportsByFreetextRange(')).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterOuterFirstArg(limit, Number(cursor));
+        expect(queryDocsByRangeInner.calledWithExactly(
+          [qualifier.freetext],
+          [qualifier.freetext + END_OF_ALPHABET_MARKER],
+          limit,
+          Number(cursor)
+        )).to.be.true;
+        expect(queryDocsByKeyInner.notCalled).to.be.true;
       });
     });
   });

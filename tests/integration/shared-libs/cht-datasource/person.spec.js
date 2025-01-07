@@ -128,19 +128,6 @@ describe('Person', () => {
         const person = await getPerson(Qualifier.byUuid('invalid-uuid'));
         expect(person).to.be.null;
       });
-
-      [
-        [ 'does not have can_view_contacts permission', userNoPerms ],
-        [ 'is not an online user', offlineUser ]
-      ].forEach(([ description, user ]) => {
-        it(`throws error when user ${description}`, async () => {
-          const opts = {
-            path: `/api/v1/person/${patient._id}`,
-            auth: {username: user.username, password: user.password},
-          };
-          await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
-        });
-      });
     });
 
     describe('getPage', async () => {
@@ -148,7 +135,8 @@ describe('Person', () => {
       const limit = 4;
       const stringifiedLimit = '7';
       const cursor = null;
-      const invalidContactType = 'invalidPerson';
+      const invalidLimit = 'invalidLimit';
+      const invalidCursor = 'invalidCursor';
 
       it('returns a page of people for no limit and cursor passed', async () => {
         const responsePage = await getPage(Qualifier.byContactType(personType));
@@ -181,63 +169,22 @@ describe('Person', () => {
         expect(secondPage.cursor).to.be.equal(null);
       });
 
-      it(`throws error when user does not have can_view_contacts permission`, async () => {
-        const opts = {
-          path: `/api/v1/person`,
-          auth: {username: userNoPerms.username, password: userNoPerms.password},
-        };
-        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      it('throws error when limit is invalid', async () => {
+        await expect(
+          getPage({...Qualifier.byContactType(personType)}, cursor, invalidLimit)
+        ).to.be.rejectedWith(
+          `The limit must be a positive number: [${invalidLimit}].`
+        );
       });
 
-      it(`throws error when user is not an online user`, async () => {
-        const opts = {
-          path: `/api/v1/person`,
-          auth: {username: offlineUser.username, password: offlineUser.password},
-        };
-        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
-      });
-
-      it('throws 400 error when personType is invalid', async () => {
-        const queryParams = {
-          type: invalidContactType
-        };
-        const queryString = new URLSearchParams(queryParams).toString();
-        const opts = {
-          path: `/api/v1/person?${queryString}`,
-        };
-
-        await expect(utils.request(opts))
-          .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid contact type [${invalidContactType}]."}`);
-      });
-
-      it('throws 400 error when limit is invalid', async () => {
-        const queryParams = {
-          type: personType,
-          limit: -1
-        };
-        const queryString = new URLSearchParams(queryParams).toString();
-        const opts = {
-          path: `/api/v1/person?${queryString}`,
-        };
-
-        await expect(utils.request(opts))
-          .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive number: [${-1}]."}`);
-      });
-
-      it('throws 400 error when cursor is invalid', async () => {
-        const queryParams = {
-          type: personType,
-          cursor: '-1'
-        };
-        const queryString = new URLSearchParams(queryParams).toString();
-        const opts = {
-          path: `/api/v1/person?${queryString}`,
-        };
-
-        await expect(utils.request(opts))
-          .to.be.rejectedWith(
-            `400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`
-          );
+      it('throws error when cursor is invalid', async () => {
+        await expect(
+          getPage({
+            ...Qualifier.byContactType(personType),
+          }, invalidCursor, limit)
+        ).to.be.rejectedWith(
+          `Invalid cursor token: [${invalidCursor}].`
+        );
       });
     });
 

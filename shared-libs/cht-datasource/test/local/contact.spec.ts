@@ -7,6 +7,7 @@ import * as LocalDoc from '../../src/local/libs/doc';
 import * as Contact from '../../src/local/contact';
 import { expect } from 'chai';
 import * as Lineage from '../../src/local/libs/lineage';
+import { END_OF_ALPHABET_MARKER } from '../../src/libs/constants';
 
 describe('local contact', () => {
   let localContext: LocalDataContext;
@@ -223,18 +224,41 @@ describe('local contact', () => {
       const contactType = 'person';
       const invalidContactTypeQualifier = { contactType: 'invalid' } as const;
       const validContactTypes = [{ id: 'person' }, { id: 'place' }];
-      let queryDocsByKeyInner: SinonStub;
+      let getByTypeExactMatchFreetext: SinonStub;
+      let getByExactMatchFreetext: SinonStub;
+      let getByType: SinonStub;
+      let getByTypeStartsWithFreetext: SinonStub;
+      let getByStartsWithFreetext: SinonStub;
       let queryDocsByKeyOuter: SinonStub;
-      let queryDocsByRangeInner: SinonStub;
       let queryDocsByRangeOuter: SinonStub;
       let fetchAndFilterInner: SinonStub;
       let fetchAndFilterOuter: SinonStub;
 
       beforeEach(() => {
-        queryDocsByKeyInner = sinon.stub();
-        queryDocsByKeyOuter = sinon.stub(LocalDoc, 'queryDocsByKey').returns(queryDocsByKeyInner);
-        queryDocsByRangeInner = sinon.stub();
-        queryDocsByRangeOuter = sinon.stub(LocalDoc, 'queryDocsByRange').returns(queryDocsByRangeInner);
+        getByTypeExactMatchFreetext = sinon.stub();
+        getByExactMatchFreetext = sinon.stub();
+        getByType = sinon.stub();
+        getByTypeStartsWithFreetext = sinon.stub();
+        getByStartsWithFreetext = sinon.stub();
+        // comment to encapsulate assigning of exact match functions
+        queryDocsByKeyOuter = sinon.stub(LocalDoc, 'queryDocsByKey');
+        queryDocsByKeyOuter.withArgs(
+          localContext.medicDb, 'medic-client/contacts_by_type_freetext'
+        ).returns(getByTypeExactMatchFreetext);
+        queryDocsByKeyOuter.withArgs(
+          localContext.medicDb, 'medic-client/contacts_by_freetext'
+        ).returns(getByExactMatchFreetext);
+        queryDocsByKeyOuter.withArgs(localContext.medicDb, 'medic-client/contacts_by_type').returns(getByType);
+        // end comment
+        // comment to encapsulate assigning of "StartsWith" functions
+        queryDocsByRangeOuter = sinon.stub(LocalDoc, 'queryDocsByRange');
+        queryDocsByRangeOuter.withArgs(
+          localContext.medicDb, 'medic-client/contacts_by_type_freetext'
+        ).returns(getByTypeStartsWithFreetext);
+        queryDocsByRangeOuter.withArgs(
+          localContext.medicDb, 'medic-client/contacts_by_freetext'
+        ).returns(getByStartsWithFreetext);
+        // end comment
         getContactTypes.returns(validContactTypes);
         settingsGetAll.returns(settings);
         fetchAndFilterInner = sinon.stub();
@@ -260,7 +284,6 @@ describe('local contact', () => {
 
         const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-        const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.callCount).to.equal(1);
@@ -275,8 +298,6 @@ describe('local contact', () => {
         expect(
           queryDocsByKeyOuter.getCall(2).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
-        expect(queryDocsByKeyInner.notCalled).to.be.true;
-        expect(queryDocsByRangeInner.notCalled).to.be.true;
         expect(queryDocsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocsByRangeOuter.getCall(0).args
@@ -286,10 +307,16 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterOuterString.includes('getContactsByType(')).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterOuterFirstArg(limit, Number(cursor));
+        expect(getByType.calledWithExactly([qualifier.contactType], limit, Number(cursor))).to.be.true;
+        expect(getByTypeExactMatchFreetext.notCalled).to.be.true;
+        expect(getByExactMatchFreetext.notCalled).to.be.true;
+        expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
+        expect(getByStartsWithFreetext.notCalled).to.be.true;
       });
 
       it('returns a page of contact identifiers for freetext only qualifier with : delimiter', async () => {
@@ -314,7 +341,6 @@ describe('local contact', () => {
 
         const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-        const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.notCalled).to.be.true;
@@ -329,8 +355,6 @@ describe('local contact', () => {
         expect(
           queryDocsByKeyOuter.getCall(2).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
-        expect(queryDocsByKeyInner.notCalled).to.be.true;
-        expect(queryDocsByRangeInner.notCalled).to.be.true;
         expect(queryDocsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocsByRangeOuter.getCall(0).args
@@ -340,10 +364,16 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterOuterString.includes('getContactsByFreetext(')).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterOuterFirstArg(limit, Number(cursor));
+        expect(getByExactMatchFreetext.calledWithExactly([qualifier.freetext], limit, Number(cursor))).to.be.true;
+        expect(getByTypeExactMatchFreetext.notCalled).to.be.true;
+        expect(getByType.notCalled).to.be.true;
+        expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
+        expect(getByStartsWithFreetext.notCalled).to.be.true;
       });
 
       it('returns a page of contact identifiers for freetext only qualifier without : delimiter', async () => {
@@ -368,7 +398,6 @@ describe('local contact', () => {
 
         const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-        const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.notCalled).to.be.true;
@@ -383,8 +412,6 @@ describe('local contact', () => {
         expect(
           queryDocsByKeyOuter.getCall(2).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
-        expect(queryDocsByKeyInner.notCalled).to.be.true;
-        expect(queryDocsByRangeInner.notCalled).to.be.true;
         expect(queryDocsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocsByRangeOuter.getCall(0).args
@@ -394,10 +421,18 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterOuterString.includes('getContactsByFreetextRange(')).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterOuterFirstArg(limit, Number(cursor));
+        expect(getByStartsWithFreetext.calledWithExactly(
+          [qualifier.freetext], [qualifier.freetext + END_OF_ALPHABET_MARKER], limit, Number(cursor)
+        )).to.be.true;
+        expect(getByTypeExactMatchFreetext.notCalled).to.be.true;
+        expect(getByExactMatchFreetext.notCalled).to.be.true;
+        expect(getByType.notCalled).to.be.true;
+        expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
       });
 
       it('returns a page of contact identifiers for contactType and freetext qualifier with : delimiter', async () => {
@@ -423,7 +458,6 @@ describe('local contact', () => {
 
         const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-        const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.callCount).to.equal(1);
@@ -438,8 +472,6 @@ describe('local contact', () => {
         expect(
           queryDocsByKeyOuter.getCall(2).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
-        expect(queryDocsByKeyInner.notCalled).to.be.true;
-        expect(queryDocsByRangeInner.notCalled).to.be.true;
         expect(queryDocsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocsByRangeOuter.getCall(0).args
@@ -449,10 +481,18 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterOuterString.includes('getContactsByTypeFreetext(')).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterOuterFirstArg(limit, Number(cursor));
+        expect(getByTypeExactMatchFreetext.calledWithExactly(
+          [qualifier.contactType, qualifier.freetext], limit, Number(cursor)
+        )).to.be.true;
+        expect(getByExactMatchFreetext.notCalled).to.be.true;
+        expect(getByType.notCalled).to.be.true;
+        expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
+        expect(getByStartsWithFreetext.notCalled).to.be.true;
       });
 
       it('returns a page of contact identifiers for contactType and freetext qualifier without delimiter', async () => {
@@ -478,7 +518,6 @@ describe('local contact', () => {
 
         const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-        const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.callCount).to.equal(1);
@@ -493,8 +532,6 @@ describe('local contact', () => {
         expect(
           queryDocsByKeyOuter.getCall(2).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
-        expect(queryDocsByKeyInner.notCalled).to.be.true;
-        expect(queryDocsByRangeInner.notCalled).to.be.true;
         expect(queryDocsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocsByRangeOuter.getCall(0).args
@@ -504,10 +541,21 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterOuterString.includes('getContactsByTypeFreetextRange(')).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterOuterFirstArg(limit, Number(cursor));
+        expect(getByTypeStartsWithFreetext.calledWithExactly(
+          [qualifier.contactType, qualifier.freetext],
+          [qualifier.contactType, qualifier.freetext + END_OF_ALPHABET_MARKER],
+          limit,
+          Number(cursor)
+        )).to.be.true;
+        expect(getByTypeExactMatchFreetext.notCalled).to.be.true;
+        expect(getByExactMatchFreetext.notCalled).to.be.true;
+        expect(getByType.notCalled).to.be.true;
+        expect(getByStartsWithFreetext.notCalled).to.be.true;
       });
 
       it('returns a page of contact identifiers for contactType only qualifier for not-null cursor', async () => {
@@ -529,7 +577,6 @@ describe('local contact', () => {
 
         const res = await Contact.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-        const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.callCount).to.equal(1);
@@ -544,8 +591,6 @@ describe('local contact', () => {
         expect(
           queryDocsByKeyOuter.getCall(2).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
-        expect(queryDocsByKeyInner.notCalled).to.be.true;
-        expect(queryDocsByRangeInner.notCalled).to.be.true;
         expect(queryDocsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocsByRangeOuter.getCall(0).args
@@ -555,10 +600,16 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterOuterString.includes('getContactsByType(')).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterOuterFirstArg(limit, Number(cursor));
+        expect(getByType.calledWithExactly([qualifier.contactType], limit, Number(cursor))).to.be.true;
+        expect(getByTypeExactMatchFreetext.notCalled).to.be.true;
+        expect(getByExactMatchFreetext.notCalled).to.be.true;
+        expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
+        expect(getByStartsWithFreetext.notCalled).to.be.true;
       });
 
       it('returns a page of contact identifiers for freetext only' +
@@ -584,7 +635,6 @@ describe('local contact', () => {
 
         const res = await Contact.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-        const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.notCalled).to.be.true;
@@ -599,8 +649,6 @@ describe('local contact', () => {
         expect(
           queryDocsByKeyOuter.getCall(2).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
-        expect(queryDocsByKeyInner.notCalled).to.be.true;
-        expect(queryDocsByRangeInner.notCalled).to.be.true;
         expect(queryDocsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocsByRangeOuter.getCall(0).args
@@ -610,10 +658,16 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterOuterString.includes('getContactsByFreetext(')).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterOuterFirstArg(limit, Number(cursor));
+        expect(getByExactMatchFreetext.calledWithExactly([qualifier.freetext], limit, Number(cursor))).to.be.true;
+        expect(getByTypeExactMatchFreetext.notCalled).to.be.true;
+        expect(getByType.notCalled).to.be.true;
+        expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
+        expect(getByStartsWithFreetext.notCalled).to.be.true;
       });
 
       it('returns a page of contact identifiers for freetext only qualifier' +
@@ -639,7 +693,6 @@ describe('local contact', () => {
 
         const res = await Contact.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-        const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.notCalled).to.be.true;
@@ -654,8 +707,6 @@ describe('local contact', () => {
         expect(
           queryDocsByKeyOuter.getCall(2).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
-        expect(queryDocsByKeyInner.notCalled).to.be.true;
-        expect(queryDocsByRangeInner.notCalled).to.be.true;
         expect(queryDocsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocsByRangeOuter.getCall(0).args
@@ -665,10 +716,18 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterOuterString.includes('getContactsByFreetextRange(')).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterOuterFirstArg(limit, Number(cursor));
+        expect(getByStartsWithFreetext.calledWithExactly(
+          [qualifier.freetext], [qualifier.freetext + END_OF_ALPHABET_MARKER], limit, Number(cursor)
+        )).to.be.true;
+        expect(getByTypeExactMatchFreetext.notCalled).to.be.true;
+        expect(getByExactMatchFreetext.notCalled).to.be.true;
+        expect(getByType.notCalled).to.be.true;
+        expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
       });
 
       it(
@@ -696,7 +755,6 @@ describe('local contact', () => {
 
           const res = await Contact.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
           const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-          const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
           expect(res).to.deep.equal(expectedResult);
           expect(settingsGetAll.callCount).to.equal(1);
@@ -711,8 +769,6 @@ describe('local contact', () => {
           expect(
             queryDocsByKeyOuter.getCall(2).args
           ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
-          expect(queryDocsByKeyInner.notCalled).to.be.true;
-          expect(queryDocsByRangeInner.notCalled).to.be.true;
           expect(queryDocsByRangeOuter.callCount).to.be.equal(2);
           expect(
             queryDocsByRangeOuter.getCall(0).args
@@ -722,10 +778,18 @@ describe('local contact', () => {
           ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
           expect(fetchAndFilterOuter.calledOnce).to.be.true;
           expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-          expect(fetchAndFilterOuterString.includes('getContactsByTypeFreetext(')).to.be.true;
           expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
           expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
           expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
+          // call the argument to check which one of the inner functions was called
+          fetchAndFilterOuterFirstArg(limit, Number(cursor));
+          expect(getByTypeExactMatchFreetext.calledWithExactly(
+            [qualifier.contactType, qualifier.freetext], limit, Number(cursor)
+          )).to.be.true;
+          expect(getByExactMatchFreetext.notCalled).to.be.true;
+          expect(getByType.notCalled).to.be.true;
+          expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
+          expect(getByStartsWithFreetext.notCalled).to.be.true;
         }
       );
 
@@ -753,7 +817,6 @@ describe('local contact', () => {
 
         const res = await Contact.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
         const fetchAndFilterOuterFirstArg = fetchAndFilterOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
-        const fetchAndFilterOuterString = fetchAndFilterOuterFirstArg.toString();
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.callCount).to.equal(1);
@@ -768,8 +831,6 @@ describe('local contact', () => {
         expect(
           queryDocsByKeyOuter.getCall(2).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
-        expect(queryDocsByKeyInner.notCalled).to.be.true;
-        expect(queryDocsByRangeInner.notCalled).to.be.true;
         expect(queryDocsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocsByRangeOuter.getCall(0).args
@@ -779,10 +840,21 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterOuterString.includes('getContactsByTypeFreetextRange(')).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterOuterFirstArg(limit, Number(cursor));
+        expect(getByTypeStartsWithFreetext.calledWithExactly(
+          [qualifier.contactType, qualifier.freetext],
+          [qualifier.contactType, qualifier.freetext + END_OF_ALPHABET_MARKER],
+          limit,
+          Number(cursor)
+        )).to.be.true;
+        expect(getByTypeExactMatchFreetext.notCalled).to.be.true;
+        expect(getByExactMatchFreetext.notCalled).to.be.true;
+        expect(getByType.notCalled).to.be.true;
+        expect(getByStartsWithFreetext.notCalled).to.be.true;
       });
 
       it('throws an error if contact type is invalid', async () => {
@@ -804,8 +876,6 @@ describe('local contact', () => {
         expect(
           queryDocsByKeyOuter.getCall(2).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
-        expect(queryDocsByKeyInner.notCalled).to.be.true;
-        expect(queryDocsByRangeInner.notCalled).to.be.true;
         expect(queryDocsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocsByRangeOuter.getCall(0).args
@@ -815,20 +885,25 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
         expect(fetchAndFilterInner.notCalled).to.be.true;
         expect(fetchAndFilterOuter.notCalled).to.be.true;
+        expect(getByTypeExactMatchFreetext.notCalled).to.be.true;
+        expect(getByExactMatchFreetext.notCalled).to.be.true;
+        expect(getByType.notCalled).to.be.true;
+        expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
+        expect(getByStartsWithFreetext.notCalled).to.be.true;
       });
 
       [
         {},
         '-1',
         undefined,
-      ].forEach((invalidSkip ) => {
-        it(`throws an error if cursor is invalid: ${String(invalidSkip)}`, async () => {
+      ].forEach((invalidCursor ) => {
+        it(`throws an error if cursor is invalid: ${String(invalidCursor)}`, async () => {
           const qualifier = {
             contactType,
           };
 
-          await expect(Contact.v1.getUuidsPage(localContext)(qualifier, invalidSkip as string, limit))
-            .to.be.rejectedWith(`Invalid cursor token: [${String(invalidSkip)}]`);
+          await expect(Contact.v1.getUuidsPage(localContext)(qualifier, invalidCursor as string, limit))
+            .to.be.rejectedWith(`Invalid cursor token: [${String(invalidCursor)}]`);
 
           expect(settingsGetAll.calledOnce).to.be.true;
           expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
@@ -842,8 +917,6 @@ describe('local contact', () => {
           expect(
             queryDocsByKeyOuter.getCall(2).args
           ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
-          expect(queryDocsByKeyInner.notCalled).to.be.true;
-          expect(queryDocsByRangeInner.notCalled).to.be.true;
           expect(queryDocsByRangeOuter.callCount).to.be.equal(2);
           expect(
             queryDocsByRangeOuter.getCall(0).args
@@ -853,6 +926,11 @@ describe('local contact', () => {
           ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
           expect(fetchAndFilterInner.notCalled).to.be.true;
           expect(fetchAndFilterOuter.notCalled).to.be.true;
+          expect(getByTypeExactMatchFreetext.notCalled).to.be.true;
+          expect(getByExactMatchFreetext.notCalled).to.be.true;
+          expect(getByType.notCalled).to.be.true;
+          expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
+          expect(getByStartsWithFreetext.notCalled).to.be.true;
         });
       });
       
@@ -883,8 +961,6 @@ describe('local contact', () => {
         expect(
           queryDocsByKeyOuter.getCall(2).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
-        expect(queryDocsByKeyInner.notCalled).to.be.true;
-        expect(queryDocsByRangeInner.notCalled).to.be.true;
         expect(queryDocsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocsByRangeOuter.getCall(0).args
@@ -893,10 +969,15 @@ describe('local contact', () => {
           queryDocsByRangeOuter.getCall(1).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterOuterString.includes('getContactsByType(')).to.be.true;
+        expect(fetchAndFilterOuterString.includes('getByType(')).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+        expect(getByTypeExactMatchFreetext.notCalled).to.be.true;
+        expect(getByExactMatchFreetext.notCalled).to.be.true;
+        expect(getByType.notCalled).to.be.true;
+        expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
+        expect(getByStartsWithFreetext.notCalled).to.be.true;
       });
     });
   });

@@ -105,19 +105,6 @@ describe('Place', () => {
         const place = await getPlace(Qualifier.byUuid('invalid-uuid'));
         expect(place).to.be.null;
       });
-
-      [
-        [ 'does not have can_view_contacts permission', userNoPerms ],
-        [ 'is not an online user', offlineUser ]
-      ].forEach(([ description, user ]) => {
-        it(`throws error when user ${description}`, async () => {
-          const opts = {
-            path: `/api/v1/place/${place0._id}`,
-            auth: {username: user.username, password: user.password},
-          };
-          await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
-        });
-      });
     });
 
     describe('getPage', async () => {
@@ -125,7 +112,8 @@ describe('Place', () => {
       const limit = 2;
       const stringifiedLimit = '3';
       const cursor = null;
-      const invalidContactType = 'invalidPlace';
+      const invalidLimit = 'invalidLimit';
+      const invalidCursor = 'invalidCursor';
 
       it('returns a page of places for no limit and cursor passed', async () => {
         const responsePage = await getPage(Qualifier.byContactType(placeType));
@@ -160,63 +148,22 @@ describe('Place', () => {
         expect(secondPage.cursor).to.be.equal(null);
       });
 
-      it(`throws error when user does not have can_view_contacts permission`, async () => {
-        const opts = {
-          path: `/api/v1/place`,
-          auth: {username: userNoPerms.username, password: userNoPerms.password},
-        };
-        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      it('throws error when limit is invalid', async () => {
+        await expect(
+          getPage(Qualifier.byContactType(placeType), cursor, invalidLimit)
+        ).to.be.rejectedWith(
+          `The limit must be a positive number: [${invalidLimit}].`
+        );
       });
 
-      it(`throws error when user is not an online user`, async () => {
-        const opts = {
-          path: `/api/v1/place`,
-          auth: {username: offlineUser.username, password: offlineUser.password},
-        };
-        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
-      });
-
-      it('throws 400 error when placeType is invalid', async () => {
-        const queryParams = {
-          'type': invalidContactType
-        };
-        const queryString = new URLSearchParams(queryParams).toString();
-        const opts = {
-          path: `/api/v1/place?${queryString}`,
-        };
-
-        await expect(utils.request(opts))
-          .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid contact type [${invalidContactType}]."}`);
-      });
-
-      it('throws 400 error when limit is invalid', async () => {
-        const queryParams = {
-          type: placeType,
-          limit: -1
-        };
-        const queryString = new URLSearchParams(queryParams).toString();
-        const opts = {
-          path: `/api/v1/place?${queryString}`,
-        };
-
-        await expect(utils.request(opts))
-          .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive number: [${-1}]."}`);
-      });
-
-      it('throws 400 error when cursor is invalid', async () => {
-        const queryParams = {
-          type: placeType,
-          cursor: '-1'
-        };
-        const queryString = new URLSearchParams(queryParams).toString();
-        const opts = {
-          path: `/api/v1/place?${queryString}`,
-        };
-
-        await expect(utils.request(opts))
-          .to.be.rejectedWith(
-            `400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`
-          );
+      it('throws error when cursor is invalid', async () => {
+        await expect(
+          getPage({
+            ...Qualifier.byContactType(placeType),
+          }, invalidCursor, limit)
+        ).to.be.rejectedWith(
+          `Invalid cursor token: [${invalidCursor}].`
+        );
       });
     });
 

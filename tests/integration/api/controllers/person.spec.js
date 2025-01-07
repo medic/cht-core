@@ -27,10 +27,6 @@ describe('Person API', () => {
     role: 'patient',
     short_name: 'Mary'
   }));
-  const adminUser = {
-    username: 'admin',
-    password: 'pass'
-  };
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms',
     place: place1._id,
@@ -103,7 +99,6 @@ describe('Person API', () => {
     it('returns the person matching the provided UUID', async () => {
       const opts = {
         path: `${endpoint}/${patient._id}`,
-        auth: adminUser,
       };
       const person = await utils.request(opts);
       expect(person).excluding(['_rev', 'reported_date']).to.deep.equal(patient);
@@ -112,7 +107,6 @@ describe('Person API', () => {
     it('returns the person with lineage when the withLineage query parameter is provided', async () => {
       const opts = {
         path: `${endpoint}/${patient._id}?with_lineage=true`,
-        auth: adminUser,
       };
       const person = await utils.request(opts);
       expect(person).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
@@ -132,10 +126,9 @@ describe('Person API', () => {
       });
     });
 
-    it('returns null when no person is found for the UUID', async () => {
+    it('throws 404 error when no person is found for the UUID', async () => {
       const opts = {
         path: `${endpoint}/invalid-uuid`,
-        auth: adminUser,
       };
       await expect(utils.request(opts)).to.be.rejectedWith('404 - {"code":404,"error":"Person not found"}');
     });
@@ -166,7 +159,6 @@ describe('Person API', () => {
       const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser,
       };
       const responsePage = await utils.request(opts);
       const responsePeople = responsePage.data;
@@ -185,7 +177,6 @@ describe('Person API', () => {
       let stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser
       };
       const firstPage = await utils.request(opts);
 
@@ -194,7 +185,6 @@ describe('Person API', () => {
       stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts2 = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser
       };
       const secondPage = await utils.request(opts2);
 

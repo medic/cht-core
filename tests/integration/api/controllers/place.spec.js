@@ -43,10 +43,6 @@ describe('Place API', () => {
     contact: {}
   }));
 
-  const adminUser = {
-    username: 'admin',
-    password: 'pass'
-  };
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms',
     place: place1._id,
@@ -83,7 +79,6 @@ describe('Place API', () => {
     it('returns the place matching the provided UUID', async () => {
       const opts = {
         path: `${endpoint}/${place0._id}`,
-        auth: adminUser,
       };
       const place = await utils.request(opts);
       expect(place).excluding(['_rev', 'reported_date']).to.deep.equal(place0);
@@ -92,7 +87,6 @@ describe('Place API', () => {
     it('returns the place with lineage when the withLineage query parameter is provided', async () => {
       const opts = {
         path: `${endpoint}/${place0._id}?with_lineage=true`,
-        auth: adminUser,
       };
       const place = await utils.request(opts);
       expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
@@ -109,10 +103,9 @@ describe('Place API', () => {
       });
     });
 
-    it('returns null when no place is found for the UUID', async () => {
+    it('throws 404 error when no place is found for the UUID', async () => {
       const opts = {
         path: `${endpoint}/invalid-uuid`,
-        auth: adminUser,
       };
       await expect(utils.request(opts)).to.be.rejectedWith('404 - {"code":404,"error":"Place not found"}');
     });
@@ -143,7 +136,6 @@ describe('Place API', () => {
       const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser,
       };
       const responsePage = await utils.request(opts);
       const responsePlaces = responsePage.data;
@@ -163,7 +155,6 @@ describe('Place API', () => {
       let stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser
       };
       const firstPage = await utils.request(opts);
 
@@ -172,7 +163,6 @@ describe('Place API', () => {
       stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts2 = {
         path: `${endpoint}?${stringQueryParams}`,
-        auth: adminUser
       };
       const secondPage = await utils.request(opts2);
 

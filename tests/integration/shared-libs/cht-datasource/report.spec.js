@@ -100,30 +100,18 @@ describe('Report', () => {
         const report = await getReport(Qualifier.byUuid('invalid-uuid'));
         expect(report).to.be.null;
       });
-
-      [
-        [ 'does not have can_view_reports permission', userNoPerms ],
-        [ 'is not an online user', offlineUser ]
-      ].forEach(([ description, user ]) => {
-        it(`throws error when user ${description}`, async () => {
-          const opts = {
-            path: `/api/v1/report/${report0._id}`, auth: {username: user.username, password: user.password},
-          };
-          await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
-        });
-      });
     });
 
     describe('getUuidsPage', async () => {
-      const getReport = Report.v1.getUuidsPage(dataContext);
+      const getUuidsPage = Report.v1.getUuidsPage(dataContext);
       const freetext = 'report';
       const limit = 4;
-      const stringifiedLimit = '6';
       const cursor = null;
-      const endpoint = '/api/v1/report/uuid';
+      const invalidLimit = 'invalidLimit';
+      const invalidCursor = 'invalidCursor';
 
       it('returns a page of report ids for no limit and cursor passed', async () => {
-        const responsePage = await getReport(Qualifier.byFreetext(freetext));
+        const responsePage = await getUuidsPage(Qualifier.byFreetext(freetext));
         const responsePeople = responsePage.data;
         const responseCursor = responsePage.cursor;
 
@@ -131,18 +119,9 @@ describe('Report', () => {
         expect(responseCursor).to.be.equal(null);
       });
 
-      it('returns a page of report ids for stringified limit and cursor passed', async () => {
-        const responsePage = await getReport(Qualifier.byFreetext(freetext), null, stringifiedLimit);
-        const responsePeople = responsePage.data;
-        const responseCursor = responsePage.cursor;
-
-        expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(allReportsIds);
-        expect(responseCursor).to.be.equal('6');
-      });
-
       it('returns a page of report ids when limit and cursor is passed and cursor can be reused', async () => {
-        const firstPage = await getReport(Qualifier.byFreetext(freetext), cursor, limit);
-        const secondPage = await getReport(Qualifier.byFreetext(freetext), firstPage.cursor, limit);
+        const firstPage = await getUuidsPage(Qualifier.byFreetext(freetext), cursor, limit);
+        const secondPage = await getUuidsPage(Qualifier.byFreetext(freetext), firstPage.cursor, limit);
 
         const allReports = [ ...firstPage.data, ...secondPage.data ];
 
@@ -153,57 +132,20 @@ describe('Report', () => {
         expect(secondPage.cursor).to.be.equal(null);
       });
 
-      it(`throws error when user does not have can_view_reports permission`, async () => {
-        const opts = {
-          path: endpoint, auth: {username: userNoPerms.username, password: userNoPerms.password},
-        };
-        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      it('throws error when limit is invalid', async () => {
+        await expect(
+          getUuidsPage(Qualifier.byFreetext(freetext), cursor, invalidLimit)
+        ).to.be.rejectedWith(
+          `The limit must be a positive number: [${invalidLimit}].`
+        );
       });
 
-      it(`throws error when user is not an online user`, async () => {
-        const opts = {
-          path: endpoint, auth: {username: offlineUser.username, password: offlineUser.password},
-        };
-        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
-      });
-
-      it('throws 400 error when freetext is invalid', async () => {
-        const queryParams = {
-          freetext: ''
-        };
-        const queryString = new URLSearchParams(queryParams).toString();
-        const opts = {
-          path: `${endpoint}?${queryString}`,
-        };
-
-        await expect(utils.request(opts))
-          .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid freetext [\\"\\"]."}`);
-      });
-
-      it('throws 400 error when limit is invalid', async () => {
-        const queryParams = {
-          freetext, limit: -1
-        };
-        const queryString = new URLSearchParams(queryParams).toString();
-        const opts = {
-          path: `${endpoint}?${queryString}`,
-        };
-
-        await expect(utils.request(opts))
-          .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive number: [${-1}]."}`);
-      });
-
-      it('throws 400 error when cursor is invalid', async () => {
-        const queryParams = {
-          freetext, cursor: '-1'
-        };
-        const queryString = new URLSearchParams(queryParams).toString();
-        const opts = {
-          path: `${endpoint}?${queryString}`,
-        };
-
-        await expect(utils.request(opts))
-          .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`);
+      it('throws error when cursor is invalid', async () => {
+        await expect(
+          getUuidsPage(Qualifier.byFreetext(freetext), invalidCursor, limit)
+        ).to.be.rejectedWith(
+          `Invalid cursor token: [${invalidCursor}].`
+        );
       });
     });
 

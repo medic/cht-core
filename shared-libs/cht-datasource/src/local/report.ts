@@ -5,17 +5,17 @@ import { Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
-import { validateCursor } from './libs/core';
+import { normalizeFreetext, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 
 /** @internal */
 export namespace v1 {
-  const isReport = () => (doc: Nullable<Doc>, uuid?: string): doc is Report.v1.Report => {
+  const isReport = (doc: Nullable<Doc>, uuid?: string): doc is Report.v1.Report => {
     if (!doc) {
       if (uuid) {
         logger.warn(`No report found for identifier [${uuid}].`);
-        return false;
       }
+      return false;
     } else if (doc.type !== 'data_record' || !doc.form) {
       logger.warn(`Document [${doc._id}] is not a valid report.`);
       return false;
@@ -30,7 +30,7 @@ export namespace v1 {
     return async (identifier: UuidQualifier): Promise<Nullable<Report.v1.Report>> => {
       const doc = await getMedicDocById(identifier.uuid);
 
-      if (!isReport()(doc, identifier.uuid)) {
+      if (!isReport(doc, identifier.uuid)) {
         return null;
       }
       return doc;
@@ -39,18 +39,18 @@ export namespace v1 {
 
   /** @internal */
   export const getUuidsPage = ({ medicDb }: LocalDataContext) => {
-    const getReportsByFreetext = queryDocsByKey(medicDb, 'medic-client/reports_by_freetext');
-    const getReportsByFreetextRange = queryDocsByRange(medicDb, 'medic-client/reports_by_freetext');
+    const getByExactMatchFreetext = queryDocsByKey(medicDb, 'medic-client/reports_by_freetext');
+    const getByStartsWithFreetext = queryDocsByRange(medicDb, 'medic-client/reports_by_freetext');
 
     const getDocsFnForFreetextType = (
       qualifier: FreetextQualifier
     ): (limit: number, skip: number) => Promise<Nullable<Doc>[]> => {
       if (isKeyedFreetextQualifier(qualifier)) {
-        return (limit, skip) => getReportsByFreetext([qualifier.freetext], limit, skip);
+        return (limit, skip) => getByExactMatchFreetext([normalizeFreetext(qualifier.freetext)], limit, skip);
       }
-      return (limit, skip) => getReportsByFreetextRange(
-        [qualifier.freetext],
-        [qualifier.freetext + END_OF_ALPHABET_MARKER],
+      return (limit, skip) => getByStartsWithFreetext(
+        [normalizeFreetext(qualifier.freetext)],
+        [normalizeFreetext(qualifier.freetext) + END_OF_ALPHABET_MARKER],
         limit,
         skip
       );
@@ -63,7 +63,7 @@ export namespace v1 {
     ): Promise<Page<string>> => {
       const skip = validateCursor(cursor);
       const getDocsFn = getDocsFnForFreetextType(qualifier);
-      const pagedDocs = await fetchAndFilter(getDocsFn, isReport(), limit)(limit, skip);
+      const pagedDocs = await fetchAndFilter(getDocsFn, isReport, limit)(limit, skip);
 
       return {
         data: pagedDocs.data.map((doc) => doc._id),
