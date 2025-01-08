@@ -52,15 +52,14 @@ const medicPouchProvider = db => {
         .then(([contactDocs, reportDocs, taskDocs]) => ({ contactDocs, reportDocs, taskDocs, userSettingsId }));
     },
 
-    contactsBySubjectId: subjectIds => {
+    contactsBySubjectId: async (subjectIds) => {
       const keys = subjectIds.map(key => ['shortcode', key]);
-      return dbQuery('medic-client/contacts_by_reference', { keys, include_docs: true })
-        .then(results => {
-          const shortcodeIds = results.rows.map(result => result.doc._id);
-          const idsThatArentShortcodes = subjectIds.filter(id => !results.rows.map(row => row.key[1]).includes(id));
+      const results = await db.query('medic-client/contacts_by_reference', { keys, include_docs: true });
 
-          return [...shortcodeIds, ...idsThatArentShortcodes];
-        });
+      const shortcodeIds = results.rows.map(result => result.doc._id);
+      const idsThatArentShortcodes = subjectIds.filter(id => !results.rows.map(row => row.key[1]).includes(id));
+
+      return [...shortcodeIds, ...idsThatArentShortcodes];
     },
 
     stateChangeCallback: docUpdateClosure(db),
@@ -82,6 +81,7 @@ const medicPouchProvider = db => {
               reporting_period: docTag,
             };
           }
+          throw err;
         })
         .then(existingDoc => {
           if (!updatedTargets && existingDoc._rev) {
@@ -125,40 +125,35 @@ const medicPouchProvider = db => {
       return rowsOf(dbQuery( 'medic-client/tasks_by_contact', options));
     },
 
-    taskDataFor: (contactIds, userSettingsDoc) => {
+    taskDataFor: async (contactIds, userSettingsDoc) => {
       if (!contactIds || contactIds.length === 0) {
-        return Promise.resolve({});
+        return {};
       }
 
-      return docsOf(db.allDocs({ keys: contactIds, include_docs: true }))
-        .then(contactDocs => {
-          const subjectIds = contactDocs.reduce((agg, contactDoc) => {
-            registrationUtils.getSubjectIds(contactDoc).forEach(subjectId => agg.add(subjectId));
-            return agg;
-          }, new Set(contactIds));
+      const contactDocs = await docsOf(db.allDocs({ keys: contactIds, include_docs: true }));
+      const subjectIds = contactDocs.reduce((agg, contactDoc) => {
+        registrationUtils.getSubjectIds(contactDoc).forEach(subjectId => agg.add(subjectId));
+        return agg;
+      }, new Set(contactIds));
 
-          const keys = Array.from(subjectIds);
-          return Promise
-            .all([
-              docsOf(dbQuery('medic-client/reports_by_subject', { keys, include_docs: true })),
-              self.tasksByRelation(contactIds, 'requester'),
-            ])
-            .then(([reportDocs, taskDocs]) => {
-              // tighten the connection between reports and contacts
-              // a report will only be allowed to generate tasks for a single contact!
-              reportDocs = reportDocs.filter(report => {
-                const subjectId = registrationUtils.getSubjectId(report);
-                return subjectIds.has(subjectId);
-              });
+      const keys = Array.from(subjectIds);
 
-              return {
-                userSettingsId: userSettingsDoc?._id,
-                contactDocs,
-                reportDocs,
-                taskDocs,
-              };
-            });
-        });
+      const [reportDocs, taskDocs] = await Promise.all([
+        docsOf(dbQuery('medic-client/reports_by_subject', { keys, include_docs: true })),
+        self.tasksByRelation(contactIds, 'requester'),
+      ]);
+
+      const relevantReportDocs = reportDocs.filter(report => {
+        const subjectId = registrationUtils.getSubjectId(report);
+        return subjectIds.has(subjectId);
+      });
+
+      return {
+        userSettingsId: userSettingsDoc?._id,
+        contactDocs,
+        reportDocs: relevantReportDocs,
+        taskDocs,
+      };
     },
   };
 
