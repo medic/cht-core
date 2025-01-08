@@ -6,6 +6,7 @@ describe('Session service', function() {
   let ipCookie;
   let ipCookieRemove;
   let location;
+  let pushStateStub;
   let $httpBackend;
   let Location;
 
@@ -14,6 +15,7 @@ describe('Session service', function() {
     ipCookie = sinon.stub();
     ipCookieRemove = sinon.stub();
     ipCookie.remove = ipCookieRemove;
+    pushStateStub = sinon.stub();
     Location = {};
     location = {};
     module(function ($provide) {
@@ -24,6 +26,7 @@ describe('Session service', function() {
       $provide.factory('$window', function() {
         return {
           angular: { callbacks: [] },
+          history: { pushState: pushStateStub },
           location: location,
         };
       });
@@ -59,6 +62,8 @@ describe('Session service', function() {
     $httpBackend.flush();
     chai.expect(location.href).to.equal(`/DB_NAME/login?redirect=CURRENT_URL&username=${expected.name}`);
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
+    chai.expect(pushStateStub.calledOnce).to.be.true;
+    chai.expect(pushStateStub.args[0]).to.have.members([ null, null, '/' ]);
     done();
   });
 
@@ -73,6 +78,8 @@ describe('Session service', function() {
     $httpBackend.flush();
     chai.expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
+    chai.expect(pushStateStub.calledOnce).to.be.true;
+    chai.expect(pushStateStub.args[0]).to.have.members([ null, null, '/' ]);
     done();
   });
 
@@ -96,6 +103,7 @@ describe('Session service', function() {
     service.checkCurrentSession();
     $httpBackend.flush();
     chai.expect(ipCookieRemove.callCount).to.equal(0);
+    chai.expect(pushStateStub.notCalled).to.be.true;
     done();
   });
 
@@ -114,6 +122,8 @@ describe('Session service', function() {
     $httpBackend.flush();
     chai.expect(location.href).to.equal(`/DB_NAME/login?redirect=CURRENT_URL&username=${expected.name}`);
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
+    chai.expect(pushStateStub.calledOnce).to.be.true;
+    chai.expect(pushStateStub.args[0]).to.have.members([ null, null, '/' ]);
     done();
   });
 
@@ -125,6 +135,7 @@ describe('Session service', function() {
     service.checkCurrentSession();
     $httpBackend.flush();
     chai.expect(ipCookieRemove.callCount).to.equal(0);
+    chai.expect(pushStateStub.notCalled).to.be.true;
     done();
   });
 
