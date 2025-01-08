@@ -5,7 +5,6 @@ const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
-const newPassword = 'Pa33word1';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
@@ -162,7 +161,6 @@ describe('Contacts by phone API', () => {
   before(async () => {
     await utils.saveDocs(contacts);
     await utils.createUsers(users);
-    await utils.resetUserPassword(users);
   });
 
   after(async () => {
@@ -171,14 +169,8 @@ describe('Contacts by phone API', () => {
   });
 
   beforeEach(() => {
-    offlineRequestOptions = {
-      path: '/api/v1/contacts-by-phone',
-      auth: { username: 'offline', password: newPassword },
-    };
-    onlineRequestOptions = {
-      path: '/api/v1/contacts-by-phone',
-      auth: { username: 'online', password: newPassword },
-    };
+    offlineRequestOptions = { path: '/api/v1/contacts-by-phone', auth: { username: 'offline', password }, };
+    onlineRequestOptions = { path: '/api/v1/contacts-by-phone', auth: { username: 'online', password }, };
     noAuthRequestOptions = {
       path: '/api/v1/contacts-by-phone',
       headers: { 'Accept': 'application/json' },

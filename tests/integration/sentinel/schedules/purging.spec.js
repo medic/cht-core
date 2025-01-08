@@ -4,7 +4,6 @@ const chai = require('chai');
 const moment = require('moment');
 
 const password = 'SuperS3creT';
-const newPassword = 'Pa33word1';
 const docs = [
   {
     _id: 'clinic1',
@@ -359,7 +358,7 @@ const purgeSettings = {
 const requestDocs = async (username) => {
   const options = {
     path: `/api/v1/replication/get-ids`,
-    auth: { username, password: newPassword },
+    auth: { username, password },
   };
   const result = await utils.request(options);
   return result.doc_ids_revs;
@@ -370,7 +369,7 @@ const requestDeletes = async (username, ids) => {
     path: `/api/v1/replication/get-deletes`,
     method: 'POST',
     body: { doc_ids: ids },
-    auth: { username, password: newPassword },
+    auth: { username, password },
   };
   const result = await utils.request(options);
   return result.doc_ids;
@@ -409,7 +408,6 @@ describe('Server side purge', () => {
     await utils.deleteUsers(existingUsers);
     await utils.saveDocs([...docs, ...tasks, ...targets]);
     await utils.createUsers(users);
-    await utils.resetUserPassword(users);
   });
 
   after(async () => {
@@ -583,7 +581,6 @@ describe('Server side purge', () => {
       roles: ['district_admin', 'purge_regular'],
     };
     await updateUser(updatedUser2);
-    await utils.resetUserPassword([updatedUser2]);
 
     responseDocsUser1 = await requestDocs('user1');
     responseDocsUser2 = await requestDocs('user2');

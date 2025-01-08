@@ -487,7 +487,8 @@ const getUserUpdates = async (username, data, fullAccess = false) => {
   };
 
   if (data.password) {
-    user.password_change_required = await isPasswordChangeRequired(username, data, fullAccess);
+    user.password_change_required = data.password_change_required === false ? false :
+      await isPasswordChangeRequired(username, data, fullAccess);
   }
 
   USER_EDITABLE_FIELDS.forEach(key => {

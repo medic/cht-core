@@ -15,13 +15,12 @@ const requestChanges = (username, params = {}) => {
   const options = {
     path: '/_changes',
     qs: params,
-    auth: { username, password: newPassword }
+    auth: { username, password }
   };
   return utils.requestOnTestDb(options);
 };
 
 const password = 'passwordSUP3RS3CR37!';
-const newPassword = 'Pa33word1';
 
 const users = [
   {
@@ -182,8 +181,7 @@ describe('changes handler', () => {
     // Bootstrap users
     return utils
       .saveDoc(parentPlace)
-      .then(() => utils.createUsers(users, true))
-      .then(() => utils.resetUserPassword(users));
+      .then(() => utils.createUsers(users, true));
   });
 
   after( async () => {
@@ -271,9 +269,10 @@ describe('changes handler', () => {
       assertChangeIds(changes, ...changesIDs, bobUserId);
     });
 
+
     it('should forward changes requests when db name is not medic', () => {
       return utils
-        .requestOnMedicDb({ path: '/_changes', auth: { username: 'bob', password: newPassword } })
+        .requestOnMedicDb({ path: '/_changes', auth: { username: 'bob', password } })
         .then(results => {
           return assertChangeIds(results, ...changesIDs, bobUserId);
         });
@@ -281,7 +280,7 @@ describe('changes handler', () => {
 
     it('filters calls with irregular urls which match couchdb endpoint', () => {
       const options = {
-        auth: { username: 'bob', password: newPassword },
+        auth: { username: 'bob', password },
         method: 'GET'
       };
 

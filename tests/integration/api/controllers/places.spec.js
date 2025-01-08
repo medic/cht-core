@@ -4,7 +4,6 @@ const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
-const newPassword = 'Pa33word1';
 
 const users = [
   {
@@ -34,7 +33,6 @@ describe('Places API', () => {
     };
     await utils.updateSettings({ permissions }, { ignoreReload: true });
     await utils.createUsers(users);
-    await utils.resetUserPassword(users);
   });
 
   after(async () => {
@@ -43,7 +41,7 @@ describe('Places API', () => {
   });
 
   beforeEach(() => {
-    onlineRequestOptions = { path: '/api/v1/places', auth: { username: 'online', password: newPassword }, };
+    onlineRequestOptions = { path: '/api/v1/places', auth: { username: 'online', password }, };
   });
 
   describe('POST', () => {

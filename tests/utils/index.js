@@ -832,61 +832,23 @@ const getCreatedUsers = async () => {
     .map((user) => ({ ...user, username: user.id.replace(COUCH_USER_ID_PREFIX, '') }));
 };
 
-const resetPassword = async (username, password) => {
-  const loginResponse = await request({
-    path: '/medic/login',
-    method: 'POST',
-    body: { user: username, password },
-    noAuth: true,
-    followRedirect: false,
-    simple: false,
-    headers: { 'X-Forwarded-For': randomIp() }
-  });
-
-  if (loginResponse.statusCode === 302 && loginResponse.body === '/medic/password-reset') {
-    const cookies = loginResponse.headers['set-cookie'];
-
-    await request({
-      path: '/medic/password-reset',
-      method: 'POST',
-      headers: {
-        Cookie: cookies.join('; '),
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Forwarded-For': randomIp()
-      },
-      body: {
-        username: username,
-        currentPassword: password,
-        password: 'Pa33word1'
-      },
-      followRedirect: false,
-      simple: false,
-      json: true
-    });
-  }
-};
-
-const resetUserPassword = async (users) => {
-  for (const user of users) {
-    await resetPassword(user.username, user.password);
-    cookieJar._jar.removeAllCookiesSync();
-  }
-};
-
 /**
  * Creates users - optionally also creating their meta dbs
  * @param {Array} users - list of users to be created
  * @param {Boolean} meta - if true, creates meta db-s as well, default false
+ * @param {Boolean} password_change_required - if true, will require user to reset password on first time login
  * @return {Promise}
  * */
-const createUsers = async (users, meta = false) => {
+const createUsers = async (users, meta = false, password_change_required = false) => {
   const createUserOpts = { path: '/api/v1/users', method: 'POST' };
   const createUserV3Opts = { path: '/api/v3/users', method: 'POST' };
 
   for (const user of users) {
     const options = {
-      body: user,
+      body: {
+        ...user,
+        password_change_required: password_change_required ? undefined : false
+      },
       ...(Array.isArray(user.place) ? createUserV3Opts : createUserOpts)
     };
     await request(options);
@@ -1729,5 +1691,4 @@ module.exports = {
   toggleSentinelTransitions,
   runSentinelTasks,
   runCommand,
-  resetUserPassword,
 };

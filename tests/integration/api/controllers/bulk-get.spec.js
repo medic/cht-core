@@ -6,7 +6,6 @@ const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
-const newPassword = 'Pa33word1';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
@@ -76,7 +75,6 @@ describe('bulk-get handler', () => {
   before(async () => {
     await utils.saveDoc(parentPlace);
     await utils.createUsers(users);
-    await utils.resetUserPassword(users);
   });
 
   after(async () => {
@@ -88,13 +86,13 @@ describe('bulk-get handler', () => {
   beforeEach(() => {
     offlineRequestOptions = {
       path: '/_bulk_get',
-      auth: { username: 'offline', password: newPassword },
+      auth: { username: 'offline', password },
       method: 'POST',
     };
 
     onlineRequestOptions = {
       path: '/_bulk_get',
-      auth: { username: 'online', password: newPassword },
+      auth: { username: 'online', password },
       method: 'POST',
     };
   });
@@ -232,7 +230,7 @@ describe('bulk-get handler', () => {
 
         const supervisorRequestOptions = {
           path: '/_bulk_get',
-          auth: { username: 'supervisor', password: newPassword },
+          auth: { username: 'supervisor', password },
           method: 'POST',
           body: offlineRequestOptions.body
         };

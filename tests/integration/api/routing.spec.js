@@ -5,7 +5,6 @@ const moment = require('moment');
 const semver = require('semver');
 
 const password = 'passwordSUP3RS3CR37!';
-const newPassword = 'Pa33word1';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
@@ -47,14 +46,14 @@ const users = [
 ];
 
 const offlineRequestOptions = {
-  auth: { username: 'offline', password: newPassword },
+  auth: { username: 'offline', password },
   method: 'GET',
 };
 
 const getOfflineRequestOptions = (method) => Object.assign({}, offlineRequestOptions, { method });
 
 const onlineRequestOptions = {
-  auth: { username: 'online', password: newPassword },
+  auth: { username: 'online', password },
   method: 'GET',
 };
 
@@ -74,7 +73,6 @@ describe('routing', () => {
   before(async () => {
     await utils.saveDoc(parentPlace);
     await utils.createUsers(users);
-    await utils.resetUserPassword(users);
   });
 
   after(async () => {
@@ -722,8 +720,8 @@ describe('routing', () => {
           path: '/_session',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: { name: username, password: newPassword },
-          auth: { username, password: newPassword }
+          body: { name: username, password },
+          auth: { username, password }
         });
       };
 

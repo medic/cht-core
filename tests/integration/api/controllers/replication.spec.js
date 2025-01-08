@@ -15,12 +15,11 @@ const isFormOrTranslation = id => defaultDocRegex.test(id);
 const getIds = docsOrChanges => docsOrChanges.map(elem => elem._id || elem.id);
 
 const password = 'passwordSUP3RS3CR37!';
-const newPassword = 'Pa33word1';
 
 const requestDocs = (username) => {
   const options = {
     path: '/api/v1/replication/get-ids',
-    auth: { username, password: newPassword }
+    auth: { username, password }
   };
   return utils.request(options);
 };
@@ -30,7 +29,7 @@ const requestDeletes = (username, docIds = []) => {
     path: '/api/v1/replication/get-deletes',
     method: 'POST',
     body: { doc_ids: docIds },
-    auth: { username, password: newPassword }
+    auth: { username, password }
   };
   return utils.request(options);
 };
@@ -197,7 +196,6 @@ describe('replication', () => {
     await utils.updatePermissions(['district_admin'], ['can_have_multiple_places'], [], { ignoreReload: true });
     await utils.saveDoc(parentPlace);
     await utils.createUsers(users, true);
-    await utils.resetUserPassword(users);
   });
 
   after( async () => {

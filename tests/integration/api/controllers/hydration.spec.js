@@ -5,7 +5,6 @@ const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
-const newPassword = 'Pa33word1';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
@@ -249,8 +248,7 @@ const hydrateReport = doc => {
 describe('Hydration API', () => {
   before(async () => {
     await utils.saveDocs(docs);
-    await utils.createUsers(users);
-    await utils.resetUserPassword(users);
+    await utils.createUsers(users).then();
   });
 
   after(async () =>  {
@@ -259,8 +257,8 @@ describe('Hydration API', () => {
   });
 
   beforeEach(() => {
-    offlineRequestOptions = { path: '/api/v1/hydrate', auth: { username: 'offline', password: newPassword }, };
-    onlineRequestOptions = { path: '/api/v1/hydrate', auth: { username: 'online', password: newPassword }, };
+    offlineRequestOptions = { path: '/api/v1/hydrate', auth: { username: 'offline', password }, };
+    onlineRequestOptions = { path: '/api/v1/hydrate', auth: { username: 'online', password }, };
     noAuthRequestOptions = { path: '/api/v1/hydrate', headers: { 'Accept': 'application/json' }, noAuth: true };
   });
 

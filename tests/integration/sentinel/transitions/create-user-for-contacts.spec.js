@@ -31,7 +31,6 @@ const ORIGINAL_USER = utils.deepFreeze({
   roles: ['chw'],
 });
 
-const newPassword = 'Pa33word1';
 const newUsers = [];
 
 const getSettings = ({
@@ -102,7 +101,6 @@ describe('create_user_for_contacts', () => {
   it('does nothing when no users should be created for the contact', async () => {
     await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
     await utils.createUsers([ORIGINAL_USER]);
-    await utils.resetUserPassword([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(NEW_PERSON);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
@@ -124,10 +122,9 @@ describe('create_user_for_contacts', () => {
   it('replaces user but does not create a new user for the same contact in the same transition', async () => {
     await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
     await utils.createUsers([ORIGINAL_USER]);
-    await utils.resetUserPassword([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
     // Can log in as user
-    assert.include(await loginAsUser({ ...ORIGINAL_USER, password: newPassword }), { statusCode: 302 });
+    assert.include(await loginAsUser(ORIGINAL_USER), { status: 302 });
     await utils.saveDoc(NEW_PERSON);
     // Write another contact that has a user being created and another user being replaced
     // (This is an approximation of behavior that could happen if Sentinel was down when the
@@ -218,10 +215,9 @@ describe('create_user_for_contacts', () => {
     it('replaces user for contact', async () => {
       await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
-      await utils.resetUserPassword([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       // Can log in as user
-      assert.include(await loginAsUser({ ...ORIGINAL_USER, password: newPassword }), { statusCode: 302 });
+      assert.include(await loginAsUser(ORIGINAL_USER), { status: 302 });
       await utils.saveDoc(NEW_PERSON);
       const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
       originalContact.user_for_contact = {
@@ -239,7 +235,7 @@ describe('create_user_for_contacts', () => {
       // Transition successful
       assert.isTrue(transitions.create_user_for_contacts.ok);
       // Can no longer log in as user
-      assert.include(await loginAsUser({ ...ORIGINAL_USER, password: newPassword }), { statusCode: 401 });
+      assert.include(await loginAsUser(ORIGINAL_USER), { status: 401 });
       // User's password was automatically reset. Change it to something we know.
       await updateUserPassword(ORIGINAL_USER.username, 'n3wPassword!');
       // Can still login as original user with new password
@@ -272,14 +268,12 @@ describe('create_user_for_contacts', () => {
     it('replaces user for a contact when the contact is associated with multiple users', async () => {
       await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
-      await utils.resetUserPassword([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       const otherUser = { ...ORIGINAL_USER, username: 'other_user', contact: ORIGINAL_PERSON._id };
       await utils.createUsers([otherUser]);
-      await utils.resetUserPassword([otherUser]);
       newUsers.push(otherUser.username);
       // Can log in as user
-      assert.include(await loginAsUser({ ...ORIGINAL_USER, password: newPassword }), { statusCode: 302 });
+      assert.include(await loginAsUser(ORIGINAL_USER), { status: 302 });
       await utils.saveDoc(NEW_PERSON);
       const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
       originalContact.user_for_contact = {
@@ -329,19 +323,18 @@ describe('create_user_for_contacts', () => {
       const [otherUserSettings] = await utils.getUserSettings({ name: otherUser.username });
       assert.equal(otherUserSettings.contact_id, ORIGINAL_PERSON._id);
       // Can still log in as other user
-      assert.include(await loginAsUser({ ...otherUser, password: newPassword }), { statusCode: 302 });
+      assert.include(await loginAsUser(otherUser), { status: 302 });
     });
 
     it('replaces multiple users for a contact', async () => {
       await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
-      await utils.resetUserPassword([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       const otherUser = { ...ORIGINAL_USER, username: 'other_user', contact: ORIGINAL_PERSON._id };
       await utils.createUsers([otherUser]);
       newUsers.push(otherUser.username);
       // Can log in as users
-      assert.include(await loginAsUser({ ...ORIGINAL_USER, password: newPassword }), { statusCode: 302 });
+      assert.include(await loginAsUser(ORIGINAL_USER), { status: 302 });
       assert.include(await loginAsUser(otherUser), { status: 302 });
       await utils.saveDoc(NEW_PERSON);
       const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
@@ -410,7 +403,6 @@ describe('create_user_for_contacts', () => {
         { ignoreReload: 'sentinel' }
       );
       await utils.createUsers([ORIGINAL_USER]);
-      await utils.resetUserPassword([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(NEW_PERSON);
       const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
@@ -436,7 +428,6 @@ describe('create_user_for_contacts', () => {
       const collectLogs = await utils.collectSentinelLogs(missingPersonPattern);
       await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
-      await utils.resetUserPassword([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
       originalContact.user_for_contact = {
@@ -486,7 +477,6 @@ describe('create_user_for_contacts', () => {
       const collectLogs = await utils.collectSentinelLogs(missingPhonePattern);
       await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
-      await utils.resetUserPassword([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(newPerson);
       const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
@@ -514,7 +504,6 @@ describe('create_user_for_contacts', () => {
       const collectLogs = await utils.collectSentinelLogs(invalidPhonePattern);
       await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
-      await utils.resetUserPassword([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(newPerson);
       const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
@@ -542,7 +531,6 @@ describe('create_user_for_contacts', () => {
       const collectLogs = await utils.collectSentinelLogs(missingNamePattern);
       await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
-      await utils.resetUserPassword([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(newPerson);
       const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
@@ -569,7 +557,6 @@ describe('create_user_for_contacts', () => {
       const collectLogs = await utils.collectSentinelLogs(missingIdPattern);
       await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
-      await utils.resetUserPassword([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(NEW_PERSON);
       const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
@@ -592,7 +579,6 @@ describe('create_user_for_contacts', () => {
     it('does not replace user when the replace status is not READY', async () => {
       await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
-      await utils.resetUserPassword([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(NEW_PERSON);
       const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
@@ -621,7 +607,6 @@ describe('create_user_for_contacts', () => {
     it('does not replace user when the contact being replaced is not a person', async () => {
       await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
-      await utils.resetUserPassword([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(NEW_PERSON);
       const clinic = await utils.getDoc(CLINIC._id);
@@ -864,7 +849,6 @@ describe('create_user_for_contacts', () => {
     it('does not create user when the contact being added is not a person', async () => {
       await utils.updateSettings(getSettings(), { ignoreReload: 'sentinel' });
       await utils.createUsers([ORIGINAL_USER]);
-      await utils.resetUserPassword([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
       await utils.saveDoc(NEW_PERSON);
       const clinic = await utils.getDoc(CLINIC._id);
