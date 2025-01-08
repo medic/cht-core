@@ -585,10 +585,13 @@ mm-analytics-filters {
     font-size: 12px;
     vertical-align: middle;
   }
-  .card .resource-icon img {
-    width: @icon-small;
-    height: @icon-small;
+  .card .resource-icon {
+    svg, img {
+      width: @icon-small;
+      height: @icon-small;
+    }
   }
+
   .card.children .row a:hover {
     border-color: @contacts-color;
   }

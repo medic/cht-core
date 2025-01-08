@@ -20,10 +20,10 @@ const loginWithData = data => {
   const opts = {
     path: '/medic/login?aaa=aaa',
     method: 'POST',
-    simple: false,
+    resolveWithFullResponse: true,
     noAuth: true,
     body: data,
-    followRedirect: false,
+    redirect: 'manual',
     headers: { 'X-Forwarded-For': randomIp() },
   };
   return utils.request(opts);
@@ -33,10 +33,9 @@ const loginWithTokenLink = (token = '') => {
   const opts = {
     path: `/medic/login/token/${token}`,
     method: 'POST',
-    simple: false,
     resolveWithFullResponse: true,
     noAuth: true,
-    followRedirect: false,
+    redirect: 'manual',
     body: {},
     headers: { 'X-Forwarded-For': randomIp() },
   };
@@ -44,16 +43,16 @@ const loginWithTokenLink = (token = '') => {
 };
 
 const expectLoginToWork = (response) => {
-  chai.expect(response).to.include({ statusCode: 302 });
-  chai.expect(response.headers['set-cookie']).to.be.an('array');
-  chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
-  chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
+  chai.expect(response).to.include({ status: 302 });
+  chai.expect(response.headers.getSetCookie()).to.be.an('array');
+  chai.expect(response.headers.getSetCookie().find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
+  chai.expect(response.headers.getSetCookie().find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
   chai.expect(response.body).to.equal('/');
 };
 
 const expectLoginToFail = (response) => {
-  chai.expect(response.headers['set-cookie']).to.be.undefined;
-  chai.expect(response.statusCode).to.equal(401);
+  chai.expect(response.headers.getSetCookie()).to.deep.equal([]);
+  chai.expect(response.status).to.equal(401);
 };
 
 const getUser = (user) => {
@@ -135,7 +134,7 @@ describe('login', () => {
     it('should fail with invalid url', () => {
       return setupTokenLoginSettings()
         .then(() => loginWithTokenLink())
-        .then(response => chai.expect(response).to.deep.include({ statusCode: 401 }));
+        .then(response => chai.expect(response).to.deep.include({ status: 401 }));
     });
 
     it('should fail with invalid data', () => {

@@ -38,11 +38,14 @@ const _ = require('lodash/core');
         }
         ipCookie.remove(COOKIE_NAME, { path: '/' });
         userCtxCookieValue = undefined;
+        // Clear browser history to prevent loading page on browser's back button after logout.
+        $window.history.pushState(null, null, '/');
         $window.location.href = `/${Location.dbName}/login?${params.toString()}`;
       };
 
       const logout = function() {
-        return $http.delete('/_session')
+        return $http
+          .delete('/_session')
           .catch(function() {
             // Set cookie to force login before using app
             ipCookie('login', 'force', { path: '/' });
