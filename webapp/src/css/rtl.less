@@ -129,6 +129,18 @@
   &.reports .right-pane .item-content {
     float: right;
   }
+
+  @media (max-width: 767px) {
+    mm-sidebar-menu .mat-sidenav-container .nav-item mat-icon {
+      margin-right: -6px;
+      margin-left: 0;
+    }
+
+    .content .page {
+      padding-right: 15px;
+      padding-left: 0;
+    }
+  }
 }
 
 [dir="rtl"] {
