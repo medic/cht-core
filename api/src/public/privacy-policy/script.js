@@ -1,8 +1,5 @@
-document.addEventListener('DOMContentLoaded', function() {
-  const backButton = document.getElementById('back-button');
-  if (backButton) {
-    backButton.addEventListener('click', function() {
-      history.go(-1);
-    }, false);
-  }
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.back-button').forEach(button => {
+    button.addEventListener('click', () => window.history.back());
+  });
 });
