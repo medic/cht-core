@@ -51,11 +51,6 @@ describe('Person Controller', () => {
           .returns(personGetWithLineage);
       });
 
-      afterEach(() => {
-        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
-        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      });
-
       it('returns a person', async () => {
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
@@ -70,6 +65,8 @@ describe('Person Controller', () => {
         expect(personGetWithLineage.notCalled).to.be.true;
         expect(res.json.calledOnceWithExactly(person)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns a person with lineage when the query parameter is set to "true"', async () => {
@@ -87,6 +84,8 @@ describe('Person Controller', () => {
         expect(personGetWithLineage.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(res.json.calledOnceWithExactly(person)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns a person without lineage when the query parameter is set something else', async () => {
@@ -104,6 +103,8 @@ describe('Person Controller', () => {
         expect(personGetWithLineage.notCalled).to.be.true;
         expect(res.json.calledOnceWithExactly(person)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns a 404 error if person is not found', async () => {
@@ -123,6 +124,8 @@ describe('Person Controller', () => {
           req,
           res
         )).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if user does not have can_view_contacts permission', async () => {
@@ -138,6 +141,8 @@ describe('Person Controller', () => {
         expect(personGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if not an online user', async () => {
@@ -152,6 +157,8 @@ describe('Person Controller', () => {
         expect(personGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
     });
 
@@ -180,11 +187,6 @@ describe('Person Controller', () => {
         qualifierByContactType.returns(personTypeQualifier);
       });
 
-      afterEach(() => {
-        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
-        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      });
-
       it('returns a page of people with correct query params', async () => {
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
@@ -198,6 +200,8 @@ describe('Person Controller', () => {
         expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly(people)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if user does not have can_view_contacts permission', async () => {
@@ -213,6 +217,8 @@ describe('Person Controller', () => {
         expect(personGetPageByType.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if not an online user', async () => {
@@ -227,6 +233,8 @@ describe('Person Controller', () => {
         expect(personGetPageByType.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns 400 error when personType is invalid', async () => {
@@ -243,6 +251,8 @@ describe('Person Controller', () => {
         expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('rethrows error in case of other errors', async () => {
@@ -259,6 +269,8 @@ describe('Person Controller', () => {
         expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
     });
   });

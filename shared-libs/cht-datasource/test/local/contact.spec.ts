@@ -107,10 +107,6 @@ describe('local contact', () => {
           .returns(getContactLineageInner);
       });
 
-      afterEach(() => {
-        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-      });
-
       it('returns a contact with lineage for person type contact', async () => {
         const person = { type: 'person', _id: 'uuid', _rev: 'rev' };
         const place0 = { _id: 'place0', _rev: 'rev' };
@@ -135,6 +131,7 @@ describe('local contact', () => {
         expect(isPerson.calledOnceWithExactly(settingsGetAll(), person)).to.be.true;
         expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getContactLineageInner.calledOnceWithExactly(lineageDocs, person, true)).to.be.true;
+        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('returns a contact with lineage for place type contact', async () => {
@@ -162,6 +159,7 @@ describe('local contact', () => {
         expect(isPerson.calledOnceWithExactly(settingsGetAll(), place0)).to.be.true;
         expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getContactLineageInner.calledOnceWithExactly(lineageDocs)).to.be.true;
+        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('returns null when no contact or lineage is found', async () => {
@@ -177,6 +175,7 @@ describe('local contact', () => {
         expect(debug.notCalled).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
         expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('returns null if the doc returned is not a contact', async () => {
@@ -197,6 +196,7 @@ describe('local contact', () => {
         expect(debug.notCalled).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
         expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('returns a contact if no lineage is found', async () => {
@@ -214,6 +214,7 @@ describe('local contact', () => {
         expect(debug.calledOnceWithExactly(`No lineage contacts found for person [${identifier.uuid}].`)).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
         expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
     });
 

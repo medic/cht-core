@@ -51,11 +51,6 @@ describe('Contact Controller', () => {
           .returns(contactGetWithLineage);
       });
 
-      afterEach(() => {
-        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
-        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      });
-
       it('returns a contact', async () => {
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
@@ -70,6 +65,8 @@ describe('Contact Controller', () => {
         expect(contactGetWithLineage.notCalled).to.be.true;
         expect(res.json.calledOnceWithExactly(contact)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns a contact with lineage when the query parameter is set to "true"', async () => {
@@ -87,6 +84,8 @@ describe('Contact Controller', () => {
         expect(contactGetWithLineage.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(res.json.calledOnceWithExactly(contact)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns a contact without lineage when the query parameter is set something else', async () => {
@@ -104,6 +103,8 @@ describe('Contact Controller', () => {
         expect(contactGetWithLineage.notCalled).to.be.true;
         expect(res.json.calledOnceWithExactly(contact)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns a 404 error if contact is not found', async () => {
@@ -123,6 +124,8 @@ describe('Contact Controller', () => {
           req,
           res
         )).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if user does not have can_view_contacts permission', async () => {
@@ -138,6 +141,8 @@ describe('Contact Controller', () => {
         expect(contactGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if not an online user', async () => {
@@ -152,6 +157,8 @@ describe('Contact Controller', () => {
         expect(contactGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
     });
 
@@ -180,11 +187,6 @@ describe('Contact Controller', () => {
         qualifierByFreetext.returns(freetextOnlyQualifier);
       });
 
-      afterEach(() => {
-        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
-        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      });
-
       it('returns a page of contact ids with contact type param only', async () => {
         req = {
           query: {
@@ -205,6 +207,8 @@ describe('Contact Controller', () => {
         expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuidsPage)).to.be.true;
         expect(contactGetUuidsPage.calledOnceWithExactly(contactTypeOnlyQualifier, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });
 
@@ -229,6 +233,8 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns a page of contact ids with both contactType and freetext param', async () => {
@@ -253,6 +259,8 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.calledOnceWithExactly(bothQualifier, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns a page of contact ids with both contactType and freetext param and undefined limit', async () => {
@@ -276,6 +284,8 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.calledOnceWithExactly(bothQualifier, cursor, undefined)).to.be.true;
         expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error in case of null limit', async () => {
@@ -301,6 +311,8 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.calledOnceWithExactly(bothQualifier, cursor, null)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if user does not have can_view_contacts permission', async () => {
@@ -325,6 +337,8 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if not an online user', async () => {
@@ -348,6 +362,8 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns 400 error when contactType is invalid', async () => {
@@ -372,6 +388,8 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.calledOnceWithExactly(contactTypeOnlyQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns 400 error when freetext is invalid', async () => {
@@ -396,6 +414,8 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns 400 error when contactType AND freetext is not present', async () => {
@@ -419,6 +439,8 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('rethrows error in case of other errors', async () => {
@@ -444,6 +466,8 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.calledOnceWithExactly(bothQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
     });
   });

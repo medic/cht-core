@@ -103,10 +103,6 @@ describe('local person', () => {
           .returns(getContactLineageInner);
       });
 
-      afterEach(() => {
-        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-      });
-
       it('returns a person with lineage', async () => {
         const person = { type: 'person', _id: 'uuid', _rev: 'rev' };
         const place0 = { _id: 'place0', _rev: 'rev' };
@@ -130,6 +126,7 @@ describe('local person', () => {
         expect(debug.notCalled).to.be.true;
         expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getContactLineageInner.calledOnceWithExactly(lineagePlaces, person, true)).to.be.true;
+        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('returns null when no person or lineage is found', async () => {
@@ -144,6 +141,7 @@ describe('local person', () => {
         expect(debug.notCalled).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
         expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('returns null if the doc returned is not a person', async () => {
@@ -164,6 +162,7 @@ describe('local person', () => {
         expect(debug.notCalled).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
         expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('returns a person if no lineage is found', async () => {
@@ -181,6 +180,7 @@ describe('local person', () => {
         expect(debug.calledOnceWithExactly(`No lineage places found for person [${identifier.uuid}].`)).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
         expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
     });
 

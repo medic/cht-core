@@ -45,11 +45,6 @@ describe('Report Controller Tests', () => {
           .returns(reportGet);
       });
 
-      afterEach(() => {
-        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
-        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      });
-
       it('returns a report', async () => {
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
@@ -63,6 +58,8 @@ describe('Report Controller Tests', () => {
         expect(reportGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(res.json.calledOnceWithExactly(report)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns a 404 error if report is not found', async () => {
@@ -81,6 +78,8 @@ describe('Report Controller Tests', () => {
           req,
           res
         )).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if user does not have can_view_reports permission', async () => {
@@ -95,6 +94,8 @@ describe('Report Controller Tests', () => {
         expect(reportGet.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if not an online user', async () => {
@@ -108,6 +109,8 @@ describe('Report Controller Tests', () => {
         expect(reportGet.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
     });
 
@@ -136,11 +139,6 @@ describe('Report Controller Tests', () => {
         qualifierByFreetext.returns(freetextOnlyQualifier);
       });
 
-      afterEach(() => {
-        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
-        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      });
-
       it('returns a page of report ids', async () => {
         req = {
           query: {
@@ -161,6 +159,8 @@ describe('Report Controller Tests', () => {
         expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly(reports)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns a page of report ids for undefined limit', async () => {
@@ -182,6 +182,8 @@ describe('Report Controller Tests', () => {
         expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, undefined)).to.be.true;
         expect(res.json.calledOnceWithExactly(reports)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error for null limit', async () => {
@@ -205,6 +207,8 @@ describe('Report Controller Tests', () => {
         expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, null)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if user does not have can_view_reports permission', async () => {
@@ -227,6 +231,8 @@ describe('Report Controller Tests', () => {
         expect(reportGetIdsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if not an online user', async () => {
@@ -248,6 +254,8 @@ describe('Report Controller Tests', () => {
         expect(reportGetIdsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns 400 error when freetext is invalid', async () => {
@@ -271,6 +279,8 @@ describe('Report Controller Tests', () => {
         expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('rethrows error in case of other errors', async () => {
@@ -294,6 +304,8 @@ describe('Report Controller Tests', () => {
         expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
     });
   });

@@ -103,10 +103,6 @@ describe('local place', () => {
           .returns(getContactLineageInner);
       });
 
-      afterEach(() => {
-        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-      });
-
       it('returns a place with lineage', async () => {
         const place0 = { _id: 'place0', _rev: 'rev' };
         const place1 = { _id: 'place1', _rev: 'rev' };
@@ -130,6 +126,7 @@ describe('local place', () => {
         expect(debug.notCalled).to.be.true;
         expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getContactLineageInner.calledOnceWithExactly(lineageDocs)).to.be.true;
+        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('returns null when no place or lineage is found', async () => {
@@ -144,6 +141,7 @@ describe('local place', () => {
         expect(debug.notCalled).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
         expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('returns null if the doc returned is not a place', async () => {
@@ -163,6 +161,7 @@ describe('local place', () => {
         expect(debug.notCalled).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
         expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('returns a place if no lineage is found', async () => {
@@ -180,6 +179,7 @@ describe('local place', () => {
         expect(debug.calledOnceWithExactly(`No lineage places found for place [${identifier.uuid}].`)).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
         expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
     });
 
