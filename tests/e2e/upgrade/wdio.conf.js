@@ -47,7 +47,7 @@ const getReleasesQuery = () => {
     startKey.push({});
   }
   return {
-    start_key: JSON.stringify(startKey),
+    start_key: startKey,
     descending: true,
     limit: TAG ? 2 : 1,
   };
@@ -60,7 +60,7 @@ const getRelease = async () => {
 
   const url = `${MARKET_URL_READ}/${STAGING_SERVER}/_design/builds/_view/releases`;
   const releases = await utils.request({
-    url: url,
+    uri: url,
     qs: getReleasesQuery(),
     noAuth: true,
   });
