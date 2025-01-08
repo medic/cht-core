@@ -57,13 +57,37 @@
     margin-right: 0;
   }
 
-  .sidebar-filter .sidebar-main .sidebar-header .sidebar-reset {
-    margin-right: 0;
-    margin-left: 20px;
-  }
+  .sidebar-filter .sidebar-main {
+    .sidebar-header .sidebar-reset {
+      margin-right: 0;
+      margin-left: 20px;
+    }
 
-  .sidebar-filter .sidebar-main .sidebar-body mat-expansion-panel mat-expansion-panel-header .chip {
-    margin-right: 10px;
+    .sidebar-body {
+      .filter-options li a {
+        padding-right: 31px;
+        padding-left: 0;
+      }
+
+      mat-expansion-panel mat-expansion-panel-header .chip {
+        margin-right: 10px;
+      }
+
+      .filter-options li.accordion-facility-list .accordion-facility-check {
+        right: 0;
+        left: auto;
+      }
+
+      .filter-options li.accordion-facility-list.accordion-facility-caret > .accordion-facility-chevron {
+        left: 0;
+        right: auto;
+      }
+
+      .filter-options li a:before {
+        float: right;
+        margin: 5px -30px 5px 7px;
+      }
+    }
   }
 
   mm-search-bar .mm-search-bar-container .btn.open-filter .open-filter-label {
@@ -92,6 +116,18 @@
 
   .enketo .or h2, .enketo .or h3, .enketo .or h4 {
     text-align: right;
+  }
+
+  .enketo .required {
+    right: 5px;
+  }
+
+  .progress-bar {
+    float: right;
+  }
+
+  &.reports .right-pane .item-content {
+    float: right;
   }
 }
 
