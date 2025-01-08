@@ -2353,8 +2353,10 @@ describe('Users service', () => {
         password: 'password.123',
         password_change_required: false
       }]]);
-      chai.expect(roles.hasAllPermissions.args).to.deep.equal(
-        [[['national-manager'], ['can_have_multiple_places']], [['national-manager'], ['can_skip_password_change']]]);
+      chai.expect(roles.hasAllPermissions.args).to.deep.equal([
+        [['national-manager'], ['can_have_multiple_places']],
+        [['national-manager'], ['can_skip_password_change']]
+      ]);
     });
 
     it('succeeds without permission for single facility', async () => {
