@@ -13,6 +13,11 @@ const PROXY_AUTH_HEADERS = {
   'X-Auth-CouchDB-Roles': '_admin',
   'X-Auth-CouchDB-Token': '5fdf567854fdf2380afca469ebf425c1d4e167d0cc8dc24eacf40344adbe06a8',
 };
+const NULL_PROXY_AUTH_HEADERS = {
+  'X-Auth-CouchDB-UserName': null,
+  'X-Auth-CouchDB-Roles': null,
+  'X-Auth-CouchDB-Token': null,
+};
 
 const wantsJSON = req => req.accepts(['text', 'json']) === 'json';
 
@@ -58,6 +63,7 @@ module.exports = {
   MEDIC_BASIC_AUTH,
   REQUEST_ID_HEADER,
   PROXY_AUTH_HEADERS,
+  NULL_PROXY_AUTH_HEADERS,
 
   /*
    * Attempts to determine the correct response given the error code.

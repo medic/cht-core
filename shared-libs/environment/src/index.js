@@ -31,7 +31,6 @@ try {
     couchUrl: parsedUrl.toString(),
     buildsUrl: BUILDS_URL || DEFAULT_BUILDS_URL,
     serverUrl: serverUrl.toString(),
-    serverUrlNoAuth: serverUrl.toString(), // TODO Remove this?
     protocol: parsedUrl.protocol,
     port: parsedUrl.port,
     host: parsedUrl.hostname,

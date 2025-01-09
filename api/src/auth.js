@@ -4,6 +4,7 @@ const db = require('./db');
 const environment = require('@medic/environment');
 const config = require('./config');
 const dataContext = require('./services/data-context');
+const { NULL_PROXY_AUTH_HEADERS } = require('./server-utils');
 const { roles, users } = require('@medic/user-management')(config, db, dataContext);
 
 const contentLengthRegex = /^content-length$/i;
@@ -15,10 +16,10 @@ const get = (path, headers) => {
     .filter(header => contentLengthRegex.test(header))
     .forEach(header => delete getHeaders[header]);
 
-  const url = new URL(path, environment.serverUrlNoAuth);
+  const url = new URL(path, environment.serverUrl);
   return request.get({
     url: url.toString(),
-    headers: getHeaders,
+    headers: { ...getHeaders, ...NULL_PROXY_AUTH_HEADERS },
     json: true
   });
 };
@@ -101,12 +102,13 @@ module.exports = {
    * @param      {Object}    Credentials object as created by basicAuthCredentials
    */
   validateBasicAuth: ({ username, password }) => {
-    const authUrl = new URL(environment.serverUrlNoAuth);
+    const authUrl = new URL(environment.serverUrl);
     authUrl.username = username;
     authUrl.password = password;
     return request.head({
       uri: authUrl.toString(),
-      resolveWithFullResponse: true
+      resolveWithFullResponse: true,
+      headers: { ...NULL_PROXY_AUTH_HEADERS },
     })
       .then(res => {
         if (res.statusCode !== 200) {

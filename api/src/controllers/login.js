@@ -170,12 +170,13 @@ const createSession = req => {
   const user = req.body.user;
   const password = req.body.password;
   return request.post({
-    url: new URL('/_session', environment.serverUrlNoAuth).toString(),
+    url: new URL('/_session', environment.serverUrl).toString(),
     json: true,
     resolveWithFullResponse: true,
     simple: false, // doesn't throw an error on non-200 responses
     body: { name: user, password: password },
     auth: { user: user, pass: password },
+    headers: { ...serverUtils.NULL_PROXY_AUTH_HEADERS }
   });
 };
 
