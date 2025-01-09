@@ -1,7 +1,4 @@
 import {
-  assertCursor,
-  assertFreetextQualifier,
-  assertLimit,
   DataObject,
   getPagedGenerator,
   Nullable,
@@ -9,11 +6,11 @@ import {
 } from './libs/core';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { Doc } from './libs/doc';
-import { InvalidArgumentError } from './libs/error';
 import * as Local from './local';
-import { FreetextQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
+import { FreetextQualifier, UuidQualifier } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
+import { assertCursor, assertFreetextQualifier, assertLimit, assertUuidQualifier } from './libs/parameter-validators';
 
 /** */
 export namespace v1 {
@@ -25,12 +22,6 @@ export namespace v1 {
     readonly reported_date: Date;
     readonly fields: DataObject;
   }
-
-  const assertReportQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
-    if (!isUuidQualifier(qualifier)) {
-      throw new InvalidArgumentError(`Invalid identifier [${JSON.stringify(qualifier)}].`);
-    }
-  };
 
   /**
    * Returns a function for retrieving a report from the given data context.
@@ -51,7 +42,7 @@ export namespace v1 {
     const curriedFn = async (
       qualifier: UuidQualifier
     ): Promise<Nullable<Report>> => {
-      assertReportQualifier(qualifier);
+      assertUuidQualifier(qualifier);
       return fn(qualifier);
     };
     return curriedFn;

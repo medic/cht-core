@@ -111,9 +111,11 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws InvalidArgumentError if the `freetext` is empty or if the `type is invalid for a contact
          */
         getUuids: (
-          freetext: Nullable<string> = null,
-          type: Nullable<string> = null
-        ) => ctx.bind(Contact.v1.getUuids)(Contact.v1.createQualifier(freetext, type)),
+          freetext: string,
+          type: string
+        ) => ctx.bind(Contact.v1.getUuids)(
+          Qualifier.and(Qualifier.byFreetext(freetext), Qualifier.byContactType(type))
+        ),
       },
       place: {
         /**

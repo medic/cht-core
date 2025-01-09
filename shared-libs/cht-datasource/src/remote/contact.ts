@@ -2,6 +2,7 @@ import { getResource, getResources, RemoteDataContext } from './libs/data-contex
 import { ContactTypeQualifier, FreetextQualifier, UuidQualifier } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
 import * as ContactType from '../contact-types';
+import { isContactType, isFreetextType } from '../libs/parameter-validators';
 
 /** @internal */
 export namespace v1 {
@@ -30,10 +31,10 @@ export namespace v1 {
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
-      const freetextParams: Record<string, string> = ContactType.v1.isFreetextType(qualifier)
+      const freetextParams: Record<string, string> = isFreetextType(qualifier)
         ? { freetext: qualifier.freetext }
         : {};
-      const typeParams: Record<string, string> = ContactType.v1.isContactType(qualifier)
+      const typeParams: Record<string, string> = isContactType(qualifier)
         ? { type: qualifier.contactType }
         : {};
 

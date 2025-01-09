@@ -80,6 +80,8 @@ describe('qualifier', () => {
       null,
       '',
       { },
+      'ab',
+      ' '
     ].forEach(freetext => {
       it(`throws an error for ${JSON.stringify(freetext)}`, () => {
         expect(() => byFreetext(freetext as string)).to.throw(

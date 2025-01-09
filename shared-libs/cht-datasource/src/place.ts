@@ -2,14 +2,14 @@ import * as Contact from './contact';
 import * as ContactTypes from './contact-types';
 import * as Person from './person';
 import { LocalDataContext } from './local/libs/data-context';
-import { ContactTypeQualifier, isUuidQualifier, UuidQualifier } from './qualifier';
+import { ContactTypeQualifier, UuidQualifier } from './qualifier';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
-import { assertCursor, assertLimit, assertTypeQualifier, getPagedGenerator, Nullable, Page } from './libs/core';
-import { InvalidArgumentError } from './libs/error';
+import { getPagedGenerator, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
+import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
 
 /** */
 export namespace v1 {
@@ -30,12 +30,6 @@ export namespace v1 {
     readonly parent?: PlaceWithLineage | ContactTypes.v1.NormalizedParent;
   }
 
-  const assertPlaceQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
-    if (!isUuidQualifier(qualifier)) {
-      throw new InvalidArgumentError(`Invalid identifier [${JSON.stringify(qualifier)}].`);
-    }
-  };
-
   const getPlace =
     <T>(
       localFn: (c: LocalDataContext) => (qualifier: UuidQualifier) => Promise<T>,
@@ -44,7 +38,7 @@ export namespace v1 {
       assertDataContext(context);
       const fn = adapt(context, localFn, remoteFn);
       return async (qualifier: UuidQualifier): Promise<T> => {
-        assertPlaceQualifier(qualifier);
+        assertUuidQualifier(qualifier);
         return fn(qualifier);
       };
     };

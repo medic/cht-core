@@ -69,7 +69,7 @@ export type FreetextQualifier = Readonly<{ freetext: string }>;
  * @throws Error if the search string is not provided or has less than 3 characters
  */
 export const byFreetext = (freetext: string): FreetextQualifier => {
-  if (!isString(freetext) || freetext.length < 3) {
+  if (!isString(freetext) || freetext.length < 3 || freetext.includes(' ')) {
     throw new InvalidArgumentError(`Invalid freetext [${JSON.stringify(freetext)}].`);
   }
 

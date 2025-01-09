@@ -10,6 +10,7 @@ import { getContactLineage, getLineageDocsById } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
 import { normalizeFreetext, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
+import { isContactType, isContactTypeAndFreetextType } from '../libs/parameter-validators';
 
 /** @internal */
 export namespace v1 {
@@ -33,12 +34,6 @@ export namespace v1 {
       }
       return true;
     };
-
-  const isContactTypeAndFreetextType = (
-    qualifier: ContactTypeQualifier | FreetextQualifier
-  ): qualifier is ContactTypeQualifier & FreetextQualifier => {
-    return ContactType.v1.isContactType(qualifier) && ContactType.v1.isFreetextType(qualifier);
-  };
 
   /** @internal */
   export const get = ({ medicDb, settings }: LocalDataContext) => {
@@ -94,7 +89,7 @@ export namespace v1 {
         return getDocsFnForContactTypeAndFreetext(qualifier);
       }
 
-      if (ContactType.v1.isContactType(qualifier)) {
+      if (isContactType(qualifier)) {
         return getDocsFnForContactType(qualifier);
       }
 
@@ -149,7 +144,7 @@ export namespace v1 {
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
-      if (ContactType.v1.isContactType(qualifier)) {
+      if (isContactType(qualifier)) {
         const contactTypesIds = getContactTypes(settings);
         if (!contactTypesIds.includes(qualifier.contactType)) {
           throw new InvalidArgumentError(`Invalid contact type [${qualifier.contactType}].`);

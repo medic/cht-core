@@ -6,7 +6,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const {expect} = require('chai');
 
-describe('Report', () => {
+describe('cht-datasource Report', () => {
   const contact0 = utils.deepFreeze(personFactory.build({name: 'contact0', role: 'chw'}));
   const contact1 = utils.deepFreeze(personFactory.build({name: 'contact1', role: 'chw_supervisor'}));
   const contact2 = utils.deepFreeze(personFactory.build({name: 'contact2', role: 'program_officer'}));

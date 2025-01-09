@@ -279,15 +279,16 @@ describe('CHT Script API - getDatasource', () => {
         dataContextBind.returns(contactGetIds);
         const freetext = 'abc';
         const contactType = 'person';
+        const contactTypeQualifier = { contactType };
+        const freetextQualifier = {freetext };
         const qualifier = { contactType, freetext };
-        const createQualifier = sinon.stub(Contact.v1, 'createQualifier').returns(qualifier);
-
+        const andQualifier = sinon.stub(Qualifier, 'and').returns(qualifier);
         const res =  contact.getUuids(freetext, contactType);
 
         expect(res).to.deep.equal(mockAsyncGenerator);
         expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
         expect(contactGetIds.calledOnceWithExactly(qualifier)).to.be.true;
-        expect(createQualifier.calledOnceWithExactly(freetext, contactType)).to.be.true;
+        expect(andQualifier.calledOnceWithExactly(freetextQualifier, contactTypeQualifier)).to.be.true;
       });
     });
 

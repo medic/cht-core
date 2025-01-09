@@ -1,7 +1,4 @@
 import {
-  assertContactTypeFreetextQualifier,
-  assertCursor, assertFreetextQualifier,
-  assertLimit, assertTypeQualifier,
   getPagedGenerator,
   Nullable,
   Page,
@@ -18,6 +15,16 @@ import * as Local from './local';
 import * as Remote from './remote';
 import * as ContactTypes from './contact-types';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
+import {
+  assertContactTypeFreetextQualifier,
+  assertCursor,
+  assertFreetextQualifier,
+  assertLimit,
+  assertTypeQualifier,
+  assertUuidQualifier,
+  isContactType,
+  isFreetextType,
+} from './libs/parameter-validators';
 
 /** */
 export namespace v1 {
@@ -30,9 +37,6 @@ export namespace v1 {
    */
   export type ContactWithLineage = ContactTypes.v1.ContactWithLineage;
 
-  /** @ignore */
-  export const createQualifier = ContactTypes.v1.createQualifier;
-
   const getContact =
     <T>(
       localFn: (c: LocalDataContext) => (qualifier: UuidQualifier) => Promise<T>,
@@ -41,7 +45,7 @@ export namespace v1 {
       assertDataContext(context);
       const fn = adapt(context, localFn, remoteFn);
       return async (qualifier: UuidQualifier): Promise<T> => {
-        ContactTypes.v1.assertContactQualifier(qualifier);
+        assertUuidQualifier(qualifier);
         return fn(qualifier);
       };
     };
@@ -92,11 +96,11 @@ export namespace v1 {
       assertCursor(cursor);
       assertLimit(limit);
 
-      if (ContactTypes.v1.isContactType(qualifier) && ContactTypes.v1.isFreetextType(qualifier)) {
+      if (isContactType(qualifier) && isFreetextType(qualifier)) {
         assertContactTypeFreetextQualifier(qualifier);
-      } else if (ContactTypes.v1.isContactType(qualifier)) {
+      } else if (isContactType(qualifier)) {
         assertTypeQualifier(qualifier);
-      } else if (ContactTypes.v1.isFreetextType(qualifier)) {
+      } else if (isFreetextType(qualifier)) {
         assertFreetextQualifier(qualifier);
       }
 
@@ -124,11 +128,11 @@ export namespace v1 {
     const curriedGen = (
       qualifier: ContactTypeQualifier | FreetextQualifier
     ): AsyncGenerator<string, null> => {
-      if (ContactTypes.v1.isContactType(qualifier) && ContactTypes.v1.isFreetextType(qualifier)) {
+      if (isContactType(qualifier) && isFreetextType(qualifier)) {
         assertContactTypeFreetextQualifier(qualifier);
-      } else if (ContactTypes.v1.isContactType(qualifier)) {
+      } else if (isContactType(qualifier)) {
         assertTypeQualifier(qualifier);
-      } else if (ContactTypes.v1.isFreetextType(qualifier)) {
+      } else if (isFreetextType(qualifier)) {
         assertFreetextQualifier(qualifier);
       }
 

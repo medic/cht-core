@@ -5,7 +5,7 @@ const userFactory = require('@factories/cht/users/users');
 const {getRemoteDataContext, Qualifier, Contact} = require('@medic/cht-datasource');
 const {expect} = require('chai');
 
-describe('Contact', () => {
+describe('cht-datasource Contact', () => {
   const contact0 = utils.deepFreeze(personFactory.build({name: 'contact0', role: 'chw'}));
   const contact1 = utils.deepFreeze(personFactory.build({name: 'contact1', role: 'chw_supervisor'}));
   const contact2 = utils.deepFreeze(personFactory.build({name: 'contact2', role: 'program_officer'}));
