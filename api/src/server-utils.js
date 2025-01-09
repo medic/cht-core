@@ -8,6 +8,12 @@ const REQUEST_ID_HEADER = 'X-Request-Id';
 const cookie = require('./services/cookie');
 const {InvalidArgumentError} = require('@medic/cht-datasource');
 
+const PROXY_AUTH_HEADERS = {
+  'X-Auth-CouchDB-UserName': 'username',
+  'X-Auth-CouchDB-Roles': '_admin',
+  'X-Auth-CouchDB-Token': '5fdf567854fdf2380afca469ebf425c1d4e167d0cc8dc24eacf40344adbe06a8',
+};
+
 const wantsJSON = req => req.accepts(['text', 'json']) === 'json';
 
 const writeJSON = (res, code, error, details) => {
@@ -49,8 +55,9 @@ const promptForBasicAuth = res => {
 };
 
 module.exports = {
-  MEDIC_BASIC_AUTH: MEDIC_BASIC_AUTH,
-  REQUEST_ID_HEADER: REQUEST_ID_HEADER,
+  MEDIC_BASIC_AUTH,
+  REQUEST_ID_HEADER,
+  PROXY_AUTH_HEADERS,
 
   /*
    * Attempts to determine the correct response given the error code.

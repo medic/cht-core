@@ -7,7 +7,7 @@ PouchDB.plugin(require('pouchdb-session-authentication'));
 PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 const asyncLocalStorage = require('./services/async-storage');
-const { REQUEST_ID_HEADER } = require('./server-utils');
+const { REQUEST_ID_HEADER, PROXY_AUTH_HEADERS } = require('./server-utils');
 
 const { UNIT_TEST_ENV } = process.env;
 
@@ -75,9 +75,9 @@ if (UNIT_TEST_ENV) {
 } else {
   const fetch = (url, opts) => {
     // Add Couch Proxy Auth headers
-    opts.headers.set('X-Auth-CouchDB-UserName', 'username');
-    opts.headers.set('X-Auth-CouchDB-Roles', '_admin');
-    opts.headers.set('X-Auth-CouchDB-Token', '5fdf567854fdf2380afca469ebf425c1d4e167d0cc8dc24eacf40344adbe06a8');
+    Object
+      .entries(PROXY_AUTH_HEADERS)
+      .forEach(([name, value]) => opts.headers.set(name, value));
 
     // Adding audit flag (haproxy) Service that made the request initially.
     opts.headers.set('X-Medic-Service', 'api');

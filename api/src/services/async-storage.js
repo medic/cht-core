@@ -1,6 +1,6 @@
 const { AsyncLocalStorage } = require('node:async_hooks');
 const asyncLocalStorage = new AsyncLocalStorage();
-const { REQUEST_ID_HEADER } = require('../server-utils');
+const { REQUEST_ID_HEADER, PROXY_AUTH_HEADERS } = require('../server-utils');
 
 const request = require('@medic/couch-request');
 
@@ -14,4 +14,5 @@ module.exports = {
   },
 };
 
-request.initialize(module.exports, REQUEST_ID_HEADER);
+// Maybe we need to init this someplace more logical
+request.initialize(module.exports, REQUEST_ID_HEADER, PROXY_AUTH_HEADERS);
