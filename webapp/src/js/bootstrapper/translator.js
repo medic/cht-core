@@ -140,6 +140,7 @@ const TRANSLATIONS = {
   ar: {
     FETCH_INFO: ({ count, total }) => `جارٍ جلب المعلومات (${count} من مستندات ${total})...`,
     LOAD_APP: 'جارٍ تحميل التطبيق…',
+    PASSWORD_CHANGE_SUCCESS: 'تم تغيير كلمة المرور بنجاح',
     PURGE_INIT: 'جارٍ التحقق من البيانات…',
     PURGE_INFO: ({ count }) => `تم تنظيف ${count} من المستندات...`,
     PURGE_META: 'جارٍ تنظيف البيانات التعريفية…',
