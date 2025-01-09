@@ -21,7 +21,6 @@ const runBatch = (ddoc, view, viewParams, iteratee) => {
   return request.get({
     url: fullUrl,
     json: true,
-    auth: { user: environment.username, pass: environment.password },
   })
     .then(result => {
       logger.info(`        Processing doc ${result.offset}`);

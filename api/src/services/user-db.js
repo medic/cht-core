@@ -79,10 +79,6 @@ module.exports = {
         port: environment.port,
         pathname: `${dbName}/_security`,
       }),
-      auth: {
-        user: environment.username,
-        pass: environment.password
-      },
       json: true,
       body: {
         admins: { names: [ username ], roles: [] },

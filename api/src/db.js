@@ -88,17 +88,15 @@ if (UNIT_TEST_ENV) {
     return PouchDB.fetch(url, opts);
   };
 
-  const couchUrl = `${environment.serverUrlNoAuth}medic`;
-
-  const DB = new PouchDB(couchUrl, { fetch });
+  const DB = new PouchDB(environment.couchUrl, { fetch });
   const getDbUrl = name => `${environment.serverUrl}/${name}`;
 
   DB.setMaxListeners(0);
   module.exports.medic = DB;
-  module.exports.medicUsersMeta = new PouchDB(`${couchUrl}-users-meta`, { fetch });
-  module.exports.medicLogs = new PouchDB(`${couchUrl}-logs`, { fetch });
-  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch });
-  module.exports.vault = new PouchDB(`${couchUrl}-vault`, { fetch });
+  module.exports.medicUsersMeta = new PouchDB(`${environment.couchUrl}-users-meta`, { fetch });
+  module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch });
+  module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch });
+  module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch });
   module.exports.createVault = () => module.exports.vault.info();
   module.exports.users = new PouchDB(getDbUrl('_users'), { fetch });
   module.exports.builds = new PouchDB(environment.buildsUrl);
