@@ -364,7 +364,10 @@ describe('login controller', () => {
         password: 'oldPass'
       };
       sinon.stub(users, 'getUserDoc').resolves(userDoc);
-      sinon.stub(db.users, 'put').resolves();
+      sinon.stub(users, 'updateUser').resolves({
+        user: { id: 'org.couchdb.user:sharon' },
+        'user-settings': { id: 'org.couchdb.user:sharon' }
+      });
       sinon.stub(request, 'get').resolves({
         statusCode: 200,
         body: { userCtx: { name: 'sharon' } }
@@ -387,13 +390,16 @@ describe('login controller', () => {
         chai.expect(cookie.args[1][1]).to.equal(JSON.stringify(userCtx));
         chai.expect(cookie.args[2][0]).to.equal('locale');
         chai.expect(cookie.args[2][1]).to.equal('en');
-        chai.expect(db.users.put.callCount).to.equal(1);
-        chai.expect(db.users.put.args[0][0]).to.deep.include({
-          name: 'sharon',
-          type: 'user',
-          password: 'newPass123',
-          password_change_required: false
-        });
+        chai.expect(users.updateUser.callCount).to.equal(1);
+        chai.expect(users.updateUser.args[0]).to.deep.equal([
+          'sharon',
+          {
+            password: 'newPass123',
+            password_change_required: false
+          },
+          true,
+          null
+        ]);
       });
     });
   });
@@ -622,12 +628,10 @@ describe('login controller', () => {
     it('returns invalid credentials', () => {
       sinon.stub(users, 'getUserDoc').resolves();
       req.body = { user: 'sharon', password: 'p4ss' };
-      const post = sinon.stub(request, 'post').resolves({ statusCode: 401 });
-      const errorResponse = {
+      const post = sinon.stub(request, 'post').rejects({
         status: 401,
         error: 'Not logged in'
-      };
-      sinon.stub(request, 'post').rejects(errorResponse);
+      });
       const status = sinon.stub(res, 'status').returns(res);
       const json = sinon.stub(res, 'json').returns(res);
       return controller.post(req, res).then(() => {
@@ -744,6 +748,11 @@ describe('login controller', () => {
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
       sinon.stub(auth, 'getUserSettings').resolves({});
+      sinon.stub(users, 'getUserDoc').resolves({
+        name: 'sharon',
+        type: 'user',
+        password_change_required: false
+      });
       return controller.post(req, res).then(() => {
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0][0].url).to.equal('http://test.com:1234/_session');
