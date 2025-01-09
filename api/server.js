@@ -1,7 +1,9 @@
 const environment = require('@medic/environment');
 const serverChecks = require('@medic/server-checks');
+const request = require('@medic/couch-request');
 const logger = require('@medic/logger');
 const express = require('express');
+const { REQUEST_ID_HEADER, PROXY_AUTH_HEADERS } = require('./src/server-utils');
 const apiPort = process.env.API_PORT || 5988;
 
 let router;
@@ -20,6 +22,9 @@ process
 (async () => {
   try {
     logger.info('Running server checks…');
+    const asyncStorage = require('./src/services/async-storage');
+    request.initialize(asyncStorage, REQUEST_ID_HEADER, PROXY_AUTH_HEADERS);
+
     await serverChecks.check(environment.couchUrl);
     logger.info('Checks passed successfully');
 

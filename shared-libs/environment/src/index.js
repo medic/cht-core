@@ -23,23 +23,24 @@ try {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL.replace(/\/$/, '');
   const parsedUrl = new URL(couchUrl);
+  const username = parsedUrl.username;
+  const password = parsedUrl.password;
+  parsedUrl.username = '';
+  parsedUrl.password = '';
   const serverUrl = new URL('/', parsedUrl);
-  const serverUrlNoAuth = new URL('/', parsedUrl);
-  serverUrlNoAuth.username = '';
-  serverUrlNoAuth.password = '';
 
   module.exports = {
-    couchUrl: couchUrl.toString(),
+    couchUrl: parsedUrl.toString(),
     buildsUrl: BUILDS_URL || DEFAULT_BUILDS_URL,
     serverUrl: serverUrl.toString(),
-    serverUrlNoAuth: serverUrlNoAuth.toString(),
+    serverUrlNoAuth: serverUrl.toString(), // TODO Remove this?
     protocol: parsedUrl.protocol,
     port: parsedUrl.port,
     host: parsedUrl.hostname,
     db: parsedUrl.pathname.replace('/', ''),
     ddoc: 'medic',
-    username: parsedUrl.username,
-    password: parsedUrl.password,
+    username,
+    password,
     proxies: {
       // See http-proxy (https://www.npmjs.com/package/http-proxy#options)
       // "changeOrigin: true/false, Default: false - changes the origin of the host header to the target URL"

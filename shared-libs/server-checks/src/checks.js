@@ -19,7 +19,7 @@ const checkServerUrl = (serverUrl) => {
     console.log(err);
     throw new Error('Environment variable "COUCH_URL" is required. ' +
                     'Please make sure your CouchDb is accessible through a URL that matches: ' +
-                    '<protocol>://<username>:<password>@<host>:<port>/<db name>');
+                    '<protocol>://<host>:<port>/<db name>');
   }
 
   const pathSegments = couchUrl.pathname.split('/').filter(segment => segment);
@@ -27,7 +27,7 @@ const checkServerUrl = (serverUrl) => {
   if (pathSegments.length !== 1) {
     throw new Error('Environment variable "COUCH_URL" must have only one path segment. ' +
                     'Please make sure your CouchDb is accessible through a URL that matches: ' +
-                    '<protocol>://<username>:<password>@<host>:<port>/<db name>');
+                    '<protocol>://<host>:<port>/<db name>');
   }
 };
 
