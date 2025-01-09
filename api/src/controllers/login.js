@@ -396,7 +396,7 @@ const updatePassword = (user, newPassword) => {
   const updateData = {
     password: newPassword,
     password_change_required: false,
-  }
+  };
   return users.updateUser(user.name, updateData, true, null);
 };
 
