@@ -7,7 +7,7 @@ PouchDB.plugin(require('pouchdb-session-authentication'));
 PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 const asyncLocalStorage = require('./services/async-storage');
-const { REQUEST_ID_HEADER, PROXY_AUTH_HEADERS } = require('./server-utils');
+const { REQUEST_ID_HEADER } = require('./server-utils');
 
 const { UNIT_TEST_ENV } = process.env;
 
@@ -76,7 +76,7 @@ if (UNIT_TEST_ENV) {
   const fetch = (url, opts) => {
     // Add Couch Proxy Auth headers
     Object
-      .entries(PROXY_AUTH_HEADERS)
+      .entries(environment.proxyAuthHeaders.admin)
       .forEach(([name, value]) => opts.headers.set(name, value));
 
     // Adding audit flag (haproxy) Service that made the request initially.

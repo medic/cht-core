@@ -4,7 +4,6 @@ const environment = require('@medic/environment');
 const servername = environment.host;
 let asyncLocalStorage;
 let requestIdHeader;
-let proxyAuthHeaderDict;
 
 
 const isString = value => typeof value === 'string' || value instanceof String;
@@ -28,7 +27,7 @@ const mergeOptions = (target, source, exclusions = []) => {
     target[key] = value; // locally, mutation is preferable to spreading as it doesn't
     // make new objects in memory. Assuming this is a hot path.
   }
-  target.headers = { ...proxyAuthHeaderDict, ...target.headers };
+  target.headers = { ...environment.proxyAuthHeaders.admin, ...target.headers };
   const requestId = asyncLocalStorage?.getRequestId();
   if (requestId) {
     target.headers[requestIdHeader] = requestId;
@@ -114,10 +113,9 @@ const getRequestType = (method) => {
 };
 
 module.exports = {
-  initialize: (store, header, proxyAuthHeaders) => {
+  initialize: (store, header) => {
     asyncLocalStorage = store;
     requestIdHeader = header;
-    proxyAuthHeaderDict = proxyAuthHeaders;
   },
 
   get: (first, second = {}) => req(methods.GET, first, second),

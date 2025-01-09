@@ -4,7 +4,6 @@ const db = require('./db');
 const environment = require('@medic/environment');
 const config = require('./config');
 const dataContext = require('./services/data-context');
-const { NULL_PROXY_AUTH_HEADERS } = require('./server-utils');
 const { roles, users } = require('@medic/user-management')(config, db, dataContext);
 
 const contentLengthRegex = /^content-length$/i;
@@ -19,7 +18,7 @@ const get = (path, headers) => {
   const url = new URL(path, environment.serverUrl);
   return request.get({
     url: url.toString(),
-    headers: { ...getHeaders, ...NULL_PROXY_AUTH_HEADERS },
+    headers: { ...getHeaders, ...environment.proxyAuthHeaders.none },
     json: true
   });
 };
@@ -108,7 +107,7 @@ module.exports = {
     return request.head({
       uri: authUrl.toString(),
       resolveWithFullResponse: true,
-      headers: { ...NULL_PROXY_AUTH_HEADERS },
+      headers: { ...environment.proxyAuthHeaders.none },
     })
       .then(res => {
         if (res.statusCode !== 200) {

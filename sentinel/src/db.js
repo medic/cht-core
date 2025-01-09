@@ -62,6 +62,10 @@ if (UNIT_TEST_ENV) {
   const couchUrl = environment.couchUrl;
 
   const fetchFn = (url, opts) => {
+    // Add Couch Proxy Auth headers
+    Object
+      .entries(environment.proxyAuthHeaders.admin)
+      .forEach(([name, value]) => opts.headers.set(name, value));
     // Adding audit flags (haproxy) Service and user that made the request initially.
     opts.headers.set('X-Medic-Service', 'sentinel');
     opts.headers.set('X-Medic-User', 'sentinel');

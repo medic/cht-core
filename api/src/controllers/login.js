@@ -176,7 +176,7 @@ const createSession = req => {
     simple: false, // doesn't throw an error on non-200 responses
     body: { name: user, password: password },
     auth: { user: user, pass: password },
-    headers: { ...serverUtils.NULL_PROXY_AUTH_HEADERS }
+    headers: { ...environment.proxyAuthHeaders.none }
   });
 };
 

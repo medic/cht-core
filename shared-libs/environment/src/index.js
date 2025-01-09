@@ -42,7 +42,19 @@ try {
       // This allows proxying from HTTP to HTTPS without encountering certificate issues
       // for environments where TLS termination happens elsewhere.
       changeOrigin: isTrue(PROXY_CHANGE_ORIGIN)
-    }
+    },
+    proxyAuthHeaders: {
+      admin: {
+        'X-Auth-CouchDB-UserName': 'username',
+        'X-Auth-CouchDB-Roles': '_admin',
+        'X-Auth-CouchDB-Token': '5fdf567854fdf2380afca469ebf425c1d4e167d0cc8dc24eacf40344adbe06a8',
+      },
+      none: {
+        'X-Auth-CouchDB-UserName': null,
+        'X-Auth-CouchDB-Roles': null,
+        'X-Auth-CouchDB-Token': null,
+      }
+    },
   };
 } catch (err) {
   if (err.message === 'Invalid URL') {
