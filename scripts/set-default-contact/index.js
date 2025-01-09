@@ -42,7 +42,7 @@ const getChtUsers = async () => {
 
 const getObjectFromMedicDb = async id => {
   const url = compileUrl('/medic/' + id);
-  return fetchUrl(url);
+  return await fetchUrl(url);
 };
 
 const hasDefaultContact = async user => {
@@ -74,7 +74,7 @@ const savePlace = async (placeId, contactId) => {
   }
   placeObj.contact._id = contactId;
   placeObj.contact.parent = {_id: placeId};
-  return fetchUrl(url, { body: JSON.stringify(placeObj), method: 'PUT' });
+  return await fetchUrl(url, { body: JSON.stringify(placeObj), method: 'PUT' });
 };
 
 
