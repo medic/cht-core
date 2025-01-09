@@ -3,6 +3,10 @@ const utils = require('@utils');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 const loginButton = () => $('#login');
+const updatePasswordButton = () => $('#update-password');
+const resetPasswordField = () => $('#form[action="/medic/password-reset"] #password');
+const confirmPasswordField = () => $('#confirm-password');
+const currentPasswordField = () => $('#current-password');
 const userField = () => $('#user');
 const passwordField = () => $('#password');
 const passwordToggleButton = () => $('#password-toggle');
@@ -11,10 +15,16 @@ const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
 const localeByName = (locale) => $(`.locale[name="${locale}"]`);
 const tokenLoginError = (reason) => $(`.error.${reason}`);
+const passwordResetMessageField = (errorMsg) => $(`p.error.${errorMsg}`);
 
 const getErrorMessage = async () => {
   await (await errorMessageField()).waitForDisplayed();
   return await (await errorMessageField()).getText();
+};
+
+const getPasswordResetErrorMessage = async (errorMsg) => {
+  await (await passwordResetMessageField(errorMsg)).waitForDisplayed();
+  return await (await passwordResetMessageField(errorMsg)).getText();
 };
 
 const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
@@ -22,7 +32,7 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
     await browser.url('/');
   }
   await setPasswordValue(password);
-  await (await userField()).setValue(username);
+  await setUsernameValue(username);
   await changeLocale(locale);
   await (await loginButton()).click();
 
@@ -98,6 +108,9 @@ const changeLocale = async locale => {
 };
 
 const changeLanguage = async (languageCode, userTranslation) => {
+  if (utils.isMinimumChromeVersion) {
+    await browser.url('/');
+  }
   await changeLocale(languageCode);
   await browser.waitUntil(async () => await (await labelForUser()).getText() === userTranslation);
   return {
@@ -133,6 +146,29 @@ const setPasswordValue = async (password) => {
   await (await passwordField()).setValue(password);
 };
 
+const setConfirmPasswordValue = async (confirmPassword) => {
+  await (await confirmPasswordField()).waitForDisplayed();
+  await (await confirmPasswordField()).setValue(confirmPassword);
+};
+
+const setCurrentPasswordValue = async (currentPassword) => {
+  await (await currentPasswordField()).waitForDisplayed();
+  await (await currentPasswordField()).setValue(currentPassword);
+};
+
+const setUsernameValue = async (username) => {
+  await (await userField()).waitForDisplayed();
+  await (await userField()).setValue(username);
+};
+
+const passwordReset = async (currentPassword, password, confirmPassword) => {
+  await setCurrentPasswordValue(currentPassword);
+  await (await resetPasswordField()).waitForDisplayed();
+  await (await resetPasswordField()).setValue(password);
+  await setConfirmPasswordValue(confirmPassword);
+  await (await updatePasswordButton()).click();
+};
+
 module.exports = {
   login,
   cookieLogin,
@@ -147,4 +183,10 @@ module.exports = {
   getErrorMessage,
   togglePassword,
   setPasswordValue,
+  setUsernameValue,
+  setConfirmPasswordValue,
+  setCurrentPasswordValue,
+  passwordReset,
+  updatePasswordButton,
+  getPasswordResetErrorMessage,
 };
