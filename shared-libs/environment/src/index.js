@@ -23,8 +23,6 @@ try {
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL.replace(/\/$/, '');
   const parsedUrl = new URL(couchUrl);
-  const username = parsedUrl.username;
-  const password = parsedUrl.password;
   parsedUrl.username = '';
   parsedUrl.password = '';
   const serverUrl = new URL('/', parsedUrl);
@@ -39,8 +37,6 @@ try {
     host: parsedUrl.hostname,
     db: parsedUrl.pathname.replace('/', ''),
     ddoc: 'medic',
-    username,
-    password,
     proxies: {
       // See http-proxy (https://www.npmjs.com/package/http-proxy#options)
       // "changeOrigin: true/false, Default: false - changes the origin of the host header to the target URL"
