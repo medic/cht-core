@@ -74,6 +74,11 @@ if (UNIT_TEST_ENV) {
   });
 } else {
   const fetch = (url, opts) => {
+    // Add Couch Proxy Auth headers
+    opts.headers.set('X-Auth-CouchDB-UserName', 'username');
+    opts.headers.set('X-Auth-CouchDB-Roles', '_admin');
+    opts.headers.set('X-Auth-CouchDB-Token', '5fdf567854fdf2380afca469ebf425c1d4e167d0cc8dc24eacf40344adbe06a8');
+
     // Adding audit flag (haproxy) Service that made the request initially.
     opts.headers.set('X-Medic-Service', 'api');
     const requestId = asyncLocalStorage.getRequestId();
@@ -83,15 +88,17 @@ if (UNIT_TEST_ENV) {
     return PouchDB.fetch(url, opts);
   };
 
-  const DB = new PouchDB(environment.couchUrl, { fetch });
+  const couchUrl = `${environment.serverUrlNoAuth}medic`;
+
+  const DB = new PouchDB(couchUrl, { fetch });
   const getDbUrl = name => `${environment.serverUrl}/${name}`;
 
   DB.setMaxListeners(0);
   module.exports.medic = DB;
-  module.exports.medicUsersMeta = new PouchDB(`${environment.couchUrl}-users-meta`, { fetch });
-  module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch });
-  module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch });
-  module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch });
+  module.exports.medicUsersMeta = new PouchDB(`${couchUrl}-users-meta`, { fetch });
+  module.exports.medicLogs = new PouchDB(`${couchUrl}-logs`, { fetch });
+  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch });
+  module.exports.vault = new PouchDB(`${couchUrl}-vault`, { fetch });
   module.exports.createVault = () => module.exports.vault.info();
   module.exports.users = new PouchDB(getDbUrl('_users'), { fetch });
   module.exports.builds = new PouchDB(environment.buildsUrl);
