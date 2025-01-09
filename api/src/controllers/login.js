@@ -392,22 +392,12 @@ const login = async (req, res) => {
   }
 };
 
-const updatePassword = async (user, newPassword, retry = 10) => {
-  const updatedUser = {
-    ...user,
+const updatePassword = (user, newPassword) => {
+  const updateData = {
     password: newPassword,
-    password_change_required: false
-  };
-  try {
-    await db.users.put(updatedUser);
-    return updatedUser;
-  } catch (err) {
-    if (retry > 0 && err && err.code === 401) {
-      await new Promise(r => setTimeout(r, 20));
-      return updatePassword(user, newPassword, --retry);
-    }
-    throw err;
+    password_change_required: false,
   }
+  return users.updateUser(user.name, updateData, true, null);
 };
 
 const validateCurrentPassword = async (username, currentPassword, newPassword) => {
