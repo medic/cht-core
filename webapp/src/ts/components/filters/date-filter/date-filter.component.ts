@@ -21,6 +21,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   private subscription: Subscription = new Subscription();
   inputLabel;
   error?: string;
+  direction: string | undefined;
   dateRange = {
     from: undefined as any,
     to: undefined as any,
@@ -37,6 +38,9 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
     private datePipe: DatePipe,
   ) {
     this.globalActions = new GlobalActions(store);
+    this.store.select(Selectors.getDirection).subscribe(direction => {
+      this.direction = direction;
+    });
   }
 
   ngOnInit() {
@@ -62,8 +66,9 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
         locale: {
           daysOfWeek: moment.weekdaysMin(),
           monthNames: moment.monthsShort(),
-          firstDay: (<LocaleWithWeekSpec>moment.localeData())._week.dow
-        }
+          firstDay: (<LocaleWithWeekSpec>moment.localeData())._week.dow,
+          direction: this.direction,
+        },
       },
       (from, to) => {
         const dateRange = this.createDateRange(from, to);

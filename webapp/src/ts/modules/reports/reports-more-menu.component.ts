@@ -41,6 +41,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   selectedReportDoc;
   verifyingReport = false;
   processingReportVerification = false;
+  direction;
 
   constructor(
     private store: Store,
@@ -74,6 +75,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getSelectMode),
       this.store.select(Selectors.getVerifyingReport),
       this.store.select(Selectors.getProcessingReportVerification),
+      this.store.select(Selectors.getDirection),
     ).subscribe(([
       reportsList,
       snapshotData,
@@ -82,6 +84,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
       selectMode,
       verifyingReport,
       processingReportVerification,
+      direction,
     ]) => {
       this.reportsList = reportsList;
       this.snapshotData = snapshotData;
@@ -90,6 +93,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
       this.selectMode = selectMode;
       this.verifyingReport = verifyingReport;
       this.processingReportVerification = processingReportVerification;
+      this.direction = direction;
     });
     this.subscription.add(storeSubscription);
   }
@@ -166,6 +170,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
       autoFocus: false,
       minWidth: 300,
       minHeight: 150,
+      direction: this.direction,
     });
   }
 

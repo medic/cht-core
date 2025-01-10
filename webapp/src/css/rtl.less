@@ -57,6 +57,21 @@
     margin-right: 0;
   }
 
+  .item-content .body > div > ul > li {
+    &.indent-1 {
+      padding-right: 30px;
+      padding-left: 0;
+    }
+    &.indent-2 {
+      padding-right: 40px;
+      padding-left: 0;
+    }
+    &.indent-3 {
+      padding-right: 50px;
+      padding-left: 0;
+    }
+  }
+
   .sidebar-filter .sidebar-main {
     .sidebar-header .sidebar-reset {
       margin-right: 0;
@@ -122,6 +137,26 @@
     right: 5px;
   }
 
+  .enketo .question {
+    input[type=radio], input[type=checkbox] {
+      float: right;
+      margin-left: 10px;
+      margin-right: 0;
+    }
+  }
+
+  .enketo .form-footer  {
+    .btn.cancel {
+      float: none;
+    }
+
+    .btn.previous-page, .btn.next-page {
+      float: left;
+      margin-right: 10px;
+    }
+
+  }
+
   .progress-bar {
     float: right;
   }
@@ -129,6 +164,7 @@
   &.reports .right-pane .item-content {
     float: right;
   }
+
 
   @media (max-width: 767px) {
     mm-sidebar-menu .mat-sidenav-container .nav-item mat-icon {
@@ -147,5 +183,10 @@
   .fast-action-body .fast-action-item .fast-action-item-icon {
     margin-left: 20px;
     margin-right: 0;
+  }
+
+  .mat-mdc-menu-panel .mat-mdc-menu-item .mat-icon {
+    float: right;
+    margin-left: 10px;
   }
 }
