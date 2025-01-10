@@ -73,10 +73,10 @@ if (UNIT_TEST_ENV) {
     module.exports[fn] = () => notStubbed(fn);
   });
 } else {
-  const fetch = (url, opts) => {
+  const fetch = async (url, opts) => {
     // Add Couch Proxy Auth headers
     Object
-      .entries(environment.proxyAuthHeaders.admin)
+      .entries(await request.getAuthHeaders('api-pouchdb', '_admin'))
       .forEach(([name, value]) => opts.headers.set(name, value));
 
     // Adding audit flag (haproxy) Service that made the request initially.

@@ -24,6 +24,7 @@ const getServerUrl = couchUrl => {
 const checkCouchDb = async (serverUrl) => {
   do {
     try {
+      await checks.checkCouchSecret();// TODO Not ideal since we want to actually kill the server.  But need to wait for server to come up...
       await checks.checkCouchDbVersion(serverUrl);
       await checks.checkCouchDbNoAdminPartyMode(serverUrl);
       await checks.checkCouchDbCluster(serverUrl);

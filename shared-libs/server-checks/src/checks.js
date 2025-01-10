@@ -72,6 +72,17 @@ const sameMembershipResult = (result1, result2) => {
          arrayEqual(result1.all_nodes, result2.all_nodes);
 };
 
+const checkCouchSecret = async () => {
+  try {
+    const secret = await request.getCouchSecret();
+    if (!secret) {
+      throw new Error();
+    }
+  } catch (e) {
+    throw new Error('The COUCHDB_SECRET environment variable must be set.');
+  }
+};
+
 const checkCouchDbCluster = async (couchUrl) => {
   const membershipResults = [
     await request.get({ url: `${couchUrl}_membership`, json: true }),
@@ -116,6 +127,7 @@ const checkCouchDbVersion = async (couchUrl) => {
 module.exports = {
   checkNodeVersion,
   checkServerUrl,
+  checkCouchSecret,
   checkCouchDbVersion,
   checkCouchDbNoAdminPartyMode,
   checkCouchDbCluster,

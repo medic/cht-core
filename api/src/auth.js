@@ -8,7 +8,7 @@ const { roles, users } = require('@medic/user-management')(config, db, dataConte
 
 const contentLengthRegex = /^content-length$/i;
 
-const get = (path, headers) => {
+const get = async (path, headers) => {
   const getHeaders = { ...headers };
   Object
     .keys(getHeaders)
@@ -18,7 +18,7 @@ const get = (path, headers) => {
   const url = new URL(path, environment.serverUrl);
   return request.get({
     url: url.toString(),
-    headers: { ...getHeaders, ...environment.proxyAuthHeaders.none },
+    headers: { ...getHeaders, ...(await request.getAuthHeaders(null, null)) },
     json: true
   });
 };
@@ -100,14 +100,14 @@ module.exports = {
    *
    * @param      {Object}    Credentials object as created by basicAuthCredentials
    */
-  validateBasicAuth: ({ username, password }) => {
+  validateBasicAuth: async ({ username, password }) => {
     const authUrl = new URL(environment.serverUrl);
     authUrl.username = username;
     authUrl.password = password;
     return request.head({
       uri: authUrl.toString(),
       resolveWithFullResponse: true,
-      headers: { ...environment.proxyAuthHeaders.none },
+      headers: await request.getAuthHeaders(null, null),
     })
       .then(res => {
         if (res.statusCode !== 200) {

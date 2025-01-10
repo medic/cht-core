@@ -9,7 +9,7 @@ const isTrue = value => isString(value) ? value.toLowerCase() === 'true' : value
 const logError = () => {
   logger.error(
     'Please define a valid COUCH_URL in your environment e.g. \n' +
-    'export COUCH_URL=\'http://admin:123qwe@localhost:5984/medic\'\n\n' +
+    'export COUCH_URL=\'http://localhost:5984/medic\'\n\n' +
     'If you are running unit tests use UNIT_TEST_ENV=1 in your environment.\n'
   );
   process.exit(1);
@@ -42,18 +42,6 @@ try {
       // This allows proxying from HTTP to HTTPS without encountering certificate issues
       // for environments where TLS termination happens elsewhere.
       changeOrigin: isTrue(PROXY_CHANGE_ORIGIN)
-    },
-    proxyAuthHeaders: {
-      admin: {
-        'X-Auth-CouchDB-UserName': 'username',
-        'X-Auth-CouchDB-Roles': '_admin',
-        'X-Auth-CouchDB-Token': '5fdf567854fdf2380afca469ebf425c1d4e167d0cc8dc24eacf40344adbe06a8',
-      },
-      none: {
-        'X-Auth-CouchDB-UserName': null,
-        'X-Auth-CouchDB-Roles': null,
-        'X-Auth-CouchDB-Token': null,
-      }
     },
   };
 } catch (err) {

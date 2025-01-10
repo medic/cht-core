@@ -166,7 +166,7 @@ const getSessionCookie = res => {
   );
 };
 
-const createSession = req => {
+const createSession = async (req) => {
   const user = req.body.user;
   const password = req.body.password;
   return request.post({
@@ -176,7 +176,7 @@ const createSession = req => {
     simple: false, // doesn't throw an error on non-200 responses
     body: { name: user, password: password },
     auth: { user: user, pass: password },
-    headers: { ...environment.proxyAuthHeaders.none }
+    headers: await request.getAuthHeaders(null, null)
   });
 };
 

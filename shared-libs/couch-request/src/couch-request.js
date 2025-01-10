@@ -1,6 +1,8 @@
 const request = require('request-promise-native');
 const isPlainObject = require('lodash/isPlainObject');
 const environment = require('@medic/environment');
+const { getAuthHeaders, getCouchSecret } = require('./proxy-auth');
+
 const servername = environment.host;
 let asyncLocalStorage;
 let requestIdHeader;
@@ -18,8 +20,9 @@ const methods = {
   HEAD: 'HEAD'
 };
 
+const promisedAdminAuthHeaders = getAuthHeaders('cht-api', '_admin');
 
-const mergeOptions = (target, source, exclusions = []) => {
+const mergeOptions = async (target, source, exclusions = []) => {
   for (const [key, value] of Object.entries(source)) {
     if (Array.isArray(exclusions) && exclusions.includes(key)) {
       continue;
@@ -27,7 +30,7 @@ const mergeOptions = (target, source, exclusions = []) => {
     target[key] = value; // locally, mutation is preferable to spreading as it doesn't
     // make new objects in memory. Assuming this is a hot path.
   }
-  target.headers = { ...environment.proxyAuthHeaders.admin, ...target.headers };
+  target.headers = { ...(await promisedAdminAuthHeaders), ...target.headers };
   const requestId = asyncLocalStorage?.getRequestId();
   if (requestId) {
     target.headers[requestIdHeader] = requestId;
@@ -65,7 +68,7 @@ const validate = (firstIsString, method, first, second = {}) => {
 };
 
 
-const req = (method, first, second = {}) => {
+const req = async (method, first, second = {}) => {
 
   const firstIsString = isString(first);
 
@@ -79,8 +82,7 @@ const req = (method, first, second = {}) => {
 
   const exclusions = firstIsString ? ['url', 'uri', 'method'] : ['method'];
   const target = addServername ? { servername } : { };
-  
-  const mergedOptions = mergeOptions(target, chosenOptions, exclusions);
+  const mergedOptions = await mergeOptions(target, chosenOptions, exclusions);
 
   return firstIsString ? getRequestType(method)(first, mergedOptions) : getRequestType(method)(mergedOptions);
 };
@@ -117,6 +119,8 @@ module.exports = {
     asyncLocalStorage = store;
     requestIdHeader = header;
   },
+  getCouchSecret,
+  getAuthHeaders,
 
   get: (first, second = {}) => req(methods.GET, first, second),
   post: (first, second = {}) => req(methods.POST, first, second),
