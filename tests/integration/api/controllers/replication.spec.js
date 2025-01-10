@@ -193,7 +193,7 @@ describe('replication', () => {
   ];
 
   before(async () => {
-    await utils.updatePermissions(['district_admin'], ['can_have_multiple_places'], [], true);
+    await utils.updatePermissions(['district_admin'], ['can_have_multiple_places'], [], { ignoreReload: true });
     await utils.saveDoc(parentPlace);
     await utils.createUsers(users, true);
   });

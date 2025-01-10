@@ -109,7 +109,7 @@ describe('Create user for contacts', () => {
       path: '/medic/login',
       body: { user: username, password, locale: 'en' },
       method: 'POST',
-      simple: false,
+      resolveWithFullResponse: true,
       noAuth: true,
     };
     return utils.request(opts);
@@ -118,7 +118,7 @@ describe('Create user for contacts', () => {
   const assertUserPasswordChanged = async (user) => {
     // Cannot login because user's password has been automatically reset
     const resp0 = await submitLoginRequest(user);
-    expect(resp0.statusCode).to.equal(401);
+    expect(resp0.status).to.equal(401);
 
     // Update user's password to something we know
     await utils.request({
@@ -129,7 +129,7 @@ describe('Create user for contacts', () => {
 
     // Can login with new password
     const resp1 = await submitLoginRequest({ ...user, password: DISABLED_USER_PASSWORD });
-    expect(resp1.statusCode).to.equal(302);
+    expect(resp1.status).to.equal(302);
   };
 
   const assertNewUserSettings = (newUserSettings, newContact, originalUser) => {
@@ -799,7 +799,7 @@ describe('Create user for contacts', () => {
       expect(updatedOriginalContact.user_for_contact).to.be.undefined;
       // Can still login as original user
       const resp1 = await submitLoginRequest(ONLINE_USER);
-      expect(resp1.statusCode).to.equal(302);
+      expect(resp1.status).to.equal(302);
       // New user not created
       const newUserSettings = await utils.getUserSettings({ contactId: replacementContactId });
       expect(newUserSettings).to.be.empty;

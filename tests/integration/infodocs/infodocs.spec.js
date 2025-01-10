@@ -58,7 +58,7 @@ describe('infodocs', () => {
       await utils.requestOnTestDb({ path, method, body: doc });
       assert.fail('request should fail with conflict');
     } catch (err) {
-      assert.equal(err.statusCode, 409);
+      assert.equal(err.status, 409);
     }
 
     const [newInfoDoc] = await delayedInfoDocsOf(doc._id);

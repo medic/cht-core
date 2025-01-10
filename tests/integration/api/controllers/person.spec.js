@@ -1,7 +1,6 @@
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { expect } = require('chai');
 const userFactory = require('@factories/cht/users/users');
 
 describe('Person API', () => {
@@ -106,7 +105,10 @@ describe('Person API', () => {
 
     it('returns the person with lineage when the withLineage query parameter is provided', async () => {
       const opts = {
-        path: `${endpoint}/${patient._id}?with_lineage=true`,
+        path: `${endpoint}/${patient._id}`,
+        qs: {
+          with_lineage: true
+        }
       };
       const person = await utils.request(opts);
       expect(person).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
@@ -153,12 +155,11 @@ describe('Person API', () => {
     const endpoint = '/api/v1/person';
 
     it('returns a page of people for no limit and cursor passed', async () => {
-      const queryParams = {
-        type: personType
-      };
-      const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
         path: `${endpoint}?${stringQueryParams}`,
+        qs: {
+          type: personType
+        }
       };
       const responsePage = await utils.request(opts);
       const responsePeople = responsePage.data;
@@ -169,24 +170,11 @@ describe('Person API', () => {
     });
 
     it('returns a page of people when limit and cursor is passed and cursor can be reused', async () => {
-      // first request
-      const queryParams = {
-        type: personType,
-        limit: limit
-      };
-      let stringQueryParams = new URLSearchParams(queryParams).toString();
-      const opts = {
-        path: `${endpoint}?${stringQueryParams}`,
-      };
-      const firstPage = await utils.request(opts);
-
-      // second request
-      queryParams.cursor = firstPage.cursor;
-      stringQueryParams = new URLSearchParams(queryParams).toString();
-      const opts2 = {
-        path: `${endpoint}?${stringQueryParams}`,
-      };
-      const secondPage = await utils.request(opts2);
+      const firstPage = await utils.request({ path: endpoint, qs: { type: personType, limit } });
+      const secondPage = await utils.request({
+        path: endpoint,
+        qs: { type: personType, cursor: firstPage.cursor, limit }
+      });
 
       const allPeople = [...firstPage.data, ...secondPage.data];
 
@@ -221,7 +209,7 @@ describe('Person API', () => {
       const opts = {
         path: `/api/v1/person?${queryString}`,
       };
-
+      tests/integration/api/controllers/person.spec.js
       await expect(utils.request(opts))
         .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid contact type [${invalidContactType}]."}`);
     });

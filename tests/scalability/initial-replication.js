@@ -4,17 +4,22 @@ const config = require('./config.json');
 const user = config.users[threadId % config.users.length];
 
 const rewire = require('rewire');
-const rpn = require('request-promise-native');
 
 const PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
 const fetchJSON = async (url) => {
-  return await rpn.get({
-    url: `${config.url}${url}`,
-    auth: { username: user.name, password: user.pass },
-    json: true,
+  const response = await fetch(`${config.url}${url}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Basic ' + btoa(`${user.name}:${user.pass}`),
+    }
   });
+  if (response.ok) {
+    return await response.json();
+  }
+
+  throw new Error(await response.text());
 };
 
 const remoteDb = new PouchDB(`${config.url}/medic`, {

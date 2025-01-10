@@ -1,7 +1,6 @@
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { expect } = require('chai');
 const userFactory = require('@factories/cht/users/users');
 
 describe('Place API', () => {
@@ -86,7 +85,10 @@ describe('Place API', () => {
 
     it('returns the place with lineage when the withLineage query parameter is provided', async () => {
       const opts = {
-        path: `${endpoint}/${place0._id}?with_lineage=true`,
+        path: `${endpoint}/${place0._id}`,
+        qs: {
+          with_lineage: true
+        }
       };
       const place = await utils.request(opts);
       expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
@@ -130,12 +132,11 @@ describe('Place API', () => {
     const endpoint = '/api/v1/place';
 
     it('returns a page of places for no limit and cursor passed', async () => {
-      const queryParams = {
-        type: placeType
-      };
-      const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
         path: `${endpoint}?${stringQueryParams}`,
+        qs: {
+          type: placeType
+        }
       };
       const responsePage = await utils.request(opts);
       const responsePlaces = responsePage.data;
@@ -147,24 +148,11 @@ describe('Place API', () => {
     });
 
     it('returns a page of places when limit and cursor is passed and cursor can be reused', async () => {
-      // first request
-      const queryParams = {
-        type: placeType,
-        limit: limit
-      };
-      let stringQueryParams = new URLSearchParams(queryParams).toString();
-      const opts = {
-        path: `${endpoint}?${stringQueryParams}`,
-      };
-      const firstPage = await utils.request(opts);
-
-      // second request
-      queryParams.cursor = firstPage.cursor;
-      stringQueryParams = new URLSearchParams(queryParams).toString();
-      const opts2 = {
-        path: `${endpoint}?${stringQueryParams}`,
-      };
-      const secondPage = await utils.request(opts2);
+      const firstPage = await utils.request({ path: endpoint, qs: { type: placeType, limit } });
+      const secondPage = await utils.request({
+        path: endpoint,
+        qs: { type: placeType, cursor: firstPage.cursor, limit }
+      });
 
       const allPeople = [...firstPage.data, ...secondPage.data];
 
