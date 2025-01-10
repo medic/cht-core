@@ -28,7 +28,7 @@ const createHeaders = (username, roles, token) => {
 
 const getAuthHeaders = async (username, roles) => {
   if (!username) {
-    return createHeaders(username, roles, null);
+    return createHeaders(username, roles);
   }
   const secret = await promisedCouchSecret;
   const token = crypto
