@@ -52,8 +52,8 @@ const expectLoginToWork = (response) => {
 
 const expectRedirectToPasswordReset = (response) => {
   chai.expect(response).to.include({ status: 302 });
-  chai.expect(response.headers['set-cookie']).to.be.an('array');
-  chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
+  chai.expect(response.headers.getSetCookie()).to.be.an('array');
+  chai.expect(response.headers.getSetCookie().find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
   chai.expect(response.body).to.equal('/medic/password-reset');
 };
 
