@@ -1,6 +1,5 @@
 const utils = require('@utils');
 const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
-const adminPage = require('@page-objects/default/admin/admin.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
