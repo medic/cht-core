@@ -9,6 +9,7 @@ const personFactory = require('@factories/cht/contacts/person');
 describe('Create Person Under Area, ', () => {
   const username = 'jack_test';
   const password = 'Jacktest@123';
+  const NEW_PASSWORD = 'Pa33word1';
 
   const places = placeFactory.generateHierarchy();
   const districtHospital = places.get('district_hospital');
@@ -38,7 +39,12 @@ describe('Create Person Under Area, ', () => {
     await usersAdminPage.saveUser();
 
     await commonPage.reloadSession();
-    await loginPage.login({ username, password });
+    await browser.url('/');
+    await loginPage.setPasswordValue(password);
+    await loginPage.setUsernameValue(username);
+    await (await loginPage.loginButton()).click();
+    await loginPage.passwordReset(password, NEW_PASSWORD, NEW_PASSWORD);
+    await (await loginPage.updatePasswordButton()).click();
 
     await commonPage.goToPeople();
     const rows = await contactPage.getAllLHSContactsNames();

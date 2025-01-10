@@ -214,7 +214,7 @@ const getResponseBody = async (response, sendJson) => {
 const request = async (options, { debug } = {}) => {
   const  { uri, options: requestInit, resolveWithFullResponse, sendJson } = getRequestOptions(options);
   if (debug) {
-    console.debug('SENDING REQUEST', JSON.stringify({ ...options, body: null }, null, 2));
+    console.debug('SENDING REQUEST', JSON.stringify({ ...options, uri, body: null }, null, 2));
   }
 
   const response = await fetch(uri, requestInit);

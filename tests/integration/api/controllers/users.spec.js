@@ -608,6 +608,7 @@ describe('Users API', () => {
       user = {
         username: 'testuser',
         password,
+        password_change_required: false,
         roles: ['district_admin'],
         place: {
           _id: 'fixture:test',
@@ -966,6 +967,7 @@ describe('Users API', () => {
           {
             username: 'offline2',
             password: password,
+            password_change_required: false,
             place: {
               _id: 'fixture:offline2',
               type: 'health_center',
@@ -981,6 +983,7 @@ describe('Users API', () => {
           {
             username: 'online2',
             password: password,
+            password_change_required: false,
             place: {
               _id: 'fixture:online2',
               type: 'health_center',
@@ -996,6 +999,7 @@ describe('Users API', () => {
           {
             username: 'offlineonline2',
             password: password,
+            password_change_required: false,
             place: {
               _id: 'fixture:offlineonline2',
               type: 'health_center',
@@ -1510,7 +1514,7 @@ describe('Users API', () => {
           .then(() => getUser(user))
           .then(user => firstTokenLogin = user.token_login)
           .then(() => {
-            const updates = { token_login: false, password };
+            const updates = { token_login: false, password, password_change_required: false };
             return utils.request({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
           })
           .then(response => {
