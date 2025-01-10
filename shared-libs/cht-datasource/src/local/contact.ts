@@ -1,5 +1,10 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
-import { fetchAndFilter, getDocById, queryDocsByKey, queryDocsByRange } from './libs/doc';
+import {
+  getDocById,
+  getPaginatedDocs,
+  queryDocUuidsByKey,
+  queryDocUuidsByRange
+} from './libs/doc';
 import { ContactTypeQualifier, FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
 import * as ContactType from '../contact-types';
 import { isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
@@ -76,15 +81,15 @@ export namespace v1 {
   /** @internal */
   export const getUuidsPage = ({ medicDb, settings }: LocalDataContext) => {
     // Define query functions
-    const getByTypeExactMatchFreetext = queryDocsByKey(medicDb, 'medic-client/contacts_by_type_freetext');
-    const getByExactMatchFreetext = queryDocsByKey(medicDb, 'medic-client/contacts_by_freetext');
-    const getByType = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
-    const getByTypeStartsWithFreetext = queryDocsByRange(medicDb, 'medic-client/contacts_by_type_freetext');
-    const getByStartsWithFreetext = queryDocsByRange(medicDb, 'medic-client/contacts_by_freetext');
+    const getByTypeExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic-client/contacts_by_type_freetext');
+    const getByExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic-client/contacts_by_freetext');
+    const getByType = queryDocUuidsByKey(medicDb, 'medic-client/contacts_by_type');
+    const getByTypeStartsWithFreetext = queryDocUuidsByRange(medicDb, 'medic-client/contacts_by_type_freetext');
+    const getByStartsWithFreetext = queryDocUuidsByRange(medicDb, 'medic-client/contacts_by_freetext');
 
     const determineGetDocsFn = (
       qualifier: ContactTypeQualifier | FreetextQualifier
-    ): ((limit: number, skip: number) => Promise<Nullable<Doc>[]>) => {
+    ): ((limit: number, skip: number) => Promise<Nullable<string>[]>) => {
       if (isContactTypeAndFreetextType(qualifier)) {
         return getDocsFnForContactTypeAndFreetext(qualifier);
       }
@@ -99,7 +104,7 @@ export namespace v1 {
 
     const getDocsFnForContactTypeAndFreetext = (
       qualifier: ContactTypeQualifier & FreetextQualifier
-    ): (limit: number, skip: number) => Promise<Nullable<Doc>[]> => {
+    ): (limit: number, skip: number) => Promise<Nullable<string>[]> => {
       // this is for an exact match search
       if (isKeyedFreetextQualifier(qualifier)) {
         return (limit, skip) => getByTypeExactMatchFreetext(
@@ -120,14 +125,14 @@ export namespace v1 {
 
     const getDocsFnForContactType = (
       qualifier: ContactTypeQualifier
-    ): (limit: number, skip: number) => Promise<Nullable<Doc>[]> => (
+    ): (limit: number, skip: number) => Promise<Nullable<string>[]> => (
       limit,
       skip
     ) => getByType([qualifier.contactType], limit, skip);
 
     const getDocsFnForFreetextType = (
       qualifier: FreetextQualifier
-    ): (limit: number, skip: number) => Promise<Nullable<Doc>[]> => {
+    ): (limit: number, skip: number) => Promise<Nullable<string>[]> => {
       if (isKeyedFreetextQualifier(qualifier)) {
         return (limit, skip) => getByExactMatchFreetext([normalizeFreetext(qualifier.freetext)], limit, skip);
       }
@@ -153,12 +158,8 @@ export namespace v1 {
 
       const skip = validateCursor(cursor);
       const getDocsFn = determineGetDocsFn(qualifier);
-      const pagedDocs = await fetchAndFilter(getDocsFn, isContact(settings), limit)(limit, skip);
 
-      return {
-        data: pagedDocs.data.map((doc) => doc._id),
-        cursor: pagedDocs.cursor,
-      } as Page<string>;
+      return await getPaginatedDocs(getDocsFn, limit, skip);
     };
   };
 }

@@ -66,6 +66,45 @@ export const queryDocsByKey = (
   skip: number
 ): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, key, limit, skip });
 
+const queryDocUuids = (
+  db: PouchDB.Database<Doc>,
+  view: string,
+  options: PouchDB.Query.Options<Doc, Record<string, unknown>>
+) => db
+  .query(view, options)
+  .then(({ rows }) => rows.map(item => item.id ? item.id as string : null));
+
+/** @internal */
+export const queryDocUuidsByRange = (
+  db: PouchDB.Database<Doc>,
+  view: string
+) => async (
+  startkey: unknown,
+  endkey: unknown,
+  limit?: number,
+  skip = 0
+): Promise<Nullable<string>[]> => queryDocUuids(
+  db,
+  view,
+  {
+    include_docs: false,
+    startkey,
+    endkey,
+    limit,
+    skip,
+  }
+);
+
+/** @internal */
+export const queryDocUuidsByKey = (
+  db: PouchDB.Database<Doc>,
+  view: string
+) => async (
+  key: unknown,
+  limit: number,
+  skip: number
+): Promise<Nullable<string>[]> => queryDocUuids(db, view, { include_docs: false, key, limit, skip });
+
 /**
  * Resolves a page containing an array of T using the getFunction to retrieve documents from the database
  * and the filterFunction to validate the returned documents are all of type T.
@@ -113,4 +152,22 @@ export const fetchAndFilter = <T extends Doc>(
     );
   };
   return recursionInner;
+};
+
+/** @internal */
+export const getPaginatedDocs = async <T>(
+  getDocsFn: (limit: number, skip: number) => Promise<Nullable<T>[]>,
+  limit: number,
+  skip: number
+): Promise<Page<T>> => {
+  // fetching 1 extra to know if we are at the end or there's more
+  const pagedDocs = await getDocsFn(limit + 1, skip);
+
+  const hasMore = pagedDocs.length > limit;
+  const docs = hasMore ? pagedDocs.slice(0, -1) : pagedDocs;
+
+  return {
+    data: docs,
+    cursor: hasMore ? (skip + limit).toString() : null
+  } as Page<T>;
 };

@@ -1,5 +1,9 @@
 import { LocalDataContext } from './libs/data-context';
-import { fetchAndFilter, getDocById, queryDocsByKey, queryDocsByRange } from './libs/doc';
+import {
+  getDocById, getPaginatedDocs,
+  queryDocUuidsByKey,
+  queryDocUuidsByRange
+} from './libs/doc';
 import { FreetextQualifier, UuidQualifier, isKeyedFreetextQualifier } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
 import * as Report from '../report';
@@ -39,12 +43,12 @@ export namespace v1 {
 
   /** @internal */
   export const getUuidsPage = ({ medicDb }: LocalDataContext) => {
-    const getByExactMatchFreetext = queryDocsByKey(medicDb, 'medic-client/reports_by_freetext');
-    const getByStartsWithFreetext = queryDocsByRange(medicDb, 'medic-client/reports_by_freetext');
+    const getByExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic-client/reports_by_freetext');
+    const getByStartsWithFreetext = queryDocUuidsByRange(medicDb, 'medic-client/reports_by_freetext');
 
     const getDocsFnForFreetextType = (
       qualifier: FreetextQualifier
-    ): (limit: number, skip: number) => Promise<Nullable<Doc>[]> => {
+    ): (limit: number, skip: number) => Promise<Nullable<string>[]> => {
       if (isKeyedFreetextQualifier(qualifier)) {
         return (limit, skip) => getByExactMatchFreetext([normalizeFreetext(qualifier.freetext)], limit, skip);
       }
@@ -63,12 +67,8 @@ export namespace v1 {
     ): Promise<Page<string>> => {
       const skip = validateCursor(cursor);
       const getDocsFn = getDocsFnForFreetextType(qualifier);
-      const pagedDocs = await fetchAndFilter(getDocsFn, isReport, limit)(limit, skip);
 
-      return {
-        data: pagedDocs.data.map((doc) => doc._id),
-        cursor: pagedDocs.cursor
-      };
+      return await getPaginatedDocs(getDocsFn, limit, skip);
     };
   };
 }
