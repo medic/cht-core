@@ -264,7 +264,7 @@ module.exports = {
         const doc = docs.length && docs[0];
         if (doc) {
           logger.info(`Updating form with ID "${docId}"`);
-          return db.medic.put(doc);
+          return db.medicAsAdmin.put(doc);
         }
         logger.info(`Form with ID "${docId}" does not need to be updated.`);
       });
@@ -287,7 +287,7 @@ module.exports = {
         if (!toSave.length) {
           return;
         }
-        return db.saveDocs(db.medic, toSave).then(results => {
+        return db.saveDocs(db.medicAsAdmin, toSave).then(results => {
           const failures = results.filter(result => !result.ok);
           if (failures.length) {
             logger.error('Bulk save failed with: %o', failures);

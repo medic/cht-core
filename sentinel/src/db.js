@@ -61,21 +61,22 @@ if (UNIT_TEST_ENV) {
 
   const couchUrl = environment.couchUrl;
 
-  const fetchFn = async (url, opts) => {
+  const makeFetch = (promisedAuthHeaders) => async (url, opts) => {
     // Add Couch Proxy Auth headers
     Object
-      .entries(await request.getAuthHeaders('sentinel-pouchdb', '_admin'))
+      .entries(await promisedAuthHeaders)
       .forEach(([name, value]) => opts.headers.set(name, value));
     // Adding audit flags (haproxy) Service and user that made the request initially.
     opts.headers.set('X-Medic-Service', 'sentinel');
     opts.headers.set('X-Medic-User', 'sentinel');
     return PouchDB.fetch(url, opts);
   };
+  const fetch = makeFetch(request.getAuthHeaders(environment.username));
+  const adminFetch = makeFetch(request.getAuthHeaders(environment.username, '_admin'));
 
-  module.exports.medic = new PouchDB(couchUrl, { fetch: fetchFn });
-  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, {
-    fetch: fetchFn,
-  });
+
+  module.exports.medic = new PouchDB(couchUrl, { fetch });
+  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch });
 
   module.exports.allDbs = () => request.get({ url: `${environment.serverUrl}/_all_dbs`, json: true });
   module.exports.get = db => new PouchDB(`${environment.serverUrl}/${db}`);
@@ -90,7 +91,7 @@ if (UNIT_TEST_ENV) {
       logger.error('Error when closing db: %o', err);
     }
   };
-  module.exports.users = new PouchDB(`${environment.serverUrl}/_users`, { fetch: fetchFn });
+  module.exports.users = new PouchDB(`${environment.serverUrl}/_users`, { fetch: adminFetch });
   module.exports.users = new PouchDB(`${environment.serverUrl}/_users`);
   module.exports.queryMedic = (viewPath, queryParams, body) => {
     const [ddoc, view] = viewPath.split('/');

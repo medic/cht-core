@@ -36,6 +36,7 @@ try {
     host: parsedUrl.hostname,
     db: parsedUrl.pathname.replace('/', ''),
     ddoc: 'medic',
+    username: 'cht-system',
     proxies: {
       // See http-proxy (https://www.npmjs.com/package/http-proxy#options)
       // "changeOrigin: true/false, Default: false - changes the origin of the host header to the target URL"

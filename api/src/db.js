@@ -73,10 +73,10 @@ if (UNIT_TEST_ENV) {
     module.exports[fn] = () => notStubbed(fn);
   });
 } else {
-  const fetch = async (url, opts) => {
+  const makeFetch = (promisedAuthHeaders) => async (url, opts) => {
     // Add Couch Proxy Auth headers
     Object
-      .entries(await request.getAuthHeaders('api-pouchdb', '_admin'))
+      .entries(await promisedAuthHeaders)
       .forEach(([name, value]) => opts.headers.set(name, value));
 
     // Adding audit flag (haproxy) Service that made the request initially.
@@ -87,18 +87,21 @@ if (UNIT_TEST_ENV) {
     }
     return PouchDB.fetch(url, opts);
   };
+  const fetch = makeFetch(request.getAuthHeaders(environment.username));
+  const adminFetch = makeFetch(request.getAuthHeaders(environment.username, '_admin'));
 
   const DB = new PouchDB(environment.couchUrl, { fetch });
   const getDbUrl = name => `${environment.serverUrl}/${name}`;
 
   DB.setMaxListeners(0);
   module.exports.medic = DB;
+  module.exports.medicAsAdmin = new PouchDB(environment.couchUrl, { fetch: adminFetch });
   module.exports.medicUsersMeta = new PouchDB(`${environment.couchUrl}-users-meta`, { fetch });
   module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch });
   module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch });
-  module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch });
+  module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch: adminFetch });
   module.exports.createVault = () => module.exports.vault.info();
-  module.exports.users = new PouchDB(getDbUrl('_users'), { fetch });
+  module.exports.users = new PouchDB(getDbUrl('_users'), { fetch: adminFetch });
   module.exports.builds = new PouchDB(environment.buildsUrl);
 
   // Get the DB with the given name
@@ -198,34 +201,33 @@ if (UNIT_TEST_ENV) {
     roles: [],
   });
 
-  const addRoleToSecurity = async (dbname, role, addAsAdmin) => {
-    if (!dbname || !role) {
-      throw new Error(`Cannot add security: invalid db name ${dbname} or role ${role}`);
+  const addToSecurity = async (dbname, value, securityField) => {
+    if (!dbname || !value) {
+      throw new Error(`Cannot add security: invalid db name ${dbname} or ${securityField} ${value}`);
     }
 
     const securityUrl = new URL(environment.serverUrl);
     securityUrl.pathname = `${dbname}/_security`;
 
     const securityObject = await request.get({ url: securityUrl.toString(), json: true });
-    const property = addAsAdmin ? 'admins' : 'members';
 
-    if (!securityObject[property]) {
-      securityObject[property] = getDefaultSecurityStructure();
+    if (!securityObject.members) {
+      securityObject.members = getDefaultSecurityStructure();
     }
 
-    if (!securityObject[property].roles || !Array.isArray(securityObject[property].roles)) {
-      securityObject[property].roles = [];
+    if (!securityObject.members[securityField] || !Array.isArray(securityObject.members[securityField])) {
+      securityObject.members[securityField] = [];
     }
 
-    if (securityObject[property].roles.includes(role)) {
+    if (securityObject.members[securityField].includes(value)) {
       return;
     }
 
-    logger.info(`Adding "${role}" role to ${dbname} ${property}`);
-    securityObject[property].roles.push(role);
+    logger.info(`Adding "${value}" role to ${dbname} members`);
+    securityObject.members[securityField].push(value);
     await request.put({ url: securityUrl.toString(), json: true, body: securityObject });
   };
 
-  module.exports.addRoleAsAdmin = (dbname, role) => addRoleToSecurity(dbname, role, true);
-  module.exports.addRoleAsMember = (dbname, role) => addRoleToSecurity(dbname, role, false);
+  module.exports.addUserAsMember = (dbname, name) => addToSecurity(dbname, name, 'names');
+  module.exports.addRoleAsMember = (dbname, role) => addToSecurity(dbname, role, 'roles');
 }
