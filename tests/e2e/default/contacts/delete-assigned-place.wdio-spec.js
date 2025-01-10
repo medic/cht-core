@@ -61,7 +61,6 @@ describe('User Test Cases -> Creating Users ->', () => {
     await usersAdminPage.saveUser();
 
     await commonPage.reloadSession();
-    await browser.url('/');
     await loginPage.setUsernameValue(username);
     await loginPage.setPasswordValue(password);
     await (await loginPage.loginButton()).click();

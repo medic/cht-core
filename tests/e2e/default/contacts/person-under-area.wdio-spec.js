@@ -39,12 +39,12 @@ describe('Create Person Under Area, ', () => {
     await usersAdminPage.saveUser();
 
     await commonPage.reloadSession();
-    await browser.url('/');
     await loginPage.setPasswordValue(password);
     await loginPage.setUsernameValue(username);
     await (await loginPage.loginButton()).click();
     await loginPage.passwordReset(password, NEW_PASSWORD, NEW_PASSWORD);
     await (await loginPage.updatePasswordButton()).click();
+    await commonPage.waitForPageLoaded();
 
     await commonPage.goToPeople();
     const rows = await contactPage.getAllLHSContactsNames();
