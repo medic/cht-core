@@ -156,7 +156,7 @@ describe('Person API', () => {
 
     it('returns a page of people for no limit and cursor passed', async () => {
       const opts = {
-        path: `${endpoint}?${stringQueryParams}`,
+        path: `${endpoint}`,
         qs: {
           type: personType
         }
@@ -209,7 +209,6 @@ describe('Person API', () => {
       const opts = {
         path: `/api/v1/person?${queryString}`,
       };
-      tests/integration/api/controllers/person.spec.js
       await expect(utils.request(opts))
         .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid contact type [${invalidContactType}]."}`);
     });

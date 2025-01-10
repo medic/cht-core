@@ -133,7 +133,7 @@ describe('Place API', () => {
 
     it('returns a page of places for no limit and cursor passed', async () => {
       const opts = {
-        path: `${endpoint}?${stringQueryParams}`,
+        path: `${endpoint}`,
         qs: {
           type: placeType
         }
