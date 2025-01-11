@@ -20,7 +20,7 @@ const methods = {
   HEAD: 'HEAD'
 };
 
-const promisedAdminAuthHeaders = getAuthHeaders('cht-api', '_admin');
+const promisedAdminAuthHeaders = getAuthHeaders(environment.username, '_admin');
 
 const mergeOptions = async (target, source, exclusions = []) => {
   for (const [key, value] of Object.entries(source)) {
