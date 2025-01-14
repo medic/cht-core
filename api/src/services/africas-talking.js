@@ -50,7 +50,7 @@ const getRecipient = res => {
          res.SMSMessageData.Recipients[0];
 };
 
-const getStatus = recipient => recipient && STATUS_MAP[recipient.statusCode];
+const getStatus = recipient => recipient && STATUS_MAP[recipient.status];
 
 const generateStateChange = (message, res) => {
   const recipient = getRecipient(res);
@@ -85,20 +85,20 @@ const parseResponseBody = body => {
 const sendMessage = (credentials, message) => {
   const url = getUrl(credentials.username === 'sandbox');
   logger.debug(`Sending message to "${url}"`);
-  return request.post({
-    url: url,
-    simple: false,
-    form: {
-      username: credentials.username,
-      from: credentials.from,
-      to: message.to,
-      message: message.content
-    },
-    headers: {
-      apikey: credentials.apiKey,
-      Accept: 'application/json'
-    }
-  })
+  return request
+    .post({
+      url: url,
+      form: {
+        username: credentials.username,
+        from: credentials.from,
+        to: message.to,
+        message: message.content
+      },
+      headers: {
+        apikey: credentials.apiKey,
+        Accept: 'application/json'
+      }
+    })
     .then(body => {
       const result = parseResponseBody(body);
       if (!result) {

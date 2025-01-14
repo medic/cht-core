@@ -1,5 +1,3 @@
-const request = require('request-promise-native');
-const isPlainObject = require('lodash/isPlainObject');
 const environment = require('@medic/environment');
 const servername = environment.host;
 let asyncLocalStorage;
@@ -10,31 +8,6 @@ const isString = value => typeof value === 'string' || value instanceof String;
 const isTrue = value => isString(value) ? value.toLowerCase() === 'true' : value === true;
 
 const addServername = isTrue(process.env.ADD_SERVERNAME_TO_HTTP_AGENT);
-const methods = {
-  GET: 'GET',
-  POST: 'POST',
-  DELETE: 'DELETE',
-  PUT: 'PUT',
-  HEAD: 'HEAD'
-};
-
-
-const mergeOptions = (target, source, exclusions = []) => {
-  for (const [key, value] of Object.entries(source)) {
-    if (Array.isArray(exclusions) && exclusions.includes(key)) {
-      continue;
-    }
-    target[key] = value; // locally, mutation is preferable to spreading as it doesn't
-    // make new objects in memory. Assuming this is a hot path.
-  }
-  const requestId = asyncLocalStorage?.getRequestId();
-  if (requestId) {
-    target.headers = target.headers || {};
-    target.headers[requestIdHeader] = requestId;
-  }
-
-  return target;
-};
 
 // When proxying to HTTPS from HTTP (for example where an ingress does TLS termination in an SNI environment),
 // not including a 'servername' for a request to the HTTPS server (eg, def.org) produces the 
@@ -47,69 +20,120 @@ const mergeOptions = (target, source, exclusions = []) => {
 // The addition of 'servername' resolves this error. See docs for 'tls.connect(options[, callback])'
 //  (https://nodejs.org/api/tls.html): "Server name for the SNI (Server Name Indication) TLS extension  It is the
 //  name of the host being connected to, and must be a host name, and not an IP address.".
-// 
+//
 
-const validate = (firstIsString, method, first, second = {}) => {
-
-  if (Object.hasOwn(methods, method) === false) {
-    throw new Error(`Unsupported method (${method}) passed to call.`);
+const setRequestUri = (options) => {
+  let uri = (options.uri || options.url);
+  if (options.baseUrl) {
+    uri = `${options.baseUrl}${uri}`;
   }
 
-  if (isPlainObject(second) === false) {
-    throw new Error(`"options" must be a plain object'`);
+  if (options.qs) {
+    Object.keys(options.qs).forEach((key) => {
+      if (Array.isArray(options.qs[key])) {
+        options.qs[key] = JSON.stringify(options.qs[key]);
+      }
+    });
+    uri = `${uri}?${new URLSearchParams(options.qs).toString()}`;
   }
 
-  if (firstIsString === false && isPlainObject(first) === false) {
-    throw new Error(`"options" must be a plain object'`);
-  }
+  options.uri = uri;
 };
 
+const setRequestAuth = (options) => {
+  let auth;
 
-const req = (method, first, second = {}) => {
-
-  const firstIsString = isString(first);
-
-  try {
-    validate(firstIsString, method, first, second);
-  } catch (e) {
-    return Promise.reject(e);
+  if (options.auth) {
+    auth = options.auth;
+  } else {
+    const url = new URL(options.uri);
+    if (url.username) {
+      auth = { username: url.username, password: url.password };
+      url.username = '';
+      url.password = '';
+      options.uri = url.toString();
+    }
   }
 
-  const chosenOptions = firstIsString ? second : first;
+  if (!auth) {
+    return;
+  }
 
-  const exclusions = firstIsString ? ['url', 'uri', 'method'] : ['method'];
-  const target = addServername ? { servername } : { };
-  
-  const mergedOptions = mergeOptions(target, chosenOptions, exclusions);
-
-  return firstIsString ? getRequestType(method)(first, mergedOptions) : getRequestType(method)(mergedOptions);
+  const basicAuth = btoa(`${auth.username}:${auth.password}`);
+  options.headers.Authorization = `Basic ${basicAuth}`;
 };
 
-const getRequestType = (method) => {
-  // This is intended to simplify testing as sinon does not stub an
-  // exported function (eg, 'export = requestPromise') but only methods.
-  // From reading, proxyquire would need to be used to solve: https://www.npmjs.com/package/proxyquire
-  // See: https://github.com/sinonjs/sinon/issues/562#issuecomment-79227487
-  switch (method) {
-  case methods.GET: {
-    return request.get;
+const setRequestContentType = (options) => {
+  let sendJson = true;
+  if (options.json === false ||
+      (options.headers['Content-Type'] && options.headers['Content-Type'] !== 'application/json')
+  ) {
+    sendJson = false;
   }
-  case methods.POST: {
-    return request.post;
+
+  if (sendJson) {
+    options.headers.Accept = 'application/json';
+    options.headers['Content-Type'] = 'application/json';
+    options.body = JSON.stringify(options.body);
   }
-  case methods.PUT: {
-    return request.put;
+
+  if (!sendJson && options.form) {
+    const formData = new FormData();
+    Object.keys(options.form).forEach(key => formData.append(key, options.form[key]));
+    options.headers['Content-Type'] = 'multipart/form-data';
+    options.body = formData;
   }
-  case methods.DELETE: {
-    return request.delete;
+
+  return sendJson;
+};
+
+const getRequestOptions = (options, servername) => {
+  options.headers = options.headers || {};
+
+  const requestId = asyncLocalStorage?.getRequestId();
+  if (requestId) {
+    options.headers[requestIdHeader] = requestId;
   }
-  case methods.HEAD: {
-    return request.head;
+
+  setRequestUri(options);
+  setRequestAuth(options);
+  const sendJson = setRequestContentType(options);
+  if (addServername) {
+    options.servername = servername;
   }
-  default: {
-    return Promise.reject(Error(`Unsupported method (${method}) passed to call.`));
+
+  return { options, sendJson };
+};
+
+const getResponseBody = async (response, sendJson) => {
+  const receiveJson =  (!response.headers.get('content-type') && sendJson) ||
+                       response.headers.get('content-type')?.startsWith('application/json');
+  return receiveJson ? await response.json() : await response.text();
+};
+
+const request = async (options = {}) => {
+  const  { options: requestInit, sendJson } = getRequestOptions(options, servername);
+
+  const response = await fetch(requestInit.uri, requestInit);
+  const responseObj = {
+    ...response,
+    body: await getResponseBody(response, sendJson),
+    status: response.status,
+    ok: response.ok,
+    headers: response.headers
+  };
+
+  if (options.simple === false) {
+    return responseObj;
   }
+
+  if (response.ok || (response.status > 300 && response.status < 399)) {
+    return responseObj.body;
   }
+
+  const err = new Error(response.error || `${response.status} - ${JSON.stringify(responseObj.body)}`);
+  Object.assign(err, responseObj);
+  throw err;
 };
 
 module.exports = {
@@ -118,9 +142,9 @@ module.exports = {
     requestIdHeader = header;
   },
 
-  get: (first, second = {}) => req(methods.GET, first, second),
-  post: (first, second = {}) => req(methods.POST, first, second),
-  put: (first, second = {}) => req(methods.PUT, first, second),
-  delete: (first, second = {}) => req(methods.DELETE, first, second),
-  head: (first, second = {}) => req(methods.HEAD, first, second),
+  get: (options = {}) => request({ ...options, method: 'GET' }),
+  post: (options = {}) => request({ ...options, method: 'POST' }),
+  put: (options = {}) => request({ ...options, method: 'PUT' }),
+  delete: (options = {}) => request({ ...options, method: 'DELETE' }),
+  head: (options = {}) => request({ ...options, method: 'HEAD' }),
 };

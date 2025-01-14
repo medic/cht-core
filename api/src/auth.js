@@ -51,7 +51,7 @@ module.exports = {
   getUserCtx: req => {
     return get('/_session', req.headers)
       .catch(err => {
-        if (err.statusCode === 401) {
+        if (err.status === 401) {
           throw { code: 401, message: 'Not logged in', err: err };
         }
         throw err;
@@ -83,12 +83,12 @@ module.exports = {
    * @return     {Object}  {username: username, password: password}
    */
   basicAuthCredentials: req => {
-    const authHeader = req && req.headers && req.headers.authorization;
+    const authHeader = req?.headers?.authorization;
     if (!authHeader || !authHeader.startsWith('Basic ')) {
       return false;
     }
     try {
-      const [username, password] = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+      const [username, password] = atob(authHeader.split(' ')[1]).split(':');
       return { username, password };
     } catch (err) {
       throw Error('Corrupted Auth header');
@@ -101,16 +101,16 @@ module.exports = {
    * @param      {Object}    Credentials object as created by basicAuthCredentials
    */
   validateBasicAuth: ({ username, password }) => {
-    const authUrl = new URL(environment.serverUrlNoAuth);
-    authUrl.username = username;
-    authUrl.password = password;
-    return request.head({
-      uri: authUrl.toString(),
-      resolveWithFullResponse: true
-    })
+    return request
+      .get({
+        uri: environment.serverUrlNoAuth,
+        auth: { username, password },
+        simple: false,
+        json: false,
+      })
       .then(res => {
-        if (res.statusCode !== 200) {
-          return Promise.reject(new Error(`Expected 200 got ${res.statusCode}`));
+        if (!res.ok) {
+          return Promise.reject(new Error(`Expected 200 got ${res.status}`));
         }
         return username;
       });
