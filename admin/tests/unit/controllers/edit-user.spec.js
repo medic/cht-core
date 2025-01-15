@@ -866,7 +866,7 @@ describe('EditUserCtrl controller', () => {
     });
   });
 
-  describe.only('skipPasswordChange', () => {
+  describe('skipPasswordChange', () => {
     let user;
 
     beforeEach(() => {
