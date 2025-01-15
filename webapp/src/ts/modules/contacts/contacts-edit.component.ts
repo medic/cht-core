@@ -5,7 +5,7 @@ import { isEqual as _isEqual } from 'lodash-es';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { FormService } from '@mm-services/form.service';
+import { FormService, DuplicatesFoundError, Duplicate } from '@mm-services/form.service';
 import { EnketoFormContext } from '@mm-services/enketo.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
@@ -58,6 +58,18 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private trackEditDuration;
   private trackSave;
   private trackMetadata = { action: '', form: '' };
+
+  private duplicateCheck;
+  acknowledged = false;
+  onAcknowledgeChange(value: boolean) {
+    this.acknowledged = value;
+  }
+
+  onNavigateToDuplicate(_id: string){
+    this.router.navigate(['/contacts', _id, 'edit']);
+  }
+
+  duplicates: Duplicate[] = [];
 
   ngOnInit() {
     this.trackRender = this.performanceService.track();
@@ -156,6 +168,10 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private async initForm() {
     this.contentError = false;
     this.errorTranslationKey = false;
+
+    // Reset when when navigated to duplicate
+    this.duplicates = [];
+    this.acknowledged = false;
 
     try {
       const contact = await this.getContact();
@@ -276,6 +292,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private async renderForm(formId: string, titleKey: string) {
     const formDoc = await this.dbService.get().get(formId);
     this.xmlVersion = formDoc.xmlVersion;
+    this.duplicateCheck = formDoc.context?.duplicate_check;
 
     this.globalActions.setEnketoEditedStatus(false);
 
@@ -330,7 +347,9 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         $('form.or').trigger('beforesave');
 
         return this.formService
-          .saveContact(form, docId, this.enketoContact.type, this.xmlVersion)
+          .saveContact({
+            form, docId, type: this.enketoContact.type, xmlVersion: this.xmlVersion
+          }, this.duplicateCheck, this.acknowledged)
           .then((result) => {
             console.debug('saved contact', result);
 
@@ -349,6 +368,11 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
             this.router.navigate(['/contacts', result.docId]);
           })
           .catch((err) => {
+            if (err instanceof DuplicatesFoundError){
+              this.duplicates = err.duplicates;
+              err = Error(err.message);
+            }
+
             console.error('Error submitting form data', err);
 
             this.globalActions.setEnketoSavingStatus(false);

@@ -1,5 +1,6 @@
 import * as moment from 'moment';
 import { Injectable } from '@angular/core';
+import { normalizedLevenshteinEq, levenshteinEq } from './utils/deduplicate';
 
 /**
  * Util functions available to a form doc's `.context` function for checking if
@@ -29,6 +30,14 @@ export class XmlFormsContextUtilsService {
 
   ageInYears(contact) {
     return this.getDateDiff(contact, 'years');
+  }
+
+  levenshteinEq(threshold: number, current: string, existing: string){
+    return current && existing ? levenshteinEq(current, existing) < threshold : false;
+  }
+
+  normalizedLevenshteinEq(threshold: number, current: string, existing: string){
+    return current && existing ? normalizedLevenshteinEq(current, existing)  < threshold : false;
   }
 
 }

@@ -37,6 +37,9 @@ import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 
+import { ParseProvider } from '@mm-providers/parse.provider';
+import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
+
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
   const mockEnketoDoc = formInternalId => {
@@ -63,6 +66,7 @@ describe('Form service', () => {
   let dbGetAttachment;
   let dbGet;
   let dbBulkDocs;
+  let dbQuery;
   let ContactSummary;
   let Form2Sms;
   let UserContact;
@@ -94,12 +98,15 @@ describe('Form service', () => {
   let extractLineageService;
   let targetAggregatesService;
   let contactViewModelGeneratorService;
+  let parserProvider;
+  let xmlFormsContextUtilsService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
     dbGetAttachment = sinon.stub();
     dbGet = sinon.stub();
     dbBulkDocs = sinon.stub();
+    dbQuery = sinon.stub();
     ContactSummary = sinon.stub();
     Form2Sms = sinon.stub();
     UserContact = sinon.stub();
@@ -163,13 +170,16 @@ describe('Form service', () => {
     targetAggregatesService = { getTargetDocs: sinon.stub() };
     contactViewModelGeneratorService = { loadReports: sinon.stub() };
 
+    parserProvider = sinon.stub();
+    xmlFormsContextUtilsService = sinon.stub();
+
     TestBed.configureTestingModule({
       providers: [
         provideMockStore(),
         {
           provide: DbService,
           useValue: {
-            get: () => ({ getAttachment: dbGetAttachment, get: dbGet, bulkDocs: dbBulkDocs })
+            get: () => ({ getAttachment: dbGetAttachment, get: dbGet, bulkDocs: dbBulkDocs, query: dbQuery })
           }
         },
         { provide: ContactSummaryService, useValue: { get: ContactSummary } },
@@ -193,6 +203,8 @@ describe('Form service', () => {
         { provide: ExtractLineageService, useValue: extractLineageService },
         { provide: TargetAggregatesService, useValue: targetAggregatesService },
         { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
+        { provide: ParseProvider, useValue: parserProvider},
+        { provide: XmlFormsContextUtilsService, useValue: xmlFormsContextUtilsService }
       ],
     });
 
@@ -1299,11 +1311,16 @@ describe('Form service', () => {
     let extractLineageService;
     let enketoTranslationService;
 
+    let parse;
+
     beforeEach(() => {
       extractLineageService = { extract: sinon.stub() };
       enketoTranslationService = {
         contactRecordToJs: sinon.stub(),
       };
+
+      parse = sinon.stub();
+      parserProvider = { parse };
 
       TestBed.configureTestingModule({
         providers: [
@@ -1311,7 +1328,7 @@ describe('Form service', () => {
           {
             provide: DbService,
             useValue: {
-              get: () => ({ getAttachment: dbGetAttachment, get: dbGet, bulkDocs: dbBulkDocs })
+              get: () => ({ getAttachment: dbGetAttachment, get: dbGet, bulkDocs: dbBulkDocs, query: dbQuery })
             }
           },
           { provide: ContactSummaryService, useValue: { get: ContactSummary } },
@@ -1334,6 +1351,8 @@ describe('Form service', () => {
           { provide: TranslateService, useValue: translateService },
           { provide: TrainingCardsService, useValue: trainingCardsService },
           { provide: FeedbackService, useValue: feedbackService },
+          { provide: ParseProvider, useValue: parserProvider},
+          { provide: XmlFormsContextUtilsService, useValue: xmlFormsContextUtilsService },
         ],
       });
 
@@ -1357,7 +1376,7 @@ describe('Form service', () => {
       extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
 
       return service
-        .saveContact(form, docId, type)
+        .saveContact({form, docId, type})
         .then(() => {
           assert.equal(dbGet.callCount, 1);
           assert.equal(dbGet.args[0][0], 'abc');
@@ -1391,7 +1410,7 @@ describe('Form service', () => {
       extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
 
       return service
-        .saveContact(form, docId, type)
+        .saveContact({form, docId, type})
         .then(() => {
           assert.equal(dbGet.callCount, 1);
           assert.equal(dbGet.args[0][0], 'abc');
@@ -1435,7 +1454,7 @@ describe('Form service', () => {
       dbBulkDocs.resolves([]);
 
       return service
-        .saveContact(form, docId, type)
+        .saveContact({form, docId, type})
         .then(() => {
           assert.isTrue(dbBulkDocs.calledOnce);
 
@@ -1494,7 +1513,7 @@ describe('Form service', () => {
       clock = sinon.useFakeTimers(5000);
 
       return service
-        .saveContact(form, docId, type)
+        .saveContact({form, docId, type})
         .then(() => {
           assert.equal(dbGet.callCount, 2);
           assert.deepEqual(dbGet.args[0], ['main1']);
@@ -1543,7 +1562,7 @@ describe('Form service', () => {
       clock = sinon.useFakeTimers(1000);
 
       return service
-        .saveContact(form, docId, type)
+        .saveContact({form, docId, type})
         .then(() => {
           assert.equal(dbGet.callCount, 1);
           assert.equal(dbGet.args[0][0], 'abc');
@@ -1579,6 +1598,192 @@ describe('Form service', () => {
           assert.equal(setLastChangedDoc.callCount, 1);
           assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
         });
+    });
+
+    it('should throw an error with duplicates found', async function () {
+      const form = { getDataStr: () => '<data></data>' };
+      const docId = null;
+      const type = 'some-contact-type';
+
+      dbGet.resolves({ });
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', name: 'Main', type: 'main', parent: { _id: 'parent1' } }
+      });
+      extractLineageService.extract.returns({ _id: 'parent1'});
+      transitionsService.applyTransitions.callsFake((docs) => {
+        docs[0].transitioned = true;
+        return Promise.resolve(docs);
+      });
+      dbQuery.resolves({
+        offset: 0,
+        rows: [
+          { id: 'sib1', 
+            doc: { 
+              _id: 'sib1', 
+              name: 'Sibling1', 
+              parent: { _id: 'parent1' }, 
+              type, 
+              reported_date: 1736845534000 
+            } 
+          },
+          { 
+            id: 'sib2', 
+            doc: { 
+              _id: 'sib2', 
+              name: 'Sibling2', 
+              parent: { _id: 'parent1' }, 
+              type, 
+              reported_date: 1736845534000 
+            }
+          },
+        ],
+        total_rows: 2
+      });
+      dbBulkDocs.resolves([]);
+      clock = sinon.useFakeTimers(1000);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-undef
+      parse.callsFake(() => (XmlFormsContextUtilsService, ctx) => true);
+      try {
+        await service.saveContact({form, docId, type, xmlVersion: undefined}, undefined, false);
+        // Fail the test if no error is thrown
+        throw new Error('Expected saveContact to throw an error, but it did not.');
+      } catch (e) {
+        expect(e.message).to.include('Duplicates found');
+        expect(e.duplicates).to.have.lengthOf(2);
+        expect(e.duplicates).to.deep.equal([
+          { 
+            _id: 'sib1', 
+            name: 'Sibling1', 
+            parent: { _id: 'parent1' }, 
+            type, 
+            reported_date: 1736845534000 
+          },
+          { 
+            _id: 'sib2', 
+            name: 'Sibling2', 
+            parent: { _id: 'parent1' }, 
+            type, 
+            reported_date: 1736845534000 
+          }
+        ]);
+      }
+    });
+    
+    it('should pass duplicate check when duplicates are acknowledged', async function () {
+      const form = { getDataStr: () => '<data></data>' };
+      const docId = null;
+      const type = 'some-contact-type';
+
+      dbGet.resolves({ });
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', name: 'Main', type: 'main', parent: { _id: 'parent1' } }
+      });
+      extractLineageService.extract.returns({ _id: 'parent1'});
+      transitionsService.applyTransitions.callsFake((docs) => {
+        docs[0].transitioned = true;
+        return Promise.resolve(docs);
+      });
+      dbQuery.resolves({
+        offset: 0,
+        rows: [
+          { id: 'sib1', 
+            doc: { 
+              _id: 'sib1', 
+              name: 'Sibling1', 
+              parent: { _id: 'parent1' }, 
+              type, 
+              reported_date: 1736845534000 
+            } 
+          },
+          { 
+            id: 'sib2', 
+            doc: { 
+              _id: 'sib2', 
+              name: 'Sibling2', 
+              parent: { _id: 'parent1' }, 
+              type, 
+              reported_date: 1736845534000 
+            }
+          },
+        ],
+        total_rows: 2
+      });
+      dbBulkDocs.resolves([]);
+      clock = sinon.useFakeTimers(1000);
+
+      await service.saveContact({form, docId, type, xmlVersion: undefined}, undefined, true);
+      assert.equal(transitionsService.applyTransitions.callCount, 1);
+      assert.deepEqual(transitionsService.applyTransitions.args[0], [[
+        { 
+          _id: 'main1',
+          name: 'Main',
+          type: 'contact',
+          contact_type: type,
+          parent: { _id: 'parent1' },
+          reported_date: 1000,
+          contact: undefined, 
+          transitioned: true
+        }
+      ]]);
+    });
+    
+    it('should pass duplicate check when record is marked as canonical', async function () {
+      const form = { getDataStr: () => '<data></data>' };
+      const docId = null;
+      const type = 'some-contact-type';
+
+      dbGet.resolves({ });
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', name: 'Main', type: 'main', parent: { _id: 'parent1' }, is_canonical: 'true' }
+      });
+      extractLineageService.extract.returns({ _id: 'parent1'});
+      transitionsService.applyTransitions.callsFake((docs) => {
+        docs[0].transitioned = true;
+        return Promise.resolve(docs);
+      });
+      dbQuery.resolves({
+        offset: 0,
+        rows: [
+          { id: 'sib1', 
+            doc: { 
+              _id: 'sib1', 
+              name: 'Sibling1', 
+              parent: { _id: 'parent1' }, 
+              type, 
+              reported_date: 1736845534000 
+            } 
+          },
+          { 
+            id: 'sib2', 
+            doc: { 
+              _id: 'sib2', 
+              name: 'Sibling2', 
+              parent: { _id: 'parent1' }, 
+              type, 
+              reported_date: 1736845534000 
+            }
+          },
+        ],
+        total_rows: 2
+      });
+      dbBulkDocs.resolves([]);
+      clock = sinon.useFakeTimers(1000);
+
+      await service.saveContact({form, docId, type, xmlVersion: undefined}, undefined, false);
+      assert.equal(transitionsService.applyTransitions.callCount, 1);
+      assert.deepEqual(transitionsService.applyTransitions.args[0], [[
+        { 
+          _id: 'main1',
+          name: 'Main',
+          type: 'contact',
+          contact_type: type,
+          parent: { _id: 'parent1' },
+          reported_date: 1000,
+          contact: undefined, 
+          transitioned: true,
+          is_canonical: 'true'
+        }
+      ]]);
     });
   });
 });

@@ -26,6 +26,9 @@ import { reduce as _reduce } from 'lodash-es';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
+import { ParseProvider } from '@mm-providers/parse.provider';
+import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
+import { extractExpression, requestSiblings, getDuplicates, Doc, DuplicateCheck } from './utils/deduplicate';
 
 /**
  * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
@@ -58,6 +61,8 @@ export class FormService {
     private enketoService: EnketoService,
     private targetAggregatesService: TargetAggregatesService,
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
+    private readonly parseProvider: ParseProvider,
+    private readonly xmlFormsDuplicateUtilsService: XmlFormsContextUtilsService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -326,7 +331,39 @@ export class FormService {
     }, null);
   }
 
-  async saveContact(form, docId, type, xmlVersion) {
+  async checkForDuplicates(doc, duplicateCheck, acknowledged) {
+    const parentId = doc ? doc.parent?._id : undefined;
+    const contactType = doc ? doc.contact_type ?? doc.type : undefined;
+    const siblings = await requestSiblings(this.dbService, parentId, contactType);
+    const expression = extractExpression(duplicateCheck);
+    const isCanonical = doc.is_canonical ? doc.is_canonical === 'true' : false;
+    acknowledged = acknowledged ?? false;
+
+    if (!isCanonical && expression && !acknowledged){
+      const duplicates = getDuplicates(
+        doc, 
+        siblings, 
+        {
+          expression, 
+          parseProvider: this.parseProvider, 
+          xmlFormsContextUtilsService: this.xmlFormsDuplicateUtilsService
+        }
+      );
+      return duplicates;
+    }
+  }
+
+  async saveContact(
+    contactInfo: { 
+      form: any; 
+      docId: string| undefined;
+      type: string | undefined;
+      xmlVersion: string | undefined;
+    }, 
+    duplicateCheck: DuplicateCheck, 
+    acknowledged: boolean
+  ) {
+    const { form, docId, type, xmlVersion } = contactInfo;
     const typeFields = this.contactTypesService.isHardcodedType(type)
       ? { type }
       : { type: 'contact', contact_type: type };
@@ -335,6 +372,16 @@ export class FormService {
     const preparedDocs = await this.applyTransitions(docs);
 
     const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
+
+    const duplicates = await this.checkForDuplicates(
+      primaryDoc || preparedDocs.preparedDocs[0], 
+      duplicateCheck, 
+      acknowledged
+    );
+    if (duplicates && duplicates.length > 0){
+      throw new DuplicatesFoundError('Duplicates found', duplicates);
+    }
+
     this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
     const bulkDocsResult = await this.dbService.get().bulkDocs(preparedDocs.preparedDocs);
     const failureMessage = this.generateFailureMessage(bulkDocsResult);
@@ -350,4 +397,14 @@ export class FormService {
     this.enketoService.unload(form);
   }
 }
+export class DuplicatesFoundError extends Error {
+  duplicates: Duplicate[];
 
+  constructor(message: string, duplicates: Duplicate[]) {
+    super(message);
+    this.message = message;
+    this.duplicates = duplicates;
+    this.name = 'DuplicatesFoundError';
+  }
+}
+export type Duplicate = Doc;
