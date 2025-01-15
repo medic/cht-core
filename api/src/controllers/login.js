@@ -1,6 +1,5 @@
 const path = require('path');
 const request = require('@medic/couch-request');
-const _ = require('lodash');
 const url = require('node:url');
 const auth = require('../auth');
 const environment = require('@medic/environment');
