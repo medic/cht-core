@@ -1,0 +1,53 @@
+<div
+  id="duplicate_info"
+  [ngStyle]="{ display: duplicates.length > 0 ? 'block' : 'none' }">
+  <p class="results_header">{{ duplicates.length }} {{'potential duplicate item(s) found:' | translate }}</p>
+  <div class="divider"></div>
+  <div>
+    <label for="check" class="acknowledge_label">
+      <input
+        id="check"
+        type="checkbox"
+        [checked]="acknowledged"
+        (change)="toggleAcknowledged()"
+        class="acknowledge_checkbox"/>
+      {{'Acknowledge duplicate siblings and proceed with submission' | translate }}
+    </label>
+  </div>
+  <div class="divider"></div>
+  <div *ngFor="let duplicate of duplicates; let i = index" >
+    <div class="card">
+      <strong>{{ 'Item number:' | translate }}</strong> {{ i + 1 }}
+      <hr>
+      <p>
+        <strong>{{ 'Name:'  | translate }}</strong> {{ duplicate.name }}
+        <br>
+        <strong>{{ 'Created on:' | translate }}</strong> {{ duplicate.reported_date | date: 'EEE MMM dd yyyy HH:mm:ss' }}
+      </p>
+      <button class="toggle-button" (click)="toggleSection(getPath('', duplicate._id))">
+        {{ isExpanded(getPath('', duplicate._id)) ? '▼' : '▶' }} 
+        {{ (isExpanded(getPath('', duplicate._id)) ? 'Show less details' : 'Show more details') | translate }}
+      </button>
+      <div *ngIf="isExpanded(getPath('', duplicate._id))" class="nested-section">
+        <ng-container *ngTemplateOutlet="renderObject; context: { obj: duplicate, path: duplicate._id }"></ng-container>
+      </div>
+      <hr>
+      <button class="btn submit btn-primary" (click)="_navigateToDuplicate(duplicate._id)">{{ 'Take me there' | translate }}</button>
+    </div>
+  </div>
+  <ng-template #renderObject let-obj="obj" let-path="path">
+    <div *ngFor="let key of obj | keyvalue">
+      <div *ngIf="isObject(key.value); else primitiveValue">
+        <button class="toggle-button" (click)="toggleSection(getPath(path, key.key))">
+          {{ isExpanded(getPath(path, key.key)) ? '▼' : '▶' }} {{ key.key }}
+        </button>
+        <div *ngIf="isExpanded(getPath(path, key.key))" class="nested-section">
+          <ng-container *ngTemplateOutlet="renderObject; context: { obj: key.value, path: getPath(path, key.key) }"></ng-container>
+        </div>
+      </div>
+      <ng-template #primitiveValue>
+        <strong>{{ key.key }}:</strong> {{ key.value }}
+      </ng-template>
+    </div>
+  </ng-template>
+</div>
