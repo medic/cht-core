@@ -3191,7 +3191,7 @@ describe('Users service', () => {
         chai.expect(e.code).to.equal(400);
         chai.expect(db.medic.put.callCount).to.equal(0);
         chai.expect(db.users.put.callCount).to.equal(0);
-        chai.expect(couchSettings.getCouchConfig.callCount).to.equal(2);
+        chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
         chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
       }
     });
@@ -3252,7 +3252,7 @@ describe('Users service', () => {
         password: COMPLEX_PASSWORD,
         password_change_required: true
       });
-      chai.expect(couchSettings.getCouchConfig.callCount).to.equal(2);
+      chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
       chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
     });
 
@@ -3901,7 +3901,7 @@ describe('Users service', () => {
         chai.expect(db.users.get.callCount).to.equal(1);
         chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
         chai.expect(db.users.put.callCount).to.equal(0);
-        chai.expect(couchSettings.getCouchConfig.callCount).to.equal(2);
+        chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
         chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
       }
 
