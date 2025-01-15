@@ -459,7 +459,7 @@ const getSettingsUpdates = (username, data) => {
 };
 
 const isPasswordChangeRequired = (user, data, fullAccess) => {
-  if (!fullAccess) {
+  if (!fullAccess || tokenLogin.shouldEnableTokenLogin(data)) {
     return false;
   }
 
