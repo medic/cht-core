@@ -203,10 +203,10 @@ const createUser = async (data, response) => {
     name: data.username,
     type: 'user'
   };
-  const userUpdates = await getUserUpdates(user, data, true)
-  const finalUser = { ...user, ...userUpdates, _id: createID(data.username) };
+  const updatedUser = await getUserUpdates(user, data, true);
+  updatedUser._id = createID(data.username);
 
-  return db.users.put(finalUser)
+  return db.users.put(updatedUser)
     .then(body => {
       response.user = {
         id: body.id,
@@ -469,22 +469,22 @@ const isPasswordChangeRequired = (user, data, fullAccess) => {
 
 const getUserUpdates = async (user, data, fullAccess = false) => {
   const ignore = ['type', 'place', 'contact'];
-  const userUpdates = {};
+  const updatedUser = { ...user, type: 'user' };
 
   if (data.password) {
-    userUpdates.password_change_required = data.password_change_required === false ? false :
-      isPasswordChangeRequired(user, data, fullAccess);
+    updatedUser.password_change_required = data.password_change_required === false ? false :
+      isPasswordChangeRequired(updatedUser, data, fullAccess);
   }
 
   USER_EDITABLE_FIELDS.forEach(key => {
     if (!_.isUndefined(data[key]) && ignore.indexOf(key) === -1) {
-      userUpdates[key] = data[key];
+      updatedUser[key] = data[key];
     }
   });
 
-  getCommonFieldsUpdates(userUpdates, data);
+  getCommonFieldsUpdates(updatedUser, data);
 
-  return userUpdates;
+  return updatedUser;
 };
 
 const createID = name => USER_PREFIX + name;
@@ -561,9 +561,14 @@ const missingFields = data => {
 const getUpdatedUserDoc = async (username, data, fullAccess) => {
   return getUserDoc(username, 'users')
     .then(async doc => {
-      return {
+      const baseUser = {
         ...doc,
-        ...(await getUserUpdates(username, data, fullAccess)),
+        name: username,
+        type: 'user',
+      };
+      return {
+        ...baseUser,
+        ...(await getUserUpdates(doc, data, fullAccess)),
         _id: createID(username)
       };
     });

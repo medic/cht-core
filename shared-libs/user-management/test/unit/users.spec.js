@@ -145,8 +145,12 @@ describe('Users service', () => {
         name: 'sam',
         email: 'john@gmail.com'
       };
-      const user = await service.__get__('getUserUpdates')('john', data);
-      chai.expect(user.name ).to.equal('john');
+      const user = {
+        name: 'john',
+        type: 'user'
+      };
+      const updatedUser = await service.__get__('getUserUpdates')(user, data);
+      chai.expect(updatedUser.name ).to.equal('john');
     });
 
     it('reassigns place and contact fields', async () => {
@@ -1681,6 +1685,7 @@ describe('Users service', () => {
         .withArgs('app_url').returns('');
 
       sinon.stub(roles, 'isOffline').returns(false);
+      sinon.stub(roles, 'hasAllPermissions').returns(false);
 
       const users = [{
         username: 'sally',
@@ -2843,8 +2848,14 @@ describe('Users service', () => {
       const data = {
         place: ['x', 'y', 'z']
       };
-      db.medic.get.resolves({ roles: ['a'] });
-      db.users.get.resolves({ roles: ['a'] });
+      const user = {
+        _id: 'org.couchdb.user:paul',
+        name: 'paul',
+        type: 'user',
+        roles: ['a']
+      };
+      db.medic.get.resolves(user);
+      db.users.get.resolves(user);
       sinon.stub(places, 'placesExist').resolves();
       sinon.stub(roles, 'hasAllPermissions').returns(true);
       db.medic.put.resolves({});
@@ -3183,7 +3194,6 @@ describe('Users service', () => {
         chai.expect(couchSettings.getCouchConfig.callCount).to.equal(2);
         chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
       }
-
     });
 
     it('should update admin when no password is sent', async () => {
@@ -3484,6 +3494,7 @@ describe('Users service', () => {
         .withArgs('app_url').returns('');
 
       sinon.stub(roles, 'isOffline').returns(false);
+      sinon.stub(roles, 'hasAllPermissions').returns(false);
 
       const user = {
         username: 'sally',
@@ -3845,6 +3856,7 @@ describe('Users service', () => {
   describe('resetPassword', () => {
     it('should reset password for valid user', async () => {
       const expectedPassword = 'newpassword';
+      sinon.stub(roles, 'hasAllPermissions').returns(false);
       sinon
         .stub(passwords, 'generate')
         .returns(expectedPassword);
@@ -3867,6 +3879,7 @@ describe('Users service', () => {
 
     it('should throw for admin user', async () => {
       const expectedPassword = 'newpassword';
+      sinon.stub(roles, 'hasAllPermissions').returns(false);
       sinon
         .stub(passwords, 'generate')
         .returns(expectedPassword);
