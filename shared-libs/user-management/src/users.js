@@ -199,9 +199,14 @@ const validateNewUsername = username => {
 };
 
 const createUser = async (data, response) => {
-  const user = await getUserUpdates(data.username, data, true);
-  user._id = createID(data.username);
-  return db.users.put(user)
+  const user = {
+    name: data.username,
+    type: 'user'
+  };
+  const userUpdates = await getUserUpdates(user, data, true)
+  const finalUser = { ...user, ...userUpdates, _id: createID(data.username) };
+
+  return db.users.put(finalUser)
     .then(body => {
       response.user = {
         id: body.id,
@@ -453,53 +458,33 @@ const getSettingsUpdates = (username, data) => {
   return settings;
 };
 
-const requirePasswordChange = async (username, fullAccess) => {
+const isPasswordChangeRequired = (user, data, fullAccess) => {
   if (!fullAccess) {
     return false;
   }
 
-  return !(await isDbAdmin(username));
+  const userRoles = data.roles || user?.roles;
+  return !roles.hasAllPermissions(userRoles, ['can_skip_password_change']);
 };
 
-const isPasswordChangeRequired = async (username, data, fullAccess) => {
-  if (!data.password || tokenLogin.shouldEnableTokenLogin(data)) {
-    return false;
-  }
-
-  const passwordChange = await requirePasswordChange(username, fullAccess);
-  if (!passwordChange) {
-    return false;
-  }
-
-  const canSkip = roles.hasAllPermissions(data.roles, ['can_skip_password_change']) ||
-    roles.isDbAdmin(data.roles) ||
-    (data.token_login && data.token_login.active);
-
-  return !canSkip;
-};
-
-const getUserUpdates = async (username, data, fullAccess = false) => {
+const getUserUpdates = async (user, data, fullAccess = false) => {
   const ignore = ['type', 'place', 'contact'];
-
-  const user = {
-    name: username,
-    type: 'user'
-  };
+  const userUpdates = {};
 
   if (data.password) {
-    user.password_change_required = data.password_change_required === false ? false :
-      await isPasswordChangeRequired(username, data, fullAccess);
+    userUpdates.password_change_required = data.password_change_required === false ? false :
+      isPasswordChangeRequired(user, data, fullAccess);
   }
 
   USER_EDITABLE_FIELDS.forEach(key => {
     if (!_.isUndefined(data[key]) && ignore.indexOf(key) === -1) {
-      user[key] = data[key];
+      userUpdates[key] = data[key];
     }
   });
 
-  getCommonFieldsUpdates(user, data);
+  getCommonFieldsUpdates(userUpdates, data);
 
-  return user;
+  return userUpdates;
 };
 
 const createID = name => USER_PREFIX + name;
@@ -522,13 +507,7 @@ const deleteUser = id => {
 };
 
 const validatePassword = (password) => {
-  if (!password) {
-    return error400(
-      'Password is not correct.',
-      'password-incorrect'
-    );
-  }
-  if (password.length < PASSWORD_MINIMUM_LENGTH) {
+  if (password?.length < PASSWORD_MINIMUM_LENGTH) {
     return error400(
       `The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`,
       'password.length.minimum',

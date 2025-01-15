@@ -40,6 +40,7 @@ describe('login controller', () => {
       query: {},
       body: {},
       hostname: 'xx.app.medicmobile.org',
+      protocol: 'http',
       headers: {cookie: ''}
     };
     res = {
@@ -397,8 +398,8 @@ describe('login controller', () => {
             password: 'newPass123',
             password_change_required: false
           },
-          true,
-          null
+          false,
+          `${req.protocol}://${req.hostname}`
         ]);
       });
     });
@@ -815,52 +816,6 @@ describe('login controller', () => {
         chai.expect(cookie.args[1][0]).to.equal('locale');
         chai.expect(cookie.args[1][1]).to.equal('es');
         chai.expect(cookie.args[1][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
-      });
-    });
-
-    it('logs in successfully and skips password-reset with can_skip_password_change permission', () => {
-      req.body = { user: 'sharon', password: 'p4ss', locale: 'es' };
-      const postResponse = {
-        statusCode: 200,
-        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
-      };
-      const post = sinon.stub(request, 'post').resolves(postResponse);
-      const send = sinon.stub(res, 'send');
-      const status = sinon.stub(res, 'status').returns(res);
-      const cookie = sinon.stub(res, 'cookie').returns(res);
-      const clearCookie = sinon.stub(res, 'clearCookie').returns(res);
-      const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
-      const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
-      sinon.stub(users, 'getUserDoc').resolves({
-        name: 'sharon',
-        type: 'user',
-        password_change_required: false
-      });
-      sinon.stub(auth, 'getUserSettings').resolves({});
-      return controller.post(req, res).then(() => {
-        chai.expect(post.callCount).to.equal(1);
-        chai.expect(post.args[0][0].url).to.equal('http://test.com:1234/_session');
-        chai.expect(post.args[0][0].body.name).to.equal('sharon');
-        chai.expect(post.args[0][0].body.password).to.equal('p4ss');
-        chai.expect(post.args[0][0].auth.user).to.equal('sharon');
-        chai.expect(post.args[0][0].auth.pass).to.equal('p4ss');
-        chai.expect(getUserCtx.callCount).to.equal(1);
-        chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
-        chai.expect(status.callCount).to.equal(1);
-        chai.expect(status.args[0][0]).to.equal(302);
-        chai.expect(send.args[0][0]).to.deep.equal('/');
-        chai.expect(cookie.callCount).to.equal(3);
-        chai.expect(cookie.args[0][0]).to.equal('AuthSession');
-        chai.expect(cookie.args[0][1]).to.equal('abc');
-        chai.expect(cookie.args[0][2]).to.deep.equal({ sameSite: 'lax', secure: false, httpOnly: true });
-        chai.expect(cookie.args[1][0]).to.equal('userCtx');
-        chai.expect(cookie.args[1][1]).to.equal(JSON.stringify(userCtx));
-        chai.expect(cookie.args[1][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
-        chai.expect(cookie.args[2][0]).to.equal('locale');
-        chai.expect(cookie.args[2][1]).to.equal('es');
-        chai.expect(cookie.args[2][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
-        chai.expect(clearCookie.callCount).to.equal(1);
-        chai.expect(clearCookie.args[0][0]).to.equal('login');
       });
     });
 

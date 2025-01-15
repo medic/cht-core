@@ -392,12 +392,13 @@ const login = async (req, res) => {
   }
 };
 
-const updatePassword = (user, newPassword) => {
+const updatePassword = (user, newPassword, req) => {
   const updateData = {
     password: newPassword,
     password_change_required: false,
   };
-  return users.updateUser(user.name, updateData, true, null);
+  const appUrl = `${req.protocol}://${req.hostname}`;
+  return users.updateUser(user.name, updateData, true, appUrl);
 };
 
 const validateCurrentPassword = async (username, currentPassword, newPassword) => {
@@ -517,7 +518,7 @@ module.exports = {
       }
 
       const userDoc = await users.getUserDoc(username);
-      await updatePassword(userDoc, password);
+      await updatePassword(userDoc, password, req);
 
       req.body = { user: username, password, locale };
       const sessionRes = await createSessionRetry(req);
