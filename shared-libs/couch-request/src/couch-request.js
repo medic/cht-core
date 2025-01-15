@@ -1,8 +1,6 @@
 const environment = require('@medic/environment');
-const servername = environment.host;
 let asyncLocalStorage;
 let requestIdHeader;
-
 
 const isString = value => typeof value === 'string' || value instanceof String;
 const isTrue = value => isString(value) ? value.toLowerCase() === 'true' : value === true;
@@ -37,25 +35,27 @@ const setRequestUri = (options) => {
     uri = `${uri}?${new URLSearchParams(options.qs).toString()}`;
   }
 
+  delete options.url;
+  delete options.baseUrl;
+  delete options.qs;
+
   options.uri = uri;
 };
 
 const setRequestAuth = (options) => {
-  let auth;
+  let auth = options.auth;
 
-  if (options.auth) {
-    auth = options.auth;
-  } else {
-    const url = new URL(options.uri);
-    if (url.username) {
-      auth = { username: url.username, password: url.password };
-      url.username = '';
-      url.password = '';
-      options.uri = url.toString();
-    }
+  const url = new URL(options.uri);
+  if (url.username) {
+    auth = auth || { username: url.username, password: url.password };
+    url.username = '';
+    url.password = '';
+    options.uri = url.toString();
   }
 
-  if (!auth) {
+  delete options.auth;
+
+  if (!auth || options.headers.Authorization) {
     return;
   }
 
@@ -74,20 +74,25 @@ const setRequestContentType = (options) => {
   if (sendJson) {
     options.headers.Accept = 'application/json';
     options.headers['Content-Type'] = 'application/json';
-    options.body = JSON.stringify(options.body);
+    options.body && (options.body = JSON.stringify(options.body));
   }
 
   if (!sendJson && options.form) {
     const formData = new FormData();
     Object.keys(options.form).forEach(key => formData.append(key, options.form[key]));
     options.headers['Content-Type'] = 'multipart/form-data';
-    options.body = formData;
+    delete options.headers.Accept;
+
+    options.body = new URLSearchParams(formData).toString();
   }
+
+  delete options.json;
+  delete options.form;
 
   return sendJson;
 };
 
-const getRequestOptions = (options, servername) => {
+const getRequestOptions = (options) => {
   options.headers = options.headers || {};
 
   const requestId = asyncLocalStorage?.getRequestId();
@@ -99,7 +104,7 @@ const getRequestOptions = (options, servername) => {
   setRequestAuth(options);
   const sendJson = setRequestContentType(options);
   if (addServername) {
-    options.servername = servername;
+    options.servername = environment.host;
   }
 
   return { options, sendJson };
@@ -112,9 +117,9 @@ const getResponseBody = async (response, sendJson) => {
 };
 
 const request = async (options = {}) => {
-  const  { options: requestInit, sendJson } = getRequestOptions(options, servername);
+  const  { options: requestInit, sendJson } = getRequestOptions(options);
 
-  const response = await fetch(requestInit.uri, requestInit);
+  const response = await global.fetch(requestInit.uri, requestInit);
   const responseObj = {
     ...response,
     body: await getResponseBody(response, sendJson),
