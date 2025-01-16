@@ -141,6 +141,8 @@ const request = async (options = {}) => {
   throw err;
 };
 
+// todo add jsdoc for this!!!
+
 module.exports = {
   initialize: (store, header) => {
     asyncLocalStorage = store;

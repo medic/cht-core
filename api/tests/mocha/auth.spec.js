@@ -29,7 +29,7 @@ describe('Auth', () => {
   describe('check', () => {
 
     it('returns error when not logged in', () => {
-      const get = sinon.stub(request, 'get').rejects({ statusCode: 401 });
+      const get = sinon.stub(request, 'get').rejects({ status: 401 });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0].url).to.equal('http://abc.com/_session');
@@ -168,12 +168,12 @@ describe('Auth', () => {
     });
 
     it('should throw a custom 401 error', async () => {
-      sinon.stub(request, 'get').rejects({ statusCode: 401, error: 'not logged in' });
+      sinon.stub(request, 'get').rejects({ status: 401, error: 'not logged in' });
 
       await chai.expect(auth.getUserCtx(req)).to.be.rejected.and.eventually.deep.equal({
         code: 401,
         message: 'Not logged in',
-        err: { statusCode: 401, error: 'not logged in' }
+        err: { status: 401, error: 'not logged in' }
       });
 
       chai.expect(request.get.callCount).to.equal(1);

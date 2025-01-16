@@ -138,7 +138,7 @@ describe('RapidPro SMS Gateway', () => {
         .withArgs(sinon.match({ body: { text: 'message2' } })).resolves()
         .withArgs(sinon.match({ body: { text: 'message3' } })).rejects({ some: 'error' })
         .withArgs(sinon.match({ body: { text: 'message4' } })).resolves({ id: 'broadcast4', status: 'queued' })
-        .withArgs(sinon.match({ body: { text: 'message5' } })).rejects({ statusCode: 400 })
+        .withArgs(sinon.match({ body: { text: 'message5' } })).rejects({ status: 400 })
         .withArgs(sinon.match({ body: { text: 'message6' } })).resolves({ id: 'broadcast6' });
 
       return service.send(messages).then((result) => {
@@ -582,7 +582,7 @@ describe('RapidPro SMS Gateway', () => {
           .onCall(2).resolves({ rows: [] });
         sinon.stub(request, 'get')
           .resolves({ results: [{ status: 'delivered' }] })
-          .onCall(10).rejects({ statusCode: 429, error: 'Request was throttled' });
+          .onCall(10).rejects({ status: 429, error: 'Request was throttled' });
 
         return service
           .poll()
@@ -620,7 +620,7 @@ describe('RapidPro SMS Gateway', () => {
           .onCall(2).resolves({ rows: [] });
         sinon.stub(request, 'get')
           .resolves({ results: [{ status: 'delivered' }] })
-          .onCall(10).rejects({ statusCode: 429, error: 'Request was throttled' });
+          .onCall(10).rejects({ status: 429, error: 'Request was throttled' });
 
         return service
           .poll()

@@ -50,7 +50,7 @@ const getRecipient = res => {
          res.SMSMessageData.Recipients[0];
 };
 
-const getStatus = recipient => recipient && STATUS_MAP[recipient.status];
+const getStatus = recipient => recipient && STATUS_MAP[recipient.statusCode];
 
 const generateStateChange = (message, res) => {
   const recipient = getRecipient(res);
@@ -88,6 +88,7 @@ const sendMessage = (credentials, message) => {
   return request
     .post({
       url: url,
+      json: false,
       form: {
         username: credentials.username,
         from: credentials.from,
