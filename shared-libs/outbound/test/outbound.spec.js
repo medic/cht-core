@@ -210,6 +210,20 @@ describe('outbound shared library', () => {
 
       assert.throws(() => mapDocumentToPayload(doc, conf, 'test-doc'), /Mapping error/);
     });
+
+    it('throws an exception if the expression does not have either path or expr', () => {
+      const doc = {
+        _id: 'test-doc',
+      };
+
+      const conf = {
+        mapping: {
+          is_gonna_fail: {not_path_or_expr: 'doc.fields.null.pointer'},
+        }
+      };
+
+      assert.throws(() => mapDocumentToPayload(doc, conf, 'test-doc'), /Mapping error/);
+    });
   });
 
   describe('updateInfo', () => {
