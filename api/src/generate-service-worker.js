@@ -131,7 +131,7 @@ const writeServiceWorkerMetaDoc = async (hash) => {
     const doc = await getSwMetaDoc();
     doc.generated_at = new Date().getTime();
     doc.hash = hash;
-    await db.medic.put(doc);
+    await db.medicAsAdmin.put(doc);
   } catch (err) {
     // don't log conflicts
     if (err.status !== 409) {

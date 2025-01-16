@@ -24,7 +24,9 @@ process
     logger.info('Checks passed successfully');
 
     const uploadDefaultDocs = require('./src/upload-default-docs');
+    const databases = require('./src/services/setup/databases');
     logger.info('Extracting initial documents…');
+    await databases.init();
     await uploadDefaultDocs.run();
     logger.info('Extracting initial documents completed successfully');
 

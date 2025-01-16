@@ -17,7 +17,6 @@ const environment = require('@medic/environment');
 const dataContext = require('./data-context');
 const extensionLibs = require('./extension-libs');
 const deployInfo = require('./deploy-info');
-const { DATABASES } = require('./setup/databases');
 
 const MEDIC_DDOC_ID = '_design/medic';
 
@@ -144,19 +143,14 @@ const updateServiceWorker = () => {
   });
 };
 
-const addSystemUserToDbs = () => Promise.all([...DATABASES, { name: `${environment.db}-purged-cache` }]
-  .filter(({ name }) => name !== '_users')
-  .map(({ name }) => db.addUserAsMember(name, environment.username)));
-
-const load = async () => {
-  await addSystemUserToDbs();
+const load = () => {
   loadViewMaps();
-  await loadTranslations();
-  await loadSettings();
-  await addUserRolesToDb();
-  await initTransitionLib();
-  await db.createVault();
-  await deployInfo.store();
+  return loadTranslations()
+    .then(() => loadSettings())
+    .then(() => addUserRolesToDb())
+    .then(() => initTransitionLib())
+    .then(() => db.createVault())
+    .then(() => deployInfo.store());
 };
 
 const listen = () => {

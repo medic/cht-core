@@ -9,7 +9,7 @@ const db = require('../../db');
 
 const MEDIC_DATABASE = {
   name: environment.db,
-  db: db.medic,
+  db: db.medicAsAdmin,
   jsonFileName: 'medic.json',
 };
 
@@ -20,17 +20,17 @@ const DATABASES = [
   MEDIC_DATABASE,
   {
     name: `${environment.db}-sentinel`,
-    db: db.sentinel,
+    db: db.sentinelAsAdmin,
     jsonFileName: 'sentinel.json',
   },
   {
     name: `${environment.db}-logs`,
-    db: db.medicLogs,
+    db: db.medicLogsAsAdmin,
     jsonFileName: 'logs.json',
   },
   {
     name: `${environment.db}-users-meta`,
-    db: db.medicUsersMeta,
+    db: db.medicUsersMetaAsAdmin,
     jsonFileName: 'users-meta.json',
   },
   {
@@ -40,7 +40,12 @@ const DATABASES = [
   },
 ];
 
+const addSystemUserToDbs = () => Promise.all(DATABASES
+  .filter(({ name }) => name !== '_users')
+  .map(({ name }) => db.addUserAsMember(name, environment.username)));
+
 module.exports = {
   MEDIC_DATABASE,
   DATABASES,
+  init: async () => addSystemUserToDbs()
 };

@@ -97,15 +97,19 @@ if (UNIT_TEST_ENV) {
   module.exports.medic = DB;
   module.exports.medicAsAdmin = new PouchDB(environment.couchUrl, { fetch: adminFetch });
   module.exports.medicUsersMeta = new PouchDB(`${environment.couchUrl}-users-meta`, { fetch });
+  module.exports.medicUsersMetaAsAdmin = new PouchDB(`${environment.couchUrl}-users-meta`, { fetch: adminFetch });
   module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch });
+  module.exports.medicLogsAsAdmin = new PouchDB(`${environment.couchUrl}-logs`, { fetch: adminFetch });
   module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch });
+  module.exports.sentinelAsAdmin = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch: adminFetch });
   module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch: adminFetch });
   module.exports.createVault = () => module.exports.vault.info();
   module.exports.users = new PouchDB(getDbUrl('_users'), { fetch: adminFetch });
   module.exports.builds = new PouchDB(environment.buildsUrl);
 
   // Get the DB with the given name
-  module.exports.get = name => new PouchDB(getDbUrl(name), { fetch });
+  // TODO Does it make sense to just use this for admin dbs? Probably have to worry about closing.
+  module.exports.get = name => new PouchDB(getDbUrl(name), { fetch: adminFetch });
   module.exports.close = db => {
     if (!db || db._destroyed || db._closed) {
       return;
