@@ -3127,7 +3127,10 @@ describe('Users service', () => {
       const data = {
         language: 'es'
       };
-      db.users.get.resolves({});
+      db.users.get.resolves({
+        name: 'paul',
+        type: 'user'
+      });
       db.medic.get.resolves({});
       const medicPut = db.medic.put.resolves({});
       const usersPut = db.users.put.resolves({});
@@ -3151,7 +3154,10 @@ describe('Users service', () => {
       const data = {
         language: 'es'
       };
-      db.users.get.resolves({});
+      db.users.get.resolves({
+        name: 'paul',
+        type: 'user'
+      });
       db.medic.get.resolves({});
       const medicPut = db.medic.put.resolves({});
       const usersPut = db.users.put.resolves({});
@@ -3178,7 +3184,11 @@ describe('Users service', () => {
         admin2: 'password_2',
       });
 
-      db.users.get.resolves({});
+      db.users.get.resolves({
+        name: 'admin2',
+        type: 'user',
+        roles: ['_admin']
+      });
       db.medic.get.resolves({});
       db.medic.put.resolves({});
       db.users.put.resolves({});
@@ -3202,7 +3212,10 @@ describe('Users service', () => {
         admin1: 'password_1',
         admin2: 'password_2',
       });
-      db.users.get.resolves({});
+      db.users.get.resolves({
+        name: 'admin2',
+        type: 'user'
+      });
       db.medic.get.resolves({});
       db.medic.put.resolves({});
       db.users.put.resolves({});
@@ -3231,7 +3244,10 @@ describe('Users service', () => {
         admin1: 'password_1',
         admin2: 'password_2',
       });
-      db.users.get.resolves({});
+      db.users.get.resolves({
+        name: 'anne',
+        type: 'user'
+      });
       db.medic.get.resolves({});
       db.medic.put.resolves({});
       db.users.put.resolves({});
@@ -3684,6 +3700,7 @@ describe('Users service', () => {
       const updates = { token_login: true, phone: '+40 755 89-89-89' };
       db.medic.get.onFirstCall().resolves({
         _id: 'org.couchdb.user:sally',
+        name: 'sally',
         type: 'user-settings',
         roles: ['a', 'b', 'mm-online'],
         phone: '123',
@@ -3697,6 +3714,7 @@ describe('Users service', () => {
       });
       db.users.get.onFirstCall().resolves({
         _id: 'org.couchdb.user:sally',
+        name: 'sally',
         type: 'user',
         roles: ['a', 'b', 'mm-online'],
       });

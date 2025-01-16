@@ -467,7 +467,7 @@ const isPasswordChangeRequired = (user, data, fullAccess) => {
   return !roles.hasAllPermissions(userRoles, ['can_skip_password_change']);
 };
 
-const getUserUpdates = async (user, data, fullAccess = false) => {
+const getUserUpdates = (user, data, fullAccess = false) => {
   const ignore = ['type', 'place', 'contact'];
   const updatedUser = { ...user, type: 'user' };
 
@@ -561,13 +561,8 @@ const missingFields = data => {
 const getUpdatedUserDoc = async (username, data, fullAccess) => {
   return getUserDoc(username, 'users')
     .then(async doc => {
-      const baseUser = {
-        ...doc,
-        name: username,
-        type: 'user',
-      };
       return {
-        ...baseUser,
+        ...doc,
         ...(await getUserUpdates(doc, data, fullAccess)),
         _id: createID(username)
       };
