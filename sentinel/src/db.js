@@ -71,15 +71,19 @@ if (UNIT_TEST_ENV) {
     opts.headers.set('X-Medic-User', 'sentinel');
     return PouchDB.fetch(url, opts);
   };
-  const fetch = makeFetch(request.getAuthHeaders(environment.username));
-  const adminFetch = makeFetch(request.getAuthHeaders(environment.username, '_admin'));
+  const fetch = makeFetch(request.getMemberAuthHeaders());
+  const adminFetch = makeFetch(request.getAdminAuthHeaders());
 
 
   module.exports.medic = new PouchDB(couchUrl, { fetch });
   module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch });
 
-  module.exports.allDbs = () => request.get({ url: `${environment.serverUrl}/_all_dbs`, json: true });
-  module.exports.get = db => new PouchDB(`${environment.serverUrl}/${db}`);
+  module.exports.allDbs = async () => {
+    const headers = await request.getAdminAuthHeaders();
+    return request.get({ url: `${environment.serverUrl}/_all_dbs`, json: true, headers });
+  };
+  // TODO Should this maybe be getAsAdmin?
+  module.exports.get = db => new PouchDB(`${environment.serverUrl}/${db}`, { fetch: adminFetch });
   module.exports.close = db => {
     if (!db || db._destroyed || db._closed) {
       return;

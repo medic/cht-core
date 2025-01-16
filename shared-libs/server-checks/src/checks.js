@@ -84,10 +84,11 @@ const checkCouchSecret = async () => {
 };
 
 const checkCouchDbCluster = async (couchUrl) => {
+  const headers = await request.getAdminAuthHeaders();
   const membershipResults = [
-    await request.get({ url: `${couchUrl}_membership`, json: true }),
-    await request.get({ url: `${couchUrl}_membership`, json: true }),
-    await request.get({ url: `${couchUrl}_membership`, json: true }),
+    await request.get({ url: `${couchUrl}_membership`, json: true, headers }),
+    await request.get({ url: `${couchUrl}_membership`, json: true, headers }),
+    await request.get({ url: `${couchUrl}_membership`, json: true, headers }),
   ];
 
   const consistentMembership =
@@ -100,9 +101,10 @@ const checkCouchDbCluster = async (couchUrl) => {
 };
 
 const checkCouchDbSystemDbs = async (couchUrl) => {
+  const headers = await request.getAdminAuthHeaders();
   try {
     for (const db of SYSTEM_DBS) {
-      await request.get({ url: `${couchUrl}${db}`, json: true });
+      await request.get({ url: `${couchUrl}${db}`, json: true, headers });
     }
   } catch (err) {
     throw new Error('System databases do not exist');

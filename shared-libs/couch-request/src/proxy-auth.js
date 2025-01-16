@@ -17,7 +17,6 @@ const promisedCouchSecret = (async () => {
     .trim();
 })();
 
-// TODO Should we also load configured values for these header names (in case someone customized them)?
 const createHeaders = (username, roles, token) => {
   return {
     'X-Auth-CouchDB-UserName': username,
@@ -27,9 +26,6 @@ const createHeaders = (username, roles, token) => {
 };
 
 const getAuthHeaders = async (username, roles) => {
-  if (!username) {
-    return createHeaders(username, roles);
-  }
   const secret = await promisedCouchSecret;
   const token = crypto
     .createHmac('sha256', secret)
@@ -39,6 +35,7 @@ const getAuthHeaders = async (username, roles) => {
 };
 
 module.exports = {
+  createHeaders,
   getAuthHeaders,
   getCouchSecret: () => promisedCouchSecret,
 };

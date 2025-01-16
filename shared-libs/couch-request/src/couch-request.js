@@ -1,7 +1,7 @@
 const request = require('request-promise-native');
 const isPlainObject = require('lodash/isPlainObject');
 const environment = require('@medic/environment');
-const { getAuthHeaders, getCouchSecret } = require('./proxy-auth');
+const { getAuthHeaders, getCouchSecret, createHeaders } = require('./proxy-auth');
 
 const servername = environment.host;
 let asyncLocalStorage;
@@ -21,6 +21,7 @@ const methods = {
 };
 
 const promisedAdminAuthHeaders = getAuthHeaders(environment.username, '_admin');
+const promisedMemberAuthHeaders = getAuthHeaders(environment.username);
 
 const mergeOptions = async (target, source, exclusions = []) => {
   for (const [key, value] of Object.entries(source)) {
@@ -30,7 +31,7 @@ const mergeOptions = async (target, source, exclusions = []) => {
     target[key] = value; // locally, mutation is preferable to spreading as it doesn't
     // make new objects in memory. Assuming this is a hot path.
   }
-  target.headers = { ...(await promisedAdminAuthHeaders), ...target.headers };
+  target.headers = { ...(await promisedMemberAuthHeaders), ...target.headers };
   const requestId = asyncLocalStorage?.getRequestId();
   if (requestId) {
     target.headers[requestIdHeader] = requestId;
@@ -121,6 +122,13 @@ module.exports = {
   },
   getCouchSecret,
   getAuthHeaders,
+  getAdminAuthHeaders: () => promisedAdminAuthHeaders,
+  getMemberAuthHeaders: () => promisedMemberAuthHeaders,
+  /**
+   * Null-valued proxy auth headers. These can override the system user's member-level headers that are set by
+   * default on each request.
+   */
+  NO_DEFAULT_AUTH_HEADERS: createHeaders(),
 
   get: (first, second = {}) => req(methods.GET, first, second),
   post: (first, second = {}) => req(methods.POST, first, second),

@@ -8,6 +8,7 @@ PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 const asyncLocalStorage = require('./services/async-storage');
 const { REQUEST_ID_HEADER } = require('./server-utils');
+const { getMemberAuthHeaders, getAdminAuthHeaders } = require('@medic/couch-request');
 
 const { UNIT_TEST_ENV } = process.env;
 
@@ -87,8 +88,8 @@ if (UNIT_TEST_ENV) {
     }
     return PouchDB.fetch(url, opts);
   };
-  const fetch = makeFetch(request.getAuthHeaders(environment.username));
-  const adminFetch = makeFetch(request.getAuthHeaders(environment.username, '_admin'));
+  const fetch = makeFetch(getMemberAuthHeaders());
+  const adminFetch = makeFetch(getAdminAuthHeaders());
 
   const DB = new PouchDB(environment.couchUrl, { fetch });
   const getDbUrl = name => `${environment.serverUrl}/${name}`;

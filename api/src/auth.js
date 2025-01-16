@@ -18,7 +18,7 @@ const get = async (path, headers) => {
   const url = new URL(path, environment.serverUrl);
   return request.get({
     url: url.toString(),
-    headers: { ...getHeaders, ...(await request.getAuthHeaders(null)) },
+    headers: { ...getHeaders, ...request.NO_DEFAULT_AUTH_HEADERS },
     json: true
   });
 };
@@ -107,7 +107,7 @@ module.exports = {
     return request.head({
       uri: authUrl.toString(),
       resolveWithFullResponse: true,
-      headers: await request.getAuthHeaders(null),
+      headers: request.NO_DEFAULT_AUTH_HEADERS,
     })
       .then(res => {
         if (res.statusCode !== 200) {
