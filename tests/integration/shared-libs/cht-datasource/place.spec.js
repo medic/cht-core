@@ -4,6 +4,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const { getRemoteDataContext, Place, Qualifier } = require('@medic/cht-datasource');
 const { expect } = require('chai');
 const userFactory = require('@factories/cht/users/users');
+const {setAuth, removeAuth} = require('./auth');
 
 describe('cht-datasource Place', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
@@ -66,6 +67,7 @@ describe('cht-datasource Place', () => {
   const expectedPlaces = [place0, clinic1, clinic2];
 
   before(async () => {
+    setAuth();
     await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic2]);
     await utils.createUsers([userNoPerms, offlineUser]);
   });
@@ -73,6 +75,7 @@ describe('cht-datasource Place', () => {
   after(async () => {
     await utils.revertDb([], true);
     await utils.deleteUsers([userNoPerms, offlineUser]);
+    removeAuth();
   });
 
   describe('v1', () => {

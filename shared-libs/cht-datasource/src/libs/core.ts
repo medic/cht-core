@@ -144,4 +144,3 @@ export const getPagedGenerator = async function* <S, T>(
 
   return null;
 };
-
