@@ -9,7 +9,10 @@ describe('couch-request', () => {
   let uri;
   let response;
 
-  const buildResponse = ({ status=200, body, headers=new Headers() } = {}) => {
+  const buildResponse = ({ status=200, body, headers=new Headers(), json=true } = {}) => {
+    if (json) {
+      headers.append('Content-Type', 'application/json');
+    }
     response = {
       ok: status >= 200 && status < 300,
       status,
@@ -113,7 +116,7 @@ describe('couch-request', () => {
 
   it('should add baseUrl to root url', async () => {
     const opts = {
-      baseUrl: 'http://admin:pass@test.com:5984/medic',
+      baseUrl: 'http://admin:pass@test.com:5984/medic/',
       uri: '/doc/attachment'
     };
 
@@ -321,6 +324,29 @@ describe('couch-request', () => {
     ]);
   });
 
+  it('should make form-data request with a json accepts', async () => {
+    const opts = {
+      url: 'http://test.com:5984/b',
+      form: { foo: 'bar', bar: 'baz' },
+      json: true
+    };
+    await couchRequest.post(opts);
+
+    expect(global.fetch.args[0]).to.deep.equal([
+      'http://test.com:5984/b',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+        },
+        body: 'foo=bar&bar=baz',
+        servername: 'test.com',
+        uri: 'http://test.com:5984/b',
+      }
+    ]);
+  });
+
   it('should make non-json request when specified', async () => {
     const opts = {
       url: 'http://test.com:5984/b',
@@ -363,6 +389,28 @@ describe('couch-request', () => {
     ]);
   });
 
+  it('should set a timeout', async () => {
+    const opts = {
+      url: 'http://test.com:5984/b',
+      timeout: 5000,
+    };
+    await couchRequest.post(opts);
+
+    expect(global.fetch.args[0]).to.deep.equal([
+      'http://test.com:5984/b',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        servername: 'test.com',
+        uri: 'http://test.com:5984/b',
+        signal: AbortSignal.timeout(5000),
+      }
+    ]);
+  });
+
   it('should not add servername if not set', async () => {
     sinon.stub(process, 'env').value({
       ...process.env,
@@ -396,7 +444,7 @@ describe('couch-request', () => {
   });
 
   it('should return text body', async () => {
-    global.fetch.resolves(buildResponse({ body: 'this is text' }));
+    global.fetch.resolves(buildResponse({ body: 'this is text', json: false }));
     const opts = {
       url: 'http://test.com:5984/b',
       json: false
@@ -435,7 +483,7 @@ describe('couch-request', () => {
       body: 'this is text',
       status: 201,
       ok: true,
-      headers: new Headers({ foo: 'bar', bar: 'baz' }),
+      headers: new Headers({ foo: 'bar', bar: 'baz', 'Content-Type': 'application/json' }),
     });
   });
 
@@ -455,7 +503,7 @@ describe('couch-request', () => {
         body: { error: true, reason: 'conflict', status: 409 },
         status: 409,
         ok: false,
-        headers: new Headers({ foo: 'bar', bar: 'baz' }),
+        headers: new Headers({ foo: 'bar', bar: 'baz', 'Content-Type': 'application/json' }),
       });
     }
   });

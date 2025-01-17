@@ -53,7 +53,6 @@ const getRequestOptions = ({ apiToken, host }={}) => ({
   json: true,
   headers: {
     Authorization: `Token ${apiToken}`,
-    Accept: 'application/json',
   },
 });
 

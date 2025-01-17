@@ -364,7 +364,6 @@ describe('server', () => {
         const reqID = getReqId(apiLogs[0]);
 
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
-        console.warn(haproxyRequests);
         expect(haproxyRequests.length).to.equal(12);
         expect(haproxyRequests[0]).to.include('_session');
         expect(haproxyRequests[5]).to.include('/medic-test/_design/medic/_view/contacts_by_depth');

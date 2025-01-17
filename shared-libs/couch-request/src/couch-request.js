@@ -1,4 +1,5 @@
 const environment = require('@medic/environment');
+const path = require('path');
 let asyncLocalStorage;
 let requestIdHeader;
 
@@ -23,7 +24,7 @@ const addServername = isTrue(process.env.ADD_SERVERNAME_TO_HTTP_AGENT);
 const setRequestUri = (options) => {
   let uri = (options.uri || options.url);
   if (options.baseUrl) {
-    uri = `${options.baseUrl}${uri}`;
+    uri = path.join(options.baseUrl, uri);
   }
 
   if (options.qs) {
@@ -77,11 +78,10 @@ const setRequestContentType = (options) => {
     options.body && (options.body = JSON.stringify(options.body));
   }
 
-  if (!sendJson && options.form) {
+  if (options.form) {
     const formData = new FormData();
     Object.keys(options.form).forEach(key => formData.append(key, options.form[key]));
     options.headers['Content-Type'] = 'multipart/form-data';
-    delete options.headers.Accept;
 
     options.body = new URLSearchParams(formData).toString();
   }
@@ -90,6 +90,13 @@ const setRequestContentType = (options) => {
   delete options.form;
 
   return sendJson;
+};
+
+const setTimeout = (options) => {
+  if (options.timeout) {
+    options.signal = AbortSignal.timeout(options.timeout);
+    delete options.timeout;
+  }
 };
 
 const getRequestOptions = (options) => {
@@ -102,6 +109,7 @@ const getRequestOptions = (options) => {
 
   setRequestUri(options);
   setRequestAuth(options);
+  setTimeout(options);
   const sendJson = setRequestContentType(options);
   if (addServername) {
     options.servername = environment.host;
@@ -111,9 +119,20 @@ const getRequestOptions = (options) => {
 };
 
 const getResponseBody = async (response, sendJson) => {
-  const receiveJson =  (!response.headers.get('content-type') && sendJson) ||
-                       response.headers.get('content-type')?.startsWith('application/json');
-  return receiveJson ? await response.json() : await response.text();
+  const receiveJson = response.headers.get('content-type')?.startsWith('application/json');
+  const content = receiveJson ? await response.json() : await response.text();
+
+  if (!!sendJson === !!receiveJson) {
+    return content;
+  }
+
+  if (sendJson && !response.headers.get('content-type')) {
+    try {
+      return JSON.parse(content);
+    } catch (e) {
+      return content;
+    }
+  }
 };
 
 const request = async (options = {}) => {
