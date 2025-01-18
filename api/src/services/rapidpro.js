@@ -50,7 +50,6 @@ const getCredentials = () => {
 
 const getRequestOptions = ({ apiToken, host }={}) => ({
   baseUrl: host,
-  json: true,
   headers: {
     Authorization: `Token ${apiToken}`,
   },
