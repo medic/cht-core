@@ -1,6 +1,6 @@
 const chai = require('chai');
+chai.config.truncateThreshold = 0;
 const sinon = require('sinon');
-const http = require('http');
 const request = require('@medic/couch-request');
 
 const service = require('../src/checks');
@@ -38,19 +38,20 @@ describe('checks', () => {
   describe('checkCouchDbNoAdminPartyMode', () => {
 
     it('disabled', async () => {
-      sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
+      sinon.stub(request, 'get').rejects({ status: 401 });
       await service.checkCouchDbNoAdminPartyMode('http://admin:pass@localhost:5984');
       // no error thrown = pass
-      chai.expect(http.get.args[0][0]).to.equal('http://localhost:5984/'); // ensure credentials are removed
+      // ensure credentials are removed
+      chai.expect(request.get.args[0][0]).to.deep.equal({ url: 'http://localhost:5984/', json: false, simple: false });
     });
 
-    it('enabled', () => {
-      sinon.stub(http, 'get').callsArgWith(1, { statusCode: 200 });
-      return service.checkCouchDbNoAdminPartyMode('http://localhost:5984')
-        .then(() => chai.assert.fail('should have thrown'))
-        .catch((err) => {
-          chai.assert.isTrue(err.toString().startsWith('Error: CouchDB security seems to be misconfigured'));
-        });
+    it('enabled', async () => {
+      sinon.stub(request, 'get').resolves({ status: 200 });
+      await chai.expect(service.checkCouchDbNoAdminPartyMode('http://localhost:5984'))
+        .to.eventually.be.rejectedWith(
+          'CouchDB security seems to be misconfigured. Accessing the db without authentication returned a 200 ' +
+          'when a 401 was expected. See: https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#enabling-a-secure-couchdb'
+        );
     });
 
   });
