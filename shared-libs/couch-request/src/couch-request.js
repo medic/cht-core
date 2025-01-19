@@ -40,18 +40,27 @@ const setRequestUri = (options) => {
   delete options.baseUrl;
   delete options.qs;
 
+  if (!uri) {
+    throw new Error('Missing uri/url parameter.');
+  }
+
+
   options.uri = uri;
 };
 
 const setRequestAuth = (options) => {
   let auth = options.auth;
 
-  const url = new URL(options.uri);
-  if (url.username) {
-    auth = auth || { username: url.username, password: url.password };
-    url.username = '';
-    url.password = '';
-    options.uri = url.toString();
+  try {
+    const url = new URL(options.uri);
+    if (url.username) {
+      auth = auth || { username: url.username, password: url.password };
+      url.username = '';
+      url.password = '';
+      options.uri = url.toString();
+    }
+  } catch (err) {
+    throw new Error('Invalid uri/url parameter. Please use a valid URL.');
   }
 
   delete options.auth;
@@ -64,13 +73,18 @@ const setRequestAuth = (options) => {
   options.headers.Authorization = `Basic ${basicAuth}`;
 };
 
-const setRequestContentType = (options) => {
-  let sendJson = true;
-  if (options.json === false ||
-      (options.headers['Content-Type'] && options.headers['Content-Type'] !== 'application/json')
-  ) {
-    sendJson = false;
+const getSendJson = options => {
+  const contentType = options.headers['Content-Type'] || options.headers['content-type'];
+  if (options.json === false || (contentType && contentType !== 'application/json')) {
+    return false;
   }
+
+  return true;
+};
+
+const setRequestContentType = (options) => {
+  const sendJson = getSendJson(options);
+
 
   if (sendJson) {
     options.headers.Accept = 'application/json';
@@ -81,7 +95,7 @@ const setRequestContentType = (options) => {
   if (options.form) {
     const formData = new FormData();
     Object.keys(options.form).forEach(key => formData.append(key, options.form[key]));
-    options.headers['Content-Type'] = 'multipart/form-data';
+    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
 
     options.body = new URLSearchParams(formData).toString();
   }
@@ -119,20 +133,19 @@ const getRequestOptions = (options) => {
 };
 
 const getResponseBody = async (response, sendJson) => {
-  const receiveJson = response.headers.get('content-type')?.startsWith('application/json');
+  const contentType = response.headers.get('content-type');
+  const receiveJson = contentType?.startsWith('application/json');
   const content = receiveJson ? await response.json() : await response.text();
 
-  if (!!sendJson === !!receiveJson) {
-    return content;
-  }
-
-  if (sendJson && !response.headers.get('content-type')) {
+  if (sendJson && !contentType) {
     try {
       return JSON.parse(content);
     } catch (e) {
       return content;
     }
   }
+
+  return content;
 };
 
 const request = async (options = {}) => {
@@ -160,7 +173,38 @@ const request = async (options = {}) => {
   throw err;
 };
 
-// todo add jsdoc for this!!!
+/**
+ * couch-request options are an extension of RequestInit,
+ * (see https://developer.mozilla.org/en-US/docs/Web/API/RequestInit), with a few custom fields, inherited from
+ * request-promise-native, which were widely used and simplified the interface.
+ *
+ * @typedef {Object} RequestInit
+ * @property {string|undefined} uri - fully qualified uri string. Has precedence over url.
+ * @property {string|undefined} url - fully qualified uri string.
+ * @property {string|undefined} baseUrl - fully qualified uri string used as the base url.
+ * Concatenated with uri || url to create the full URL.
+ * @property {boolean|undefined} json - defaults to true.
+ * Sets body to JSON representation of value and adds Content-type: application/json header.
+ * Additionally, parses the response body as JSON.
+ * @property {Object|undefined} qs - object containing querystring values to be appended to the uri
+ * @property body - entity body for PATCH, POST and PUT requests.
+ * If json is true, then body must be a JSON-serializable object.
+ * See: https://developer.mozilla.org/en-US/docs/Web/API/RequestInit#body
+ * @property {Object|undefined} form - when passed an object, this sets body to a querystring representation of value,
+ * and adds Content-type: application/x-www-form-urlencoded header
+ * @property {Object|undefined} auth - a hash containing values username, password
+ * @property {Boolean|undefined} simple - if true, returns full response object instead of parsed body.
+ * @property {Number|undefined} timeout - integer containing number of milliseconds. Adds an abortSignal.
+ */
+
+/**
+ * couch-request response is an extension of Response https://developer.mozilla.org/en-US/docs/Web/API/Response
+ * @typedef {Object} RequestResponse
+ * @property body - parsed or raw response body
+ * @property {Headers} headers - The Headers object associated with the response.
+ * @property {Boolean} ok - states whether the response was successful (status in the range 200-299) or not.
+ * @property {Number} status - HTTP status codes of the response.
+ */
 
 module.exports = {
   initialize: (store, header) => {
@@ -168,9 +212,29 @@ module.exports = {
     requestIdHeader = header;
   },
 
+  /**
+   * @param {RequestInit} options
+   * @returns {Promise<RequestResponse|any>}
+   */
   get: (options = {}) => request({ ...options, method: 'GET' }),
+  /**
+   * @param {RequestInit} options
+   * @returns {Promise<RequestResponse|any>}
+   */
   post: (options = {}) => request({ ...options, method: 'POST' }),
+  /**
+   * @param {RequestInit} options
+   * @returns {Promise<RequestResponse|any>}
+   */
   put: (options = {}) => request({ ...options, method: 'PUT' }),
+  /**
+   * @param {RequestInit} options
+   * @returns {Promise<RequestResponse|any>}
+   */
   delete: (options = {}) => request({ ...options, method: 'DELETE' }),
+  /**
+   * @param {RequestInit} options
+   * @returns {Promise<RequestResponse|any>}
+   */
   head: (options = {}) => request({ ...options, method: 'HEAD' }),
 };

@@ -68,8 +68,24 @@ describe('couch-request', () => {
     global.fetch.resolves(buildResponse({ body: 'everytime' }));
     expect(await couchRequest.head({ uri })).to.equal('everytime');
     expect(global.fetch.args[0][1]).to.deep.include({ method: 'HEAD' });
-  }); 
-  
+  });
+
+  it('should throw an error when no uri is set', async () => {
+    await expect(couchRequest.get()).to.eventually.be.rejectedWith('Missing uri/url parameter.');
+    await expect(couchRequest.post()).to.eventually.be.rejectedWith('Missing uri/url parameter.');
+    await expect(couchRequest.put()).to.eventually.be.rejectedWith('Missing uri/url parameter.');
+    await expect(couchRequest.delete()).to.eventually.be.rejectedWith('Missing uri/url parameter.');
+    await expect(couchRequest.head()).to.eventually.be.rejectedWith('Missing uri/url parameter.');
+  });
+
+  it('should throw an error on invalid url', async () => {
+    const opts = {
+      uri: 'not an url',
+    };
+    await expect(couchRequest.get(opts))
+      .to.eventually.be.rejectedWith('Invalid uri/url parameter. Please use a valid URL.');
+  });
+
   it('should use uri over url', async () => {
     const opts = {
       url: 'http://admin:password@test.com:5984/medic',
@@ -315,7 +331,7 @@ describe('couch-request', () => {
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: 'foo=bar&bar=baz',
         servername: 'test.com',
@@ -337,7 +353,7 @@ describe('couch-request', () => {
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/x-www-form-urlencoded',
           Accept: 'application/json',
         },
         body: 'foo=bar&bar=baz',
@@ -411,11 +427,35 @@ describe('couch-request', () => {
     ]);
   });
 
+  it('should add servername if not set', async () => {
+    sinon.stub(process, 'env').value({
+      ...process.env,
+      COUCH_URL: 'http://admin:password@test.com:5984/medic',
+      ADD_SERVERNAME_TO_HTTP_AGENT: true
+    });
+    couchRequest = rewire('../src/couch-request');
+
+    await couchRequest.get({ url: 'http://test.com:5984/b' });
+
+    expect(global.fetch.args[0]).to.deep.equal([
+      'http://test.com:5984/b',
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        servername: 'test.com',
+        uri: 'http://test.com:5984/b',
+      }
+    ]);
+  });
+
   it('should not add servername if not set', async () => {
     sinon.stub(process, 'env').value({
       ...process.env,
       COUCH_URL: 'http://admin:password@test.com:5984/medic',
-      ADD_SERVERNAME_TO_HTTP_AGENT: 'false'
+      ADD_SERVERNAME_TO_HTTP_AGENT: 'not true'
     });
     couchRequest = rewire('../src/couch-request');
 
@@ -451,6 +491,38 @@ describe('couch-request', () => {
     };
     const resp = await couchRequest.get(opts);
     expect(resp).to.deep.equal('this is text');
+    expect(response.json.callCount).to.equal(0);
+    expect(response.text.callCount).to.equal(1);
+  });
+
+  it('should optimistically try parsing json when sending json and no content-type header', async () => {
+    global.fetch.resolves(buildResponse({
+      body: JSON.stringify({ foo: 'bar', bar: 'baz' }),
+      json: false,
+    }));
+    const opts = {
+      url: 'http://test.com:5984/b',
+      json: true
+    };
+
+    const resp = await couchRequest.get(opts);
+    expect(resp).to.deep.equal({ foo: 'bar', bar: 'baz' });
+    expect(response.json.callCount).to.equal(0);
+    expect(response.text.callCount).to.equal(1);
+  });
+
+  it('should return unparsed content when optimistically returning json', async () => {
+    global.fetch.resolves(buildResponse({
+      body: 'text does not parse to json',
+      json: false,
+    }));
+    const opts = {
+      url: 'http://test.com:5984/b',
+      json: true
+    };
+
+    const resp = await couchRequest.get(opts);
+    expect(resp).to.deep.equal('text does not parse to json');
     expect(response.json.callCount).to.equal(0);
     expect(response.text.callCount).to.equal(1);
   });
