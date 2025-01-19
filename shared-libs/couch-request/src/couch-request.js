@@ -75,11 +75,10 @@ const setRequestAuth = (options) => {
 
 const getSendJson = options => {
   const contentType = options.headers['Content-Type'] || options.headers['content-type'];
-  if (options.json === false || (contentType && contentType !== 'application/json')) {
-    return false;
+  if (options.json && contentType && contentType !== 'application/json') {
+    throw new Error('Incompatible json and content-type properties.');
   }
-
-  return true;
+  return options.json !== false && (!contentType || contentType === 'application/json');
 };
 
 const setRequestContentType = (options) => {

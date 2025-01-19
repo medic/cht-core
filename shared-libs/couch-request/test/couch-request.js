@@ -405,6 +405,38 @@ describe('couch-request', () => {
     ]);
   });
 
+  it('should throw an error with incompatible json and content-type headers', async () => {
+    const opts = {
+      url: 'http://test.com:5984/b',
+      body: 'some random text',
+      json: true,
+      headers: { 'Content-Type': 'text/html' },
+    };
+    await expect(couchRequest.post(opts)).to.eventually.be.rejectedWith(
+      'Incompatible json and content-type properties.'
+    );
+  });
+
+  it('should allow to send non-json and receive json', async () => {
+    global.fetch.resolves(buildResponse({
+      body: { foo: 'bar', bar: 'baz' },
+      headers: new Headers({ 'content-type': 'application/json' }),
+    }));
+
+    const opts = {
+      url: 'http://test.com:5984/b',
+      body: 'some random text',
+      json: false,
+      headers: { 'Content-Type': 'text/html' },
+    };
+
+    const resp =  await couchRequest.post(opts);
+
+    expect(resp).to.deep.equal({ foo: 'bar', bar: 'baz' });
+    expect(response.text.called).to.equal(false);
+    expect(response.json.called).to.equal(true);
+  });
+
   it('should set a timeout', async () => {
     const opts = {
       url: 'http://test.com:5984/b',
