@@ -84,7 +84,6 @@ const getSendJson = options => {
 const setRequestContentType = (options) => {
   const sendJson = getSendJson(options);
 
-
   if (sendJson) {
     options.headers.Accept = 'application/json';
     options.headers['Content-Type'] = 'application/json';

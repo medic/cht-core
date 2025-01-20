@@ -7,12 +7,13 @@ const dataContext = require('./services/data-context');
 const { roles, users } = require('@medic/user-management')(config, db, dataContext);
 
 const contentLengthRegex = /^content-length$/i;
+const contentTypeRegex = /^content-type$/i;
 
 const get = (path, headers) => {
   const getHeaders = { ...headers };
   Object
     .keys(getHeaders)
-    .filter(header => contentLengthRegex.test(header))
+    .filter(header => contentLengthRegex.test(header) || contentTypeRegex.test(header))
     .forEach(header => delete getHeaders[header]);
 
   const url = new URL(path, environment.serverUrlNoAuth);

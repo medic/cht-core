@@ -139,12 +139,11 @@ describe('Auth', () => {
           host: 'localhost:5988',
           'user-agent': 'curl/8.6.0',
           accept: '*/*',
-          'content-type': 'application/json',
         },
       }]]);
     });
 
-    it('should clean content-length headers before forwarding', async () => {
+    it('should clean content-length and content-type headers before forwarding', async () => {
       sinon.stub(request, 'get').resolves({ userCtx: { name: 'theuser', roles: ['userrole'] }});
 
       req.headers['content-length'] = 100;
@@ -152,6 +151,13 @@ describe('Auth', () => {
       req.headers['Content-length'] = 44;
       req.headers['content-Length'] = 82;
       req.headers['CONTENT-LENGTH'] = 240;
+
+      req.headers['content-type'] = 'application/json';
+      req.headers['Content-Type'] = 'image/jpeg';
+      req.headers['Content-type'] = 'x-www-form-urlencoded';
+      req.headers['content-Type'] = 'multipart/form-data';
+      req.headers['CONTENT-TYPE'] = 'text/html';
+
 
       const result = await auth.getUserCtx(req);
       chai.expect(result).to.deep.equal({ name: 'theuser', roles: ['userrole'] });
@@ -162,7 +168,6 @@ describe('Auth', () => {
           host: 'localhost:5988',
           'user-agent': 'curl/8.6.0',
           accept: '*/*',
-          'content-type': 'application/json',
         },
       }]]);
     });
