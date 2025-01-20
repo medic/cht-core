@@ -35,7 +35,7 @@
 </section>
 
 <ng-template #verifyReportWrapper>
-  <section class="verify-report-options-wrapper">
+  <section class="verify-report-options-wrapper" [dir]="direction">
     <mm-panel-header headerTitle="reports.verify" (onClose)="closeVerifyReportComponents()"></mm-panel-header>
     <div class="verify-report-options-body">
       <button mat-flat-button class="invalid-option" [class.active-option]="selectedReportDoc?.verified === false" (click)="isReportCorrect(false)">

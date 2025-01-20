@@ -8,6 +8,7 @@ export class AnalyticsTargetsProgressComponent {
   @Input() target;
   @Input() value;
   @Input() aggregate;
+  @Input() direction;
 
   constructor() { }
 }

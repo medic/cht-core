@@ -22,6 +22,7 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
   selected: any = null;
   error: any = null;
   reportingPeriod;
+  direction;
   private aggregates = null;
   private viewInited = new Subject();
 
@@ -53,11 +54,13 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
     const subscriptionStore = combineLatest(
       this.store.select(Selectors.getTargetAggregates),
       this.store.select(Selectors.getSelectedTargetAggregate),
-      this.store.select(Selectors.getTargetAggregatesError)
-    ).subscribe(([aggregates, selected, error]) => {
+      this.store.select(Selectors.getTargetAggregatesError),
+      this.store.select(Selectors.getDirection),
+    ).subscribe(([aggregates, selected, error, direction]) => {
       this.aggregates = aggregates;
       this.selected = selected;
       this.error = error;
+      this.direction = direction;
       if (this.selected) {
         this.reportingPeriod = this.getReportingPeriodText(this.selected);
       }
