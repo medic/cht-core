@@ -222,7 +222,7 @@ describe('outbound shared library', () => {
         }
       };
 
-      assert.throws(() => mapDocumentToPayload(doc, conf, 'test-doc'), /Mapping error/);
+      assert.throws(() => mapDocumentToPayload(doc, conf, 'test-doc'), /Mapping error.*'expr' or 'path' is required/);
     });
   });
 
