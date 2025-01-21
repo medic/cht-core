@@ -6,7 +6,7 @@ import {
   queryDocUuidsByRange
 } from './libs/doc';
 import { ContactTypeQualifier, FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
-import * as ContactType from '../contact-types';
+import * as Contact from '../contact';
 import { isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
@@ -25,7 +25,7 @@ export namespace v1 {
   };
 
   const isContact =
-    (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is ContactType.v1.Contact => {
+    (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is Contact.v1.Contact => {
       if (!doc) {
         if (uuid) {
           logger.warn(`No contact found for identifier [${uuid}].`);
@@ -43,7 +43,7 @@ export namespace v1 {
   /** @internal */
   export const get = ({ medicDb, settings }: LocalDataContext) => {
     const getMedicDocById = getDocById(medicDb);
-    return async (identifier: UuidQualifier): Promise<Nullable<ContactType.v1.Contact>> => {
+    return async (identifier: UuidQualifier): Promise<Nullable<Contact.v1.Contact>> => {
       const doc = await getMedicDocById(identifier.uuid);
       if (!isContact(settings)(doc, identifier.uuid)) {
         return null;
@@ -57,7 +57,7 @@ export namespace v1 {
   export const getWithLineage = ({ medicDb, settings }: LocalDataContext) => {
     const getLineageDocs = getLineageDocsById(medicDb);
 
-    return async (identifier: UuidQualifier): Promise<Nullable<ContactType.v1.ContactWithLineage>> => {
+    return async (identifier: UuidQualifier): Promise<Nullable<Contact.v1.ContactWithLineage>> => {
       const [contact, ...lineageContacts] = await getLineageDocs(identifier.uuid);
       if (!isContact(settings)(contact, identifier.uuid)) {
         return null;

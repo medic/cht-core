@@ -1,5 +1,5 @@
 import {
-  getPagedGenerator,
+  getPagedGenerator, NormalizedParent,
   Nullable,
   Page,
 } from './libs/core';
@@ -13,7 +13,6 @@ import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
-import * as ContactTypes from './contact-types';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import {
   assertContactTypeFreetextQualifier,
@@ -25,17 +24,26 @@ import {
   isContactType,
   isFreetextType,
 } from './libs/parameter-validators';
+import { Doc } from './libs/doc';
 
 /** */
 export namespace v1 {
   /**
    * Immutable data about a Contact.
    */
-  export type Contact = ContactTypes.v1.Contact;
+  export interface Contact extends Doc, NormalizedParent {
+    readonly contact_type?: string;
+    readonly name?: string;
+    readonly reported_date?: Date;
+    readonly type: string;
+  }
+
   /**
    * Immutable data about a contact, including the full records of the parent's lineage.
    */
-  export type ContactWithLineage = ContactTypes.v1.ContactWithLineage;
+  export interface ContactWithLineage extends Contact {
+    readonly parent?: ContactWithLineage | NormalizedParent;
+  }
 
   const getContact =
     <T>(
