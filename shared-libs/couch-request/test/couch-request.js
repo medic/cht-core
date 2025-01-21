@@ -11,7 +11,7 @@ describe('couch-request', () => {
 
   const buildResponse = ({ status=200, body, headers=new Headers(), json=true } = {}) => {
     if (json) {
-      headers.append('Content-Type', 'application/json');
+      headers.append('content-type', 'application/json');
     }
     response = {
       ok: status >= 200 && status < 300,
@@ -98,9 +98,9 @@ describe('couch-request', () => {
       {
         method: 'GET',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Basic ${btoa('admin:password')}`,
+          accept: 'application/json',
+          'content-type': 'application/json',
+          authorization: `Basic ${btoa('admin:password')}`,
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/test',
@@ -120,9 +120,9 @@ describe('couch-request', () => {
       {
         method: 'POST',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Basic ${btoa('admin:password')}`,
+          accept: 'application/json',
+          'content-type': 'application/json',
+          authorization: `Basic ${btoa('admin:password')}`,
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/omg',
@@ -143,9 +143,9 @@ describe('couch-request', () => {
       {
         method: 'PUT',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Basic ${btoa('admin:pass')}`,
+          accept: 'application/json',
+          'content-type': 'application/json',
+          authorization: `Basic ${btoa('admin:pass')}`,
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/doc/attachment',
@@ -171,9 +171,9 @@ describe('couch-request', () => {
       {
         method: 'DELETE',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Basic ${btoa('admin:pass')}`,
+          accept: 'application/json',
+          'content-type': 'application/json',
+          authorization: `Basic ${btoa('admin:pass')}`,
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic?number=2&string=yes&array=%5B%22one%22%2C%22two%22%5D&boolean=true',
@@ -194,9 +194,9 @@ describe('couch-request', () => {
       {
         method: 'HEAD',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Basic ${btoa('admin:123456')}`,
+          accept: 'application/json',
+          'content-type': 'application/json',
+          authorization: `Basic ${btoa('admin:123456')}`,
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/oops',
@@ -217,9 +217,9 @@ describe('couch-request', () => {
       {
         method: 'HEAD',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Basic ${btoa('admin:123456')}`,
+          accept: 'application/json',
+          'content-type': 'application/json',
+          authorization: `Basic ${btoa('admin:123456')}`,
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/omg',
@@ -235,8 +235,8 @@ describe('couch-request', () => {
       {
         method: 'HEAD',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          accept: 'application/json',
+          'content-type': 'application/json',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/a',
@@ -248,7 +248,7 @@ describe('couch-request', () => {
     await couchRequest.post({
       url: 'http://a:b@marvel.net:5984/a',
       auth: { username: 'admin', password: '123456' },
-      headers: { Authorization: 'Bearer something' },
+      headers: { authorization: 'Bearer something' },
     });
 
     expect(global.fetch.args[0]).to.deep.equal([
@@ -256,9 +256,9 @@ describe('couch-request', () => {
       {
         method: 'POST',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer something',
+          accept: 'application/json',
+          'content-type': 'application/json',
+          authorization: 'Bearer something',
         },
         servername: 'test.com',
         uri: 'http://marvel.net:5984/a',
@@ -287,8 +287,8 @@ describe('couch-request', () => {
       {
         method: 'POST',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          accept: 'application/json',
+          'content-type': 'application/json',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/a',
@@ -308,8 +308,8 @@ describe('couch-request', () => {
       {
         method: 'POST',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          accept: 'application/json',
+          'content-type': 'application/json',
         },
         body: JSON.stringify({ foo: 'bar' }),
         servername: 'test.com',
@@ -331,7 +331,7 @@ describe('couch-request', () => {
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'content-type': 'application/x-www-form-urlencoded',
         },
         body: 'foo=bar&bar=baz',
         servername: 'test.com',
@@ -353,8 +353,8 @@ describe('couch-request', () => {
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          Accept: 'application/json',
+          'content-type': 'application/x-www-form-urlencoded',
+          accept: 'application/json',
         },
         body: 'foo=bar&bar=baz',
         servername: 'test.com',
@@ -387,7 +387,7 @@ describe('couch-request', () => {
     const opts = {
       url: 'http://test.com:5984/b',
       body: 'some random text',
-      headers: { 'Content-Type': 'text/html' },
+      headers: { 'content-type': 'text/html' },
     };
     await couchRequest.post(opts);
 
@@ -396,7 +396,7 @@ describe('couch-request', () => {
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'text/html',
+          'content-type': 'text/html',
         },
         body: 'some random text',
         servername: 'test.com',
@@ -410,7 +410,7 @@ describe('couch-request', () => {
       url: 'http://test.com:5984/b',
       body: 'some random text',
       json: true,
-      headers: { 'Content-Type': 'text/html' },
+      headers: { 'content-type': 'text/html' },
     };
     await expect(couchRequest.post(opts)).to.eventually.be.rejectedWith(
       'Incompatible json and content-type properties.'
@@ -427,7 +427,7 @@ describe('couch-request', () => {
       url: 'http://test.com:5984/b',
       body: 'some random text',
       json: false,
-      headers: { 'Content-Type': 'text/html' },
+      headers: { 'content-type': 'text/html' },
     };
 
     const resp =  await couchRequest.post(opts);
@@ -449,8 +449,8 @@ describe('couch-request', () => {
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
+          'content-type': 'application/json',
+          accept: 'application/json',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/b',
@@ -474,8 +474,8 @@ describe('couch-request', () => {
       {
         method: 'GET',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          accept: 'application/json',
+          'content-type': 'application/json',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/b',
@@ -498,8 +498,8 @@ describe('couch-request', () => {
       {
         method: 'GET',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          accept: 'application/json',
+          'content-type': 'application/json',
         },
         uri: 'http://test.com:5984/b',
       }
@@ -587,7 +587,7 @@ describe('couch-request', () => {
       body: 'this is text',
       status: 201,
       ok: true,
-      headers: new Headers({ foo: 'bar', bar: 'baz', 'Content-Type': 'application/json' }),
+      headers: new Headers({ foo: 'bar', bar: 'baz', 'content-type': 'application/json' }),
     });
   });
 
@@ -607,7 +607,7 @@ describe('couch-request', () => {
         body: { error: true, reason: 'conflict', status: 409 },
         status: 409,
         ok: false,
-        headers: new Headers({ foo: 'bar', bar: 'baz', 'Content-Type': 'application/json' }),
+        headers: new Headers({ foo: 'bar', bar: 'baz', 'content-type': 'application/json' }),
       });
     }
   });
@@ -621,8 +621,8 @@ describe('couch-request', () => {
       {
         method: 'GET',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          accept: 'application/json',
+          'content-type': 'application/json',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/test',
@@ -643,8 +643,8 @@ describe('couch-request', () => {
       {
         method: 'GET',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          accept: 'application/json',
+          'content-type': 'application/json',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/test',
@@ -663,8 +663,8 @@ describe('couch-request', () => {
       {
         method: 'GET',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          accept: 'application/json',
+          'content-type': 'application/json',
           'header-name': 'req_uuid'
         },
         servername: 'test.com',
@@ -677,17 +677,17 @@ describe('couch-request', () => {
     const asyncLocalStorage = { getRequestId: sinon.stub().returns('req_uuid') };
     couchRequest.initialize(asyncLocalStorage, 'header-name');
 
-    const response = await couchRequest.get({ uri: 'http://test.com:5984/b', headers: { 'Authorization': 'Basic 123' } });
+    const response = await couchRequest.get({ uri: 'http://test.com:5984/b', headers: { 'authorization': 'Basic 123' } });
     chai.expect(response).to.equal('yes');
     chai.expect(global.fetch.args).to.deep.equal([[
       'http://test.com:5984/b',
       {
         method: 'GET',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          accept: 'application/json',
+          'content-type': 'application/json',
           'header-name': 'req_uuid',
-          'Authorization': 'Basic 123',
+          'authorization': 'Basic 123',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/b',

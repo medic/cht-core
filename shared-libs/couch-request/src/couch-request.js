@@ -3,6 +3,9 @@ const path = require('path');
 let asyncLocalStorage;
 let requestIdHeader;
 
+const JSON_HEADER_VALUE = 'application/json';
+const CONTENT_TYPE = 'content-type';
+
 const isString = value => typeof value === 'string' || value instanceof String;
 const isTrue = value => isString(value) ? value.toLowerCase() === 'true' : value === true;
 
@@ -22,7 +25,7 @@ const addServername = isTrue(process.env.ADD_SERVERNAME_TO_HTTP_AGENT);
 //
 
 const setRequestUri = (options) => {
-  let uri = (options.uri || options.url);
+  let uri = options.uri || options.url;
   if (options.baseUrl) {
     uri = path.join(options.baseUrl, uri);
   }
@@ -44,56 +47,62 @@ const setRequestUri = (options) => {
     throw new Error('Missing uri/url parameter.');
   }
 
+  try {
+    new URL(uri);
+  } catch (err) {
+    throw new Error('Invalid uri/url parameter. Please use a valid URL.');
+  }
 
   options.uri = uri;
 };
 
 const setRequestAuth = (options) => {
-  let auth = options.auth;
+  let auth;
 
-  try {
-    const url = new URL(options.uri);
-    if (url.username) {
-      auth = auth || { username: url.username, password: url.password };
-      url.username = '';
-      url.password = '';
-      options.uri = url.toString();
-    }
-  } catch (err) {
-    throw new Error('Invalid uri/url parameter. Please use a valid URL.');
+  const url = new URL(options.uri);
+  if (url.username) {
+    auth = { username: url.username, password: url.password };
+    url.username = '';
+    url.password = '';
+    options.uri = url.toString();
+  }
+
+  if (options.auth) {
+    auth = options.auth;
   }
 
   delete options.auth;
 
-  if (!auth || options.headers.Authorization) {
+  if (!auth || options.headers.authorization) {
     return;
   }
 
   const basicAuth = btoa(`${auth.username}:${auth.password}`);
-  options.headers.Authorization = `Basic ${basicAuth}`;
+  options.headers.authorization = `Basic ${basicAuth}`;
 };
 
 const getSendJson = options => {
-  const contentType = options.headers['Content-Type'] || options.headers['content-type'];
-  if (options.json && contentType && contentType !== 'application/json') {
+  const contentType = options.headers[CONTENT_TYPE];
+
+  if (options.json && contentType && contentType !== JSON_HEADER_VALUE) {
     throw new Error('Incompatible json and content-type properties.');
   }
-  return options.json !== false && (!contentType || contentType === 'application/json');
+  return options.json !== false && (!contentType || contentType === JSON_HEADER_VALUE);
 };
 
 const setRequestContentType = (options) => {
   const sendJson = getSendJson(options);
 
   if (sendJson) {
-    options.headers.Accept = 'application/json';
-    options.headers['Content-Type'] = 'application/json';
+    options.headers.accept = JSON_HEADER_VALUE;
+    options.headers[CONTENT_TYPE] = JSON_HEADER_VALUE;
     options.body && (options.body = JSON.stringify(options.body));
   }
 
   if (options.form) {
     const formData = new FormData();
     Object.keys(options.form).forEach(key => formData.append(key, options.form[key]));
-    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    options.headers[CONTENT_TYPE] = 'application/x-www-form-urlencoded';
 
     options.body = new URLSearchParams(formData).toString();
   }
@@ -111,8 +120,13 @@ const setTimeout = (options) => {
   }
 };
 
+const lowercaseHeaders = headers => Object.assign(
+  {},
+  ...Object.keys(headers).map(key => ({ [key.toLowerCase()]: headers[key] }))
+);
+
 const getRequestOptions = (options) => {
-  options.headers = options.headers || {};
+  options.headers = lowercaseHeaders(options.headers || {});
 
   const requestId = asyncLocalStorage?.getRequestId();
   if (requestId) {
@@ -131,8 +145,8 @@ const getRequestOptions = (options) => {
 };
 
 const getResponseBody = async (response, sendJson) => {
-  const contentType = response.headers.get('content-type');
-  const receiveJson = contentType?.startsWith('application/json');
+  const contentType = response.headers.get(CONTENT_TYPE);
+  const receiveJson = contentType?.startsWith(JSON_HEADER_VALUE);
   const content = receiveJson ? await response.json() : await response.text();
 
   if (sendJson && !contentType) {
@@ -174,7 +188,7 @@ const request = async (options = {}) => {
 /**
  * couch-request options are an extension of RequestInit,
  * (see https://developer.mozilla.org/en-US/docs/Web/API/RequestInit), with a few custom fields, inherited from
- * request-promise-native, which were widely used and simplified the interface.
+ * request-promise-native, which were widely used and simplified the interface
  *
  * @typedef {Object} RequestInit
  * @property {string|undefined} uri - fully qualified uri string. Has precedence over url.
@@ -182,14 +196,16 @@ const request = async (options = {}) => {
  * @property {string|undefined} baseUrl - fully qualified uri string used as the base url.
  * Concatenated with uri || url to create the full URL.
  * @property {boolean|undefined} json - defaults to true.
- * Sets body to JSON representation of value and adds Content-type: application/json header.
+ * Sets body to JSON representation of value and adds content-type: application/json header.
  * Additionally, parses the response body as JSON.
+ * @property {Object} headers - hashmap of request headers. Headers names must be lowercase according to http/2 RFC
+ * https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2
  * @property {Object|undefined} qs - object containing querystring values to be appended to the uri
  * @property body - entity body for PATCH, POST and PUT requests.
  * If json is true, then body must be a JSON-serializable object.
  * See: https://developer.mozilla.org/en-US/docs/Web/API/RequestInit#body
  * @property {Object|undefined} form - when passed an object, this sets body to a querystring representation of value,
- * and adds Content-type: application/x-www-form-urlencoded header
+ * and adds content-type: application/x-www-form-urlencoded header
  * @property {Object|undefined} auth - a hash containing values username, password
  * @property {Boolean|undefined} simple - if true, returns full response object instead of parsed body.
  * @property {Number|undefined} timeout - integer containing number of milliseconds. Adds an abortSignal.
@@ -207,7 +223,7 @@ const request = async (options = {}) => {
 module.exports = {
   initialize: (store, header) => {
     asyncLocalStorage = store;
-    requestIdHeader = header;
+    requestIdHeader = header.toLowerCase();
   },
 
   /**
