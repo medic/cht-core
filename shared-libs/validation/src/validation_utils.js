@@ -47,24 +47,27 @@ const parseStartDate = (duration) => {
   return moment().subtract(parsed).valueOf();
 };
 
-const exists = async (doc, fields, options = {}) => {
-  if (!fields.length) {
-    return Promise.reject('No arguments provided to "exists" validation function');
-  }
-  const requestOptions = fields.map(field => {
+const getExistsRequestOptions = (fields, doc) => {
+  return fields.map(field => {
     if (doc[field].includes(' ')) {
-      return [{ key: [`${field}:${lowerCaseString(doc[field])}`] }, { useChtDatasource: false }];
+      return [ {key: [ `${field}:${lowerCaseString(doc[field])}` ]}, {useChtDatasource: false} ];
     }
-    return [`${field}:${lowerCaseString(doc[field])}`, { useChtDatasource: true }];
+    return [ `${field}:${lowerCaseString(doc[field])}`, {useChtDatasource: true} ];
   });
+};
+
+const addAdditionalFilters = (options, requestOptions) => {
   if (options.additionalFilter) {
     const lowerCaseAdditionalFilter = lowerCaseString(options.additionalFilter);
     if (lowerCaseAdditionalFilter.includes(' ')) {
-      requestOptions.push([{ key: [lowerCaseAdditionalFilter] }, { useChtDatasource: false }]);
+      requestOptions.push([ {key: [ lowerCaseAdditionalFilter ]}, {useChtDatasource: false} ]);
     } else {
-      requestOptions.push([lowerCaseAdditionalFilter, { useChtDatasource: true }]);
+      requestOptions.push([ lowerCaseAdditionalFilter, {useChtDatasource: true} ]);
     }
   }
+};
+
+const getExistsResponses = async requestOptions => {
   const responses = [];
   for (const options of requestOptions) {
     let response;
@@ -77,6 +80,16 @@ const exists = async (doc, fields, options = {}) => {
       responses.push(ids);
     }
   }
+  return responses;
+};
+
+const exists = async (doc, fields, options = {}) => {
+  if (!fields.length) {
+    return Promise.reject('No arguments provided to "exists" validation function');
+  }
+  const requestOptions = getExistsRequestOptions(fields, doc);
+  addAdditionalFilters(options, requestOptions);
+  const responses = await getExistsResponses(requestOptions);
 
   const ids = getIntersection(responses).filter(id => id !== doc._id);
   if (!ids.length) {
@@ -86,14 +99,13 @@ const exists = async (doc, fields, options = {}) => {
   const result = await db.medic.allDocs({ keys: ids, include_docs: true });
   const startDate = parseStartDate(options.duration);
   // filter out docs with errors
-  const found = result.rows.some(row => {
+  return result.rows.some(row => {
     const doc = row.doc;
     return (
       (!doc.errors || doc.errors.length === 0) &&
       (!startDate || doc.reported_date >= startDate)
     );
   });
-  return found;
 };
 
 const compareDateAfter = (testDate, reportedDate, duration) => {
