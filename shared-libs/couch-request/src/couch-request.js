@@ -80,7 +80,7 @@ const setRequestAuth = (options) => {
   }
 
   delete options.auth;
-  const basicAuth = btoa(`${auth.username}:${auth.password}`);
+  const basicAuth = Buffer.from(`${auth.username}:${auth.password}`, 'utf8').toString('base64');
   options.headers.authorization = `Basic ${basicAuth}`;
 };
 

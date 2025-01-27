@@ -89,7 +89,7 @@ module.exports = {
       return false;
     }
     try {
-      const [username, password] = atob(authHeader.split(' ')[1]).split(':');
+      const [username, password] = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
       return { username, password };
     } catch (err) {
       throw Error('Corrupted Auth header');
