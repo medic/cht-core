@@ -144,3 +144,14 @@ export const getPagedGenerator = async function* <S, T>(
 
   return null;
 };
+
+/** @internal */
+export interface NormalizedParent extends DataObject, Identifiable {
+  readonly parent?: NormalizedParent;
+}
+
+/** @ignore */
+export const isNormalizedParent = (value: unknown): value is NormalizedParent => {
+  return isDataObject(value) && isIdentifiable(value) && (!value.parent || isNormalizedParent(value.parent));
+};
+
