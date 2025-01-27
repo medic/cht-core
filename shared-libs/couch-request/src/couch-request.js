@@ -93,9 +93,7 @@ const getSendJson = options => {
   return options.json !== false && (!contentType || contentType === JSON_HEADER_VALUE);
 };
 
-const setRequestContentType = (options) => {
-  const sendJson = getSendJson(options);
-
+const setRequestContentType = (options, sendJson) => {
   if (sendJson) {
     options.headers.accept = JSON_HEADER_VALUE;
     options.headers[CONTENT_TYPE] = JSON_HEADER_VALUE;
@@ -128,7 +126,7 @@ const lowercaseHeaders = headers => Object.assign(
   ...Object.keys(headers).map(key => ({ [key.toLowerCase()]: headers[key] }))
 );
 
-const getRequestOptions = (options) => {
+const setRequestOptions = (options) => {
   options.headers = lowercaseHeaders(options.headers || {});
 
   const requestId = asyncLocalStorage?.getRequestId();
@@ -139,12 +137,11 @@ const getRequestOptions = (options) => {
   setRequestUri(options);
   setRequestAuth(options);
   setTimeout(options);
-  const sendJson = setRequestContentType(options);
+  const sendJson = getSendJson(options);
+  setRequestContentType(options, sendJson);
   if (addServername) {
     options.servername = environment.host;
   }
-
-  return { options, sendJson };
 };
 
 const getResponseBody = async (response, sendJson) => {
@@ -164,12 +161,12 @@ const getResponseBody = async (response, sendJson) => {
 };
 
 const request = async (options = {}) => {
-  const  { options: requestInit, sendJson } = getRequestOptions(options);
+  setRequestOptions(options);
 
-  const response = await global.fetch(requestInit.uri, requestInit);
+  const response = await global.fetch(options.uri, options);
   const responseObj = {
     ...response,
-    body: await getResponseBody(response, sendJson),
+    body: await getResponseBody(response, options.headers[CONTENT_TYPE] === JSON_HEADER_VALUE),
     status: response.status,
     ok: response.ok,
     headers: response.headers
