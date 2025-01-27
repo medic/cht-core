@@ -50,10 +50,8 @@ const getCredentials = () => {
 
 const getRequestOptions = ({ apiToken, host }={}) => ({
   baseUrl: host,
-  json: true,
   headers: {
     Authorization: `Token ${apiToken}`,
-    Accept: 'application/json',
   },
 });
 
@@ -108,7 +106,7 @@ const sendMessage = (credentials, message) => {
     })
     .catch(err => {
       logger.error(`Error thrown when trying to send message: %o`, err);
-      if (err?.statusCode === 400) {
+      if (err?.status === 400) {
         // source https://rapidpro.io/api/v2/
         // 400: The request failed due to invalid parameters.
         // Do not retry with the same values, and the body of the response will contain details.
@@ -168,7 +166,7 @@ const getRemoteStates = (credentials, messages) => {
           stateUpdates.push(stateUpdate);
         })
         .catch(err => {
-          if (err && err.statusCode === 429) {
+          if (err && err.status === 429) {
             // rate limited, throw error to halt recursive polling
             throttled = true;
           }

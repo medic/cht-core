@@ -7,12 +7,13 @@ const dataContext = require('./services/data-context');
 const { roles, users } = require('@medic/user-management')(config, db, dataContext);
 
 const contentLengthRegex = /^content-length$/i;
+const contentTypeRegex = /^content-type$/i;
 
 const get = (path, headers) => {
   const getHeaders = { ...headers };
   Object
     .keys(getHeaders)
-    .filter(header => contentLengthRegex.test(header))
+    .filter(header => contentLengthRegex.test(header) || contentTypeRegex.test(header))
     .forEach(header => delete getHeaders[header]);
 
   const url = new URL(path, environment.serverUrlNoAuth);
@@ -51,7 +52,7 @@ module.exports = {
   getUserCtx: req => {
     return get('/_session', req.headers)
       .catch(err => {
-        if (err.statusCode === 401) {
+        if (err.status === 401) {
           throw { code: 401, message: 'Not logged in', err: err };
         }
         throw err;
@@ -83,7 +84,7 @@ module.exports = {
    * @return     {Object}  {username: username, password: password}
    */
   basicAuthCredentials: req => {
-    const authHeader = req && req.headers && req.headers.authorization;
+    const authHeader = req?.headers?.authorization;
     if (!authHeader || !authHeader.startsWith('Basic ')) {
       return false;
     }
@@ -101,16 +102,16 @@ module.exports = {
    * @param      {Object}    Credentials object as created by basicAuthCredentials
    */
   validateBasicAuth: ({ username, password }) => {
-    const authUrl = new URL(environment.serverUrlNoAuth);
-    authUrl.username = username;
-    authUrl.password = password;
-    return request.head({
-      uri: authUrl.toString(),
-      resolveWithFullResponse: true
-    })
+    return request
+      .get({
+        uri: environment.serverUrlNoAuth,
+        auth: { username, password },
+        simple: false,
+        json: false,
+      })
       .then(res => {
-        if (res.statusCode !== 200) {
-          return Promise.reject(new Error(`Expected 200 got ${res.statusCode}`));
+        if (!res.ok) {
+          return Promise.reject(new Error(`Expected 200 got ${res.status}`));
         }
         return username;
       });
