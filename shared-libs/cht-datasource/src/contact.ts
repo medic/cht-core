@@ -49,13 +49,21 @@ export namespace v1 {
     <T>(
       localFn: (c: LocalDataContext) => (qualifier: UuidQualifier) => Promise<T>,
       remoteFn: (c: RemoteDataContext) => (qualifier: UuidQualifier) => Promise<T>
-    ) => (context: DataContext) => {
+    ) => (context: DataContext): typeof curriedFn => {
       assertDataContext(context);
       const fn = adapt(context, localFn, remoteFn);
-      return async (qualifier: UuidQualifier): Promise<T> => {
+
+      /**
+       * Returns the contact with the given identifier.
+       * @param qualifier the limiter defining which contact to return
+       * @returns the contact with the given identifier
+       * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
+       */
+      const curriedFn = async (qualifier: UuidQualifier): Promise<T> => {
         assertUuidQualifier(qualifier);
         return fn(qualifier);
       };
+      return curriedFn;
     };
 
   /**
