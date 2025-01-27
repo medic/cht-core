@@ -26,7 +26,7 @@ const getCredentialsDoc = (id) => {
   return request
     .get({ url: getVaultUrl(id), json: true })
     .catch(err => {
-      if (err.statusCode === 404) {
+      if (err.status === 404) {
         // No credentials defined
         return;
       }

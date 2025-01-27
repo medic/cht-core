@@ -1,6 +1,5 @@
 const path = require('path');
 const request = require('@medic/couch-request');
-const _ = require('lodash');
 const url = require('node:url');
 const auth = require('../auth');
 const environment = require('@medic/environment');
@@ -160,22 +159,19 @@ const render = (page, req, extras = {}) => {
 };
 
 const getSessionCookie = res => {
-  return _.find(
-    res.headers['set-cookie'],
-    cookie => cookie.indexOf('AuthSession') === 0
-  );
+  return res.headers.getSetCookie().find(cookie => cookie.indexOf('AuthSession') === 0);
 };
 
 const createSession = req => {
   const user = req.body.user;
   const password = req.body.password;
+
   return request.post({
     url: new URL('/_session', environment.serverUrlNoAuth).toString(),
     json: true,
-    resolveWithFullResponse: true,
     simple: false, // doesn't throw an error on non-200 responses
     body: { name: user, password: password },
-    auth: { user: user, pass: password },
+    auth: { username: user, password: password },
   });
 };
 
@@ -242,7 +238,7 @@ const getUserCtxRetry = async (options, retry = 10) => {
 
 const createSessionRetry = (req, retry=10) => {
   return createSession(req).then(sessionRes => {
-    if (sessionRes.statusCode === 200) {
+    if (sessionRes.status === 200) {
       return sessionRes;
     }
 
@@ -303,8 +299,8 @@ const renderLogin = (req) => {
 const login = async (req, res) => {
   try {
     const sessionRes = await createSession(req);
-    if (sessionRes.statusCode !== 200) {
-      res.status(sessionRes.statusCode).json({ error: 'Not logged in' });
+    if (sessionRes.status !== 200) {
+      res.status(sessionRes.status).json({ error: 'Not logged in' });
     } else {
       const redirectUrl = await setCookies(req, res, sessionRes);
       res.status(302).send(redirectUrl);

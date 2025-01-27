@@ -16,8 +16,8 @@ const addSecurityToDb = () => {
       pathname: `${environment.db}-sentinel/_security`,
     }),
     auth: {
-      user: environment.username,
-      pass: environment.password
+      username: environment.username,
+      password: environment.password
     },
     json: true,
     body: securityObject
