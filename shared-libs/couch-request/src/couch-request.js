@@ -71,12 +71,15 @@ const setRequestAuth = (options) => {
     auth = options.auth;
   }
 
-  delete options.auth;
+  if (options.auth && options.headers.authorization) {
+    throw new Error('Conflicting authorization settings. Use authorization header or basic auth exclusively.');
+  }
 
   if (!auth || options.headers.authorization) {
     return;
   }
 
+  delete options.auth;
   const basicAuth = btoa(`${auth.username}:${auth.password}`);
   options.headers.authorization = `Basic ${basicAuth}`;
 };

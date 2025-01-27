@@ -244,10 +244,9 @@ describe('couch-request', () => {
     ]);
   });
 
-  it('should not overwrite authorization header', async () => {
+  it('should use authorization header', async () => {
     await couchRequest.post({
       url: 'http://a:b@marvel.net:5984/a',
-      auth: { username: 'admin', password: '123456' },
       headers: { authorization: 'Bearer something' },
     });
 
@@ -264,6 +263,18 @@ describe('couch-request', () => {
         uri: 'http://marvel.net:5984/a',
       }
     ]);
+  });
+
+  it('should throw error when both options.auth and header is used', async () => {
+    const opts = {
+      url: 'http://a:b@marvel.net:5984/a',
+      auth: { username: 'admin', password: '123456' },
+      headers: { authorization: 'Bearer something' },
+    };
+
+    await expect(couchRequest.get(opts)).to.eventually.be.rejectedWith(
+      'Conflicting authorization settings. Use authorization header or basic auth exclusively.'
+    );
   });
 
   it('should copy all additional headers and params', async () => {
