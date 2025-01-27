@@ -116,7 +116,6 @@ const sendPayload = (payload, config) => {
           sendOptions.auth = {
             username: authConf.username,
             password: password,
-            sendImmediately: true
           };
         });
     }
@@ -147,7 +146,8 @@ const sendPayload = (payload, config) => {
             timeout: OUTBOUND_REQ_TIMEOUT
           };
 
-          return request.post(authOptions)
+          return request
+            .post(authOptions)
             .then(result => {
               // No that's not a spelling mistake, this API is sometimes French!
               if (result.statut !== 200) {
