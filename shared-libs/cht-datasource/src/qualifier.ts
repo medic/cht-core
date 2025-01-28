@@ -84,7 +84,6 @@ export const byFreetext = (freetext: string): FreetextQualifier => {
 export const isFreetextQualifier = (qualifier: unknown): qualifier is FreetextQualifier => {
   return isRecord(qualifier) &&
     hasField(qualifier, { name: 'freetext', type: 'string' }) &&
-    typeof qualifier.freetext === 'string' &&
     qualifier.freetext.length >= 3;
 };
 
