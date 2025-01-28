@@ -213,7 +213,7 @@ describe('Contact Delivery Form', () => {
     expect(_.uniq(aliveBabyUUIds).length).to.deep.equal(noOfAliveBabies);
 
     await reportsPage.openReport(reportId);
-    await reportsPage.editReport();
+    await commonPage.accessEditOption();
     await genericForm.nextPage();
     await genericForm.nextPage();
     await genericForm.nextPage();
@@ -321,7 +321,7 @@ describe('Contact Delivery Form', () => {
 
     // edit one field
     await reportsPage.openReport(reportId);
-    await reportsPage.editReport();
+    await commonPage.accessEditOption();
     await genericForm.nextPage();
     await genericForm.nextPage();
     await commonEnketoPage.selectRadioButton('How did she deliver?', 'Cesarean');
@@ -392,7 +392,7 @@ describe('Contact Delivery Form', () => {
     expect(initialReport._attachments).to.equal(undefined);
     await browser.refresh();
 
-    await reportsPage.editReport();
+    await commonPage.accessEditOption();
     await genericForm.nextPage();
     await dangerSignPage.selectAllDangerSignsDelivery();
     await genericForm.nextPage();

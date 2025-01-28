@@ -193,7 +193,7 @@ describe('replication', () => {
   ];
 
   before(async () => {
-    await utils.updatePermissions(['district_admin'], ['can_have_multiple_places'], [], true);
+    await utils.updatePermissions(['district_admin'], ['can_have_multiple_places'], [], { ignoreReload: true });
     await utils.saveDoc(parentPlace);
     await utils.createUsers(users, true);
   });
@@ -202,6 +202,7 @@ describe('replication', () => {
     // Clean up like normal
     await utils.revertDb([], true);// And also revert users we created in before
     await utils.deleteUsers(users, true);
+    await utils.deletePurgeDbs();
   });
 
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
@@ -1089,8 +1090,6 @@ describe('replication', () => {
         { purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } },
         { ignoreReload: true }
       );
-      await utils.stopSentinel();
-      await utils.startSentinel();
       await sentinelUtils.waitForPurgeCompletion(seq);
 
       const response = await requestDeletes('bob', getIds(reports));
@@ -1115,8 +1114,6 @@ describe('replication', () => {
         { purge: { fn: purgeFn.toString(), text_expression: 'every 1 seconds' } },
         { ignoreReload: true }
       );
-      await utils.stopSentinel();
-      await utils.startSentinel();
       await sentinelUtils.waitForPurgeCompletion(seq);
 
       const response = await requestDeletes('bob', [...savedIds, ...deletedIds, ...getIds(reports)]);

@@ -1,4 +1,4 @@
-const utils = require('../../../utils');
+const utils = require('@utils');
 
 const adminNavbarLogo = () => $('.navbar-header .navbar-brand');
 const languagesPanel = () => $('.tab-content > #language-accordion > .panel');

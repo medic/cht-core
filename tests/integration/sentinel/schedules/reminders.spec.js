@@ -200,8 +200,6 @@ const assertReminder = ({ form, reminder, place, message }) => {
   });
 };
 
-const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
-
 describe('reminders', () => {
   before(() => {
     return utils
@@ -219,7 +217,8 @@ describe('reminders', () => {
     let reminder2Date;
     let reminder2Date2;
     let reminder2Date3;
-    return restartSentinel()
+    return utils
+      .runSentinelTasks()
       .then(() => getReminderLogs(2))
       .then(({ rows: reminderLogs }) => {
         chai.expect(reminderLogs[0].id.startsWith('reminderlog:FORM1:')).to.be.true;
@@ -278,7 +277,7 @@ describe('reminders', () => {
           { ignoreReload: true }
         );
       })
-      .then(() => restartSentinel())
+      .then(() => utils.runSentinelTasks())
       .then(() => getReminderLogs(3))
       .then(({ rows: reminderLogs }) => {
         // Only the 2nd reminder ran. Because reminders are executed in a series, we know that 1st reminder was skipped
@@ -381,7 +380,7 @@ describe('reminders', () => {
           { ignoreReload: true }
         );
       })
-      .then(() => restartSentinel())
+      .then(() => utils.runSentinelTasks())
       .then(() => getReminderLogs(4))
       .then(({ rows: reminderLogs }) => {
         chai.expect(reminderLogs).to.have.lengthOf(4);

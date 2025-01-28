@@ -38,27 +38,21 @@ const getNoAuthURL = (couchUrl) => {
   return noAuthUrl;
 };
 
-const checkCouchDbNoAdminPartyMode = (couchUrl) => {
+const checkCouchDbNoAdminPartyMode = async (couchUrl) => {
   const noAuthUrl = getNoAuthURL(couchUrl);
-
-  // require either 'http' or 'https' by removing the ":" from noAuthUrl.protocol
-  const net = require(noAuthUrl.protocol.replace(':', ''));
-
-  return new Promise((resolve, reject) => {
-    net.get(noAuthUrl.toString(), ({ statusCode }) => {
-      // We expect to be rejected because we didn't provide auth
-      if (statusCode === 401) {
-        resolve();
-      } else {
-        reject(new Error('CouchDB security seems to be misconfigured. ' +
-          `Accessing the db without authentication returned a ${statusCode} when a 401 was expected. ` +
-          'See: https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#enabling-a-secure-couchdb'));
-      }
-    }).on('error', (e) => {
-      reject(`CouchDB doesn't seem to be running on ${noAuthUrl.toString()}. ` +
-        `Tried to connect but got an error:\n ${e.stack}`);
-    });
-  });
+  try {
+    throw await request.get({ url: noAuthUrl.toString(), json: false, simple: false });
+  } catch (error) {
+    if (error.status === 401) {
+      return;
+    }
+    if (error.status) {
+      throw new Error('CouchDB security seems to be misconfigured. ' +
+                      `Accessing the db without authentication returned a ${error.status} when a 401 was expected. ` +
+                      'See: https://github.com/medic/cht-core/blob/master/DEVELOPMENT.md#enabling-a-secure-couchdb');
+    }
+    throw error;
+  }
 };
 
 const arrayEqual = (arr1, arr2) => ![

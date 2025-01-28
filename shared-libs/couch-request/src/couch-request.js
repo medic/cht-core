@@ -1,31 +1,15 @@
-const request = require('request-promise-native');
-const isPlainObject = require('lodash/isPlainObject');
 const environment = require('@medic/environment');
-const servername = environment.host;
+const path = require('path');
+let asyncLocalStorage;
+let requestIdHeader;
+
+const JSON_HEADER_VALUE = 'application/json';
+const CONTENT_TYPE = 'content-type';
 
 const isString = value => typeof value === 'string' || value instanceof String;
 const isTrue = value => isString(value) ? value.toLowerCase() === 'true' : value === true;
 
 const addServername = isTrue(process.env.ADD_SERVERNAME_TO_HTTP_AGENT);
-const methods = {
-  GET: 'GET',
-  POST: 'POST',
-  DELETE: 'DELETE',
-  PUT: 'PUT',
-  HEAD: 'HEAD'
-};
-
-
-const mergeOptions = (target, source, exclusions = []) => {
-  for (const [key, value] of Object.entries(source)) {
-    if (Array.isArray(exclusions) && exclusions.includes(key)) {
-      return target;
-    }
-    target[key] = value; // locally, mutation is preferable to spreading as it doesn't
-    // make new objects in memory. Assuming this is a hot path.
-  }
-  return target;
-};
 
 // When proxying to HTTPS from HTTP (for example where an ingress does TLS termination in an SNI environment),
 // not including a 'servername' for a request to the HTTPS server (eg, def.org) produces the 
@@ -38,75 +22,233 @@ const mergeOptions = (target, source, exclusions = []) => {
 // The addition of 'servername' resolves this error. See docs for 'tls.connect(options[, callback])'
 //  (https://nodejs.org/api/tls.html): "Server name for the SNI (Server Name Indication) TLS extension  It is the
 //  name of the host being connected to, and must be a host name, and not an IP address.".
-// 
+//
 
-const validate = (firstIsString, method, first, second = {}) => {
-
-  if (Object.hasOwn(methods, method) === false) {
-    throw new Error(`Unsupported method (${method}) passed to call.`);
+const setRequestUri = (options) => {
+  let uri = options.uri || options.url;
+  if (options.baseUrl) {
+    uri = path.join(options.baseUrl, uri);
   }
 
-  if (isPlainObject(second) === false) {
-    throw new Error(`"options" must be a plain object'`);
+  if (options.qs) {
+    Object.keys(options.qs).forEach((key) => {
+      if (Array.isArray(options.qs[key])) {
+        options.qs[key] = JSON.stringify(options.qs[key]);
+      }
+    });
+    uri = `${uri}?${new URLSearchParams(options.qs).toString()}`;
   }
 
-  if (firstIsString === false && isPlainObject(first) === false) {
-    throw new Error(`"options" must be a plain object'`);
+  delete options.url;
+  delete options.baseUrl;
+  delete options.qs;
+
+  if (!uri) {
+    throw new Error('Missing uri/url parameter.');
   }
-};
-
-
-const req = (method, first, second = {}) => {
-
-  const firstIsString = isString(first);
 
   try {
-    validate(firstIsString, method, first, second);
-  } catch (e) {
-    return Promise.reject(e);
+    new URL(uri);
+  } catch (err) {
+    throw new Error('Invalid uri/url parameter. Please use a valid URL.');
   }
 
-  const chosenOptions = firstIsString ? second : first;
-
-  const exclusions = firstIsString ? ['url', 'uri', 'method'] : ['method'];
-  const target = addServername ? { servername } : { };
-  
-  const mergedOptions = mergeOptions(target, chosenOptions, exclusions);
-
-  return firstIsString ? getRequestType(method)(first, mergedOptions) : getRequestType(method)(mergedOptions);
+  options.uri = uri;
 };
 
-const getRequestType = (method) => {
-  // This is intended to simplify testing as sinon does not stub an
-  // exported function (eg, 'export = requestPromise') but only methods.
-  // From reading, proxyquire would need to be used to solve: https://www.npmjs.com/package/proxyquire
-  // See: https://github.com/sinonjs/sinon/issues/562#issuecomment-79227487
-  switch (method) {
-  case methods.GET: {
-    return request.get;
+const setRequestAuth = (options) => {
+  let auth;
+
+  const url = new URL(options.uri);
+  if (url.username) {
+    auth = { username: url.username, password: url.password };
+    url.username = '';
+    url.password = '';
+    options.uri = url.toString();
   }
-  case methods.POST: {
-    return request.post;
+
+  if (options.auth) {
+    auth = options.auth;
   }
-  case methods.PUT: {
-    return request.put;
+
+  if (options.auth && options.headers.authorization) {
+    throw new Error('Conflicting authorization settings. Use authorization header or basic auth exclusively.');
   }
-  case methods.DELETE: {
-    return request.delete;
+
+  if (!auth || options.headers.authorization) {
+    return;
   }
-  case methods.HEAD: {
-    return request.head;
+
+  delete options.auth;
+  const basicAuth = Buffer.from(`${auth.username}:${auth.password}`, 'utf8').toString('base64');
+  options.headers.authorization = `Basic ${basicAuth}`;
+};
+
+const getSendJson = options => {
+  const contentType = options.headers[CONTENT_TYPE];
+
+  if (options.json && contentType && contentType !== JSON_HEADER_VALUE) {
+    throw new Error('Incompatible json and content-type properties.');
   }
-  default: {
-    return Promise.reject(Error(`Unsupported method (${method}) passed to call.`));
+  return options.json !== false && (!contentType || contentType === JSON_HEADER_VALUE);
+};
+
+const setRequestContentType = (options, sendJson) => {
+  if (sendJson) {
+    options.headers.accept = JSON_HEADER_VALUE;
+    options.headers[CONTENT_TYPE] = JSON_HEADER_VALUE;
+    options.body && (options.body = JSON.stringify(options.body));
   }
+
+  if (options.form) {
+    const formData = new FormData();
+    Object.keys(options.form).forEach(key => formData.append(key, options.form[key]));
+    options.headers[CONTENT_TYPE] = 'application/x-www-form-urlencoded';
+
+    options.body = new URLSearchParams(formData).toString();
+  }
+
+  delete options.json;
+  delete options.form;
+
+  return sendJson;
+};
+
+const setTimeout = (options) => {
+  if (options.timeout) {
+    options.signal = AbortSignal.timeout(options.timeout);
+    delete options.timeout;
   }
 };
+
+const lowercaseHeaders = headers => Object.assign(
+  {},
+  ...Object.keys(headers).map(key => ({ [key.toLowerCase()]: headers[key] }))
+);
+
+const setRequestOptions = (options) => {
+  options.headers = lowercaseHeaders(options.headers || {});
+
+  const requestId = asyncLocalStorage?.getRequestId();
+  if (requestId) {
+    options.headers[requestIdHeader] = requestId;
+  }
+
+  setRequestUri(options);
+  setRequestAuth(options);
+  setTimeout(options);
+  const sendJson = getSendJson(options);
+  setRequestContentType(options, sendJson);
+  if (addServername) {
+    options.servername = environment.host;
+  }
+};
+
+const getResponseBody = async (response, sendJson) => {
+  const contentType = response.headers.get(CONTENT_TYPE);
+  const receiveJson = contentType?.startsWith(JSON_HEADER_VALUE);
+  const content = receiveJson ? await response.json() : await response.text();
+
+  if (sendJson && !contentType) {
+    try {
+      return JSON.parse(content);
+    } catch (e) {
+      return content;
+    }
+  }
+
+  return content;
+};
+
+const request = async (options = {}) => {
+  setRequestOptions(options);
+
+  const response = await global.fetch(options.uri, options);
+  const responseObj = {
+    ...response,
+    body: await getResponseBody(response, options.headers[CONTENT_TYPE] === JSON_HEADER_VALUE),
+    status: response.status,
+    ok: response.ok,
+    headers: response.headers
+  };
+
+  if (options.simple === false) {
+    return responseObj;
+  }
+
+  if (response.ok || (response.status > 300 && response.status < 399)) {
+    return responseObj.body;
+  }
+
+  const err = new Error(response.error || `${response.status} - ${JSON.stringify(responseObj.body)}`);
+  Object.assign(err, responseObj);
+  throw err;
+};
+
+/**
+ * couch-request options are an extension of RequestInit,
+ * (see https://developer.mozilla.org/en-US/docs/Web/API/RequestInit), with a few custom fields, inherited from
+ * request-promise-native, which were widely used and simplified the interface
+ *
+ * @typedef {Object} RequestInit
+ * @property {string|undefined} uri - fully qualified uri string. Has precedence over url.
+ * @property {string|undefined} url - fully qualified uri string.
+ * @property {string|undefined} baseUrl - fully qualified uri string used as the base url.
+ * Concatenated with uri || url to create the full URL.
+ * @property {boolean|undefined} json - defaults to true.
+ * Sets body to JSON representation of value and adds content-type: application/json header.
+ * Additionally, parses the response body as JSON.
+ * @property {Object} headers - hashmap of request headers. Headers names must be lowercase according to http/2 RFC
+ * https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2
+ * @property {Object|undefined} qs - object containing querystring values to be appended to the uri
+ * @property body - entity body for PATCH, POST and PUT requests.
+ * If json is true, then body must be a JSON-serializable object.
+ * See: https://developer.mozilla.org/en-US/docs/Web/API/RequestInit#body
+ * @property {Object|undefined} form - when passed an object, this sets body to a querystring representation of value,
+ * and adds content-type: application/x-www-form-urlencoded header
+ * @property {Object|undefined} auth - a hash containing values username, password
+ * @property {Boolean|undefined} simple - if true, returns full response object instead of parsed body.
+ * @property {Number|undefined} timeout - integer containing number of milliseconds. Adds an abortSignal.
+ */
+
+/**
+ * couch-request response is an extension of Response https://developer.mozilla.org/en-US/docs/Web/API/Response
+ * @typedef {Object} RequestResponse
+ * @property body - parsed or raw response body
+ * @property {Headers} headers - The Headers object associated with the response.
+ * @property {Boolean} ok - states whether the response was successful (status in the range 200-299) or not.
+ * @property {Number} status - HTTP status codes of the response.
+ */
 
 module.exports = {
-  get: (first, second = {}) => req(methods.GET, first, second),
-  post: (first, second = {}) => req(methods.POST, first, second),
-  put: (first, second = {}) => req(methods.PUT, first, second),
-  delete: (first, second = {}) => req(methods.DELETE, first, second),
-  head: (first, second = {}) => req(methods.HEAD, first, second),
+  initialize: (store, header) => {
+    asyncLocalStorage = store;
+    requestIdHeader = header.toLowerCase();
+  },
+
+  /**
+   * @param {RequestInit} options
+   * @returns {Promise<RequestResponse|any>}
+   */
+  get: (options = {}) => request({ ...options, method: 'GET' }),
+  /**
+   * @param {RequestInit} options
+   * @returns {Promise<RequestResponse|any>}
+   */
+  post: (options = {}) => request({ ...options, method: 'POST' }),
+  /**
+   * @param {RequestInit} options
+   * @returns {Promise<RequestResponse|any>}
+   */
+  put: (options = {}) => request({ ...options, method: 'PUT' }),
+  /**
+   * @param {RequestInit} options
+   * @returns {Promise<RequestResponse|any>}
+   */
+  delete: (options = {}) => request({ ...options, method: 'DELETE' }),
+  /**
+   * @param {RequestInit} options
+   * @returns {Promise<RequestResponse|any>}
+   */
+  head: (options = {}) => request({ ...options, method: 'HEAD' }),
 };

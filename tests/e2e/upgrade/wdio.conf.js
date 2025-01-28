@@ -6,13 +6,12 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const chai = require('chai');
-const { spawn } = require('child_process');
 chai.use(require('chai-exclude'));
-const rpn = require('request-promise-native');
 const semver = require('semver');
 
 const utils = require('@utils');
 const wdioBaseConfig = require('../../wdio.conf');
+const { generateReport } = require('@utils/allure');
 
 const {
   MARKET_URL_READ = 'https://staging.dev.medicmobile.org',
@@ -31,7 +30,11 @@ const MAIN_BRANCH = 'medic:medic:master';
 
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb'];
 const getUpgradeServiceDockerCompose = async () => {
-  const contents = (await rpn.get('https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml'));
+  const contents = await utils.request({
+    uri: 'https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml',
+    json: false,
+    noAuth: true,
+  });
   await fs.promises.writeFile(UPGRADE_SERVICE_DC, contents);
 };
 
@@ -44,7 +47,7 @@ const getReleasesQuery = () => {
     startKey.push({});
   }
   return {
-    start_key: JSON.stringify(startKey),
+    start_key: startKey,
     descending: true,
     limit: TAG ? 2 : 1,
   };
@@ -56,7 +59,12 @@ const getRelease = async () => {
   }
 
   const url = `${MARKET_URL_READ}/${STAGING_SERVER}/_design/builds/_view/releases`;
-  const releases = await rpn.get({ url: url, qs: getReleasesQuery(), json: true });
+  const releases = await utils.request({
+    uri: url,
+    qs: getReleasesQuery(),
+    noAuth: true,
+  });
+
   if (!releases.rows.length) {
     return MAIN_BRANCH;
   }
@@ -68,61 +76,56 @@ const getMainCHTDockerCompose = async () => {
   const release = await getRelease();
   for (const composeFile of COMPOSE_FILES) {
     const composeFileUrl = `${MARKET_URL_READ}/${STAGING_SERVER}/${release}/docker-compose/${composeFile}.yml`;
-    const contents = await rpn.get(composeFileUrl);
+    const contents = await utils.request({
+      uri: composeFileUrl,
+      json: false,
+      noAuth: true,
+    });
     const filePath = path.join(CHT_DOCKER_COMPOSE_FOLDER, `${composeFile}.yml`);
     await fs.promises.writeFile(filePath, contents);
   }
 };
 
 const TEST_TIMEOUT = 240 * 1000; // 4 minutes
-
-const dockerComposeCmd = (...params) => {
-  const env = {
-    ...process.env,
-    HAPROXY_PORT,
-    CHT_COMPOSE_PATH: CHT_DOCKER_COMPOSE_FOLDER,
-    COUCHDB_USER: constants.USERNAME,
-    COUCHDB_PASSWORD: constants.PASSWORD,
-    DOCKER_CONFIG_PATH: os.homedir(),
-    COUCHDB_DATA: CHT_DATA_FOLDER,
-    CHT_COMPOSE_PROJECT_NAME: CHT_COMPOSE_PROJECT_NAME,
-    CHT_NETWORK: 'cht-net-upgrade',
-  };
-
-  params.unshift('-p', 'upgrade');
-
-  return new Promise((resolve, reject) => {
-    console.log(...['docker compose', '-f', UPGRADE_SERVICE_DC, ...params]);
-    const cmd = spawn('docker', ['compose', '-f', UPGRADE_SERVICE_DC, ...params], { env });
-    const output = [];
-    const log = (data, error) => {
-      data = data.toString();
-      output.push(data);
-      error ? console.error(data) : console.log(data);
-    };
-
-    cmd.on('error', (err) => {
-      console.error(err);
-      reject(err);
-    });
-    cmd.stdout.on('data', log);
-    cmd.stderr.on('data', log);
-
-    cmd.on('close', () => resolve(output));
-  });
+const env = {
+  ...process.env,
+  HAPROXY_PORT,
+  CHT_COMPOSE_PATH: CHT_DOCKER_COMPOSE_FOLDER,
+  COUCHDB_USER: constants.USERNAME,
+  COUCHDB_PASSWORD: constants.PASSWORD,
+  DOCKER_CONFIG_PATH: os.homedir(),
+  COUCHDB_DATA: CHT_DATA_FOLDER,
+  CHT_COMPOSE_PROJECT_NAME: CHT_COMPOSE_PROJECT_NAME,
+  CHT_NETWORK: 'cht-net-upgrade',
 };
-const exit = () => dockerComposeCmd('down');
+
+const upgradeServiceCmd = (command) => {
+  command = `docker compose -f ${UPGRADE_SERVICE_DC} -p upgrade ${command}`;
+
+  return utils.runCommand(command, { verbose: true, overrideEnv: env });
+};
+const exit = () => upgradeServiceCmd('down');
 
 const startUpgradeService = async () => {
-  await dockerComposeCmd('up', '-d');
+  await upgradeServiceCmd('up -d');
   let retries = 20;
   do {
-    const response = await dockerComposeCmd('ps', '-q');
+    const response = await upgradeServiceCmd('ps -q');
     if (response.length) {
       return;
     }
     await utils.delayPromise(500);
   } while (--retries);
+};
+
+const tearDownServices = async () => {
+  const composeFilesParam = COMPOSE_FILES
+    .map(composeFile => '-f ' + path.join(CHT_DOCKER_COMPOSE_FOLDER, `${composeFile}.yml`))
+    .join(' ');
+  const cmd = `docker compose ${composeFilesParam} -p ${CHT_COMPOSE_PROJECT_NAME} down -t 0 --remove-orphans --volumes`;
+  await utils.runCommand(cmd, { verbose: true, overrideEnv: env });
+
+  await exit();
 };
 
 const servicesStartTimeout = () => {
@@ -133,7 +136,7 @@ const servicesStartTimeout = () => {
       allotted time.
       Either run the test multiple times until you load all images, download images manually or increase this timeout.
     `);
-    await utils.tearDownServices();
+    await tearDownServices();
     process.exit(1);
   }, TEST_TIMEOUT);
 };
@@ -160,6 +163,12 @@ const upgradeConfig = Object.assign(wdioBaseConfig.config, {
     await utils.listenForApi();
     clearTimeout(tooLongTimeout);
   },
+
+  onComplete: async () => {
+    await tearDownServices();
+    await generateReport();
+  },
+
   mochaOpts: {
     ui: 'bdd',
     timeout: TEST_TIMEOUT,

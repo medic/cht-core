@@ -5,12 +5,11 @@ const utils = require('@utils');
 const path = require('path');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('Submit Photo Upload form', () => {
 
   before(async () => {
-    await commonEnketoPage.uploadForm('photo-upload');
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/photo-upload`));
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();
   });
@@ -32,7 +31,7 @@ describe('Submit Photo Upload form', () => {
     expect(attachmentNames[0]).to.match(/^user-file-photo-for-upload-form-\d\d?_\d\d?_\d\d?\.png$/);
 
     await reportsPage.openReport(reportId);
-    await reportsPage.editReport();
+    await commonPage.accessEditOption();
     await (enketoWidgetsPage.imagePreview('photo-upload')).waitForDisplayed();
     await genericForm.submitForm();
 
@@ -51,7 +50,7 @@ describe('Submit Photo Upload form', () => {
     expect(attachmentNames[0]).to.match(/^user-file-photo-for-upload-form-\d\d?_\d\d?_\d\d?\.png$/);
 
     await reportsPage.openReport(reportId);
-    await reportsPage.editReport();
+    await commonPage.accessEditOption();
     await (enketoWidgetsPage.imagePreview('photo-upload')).waitForDisplayed();
     await enketoWidgetsPage.selectImage('photo-upload', path.join(__dirname, '../../../../webapp/src/img/layers.png'));
     await (enketoWidgetsPage.imagePreview('photo-upload')).waitForDisplayed();

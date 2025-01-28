@@ -69,13 +69,6 @@ describe('Tasks', () => {
     await utils.revertSettings(true);
   });
 
-  after(async () => {
-    await utils.deleteUsers([chw]);
-    await utils.revertDb([/^form:/], true);
-    await browser.deleteCookies();
-    await browser.refresh();
-  });
-
   it('should remove task from list when CHW completes a task successfully', async () => {
     await tasksPage.compileTasks('tasks-breadcrumbs-config.js', true);
     
@@ -90,6 +83,24 @@ describe('Tasks', () => {
     await taskElement.waitForDisplayed({ reverse: true });
     list = await tasksPage.getTasks();
     expect(list).to.have.length(2);
+  });
+
+  it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
+    await tasksPage.compileTasks('tasks-breadcrumbs-config.js', false);
+    
+    await commonPage.goToTasks();
+    let list = await tasksPage.getTasks();
+    expect(list).to.have.length(2);
+    let task = await tasksPage.getTaskByContactAndForm('Megan Spice', 'person_create');
+    await task.click();
+    await tasksPage.waitForTaskContentLoaded('Home Visit');
+    const taskElement = await tasksPage.getOpenTaskElement();
+    await genericForm.submitForm();
+    await taskElement.waitForDisplayed();
+    await commonPage.sync({ expectReload: true });
+    task = await tasksPage.getTaskByContactAndForm('Megan Spice', 'person_create_follow_up');
+    list = await tasksPage.getTasks();
+    expect(list).to.have.length(3);
   });
 
   it('should load multiple pages of tasks on infinite scrolling', async () => {

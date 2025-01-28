@@ -51,9 +51,8 @@ describe('More Options Menu - Offline User - Edit permissions disabled', () => {
     result = await utils.saveDoc(smsReport);
     smsReportId = result.id;
     await utils.createUsers([offlineUser]);
+    await utils.updatePermissions(offlineUser.roles, [], ['can_edit'], true);
     await loginPage.login(offlineUser);
-    await utils.updatePermissions(offlineUser.roles, [], ['can_edit']);
-    await commonPage.closeReloadModal();
   });
 
   after(async () => await utils.revertSettings(true));
@@ -62,19 +61,19 @@ describe('More Options Menu - Offline User - Edit permissions disabled', () => {
     it('should hide the kebab menu.', async () => {
       await commonPage.goToPeople(patient._id);
       await commonPage.closeReloadModal();
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
     });
   });
 
   describe('Report tab', () => {
     it('should hide the kebab menu when the sms report is opened.', async () => {
       await reportPage.goToReportById(smsReportId);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
     });
 
     it('should hide the kebab menu when the xml report is opened.', async () => {
       await reportPage.goToReportById(xmlReportId);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      expect(await commonPage.isMoreOptionsMenuPresent()).to.be.false;
     });
   });
 });

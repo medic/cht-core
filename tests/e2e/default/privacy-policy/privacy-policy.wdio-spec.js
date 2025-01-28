@@ -1,4 +1,4 @@
-const commonElements = require('@page-objects/default/common/common.wdio.page.js');
+const commonPage = require('@page-objects/default/common/common.wdio.page.js');
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const privacyPage = require('@page-objects/default/privacy-policy/privacy-policy.wdio.page');
@@ -22,8 +22,7 @@ describe('Privacy policy', () => {
   users.forEach((user) => {
     describe(`for an ${user.isOffline ? 'offline':'online'} user`, () => {
       before(async () => {
-        await browser.reloadSession();
-        await browser.url('/');
+        await commonPage.reloadSession();
         await utils.saveDocs([parent, privacyPolicy]);
         await utils.createUsers([user]);
         await loginPage.login({ username: user.username, password: user.password, privacyPolicy: true });
@@ -36,12 +35,12 @@ describe('Privacy policy', () => {
 
       it('should show the correct privacy policy on login', async () => {
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), englishTexts, user.isOffline);
-        expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
+        expect(await (await commonPage.tabsSelector.messagesTab()).isDisplayed()).to.be.true;
       });
 
       it('should not show on refresh', async () => {
         await browser.url('/');
-        await (await commonElements.messagesTab()).waitForDisplayed();
+        await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
         expect(await (await privacyPage.privacyWrapper()).isDisplayed()).to.not.be.true;
       });
 
@@ -51,26 +50,24 @@ describe('Privacy policy', () => {
       });
 
       it('should not show on subsequent login', async () => {
-        await browser.reloadSession();
-        await browser.url('/');
+        await commonPage.reloadSession();
         await loginPage.login({ username: user.username, password: user.password });
-        await (await commonElements.messagesTab()).waitForDisplayed();
+        await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
         expect(await (await privacyPage.privacyWrapper()).isDisplayed()).to.not.be.true;
       });
 
       it('should show french policy on secondary login', async () => {
-        await browser.reloadSession();
-        await browser.url('/');
+        await commonPage.reloadSession();
         await loginPage.login({ username: user.username, password: user.password, locale: 'fr', privacyPolicy: true });
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), frenchTexts);
-        expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
+        expect(await (await commonPage.tabsSelector.messagesTab()).isDisplayed()).to.be.true;
       });
 
       it('should show if the user changes their language', async () => {
         await browser.setCookies({ name: 'locale', value: 'es' });
         await browser.refresh();
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), spanishTexts);
-        expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
+        expect(await (await commonPage.tabsSelector.messagesTab()).isDisplayed()).to.be.true;
       });
 
       it('should show if the user policy changes', async () => {
@@ -94,13 +91,13 @@ describe('Privacy policy', () => {
         await privacyPage.updatePrivacyPolicy(updatedPolicy);
 
         if (user.isOffline) {
-          await commonElements.sync();
+          await commonPage.sync();
         }
 
         await browser.refresh();
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), text);
 
-        expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
+        expect(await (await commonPage.tabsSelector.messagesTab()).isDisplayed()).to.be.true;
       });
     });
   });
@@ -116,8 +113,7 @@ describe('Privacy policy', () => {
     before(async () => {
       await utils.saveDocs([parent, privacyPolicy]);
       await utils.createUsers([conflictUser]);
-      await browser.reloadSession();
-      await browser.url('/');
+      await commonPage.reloadSession();
       await loginPage.login({ username: conflictUser.username, password: conflictUser.password, privacyPolicy: true });
     });
 
@@ -133,8 +129,8 @@ describe('Privacy policy', () => {
     it('should not fail due to document conflict for new offline user', async () => {
       await privacyPage.waitForPolicy(await privacyPage.privacyWrapper(), englishTexts);
       await privacyPage.acceptPrivacyPolicy();
-      await commonElements.sync();
-      expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
+      await commonPage.sync();
+      expect(await (await commonPage.tabsSelector.messagesTab()).isDisplayed()).to.be.true;
       passed = true;
     });
   });

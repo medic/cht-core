@@ -15,8 +15,8 @@ const addMemberToDb = () => {
       pathname: `${environment.db}-audit/_security`,
     }),
     auth: {
-      user: environment.username,
-      pass: environment.password
+      username: environment.username,
+      password: environment.password
     },
     json: true,
     body: securityObject

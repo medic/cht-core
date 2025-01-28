@@ -53,18 +53,20 @@ body {
     }
 
     &.about,
+    &.trainings,
     &.testing,
     &.user,
     &.privacy-policy {
       .tool-bar {
         background-color: @top-header-color;
 
-        .ellipsis-title {
+        .ellipsis-title,
+        .app-menu-button .mat-icon[fonticon="fa-bars"]:before {
           color: @text-inverse-color;
         }
 
-        .app-menu-button .mat-icon[fonticon="fa-bars"]:before {
-          color: @text-inverse-color;
+        .navigation .mat-icon-back path {
+          fill: @text-inverse-color;
         }
       }
 
@@ -479,7 +481,10 @@ mm-analytics-filters {
   background-color: @background-color;
 }
 
-.reports .inbox-items, .contacts .inbox-items, .messages .inbox-items {
+.reports .inbox-items,
+.contacts .inbox-items,
+.messages .inbox-items,
+.trainings .inbox-items {
   overflow-y: hidden;
   overflow-x: hidden;
   height: 100%;
@@ -580,10 +585,13 @@ mm-analytics-filters {
     font-size: 12px;
     vertical-align: middle;
   }
-  .card .resource-icon img {
-    width: @icon-small;
-    height: @icon-small;
+  .card .resource-icon {
+    svg, img {
+      width: @icon-small;
+      height: @icon-small;
+    }
   }
+
   .card.children .row a:hover {
     border-color: @contacts-color;
   }
@@ -846,6 +854,7 @@ a.fa:hover {
 
 .reports,
 .messages,
+.trainings,
 .tasks {
   .item-content {
     .body {
@@ -1376,6 +1385,11 @@ mm-sidebar-menu .mat-sidenav-container {
       margin-left: 10px;
       flex-shrink: 0;
     }
+
+    mat-icon.fa-graduation-cap:before {
+      font-size: @font-medium;
+      vertical-align: middle;
+    }
   }
 
   .nav-item:not(:not(.hidden) ~ .nav-item) { // The first element without .hidden class, compatible with Chrome +90
@@ -1432,6 +1446,7 @@ mm-sidebar-menu .mat-sidenav-container {
     &.messages,
     &.tasks,
     &.reports,
+    &.trainings,
     &.contacts {
       .loading-status {
         margin: 10px 10px calc(@tab-navbar-size + 10px);
@@ -1667,6 +1682,7 @@ mm-sidebar-menu .mat-sidenav-container {
     }
   }
   .reports,
+  .trainings,
   .tasks {
     .content .item-content .body > div > ul > li {
       padding: 10px;

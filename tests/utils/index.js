@@ -2,11 +2,10 @@
 
 const _ = require('lodash');
 const constants = require('@constants');
-const rpn = require('request-promise-native');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { execSync, spawn } = require('child_process');
+const { execSync, spawn, exec } = require('child_process');
 const mustache = require('mustache');
 // by default, mustache escapes slashes, which messes with paths and urls.
 mustache.escape = (text) => text;
@@ -31,6 +30,9 @@ let infrastructure = 'docker';
 const isDocker = () => infrastructure === 'docker';
 const isK3D = () => !isDocker();
 const K3D_DATA_PATH = '/data';
+const K3D_REGISTRY = 'registry.localhost';
+let K3D_REGISTRY_PORT;
+const K3D_REPO = () => `k3d-${K3D_REGISTRY}:${K3D_REGISTRY_PORT}`;
 
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
@@ -59,21 +61,18 @@ const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { 
 const existingFeedbackDocIds = [];
 const MINIMUM_BROWSER_VERSION = '90';
 const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
-const cookieJar = rpn.jar();
-
-// Cookies from the jar will be included on Node `fetch` calls
-global.fetch = require('fetch-cookie').default(global.fetch, cookieJar);
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const env = {
   ...process.env,
   CHT_NETWORK: NETWORK,
   COUCHDB_SECRET: 'monkey',
+  COUCHDB_UUID: 'the_uuid',
 };
 
 const dockerPlatformName = () => {
   try {
-    return JSON.parse(execSync(`docker version --format '{{json .Server.Platform.Name}}'`));
+    return JSON.parse(execSync(`docker version --format '{{json .Server.Platform.Name}}'`).toString());
   } catch (error) {
     console.log('docker version failed. NOTE this error is not relevant if running outside of docker');
     console.log(error.message);
@@ -88,7 +87,7 @@ const isDockerDesktop = () => {
 const dockerGateway = () => {
   const network = isDocker() ? NETWORK : `k3d-${PROJECT_NAME}`;
   try {
-    return JSON.parse(execSync(`docker network inspect ${network} --format='{{json .IPAM.Config}}'`));
+    return JSON.parse(execSync(`docker network inspect ${network} --format='{{json .IPAM.Config}}'`).toString());
   } catch (error) {
     console.log('docker network inspect failed. NOTE this error is not relevant if running outside of docker');
     console.log(error.message);
@@ -134,81 +133,115 @@ const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.buil
     });
 };
 
-const getSession = async () => {
-  if (cookieJar.getCookies(constants.BASE_URL).length) {
-    return;
-  }
-
-  const options = {
-    method: 'POST',
-    uri: `${constants.BASE_URL}/_session`,
-    json: true,
-    body: { name: auth.username, password: auth.password },
-    auth,
-    resolveWithFullResponse: true,
-  };
-  const response = await rpn(options);
-  const setCookie = response.headers?.['set-cookie'];
-  const header = Array.isArray(setCookie) ? setCookie.find(header => header.startsWith('AuthSession')) : setCookie;
-  if (header) {
-    try {
-      cookieJar.setCookie(rpn.cookie(header), constants.BASE_URL);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-};
-
-const isLoginRequest = options => {
-  return options.path === '/medic/login' && options.body.user !== auth.username;
-};
-
 const randomIp = () => {
   const section = () => (Math.floor(Math.random() * 255) + 1);
   return `${section()}.${section()}.${section()}.${section()}`;
 };
 
+const getRequestUri = (options) => {
+  let uri = (options.uri || `${constants.BASE_URL}${options.path}`);
+  if (options.qs) {
+    Object.keys(options.qs).forEach((key) => {
+      if (Array.isArray(options.qs[key])) {
+        options.qs[key] = JSON.stringify(options.qs[key]);
+      }
+    });
+    uri = `${uri}?${new URLSearchParams(options.qs).toString()}`;
+  }
+
+  return uri;
+};
+
+const setRequestContentType = (options) => {
+  let sendJson = true;
+  if (options.json === false ||
+      (options.headers['Content-Type'] && options.headers['Content-Type'] !== 'application/json')
+  ) {
+    sendJson = false;
+  }
+
+  if (sendJson) {
+    options.headers.Accept = 'application/json';
+    options.headers['Content-Type'] = 'application/json';
+    options.body = JSON.stringify(options.body);
+  }
+
+  return sendJson;
+};
+
+const setRequestEncoding = (options) => {
+  if (options.gzip) {
+    options.headers['Accept-Encoding'] = 'gzip';
+  }
+
+  if (options.gzip === false && !options.headers['Accept-Encoding']) {
+    options.headers['Accept-Encoding'] = 'identity';
+  }
+};
+
+const setRequestAuth = (options) => {
+  if (options.noAuth) {
+    return;
+  }
+
+  const auth = options.auth || { username: constants.USERNAME, password: constants.PASSWORD };
+  const basicAuth = btoa(`${auth.username}:${auth.password}`);
+  options.headers.Authorization = `Basic ${basicAuth}`;
+};
+
+const getRequestOptions = (options) => {
+  options = typeof options === 'string' ? { path: options } : _.clone(options);
+  options.headers = options.headers || {};
+  options.headers['X-Forwarded-For'] = randomIp();
+
+  const uri = getRequestUri(options);
+  const sendJson = setRequestContentType(options);
+
+  setRequestAuth(options);
+  setRequestEncoding(options);
+
+  return { uri, options, resolveWithFullResponse: options.resolveWithFullResponse, sendJson };
+};
+
+const getResponseBody = async (response, sendJson) => {
+  const receiveJson =  (!response.headers.get('content-type') && sendJson) ||
+                       response.headers.get('content-type')?.startsWith('application/json');
+  return receiveJson ? await response.json() : await response.text();
+};
+
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = async (options, { debug } = {}) => { //NOSONAR
-  options = typeof options === 'string' ? { path: options } : _.clone(options);
-  if (!options.noAuth && !options.auth && !isLoginRequest(options)) {
-    await getSession();
-    options.jar = cookieJar;
-  } else {
-    options.headers = options.headers || {};
-    options.headers['X-Forwarded-For'] = randomIp();
-  }
-  options.uri = options.uri || `${constants.BASE_URL}${options.path}`;
-  options.json = options.json === undefined ? true : options.json;
-
+const request = async (options, { debug } = {}) => {
+  const  { uri, options: requestInit, resolveWithFullResponse, sendJson } = getRequestOptions(options);
   if (debug) {
-    console.log('SENDING REQUEST');
-    console.log(JSON.stringify(options, null, 2));
+    console.debug('SENDING REQUEST', JSON.stringify({ ...options, uri, body: null }, null, 2));
   }
 
-  options.transform = (body, response, resolveWithFullResponse) => {
-    if (debug) {
-      console.log('RESPONSE');
-      console.log(response.statusCode);
-      console.log(response.body);
-    }
-    // we might get a json response for a non-json request.
-    const contentType = response.headers['content-type'];
-    if (contentType?.startsWith('application/json') && !options.json) {
-      response.body = JSON.parse(response.body);
-    }
-    // return full response if `resolveWithFullResponse` or if non-2xx status code (so errors can be inspected)
-    return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
+  const response = await fetch(uri, requestInit);
+  const responseObj = {
+    ...response,
+    body: await getResponseBody(response, sendJson),
+    status: response.status,
+    ok: response.ok,
+    headers: response.headers
   };
 
-  try {
-    return await rpn(options);
-  } catch (err) {
-    err.responseBody = err?.response?.body;
-    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri} ${err.statusCode}`);
-    throw err;
+  if (debug) {
+    console.debug('RESPONSE', response.status, response.body);
   }
+
+  if (resolveWithFullResponse) {
+    return responseObj;
+  }
+
+  if (response.ok || (response.status > 300 && response.status < 399)) {
+    return responseObj.body;
+  }
+
+  console.warn(`Error with request: ${options.method || 'GET'} ${uri} ${responseObj.status}`);
+  const err = new Error(response.error || `${response.status} - ${JSON.stringify(responseObj.body)}`);
+  Object.assign(err, responseObj);
+  throw err;
 };
 
 const requestOnTestDb = (options, debug) => {
@@ -559,14 +592,14 @@ const updateSettings = async (updates, options = {}) => {
   }
   const watcher = ignoreReload && Object.keys(updates).length && await waitForSettingsUpdateLogs(ignoreReload);
   await updateCustomSettings(updates);
-  if (!ignoreReload) {
+  if (!ignoreReload && !sync) {
     return await commonElements.closeReloadModal(true);
   }
   if (watcher) {
     await watcher.promise;
   }
   if (sync) {
-    await commonElements.sync(true);
+    await commonElements.sync({ expectReload: true });
   }
   if (refresh) {
     await browser.refresh();
@@ -791,6 +824,14 @@ const deleteUsers = async (users, meta = false) => { //NOSONAR
   }
 };
 
+const deletePurgeDbs = async () => {
+  const dbs = await request({ path: '/_all_dbs' });
+  const purgeDbs = dbs.filter(db => db.includes('purged-role'));
+  for (const purgeDb of purgeDbs) {
+    await request({ path: `/${purgeDb}`, method: 'DELETE' });
+  }
+};
+
 const getCreatedUsers = async () => {
   const adminUserId = COUCH_USER_ID_PREFIX + constants.USERNAME;
   const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
@@ -846,49 +887,38 @@ const getUserSettings = ({ contactId, name }) => {
     }));
 };
 
-const apiRetry = () => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(listenForApi());
-    }, 1000);
-  });
-};
-
 const listenForApi = async () => {
-  console.log('Checking API');
-  try {
-    await request({ path: '/api/info' });
-    console.log('API is up');
-  } catch (err) {
-    console.log('API check failed, trying again in 1 second');
-    console.log(err.message);
-    await apiRetry();
-  }
+  let retryCount = 180;
+  do {
+    try {
+      console.log(`Checking API, retries left ${retryCount}`);
+      return await request({ path: '/api/info' });
+    } catch (err) {
+      console.log('API check failed, trying again in 1 second');
+      console.log(err.message);
+      await delayPromise(1000);
+    }
+  } while (--retryCount > 0);
+  throw new Error('API failed to start after 3 minutes');
 };
 
 const dockerComposeCmd = (params) => {
-  params = params.split(' ').filter(String);
   const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
-  params.unshift('compose', ...composeFiles, '-p', PROJECT_NAME);
+  params = `docker compose ${composeFiles.join(' ')} -p ${PROJECT_NAME} ${params}`;
 
-  return new Promise((resolve, reject) => {
-    const cmd = spawn('docker', params, { env });
-    const output = [];
-    const log = (data, error) => {
-      data = data.toString();
-      output.push(data);
-      error ? console.error(data) : console.log(data);
-    };
+  return runCommand(params);
+};
 
-    cmd.on('error', (err) => {
-      console.error(err);
-      reject(err);
-    });
-    cmd.stdout.on('data', log);
-    cmd.stderr.on('data', log);
+const sendSignal = async (service, signal) => {
+  const getPIDcmd = `/bin/bash -c "pgrep -n node"`;
+  const killCmd = (pid) => `/bin/bash -c "kill -s ${signal} ${pid.trim()}"`;
+  if (isDocker()) {
+    const pid = await dockerComposeCmd(`exec ${service} ${getPIDcmd}`);
+    return await dockerComposeCmd(`exec ${service} ${killCmd(pid)}`);
+  }
 
-    cmd.on('close', () => resolve(output));
-  });
+  const pid = await runCommand(`kubectl ${KUBECTL_CONTEXT} exec deployments/cht-${service} -- ${getPIDcmd}`);
+  await runCommand(`kubectl ${KUBECTL_CONTEXT} exec deployments/cht-${service} -- ${killCmd(pid)}`);
 };
 
 const stopService = async (service) => {
@@ -900,7 +930,7 @@ const stopService = async (service) => {
   let tries = 100;
   do {
     try {
-      await getPodName(service, true);
+      await getPodName(service, false);
       await delayPromise(100);
       tries--;
     } catch {
@@ -918,15 +948,15 @@ const waitForService = async (service) => {
   let tries = 100;
   do {
     try {
-      const podName = await getPodName(service, true);
+      const podName = await getPodName(service);
       await runCommand(
         `kubectl ${KUBECTL_CONTEXT} wait --for jsonpath={.status.containerStatuses[0].started}=true ${podName}`,
-        true
+        { verbose: false }
       );
       return;
     } catch {
       tries--;
-      await delayPromise(100);
+      await delayPromise(500);
     }
   } while (tries > 0);
 };
@@ -1070,6 +1100,8 @@ const addTranslations = (languageCode, translations = {}) => {
           generic: {}
         };
       }
+
+      throw err;
     });
   };
 
@@ -1109,13 +1141,13 @@ const getTestComposeFilePath = file => path.resolve(__dirname, `../${file}-test.
 
 const generateK3DValuesFile = async () => {
   const view = {
-    repo: buildVersions.getRepo(),
+    repo: `${K3D_REPO()}/${buildVersions.getRepo()}`,
     tag: buildVersions.getImageTag(),
     db_name: constants.DB_NAME,
     user: constants.USERNAME,
     password: constants.PASSWORD,
-    secret: '',
-    uuid: '',
+    secret: env.COUCHDB_SECRET,
+    uuid: env.COUCHDB_UUID,
     namespace: PROJECT_NAME,
     data_path: K3D_DATA_PATH,
   };
@@ -1179,39 +1211,34 @@ const startServices = async () => {
   }
 };
 
-const runCommand = (command, silent) => {
-  const [cmd, ...params] = command.split(' ');
+const runCommand = (command, { verbose = true, overrideEnv = false } = {}) => {
+  verbose && console.log(command);
   return new Promise((resolve, reject) => {
-    const proc = spawn(cmd, params, { env });
-    const output = [];
-    const log = (data, error) => {
-      data = data.toString();
-      output.push(data);
-      if (!silent) {
-        error ? console.error(data) : console.log(data);
+    exec(command, { env: overrideEnv || env }, (error, stdout, stderr) => {
+      if (error) {
+        verbose && console.error(error);
+        return reject(error);
       }
-    };
 
-    proc.on('error', (err) => {
-      console.error(err);
-      reject(err);
-    });
-    proc.stdout.on('data', log);
-    proc.stderr.on('data', log);
-
-    proc.on('close', (exitCode) => {
-      const outString = output.join('\n');
-      return exitCode ? reject(outString) : resolve(outString);
+      verbose && console.error(stderr);
+      verbose && console.log(stdout);
+      resolve(stdout);
     });
   });
 };
 
 const createCluster = async (dataDir) => {
   const hostPort = process.env.NGINX_HTTPS_PORT ? `${process.env.NGINX_HTTPS_PORT}` : '443';
+  await runCommand(`k3d registry create ${K3D_REGISTRY}`);
+
+  const port = await runCommand(`docker container port k3d-${K3D_REGISTRY}`);
+  K3D_REGISTRY_PORT = port.trim().replace('5000/tcp -> 0.0.0.0:', '');
+
   await runCommand(
     `k3d cluster create ${PROJECT_NAME} ` +
     `--port ${hostPort}:443@loadbalancer ` +
-    `--volume ${dataDir}:${K3D_DATA_PATH} --kubeconfig-switch-context=false`
+    `--volume ${dataDir}:${K3D_DATA_PATH} --kubeconfig-switch-context=false ` +
+    `--registry-use ${K3D_REPO()}`
   );
 };
 
@@ -1228,15 +1255,21 @@ const importImages = async () => {
     // authentication to private repos is weird to set up in k3d.
     // https://k3d.io/v5.2.0/usage/registries/#authenticated-registries
     try {
-      await runCommand(`docker image inspect ${image}`, true);
+      await runCommand(`docker image inspect ${image}`, { verbose: false });
     } catch {
       await runCommand(`docker pull ${image}`);
     }
-    await runCommand(`k3d image import ${image} -c ${PROJECT_NAME}`);
+    await runCommand(`docker tag ${image} ${K3D_REPO()}/${image}`);
+    await runCommand(`docker push ${K3D_REPO()}/${image}`);
   }
 };
 
 const cleanupOldCluster = async () => {
+  try {
+    await runCommand(`k3d registry delete ${K3D_REGISTRY}`);
+  } catch {
+    console.warn('No registry to clean up');
+  }
   try {
     await runCommand(`k3d cluster delete ${PROJECT_NAME}`);
   } catch {
@@ -1461,7 +1494,14 @@ const collectLogs = (container, ...regex) => {
     errors.push(err.toString());
   });
 
+  const timeout = setTimeout(() => {
+    receivedFirstLine();
+    errors.push('Timed out waiting for first log line');
+    killSpawnedProcess(proc);
+  }, 180000);
+
   const collect = () => {
+    clearTimeout(timeout);
     if (errors.length) {
       const error = new Error('CollectLogs errored');
       error.errors = errors;
@@ -1483,9 +1523,14 @@ const collectHaproxyLogs = (...regex) => collectLogs('haproxy', ...regex);
 
 const normalizeTestName = name => name.replace(/\s/g, '_');
 
-const apiLogTestStart = (name) => {
-  return requestOnTestDb(`/?start=${normalizeTestName(name)}`)
-    .catch(() => console.warn('Error logging test start - ignoring'));
+const apiLogTestStart = async (name) => {
+  try {
+    await requestOnTestDb(`/?start=${normalizeTestName(name)}`);
+  } catch (err) {
+    console.error('Api is not up. Cancelling workflow', err);
+    await saveLogs();
+    process.exit(1);
+  }
 };
 
 const apiLogTestEnd = (name) => {
@@ -1517,16 +1562,20 @@ const getUpdatedPermissions = async (roles, addPermissions, removePermissions) =
   return settings.permissions;
 };
 
-const updatePermissions = async (roles, addPermissions, removePermissions, ignoreReload) => {
+const updatePermissions = async (roles, addPermissions, removePermissions, options = {}) => {
   const permissions = await getUpdatedPermissions(roles, addPermissions, removePermissions);
-  await updateSettings({permissions}, { ignoreReload: ignoreReload });
+  const { ignoreReload = false, revert = false, refresh = false, sync = false } = options;
+  await updateSettings(
+    { permissions },
+    { ignoreReload, revert, refresh, sync }
+  );
 };
 
 const getSentinelDate = () => getContainerDate('sentinel');
-const getPodName = async (service, silent) => {
+const getPodName = async (service, verbose) => {
   const cmd = await runCommand(
     `kubectl get pods ${KUBECTL_CONTEXT} -l cht.service=${service} --field-selector=status.phase==Running -o name`,
-    silent
+    { verbose }
   );
   return cmd.replace(/[^A-Za-z0-9-/]/g, '');
 };
@@ -1561,6 +1610,9 @@ const logFeedbackDocs = async (test) => {
 const isMinimumChromeVersion = process.env.CHROME_VERSION === MINIMUM_BROWSER_VERSION;
 
 const escapeBranchName = (branch) => branch?.replace(/[/|_]/g, '-');
+
+const toggleSentinelTransitions = () => sendSignal('sentinel', 'USR1');
+const runSentinelTasks = () => sendSignal('sentinel', 'USR2');
 
 module.exports = {
   db,
@@ -1640,4 +1692,8 @@ module.exports = {
   stopCouchDb,
   startCouchDb,
   getDefaultForms,
+  toggleSentinelTransitions,
+  runSentinelTasks,
+  runCommand,
+  deletePurgeDbs,
 };
