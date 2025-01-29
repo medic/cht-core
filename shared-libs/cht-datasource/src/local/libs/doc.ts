@@ -72,7 +72,7 @@ const queryDocUuids = (
   options: PouchDB.Query.Options<Doc, Record<string, unknown>>
 ) => db
   .query(view, options)
-  .then(({ rows }) => rows.map(item => item.id ? item.id as string : null));
+  .then(({ rows }) => rows.map(({ id }) => id as string));
 
 /** @internal */
 export const queryDocUuidsByRange = (
@@ -83,7 +83,7 @@ export const queryDocUuidsByRange = (
   endkey: unknown,
   limit?: number,
   skip = 0
-): Promise<Nullable<string>[]> => queryDocUuids(
+): Promise<string[]> => queryDocUuids(
   db,
   view,
   {
@@ -103,7 +103,7 @@ export const queryDocUuidsByKey = (
   key: unknown,
   limit: number,
   skip: number
-): Promise<Nullable<string>[]> => queryDocUuids(db, view, { include_docs: false, key, limit, skip });
+): Promise<string[]> => queryDocUuids(db, view, { include_docs: false, key, limit, skip });
 
 /**
  * Resolves a page containing an array of T using the getFunction to retrieve documents from the database
