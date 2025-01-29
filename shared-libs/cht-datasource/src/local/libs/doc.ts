@@ -83,7 +83,7 @@ export const queryDocUuidsByRange = (
   endkey: unknown,
   limit?: number,
   skip = 0
-): Promise<Nullable<string>[]> => queryDocUuids(
+): Promise<string[]> => queryDocUuids(
   db,
   view,
   {
