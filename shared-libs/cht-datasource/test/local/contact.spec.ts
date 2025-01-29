@@ -130,7 +130,7 @@ describe('local contact', () => {
         expect(debug.notCalled).to.be.true;
         expect(isPerson.calledOnceWithExactly(settingsGetAll(), person)).to.be.true;
         expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getContactLineageInner.calledOnceWithExactly(lineageDocs, person, true)).to.be.true;
+        expect(getContactLineageInner.calledOnceWithExactly(lineageDocs, person)).to.be.true;
         expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
@@ -174,7 +174,7 @@ describe('local contact', () => {
         expect(warn.calledOnceWithExactly(`No contact found for identifier [${identifier.uuid}].`)).to.be.true;
         expect(debug.notCalled).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
-        expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
@@ -195,7 +195,7 @@ describe('local contact', () => {
         expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid contact.`)).to.be.true;
         expect(debug.notCalled).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
-        expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
@@ -213,7 +213,7 @@ describe('local contact', () => {
         expect(warn.notCalled).to.be.true;
         expect(debug.calledOnceWithExactly(`No lineage contacts found for person [${identifier.uuid}].`)).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
-        expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
     });
@@ -318,7 +318,7 @@ describe('local contact', () => {
       });
 
       it('returns a page of contact identifiers for freetext only qualifier with : delimiter', async () => {
-        const freetext = 'has : delimiter';
+        const freetext = 'has:delimiter';
         const qualifier = {
           freetext
         };
@@ -432,7 +432,7 @@ describe('local contact', () => {
       });
 
       it('returns a page of contact identifiers for contactType and freetext qualifier with : delimiter', async () => {
-        const freetext = 'has : delimiter';
+        const freetext = 'has:delimiter';
         const qualifier = {
           contactType,
           freetext
@@ -607,7 +607,7 @@ describe('local contact', () => {
 
       it('returns a page of contact identifiers for freetext only' +
         'qualifier with : delimiter for not-null cursor', async () => {
-        const freetext = 'has : delimiter';
+        const freetext = 'has:delimiter';
         const qualifier = {
           freetext
         };
@@ -726,7 +726,7 @@ describe('local contact', () => {
       it(
         'returns a page of contact identifiers for contactType and freetext qualifier' +
         'with : delimiter for not-null cursor', async () => {
-          const freetext = 'has : delimiter';
+          const freetext = 'has:delimiter';
           const qualifier = {
             contactType,
             freetext

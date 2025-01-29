@@ -13,7 +13,7 @@ import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
-import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
+import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 import {
   assertContactTypeFreetextQualifier,
   assertCursor,
@@ -111,14 +111,7 @@ export namespace v1 {
     ): Promise<Page<string>> => {
       assertCursor(cursor);
       assertLimit(limit);
-
-      if (isContactType(qualifier) && isFreetextType(qualifier)) {
-        assertContactTypeFreetextQualifier(qualifier);
-      } else if (isContactType(qualifier)) {
-        assertTypeQualifier(qualifier);
-      } else if (isFreetextType(qualifier)) {
-        assertFreetextQualifier(qualifier);
-      }
+      assertContactTypeFreetextQualifier(qualifier);
 
       return fn(qualifier, cursor, Number(limit));
     };
@@ -144,13 +137,7 @@ export namespace v1 {
     const curriedGen = (
       qualifier: ContactTypeQualifier | FreetextQualifier
     ): AsyncGenerator<string, null> => {
-      if (isContactType(qualifier) && isFreetextType(qualifier)) {
-        assertContactTypeFreetextQualifier(qualifier);
-      } else if (isContactType(qualifier)) {
-        assertTypeQualifier(qualifier);
-      } else if (isFreetextType(qualifier)) {
-        assertFreetextQualifier(qualifier);
-      }
+      assertContactTypeFreetextQualifier(qualifier);
 
       return getPagedGenerator(getPage, qualifier);
     };

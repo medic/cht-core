@@ -97,17 +97,16 @@ export const getContactLineage = (medicDb: PouchDB.Database<Doc>) => {
   const getMedicDocsById = getDocsByIds(medicDb);
 
   return async (
-    contacts: NonEmptyArray<Nullable<Doc>>,
+    places: NonEmptyArray<Nullable<Doc>>,
     person?: Person.v1.Person,
-    filterSelf = false,
   ): Promise<Nullable<Contact.v1.ContactWithLineage>>  => {
-    const contactUuids = getPrimaryContactIds(contacts);
-    const uuidsToFetch = filterSelf ? contactUuids.filter(uuid => uuid !== person?._id) : contactUuids;
+    const placeUuids = getPrimaryContactIds(places);
+    const uuidsToFetch = person ? placeUuids.filter(uuid => uuid !== person._id) : placeUuids;
     const fetchedContacts = await getMedicDocsById(uuidsToFetch);
     const allContacts = person ? [person, ...fetchedContacts] : fetchedContacts;
-    const contactsWithHydratedPrimaryContact = contacts.map(
+    const contactsWithHydratedPrimaryContact = places.map(
       hydratePrimaryContact(allContacts)
-    ).filter(item => item ?? false);
+    );
     const [mainContact, ...lineageContacts] = contactsWithHydratedPrimaryContact;
     const contactWithLineage = hydrateLineage(
       (person ?? mainContact) as Contact.v1.Contact,

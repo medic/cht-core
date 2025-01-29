@@ -43,6 +43,7 @@ export namespace v1 {
   /** @internal */
   export const getWithLineage = ({ medicDb, settings }: LocalDataContext) => {
     const getLineageDocs = getLineageDocsById(medicDb);
+    const getLineage = getContactLineage(medicDb);
 
     return async (identifier: UuidQualifier): Promise<Nullable<Place.v1.PlaceWithLineage>> => {
       const [place, ...lineagePlaces] = await getLineageDocs(identifier.uuid);
@@ -56,7 +57,7 @@ export namespace v1 {
       }
 
       const places: NonEmptyArray<Nullable<Doc>> = [place, ...lineagePlaces];
-      return await getContactLineage(medicDb)(places) as Nullable<Place.v1.PlaceWithLineage>;
+      return await getLineage(places) as Nullable<Place.v1.PlaceWithLineage>;
     };
   };
 

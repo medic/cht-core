@@ -56,6 +56,7 @@ export namespace v1 {
   /** @internal */
   export const getWithLineage = ({ medicDb, settings }: LocalDataContext) => {
     const getLineageDocs = getLineageDocsById(medicDb);
+    const getLineage = getContactLineage(medicDb);
 
     return async (identifier: UuidQualifier): Promise<Nullable<Contact.v1.ContactWithLineage>> => {
       const [contact, ...lineageContacts] = await getLineageDocs(identifier.uuid);
@@ -71,10 +72,10 @@ export namespace v1 {
       const combinedContacts: NonEmptyArray<Nullable<Doc>> = [contact, ...lineageContacts];
       
       if (contactTypeUtils.isPerson(settings.getAll(), contact)) {
-        return await getContactLineage(medicDb)(lineageContacts, contact, true);
+        return await getLineage(lineageContacts, contact);
       }
 
-      return await getContactLineage(medicDb)(combinedContacts);
+      return await getLineage(combinedContacts);
     };
   };
 

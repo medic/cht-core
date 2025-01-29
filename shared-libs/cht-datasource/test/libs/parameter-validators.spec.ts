@@ -83,7 +83,7 @@ describe('libs parameter-validators', () => {
 
   describe('assertFreetextQualifier', () => {
     it('should not throw for valid freetext qualifier', () => {
-      const validQualifier: FreetextQualifier = { freetext: 'search text' };
+      const validQualifier: FreetextQualifier = { freetext: 'search-text' };
       expect(() => assertFreetextQualifier(validQualifier)).to.not.throw();
     });
 
@@ -112,7 +112,7 @@ describe('libs parameter-validators', () => {
     });
 
     it('should pass when given a valid freetext qualifier', () => {
-      const validFreetext = { freetext: 'some text' };
+      const validFreetext = { freetext: 'some-text' };
 
       expect(() => assertContactTypeFreetextQualifier(validFreetext)).to.not.throw();
     });

@@ -108,7 +108,7 @@ describe('local report', () => {
       });
 
       it('returns a page of report identifiers for freetext only qualifier with : delimiter', async () => {
-        const freetext = 'has : delimiter';
+        const freetext = 'has:delimiter';
         const qualifier = {
           freetext
         };
@@ -202,7 +202,7 @@ describe('local report', () => {
 
       it('returns a page of report identifiers for freetext only qualifier' +
         'with : delimiter for not-null cursor', async () => {
-        const freetext = 'has : delimiter';
+        const freetext = 'has:delimiter';
         const qualifier = {
           freetext
         };

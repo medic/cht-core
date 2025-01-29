@@ -80,7 +80,8 @@ export const getDatasource = (ctx: DataContext) => {
         getByUuidWithLineage: (uuid: string) => ctx.bind(Contact.v1.getWithLineage)(Qualifier.byUuid(uuid)),
 
         /**
-         * Returns an array of contact identifiers for the provided page specifications.
+         * Returns an array of contact identifiers for the provided page specifications,
+         * freetext and type
          * @param freetext the search keyword(s)
          * @param type the type of contact to search for
          * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
@@ -102,6 +103,46 @@ export const getDatasource = (ctx: DataContext) => {
         ),
 
         /**
+         * Returns an array of contact identifiers for the provided page specifications and type.
+         * @param type the type of contact to search for
+         * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+         * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+         * @param limit the maximum number of identifiers to return. Default is 10000.
+         * @returns a page of contact identifiers for the provided specifications
+         * @throws InvalidArgumentError if `type` is not provided
+         * @throws InvalidArgumentError if the `type is invalid for a contact
+         * @throws InvalidArgumentError if the provided limit is `<= 0`
+         * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+         */
+        getUuidsPageByType: (
+          type: string,
+          cursor: Nullable<string> = null,
+          limit: number | `${number}` = DEFAULT_IDS_PAGE_LIMIT
+        ) => ctx.bind(Contact.v1.getUuidsPage)(
+          Qualifier.byContactType(type), cursor, limit
+        ),
+
+        /**
+         * Returns an array of contact identifiers for the provided page specifications and freetext
+         * @param freetext the search keyword(s)
+         * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+         * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+         * @param limit the maximum number of identifiers to return. Default is 10000.
+         * @returns a page of contact identifiers for the provided specifications
+         * @throws InvalidArgumentError if `freetext` is not provided
+         * @throws InvalidArgumentError if the `freetext` is empty or invalid
+         * @throws InvalidArgumentError if the provided limit is `<= 0`
+         * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+         */
+        getUuidsPageByFreetext: (
+          freetext: string,
+          cursor: Nullable<string> = null,
+          limit: number | `${number}` = DEFAULT_IDS_PAGE_LIMIT
+        ) => ctx.bind(Contact.v1.getUuidsPage)(
+          Qualifier.byFreetext(freetext), cursor, limit
+        ),
+
+        /**
          * Returns a generator for fetching all the contact identifiers for given
          * `freetext` and `type`.
          * @param freetext the search keyword(s)
@@ -110,11 +151,38 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws InvalidArgumentError if either `freetext` or `type` is not provided
          * @throws InvalidArgumentError if the `freetext` is empty or if the `type is invalid for a contact
          */
-        getUuids: (
+        getUuidsByTypeFreetext: (
           freetext: string,
           type: string
         ) => ctx.bind(Contact.v1.getUuids)(
           Qualifier.and(Qualifier.byFreetext(freetext), Qualifier.byContactType(type))
+        ),
+
+        /**
+         * Returns a generator for fetching all the contact identifiers for given `type`.
+         * @param type the type of contact identifiers to return
+         * @returns a generator for fetching all the contact identifiers matching the given `type`.
+         * @throws InvalidArgumentError if either `type` is not provided
+         * @throws InvalidArgumentError if the `type is invalid for a contact
+         */
+        getUuidsByType: (
+          type: string
+        ) => ctx.bind(Contact.v1.getUuids)(
+          Qualifier.byContactType(type)
+        ),
+
+        /**
+         * Returns a generator for fetching all the contact identifiers for given
+         * `freetext`.
+         * @param freetext the search keyword(s)
+         * @returns a generator for fetching all the contact identifiers matching the given `freetext`.
+         * @throws InvalidArgumentError if either `freetext`is not provided
+         * @throws InvalidArgumentError if the `freetext` is empty or invalid
+         */
+        getUuidsByFreetext: (
+          freetext: string,
+        ) => ctx.bind(Contact.v1.getUuids)(
+          Qualifier.byFreetext(freetext)
         ),
       },
       place: {
@@ -227,7 +295,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws InvalidArgumentError if the provided `limit` value is `<=0`
          * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
          */
-        getUuidsPage: (
+        getUuidsPageByFreetext: (
           qualifier: string,
           cursor: Nullable<string> = null,
           limit: number | `${number}` = DEFAULT_IDS_PAGE_LIMIT
@@ -241,7 +309,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns a generator for fetching all report identifiers that match the given qualifier
          * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
          */
-        getUuids: (
+        getUuidsByFreetext: (
           qualifier: string,
         ) => ctx.bind(Report.v1.getUuids)(Qualifier.byFreetext(qualifier)),
       },
