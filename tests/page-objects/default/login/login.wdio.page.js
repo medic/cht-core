@@ -11,6 +11,7 @@ const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
 const localeByName = (locale) => $(`.locale[name="${locale}"]`);
 const tokenLoginError = (reason) => $(`.error.${reason}`);
+const privacyPolicyPageLink = () => $('a[translate="privacy.policy"]');
 
 const getErrorMessage = async () => {
   await (await errorMessageField()).waitForDisplayed();
@@ -133,6 +134,10 @@ const setPasswordValue = async (password) => {
   await (await passwordField()).setValue(password);
 };
 
+const goToPrivacyPolicyPage = async () => {
+  await (await privacyPolicyPageLink()).click();
+};
+
 module.exports = {
   login,
   cookieLogin,
@@ -147,4 +152,6 @@ module.exports = {
   getErrorMessage,
   togglePassword,
   setPasswordValue,
+  privacyPolicyPageLink,
+  goToPrivacyPolicyPage
 };
