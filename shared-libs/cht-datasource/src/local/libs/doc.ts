@@ -103,7 +103,7 @@ export const queryDocUuidsByKey = (
   key: unknown,
   limit: number,
   skip: number
-): Promise<Nullable<string>[]> => queryDocUuids(db, view, { include_docs: false, key, limit, skip });
+): Promise<string[]> => queryDocUuids(db, view, { include_docs: false, key, limit, skip });
 
 /**
  * Resolves a page containing an array of T using the getFunction to retrieve documents from the database
