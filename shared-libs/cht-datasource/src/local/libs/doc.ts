@@ -72,7 +72,7 @@ const queryDocUuids = (
   options: PouchDB.Query.Options<Doc, Record<string, unknown>>
 ) => db
   .query(view, options)
-  .then(({ rows }) => rows.map(item => item.id ? item.id as string : null));
+  .then(({ rows }) => rows.map(({ id }) => id as string));
 
 /** @internal */
 export const queryDocUuidsByRange = (
