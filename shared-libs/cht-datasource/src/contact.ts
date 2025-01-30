@@ -17,12 +17,8 @@ import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 import {
   assertContactTypeFreetextQualifier,
   assertCursor,
-  assertFreetextQualifier,
   assertLimit,
-  assertTypeQualifier,
   assertUuidQualifier,
-  isContactType,
-  isFreetextType,
 } from './libs/parameter-validators';
 import { Doc } from './libs/doc';
 
