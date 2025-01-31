@@ -402,8 +402,7 @@ const validateCurrentPassword = async (username, currentPassword, newPassword) =
     await request.get({
       url: new URL('/_session', environment.serverUrlNoAuth).toString(),
       json: true,
-      resolveWithFullResponse: true,
-      auth: { user: username, pass: currentPassword },
+      auth: { username: username, password: currentPassword },
     });
 
     if (currentPassword === newPassword) {
@@ -414,7 +413,7 @@ const validateCurrentPassword = async (username, currentPassword, newPassword) =
     }
     return { isValid: true };
   } catch (err) {
-    if (err.statusCode === 401) {
+    if (err.status === 401) {
       return {
         isValid: false,
         error: ERROR_KEY_MAPPING['password.current.incorrect'],
