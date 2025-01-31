@@ -37,8 +37,8 @@
               ]
             },
             "scripts": [
-              "../node_modules/jquery/dist/jquery.min.js",
-              "../node_modules/select2/dist/js/select2.min.js"
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/select2/dist/js/select2.min.js"
             ],
             "customWebpackConfig": {
               "path": "./custom-webpack.config.js"
@@ -121,8 +121,8 @@
               ]
             },
             "scripts": [
-              "../node_modules/jquery/dist/jquery.min.js",
-              "../node_modules/select2/dist/js/select2.min.js"
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/select2/dist/js/select2.min.js"
             ],
             "customWebpackConfig": {
               "path": "./custom-webpack.config.js"
@@ -172,8 +172,8 @@
               ]
             },
             "scripts": [
-              "../node_modules/jquery/dist/jquery.min.js",
-              "../node_modules/select2/dist/js/select2.min.js"
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/select2/dist/js/select2.min.js"
             ],
 
             "customWebpackConfig": {
@@ -255,8 +255,8 @@
               ]
             },
             "scripts": [
-              "../node_modules/jquery/dist/jquery.min.js",
-              "../node_modules/select2/dist/js/select2.min.js"
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/select2/dist/js/select2.min.js"
             ],
             "customWebpackConfig": {
               "path": "./custom-webpack.config.js"
