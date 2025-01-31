@@ -27,7 +27,7 @@
   <body>
     <div>
       <% if(showBackButton) { %>
-      <a id="back-button" href="#">{{ translations.back }}</a>
+      <a class="back-button" href="#">{{ translations.back }}</a>
       <% } else { %>
       <a href="/">{{ translations.login }}</a>
       <% } %>
@@ -35,12 +35,12 @@
     <div>
       <h1>{{ translations.title }}</h1>
     </div>
-    <div>
+    <div id="privacy-policy-content">
       {{ policy }}
     </div>
     <div>
       <% if(showBackButton) { %>
-      <a id="back-button" href="#">{{ translations.back }}</a>
+      <a class="back-button" href="#">{{ translations.back }}</a>
       <% } else { %>
       <a href="/">{{ translations.login }}</a>
       <% } %>

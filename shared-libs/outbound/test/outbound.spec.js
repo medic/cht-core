@@ -295,7 +295,6 @@ describe('outbound shared library', () => {
           assert.deepEqual(request.post.args[0][0].auth, {
             username: 'admin',
             password: 'pass',
-            sendImmediately: true
           });
         });
     });

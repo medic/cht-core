@@ -824,6 +824,14 @@ const deleteUsers = async (users, meta = false) => { //NOSONAR
   }
 };
 
+const deletePurgeDbs = async () => {
+  const dbs = await request({ path: '/_all_dbs' });
+  const purgeDbs = dbs.filter(db => db.includes('purged-role'));
+  for (const purgeDb of purgeDbs) {
+    await request({ path: `/${purgeDb}`, method: 'DELETE' });
+  }
+};
+
 const getCreatedUsers = async () => {
   const adminUserId = COUCH_USER_ID_PREFIX + constants.USERNAME;
   const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
@@ -1691,4 +1699,5 @@ module.exports = {
   toggleSentinelTransitions,
   runSentinelTasks,
   runCommand,
+  deletePurgeDbs,
 };

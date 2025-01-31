@@ -513,7 +513,8 @@ describe('login controller', () => {
       sinon.stub(tokenLogin, 'getUserByToken').resolves('userId');
       sinon.stub(tokenLogin, 'resetPassword').resolves({ user: 'user_name', password: 'secret' });
       sinon.stub(tokenLogin, 'deactivateTokenLogin').resolves();
-      sinon.stub(request, 'post').resolves({ statusCode: 200, headers: { 'set-cookie': [ 'AuthSession=abc;' ] } });
+      sinon.stub(request, 'post')
+        .resolves({ status: 200, headers: new Headers({ 'set-cookie': [ 'AuthSession=abc;' ] }) });
       sinon.stub(res, 'status').returns(res);
       sinon.stub(res, 'send').returns(res);
       sinon.stub(res, 'cookie');
@@ -551,11 +552,11 @@ describe('login controller', () => {
       sinon.stub(tokenLogin, 'resetPassword').resolves({ user: 'user_name', password: 'secret' });
       sinon.stub(tokenLogin, 'deactivateTokenLogin').resolves();
       sinon.stub(request, 'post')
-        .onCall(0).resolves({ statusCode: 401 })
-        .onCall(1).resolves({ statusCode: 401 })
-        .onCall(2).resolves({ statusCode: 401 })
-        .onCall(3).resolves({ statusCode: 401 })
-        .resolves({ statusCode: 200, headers: { 'set-cookie': [ 'AuthSession=cde;' ] } });
+        .onCall(0).resolves({ status: 401 })
+        .onCall(1).resolves({ status: 401 })
+        .onCall(2).resolves({ status: 401 })
+        .onCall(3).resolves({ status: 401 })
+        .resolves({ status: 200, headers: new Headers({ 'set-cookie': [ 'AuthSession=cde;' ] }) });
 
       sinon.stub(res, 'status').returns(res);
       sinon.stub(res, 'cookie');
@@ -659,8 +660,8 @@ describe('login controller', () => {
     it('should retry getting userCtx 10 times', async () => {
       req.body = { user: 'sharon', password: 'p4ss', locale: 'fr' };
       const postResponse = {
-        statusCode: 200,
-        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+        status: 200,
+        headers: new Headers({ 'set-cookie': [ 'AuthSession=abc;' ] }),
       };
       sinon.stub(request, 'post').resolves(postResponse);
       sinon.stub(res, 'status').returns(res);
@@ -676,8 +677,8 @@ describe('login controller', () => {
       chai.expect(request.post.args[0][0].url).to.equal('http://test.com:1234/_session');
       chai.expect(request.post.args[0][0].body.name).to.equal('sharon');
       chai.expect(request.post.args[0][0].body.password).to.equal('p4ss');
-      chai.expect(request.post.args[0][0].auth.user).to.equal('sharon');
-      chai.expect(request.post.args[0][0].auth.pass).to.equal('p4ss');
+      chai.expect(request.post.args[0][0].auth.username).to.equal('sharon');
+      chai.expect(request.post.args[0][0].auth.password).to.equal('p4ss');
       chai.expect(auth.getUserCtx.callCount).to.equal(10);
       chai.expect(auth.getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
       chai.expect(res.status.callCount).to.equal(1);
@@ -698,8 +699,8 @@ describe('login controller', () => {
     it('returns errors from auth after 10 retries', () => {
       req.body = { user: 'sharon', password: 'p4ss' };
       const postResponse = {
-        statusCode: 200,
-        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+        status: 200,
+        headers: new Headers({ 'set-cookie': [ 'AuthSession=abc;' ] })
       };
       const post = sinon.stub(request, 'post').resolves(postResponse);
       const status = sinon.stub(res, 'status').returns(res);
@@ -718,8 +719,8 @@ describe('login controller', () => {
     it('returns errors immediately from auth if code is not 401', () => {
       req.body = { user: 'sharon', password: 'p4ss' };
       const postResponse = {
-        statusCode: 200,
-        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+        status: 200,
+        headers: new Headers({ 'set-cookie': [ 'AuthSession=abc;' ] })
       };
       const post = sinon.stub(request, 'post').resolves(postResponse);
       const status = sinon.stub(res, 'status').returns(res);
@@ -738,8 +739,8 @@ describe('login controller', () => {
     it('logs in successfully', () => {
       req.body = { user: 'sharon', password: 'p4ss', locale: 'es' };
       const postResponse = {
-        statusCode: 200,
-        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+        status: 200,
+        headers: new Headers({ 'set-cookie': [ 'AuthSession=abc;' ] })
       };
       const post = sinon.stub(request, 'post').resolves(postResponse);
       const send = sinon.stub(res, 'send');
@@ -759,8 +760,8 @@ describe('login controller', () => {
         chai.expect(post.args[0][0].url).to.equal('http://test.com:1234/_session');
         chai.expect(post.args[0][0].body.name).to.equal('sharon');
         chai.expect(post.args[0][0].body.password).to.equal('p4ss');
-        chai.expect(post.args[0][0].auth.user).to.equal('sharon');
-        chai.expect(post.args[0][0].auth.pass).to.equal('p4ss');
+        chai.expect(post.args[0][0].auth.username).to.equal('sharon');
+        chai.expect(post.args[0][0].auth.password).to.equal('p4ss');
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
         chai.expect(status.callCount).to.equal(1);
@@ -822,8 +823,8 @@ describe('login controller', () => {
     it('sets user settings and cookie to default when no locale selected', () => {
       req.body = { user: 'sharon', password: 'p4ss' };
       const postResponse = {
-        statusCode: 200,
-        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+        status: 200,
+        headers: new Headers({ 'set-cookie': [ 'AuthSession=abc;' ] }),
       };
       sinon.stub(request, 'post').resolves(postResponse);
       sinon.stub(res, 'send');
@@ -848,8 +849,8 @@ describe('login controller', () => {
     it('does not set locale when not changed', () => {
       req.body = { user: 'sharon', password: 'p4ss' };
       const postResponse = {
-        statusCode: 200,
-        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+        status: 200,
+        headers: new Headers({ 'set-cookie': [ 'AuthSession=abc;' ] })
       };
       sinon.stub(request, 'post').resolves(postResponse);
       sinon.stub(res, 'send');
@@ -875,8 +876,8 @@ describe('login controller', () => {
     it('redirect offline admin user to webapp after successful login - #5785', () => {
       req.body = { user: 'sharon', password: 'p4ss' };
       const postResponse = {
-        statusCode: 200,
-        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+        status: 200,
+        headers: new Headers({ 'set-cookie': [ 'AuthSession=abc;' ] })
       };
       const post = sinon.stub(request, 'post').resolves(postResponse);
       const send = sinon.stub(res, 'send');
@@ -900,8 +901,8 @@ describe('login controller', () => {
     it('redirect admin users to admin app after successful login', () => {
       req.body = { user: 'sharon', password: 'p4ss' };
       const postResponse = {
-        statusCode: 200,
-        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+        status: 200,
+        headers: new Headers({ 'set-cookie': [ 'AuthSession=abc;' ] })
       };
       const post = sinon.stub(request, 'post').resolves(postResponse);
       const send = sinon.stub(res, 'send');
@@ -933,8 +934,8 @@ describe('login controller', () => {
     it('should not return a 401 when an admin without user-settings logs in', () => {
       req.body = { user: 'shazza', password: 'p4ss' };
       const postResponse = {
-        statusCode: 200,
-        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+        status: 200,
+        headers: new Headers({ 'set-cookie': [ 'AuthSession=abc;' ] })
       };
       sinon.stub(request, 'post').resolves(postResponse);
       sinon.stub(res, 'send');
