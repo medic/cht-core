@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "postinstall": "patch-package",
-    "prepare": "husky install",
+    "prepare": "husky",
     "-- DEV BUILD SCRIPTS": "-----------------------------------------------------------------------------------------------",
     "clean": "rm -rf build api/build",
     "build-ddocs": "mkdir -p build/ddocs && cp -r ddocs/* build/ddocs/ && node scripts/build/cli setDdocsVersion && node scripts/build/cli setBuildInfo && node ./scripts/build/ddoc-compile.js primary && mkdir -p api/build/ddocs && cp build/ddocs/*.json api/build/ddocs/",
@@ -131,7 +131,7 @@
     "fetch-cookie": "^3.1.0",
     "flat": "^6.0.0",
     "gaze": "^1.1.3",
-    "husky": "^8.0.0",
+    "husky": "^9.1.7",
     "inquirer": "^12.3.3",
     "jasmine-spec-reporter": "^7.0.0",
     "jsdoc": "^4.0.4",
