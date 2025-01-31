@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "angular-jsdoc": "^1.5.1",
-    "angular-mocks": "^1.8.3"
+    "angular-mocks": "^1.8.3",
+    "q": "^1.5.1"
   }
 }
