@@ -67,7 +67,7 @@
     "minimist": ">=1.2.6"
   },
   "resolutions": {
-    "**/jquery": "3.2.x"
+    "**/jquery": "3.6.3"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^18.0.0",
