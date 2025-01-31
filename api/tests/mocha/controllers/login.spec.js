@@ -348,8 +348,8 @@ describe('login controller', () => {
       };
 
       const postResponse = {
-        statusCode: 200,
-        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+        status: 200,
+        headers: { getSetCookie: () => [ 'AuthSession=abc;' ] }
       };
       const post = sinon.stub(request, 'post').resolves(postResponse);
       const send = sinon.stub(res, 'send');
@@ -370,7 +370,7 @@ describe('login controller', () => {
         'user-settings': { id: 'org.couchdb.user:sharon' }
       });
       sinon.stub(request, 'get').resolves({
-        statusCode: 200,
+        status: 200,
         body: { userCtx: { name: 'sharon' } }
       });
 
@@ -785,8 +785,8 @@ describe('login controller', () => {
     it('logs in successfully and redirects to password-reset for new users', () => {
       req.body = { user: 'sharon', password: 'p4ss', locale: 'es' };
       const postResponse = {
-        statusCode: 200,
-        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+        status: 200,
+        headers: { getSetCookie: () => [ 'AuthSession=abc;' ] }
       };
       const post = sinon.stub(request, 'post').resolves(postResponse);
       const send = sinon.stub(res, 'send');

@@ -361,9 +361,9 @@ const validatePasswordReset = (password) => {
 
 const validateSession = async (req) => {
   const sessionRes = await createSession(req);
-  if (sessionRes.statusCode !== 200) {
+  if (sessionRes.status !== 200) {
     const error = new Error('Not logged in');
-    error.status = sessionRes.statusCode;
+    error.status = sessionRes.status;
     error.error = 'Not logged in';
     throw error;
   }
