@@ -39,6 +39,7 @@ describe('EditUserCtrl controller', () => {
       },
       permissions: {
         can_have_multiple_places: ['community-health-assistant'],
+        can_skip_password_change: ['community-health-assistant'],
       },
     });
     http = { get: sinon.stub() };
@@ -862,6 +863,39 @@ describe('EditUserCtrl controller', () => {
           chai.expect(UpdateUser.callCount).to.equal(0);
           chai.expect(scope.errors.password).to.equal('password required');
         });
+    });
+  });
+
+  describe('skipPasswordChange', () => {
+    let user;
+
+    beforeEach(() => {
+      user = {
+        _id: 'user.id',
+        name: 'user.name',
+        fullname: 'user.fullname',
+        email: 'user@email.com',
+        phone: 'user.phone',
+        facility_id: 'abc',
+        contact_id: 'xyz',
+        language: 'zz',
+      };
+    });
+
+    it('should set skipPasswordChange to false if user does not have can_skip_password_change permission', () => {
+      user.roles = ['supervisor'];
+
+      return mockEditAUser(user).setupPromise.then(() => {
+        chai.expect(scope.skipPasswordChange).to.equal(false);
+      });
+    });
+
+    it('should set skipPasswordChange to true if user has can_skip_password_change permission', () => {
+      user.roles = ['community-health-assistant'];
+
+      return mockEditAUser(user).setupPromise.then(() => {
+        chai.expect(scope.skipPasswordChange).to.equal(true);
+      });
     });
   });
 });
