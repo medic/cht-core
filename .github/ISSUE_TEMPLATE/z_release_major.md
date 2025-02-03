@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-# Planning - Product Manager
+# Planning - CHT Community 
 
 - [ ] Create a GH Milestone for the release. We use [semver](http://semver.org) so if there are breaking changes increment the major, otherwise if there are new features increment the minor, otherwise increment the service pack. Breaking changes in our case relate to updated software requirements (egs: CouchDB, node, minimum browser versions), broken backwards compatibility in an api, or a major visual update that requires user retraining.
 - [ ] Add all the issues to be worked on to the Milestone. Ideally each minor release will have one or two features, a handful of improvements, and plenty of bug fixes.
@@ -55,9 +55,7 @@ If all is good, then in 24h, I will start the release. Thanks!
 
 See below for some highlights, read the [release notes]({{<paste-url>}}) for full details.
 
-Following our support policy, versions {{versions}} are no longer supported. Projects running these versions should start planning to upgrade in the near future. For more details read our [software support documentation](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions).
-
-Check out our [roadmap](https://github.com/orgs/medic/projects/112/views/21) to see what else is currently being working on.
+Following the CHT's support policy, versions {{versions}} are no longer supported. Projects running these versions should start planning to upgrade in the near future. For more details read the CHT [software support documentation](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions).
 
 ## {{version}} Highlights
 
@@ -74,5 +72,5 @@ Check out our [roadmap](https://github.com/orgs/medic/projects/112/views/21) to 
 We’ve also implemented loads of other improvements and fixed a heap of bugs.
 
 ```
-- [ ] Add one last update to the #product-team Slack channel and use the thread to lead an internal release retrospective covering what went well and areas to improve for next time.
+- [ ] Add one last update to the #development Slack channel and use the thread to lead an internal release retrospective covering what went well and areas to improve for next time.
 - [ ] Mark this issue "done" and close the Milestone.
