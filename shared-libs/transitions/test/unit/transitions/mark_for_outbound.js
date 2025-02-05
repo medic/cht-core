@@ -83,7 +83,7 @@ describe('mark for outbound', () => {
       outbound.send.rejects();
       db.sentinel.get.rejects({ status: 404 });
 
-      clock = sinon.useFakeTimers(new Date('2023-07-11T03:05:00+0000').getTime());
+      clock = sinon.useFakeTimers({now:new Date('2023-07-11T03:05:00+0000').getTime()});
 
       return markForOutbound
         .onMatch(change)

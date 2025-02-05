@@ -1491,7 +1491,7 @@ describe('Form service', () => {
         .returns({ _id: 'contact', parent: { _id: 'def' } })
         .withArgs(sinon.match({ _id: 'def' }))
         .returns({ _id: 'def' });
-      clock = sinon.useFakeTimers(5000);
+      clock = sinon.useFakeTimers({now:5000});
 
       return service
         .saveContact(form, docId, type)
@@ -1540,7 +1540,7 @@ describe('Form service', () => {
         clonedDocs.push({ this: 'is a new doc' });
         return Promise.resolve(clonedDocs);
       });
-      clock = sinon.useFakeTimers(1000);
+      clock = sinon.useFakeTimers({now:1000});
 
       return service
         .saveContact(form, docId, type)

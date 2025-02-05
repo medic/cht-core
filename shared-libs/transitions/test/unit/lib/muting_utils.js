@@ -207,7 +207,7 @@ describe('mutingUtils', () => {
 
     it('should not update docs without changes when unmuting', () => {
       const timestamp = 5000;
-      clock = sinon.useFakeTimers(timestamp);
+      clock = sinon.useFakeTimers({now:timestamp});
       const contacts = [
         { _id: 'a' },
         { _id: 'b', muted: 100 },
@@ -1773,7 +1773,7 @@ describe('mutingUtils', () => {
     });
 
     it('should set muting history when available', () => {
-      clock = sinon.useFakeTimers(4567);
+      clock = sinon.useFakeTimers({now:4567});
       const mutedContact = {
         muted: 2000,
         muting_history: {
@@ -1874,7 +1874,7 @@ describe('mutingUtils', () => {
     describe('should update contact when muting context changes', () => {
       const timestamp = 4567;
       beforeEach(() => {
-        clock = sinon.useFakeTimers(timestamp);
+        clock = sinon.useFakeTimers({now:timestamp});
       });
 
       it('when muted on client, unmuted on server and muting', () => {
@@ -1992,7 +1992,7 @@ describe('mutingUtils', () => {
     describe('should not update contact when muting context does not change', () => {
       const timestamp = 4567;
       beforeEach(() => {
-        clock = sinon.useFakeTimers(timestamp);
+        clock = sinon.useFakeTimers({now:timestamp});
       });
 
       it('when unmuting an unmuted contact', () => {

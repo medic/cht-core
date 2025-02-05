@@ -22,7 +22,7 @@ describe('RelativeDate Service', () => {
     const relative = (timestamp, options) => options.withoutTime ?
       formatDateRelativeDay(timestamp, options) : formatDateRelativeTime(timestamp, options);
 
-    clock = sinon.useFakeTimers(5000);
+    clock = sinon.useFakeTimers({now:5000});
 
     TestBed.configureTestingModule({
       providers: [
