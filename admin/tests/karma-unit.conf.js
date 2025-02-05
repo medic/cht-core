@@ -26,7 +26,7 @@ module.exports = function(config) {
       // used to query html
       'node_modules/jquery/dist/jquery.js',
 
-      '../node_modules/q/q.js',
+      'node_modules/q/q.js',
 
       // application code
       '../api/build/static/admin/js/main.js',
