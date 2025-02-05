@@ -1,6 +1,7 @@
 import { LocalDataContext } from './libs/data-context';
 import {
-  getDocById, getPaginatedDocs,
+  fetchAndFilterUuids,
+  getDocById,
   queryDocUuidsByKey,
   queryDocUuidsByRange
 } from './libs/doc';
@@ -48,7 +49,7 @@ export namespace v1 {
 
     const getDocsFnForFreetextType = (
       qualifier: FreetextQualifier
-    ): (limit: number, skip: number) => Promise<Nullable<string>[]> => {
+    ): (limit: number, skip: number) => Promise<string[]> => {
       if (isKeyedFreetextQualifier(qualifier)) {
         return (limit, skip) => getByExactMatchFreetext([normalizeFreetext(qualifier.freetext)], limit, skip);
       }
@@ -68,7 +69,7 @@ export namespace v1 {
       const skip = validateCursor(cursor);
       const getDocsFn = getDocsFnForFreetextType(qualifier);
 
-      return await getPaginatedDocs(getDocsFn, limit, skip);
+      return await fetchAndFilterUuids(getDocsFn, limit)(limit, skip);
     };
   };
 }

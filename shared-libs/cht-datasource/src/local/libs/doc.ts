@@ -171,3 +171,47 @@ export const getPaginatedDocs = async <T>(
     cursor: hasMore ? (skip + limit).toString() : null
   } as Page<T>;
 };
+
+/** @internal */
+export const fetchAndFilterUuids = (
+  getFunction: (limit: number, skip: number) => Promise<string[]>,
+  limit: number,
+): typeof recursionInner => {
+  const recursionInner = async (
+    currentLimit: number,
+    currentSkip: number,
+    currentUuids: string[] = []
+  ): Promise<Page<string>> => {
+    // fetching 1 extra to know if we are at the end or there's more
+    const docUuidsExtra = await getFunction(currentLimit + 1, currentSkip);
+    const hasMore = docUuidsExtra.length > currentLimit;
+    const docUuids = hasMore ? docUuidsExtra.slice(0, -1) : docUuidsExtra;
+    const uniqueUuids = [...new Set(docUuids)];
+    const overFetchCount = currentUuids.length + uniqueUuids.length - limit || 0;
+    const allUuids = [...currentUuids, ...uniqueUuids].slice(0, limit);
+    const allUuidsUnique = [...new Set(allUuids)];
+
+    if (!hasMore) {
+      return { data: allUuidsUnique, cursor: null };
+    }
+
+    if (allUuids.length === limit) {
+      const nextSkip = currentSkip + currentLimit - overFetchCount;
+
+      return { data: allUuidsUnique, cursor: nextSkip.toString() };
+    }
+
+    // Re-fetch twice as many docs as we need to limit number of recursions
+    const missingCount = currentLimit - uniqueUuids.length;
+    logger.debug(`Found [${missingCount.toString()}] invalid docs. Re-fetching additional records.`);
+    const nextLimit = missingCount * 2;
+    const nextSkip = currentSkip + currentLimit;
+
+    return recursionInner(
+      nextLimit,
+      nextSkip,
+      allUuidsUnique
+    );
+  };
+  return recursionInner;
+};

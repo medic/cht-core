@@ -58,7 +58,31 @@ describe('Report API', () => {
   }, {
     patient, submitter: contact0
   }));
-
+  // NOTE: this is a common word added to contacts for searching purposes
+  // the value was chosen such that it is a sub-string of the name which
+  // gives double output from the couchdb view
+  const searchWord = 'freetext';
+  const report6 = utils.deepFreeze(reportFactory.report().build({
+    form: 'freetext-report-6'
+  }, {
+    patient, submitter: contact0, fields: {
+      note: searchWord
+    }
+  }));
+  const report7 = utils.deepFreeze(reportFactory.report().build({
+    form: 'freetext-report-7'
+  }, {
+    patient, submitter: contact0, fields: {
+      note: searchWord
+    }
+  }));
+  const report8 = utils.deepFreeze(reportFactory.report().build({
+    form: 'freetext-report-8'
+  }, {
+    patient, submitter: contact0, fields: {
+      note: searchWord
+    }
+  }));
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms', place: place1._id, contact: {
       _id: 'fixture:user:online-no-perms', name: 'Online User',
@@ -71,8 +95,7 @@ describe('Report API', () => {
   }));
 
   const allDocItems = [ contact0, contact1, contact2, place0, place1, place2, patient ];
-  const allReports = [ report0, report1, report2, report3, report4, report5 ];
-  const allReportsIds = allReports.map(report => report._id);
+  const allReports = [ report0, report1, report2, report3, report4, report5, report6, report7, report8 ];
 
   before(async () => {
     await utils.saveDocs(allDocItems);
@@ -129,15 +152,17 @@ describe('Report API', () => {
       const opts = {
         path: `${endpoint}?${stringQueryParams}`,
       };
+      const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
       const responsePage = await utils.request(opts);
       const responsePeople = responsePage.data;
       const responseCursor = responsePage.cursor;
 
-      expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(allReportsIds);
+      expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
       expect(responseCursor).to.be.equal(null);
     });
 
     it('returns a page of report ids when limit and cursor is passed and cursor can be reused', async () => {
+      const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
       // first request
       const queryParams = {
         freetext,
@@ -159,12 +184,53 @@ describe('Report API', () => {
 
       const allReports = [ ...firstPage.data, ...secondPage.data ];
 
-      expect(allReports).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(allReportsIds);
+      expect(allReports).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
       expect(firstPage.data.length).to.be.equal(4);
       expect(secondPage.data.length).to.be.equal(2);
       expect(firstPage.cursor).to.be.equal('4');
       expect(secondPage.cursor).to.be.equal(null);
     });
+
+    it('returns a page of unique report ids for when multiple fields match the same freetext', async () => {
+      const expectedContactIds = [ report6._id, report7._id, report8._id ];
+      const queryParams = {
+        freetext: searchWord,
+      };
+      const stringQueryParams = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `${endpoint}?${stringQueryParams}`,
+      };
+      const responsePage = await utils.request(opts);
+      const responseIds = responsePage.data;
+      const responseCursor = responsePage.cursor;
+
+      expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
+        .to.deep.equalInAnyOrder(expectedContactIds);
+      expect(responseCursor).to.be.equal(null);
+    });
+
+    it('returns a page of unique report ids for when multiple fields match the same freetext with limit',
+      async () => {
+        const expectedContactIds = [ report6._id, report7._id, report8._id ];
+        // NOTE: adding a limit of 4 to deliberately fetch 4 contacts with the given search word
+        // and enforce re-fetching logic
+        const queryParams = {
+          freetext: searchWord,
+          limit: 4
+        };
+        const stringQueryParams = new URLSearchParams(queryParams).toString();
+        const opts = {
+          path: `${endpoint}?${stringQueryParams}`,
+        };
+        const responsePage = await utils.request(opts);
+
+        const responseIds = responsePage.data;
+        const responseCursor = responsePage.cursor;
+
+        expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
+          .to.deep.equalInAnyOrder(expectedContactIds);
+        expect(responseCursor).to.be.equal(null);
+      });
 
     it(`throws error when user does not have can_view_reports permission`, async () => {
       const opts = {

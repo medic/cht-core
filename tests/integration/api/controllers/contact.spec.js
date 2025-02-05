@@ -5,18 +5,31 @@ const userFactory = require('@factories/cht/users/users');
 const {expect} = require('chai');
 
 describe('Contact API', () => {
-  // just a random string to be added to every doc so that it can be used to retrieve all the docs
-  const commonWord = 'freetext';
-  const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw', notes: commonWord }));
+  // NOTE: this is a common word added to contacts to fetch them
+  const commonWord = 'contact';
+  // NOTE: this is a search word added to contacts for searching purposes
+  // the value was chosen such that it is a sub-string of the short_name which
+  // gives double output from the couchdb view
+  const searchWord = 'freetext';
+  // the fields `search` and `short_name` exist for the unique search by freetext based searching
+  // whereas the `name` field is for just simple searching
+  // combining them to have similar text is not done here because the order in which the docs
+  // were being returned were not consistent, meaning the order could be [contact0, contact1, contact2]
+  // in the first run whereas another in another giving a non-consistent expected value to match against
+  const contact0 = utils.deepFreeze(personFactory.build({
+    name: 'contact0', role: 'chw', notes: searchWord, short_name: searchWord + '0'
+  }));
   const contact1 = utils.deepFreeze(personFactory.build({
     name: 'contact1',
     role: 'chw_supervisor',
-    notes: commonWord
+    notes: searchWord,
+    short_name: searchWord + '1'
   }));
   const contact2 = utils.deepFreeze(personFactory.build({
     name: 'contact2',
     role: 'program_officer',
-    notes: commonWord
+    notes: searchWord,
+    short_name: searchWord + '2'
   }));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
   const place1 = utils.deepFreeze({
@@ -233,7 +246,7 @@ describe('Contact API', () => {
     const threeLimit = 3;
     const twoLimit = 2;
     const invalidContactType = 'invalidPerson';
-    const freetext = 'freetext';
+    const freetext = 'contact';
     const placeFreetext = 'clinic';
     const endpoint = '/api/v1/contact/uuid';
 
@@ -418,7 +431,7 @@ describe('Contact API', () => {
         expect(secondPage.cursor).to.be.equal(null);
       });
 
-    it('returns a page of people type contact ids with freetext when limit and cursor is passed' +
+    it('returns a page of people type contact ids with freetext when limit and cursor is passed ' +
       'and cursor can be reused',
     async () => {
       // first request
@@ -481,6 +494,46 @@ describe('Contact API', () => {
         expect(secondPage.data.length).to.be.equal(1);
         expect(firstPage.cursor).to.be.equal('2');
         expect(secondPage.cursor).to.be.equal(null);
+      });
+
+    it('returns a page of unique contact ids for when multiple fields match the same freetext', async () => {
+      const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
+      const queryParams = {
+        freetext: searchWord,
+      };
+      const stringQueryParams = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `${endpoint}?${stringQueryParams}`,
+      };
+      const responsePage = await utils.request(opts);
+      const responseIds = responsePage.data;
+      const responseCursor = responsePage.cursor;
+
+      expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
+        .to.deep.equalInAnyOrder(expectedContactIds);
+      expect(responseCursor).to.be.equal(null);
+    });
+
+    it('returns a page of unique contact ids for when multiple fields match the same freetext with limit',
+      async () => {
+        const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
+        // NOTE: adding a limit of 4 to deliberately fetch 4 contacts with the given search word
+        // and enforce re-fetching logic
+        const queryParams = {
+          freetext: searchWord,
+          limit: 4
+        };
+        const stringQueryParams = new URLSearchParams(queryParams).toString();
+        const opts = {
+          path: `${endpoint}?${stringQueryParams}`,
+        };
+        const responsePage = await utils.request(opts);
+        const responseIds = responsePage.data;
+        const responseCursor = responsePage.cursor;
+
+        expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
+          .to.deep.equalInAnyOrder(expectedContactIds);
+        expect(responseCursor).to.be.equal(null);
       });
 
     it(`throws error when user does not have can_view_contacts permission`, async () => {

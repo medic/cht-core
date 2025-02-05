@@ -1,7 +1,7 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import {
+  fetchAndFilterUuids,
   getDocById,
-  getPaginatedDocs,
   queryDocUuidsByKey,
   queryDocUuidsByRange
 } from './libs/doc';
@@ -90,7 +90,7 @@ export namespace v1 {
 
     const determineGetDocsFn = (
       qualifier: ContactTypeQualifier | FreetextQualifier
-    ): ((limit: number, skip: number) => Promise<Nullable<string>[]>) => {
+    ): ((limit: number, skip: number) => Promise<string[]>) => {
       if (isContactTypeAndFreetextType(qualifier)) {
         return getDocsFnForContactTypeAndFreetext(qualifier);
       }
@@ -105,7 +105,7 @@ export namespace v1 {
 
     const getDocsFnForContactTypeAndFreetext = (
       qualifier: ContactTypeQualifier & FreetextQualifier
-    ): (limit: number, skip: number) => Promise<Nullable<string>[]> => {
+    ): (limit: number, skip: number) => Promise<string[]> => {
       // this is for an exact match search
       if (isKeyedFreetextQualifier(qualifier)) {
         return (limit, skip) => getByTypeExactMatchFreetext(
@@ -126,14 +126,14 @@ export namespace v1 {
 
     const getDocsFnForContactType = (
       qualifier: ContactTypeQualifier
-    ): (limit: number, skip: number) => Promise<Nullable<string>[]> => (
+    ): (limit: number, skip: number) => Promise<string[]> => (
       limit,
       skip
     ) => getByType([qualifier.contactType], limit, skip);
 
     const getDocsFnForFreetextType = (
       qualifier: FreetextQualifier
-    ): (limit: number, skip: number) => Promise<Nullable<string>[]> => {
+    ): (limit: number, skip: number) => Promise<string[]> => {
       if (isKeyedFreetextQualifier(qualifier)) {
         return (limit, skip) => getByExactMatchFreetext([normalizeFreetext(qualifier.freetext)], limit, skip);
       }
@@ -160,7 +160,7 @@ export namespace v1 {
       const skip = validateCursor(cursor);
       const getDocsFn = determineGetDocsFn(qualifier);
 
-      return await getPaginatedDocs(getDocsFn, limit, skip);
+      return await fetchAndFilterUuids(getDocsFn, limit)(limit, skip);
     };
   };
 }
