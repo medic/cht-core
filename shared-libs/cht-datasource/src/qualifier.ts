@@ -86,7 +86,7 @@ export const isFreetextQualifier = (qualifier: unknown): qualifier is FreetextQu
   return isRecord(qualifier) &&
     hasField(qualifier, { name: 'freetext', type: 'string' }) &&
     qualifier.freetext.length >= 3 &&
-    (qualifier.freetext.includes(':') || !qualifier.freetext.includes(' '));
+    (qualifier.freetext.includes(':') || !/\s+/.test(qualifier.freetext));
 };
 
 /**
