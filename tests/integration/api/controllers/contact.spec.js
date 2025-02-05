@@ -565,6 +565,19 @@ describe('Contact API', () => {
         .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid contact type [${invalidContactType}]."}`);
     });
 
+    it('should not throw 400 error when freetext contains space but also has : delimiter', async () => {
+      const queryParams = {
+        freetext: 'key:value with space'
+      };
+      const queryString = new URLSearchParams(queryParams).toString();
+      const opts = {
+        path: `${endpoint}?${queryString}`,
+      };
+
+      await expect(utils.request(opts))
+        .to.not.be.rejectedWith(`400 - {"code":400,"error":"Invalid freetext [\\" \\"]."}`);
+    });
+
     it('should 400 error when freetext is invalid', async () => {
       const queryParams = {
         freetext: ' '
