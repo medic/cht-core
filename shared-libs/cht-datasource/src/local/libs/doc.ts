@@ -155,24 +155,6 @@ export const fetchAndFilter = <T extends Doc>(
 };
 
 /** @internal */
-export const getPaginatedDocs = async <T>(
-  getDocsFn: (limit: number, skip: number) => Promise<Nullable<T>[]>,
-  limit: number,
-  skip: number
-): Promise<Page<T>> => {
-  // fetching 1 extra to know if we are at the end or there's more
-  const pagedDocs = await getDocsFn(limit + 1, skip);
-
-  const hasMore = pagedDocs.length > limit;
-  const docs = hasMore ? pagedDocs.slice(0, -1) : pagedDocs;
-
-  return {
-    data: docs,
-    cursor: hasMore ? (skip + limit).toString() : null
-  } as Page<T>;
-};
-
-/** @internal */
 export const fetchAndFilterUuids = (
   getFunction: (limit: number, skip: number) => Promise<string[]>,
   limit: number,

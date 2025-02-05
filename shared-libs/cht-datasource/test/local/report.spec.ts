@@ -97,14 +97,16 @@ describe('local report', () => {
       let queryDocUuidsByKeyOuter: SinonStub;
       let queryDocUuidsByRangeInner: SinonStub;
       let queryDocUuidsByRangeOuter: SinonStub;
-      let getPaginatedDocs: SinonStub;
+      let fetchAndFilterUuidsInner: SinonStub;
+      let fetchAndFilterUuidsOuter: SinonStub;
 
       beforeEach(() => {
         queryDocUuidsByKeyInner = sinon.stub();
         queryDocUuidsByKeyOuter = sinon.stub(LocalDoc, 'queryDocUuidsByKey').returns(queryDocUuidsByKeyInner);
         queryDocUuidsByRangeInner = sinon.stub();
         queryDocUuidsByRangeOuter = sinon.stub(LocalDoc, 'queryDocUuidsByRange').returns(queryDocUuidsByRangeInner);
-        getPaginatedDocs = sinon.stub(LocalDoc, 'getPaginatedDocs');
+        fetchAndFilterUuidsInner = sinon.stub();
+        fetchAndFilterUuidsOuter = sinon.stub(LocalDoc, 'fetchAndFilterUuids').returns(fetchAndFilterUuidsInner);
       });
 
       it('returns a page of report identifiers for freetext only qualifier with : delimiter', async () => {
@@ -125,10 +127,11 @@ describe('local report', () => {
           cursor: '3',
           data: ['1', '2', '3']
         };
-        getPaginatedDocs.resolves(getPaginatedDocsResult);
+        fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
 
         const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
-        const getPaginatedDocsFirstArg = getPaginatedDocs.firstCall.args[0] as (...args: unknown[]) => unknown;
+        const fetchAndFilterUuidsOuterFirstArg =
+          fetchAndFilterUuidsOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
 
         expect(res).to.deep.equal(expectedResult);
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
@@ -141,12 +144,12 @@ describe('local report', () => {
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
-        expect(getPaginatedDocs.calledOnce).to.be.true;
-        expect(getPaginatedDocs.firstCall.args[0]).to.be.a('function');
-        expect(getPaginatedDocs.firstCall.args[1]).to.be.equal(limit);
-        expect(getPaginatedDocs.firstCall.args[2]).to.be.equal(Number(cursor));
+        expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
+        expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
+        expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
         // call the argument to check which one of the inner functions was called
-        getPaginatedDocsFirstArg(limit, Number(cursor));
+        fetchAndFilterUuidsOuterFirstArg(limit, Number(cursor));
         expect(queryDocUuidsByKeyInner.calledWithExactly([qualifier.freetext], limit, Number(cursor))).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
       });
@@ -169,10 +172,11 @@ describe('local report', () => {
           cursor: '3',
           data: ['1', '2', '3']
         };
-        getPaginatedDocs.resolves(getPaginatedDocsResult);
+        fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
 
         const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
-        const fetchAndFilterOuterFirstArg = getPaginatedDocs.firstCall.args[0] as (...args: unknown[]) => unknown;
+        const fetchAndFilterOuterFirstArg =
+          fetchAndFilterUuidsOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
 
         expect(res).to.deep.equal(expectedResult);
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
@@ -185,10 +189,10 @@ describe('local report', () => {
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
-        expect(getPaginatedDocs.calledOnce).to.be.true;
-        expect(getPaginatedDocs.firstCall.args[0]).to.be.a('function');
-        expect(getPaginatedDocs.firstCall.args[1]).to.be.equal(limit);
-        expect(getPaginatedDocs.firstCall.args[2]).to.be.equal(Number(cursor));
+        expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
+        expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
+        expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
         // call the argument to check which one of the inner functions was called
         fetchAndFilterOuterFirstArg(limit, Number(cursor));
         expect(queryDocUuidsByRangeInner.calledWithExactly(
@@ -219,10 +223,11 @@ describe('local report', () => {
           cursor: '8',
           data: ['1', '2', '3']
         };
-        getPaginatedDocs.resolves(getPaginatedDocsResult);
+        fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
 
         const res = await Report.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
-        const getPaginatedDocsFirstArg = getPaginatedDocs.firstCall.args[0] as (...args: unknown[]) => unknown;
+        const fetchAndFilterUuidsOuterFirstArg =
+          fetchAndFilterUuidsOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
 
         expect(res).to.deep.equal(expectedResult);
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
@@ -235,12 +240,12 @@ describe('local report', () => {
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
-        expect(getPaginatedDocs.calledOnce).to.be.true;
-        expect(getPaginatedDocs.firstCall.args[0]).to.be.a('function');
-        expect(getPaginatedDocs.firstCall.args[1]).to.be.equal(limit);
-        expect(getPaginatedDocs.firstCall.args[2]).to.be.equal(Number(notNullCursor));
+        expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
+        expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
+        expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
         // call the argument to check which one of the inner functions was called
-        getPaginatedDocsFirstArg(limit, Number(notNullCursor));
+        fetchAndFilterUuidsOuterFirstArg(limit, Number(notNullCursor));
         expect(
           queryDocUuidsByKeyInner.calledWithExactly([qualifier.freetext], limit, Number(notNullCursor))
         ).to.be.true;
@@ -266,10 +271,11 @@ describe('local report', () => {
           cursor: '8',
           data: ['1', '2', '3']
         };
-        getPaginatedDocs.resolves(getPaginatedDocsResult);
+        fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
 
         const res = await Report.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
-        const getPaginatedDocsFirstArg = getPaginatedDocs.firstCall.args[0] as (...args: unknown[]) => unknown;
+        const fetchAndFilterUuidsOuterFirstArg =
+          fetchAndFilterUuidsOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
 
         expect(res).to.deep.equal(expectedResult);
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
@@ -282,12 +288,12 @@ describe('local report', () => {
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
-        expect(getPaginatedDocs.calledOnce).to.be.true;
-        expect(getPaginatedDocs.firstCall.args[0]).to.be.a('function');
-        expect(getPaginatedDocs.firstCall.args[1]).to.be.equal(limit);
-        expect(getPaginatedDocs.firstCall.args[2]).to.be.equal(Number(notNullCursor));
+        expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
+        expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
+        expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
         // call the argument to check which one of the inner functions was called
-        getPaginatedDocsFirstArg(limit, Number(notNullCursor));
+        fetchAndFilterUuidsOuterFirstArg(limit, Number(notNullCursor));
         expect(queryDocUuidsByRangeInner.calledWithExactly(
           [qualifier.freetext],
           [qualifier.freetext + END_OF_ALPHABET_MARKER],
@@ -321,7 +327,7 @@ describe('local report', () => {
           expect(
             queryDocUuidsByRangeOuter.getCall(0).args
           ).to.deep.equal([ localContext.medicDb, 'medic-client/reports_by_freetext' ]);
-          expect(getPaginatedDocs.notCalled).to.be.true;
+          expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
         });
       });
 
@@ -334,10 +340,11 @@ describe('local report', () => {
           data: [],
           cursor
         };
-        getPaginatedDocs.resolves(expectedResult);
+        fetchAndFilterUuidsInner.resolves(expectedResult);
 
         const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
-        const getPaginatedDocsFirstArg = getPaginatedDocs.firstCall.args[0] as (...args: unknown[]) => unknown;
+        const fetchAndFilterUuidsOuterFirstArg =
+          fetchAndFilterUuidsOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
 
         expect(res).to.deep.equal(expectedResult);
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
@@ -350,11 +357,11 @@ describe('local report', () => {
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
         ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
-        expect(getPaginatedDocs.firstCall.args[0]).to.be.a('function');
-        expect(getPaginatedDocs.firstCall.args[1]).to.be.equal(limit);
-        expect(getPaginatedDocs.firstCall.args[2]).to.be.equal(Number(cursor));
+        expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
+        expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
         // call the argument to check which one of the inner functions was called
-        getPaginatedDocsFirstArg(limit, Number(cursor));
+        fetchAndFilterUuidsOuterFirstArg(limit, Number(cursor));
         expect(queryDocUuidsByRangeInner.calledWithExactly(
           [qualifier.freetext],
           [qualifier.freetext + END_OF_ALPHABET_MARKER],
