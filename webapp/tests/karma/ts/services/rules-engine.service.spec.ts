@@ -18,6 +18,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { RulesEngineCoreFactoryService, RulesEngineService } from '@mm-services/rules-engine.service';
 import { PipesService } from '@mm-services/pipes.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { getProperty } from '../../../../src/ts/libs/schema';
 
 describe('RulesEngineService', () => {
   let service: RulesEngineService;
@@ -215,7 +216,7 @@ describe('RulesEngineService', () => {
         await func();
         assert.fail('Should throw');
       } catch (err) {
-        expect(err.name).to.include(include);
+        expect(getProperty(err, 'name')).to.include(include);
       }
     };
 

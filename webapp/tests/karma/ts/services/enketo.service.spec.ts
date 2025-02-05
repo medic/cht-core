@@ -12,6 +12,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
+import { getProperty } from '../../../../src/ts/libs/schema';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -130,7 +131,7 @@ describe('Enketo service', () => {
         expect.fail('Should throw error');
       } catch (error) {
         expect(enketoInit.callCount).to.equal(1);
-        expect(error.message).to.equal('["nope","still nope"]');
+        expect(getProperty(error, 'message')).to.equal('["nope","still nope"]');
       }
     }));
 

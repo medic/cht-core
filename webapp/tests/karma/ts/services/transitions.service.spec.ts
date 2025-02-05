@@ -8,6 +8,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ValidationService } from '@mm-services/validation.service';
 import { CreateUserForContactsTransition } from '@mm-services/transitions/create-user-for-contacts.transition';
+import { getProperty } from '../../../../src/ts/libs/schema';
 
 describe('Transitions Service', () => {
   let settingsService;
@@ -264,7 +265,7 @@ describe('Transitions Service', () => {
           await service.applyTransitions(docs);
           expect.fail('should have thrown an error');
         } catch (err) {
-          expect(err.message).to.equal(`An array of valid doc objects must be provided.`);
+          expect(getProperty(err, 'message')).to.equal(`An array of valid doc objects must be provided.`);
         }
 
         expect(mutingTransition.filter.callCount).to.equal(0);

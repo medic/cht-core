@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 
 import { DbService } from '@mm-services/db.service';
+import { getProperty } from '../libs/schema';
 
 @Injectable({
   providedIn: 'root'
@@ -84,7 +85,7 @@ export class IndexedDbService {
     try {
       localDoc = await this.loadingLocalDoc;
     } catch (error) {
-      if (error.status !== 404) {
+      if (getProperty(error, 'status') !== 404) {
         throw error;
       }
       console.debug('IndexedDbService :: Local doc not created yet. Ignoring error.');

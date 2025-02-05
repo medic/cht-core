@@ -4,6 +4,7 @@ import { Person, Qualifier } from '@medic/cht-datasource';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { AuthService } from '@mm-services/auth.service';
+import { getProperty } from '../libs/schema';
 
 @Injectable({
   providedIn: 'root'
@@ -47,7 +48,7 @@ export class UserContactService {
     try {
       return await this.userSettingsService.get();
     } catch (err) {
-      if (err.code === 404) {
+      if (getProperty(err, 'code') === 404) {
         return null;
       }
       throw err;

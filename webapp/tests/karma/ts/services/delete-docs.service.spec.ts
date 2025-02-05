@@ -7,6 +7,7 @@ import { SessionService } from '@mm-services/session.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { DeleteDocsService } from '@mm-services/delete-docs.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { getProperty } from '../../../../src/ts/libs/schema';
 
 describe('DeleteDocs service', () => {
 
@@ -266,7 +267,7 @@ describe('DeleteDocs service', () => {
     try {
       JSON.stringify(report);
     } catch (e) {
-      if (e.message.startsWith('Converting circular structure to JSON')) {
+      if ((getProperty(e, 'message') as string).startsWith('Converting circular structure to JSON')) {
         isCircularBefore = true;
       }
     }
@@ -277,7 +278,7 @@ describe('DeleteDocs service', () => {
       try {
         JSON.stringify(bulkDocs.args[0][0][0]);
       } catch (e) {
-        if (e.message.startsWith('Converting circular structure to JSON')) {
+        if ((getProperty(e, 'message') as string).startsWith('Converting circular structure to JSON')) {
           isCircularAfter = true;
         }
       }

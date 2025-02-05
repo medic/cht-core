@@ -14,6 +14,7 @@ import { LineageModelGeneratorService } from '@mm-services/lineage-model-generat
 import { PerformanceService } from '@mm-services/performance.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { UserContactService } from '@mm-services/user-contact.service';
+import { getProperty } from '../../libs/schema';
 
 @Component({
   templateUrl: './tasks.component.html',
@@ -156,7 +157,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
-      this.errorStack = exception.stack;
+      this.errorStack = getProperty(exception, 'stack');
       this.hasTasks = false;
       this.tasksActions.setTasksList([]);
     } finally {

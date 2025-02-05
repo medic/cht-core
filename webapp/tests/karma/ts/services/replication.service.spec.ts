@@ -7,6 +7,7 @@ import { ReplicationService } from '@mm-services/replication.service';
 import { DbService } from '@mm-services/db.service';
 import { of, throwError } from 'rxjs';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
+import { getProperty } from '../../../../src/ts/libs/schema';
 
 
 describe('ContactTypes service', () => {
@@ -330,7 +331,7 @@ describe('ContactTypes service', () => {
           await service.replicateFrom();
           expect.fail('Should have thrown');
         } catch (err) {
-          expect(err.message).to.equal('omg');
+          expect(getProperty(err, 'message')).to.equal('omg');
           expect(localDb.allDocs.callCount).to.equal(0);
           expect(localDb.bulkDocs.callCount).to.equal(0);
           expect(remoteDb.bulkGet.callCount).to.equal(0);
@@ -351,7 +352,7 @@ describe('ContactTypes service', () => {
           await service.replicateFrom();
           expect.fail('Should have thrown');
         } catch (err) {
-          expect(err.message).to.equal('alldocsfail');
+          expect(getProperty(err, 'message')).to.equal('alldocsfail');
           expect(localDb.bulkDocs.callCount).to.equal(0);
           expect(remoteDb.bulkGet.callCount).to.equal(0);
           expect(http.post.callCount).to.equal(0);
@@ -381,7 +382,7 @@ describe('ContactTypes service', () => {
           await service.replicateFrom();
           expect.fail('Should have thrown');
         } catch (err) {
-          expect(err.message).to.equal('bulkgeterror');
+          expect(getProperty(err, 'message')).to.equal('bulkgeterror');
           expect(localDb.bulkDocs.callCount).to.equal(0);
           expect(http.post.callCount).to.equal(0);
         }
@@ -416,7 +417,7 @@ describe('ContactTypes service', () => {
           await service.replicateFrom();
           expect.fail('Should have thrown');
         } catch (err) {
-          expect(err.message).to.equal('bulkdocserr');
+          expect(getProperty(err, 'message')).to.equal('bulkdocserr');
           expect(http.post.callCount).to.equal(0);
         }
       });
@@ -444,7 +445,7 @@ describe('ContactTypes service', () => {
           await service.replicateFrom();
           expect.fail('Should have thrown');
         } catch (err) {
-          expect(err.message).to.equal('getdeleteserror');
+          expect(getProperty(err, 'message')).to.equal('getdeleteserror');
           expect(localDb.bulkDocs.callCount).to.equal(0);
         }
       });
@@ -474,7 +475,7 @@ describe('ContactTypes service', () => {
           await service.replicateFrom();
           expect.fail('Should have thrown');
         } catch (err) {
-          expect(err.message).to.equal('bulkdocserror2');
+          expect(getProperty(err, 'message')).to.equal('bulkdocserror2');
         }
       });
     });
