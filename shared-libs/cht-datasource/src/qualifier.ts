@@ -69,11 +69,12 @@ export type FreetextQualifier = Readonly<{ freetext: string }>;
  * @throws Error if the search string is not provided or has less than 3 characters
  */
 export const byFreetext = (freetext: string): FreetextQualifier => {
-  if (!isString(freetext) || freetext.length < 3 || freetext.includes(' ')) {
+  const qualifier = { freetext };
+  if (!isFreetextQualifier(qualifier)) {
     throw new InvalidArgumentError(`Invalid freetext [${JSON.stringify(freetext)}].`);
   }
 
-  return { freetext };
+  return qualifier;
 };
 
 /**
@@ -84,8 +85,8 @@ export const byFreetext = (freetext: string): FreetextQualifier => {
 export const isFreetextQualifier = (qualifier: unknown): qualifier is FreetextQualifier => {
   return isRecord(qualifier) &&
     hasField(qualifier, { name: 'freetext', type: 'string' }) &&
-    typeof qualifier.freetext === 'string' &&
-    qualifier.freetext.length >= 3;
+    qualifier.freetext.length >= 3 &&
+    (qualifier.freetext.includes(':') || !/\s+/.test(qualifier.freetext));
 };
 
 /**

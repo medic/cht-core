@@ -1,5 +1,4 @@
 import * as Contact from './contact';
-import * as ContactTypes from './contact-types';
 import * as Person from './person';
 import { LocalDataContext } from './local/libs/data-context';
 import { ContactTypeQualifier, UuidQualifier } from './qualifier';
@@ -7,7 +6,7 @@ import { RemoteDataContext } from './remote/libs/data-context';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
-import { getPagedGenerator, Nullable, Page } from './libs/core';
+import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
 
@@ -17,7 +16,7 @@ export namespace v1 {
    * Immutable data about a place contact.
    */
   export interface Place extends Contact.v1.Contact {
-    readonly contact?: ContactTypes.v1.NormalizedParent;
+    readonly contact?: NormalizedParent;
     readonly place_id?: string;
   }
 
@@ -26,8 +25,8 @@ export namespace v1 {
    * contact for the place.
    */
   export interface PlaceWithLineage extends Place {
-    readonly contact?: Person.v1.PersonWithLineage | ContactTypes.v1.NormalizedParent;
-    readonly parent?: PlaceWithLineage | ContactTypes.v1.NormalizedParent;
+    readonly contact?: Person.v1.PersonWithLineage | NormalizedParent;
+    readonly parent?: PlaceWithLineage | NormalizedParent;
   }
 
   const getPlace =

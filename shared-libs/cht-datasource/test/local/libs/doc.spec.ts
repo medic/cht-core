@@ -1,7 +1,14 @@
 import * as Doc from '../../../src/libs/doc';
 import sinon, { SinonStub } from 'sinon';
 import logger from '@medic/logger';
-import {fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey, queryDocsByRange} from '../../../src/local/libs/doc';
+import {
+  fetchAndFilter,
+  fetchAndFilterUuids,
+  getDocById,
+  getDocsByIds,
+  queryDocsByKey,
+  queryDocsByRange, queryDocUuidsByKey, queryDocUuidsByRange,
+} from '../../../src/local/libs/doc';
 import { expect } from 'chai';
 
 describe('local doc lib', () => {
@@ -293,6 +300,95 @@ describe('local doc lib', () => {
     });
   });
 
+  describe('queryDocUuidsByRange', () => {
+    const limit = 3;
+    const skip = 2;
+
+    it('returns docs uuids for the given keys', async () => {
+      const doc0 = { id: 'doc0' };
+      const doc1 = { id: 'doc1' };
+      const doc2 = { id: 'doc2' };
+      dbQuery.resolves({
+        rows: [
+          { ...doc0 },
+          { ...doc1 },
+          { ...doc2 }
+        ]
+      });
+
+      const result = await queryDocUuidsByRange(db, 'medic-client/contacts_by_type')(doc0.id, doc1.id);
+
+      expect(result).to.deep.equal([doc0.id, doc1.id, doc2.id]);
+
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+        include_docs: false,
+        startkey: doc0.id,
+        endkey: doc1.id,
+        limit: undefined,
+        skip: 0
+      })).to.be.true;
+    });
+
+    it('returns empty array if no doc is found', async () => {
+      const doc0 = { _id: 'doc0' };
+      dbQuery.resolves({
+        rows: []
+      });
+
+      const result = await queryDocUuidsByRange(db, 'medic-client/contacts_by_type')(doc0._id, doc0._id, limit, skip);
+
+      expect(result).to.deep.equal([]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+        startkey: doc0._id,
+        endkey: doc0._id,
+        include_docs: false,
+        limit,
+        skip
+      })).to.be.true;
+    });
+  });
+
+  describe('queryDocUuidsByKey', () => {
+    const limit = 100;
+    const skip = 0;
+    const contactType = 'person';
+
+    it('returns doc uuids based on key in pages', async () => {
+      const doc0 = { id: 'doc0' };
+      const doc1 = { id: 'doc1' };
+      const doc2 = { id: 'doc2' };
+
+      dbQuery.resolves({
+        rows: [
+          { ...doc0 },
+          { ...doc1 },
+          { ...doc2 }
+        ]
+      });
+
+      const result = await queryDocUuidsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+
+      expect(result).to.deep.equal([doc0.id, doc1.id, doc2.id]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+        include_docs: false,
+        key: contactType,
+        limit,
+        skip
+      })).to.be.true;
+    });
+
+    it('returns empty array if docs are not found', async () => {
+      dbQuery.resolves({ rows: [] });
+
+      const result = await queryDocUuidsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+
+      expect(result).to.deep.equal([]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+        include_docs: false, key: contactType, limit, skip
+      })).to.be.true;
+    });
+  });
+
   describe('fetchAndFilter', () => {
     let getFunction: sinon.SinonStub;
     let filterFunction: sinon.SinonStub;
@@ -379,6 +475,69 @@ describe('local doc lib', () => {
       expect(getFunction.firstCall.calledWith(3, 0)).to.be.true;
       expect(getFunction.secondCall.calledWith(6, 3)).to.be.true;
       expect(filterFunction.callCount).to.equal(6);
+    });
+  });
+
+  describe('fetchAndFilterUuids', () => {
+    let getFunction: sinon.SinonStub;
+
+    beforeEach(() => {
+      getFunction = sinon.stub();
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it('should return correct data when all docs are valid and unique and has no more docs', async () => {
+      const uuids = ['1', '2', '3'];
+      getFunction.resolves(uuids);
+
+      const fn = fetchAndFilterUuids(getFunction, 3);
+      const result = await fn(3, 0);
+
+      expect(result.data).to.deep.equal(uuids);
+      expect(result.cursor).to.be.null;
+      expect(getFunction.calledOnceWith(3 + 1, 0)).to.be.true;
+    });
+
+    it('should return correct data when all docs are valid and unique and has more docs', async () => {
+      const uuids = ['1', '2', '3', '4'];
+      getFunction.resolves(uuids);
+
+      const fn = fetchAndFilterUuids(getFunction, 3);
+      const result = await fn(3, 0);
+
+      expect(result.data).to.deep.equal(uuids.slice(0, -1));
+      expect(result.cursor).to.be.equal('3');
+      expect(getFunction.calledOnceWith(3 + 1, 0)).to.be.true;
+    });
+
+    it('should filter out duplicate docs when there are dups in a single page', async () => {
+      const uuids1 = ['1', '2', '3', '1', '2'];
+      const uuids2  = ['1', '2', '3', '2'];
+      const expectedUuids = ['1', '2', '3'];
+      getFunction.onFirstCall().resolves(uuids1);
+      getFunction.onSecondCall().resolves(uuids2);
+
+      const fn = fetchAndFilterUuids(getFunction, 4);
+      const result = await fn(4, 0);
+
+      expect(result.data).to.deep.equal(expectedUuids);
+      expect(result.cursor).to.be.equal('4');
+      expect(getFunction.firstCall.calledWith(4 + 1, 0)).to.be.true;
+      expect(getFunction.secondCall.calledWith(3, 4)).to.be.true;
+    });
+
+    it('should handle empty result', async () => {
+      getFunction.resolves([]);
+
+      const fn = fetchAndFilterUuids(getFunction, 3);
+      const result = await fn(3, 0);
+
+      expect(result.data).to.deep.equal([]);
+      expect(result.cursor).to.be.null;
+      expect(getFunction.calledOnceWith(3 + 1, 0)).to.be.true;
     });
   });
 });

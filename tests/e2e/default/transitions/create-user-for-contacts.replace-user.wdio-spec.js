@@ -18,6 +18,7 @@ describe('Create user for contacts', () => {
   const REPLACE_USER_FORM_ID = 'replace_user';
   const OTHER_REPLACE_FORM_ID = 'other_replace_form';
   const DISABLED_USER_PASSWORD = 'n3wPassword!';
+  const NEW_PASSWORD = 'Pa33word1';
 
   const USER_CONTACT = utils.deepFreeze(personFactory.build({ role: 'chw' }));
 
@@ -250,9 +251,15 @@ describe('Create user for contacts', () => {
 
         // Can still login as the original user (with the manually updated password)
         await commonPage.logout();
-        await loginPage.login({ ...ORIGINAL_USER, password: DISABLED_USER_PASSWORD });
+        await browser.url('/');
+        await loginPage.setUsernameValue(ORIGINAL_USER.username);
+        await loginPage.setPasswordValue(DISABLED_USER_PASSWORD);
+        await (await loginPage.loginButton()).click();
+        await loginPage.passwordReset(DISABLED_USER_PASSWORD, NEW_PASSWORD, NEW_PASSWORD);
+        await (await loginPage.updatePasswordButton()).click();
         await commonPage.waitForPageLoaded();
         await commonPage.sync();
+        await sentinelUtils.waitForSentinel();
         await commonPage.goToReports();
         const basicReportId3 = await createUserForContactsPage.submitBasicForm();
         const basicReport3 = await utils.getDoc(basicReportId3);

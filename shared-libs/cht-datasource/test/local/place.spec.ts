@@ -140,7 +140,7 @@ describe('local place', () => {
         expect(warn.calledOnceWithExactly(`No place found for identifier [${identifier.uuid}].`)).to.be.true;
         expect(debug.notCalled).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
-        expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
@@ -160,7 +160,7 @@ describe('local place', () => {
         expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid place.`)).to.be.true;
         expect(debug.notCalled).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
-        expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
@@ -178,7 +178,7 @@ describe('local place', () => {
         expect(warn.notCalled).to.be.true;
         expect(debug.calledOnceWithExactly(`No lineage places found for place [${identifier.uuid}].`)).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
-        expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
     });

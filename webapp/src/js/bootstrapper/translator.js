@@ -7,6 +7,7 @@ const TRANSLATIONS = {
   en: {
     FETCH_INFO: ({ count, total }) => `Fetching info (${count} of ${total} docs )…`,
     LOAD_APP: 'Loading app…',
+    PASSWORD_CHANGE_SUCCESS: 'Password changed successfully',
     PURGE_INIT: 'Checking data…',
     PURGE_INFO: ({ count }) => `Cleaned ${count} documents…`,
     PURGE_META: 'Cleaning metadata…',
@@ -25,6 +26,7 @@ const TRANSLATIONS = {
   es: {
     FETCH_INFO: ({ count, total }) => `Obteniendo información (${count} de ${total} docs)…`,
     LOAD_APP: 'Cargando aplicación…',
+    PASSWORD_CHANGE_SUCCESS: 'Cambio de contraseña exitoso',
     PURGE_INIT: 'Verificación de datos…',
     PURGE_INFO: ({ count }) => `Limpiado ${count} documentos…`,
     PURGE_META: 'Limpieza de metadatos…',
@@ -43,6 +45,7 @@ const TRANSLATIONS = {
   sw: {
     FETCH_INFO: ({ count, total }) => `Inachukua habari (${count} of ${total})…`,
     LOAD_APP: 'Inapakia programu…',
+    PASSWORD_CHANGE_SUCCESS: 'Umefaulu kubadilisha nenosiri',
     PURGE_INIT: 'Kuangalia takwimu…',
     PURGE_INFO: ({ count }) => `Imesafisha hati ${count}…`,
     PURGE_META: 'inasafisha metadata…',
@@ -61,6 +64,7 @@ const TRANSLATIONS = {
   ne: {
     FETCH_INFO: ({ count, total }) => eurodigit.to_non_euro.devanagari(`${total} मध्ये ${count} डकुमेन्ट लोड हुँदै  …`),
     LOAD_APP: 'एप लोड गर्दै…',
+    PASSWORD_CHANGE_SUCCESS: 'पासवर्ड सफलतापूर्वक परिवर्तन भयो',
     PURGE_INIT: 'डाटा जाँच गर्दै…',
     PURGE_INFO: ({ count }) => eurodigit.to_non_euro.devanagari(`${count} वटा डकुमेन्ट सफा गरीयो…`),
     PURGE_META: 'मेटा डाटा सफा गर्दै…',
@@ -79,6 +83,7 @@ const TRANSLATIONS = {
   fr: {
     FETCH_INFO: ({ count, total }) => `Récupération des données  (${count} sur ${total} documents)…`,
     LOAD_APP: 'Chargement de l’application…',
+    PASSWORD_CHANGE_SUCCESS: 'Mot de passe modifié avec succès',
     PURGE_INIT: 'Vérification des données…',
     PURGE_INFO: ({ count }) => `${count} document(s) nettoyé(s)…`,
     PURGE_META: 'Cleaning meta data…',
@@ -97,6 +102,7 @@ const TRANSLATIONS = {
   hi: {
     FETCH_INFO: ({ count, total }) => `डॉक्युमेंट लोड हो रहें हैं (${total} मेंस से ${count})…`,
     LOAD_APP: 'एप्लीकेशन लोड हो रही है…',
+    PASSWORD_CHANGE_SUCCESS: 'पासवर्ड सफलतापूर्वक बदला गया',
     PURGE_INIT: 'डेटा की जाँच…',
     PURGE_INFO: ({ count }) => `${count} दस्तावेज साफ किए…`,
     PURGE_META: 'Nettoyage des métadonnées…',
@@ -115,6 +121,7 @@ const TRANSLATIONS = {
   id: {
     FETCH_INFO: ({ count, total }) => `Mengambil informasi (${count} dari ${total} dokumen)…`,
     LOAD_APP: 'Memuat aplikasi…',
+    PASSWORD_CHANGE_SUCCESS: 'Perubahan kata sandi berhasil',
     PURGE_INIT: 'Mengecek data…',
     PURGE_INFO: ({ count }) => `Menghapus ${count} dokument…`,
     PURGE_META: 'Menghapus metadata…',
@@ -133,6 +140,7 @@ const TRANSLATIONS = {
   ar: {
     FETCH_INFO: ({ count, total }) => `جارٍ جلب المعلومات (${count} من مستندات ${total})...`,
     LOAD_APP: 'جارٍ تحميل التطبيق…',
+    PASSWORD_CHANGE_SUCCESS: 'تم تغيير كلمة المرور بنجاح',
     PURGE_INIT: 'جارٍ التحقق من البيانات…',
     PURGE_INFO: ({ count }) => `تم تنظيف ${count} من المستندات...`,
     PURGE_META: 'جارٍ تنظيف البيانات التعريفية…',

@@ -60,7 +60,31 @@ describe('cht-datasource Report', () => {
   }, {
     patient, submitter: contact0
   }));
-
+  // NOTE: this is a common word added to contacts for searching purposes
+  // the value was chosen such that it is a sub-string of the name which
+  // gives double output from the couchdb view
+  const searchWord = 'freetext';
+  const report6 = utils.deepFreeze(reportFactory.report().build({
+    form: 'freetext-report-6'
+  }, {
+    patient, submitter: contact0, fields: {
+      note: searchWord
+    }
+  }));
+  const report7 = utils.deepFreeze(reportFactory.report().build({
+    form: 'freetext-report-7'
+  }, {
+    patient, submitter: contact0, fields: {
+      note: searchWord
+    }
+  }));
+  const report8 = utils.deepFreeze(reportFactory.report().build({
+    form: 'freetext-report-8'
+  }, {
+    patient, submitter: contact0, fields: {
+      note: searchWord
+    }
+  }));
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms', place: place1._id, contact: {
       _id: 'fixture:user:online-no-perms', name: 'Online User',
@@ -73,8 +97,7 @@ describe('cht-datasource Report', () => {
   }));
 
   const allDocItems = [ contact0, contact1, contact2, place0, place1, place2, patient ];
-  const allReports = [ report0, report1, report2, report3, report4, report5 ];
-  const allReportsIds = allReports.map(report => report._id);
+  const allReports = [ report0, report1, report2, report3, report4, report5, report6, report7, report8 ];
   const dataContext = getRemoteDataContext(utils.getOrigin());
 
   before(async () => {
@@ -114,26 +137,53 @@ describe('cht-datasource Report', () => {
       const invalidCursor = 'invalidCursor';
 
       it('returns a page of report ids for no limit and cursor passed', async () => {
+        const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
         const responsePage = await getUuidsPage(Qualifier.byFreetext(freetext));
         const responsePeople = responsePage.data;
         const responseCursor = responsePage.cursor;
 
-        expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(allReportsIds);
+        expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
         expect(responseCursor).to.be.equal(null);
       });
 
       it('returns a page of report ids when limit and cursor is passed and cursor can be reused', async () => {
+        const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
         const firstPage = await getUuidsPage(Qualifier.byFreetext(freetext), cursor, limit);
         const secondPage = await getUuidsPage(Qualifier.byFreetext(freetext), firstPage.cursor, limit);
 
         const allReports = [ ...firstPage.data, ...secondPage.data ];
 
-        expect(allReports).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(allReportsIds);
+        expect(allReports).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
         expect(firstPage.data.length).to.be.equal(4);
         expect(secondPage.data.length).to.be.equal(2);
         expect(firstPage.cursor).to.be.equal('4');
         expect(secondPage.cursor).to.be.equal(null);
       });
+
+      it('returns a page of unique report ids for when multiple fields match the same freetext', async () => {
+        const expectedContactIds = [ report6._id, report7._id, report8._id ];
+        const responsePage = await getUuidsPage(Qualifier.byFreetext(searchWord));
+        const responseIds = responsePage.data;
+        const responseCursor = responsePage.cursor;
+
+        expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
+          .to.deep.equalInAnyOrder(expectedContactIds);
+        expect(responseCursor).to.be.equal(null);
+      });
+
+      it('returns a page of unique report ids for when multiple fields match the same freetext with limit', 
+        async () => {
+          const expectedContactIds = [ report6._id, report7._id, report8._id ];
+          // NOTE: adding a limit of 4 to deliberately fetch 4 contacts with the given search word
+          // and enforce re-fetching logic
+          const responsePage = await getUuidsPage(Qualifier.byFreetext(searchWord), null, 4);
+          const responseIds = responsePage.data;
+          const responseCursor = responsePage.cursor;
+
+          expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
+            .to.deep.equalInAnyOrder(expectedContactIds);
+          expect(responseCursor).to.be.equal(null);
+        });
 
       it('throws error when limit is invalid', async () => {
         await expect(
@@ -154,6 +204,7 @@ describe('cht-datasource Report', () => {
 
     describe('getUuids', async () => {
       it('fetches all data by iterating through generator', async () => {
+        const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
         const freetext = 'report';
         const docs = [];
 
@@ -163,7 +214,7 @@ describe('cht-datasource Report', () => {
           docs.push(doc);
         }
 
-        expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(allReportsIds);
+        expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
       });
     });
   });

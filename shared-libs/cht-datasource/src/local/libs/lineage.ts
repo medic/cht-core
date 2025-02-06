@@ -1,5 +1,4 @@
 import * as Contact from '../../contact';
-import * as ContactTypes from '../../contact-types';
 import * as Person from '../../person';
 import {
   DataObject,
@@ -9,7 +8,7 @@ import {
   isIdentifiable,
   isNonEmptyArray,
   isNotNull,
-  NonEmptyArray,
+  NonEmptyArray, NormalizedParent,
   Nullable
 } from '../../libs/core';
 import { Doc } from '../../libs/doc';
@@ -50,7 +49,7 @@ export const hydratePrimaryContact = (contacts: Doc[]) => (place: Nullable<Doc>)
   };
 };
 
-const getParentUuid = (index: number, contact?: ContactTypes.v1.NormalizedParent): Nullable<string> => {
+const getParentUuid = (index: number, contact?: NormalizedParent): Nullable<string> => {
   if (!contact) {
     return null;
   }
@@ -98,20 +97,19 @@ export const getContactLineage = (medicDb: PouchDB.Database<Doc>) => {
   const getMedicDocsById = getDocsByIds(medicDb);
 
   return async (
-    contacts: NonEmptyArray<Nullable<Doc>>,
+    places: NonEmptyArray<Nullable<Doc>>,
     person?: Person.v1.Person,
-    filterSelf = false,
-  ): Promise<Nullable<ContactTypes.v1.ContactWithLineage>>  => {
-    const contactUuids = getPrimaryContactIds(contacts);
-    const uuidsToFetch = filterSelf ? contactUuids.filter(uuid => uuid !== person?._id) : contactUuids;
+  ): Promise<Nullable<Contact.v1.ContactWithLineage>>  => {
+    const placeUuids = getPrimaryContactIds(places);
+    const uuidsToFetch = person ? placeUuids.filter(uuid => uuid !== person._id) : placeUuids;
     const fetchedContacts = await getMedicDocsById(uuidsToFetch);
     const allContacts = person ? [person, ...fetchedContacts] : fetchedContacts;
-    const contactsWithHydratedPrimaryContact = contacts.map(
+    const contactsWithHydratedPrimaryContact = places.map(
       hydratePrimaryContact(allContacts)
-    ).filter(item => item ?? false);
+    );
     const [mainContact, ...lineageContacts] = contactsWithHydratedPrimaryContact;
     const contactWithLineage = hydrateLineage(
-      (person ?? mainContact) as ContactTypes.v1.Contact,
+      (person ?? mainContact) as Contact.v1.Contact,
       person ? contactsWithHydratedPrimaryContact : lineageContacts
     );
 

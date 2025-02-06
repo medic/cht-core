@@ -73,7 +73,7 @@ describe('qualifier', () => {
 
   describe('byFreetext', () => {
     it('builds a qualifier for searching an entity by freetext', () => {
-      expect(byFreetext('freetext')).to.deep.equal({ freetext: 'freetext' });
+      expect(byFreetext('key:some value')).to.deep.equal({ freetext: 'key:some value' });
     });
 
     [
@@ -94,9 +94,11 @@ describe('qualifier', () => {
   describe('isFreetextQualifier', () => {
     [
       [ null, false ],
+      [ ' ', false ],
       [ 'freetext', false ],
       [ { freetext: 'freetext' }, true ],
-      [ { freetext: 'freetext', other: 'other' }, true ]
+      [ { freetext: 'freetext', other: 'other' }, true ],
+      [ { freetext: 'key:some value' }, true ]
     ].forEach(([ freetext, expected ]) => {
       it(`evaluates ${JSON.stringify(freetext)}`, () => {
         expect(isFreetextQualifier(freetext)).to.equal(expected);

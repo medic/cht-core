@@ -1,12 +1,12 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import {
+  fetchAndFilterUuids,
   getDocById,
-  getPaginatedDocs,
   queryDocUuidsByKey,
   queryDocUuidsByRange
 } from './libs/doc';
 import { ContactTypeQualifier, FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
-import * as ContactType from '../contact-types';
+import * as Contact from '../contact';
 import { isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
@@ -25,7 +25,7 @@ export namespace v1 {
   };
 
   const isContact =
-    (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is ContactType.v1.Contact => {
+    (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is Contact.v1.Contact => {
       if (!doc) {
         if (uuid) {
           logger.warn(`No contact found for identifier [${uuid}].`);
@@ -43,7 +43,7 @@ export namespace v1 {
   /** @internal */
   export const get = ({ medicDb, settings }: LocalDataContext) => {
     const getMedicDocById = getDocById(medicDb);
-    return async (identifier: UuidQualifier): Promise<Nullable<ContactType.v1.Contact>> => {
+    return async (identifier: UuidQualifier): Promise<Nullable<Contact.v1.Contact>> => {
       const doc = await getMedicDocById(identifier.uuid);
       if (!isContact(settings)(doc, identifier.uuid)) {
         return null;
@@ -56,8 +56,9 @@ export namespace v1 {
   /** @internal */
   export const getWithLineage = ({ medicDb, settings }: LocalDataContext) => {
     const getLineageDocs = getLineageDocsById(medicDb);
+    const getLineage = getContactLineage(medicDb);
 
-    return async (identifier: UuidQualifier): Promise<Nullable<ContactType.v1.ContactWithLineage>> => {
+    return async (identifier: UuidQualifier): Promise<Nullable<Contact.v1.ContactWithLineage>> => {
       const [contact, ...lineageContacts] = await getLineageDocs(identifier.uuid);
       if (!isContact(settings)(contact, identifier.uuid)) {
         return null;
@@ -71,10 +72,10 @@ export namespace v1 {
       const combinedContacts: NonEmptyArray<Nullable<Doc>> = [contact, ...lineageContacts];
       
       if (contactTypeUtils.isPerson(settings.getAll(), contact)) {
-        return await getContactLineage(medicDb)(lineageContacts, contact, true);
+        return await getLineage(lineageContacts, contact);
       }
 
-      return await getContactLineage(medicDb)(combinedContacts);
+      return await getLineage(combinedContacts);
     };
   };
 
@@ -89,7 +90,7 @@ export namespace v1 {
 
     const determineGetDocsFn = (
       qualifier: ContactTypeQualifier | FreetextQualifier
-    ): ((limit: number, skip: number) => Promise<Nullable<string>[]>) => {
+    ): ((limit: number, skip: number) => Promise<string[]>) => {
       if (isContactTypeAndFreetextType(qualifier)) {
         return getDocsFnForContactTypeAndFreetext(qualifier);
       }
@@ -104,7 +105,7 @@ export namespace v1 {
 
     const getDocsFnForContactTypeAndFreetext = (
       qualifier: ContactTypeQualifier & FreetextQualifier
-    ): (limit: number, skip: number) => Promise<Nullable<string>[]> => {
+    ): (limit: number, skip: number) => Promise<string[]> => {
       // this is for an exact match search
       if (isKeyedFreetextQualifier(qualifier)) {
         return (limit, skip) => getByTypeExactMatchFreetext(
@@ -125,14 +126,14 @@ export namespace v1 {
 
     const getDocsFnForContactType = (
       qualifier: ContactTypeQualifier
-    ): (limit: number, skip: number) => Promise<Nullable<string>[]> => (
+    ): (limit: number, skip: number) => Promise<string[]> => (
       limit,
       skip
     ) => getByType([qualifier.contactType], limit, skip);
 
     const getDocsFnForFreetextType = (
       qualifier: FreetextQualifier
-    ): (limit: number, skip: number) => Promise<Nullable<string>[]> => {
+    ): (limit: number, skip: number) => Promise<string[]> => {
       if (isKeyedFreetextQualifier(qualifier)) {
         return (limit, skip) => getByExactMatchFreetext([normalizeFreetext(qualifier.freetext)], limit, skip);
       }
@@ -159,7 +160,7 @@ export namespace v1 {
       const skip = validateCursor(cursor);
       const getDocsFn = determineGetDocsFn(qualifier);
 
-      return await getPaginatedDocs(getDocsFn, limit, skip);
+      return await fetchAndFilterUuids(getDocsFn, limit)(limit, skip);
     };
   };
 }

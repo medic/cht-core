@@ -17,7 +17,7 @@ module.exports = {
           return p.then(() => {
             return userDb.setSecurity(userDb.getDbName(username), username)
               .catch(err => {
-                if (err.statusCode !== 404) {
+                if (err.status !== 404) {
                   throw err;
                 }
                 // db not found is ok

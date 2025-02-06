@@ -595,7 +595,7 @@ describe('mark_for_outbound', () => {
       return utils
         .updateSettings(config, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDoc(report))
-        .then(() => utils.collectSentinelLogs(/Failed to push/, /Response body.+error response/))
+        .then(() => utils.collectSentinelLogs(/Failed to push/, /body.+error response/))
         .then((result) => collect = result)
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
@@ -630,12 +630,12 @@ describe('mark_for_outbound', () => {
       return utils
         .updateSettings(config, { ignoreReload: 'sentinel' })
         .then(() => utils.saveDoc(report))
-        .then(() => utils.collectSentinelLogs(/Failed to push.+ECONNREFUSED/))
+        .then(() => utils.collectSentinelLogs(/Failed to push/, /cause.*ECONNREFUSED/))
         .then((result) => collect = result)
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
         .then(logs => {
-          expect(logs).to.have.lengthOf(1);
+          expect(logs).to.have.lengthOf(2);
         });
     });
   });

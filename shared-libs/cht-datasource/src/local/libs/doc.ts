@@ -72,7 +72,7 @@ const queryDocUuids = (
   options: PouchDB.Query.Options<Doc, Record<string, unknown>>
 ) => db
   .query(view, options)
-  .then(({ rows }) => rows.map(item => item.id ? item.id as string : null));
+  .then(({ rows }) => rows.map(({ id }) => id as string));
 
 /** @internal */
 export const queryDocUuidsByRange = (
@@ -83,7 +83,7 @@ export const queryDocUuidsByRange = (
   endkey: unknown,
   limit?: number,
   skip = 0
-): Promise<Nullable<string>[]> => queryDocUuids(
+): Promise<string[]> => queryDocUuids(
   db,
   view,
   {
@@ -103,7 +103,7 @@ export const queryDocUuidsByKey = (
   key: unknown,
   limit: number,
   skip: number
-): Promise<Nullable<string>[]> => queryDocUuids(db, view, { include_docs: false, key, limit, skip });
+): Promise<string[]> => queryDocUuids(db, view, { include_docs: false, key, limit, skip });
 
 /**
  * Resolves a page containing an array of T using the getFunction to retrieve documents from the database
@@ -155,19 +155,45 @@ export const fetchAndFilter = <T extends Doc>(
 };
 
 /** @internal */
-export const getPaginatedDocs = async <T>(
-  getDocsFn: (limit: number, skip: number) => Promise<Nullable<T>[]>,
+export const fetchAndFilterUuids = (
+  getFunction: (limit: number, skip: number) => Promise<string[]>,
   limit: number,
-  skip: number
-): Promise<Page<T>> => {
-  // fetching 1 extra to know if we are at the end or there's more
-  const pagedDocs = await getDocsFn(limit + 1, skip);
+): typeof recursionInner => {
+  const recursionInner = async (
+    currentLimit: number,
+    currentSkip: number,
+    currentUuids: string[] = []
+  ): Promise<Page<string>> => {
+    // fetching 1 extra to know if we are at the end or there's more
+    const docUuidsExtra = await getFunction(currentLimit + 1, currentSkip);
+    const hasMore = docUuidsExtra.length > currentLimit;
+    const docUuids = hasMore ? docUuidsExtra.slice(0, -1) : docUuidsExtra;
+    const uniqueUuids = [...new Set(docUuids)];
+    const overFetchCount = currentUuids.length + uniqueUuids.length - limit || 0;
+    const allUuids = [...currentUuids, ...uniqueUuids].slice(0, limit);
+    const allUuidsUnique = [...new Set(allUuids)];
 
-  const hasMore = pagedDocs.length > limit;
-  const docs = hasMore ? pagedDocs.slice(0, -1) : pagedDocs;
+    if (!hasMore) {
+      return { data: allUuidsUnique, cursor: null };
+    }
 
-  return {
-    data: docs,
-    cursor: hasMore ? (skip + limit).toString() : null
-  } as Page<T>;
+    if (allUuids.length === limit) {
+      const nextSkip = currentSkip + currentLimit - overFetchCount;
+
+      return { data: allUuidsUnique, cursor: nextSkip.toString() };
+    }
+
+    // Re-fetch twice as many docs as we need to limit number of recursions
+    const missingCount = currentLimit - uniqueUuids.length;
+    logger.debug(`Found [${missingCount.toString()}] invalid docs. Re-fetching additional records.`);
+    const nextLimit = missingCount * 2;
+    const nextSkip = currentSkip + currentLimit;
+
+    return recursionInner(
+      nextLimit,
+      nextSkip,
+      allUuidsUnique
+    );
+  };
+  return recursionInner;
 };

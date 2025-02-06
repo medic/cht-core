@@ -4,7 +4,7 @@
   "description": "Provides a declarative global options interface for http requests",
   "main": "src/couch-request.js",
   "scripts": {
-    "test": "mocha ./test"
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
   },
   "author": "",
   "license": "Apache-2.0",

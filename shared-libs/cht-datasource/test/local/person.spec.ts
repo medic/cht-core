@@ -125,7 +125,7 @@ describe('local person', () => {
         expect(warn.notCalled).to.be.true;
         expect(debug.notCalled).to.be.true;
         expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getContactLineageInner.calledOnceWithExactly(lineagePlaces, person, true)).to.be.true;
+        expect(getContactLineageInner.calledOnceWithExactly(lineagePlaces, person)).to.be.true;
         expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
@@ -140,7 +140,7 @@ describe('local person', () => {
         expect(warn.calledOnceWithExactly(`No person found for identifier [${identifier.uuid}].`)).to.be.true;
         expect(debug.notCalled).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
-        expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
@@ -161,7 +161,7 @@ describe('local person', () => {
         expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid person.`)).to.be.true;
         expect(debug.notCalled).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
-        expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
@@ -179,7 +179,7 @@ describe('local person', () => {
         expect(warn.notCalled).to.be.true;
         expect(debug.calledOnceWithExactly(`No lineage places found for person [${identifier.uuid}].`)).to.be.true;
         expect(getContactLineageInner.notCalled).to.be.true;
-        expect(getContactLineageOuter.notCalled).to.be.true;
+        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
     });

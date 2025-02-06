@@ -1,5 +1,5 @@
 import {
-  getPagedGenerator,
+  getPagedGenerator, NormalizedParent,
   Nullable,
   Page,
 } from './libs/core';
@@ -13,41 +13,53 @@ import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
-import * as ContactTypes from './contact-types';
-import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
+import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 import {
   assertContactTypeFreetextQualifier,
   assertCursor,
-  assertFreetextQualifier,
   assertLimit,
-  assertTypeQualifier,
   assertUuidQualifier,
-  isContactType,
-  isFreetextType,
 } from './libs/parameter-validators';
+import { Doc } from './libs/doc';
 
 /** */
 export namespace v1 {
   /**
    * Immutable data about a Contact.
    */
-  export type Contact = ContactTypes.v1.Contact;
+  export interface Contact extends Doc, NormalizedParent {
+    readonly contact_type?: string;
+    readonly name?: string;
+    readonly reported_date?: Date;
+    readonly type: string;
+  }
+
   /**
    * Immutable data about a contact, including the full records of the parent's lineage.
    */
-  export type ContactWithLineage = ContactTypes.v1.ContactWithLineage;
+  export interface ContactWithLineage extends Contact {
+    readonly parent?: ContactWithLineage | NormalizedParent;
+  }
 
   const getContact =
     <T>(
       localFn: (c: LocalDataContext) => (qualifier: UuidQualifier) => Promise<T>,
       remoteFn: (c: RemoteDataContext) => (qualifier: UuidQualifier) => Promise<T>
-    ) => (context: DataContext) => {
+    ) => (context: DataContext): typeof curriedFn => {
       assertDataContext(context);
       const fn = adapt(context, localFn, remoteFn);
-      return async (qualifier: UuidQualifier): Promise<T> => {
+
+      /**
+       * Returns the contact with the given identifier.
+       * @param qualifier the limiter defining which contact to return
+       * @returns the contact with the given identifier
+       * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
+       */
+      const curriedFn = async (qualifier: UuidQualifier): Promise<T> => {
         assertUuidQualifier(qualifier);
         return fn(qualifier);
       };
+      return curriedFn;
     };
 
   /**
@@ -91,18 +103,11 @@ export namespace v1 {
     const curriedFn = async (
       qualifier: ContactTypeQualifier | FreetextQualifier,
       cursor: Nullable<string> = null,
-      limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
+      limit: number | `${number}` = DEFAULT_IDS_PAGE_LIMIT
     ): Promise<Page<string>> => {
       assertCursor(cursor);
       assertLimit(limit);
-
-      if (isContactType(qualifier) && isFreetextType(qualifier)) {
-        assertContactTypeFreetextQualifier(qualifier);
-      } else if (isContactType(qualifier)) {
-        assertTypeQualifier(qualifier);
-      } else if (isFreetextType(qualifier)) {
-        assertFreetextQualifier(qualifier);
-      }
+      assertContactTypeFreetextQualifier(qualifier);
 
       return fn(qualifier, cursor, Number(limit));
     };
@@ -128,13 +133,7 @@ export namespace v1 {
     const curriedGen = (
       qualifier: ContactTypeQualifier | FreetextQualifier
     ): AsyncGenerator<string, null> => {
-      if (isContactType(qualifier) && isFreetextType(qualifier)) {
-        assertContactTypeFreetextQualifier(qualifier);
-      } else if (isContactType(qualifier)) {
-        assertTypeQualifier(qualifier);
-      } else if (isFreetextType(qualifier)) {
-        assertFreetextQualifier(qualifier);
-      }
+      assertContactTypeFreetextQualifier(qualifier);
 
       return getPagedGenerator(getPage, qualifier);
     };

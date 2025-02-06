@@ -212,44 +212,42 @@ describe('local lineage lib', () => {
       sinon.restore();
     });
 
-    it('returns a contact with lineage for no person and filterSelf set to false', async () => {
-      const person = { type: 'person', _id: 'uuid', _rev: 'rev' };
+    it('returns a contact with lineage for no person', async () => {
       const place0 = { _id: 'place0', _rev: 'rev' };
       const place1 = { _id: 'place1', _rev: 'rev' };
       const place2 = { _id: 'place2', _rev: 'rev' };
       const contact0 = { _id: 'contact0', _rev: 'rev' };
       const contact1 = { _id: 'contact1', _rev: 'rev' };
-      const lineageContacts = [person, place0, place1, place2];
+      const lineageContacts = [place0, place1, place2];
 
-      getPrimaryContactIds.returns([contact0._id, contact1._id, person._id]);
+      getPrimaryContactIds.returns([contact0._id, contact1._id]);
       getDocsByIdsInner.resolves([contact0, contact1]);
       const place0WithContact = { ...place0, contact: contact0 };
       const place1WithContact = { ...place1, contact: contact1 };
       hydratePrimaryContactInner.onFirstCall().returns(place0WithContact);
       hydratePrimaryContactInner.onSecondCall().returns(place1WithContact);
       hydratePrimaryContactInner.onThirdCall().returns(place2);
-      const personWithLineage = { ...person, lineage: true };
-      hydrateLineage.returns(personWithLineage);
-      const copiedPerson = { ...personWithLineage };
-      deepCopy.returns(copiedPerson);
+      const contactWithLineage = { ...place0, lineage: true };
+      hydrateLineage.returns(contactWithLineage);
+      const copiedContact = { ...contactWithLineage };
+      deepCopy.returns(copiedContact);
 
       const result = await Lineage.getContactLineage(medicDb)(lineageContacts as NonEmptyArray<Nullable<Doc>>);
 
-      expect(result).to.equal(copiedPerson);
+      expect(result).to.equal(copiedContact);
       expect(getPrimaryContactIds.calledOnceWithExactly(lineageContacts)).to.be.true;
       expect(getDocsByIdsOuter.calledOnceWithExactly(medicDb)).to.be.true;
-      expect(getDocsByIdsInner.calledOnceWithExactly([contact0._id, contact1._id, person._id])).to.be.true;
+      expect(getDocsByIdsInner.calledOnceWithExactly([contact0._id, contact1._id])).to.be.true;
       expect(hydratePrimaryContactOuter.calledOnceWithExactly([contact0, contact1])).to.be.true;
-      expect(hydratePrimaryContactInner.callCount).to.be.equal(4);
-      expect(hydratePrimaryContactInner.calledWith(person)).to.be.true;
+      expect(hydratePrimaryContactInner.callCount).to.be.equal(3);
       expect(hydratePrimaryContactInner.calledWith(place0)).to.be.true;
       expect(hydratePrimaryContactInner.calledWith(place1)).to.be.true;
       expect(hydratePrimaryContactInner.calledWith(place2)).to.be.true;
       expect(hydrateLineage.calledOnceWithExactly(place0WithContact, [place1WithContact, place2])).to.be.true;
-      expect(deepCopy.calledOnceWithExactly(personWithLineage)).to.be.true;
+      expect(deepCopy.calledOnceWithExactly(contactWithLineage)).to.be.true;
     });
 
-    it('returns a contact with lineage for person and filterSelf set to true', async () => {
+    it('returns a contact with lineage for a person', async () => {
       const person = { type: 'person', _id: 'uuid', _rev: 'rev' };
       const place0 = { _id: 'place0', _rev: 'rev' };
       const place1 = { _id: 'place1', _rev: 'rev' };
@@ -271,7 +269,7 @@ describe('local lineage lib', () => {
       deepCopy.returns(copiedPerson);
 
       const result = await Lineage.getContactLineage(medicDb)(
-        lineageContacts as NonEmptyArray<Nullable<Doc>>, person, true
+        lineageContacts as NonEmptyArray<Nullable<Doc>>, person
       );
 
       expect(result).to.equal(copiedPerson);
