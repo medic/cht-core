@@ -344,6 +344,8 @@ describe('server', () => {
         await utils.saveDocs([contact, ...placeMap.values()]);
         await utils.createUsers([offlineUser]);
 
+        await utils.deletePurgeDbs();
+
         reqOptions = {
           auth: { username: offlineUser.username, password: offlineUser.password },
         };

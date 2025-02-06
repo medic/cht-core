@@ -824,6 +824,14 @@ const deleteUsers = async (users, meta = false) => { //NOSONAR
   }
 };
 
+const deletePurgeDbs = async () => {
+  const dbs = await request({ path: '/_all_dbs' });
+  const purgeDbs = dbs.filter(db => db.includes('purged-role'));
+  for (const purgeDb of purgeDbs) {
+    await request({ path: `/${purgeDb}`, method: 'DELETE' });
+  }
+};
+
 const getCreatedUsers = async () => {
   const adminUserId = COUCH_USER_ID_PREFIX + constants.USERNAME;
   const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
@@ -836,15 +844,19 @@ const getCreatedUsers = async () => {
  * Creates users - optionally also creating their meta dbs
  * @param {Array} users - list of users to be created
  * @param {Boolean} meta - if true, creates meta db-s as well, default false
+ * @param {Boolean} password_change_required - if true, will require user to reset password on first time login
  * @return {Promise}
  * */
-const createUsers = async (users, meta = false) => {
+const createUsers = async (users, meta = false, password_change_required = false) => {
   const createUserOpts = { path: '/api/v1/users', method: 'POST' };
   const createUserV3Opts = { path: '/api/v3/users', method: 'POST' };
 
   for (const user of users) {
     const options = {
-      body: user,
+      body: {
+        ...user,
+        password_change_required: password_change_required ? undefined : false
+      },
       ...(Array.isArray(user.place) ? createUserV3Opts : createUserOpts)
     };
     await request(options);
@@ -1687,4 +1699,5 @@ module.exports = {
   toggleSentinelTransitions,
   runSentinelTasks,
   runCommand,
+  deletePurgeDbs,
 };

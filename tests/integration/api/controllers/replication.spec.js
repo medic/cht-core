@@ -202,6 +202,7 @@ describe('replication', () => {
     // Clean up like normal
     await utils.revertDb([], true);// And also revert users we created in before
     await utils.deleteUsers(users, true);
+    await utils.deletePurgeDbs();
   });
 
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));

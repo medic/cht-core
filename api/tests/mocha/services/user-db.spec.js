@@ -62,7 +62,7 @@ describe('User DB service', () => {
         chai.expect(get.callCount).to.equal(1);
         const requestParams = requestPut.args[0][0];
         chai.expect(requestParams.url).to.equal(`http://localhost:7357/${environment.db}-user-gareth-meta/_security`);
-        chai.expect(requestParams.auth).to.deep.equal({ user: 'auser', pass: 'apass' });
+        chai.expect(requestParams.auth).to.deep.equal({ username: 'auser', password: 'apass' });
         chai.expect(requestParams.json).to.equal(true);
         chai.expect(requestParams.body.admins.names[0]).to.equal('gareth');
         chai.expect(requestParams.body.members.names[0]).to.equal('gareth');
