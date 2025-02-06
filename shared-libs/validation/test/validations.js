@@ -96,7 +96,7 @@ describe('validations', () => {
     qualifier.returns({ freetext });
     const mockGeneratorL = async function* () {
     };
-    reportGetUuids.resolves(mockGeneratorL);
+    reportGetUuids.resolves(mockGeneratorL());
     const validations = [
       {
         property: 'patient_id',
@@ -124,7 +124,7 @@ describe('validations', () => {
     const mockGeneratorL = async function* () {
       yield 'same';
     };
-    reportGetUuids.resolves(mockGeneratorL);
+    reportGetUuids.resolves(mockGeneratorL());
     const validations = [
       {
         property: 'patient_id',
@@ -152,7 +152,7 @@ describe('validations', () => {
     const mockGeneratorL = async function* () {
       yield 'different';
     };
-    reportGetUuids.resolves(mockGeneratorL);
+    reportGetUuids.resolves(mockGeneratorL());
     const allDocs = sinon.stub(db.medic, 'allDocs').resolves({
       rows: [
         {
@@ -232,7 +232,9 @@ describe('validations', () => {
     const mockGenerator = async function* () {
       yield 'different';
     };
-    reportGetUuids.resolves(mockGenerator);
+    reportGetUuids
+      .onCall(0).resolves(mockGenerator())
+      .onCall(1).resolves(mockGenerator());
     const allDocs = sinon.stub(db.medic, 'allDocs').resolves({
       rows: [
         {
@@ -464,7 +466,7 @@ describe('validations', () => {
     const mockGenerator = async function* () {
       yield 'different';
     };
-    reportGetUuids.resolves(mockGenerator);
+    reportGetUuids.resolves(mockGenerator());
     sinon.stub(db.medic, 'allDocs').resolves({
       rows: [
         {
@@ -647,7 +649,9 @@ describe('validations', () => {
     const mockGenerator = async function* () {
       yield 'different';
     };
-    reportGetUuids.resolves(mockGenerator);
+    reportGetUuids
+      .onCall(0).resolves(mockGenerator())
+      .onCall(1).resolves(mockGenerator());
     sinon.stub(db.medic, 'allDocs').resolves({
       rows: [
         {
@@ -1041,10 +1045,10 @@ describe('validations', () => {
         const mockGeneratorEmpty = async function* () {
         };
         reportGetUuids
-          .onCall(0).resolves(mockGeneratorDifferent1) // once for patient_id=444
-          .onCall(1).resolves(mockGeneratorDifferent1) // once for form=L
-          .onCall(2).resolves(mockGeneratorDifferent2) // once for patient_id=444
-          .onCall(3).resolves(mockGeneratorEmpty); // once for form=G
+          .onCall(0).resolves(mockGeneratorDifferent1()) // once for patient_id=444
+          .onCall(1).resolves(mockGeneratorDifferent1()) // once for form=L
+          .onCall(2).resolves(mockGeneratorDifferent2()) // once for patient_id=444
+          .onCall(3).resolves(mockGeneratorEmpty()); // once for form=G
         sinon.stub(db.medic, 'allDocs').resolves({
           rows: [{
             id: 'different1',
@@ -1095,10 +1099,10 @@ describe('validations', () => {
         const mockGeneratorEmpty = async function* () {
         };
         reportGetUuids
-          .onCall(0).resolves(mockGeneratorDifferent1) // once for patient_id=444
-          .onCall(1).resolves(mockGeneratorEmpty) // once for form=L
-          .onCall(2).resolves(mockGeneratorDifferent2) // once for patient_id=444
-          .onCall(3).resolves(mockGeneratorDifferent2); // once for form=G
+          .onCall(0).resolves(mockGeneratorDifferent1()) // once for patient_id=444
+          .onCall(1).resolves(mockGeneratorEmpty()) // once for form=L
+          .onCall(2).resolves(mockGeneratorDifferent2()) // once for patient_id=444
+          .onCall(3).resolves(mockGeneratorDifferent2()); // once for form=G
         sinon.stub(db.medic, 'allDocs').resolves({
           rows: [{
             id: 'different2',
@@ -1146,10 +1150,10 @@ describe('validations', () => {
           yield 'different2';
         };
         reportGetUuids
-          .onCall(0).resolves(mockGeneratorDifferent1) // once for patient_id=444
-          .onCall(1).resolves(mockGeneratorDifferent1) // once for form=L
-          .onCall(2).resolves(mockGeneratorDifferent2) // once for patient_id=444
-          .onCall(3).resolves(mockGeneratorDifferent2); // once for form=G
+          .onCall(0).resolves(mockGeneratorDifferent1()) // once for patient_id=444
+          .onCall(1).resolves(mockGeneratorDifferent1()) // once for form=L
+          .onCall(2).resolves(mockGeneratorDifferent2()) // once for patient_id=444
+          .onCall(3).resolves(mockGeneratorDifferent2()); // once for form=G
         sinon.stub(db.medic, 'allDocs')
           .onCall(0).resolves({
             rows: [{
@@ -1240,8 +1244,8 @@ describe('validations', () => {
           yield 'different1';
         };
         reportGetUuids
-          .onCall(0).resolves(mockGenerator) // once for patient_id=123
-          .onCall(1).resolves(mockGenerator); // once for form=G
+          .onCall(0).resolves(mockGenerator()) // once for patient_id=123
+          .onCall(1).resolves(mockGenerator()); // once for form=G
         sinon.stub(db.medic, 'allDocs')
           .onCall(0).resolves({
             rows: [{
