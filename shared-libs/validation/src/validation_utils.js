@@ -10,16 +10,12 @@ let dataContext;
 
 const lowerCaseString = obj => typeof obj === 'string' ? obj.toLowerCase() : obj;
 
-const executeExistsRequest = async (options) => {
-  return await db.medic.query('medic-client/reports_by_freetext', options);
-};
-
 const executeChtDatasourceExistsRequest = async (freetext) => {
   const getReportUuids = dataContext.bind(Report.v1.getUuids);
   const reportUuids = [];
   const generator = await getReportUuids(Qualifier.byFreetext(freetext));
 
-  for await (const uuid of generator()) {
+  for await (const uuid of generator) {
     reportUuids.push(uuid);
   }
 
@@ -49,36 +45,22 @@ const parseStartDate = (duration) => {
 
 const getExistsRequestOptions = (fields, doc) => {
   return fields.map(field => {
-    if (doc[field].includes(' ')) {
-      return [ {key: [ `${field}:${lowerCaseString(doc[field])}` ]}, {useChtDatasource: false} ];
-    }
-    return [ `${field}:${lowerCaseString(doc[field])}`, {useChtDatasource: true} ];
+    return `${field}:${lowerCaseString(doc[field])}`;
   });
 };
 
 const addAdditionalFilters = (options, requestOptions) => {
   if (options.additionalFilter) {
     const lowerCaseAdditionalFilter = lowerCaseString(options.additionalFilter);
-    if (lowerCaseAdditionalFilter.includes(' ')) {
-      requestOptions.push([ {key: [ lowerCaseAdditionalFilter ]}, {useChtDatasource: false} ]);
-    } else {
-      requestOptions.push([ lowerCaseAdditionalFilter, {useChtDatasource: true} ]);
-    }
+    requestOptions.push(lowerCaseAdditionalFilter);
   }
 };
 
 const getExistsResponses = async requestOptions => {
   const responses = [];
   for (const options of requestOptions) {
-    let response;
-    if (options[1].useChtDatasource) {
-      response = await executeChtDatasourceExistsRequest(options[0]);
-      responses.push(response);
-    } else {
-      response = await executeExistsRequest(options[0]);
-      const ids = response.rows.map(row => row.id);
-      responses.push(ids);
-    }
+    const response = await executeChtDatasourceExistsRequest(options);
+    responses.push(response);
   }
   return responses;
 };
