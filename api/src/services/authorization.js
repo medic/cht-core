@@ -41,7 +41,7 @@ const getDepth = (userCtx) => {
     const settingDepth = setting && parseInt(setting.depth, 10);
     if (!isNaN(settingDepth) && settingDepth > depth.contactDepth) {
       depth.contactDepth = settingDepth;
-      depth.replicatePrimaryContacts = setting.replicate_primary_contacts;
+      depth.replicatePrimaryContacts = !!setting.replicate_primary_contacts;
 
       const settingsReportDepth = setting && parseInt(setting.report_depth);
       depth.reportDepth = !isNaN(settingsReportDepth) ? settingsReportDepth : -1;
@@ -182,10 +182,6 @@ const filterAllowedDocs = (authorizationContext, docObjs) => {
   return allowedDocs;
 };
 
-const alwaysAllowCreate = doc => {
-  return doc && doc.type && doc.type === 'feedback';
-};
-
 const getContactsByDepthKeys = (userCtx, depth) => {
   const keys = [];
   for (const facilityId of userCtx.facility_id) {
@@ -239,38 +235,77 @@ const getContextObject = (userCtx) => {
   };
 };
 
-const getContactSubjects = (row, replicatePrimaryContacts) => {
-  const { _id: docId, shortcode, primary_contact: primaryContact } = row.value || {};
-  const subjects = [docId, shortcode];
+const getContactSubjects = (row) => {
+  const subjects = [];
 
-  if (replicatePrimaryContacts) {
-    subjects.push(primaryContact);
+  subjects.push(row.id);
+
+  if (row.value) {
+    subjects.push(row.value.shortcode);
   }
 
-  return subjects.filter(Boolean);
+  return subjects;
 };
 
-const getAuthorizationContext = (userCtx) => {
-  const authorizationCtx = getContextObject(userCtx);
+const getAuthorizationContext = async (userCtx) => {
+  const authCtx = getContextObject(userCtx);
+  const primaryContacts = {};
+  const primaryContactEntry = (id) => primaryContacts[id] || ({ id: id, placeIds: [], subjects: [] });
 
-  return db.medic.query('medic/contacts_by_depth', { keys: authorizationCtx.contactsByDepthKeys }).then(results => {
-    results.rows.forEach(row => {
-      const subjects = getContactSubjects(row, authorizationCtx.replicatePrimaryContacts);
-      authorizationCtx.subjectIds.push(...subjects);
+  const results = await db.medic.query('medic/contacts_by_depth', { keys: authCtx.contactsByDepthKeys });
+  results.rows.forEach(row => {
+    const subjects = getContactSubjects(row);
+    authCtx.subjectIds.push(...subjects);
 
-      if (usesReportDepth(authorizationCtx)) {
-        const subjectDepth = row.key[1];
-        subjects.forEach(subject => authorizationCtx.subjectsDepth[subject] = subjectDepth);
+    if (authCtx.replicatePrimaryContacts) {
+      if (row.value.primary_contact) {
+        primaryContacts[row.value.primary_contact] = primaryContactEntry(row.value.primary_contact);
+        primaryContacts[row.value.primary_contact].placeIds.push(row.id);
       }
-    });
 
-    authorizationCtx.subjectIds = _.uniq(authorizationCtx.subjectIds);
-    if (hasAccessToUnassignedDocs(userCtx)) {
-      authorizationCtx.subjectIds.push(UNASSIGNED_KEY);
-      authorizationCtx.subjectsDepth[UNASSIGNED_KEY] = 0;
+      primaryContacts[row.id] = primaryContactEntry(row.id);
+      primaryContacts[row.id].subjects = subjects;
     }
-    return authorizationCtx;
+
+    if (usesReportDepth(authCtx)) {
+      const subjectDepth = row.key[1];
+      subjects.forEach(subject => authCtx.subjectsDepth[subject] = subjectDepth);
+    }
   });
+
+  await addPrimaryContactsSubjects(authCtx, primaryContacts);
+
+  authCtx.subjectIds = _.uniq(authCtx.subjectIds);
+  if (hasAccessToUnassignedDocs(userCtx)) {
+    authCtx.subjectIds.push(UNASSIGNED_KEY);
+    authCtx.subjectsDepth[UNASSIGNED_KEY] = 0;
+  }
+
+  return authCtx;
+};
+
+const addPrimaryContactsSubjects = async (authCtx, primaryContacts) => {
+  const unknownPrimaryContacts = Object.keys(primaryContacts).filter(id => !authCtx.subjectIds.includes(id));
+
+  if (unknownPrimaryContacts.length) {
+    const result = await db.medic.allDocs({ keys: unknownPrimaryContacts, include_docs: true });
+    result.rows.forEach(row => {
+      const subjects = registrationUtils.getSubjectIds(row.doc);
+      authCtx.subjectIds.push(...subjects);
+      primaryContacts[row.id].subjects = subjects;
+    });
+  }
+
+  if (usesReportDepth(authCtx)) {
+    Object.values(primaryContacts).forEach(({ placeIds, subjects }) => {
+      if (!placeIds.length) {
+        return;
+      }
+      const lowestPlaceDepth = Math.min(...placeIds.map(placeID => authCtx.subjectsDepth[placeID]));
+      subjects.forEach(subject => authCtx.subjectsDepth[subject] = lowestPlaceDepth);
+    });
+  }
+
 };
 
 const getReplicationKeys = (viewResults) => {
@@ -307,38 +342,26 @@ const findContactsByReplicationKeys = (replicationKeys) => {
   return db.medic
     .query('medic-client/contacts_by_reference', { keys })
     .then(result => {
-      let docIds = [];
+      const docIds = new Set();
       replicationKeys.forEach(replicationKey => {
         const keys = result.rows.filter(row => row.key[1] === replicationKey).map(row => row.id);
         if (keys.length) {
-          docIds.push(...keys);
+          docIds.add(...keys);
         } else {
-          docIds.push(replicationKey);
+          docIds.add(replicationKey);
         }
       });
-      docIds = _.uniq(docIds);
 
-      return db.medic.allDocs({ keys: docIds, include_docs: true });
+      return db.medic.allDocs({ keys: [...docIds], include_docs: true });
     })
     .then(results => results.rows.map(row => row.doc).filter(doc => doc));
 };
 
-const getContactsByLineage = async (docs) => {
-  const lineageIds = new Set();
-
-  for (const doc of docs) {
-    let parent = doc;
-    while (parent) {
-      lineageIds.add(parent._id);
-      parent = parent.parent;
-    }
-  }
-
-  const uniqIds = [...lineageIds].filter(Boolean);
-  const allDocsResult = await db.medic.allDocs({ keys: uniqIds, include_docs: true });
-  return allDocsResult.rows.map(row => row.doc).filter(doc => doc);
+const getPrimaryPlaces = async (docs) => {
+  const ids = docs.map(d => d._id);
+  const queryResult = await db.medic.query('medic/places_by_primary_contact', { keys: ids, include_docs: true });
+  return queryResult.rows.map(row => row.doc).filter(doc => doc);
 };
-
 /**
  * Iterates over list of contacts and populates list of allowed subject ids. Returns whether new subjects were added.
  * @param {{ subjectIds: string[], replicatePrimaryContacts: Boolean }}authorizationCtx
@@ -357,7 +380,7 @@ const populateAllowedSubjectIds = (authorizationCtx, contacts) => {
     }
 
     const contactsByDepthResults = viewResults.contactsByDepth?.[0]?.value;
-    const subjectIds = [contactsByDepthResults._id, contactsByDepthResults.shortcode];
+    const subjectIds = [contactsByDepthResults?._id, contactsByDepthResults?.shortcode];
     if (authorizationCtx.replicatePrimaryContacts) {
       subjectIds.push(contactsByDepthResults.primary_contact);
     }
@@ -391,12 +414,13 @@ const getScopedAuthorizationContext = async (userCtx, scopeDocsCtx = []) => {
   scopeDocsCtx.forEach(docCtx => {
     const viewResults = docCtx.viewResults || getViewResults(docCtx.doc);
     replicationKeys.push(...getReplicationKeys(viewResults));
+    docCtx.viewResults = viewResults;
   });
 
   const contacts = await findContactsByReplicationKeys(replicationKeys);
   if (authorizationCtx.replicatePrimaryContacts) {
-    const contactsByLineage = await getContactsByLineage(contacts);
-    contacts.push(...contactsByLineage);
+    const primaryPlaces = await getPrimaryPlaces(contacts);
+    contacts.push(...primaryPlaces);
   }
 
   // we simulate a `medic/contacts_by_depth` filter over the list contacts
@@ -404,15 +428,13 @@ const getScopedAuthorizationContext = async (userCtx, scopeDocsCtx = []) => {
   let newSubjects;
   do {
     newSubjects = populateAllowedSubjectIds(authorizationCtx, contacts);
-    console.log(newSubjects);
-  } while (newSubjects);
+  } while (newSubjects && authorizationCtx.replicatePrimaryContacts);
 
+  console.warn(authorizationCtx);
 
   if (hasAccessToUnassignedDocs(userCtx)) {
     authorizationCtx.subjectIds.push(UNASSIGNED_KEY);
   }
-
-  console.log(authorizationCtx.subjectIds);
 
   return authorizationCtx;
 };
@@ -566,7 +588,6 @@ module.exports = {
   getAllowedDocIds: getAllowedDocIds,
   getDocsByReplicationKey: getDocsByReplicationKey,
   filterAllowedDocIds: filterAllowedDocIds,
-  alwaysAllowCreate: alwaysAllowCreate,
   filterAllowedDocs: filterAllowedDocs,
   getScopedAuthorizationContext: getScopedAuthorizationContext,
 };

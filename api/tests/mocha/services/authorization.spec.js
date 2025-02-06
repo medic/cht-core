@@ -6,7 +6,6 @@ const viewMapUtils = require('@medic/view-map-utils');
 const rewire = require('rewire');
 const service = rewire('../../../src/services/authorization');
 
-const should = require('chai').should();
 const { assert } = require('chai');
 const userCtx = {
   name: 'user',
@@ -14,6 +13,7 @@ const userCtx = {
   facility_id: ['facility_id'],
   contact: { _id: 'contact_id', patient_id: 'contact_shortcode', name: 'contact', type: 'person' },
   facility: [{ _id: 'facility_id', place_id: 'facility_shortcode', name: 'health center', type: 'health_center' }],
+  roles: ['user']
 };
 const userCtxMultiFacility = {
   name: 'user',
@@ -75,7 +75,11 @@ describe('Authorization service', () => {
       ];
 
       config.get.returns(settings);
-      service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({ contactDepth: 4, reportDepth: -1 });
+      service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({
+        contactDepth: 4,
+        reportDepth: -1,
+        replicatePrimaryContacts: false
+      });
     });
 
     it('should return report depth associated with selected depth', () => {
@@ -87,7 +91,11 @@ describe('Authorization service', () => {
       ];
 
       config.get.returns(settings1);
-      service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({ contactDepth: 2, reportDepth: 1 });
+      service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({
+        contactDepth: 2,
+        reportDepth: 1,
+        replicatePrimaryContacts: false
+      });
 
       const settings2 = [
         { role: 'a', depth: 1, report_depth: 0 },
@@ -97,7 +105,11 @@ describe('Authorization service', () => {
       ];
 
       config.get.returns(settings2);
-      service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({ contactDepth: 4, reportDepth: -1 });
+      service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({
+        contactDepth: 4,
+        reportDepth: -1,
+        replicatePrimaryContacts: false
+      });
     });
   });
 
@@ -179,7 +191,10 @@ describe('Authorization service', () => {
 
     it('returns contactsByDepthKeys array, contact and report depths', () => {
       db.medic.query.withArgs('medic/contacts_by_depth').resolves({
-        rows: [{ id: 1, key: 'key', value: 's1' }, { id: 2, key: 'key', value: 's2' }]
+        rows: [
+          { id: 1, key: 'key', value: { _id: 1, shortcode: 's1', primary_contact: undefined } },
+          { id: 2, key: 'key', value: { _id: 2, shortcode: 's2' } }
+        ]
       });
       service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: -1 });
       auth.hasAllPermissions.returns(false);
@@ -199,7 +214,10 @@ describe('Authorization service', () => {
 
     it('returns contactsByDepthKeys array, contact and report depths with multiple facilities', () => {
       db.medic.query.withArgs('medic/contacts_by_depth').resolves({
-        rows: [{ id: 1, key: 'key', value: 's1' }, { id: 2, key: 'key', value: 's2' }]
+        rows: [
+          { id: 1, key: 'key', value: { _id: 1, shortcode: 's1' } },
+          { id: 2, key: 'key', value: { _id: 2, shortcode: 's2' } }
+        ]
       });
       service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: -1 });
       auth.hasAllPermissions.returns(false);
@@ -222,10 +240,10 @@ describe('Authorization service', () => {
     it('should compile subjectsDepth when using reportDepth', () => {
       db.medic.query.withArgs('medic/contacts_by_depth').resolves({
         rows: [
-          { id: 'aaa', key: ['aaa', 0], value: 'aaa' },
-          { id: '1', key: ['aaa', 1], value: 's1' },
-          { id: '2', key: ['aaa', 2], value: 's2' },
-          { id: '3', key: ['aaa', 2], value: '3' },
+          { id: 'aaa', key: ['aaa', 0], value: { _id: 'aaa', shortcode: 'aaa' } },
+          { id: '1', key: ['aaa', 1], value: { _id: '1', shortcode: 's1' } },
+          { id: '2', key: ['aaa', 2], value: { _id: '2', shortcode: 's2' } },
+          { id: '3', key: ['aaa', 2], value: { _id: '3', shortcode: '3' } },
         ]
       });
       service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: 1 });
@@ -254,14 +272,14 @@ describe('Authorization service', () => {
     it('should compile subjectsDepth when using reportDepth and multiple facility', () => {
       db.medic.query.withArgs('medic/contacts_by_depth').resolves({
         rows: [
-          { id: 'aaa', key: ['aaa', 0], value: 'aaa' },
-          { id: '1', key: ['aaa', 1], value: 's1' },
-          { id: '2', key: ['aaa', 2], value: 's2' },
-          { id: '3', key: ['aaa', 2], value: '3' },
-          { id: 'bbb', key: ['bbb', 0], value: 'bbb' },
-          { id: '11', key: ['bbb', 1], value: 's11' },
-          { id: '22', key: ['bbb', 2], value: 's22' },
-          { id: '33', key: ['bbb', 2], value: '33' },
+          { id: 'aaa', key: ['aaa', 0], value: { _id: 'aaa', shortcode: 'aaa' }, },
+          { id: '1', key: ['aaa', 1], value: { _id: '1', shortcode: 's1' }, },
+          { id: '2', key: ['aaa', 2], value: { _id: '2', shortcode: 's2' } },
+          { id: '3', key: ['aaa', 2], value: { _id: '3', shortcode: '3' } },
+          { id: 'bbb', key: ['bbb', 0], value: { _id: 'bbb', shortcode: 'bbb' } },
+          { id: '11', key: ['bbb', 1], value: { _id: '11', shortcode: 's11' } },
+          { id: '22', key: ['bbb', 2], value: { _id: '22', shortcode: 's22' } },
+          { id: '33', key: ['bbb', 2], value: { _id: '33', shortcode: '33' } },
         ]
       });
       service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: 1 });
@@ -303,9 +321,9 @@ describe('Authorization service', () => {
     it('should compile subjectsDepth when user has access to unassigned', () => {
       db.medic.query.withArgs('medic/contacts_by_depth').resolves({
         rows: [
-          { id: 'aaa', key: ['aaa', 0], value: 'aaa' },
-          { id: '1', key: ['aaa', 1], value: 's1' },
-          { id: '2', key: ['aaa', 2], value: 's2' },
+          { id: 'aaa', key: ['aaa', 0], value: { _id: 'aaa', shortcode: 'aaa' } },
+          { id: '1', key: ['aaa', 1], value: { _id: '1', shortcode: 's1' } },
+          { id: '2', key: ['aaa', 2], value: { _id: '2', shortcode: 's2' } },
         ]
       });
       service.__get__('getDepth').returns({ contactDepth: 3, reportDepth: 2 });
@@ -336,12 +354,12 @@ describe('Authorization service', () => {
     it('should compile subjectsDepth when user has access to unassigned with multiple facilities', () => {
       db.medic.query.withArgs('medic/contacts_by_depth').resolves({
         rows: [
-          { id: 'aaa', key: ['aaa', 0], value: 'aaa' },
-          { id: '1', key: ['aaa', 1], value: 's1' },
-          { id: '2', key: ['aaa', 2], value: 's2' },
-          { id: 'bbb', key: ['bbb', 0], value: 'bbb' },
-          { id: '11', key: ['bbb', 1], value: 's11' },
-          { id: '22', key: ['bbb', 2], value: 's22' },
+          { id: 'aaa', key: ['aaa', 0], value: { _id: 'aaa', shortcode: 'aaa' } },
+          { id: '1', key: ['aaa', 1], value: { _id: '1', shortcode: 's1' } },
+          { id: '2', key: ['aaa', 2], value: { _id: '2', shortcode: 's2' } },
+          { id: 'bbb', key: ['bbb', 0], value: { _id: 'bbb', shortcode: 'bbb' } },
+          { id: '11', key: ['bbb', 1], value: { _id: '11', shortcode: 's11' } },
+          { id: '22', key: ['bbb', 2], value: { _id: '22', shortcode: 's22' } },
         ]
       });
       service.__get__('getDepth').returns({ contactDepth: 3, reportDepth: 2 });
@@ -378,6 +396,136 @@ describe('Authorization service', () => {
           });
         });
     });
+
+    it('should add primary contacts when enabled', async () => {
+      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
+        rows: [
+          { id: 'aaa', key: ['aaa', 0], value: { _id: 'aaa', shortcode: 'aaa', primary_contact: 'contact' } },
+          { id: '1', key: ['aaa', 1], value: { _id: '1', shortcode: 's1', primary_contact: 'contact2' } },
+        ]
+      });
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { id: 'contact', doc: { _id: 'contact', patient_id: 'contact_id' } },
+          { id: 'contact2', doc: { _id: 'contact2', patient_id: 'contact2_id' } },
+        ]
+      });
+      service.__get__('getDepth').returns({ contactDepth: 1, replicatePrimaryContacts: true });
+      auth.hasAllPermissions.returns(true);
+
+      const result = await service.getAuthorizationContext({ facility_id: ['aaa'], name: 'peter' });
+
+      result.subjectIds.should.have.members([
+        '_all', 'org.couchdb.user:peter',
+        '1', 's1', 'aaa', 'contact', 'contact2', 'contact_id', 'contact2_id'
+      ]);
+      result.contactsByDepthKeys.should.deep.equal([
+        ['aaa', 0], ['aaa', 1],
+      ]);
+      result.should.deep.include({ contactDepth: 1 });
+      db.medic.allDocs.args.should.deep.equal([[{ keys: ['contact', 'contact2'], include_docs: true }]]);
+    });
+
+    it('should only query for unknown primary contacts', async () => {
+      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
+        rows: [
+          { id: 'aaa', key: ['aaa', 0], value: { _id: 'aaa', shortcode: 'aaa', primary_contact: 'contact' } },
+          { id: '1', key: ['aaa', 1], value: { _id: '1', shortcode: 's1', primary_contact: 'contact2' } },
+          { id: 'contact2', key: ['aaa', 2], value: { _id: 'contact2', shortcode: 'contact2_id' } },
+        ]
+      });
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { id: 'contact', doc: { _id: 'contact', patient_id: 'contact_id' } },
+        ]
+      });
+      service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: 1, replicatePrimaryContacts: true });
+      auth.hasAllPermissions.returns(true);
+
+      const result = await service.getAuthorizationContext({ facility_id: ['aaa'], name: 'peter' });
+
+      result.subjectIds.should.have.members([
+        '_all', 'org.couchdb.user:peter',
+        '1', 's1', 'aaa', 'contact', 'contact2', 'contact_id', 'contact2_id'
+      ]);
+      result.contactsByDepthKeys.should.deep.equal([
+        ['aaa', 0], ['aaa', 1], ['aaa', 2]
+      ]);
+      result.should.deep.include({
+        contactDepth: 2,
+        reportDepth: 1,
+        subjectsDepth: {
+          'aaa': 0,
+          '1': 1,
+          's1': 1,
+          'contact': 0,
+          'contact_id': 0,
+          'contact2': 1,
+          'contact2_id': 1,
+        },
+      });
+      db.medic.allDocs.args.should.deep.equal([[{ keys: ['contact'], include_docs: true }]]);
+    });
+    
+    it('should set lowest place depth for primary contacts', async () => {
+      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
+        rows: [
+          { id: 'aaa', key: ['aaa', 0], value: { _id: 'aaa', shortcode: 'aaa', primary_contact: 'contact1' } },
+          { id: '1', key: ['aaa', 1], value: { _id: '1', shortcode: 's1', primary_contact: 'contact1' } },
+          { id: 'contact1', key: ['aaa', 2], value: { _id: 'contact1', shortcode: 'contact1_id' } },
+
+
+          { id: 'bbb', key: ['bbb', 0], value: { _id: 'bbb', shortcode: 'bbb', primary_contact: 'contact2' } },
+          { id: '2', key: ['bbb', 1], value: { _id: '2', shortcode: 's2', primary_contact: 'contact2' } },
+          { id: '3', key: ['bbb', 1], value: { _id: '3', shortcode: 's3', primary_contact: 'contact3' } },
+
+          { id: 'contact4', key: ['aaa', 2], value: { _id: 'contact4', shortcode: 'contact4_id' } },
+        ]
+      });
+
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { id: 'contact2', doc: { _id: 'contact2', patient_id: 'contact2_id' } },
+          { id: 'contact3', doc: { _id: 'contact3', patient_id: 'contact3_id' } },
+        ]
+      });
+      service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: 1, replicatePrimaryContacts: true });
+      auth.hasAllPermissions.returns(true);
+
+      const result = await service.getAuthorizationContext({ facility_id: ['aaa', 'bbb'], name: 'peter' });
+
+      result.subjectIds.should.have.members([
+        '_all', 'org.couchdb.user:peter',
+        '1', 's1', 'aaa', '2', 's2', 'bbb', '3', 's3',
+        'contact1', 'contact2', 'contact1_id', 'contact2_id', 'contact3', 'contact3_id', 'contact4', 'contact4_id'
+      ]);
+      result.contactsByDepthKeys.should.deep.equal([
+        ['aaa', 0], ['aaa', 1], ['aaa', 2], ['bbb', 0], ['bbb', 1], ['bbb', 2]
+      ]);
+      result.should.deep.include({
+        contactDepth: 2,
+        reportDepth: 1,
+        subjectsDepth: {
+          'aaa': 0,
+          '1': 1,
+          's1': 1,
+          'bbb': 0,
+          '2': 1,
+          's2': 1,
+          '3': 1,
+          's3': 1,
+          'contact1': 0,
+          'contact1_id': 0,
+          'contact2': 0,
+          'contact2_id': 0,
+          'contact3': 1,
+          'contact3_id': 1,
+          'contact4': 2,
+          'contact4_id': 2,
+        },
+      });
+      db.medic.allDocs.args.should.deep.equal([[{ keys: ['contact2', 'contact3'], include_docs: true }]]);
+    }); 
 
   });
 
@@ -2500,6 +2648,7 @@ describe('Authorization service', () => {
             userCtx,
             subjectIds: ['_all', 'org.couchdb.user:user'],
             contactsByDepthKeys: [ ['facility_id'] ],
+            replicatePrimaryContacts: undefined,
             subjectsDepth: {},
             contactDepth: -1,
             reportDepth: -1,
@@ -2517,6 +2666,7 @@ describe('Authorization service', () => {
             userCtx,
             subjectIds: ['_all', 'org.couchdb.user:user'],
             contactsByDepthKeys: [ ['facility_id'] ],
+            replicatePrimaryContacts: undefined,
             subjectsDepth: {},
             contactDepth: -1,
             reportDepth: -1,
@@ -2525,7 +2675,6 @@ describe('Authorization service', () => {
     });
 
     it('should get view results if missing', () => {
-      db.medic.query.resolves({ rows: [] });
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
       const contactsByDepth = sinon.stub();
       const docsByReplicationKey = sinon.stub();
@@ -2569,9 +2718,9 @@ describe('Authorization service', () => {
           doc: c1, // allowed
           viewResults: {
             contactsByDepth: [
-              { key: ['c1'], value: '123456' },
-              { key: ['p1'], value: '123456' },
-              { key: ['facility_id'], value: '123456' },
+              { key: ['c1'], value: { _id: '123456', shortcode: '123456' } },
+              { key: ['p1'], value: { _id: '123456', shortcode: '123456' }  },
+              { key: ['facility_id'], value: { _id: '123456', shortcode: '123456' }  },
             ],
             replicationKeys: [{ key: 'c1', value: { type: 'contact' }}],
           }
@@ -2580,9 +2729,9 @@ describe('Authorization service', () => {
           doc: c2, // denied
           viewResults: {
             contactsByDepth: [
-              { key: ['c2'], value: 'place1' },
-              { key: ['p3'], value: 'place1' },
-              { key: ['p4'], value: 'place1' },
+              { key: ['c2'], value: { _id: 'place1', shortcode: 'place1' } },
+              { key: ['p3'], value: { _id: 'place1', shortcode: 'place1' } },
+              { key: ['p4'], value: { _id: 'place1', shortcode: 'place1' } },
             ],
             replicationKeys: [{ key: 'c2', value: { type: 'contact' }}],
           }
@@ -2591,9 +2740,9 @@ describe('Authorization service', () => {
           doc: c3, // allowed
           viewResults: {
             contactsByDepth: [
-              { key: ['c3'], value: null },
-              { key: ['p1'], value: null },
-              { key: ['facility_id'], value: null },
+              { key: ['c3'], value: { _id: 'c3' } },
+              { key: ['p1'], value: { _id: 'p1' } },
+              { key: ['facility_id'], value: { _id: 'facility_id' } },
             ],
             replicationKeys: [{ key: 'c3', value: { type: 'contact' }}]
           },
@@ -2602,9 +2751,9 @@ describe('Authorization service', () => {
           doc: c4, // denied
           viewResults: {
             contactsByDepth: [
-              { key: ['c4'], value: null },
-              { key: ['p3'], value: null },
-              { key: ['p4'], value: null },
+              { key: ['c4'], value: { _id: 'c4' } },
+              { key: ['p3'], value: { _id: 'p3' } },
+              { key: ['p4'], value: { _id: 'p4' } },
             ],
             replicationKeys: [{ key: 'c4', value: { type: 'contact' }}],
           },
@@ -2613,54 +2762,50 @@ describe('Authorization service', () => {
           doc: c5, // allowed
           viewResults: {
             contactsByDepth: [
-              { key: ['c5'], value: 'place5' },
-              { key: ['p2'], value: 'place5' },
-              { key: ['facility_id'], value: 'place5' },
+              { key: ['c5'], value: { _id: 'place5', shortcode: 'place5' } },
+              { key: ['p2'], value: { _id: 'place5', shortcode: 'place5' }},
+              { key: ['facility_id'], value: { _id: 'place5', shortcode: 'place5' } },
             ],
             replicationKeys: [{ key: 'c5', value: { type: 'contact' }}],
           },
         },
       ];
 
-      db.medic.query.resolves({ rows: [] });
-      sinon.stub(db.medic, 'allDocs');
-
-      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.any })).resolves({ rows: [] });
-      db.medic.allDocs
-        .withArgs(sinon.match({ keys: sinon.match.array }))
-        .resolves({ rows: [
+      sinon.stub(db.medic, 'allDocs').resolves({ rows:
+        [
           { id: 'c1', doc: c1 },
           { id: 'c2', doc: c2 },
           { id: 'c3', doc: c3 },
           { id: 'c4', doc: c4 },
           { id: 'c5', doc: c5 },
-        ] });
+        ]
+      });
 
       const contactsByDepth = sinon.stub();
       contactsByDepth.withArgs(c1).returns([
-        { key: ['c1'], value: '123456' },
-        { key: ['p1'], value: '123456' },
-        { key: ['facility_id'], value: '123456' },
+        { key: ['c1'], value: { _id: c1._id, shortcode: '123456' } },
+        { key: ['p1'], value: { _id: c1._id, shortcode: '123456' } },
+        { key: ['facility_id'], value: { _id: c1._id, shortcode: '123456' } },
       ]);
       contactsByDepth.withArgs(c2).returns([
-        { key: ['c2'], value: 'place1' },
-        { key: ['p3'], value: 'place1' },
-        { key: ['p4'], value: 'place1' },
+        { key: ['c2'], value: { _id: c2._id, shortcode: 'place1' } },
+        { key: ['p3'], value: { _id: c2._id, shortcode: 'place1' } },
+        { key: ['p4'], value: { _id: c2._id, shortcode: 'place1' } },
       ]);
       contactsByDepth.withArgs(c3).returns([
-        { key: ['c3'], value: null },
-        { key: ['p1'], value: null },
-        { key: ['facility_id'], value: null },
+        { key: ['c3'], value: { _id: c3._id } },
+        { key: ['p1'], value: { _id: c3._id } },
+        { key: ['facility_id'], value: { _id: c3._id } },
       ]);
       contactsByDepth.withArgs(c4).returns([
-        { key: ['c4'], value: null },
-        { key: ['p3'], value: null },
-        { key: ['p4'], value: null },
+        { key: ['c4'], value: { _id: c4._id } },
+        { key: ['p3'], value: { _id: c4._id } },
+        { key: ['p4'], value: { _id: c4._id } },
       ]);
       contactsByDepth.withArgs(c5).returns([
-        { key: ['c5'], value: 'place5' },
-        { key: ['p2'], value: 'place5' },
-        { key: ['facility_id'], value: 'place5' },
+        { key: ['c5'], value: { _id: c5._id, shortcode: 'place5' } },
+        { key: ['p2'], value: { _id: c5._id, shortcode: 'place5' } },
+        { key: ['facility_id'], value: { _id: c5._id, shortcode: 'place5' } },
       ]);
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(c1).returns([{ key: 'c1', value: {  type: 'contact'  }}]);
@@ -2756,15 +2901,8 @@ describe('Authorization service', () => {
         },
       ];
 
-      db.medic.query.resolves({ rows: [
-        { id: 'patient1doc', key: ['shortcode', 'patient1'] },
-        { id: 'patient2doc', key: ['shortcode', 'patient2'] },
-      ] });
-      sinon.stub(db.medic, 'allDocs');
-      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
-      db.medic.allDocs
-        .withArgs(sinon.match({ keys: sinon.match.array }))
-        .resolves({ rows: [
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
           {
             id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } }
           },
@@ -2791,29 +2929,37 @@ describe('Authorization service', () => {
 
       const contactsByDepth = sinon.stub();
       contactsByDepth.withArgs(sinon.match({ _id: 'c1' })).returns([
-        { key: ['c1'], value: null }, { key: ['p1'], value: null }, { key: ['facility_id'], value: null },
+        { key: ['c1'], value: { _id: 'c1' } },
+        { key: ['p1'], value: { _id: 'c1' } },
+        { key: ['facility_id'], value: { _id: 'c1' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient1doc' })).returns([
-        { key: ['patient1doc'], value: 'patient1' },
-        { key: ['p1'], value: 'patient1' },
-        { key: ['facility_id'], value: 'patient1' },
+        { key: ['patient1doc'], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+        { key: ['p1'], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+        { key: ['facility_id'], value: { _id: 'patient1doc', shortcode: 'patient1' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'c2' })).returns([
-        { key: ['c2'], value: null }, { key: ['p2'], value: null }, { key: ['p3'], value: null },
+        { key: ['c2'], value: { _id: 'c2' } },
+        { key: ['p2'], value: { _id: 'c2' } },
+        { key: ['p3'], value: { _id: 'c2' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient2doc' })).returns([
-        { key: ['patient2doc'], value: 'patient1' },
-        { key: ['p2'], value: 'patient2' },
-        { key: ['p3'], value: 'patient2' },
+        { key: ['patient2doc'], value: { _id: 'patient2doc', shortcode: 'patient2' } },
+        { key: ['p2'], value: { _id: 'patient2doc', shortcode: 'patient2' } },
+        { key: ['p3'], value: { _id: 'patient2doc', shortcode: 'patient2' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'c3' })).returns([
-        { key: ['c3'], value: null }, { key: ['p2'], value: null }, { key: ['p3'], value: null },
+        { key: ['c3'], value: { _id: 'c3' } },
+        { key: ['p2'], value: { _id: 'c3' } },
+        { key: ['p3'], value: { _id: 'c3' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient3doc' })).returns([
-        { key: ['patient3doc'], value: null }, { key: ['facility_id'], value: null },
+        { key: ['patient3doc'], value: { _id: 'patient3doc' } },
+        { key: ['facility_id'], value: { _id: 'patient3doc' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient4doc' })).returns([
-        { key: ['patient4doc'], value: null }, { key: ['p3'], value: null },
+        { key: ['patient4doc'], value: { _id: 'patient4doc' } },
+        { key: ['p3'], value: { _id: 'patient4doc' } },
       ]);
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([
@@ -2838,6 +2984,13 @@ describe('Authorization service', () => {
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'patient1doc', key: ['shortcode', 'patient1'] },
+          { id: 'patient2doc', key: ['shortcode', 'patient2'] },
+        ]
+      });
 
       return service
         .getScopedAuthorizationContext(userCtx, docObjs)
@@ -2905,15 +3058,8 @@ describe('Authorization service', () => {
         },
       ];
 
-      db.medic.query.resolves({ rows: [
-        { id: 'patient1doc', key: ['shortcode', 'patient1'] },
-        { id: 'patient2doc', key: ['shortcode', 'patient2'] },
-      ] });
-      sinon.stub(db.medic, 'allDocs');
-      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
-      db.medic.allDocs
-        .withArgs(sinon.match({ keys: sinon.match.array }))
-        .resolves({ rows: [
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
           { id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
           {
             id: 'patient1doc', doc: { _id: 'patient1doc', type: 'person', patient_id: 'patient1',
@@ -2932,29 +3078,36 @@ describe('Authorization service', () => {
 
       const contactsByDepth = sinon.stub();
       contactsByDepth.withArgs(sinon.match({ _id: 'c1' })).returns([
-        { key: ['c1'], value: null }, { key: ['p1'], value: null }, { key: ['facility_id'], value: null },
+        { key: ['c1'], value: { _id: 'c1' } },
+        { key: ['p1'], value: { _id: 'c1' } },
+        { key: ['facility_id'], value: { _id: 'c1' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient1doc' })).returns([
-        { key: ['patient1doc'], value: 'patient1' },
-        { key: ['p1'], value: 'patient1' },
-        { key: ['facility_id'], value: 'patient1' },
+        { key: ['patient1doc'], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+        { key: ['p1'], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+        { key: ['facility_id'], value: { _id: 'patient1doc', shortcode: 'patient1' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'c2' })).returns([
-        { key: ['c2'], value: null }, { key: ['p2'], value: null }, { key: ['p3'], value: null },
+        { key: ['c2'], value: { _id: 'c2' } },
+        { key: ['p2'], value: { _id: 'c2' } },
+        { key: ['p3'], value: { _id: 'c2' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient2doc' })).returns([
-        { key: ['patient2doc'], value: 'patient2' },
-        { key: ['p2'], value: 'patient2' },
-        { key: ['p3'], value: 'patient2' },
+        { key: ['patient2doc'], value: { _id: 'patient2doc', shortcode: 'patient2' } },
+        { key: ['p2'], value: { _id: 'patient2doc', shortcode: 'patient2' } },
+        { key: ['p3'], value: { _id: 'patient2doc', shortcode: 'patient2' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'p1' })).returns([
-        { key: ['p1'], value: null }, { key: ['facility_id'], value: null },
+        { key: ['p1'], value: { _id: 'p1' } },
+        { key: ['facility_id'], value: { _id: 'p1' } },
       ]);
-      contactsByDepth.withArgs(sinon.match({ _id: 'facility_id' })).returns([{ key: ['facility_id'], value: null }]);
+      contactsByDepth.withArgs(sinon.match({ _id: 'facility_id' })).returns([
+        { key: ['facility_id'], value: { _id: 'facility_id' } }
+      ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'p2' })).returns([
-        { key: ['p2'], value: null }, { key: ['p3'], value: null },
+        { key: ['p2'], value: { _id: 'p2' } }, { key: ['p3'], value: { _id: 'p2' } },
       ]);
-      contactsByDepth.withArgs(sinon.match({ _id: 'p3' })).returns([{ key: ['p3'], value: null }]);
+      contactsByDepth.withArgs(sinon.match({ _id: 'p3' })).returns([{ key: ['p3'], value: { _id: 'p3' } }]);
 
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([{ key: 'c1', value: {  type: 'contact'  }}]);
@@ -2974,6 +3127,13 @@ describe('Authorization service', () => {
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'patient1doc', key: ['shortcode', 'patient1'] },
+          { id: 'patient2doc', key: ['shortcode', 'patient2'] },
+        ]
+      });
 
       return service
         .getScopedAuthorizationContext(userCtx, docObjs)
@@ -3055,15 +3215,8 @@ describe('Authorization service', () => {
         },
       ];
 
-      db.medic.query.resolves({ rows: [
-        { id: 'patient1doc', key: ['shortcode', 'patient1'] },
-        { id: 'patient2doc', key: ['shortcode', 'patient2'] },
-      ] });
-      sinon.stub(db.medic, 'allDocs');
-      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
-      db.medic.allDocs
-        .withArgs(sinon.match({ keys: sinon.match.array }))
-        .resolves({ rows: [
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
           {
             id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } },
               patient_id: 'contact1' }
@@ -3084,24 +3237,24 @@ describe('Authorization service', () => {
 
       const contactsByDepth = sinon.stub();
       contactsByDepth.withArgs(sinon.match({ _id: 'c1' })).returns([
-        { key: ['c1'], value: 'contact1' },
-        { key: ['p1'], value: 'contact1' },
-        { key: ['facility_id'], value: 'contact1' },
+        { key: ['c1'], value: { _id: 'c1', shortcode: 'contact1' } },
+        { key: ['p1'], value: { _id: 'c1', shortcode: 'contact1' } },
+        { key: ['facility_id'], value: { _id: 'c1', shortcode: 'contact1' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient1doc' })).returns([
-        { key: ['patient1doc'], value: 'patient1' },
-        { key: ['p1'], value: 'patient1' },
-        { key: ['facility_id'], value: 'patient1' },
+        { key: ['patient1doc'], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+        { key: ['p1'], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+        { key: ['facility_id'], value: { _id: 'patient1doc', shortcode: 'patient1' } },
       ]);
-      contactsByDepth.withArgs(sinon.match({ _id: 'c2' })).returns([
-        { key: ['c2'], value: 'contact2' },
-        { key: ['p2'], value: 'contact2' },
-        { key: ['p3'], value: 'contact2' },
+      contactsByDepth.withArgs(sinon.match()).returns([
+        { key: ['c2'], value: { _id: 'c2', shortcode: 'contact2' } },
+        { key: ['p2'], value: { _id: 'c2', shortcode: 'contact2' } },
+        { key: ['p3'], value: { _id: 'c2', shortcode: 'contact2' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient2doc' })).returns([
-        { key: ['patient2doc'], value: 'patient2' },
-        { key: ['p2'], value: 'patient2' },
-        { key: ['p3'], value: 'patient2' },
+        { key: ['patient2doc'], value: { _id: 'patient2doc', shortcode: 'patient2' } },
+        { key: ['p2'], value: { _id: 'patient2doc', shortcode: 'patient2' } },
+        { key: ['p3'], value: { _id: 'patient2doc', shortcode: 'patient2' } },
       ]);
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([{ key: 'c1', value: {  type: 'contact'  }}]);
@@ -3115,6 +3268,13 @@ describe('Authorization service', () => {
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'patient1doc', key: ['shortcode', 'patient1'] },
+          { id: 'patient2doc', key: ['shortcode', 'patient2'] },
+        ]
+      });
 
       return service
         .getScopedAuthorizationContext(userCtx, docObjs)
@@ -3144,7 +3304,7 @@ describe('Authorization service', () => {
 
     it('adds unassigned key if the user has required permissions', () => {
       auth.hasAllPermissions.returns(true);
-      config.get.returns(true);
+      config.get.withArgs('district_admins_access_unallocated_messages').returns(true);
 
       const docObjs = [
         { // unallocated
@@ -3167,7 +3327,7 @@ describe('Authorization service', () => {
 
     it('should not add unassigned key if the user does not have required permissions', () => {
       auth.hasAllPermissions.returns(false);
-      config.get.returns(true);
+      config.get.withArgs('district_admins_access_unallocated_messages').returns(true);
 
       const docObjs = [
         { // unallocated
@@ -3203,12 +3363,8 @@ describe('Authorization service', () => {
         },
       ];
 
-      db.medic.query.resolves({ rows: [ { id: 'patient1doc', key: ['shortcode', 'patient1'] } ] });
-      sinon.stub(db.medic, 'allDocs');
-      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
-      db.medic.allDocs
-        .withArgs(sinon.match({ keys: sinon.match.array }))
-        .resolves({ rows: [
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
           { id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
           {
             id: 'patient1doc',
@@ -3225,20 +3381,20 @@ describe('Authorization service', () => {
       contactsByDepth
         .withArgs(sinon.match({ _id: 'c1' }))
         .returns([
-          { key: ['c1'], value: null },
-          { key: ['c1', 0], value: null },
-          { key: ['facility_id'], value: null },
-          { key: ['facility_id', 1], value: null },
+          { key: ['c1'], value: { _id: 'c1' } },
+          { key: ['c1', 0], value: { _id: 'c1' } },
+          { key: ['facility_id'], value: { _id: 'c1' } },
+          { key: ['facility_id', 1], value: { _id: 'c1' } },
         ]);
       contactsByDepth
         .withArgs(sinon.match({ _id: 'patient1doc' }))
         .returns([
-          { key: ['patient1doc'], value: 'patient1' },
-          { key: ['patient1doc', 0], value: 'patient1' },
-          { key: ['p1'], value: 'patient1' },
-          { key: ['p1', 1], value: 'patient1' },
-          { key: ['facility_id'], value: 'patient1' },
-          { key: ['facility_id', 2], value: 'patient1' }
+          { key: ['patient1doc'], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+          { key: ['patient1doc', 0], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+          { key: ['p1'], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+          { key: ['p1', 1], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+          { key: ['facility_id'], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+          { key: ['facility_id', 2], value: { _id: 'patient1doc', shortcode: 'patient1' } }
         ]);
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([{ key: 'c1', value: {  type: 'contact'  }}]);
@@ -3248,6 +3404,12 @@ describe('Authorization service', () => {
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'patient1doc', key: ['shortcode', 'patient1'] },
+        ]
+      });
 
       return service
         .getScopedAuthorizationContext(userCtx, docObjs)
@@ -3300,12 +3462,8 @@ describe('Authorization service', () => {
         },
       ];
 
-      db.medic.query.resolves({ rows: [ { id: 'patient1doc', key: ['shortcode', 'patient1'] } ] });
-      sinon.stub(db.medic, 'allDocs');
-      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
-      db.medic.allDocs
-        .withArgs(sinon.match({ keys: sinon.match.array }))
-        .resolves({ rows: [
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
           { id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
           {
             id: 'patient1doc',
@@ -3322,34 +3480,34 @@ describe('Authorization service', () => {
       contactsByDepth
         .withArgs(sinon.match({ _id: 'c1' }))
         .returns([
-          { key: ['c1'], value: null },
-          { key: ['c1', 0], value: null },
-          { key: ['facility_id'], value: null },
-          { key: ['facility_id', 1], value: null },
+          { key: ['c1'], value: { _id: 'c1' } },
+          { key: ['c1', 0], value: { _id: 'c1' } },
+          { key: ['facility_id'], value: { _id: 'c1' } },
+          { key: ['facility_id', 1], value: { _id: 'c1' } },
         ]);
       contactsByDepth
         .withArgs(sinon.match({ _id: 'patient1doc' }))
         .returns([
-          { key: ['patient1doc'], value: 'patient1' },
-          { key: ['patient1doc', 0], value: 'patient1' },
-          { key: ['p1'], value: 'patient1' },
-          { key: ['p1', 1], value: 'patient1' },
-          { key: ['facility_id'], value: 'patient1' },
-          { key: ['facility_id', 2], value: 'patient1' }
+          { key: ['patient1doc'], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+          { key: ['patient1doc', 0], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+          { key: ['p1'], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+          { key: ['p1', 1], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+          { key: ['facility_id'], value: { _id: 'patient1doc', shortcode: 'patient1' } },
+          { key: ['facility_id', 2], value: { _id: 'patient1doc', shortcode: 'patient1' } }
         ]);
       contactsByDepth
         .withArgs(sinon.match({ _id: 'p1' }))
         .returns([
-          { key: ['p1'], value: null },
-          { key: ['p1', 0], value: null },
-          { key: ['facility_id'], value: null },
-          { key: ['facility_id', 1], value: null }
+          { key: ['p1'], value: { _id: 'p1' } },
+          { key: ['p1', 0], value: { _id: 'p1' } },
+          { key: ['facility_id'], value: { _id: 'p1' } },
+          { key: ['facility_id', 1], value: { _id: 'p1' } }
         ]);
       contactsByDepth
         .withArgs(sinon.match({ _id: 'facility_id' }))
         .returns([
-          { key: ['facility_id'], value: null },
-          { key: ['facility_id', 0], value: null }
+          { key: ['facility_id'], value: { _id: 'facility_id' } },
+          { key: ['facility_id', 0], value: { _id: 'facility_id' } }
         ]);
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([{ key: 'c1', value: {  type: 'contact'  }}]);
@@ -3363,6 +3521,12 @@ describe('Authorization service', () => {
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'patient1doc', key: ['shortcode', 'patient1'] },
+        ]
+      });
 
       return service
         .getScopedAuthorizationContext(userCtx, docObjs)
@@ -3413,12 +3577,12 @@ describe('Authorization service', () => {
           doc: c1, // allowed
           viewResults: {
             contactsByDepth: [
-              { key: ['c1'], value: '123456' },
-              { key: ['c1', 0], value: '123456' },
-              { key: ['p1'], value: '123456' },
-              { key: ['p1', 1], value: '123456' },
-              { key: ['facility_id'], value: '123456' },
-              { key: ['facility_id', 2], value: '123456' }
+              { key: ['c1'], value: { _id: c1._id, shortcode: c1.patient_id } },
+              { key: ['c1', 0], value: { _id: c1._id, shortcode: c1.patient_id } },
+              { key: ['p1'], value: { _id: c1._id, shortcode: c1.patient_id } },
+              { key: ['p1', 1], value: { _id: c1._id, shortcode: c1.patient_id } },
+              { key: ['facility_id'], value: { _id: c1._id, shortcode: c1.patient_id } },
+              { key: ['facility_id', 2], value: { _id: c1._id, shortcode: c1.patient_id } }
             ],
             replicationKeys: [{ key: 'c1', value: {  type: 'contact'  }}]
           }
@@ -3427,46 +3591,40 @@ describe('Authorization service', () => {
           doc: c2, // denied
           viewResults: {
             contactsByDepth: [
-              { key: ['c2'], value: 'place1' },
-              { key: ['c2', 0], value: 'place1' },
-              { key: ['p3'], value: 'place1' },
-              { key: ['p3', 1], value: 'place1' },
-              { key: ['p4'], value: 'place1' },
-              { key: ['p4', 2], value: 'place1' },
+              { key: ['c2'], value: { _id: c2._id, shortcode: c2.place_id } },
+              { key: ['c2', 0], value: { _id: c2._id, shortcode: c2.place_id } },
+              { key: ['p3'], value: { _id: c2._id, shortcode: c2.place_id } },
+              { key: ['p3', 1], value: { _id: c2._id, shortcode: c2.place_id } },
+              { key: ['p4'], value: { _id: c2._id, shortcode: c2.place_id } },
+              { key: ['p4', 2], value: { _id: c2._id, shortcode: c2.place_id } },
             ],
             replicationKeys: [{ key: 'c2', value: {  type: 'contact'  }}]
           }
         },
       ];
 
-      db.medic.query.resolves({ rows: [] });
-      sinon.stub(db.medic, 'allDocs');
-
-      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.any })).resolves({ rows: [] });
-      db.medic.allDocs
-        .withArgs(sinon.match({ keys: sinon.match.array }))
-        .resolves({ rows: [ { id: 'c1', doc: c1 }, { id: 'c2', doc: c2 } ] });
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [ { id: 'c1', doc: c1 }, { id: 'c2', doc: c2 } ] });
 
       const contactsByDepth = sinon.stub();
       contactsByDepth.withArgs(c1).returns([
-        { key: ['c1'], value: '123456' },
-        { key: ['c1', 0], value: '123456' },
-        { key: ['p1'], value: '123456' },
-        { key: ['p1', 1], value: '123456' },
-        { key: ['facility_id'], value: '123456' },
-        { key: ['facility_id', 2], value: '123456' },
+        { key: ['c1'], value: { _id: c1._id, shortcode: c1.patient_id } },
+        { key: ['c1', 0], value: { _id: c1._id, shortcode: c1.patient_id } },
+        { key: ['p1'], value: { _id: c1._id, shortcode: c1.patient_id } },
+        { key: ['p1', 1], value: { _id: c1._id, shortcode: c1.patient_id } },
+        { key: ['facility_id'], value: { _id: c1._id, shortcode: c1.patient_id } },
+        { key: ['facility_id', 2], value: { _id: c1._id, shortcode: c1.patient_id } }
       ]);
       contactsByDepth.withArgs(c2).returns([
-        { key: ['c2'], value: 'place1' },
-        { key: ['c2', 0], value: 'place1' },
-        { key: ['p3'], value: 'place1' },
-        { key: ['p3', 1], value: 'place1' },
-        { key: ['p4'], value: 'place1' },
-        { key: ['p4', 2], value: 'place1' },
+        { key: ['c2'], value: { _id: c2._id, shortcode: c2.place_id } },
+        { key: ['c2', 0], value: { _id: c2._id, shortcode: c2.place_id } },
+        { key: ['p3'], value: { _id: c2._id, shortcode: c2.place_id } },
+        { key: ['p3', 1], value: { _id: c2._id, shortcode: c2.place_id } },
+        { key: ['p4'], value: { _id: c2._id, shortcode: c2.place_id } },
+        { key: ['p4', 2], value: { _id: c2._id, shortcode: c2.place_id } },
       ]);
       const docsByReplicationKey = sinon.stub();
-      docsByReplicationKey.withArgs(c1).returns([{ key: 'c1', value: {  type: 'contact'  }}]);
-      docsByReplicationKey.withArgs(c2).returns([{ key: 'c2', value: {  type: 'contact'  }}]);
+      docsByReplicationKey.withArgs(c1).returns([{ key: 'c1', value: { type: 'contact' }}]);
+      docsByReplicationKey.withArgs(c2).returns([{ key: 'c2', value: { type: 'contact' }}]);
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
@@ -3497,6 +3655,266 @@ describe('Authorization service', () => {
             '123456': 2,
           });
         });
+    });
+
+    it('should assign correct subjectIds when replicating hierarchy primary contacts', async () => {
+      const contact1 = {
+        _id: 'contact_id',
+        type: 'person',
+        parent: { _id: 'place_id', parent: { _id: 'facility_id' } },
+        patient_id: '123456',
+      };
+
+      const contact2 = {
+        _id: 'place_id',
+        parent_id: 'facility_id',
+        type: 'contact',
+        contact: 'contact_id'
+      };
+
+      const docObjs = [
+        {
+          doc: contact1,
+          viewResults: {
+            contactsByDepth: [
+              { key: ['contact_id', 0], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['place_id', 1], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['facility_id', 2], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+            ],
+            replicationKeys: [{ key: 'contact', value: { type: 'contact' }}],
+          }
+        }
+      ];
+
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { id: 'contact_id', doc: contact1 },
+          { id: 'place_id', doc: contact2 },
+        ]
+      });
+
+      const contactsByDepth = sinon.stub();
+      contactsByDepth.withArgs(contact1).returns(docObjs[0].viewResults.contactsByDepth);
+      contactsByDepth.withArgs(contact2).returns([
+        { key: ['place_id', 0], value: { _id: 'place_id', primary_contact: contact1._id } },
+        { key: ['facility_id', 1], value: { _id: 'place_id', primary_contact: contact1._id } },
+      ]);
+      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
+
+      const docsByReplicationKey = sinon.stub();
+      docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.replicationKeys);
+      docsByReplicationKey.withArgs(contact2).returns([
+        { key: 'place_id', value: { type: 'contact_id' } }
+      ]);
+      viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      config.get.returns([
+        { role: 'user', depth: 1, report_depth: 0, replicate_primary_contacts: true },
+      ]);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'contact_id', key: ['shortcode', '123456'] },
+        ]
+      });
+
+      db.medic.query.withArgs( 'medic/places_by_primary_contact').resolves({
+        rows: [
+          {
+            id: 'place_id',
+            key: 'contact_id',
+            doc: {
+              _id: 'place_id',
+              parent: { _id: 'facility_id' },
+              type: 'contact',
+              contact: 'contact_id'
+            }
+          },
+        ]
+      });
+
+      const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
+      result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user', 'contact_id', '123456', 'place_id']);
+      db.medic.query.withArgs( 'medic/places_by_primary_contact').args.should.deep.equal([[
+        'medic/places_by_primary_contact',
+        {
+          include_docs: true,
+          keys: ['contact_id', 'place_id']
+        }
+      ]]);
+    });
+
+    it('should assign correct subjectIds when replicating out of hierarchy primary contacts', async () => {
+      const contact1 = {
+        _id: 'contact',
+        type: 'person',
+        parent: { _id: 'place', parent: { _id: 'facility' } },
+        patient_id: '123456',
+      };
+
+      const contact2 = {
+        _id: 'place_id',
+        parent_id: 'facility_id',
+        type: 'contact',
+        contact: 'contact'
+      };
+
+      const docObjs = [
+        {
+          doc: contact1, // allowed
+          viewResults: {
+            contactsByDepth: [
+              { key: ['facility', 2], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['place', 1], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['contact', 0], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+            ],
+            replicationKeys: [{ key: 'contact', value: { type: 'contact' }}],
+          }
+        }
+      ];
+
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { id: 'contact', doc: contact1 },
+        ]
+      });
+
+      const contactsByDepth = sinon.stub();
+      contactsByDepth.withArgs(contact1).returns(docObjs[0].viewResults.contactsByDepth);
+      contactsByDepth.withArgs(contact2).returns([
+        { key: ['facility_id', 1], value: { _id: 'place_id', primary_contact: contact1._id } },
+        { key: ['place_id', 0], value: { _id: 'place_id', primary_contact: contact1._id } },
+      ]);
+      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
+
+      const docsByReplicationKey = sinon.stub();
+      docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.replicationKeys);
+      docsByReplicationKey.withArgs(contact2).returns([
+        { key: 'place_id', value: { type: 'contact' } }
+      ]);
+      viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      config.get.returns([
+        { role: 'user', depth: 1, report_depth: 0, replicate_primary_contacts: true },
+      ]);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'contact', key: ['shortcode', '123456'] },
+        ]
+      });
+
+      db.medic.query.withArgs( 'medic/places_by_primary_contact').resolves({
+        rows: [
+          {
+            id: 'place_id',
+            key: 'contact',
+            doc: contact2
+          },
+        ]
+      });
+
+      const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
+      result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user', 'contact', '123456', 'place_id']);
+      db.medic.query.withArgs( 'medic/places_by_primary_contact').args.should.deep.equal([[
+        'medic/places_by_primary_contact',
+        {
+          include_docs: true,
+          keys: ['contact']
+        }
+      ]]);
+      db.medic.allDocs.args.should.deep.equal([[
+        {
+          include_docs: true,
+          keys: ['contact'],
+        }
+      ]]);
+    });
+
+    it('should assign correct subjectIds when replicating disallowed primary contacts', async () => {
+      const contact1 = {
+        _id: 'contact',
+        type: 'person',
+        parent: { _id: 'place', parent: { _id: 'facility' } },
+        patient_id: '123456',
+      };
+
+      const contact2 = {
+        _id: 'place',
+        parent_id: 'facility',
+        type: 'contact',
+        contact: 'contact'
+      };
+
+      const docObjs = [
+        {
+          doc: contact1, // denied
+          viewResults: {
+            contactsByDepth: [
+              { key: ['facility', 2], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['place', 1], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['contact', 0], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+            ],
+            replicationKeys: [{ key: 'contact', value: { type: 'contact' }}],
+          }
+        }
+      ];
+
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { id: 'contact', doc: contact1 },
+        ]
+      });
+
+      const contactsByDepth = sinon.stub();
+      contactsByDepth.withArgs(contact1).returns(docObjs[0].viewResults.contactsByDepth);
+      contactsByDepth.withArgs(contact2).returns([
+        { key: ['facility', 1], value: { _id: 'place', primary_contact: contact1._id } },
+        { key: ['place', 0], value: { _id: 'place', primary_contact: contact1._id } },
+      ]);
+      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
+
+      const docsByReplicationKey = sinon.stub();
+      docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.replicationKeys);
+      docsByReplicationKey.withArgs(contact2).returns([
+        { key: 'place', value: { type: 'contact' } }
+      ]);
+      viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      config.get.returns([
+        { role: 'user', depth: 1, report_depth: 0, replicate_primary_contacts: true },
+      ]);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'contact', key: ['shortcode', '123456'] },
+        ]
+      });
+
+      db.medic.query.withArgs( 'medic/places_by_primary_contact').resolves({
+        rows: [
+          {
+            id: 'place',
+            key: 'contact',
+            doc: {
+              _id: 'place',
+              parent: { _id: 'facility' },
+              type: 'contact',
+              contact: 'contact'
+            }
+          },
+        ]
+      });
+
+      const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
+      result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user']);
+      db.medic.query.withArgs( 'medic/places_by_primary_contact').args.should.deep.equal([[
+        'medic/places_by_primary_contact',
+        {
+          include_docs: true,
+          keys: ['contact']
+        }
+      ]]);
     });
 
     describe('getReplicationKeys', () => {
@@ -3542,7 +3960,6 @@ describe('Authorization service', () => {
       it('should execute query with unique subject ids', () => {
         db.medic.query.resolves({ rows: [] });
         sinon.stub(db.medic, 'allDocs');
-        db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
         db.medic.allDocs.withArgs(sinon.match({ keys: sinon.match.array })).resolves({
           rows: [
             { id: 'a', doc: { _id: 'a' } },
@@ -3569,7 +3986,6 @@ describe('Authorization service', () => {
           { id: 'person2', key: ['shortcode', 'patient_2'] },
         ] });
         sinon.stub(db.medic, 'allDocs');
-        db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
         db.medic.allDocs.withArgs(sinon.match({ keys: sinon.match.array })).resolves({ rows: [
           { id: 'contact1', key: 'contact1', doc: { _id: 'contact1' } },
           { id: 'person1', key: 'person1', doc: { _id: 'person1' } },
@@ -3599,23 +4015,6 @@ describe('Authorization service', () => {
             include_docs: true,
           }]);
         });
-      });
-    });
-
-    describe('getPatientId', () => {
-      const getContactShortcode = service.__get__('getContactShortcode');
-      it('should not crash with incorrect input', () => {
-        should.not.exist(getContactShortcode());
-        getContactShortcode(false).should.equal(false);
-        should.not.exist(getContactShortcode({}));
-        should.not.exist(getContactShortcode({ contactsByDepth: [] }));
-      });
-
-      it('should return patient_id', () => {
-        getContactShortcode({ contactsByDepth: [{ key: ['parent'], value: 'patient' }] }).should.equal('patient');
-        getContactShortcode(
-          { contactsByDepth: [{ key: ['parent'], value: 'patient' }, { key: ['parent', 0], value: 'patient' }] }
-        ).should.equal('patient');
       });
     });
   });

@@ -3,7 +3,7 @@ function(doc) {
     var value = {
       _id: doc._id,
       shortcode: doc.patient_id || doc.place_id,
-      primary_contact: doc.contact && doc.contact._id
+      primary_contact: (doc.contact && doc.contact._id) || doc.contact,
     }
     var parent = doc;
     var depth = 0;

@@ -79,9 +79,7 @@ module.exports = {
             }
 
             // user must be allowed to see new/updated document or be allowed to create this document
-            if (requested &&
-                !authorization.alwaysAllowCreate(requested.doc) &&
-                !authorization.allowedDoc(requested.doc._id, authorizationContext, requested.viewResults)) {
+            if (requested && !authorization.allowedDoc(requested.doc._id, authorizationContext, requested.viewResults)) {
               return false;
             }
 
