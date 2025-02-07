@@ -10,7 +10,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'mm-tool-bar',
   templateUrl: './tool-bar.component.html',
-  standalone: true,
   imports: [MatIconButton, MatIcon, NavigationComponent, TranslatePipe]
 })
 export class ToolBarComponent {

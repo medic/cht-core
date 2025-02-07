@@ -7,7 +7,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'mm-modal-layout',
   templateUrl: './modal-layout.component.html',
-  standalone: true,
   imports: [NgIf, PanelHeaderComponent, MatButton, TranslatePipe]
 })
 export class ModalLayoutComponent {

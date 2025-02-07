@@ -11,7 +11,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   templateUrl: './configuration-user.component.html',
-  standalone: true,
   imports: [ToolBarComponent, NgIf, TranslatePipe]
 })
 export class ConfigurationUserComponent implements OnInit {

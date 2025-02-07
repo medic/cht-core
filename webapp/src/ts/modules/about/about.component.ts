@@ -20,7 +20,6 @@ import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';
 
 @Component({
   templateUrl: './about.component.html',
-  standalone: true,
   imports: [
     ToolBarComponent,
     MatCard,

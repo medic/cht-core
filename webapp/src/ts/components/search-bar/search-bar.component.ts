@@ -27,7 +27,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'mm-search-bar',
   templateUrl: './search-bar.component.html',
-  standalone: true,
   imports: [NgIf, FreetextFilterComponent_1, SortFilterComponent, MatIcon, TranslatePipe]
 })
 export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDestroy {

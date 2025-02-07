@@ -40,7 +40,6 @@ import { AutoreplyPipe, StatePipe } from '@mm-pipes/date.pipe';
 @Component({
   selector: 'messages-content',
   templateUrl: './messages-content.component.html',
-  standalone: true,
   imports: [
     NgIf,
     SenderComponent,

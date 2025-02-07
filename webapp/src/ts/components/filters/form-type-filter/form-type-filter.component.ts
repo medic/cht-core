@@ -11,7 +11,6 @@ import { NgFor } from '@angular/common';
 @Component({
   selector: 'mm-form-type-filter',
   templateUrl: './form-type-filter.component.html',
-  standalone: true,
   imports: [NgFor]
 })
 export class FormTypeFilterComponent implements OnDestroy, OnInit {

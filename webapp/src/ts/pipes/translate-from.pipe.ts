@@ -18,7 +18,6 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
  */
 @Pipe({
   name: 'translateFrom',
-  standalone: true
 })
 @Injectable({
   providedIn: 'root'

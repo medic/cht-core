@@ -6,7 +6,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'browser-compatibility-modal',
   templateUrl: './browser-compatibility.component.html',
-  standalone: true,
   imports: [ModalLayoutComponent, TranslatePipe]
 })
 export class BrowserCompatibilityComponent {

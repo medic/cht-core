@@ -17,7 +17,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'mm-date-filter',
   templateUrl: './date-filter.component.html',
-  standalone: true,
   imports: [BsDropdownModule, NgIf, TranslatePipe]
 })
 export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {

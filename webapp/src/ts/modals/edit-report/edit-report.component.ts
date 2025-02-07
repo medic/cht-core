@@ -12,7 +12,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'edit-report',
   templateUrl: './edit-report.component.html',
-  standalone: true,
   imports: [ModalLayoutComponent, FormsModule, TranslatePipe]
 })
 export class EditReportComponent implements AfterViewInit {

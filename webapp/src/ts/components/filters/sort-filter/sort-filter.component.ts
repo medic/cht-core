@@ -6,7 +6,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'mm-sort-filter',
   templateUrl: './sort-filter.component.html',
-  standalone: true,
   imports: [NgIf, BsDropdownModule, TranslatePipe]
 })
 export class SortFilterComponent {

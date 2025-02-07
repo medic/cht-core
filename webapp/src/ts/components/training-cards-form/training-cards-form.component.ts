@@ -18,7 +18,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'training-cards-form',
   templateUrl: './training-cards-form.component.html',
-  standalone: true,
   imports: [
     NgIf,
     EnketoComponent,

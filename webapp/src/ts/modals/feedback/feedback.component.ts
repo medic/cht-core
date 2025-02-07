@@ -13,7 +13,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'feedback-modal',
   templateUrl: './feedback.component.html',
-  standalone: true,
   imports: [ModalLayoutComponent, FormsModule, NgIf, TranslatePipe]
 })
 export class FeedbackComponent {

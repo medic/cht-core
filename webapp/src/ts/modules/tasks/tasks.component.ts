@@ -25,7 +25,6 @@ import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
 
 @Component({
   templateUrl: './tasks.component.html',
-  standalone: true,
   imports: [
     ToolBarComponent,
     NgIf,

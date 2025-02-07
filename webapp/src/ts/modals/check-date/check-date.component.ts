@@ -8,7 +8,6 @@ import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';
 @Component({
   selector: 'check-date',
   templateUrl: './check-date.component.html',
-  standalone: true,
   imports: [ModalLayoutComponent, NgIf, TranslatePipe, SimpleDateTimePipe]
 })
 export class CheckDateComponent {

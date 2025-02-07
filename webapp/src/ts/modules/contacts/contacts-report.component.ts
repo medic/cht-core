@@ -20,7 +20,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   templateUrl: './contacts-report.component.html',
-  standalone: true,
   imports: [NgIf, EnketoComponent, TranslatePipe]
 })
 export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit {

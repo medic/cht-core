@@ -5,7 +5,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'mm-enketo',
   templateUrl: './enketo.component.html',
-  standalone: true,
   imports: [NgIf, TranslatePipe],
 })
 export class EnketoComponent {

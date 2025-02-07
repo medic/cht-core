@@ -17,7 +17,6 @@ const PAGE_SIZE = 50;
 
 @Component({
   templateUrl: './trainings.component.html',
-  standalone: true,
   imports: [ToolBarComponent, NgIf, NgFor, RouterLink, MatIcon, RouterOutlet, TranslatePipe]
 })
 export class TrainingsComponent implements OnInit, OnDestroy {

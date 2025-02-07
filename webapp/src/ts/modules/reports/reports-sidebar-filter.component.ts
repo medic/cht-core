@@ -34,7 +34,6 @@ type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateF
 @Component({
   selector: 'mm-reports-sidebar-filter',
   templateUrl: './reports-sidebar-filter.component.html',
-  standalone: true,
   imports: [
     NgClass,
     MatIcon,

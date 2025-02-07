@@ -4,7 +4,6 @@ import { AuthService } from '../services/auth.service';
 
 @Directive({
   selector: '[mmAuth]',
-  standalone: true
 })
 export class AuthDirective implements OnChanges {
   @Input() mmAuth?: string;

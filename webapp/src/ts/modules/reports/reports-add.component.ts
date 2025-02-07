@@ -23,7 +23,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   templateUrl: './reports-add.component.html',
-  standalone: true,
   imports: [
     NgIf,
     EnketoComponent,

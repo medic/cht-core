@@ -6,7 +6,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'reloading-modal',
   templateUrl: './reloading.component.html',
-  standalone: true,
   imports: [ModalLayoutComponent, TranslatePipe]
 })
 export class ReloadingComponent {

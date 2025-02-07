@@ -4,7 +4,6 @@ const bootstrapTranslator = require('../../js/bootstrapper/translator');
 
 @Pipe({
   name: 'bootstrapTranslate',
-  standalone: true
 })
 @Injectable({
   providedIn: 'root'

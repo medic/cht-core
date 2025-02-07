@@ -22,7 +22,6 @@ import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 @Component({
   selector: 'mm-sidebar-menu',
   templateUrl: './sidebar-menu.component.html',
-  standalone: true,
   imports: [
     MatSidenavContainer,
     MatSidenav,

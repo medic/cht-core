@@ -4,7 +4,6 @@ import { FormatNumberService } from '@mm-services/format-number.service';
 
 @Pipe({
   name: 'localizeNumber',
-  standalone: true
 })
 @Injectable({
   providedIn: 'root'

@@ -10,7 +10,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'analytics-modules',
   templateUrl: './analytics-modules.component.html',
-  standalone: true,
   imports: [NgIf, NgFor, RouterLink, TranslatePipe]
 })
 export class AnalyticsModulesComponent implements OnInit, OnDestroy {

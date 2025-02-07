@@ -10,7 +10,6 @@ import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';
 @Component({
   selector: 'error-log',
   templateUrl: './error-log.component.html',
-  standalone: true,
   imports: [NgIf, TranslatePipe, SimpleDateTimePipe]
 })
 export class ErrorLogComponent implements AfterViewInit, OnDestroy {

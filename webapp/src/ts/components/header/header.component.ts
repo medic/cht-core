@@ -25,7 +25,6 @@ export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
 @Component({
   selector: 'mm-header',
   templateUrl: './header.component.html',
-  standalone: true,
   imports: [
     RouterLink,
     BsDropdownModule,

@@ -82,7 +82,6 @@ const SYNC_STATUS = {
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  standalone: true,
   imports: [
     NgIf,
     PrivacyPolicyComponent,

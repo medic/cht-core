@@ -17,7 +17,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   templateUrl: './tasks-group.component.html',
-  standalone: true,
   imports: [NgIf, NgFor, ContentRowListItemComponent, TranslatePipe]
 })
 export class TasksGroupComponent implements OnInit, OnDestroy {

@@ -12,7 +12,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'edit-message-group',
   templateUrl: './edit-message-group.component.html',
-  standalone: true,
   imports: [
     ModalLayoutComponent,
     FormsModule,

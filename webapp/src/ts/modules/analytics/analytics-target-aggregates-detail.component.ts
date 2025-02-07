@@ -24,7 +24,6 @@ import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 @Component({
   selector: 'analytics-target-aggregates-detail',
   templateUrl: './analytics-target-aggregates-detail.component.html',
-  standalone: true,
   imports: [
     NgIf,
     NgClass,

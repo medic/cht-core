@@ -15,7 +15,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'delete-doc-confirm',
   templateUrl: './delete-doc-confirm.component.html',
-  standalone: true,
   imports: [ModalLayoutComponent, TranslatePipe]
 })
 export class DeleteDocConfirmComponent implements OnInit, OnDestroy {

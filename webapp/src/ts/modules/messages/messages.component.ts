@@ -28,7 +28,6 @@ import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 
 @Component({
   templateUrl: './messages.component.html',
-  standalone: true,
   imports: [
     ToolBarComponent,
     MessagesMoreMenuComponent,

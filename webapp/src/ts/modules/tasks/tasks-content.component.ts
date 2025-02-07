@@ -23,7 +23,6 @@ import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 
 @Component({
   templateUrl: './tasks-content.component.html',
-  standalone: true,
   imports: [NgIf, NgClass, NgFor, EnketoComponent, TranslatePipe, SimpleDatePipe, TranslateFromPipe]
 })
 export class TasksContentComponent implements OnInit, OnDestroy {

@@ -19,7 +19,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   templateUrl: './contacts-edit.component.html',
-  standalone: true,
   imports: [NgIf, EnketoComponent, TranslatePipe]
 })
 export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {

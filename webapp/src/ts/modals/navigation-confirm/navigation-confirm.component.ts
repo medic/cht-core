@@ -8,7 +8,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'navigation-confirm-modal',
   templateUrl: './navigation-confirm.component.html',
-  standalone: true,
   imports: [ModalLayoutComponent, TranslatePipe]
 })
 export class NavigationConfirmComponent {

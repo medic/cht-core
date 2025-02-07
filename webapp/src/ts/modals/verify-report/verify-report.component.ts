@@ -6,7 +6,6 @@ import { TranslateDirective } from '@ngx-translate/core';
 @Component({
   selector: 'verify-report',
   templateUrl: './verify-report.component.html',
-  standalone: true,
   imports: [ModalLayoutComponent, TranslateDirective]
 })
 export class VerifyReportComponent {

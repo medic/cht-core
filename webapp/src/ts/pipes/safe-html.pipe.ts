@@ -3,7 +3,6 @@ import { DomSanitizer, SafeHtml, SafeStyle, SafeScript, SafeUrl, SafeResourceUrl
 
 @Pipe({
   name: 'safeHtml',
-  standalone: true
 })
 @Injectable({
   providedIn: 'root'

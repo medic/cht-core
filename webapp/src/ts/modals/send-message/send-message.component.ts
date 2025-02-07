@@ -17,7 +17,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'send-message',
   templateUrl: './send-message.component.html',
-  standalone: true,
   imports: [
     ModalLayoutComponent,
     FormsModule,

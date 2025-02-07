@@ -7,7 +7,6 @@ import { LineagePipe } from '@mm-pipes/message.pipe';
 @Component({
   selector: 'mm-sender',
   templateUrl: './sender.component.html',
-  standalone: true,
   imports: [NgIf, NgClass, TranslateDirective, RouterLink, TranslatePipe, LineagePipe]
 })
 export class SenderComponent {

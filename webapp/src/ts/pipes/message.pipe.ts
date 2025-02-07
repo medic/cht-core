@@ -15,7 +15,6 @@ const getFormName = (record, forms) => {
 
 @Pipe({
   name: 'summary',
-  standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -47,7 +46,6 @@ export class SummaryPipe implements PipeTransform {
 
 @Pipe({
   name: 'title',
-  standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -74,7 +72,6 @@ export class TitlePipe implements PipeTransform {
 // @deprecated
 @Pipe({
   name: 'clinic',
-  standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -92,7 +89,6 @@ export class ClinicPipe implements PipeTransform {
 
 @Pipe({
   name: 'lineage',
-  standalone: true
 })
 @Injectable({
   providedIn: 'root'

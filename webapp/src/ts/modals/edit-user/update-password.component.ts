@@ -21,7 +21,6 @@ const HIDE_PASSWORD_ICON = '/login/images/hide-password.svg';
 @Component({
   selector: 'update-password',
   templateUrl: './update-password.component.html',
-  standalone: true,
   imports: [ModalLayoutComponent, FormsModule, NgClass, TranslatePipe]
 })
 export class UpdatePasswordComponent {

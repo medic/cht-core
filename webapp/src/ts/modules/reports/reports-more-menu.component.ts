@@ -26,7 +26,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'mm-reports-more-menu',
   templateUrl: './reports-more-menu.component.html',
-  standalone: true,
   imports: [
     NgIf,
     MatIconButton,

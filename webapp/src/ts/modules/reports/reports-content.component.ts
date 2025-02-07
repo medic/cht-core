@@ -32,7 +32,6 @@ import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
 
 @Component({
   templateUrl: './reports-content.component.html',
-  standalone: true,
   imports: [
     NgIf,
     FastActionButtonComponent,

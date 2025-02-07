@@ -15,7 +15,6 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
   selector: '<mm-content-row>',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './content-row-list-item.component.html',
-  standalone: true,
   imports: [
     RouterLink,
     NgIf,

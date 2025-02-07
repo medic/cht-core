@@ -46,7 +46,6 @@ const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
 
 @Component({
   templateUrl: './reports.component.html',
-  standalone: true,
   imports: [
     ToolBarComponent,
     NgIf,

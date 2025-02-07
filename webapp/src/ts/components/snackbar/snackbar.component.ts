@@ -12,7 +12,6 @@ import { NgIf } from '@angular/common';
   selector: 'snackbar',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './snackbar.component.html',
-  standalone: true,
   imports: [NgIf]
 })
 export class SnackbarComponent implements OnInit, OnDestroy {

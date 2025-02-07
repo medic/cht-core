@@ -36,7 +36,6 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 @Component({
   selector: 'contacts-content',
   templateUrl: './contacts-content.component.html',
-  standalone: true,
   imports: [
     NgIf,
     ErrorLogComponent,

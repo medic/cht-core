@@ -12,7 +12,6 @@ import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'mm-navigation',
   templateUrl: './navigation.component.html',
-  standalone: true,
   imports: [NgIf, MatIcon, TranslateDirective, NgClass, TranslatePipe]
 })
 export class NavigationComponent implements AfterContentInit, OnDestroy {

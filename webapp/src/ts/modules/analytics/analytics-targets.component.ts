@@ -14,7 +14,6 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 
 @Component({
   templateUrl: './analytics-targets.component.html',
-  standalone: true,
   imports: [
     NgIf,
     ErrorLogComponent,

@@ -20,7 +20,6 @@ import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 @Component({
   selector: 'mm-fast-action-button',
   templateUrl: './fast-action-button.component.html',
-  standalone: true,
   imports: [
     NgIf,
     MatFabButton,

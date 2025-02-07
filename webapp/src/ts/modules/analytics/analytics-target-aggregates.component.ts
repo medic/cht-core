@@ -20,7 +20,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'analytics-target-aggregates',
   templateUrl: './analytics-target-aggregates.component.html',
-  standalone: true,
   imports: [
     NgIf,
     NgClass,

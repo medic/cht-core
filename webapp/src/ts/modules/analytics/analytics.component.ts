@@ -10,7 +10,6 @@ import { RouterOutlet } from '@angular/router';
 
 @Component({
   templateUrl: './analytics.component.html',
-  standalone: true,
   imports: [ToolBarComponent, AnalyticsFilterComponent, RouterOutlet]
 })
 export class AnalyticsComponent implements OnInit, OnDestroy {

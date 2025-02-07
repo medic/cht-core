@@ -5,7 +5,6 @@ import { ResourceIconsService } from '@mm-services/resource-icons.service';
 
 @Pipe({
   name: 'resourceIcon',
-  standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -23,7 +22,6 @@ export class ResourceIconPipe implements PipeTransform {
 
 @Pipe({
   name: 'headerLogo',
-  standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -41,7 +39,6 @@ export class HeaderLogoPipe implements PipeTransform {
 
 @Pipe({
   name: 'partnerImage',
-  standalone: true
 })
 @Injectable({
   providedIn: 'root'

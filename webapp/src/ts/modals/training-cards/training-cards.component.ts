@@ -15,7 +15,6 @@ import { TrainingCardsFormComponent } from '../../components/training-cards-form
 @Component({
   selector: 'training-cards-modal',
   templateUrl: './training-cards.component.html',
-  standalone: true,
   imports: [ModalLayoutComponent, NgIf, TrainingCardsConfirmComponent, TrainingCardsFormComponent]
 })
 export class TrainingCardsComponent implements OnInit, OnDestroy {

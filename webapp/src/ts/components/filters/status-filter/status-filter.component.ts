@@ -9,7 +9,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'mm-status-filter',
   templateUrl: './status-filter.component.html',
-  standalone: true,
   imports: [NgFor, TranslatePipe]
 })
 export class StatusFilterComponent {

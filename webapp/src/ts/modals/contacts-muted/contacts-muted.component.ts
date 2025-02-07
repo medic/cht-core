@@ -6,7 +6,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'contacts-muted',
   templateUrl: './contacts-muted.component.html',
-  standalone: true,
   imports: [ModalLayoutComponent, TranslatePipe]
 })
 export class ContactsMutedComponent {

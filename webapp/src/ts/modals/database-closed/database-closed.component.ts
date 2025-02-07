@@ -6,7 +6,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'database-closed',
   templateUrl: './database-closed.component.html',
-  standalone: true,
   imports: [ModalLayoutComponent, TranslatePipe]
 })
 export class DatabaseClosedComponent {

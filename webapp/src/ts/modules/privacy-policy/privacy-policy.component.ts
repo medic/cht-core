@@ -10,7 +10,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'mm-privacy-policy',
   templateUrl: './privacy-policy.component.html',
-  standalone: true,
   imports: [
     NgIf,
     ToolBarComponent,

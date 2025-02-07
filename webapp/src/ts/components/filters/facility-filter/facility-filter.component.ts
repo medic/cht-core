@@ -14,7 +14,6 @@ import { NgFor, NgTemplateOutlet, NgClass, NgIf, AsyncPipe } from '@angular/comm
 @Component({
   selector: 'mm-facility-filter',
   templateUrl: './facility-filter.component.html',
-  standalone: true,
   imports: [NgFor, NgTemplateOutlet, NgClass, NgIf, AsyncPipe]
 })
 export class FacilityFilterComponent implements OnInit, AfterViewInit {

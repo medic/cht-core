@@ -13,7 +13,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   templateUrl: './testing.component.html',
-  standalone: true,
   imports: [
     ToolBarComponent,
     NgIf,

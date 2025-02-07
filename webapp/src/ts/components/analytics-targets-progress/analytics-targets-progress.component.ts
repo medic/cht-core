@@ -6,7 +6,6 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 @Component({
   selector: 'mm-analytics-targets-progress',
   templateUrl: './analytics-targets-progress.component.html',
-  standalone: true,
   imports: [
     NgIf,
     NgStyle,

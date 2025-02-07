@@ -36,7 +36,6 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 
 @Component({
   templateUrl: './contacts.component.html',
-  standalone: true,
   imports: [
     ToolBarComponent,
     SearchBarComponent,

@@ -2,7 +2,6 @@ import { Pipe, PipeTransform, Injectable } from '@angular/core';
 
 @Pipe({
   name: 'formIconName',
-  standalone: true
 })
 @Injectable({
   providedIn: 'root'
