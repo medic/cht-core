@@ -190,12 +190,12 @@ describe('AppComponent', () => {
 
     await TestBed
       .configureTestingModule({
-    declarations: [AppComponent],
     imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterTestingModule,
         SnackbarComponent,
         SidebarMenuComponent,
+        AppComponent,
     ],
     providers: [
         provideAnimations(),

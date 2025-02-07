@@ -60,7 +60,8 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
   }
 }
 
-@NgModule({
+@NgModule(/* TODO(standalone-migration): clean up removed NgModule class manually. 
+{
   declarations: [
     AppComponent
   ],
@@ -104,7 +105,7 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     DatePipe,
   ],
   bootstrap: [AppComponent]
-})
+} */)
 export class AppModule {
   integration;
   constructor(

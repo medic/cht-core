@@ -1,4 +1,4 @@
-import { ActivationEnd, ActivationStart, Router } from '@angular/router';
+import { ActivationEnd, ActivationStart, Router, RouterOutlet } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatIconRegistry } from '@angular/material/icon';
 import * as moment from 'moment';
@@ -50,6 +50,11 @@ import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserSettings, UserSettingsService } from '@mm-services/user-settings.service';
 import { OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
+import { NgIf } from '@angular/common';
+import { PrivacyPolicyComponent } from './modules/privacy-policy/privacy-policy.component';
+import { SidebarMenuComponent } from './components/sidebar-menu/sidebar-menu.component';
+import { HeaderComponent } from './components/header/header.component';
+import { SnackbarComponent } from './components/snackbar/snackbar.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -75,8 +80,17 @@ const SYNC_STATUS = {
 
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    standalone: true,
+    imports: [
+        NgIf,
+        PrivacyPolicyComponent,
+        SidebarMenuComponent,
+        HeaderComponent,
+        RouterOutlet,
+        SnackbarComponent,
+    ],
 })
 export class AppComponent implements OnInit, AfterViewInit {
   private globalActions: GlobalActions;
