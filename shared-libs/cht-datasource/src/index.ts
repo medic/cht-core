@@ -130,7 +130,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @param limit the maximum number of identifiers to return. Default is 10000.
          * @returns a page of contact identifiers for the provided specifications
          * @throws InvalidArgumentError if `freetext` is not provided
-         * @throws InvalidArgumentError if the `freetext` is empty or invalid
+         * @throws InvalidArgumentError if the `freetext` is less than 3 characters long or if it contains white-space
          * @throws InvalidArgumentError if the provided limit is `<= 0`
          * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
          */
