@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnDestroy, Output, Input, AfterViewInit, OnInit } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgIf } from '@angular/common';
 import { Store } from '@ngrx/store';
 import 'bootstrap-daterangepicker';
 import * as moment from 'moment';
@@ -11,10 +11,14 @@ interface LocaleWithWeekSpec extends moment.Locale {
 
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  selector: 'mm-date-filter',
-  templateUrl: './date-filter.component.html'
+    selector: 'mm-date-filter',
+    templateUrl: './date-filter.component.html',
+    standalone: true,
+    imports: [BsDropdownModule, NgIf, TranslatePipe]
 })
 export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   private globalActions: GlobalActions;

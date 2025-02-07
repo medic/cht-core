@@ -4,10 +4,16 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguagesService } from '@mm-services/languages.service';
 import { SetLanguageService, LanguageService } from '@mm-services/language.service';
+import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout.component';
+import { FormsModule } from '@angular/forms';
+import { NgFor } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  selector: 'update-password',
-  templateUrl: './edit-user-settings.component.html'
+    selector: 'update-password',
+    templateUrl: './edit-user-settings.component.html',
+    standalone: true,
+    imports: [ModalLayoutComponent, FormsModule, NgFor, TranslatePipe]
 })
 export class EditUserSettingsComponent implements OnInit {
 

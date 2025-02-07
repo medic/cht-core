@@ -3,10 +3,15 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { DeleteDocsService } from '@mm-services/delete-docs.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout.component';
+import { NgIf } from '@angular/common';
+import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  selector: 'bulk-delete-confirm',
-  templateUrl: './bulk-delete-confirm.component.html'
+    selector: 'bulk-delete-confirm',
+    templateUrl: './bulk-delete-confirm.component.html',
+    standalone: true,
+    imports: [ModalLayoutComponent, NgIf, TranslateDirective, TranslatePipe]
 })
 export class BulkDeleteConfirmComponent {
   static id = 'bulk-delete-confirm-modal';

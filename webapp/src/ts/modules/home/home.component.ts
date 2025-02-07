@@ -4,7 +4,8 @@ import { Router } from '@angular/router';
 import { HeaderTabsService } from '@mm-services/header-tabs.service';
 
 @Component({
-  template: '',
+    template: '',
+    standalone: true,
 })
 export class HomeComponent implements OnInit {
 

@@ -23,19 +23,17 @@ describe('Form Type Filter Component', () => {
 
     return TestBed
       .configureTestingModule({
-        imports: [
-          BrowserAnimationsModule,
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule,
-          FormsModule,
-        ],
-        declarations: [
-          FormTypeFilterComponent,
-        ],
-        providers: [
-          provideMockStore({ selectors: mockedSelectors }),
-        ]
-      })
+    imports: [
+        BrowserAnimationsModule,
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        RouterTestingModule,
+        FormsModule,
+        FormTypeFilterComponent,
+    ],
+    providers: [
+        provideMockStore({ selectors: mockedSelectors }),
+    ]
+})
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(FormTypeFilterComponent);

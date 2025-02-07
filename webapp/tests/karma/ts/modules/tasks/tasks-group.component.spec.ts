@@ -51,20 +51,20 @@ describe('TasksGroupComponent', () => {
     };
 
     TestBed.configureTestingModule({
-      imports: [
+    imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterTestingModule,
-      ],
-      declarations: [ TasksGroupComponent, NavigationComponent, ContentRowListItemComponent, TaskDueDatePipe ],
-      providers: [
+        TasksGroupComponent, NavigationComponent, ContentRowListItemComponent, TaskDueDatePipe,
+    ],
+    providers: [
         provideMockStore({ selectors: mockedSelectors }),
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
         { provide: TelemetryService, useValue: telemetryService },
         { provide: TasksForContactService, useValue: tasksForContactService },
-        { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) }}, // used by TaskDueDatePipe
-      ],
-    });
+        { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) } }, // used by TaskDueDatePipe
+    ],
+});
 
     store = TestBed.inject(MockStore);
     compileComponent = (lastSubmittedTask?, tasks?, contact?, loadingContact?) => {

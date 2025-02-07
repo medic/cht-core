@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild, Input } from '@angular/core';
-import { MatSidenav } from '@angular/material/sidenav';
-import { NavigationStart, Router } from '@angular/router';
+import { MatSidenav, MatSidenavContainer, MatSidenavContent } from '@angular/material/sidenav';
+import { NavigationStart, Router, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -12,10 +12,30 @@ import { DBSyncService } from '@mm-services/db-sync.service';
 import { ModalService } from '@mm-services/modal.service';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
+import { PanelHeaderComponent } from '../panel-header/panel-header.component';
+import { NgFor, NgIf } from '@angular/common';
+import { AuthDirective } from '../../directives/auth.directive';
+import { MatIcon } from '@angular/material/icon';
+import { TranslatePipe } from '@ngx-translate/core';
+import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 
 @Component({
-  selector: 'mm-sidebar-menu',
-  templateUrl: './sidebar-menu.component.html',
+    selector: 'mm-sidebar-menu',
+    templateUrl: './sidebar-menu.component.html',
+    standalone: true,
+    imports: [
+        MatSidenavContainer,
+        MatSidenav,
+        PanelHeaderComponent,
+        MatSidenavContent,
+        NgFor,
+        RouterLink,
+        AuthDirective,
+        MatIcon,
+        NgIf,
+        TranslatePipe,
+        RelativeDatePipe,
+    ],
 })
 export class SidebarMenuComponent implements OnInit, OnDestroy {
   @Input() canLogOut: boolean = false;

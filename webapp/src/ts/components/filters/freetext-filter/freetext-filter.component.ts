@@ -4,10 +4,14 @@ import { Subscription } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
+import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  selector: 'mm-freetext-filter',
-  templateUrl: './freetext-filter.component.html'
+    selector: 'mm-freetext-filter',
+    templateUrl: './freetext-filter.component.html',
+    standalone: true,
+    imports: [FormsModule, TranslatePipe]
 })
 export class FreetextFilterComponent implements OnDestroy, OnInit {
   private globalActions;

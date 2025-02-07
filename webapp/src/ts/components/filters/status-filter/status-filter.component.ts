@@ -3,10 +3,14 @@ import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
 import { Filter } from '@mm-components/filters/filter';
+import { NgFor } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  selector: 'mm-status-filter',
-  templateUrl: './status-filter.component.html'
+    selector: 'mm-status-filter',
+    templateUrl: './status-filter.component.html',
+    standalone: true,
+    imports: [NgFor, TranslatePipe]
 })
 export class StatusFilterComponent {
   @Input() disabled;

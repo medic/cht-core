@@ -49,19 +49,17 @@ describe('GlobalEffects', () => {
     cancelCallback = sinon.stub();
 
     TestBed.configureTestingModule({
-      declarations: [
-        NavigationConfirmComponent,
-      ],
-      imports: [
+    imports: [
         EffectsModule.forRoot([GlobalEffects]),
-      ],
-      providers: [
+        NavigationConfirmComponent,
+    ],
+    providers: [
         provideMockActions(() => actions$),
         provideMockStore({ selectors: mockedSelectors }),
         { provide: ModalService, useValue: modalService },
         { provide: Router, useValue: router },
-      ],
-    });
+    ],
+});
 
     effects = TestBed.inject(GlobalEffects);
     store = TestBed.inject(MockStore);

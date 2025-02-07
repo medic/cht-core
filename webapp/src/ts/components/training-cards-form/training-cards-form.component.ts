@@ -11,10 +11,19 @@ import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { EnketoFormContext } from '@mm-services/enketo.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
+import { NgIf } from '@angular/common';
+import { EnketoComponent } from '../enketo/enketo.component';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  selector: 'training-cards-form',
-  templateUrl: './training-cards-form.component.html',
+    selector: 'training-cards-form',
+    templateUrl: './training-cards-form.component.html',
+    standalone: true,
+    imports: [
+        NgIf,
+        EnketoComponent,
+        TranslatePipe,
+    ],
 })
 export class TrainingCardsFormComponent implements OnInit, OnDestroy {
   @Input() isEmbedded = true;

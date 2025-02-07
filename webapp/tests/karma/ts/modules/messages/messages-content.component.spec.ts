@@ -71,31 +71,29 @@ describe('MessagesContentComponent', () => {
 
     return TestBed
       .configureTestingModule({
-        imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule,
-          PipesModule,
-          FormsModule,
-          CommonModule
-        ],
-        declarations: [
-          MessagesContentComponent,
-          SenderComponent,
-        ],
-        providers: [
-          provideMockStore({ selectors: mockedSelectors }),
-          { provide: ChangesService, useValue: changesService },
-          { provide: MessageContactService, useValue: messageContactService },
-          { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
-          { provide: SessionService, useValue: sessionService },
-          { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
-          { provide: MarkReadService, useValue: markReadService },
-          { provide: SendMessageService, useValue: sendMessageService },
-          { provide: ModalService, useValue: modalService },
-          { provide: ActivatedRoute, useValue: activatedRoute },
-          { provide: PerformanceService, useValue: performanceService },
-        ]
-      })
+    imports: [
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        RouterTestingModule,
+        PipesModule,
+        FormsModule,
+        CommonModule,
+        MessagesContentComponent,
+        SenderComponent
+    ],
+    providers: [
+        provideMockStore({ selectors: mockedSelectors }),
+        { provide: ChangesService, useValue: changesService },
+        { provide: MessageContactService, useValue: messageContactService },
+        { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
+        { provide: SessionService, useValue: sessionService },
+        { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
+        { provide: MarkReadService, useValue: markReadService },
+        { provide: SendMessageService, useValue: sendMessageService },
+        { provide: ModalService, useValue: modalService },
+        { provide: ActivatedRoute, useValue: activatedRoute },
+        { provide: PerformanceService, useValue: performanceService },
+    ]
+})
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(MessagesContentComponent);

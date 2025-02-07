@@ -44,25 +44,23 @@ describe('TrainingsComponent', () => {
 
     return TestBed
       .configureTestingModule({
-        imports: [
-          RouterModule,
-          MatIconModule,
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ],
-        declarations: [
-          TrainingsComponent,
-          ModalLayoutComponent,
-          TrainingCardsFormComponent,
-          EnketoComponent,
-          ToolBarComponent,
-        ],
-        providers: [
-          provideMockStore({ selectors: mockedSelectors }),
-          { provide: PerformanceService, useValue: performanceService },
-          { provide: TrainingCardsService, useValue: trainingCardsService },
-          { provide: ScrollLoaderProvider, useValue: scrollLoaderProvider },
-        ],
-      })
+    imports: [
+        RouterModule,
+        MatIconModule,
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        TrainingsComponent,
+        ModalLayoutComponent,
+        TrainingCardsFormComponent,
+        EnketoComponent,
+        ToolBarComponent,
+    ],
+    providers: [
+        provideMockStore({ selectors: mockedSelectors }),
+        { provide: PerformanceService, useValue: performanceService },
+        { provide: TrainingCardsService, useValue: trainingCardsService },
+        { provide: ScrollLoaderProvider, useValue: scrollLoaderProvider },
+    ],
+})
       .overrideComponent(ToolBarComponent, {
         set: {
           selector: 'mm-tool-bar',

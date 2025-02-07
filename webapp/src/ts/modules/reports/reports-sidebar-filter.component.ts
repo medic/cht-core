@@ -7,12 +7,22 @@ import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { NgClass, NgTemplateOutlet, NgIf } from '@angular/common';
+import { MatIcon } from '@angular/material/icon';
+import { MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelDescription } from '@angular/material/expansion';
+import { FormTypeFilterComponent as FormTypeFilterComponent_1 } from '../../components/filters/form-type-filter/form-type-filter.component';
+import { FacilityFilterComponent as FacilityFilterComponent_1 } from '../../components/filters/facility-filter/facility-filter.component';
+import { DateFilterComponent as DateFilterComponent_1 } from '../../components/filters/date-filter/date-filter.component';
+import { StatusFilterComponent as StatusFilterComponent_1 } from '../../components/filters/status-filter/status-filter.component';
+import { TranslatePipe } from '@ngx-translate/core';
 
 type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateFilterComponent | StatusFilterComponent;
 
 @Component({
-  selector: 'mm-reports-sidebar-filter',
-  templateUrl: './reports-sidebar-filter.component.html'
+    selector: 'mm-reports-sidebar-filter',
+    templateUrl: './reports-sidebar-filter.component.html',
+    standalone: true,
+    imports: [NgClass, MatIcon, MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, NgTemplateOutlet, MatExpansionPanelDescription, FormTypeFilterComponent_1, FacilityFilterComponent_1, DateFilterComponent_1, NgIf, StatusFilterComponent_1, TranslatePipe]
 })
 export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   @Output() search: EventEmitter<any> = new EventEmitter();

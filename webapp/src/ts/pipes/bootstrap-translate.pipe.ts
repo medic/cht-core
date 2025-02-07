@@ -3,7 +3,8 @@ import { Injectable, Pipe, PipeTransform } from '@angular/core';
 const bootstrapTranslator = require('../../js/bootstrapper/translator');
 
 @Pipe({
-  name: 'bootstrapTranslate'
+    name: 'bootstrapTranslate',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'

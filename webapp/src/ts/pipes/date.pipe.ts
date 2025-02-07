@@ -90,7 +90,8 @@ const getRecipient = (task, translateService) => {
 };
 
 @Pipe({
-  name: 'autoreply'
+    name: 'autoreply',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -126,7 +127,8 @@ export class AutoreplyPipe implements PipeTransform {
 }
 
 @Pipe({
-  name: 'state'
+    name: 'state',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -163,7 +165,8 @@ export class StatePipe implements PipeTransform {
 }
 
 @Pipe({
-  name: 'dateOfDeath'
+    name: 'dateOfDeath',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -192,7 +195,8 @@ export class DateOfDeathPipe implements PipeTransform {
 }
 
 @Pipe({
-  name: 'age'
+    name: 'age',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -218,7 +222,8 @@ export class AgePipe implements PipeTransform {
 
 
 @Pipe({
-  name: 'dayMonth'
+    name: 'dayMonth',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -235,7 +240,8 @@ export class DayMonthPipe implements PipeTransform {
 }
 
 @Pipe({
-  name: 'relativeDate'
+    name: 'relativeDate',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -263,7 +269,8 @@ export class RelativeDatePipe implements PipeTransform {
 }
 
 @Pipe({
-  name: 'relativeDay'
+    name: 'relativeDay',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -293,7 +300,8 @@ export class RelativeDayPipe implements PipeTransform {
 
 
 @Pipe({
-  name: 'taskDueDate'
+    name: 'taskDueDate',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -316,7 +324,8 @@ export class TaskDueDatePipe implements PipeTransform {
 }
 
 @Pipe({
-  name: 'simpleDate'
+    name: 'simpleDate',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -333,7 +342,8 @@ export class SimpleDatePipe implements PipeTransform {
 
 
 @Pipe({
-  name: 'simpleDateTime'
+    name: 'simpleDateTime',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -350,7 +360,8 @@ export class SimpleDateTimePipe implements PipeTransform {
 
 
 @Pipe({
-  name: 'fullDate'
+    name: 'fullDate',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'
@@ -378,7 +389,8 @@ export class FullDatePipe implements PipeTransform {
 }
 
 @Pipe({
-  name: 'weeksPregnant'
+    name: 'weeksPregnant',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'

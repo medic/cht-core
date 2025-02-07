@@ -5,10 +5,15 @@ import { combineLatest, Subscription } from 'rxjs';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { NavigationService } from '@mm-services/navigation.service';
+import { NgIf, NgClass } from '@angular/common';
+import { MatIcon } from '@angular/material/icon';
+import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  selector: 'mm-navigation',
-  templateUrl: './navigation.component.html'
+    selector: 'mm-navigation',
+    templateUrl: './navigation.component.html',
+    standalone: true,
+    imports: [NgIf, MatIcon, TranslateDirective, NgClass, TranslatePipe]
 })
 export class NavigationComponent implements AfterContentInit, OnDestroy {
   private subscription: Subscription = new Subscription();

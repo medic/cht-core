@@ -66,25 +66,23 @@ describe('TrainingCardsFormComponent', () => {
 
     return TestBed
       .configureTestingModule({
-        imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ],
-        declarations: [
-          TrainingCardsFormComponent,
-          ModalLayoutComponent,
-          PanelHeaderComponent,
-          EnketoComponent,
-        ],
-        providers: [
-          provideMockStore({ selectors: mockedSelectors }),
-          { provide: GeolocationService, useValue: geolocationService },
-          { provide: XmlFormsService, useValue: xmlFormsService },
-          { provide: TranslateService, useValue: translateService },
-          { provide: FormService, useValue: formService },
-          { provide: PerformanceService, useValue: performanceService },
-          { provide: FeedbackService, useValue: feedbackService },
-        ],
-      })
+    imports: [
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        TrainingCardsFormComponent,
+        ModalLayoutComponent,
+        PanelHeaderComponent,
+        EnketoComponent,
+    ],
+    providers: [
+        provideMockStore({ selectors: mockedSelectors }),
+        { provide: GeolocationService, useValue: geolocationService },
+        { provide: XmlFormsService, useValue: xmlFormsService },
+        { provide: TranslateService, useValue: translateService },
+        { provide: FormService, useValue: formService },
+        { provide: PerformanceService, useValue: performanceService },
+        { provide: FeedbackService, useValue: feedbackService },
+    ],
+})
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(TrainingCardsFormComponent);

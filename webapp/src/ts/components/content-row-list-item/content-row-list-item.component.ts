@@ -1,9 +1,19 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { NgIf } from '@angular/common';
+import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from '../status-icons/status-icons.template';
+import { TranslatePipe } from '@ngx-translate/core';
+import { LineagePipe } from '@mm-pipes/message.pipe';
+import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
+import { AgePipe, DateOfDeathPipe, RelativeDatePipe, TaskDueDatePipe } from '@mm-pipes/date.pipe';
+import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 
 @Component({
-  selector: '<mm-content-row>',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './content-row-list-item.component.html'
+    selector: '<mm-content-row>',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    templateUrl: './content-row-list-item.component.html',
+    standalone: true,
+    imports: [RouterLink, NgIf, ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent, TranslatePipe, LineagePipe, ResourceIconPipe, AgePipe, DateOfDeathPipe, RelativeDatePipe, TaskDueDatePipe, LocalizeNumberPipe]
 })
 export class ContentRowListItemComponent {
   // string: (required) the _id of the doc

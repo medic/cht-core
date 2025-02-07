@@ -5,10 +5,14 @@ import moment from 'moment';
 import { toBik_text } from 'bikram-sambat';
 import { TranslateService } from '@mm-services/translate.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
+import { NgIf } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  selector: 'cht-form',
-  templateUrl: './app.component.html',
+    selector: 'cht-form',
+    templateUrl: './app.component.html',
+    standalone: true,
+    imports: [NgIf, TranslatePipe],
 })
 export class AppComponent {
   private readonly DEFAULT_FORM_ID = 'cht-form-id';

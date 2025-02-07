@@ -9,10 +9,30 @@ import { filter } from 'rxjs/operators';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { FastAction, IconType } from '@mm-services/fast-action-button.service';
 import { Selectors } from '@mm-selectors/index';
+import { NgIf, NgFor } from '@angular/common';
+import { MatFabButton, MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { PanelHeaderComponent } from '../panel-header/panel-header.component';
+import { MatList, MatListItem } from '@angular/material/list';
+import { TranslatePipe } from '@ngx-translate/core';
+import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 
 @Component({
-  selector: 'mm-fast-action-button',
-  templateUrl: './fast-action-button.component.html',
+    selector: 'mm-fast-action-button',
+    templateUrl: './fast-action-button.component.html',
+    standalone: true,
+    imports: [
+        NgIf,
+        MatFabButton,
+        MatIcon,
+        MatButton,
+        PanelHeaderComponent,
+        MatList,
+        NgFor,
+        MatListItem,
+        TranslatePipe,
+        ResourceIconPipe,
+    ],
 })
 export class FastActionButtonComponent implements OnInit, OnDestroy {
 

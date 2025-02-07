@@ -9,10 +9,25 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { GlobalActions } from '@mm-actions/global';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
+import { NgIf, NgClass, NgFor } from '@angular/common';
+import { ContentRowListItemComponent } from '../../components/content-row-list-item/content-row-list-item.component';
+import { RouterOutlet } from '@angular/router';
+import { AnalyticsTargetAggregatesSidebarFilterComponent } from './analytics-target-aggregates-sidebar-filter.component';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  selector: 'analytics-target-aggregates',
-  templateUrl: './analytics-target-aggregates.component.html',
+    selector: 'analytics-target-aggregates',
+    templateUrl: './analytics-target-aggregates.component.html',
+    standalone: true,
+    imports: [
+        NgIf,
+        NgClass,
+        NgFor,
+        ContentRowListItemComponent,
+        RouterOutlet,
+        AnalyticsTargetAggregatesSidebarFilterComponent,
+        TranslatePipe,
+    ],
 })
 export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
 

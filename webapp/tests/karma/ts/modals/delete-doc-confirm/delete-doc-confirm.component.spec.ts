@@ -42,22 +42,20 @@ describe('DeleteDocConfirmComponent', () => {
 
     return TestBed
       .configureTestingModule({
-        imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ],
-        declarations: [
-          DeleteDocConfirmComponent,
-          ModalLayoutComponent,
-          PanelHeaderComponent,
-        ],
-        providers: [
-          provideMockStore({ selectors: mockedSelectors }),
-          { provide: DbService, useValue: dbService },
-          { provide: Router, useValue: router },
-          { provide: MatDialogRef, useValue: matDialogRef },
-          { provide: MAT_DIALOG_DATA, useValue: {} },
-        ]
-      })
+    imports: [
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        DeleteDocConfirmComponent,
+        ModalLayoutComponent,
+        PanelHeaderComponent,
+    ],
+    providers: [
+        provideMockStore({ selectors: mockedSelectors }),
+        { provide: DbService, useValue: dbService },
+        { provide: Router, useValue: router },
+        { provide: MatDialogRef, useValue: matDialogRef },
+        { provide: MAT_DIALOG_DATA, useValue: {} },
+    ]
+})
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(DeleteDocConfirmComponent);

@@ -13,9 +13,14 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { NgIf } from '@angular/common';
+import { EnketoComponent } from '../../components/enketo/enketo.component';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  templateUrl: './contacts-edit.component.html'
+    templateUrl: './contacts-edit.component.html',
+    standalone: true,
+    imports: [NgIf, EnketoComponent, TranslatePipe]
 })
 export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(

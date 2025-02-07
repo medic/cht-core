@@ -17,9 +17,18 @@ import { FormService } from '@mm-services/form.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { EnketoFormContext } from '@mm-services/enketo.service';
+import { NgIf } from '@angular/common';
+import { EnketoComponent } from '../../components/enketo/enketo.component';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  templateUrl: './reports-add.component.html',
+    templateUrl: './reports-add.component.html',
+    standalone: true,
+    imports: [
+        NgIf,
+        EnketoComponent,
+        TranslatePipe,
+    ],
 })
 export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   subscription: Subscription = new Subscription();

@@ -124,48 +124,46 @@ describe('Reports Component', () => {
 
     return TestBed
       .configureTestingModule({
-        imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule,
-          ComponentsModule,
-          BrowserAnimationsModule,
-          MatExpansionModule,
-          MatIconModule,
-        ],
-        declarations: [
-          ReportsComponent,
-          ReportsSidebarFilterComponent,
-          SearchBarComponent,
-          ReportsContentComponent,
-          ReportsMoreMenuComponent,
-          NavigationComponent,
-        ],
-        providers: [
-          provideMockStore({ selectors: mockedSelectors }),
-          { provide: ChangesService, useValue: changesService },
-          { provide: AddReadStatusService, useValue: addReadStatusService },
-          { provide: SearchService, useValue: searchService },
-          // Needed because of ngx-translate provider's constructor.
-          { provide: SettingsService, useValue: {} },
-          // Needed because of facility filter
-          { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } },
-          // Needed because of Reports Sidebar Filter
-          { provide: PerformanceService, useValue: performanceService },
-          { provide: SessionService, useValue: sessionService },
-          { provide: DbService, useValue: { get: sinon.stub().resolves() } },
-          { provide: UserContactService, useValue: userContactService },
-          { provide: NavigationService, useValue: {} },
-          { provide: AuthService, useValue: authService },
-          { provide: ResponsiveService, useValue: responsiveService },
-          { provide: ModalService, useValue: modalService },
-          { provide: DatePipe, useValue: datePipe },
-          { provide: ActivatedRoute, useValue: route },
-          { provide: Router, useValue: router },
-          { provide: FastActionButtonService, useValue: fastActionButtonService },
-          { provide: FeedbackService, useValue: feedbackService },
-          { provide: XmlFormsService, useValue: xmlFormsService },
-        ]
-      })
+    imports: [
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        RouterTestingModule,
+        ComponentsModule,
+        BrowserAnimationsModule,
+        MatExpansionModule,
+        MatIconModule,
+        ReportsComponent,
+        ReportsSidebarFilterComponent,
+        SearchBarComponent,
+        ReportsContentComponent,
+        ReportsMoreMenuComponent,
+        NavigationComponent,
+    ],
+    providers: [
+        provideMockStore({ selectors: mockedSelectors }),
+        { provide: ChangesService, useValue: changesService },
+        { provide: AddReadStatusService, useValue: addReadStatusService },
+        { provide: SearchService, useValue: searchService },
+        // Needed because of ngx-translate provider's constructor.
+        { provide: SettingsService, useValue: {} },
+        // Needed because of facility filter
+        { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } },
+        // Needed because of Reports Sidebar Filter
+        { provide: PerformanceService, useValue: performanceService },
+        { provide: SessionService, useValue: sessionService },
+        { provide: DbService, useValue: { get: sinon.stub().resolves() } },
+        { provide: UserContactService, useValue: userContactService },
+        { provide: NavigationService, useValue: {} },
+        { provide: AuthService, useValue: authService },
+        { provide: ResponsiveService, useValue: responsiveService },
+        { provide: ModalService, useValue: modalService },
+        { provide: DatePipe, useValue: datePipe },
+        { provide: ActivatedRoute, useValue: route },
+        { provide: Router, useValue: router },
+        { provide: FastActionButtonService, useValue: fastActionButtonService },
+        { provide: FeedbackService, useValue: feedbackService },
+        { provide: XmlFormsService, useValue: xmlFormsService },
+    ]
+})
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(ReportsComponent);

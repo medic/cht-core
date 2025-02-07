@@ -25,17 +25,17 @@ describe('Error log component', () => {
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
 
     return TestBed.configureTestingModule({
-      imports: [
+    imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        PipesModule
-      ],
-      declarations: [ ErrorLogComponent ],
-      providers: [
+        PipesModule,
+        ErrorLogComponent
+    ],
+    providers: [
         { provide: SessionService, useValue: sessionService },
         { provide: ChangesService, useValue: changesService },
         provideMockStore(),
-      ]
-    })
+    ]
+})
       .compileComponents().then(() => {
         fixture = TestBed.createComponent(ErrorLogComponent);
         component = fixture.componentInstance;

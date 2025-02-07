@@ -9,10 +9,13 @@ import { SessionService } from '@mm-services/session.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { Filter } from '@mm-components/filters/filter';
 import { Selectors } from '@mm-selectors/index';
+import { NgFor, NgTemplateOutlet, NgClass, NgIf, AsyncPipe } from '@angular/common';
 
 @Component({
-  selector: 'mm-facility-filter',
-  templateUrl: './facility-filter.component.html'
+    selector: 'mm-facility-filter',
+    templateUrl: './facility-filter.component.html',
+    standalone: true,
+    imports: [NgFor, NgTemplateOutlet, NgClass, NgIf, AsyncPipe]
 })
 export class FacilityFilterComponent implements OnInit, AfterViewInit {
   private globalActions: GlobalActions;

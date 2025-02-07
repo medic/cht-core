@@ -6,9 +6,20 @@ import { DebugService } from '@mm-services/debug.service';
 import { DbService } from '@mm-services/db.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { SessionService } from '@mm-services/session.service';
+import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
+import { NgIf } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  templateUrl: './testing.component.html',
+    templateUrl: './testing.component.html',
+    standalone: true,
+    imports: [
+        ToolBarComponent,
+        NgIf,
+        FormsModule,
+        TranslatePipe,
+    ],
 })
 export class TestingComponent implements OnInit {
   amountFeedbackDocs:any = 5000;

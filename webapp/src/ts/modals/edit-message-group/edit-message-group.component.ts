@@ -4,10 +4,22 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { EditGroupService } from '@mm-services/edit-group.service';
 import { SettingsService } from '@mm-services/settings.service';
+import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout.component';
+import { FormsModule } from '@angular/forms';
+import { NgFor, NgIf } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  selector: 'edit-message-group',
-  templateUrl: './edit-message-group.component.html',
+    selector: 'edit-message-group',
+    templateUrl: './edit-message-group.component.html',
+    standalone: true,
+    imports: [
+        ModalLayoutComponent,
+        FormsModule,
+        NgFor,
+        NgIf,
+        TranslatePipe,
+    ],
 })
 export class EditMessageGroupComponent implements AfterViewInit, OnInit, AfterViewChecked, OnDestroy {
 

@@ -46,26 +46,24 @@ describe('TrainingsContentComponent', () => {
 
     return TestBed
       .configureTestingModule({
-        imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ],
-        declarations: [
-          TrainingsContentComponent,
-          ModalLayoutComponent,
-          TrainingCardsFormComponent,
-          EnketoComponent,
-        ],
-        providers: [
-          provideMockStore({ selectors: mockedSelectors }),
-          { provide: ActivatedRoute, useValue: { params: new Subject() } },
-          { provide: PerformanceService, useValue: performanceService },
-          { provide: ModalService, useValue: modalService },
-          { provide: Router, useValue: routerMock },
-          { provide: XmlFormsService, useValue: {} },
-          { provide: FormService, useValue: { unload: sinon.stub() } },
-          { provide: GeolocationService, useValue: {} },
-        ],
-      })
+    imports: [
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        TrainingsContentComponent,
+        ModalLayoutComponent,
+        TrainingCardsFormComponent,
+        EnketoComponent,
+    ],
+    providers: [
+        provideMockStore({ selectors: mockedSelectors }),
+        { provide: ActivatedRoute, useValue: { params: new Subject() } },
+        { provide: PerformanceService, useValue: performanceService },
+        { provide: ModalService, useValue: modalService },
+        { provide: Router, useValue: routerMock },
+        { provide: XmlFormsService, useValue: {} },
+        { provide: FormService, useValue: { unload: sinon.stub() } },
+        { provide: GeolocationService, useValue: {} },
+    ],
+})
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(TrainingsContentComponent);

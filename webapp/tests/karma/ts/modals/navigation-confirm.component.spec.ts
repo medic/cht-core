@@ -21,20 +21,18 @@ describe('NavigationConfirmModal', () => {
 
     return TestBed
       .configureTestingModule({
-        imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ],
-        declarations: [
-          NavigationConfirmComponent,
-          ModalLayoutComponent,
-          PanelHeaderComponent,
-        ],
-        providers: [
-          { provide: TelemetryService, useValue: telemetryService },
-          { provide: MatDialogRef, useValue: matDialogRef },
-          { provide: MAT_DIALOG_DATA, useValue: {} },
-        ],
-      })
+    imports: [
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        NavigationConfirmComponent,
+        ModalLayoutComponent,
+        PanelHeaderComponent,
+    ],
+    providers: [
+        { provide: TelemetryService, useValue: telemetryService },
+        { provide: MatDialogRef, useValue: matDialogRef },
+        { provide: MAT_DIALOG_DATA, useValue: {} },
+    ],
+})
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(NavigationConfirmComponent);

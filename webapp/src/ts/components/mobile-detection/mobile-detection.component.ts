@@ -3,8 +3,9 @@ import { AfterViewInit, Component, ElementRef, HostListener } from '@angular/cor
 import { ResponsiveService } from '@mm-services/responsive.service';
 
 @Component({
-  template: '<div id="mobile-detection"></div>',
-  selector: 'mobile-detection',
+    template: '<div id="mobile-detection"></div>',
+    selector: 'mobile-detection',
+    standalone: true,
 })
 export class MobileDetectionComponent implements AfterViewInit {
   constructor(

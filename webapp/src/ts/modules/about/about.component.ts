@@ -10,9 +10,18 @@ import { SessionService } from '@mm-services/session.service';
 import { VersionService } from '@mm-services/version.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { BrowserDetectorService } from '@mm-services/browser-detector.service';
+import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
+import { MatCard, MatCardHeader, MatCardTitle, MatCardContent, MatCardSubtitle } from '@angular/material/card';
+import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
+import { MatButton } from '@angular/material/button';
+import { NgSwitch, NgSwitchCase, NgIf, NgFor, DecimalPipe } from '@angular/common';
+import { PartnerImagePipe } from '@mm-pipes/resource-icon.pipe';
+import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';
 
 @Component({
-  templateUrl: './about.component.html'
+    templateUrl: './about.component.html',
+    standalone: true,
+    imports: [ToolBarComponent, MatCard, MatCardHeader, MatCardTitle, TranslateDirective, MatCardContent, MatButton, NgSwitch, NgSwitchCase, NgIf, MatCardSubtitle, NgFor, DecimalPipe, TranslatePipe, PartnerImagePipe, SimpleDateTimePipe]
 })
 export class AboutComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();

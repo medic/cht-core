@@ -17,7 +17,8 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
  * {{task.instructionsLabel | translateFrom:task}}
  */
 @Pipe({
-  name: 'translateFrom'
+    name: 'translateFrom',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'

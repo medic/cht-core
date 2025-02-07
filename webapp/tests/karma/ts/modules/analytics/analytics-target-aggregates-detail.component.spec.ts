@@ -51,17 +51,17 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
 
     return TestBed
       .configureTestingModule({
-        declarations: [ AnalyticsTargetAggregatesDetailComponent ],
-        imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule
-        ],
-        providers: [
-          provideMockStore({ selectors: mockSelectors }),
-          { provide: TargetAggregatesService, useValue: targetAggregatesService },
-          { provide: ActivatedRoute, useValue: route },
-        ]
-      })
+    imports: [
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        RouterTestingModule,
+        AnalyticsTargetAggregatesDetailComponent
+    ],
+    providers: [
+        provideMockStore({ selectors: mockSelectors }),
+        { provide: TargetAggregatesService, useValue: targetAggregatesService },
+        { provide: ActivatedRoute, useValue: route },
+    ]
+})
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(AnalyticsTargetAggregatesDetailComponent);

@@ -5,15 +5,13 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AuthDirective } from '@mm-directives/auth.directive';
 
 @NgModule({
-  declarations: [
-    AuthDirective,
-  ],
-  imports: [
-    CommonModule,
-    TranslateModule,
-  ],
-  exports: [
-    AuthDirective,
-  ]
+    imports: [
+        CommonModule,
+        TranslateModule,
+        AuthDirective,
+    ],
+    exports: [
+        AuthDirective,
+    ]
 })
 export class DirectivesModule { }

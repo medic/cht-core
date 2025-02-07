@@ -5,7 +5,8 @@ import * as phoneNumber from '@medic/phone-number';
 import { SettingsService } from '@mm-services/settings.service';
 
 @Pipe({
-  name: 'phone'
+    name: 'phone',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'

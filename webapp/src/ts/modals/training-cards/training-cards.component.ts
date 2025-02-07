@@ -7,10 +7,16 @@ import { Router } from '@angular/router';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
+import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout.component';
+import { NgIf } from '@angular/common';
+import { TrainingCardsConfirmComponent } from '../training-cards-confirm/training-cards-confirm.component';
+import { TrainingCardsFormComponent } from '../../components/training-cards-form/training-cards-form.component';
 
 @Component({
-  selector: 'training-cards-modal',
-  templateUrl: './training-cards.component.html'
+    selector: 'training-cards-modal',
+    templateUrl: './training-cards.component.html',
+    standalone: true,
+    imports: [ModalLayoutComponent, NgIf, TrainingCardsConfirmComponent, TrainingCardsFormComponent]
 })
 export class TrainingCardsComponent implements OnInit, OnDestroy {
   readonly MODAL_ID = 'training-cards-modal';

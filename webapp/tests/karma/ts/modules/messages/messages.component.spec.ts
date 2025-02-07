@@ -70,36 +70,34 @@ describe('Messages Component', () => {
 
     return TestBed
       .configureTestingModule({
-        imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule,
-          MatIconModule,
-        ],
-        declarations: [
-          MessagesComponent,
-          RelativeDatePipe,
-          NavigationComponent,
-          MessagesMoreMenuComponent,
-          FastActionButtonComponent,
-          ToolBarComponent,
-        ],
-        providers: [
-          provideMockStore({ selectors: mockedSelectors }),
-          { provide: ChangesService, useValue: changesService },
-          { provide: MessageContactService, useValue: messageContactService },
-          { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
-          { provide: ExportService, useValue: {} },
-          { provide: SessionService, useValue: sessionService },
-          { provide: ModalService, useValue: modalService },
-          { provide: NavigationService, useValue: {} },
-          { provide: AuthService, useValue: authService },
-          { provide: FastActionButtonService, useValue: fastActionButtonService },
-          { provide: PerformanceService, useValue: performanceService },
-          { provide: UserContactService, useValue: userContactService },
-          { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
-          { provide: MatDialog, useValue: { open: sinon.stub() } },
-        ]
-      })
+    imports: [
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        RouterTestingModule,
+        MatIconModule,
+        MessagesComponent,
+        RelativeDatePipe,
+        NavigationComponent,
+        MessagesMoreMenuComponent,
+        FastActionButtonComponent,
+        ToolBarComponent,
+    ],
+    providers: [
+        provideMockStore({ selectors: mockedSelectors }),
+        { provide: ChangesService, useValue: changesService },
+        { provide: MessageContactService, useValue: messageContactService },
+        { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
+        { provide: ExportService, useValue: {} },
+        { provide: SessionService, useValue: sessionService },
+        { provide: ModalService, useValue: modalService },
+        { provide: NavigationService, useValue: {} },
+        { provide: AuthService, useValue: authService },
+        { provide: FastActionButtonService, useValue: fastActionButtonService },
+        { provide: PerformanceService, useValue: performanceService },
+        { provide: UserContactService, useValue: userContactService },
+        { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
+        { provide: MatDialog, useValue: { open: sinon.stub() } },
+    ]
+})
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(MessagesComponent);

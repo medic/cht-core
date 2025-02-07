@@ -16,18 +16,16 @@ describe('Status Filter Component', () => {
   beforeEach(waitForAsync(() => {
     return TestBed
       .configureTestingModule({
-        imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule,
-          BrowserAnimationsModule
-        ],
-        declarations: [
-          StatusFilterComponent,
-        ],
-        providers: [
-          provideMockStore(),
-        ]
-      })
+    imports: [
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        RouterTestingModule,
+        BrowserAnimationsModule,
+        StatusFilterComponent
+    ],
+    providers: [
+        provideMockStore(),
+    ]
+})
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(StatusFilterComponent);

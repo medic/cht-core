@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { find as _find, isEqual as _isEqual } from 'lodash-es';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
 
 import { MessageContactService } from '@mm-services/message-contact.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -18,9 +18,18 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
 import { UserContactService } from '@mm-services/user-contact.service';
+import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
+import { MessagesMoreMenuComponent } from './messages-more-menu.component';
+import { NgIf, NgFor, NgClass } from '@angular/common';
+import { FastActionButtonComponent } from '../../components/fast-action-button/fast-action-button.component';
+import { TranslatePipe } from '@ngx-translate/core';
+import { LineagePipe } from '@mm-pipes/message.pipe';
+import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 
 @Component({
-  templateUrl: './messages.component.html'
+    templateUrl: './messages.component.html',
+    standalone: true,
+    imports: [ToolBarComponent, MessagesMoreMenuComponent, NgIf, NgFor, NgClass, RouterLink, FastActionButtonComponent, RouterOutlet, TranslatePipe, LineagePipe, RelativeDatePipe]
 })
 export class MessagesComponent implements OnInit, OnDestroy {
   private globalActions: GlobalActions;

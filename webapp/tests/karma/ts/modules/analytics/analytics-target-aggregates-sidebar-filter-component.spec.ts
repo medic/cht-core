@@ -42,21 +42,19 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
 
     await TestBed
       .configureTestingModule({
-        imports: [
-          FormsModule,
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          MatExpansionModule,
-          MatIconModule,
-        ],
-        declarations: [
-          AnalyticsTargetAggregatesSidebarFilterComponent,
-        ],
-        providers: [
-          provideMockStore({ selectors: mockedSelectors }),
-          { provide: ContactTypesService, useValue: contactTypesService },
-          { provide: SettingsService, useValue: settingsService },
-        ]
-      })
+    imports: [
+        FormsModule,
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        MatExpansionModule,
+        MatIconModule,
+        AnalyticsTargetAggregatesSidebarFilterComponent,
+    ],
+    providers: [
+        provideMockStore({ selectors: mockedSelectors }),
+        { provide: ContactTypesService, useValue: contactTypesService },
+        { provide: SettingsService, useValue: settingsService },
+    ]
+})
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(AnalyticsTargetAggregatesSidebarFilterComponent);

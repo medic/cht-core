@@ -60,20 +60,18 @@ describe('Analytics Target Aggregates Component', () => {
 
     return TestBed
       .configureTestingModule({
-        declarations: [
-          AnalyticsTargetAggregatesComponent,
-          AnalyticsTargetAggregatesSidebarFilterComponent
-        ],
-        imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ],
-        providers: [
-          provideMockStore({ selectors: mockedSelectors }),
-          { provide: TargetAggregatesService, useValue: targetAggregatesService },
-          { provide: PerformanceService, useValue: performanceService },
-          { provide: UserSettingsService, useValue: userSettingsService },
-        ]
-      })
+    imports: [
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        AnalyticsTargetAggregatesComponent,
+        AnalyticsTargetAggregatesSidebarFilterComponent,
+    ],
+    providers: [
+        provideMockStore({ selectors: mockedSelectors }),
+        { provide: TargetAggregatesService, useValue: targetAggregatesService },
+        { provide: PerformanceService, useValue: performanceService },
+        { provide: UserSettingsService, useValue: userSettingsService },
+    ]
+})
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(AnalyticsTargetAggregatesComponent);

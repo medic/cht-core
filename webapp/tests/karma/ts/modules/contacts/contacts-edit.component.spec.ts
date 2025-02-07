@@ -73,27 +73,25 @@ describe('ContactsEdit component', () => {
     ];
 
     TestBed.configureTestingModule({
-      imports: [
+    imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterTestingModule,
         ComponentsModule,
-      ],
-      providers: [
+        EnketoComponent,
+        ContactsEditComponent,
+    ],
+    providers: [
         provideMockStore({ selectors: mockedSelectors }),
         { provide: TranslateService, useValue: translateService },
         { provide: DbService, useValue: { get: () => ({ get: dbGet }) } },
-        { provide: Router, useValue: router  },
+        { provide: Router, useValue: router },
         { provide: ActivatedRoute, useValue: route },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
         { provide: FormService, useValue: formService },
         { provide: ContactTypesService, useValue: contactTypesService },
-        { provide: PerformanceService, useValue: performanceService},
-      ],
-      declarations: [
-        EnketoComponent,
-        ContactsEditComponent,
-      ],
-    });
+        { provide: PerformanceService, useValue: performanceService },
+    ],
+});
 
     createComponent = () => {
       return TestBed.compileComponents().then(() => {

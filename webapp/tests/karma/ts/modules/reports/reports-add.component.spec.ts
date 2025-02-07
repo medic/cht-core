@@ -73,29 +73,27 @@ describe('Reports Add Component', () => {
 
     return TestBed
       .configureTestingModule({
-        imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule,
-          ComponentsModule,
-        ],
-        declarations: [
-          ReportsAddComponent,
-          EnketoComponent,
-        ],
-        providers: [
-          provideMockStore({ selectors: mockedSelectors }),
-          { provide: DbService, useValue: { get: () => dbService }},
-          { provide: FileReaderService, useValue: fileReaderService },
-          { provide: GetReportContentService, useValue: getReportContentService },
-          { provide: XmlFormsService, useValue: xmlFormsService },
-          { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
-          { provide: GeolocationService, useValue: geolocationService },
-          { provide: FormService, useValue: formService },
-          { provide: ActivatedRoute, useValue: route },
-          { provide: Router, useValue: router },
-          { provide: PerformanceService, useValue: performanceService},
-        ],
-      })
+    imports: [
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        RouterTestingModule,
+        ComponentsModule,
+        ReportsAddComponent,
+        EnketoComponent,
+    ],
+    providers: [
+        provideMockStore({ selectors: mockedSelectors }),
+        { provide: DbService, useValue: { get: () => dbService } },
+        { provide: FileReaderService, useValue: fileReaderService },
+        { provide: GetReportContentService, useValue: getReportContentService },
+        { provide: XmlFormsService, useValue: xmlFormsService },
+        { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
+        { provide: GeolocationService, useValue: geolocationService },
+        { provide: FormService, useValue: formService },
+        { provide: ActivatedRoute, useValue: route },
+        { provide: Router, useValue: router },
+        { provide: PerformanceService, useValue: performanceService },
+    ],
+})
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(ReportsAddComponent);

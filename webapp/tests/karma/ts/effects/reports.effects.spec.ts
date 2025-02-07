@@ -72,28 +72,26 @@ describe('Reports effects', () => {
     };
 
     TestBed.configureTestingModule({
-      declarations: [
+    imports: [
+        EffectsModule.forRoot([ReportsEffects]),
         SendMessageComponent,
         EditReportComponent,
         VerifyReportComponent,
-      ],
-      imports: [
-        EffectsModule.forRoot([ReportsEffects]),
-      ],
-      providers: [
+    ],
+    providers: [
         provideMockActions(() => actions$),
         provideMockStore({ selectors: mockedSelectors }),
         { provide: ReportViewModelGeneratorService, useValue: reportViewModelGeneratorService },
         { provide: MarkReadService, useValue: markReadService },
         { provide: ModalService, useValue: modalService },
-        { provide: DbService, useValue: { get: sinon.stub().returns(dbService)} },
+        { provide: DbService, useValue: { get: sinon.stub().returns(dbService) } },
         { provide: Router, useValue: router },
         { provide: SearchService, useValue: searchService },
         { provide: AuthService, useValue: authService },
         { provide: TranslateService, useValue: translateService },
         { provide: PerformanceService, useValue: performanceService },
-      ],
-    });
+    ],
+});
 
     effects = TestBed.inject(ReportsEffects);
     store = TestBed.inject(MockStore);

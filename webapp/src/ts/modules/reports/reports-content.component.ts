@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import * as _ from 'lodash-es';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
@@ -17,9 +17,20 @@ import { FastAction, FastActionButtonService } from '@mm-services/fast-action-bu
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { DbService } from '@mm-services/db.service';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
+import { NgIf, NgFor, AsyncPipe } from '@angular/common';
+import { FastActionButtonComponent } from '../../components/fast-action-button/fast-action-button.component';
+import { SenderComponent } from '../../components/sender/sender.component';
+import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from '../../components/status-icons/status-icons.template';
+import { ReportImageComponent } from '../../components/report-image/report-image.component';
+import { TranslatePipe } from '@ngx-translate/core';
+import { LineagePipe, TitlePipe } from '@mm-pipes/message.pipe';
+import { RelativeDatePipe, StatePipe } from '@mm-pipes/date.pipe';
+import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
 
 @Component({
-  templateUrl: './reports-content.component.html'
+    templateUrl: './reports-content.component.html',
+    standalone: true,
+    imports: [NgIf, FastActionButtonComponent, NgFor, RouterLink, SenderComponent, ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent, ReportImageComponent, AsyncPipe, TranslatePipe, LineagePipe, RelativeDatePipe, StatePipe, TitlePipe, FormIconPipe]
 })
 export class ReportsContentComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();

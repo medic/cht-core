@@ -8,7 +8,10 @@ import { SummaryPipe } from '@mm-pipes/message.pipe';
 import { TitlePipe } from '@mm-pipes/message.pipe';
 
 describe('messages pipe', () => {
-  @Component({ template: `` })
+  @Component({
+    template: ``,
+    standalone: true
+})
   class TestComponent {
     @Input() forms;
     @Input() message;
@@ -28,15 +31,13 @@ describe('messages pipe', () => {
   beforeEach(() => {
     TestBed
       .configureTestingModule({
-        providers: [
-          { provide: TranslateService, useValue: { instant: sinon.stub().returnsArg(0) }},
-        ],
-        declarations: [
-          SummaryPipe,
-          TestComponent,
-          TitlePipe,
-        ]
-      })
+    imports: [SummaryPipe,
+        TestComponent,
+        TitlePipe,],
+    providers: [
+        { provide: TranslateService, useValue: { instant: sinon.stub().returnsArg(0) } },
+    ]
+})
       .compileComponents();
   });
 

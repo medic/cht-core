@@ -3,7 +3,8 @@ import { Injectable, Pipe, PipeTransform } from '@angular/core';
 import { FormatNumberService } from '@mm-services/format-number.service';
 
 @Pipe({
-  name: 'localizeNumber'
+    name: 'localizeNumber',
+    standalone: true
 })
 @Injectable({
   providedIn: 'root'

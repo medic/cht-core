@@ -9,10 +9,14 @@ import { DbService } from '@mm-services/db.service';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { TranslateService } from '@mm-services/translate.service';
+import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout.component';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  selector: 'delete-doc-confirm',
-  templateUrl: './delete-doc-confirm.component.html'
+    selector: 'delete-doc-confirm',
+    templateUrl: './delete-doc-confirm.component.html',
+    standalone: true,
+    imports: [ModalLayoutComponent, TranslatePipe]
 })
 export class DeleteDocConfirmComponent implements OnInit, OnDestroy {
   static id = 'delete-doc-confirm-modal';

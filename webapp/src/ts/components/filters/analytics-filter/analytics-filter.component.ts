@@ -9,7 +9,7 @@ import {
   Output
 } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { ActivatedRoute, ActivationEnd, NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, ActivationEnd, NavigationEnd, Router, RouterLink } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
 
 import { GlobalActions } from '@mm-actions/global';
@@ -18,10 +18,15 @@ import { SessionService } from '@mm-services/session.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { AGGREGATE_TARGETS_ID } from '@mm-services/analytics-modules.service';
+import { NgIf, NgFor } from '@angular/common';
+import { MatIcon } from '@angular/material/icon';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  selector: 'mm-analytics-filters',
-  templateUrl: './analytics-filter.component.html'
+    selector: 'mm-analytics-filters',
+    templateUrl: './analytics-filter.component.html',
+    standalone: true,
+    imports: [NgIf, NgFor, RouterLink, MatIcon, TranslatePipe]
 })
 export class AnalyticsFilterComponent implements AfterContentInit, AfterContentChecked, OnInit, OnDestroy {
   @Input() analyticsModules: any[] = [];

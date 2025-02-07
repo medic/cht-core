@@ -23,19 +23,17 @@ describe('Freetext Filter Component', () => {
 
     return TestBed
       .configureTestingModule({
-        imports: [
-          BrowserAnimationsModule,
-          FormsModule,
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule,
-        ],
-        declarations: [
-          FreetextFilterComponent,
-        ],
-        providers: [
-          provideMockStore({ selectors: mockedSelectors }),
-        ]
-      })
+    imports: [
+        BrowserAnimationsModule,
+        FormsModule,
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        RouterTestingModule,
+        FreetextFilterComponent,
+    ],
+    providers: [
+        provideMockStore({ selectors: mockedSelectors }),
+    ]
+})
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(FreetextFilterComponent);

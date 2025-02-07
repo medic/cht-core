@@ -11,23 +11,23 @@ import { HttpClientModule } from '@angular/common/http';
 import { StoreModule } from '@ngrx/store';
 
 @NgModule({
-  declarations: [AppComponent],
-  imports: [
-    BrowserModule,
-    HttpClientModule,
-    StoreModule.forRoot(),
-    TranslateModule.forRoot({
-      loader: {
-        provide: TranslateLoader,
-        useFactory: (db: DbService) => new TranslationLoaderProvider(db),
-        deps: [DbService],
-      },
-      compiler: {
-        provide: TranslateCompiler,
-        useClass: TranslateMessageFormatCompilerProvider,
-      },
-    }),
-  ]
+    imports: [
+        BrowserModule,
+        HttpClientModule,
+        StoreModule.forRoot(),
+        TranslateModule.forRoot({
+            loader: {
+                provide: TranslateLoader,
+                useFactory: (db: DbService) => new TranslationLoaderProvider(db),
+                deps: [DbService],
+            },
+            compiler: {
+                provide: TranslateCompiler,
+                useClass: TranslateMessageFormatCompilerProvider,
+            },
+        }),
+        AppComponent,
+    ]
 })
 export class AppModule implements DoBootstrap {
   constructor(

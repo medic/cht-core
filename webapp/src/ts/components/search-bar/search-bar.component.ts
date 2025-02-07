@@ -16,10 +16,17 @@ import { Selectors } from '@mm-selectors/index';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { SearchFiltersService } from '@mm-services/search-filters.service';
+import { NgIf } from '@angular/common';
+import { FreetextFilterComponent as FreetextFilterComponent_1 } from '../filters/freetext-filter/freetext-filter.component';
+import { SortFilterComponent } from '../filters/sort-filter/sort-filter.component';
+import { MatIcon } from '@angular/material/icon';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  selector: 'mm-search-bar',
-  templateUrl: './search-bar.component.html'
+    selector: 'mm-search-bar',
+    templateUrl: './search-bar.component.html',
+    standalone: true,
+    imports: [NgIf, FreetextFilterComponent_1, SortFilterComponent, MatIcon, TranslatePipe]
 })
 export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDestroy {
   @Input() disabled;

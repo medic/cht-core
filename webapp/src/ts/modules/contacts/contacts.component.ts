@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { findIndex as _findIndex } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
@@ -24,9 +24,20 @@ import { TranslateService } from '@mm-services/translate.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
+import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
+import { SearchBarComponent } from '../../components/search-bar/search-bar.component';
+import { ContactsMoreMenuComponent } from './contacts-more-menu.component';
+import { NgFor, NgIf } from '@angular/common';
+import { FastActionButtonComponent } from '../../components/fast-action-button/fast-action-button.component';
+import { TranslatePipe } from '@ngx-translate/core';
+import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
+import { DateOfDeathPipe } from '@mm-pipes/date.pipe';
+import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 
 @Component({
-  templateUrl: './contacts.component.html'
+    templateUrl: './contacts.component.html',
+    standalone: true,
+    imports: [ToolBarComponent, SearchBarComponent, ContactsMoreMenuComponent, NgFor, RouterLink, NgIf, FastActionButtonComponent, RouterOutlet, TranslatePipe, ResourceIconPipe, DateOfDeathPipe, LocalizeNumberPipe]
 })
 export class ContactsComponent implements OnInit, OnDestroy {
   private readonly PAGE_SIZE = 25;

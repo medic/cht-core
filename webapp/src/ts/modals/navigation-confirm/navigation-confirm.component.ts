@@ -2,10 +2,14 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout.component';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  selector: 'navigation-confirm-modal',
-  templateUrl: './navigation-confirm.component.html'
+    selector: 'navigation-confirm-modal',
+    templateUrl: './navigation-confirm.component.html',
+    standalone: true,
+    imports: [ModalLayoutComponent, TranslatePipe]
 })
 export class NavigationConfirmComponent {
   static id = 'navigation-confirm-modal';

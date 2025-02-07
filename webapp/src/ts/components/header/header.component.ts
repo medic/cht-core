@@ -10,12 +10,23 @@ import { ModalService } from '@mm-services/modal.service';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 import { DBSyncService } from '@mm-services/db-sync.service';
+import { RouterLink } from '@angular/router';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { AuthDirective } from '../../directives/auth.directive';
+import { NgIf, NgClass, NgFor } from '@angular/common';
+import { MobileDetectionComponent } from '../mobile-detection/mobile-detection.component';
+import { TranslatePipe } from '@ngx-translate/core';
+import { HeaderLogoPipe, ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
+import { RelativeDatePipe } from '@mm-pipes/date.pipe';
+import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 
 export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
 
 @Component({
-  selector: 'mm-header',
-  templateUrl: './header.component.html'
+    selector: 'mm-header',
+    templateUrl: './header.component.html',
+    standalone: true,
+    imports: [RouterLink, BsDropdownModule, AuthDirective, NgIf, NgClass, NgFor, MobileDetectionComponent, TranslatePipe, HeaderLogoPipe, ResourceIconPipe, RelativeDatePipe, LocalizeNumberPipe]
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   private subscription: Subscription = new Subscription();

@@ -27,21 +27,19 @@ describe('EditMessageGroupComponent', () => {
 
     return TestBed
       .configureTestingModule({
-        imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ],
-        declarations: [
-          EditMessageGroupComponent,
-          ModalLayoutComponent,
-          PanelHeaderComponent,
-        ],
-        providers: [
-          { provide: MatDialogRef, useValue: matDialogRef },
-          { provide: MAT_DIALOG_DATA, useValue: {} },
-          { provide: SettingsService, useValue: settingsService },
-          { provide: EditGroupService, useValue: editGroupService },
-        ]
-      })
+    imports: [
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        EditMessageGroupComponent,
+        ModalLayoutComponent,
+        PanelHeaderComponent,
+    ],
+    providers: [
+        { provide: MatDialogRef, useValue: matDialogRef },
+        { provide: MAT_DIALOG_DATA, useValue: {} },
+        { provide: SettingsService, useValue: settingsService },
+        { provide: EditGroupService, useValue: editGroupService },
+    ]
+})
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(EditMessageGroupComponent);
