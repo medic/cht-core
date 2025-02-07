@@ -24,7 +24,6 @@ import '@angular/compiler';
 import pouchdbDebug from 'pouchdb-debug';
 import * as $ from 'jquery';
 
-import { MissingTranslationHandlerLog } from './app.module';
 import { environment } from '@mm-environments/environment';
 import { POUCHDB_OPTIONS } from './constants';
 
@@ -42,7 +41,13 @@ import { withInterceptorsFromDi, provideHttpClient } from '@angular/common/http'
 import { StoreModule } from '@ngrx/store';
 import { reducers } from '@mm-reducers/index';
 import { storeLogger } from 'ngrx-store-logger';
-import { TranslateModule, TranslateLoader, MissingTranslationHandler, TranslateCompiler } from '@ngx-translate/core';
+import {
+  TranslateModule,
+  TranslateLoader,
+  MissingTranslationHandler,
+  TranslateCompiler,
+  MissingTranslationHandlerParams
+} from '@ngx-translate/core';
 import { DbService } from '@mm-services/db.service';
 import { TranslationLoaderProvider } from '@mm-providers/translation-loader.provider';
 import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
@@ -79,6 +84,10 @@ const rxhtmlTag = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([a-z][^/
 Object.defineProperties($, {
   htmlPrefilter: { value: (html) => html.replace(rxhtmlTag, '<$1></$2>') }
 });
+
+class MissingTranslationHandlerLog implements MissingTranslationHandler {
+  handle = (params: MissingTranslationHandlerParams) => params.key;
+}
 
 window.PouchDB.plugin(pouchdbDebug);
 bootstrapper(POUCHDB_OPTIONS)
@@ -126,18 +135,7 @@ bootstrapper(POUCHDB_OPTIONS)
       ]
     })
       .then((moduleRef) => {
-        // window.CHTCore = moduleRef.instance.integration;
         window.CHTCore = moduleRef.injector.get(IntegrationApiService);
-        // backwards compatibility with the old way of reaching these services, the syntax looked like:
-        // angular.element(document.body).injector().get(<serviceName>);
-        window.angular = {
-          element: () => ({
-            injector: () => ({
-              // get: service => moduleRef.instance.integration.get(service),
-              get: service => window.CHTCore.get(service),
-            })
-          })
-        };
       })
       .catch(err => console.error(err));
   })
