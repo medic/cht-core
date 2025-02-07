@@ -21,7 +21,24 @@ import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';
 @Component({
   templateUrl: './about.component.html',
   standalone: true,
-  imports: [ToolBarComponent, MatCard, MatCardHeader, MatCardTitle, TranslateDirective, MatCardContent, MatButton, NgSwitch, NgSwitchCase, NgIf, MatCardSubtitle, NgFor, DecimalPipe, TranslatePipe, PartnerImagePipe, SimpleDateTimePipe]
+  imports: [
+    ToolBarComponent,
+    MatCard,
+    MatCardHeader,
+    MatCardTitle,
+    TranslateDirective,
+    MatCardContent,
+    MatButton,
+    NgSwitch,
+    NgSwitchCase,
+    NgIf,
+    MatCardSubtitle,
+    NgFor,
+    DecimalPipe,
+    TranslatePipe,
+    PartnerImagePipe,
+    SimpleDateTimePipe
+  ]
 })
 export class AboutComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();

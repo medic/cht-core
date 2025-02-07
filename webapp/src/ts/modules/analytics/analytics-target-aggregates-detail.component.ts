@@ -11,8 +11,12 @@ import { TranslateService } from '@mm-services/translate.service';
 
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 import { NgIf, NgClass, NgFor } from '@angular/common';
-import { AnalyticsTargetsDetailsComponent } from '../../components/analytics-targets-details/analytics-targets-details.component';
-import { AnalyticsTargetsProgressComponent } from '../../components/analytics-targets-progress/analytics-targets-progress.component';
+import {
+  AnalyticsTargetsDetailsComponent
+} from '../../components/analytics-targets-details/analytics-targets-details.component';
+import {
+  AnalyticsTargetsProgressComponent
+} from '../../components/analytics-targets-progress/analytics-targets-progress.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
@@ -21,7 +25,17 @@ import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
   selector: 'analytics-target-aggregates-detail',
   templateUrl: './analytics-target-aggregates-detail.component.html',
   standalone: true,
-  imports: [NgIf, NgClass, NgFor, RouterLink, AnalyticsTargetsDetailsComponent, AnalyticsTargetsProgressComponent, TranslatePipe, ResourceIconPipe, TranslateFromPipe]
+  imports: [
+    NgIf,
+    NgClass,
+    NgFor,
+    RouterLink,
+    AnalyticsTargetsDetailsComponent,
+    AnalyticsTargetsProgressComponent,
+    TranslatePipe,
+    ResourceIconPipe,
+    TranslateFromPipe
+  ]
 })
 export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestroy, AfterViewInit {
   private targetAggregatesActions: TargetAggregatesActions;

@@ -16,7 +16,10 @@ import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { MatIcon } from '@angular/material/icon';
 import { PanelHeaderComponent } from '../../components/panel-header/panel-header.component';
-import { ReportVerifyInvalidIconComponent, ReportVerifyValidIconComponent } from '../../components/status-icons/status-icons.template';
+import {
+  ReportVerifyInvalidIconComponent,
+  ReportVerifyValidIconComponent
+} from '../../components/status-icons/status-icons.template';
 import { TranslatePipe } from '@ngx-translate/core';
 
 
@@ -24,7 +27,20 @@ import { TranslatePipe } from '@ngx-translate/core';
   selector: 'mm-reports-more-menu',
   templateUrl: './reports-more-menu.component.html',
   standalone: true,
-  imports: [NgIf, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, RouterLink, PanelHeaderComponent, MatButton, ReportVerifyInvalidIconComponent, ReportVerifyValidIconComponent, TranslatePipe]
+  imports: [
+    NgIf,
+    MatIconButton,
+    MatMenuTrigger,
+    MatIcon,
+    MatMenu,
+    MatMenuItem,
+    RouterLink,
+    PanelHeaderComponent,
+    MatButton,
+    ReportVerifyInvalidIconComponent,
+    ReportVerifyValidIconComponent,
+    TranslatePipe
+  ]
 })
 export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   @Output() exportReports: EventEmitter<any> = new EventEmitter();

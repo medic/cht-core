@@ -4,7 +4,9 @@ import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { ErrorLogComponent } from '../../components/error-log/error-log.component';
-import { AnalyticsTargetsProgressComponent } from '../../components/analytics-targets-progress/analytics-targets-progress.component';
+import {
+  AnalyticsTargetsProgressComponent
+} from '../../components/analytics-targets-progress/analytics-targets-progress.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
@@ -13,7 +15,17 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 @Component({
   templateUrl: './analytics-targets.component.html',
   standalone: true,
-  imports: [NgIf, ErrorLogComponent, NgFor, NgClass, AnalyticsTargetsProgressComponent, TranslatePipe, ResourceIconPipe, TranslateFromPipe, LocalizeNumberPipe]
+  imports: [
+    NgIf,
+    ErrorLogComponent,
+    NgFor,
+    NgClass,
+    AnalyticsTargetsProgressComponent,
+    TranslatePipe,
+    ResourceIconPipe,
+    TranslateFromPipe,
+    LocalizeNumberPipe
+  ]
 })
 export class AnalyticsTargetsComponent implements OnInit {
   targets: any[] = [];

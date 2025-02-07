@@ -41,7 +41,18 @@ import { AutoreplyPipe, StatePipe } from '@mm-pipes/date.pipe';
   selector: 'messages-content',
   templateUrl: './messages-content.component.html',
   standalone: true,
-  imports: [NgIf, SenderComponent, NgFor, NgClass, AuthDirective, FormsModule, AsyncPipe, TranslatePipe, AutoreplyPipe, StatePipe]
+  imports: [
+    NgIf,
+    SenderComponent,
+    NgFor,
+    NgClass,
+    AuthDirective,
+    FormsModule,
+    AsyncPipe,
+    TranslatePipe,
+    AutoreplyPipe,
+    StatePipe
+  ]
 })
 export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
   private userCtx;

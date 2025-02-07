@@ -21,11 +21,10 @@ window.$ = window.jQuery = require('jquery');
 
 import { enableProdMode, importProvidersFrom } from '@angular/core';
 import '@angular/compiler';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import pouchdbDebug from 'pouchdb-debug';
 import * as $ from 'jquery';
 
-import { AppModule, MissingTranslationHandlerLog } from './app.module';
+import { MissingTranslationHandlerLog } from './app.module';
 import { environment } from '@mm-environments/environment';
 import { POUCHDB_OPTIONS } from './constants';
 
@@ -43,7 +42,7 @@ import { withInterceptorsFromDi, provideHttpClient } from '@angular/common/http'
 import { StoreModule } from '@ngrx/store';
 import { reducers } from '@mm-reducers/index';
 import { storeLogger } from 'ngrx-store-logger';
-import { TranslateModule, TranslateLoader, MissingTranslationHandler, MissingTranslationHandlerParams, TranslateCompiler } from '@ngx-translate/core';
+import { TranslateModule, TranslateLoader, MissingTranslationHandler, TranslateCompiler } from '@ngx-translate/core';
 import { DbService } from '@mm-services/db.service';
 import { TranslationLoaderProvider } from '@mm-providers/translation-loader.provider';
 import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
@@ -91,21 +90,30 @@ bootstrapper(POUCHDB_OPTIONS)
 
     return bootstrapApplication(AppComponent, {
       providers: [
-        importProvidersFrom(BrowserModule, AppRoutingModule, RouterModule, StoreModule.forRoot(reducers, { metaReducers }), TranslateModule.forRoot({
-          loader: {
-            provide: TranslateLoader,
-            useFactory: (db: DbService) => new TranslationLoaderProvider(db),
-            deps: [DbService],
-          },
-          missingTranslationHandler: {
-            provide: MissingTranslationHandler,
-            useClass: MissingTranslationHandlerLog
-          },
-          compiler: {
-            provide: TranslateCompiler,
-            useClass: TranslateMessageFormatCompilerProvider,
-          },
-        }), BsDropdownModule.forRoot(), FormsModule, EffectsModule.forRoot([GlobalEffects, ReportsEffects, ContactsEffects])),
+        importProvidersFrom(
+          BrowserModule,
+          AppRoutingModule,
+          RouterModule,
+          StoreModule.forRoot(reducers, { metaReducers }),
+          TranslateModule.forRoot({
+            loader: {
+              provide: TranslateLoader,
+              useFactory: (db: DbService) => new TranslationLoaderProvider(db),
+              deps: [DbService],
+            },
+            missingTranslationHandler: {
+              provide: MissingTranslationHandler,
+              useClass: MissingTranslationHandlerLog
+            },
+            compiler: {
+              provide: TranslateCompiler,
+              useClass: TranslateMessageFormatCompilerProvider,
+            },
+          }),
+          BsDropdownModule.forRoot(),
+          FormsModule,
+          EffectsModule.forRoot([GlobalEffects, ReportsEffects, ContactsEffects])
+        ),
         { provide: APP_BASE_HREF, useValue: '/' },
         AppRouteGuardProvider,
         TrainingCardDeactivationGuardProvider,

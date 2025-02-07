@@ -20,7 +20,10 @@ import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
 import { NgIf, NgFor, AsyncPipe } from '@angular/common';
 import { FastActionButtonComponent } from '../../components/fast-action-button/fast-action-button.component';
 import { SenderComponent } from '../../components/sender/sender.component';
-import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from '../../components/status-icons/status-icons.template';
+import {
+  ReportVerifyValidIconComponent,
+  ReportVerifyInvalidIconComponent
+} from '../../components/status-icons/status-icons.template';
 import { ReportImageComponent } from '../../components/report-image/report-image.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LineagePipe, TitlePipe } from '@mm-pipes/message.pipe';
@@ -30,7 +33,23 @@ import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
 @Component({
   templateUrl: './reports-content.component.html',
   standalone: true,
-  imports: [NgIf, FastActionButtonComponent, NgFor, RouterLink, SenderComponent, ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent, ReportImageComponent, AsyncPipe, TranslatePipe, LineagePipe, RelativeDatePipe, StatePipe, TitlePipe, FormIconPipe]
+  imports: [
+    NgIf,
+    FastActionButtonComponent,
+    NgFor,
+    RouterLink,
+    SenderComponent,
+    ReportVerifyValidIconComponent,
+    ReportVerifyInvalidIconComponent,
+    ReportImageComponent,
+    AsyncPipe,
+    TranslatePipe,
+    LineagePipe,
+    RelativeDatePipe,
+    StatePipe,
+    TitlePipe,
+    FormIconPipe
+  ]
 })
 export class ReportsContentComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();

@@ -26,7 +26,20 @@ export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
   selector: 'mm-header',
   templateUrl: './header.component.html',
   standalone: true,
-  imports: [RouterLink, BsDropdownModule, AuthDirective, NgIf, NgClass, NgFor, MobileDetectionComponent, TranslatePipe, HeaderLogoPipe, ResourceIconPipe, RelativeDatePipe, LocalizeNumberPipe]
+  imports: [
+    RouterLink,
+    BsDropdownModule,
+    AuthDirective,
+    NgIf,
+    NgClass,
+    NgFor,
+    MobileDetectionComponent,
+    TranslatePipe,
+    HeaderLogoPipe,
+    ResourceIconPipe,
+    RelativeDatePipe,
+    LocalizeNumberPipe
+  ]
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   private subscription: Subscription = new Subscription();

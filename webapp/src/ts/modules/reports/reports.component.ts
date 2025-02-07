@@ -30,7 +30,10 @@ import { NgIf, NgClass, NgFor } from '@angular/common';
 import { SearchBarComponent } from '../../components/search-bar/search-bar.component';
 import { MultiselectBarComponent } from '../../components/multiselect-bar/multiselect-bar.component';
 import { ReportsMoreMenuComponent } from './reports-more-menu.component';
-import { ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent } from '../../components/status-icons/status-icons.template';
+import {
+  ReportVerifyValidIconComponent,
+  ReportVerifyInvalidIconComponent
+} from '../../components/status-icons/status-icons.template';
 import { FastActionButtonComponent } from '../../components/fast-action-button/fast-action-button.component';
 import { ReportsSidebarFilterComponent as ReportsSidebarFilterComponent_1 } from './reports-sidebar-filter.component';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -44,7 +47,25 @@ const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
 @Component({
   templateUrl: './reports.component.html',
   standalone: true,
-  imports: [ToolBarComponent, NgIf, SearchBarComponent, MultiselectBarComponent, ReportsMoreMenuComponent, NgClass, NgFor, RouterLink, ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent, FastActionButtonComponent, RouterOutlet, ReportsSidebarFilterComponent_1, TranslatePipe, LineagePipe, ResourceIconPipe, RelativeDatePipe]
+  imports: [
+    ToolBarComponent,
+    NgIf,
+    SearchBarComponent,
+    MultiselectBarComponent,
+    ReportsMoreMenuComponent,
+    NgClass,
+    NgFor,
+    RouterLink,
+    ReportVerifyValidIconComponent,
+    ReportVerifyInvalidIconComponent,
+    FastActionButtonComponent,
+    RouterOutlet,
+    ReportsSidebarFilterComponent_1,
+    TranslatePipe,
+    LineagePipe,
+    ResourceIconPipe,
+    RelativeDatePipe
+  ]
 })
 export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(ReportsSidebarFilterComponent) reportsSidebarFilter?: ReportsSidebarFilterComponent;
