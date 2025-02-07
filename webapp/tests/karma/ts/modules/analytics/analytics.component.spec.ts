@@ -53,25 +53,25 @@ describe('AnalyticsComponent', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule,
-        MatIconModule,
-        AnalyticsComponent,
-        AnalyticsFilterComponent,
-        NavigationComponent,
-        ToolBarComponent,
-    ],
-    providers: [
-        provideMockStore({ selectors: mockSelectors }),
-        { provide: NavigationService, useValue: {} },
-        { provide: AuthService, useValue: authService },
-        { provide: SessionService, useValue: sessionService },
-        { provide: TelemetryService, useValue: telemetryService },
-        { provide: TargetAggregatesService, useValue: targetAggregatesService },
-        { provide: UserSettingsService, useValue: userSettingsService }
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule,
+          MatIconModule,
+          AnalyticsComponent,
+          AnalyticsFilterComponent,
+          NavigationComponent,
+          ToolBarComponent,
+        ],
+        providers: [
+          provideMockStore({ selectors: mockSelectors }),
+          { provide: NavigationService, useValue: {} },
+          { provide: AuthService, useValue: authService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: TelemetryService, useValue: telemetryService },
+          { provide: TargetAggregatesService, useValue: targetAggregatesService },
+          { provide: UserSettingsService, useValue: userSettingsService }
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(AnalyticsComponent);

@@ -23,10 +23,10 @@ import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'mm-analytics-filters',
-    templateUrl: './analytics-filter.component.html',
-    standalone: true,
-    imports: [NgIf, NgFor, RouterLink, MatIcon, TranslatePipe]
+  selector: 'mm-analytics-filters',
+  templateUrl: './analytics-filter.component.html',
+  standalone: true,
+  imports: [NgIf, NgFor, RouterLink, MatIcon, TranslatePipe]
 })
 export class AnalyticsFilterComponent implements AfterContentInit, AfterContentChecked, OnInit, OnDestroy {
   @Input() analyticsModules: any[] = [];

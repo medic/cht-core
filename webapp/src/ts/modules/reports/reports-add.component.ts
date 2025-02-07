@@ -22,13 +22,13 @@ import { EnketoComponent } from '../../components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    templateUrl: './reports-add.component.html',
-    standalone: true,
-    imports: [
-        NgIf,
-        EnketoComponent,
-        TranslatePipe,
-    ],
+  templateUrl: './reports-add.component.html',
+  standalone: true,
+  imports: [
+    NgIf,
+    EnketoComponent,
+    TranslatePipe,
+  ],
 })
 export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   subscription: Subscription = new Subscription();

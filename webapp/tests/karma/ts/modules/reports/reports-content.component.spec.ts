@@ -82,39 +82,39 @@ describe('Reports Content Component', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule,
-        CommonModule,
-        ReportsContentComponent,
-        EditMessageGroupComponent,
-        FormIconPipe,
-        TitlePipe,
-        RelativeDatePipe,
-        FastActionButtonComponent,
-        SenderComponent,
-        ReportVerifyInvalidIconComponent
-    ],
-    providers: [
-        provideMockStore({ selectors: mockedSelectors }),
-        { provide: ChangesService, useValue: changesService },
-        { provide: SearchFiltersService, useValue: searchFiltersService },
-        { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
-        { provide: ActivatedRoute, useValue: activatedRoute },
-        { provide: Router, useValue: router },
-        { provide: MessageStateService, useValue: messageStateService },
-        { provide: ResponsiveService, useValue: responsiveService },
-        { provide: ModalService, useValue: modalService },
-        { provide: ResourceIconPipe, useValue: { transform: sinon.stub() } },
-        { provide: FastActionButtonService, useValue: fastActionButtonService },
-        { provide: DbService, useValue: dbService },
-        { provide: AuthService, useValue: authService },
-        { provide: SessionService, useValue: sessionService },
-        { provide: SearchTelemetryService, useValue: searchTelemetryService },
-        { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
-        { provide: MatDialog, useValue: { open: sinon.stub() } },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule,
+          CommonModule,
+          ReportsContentComponent,
+          EditMessageGroupComponent,
+          FormIconPipe,
+          TitlePipe,
+          RelativeDatePipe,
+          FastActionButtonComponent,
+          SenderComponent,
+          ReportVerifyInvalidIconComponent
+        ],
+        providers: [
+          provideMockStore({ selectors: mockedSelectors }),
+          { provide: ChangesService, useValue: changesService },
+          { provide: SearchFiltersService, useValue: searchFiltersService },
+          { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
+          { provide: ActivatedRoute, useValue: activatedRoute },
+          { provide: Router, useValue: router },
+          { provide: MessageStateService, useValue: messageStateService },
+          { provide: ResponsiveService, useValue: responsiveService },
+          { provide: ModalService, useValue: modalService },
+          { provide: ResourceIconPipe, useValue: { transform: sinon.stub() } },
+          { provide: FastActionButtonService, useValue: fastActionButtonService },
+          { provide: DbService, useValue: dbService },
+          { provide: AuthService, useValue: authService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: SearchTelemetryService, useValue: searchTelemetryService },
+          { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
+          { provide: MatDialog, useValue: { open: sinon.stub() } },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(ReportsContentComponent);

@@ -9,10 +9,10 @@ import { Filter } from '@mm-components/filters/filter';
 import { NgFor } from '@angular/common';
 
 @Component({
-    selector: 'mm-form-type-filter',
-    templateUrl: './form-type-filter.component.html',
-    standalone: true,
-    imports: [NgFor]
+  selector: 'mm-form-type-filter',
+  templateUrl: './form-type-filter.component.html',
+  standalone: true,
+  imports: [NgFor]
 })
 export class FormTypeFilterComponent implements OnDestroy, OnInit {
   private globalActions: GlobalActions;

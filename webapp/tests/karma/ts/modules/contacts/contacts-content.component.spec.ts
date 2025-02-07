@@ -115,38 +115,38 @@ describe('Contacts content component', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        MatIconModule,
-        ContactsContentComponent,
-        ResourceIconPipe,
-        FastActionButtonComponent,
-    ],
-    providers: [
-        provideMockStore({ selectors: mockedSelectors }),
-        { provide: ActivatedRoute, useValue: activatedRoute },
-        { provide: Router, useValue: router },
-        { provide: ResourceIconPipe, useValue: { transform: sinon.stub() } },
-        { provide: ResourceIconsService, useValue: { getImg: sinon.stub() } },
-        { provide: ContactChangeFilterService, useValue: contactChangeFilterService },
-        { provide: ChangesService, useValue: changesService },
-        { provide: ChangesService, useValue: changesService },
-        { provide: SettingsService, useValue: settingsService },
-        { provide: UserSettingsService, useValue: userSettingsService },
-        { provide: SessionService, useValue: sessionService },
-        { provide: ContactTypesService, useValue: contactTypesService },
-        { provide: XmlFormsService, useValue: xmlFormsService },
-        { provide: ModalService, useValue: modalService },
-        { provide: ResponsiveService, useValue: responsiveService },
-        { provide: ContactMutedService, useValue: contactMutedService },
-        { provide: MutingTransition, useValue: mutingTransition },
-        { provide: FastActionButtonService, useValue: fastActionButtonService },
-        { provide: SearchTelemetryService, useValue: searchTelemetryService },
-        { provide: AuthService, useValue: { has: sinon.stub() } },
-        { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
-        { provide: MatDialog, useValue: { open: sinon.stub() } },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          MatIconModule,
+          ContactsContentComponent,
+          ResourceIconPipe,
+          FastActionButtonComponent,
+        ],
+        providers: [
+          provideMockStore({ selectors: mockedSelectors }),
+          { provide: ActivatedRoute, useValue: activatedRoute },
+          { provide: Router, useValue: router },
+          { provide: ResourceIconPipe, useValue: { transform: sinon.stub() } },
+          { provide: ResourceIconsService, useValue: { getImg: sinon.stub() } },
+          { provide: ContactChangeFilterService, useValue: contactChangeFilterService },
+          { provide: ChangesService, useValue: changesService },
+          { provide: ChangesService, useValue: changesService },
+          { provide: SettingsService, useValue: settingsService },
+          { provide: UserSettingsService, useValue: userSettingsService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: ContactTypesService, useValue: contactTypesService },
+          { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: ModalService, useValue: modalService },
+          { provide: ResponsiveService, useValue: responsiveService },
+          { provide: ContactMutedService, useValue: contactMutedService },
+          { provide: MutingTransition, useValue: mutingTransition },
+          { provide: FastActionButtonService, useValue: fastActionButtonService },
+          { provide: SearchTelemetryService, useValue: searchTelemetryService },
+          { provide: AuthService, useValue: { has: sinon.stub() } },
+          { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
+          { provide: MatDialog, useValue: { open: sinon.stub() } },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(ContactsContentComponent);

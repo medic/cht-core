@@ -24,20 +24,20 @@ import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
 
 @Component({
-    templateUrl: './tasks.component.html',
-    standalone: true,
-    imports: [
-        ToolBarComponent,
-        NgIf,
-        NgFor,
-        RouterLink,
-        ErrorLogComponent,
-        RouterOutlet,
-        TranslatePipe,
-        LineagePipe,
-        ResourceIconPipe,
-        TaskDueDatePipe,
-    ],
+  templateUrl: './tasks.component.html',
+  standalone: true,
+  imports: [
+    ToolBarComponent,
+    NgIf,
+    NgFor,
+    RouterLink,
+    ErrorLogComponent,
+    RouterOutlet,
+    TranslatePipe,
+    LineagePipe,
+    ResourceIconPipe,
+    TaskDueDatePipe,
+  ],
 })
 export class TasksComponent implements OnInit, OnDestroy {
   constructor(

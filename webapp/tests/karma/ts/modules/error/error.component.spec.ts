@@ -34,19 +34,19 @@ describe('ErrorComponent', () => {
 
     await TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ErrorComponent,
-        ToolBarComponent,
-    ],
-    providers: [
-        provideMockStore({ selectors: [] }),
-        { provide: NavigationService, useValue: navigationService },
-        { provide: Router, useValue: routerMock },
-        { provide: ActivatedRoute, useValue: {} },
-        { provide: DOCUMENT, useValue: documentMock },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          ErrorComponent,
+          ToolBarComponent,
+        ],
+        providers: [
+          provideMockStore({ selectors: [] }),
+          { provide: NavigationService, useValue: navigationService },
+          { provide: Router, useValue: routerMock },
+          { provide: ActivatedRoute, useValue: {} },
+          { provide: DOCUMENT, useValue: documentMock },
+        ]
+      })
       .overrideComponent(ErrorComponent, {
         set: {
           template: '<div></div>'

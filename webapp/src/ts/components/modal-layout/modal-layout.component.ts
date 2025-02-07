@@ -5,10 +5,10 @@ import { MatButton } from '@angular/material/button';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'mm-modal-layout',
-    templateUrl: './modal-layout.component.html',
-    standalone: true,
-    imports: [NgIf, PanelHeaderComponent, MatButton, TranslatePipe]
+  selector: 'mm-modal-layout',
+  templateUrl: './modal-layout.component.html',
+  standalone: true,
+  imports: [NgIf, PanelHeaderComponent, MatButton, TranslatePipe]
 })
 export class ModalLayoutComponent {
   @Attribute('id') id;

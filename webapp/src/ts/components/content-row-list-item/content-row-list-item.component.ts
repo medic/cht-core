@@ -9,11 +9,11 @@ import { AgePipe, DateOfDeathPipe, RelativeDatePipe, TaskDueDatePipe } from '@mm
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 
 @Component({
-    selector: '<mm-content-row>',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './content-row-list-item.component.html',
-    standalone: true,
-    imports: [RouterLink, NgIf, ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent, TranslatePipe, LineagePipe, ResourceIconPipe, AgePipe, DateOfDeathPipe, RelativeDatePipe, TaskDueDatePipe, LocalizeNumberPipe]
+  selector: '<mm-content-row>',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './content-row-list-item.component.html',
+  standalone: true,
+  imports: [RouterLink, NgIf, ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent, TranslatePipe, LineagePipe, ResourceIconPipe, AgePipe, DateOfDeathPipe, RelativeDatePipe, TaskDueDatePipe, LocalizeNumberPipe]
 })
 export class ContentRowListItemComponent {
   // string: (required) the _id of the doc

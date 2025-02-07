@@ -80,17 +80,17 @@ const SYNC_STATUS = {
 
 
 @Component({
-    selector: 'app-root',
-    templateUrl: './app.component.html',
-    standalone: true,
-    imports: [
-        NgIf,
-        PrivacyPolicyComponent,
-        SidebarMenuComponent,
-        HeaderComponent,
-        RouterOutlet,
-        SnackbarComponent,
-    ],
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  standalone: true,
+  imports: [
+    NgIf,
+    PrivacyPolicyComponent,
+    SidebarMenuComponent,
+    HeaderComponent,
+    RouterOutlet,
+    SnackbarComponent,
+  ],
 })
 export class AppComponent implements OnInit, AfterViewInit {
   private globalActions: GlobalActions;

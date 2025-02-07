@@ -8,10 +8,10 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';
 
 @Component({
-    selector: 'error-log',
-    templateUrl: './error-log.component.html',
-    standalone: true,
-    imports: [NgIf, TranslatePipe, SimpleDateTimePipe]
+  selector: 'error-log',
+  templateUrl: './error-log.component.html',
+  standalone: true,
+  imports: [NgIf, TranslatePipe, SimpleDateTimePipe]
 })
 export class ErrorLogComponent implements AfterViewInit, OnDestroy {
   @Input() errorStack;

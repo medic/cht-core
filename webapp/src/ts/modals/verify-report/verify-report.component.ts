@@ -4,10 +4,10 @@ import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout
 import { TranslateDirective } from '@ngx-translate/core';
 
 @Component({
-    selector: 'verify-report',
-    templateUrl: './verify-report.component.html',
-    standalone: true,
-    imports: [ModalLayoutComponent, TranslateDirective]
+  selector: 'verify-report',
+  templateUrl: './verify-report.component.html',
+  standalone: true,
+  imports: [ModalLayoutComponent, TranslateDirective]
 })
 export class VerifyReportComponent {
   static id = 'verify-report-modal';

@@ -57,13 +57,13 @@ describe('TasksContentComponent', () => {
     ];
 
     TestBed.configureTestingModule({
-    imports: [
+      imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterTestingModule,
         TasksContentComponent,
         EnketoComponent,
-    ],
-    providers: [
+      ],
+      providers: [
         provideMockStore({ selectors: mockedSelectors }),
         { provide: ActivatedRoute, useValue: route },
         { provide: FormService, useValue: formService },
@@ -73,8 +73,8 @@ describe('TasksContentComponent', () => {
         { provide: GeolocationService, useValue: geolocationService },
         { provide: Router, useValue: router },
         { provide: TasksForContactService, useValue: tasksForContactService },
-    ],
-});
+      ],
+    });
 
     store = TestBed.inject(MockStore);
 

@@ -3,8 +3,8 @@ import { Directive, Input, HostBinding, OnChanges } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 
 @Directive({
-    selector: '[mmAuth]',
-    standalone: true
+  selector: '[mmAuth]',
+  standalone: true
 })
 export class AuthDirective implements OnChanges {
   @Input() mmAuth?: string;

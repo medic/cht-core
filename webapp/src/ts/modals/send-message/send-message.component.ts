@@ -15,16 +15,16 @@ import { NgClass, NgIf } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'send-message',
-    templateUrl: './send-message.component.html',
-    standalone: true,
-    imports: [
-        ModalLayoutComponent,
-        FormsModule,
-        NgClass,
-        NgIf,
-        TranslatePipe,
-    ],
+  selector: 'send-message',
+  templateUrl: './send-message.component.html',
+  standalone: true,
+  imports: [
+    ModalLayoutComponent,
+    FormsModule,
+    NgClass,
+    NgIf,
+    TranslatePipe,
+  ],
 })
 export class SendMessageComponent implements AfterViewInit {
   static id = 'send-message-modal';

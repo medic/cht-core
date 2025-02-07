@@ -10,9 +10,9 @@ import { NgIf } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    templateUrl: './configuration-user.component.html',
-    standalone: true,
-    imports: [ToolBarComponent, NgIf, TranslatePipe]
+  templateUrl: './configuration-user.component.html',
+  standalone: true,
+  imports: [ToolBarComponent, NgIf, TranslatePipe]
 })
 export class ConfigurationUserComponent implements OnInit {
 

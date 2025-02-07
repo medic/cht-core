@@ -13,10 +13,10 @@ import { TrainingCardsConfirmComponent } from '../training-cards-confirm/trainin
 import { TrainingCardsFormComponent } from '../../components/training-cards-form/training-cards-form.component';
 
 @Component({
-    selector: 'training-cards-modal',
-    templateUrl: './training-cards.component.html',
-    standalone: true,
-    imports: [ModalLayoutComponent, NgIf, TrainingCardsConfirmComponent, TrainingCardsFormComponent]
+  selector: 'training-cards-modal',
+  templateUrl: './training-cards.component.html',
+  standalone: true,
+  imports: [ModalLayoutComponent, NgIf, TrainingCardsConfirmComponent, TrainingCardsFormComponent]
 })
 export class TrainingCardsComponent implements OnInit, OnDestroy {
   readonly MODAL_ID = 'training-cards-modal';

@@ -39,20 +39,20 @@ describe('FastActionButtonComponent', () => {
 
     await TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        FastActionButtonComponent,
-    ],
-    providers: [
-        provideMockStore(),
-        { provide: Router, useValue: router },
-        { provide: AuthService, useValue: authService },
-        { provide: SessionService, useValue: sessionService },
-        { provide: ResponsiveService, useValue: responsiveService },
-        { provide: MatBottomSheet, useValue: matBottomSheet },
-        { provide: MatDialog, useValue: matDialog },
-    ],
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          FastActionButtonComponent,
+        ],
+        providers: [
+          provideMockStore(),
+          { provide: Router, useValue: router },
+          { provide: AuthService, useValue: authService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: ResponsiveService, useValue: responsiveService },
+          { provide: MatBottomSheet, useValue: matBottomSheet },
+          { provide: MatDialog, useValue: matDialog },
+        ],
+      })
       .compileComponents();
 
     fixture = TestBed.createComponent(FastActionButtonComponent);

@@ -31,20 +31,20 @@ describe('EditReportComponent', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        EditReportComponent,
-        ModalLayoutComponent,
-        PanelHeaderComponent,
-    ],
-    providers: [
-        { provide: ContactTypesService, useValue: contactTypesService },
-        { provide: Select2SearchService, useValue: select2SearchService },
-        { provide: UpdateFacilityService, useValue: updateFacilityService },
-        { provide: MatDialogRef, useValue: matDialogRef },
-        { provide: MAT_DIALOG_DATA, useValue: {} },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          EditReportComponent,
+          ModalLayoutComponent,
+          PanelHeaderComponent,
+        ],
+        providers: [
+          { provide: ContactTypesService, useValue: contactTypesService },
+          { provide: Select2SearchService, useValue: select2SearchService },
+          { provide: UpdateFacilityService, useValue: updateFacilityService },
+          { provide: MatDialogRef, useValue: matDialogRef },
+          { provide: MAT_DIALOG_DATA, useValue: {} },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(EditReportComponent);

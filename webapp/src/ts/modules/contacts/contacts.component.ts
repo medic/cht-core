@@ -35,9 +35,9 @@ import { DateOfDeathPipe } from '@mm-pipes/date.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 
 @Component({
-    templateUrl: './contacts.component.html',
-    standalone: true,
-    imports: [ToolBarComponent, SearchBarComponent, ContactsMoreMenuComponent, NgFor, RouterLink, NgIf, FastActionButtonComponent, RouterOutlet, TranslatePipe, ResourceIconPipe, DateOfDeathPipe, LocalizeNumberPipe]
+  templateUrl: './contacts.component.html',
+  standalone: true,
+  imports: [ToolBarComponent, SearchBarComponent, ContactsMoreMenuComponent, NgFor, RouterLink, NgIf, FastActionButtonComponent, RouterOutlet, TranslatePipe, ResourceIconPipe, DateOfDeathPipe, LocalizeNumberPipe]
 })
 export class ContactsComponent implements OnInit, OnDestroy {
   private readonly PAGE_SIZE = 25;

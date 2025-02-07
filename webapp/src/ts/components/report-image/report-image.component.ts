@@ -6,10 +6,10 @@ import { NgIf } from '@angular/common';
 
 
 @Component({
-    selector: 'report-image',
-    templateUrl: './report-image.component.html',
-    standalone: true,
-    imports: [NgIf]
+  selector: 'report-image',
+  templateUrl: './report-image.component.html',
+  standalone: true,
+  imports: [NgIf]
 })
 export class ReportImageComponent implements OnInit, OnDestroy {
   @Input() report;

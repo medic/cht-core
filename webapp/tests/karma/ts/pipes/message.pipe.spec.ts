@@ -12,7 +12,7 @@ describe('messages pipe', () => {
     template: ``,
     standalone: true,
     imports: [SummaryPipe, TitlePipe]
-})
+  })
   class TestComponent {
     @Input() forms;
     @Input() message;
@@ -32,13 +32,13 @@ describe('messages pipe', () => {
   beforeEach(() => {
     TestBed
       .configureTestingModule({
-    imports: [SummaryPipe,
-        TestComponent,
-        TitlePipe,],
-    providers: [
-        { provide: TranslateService, useValue: { instant: sinon.stub().returnsArg(0) } },
-    ]
-})
+        imports: [SummaryPipe,
+          TestComponent,
+          TitlePipe,],
+        providers: [
+          { provide: TranslateService, useValue: { instant: sinon.stub().returnsArg(0) } },
+        ]
+      })
       .compileComponents();
   });
 

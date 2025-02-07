@@ -18,21 +18,21 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 
 @Component({
-    selector: 'mm-fast-action-button',
-    templateUrl: './fast-action-button.component.html',
-    standalone: true,
-    imports: [
-        NgIf,
-        MatFabButton,
-        MatIcon,
-        MatButton,
-        PanelHeaderComponent,
-        MatList,
-        NgFor,
-        MatListItem,
-        TranslatePipe,
-        ResourceIconPipe,
-    ],
+  selector: 'mm-fast-action-button',
+  templateUrl: './fast-action-button.component.html',
+  standalone: true,
+  imports: [
+    NgIf,
+    MatFabButton,
+    MatIcon,
+    MatButton,
+    PanelHeaderComponent,
+    MatList,
+    NgFor,
+    MatListItem,
+    TranslatePipe,
+    ResourceIconPipe,
+  ],
 })
 export class FastActionButtonComponent implements OnInit, OnDestroy {
 

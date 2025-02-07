@@ -27,17 +27,17 @@ describe('HomeComponent', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule,
-        FormsModule,
-        HomeComponent,
-    ],
-    providers: [
-        { provide: AuthService, useValue: authServiceMock },
-        { provide: Router, useValue: routerMock },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule,
+          FormsModule,
+          HomeComponent,
+        ],
+        providers: [
+          { provide: AuthService, useValue: authServiceMock },
+          { provide: Router, useValue: routerMock },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(HomeComponent);

@@ -11,9 +11,9 @@ import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    templateUrl: './error.component.html',
-    standalone: true,
-    imports: [ToolBarComponent, NgIf, TranslatePipe]
+  templateUrl: './error.component.html',
+  standalone: true,
+  imports: [ToolBarComponent, NgIf, TranslatePipe]
 })
 export class ErrorComponent implements OnInit, OnDestroy {
   private windowRef;

@@ -18,10 +18,10 @@ import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 
 @Component({
-    selector: 'analytics-target-aggregates-detail',
-    templateUrl: './analytics-target-aggregates-detail.component.html',
-    standalone: true,
-    imports: [NgIf, NgClass, NgFor, RouterLink, AnalyticsTargetsDetailsComponent, AnalyticsTargetsProgressComponent, TranslatePipe, ResourceIconPipe, TranslateFromPipe]
+  selector: 'analytics-target-aggregates-detail',
+  templateUrl: './analytics-target-aggregates-detail.component.html',
+  standalone: true,
+  imports: [NgIf, NgClass, NgFor, RouterLink, AnalyticsTargetsDetailsComponent, AnalyticsTargetsProgressComponent, TranslatePipe, ResourceIconPipe, TranslateFromPipe]
 })
 export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestroy, AfterViewInit {
   private targetAggregatesActions: TargetAggregatesActions;

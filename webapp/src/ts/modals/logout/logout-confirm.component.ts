@@ -6,10 +6,10 @@ import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'logout-confirm-modal',
-    templateUrl: './logout-confirm.component.html',
-    standalone: true,
-    imports: [ModalLayoutComponent, TranslatePipe]
+  selector: 'logout-confirm-modal',
+  templateUrl: './logout-confirm.component.html',
+  standalone: true,
+  imports: [ModalLayoutComponent, TranslatePipe]
 })
 export class LogoutConfirmComponent {
   static id = 'logout-confirm-modal';

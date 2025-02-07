@@ -3,10 +3,10 @@ import { NgIf } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'mm-enketo',
-    templateUrl: './enketo.component.html',
-    standalone: true,
-    imports: [NgIf, TranslatePipe],
+  selector: 'mm-enketo',
+  templateUrl: './enketo.component.html',
+  standalone: true,
+  imports: [NgIf, TranslatePipe],
 })
 export class EnketoComponent {
   // string: (optional) modal element id

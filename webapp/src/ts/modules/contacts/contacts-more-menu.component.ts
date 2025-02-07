@@ -16,10 +16,10 @@ import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'mm-contacts-more-menu',
-    templateUrl: './contacts-more-menu.component.html',
-    standalone: true,
-    imports: [NgIf, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, RouterLink, TranslatePipe]
+  selector: 'mm-contacts-more-menu',
+  templateUrl: './contacts-more-menu.component.html',
+  standalone: true,
+  imports: [NgIf, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, RouterLink, TranslatePipe]
 })
 export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
   @Output() exportContacts: EventEmitter<any> = new EventEmitter();

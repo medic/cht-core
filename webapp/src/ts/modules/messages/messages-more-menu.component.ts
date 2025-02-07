@@ -9,10 +9,10 @@ import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'mm-messages-more-menu',
-    templateUrl: './messages-more-menu.component.html',
-    standalone: true,
-    imports: [NgIf, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, TranslatePipe]
+  selector: 'mm-messages-more-menu',
+  templateUrl: './messages-more-menu.component.html',
+  standalone: true,
+  imports: [NgIf, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, TranslatePipe]
 })
 export class MessagesMoreMenuComponent implements OnInit {
   @Input() conversations;

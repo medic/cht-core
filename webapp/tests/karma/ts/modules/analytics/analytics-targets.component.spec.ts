@@ -32,17 +32,17 @@ describe('AnalyticsTargetsComponent', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        AnalyticsTargetsComponent,
-    ],
-    providers: [
-        provideMockStore(),
-        { provide: RulesEngineService, useValue: rulesEngineService },
-        { provide: PerformanceService, useValue: performanceService },
-        { provide: SessionService, useValue: sessionService },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          AnalyticsTargetsComponent,
+        ],
+        providers: [
+          provideMockStore(),
+          { provide: RulesEngineService, useValue: rulesEngineService },
+          { provide: PerformanceService, useValue: performanceService },
+          { provide: SessionService, useValue: sessionService },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(AnalyticsTargetsComponent);

@@ -27,20 +27,20 @@ describe('BulkDeleteConfirmComponent', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        FormsModule,
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        BulkDeleteConfirmComponent,
-        ModalLayoutComponent,
-        PanelHeaderComponent,
-    ],
-    providers: [
-        { provide: DeleteDocsService, useValue: deleteDocsService },
-        { provide: TelemetryService, useValue: telemetryService },
-        { provide: MatDialogRef, useValue: matDialogRef },
-        { provide: MAT_DIALOG_DATA, useValue: {} },
-    ]
-})
+        imports: [
+          FormsModule,
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          BulkDeleteConfirmComponent,
+          ModalLayoutComponent,
+          PanelHeaderComponent,
+        ],
+        providers: [
+          { provide: DeleteDocsService, useValue: deleteDocsService },
+          { provide: TelemetryService, useValue: telemetryService },
+          { provide: MatDialogRef, useValue: matDialogRef },
+          { provide: MAT_DIALOG_DATA, useValue: {} },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(BulkDeleteConfirmComponent);

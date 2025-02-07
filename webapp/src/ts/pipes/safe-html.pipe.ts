@@ -2,8 +2,8 @@ import { Injectable, Pipe, PipeTransform } from '@angular/core';
 import { DomSanitizer, SafeHtml, SafeStyle, SafeScript, SafeUrl, SafeResourceUrl } from '@angular/platform-browser';
 
 @Pipe({
-    name: 'safeHtml',
-    standalone: true
+  name: 'safeHtml',
+  standalone: true
 })
 @Injectable({
   providedIn: 'root'

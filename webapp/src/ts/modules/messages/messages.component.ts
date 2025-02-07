@@ -27,9 +27,9 @@ import { LineagePipe } from '@mm-pipes/message.pipe';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 
 @Component({
-    templateUrl: './messages.component.html',
-    standalone: true,
-    imports: [ToolBarComponent, MessagesMoreMenuComponent, NgIf, NgFor, NgClass, RouterLink, FastActionButtonComponent, RouterOutlet, TranslatePipe, LineagePipe, RelativeDatePipe]
+  templateUrl: './messages.component.html',
+  standalone: true,
+  imports: [ToolBarComponent, MessagesMoreMenuComponent, NgIf, NgFor, NgClass, RouterLink, FastActionButtonComponent, RouterOutlet, TranslatePipe, LineagePipe, RelativeDatePipe]
 })
 export class MessagesComponent implements OnInit, OnDestroy {
   private globalActions: GlobalActions;

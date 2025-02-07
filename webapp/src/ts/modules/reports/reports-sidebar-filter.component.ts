@@ -19,10 +19,10 @@ import { TranslatePipe } from '@ngx-translate/core';
 type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateFilterComponent | StatusFilterComponent;
 
 @Component({
-    selector: 'mm-reports-sidebar-filter',
-    templateUrl: './reports-sidebar-filter.component.html',
-    standalone: true,
-    imports: [NgClass, MatIcon, MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, NgTemplateOutlet, MatExpansionPanelDescription, FormTypeFilterComponent_1, FacilityFilterComponent_1, DateFilterComponent_1, NgIf, StatusFilterComponent_1, TranslatePipe]
+  selector: 'mm-reports-sidebar-filter',
+  templateUrl: './reports-sidebar-filter.component.html',
+  standalone: true,
+  imports: [NgClass, MatIcon, MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, NgTemplateOutlet, MatExpansionPanelDescription, FormTypeFilterComponent_1, FacilityFilterComponent_1, DateFilterComponent_1, NgIf, StatusFilterComponent_1, TranslatePipe]
 })
 export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   @Output() search: EventEmitter<any> = new EventEmitter();

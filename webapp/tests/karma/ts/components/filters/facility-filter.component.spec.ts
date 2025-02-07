@@ -35,18 +35,18 @@ describe('Facility Filter Component', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        BrowserAnimationsModule,
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule,
-        FacilityFilterComponent,
-    ],
-    providers: [
-        provideMockStore(),
-        { provide: SessionService, useValue: sessionService },
-        { provide: PlaceHierarchyService, useValue: placeHierarchyService },
-    ]
-})
+        imports: [
+          BrowserAnimationsModule,
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule,
+          FacilityFilterComponent,
+        ],
+        providers: [
+          provideMockStore(),
+          { provide: SessionService, useValue: sessionService },
+          { provide: PlaceHierarchyService, useValue: placeHierarchyService },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(FacilityFilterComponent);

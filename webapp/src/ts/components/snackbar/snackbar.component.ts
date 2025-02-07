@@ -9,11 +9,11 @@ import { GlobalActions } from '@mm-actions/global';
 import { NgIf } from '@angular/common';
 
 @Component({
-    selector: 'snackbar',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './snackbar.component.html',
-    standalone: true,
-    imports: [NgIf]
+  selector: 'snackbar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './snackbar.component.html',
+  standalone: true,
+  imports: [NgIf]
 })
 export class SnackbarComponent implements OnInit, OnDestroy {
   private subscription: Subscription = new Subscription();

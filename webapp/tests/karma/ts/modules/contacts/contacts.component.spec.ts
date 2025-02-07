@@ -120,40 +120,40 @@ describe('Contacts component', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule,
-        FormsModule,
-        MatIconModule,
-        ContactsComponent,
-        ContactsMoreMenuComponent,
-        FreetextFilterComponent,
-        NavigationComponent,
-        SortFilterComponent,
-        FastActionButtonComponent,
-        SearchBarComponent,
-        ToolBarComponent,
-    ],
-    providers: [
-        provideMockStore({ selectors: mockedSelectors }),
-        { provide: ChangesService, useValue: changesService },
-        { provide: SearchService, useValue: searchService },
-        { provide: SettingsService, useValue: settingsService },
-        { provide: UserSettingsService, useValue: userSettingsService },
-        { provide: GetDataRecordsService, useValue: getDataRecordsService },
-        { provide: SessionService, useValue: sessionService },
-        { provide: AuthService, useValue: authService },
-        { provide: ContactTypesService, useValue: contactTypesService },
-        { provide: ScrollLoaderProvider, useValue: scrollLoaderProvider },
-        { provide: ExportService, useValue: exportService },
-        { provide: XmlFormsService, useValue: xmlFormsService },
-        { provide: FastActionButtonService, useValue: fastActionButtonService },
-        { provide: NavigationService, useValue: {} },
-        { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
-        { provide: PerformanceService, useValue: performanceService },
-        { provide: MatDialog, useValue: { open: sinon.stub() } },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule,
+          FormsModule,
+          MatIconModule,
+          ContactsComponent,
+          ContactsMoreMenuComponent,
+          FreetextFilterComponent,
+          NavigationComponent,
+          SortFilterComponent,
+          FastActionButtonComponent,
+          SearchBarComponent,
+          ToolBarComponent,
+        ],
+        providers: [
+          provideMockStore({ selectors: mockedSelectors }),
+          { provide: ChangesService, useValue: changesService },
+          { provide: SearchService, useValue: searchService },
+          { provide: SettingsService, useValue: settingsService },
+          { provide: UserSettingsService, useValue: userSettingsService },
+          { provide: GetDataRecordsService, useValue: getDataRecordsService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: AuthService, useValue: authService },
+          { provide: ContactTypesService, useValue: contactTypesService },
+          { provide: ScrollLoaderProvider, useValue: scrollLoaderProvider },
+          { provide: ExportService, useValue: exportService },
+          { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: FastActionButtonService, useValue: fastActionButtonService },
+          { provide: NavigationService, useValue: {} },
+          { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
+          { provide: PerformanceService, useValue: performanceService },
+          { provide: MatDialog, useValue: { open: sinon.stub() } },
+        ]
+      })
       .compileComponents().then(() => {
         fixture = TestBed.createComponent(ContactsComponent);
         component = fixture.componentInstance;

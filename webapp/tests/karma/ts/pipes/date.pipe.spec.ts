@@ -58,23 +58,23 @@ describe('date pipes', () => {
 
     TestBed
       .configureTestingModule({
-    imports: [AgePipe,
-        AutoreplyPipe,
-        DayMonthPipe,
-        FullDatePipe,
-        RelativeDayPipe,
-        RelativeDatePipe,
-        SimpleDateTimePipe,
-        SimpleDatePipe,
-        StatePipe,
-        WeeksPregnantPipe,],
-    providers: [
-        { provide: RelativeDateService, useValue: relativeDateService },
-        { provide: FormatDateService, useValue: formatDateService },
-        { provide: TranslateService, useValue: translateService },
-        { provide: DomSanitizer, useValue: { bypassSecurityTrustHtml: sinon.stub().returnsArg(0) } },
-    ]
-});
+        imports: [AgePipe,
+          AutoreplyPipe,
+          DayMonthPipe,
+          FullDatePipe,
+          RelativeDayPipe,
+          RelativeDatePipe,
+          SimpleDateTimePipe,
+          SimpleDatePipe,
+          StatePipe,
+          WeeksPregnantPipe,],
+        providers: [
+          { provide: RelativeDateService, useValue: relativeDateService },
+          { provide: FormatDateService, useValue: formatDateService },
+          { provide: TranslateService, useValue: translateService },
+          { provide: DomSanitizer, useValue: { bypassSecurityTrustHtml: sinon.stub().returnsArg(0) } },
+        ]
+      });
 
     sanitizer = TestBed.inject(DomSanitizer);
   });
@@ -273,7 +273,7 @@ describe('date pipes rendering', () => {
       StatePipe,
       WeeksPregnantPipe,
     ]
-})
+  })
   class TestComponent {
     @Input() date;
     @Input() task;
@@ -315,26 +315,26 @@ describe('date pipes rendering', () => {
 
     TestBed
       .configureTestingModule({
-    imports: [
-        AsyncPipe,
-        AgePipe,
-        AutoreplyPipe,
-        DayMonthPipe,
-        FullDatePipe,
-        RelativeDayPipe,
-        RelativeDatePipe,
-        SimpleDateTimePipe,
-        SimpleDatePipe,
-        StatePipe,
-        WeeksPregnantPipe,
-        TestComponent,
-    ],
-    providers: [
-        { provide: RelativeDateService, useValue: relativeDate },
-        { provide: FormatDateService, useValue: formatDate },
-        { provide: TranslateService, useValue: translate },
-    ]
-})
+        imports: [
+          AsyncPipe,
+          AgePipe,
+          AutoreplyPipe,
+          DayMonthPipe,
+          FullDatePipe,
+          RelativeDayPipe,
+          RelativeDatePipe,
+          SimpleDateTimePipe,
+          SimpleDatePipe,
+          StatePipe,
+          WeeksPregnantPipe,
+          TestComponent,
+        ],
+        providers: [
+          { provide: RelativeDateService, useValue: relativeDate },
+          { provide: FormatDateService, useValue: formatDate },
+          { provide: TranslateService, useValue: translate },
+        ]
+      })
       .compileComponents();
   });
 

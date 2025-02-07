@@ -16,9 +16,9 @@ import { ContentRowListItemComponent } from '../../components/content-row-list-i
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    templateUrl: './tasks-group.component.html',
-    standalone: true,
-    imports: [NgIf, NgFor, ContentRowListItemComponent, TranslatePipe]
+  templateUrl: './tasks-group.component.html',
+  standalone: true,
+  imports: [NgIf, NgFor, ContentRowListItemComponent, TranslatePipe]
 })
 export class TasksGroupComponent implements OnInit, OnDestroy {
   private globalActions;

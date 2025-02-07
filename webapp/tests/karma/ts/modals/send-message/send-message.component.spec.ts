@@ -34,23 +34,23 @@ describe('SendMessageComponent', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        FormsModule,
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        SendMessageComponent,
-        ModalLayoutComponent,
-        PanelHeaderComponent,
-    ],
-    providers: [
-        { provide: SendMessageService, useValue: sendMessageService },
-        { provide: Select2SearchService, useValue: select2SearchService },
-        { provide: FormatProvider, useValue: formatProvider },
-        { provide: SettingsService, useValue: settingsService },
-        { provide: ContactTypesService, useValue: contactTypesService },
-        { provide: MatDialogRef, useValue: matDialogRef },
-        { provide: MAT_DIALOG_DATA, useValue: {} },
-    ]
-})
+        imports: [
+          FormsModule,
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          SendMessageComponent,
+          ModalLayoutComponent,
+          PanelHeaderComponent,
+        ],
+        providers: [
+          { provide: SendMessageService, useValue: sendMessageService },
+          { provide: Select2SearchService, useValue: select2SearchService },
+          { provide: FormatProvider, useValue: formatProvider },
+          { provide: SettingsService, useValue: settingsService },
+          { provide: ContactTypesService, useValue: contactTypesService },
+          { provide: MatDialogRef, useValue: matDialogRef },
+          { provide: MAT_DIALOG_DATA, useValue: {} },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(SendMessageComponent);

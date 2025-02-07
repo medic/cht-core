@@ -10,10 +10,10 @@ import { NgFor } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'update-password',
-    templateUrl: './edit-user-settings.component.html',
-    standalone: true,
-    imports: [ModalLayoutComponent, FormsModule, NgFor, TranslatePipe]
+  selector: 'update-password',
+  templateUrl: './edit-user-settings.component.html',
+  standalone: true,
+  imports: [ModalLayoutComponent, FormsModule, NgFor, TranslatePipe]
 })
 export class EditUserSettingsComponent implements OnInit {
 

@@ -30,20 +30,20 @@ describe('PrivacyPoliciesComponent', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule,
-        MatIcon,
-        PrivacyPolicyComponent,
-        ToolBarComponent,
-        NavigationComponent,
-    ],
-    providers: [
-        provideMockStore(),
-        { provide: PrivacyPoliciesService, useValue: privacyPoliciesService },
-        { provide: NavigationService, useValue: navigationService },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule,
+          MatIcon,
+          PrivacyPolicyComponent,
+          ToolBarComponent,
+          NavigationComponent,
+        ],
+        providers: [
+          provideMockStore(),
+          { provide: PrivacyPoliciesService, useValue: privacyPoliciesService },
+          { provide: NavigationService, useValue: navigationService },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(PrivacyPolicyComponent);

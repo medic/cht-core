@@ -53,22 +53,22 @@ describe('EditUserSettingsComponent', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule,
-        FormsModule,
-        EditUserSettingsComponent,
-        ModalLayoutComponent,
-        PanelHeaderComponent,
-    ],
-    providers: [
-        { provide: UserSettingsService, useValue: userSettingsService },
-        { provide: LanguageService, useValue: languageService },
-        { provide: LanguagesService, useValue: languagesService },
-        { provide: SetLanguageService, useValue: setLanguageService },
-        { provide: MatDialogRef, useValue: matDialogRef },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule,
+          FormsModule,
+          EditUserSettingsComponent,
+          ModalLayoutComponent,
+          PanelHeaderComponent,
+        ],
+        providers: [
+          { provide: UserSettingsService, useValue: userSettingsService },
+          { provide: LanguageService, useValue: languageService },
+          { provide: LanguagesService, useValue: languagesService },
+          { provide: SetLanguageService, useValue: setLanguageService },
+          { provide: MatDialogRef, useValue: matDialogRef },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(EditUserSettingsComponent);

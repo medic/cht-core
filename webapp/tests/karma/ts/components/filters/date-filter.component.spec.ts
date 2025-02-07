@@ -30,19 +30,19 @@ describe('Date Filter Component', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule,
-        BrowserAnimationsModule,
-        BsDropdownModule.forRoot(),
-        DateFilterComponent,
-    ],
-    providers: [
-        provideMockStore({ selectors: mockedSelectors }),
-        ResponsiveService,
-        { provide: DatePipe, useValue: datePipe },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule,
+          BrowserAnimationsModule,
+          BsDropdownModule.forRoot(),
+          DateFilterComponent,
+        ],
+        providers: [
+          provideMockStore({ selectors: mockedSelectors }),
+          ResponsiveService,
+          { provide: DatePipe, useValue: datePipe },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(DateFilterComponent);

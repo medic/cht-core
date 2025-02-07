@@ -13,10 +13,10 @@ import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'mm-analytics-target-aggregates-sidebar-filter',
-    templateUrl: './analytics-target-aggregates-sidebar-filter.component.html',
-    standalone: true,
-    imports: [NgClass, MatIcon, MatAccordion, NgIf, NgFor, FormsModule, TranslatePipe]
+  selector: 'mm-analytics-target-aggregates-sidebar-filter',
+  templateUrl: './analytics-target-aggregates-sidebar-filter.component.html',
+  standalone: true,
+  imports: [NgClass, MatIcon, MatAccordion, NgIf, NgFor, FormsModule, TranslatePipe]
 })
 export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, OnDestroy {
 

@@ -9,10 +9,10 @@ import { NgIf } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'cht-form',
-    templateUrl: './app.component.html',
-    standalone: true,
-    imports: [NgIf, TranslatePipe],
+  selector: 'cht-form',
+  templateUrl: './app.component.html',
+  standalone: true,
+  imports: [NgIf, TranslatePipe],
 })
 export class AppComponent {
   private readonly DEFAULT_FORM_ID = 'cht-form-id';

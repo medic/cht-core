@@ -46,26 +46,26 @@ describe('Reports Sidebar Filter Component', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        MatExpansionModule,
-        BrowserAnimationsModule,
-        BsDropdownModule,
-        MatIconModule,
-        ReportsSidebarFilterComponent,
-        DateFilterComponent,
-        FacilityFilterComponent,
-        FormTypeFilterComponent,
-        StatusFilterComponent,
-    ],
-    providers: [
-        provideMockStore({ selectors: mockedSelectors }),
-        { provide: TelemetryService, useValue: telemetryService },
-        { provide: PlaceHierarchyService, useValue: placeHierarchyService },
-        { provide: SessionService, useValue: sessionService },
-        { provide: DatePipe, useValue: datePipe },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          MatExpansionModule,
+          BrowserAnimationsModule,
+          BsDropdownModule,
+          MatIconModule,
+          ReportsSidebarFilterComponent,
+          DateFilterComponent,
+          FacilityFilterComponent,
+          FormTypeFilterComponent,
+          StatusFilterComponent,
+        ],
+        providers: [
+          provideMockStore({ selectors: mockedSelectors }),
+          { provide: TelemetryService, useValue: telemetryService },
+          { provide: PlaceHierarchyService, useValue: placeHierarchyService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: DatePipe, useValue: datePipe },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(ReportsSidebarFilterComponent);

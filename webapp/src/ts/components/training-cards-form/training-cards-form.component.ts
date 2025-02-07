@@ -16,14 +16,14 @@ import { EnketoComponent } from '../enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'training-cards-form',
-    templateUrl: './training-cards-form.component.html',
-    standalone: true,
-    imports: [
-        NgIf,
-        EnketoComponent,
-        TranslatePipe,
-    ],
+  selector: 'training-cards-form',
+  templateUrl: './training-cards-form.component.html',
+  standalone: true,
+  imports: [
+    NgIf,
+    EnketoComponent,
+    TranslatePipe,
+  ],
 })
 export class TrainingCardsFormComponent implements OnInit, OnDestroy {
   @Input() isEmbedded = true;

@@ -12,14 +12,14 @@ import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    templateUrl: './testing.component.html',
-    standalone: true,
-    imports: [
-        ToolBarComponent,
-        NgIf,
-        FormsModule,
-        TranslatePipe,
-    ],
+  templateUrl: './testing.component.html',
+  standalone: true,
+  imports: [
+    ToolBarComponent,
+    NgIf,
+    FormsModule,
+    TranslatePipe,
+  ],
 })
 export class TestingComponent implements OnInit {
   amountFeedbackDocs:any = 5000;

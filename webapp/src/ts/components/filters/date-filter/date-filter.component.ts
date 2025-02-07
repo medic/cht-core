@@ -15,10 +15,10 @@ import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'mm-date-filter',
-    templateUrl: './date-filter.component.html',
-    standalone: true,
-    imports: [BsDropdownModule, NgIf, TranslatePipe]
+  selector: 'mm-date-filter',
+  templateUrl: './date-filter.component.html',
+  standalone: true,
+  imports: [BsDropdownModule, NgIf, TranslatePipe]
 })
 export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   private globalActions: GlobalActions;

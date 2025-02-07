@@ -28,9 +28,9 @@ import { RelativeDatePipe, StatePipe } from '@mm-pipes/date.pipe';
 import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
 
 @Component({
-    templateUrl: './reports-content.component.html',
-    standalone: true,
-    imports: [NgIf, FastActionButtonComponent, NgFor, RouterLink, SenderComponent, ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent, ReportImageComponent, AsyncPipe, TranslatePipe, LineagePipe, RelativeDatePipe, StatePipe, TitlePipe, FormIconPipe]
+  templateUrl: './reports-content.component.html',
+  standalone: true,
+  imports: [NgIf, FastActionButtonComponent, NgFor, RouterLink, SenderComponent, ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent, ReportImageComponent, AsyncPipe, TranslatePipe, LineagePipe, RelativeDatePipe, StatePipe, TitlePipe, FormIconPipe]
 })
 export class ReportsContentComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();

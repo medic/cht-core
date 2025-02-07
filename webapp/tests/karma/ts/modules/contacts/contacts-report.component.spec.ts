@@ -71,24 +71,24 @@ describe('contacts report component', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule,
-        ContactsReportComponent,
-        EnketoComponent,
-    ],
-    providers: [
-        provideMockStore({ selectors: mockedSelectors }),
-        { provide: FormService, useValue: formService },
-        { provide: GeolocationService, useValue: geolocationService },
-        { provide: PerformanceService, useValue: performanceService },
-        { provide: XmlFormsService, useValue: xmlFormsService },
-        { provide: TranslateFromService, useValue: translateFromService },
-        { provide: ActivatedRoute, useValue: route },
-        { provide: Router, useValue: router },
-        { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule,
+          ContactsReportComponent,
+          EnketoComponent,
+        ],
+        providers: [
+          provideMockStore({ selectors: mockedSelectors }),
+          { provide: FormService, useValue: formService },
+          { provide: GeolocationService, useValue: geolocationService },
+          { provide: PerformanceService, useValue: performanceService },
+          { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: TranslateFromService, useValue: translateFromService },
+          { provide: ActivatedRoute, useValue: route },
+          { provide: Router, useValue: router },
+          { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(ContactsReportComponent);

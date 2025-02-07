@@ -8,10 +8,10 @@ import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'mm-freetext-filter',
-    templateUrl: './freetext-filter.component.html',
-    standalone: true,
-    imports: [FormsModule, TranslatePipe]
+  selector: 'mm-freetext-filter',
+  templateUrl: './freetext-filter.component.html',
+  standalone: true,
+  imports: [FormsModule, TranslatePipe]
 })
 export class FreetextFilterComponent implements OnDestroy, OnInit {
   private globalActions;

@@ -11,9 +11,9 @@ import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 
 @Component({
-    templateUrl: './analytics-targets.component.html',
-    standalone: true,
-    imports: [NgIf, ErrorLogComponent, NgFor, NgClass, AnalyticsTargetsProgressComponent, TranslatePipe, ResourceIconPipe, TranslateFromPipe, LocalizeNumberPipe]
+  templateUrl: './analytics-targets.component.html',
+  standalone: true,
+  imports: [NgIf, ErrorLogComponent, NgFor, NgClass, AnalyticsTargetsProgressComponent, TranslatePipe, ResourceIconPipe, TranslateFromPipe, LocalizeNumberPipe]
 })
 export class AnalyticsTargetsComponent implements OnInit {
   targets: any[] = [];

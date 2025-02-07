@@ -29,18 +29,18 @@ describe('Search Bar Component', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        FormsModule,
-        SearchBarComponent,
-        FreetextFilterComponent
-    ],
-    providers: [
-        provideMockStore({ selectors: mockedSelectors }),
-        { provide: ResponsiveService, useValue: responsiveService },
-        { provide: SearchFiltersService, useValue: searchFiltersService },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          FormsModule,
+          SearchBarComponent,
+          FreetextFilterComponent
+        ],
+        providers: [
+          provideMockStore({ selectors: mockedSelectors }),
+          { provide: ResponsiveService, useValue: responsiveService },
+          { provide: SearchFiltersService, useValue: searchFiltersService },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(SearchBarComponent);

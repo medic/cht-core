@@ -53,15 +53,15 @@ describe('TasksComponent', () => {
     };
 
     TestBed.configureTestingModule({
-    imports: [
+      imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterTestingModule,
         MatIconModule,
         TasksComponent,
         NavigationComponent,
         ToolBarComponent,
-    ],
-    providers: [
+      ],
+      providers: [
         provideMockStore(),
         { provide: ChangesService, useValue: changesService },
         { provide: RulesEngineService, useValue: rulesEngineService },
@@ -70,8 +70,8 @@ describe('TasksComponent', () => {
         { provide: NavigationService, useValue: {} },
         { provide: UserContactService, useValue: userContactService },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
-    ],
-});
+      ],
+    });
 
     getComponent = () => {
       return TestBed.compileComponents().then(() => {

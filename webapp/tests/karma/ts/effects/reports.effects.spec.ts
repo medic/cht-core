@@ -72,13 +72,13 @@ describe('Reports effects', () => {
     };
 
     TestBed.configureTestingModule({
-    imports: [
+      imports: [
         EffectsModule.forRoot([ReportsEffects]),
         SendMessageComponent,
         EditReportComponent,
         VerifyReportComponent,
-    ],
-    providers: [
+      ],
+      providers: [
         provideMockActions(() => actions$),
         provideMockStore({ selectors: mockedSelectors }),
         { provide: ReportViewModelGeneratorService, useValue: reportViewModelGeneratorService },
@@ -90,8 +90,8 @@ describe('Reports effects', () => {
         { provide: AuthService, useValue: authService },
         { provide: TranslateService, useValue: translateService },
         { provide: PerformanceService, useValue: performanceService },
-    ],
-});
+      ],
+    });
 
     effects = TestBed.inject(ReportsEffects);
     store = TestBed.inject(MockStore);

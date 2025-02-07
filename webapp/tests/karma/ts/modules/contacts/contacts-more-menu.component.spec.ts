@@ -39,18 +39,18 @@ describe('Contacts More Menu Component', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ContactsMoreMenuComponent,
-    ],
-    providers: [
-        provideMockStore({ selectors: mockedSelectors }),
-        { provide: AuthService, useValue: authService },
-        { provide: SessionService, useValue: sessionService },
-        { provide: ResponsiveService, useValue: responsiveService },
-        { provide: UserSettingsService, useValue: userSettingsService },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          ContactsMoreMenuComponent,
+        ],
+        providers: [
+          provideMockStore({ selectors: mockedSelectors }),
+          { provide: AuthService, useValue: authService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: ResponsiveService, useValue: responsiveService },
+          { provide: UserSettingsService, useValue: userSettingsService },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(ContactsMoreMenuComponent);

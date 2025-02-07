@@ -10,10 +10,10 @@ import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'edit-report',
-    templateUrl: './edit-report.component.html',
-    standalone: true,
-    imports: [ModalLayoutComponent, FormsModule, TranslatePipe]
+  selector: 'edit-report',
+  templateUrl: './edit-report.component.html',
+  standalone: true,
+  imports: [ModalLayoutComponent, FormsModule, TranslatePipe]
 })
 export class EditReportComponent implements AfterViewInit {
   static id = 'edit-report-modal';

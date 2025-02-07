@@ -15,12 +15,12 @@ describe('sender directive', function() {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-    imports: [
+      imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterModule.forRoot([]),
         SenderComponent,
-    ]
-});
+      ]
+    });
     fixture = TestBed.createComponent(SenderComponent);
   });
 

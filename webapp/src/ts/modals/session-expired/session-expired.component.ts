@@ -6,10 +6,10 @@ import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout
 import { BootstrapTranslatePipe } from '@mm-pipes/bootstrap-translate.pipe';
 
 @Component({
-    selector: 'session-expired',
-    templateUrl: './session-expired.component.html',
-    standalone: true,
-    imports: [ModalLayoutComponent, BootstrapTranslatePipe]
+  selector: 'session-expired',
+  templateUrl: './session-expired.component.html',
+  standalone: true,
+  imports: [ModalLayoutComponent, BootstrapTranslatePipe]
 })
 export class SessionExpiredComponent {
   static id = 'session-expired-modal';

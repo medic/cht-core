@@ -34,10 +34,10 @@ import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 
 @Component({
-    selector: 'contacts-content',
-    templateUrl: './contacts-content.component.html',
-    standalone: true,
-    imports: [NgIf, ErrorLogComponent, FastActionButtonComponent, NgClass, NgFor, TranslateDirective, AuthDirective, ContentRowListItemComponent, RouterLink, LowerCasePipe, TranslatePipe, ResourceIconPipe, SummaryPipe, FormIconNamePipe, LocalizeNumberPipe]
+  selector: 'contacts-content',
+  templateUrl: './contacts-content.component.html',
+  standalone: true,
+  imports: [NgIf, ErrorLogComponent, FastActionButtonComponent, NgClass, NgFor, TranslateDirective, AuthDirective, ContentRowListItemComponent, RouterLink, LowerCasePipe, TranslatePipe, ResourceIconPipe, SummaryPipe, FormIconNamePipe, LocalizeNumberPipe]
 })
 export class ContactsContentComponent implements OnInit, OnDestroy {
   subscriptions: Subscription = new Subscription();

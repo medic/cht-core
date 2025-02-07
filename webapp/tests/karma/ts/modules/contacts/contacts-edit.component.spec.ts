@@ -72,13 +72,13 @@ describe('ContactsEdit component', () => {
     ];
 
     TestBed.configureTestingModule({
-    imports: [
+      imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterTestingModule,
         EnketoComponent,
         ContactsEditComponent,
-    ],
-    providers: [
+      ],
+      providers: [
         provideMockStore({ selectors: mockedSelectors }),
         { provide: TranslateService, useValue: translateService },
         { provide: DbService, useValue: { get: () => ({ get: dbGet }) } },
@@ -88,8 +88,8 @@ describe('ContactsEdit component', () => {
         { provide: FormService, useValue: formService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: PerformanceService, useValue: performanceService },
-    ],
-});
+      ],
+    });
 
     createComponent = () => {
       return TestBed.compileComponents().then(() => {

@@ -42,9 +42,9 @@ const PAGE_SIZE = 50;
 const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
 
 @Component({
-    templateUrl: './reports.component.html',
-    standalone: true,
-    imports: [ToolBarComponent, NgIf, SearchBarComponent, MultiselectBarComponent, ReportsMoreMenuComponent, NgClass, NgFor, RouterLink, ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent, FastActionButtonComponent, RouterOutlet, ReportsSidebarFilterComponent_1, TranslatePipe, LineagePipe, ResourceIconPipe, RelativeDatePipe]
+  templateUrl: './reports.component.html',
+  standalone: true,
+  imports: [ToolBarComponent, NgIf, SearchBarComponent, MultiselectBarComponent, ReportsMoreMenuComponent, NgClass, NgFor, RouterLink, ReportVerifyValidIconComponent, ReportVerifyInvalidIconComponent, FastActionButtonComponent, RouterOutlet, ReportsSidebarFilterComponent_1, TranslatePipe, LineagePipe, ResourceIconPipe, RelativeDatePipe]
 })
 export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(ReportsSidebarFilterComponent) reportsSidebarFilter?: ReportsSidebarFilterComponent;

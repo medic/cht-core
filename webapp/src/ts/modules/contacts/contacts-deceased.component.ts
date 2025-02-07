@@ -11,10 +11,10 @@ import { ContentRowListItemComponent } from '../../components/content-row-list-i
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'contacts-deceased',
-    templateUrl: './contacts-deceased.component.html',
-    standalone: true,
-    imports: [NgIf, NgFor, ContentRowListItemComponent, TranslatePipe]
+  selector: 'contacts-deceased',
+  templateUrl: './contacts-deceased.component.html',
+  standalone: true,
+  imports: [NgIf, NgFor, ContentRowListItemComponent, TranslatePipe]
 })
 export class ContactsDeceasedComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();

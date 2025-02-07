@@ -38,10 +38,10 @@ import { AutoreplyPipe, StatePipe } from '@mm-pipes/date.pipe';
 *  This is determined by the URL parameter "type": 'contact', 'phone' or 'unknown' respectively.
 */
 @Component({
-    selector: 'messages-content',
-    templateUrl: './messages-content.component.html',
-    standalone: true,
-    imports: [NgIf, SenderComponent, NgFor, NgClass, AuthDirective, FormsModule, AsyncPipe, TranslatePipe, AutoreplyPipe, StatePipe]
+  selector: 'messages-content',
+  templateUrl: './messages-content.component.html',
+  standalone: true,
+  imports: [NgIf, SenderComponent, NgFor, NgClass, AuthDirective, FormsModule, AsyncPipe, TranslatePipe, AutoreplyPipe, StatePipe]
 })
 export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
   private userCtx;

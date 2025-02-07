@@ -45,24 +45,24 @@ describe('Testing Component', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        FormsModule,
-        MatIcon,
-        TestingComponent,
-        ToolBarComponent,
-        NavigationComponent,
-    ],
-    providers: [
-        provideMockStore({ selectors: [] }),
-        { provide: NavigationService, useValue: navigationService },
-        { provide: DbService, useValue: dbService },
-        { provide: DebugService, useValue: debugService },
-        { provide: FeedbackService, useValue: feedbackService },
-        { provide: SessionService, useValue: sessionService },
-        { provide: CookieService, useValue: cookieService },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          FormsModule,
+          MatIcon,
+          TestingComponent,
+          ToolBarComponent,
+          NavigationComponent,
+        ],
+        providers: [
+          provideMockStore({ selectors: [] }),
+          { provide: NavigationService, useValue: navigationService },
+          { provide: DbService, useValue: dbService },
+          { provide: DebugService, useValue: debugService },
+          { provide: FeedbackService, useValue: feedbackService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: CookieService, useValue: cookieService },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(TestingComponent);

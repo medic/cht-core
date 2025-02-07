@@ -26,16 +26,16 @@ describe('Messages More Menu Component', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        MessagesMoreMenuComponent,
-    ],
-    providers: [
-        { provide: AuthService, useValue: authService },
-        { provide: SessionService, useValue: sessionService },
-        { provide: ResponsiveService, useValue: responsiveService },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          MessagesMoreMenuComponent,
+        ],
+        providers: [
+          { provide: AuthService, useValue: authService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: ResponsiveService, useValue: responsiveService },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(MessagesMoreMenuComponent);

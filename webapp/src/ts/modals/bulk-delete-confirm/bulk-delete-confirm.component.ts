@@ -8,10 +8,10 @@ import { NgIf } from '@angular/common';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'bulk-delete-confirm',
-    templateUrl: './bulk-delete-confirm.component.html',
-    standalone: true,
-    imports: [ModalLayoutComponent, NgIf, TranslateDirective, TranslatePipe]
+  selector: 'bulk-delete-confirm',
+  templateUrl: './bulk-delete-confirm.component.html',
+  standalone: true,
+  imports: [ModalLayoutComponent, NgIf, TranslateDirective, TranslatePipe]
 })
 export class BulkDeleteConfirmComponent {
   static id = 'bulk-delete-confirm-modal';

@@ -21,10 +21,10 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 
 @Component({
-    selector: 'mm-reports-more-menu',
-    templateUrl: './reports-more-menu.component.html',
-    standalone: true,
-    imports: [NgIf, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, RouterLink, PanelHeaderComponent, MatButton, ReportVerifyInvalidIconComponent, ReportVerifyValidIconComponent, TranslatePipe]
+  selector: 'mm-reports-more-menu',
+  templateUrl: './reports-more-menu.component.html',
+  standalone: true,
+  imports: [NgIf, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, RouterLink, PanelHeaderComponent, MatButton, ReportVerifyInvalidIconComponent, ReportVerifyValidIconComponent, TranslatePipe]
 })
 export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   @Output() exportReports: EventEmitter<any> = new EventEmitter();

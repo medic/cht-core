@@ -14,10 +14,10 @@ import { TrainingCardsConfirmComponent } from '../../modals/training-cards-confi
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'training-content',
-    templateUrl: './trainings-content.component.html',
-    standalone: true,
-    imports: [NgIf, TrainingCardsFormComponent, ModalLayoutComponent, TrainingCardsConfirmComponent, TranslatePipe]
+  selector: 'training-content',
+  templateUrl: './trainings-content.component.html',
+  standalone: true,
+  imports: [NgIf, TrainingCardsFormComponent, ModalLayoutComponent, TrainingCardsConfirmComponent, TranslatePipe]
 })
 export class TrainingsContentComponent implements OnInit, OnDestroy {
   @ViewChild('confirmModal') confirmModalTemplate;

@@ -20,22 +20,22 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 
 @Component({
-    selector: 'mm-sidebar-menu',
-    templateUrl: './sidebar-menu.component.html',
-    standalone: true,
-    imports: [
-        MatSidenavContainer,
-        MatSidenav,
-        PanelHeaderComponent,
-        MatSidenavContent,
-        NgFor,
-        RouterLink,
-        AuthDirective,
-        MatIcon,
-        NgIf,
-        TranslatePipe,
-        RelativeDatePipe,
-    ],
+  selector: 'mm-sidebar-menu',
+  templateUrl: './sidebar-menu.component.html',
+  standalone: true,
+  imports: [
+    MatSidenavContainer,
+    MatSidenav,
+    PanelHeaderComponent,
+    MatSidenavContent,
+    NgFor,
+    RouterLink,
+    AuthDirective,
+    MatIcon,
+    NgIf,
+    TranslatePipe,
+    RelativeDatePipe,
+  ],
 })
 export class SidebarMenuComponent implements OnInit, OnDestroy {
   @Input() canLogOut: boolean = false;

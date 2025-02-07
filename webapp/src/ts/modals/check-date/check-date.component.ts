@@ -6,10 +6,10 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';
 
 @Component({
-    selector: 'check-date',
-    templateUrl: './check-date.component.html',
-    standalone: true,
-    imports: [ModalLayoutComponent, NgIf, TranslatePipe, SimpleDateTimePipe]
+  selector: 'check-date',
+  templateUrl: './check-date.component.html',
+  standalone: true,
+  imports: [ModalLayoutComponent, NgIf, TranslatePipe, SimpleDateTimePipe]
 })
 export class CheckDateComponent {
   static id = 'check-date-modal';

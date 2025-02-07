@@ -9,9 +9,9 @@ import { AuthService } from '@mm-services/auth.service';
 
 
 @Component({
-    template: ``,
-    standalone: true,
-    imports: [AuthDirective]
+  template: ``,
+  standalone: true,
+  imports: [AuthDirective]
 })
 class TestComponent {}
 
@@ -27,11 +27,11 @@ describe('Auth directive', () => {
     };
 
     TestBed.configureTestingModule({
-    imports: [AuthDirective, TestComponent],
-    providers: [
+      imports: [AuthDirective, TestComponent],
+      providers: [
         { provide: AuthService, useValue: authServiceMock },
-    ]
-});
+      ]
+    });
   });
 
   afterEach(() => {

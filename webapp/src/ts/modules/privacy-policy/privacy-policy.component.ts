@@ -8,14 +8,14 @@ import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'mm-privacy-policy',
-    templateUrl: './privacy-policy.component.html',
-    standalone: true,
-    imports: [
-        NgIf,
-        ToolBarComponent,
-        TranslatePipe,
-    ],
+  selector: 'mm-privacy-policy',
+  templateUrl: './privacy-policy.component.html',
+  standalone: true,
+  imports: [
+    NgIf,
+    ToolBarComponent,
+    TranslatePipe,
+  ],
 })
 export class PrivacyPolicyComponent implements OnInit {
   @Input() overlay;

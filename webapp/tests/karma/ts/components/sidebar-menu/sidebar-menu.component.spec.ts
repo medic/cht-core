@@ -35,24 +35,24 @@ describe('SidebarMenuComponent', () => {
 
     await TestBed
       .configureTestingModule({
-    imports: [
-        RouterTestingModule,
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        MatSidenavModule,
-        MatIconModule,
-        SidebarMenuComponent,
-        PanelHeaderComponent,
-        AuthDirective,
-    ],
-    providers: [
-        provideAnimations(),
-        provideMockStore(),
-        { provide: LocationService, useValue: locationService },
-        { provide: DBSyncService, useValue: dbSyncService },
-        { provide: ModalService, useValue: modalService },
-        { provide: AuthService, useValue: authService },
-    ],
-})
+        imports: [
+          RouterTestingModule,
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          MatSidenavModule,
+          MatIconModule,
+          SidebarMenuComponent,
+          PanelHeaderComponent,
+          AuthDirective,
+        ],
+        providers: [
+          provideAnimations(),
+          provideMockStore(),
+          { provide: LocationService, useValue: locationService },
+          { provide: DBSyncService, useValue: dbSyncService },
+          { provide: ModalService, useValue: modalService },
+          { provide: AuthService, useValue: authService },
+        ],
+      })
       .compileComponents();
 
     fixture = TestBed.createComponent(SidebarMenuComponent);

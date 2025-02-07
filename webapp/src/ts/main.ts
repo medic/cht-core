@@ -90,21 +90,21 @@ bootstrapper(POUCHDB_OPTIONS)
     }
 
     return bootstrapApplication(AppComponent, {
-    providers: [
+      providers: [
         importProvidersFrom(BrowserModule, AppRoutingModule, RouterModule, StoreModule.forRoot(reducers, { metaReducers }), TranslateModule.forRoot({
-            loader: {
-                provide: TranslateLoader,
-                useFactory: (db: DbService) => new TranslationLoaderProvider(db),
-                deps: [DbService],
-            },
-            missingTranslationHandler: {
-                provide: MissingTranslationHandler,
-                useClass: MissingTranslationHandlerLog
-            },
-            compiler: {
-                provide: TranslateCompiler,
-                useClass: TranslateMessageFormatCompilerProvider,
-            },
+          loader: {
+            provide: TranslateLoader,
+            useFactory: (db: DbService) => new TranslationLoaderProvider(db),
+            deps: [DbService],
+          },
+          missingTranslationHandler: {
+            provide: MissingTranslationHandler,
+            useClass: MissingTranslationHandlerLog
+          },
+          compiler: {
+            provide: TranslateCompiler,
+            useClass: TranslateMessageFormatCompilerProvider,
+          },
         }), BsDropdownModule.forRoot(), FormsModule, EffectsModule.forRoot([GlobalEffects, ReportsEffects, ContactsEffects])),
         { provide: APP_BASE_HREF, useValue: '/' },
         AppRouteGuardProvider,
@@ -115,8 +115,8 @@ bootstrapper(POUCHDB_OPTIONS)
         DatePipe,
         provideHttpClient(withInterceptorsFromDi()),
         provideAnimations()
-    ]
-})
+      ]
+    })
       .then((moduleRef) => {
         // window.CHTCore = moduleRef.instance.integration;
         window.CHTCore = moduleRef.injector.get(IntegrationApiService);

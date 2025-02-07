@@ -41,19 +41,19 @@ describe('Reports More Menu Component', () => {
 
     return TestBed
       .configureTestingModule({
-    imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        MatExpansionModule,
-        ReportsMoreMenuComponent,
-    ],
-    providers: [
-        provideMockStore({ selectors: mockedSelectors }),
-        { provide: AuthService, useValue: authService },
-        { provide: ResponsiveService, useValue: responsiveService },
-        { provide: MatBottomSheet, useValue: matBottomSheet },
-        { provide: MatDialog, useValue: matDialog },
-    ]
-})
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          MatExpansionModule,
+          ReportsMoreMenuComponent,
+        ],
+        providers: [
+          provideMockStore({ selectors: mockedSelectors }),
+          { provide: AuthService, useValue: authService },
+          { provide: ResponsiveService, useValue: responsiveService },
+          { provide: MatBottomSheet, useValue: matBottomSheet },
+          { provide: MatDialog, useValue: matDialog },
+        ]
+      })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(ReportsMoreMenuComponent);

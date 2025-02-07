@@ -16,18 +16,18 @@ import { AnalyticsTargetAggregatesSidebarFilterComponent } from './analytics-tar
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-    selector: 'analytics-target-aggregates',
-    templateUrl: './analytics-target-aggregates.component.html',
-    standalone: true,
-    imports: [
-        NgIf,
-        NgClass,
-        NgFor,
-        ContentRowListItemComponent,
-        RouterOutlet,
-        AnalyticsTargetAggregatesSidebarFilterComponent,
-        TranslatePipe,
-    ],
+  selector: 'analytics-target-aggregates',
+  templateUrl: './analytics-target-aggregates.component.html',
+  standalone: true,
+  imports: [
+    NgIf,
+    NgClass,
+    NgFor,
+    ContentRowListItemComponent,
+    RouterOutlet,
+    AnalyticsTargetAggregatesSidebarFilterComponent,
+    TranslatePipe,
+  ],
 })
 export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
 
