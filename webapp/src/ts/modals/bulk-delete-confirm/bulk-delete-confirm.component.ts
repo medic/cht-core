@@ -3,7 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { DeleteDocsService } from '@mm-services/delete-docs.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout.component';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { NgIf } from '@angular/common';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 

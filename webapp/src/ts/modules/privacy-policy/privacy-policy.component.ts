@@ -4,7 +4,7 @@ import { Store } from '@ngrx/store';
 import { GlobalActions } from '@mm-actions/global';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { NgIf } from '@angular/common';
-import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({

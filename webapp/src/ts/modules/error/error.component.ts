@@ -7,7 +7,7 @@ import { Subscription, timer } from 'rxjs';
 import { Selectors } from '@mm-selectors/index';
 import { TranslateService } from '@mm-services/translate.service';
 import { NavigationService } from '@mm-services/navigation.service';
-import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({

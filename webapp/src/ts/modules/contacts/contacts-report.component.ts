@@ -15,7 +15,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { NgIf } from '@angular/common';
-import { EnketoComponent } from '../../components/enketo/enketo.component';
+import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({

@@ -10,7 +10,7 @@ import { SessionService } from '@mm-services/session.service';
 import { VersionService } from '@mm-services/version.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { BrowserDetectorService } from '@mm-services/browser-detector.service';
-import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { MatCard, MatCardHeader, MatCardTitle, MatCardContent, MatCardSubtitle } from '@angular/material/card';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 import { MatButton } from '@angular/material/button';

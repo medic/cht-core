@@ -8,7 +8,7 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { UpdatePasswordService } from '@mm-services/update-password.service';
 import { UserLoginService } from '@mm-services/user-login.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout.component';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';

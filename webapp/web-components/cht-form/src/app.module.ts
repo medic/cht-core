@@ -32,8 +32,8 @@ import { StoreModule } from '@ngrx/store';
 export class AppModule implements DoBootstrap {
   constructor(
     injector: Injector,
-    private dbService: DbService,
-    private translateService: TranslateService
+    private readonly dbService: DbService,
+    private readonly translateService: TranslateService
   ) {
     const chtForm = createCustomElement(AppComponent, { injector });
     customElements.define('cht-form', chtForm);

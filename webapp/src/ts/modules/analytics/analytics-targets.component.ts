@@ -3,10 +3,10 @@ import { Component, OnInit } from '@angular/core';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { NgIf, NgFor, NgClass } from '@angular/common';
-import { ErrorLogComponent } from '../../components/error-log/error-log.component';
+import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import {
   AnalyticsTargetsProgressComponent
-} from '../../components/analytics-targets-progress/analytics-targets-progress.component';
+} from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';

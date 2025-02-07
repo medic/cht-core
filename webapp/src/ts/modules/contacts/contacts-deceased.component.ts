@@ -7,7 +7,7 @@ import { Selectors } from '@mm-selectors/index';
 import { ContactsActions } from '@mm-actions/contacts';
 import { ChangesService } from '@mm-services/changes.service';
 import { NgIf, NgFor } from '@angular/common';
-import { ContentRowListItemComponent } from '../../components/content-row-list-item/content-row-list-item.component';
+import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({

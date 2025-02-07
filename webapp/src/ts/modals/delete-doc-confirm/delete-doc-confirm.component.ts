@@ -9,7 +9,7 @@ import { DbService } from '@mm-services/db.service';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { TranslateService } from '@mm-services/translate.service';
-import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout.component';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({

@@ -49,9 +49,9 @@ export class AppComponent {
   @Output() onSubmit: EventEmitter<Object[]> = new EventEmitter();
 
   constructor(
-    private contactSaveService: ContactSaveService,
-    private enketoService: EnketoService,
-    private translateService: TranslateService,
+    private readonly contactSaveService: ContactSaveService,
+    private readonly enketoService: EnketoService,
+    private readonly translateService: TranslateService,
   ) {
     const zscoreUtil = {};
     const api = {};

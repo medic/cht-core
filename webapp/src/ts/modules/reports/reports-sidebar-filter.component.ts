@@ -15,18 +15,6 @@ import {
   MatExpansionPanelHeader,
   MatExpansionPanelDescription
 } from '@angular/material/expansion';
-import {
-  FormTypeFilterComponent as FormTypeFilterComponent_1
-} from '../../components/filters/form-type-filter/form-type-filter.component';
-import {
-  FacilityFilterComponent as FacilityFilterComponent_1
-} from '../../components/filters/facility-filter/facility-filter.component';
-import {
-  DateFilterComponent as DateFilterComponent_1
-} from '../../components/filters/date-filter/date-filter.component';
-import {
-  StatusFilterComponent as StatusFilterComponent_1
-} from '../../components/filters/status-filter/status-filter.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateFilterComponent | StatusFilterComponent;
@@ -42,11 +30,11 @@ type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateF
     MatExpansionPanelHeader,
     NgTemplateOutlet,
     MatExpansionPanelDescription,
-    FormTypeFilterComponent_1,
-    FacilityFilterComponent_1,
-    DateFilterComponent_1,
+    FormTypeFilterComponent,
+    FacilityFilterComponent,
+    DateFilterComponent,
     NgIf,
-    StatusFilterComponent_1,
+    StatusFilterComponent,
     TranslatePipe
   ]
 })

@@ -4,7 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { EditGroupService } from '@mm-services/edit-group.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout.component';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';

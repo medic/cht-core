@@ -13,10 +13,10 @@ import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregat
 import { NgIf, NgClass, NgFor } from '@angular/common';
 import {
   AnalyticsTargetsDetailsComponent
-} from '../../components/analytics-targets-details/analytics-targets-details.component';
+} from '@mm-components/analytics-targets-details/analytics-targets-details.component';
 import {
   AnalyticsTargetsProgressComponent
-} from '../../components/analytics-targets-progress/analytics-targets-progress.component';
+} from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';

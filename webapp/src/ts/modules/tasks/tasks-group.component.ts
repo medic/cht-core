@@ -12,7 +12,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 import { NgIf, NgFor } from '@angular/common';
-import { ContentRowListItemComponent } from '../../components/content-row-list-item/content-row-list-item.component';
+import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({

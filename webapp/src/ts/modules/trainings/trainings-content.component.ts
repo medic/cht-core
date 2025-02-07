@@ -8,9 +8,9 @@ import { ModalService } from '@mm-services/modal.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { Selectors } from '@mm-selectors/index';
 import { NgIf } from '@angular/common';
-import { TrainingCardsFormComponent } from '../../components/training-cards-form/training-cards-form.component';
-import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout.component';
-import { TrainingCardsConfirmComponent } from '../../modals/training-cards-confirm/training-cards-confirm.component';
+import { TrainingCardsFormComponent } from '@mm-components/training-cards-form/training-cards-form.component';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
+import { TrainingCardsConfirmComponent } from '@mm-modals/training-cards-confirm/training-cards-confirm.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({

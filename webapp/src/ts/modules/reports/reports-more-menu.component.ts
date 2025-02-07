@@ -15,11 +15,11 @@ import { NgIf } from '@angular/common';
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { MatIcon } from '@angular/material/icon';
-import { PanelHeaderComponent } from '../../components/panel-header/panel-header.component';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 import {
   ReportVerifyInvalidIconComponent,
   ReportVerifyValidIconComponent
-} from '../../components/status-icons/status-icons.template';
+} from '@mm-components/status-icons/status-icons.template';
 import { TranslatePipe } from '@ngx-translate/core';
 
 

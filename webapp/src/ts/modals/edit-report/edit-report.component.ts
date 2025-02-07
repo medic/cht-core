@@ -5,7 +5,7 @@ import { take } from 'rxjs/operators';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { Select2SearchService } from '@mm-services/select2-search.service';
 import { UpdateFacilityService } from '@mm-services/update-facility.service';
-import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout.component';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 

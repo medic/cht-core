@@ -24,17 +24,16 @@ import { FastAction, FastActionButtonService } from '@mm-services/fast-action-bu
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
-import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
-import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
+import { ButtonType, FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { NgIf, NgClass, NgFor } from '@angular/common';
-import { SearchBarComponent } from '../../components/search-bar/search-bar.component';
-import { MultiselectBarComponent } from '../../components/multiselect-bar/multiselect-bar.component';
+import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
+import { MultiselectBarComponent } from '@mm-components/multiselect-bar/multiselect-bar.component';
 import { ReportsMoreMenuComponent } from './reports-more-menu.component';
 import {
   ReportVerifyValidIconComponent,
   ReportVerifyInvalidIconComponent
-} from '../../components/status-icons/status-icons.template';
-import { FastActionButtonComponent } from '../../components/fast-action-button/fast-action-button.component';
+} from '@mm-components/status-icons/status-icons.template';
 import { ReportsSidebarFilterComponent as ReportsSidebarFilterComponent_1 } from './reports-sidebar-filter.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LineagePipe } from '@mm-pipes/message.pipe';

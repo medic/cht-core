@@ -10,7 +10,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 import { NgIf, NgClass, NgFor } from '@angular/common';
-import { ContentRowListItemComponent } from '../../components/content-row-list-item/content-row-list-item.component';
+import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 import { RouterOutlet } from '@angular/router';
 import {
   AnalyticsTargetAggregatesSidebarFilterComponent

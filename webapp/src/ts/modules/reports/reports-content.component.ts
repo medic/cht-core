@@ -18,13 +18,13 @@ import { SendMessageComponent } from '@mm-modals/send-message/send-message.compo
 import { DbService } from '@mm-services/db.service';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
 import { NgIf, NgFor, AsyncPipe } from '@angular/common';
-import { FastActionButtonComponent } from '../../components/fast-action-button/fast-action-button.component';
-import { SenderComponent } from '../../components/sender/sender.component';
+import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
+import { SenderComponent } from '@mm-components/sender/sender.component';
 import {
   ReportVerifyValidIconComponent,
   ReportVerifyInvalidIconComponent
-} from '../../components/status-icons/status-icons.template';
-import { ReportImageComponent } from '../../components/report-image/report-image.component';
+} from '@mm-components/status-icons/status-icons.template';
+import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LineagePipe, TitlePipe } from '@mm-pipes/message.pipe';
 import { RelativeDatePipe, StatePipe } from '@mm-pipes/date.pipe';

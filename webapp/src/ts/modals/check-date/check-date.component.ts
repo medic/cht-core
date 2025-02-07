@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout.component';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { NgIf } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';

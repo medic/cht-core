@@ -7,7 +7,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { TrainingCardsService, TrainingMaterial } from '@mm-services/training-cards.service';
 import { Selectors } from '@mm-selectors/index';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
-import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { NgIf, NgFor } from '@angular/common';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';

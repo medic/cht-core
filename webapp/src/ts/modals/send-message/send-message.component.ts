@@ -9,7 +9,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SendMessageService } from '@mm-services/send-message.service';
 import { Select2SearchService } from '@mm-services/select2-search.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { ModalLayoutComponent } from '../../components/modal-layout/modal-layout.component';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { FormsModule } from '@angular/forms';
 import { NgClass, NgIf } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';

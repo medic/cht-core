@@ -49,12 +49,11 @@ import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserSettings, UserSettingsService } from '@mm-services/user-settings.service';
-import { OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
+import { OLD_NAV_PERMISSION, HeaderComponent } from '@mm-components/header/header.component';
 import { NgIf } from '@angular/common';
 import { PrivacyPolicyComponent } from './modules/privacy-policy/privacy-policy.component';
-import { SidebarMenuComponent } from './components/sidebar-menu/sidebar-menu.component';
-import { HeaderComponent } from './components/header/header.component';
-import { SnackbarComponent } from './components/snackbar/snackbar.component';
+import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
+import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
 
 const SYNC_STATUS = {
   inProgress: {
