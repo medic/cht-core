@@ -25,12 +25,12 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppRouteGuardProvider } from './app-route.guard.provider';
 import { TrainingCardDeactivationGuardProvider } from './training-card.guard.provider';
 import { AppComponent } from './app.component';
-import { ModulesModule } from '@mm-modules/modules.module';
+
 import { environment } from '@mm-environments/environment';
-import { ComponentsModule } from '@mm-components/components.module';
-import { ModalsModule } from '@mm-modals/modals.module';
-import { DirectivesModule } from '@mm-directives/directives.module';
-import { PipesModule } from '@mm-pipes/pipes.module';
+
+
+
+
 import { DbService } from '@mm-services/db.service';
 import { IntegrationApiService } from '@mm-services/integration-api.service';
 import { AnalyticsRouteGuardProvider } from '@mm-modules/analytics/analytics-route.guard.provider';
@@ -41,6 +41,10 @@ import { GlobalEffects } from '@mm-effects/global.effects';
 import { ReportsEffects } from '@mm-effects/reports.effects';
 import { ContactsEffects } from '@mm-effects/contacts.effects';
 import { reducers } from '@mm-reducers/index';
+import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-policy.component';
+import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
+import { HeaderComponent } from '@mm-components/header/header.component';
+import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
 
 const logger = reducer => {
   // default, no options
@@ -63,11 +67,6 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
   imports: [
     BrowserModule,
     AppRoutingModule,
-    ComponentsModule,
-    ModalsModule,
-    ModulesModule,
-    DirectivesModule,
-    PipesModule,
     RouterModule,
     HttpClientModule,
     StoreModule.forRoot(reducers, { metaReducers }),
@@ -89,7 +88,11 @@ export class MissingTranslationHandlerLog implements MissingTranslationHandler {
     BrowserAnimationsModule,
     BsDropdownModule.forRoot(),
     FormsModule,
-    EffectsModule.forRoot([ GlobalEffects, ReportsEffects, ContactsEffects ]),
+    EffectsModule.forRoot([GlobalEffects, ReportsEffects, ContactsEffects]),
+    PrivacyPolicyComponent,
+    SidebarMenuComponent,
+    HeaderComponent,
+    SnackbarComponent,
   ],
   providers: [
     { provide: APP_BASE_HREF, useValue: '/' },
