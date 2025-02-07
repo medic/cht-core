@@ -176,7 +176,7 @@ export const getDatasource = (ctx: DataContext) => {
          * `freetext`.
          * @param freetext the search keyword(s)
          * @returns a generator for fetching all the contact identifiers matching the given `freetext`.
-         * @throws InvalidArgumentError if either `freetext`is not provided
+         * @throws InvalidArgumentError if `freetext`is not provided
          * @throws InvalidArgumentError if the `freetext` is empty or invalid
          */
         getUuidsByFreetext: (
