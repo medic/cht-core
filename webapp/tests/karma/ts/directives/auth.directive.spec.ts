@@ -10,7 +10,8 @@ import { AuthService } from '@mm-services/auth.service';
 
 @Component({
     template: ``,
-    standalone: true
+    standalone: true,
+    imports: [AuthDirective]
 })
 class TestComponent {}
 

@@ -10,7 +10,8 @@ import { TitlePipe } from '@mm-pipes/message.pipe';
 describe('messages pipe', () => {
   @Component({
     template: ``,
-    standalone: true
+    standalone: true,
+    imports: [SummaryPipe, TitlePipe]
 })
   class TestComponent {
     @Input() forms;

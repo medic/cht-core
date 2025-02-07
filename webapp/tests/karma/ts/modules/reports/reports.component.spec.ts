@@ -18,7 +18,6 @@ import { ReportsContentComponent } from '@mm-modules/reports/reports-content.com
 import { SettingsService } from '@mm-services/settings.service';
 import { ReportsActions } from '@mm-actions/reports';
 import { Selectors } from '@mm-selectors/index';
-import { ComponentsModule } from '@mm-components/components.module';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { SessionService } from '@mm-services/session.service';
@@ -127,7 +126,6 @@ describe('Reports Component', () => {
     imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterTestingModule,
-        ComponentsModule,
         BrowserAnimationsModule,
         MatExpansionModule,
         MatIconModule,

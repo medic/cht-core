@@ -8,7 +8,6 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import { SessionService } from '@mm-services/session.service';
 import { ChangesService } from '@mm-services/changes.service';
-import { PipesModule } from '@mm-pipes/pipes.module';
 
 describe('Error log component', () => {
   let component: ErrorLogComponent;
@@ -27,7 +26,6 @@ describe('Error log component', () => {
     return TestBed.configureTestingModule({
     imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        PipesModule,
         ErrorLogComponent
     ],
     providers: [

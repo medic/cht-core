@@ -259,7 +259,20 @@ describe('date pipes rendering', () => {
   @Component({
     template: ``,
     standalone: true,
-    imports: [AsyncPipe]
+    imports: [
+      AsyncPipe,
+      AgePipe,
+      AutoreplyPipe,
+      DateOfDeathPipe,
+      DayMonthPipe,
+      FullDatePipe,
+      RelativeDatePipe,
+      RelativeDayPipe,
+      SimpleDatePipe,
+      SimpleDateTimePipe,
+      StatePipe,
+      WeeksPregnantPipe,
+    ]
 })
   class TestComponent {
     @Input() date;
