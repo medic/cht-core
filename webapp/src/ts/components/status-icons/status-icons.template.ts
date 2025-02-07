@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: '<report-verify-valid-icon>',
-  templateUrl: './report-verify-valid-icon.html',
+  templateUrl: './report-verify-valid-icon.html'
 })
 export class ReportVerifyValidIconComponent {
   constructor() {}
@@ -10,7 +10,7 @@ export class ReportVerifyValidIconComponent {
 
 @Component({
   selector: '<report-verify-invalid-icon>',
-  templateUrl: './report-verify-invalid-icon.html',
+  templateUrl: './report-verify-invalid-icon.html'
 })
 export class ReportVerifyInvalidIconComponent {
   constructor() {}

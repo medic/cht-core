@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, HostListener, Attribute } from '@angular/core';
 import { NgIf } from '@angular/common';
-import { PanelHeaderComponent } from '../panel-header/panel-header.component';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 import { MatButton } from '@angular/material/button';
 import { TranslatePipe } from '@ngx-translate/core';
 

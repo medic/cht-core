@@ -51,7 +51,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { UserSettings, UserSettingsService } from '@mm-services/user-settings.service';
 import { OLD_NAV_PERMISSION, HeaderComponent } from '@mm-components/header/header.component';
 import { NgIf } from '@angular/common';
-import { PrivacyPolicyComponent } from './modules/privacy-policy/privacy-policy.component';
+import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-policy.component';
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
 

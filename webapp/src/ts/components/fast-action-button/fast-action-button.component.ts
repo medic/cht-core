@@ -12,7 +12,7 @@ import { Selectors } from '@mm-selectors/index';
 import { NgIf, NgFor } from '@angular/common';
 import { MatFabButton, MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
-import { PanelHeaderComponent } from '../panel-header/panel-header.component';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 import { MatList, MatListItem } from '@angular/material/list';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';

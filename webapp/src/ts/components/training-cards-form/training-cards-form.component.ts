@@ -12,7 +12,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { EnketoFormContext } from '@mm-services/enketo.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { NgIf } from '@angular/common';
-import { EnketoComponent } from '../enketo/enketo.component';
+import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({

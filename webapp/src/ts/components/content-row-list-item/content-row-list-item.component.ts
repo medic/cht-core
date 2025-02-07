@@ -4,7 +4,7 @@ import { NgIf } from '@angular/common';
 import {
   ReportVerifyValidIconComponent,
   ReportVerifyInvalidIconComponent
-} from '../status-icons/status-icons.template';
+} from '@mm-components/status-icons/status-icons.template';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LineagePipe } from '@mm-pipes/message.pipe';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';

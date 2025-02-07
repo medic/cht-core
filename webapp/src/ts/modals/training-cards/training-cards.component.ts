@@ -9,7 +9,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { NgIf } from '@angular/common';
-import { TrainingCardsConfirmComponent } from '../training-cards-confirm/training-cards-confirm.component';
+import { TrainingCardsConfirmComponent } from '@mm-modals/training-cards-confirm/training-cards-confirm.component';
 import { TrainingCardsFormComponent } from '@mm-components/training-cards-form/training-cards-form.component';
 
 @Component({

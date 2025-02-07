@@ -16,7 +16,7 @@ import { DbService } from '@mm-services/db.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { NgIf, NgClass, NgFor } from '@angular/common';
-import { EnketoComponent } from '../../components/enketo/enketo.component';
+import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SimpleDatePipe } from '@mm-pipes/date.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
