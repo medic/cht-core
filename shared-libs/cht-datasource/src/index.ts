@@ -162,7 +162,7 @@ export const getDatasource = (ctx: DataContext) => {
          * Returns a generator for fetching all the contact identifiers for given `type`.
          * @param type the type of contact identifiers to return
          * @returns a generator for fetching all the contact identifiers matching the given `type`.
-         * @throws InvalidArgumentError if either `type` is not provided
+         * @throws InvalidArgumentError if `type` is not provided
          * @throws InvalidArgumentError if the `type is invalid for a contact
          */
         getUuidsByType: (
