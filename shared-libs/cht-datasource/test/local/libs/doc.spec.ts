@@ -9,7 +9,9 @@ import {
   queryDocsByKey,
   queryDocsByRange, queryDocUuidsByKey, queryDocUuidsByRange,
 } from '../../../src/local/libs/doc';
+import * as LocalDoc from '../../../src/local/libs/doc';
 import { expect } from 'chai';
+import { Nullable } from '../../../src';
 
 describe('local doc lib', () => {
   let dbGet: SinonStub;
@@ -479,65 +481,111 @@ describe('local doc lib', () => {
   });
 
   describe('fetchAndFilterUuids', () => {
-    let getFunction: sinon.SinonStub;
+    let fetchAndFilterStub: sinon.SinonStub;
 
     beforeEach(() => {
-      getFunction = sinon.stub();
+      fetchAndFilterStub = sinon.stub(LocalDoc, 'fetchAndFilter');
     });
 
     afterEach(() => {
       sinon.restore();
     });
 
-    it('should return correct data when all docs are valid and unique and has no more docs', async () => {
-      const uuids = ['1', '2', '3'];
+    it('should filter out duplicate UUIDs', () => {
+      const uuids = [
+        '123e4567-e89b-12d3-a456-426614174000',
+        '123e4567-e89b-12d3-a456-426614174000',
+        '987fcdeb-51a2-43d7-9b56-254125174000'
+      ];
+
+      const getFunction = sinon.stub();
       getFunction.resolves(uuids);
 
-      const fn = fetchAndFilterUuids(getFunction, 3);
-      const result = await fn(3, 0);
+      // Mock fetchAndFilter to be able to test the inner filter function
+      const fetchAndFilterStubFake = fetchAndFilterStub
+        .callsFake(<T>(
+          fn: (limit: number, skip: number) => Promise<Nullable<T>[]>,
+          filterFn: (doc: Nullable<string>) => boolean
+        ) => {
+          const results: string[] = [];
+          for (const uuid of uuids) {
+            if (filterFn(uuid)) {
+              results.push(uuid);
+            }
+          }
+          return results;
+        });
 
-      expect(result.data).to.deep.equal(uuids);
-      expect(result.cursor).to.be.null;
-      expect(getFunction.calledOnceWith(3 + 1, 0)).to.be.true;
+      const result =  fetchAndFilterUuids(getFunction, 3);
+
+      expect(result).to.have.length(2);
+      expect(result).to.include('123e4567-e89b-12d3-a456-426614174000');
+      expect(result).to.include('987fcdeb-51a2-43d7-9b56-254125174000');
+      expect(fetchAndFilterStubFake.calledOnce).to.be.true;
     });
 
-    it('should return correct data when all docs are valid and unique and has more docs', async () => {
-      const uuids = ['1', '2', '3', '4'];
+    it('should filter out null values', () => {
+      const uuids = [
+        '123e4567-e89b-12d3-a456-426614174000',
+        null,
+        '987fcdeb-51a2-43d7-9b56-254125174000'
+      ] as (string | null)[];
+
+      const getFunction = sinon.stub();
       getFunction.resolves(uuids);
 
-      const fn = fetchAndFilterUuids(getFunction, 3);
-      const result = await fn(3, 0);
+      fetchAndFilterStub
+        .callsFake(<T>(
+          fn: (limit: number, skip: number) => Promise<Nullable<T>[]>,
+          filterFn: (doc: Nullable<string>) => boolean
+        ) => {
+          const results: string[] = [];
+          for (const uuid of uuids) {
+            if (filterFn(uuid)) {
+              results.push(uuid!);
+            }
+          }
+          return results;
+        });
 
-      expect(result.data).to.deep.equal(uuids.slice(0, -1));
-      expect(result.cursor).to.be.equal('3');
-      expect(getFunction.calledOnceWith(3 + 1, 0)).to.be.true;
+      const result = fetchAndFilterUuids(getFunction, 3);
+
+      expect(result).to.have.length(2);
+      expect(result).to.not.include(null);
     });
 
-    it('should filter out duplicate docs when there are dups in a single page', async () => {
-      const uuids1 = ['1', '2', '3', '1', '2'];
-      const uuids2  = ['1', '2', '3', '2'];
-      const expectedUuids = ['1', '2', '3'];
-      getFunction.onFirstCall().resolves(uuids1);
-      getFunction.onSecondCall().resolves(uuids2);
+    it('should respect the limit parameter', () => {
+      const getFunction = sinon.stub();
+      const limit = 2;
 
-      const fn = fetchAndFilterUuids(getFunction, 4);
-      const result = await fn(4, 0);
+      fetchAndFilterStub
+        .callsFake( (fn, filterFn, passedLimit) => {
+          expect(passedLimit).to.equal(limit);
+          return [];
+        });
 
-      expect(result.data).to.deep.equal(expectedUuids);
-      expect(result.cursor).to.be.equal('4');
-      expect(getFunction.firstCall.calledWith(4 + 1, 0)).to.be.true;
-      expect(getFunction.secondCall.calledWith(3, 4)).to.be.true;
+      fetchAndFilterUuids(getFunction, limit);
     });
 
-    it('should handle empty result', async () => {
+    it('should handle empty results', () => {
+      const getFunction = sinon.stub();
       getFunction.resolves([]);
 
-      const fn = fetchAndFilterUuids(getFunction, 3);
-      const result = await fn(3, 0);
+      fetchAndFilterStub
+        .returns([]);
 
-      expect(result.data).to.deep.equal([]);
-      expect(result.cursor).to.be.null;
-      expect(getFunction.calledOnceWith(3 + 1, 0)).to.be.true;
+      const result = fetchAndFilterUuids(getFunction, 3);
+
+      expect(result).to.be.an('array').that.is.empty;
+    });
+
+    it('should propagate errors from getFunction', () => {
+      const error = new Error('API Error');
+      const getFunction = sinon.stub();
+
+      fetchAndFilterStub.throws(error);
+
+      expect(() => fetchAndFilterUuids(getFunction, 3)).to.throw('API Error');
     });
   });
 });

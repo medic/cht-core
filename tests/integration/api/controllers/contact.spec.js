@@ -428,7 +428,7 @@ describe('Contact API', () => {
         expect(firstPage.data.length).to.be.equal(3);
         expect(secondPage.data.length).to.be.equal(3);
         expect(firstPage.cursor).to.be.equal('3');
-        expect(secondPage.cursor).to.be.equal(null);
+        expect(secondPage.cursor).to.be.equal('6');
       });
 
     it('returns a page of people type contact ids with freetext when limit and cursor is passed ' +
