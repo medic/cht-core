@@ -29,7 +29,7 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { NgIf, NgClass, NgFor } from '@angular/common';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { MultiselectBarComponent } from '@mm-components/multiselect-bar/multiselect-bar.component';
-import { ReportsMoreMenuComponent } from './reports-more-menu.component';
+import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
 import {
   ReportVerifyValidIconComponent,
   ReportVerifyInvalidIconComponent
