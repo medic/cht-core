@@ -144,4 +144,8 @@ export class CHTDatasourceService {
       }
     };
   }
+
+  getDataContext() {
+    return this.dataContext;
+  }
 }
