@@ -13,11 +13,11 @@ import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 })
 export class ValidationService {
   constructor(
-    private dbService:DbService,
-    private settingsService:SettingsService,
-    private translateLocaleService:TranslateLocaleService,
-    private languageService:LanguageService,
-    private chtDatasourceService: CHTDatasourceService
+    private readonly dbService:DbService,
+    private readonly settingsService:SettingsService,
+    private readonly translateLocaleService:TranslateLocaleService,
+    private readonly languageService:LanguageService,
+    private readonly chtDatasourceService: CHTDatasourceService
   ) {
   }
 
