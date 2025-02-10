@@ -4,7 +4,7 @@ import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
 
 @Pipe({
-  name: 'formIcon',
+  name: 'formIcon'
 })
 @Injectable({
   providedIn: 'root'

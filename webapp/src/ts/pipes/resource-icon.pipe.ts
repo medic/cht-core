@@ -4,7 +4,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ResourceIconsService } from '@mm-services/resource-icons.service';
 
 @Pipe({
-  name: 'resourceIcon',
+  name: 'resourceIcon'
 })
 @Injectable({
   providedIn: 'root'
@@ -21,7 +21,7 @@ export class ResourceIconPipe implements PipeTransform {
 }
 
 @Pipe({
-  name: 'headerLogo',
+  name: 'headerLogo'
 })
 @Injectable({
   providedIn: 'root'
@@ -38,7 +38,7 @@ export class HeaderLogoPipe implements PipeTransform {
 }
 
 @Pipe({
-  name: 'partnerImage',
+  name: 'partnerImage'
 })
 @Injectable({
   providedIn: 'root'

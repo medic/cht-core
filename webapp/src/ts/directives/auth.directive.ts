@@ -1,9 +1,9 @@
 import * as _ from 'lodash-es';
 import { Directive, Input, HostBinding, OnChanges } from '@angular/core';
-import { AuthService } from '@mm-services/auth.service';
+import { AuthService } from '../services/auth.service';
 
 @Directive({
-  selector: '[mmAuth]',
+  selector: '[mmAuth]'
 })
 export class AuthDirective implements OnChanges {
   @Input() mmAuth?: string;

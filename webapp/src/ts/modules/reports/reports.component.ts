@@ -34,7 +34,6 @@ import {
   ReportVerifyValidIconComponent,
   ReportVerifyInvalidIconComponent
 } from '@mm-components/status-icons/status-icons.template';
-import { ReportsSidebarFilterComponent as ReportsSidebarFilterComponent_1 } from './reports-sidebar-filter.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LineagePipe } from '@mm-pipes/message.pipe';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
@@ -58,7 +57,7 @@ const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
     ReportVerifyInvalidIconComponent,
     FastActionButtonComponent,
     RouterOutlet,
-    ReportsSidebarFilterComponent_1,
+    ReportsSidebarFilterComponent,
     TranslatePipe,
     LineagePipe,
     ResourceIconPipe,

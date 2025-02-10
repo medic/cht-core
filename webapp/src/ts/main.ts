@@ -1,6 +1,5 @@
 import { IntegrationApiService } from '@mm-services/integration-api.service';
 
-
 const logger = reducer => {
   // default, no options
   return storeLogger({

@@ -26,7 +26,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { ButtonType, FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
-import { ContactsMoreMenuComponent } from './contacts-more-menu.component';
+import { ContactsMoreMenuComponent } from '@mm-modules/contacts/contacts-more-menu.component';
 import { NgFor, NgIf } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
