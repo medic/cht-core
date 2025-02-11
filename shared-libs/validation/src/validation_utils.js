@@ -3,19 +3,29 @@ const moment = require('moment');
 const logger = require('@medic/logger');
 const phoneNumberParser = require('@medic/phone-number');
 const config = require('../../transitions/src/config');
+const { Qualifier, Report } = require('@medic/cht-datasource');
 
 let db;
+let dataContext;
 
 const lowerCaseString = obj => typeof obj === 'string' ? obj.toLowerCase() : obj;
 
-const executeExistsRequest = async (options) => {
-  return await db.medic.query('medic-client/reports_by_freetext', options);
+const executeChtDatasourceExistsRequest = async (freetext) => {
+  const getReportUuids = dataContext.bind(Report.v1.getUuids);
+  const reportUuids = [];
+  const generator = await getReportUuids(Qualifier.byFreetext(freetext));
+
+  for await (const uuid of generator) {
+    reportUuids.push(uuid);
+  }
+
+  return reportUuids;
 };
 
 const getIntersection = responses => {
-  let ids = responses.pop().rows.map(row => row.id);
+  let ids = responses.pop();
   responses.forEach(response => {
-    ids = ids.filter(id => _.find(response.rows, { id }));
+    ids = ids.filter(id => _.find(response, item => item === id));
   });
   return ids;
 };
@@ -33,21 +43,35 @@ const parseStartDate = (duration) => {
   return moment().subtract(parsed).valueOf();
 };
 
+const getExistsRequestOptions = (fields, doc) => {
+  return fields.map(field => {
+    return `${field}:${lowerCaseString(doc[field])}`;
+  });
+};
+
+const addAdditionalFilters = (options, requestOptions) => {
+  if (options.additionalFilter) {
+    const lowerCaseAdditionalFilter = lowerCaseString(options.additionalFilter);
+    requestOptions.push(lowerCaseAdditionalFilter);
+  }
+};
+
+const getExistsResponses = async requestOptions => {
+  const responses = [];
+  for (const options of requestOptions) {
+    const response = await executeChtDatasourceExistsRequest(options);
+    responses.push(response);
+  }
+  return responses;
+};
+
 const exists = async (doc, fields, options = {}) => {
   if (!fields.length) {
     return Promise.reject('No arguments provided to "exists" validation function');
   }
-  const requestOptions = fields.map(field => {
-    return { key: [`${field}:${lowerCaseString(doc[field])}`] };
-  });
-  if (options.additionalFilter) {
-    requestOptions.push({ key: [lowerCaseString(options.additionalFilter)] });
-  }
-  const responses = [];
-  for (const options of requestOptions) {
-    const response = await executeExistsRequest(options);
-    responses.push(response);
-  }
+  const requestOptions = getExistsRequestOptions(fields, doc);
+  addAdditionalFilters(options, requestOptions);
+  const responses = await getExistsResponses(requestOptions);
 
   const ids = getIntersection(responses).filter(id => id !== doc._id);
   if (!ids.length) {
@@ -57,14 +81,13 @@ const exists = async (doc, fields, options = {}) => {
   const result = await db.medic.allDocs({ keys: ids, include_docs: true });
   const startDate = parseStartDate(options.duration);
   // filter out docs with errors
-  const found = result.rows.some(row => {
+  return result.rows.some(row => {
     const doc = row.doc;
     return (
       (!doc.errors || doc.errors.length === 0) &&
       (!startDate || doc.reported_date >= startDate)
     );
   });
-  return found;
 };
 
 const compareDateAfter = (testDate, reportedDate, duration) => {
@@ -125,8 +148,9 @@ const uniquePhone = async (value) => {
 };
 
 module.exports = {
-  init: (_db) => {
+  init: (_db, _dataContext) => {
     db = _db;
+    dataContext = _dataContext;
   },
   exists,
   compareDate,
