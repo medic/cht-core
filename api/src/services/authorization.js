@@ -257,20 +257,18 @@ const getContactSubjects = (row) => {
 const getAuthorizationContext = async (userCtx) => {
   const authCtx = getContextObject(userCtx);
   const contactsSubjects = {};
-  const subjectsEntry = (id, primaryContact) => contactsSubjects[id] || { subjects: [], primaryContact };
 
   const results = await db.medic.query('medic/contacts_by_depth', { keys: authCtx.contactsByDepthKeys });
   results.rows.forEach(row => {
     const subjects = getContactSubjects(row);
 
+    contactsSubjects[row.id] = { subjects, primaryContact: row.value.primary_contact };
+    authCtx.subjectIds.push(...subjects);
+
     if (usesReportDepth(authCtx)) {
       const depth = lowestSubjectDepth(subjects, authCtx.subjectsDepth, row.key[1]);
       subjects.forEach(subject => authCtx.subjectsDepth[subject] = depth);
     }
-
-    contactsSubjects[row.id] = subjectsEntry(row.id, row.value.primary_contact);
-    contactsSubjects[row.id].subjects = subjects;
-    authCtx.subjectIds.push(...subjects);
   });
 
   if (authCtx.replicatePrimaryContacts) {
@@ -298,17 +296,17 @@ const addPrimaryContactsSubjects = async (authCtx, contacts) => {
     result.rows.forEach(row => {
       const subjects = registrationUtils.getSubjectIds(row.doc);
       authCtx.subjectIds.push(...subjects);
-      contacts[row.id] = { subjects: subjects };
+      contacts[row.id] = { subjects };
     });
   }
 
   if (usesReportDepth(authCtx)) {
-    primaryContactIds.forEach(id => {
+    primaryContactIds.forEach(primaryContactId => {
       const parents = Object.entries(contacts)
-        .filter(([, { primaryContact } ]) => primaryContact === id)
+        .filter(([, { primaryContact } ]) => primaryContact === primaryContactId)
         .map(([id]) => id);
       const depth = lowestSubjectDepth(parents, authCtx.subjectsDepth);
-      contacts[id].subjects.forEach(subject => authCtx.subjectsDepth[subject] = depth);
+      contacts[primaryContactId].subjects.forEach(subject => authCtx.subjectsDepth[subject] = depth);
     });
   }
 
