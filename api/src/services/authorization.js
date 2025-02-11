@@ -58,8 +58,15 @@ const hasAccessToUnassignedDocs = (userCtx) => {
          auth.hasAllPermissions(userCtx, 'can_view_unallocated_data_records');
 };
 
+const lowestSubjectDepth = (subjects, subjectsDepth, depth) => {
+  const depths = [depth, ...subjects.map(subject => subjectsDepth[subject]), Number.MAX_VALUE].filter(d => !isNaN(d));
+  return Math.min(...depths);
+};
+
 const includeSubjects = (authorizationContext, newSubjects, depth) => {
   const initialSubjectsCount = authorizationContext.subjectIds.length;
+
+  depth = lowestSubjectDepth(newSubjects, authorizationContext.subjectsDepth, depth);
   newSubjects.forEach(subject => {
     if (!subject || authorizationContext.subjectIds.includes(subject)) {
       return;
@@ -81,7 +88,7 @@ const getContactDepth = (authorizationContext, contactsByDepth) => {
   const depthEntry = contactsByDepth.find(entry => {
     return entry.key.length === 2 && authorizationContext.userCtx.facility_id.includes(entry.key[0]);
   });
-  return depthEntry && depthEntry.key[1];
+  return depthEntry?.key[1];
 };
 
 // Updates authorizationContext.subjectIds, including or excluding tested contact `subjectId` and `docId`
@@ -249,31 +256,26 @@ const getContactSubjects = (row) => {
 
 const getAuthorizationContext = async (userCtx) => {
   const authCtx = getContextObject(userCtx);
-  const primaryContacts = {};
-  const primaryContactEntry = (id) => primaryContacts[id] || ({ id: id, placeIds: [], subjects: [] });
+  const contactsSubjects = {};
+  const subjectsEntry = (id, primaryContact) => contactsSubjects[id] || { subjects: [], primaryContact };
 
   const results = await db.medic.query('medic/contacts_by_depth', { keys: authCtx.contactsByDepthKeys });
   results.rows.forEach(row => {
     const subjects = getContactSubjects(row);
-    authCtx.subjectIds.push(...subjects);
-
-    if (authCtx.replicatePrimaryContacts) {
-      if (row.value.primary_contact) {
-        primaryContacts[row.value.primary_contact] = primaryContactEntry(row.value.primary_contact);
-        primaryContacts[row.value.primary_contact].placeIds.push(row.id);
-      }
-
-      primaryContacts[row.id] = primaryContactEntry(row.id);
-      primaryContacts[row.id].subjects = subjects;
-    }
 
     if (usesReportDepth(authCtx)) {
-      const subjectDepth = row.key[1];
-      subjects.forEach(subject => authCtx.subjectsDepth[subject] = subjectDepth);
+      const depth = lowestSubjectDepth(subjects, authCtx.subjectsDepth, row.key[1]);
+      subjects.forEach(subject => authCtx.subjectsDepth[subject] = depth);
     }
+
+    contactsSubjects[row.id] = subjectsEntry(row.id, row.value.primary_contact);
+    contactsSubjects[row.id].subjects = subjects;
+    authCtx.subjectIds.push(...subjects);
   });
 
-  await addPrimaryContactsSubjects(authCtx, primaryContacts);
+  if (authCtx.replicatePrimaryContacts) {
+    await addPrimaryContactsSubjects(authCtx, contactsSubjects);
+  }
 
   authCtx.subjectIds = _.uniq(authCtx.subjectIds);
   if (hasAccessToUnassignedDocs(userCtx)) {
@@ -284,25 +286,29 @@ const getAuthorizationContext = async (userCtx) => {
   return authCtx;
 };
 
-const addPrimaryContactsSubjects = async (authCtx, primaryContacts) => {
-  const unknownPrimaryContacts = Object.keys(primaryContacts).filter(id => !authCtx.subjectIds.includes(id));
+const addPrimaryContactsSubjects = async (authCtx, contacts) => {
+  const primaryContactIds = Object
+    .values(contacts)
+    .map(({ primaryContact }) => primaryContact)
+    .filter(id => !!id);
+  const unknownPrimaryContacts = _.uniq(primaryContactIds.filter(id => !contacts[id]));
 
   if (unknownPrimaryContacts.length) {
     const result = await db.medic.allDocs({ keys: unknownPrimaryContacts, include_docs: true });
     result.rows.forEach(row => {
       const subjects = registrationUtils.getSubjectIds(row.doc);
       authCtx.subjectIds.push(...subjects);
-      primaryContacts[row.id].subjects = subjects;
+      contacts[row.id] = { subjects: subjects };
     });
   }
 
   if (usesReportDepth(authCtx)) {
-    Object.values(primaryContacts).forEach(({ placeIds, subjects }) => {
-      if (!placeIds.length) {
-        return;
-      }
-      const lowestPlaceDepth = Math.min(...placeIds.map(placeID => authCtx.subjectsDepth[placeID]));
-      subjects.forEach(subject => authCtx.subjectsDepth[subject] = lowestPlaceDepth);
+    primaryContactIds.forEach(id => {
+      const parents = Object.entries(contacts)
+        .filter(([, { primaryContact } ]) => primaryContact === id)
+        .map(([id]) => id);
+      const depth = lowestSubjectDepth(parents, authCtx.subjectsDepth);
+      contacts[id].subjects.forEach(subject => authCtx.subjectsDepth[subject] = depth);
     });
   }
 
@@ -429,8 +435,6 @@ const getScopedAuthorizationContext = async (userCtx, scopeDocsCtx = []) => {
   do {
     newSubjects = populateAllowedSubjectIds(authorizationCtx, contacts);
   } while (newSubjects && authorizationCtx.replicatePrimaryContacts);
-
-  console.warn(authorizationCtx);
 
   if (hasAccessToUnassignedDocs(userCtx)) {
     authorizationCtx.subjectIds.push(UNASSIGNED_KEY);

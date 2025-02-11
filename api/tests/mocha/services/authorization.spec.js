@@ -423,7 +423,7 @@ describe('Authorization service', () => {
         ['aaa', 0], ['aaa', 1],
       ]);
       result.should.deep.include({ contactDepth: 1 });
-      db.medic.allDocs.args.should.deep.equal([[{ keys: ['contact', 'contact2'], include_docs: true }]]);
+      db.medic.allDocs.args.should.deep.equal([[{ keys: ['contact2', 'contact'], include_docs: true }]]);
     });
 
     it('should only query for unknown primary contacts', async () => {
