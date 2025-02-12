@@ -33,13 +33,14 @@ const isDataPrimitive = (value: unknown): value is DataPrimitive => {
     || value instanceof Date;
 };
 
-interface DataArray extends Readonly<DataValue[]> { }
+type DataArray = readonly DataValue[]
 
 const isDataArray = (value: unknown): value is DataArray => {
   return Array.isArray(value) && value.every(v => isDataPrimitive(v) || isDataArray(v) || isDataObject(v));
 };
 
 /** @internal */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface DataObject extends Readonly<Record<string, DataValue>> { }
 
 /** @internal */
@@ -166,6 +167,6 @@ export const assertLimit: (limit: unknown) => asserts limit is number = (limit: 
 /** @internal */
 export const assertCursor: (cursor: unknown) => asserts cursor is Nullable<string> = (cursor: unknown) => {
   if (cursor !== null && (typeof cursor !== 'string' || !cursor.length)) {
-    throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}].`);
+    throw new InvalidArgumentError(`Invalid cursor token: [${JSON.stringify(cursor)}].`);
   }
 };

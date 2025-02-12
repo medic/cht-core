@@ -318,9 +318,9 @@ describe('local person', () => {
         '-1',
         undefined,
       ].forEach((invalidSkip ) => {
-        it(`throws an error if cursor is invalid: ${String(invalidSkip)}`, async () => {
+        it(`throws an error if cursor is invalid: ${JSON.stringify(invalidSkip)}`, async () => {
           await expect(Person.v1.getPage(localContext)(personTypeQualifier, invalidSkip as string, limit))
-            .to.be.rejectedWith(`Invalid cursor token: [${String(invalidSkip)}]`);
+            .to.be.rejectedWith(`Invalid cursor token: [${JSON.stringify(invalidSkip)}]`);
 
           expect(settingsGetAll.calledOnce).to.be.true;
           expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
