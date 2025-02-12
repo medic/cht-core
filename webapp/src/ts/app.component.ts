@@ -646,7 +646,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       // initialised yet
       try {
         $(element).select2('close');
-      } catch (e) {
+      } catch (_) {
         // exception thrown on clicking 'close'
       }
     });
