@@ -95,6 +95,7 @@ const getContactDepth = (authorizationContext, contactsByDepth) => {
 // @param   {Boolean} allowed - whether subjects should be included or excluded
 // @param   {Array}   authorizationContext.subjectIds - allowed subjectIds.
 // @param   {Object}  authorizationContext.subjectsByDepth
+// @param   {Boolean} authorizationContext.replicatePrimaryContacts
 // @param   {Array}   viewValues.contactsByDepth - results of `medic/contacts_by_depth` view against doc
 // @returns {Boolean} whether new subjectIds were added to authorizationContext
 const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
@@ -103,11 +104,15 @@ const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
   }
 
   //first element of `contactsByDepth` contains both `subjectId` and `docID`
-  const [{ key: [ docId ], value: subjectId }] = contactsByDepth;
+  const [{ key: [ docId ], value: { shortcode: subjectId, primary_contact: primaryContact } }] = contactsByDepth;
 
   if (allowed) {
+    const newSubjects = [subjectId, docId];
+    if (authorizationContext.replicatePrimaryContacts) {
+      newSubjects.push(primaryContact);
+    }
     const contactDepth = getContactDepth(authorizationContext, contactsByDepth);
-    return includeSubjects(authorizationContext, [subjectId, docId], contactDepth);
+    return includeSubjects(authorizationContext, newSubjects, contactDepth);
   }
 
   excludeSubjects(authorizationContext, subjectId, docId);
@@ -209,6 +214,7 @@ const getContactsByDepthKeys = (userCtx, depth) => {
  * @param {Object} authorizationContext
  * @param {Array} authorizationContext.contactsByDepthKeys - list containing user's generated contactsByDepthKeys
  * @param {Array<string>} authorizationContext.subjectIds - allowed subjectIds.
+ * @param {Boolean} authorizationContext.replicatePrimaryContacts - whether to allow replication of primary contacts
  *
  * @returns {Boolean}
  */
@@ -221,6 +227,9 @@ const allowedContact = (docContactsByDepth, authorizationContext) => {
 
   if (matchedView) {
     return true;
+  }
+  if (!authorizationContext.replicatePrimaryContacts) {
+    return false;
   }
 
   // this doc isn't allowed through its direct lineage, but can be a primary contact of a place that is.
@@ -247,7 +256,7 @@ const getContactSubjects = (row) => {
 
   subjects.push(row.id);
 
-  if (row.value) {
+  if (row.value && row.value.shortcode) {
     subjects.push(row.value.shortcode);
   }
 
