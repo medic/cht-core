@@ -19,10 +19,8 @@ describe('Status Filter Component', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
-          BrowserAnimationsModule
-        ],
-        declarations: [
-          StatusFilterComponent,
+          BrowserAnimationsModule,
+          StatusFilterComponent
         ],
         providers: [
           provideMockStore(),

@@ -31,11 +31,9 @@ describe('Search Bar Component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          FormsModule
-        ],
-        declarations: [
+          FormsModule,
           SearchBarComponent,
-          FreetextFilterComponent,
+          FreetextFilterComponent
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),

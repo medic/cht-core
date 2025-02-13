@@ -39,8 +39,6 @@ describe('Facility Filter Component', () => {
           BrowserAnimationsModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
-        ],
-        declarations: [
           FacilityFilterComponent,
         ],
         providers: [

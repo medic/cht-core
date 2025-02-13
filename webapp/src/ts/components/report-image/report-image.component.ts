@@ -2,11 +2,13 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 import { DbService } from '@mm-services/db.service';
+import { NgIf } from '@angular/common';
 
 
 @Component({
   selector: 'report-image',
-  templateUrl: './report-image.component.html'
+  templateUrl: './report-image.component.html',
+  imports: [NgIf]
 })
 export class ReportImageComponent implements OnInit, OnDestroy {
   @Input() report;

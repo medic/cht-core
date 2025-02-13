@@ -53,16 +53,14 @@ describe('AnalyticsComponent', () => {
 
     return TestBed
       .configureTestingModule({
-        declarations: [
-          AnalyticsComponent,
-          AnalyticsFilterComponent,
-          NavigationComponent,
-          ToolBarComponent,
-        ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
           MatIconModule,
+          AnalyticsComponent,
+          AnalyticsFilterComponent,
+          NavigationComponent,
+          ToolBarComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockSelectors }),
@@ -71,7 +69,7 @@ describe('AnalyticsComponent', () => {
           { provide: SessionService, useValue: sessionService },
           { provide: TelemetryService, useValue: telemetryService },
           { provide: TargetAggregatesService, useValue: targetAggregatesService },
-          { provide: UserSettingsService, useValue: userSettingsService}
+          { provide: UserSettingsService, useValue: userSettingsService }
         ]
       })
       .compileComponents()

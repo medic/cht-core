@@ -48,8 +48,6 @@ describe('TrainingsComponent', () => {
           RouterModule,
           MatIconModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ],
-        declarations: [
           TrainingsComponent,
           ModalLayoutComponent,
           TrainingCardsFormComponent,

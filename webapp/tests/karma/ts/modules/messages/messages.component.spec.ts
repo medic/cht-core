@@ -74,8 +74,6 @@ describe('Messages Component', () => {
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
           MatIconModule,
-        ],
-        declarations: [
           MessagesComponent,
           RelativeDatePipe,
           NavigationComponent,
