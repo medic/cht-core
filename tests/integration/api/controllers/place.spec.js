@@ -198,7 +198,7 @@ describe('Place API', () => {
 
       await expect(utils.request(opts))
         .to.be.rejectedWith(
-          `400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`
+          `400 - {"code":400,"error":"Invalid cursor token: [\\"-1\\"]."}`
         );
     });
   });
