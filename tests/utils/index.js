@@ -854,12 +854,14 @@ const createUsers = async (users, meta = false, password_change_required = false
       method: 'POST',
       body: {
         ...user,
+        place: Array.isArray(user.place) ? user.place : [user.place],
         password_change_required: !!password_change_required,
       },
     };
     await request(options);
   }
 
+  // it takes a little time before users are available to be logged in with.
   await delayPromise(1000);
 
   if (meta) {
