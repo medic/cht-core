@@ -848,28 +848,24 @@ const getCreatedUsers = async () => {
  * @return {Promise}
  * */
 const createUsers = async (users, meta = false, password_change_required = false) => {
-  const createUserOpts = { path: '/api/v1/users', method: 'POST' };
-  const createUserV3Opts = { path: '/api/v3/users', method: 'POST' };
-
   for (const user of users) {
     const options = {
+      path: '/api/v3/users',
+      method: 'POST',
       body: {
         ...user,
-        password_change_required: password_change_required ? undefined : false
+        password_change_required: !!password_change_required,
       },
-      ...(Array.isArray(user.place) ? createUserV3Opts : createUserOpts)
     };
     await request(options);
   }
 
   await delayPromise(1000);
 
-  if (!meta) {
-    return;
-  }
-
-  for (const user of users) {
-    await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`, method: 'PUT' });
+  if (meta) {
+    for (const user of users) {
+      await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`, method: 'PUT' });
+    }
   }
 };
 
@@ -1236,7 +1232,8 @@ const createCluster = async (dataDir) => {
   await runCommand(`k3d registry create ${K3D_REGISTRY}`);
 
   const port = await runCommand(`docker container port k3d-${K3D_REGISTRY}`);
-  K3D_REGISTRY_PORT = port.trim().replace('5000/tcp -> 0.0.0.0:', '');
+  const match = port.trim().match(/:(\d+)$/);
+  K3D_REGISTRY_PORT = match[1];
 
   await runCommand(
     `k3d cluster create ${PROJECT_NAME} ` +
