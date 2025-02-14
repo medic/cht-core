@@ -848,26 +848,28 @@ const getCreatedUsers = async () => {
  * @return {Promise}
  * */
 const createUsers = async (users, meta = false, password_change_required = false) => {
+  const createUserOpts = { path: '/api/v1/users', method: 'POST' };
+  const createUserV3Opts = { path: '/api/v3/users', method: 'POST' };
+
   for (const user of users) {
     const options = {
-      path: '/api/v3/users',
-      method: 'POST',
       body: {
         ...user,
-        place: Array.isArray(user.place) ? user.place : [user.place],
-        password_change_required: !!password_change_required,
+        password_change_required: password_change_required ? undefined : false
       },
+      ...(Array.isArray(user.place) ? createUserV3Opts : createUserOpts)
     };
     await request(options);
   }
 
-  // it takes a little time before users are available to be logged in with.
   await delayPromise(1000);
 
-  if (meta) {
-    for (const user of users) {
-      await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`, method: 'PUT' });
-    }
+  if (!meta) {
+    return;
+  }
+
+  for (const user of users) {
+    await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`, method: 'PUT' });
   }
 };
 
