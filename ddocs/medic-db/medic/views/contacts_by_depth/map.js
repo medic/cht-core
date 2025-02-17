@@ -1,7 +1,6 @@
 function(doc) {
   if (['contact', 'person', 'clinic', 'health_center', 'district_hospital'].indexOf(doc.type) !== -1) {
     var value = {
-      _id: doc._id,
       shortcode: doc.patient_id || doc.place_id,
       primary_contact: (doc.contact && doc.contact._id) || doc.contact,
     }
