@@ -175,11 +175,11 @@
     margin-right: 0;
   }
 
-  [type=tel] {
+  [type=tel], .phone, [class*="phone"] p, [class*="phone"] span {
     direction: ltr!important;
     unicode-bidi: embed;
+    text-align: right;
   }
-
 
   @media (max-width: 767px) {
     mm-sidebar-menu .mat-sidenav-container .nav-item mat-icon {
