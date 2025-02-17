@@ -65,12 +65,15 @@ const getDepth = (userCtx) => {
   userCtx.roles.forEach((role) => {
     // find the role with the highest depth
     const setting = settings.find(setting => setting.role === role);
-    const settingDepth = setting && parseInt(setting.depth, 10);
+    if (!setting) {
+      return;
+    }
+    const settingDepth = parseInt(setting.depth, 10);
     if (!isNaN(settingDepth) && settingDepth > depth.contactDepth) {
       depth.contactDepth = settingDepth;
       depth.replicatePrimaryContacts = !!setting.replicate_primary_contacts;
 
-      const settingsReportDepth = setting && parseInt(setting.report_depth);
+      const settingsReportDepth = parseInt(setting.report_depth);
       depth.reportDepth = !isNaN(settingsReportDepth) ? settingsReportDepth : -1;
     }
   });
