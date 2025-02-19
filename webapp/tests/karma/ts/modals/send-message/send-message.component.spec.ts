@@ -37,8 +37,6 @@ describe('SendMessageComponent', () => {
         imports: [
           FormsModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ],
-        declarations: [
           SendMessageComponent,
           ModalLayoutComponent,
           PanelHeaderComponent,

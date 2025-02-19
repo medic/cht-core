@@ -3,10 +3,18 @@ import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
+import { NgIf } from '@angular/common';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'mm-privacy-policy',
   templateUrl: './privacy-policy.component.html',
+  imports: [
+    NgIf,
+    ToolBarComponent,
+    TranslatePipe,
+  ],
 })
 export class PrivacyPolicyComponent implements OnInit {
   @Input() overlay;

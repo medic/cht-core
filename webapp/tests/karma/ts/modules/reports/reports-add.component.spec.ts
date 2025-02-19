@@ -18,7 +18,6 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { FormService } from '@mm-services/form.service';
-import { ComponentsModule } from '@mm-components/components.module';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { PerformanceService } from '@mm-services/performance.service';
 
@@ -76,15 +75,12 @@ describe('Reports Add Component', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
-          ComponentsModule,
-        ],
-        declarations: [
           ReportsAddComponent,
           EnketoComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
-          { provide: DbService, useValue: { get: () => dbService }},
+          { provide: DbService, useValue: { get: () => dbService } },
           { provide: FileReaderService, useValue: fileReaderService },
           { provide: GetReportContentService, useValue: getReportContentService },
           { provide: XmlFormsService, useValue: xmlFormsService },
@@ -93,7 +89,7 @@ describe('Reports Add Component', () => {
           { provide: FormService, useValue: formService },
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
-          { provide: PerformanceService, useValue: performanceService},
+          { provide: PerformanceService, useValue: performanceService },
         ],
       })
       .compileComponents()

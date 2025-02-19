@@ -1,9 +1,12 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
+import { TranslateDirective } from '@ngx-translate/core';
 
 @Component({
   selector: 'verify-report',
-  templateUrl: './verify-report.component.html'
+  templateUrl: './verify-report.component.html',
+  imports: [ModalLayoutComponent, TranslateDirective]
 })
 export class VerifyReportComponent {
   static id = 'verify-report-modal';

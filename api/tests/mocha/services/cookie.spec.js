@@ -12,6 +12,7 @@ describe('cookie service', () => {
     service = rewire('../../../src/services/cookie');
     res = {
       cookie: sinon.stub(),
+      clearCookie: sinon.stub(),
     };
   });
 
@@ -124,6 +125,39 @@ describe('cookie service', () => {
           secure: true,
           maxAge: oneYear,
         },
+      ]);
+    });
+  });
+
+  describe('clearCookie', () => {
+    it('should clear cookie with correct security options', () => {
+      sinon.stub(process, 'env').value({});
+      const cookieName = 'testCookie';
+      service.clearCookie(res, cookieName);
+      chai.expect(res.clearCookie.callCount).to.equal(1);
+      chai.expect(res.clearCookie.args[0]).to.deep.equal([
+        'testCookie',
+        {
+          sameSite: 'lax',
+          secure: false,
+          httpOnly: true
+        }
+      ]);
+    });
+
+    it('should clear cookie with secure option in production environment', () => {
+      sinon.stub(process, 'env').value({ NODE_ENV: 'production' });
+      service = rewire('../../../src/services/cookie');
+      const cookieName = 'testCookie';
+      service.clearCookie(res, cookieName);
+      chai.expect(res.clearCookie.callCount).to.equal(1);
+      chai.expect(res.clearCookie.args[0]).to.deep.equal([
+        'testCookie',
+        {
+          sameSite: 'lax',
+          secure: true,
+          httpOnly: true
+        }
       ]);
     });
   });

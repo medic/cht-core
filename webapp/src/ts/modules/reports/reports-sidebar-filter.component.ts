@@ -7,12 +7,36 @@ import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { NgClass, NgTemplateOutlet, NgIf } from '@angular/common';
+import { MatIcon } from '@angular/material/icon';
+import {
+  MatAccordion,
+  MatExpansionPanel,
+  MatExpansionPanelHeader,
+  MatExpansionPanelDescription
+} from '@angular/material/expansion';
+import { TranslatePipe } from '@ngx-translate/core';
 
 type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateFilterComponent | StatusFilterComponent;
 
 @Component({
   selector: 'mm-reports-sidebar-filter',
-  templateUrl: './reports-sidebar-filter.component.html'
+  templateUrl: './reports-sidebar-filter.component.html',
+  imports: [
+    NgClass,
+    MatIcon,
+    MatAccordion,
+    MatExpansionPanel,
+    MatExpansionPanelHeader,
+    NgTemplateOutlet,
+    MatExpansionPanelDescription,
+    FormTypeFilterComponent,
+    FacilityFilterComponent,
+    DateFilterComponent,
+    NgIf,
+    StatusFilterComponent,
+    TranslatePipe
+  ]
 })
 export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   @Output() search: EventEmitter<any> = new EventEmitter();

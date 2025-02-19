@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, NgIf } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription, timer } from 'rxjs';
@@ -7,9 +7,12 @@ import { Subscription, timer } from 'rxjs';
 import { Selectors } from '@mm-selectors/index';
 import { TranslateService } from '@mm-services/translate.service';
 import { NavigationService } from '@mm-services/navigation.service';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  templateUrl: './error.component.html'
+  templateUrl: './error.component.html',
+  imports: [ToolBarComponent, NgIf, TranslatePipe]
 })
 export class ErrorComponent implements OnInit, OnDestroy {
   private windowRef;

@@ -15,7 +15,7 @@ export class TranslateMessageFormatCompilerProvider extends TranslateCompiler {
     return (params) => {
       try {
         return compiledMessageFormat(params);
-      } catch (err) {
+      } catch (_) {
         console.warn('Error while interpolating', value);
         return value;
       }

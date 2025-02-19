@@ -42,8 +42,10 @@ describe('AppComponent', () => {
     };
     await TestBed
       .configureTestingModule({
-        declarations: [AppComponent],
-        imports: [TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } })],
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          AppComponent
+        ],
         providers: [
           { provide: ContactSaveService, useValue: contactSaveService },
           { provide: EnketoService, useValue: enketoService },

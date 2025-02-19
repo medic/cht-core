@@ -69,12 +69,14 @@ const mapDocumentToPayload = (doc, config, key) => {
       } catch (err) {
         throw new OutboundError(`Mapping error for '${key}/${dest}' JS error on source document: '${doc._id}': ${err}`);
       }
-    } else {
+    } else if (path) {
       try {
         srcValue = objectPath.get({doc}, path);
       } catch (err) {
         throw new OutboundError(`Mapping error for '${key}/${dest}' JS error on source document: '${doc._id}': ${err}`);
       }
+    } else {
+      throw new OutboundError(`Mapping error for '${key}/${dest}' either 'expr' or 'path' is required: '${doc._id}'`);
     }
 
     if (required && srcValue === undefined) {

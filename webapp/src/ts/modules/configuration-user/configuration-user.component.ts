@@ -5,9 +5,13 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.component';
 import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settings.component';
 import { SessionService } from '@mm-services/session.service';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
+import { NgIf } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  templateUrl: './configuration-user.component.html'
+  templateUrl: './configuration-user.component.html',
+  imports: [ToolBarComponent, NgIf, TranslatePipe]
 })
 export class ConfigurationUserComponent implements OnInit {
 

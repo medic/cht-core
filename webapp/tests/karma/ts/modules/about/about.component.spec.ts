@@ -61,8 +61,6 @@ describe('About Component', () => {
           RouterTestingModule,
           MatCardModule,
           MatIcon,
-        ],
-        declarations: [
           AboutComponent,
           ToolBarComponent,
           NavigationComponent,

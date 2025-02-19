@@ -2,7 +2,7 @@ import { cloneDeep as _cloneDeep, find as _find } from 'lodash-es';
 import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router';
 
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { GlobalActions } from '@mm-actions/global';
@@ -24,13 +24,45 @@ import { FastAction, FastActionButtonService } from '@mm-services/fast-action-bu
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
-import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
+import { ButtonType, FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
+import { NgIf, NgClass, NgFor } from '@angular/common';
+import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
+import { MultiselectBarComponent } from '@mm-components/multiselect-bar/multiselect-bar.component';
+import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
+import {
+  ReportVerifyValidIconComponent,
+  ReportVerifyInvalidIconComponent
+} from '@mm-components/status-icons/status-icons.template';
+import { TranslatePipe } from '@ngx-translate/core';
+import { LineagePipe } from '@mm-pipes/message.pipe';
+import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
+import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 
 const PAGE_SIZE = 50;
 const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
 
 @Component({
-  templateUrl: './reports.component.html'
+  templateUrl: './reports.component.html',
+  imports: [
+    ToolBarComponent,
+    NgIf,
+    SearchBarComponent,
+    MultiselectBarComponent,
+    ReportsMoreMenuComponent,
+    NgClass,
+    NgFor,
+    RouterLink,
+    ReportVerifyValidIconComponent,
+    ReportVerifyInvalidIconComponent,
+    FastActionButtonComponent,
+    RouterOutlet,
+    ReportsSidebarFilterComponent,
+    TranslatePipe,
+    LineagePipe,
+    ResourceIconPipe,
+    RelativeDatePipe
+  ]
 })
 export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(ReportsSidebarFilterComponent) reportsSidebarFilter?: ReportsSidebarFilterComponent;

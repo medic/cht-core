@@ -27,13 +27,11 @@ describe('HomeComponent', () => {
 
     return TestBed
       .configureTestingModule({
-        declarations: [
-          HomeComponent,
-        ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
           FormsModule,
+          HomeComponent,
         ],
         providers: [
           { provide: AuthService, useValue: authServiceMock },

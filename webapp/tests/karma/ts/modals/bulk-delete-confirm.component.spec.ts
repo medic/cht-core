@@ -30,11 +30,9 @@ describe('BulkDeleteConfirmComponent', () => {
         imports: [
           FormsModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ],
-        declarations: [
           BulkDeleteConfirmComponent,
           ModalLayoutComponent,
-          PanelHeaderComponent
+          PanelHeaderComponent,
         ],
         providers: [
           { provide: DeleteDocsService, useValue: deleteDocsService },

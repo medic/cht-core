@@ -5,7 +5,6 @@ import { By } from '@angular/platform-browser';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
 import { SenderComponent } from '@mm-components/sender/sender.component';
-import { PipesModule } from '@mm-pipes/pipes.module';
 
 describe('sender directive', function() {
   let fixture;
@@ -18,10 +17,7 @@ describe('sender directive', function() {
     TestBed.configureTestingModule({
       imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        PipesModule,
         RouterModule.forRoot([]),
-      ],
-      declarations: [
         SenderComponent,
       ]
     });

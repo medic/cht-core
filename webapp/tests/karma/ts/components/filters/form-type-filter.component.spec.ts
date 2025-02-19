@@ -28,8 +28,6 @@ describe('Form Type Filter Component', () => {
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
           FormsModule,
-        ],
-        declarations: [
           FormTypeFilterComponent,
         ],
         providers: [
