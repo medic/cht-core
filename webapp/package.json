@@ -42,7 +42,7 @@
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "bikram-sambat-bootstrap": "^1.6.0",
     "bootstrap": "^3.4.1",
-    "bootstrap-daterangepicker": "^2.1.30",
+    "bootstrap-daterangepicker": "^3.1.0",
     "core-js": "^3.40.0",
     "enketo-core": "^7.2.5",
     "eurodigit": "^3.1.3",
