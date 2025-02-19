@@ -31,7 +31,6 @@ updates:
       - dependency-name: "node-fetch" # ESM Modules https://github.com/medic/cht-core/issues/9770
       - dependency-name: "url-join" # ESM Modules https://github.com/medic/cht-core/issues/9770
       - dependency-name: "pouchdb-*" # https://github.com/medic/cht-core/issues/9534
-      - dependency-name: "uuid" # https://github.com/medic/cht-core/issues/9769
 
   - package-ecosystem: "npm"
     directory: "/admin"
