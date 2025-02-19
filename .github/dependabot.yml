@@ -31,6 +31,7 @@ updates:
       - dependency-name: "node-fetch" # ESM Modules https://github.com/medic/cht-core/issues/9770
       - dependency-name: "url-join" # ESM Modules https://github.com/medic/cht-core/issues/9770
       - dependency-name: "pouchdb-*" # https://github.com/medic/cht-core/issues/9534
+      - dependency-name: "uuid" # https://github.com/medic/cht-core/issues/9769
 
   - package-ecosystem: "npm"
     directory: "/admin"
@@ -58,5 +59,9 @@ updates:
         - "rxjs"
         - "zone.js"
     ignore:
+      - dependency-name: "bootstrap" # https://github.com/medic/cht-core/issues/8176
+      - dependency-name: "bootstrap-daterangepicker" # https://github.com/medic/cht-core/issues/8176
       - dependency-name: "enketo-core" # https://github.com/medic/cht-core/issues/8755
       - dependency-name: "jquery" # https://github.com/medic/cht-core/issues/8755
+      - dependency-name: "select2" # https://github.com/medic/cht-core/issues/8755
+      - dependency-name: "signature_pad" # https://github.com/medic/cht-core/issues/8755
