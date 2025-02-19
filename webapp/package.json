@@ -41,7 +41,7 @@
     "@ngx-translate/core": "^16.0.4",
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "bikram-sambat-bootstrap": "^1.6.0",
-    "bootstrap": "^3.4.1",
+    "bootstrap": "^5.3.3",
     "bootstrap-daterangepicker": "^2.1.30",
     "core-js": "^3.40.0",
     "enketo-core": "^7.2.5",
