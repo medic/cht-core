@@ -2186,11 +2186,6 @@ describe('Users API', () => {
         user.oidc_provider = correctOidcClientId;
         user.password = password;
 
-
-        // const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
-        // await utils.updateSettings(settings, { ignoreReload: true });
-        // await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
-
         const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: user });
         chai.expect(response).to.shallowDeepEqual([
           {
@@ -2205,13 +2200,7 @@ describe('Users API', () => {
 
       it('should fail to create/update a user when token_login is also active', async () => {
         user.oidc_provider = correctOidcClientId;
-
-        
-
-
-        // const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
-        // await utils.updateSettings(settings, { ignoreReload: true });
-        // await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
+        user.token_login = true;
 
         const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: user });
         chai.expect(response).to.shallowDeepEqual([
