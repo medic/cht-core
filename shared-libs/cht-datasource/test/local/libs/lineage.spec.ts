@@ -224,9 +224,9 @@ describe('local lineage lib', () => {
       getDocsByIdsInner.resolves([contact0, contact1]);
       const place0WithContact = { ...place0, contact: contact0 };
       const place1WithContact = { ...place1, contact: contact1 };
-      hydratePrimaryContactInner.onFirstCall().returns(place0WithContact);
-      hydratePrimaryContactInner.onSecondCall().returns(place1WithContact);
-      hydratePrimaryContactInner.onThirdCall().returns(place2);
+      hydratePrimaryContactInner.withArgs(place0).returns(place0WithContact);
+      hydratePrimaryContactInner.withArgs(place1).returns(place1WithContact);
+      hydratePrimaryContactInner.withArgs(place2).returns(place2);
       const contactWithLineage = { ...place0, lineage: true };
       hydrateLineage.returns(contactWithLineage);
       const copiedContact = { ...contactWithLineage };
@@ -260,9 +260,9 @@ describe('local lineage lib', () => {
       getDocsByIdsInner.resolves([contact0, contact1]);
       const place0WithContact = { ...place0, contact: contact0 };
       const place1WithContact = { ...place1, contact: contact1 };
-      hydratePrimaryContactInner.onFirstCall().returns(place0WithContact);
-      hydratePrimaryContactInner.onSecondCall().returns(place1WithContact);
-      hydratePrimaryContactInner.onThirdCall().returns(place2);
+      hydratePrimaryContactInner.withArgs(place0).returns(place0WithContact);
+      hydratePrimaryContactInner.withArgs(place1).returns(place1WithContact);
+      hydratePrimaryContactInner.withArgs(place2).returns(place2);
       const personWithLineage = { ...person, lineage: true };
       hydrateLineage.returns(personWithLineage);
       const copiedPerson = { ...personWithLineage };

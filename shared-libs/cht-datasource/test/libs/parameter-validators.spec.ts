@@ -58,7 +58,7 @@ describe('libs parameter-validators', () => {
         expect(() => assertLimit(limit))
           .to.throw(InvalidArgumentError)
           .with.property('message')
-          .that.includes('The limit must be a positive number');
+          .that.includes('The limit must be a positive integer');
       });
     });
   });
@@ -76,7 +76,7 @@ describe('libs parameter-validators', () => {
         expect(() => assertCursor(cursor))
           .to.throw(InvalidArgumentError)
           .with.property('message')
-          .that.includes('Invalid cursor token');
+          .that.includes('The cursor must be a string or null for first page');
       });
     });
   });

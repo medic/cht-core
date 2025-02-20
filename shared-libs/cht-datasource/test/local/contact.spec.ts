@@ -14,7 +14,7 @@ describe('local contact', () => {
   let settingsGetAll: SinonStub;
   let warn: SinonStub;
   let debug: SinonStub;
-  let getContactTypes: SinonStub;
+  let getContactTypeIds: SinonStub;
   let isContact: SinonStub;
 
   beforeEach(() => {
@@ -25,7 +25,7 @@ describe('local contact', () => {
     } as unknown as LocalDataContext;
     warn = sinon.stub(logger, 'warn');
     debug = sinon.stub(logger, 'debug');
-    getContactTypes = sinon.stub(contactTypeUtils, 'getContactTypes');
+    getContactTypeIds = sinon.stub(contactTypeUtils, 'getContactTypeIds');
     isContact = sinon.stub(contactTypeUtils, 'isContact');
   });
   
@@ -33,7 +33,11 @@ describe('local contact', () => {
 
   describe('v1', () => {
     const settings = { hello: 'world' } as const;
-    
+
+    beforeEach(() => {
+      settingsGetAll.returns(settings);
+    });
+
     describe('get', () => {
       const identifier = { uuid: 'uuid' } as const;
       let getDocByIdOuter: SinonStub;
@@ -47,7 +51,6 @@ describe('local contact', () => {
       it('returns a contact by UUID', async () => {
         const doc = { type: 'person' };
         getDocByIdInner.resolves(doc);
-        settingsGetAll.returns(settings);
         isContact.returns(true);
 
         const result = await Contact.v1.get(localContext)(identifier);
@@ -62,7 +65,6 @@ describe('local contact', () => {
       it('returns null if the identified doc does not have a contact type', async () => {
         const doc = { type: 'not-contact', _id: '_id' };
         getDocByIdInner.resolves(doc);
-        settingsGetAll.returns(settings);
         isContact.returns(false);
 
         const result = await Contact.v1.get(localContext)(identifier);
@@ -85,6 +87,18 @@ describe('local contact', () => {
         expect(settingsGetAll.notCalled).to.be.true;
         expect(isContact.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No contact found for identifier [${identifier.uuid}].`)).to.be.true;
+      });
+
+      it('propagates error if getMedicDocById throws an error', async () => {
+        const err = new Error('error');
+        getDocByIdInner.throws(err);
+
+        await expect(Contact.v1.get(localContext)(identifier)).to.be.rejectedWith('error');
+
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(settingsGetAll.notCalled).to.be.true;
+        expect(warn.notCalled).to.be.true;
       });
     });
 
@@ -115,7 +129,6 @@ describe('local contact', () => {
         const lineageDocs = [place0, place1, place2];
         getLineageDocsByIdInner.resolves([person, ...lineageDocs]);
         isContact.returns(true);
-        settingsGetAll.returns(settings);
         const personWithLineage = { ...person, lineage: true };
         const copiedPerson = { ...personWithLineage };
         getContactLineageInner.returns(copiedPerson);
@@ -142,7 +155,6 @@ describe('local contact', () => {
         const lineageDocs = [ place0, place1, place2 ];
         getLineageDocsByIdInner.resolves(lineageDocs);
         isContact.returns(true);
-        settingsGetAll.returns(settings);
         const place0WithContact = { ...place0, contact: contact0 };
         const place0WithLineage = { ...place0WithContact, lineage: true };
         const copiedPlace = { ...place0WithLineage };
@@ -169,7 +181,7 @@ describe('local contact', () => {
 
         expect(result).to.be.null;
         expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(getContactTypes.notCalled).to.be.true;
+        expect(getContactTypeIds.notCalled).to.be.true;
         expect(isContact.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No contact found for identifier [${identifier.uuid}].`)).to.be.true;
         expect(debug.notCalled).to.be.true;
@@ -185,7 +197,6 @@ describe('local contact', () => {
         const place2 = { _id: 'place2', _rev: 'rev' };
         getLineageDocsByIdInner.resolves([person, place0, place1, place2]);
         isContact.returns(false);
-        settingsGetAll.returns(settings);
 
         const result = await Contact.v1.getWithLineage(localContext)(identifier);
 
@@ -203,7 +214,6 @@ describe('local contact', () => {
         const person = { type: 'person', _id: 'uuid', _rev: 'rev' };
         getLineageDocsByIdInner.resolves([person]);
         isContact.returns(true);
-        settingsGetAll.returns(settings);
 
         const result = await Contact.v1.getWithLineage(localContext)(identifier);
 
@@ -224,7 +234,7 @@ describe('local contact', () => {
       const notNullCursor = '5';
       const contactType = 'person';
       const invalidContactTypeQualifier = { contactType: 'invalid' } as const;
-      const validContactTypes = [{ id: 'person' }, { id: 'place' }];
+      const validContactTypes = ['person', 'place'];
       let getByTypeExactMatchFreetext: SinonStub;
       let getByExactMatchFreetext: SinonStub;
       let getByType: SinonStub;
@@ -260,8 +270,7 @@ describe('local contact', () => {
           localContext.medicDb, 'medic-client/contacts_by_freetext'
         ).returns(getByStartsWithFreetext);
         // end comment
-        getContactTypes.returns(validContactTypes);
-        settingsGetAll.returns(settings);
+        getContactTypeIds.returns(validContactTypes);
         fetchAndFilterUuidsInner = sinon.stub();
         fetchAndFilterUuidsOuter = sinon.stub(LocalDoc, 'fetchAndFilterUuids').returns(fetchAndFilterUuidsInner);
       });
@@ -289,7 +298,7 @@ describe('local contact', () => {
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.callCount).to.equal(1);
-        expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(3);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
@@ -346,7 +355,7 @@ describe('local contact', () => {
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.notCalled).to.be.true;
-        expect(getContactTypes.notCalled).to.be.true;
+        expect(getContactTypeIds.notCalled).to.be.true;
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(3);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
@@ -403,7 +412,7 @@ describe('local contact', () => {
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.notCalled).to.be.true;
-        expect(getContactTypes.notCalled).to.be.true;
+        expect(getContactTypeIds.notCalled).to.be.true;
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(3);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
@@ -463,7 +472,7 @@ describe('local contact', () => {
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.callCount).to.equal(1);
-        expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(3);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
@@ -523,7 +532,7 @@ describe('local contact', () => {
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.callCount).to.equal(1);
-        expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(3);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
@@ -582,7 +591,7 @@ describe('local contact', () => {
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.callCount).to.equal(1);
-        expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(3);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
@@ -640,7 +649,7 @@ describe('local contact', () => {
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.notCalled).to.be.true;
-        expect(getContactTypes.notCalled).to.be.true;
+        expect(getContactTypeIds.notCalled).to.be.true;
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(3);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
@@ -700,7 +709,7 @@ describe('local contact', () => {
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.notCalled).to.be.true;
-        expect(getContactTypes.notCalled).to.be.true;
+        expect(getContactTypeIds.notCalled).to.be.true;
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(3);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
@@ -762,7 +771,7 @@ describe('local contact', () => {
 
           expect(res).to.deep.equal(expectedResult);
           expect(settingsGetAll.callCount).to.equal(1);
-          expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
+          expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
           expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(3);
           expect(
             queryDocUuidsByKeyOuter.getCall(0).args
@@ -824,7 +833,7 @@ describe('local contact', () => {
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.callCount).to.equal(1);
-        expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(3);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
@@ -868,7 +877,7 @@ describe('local contact', () => {
         );
 
         expect(settingsGetAll.calledOnce).to.be.true;
-        expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(3);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
@@ -904,10 +913,10 @@ describe('local contact', () => {
           };
 
           await expect(Contact.v1.getUuidsPage(localContext)(qualifier, invalidCursor as string, limit))
-            .to.be.rejectedWith(`Invalid cursor token: [${String(invalidCursor)}]`);
+            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${String(invalidCursor)}]`);
 
           expect(settingsGetAll.calledOnce).to.be.true;
-          expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
+          expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
           expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(3);
           expect(
             queryDocUuidsByKeyOuter.getCall(0).args
@@ -949,7 +958,51 @@ describe('local contact', () => {
 
         expect(res).to.deep.equal(expectedResult);
         expect(settingsGetAll.calledOnce).to.be.true;
-        expect(getContactTypes.calledOnceWithExactly(settings)).to.be.true;
+        expect(getContactTypeIds.calledOnceWithExactly(settingsGetAll())).to.be.true;
+        expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(3);
+        expect(
+          queryDocUuidsByKeyOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type_freetext']);
+        expect(
+          queryDocUuidsByKeyOuter.getCall(1).args
+        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
+        expect(
+          queryDocUuidsByKeyOuter.getCall(2).args
+        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+        expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
+        expect(
+          queryDocUuidsByRangeOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type_freetext']);
+        expect(
+          queryDocUuidsByRangeOuter.getCall(1).args
+        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_freetext']);
+        expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
+        expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
+        expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterUuidsOuterFirstArg(limit, Number(cursor));
+        expect(getByType.calledOnceWithExactly([qualifier.contactType], limit, Number(cursor))).to.be.true;
+        expect(getByTypeExactMatchFreetext.notCalled).to.be.true;
+        expect(getByExactMatchFreetext.notCalled).to.be.true;
+        expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
+        expect(getByStartsWithFreetext.notCalled).to.be.true;
+      });
+
+      it('propagates error if any internally used function throws an error', async () => {
+        const contactType = 'person';
+        const qualifier = {
+          contactType
+        };
+        const err = new Error('some error');
+        fetchAndFilterUuidsInner.throws(err);
+
+        await expect(Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit)).to.be.rejectedWith(`some error`);
+        const fetchAndFilterUuidsOuterFirstArg =
+          fetchAndFilterUuidsOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
+
+        expect(settingsGetAll.calledOnce).to.be.true;
+        expect(getContactTypeIds.calledOnceWithExactly(settingsGetAll())).to.be.true;
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(3);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args

@@ -25,6 +25,7 @@ describe('cht-datasource Place', () => {
   });
   const placeType = 'clinic';
   const clinic1 = utils.deepFreeze(placeFactory.place().build({
+    name: 'clinic1',
     parent: {
       _id: place1._id,
       parent: {
@@ -34,7 +35,10 @@ describe('cht-datasource Place', () => {
     type: placeType,
     contact: {}
   }));
-  const clinic2 = utils.deepFreeze(placeFactory.place().build({
+  // this is named as clinic3 and not clinic2 because placeMap.get('clinic')
+  // generates the name `clinic2` always and this is to not cause conflict and confusion
+  const clinic3 = utils.deepFreeze(placeFactory.place().build({
+    name: 'clinic3',
     parent: {
       _id: place1._id,
       parent: {
@@ -64,11 +68,11 @@ describe('cht-datasource Place', () => {
     roles: ['chw']
   }));
   const dataContext = getRemoteDataContext(utils.getOrigin());
-  const expectedPlaces = [place0, clinic1, clinic2];
+  const expectedPlaces = [place0, clinic1, clinic3];
 
   before(async () => {
     setAuth();
-    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic2]);
+    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic3]);
     await utils.createUsers([userNoPerms, offlineUser]);
   });
 
@@ -81,14 +85,22 @@ describe('cht-datasource Place', () => {
   describe('v1', () => {
     describe('get', async () => {
       const getPlace = Place.v1.get(dataContext);
-      const getPlaceWithLineage = Place.v1.getWithLineage(dataContext);
 
       it('returns the place matching the provided UUID', async () => {
         const place = await getPlace(Qualifier.byUuid(place0._id));
         expect(place).excluding([ '_rev', 'reported_date' ]).to.deep.equal(place0);
       });
 
-      it('returns the place with lineage when the withLineage query parameter is provided', async () => {
+      it('returns null when no place is found for the UUID', async () => {
+        const place = await getPlace(Qualifier.byUuid('invalid-uuid'));
+        expect(place).to.be.null;
+      });
+    });
+
+    describe('getWithLineage', () => {
+      const getPlaceWithLineage = Place.v1.getWithLineage(dataContext);
+
+      it('returns the place with lineage', async () => {
         const place = await getPlaceWithLineage(Qualifier.byUuid(place0._id));
         expect(place).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
           ...place0,
@@ -104,10 +116,24 @@ describe('cht-datasource Place', () => {
         });
       });
 
-      it('returns null when no place is found for the UUID', async () => {
-        const place = await getPlace(Qualifier.byUuid('invalid-uuid'));
-        expect(place).to.be.null;
-      });
+      it(
+        'returns the place when the place has no primary contact',
+        async () => {
+          const place = await getPlaceWithLineage(Qualifier.byUuid(clinic3._id));
+          expect(place).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
+            ...clinic3,
+            contact: {},
+            parent: {
+              ...place1,
+              contact: contact1,
+              parent: {
+                ...place2,
+                contact: contact2
+              }
+            }
+          });
+        }
+      );
     });
 
     describe('getPage', async () => {
@@ -155,7 +181,7 @@ describe('cht-datasource Place', () => {
         await expect(
           getPage(Qualifier.byContactType(placeType), cursor, invalidLimit)
         ).to.be.rejectedWith(
-          `The limit must be a positive number: [${invalidLimit}].`
+          `The limit must be a positive integer: [${invalidLimit}].`
         );
       });
 
@@ -165,7 +191,7 @@ describe('cht-datasource Place', () => {
             ...Qualifier.byContactType(placeType),
           }, invalidCursor, limit)
         ).to.be.rejectedWith(
-          `Invalid cursor token: [${invalidCursor}].`
+          `The cursor must be a string or null for first page: [${invalidCursor}].`
         );
       });
     });

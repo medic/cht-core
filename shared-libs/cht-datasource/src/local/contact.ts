@@ -19,11 +19,6 @@ import { isContactType, isContactTypeAndFreetextType } from '../libs/parameter-v
 
 /** @internal */
 export namespace v1 {
-  const getContactTypes = (settings: SettingsService): string[] => {
-    const contactTypesObjects = contactTypeUtils.getContactTypes(settings.getAll());
-    return contactTypesObjects.map((item) => item.id) as string[];
-  };
-
   const isContact =
     (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is Contact.v1.Contact => {
       if (!doc) {
@@ -151,7 +146,7 @@ export namespace v1 {
       limit: number
     ): Promise<Page<string>> => {
       if (isContactType(qualifier)) {
-        const contactTypesIds = getContactTypes(settings);
+        const contactTypesIds = contactTypeUtils.getContactTypeIds(settings.getAll());
         if (!contactTypesIds.includes(qualifier.contactType)) {
           throw new InvalidArgumentError(`Invalid contact type [${qualifier.contactType}].`);
         }

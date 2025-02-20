@@ -31,6 +31,8 @@ describe('Report Controller Tests', () => {
 
 
   describe('v1', () => {
+    const privilegeError = { code: 403, message: 'Insufficient privileges' };
+
     describe('get', () => {
       let reportGet;
 
@@ -83,7 +85,6 @@ describe('Report Controller Tests', () => {
       });
 
       it('returns error if user does not have can_view_reports permission', async () => {
-        const error = { code: 403, message: 'Insufficient privileges' };
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(false);
 
@@ -93,13 +94,12 @@ describe('Report Controller Tests', () => {
         expect(dataContextBind.notCalled).to.be.true;
         expect(reportGet.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if not an online user', async () => {
-        const error = { code: 403, message: 'Insufficient privileges' };
         isOnlineOnly.returns(false);
 
         await controller.v1.get(req, res);
@@ -108,7 +108,7 @@ describe('Report Controller Tests', () => {
         expect(dataContextBind.notCalled).to.be.true;
         expect(reportGet.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
@@ -194,7 +194,7 @@ describe('Report Controller Tests', () => {
             limit: null
           }
         };
-        const err = new InvalidArgumentError(`The limit must be a positive number: [NaN].`);
+        const err = new InvalidArgumentError(`The limit must be a positive integer: [NaN].`);
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
         reportGetIdsPage.throws(err);
@@ -219,7 +219,6 @@ describe('Report Controller Tests', () => {
             limit,
           }
         };
-        const error = { code: 403, message: 'Insufficient privileges' };
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(false);
 
@@ -230,7 +229,7 @@ describe('Report Controller Tests', () => {
         expect(qualifierByFreetext.notCalled).to.be.true;
         expect(reportGetIdsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
@@ -243,7 +242,6 @@ describe('Report Controller Tests', () => {
             limit,
           }
         };
-        const error = { code: 403, message: 'Insufficient privileges' };
         isOnlineOnly.returns(false);
 
         await controller.v1.getUuids(req, res);
@@ -253,7 +251,7 @@ describe('Report Controller Tests', () => {
         expect(qualifierByFreetext.notCalled).to.be.true;
         expect(reportGetIdsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });

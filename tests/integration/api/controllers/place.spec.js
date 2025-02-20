@@ -22,6 +22,7 @@ describe('Place API', () => {
   });
   const placeType = 'clinic';
   const clinic1 = utils.deepFreeze(placeFactory.place().build({
+    name: 'clinic1',
     parent: {
       _id: place1._id,
       parent: {
@@ -31,7 +32,10 @@ describe('Place API', () => {
     type: placeType,
     contact: {}
   }));
-  const clinic2 = utils.deepFreeze(placeFactory.place().build({
+  // this is named as clinic3 and not clinic2 because placeMap.get('clinic')
+  // generates the name `clinic2` always and this is to not cause conflict and confusion
+  const clinic3 = utils.deepFreeze(placeFactory.place().build({
+    name: 'clinic3',
     parent: {
       _id: place1._id,
       parent: {
@@ -60,10 +64,10 @@ describe('Place API', () => {
     },
     roles: ['chw']
   }));
-  const expectedPlaces = [place0, clinic1, clinic2];
+  const expectedPlaces = [place0, clinic1, clinic3];
 
   before(async () => {
-    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic2]);
+    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic3]);
     await utils.createUsers([userNoPerms, offlineUser]);
   });
 
@@ -94,6 +98,29 @@ describe('Place API', () => {
       expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
         ...place0,
         contact: contact0,
+        parent: {
+          ...place1,
+          contact: contact1,
+          parent: {
+            ...place2,
+            contact: contact2
+          }
+        }
+      });
+    });
+
+    it('returns the place with lineage when the withLineage query parameter is provided ' +
+      'and the place has no primary contact', async () => {
+      const opts = {
+        path: `${endpoint}/${clinic3._id}`,
+        qs: {
+          with_lineage: true
+        }
+      };
+      const place = await utils.request(opts);
+      expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+        ...clinic3,
+        contact: {},
         parent: {
           ...place1,
           contact: contact1,
@@ -203,7 +230,7 @@ describe('Place API', () => {
       };
 
       await expect(utils.request(opts))
-        .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive number: [${-1}]."}`);
+        .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive integer: [${-1}]."}`);
     });
 
     it('throws 400 error when cursor is invalid', async () => {
@@ -218,7 +245,7 @@ describe('Place API', () => {
 
       await expect(utils.request(opts))
         .to.be.rejectedWith(
-          `400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`
+          `400 - {"code":400,"error":"The cursor must be a string or null for first page: [${-1}]."}`
         );
     });
   });

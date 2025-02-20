@@ -66,7 +66,9 @@ export type FreetextQualifier = Readonly<{ freetext: string }>;
  * Builds a qualifier for finding entities by the given freetext string.
  * @param freetext the text to search with
  * @returns the qualifier
- * @throws Error if the search string is not provided or has less than 3 characters
+ * @throws Error if the search string is not invalid
+ *
+ * See {@link isFreetextQualifier} for validity of a search string.
  */
 export const byFreetext = (freetext: string): FreetextQualifier => {
   const qualifier = { freetext };
@@ -79,8 +81,21 @@ export const byFreetext = (freetext: string): FreetextQualifier => {
 
 /**
  * Returns `true` if the given qualifier is a {@link FreetextQualifier} otherwise `false`.
+ *
+ * The condition for being a valid freetext is that the qualifier should have a `freetext`
+ * key and the value should be a string which is more than 3 characters in length. The
+ * additional condition is that the value should not contain a whitespace(' ') unless
+ * the value is in the `key:value` pattern.
  * @param qualifier the qualifier to check
  * @returns `true` if the given type is a {@link FreetextQualifier}, otherwise `false`.
+ * @example
+ * // valid
+ * { freetext: 'abc' }
+ * // valid
+ * { freetext: 'key:value with spaces' }
+ * @example
+ * // invalid
+ * { freetext: 'value with spaces' }
  */
 export const isFreetextQualifier = (qualifier: unknown): qualifier is FreetextQualifier => {
   return isRecord(qualifier) &&

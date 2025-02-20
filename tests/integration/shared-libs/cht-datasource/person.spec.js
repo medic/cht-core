@@ -101,14 +101,22 @@ describe('cht-datasource Person', () => {
   describe('v1', () => {
     describe('get', async () => {
       const getPerson = Person.v1.get(dataContext);
-      const getPersonWithLineage = Person.v1.getWithLineage(dataContext);
 
       it('returns the person matching the provided UUID', async () => {
         const person = await getPerson(Qualifier.byUuid(patient._id));
         expect(person).excluding([ '_rev', 'reported_date' ]).to.deep.equal(patient);
       });
 
-      it('returns the person with lineage when the withLineage query parameter is provided', async () => {
+      it('returns null when no person is found for the UUID', async () => {
+        const person = await getPerson(Qualifier.byUuid('invalid-uuid'));
+        expect(person).to.be.null;
+      });
+    });
+
+    describe('getWithLineage', () => {
+      const getPersonWithLineage = Person.v1.getWithLineage(dataContext);
+
+      it('returns the person with lineage', async () => {
         const person = await getPersonWithLineage(Qualifier.byUuid(patient._id));
         expect(person).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
           ...patient,
@@ -125,11 +133,6 @@ describe('cht-datasource Person', () => {
             }
           }
         });
-      });
-
-      it('returns null when no person is found for the UUID', async () => {
-        const person = await getPerson(Qualifier.byUuid('invalid-uuid'));
-        expect(person).to.be.null;
       });
     });
 
@@ -176,7 +179,7 @@ describe('cht-datasource Person', () => {
         await expect(
           getPage({...Qualifier.byContactType(personType)}, cursor, invalidLimit)
         ).to.be.rejectedWith(
-          `The limit must be a positive number: [${invalidLimit}].`
+          `The limit must be a positive integer: [${invalidLimit}].`
         );
       });
 
@@ -186,7 +189,7 @@ describe('cht-datasource Person', () => {
             ...Qualifier.byContactType(personType),
           }, invalidCursor, limit)
         ).to.be.rejectedWith(
-          `Invalid cursor token: [${invalidCursor}].`
+          `The cursor must be a string or null for first page: [${invalidCursor}].`
         );
       });
     });

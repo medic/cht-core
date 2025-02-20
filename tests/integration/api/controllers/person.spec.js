@@ -224,7 +224,7 @@ describe('Person API', () => {
       };
 
       await expect(utils.request(opts))
-        .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive number: [${-1}]."}`);
+        .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive integer: [${-1}]."}`);
     });
 
     it('throws 400 error when cursor is invalid', async () => {
@@ -239,7 +239,7 @@ describe('Person API', () => {
 
       await expect(utils.request(opts))
         .to.be.rejectedWith(
-          `400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`
+          `400 - {"code":400,"error":"The cursor must be a string or null for first page: [${-1}]."}`
         );
     });
   });

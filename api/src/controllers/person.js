@@ -13,7 +13,7 @@ const getPageByType = () => ctx.bind(Person.v1.getPage);
 const checkUserPermissions = async (req) => {
   const userCtx = await auth.getUserCtx(req);
   if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, 'can_view_contacts')) {
-    return Promise.reject({ code: 403, message: 'Insufficient privileges' });
+    throw { code: 403, message: 'Insufficient privileges' };
   }
 };
 

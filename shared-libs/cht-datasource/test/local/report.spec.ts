@@ -59,7 +59,7 @@ describe('local report', () => {
         expect(result).to.be.null;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(warn.calledOnceWithExactly(`Document [${doc._id}] is not a valid report.`)).to.be.true;
+        expect(warn.calledOnceWithExactly(`Document [${doc._id}] is not a report.`)).to.be.true;
       });
 
       it('returns null if the identified doc does not have a form field', async () => {
@@ -72,7 +72,7 @@ describe('local report', () => {
         expect(result).to.be.null;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(warn.calledOnceWithExactly(`Document [${doc._id}] is not a valid report.`)).to.be.true;
+        expect(warn.calledOnceWithExactly(`Document [${doc._id}] is not a report.`)).to.be.true;
       });
 
       it('returns null if the identified doc is not found', async () => {
@@ -85,6 +85,18 @@ describe('local report', () => {
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(settingsGetAll.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No report found for identifier [${identifier.uuid}].`)).to.be.true;
+      });
+
+      it('propagates error if getMedicDocById throws an error', async () => {
+        const err = new Error('error');
+        getDocByIdInner.throws(err);
+
+        await expect(Report.v1.get(localContext)(identifier)).to.be.rejectedWith('error');
+
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(settingsGetAll.notCalled).to.be.true;
+        expect(warn.notCalled).to.be.true;
       });
     });
 
@@ -307,15 +319,15 @@ describe('local report', () => {
         {},
         '-1',
         undefined,
-      ].forEach((invalidSkip ) => {
-        it(`throws an error if cursor is invalid: ${String(invalidSkip)}`, async () => {
+      ].forEach((invalidCursor ) => {
+        it(`throws an error if cursor is invalid: ${String(invalidCursor)}`, async () => {
           const freetext = 'nice report';
           const qualifier = {
             freetext,
           };
 
-          await expect(Report.v1.getUuidsPage(localContext)(qualifier, invalidSkip as string, limit))
-            .to.be.rejectedWith(`Invalid cursor token: [${String(invalidSkip)}]`);
+          await expect(Report.v1.getUuidsPage(localContext)(qualifier, invalidCursor as string, limit))
+            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${String(invalidCursor)}]`);
 
           expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
           expect(
@@ -347,6 +359,42 @@ describe('local report', () => {
           fetchAndFilterUuidsOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
 
         expect(res).to.deep.equal(expectedResult);
+        expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
+        expect(
+          queryDocUuidsByKeyOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+        expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+        expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
+        expect(
+          queryDocUuidsByRangeOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
+        expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterUuidsOuterFirstArg(limit, Number(cursor));
+        expect(queryDocUuidsByRangeInner.calledWithExactly(
+          [qualifier.freetext],
+          [qualifier.freetext + END_OF_ALPHABET_MARKER],
+          limit,
+          Number(cursor)
+        )).to.be.true;
+        expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+      });
+
+      it('propagates error if any internally used function throws an error', async () => {
+        const freetext = 'report';
+        const qualifier = {
+          freetext
+        };
+        const err = new Error('some error');
+        fetchAndFilterUuidsInner.throws(err);
+
+        await expect(Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit)).to.be.rejectedWith(`some error`);
+        const fetchAndFilterUuidsOuterFirstArg =
+          fetchAndFilterUuidsOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
+
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args

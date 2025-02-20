@@ -22,7 +22,7 @@ export namespace v1 {
       }
       return false;
     } else if (doc.type !== 'data_record' || !doc.form) {
-      logger.warn(`Document [${doc._id}] is not a valid report.`);
+      logger.warn(`Document [${doc._id}] is not a report.`);
       return false;
     }
 

@@ -5,7 +5,7 @@ import { InvalidArgumentError } from '../../libs/error';
 export const validateCursor = (cursor: Nullable<string>): number => {
   const skip = Number(cursor);
   if (isNaN(skip) || skip < 0 || !Number.isInteger(skip)) {
-    throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}].`);
+    throw new InvalidArgumentError(`The cursor must be a string or null for first page: [${String(cursor)}].`);
   }
   return skip;
 };

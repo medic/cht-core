@@ -220,7 +220,7 @@ describe('place', () => {
           getPage.resolves(places);
 
           await expect(Place.v1.getPage(dataContext)(placeTypeQualifier, cursor, limitValue as number))
-            .to.be.rejectedWith(`The limit must be a positive number: [${String(limitValue)}]`);
+            .to.be.rejectedWith(`The limit must be a positive integer: [${String(limitValue)}]`);
 
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
           expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.getPage, Remote.Place.v1.getPage))
@@ -235,13 +235,13 @@ describe('place', () => {
         '',
         1,
         false,
-      ].forEach((skipValue) => {
+      ].forEach((invalidCursor) => {
         it('throws an error if cursor is invalid', async () => {
           isContactTypeQualifier.returns(true);
           getPage.resolves(places);
 
-          await expect(Place.v1.getPage(dataContext)(placeTypeQualifier, skipValue as string, limit))
-            .to.be.rejectedWith(`Invalid cursor token: [${String(skipValue)}]`);
+          await expect(Place.v1.getPage(dataContext)(placeTypeQualifier, invalidCursor as string, limit))
+            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${String(invalidCursor)}]`);
 
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
           expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.getPage, Remote.Place.v1.getPage))

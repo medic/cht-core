@@ -251,12 +251,11 @@ describe('Contact API', () => {
     const endpoint = '/api/v1/contact/uuid';
 
     it('returns a page of people type contact ids for no limit and cursor passed', async () => {
-      const queryParams = {
-        type: personType
-      };
-      const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${stringQueryParams}`,
+        path: `${endpoint}`,
+        qs: {
+          type: personType
+        }
       };
       const responsePage = await utils.request(opts);
       const responsePeople = responsePage.data;
@@ -267,12 +266,11 @@ describe('Contact API', () => {
     });
 
     it('returns a page of place type contact for no limit and cursor passed', async () => {
-      const queryParams = {
-        type: placeType
-      };
-      const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${stringQueryParams}`,
+        path: `${endpoint}`,
+        qs: {
+          type: placeType
+        }
       };
       const responsePage = await utils.request(opts);
       const responsePlaces = responsePage.data;
@@ -284,12 +282,11 @@ describe('Contact API', () => {
     });
 
     it('returns a page of contact ids for freetext with no limit and cursor passed', async () => {
-      const queryParams = {
-        freetext
-      };
-      const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${stringQueryParams}`,
+        path: `${endpoint}`,
+        qs: {
+          freetext
+        }
       };
       const expectedContactIds = [contact0._id, contact1._id, contact2._id, place0._id, place1._id, place2._id];
 
@@ -302,13 +299,12 @@ describe('Contact API', () => {
     });
 
     it('returns a page of people type contact ids and freetext for no limit and cursor passed', async () => {
-      const queryParams = {
-        type: personType,
-        freetext
-      };
-      const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${stringQueryParams}`,
+        path: `${endpoint}`,
+        qs: {
+          type: personType,
+          freetext
+        }
       };
       const expectedContactIds = [contact0._id, contact1._id, contact2._id];
 
@@ -321,13 +317,12 @@ describe('Contact API', () => {
     });
 
     it('returns a page of place type contact with freetext for no limit and cursor passed', async () => {
-      const queryParams = {
-        type: placeType,
-        freetext: placeFreetext
-      };
-      const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${stringQueryParams}`,
+        path: `${endpoint}`,
+        qs: {
+          type: placeType,
+          freetext: placeFreetext
+        }
       };
       const expectedContactIds = [place0._id, clinic1._id, clinic2._id];
 
@@ -342,22 +337,22 @@ describe('Contact API', () => {
 
     it('returns a page of people type contact ids when limit and cursor is passed and cursor can be reused',
       async () => {
-        // first request
-        const queryParams = {
+        const qs = {
           type: personType,
           limit: fourLimit
         };
-        let stringQueryParams = new URLSearchParams(queryParams).toString();
+        // first request
         const opts = {
-          path: `${endpoint}?${stringQueryParams}`,
+          path: `${endpoint}`,
+          qs 
         };
         const firstPage = await utils.request(opts);
 
         // second request
-        queryParams.cursor = firstPage.cursor;
-        stringQueryParams = new URLSearchParams(queryParams).toString();
+        qs.cursor = firstPage.cursor;
         const opts2 = {
-          path: `${endpoint}?${stringQueryParams}`,
+          path: `${endpoint}`,
+          qs
         };
         const secondPage = await utils.request(opts2);
 
@@ -373,21 +368,21 @@ describe('Contact API', () => {
     it('returns a page of place type contact ids when limit and cursor is passed and cursor can be reused',
       async () => {
         // first request
-        const queryParams = {
+        const qs = {
           type: placeType,
           limit: twoLimit
         };
-        let stringQueryParams = new URLSearchParams(queryParams).toString();
         const opts = {
-          path: `${endpoint}?${stringQueryParams}`,
+          path: `${endpoint}`,
+          qs
         };
         const firstPage = await utils.request(opts);
 
         // second request
-        queryParams.cursor = firstPage.cursor;
-        stringQueryParams = new URLSearchParams(queryParams).toString();
+        qs.cursor = firstPage.cursor;
         const opts2 = {
-          path: `${endpoint}?${stringQueryParams}`,
+          path: `${endpoint}`,
+          qs
         };
         const secondPage = await utils.request(opts2);
 
@@ -404,21 +399,21 @@ describe('Contact API', () => {
       async () => {
         // first request
         const expectedContactIds = [contact0._id, contact1._id, contact2._id, place0._id, place1._id, place2._id];
-        const queryParams = {
+        const qs = {
           freetext,
           limit: threeLimit
         };
-        let stringQueryParams = new URLSearchParams(queryParams).toString();
         const opts = {
-          path: `${endpoint}?${stringQueryParams}`,
+          path: `${endpoint}`,
+          qs
         };
         const firstPage = await utils.request(opts);
 
         // second request
-        queryParams.cursor = firstPage.cursor;
-        stringQueryParams = new URLSearchParams(queryParams).toString();
+        qs.cursor = firstPage.cursor;
         const opts2 = {
-          path: `${endpoint}?${stringQueryParams}`,
+          path: `${endpoint}`,
+          qs
         };
         const secondPage = await utils.request(opts2);
 
@@ -436,22 +431,22 @@ describe('Contact API', () => {
     async () => {
       // first request
       const expectedContactIds = [contact0._id, contact1._id, contact2._id];
-      const queryParams = {
+      const qs = {
         freetext,
         type: personType,
         limit: twoLimit
       };
-      let stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${stringQueryParams}`,
+        path: `${endpoint}`,
+        qs
       };
       const firstPage = await utils.request(opts);
 
       // second request
-      queryParams.cursor = firstPage.cursor;
-      stringQueryParams = new URLSearchParams(queryParams).toString();
+      qs.cursor = firstPage.cursor;
       const opts2 = {
-        path: `${endpoint}?${stringQueryParams}`,
+        path: `${endpoint}`,
+        qs
       };
       const secondPage = await utils.request(opts2);
 
@@ -468,22 +463,22 @@ describe('Contact API', () => {
       async () => {
         // first request
         const expectedContactIds = [place0._id, clinic1._id, clinic2._id];
-        const queryParams = {
+        const qs = {
           freetext: placeFreetext,
           type: placeType,
           limit: twoLimit
         };
-        let stringQueryParams = new URLSearchParams(queryParams).toString();
         const opts = {
-          path: `${endpoint}?${stringQueryParams}`,
+          path: `${endpoint}`,
+          qs
         };
         const firstPage = await utils.request(opts);
 
         // second request
-        queryParams.cursor = firstPage.cursor;
-        stringQueryParams = new URLSearchParams(queryParams).toString();
+        qs.cursor = firstPage.cursor;
         const opts2 = {
-          path: `${endpoint}?${stringQueryParams}`,
+          path: `${endpoint}`,
+          qs
         };
         const secondPage = await utils.request(opts2);
 
@@ -498,12 +493,12 @@ describe('Contact API', () => {
 
     it('returns a page of unique contact ids for when multiple fields match the same freetext', async () => {
       const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
-      const queryParams = {
+      const qs = {
         freetext: searchWord,
       };
-      const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${stringQueryParams}`,
+        path: `${endpoint}`,
+        qs
       };
       const responsePage = await utils.request(opts);
       const responseIds = responsePage.data;
@@ -519,13 +514,13 @@ describe('Contact API', () => {
         const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
         // NOTE: adding a limit of 4 to deliberately fetch 4 contacts with the given search word
         // and enforce re-fetching logic
-        const queryParams = {
+        const qs = {
           freetext: searchWord,
-          limit: 4
+          limit: fourLimit
         };
-        const stringQueryParams = new URLSearchParams(queryParams).toString();
         const opts = {
-          path: `${endpoint}?${stringQueryParams}`,
+          path: `${endpoint}`,
+          qs
         };
         const responsePage = await utils.request(opts);
         const responseIds = responsePage.data;
@@ -534,6 +529,24 @@ describe('Contact API', () => {
         expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
           .to.deep.equalInAnyOrder(expectedContactIds);
         expect(responseCursor).to.be.equal(null);
+      });
+
+    it('returns a page of unique contact ids for when multiple fields match the same freetext with lower limit',
+      async () => {
+        const qs = {
+          freetext: searchWord,
+          limit: twoLimit
+        };
+        const opts = {
+          path: `${endpoint}`,
+          qs
+        };
+        const responsePage = await utils.request(opts);
+        const responseIds = responsePage.data;
+        const responseCursor = responsePage.cursor;
+
+        expect(responseIds.length).to.be.equal(2);
+        expect(responseCursor).to.be.equal('2');
       });
 
     it(`throws error when user does not have can_view_contacts permission`, async () => {
@@ -553,12 +566,12 @@ describe('Contact API', () => {
     });
 
     it('throws 400 error when contactType is invalid', async () => {
-      const queryParams = {
+      const qs = {
         type: invalidContactType
       };
-      const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${queryString}`,
+        path: `${endpoint}`,
+        qs
       };
 
       await expect(utils.request(opts))
@@ -566,12 +579,12 @@ describe('Contact API', () => {
     });
 
     it('should not throw 400 error when freetext contains space but also has : delimiter', async () => {
-      const queryParams = {
+      const qs = {
         freetext: 'key:value with space'
       };
-      const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${queryString}`,
+        path: `${endpoint}`,
+        qs
       };
 
       await expect(utils.request(opts))
@@ -579,12 +592,12 @@ describe('Contact API', () => {
     });
 
     it('should 400 error when freetext is invalid', async () => {
-      const queryParams = {
+      const qs = {
         freetext: ' '
       };
-      const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${queryString}`,
+        path: `${endpoint}`,
+        qs
       };
 
       await expect(utils.request(opts))
@@ -592,32 +605,32 @@ describe('Contact API', () => {
     });
 
     it('throws 400 error when limit is invalid', async () => {
-      const queryParams = {
+      const qs = {
         type: personType,
         limit: -1
       };
-      const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${queryString}`,
+        path: `${endpoint}`,
+        qs
       };
 
       await expect(utils.request(opts))
-        .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive number: [${-1}]."}`);
+        .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive integer: [${-1}]."}`);
     });
 
     it('throws 400 error when cursor is invalid', async () => {
-      const queryParams = {
+      const qs = {
         type: personType,
         cursor: '-1'
       };
-      const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${queryString}`,
+        path: `${endpoint}`,
+        qs
       };
 
       await expect(utils.request(opts))
         .to.be.rejectedWith(
-          `400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`
+          `400 - {"code":400,"error":"The cursor must be a string or null for first page: [${-1}]."}`
         );
     });
   });

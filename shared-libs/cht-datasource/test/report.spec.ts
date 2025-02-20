@@ -173,7 +173,7 @@ describe('report', () => {
           getIdsPage.resolves(pageData);
 
           await expect(Report.v1.getUuidsPage(dataContext)(freetextQualifier, cursor, limitValue as number))
-            .to.be.rejectedWith(`The limit must be a positive number: [${String(limitValue)}]`);
+            .to.be.rejectedWith(`The limit must be a positive integer: [${String(limitValue)}]`);
 
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
           expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage))
@@ -194,7 +194,7 @@ describe('report', () => {
           getIdsPage.resolves(pageData);
 
           await expect(Report.v1.getUuidsPage(dataContext)(freetextQualifier, skipValue as string, limit))
-            .to.be.rejectedWith(`Invalid cursor token: [${String(skipValue)}]`);
+            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${String(skipValue)}]`);
 
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
           expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage))

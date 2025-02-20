@@ -10,7 +10,7 @@ let dataContext;
 
 const lowerCaseString = obj => typeof obj === 'string' ? obj.toLowerCase() : obj;
 
-const executeChtDatasourceExistsRequest = async (freetext) => {
+const executeExistsRequest = async (freetext) => {
   const getReportUuids = dataContext.bind(Report.v1.getUuids);
   const reportUuids = [];
   const generator = await getReportUuids(Qualifier.byFreetext(freetext));
@@ -59,7 +59,7 @@ const addAdditionalFilters = (options, requestOptions) => {
 const getExistsResponses = async requestOptions => {
   const responses = [];
   for (const options of requestOptions) {
-    const response = await executeChtDatasourceExistsRequest(options);
+    const response = await executeExistsRequest(options);
     responses.push(response);
   }
   return responses;

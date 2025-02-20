@@ -72,8 +72,12 @@ describe('qualifier', () => {
   });
 
   describe('byFreetext', () => {
-    it('builds a qualifier for searching an entity by freetext', () => {
+    it('builds a qualifier for searching an entity by freetext with colon : delimiter', () => {
       expect(byFreetext('key:some value')).to.deep.equal({ freetext: 'key:some value' });
+    });
+
+    it('builds a qualifier for searching an entity by freetext without colon : delimiter', () => {
+      expect(byFreetext('value')).to.deep.equal({ freetext: 'value' });
     });
 
     [

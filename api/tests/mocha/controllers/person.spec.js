@@ -32,6 +32,8 @@ describe('Person Controller', () => {
   afterEach(() => sinon.restore());
 
   describe('v1', () => {
+    const privilegeError = { code: 403, message: 'Insufficient privileges' };
+
     describe('get', () => {
       let personGet;
       let personGetWithLineage;
@@ -129,7 +131,6 @@ describe('Person Controller', () => {
       });
 
       it('returns error if user does not have can_view_contacts permission', async () => {
-        const error = { code: 403, message: 'Insufficient privileges' };
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(false);
 
@@ -140,13 +141,12 @@ describe('Person Controller', () => {
         expect(personGet.notCalled).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if not an online user', async () => {
-        const error = { code: 403, message: 'Insufficient privileges' };
         isOnlineOnly.returns(false);
 
         await controller.v1.get(req, res);
@@ -156,7 +156,7 @@ describe('Person Controller', () => {
         expect(personGet.notCalled).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
@@ -205,7 +205,6 @@ describe('Person Controller', () => {
       });
 
       it('returns error if user does not have can_view_contacts permission', async () => {
-        const error = { code: 403, message: 'Insufficient privileges' };
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(false);
 
@@ -216,13 +215,12 @@ describe('Person Controller', () => {
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(personGetPageByType.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if not an online user', async () => {
-        const error = { code: 403, message: 'Insufficient privileges' };
         isOnlineOnly.returns(false);
 
         await controller.v1.getAll(req, res);
@@ -232,7 +230,7 @@ describe('Person Controller', () => {
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(personGetPageByType.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });

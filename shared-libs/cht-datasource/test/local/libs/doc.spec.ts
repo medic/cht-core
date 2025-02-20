@@ -333,16 +333,17 @@ describe('local doc lib', () => {
 
     it('returns empty array if no doc is found', async () => {
       const doc0 = { _id: 'doc0' };
+      const doc1 = { _id: 'doc1' };
       dbQuery.resolves({
         rows: []
       });
 
-      const result = await queryDocUuidsByRange(db, 'medic-client/contacts_by_type')(doc0._id, doc0._id, limit, skip);
+      const result = await queryDocUuidsByRange(db, 'medic-client/contacts_by_type')(doc0._id, doc1._id, limit, skip);
 
       expect(result).to.deep.equal([]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
         startkey: doc0._id,
-        endkey: doc0._id,
+        endkey: doc1._id,
         include_docs: false,
         limit,
         skip
@@ -518,9 +519,7 @@ describe('local doc lib', () => {
 
       const result =  fetchAndFilterUuids(getFunction, 3);
 
-      expect(result).to.have.length(2);
-      expect(result).to.include('123e4567-e89b-12d3-a456-426614174000');
-      expect(result).to.include('987fcdeb-51a2-43d7-9b56-254125174000');
+      expect(result).to.have.members(['123e4567-e89b-12d3-a456-426614174000', '987fcdeb-51a2-43d7-9b56-254125174000']);
       expect(fetchAndFilterStubFake.calledOnce).to.be.true;
     });
 

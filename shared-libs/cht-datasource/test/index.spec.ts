@@ -291,6 +291,7 @@ describe('CHT Script API - getDatasource', () => {
         const cursor = '1';
         const contactTypeQualifier = { contactType };
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(contactTypeQualifier);
+        const byFreetext = sinon.stub(Qualifier, 'byFreetext');
 
         const returnedContactIds = await contact.getUuidsPageByType(contactType, cursor, limit);
 
@@ -300,6 +301,7 @@ describe('CHT Script API - getDatasource', () => {
           contactGetIdsPage.calledOnceWithExactly(contactTypeQualifier, cursor, limit)
         ).to.be.true;
         expect(byContactType.calledOnceWithExactly(contactType)).to.be.true;
+        expect(byFreetext.notCalled).to.be.true;
       });
 
       it('getUuidsPageByFreetext', async () => {
@@ -311,6 +313,7 @@ describe('CHT Script API - getDatasource', () => {
         const cursor = '1';
         const freetextQualifier = { freetext };
         const byFreetext = sinon.stub(Qualifier, 'byFreetext').returns(freetextQualifier);
+        const byContactType = sinon.stub(Qualifier, 'byContactType');
 
         const returnedContactIds = await contact.getUuidsPageByFreetext(freetext, cursor, limit);
 
@@ -320,6 +323,7 @@ describe('CHT Script API - getDatasource', () => {
           contactGetIdsPage.calledOnceWithExactly(freetextQualifier, cursor, limit)
         ).to.be.true;
         expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
+        expect(byContactType.notCalled).to.be.true;
       });
 
       it('getUuidsByTypeFreetext', () => {

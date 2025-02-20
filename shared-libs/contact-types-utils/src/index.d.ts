@@ -12,6 +12,7 @@ export function isContact(config: Record<string, unknown>, contact: Record<strin
 export function isHardcodedType(type: string): boolean;
 export declare const HARDCODED_TYPES: string[];
 export function getContactTypes(config?: Record<string, unknown>): Record<string, unknown>[];
+export function getContactTypeIds(config?: Record<string, unknown>): string[];
 export function getChildren(config?: Record<string, unknown>, parentType?: string | Record<string, unknown>): Record<string, unknown>[];
 export function getPlaceTypes(config?: Record<string, unknown>): Record<string, unknown>[];
 export function getPersonTypes(config?: Record<string, unknown>): Record<string, unknown>[];

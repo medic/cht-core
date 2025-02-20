@@ -189,7 +189,7 @@ describe('cht-datasource Report', () => {
         await expect(
           getUuidsPage(Qualifier.byFreetext(freetext), cursor, invalidLimit)
         ).to.be.rejectedWith(
-          `The limit must be a positive number: [${invalidLimit}].`
+          `The limit must be a positive integer: [${invalidLimit}].`
         );
       });
 
@@ -197,7 +197,7 @@ describe('cht-datasource Report', () => {
         await expect(
           getUuidsPage(Qualifier.byFreetext(freetext), invalidCursor, limit)
         ).to.be.rejectedWith(
-          `Invalid cursor token: [${invalidCursor}].`
+          `The cursor must be a string or null for first page: [${invalidCursor}].`
         );
       });
     });

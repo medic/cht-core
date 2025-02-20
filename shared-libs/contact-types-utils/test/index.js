@@ -429,6 +429,68 @@ describe('ContactType Utils', () => {
     });
   });
 
+  describe('getContactTypeIds', () => {
+    it('should return an array of contact type IDs when valid config is provided', () => {
+      const config = {
+        contact_types: [
+          { id: 'person', name: 'abc' },
+          { id: 'place', name: 'def' },
+          { id: 'xyz', name: 'ghi' }
+        ]
+      };
+
+      const result = utils.getContactTypeIds(config);
+
+      chai.expect(result).to.deep.equal(['person', 'place', 'xyz']);
+    });
+
+    it('should return empty array when config is null', () => {
+      const result = utils.getContactTypeIds(null);
+
+      chai.expect(result).to.deep.equal([]);
+    });
+
+    it('should return empty array when config is undefined', () => {
+      const result = utils.getContactTypeIds(undefined);
+
+      chai.expect(result).to.deep.equal([]);
+    });
+
+    it('should return empty array when contact_types is not an array', () => {
+      const config = {
+        contact_types: 'not an array'
+      };
+
+      const result = utils.getContactTypeIds(config);
+
+      chai.expect(result).to.deep.equal([]);
+    });
+
+    it('should return empty array when contact_types is not defined/declared', () => {
+      const config = {
+        some_other_property: 'value'
+      };
+
+      const result = utils.getContactTypeIds(config);
+
+      chai.expect(result).to.deep.equal([]);
+    });
+
+    it('should handle contact types without id property', () => {
+      const config = {
+        contact_types: [
+          { name: 'Email' },
+          { id: 'person', name: 'Phone' },
+          { name: 'SMS' }
+        ]
+      };
+
+      const result = utils.getContactTypeIds(config);
+
+      chai.expect(result).to.deep.equal([undefined, 'person', undefined]);
+    });
+  });
+
   describe('getChildren', () => {
     it('should not crash with empty config', () => {
       chai.expect(utils.getChildren()).to.deep.equal([]);

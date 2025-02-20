@@ -281,7 +281,7 @@ describe('contact', () => {
           getIdsPage.resolves(pageData);
 
           await expect(Contact.v1.getUuidsPage(dataContext)(qualifier, cursor, limitValue as number))
-            .to.be.rejectedWith(`The limit must be a positive number: [${String(limitValue)}]`);
+            .to.be.rejectedWith(`The limit must be a positive integer: [${String(limitValue)}]`);
 
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
           expect(
@@ -304,7 +304,7 @@ describe('contact', () => {
           getIdsPage.resolves(pageData);
 
           await expect(Contact.v1.getUuidsPage(dataContext)(qualifier, skipValue as string, limit))
-            .to.be.rejectedWith(`Invalid cursor token: [${String(skipValue)}]`);
+            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${String(skipValue)}]`);
 
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
           expect(

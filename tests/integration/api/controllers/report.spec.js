@@ -145,12 +145,12 @@ describe('Report API', () => {
     const endpoint = '/api/v1/report/uuid';
 
     it('returns a page of report ids for no limit and cursor passed', async () => {
-      const queryParams = {
+      const qs = {
         freetext
       };
-      const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${stringQueryParams}`,
+        path: `${endpoint}`,
+        qs
       };
       const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
       const responsePage = await utils.request(opts);
@@ -164,21 +164,21 @@ describe('Report API', () => {
     it('returns a page of report ids when limit and cursor is passed and cursor can be reused', async () => {
       const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
       // first request
-      const queryParams = {
+      const qs = {
         freetext,
         limit
       };
-      let stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${stringQueryParams}`,
+        path: `${endpoint}`,
+        qs
       };
       const firstPage = await utils.request(opts);
 
       // second request
-      queryParams.cursor = firstPage.cursor;
-      stringQueryParams = new URLSearchParams(queryParams).toString();
+      qs.cursor = firstPage.cursor;
       const opts2 = {
-        path: `${endpoint}?${stringQueryParams}`,
+        path: `${endpoint}`,
+        qs
       };
       const secondPage = await utils.request(opts2);
 
@@ -193,12 +193,12 @@ describe('Report API', () => {
 
     it('returns a page of unique report ids for when multiple fields match the same freetext', async () => {
       const expectedContactIds = [ report6._id, report7._id, report8._id ];
-      const queryParams = {
+      const qs = {
         freetext: searchWord,
       };
-      const stringQueryParams = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${stringQueryParams}`,
+        path: `${endpoint}`,
+        qs
       };
       const responsePage = await utils.request(opts);
       const responseIds = responsePage.data;
@@ -214,13 +214,13 @@ describe('Report API', () => {
         const expectedContactIds = [ report6._id, report7._id, report8._id ];
         // NOTE: adding a limit of 4 to deliberately fetch 4 contacts with the given search word
         // and enforce re-fetching logic
-        const queryParams = {
+        const qs = {
           freetext: searchWord,
           limit: 4
         };
-        const stringQueryParams = new URLSearchParams(queryParams).toString();
         const opts = {
-          path: `${endpoint}?${stringQueryParams}`,
+          path: `${endpoint}`,
+          qs
         };
         const responsePage = await utils.request(opts);
 
@@ -247,12 +247,12 @@ describe('Report API', () => {
     });
 
     it('throws 400 error when freetext is invalid', async () => {
-      const queryParams = {
+      const qs = {
         freetext: ''
       };
-      const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${queryString}`,
+        path: `${endpoint}`,
+        qs
       };
 
       await expect(utils.request(opts))
@@ -260,12 +260,12 @@ describe('Report API', () => {
     });
 
     it('should not throw 400 error when freetext contains space but also has : delimiter', async () => {
-      const queryParams = {
+      const qs = {
         freetext: 'key:value with space'
       };
-      const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${queryString}`,
+        path: `${endpoint}`,
+        qs
       };
 
       await expect(utils.request(opts))
@@ -273,29 +273,31 @@ describe('Report API', () => {
     });
 
     it('throws 400 error when limit is invalid', async () => {
-      const queryParams = {
+      const qs = {
         freetext, limit: -1
       };
-      const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${queryString}`,
+        path: `${endpoint}`,
+        qs
       };
 
       await expect(utils.request(opts))
-        .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive number: [${-1}]."}`);
+        .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive integer: [${-1}]."}`);
     });
 
     it('throws 400 error when cursor is invalid', async () => {
-      const queryParams = {
+      const qs = {
         freetext, cursor: '-1'
       };
-      const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `${endpoint}?${queryString}`,
+        path: `${endpoint}`,
+        qs
       };
 
       await expect(utils.request(opts))
-        .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`);
+        .to.be.rejectedWith(
+          `400 - {"code":400,"error":"The cursor must be a string or null for first page: [${-1}]."}`
+        );
     });
   });
 });
