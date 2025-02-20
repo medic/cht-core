@@ -348,7 +348,7 @@ describe('cht-datasource Contact', () => {
             ...Qualifier.byFreetext(placeFreetext)
           }, cursor, invalidLimit)
         ).to.be.rejectedWith(
-          `The limit must be a positive integer: [${invalidLimit}].`
+          `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`
         );
       });
 
@@ -359,7 +359,7 @@ describe('cht-datasource Contact', () => {
             ...Qualifier.byFreetext(placeFreetext),
           }, invalidCursor, twoLimit)
         ).to.be.rejectedWith(
-          `The cursor must be a string or null for first page: [${invalidCursor}].`
+          `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
         );
       });
     });

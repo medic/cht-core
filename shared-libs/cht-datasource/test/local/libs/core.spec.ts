@@ -16,33 +16,33 @@ describe('validateCursor', () => {
   it('should throw InvalidArgumentError for negative numbers', () => {
     expect(() => validateCursor('-1')).to.throw(
       InvalidArgumentError,
-      'The cursor must be a string or null for first page: [-1].'
+      'The cursor must be a string or null for first page: ["-1"].'
     );
     expect(() => validateCursor('-100')).to.throw(
       InvalidArgumentError,
-      'The cursor must be a string or null for first page: [-100].'
+      'The cursor must be a string or null for first page: ["-100"].'
     );
   });
 
   it('should throw InvalidArgumentError for non-integer numbers', () => {
     expect(() => validateCursor('1.5')).to.throw(
       InvalidArgumentError,
-      'The cursor must be a string or null for first page: [1.5].'
+      'The cursor must be a string or null for first page: ["1.5"].'
     );
     expect(() => validateCursor('0.1')).to.throw(
       InvalidArgumentError,
-      'The cursor must be a string or null for first page: [0.1].'
+      'The cursor must be a string or null for first page: ["0.1"].'
     );
   });
 
   it('should throw InvalidArgumentError for non-numeric strings', () => {
     expect(() => validateCursor('abc')).to.throw(
       InvalidArgumentError,
-      'The cursor must be a string or null for first page: [abc].'
+      'The cursor must be a string or null for first page: ["abc"].'
     );
     expect(() => validateCursor('123abc')).to.throw(
       InvalidArgumentError,
-      'The cursor must be a string or null for first page: [123abc].'
+      'The cursor must be a string or null for first page: ["123abc"].'
     );
   });
 

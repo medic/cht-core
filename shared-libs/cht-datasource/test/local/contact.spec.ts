@@ -913,7 +913,7 @@ describe('local contact', () => {
           };
 
           await expect(Contact.v1.getUuidsPage(localContext)(qualifier, invalidCursor as string, limit))
-            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${String(invalidCursor)}]`);
+            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}]`);
 
           expect(settingsGetAll.calledOnce).to.be.true;
           expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;

@@ -5,6 +5,7 @@ const auth = require('../../../src/auth');
 const controller = require('../../../src/controllers/place');
 const dataContext = require('../../../src/services/data-context');
 const serverUtils = require('../../../src/server-utils');
+const {PermissionError} = require('../../../src/errors');
 
 describe('Place Controller', () => {
   const userCtx = { hello: 'world' };
@@ -32,7 +33,7 @@ describe('Place Controller', () => {
   afterEach(() => sinon.restore());
 
   describe('v1', () => {
-    const privilegeError = { code: 403, message: 'Insufficient privileges' };
+    const privilegeError = new PermissionError('Insufficient privileges');
 
     describe('get', () => {
       let placeGet;
@@ -141,7 +142,12 @@ describe('Place Controller', () => {
         expect(placeGet.notCalled).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(PermissionError);
+        expect(serverUtilsError.firstCall.args[0].message).to.equal(privilegeError.message);
+        expect(serverUtilsError.firstCall.args[0].code).to.equal(privilegeError.code);
+        expect(serverUtilsError.firstCall.args[1]).to.equal(req);
+        expect(serverUtilsError.firstCall.args[2]).to.equal(res);
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
@@ -156,7 +162,12 @@ describe('Place Controller', () => {
         expect(placeGet.notCalled).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(PermissionError);
+        expect(serverUtilsError.firstCall.args[0].message).to.equal(privilegeError.message);
+        expect(serverUtilsError.firstCall.args[0].code).to.equal(privilegeError.code);
+        expect(serverUtilsError.firstCall.args[1]).to.equal(req);
+        expect(serverUtilsError.firstCall.args[2]).to.equal(res);
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
@@ -215,7 +226,12 @@ describe('Place Controller', () => {
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(placeGetPageByType.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(PermissionError);
+        expect(serverUtilsError.firstCall.args[0].message).to.equal(privilegeError.message);
+        expect(serverUtilsError.firstCall.args[0].code).to.equal(privilegeError.code);
+        expect(serverUtilsError.firstCall.args[1]).to.equal(req);
+        expect(serverUtilsError.firstCall.args[2]).to.equal(res);
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
@@ -230,7 +246,12 @@ describe('Place Controller', () => {
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(placeGetPageByType.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(PermissionError);
+        expect(serverUtilsError.firstCall.args[0].message).to.equal(privilegeError.message);
+        expect(serverUtilsError.firstCall.args[0].code).to.equal(privilegeError.code);
+        expect(serverUtilsError.firstCall.args[1]).to.equal(req);
+        expect(serverUtilsError.firstCall.args[2]).to.equal(res);
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });

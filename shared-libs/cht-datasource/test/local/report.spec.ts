@@ -327,7 +327,9 @@ describe('local report', () => {
           };
 
           await expect(Report.v1.getUuidsPage(localContext)(qualifier, invalidCursor as string, limit))
-            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${String(invalidCursor)}]`);
+            .to.be.rejectedWith(
+              `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}]`
+            );
 
           expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
           expect(

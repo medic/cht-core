@@ -2,6 +2,7 @@ const auth = require('../auth');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const { Report, Qualifier } = require('@medic/cht-datasource');
+const { PermissionError } = require('../errors');
 
 const getReport = () => ctx.bind(Report.v1.get);
 const getReportIds = () => ctx.bind(Report.v1.getUuidsPage);
@@ -9,7 +10,7 @@ const getReportIds = () => ctx.bind(Report.v1.getUuidsPage);
 const checkUserPermissions = async (req) => {
   const userCtx = await auth.getUserCtx(req);
   if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, 'can_view_reports')) {
-    throw { code: 403, message: 'Insufficient privileges' };
+    throw new PermissionError('Insufficient privileges');
   }
 };
 

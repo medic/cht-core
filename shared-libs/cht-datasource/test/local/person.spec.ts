@@ -279,7 +279,7 @@ describe('local person', () => {
       ].forEach((invalidSkip ) => {
         it(`throws an error if cursor is invalid: ${String(invalidSkip)}`, async () => {
           await expect(Person.v1.getPage(localContext)(personTypeQualifier, invalidSkip as string, limit))
-            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${String(invalidSkip)}]`);
+            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${JSON.stringify(invalidSkip)}]`);
 
           expect(settingsGetAll.calledOnce).to.be.true;
           expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;

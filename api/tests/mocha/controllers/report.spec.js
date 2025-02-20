@@ -5,6 +5,7 @@ const serverUtils = require('../../../src/server-utils');
 const controller = require('../../../src/controllers/report');
 const { Report, Qualifier, InvalidArgumentError} = require('@medic/cht-datasource');
 const {expect} = require('chai');
+const {PermissionError} = require('../../../src/errors');
 
 describe('Report Controller Tests', () => {
   const userCtx = { hello: 'world' };
@@ -31,7 +32,7 @@ describe('Report Controller Tests', () => {
 
 
   describe('v1', () => {
-    const privilegeError = { code: 403, message: 'Insufficient privileges' };
+    const privilegeError = new PermissionError('Insufficient privileges');
 
     describe('get', () => {
       let reportGet;
@@ -94,7 +95,12 @@ describe('Report Controller Tests', () => {
         expect(dataContextBind.notCalled).to.be.true;
         expect(reportGet.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(PermissionError);
+        expect(serverUtilsError.firstCall.args[0].message).to.equal(privilegeError.message);
+        expect(serverUtilsError.firstCall.args[0].code).to.equal(privilegeError.code);
+        expect(serverUtilsError.firstCall.args[1]).to.equal(req);
+        expect(serverUtilsError.firstCall.args[2]).to.equal(res);
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
@@ -108,7 +114,12 @@ describe('Report Controller Tests', () => {
         expect(dataContextBind.notCalled).to.be.true;
         expect(reportGet.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(PermissionError);
+        expect(serverUtilsError.firstCall.args[0].message).to.equal(privilegeError.message);
+        expect(serverUtilsError.firstCall.args[0].code).to.equal(privilegeError.code);
+        expect(serverUtilsError.firstCall.args[1]).to.equal(req);
+        expect(serverUtilsError.firstCall.args[2]).to.equal(res);
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
@@ -229,7 +240,10 @@ describe('Report Controller Tests', () => {
         expect(qualifierByFreetext.notCalled).to.be.true;
         expect(reportGetIdsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(PermissionError);
+        expect(serverUtilsError.firstCall.args[0].message === privilegeError.message).to.be.true;
+        expect(serverUtilsError.firstCall.args[0].code === privilegeError.code).to.be.true;
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
@@ -251,7 +265,10 @@ describe('Report Controller Tests', () => {
         expect(qualifierByFreetext.notCalled).to.be.true;
         expect(reportGetIdsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(privilegeError, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(PermissionError);
+        expect(serverUtilsError.firstCall.args[0].message === privilegeError.message).to.be.true;
+        expect(serverUtilsError.firstCall.args[0].code === privilegeError.code).to.be.true;
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });

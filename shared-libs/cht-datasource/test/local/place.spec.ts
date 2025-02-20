@@ -279,7 +279,7 @@ describe('local place', () => {
       ].forEach((invalidSkip ) => {
         it(`throws an error if cursor is invalid: ${String(invalidSkip)}`, async () => {
           await expect(Place.v1.getPage(localContext)(placeTypeQualifier, invalidSkip as string, limit))
-            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${String(invalidSkip)}]`);
+            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${JSON.stringify(invalidSkip)}]`);
 
           expect(settingsGetAll.calledOnce).to.be.true;
           expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;

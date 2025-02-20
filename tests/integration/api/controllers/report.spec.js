@@ -281,8 +281,9 @@ describe('Report API', () => {
         qs
       };
 
-      await expect(utils.request(opts))
-        .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive integer: [${-1}]."}`);
+      await expect(utils.request(opts)).to.be.rejectedWith(
+        `400 - {"code":400,"error":"The limit must be a positive integer: [\\"-1\\"]."}`
+      );
     });
 
     it('throws 400 error when cursor is invalid', async () => {
@@ -296,7 +297,7 @@ describe('Report API', () => {
 
       await expect(utils.request(opts))
         .to.be.rejectedWith(
-          `400 - {"code":400,"error":"The cursor must be a string or null for first page: [${-1}]."}`
+          `400 - {"code":400,"error":"The cursor must be a string or null for first page: [\\"-1\\"]."}`
         );
     });
   });

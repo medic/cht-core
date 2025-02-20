@@ -22,14 +22,14 @@ export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is C
 export const assertLimit: (limit: unknown) => asserts limit is number | `${number}` = (limit: unknown) => {
   const numberLimit = Number(limit);
   if (!Number.isInteger(numberLimit) || numberLimit <= 0) {
-    throw new InvalidArgumentError(`The limit must be a positive integer: [${String(limit)}].`);
+    throw new InvalidArgumentError(`The limit must be a positive integer: [${JSON.stringify(limit)}].`);
   }
 };
 
 /** @internal */
 export const assertCursor: (cursor: unknown) => asserts cursor is Nullable<string> = (cursor: unknown) => {
   if (cursor !== null && (typeof cursor !== 'string' || !cursor.length)) {
-    throw new InvalidArgumentError(`The cursor must be a string or null for first page: [${String(cursor)}].`);
+    throw new InvalidArgumentError(`The cursor must be a string or null for first page: [${JSON.stringify(cursor)}].`);
   }
 };
 
