@@ -36,6 +36,7 @@ import { EnketoTranslationService } from '@mm-services/enketo-translation.servic
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
+import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -94,6 +95,7 @@ describe('Form service', () => {
   let extractLineageService;
   let targetAggregatesService;
   let contactViewModelGeneratorService;
+  let userContactSummaryService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -162,6 +164,7 @@ describe('Form service', () => {
     extractLineageService = { extract: ExtractLineageService.prototype.extract };
     targetAggregatesService = { getTargetDocs: sinon.stub() };
     contactViewModelGeneratorService = { loadReports: sinon.stub() };
+    userContactSummaryService = { get: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -193,6 +196,7 @@ describe('Form service', () => {
         { provide: ExtractLineageService, useValue: extractLineageService },
         { provide: TargetAggregatesService, useValue: targetAggregatesService },
         { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
+        { provide: UserContactSummaryService, useValue: userContactSummaryService },
       ],
     });
 

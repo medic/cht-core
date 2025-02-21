@@ -214,11 +214,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   private subscribeToChanges() {
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-content',
-      filter: (change) => {
-        return this.contactChangeFilterService.matchContact(change, this.selectedContact) ||
-          this.contactChangeFilterService.isRelevantContact(change, this.selectedContact) ||
-          this.contactChangeFilterService.isRelevantReport(change, this.selectedContact);
-      },
+      filter: (change) => this.contactChangeFilterService.isRelevantChange(change, this.selectedContact),
       callback: (change) => {
         const matchedContact = this.contactChangeFilterService.matchContact(change, this.selectedContact);
         const contactDeleted = this.contactChangeFilterService.isDeleted(change);
