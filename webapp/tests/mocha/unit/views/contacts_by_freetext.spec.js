@@ -1,95 +1,214 @@
-const _ = require('lodash');
-const assert = require('chai').assert;
-const utils = require('./utils');
+const { loadView, buildViewMapFn } = require('./utils');
+const medicOfflineFreetext = require('../../../../src/js/bootstrapper/offline-ddocs/medic-offline-freetext');
+const { expect } = require('chai');
 
-const doc = {
-  _id: '3c0c4575468bc9b7ce066a279b022e8e',
-  _rev: '2-5fb6ead9b03232a4cf1e0171c5434469',
-  name: 'Test Contact of Clinic',
-  date_of_birth: '',
-  phone: '+13125551212',
-  alternate_phone: '',
-  notes: '',
-  type: 'person',
-  reported_date: 1491910934051,
-  transitions: {
-    maintain_info_document: {
-      last_rev: 2,
-      seq: '241-g1AAAACbeJzLYWBgYMpgTmEQTM4vTc5ISXLIyU9OzMnILy7JAUklMiTV____',
-      ok: true
-    }
-  }
-};
+const expectedValue = (
+  {typeIndex, name, dead = false, muted = false } = {}
+) => `${dead} ${muted} ${typeIndex} ${name}`;
 
-const nonAsciiDoc = {
-  _id: '3e32235b-7111-4a69-a0a1-b3094f257891',
-  _rev: '1-e19cb2355b26c5f71abd1cc67b4b1bc0',
-  name: 'बुद्ध Élève',
-  date_of_birth: '',
-  phone: '+254777444333',
-  alternate_phone: '',
-  notes: '',
-  parent: {
-    _id: 'd978f02c-093b-4266-81cd-3983749f9c99'
-  },
-  type: 'person',
-  reported_date: 1496068842996
-};
+describe('contacts_by_freetext', () => {
+  [
+    ['online view', loadView('medic-db', 'medic-client', 'contacts_by_freetext')],
+    ['offline view', buildViewMapFn(medicOfflineFreetext.views.contacts_by_freetext.map)],
+  ].forEach(([name, mapFn]) => {
+    describe(name, () => {
+      afterEach(() => mapFn.reset());
+      [
+        ['district_hospital', 0],
+        ['health_center', 1],
+        ['clinic', 2],
+        ['person', 3],
+      ].forEach(([type, typeIndex]) => it(`emits numerical index [${typeIndex}] for default type`, () => {
+        const doc = { type, hello: 'world' };
 
-describe('contacts_by_freetext view', () => {
+        const emitted = mapFn(doc, true);
 
-  it('indexes doc name', () => {
-    // given
-    const map = utils.loadView('medic-db', 'medic-client', 'contacts_by_freetext');
+        const value = expectedValue({ typeIndex });
+        expect(emitted).to.deep.equal([
+          { key: ['world'], value },
+          { key: ['hello:world'], value }
+        ]);
+      }));
 
-    // when
-    const emitted = map(doc);
+      [
+        ['contact', 0, 'district_hospital'],
+        ['contact', 1, 'health_center'],
+        ['contact', 2, 'clinic'],
+        ['contact', 3, 'person']
+      ].forEach(([type, typeIndex, contactType]) => it(
+        `emits numerical index [${typeIndex}] for default type when used as custom type`,
+        () => {
+          const doc = { type, hello: 'world', contact_type: contactType };
 
-    // then
-    // Keys are arrays, so flatten the array of arrays for easier asserts.
-    const flattened = _.flattenDeep(emitted);
-    assert.include(flattened, 'test');
-    assert.include(flattened, 'clinic');
-    assert.include(flattened, 'contact');
+          const emitted = mapFn(doc, true);
+
+          const value = expectedValue({ typeIndex });
+          expect(emitted).to.deep.equal([
+            { key: ['world'], value },
+            { key: ['hello:world'], value },
+            { key: [contactType], value },
+            { key: [`contact_type:${contactType}`], value },
+          ]);
+        }
+      ));
+
+      it('emits contact_type index for custom type', () => {
+        const typeIndex = 'my_custom_type';
+        const doc = { contact_type: typeIndex, type: 'contact', hello: 'world' };
+        const emitted = mapFn(doc, true);
+
+        const value = expectedValue({ typeIndex });
+        expect(emitted).to.deep.equal([
+          { key: [typeIndex], value },
+          { key: [`contact_type:${typeIndex}`], value },
+          { key: ['world'], value },
+          { key: ['hello:world'], value },
+        ]);
+      });
+
+      [
+        undefined,
+        'invalid'
+      ].forEach(type => it(`emits nothing when type is invalid [${type}]`, () => {
+        const doc = { type, hello: 'world' };
+        const emitted = mapFn(doc, true);
+        expect(emitted).to.be.empty;
+      }));
+
+      it('emits death status in value', () => {
+        const doc = { type: 'district_hospital', date_of_death: '2021-01-01' };
+
+        const emitted = mapFn(doc, true);
+
+        const value = expectedValue({ typeIndex: 0, dead: true });
+        expect(emitted).to.deep.equal([
+          { key: ['2021-01-01'], value },
+          { key: ['date_of_death:2021-01-01'], value }
+        ]);
+      });
+
+      it('emits muted status in value', () => {
+        const doc = { type: 'district_hospital', muted: true, hello: 'world' };
+
+        const emitted = mapFn(doc, true);
+
+        const value = expectedValue({ typeIndex: 0, muted: true });
+        expect(emitted).to.deep.equal([
+          { key: ['world'], value },
+          { key: ['hello:world'], value }
+        ]);
+      });
+
+      [
+        'hello', 'HeLlO'
+      ].forEach(name => it(`emits name in value [${name}]`, () => {
+        const doc = { type: 'district_hospital', name };
+
+        const emitted = mapFn(doc, true);
+
+        const value = expectedValue({ typeIndex: 0, name: name.toLowerCase() });
+        expect(emitted).to.deep.equal([
+          { key: [name.toLowerCase()], value },
+          { key: [`name:${name.toLowerCase()}`], value }
+        ]);
+      }));
+
+      [
+        null, undefined, { hello: 'world' }, {}, true
+      ].forEach(hello => it(`emits nothing when value is not a string or number [${JSON.stringify(hello)}]`, () => {
+        const doc = { type: 'district_hospital', hello };
+        const emitted = mapFn(doc, true);
+        expect(emitted).to.be.empty;
+      }));
+
+      it('emits only key:value when value is number', () => {
+        const doc = { type: 'district_hospital', hello: 1234 };
+
+        const emitted = mapFn(doc, true);
+
+        const value = expectedValue({ typeIndex: 0 });
+        expect(emitted).to.deep.equal([{ key: ['hello:1234'], value }]);
+      });
+
+      [
+        't', 'to'
+      ].forEach(hello => it(`emits nothing but key:value when value is too short [${hello}]`, () => {
+        const doc = { type: 'district_hospital', hello };
+
+        const emitted = mapFn(doc, true);
+
+        const value = expectedValue({ typeIndex: 0 });
+        expect(emitted).to.deep.equal([{ key: [`hello:${hello}`], value }]);
+      }));
+
+      it('emits nothing when value is empty', () => {
+        const doc = { type: 'district_hospital', hello: '' };
+        const emitted = mapFn(doc, true);
+        expect(emitted).to.be.empty;
+      });
+
+      [
+        '_id', '_rev', 'type', 'refid', 'geolocation', 'Refid'
+      ].forEach(key => it(`emits nothing for a skipped field [${key}]`, () => {
+        const doc = { type: 'district_hospital', [key]: 'world' };
+        const emitted = mapFn(doc, true);
+        expect(emitted).to.be.empty;
+      }));
+
+      it('emits nothing for fields that end with "_date"', () => {
+        const doc = { type: 'district_hospital', reported_date: 'world' };
+        const emitted = mapFn(doc, true);
+        expect(emitted).to.be.empty;
+      });
+
+      it('emits value only once', () => {
+        const doc = {
+          type: 'district_hospital',
+          hello: 'world world',
+          hello1: 'world',
+          hello3: 'world',
+        };
+
+        const emitted = mapFn(doc, true);
+
+        const value = expectedValue({ typeIndex: 0 });
+        expect(emitted).to.deep.equal([
+          { key: ['world'], value },
+          { key: ['hello:world world'], value },
+          { key: ['hello1:world'], value },
+          { key: ['hello3:world'], value }
+        ]);
+      });
+
+      it('emits each word in a string', () => {
+        const doc = {
+          type: 'district_hospital',
+          hello: `the quick\nBrown\tfox`,
+        };
+        const emitted = mapFn(doc, true);
+
+        const value =  expectedValue({ typeIndex: 0 });
+        expect(emitted).to.deep.equal([
+          { key: ['the'], value },
+          { key: ['quick'], value },
+          { key: ['brown'], value },
+          { key: ['fox'], value },
+          { key: ['hello:the quick\nbrown\tfox'], value },
+        ]);
+      });
+
+      it('emits non-ascii values', () => {
+        const doc = { type: 'district_hospital', name: 'बुद्ध Élève' };
+
+        const emitted = mapFn(doc, true);
+
+        const value = expectedValue({ typeIndex: 0, name: 'बुद्ध élève' });
+        expect(emitted).to.deep.equal([
+          { key: ['बुद्ध'], value },
+          { key: ['élève'], value },
+          { key: ['name:बुद्ध élève'], value }
+        ]);
+      });
+    });
   });
-
-  it('indexes non-ascii doc name', () => {
-    // given
-    const map = utils.loadView('medic-db', 'medic-client', 'contacts_by_freetext');
-
-    // when
-    const emitted = map(nonAsciiDoc);
-
-    // then
-    // Keys are arrays, so flatten the array of arrays for easier asserts.
-    const flattened = _.flattenDeep(emitted);
-    assert.include(flattened, 'बुद्ध');
-    assert.include(flattened, 'élève');
-  });
-
-  it('does not index words of less than 3 chars', () => {
-    // given
-    const map = utils.loadView('medic-db', 'medic-client', 'contacts_by_freetext');
-
-    // when
-    const emitted = map(doc);
-
-    // then
-    // Keys are arrays, so flatten the array of arrays for easier asserts.
-    const flattened = _.flattenDeep(emitted);
-    assert.notInclude(flattened, 'of');
-  });
-
-  it('does not index non-contact docs', () => {
-    // given
-    const map = utils.loadView('medic-db', 'medic-client', 'contacts_by_freetext');
-
-    // when
-    const emitted = map({ type: 'data_record', name: 'do not index me'});
-
-    // then
-    // Keys are arrays, so flatten the array of arrays for easier asserts.
-    assert.equal(emitted.length, 0);
-  });
-
 });
