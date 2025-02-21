@@ -632,6 +632,7 @@ export class EnketoFormContext {
   isFormInModal?: boolean;
   userContact?: Nullable<Person.v1.Person>;
   contactSummary?: Record<string, any>;
+  userContactSummary?: unknown;
 
   constructor(selector: string, type: string, formDoc: Record<string, any>, instanceData?) {
     this.selector = selector;

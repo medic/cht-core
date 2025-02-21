@@ -14,6 +14,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
+import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -58,6 +59,7 @@ export class FormService {
     private enketoService: EnketoService,
     private targetAggregatesService: TargetAggregatesService,
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
+    private userContactSummaryService: UserContactSummaryService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -102,12 +104,15 @@ export class FormService {
       ])
       .then(([html, model]) => {
         const $html = $(html);
-        const hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
+        const hasContactSummary = $(model).find('> instance[id="contact-summary"]').length;
+        const hasUserContactSummary = $(model).find('> instance[id="user-contact-summary"]').length;
+
         return {
           html: $html,
           model: model,
           title: form.title,
-          hasContactSummary: hasContactSummary
+          hasContactSummary,
+          hasUserContactSummary,
         };
       });
   }
@@ -148,6 +153,13 @@ export class FormService {
       .then(([reports, lineage, targetDocs]) => this.contactSummaryService.get(contact, reports, lineage, targetDocs));
   }
 
+  private async getUserContactSummary(doc) {
+    if (!doc.hasUserContactSummary) {
+      return;
+    }
+    return await this.userContactSummaryService.get();
+  }
+
   private canAccessForm(formContext: EnketoFormContext) {
     return this.xmlFormsService.canAccessForm(
       formContext.formDoc,
@@ -170,6 +182,8 @@ export class FormService {
         this.userSettingsService.getWithLanguage()
       ]);
       formContext.contactSummary = await this.getContactSummary(doc, instanceData);
+      formContext.userContactSummary = await this.getUserContactSummary(doc);
+
 
       if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };

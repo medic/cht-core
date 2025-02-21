@@ -131,7 +131,6 @@ describe('ContactChangeFilter service', () => {
             {doc: {_id: 'o1'}},
             {doc: {_id: 'o2'}}
           ],
-          someProperty: 'someValue'
         },
         lineage: [
           {_id: '123'},
@@ -157,7 +156,6 @@ describe('ContactChangeFilter service', () => {
             {doc: {_id: 'o1'}},
             {doc: {_id: 'o2'}}
           ],
-          someProperty: 'someValue'
         },
         lineage: [
           {_id: '123'},

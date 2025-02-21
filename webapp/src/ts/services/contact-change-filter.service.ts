@@ -2,9 +2,9 @@
  * Service to identify relevant changes in relation to a Contact document.
  */
 import { Injectable } from '@angular/core';
-import { some } from 'lodash-es';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import * as registrationUtils from '@medic/registration-utils';
 
 @Injectable({
   providedIn: 'root'
@@ -23,22 +23,10 @@ export class ContactChangeFilterService {
   }
 
   private matchReportSubject(report, contact) {
-    if (report.doc.fields && (
-      (report.doc.fields.patient_id && report.doc.fields.patient_id === contact.doc._id) ||
-      (report.doc.fields.patient_id && report.doc.fields.patient_id === contact.doc.patient_id) ||
-      (report.doc.fields.place_id && report.doc.fields.place_id === contact.doc._id) ||
-      (report.doc.fields.place_id && report.doc.fields.place_id === contact.doc.place_id))) {
-      return true;
-    }
+    const reportSubjects = registrationUtils.getSubjectIds(report.doc);
+    const contactSubjects = registrationUtils.getSubjectIds(contact.doc);
 
-    if ((report.doc.patient_id && report.doc.patient_id === contact.doc.patient_id) ||
-        (report.doc.patient_id && report.doc.patient_id === contact.doc._id) ||
-        (report.doc.place_id && report.doc.place_id === contact.doc.place_id) ||
-        (report.doc.place_id && report.doc.place_id === contact.doc._id)) {
-      return true;
-    }
-
-    return false;
+    return contactSubjects.some(subject => reportSubjects.includes(subject));
   }
 
   private isChild(change, contact) {
@@ -46,25 +34,29 @@ export class ContactChangeFilterService {
   }
 
   private wasChild(change, contact) {
-    return some(contact.children, (children) => {
-      return children instanceof Array && some(children, (child) => {
-        return child.doc._id === change.doc._id;
-      });
-    });
+    if (!contact.children) {
+      return;
+    }
+
+    return Object
+      .values(contact.children)
+      .some((children:Array<{
+        doc: any;
+      }>) => children?.some(child => child.doc._id === change.doc._id));
   }
 
   private isAncestor(change, contact) {
-    return some(contact.lineage, (lineage) => {
-      return !!lineage && lineage._id === change.doc._id;
-    });
+    return contact.lineage?.some(ancestor => ancestor?._id === change.doc._id);
   }
 
   private matchChildReportSubject(change, contact) {
-    return some(contact.children, (children) => {
-      return children instanceof Array && some(children, (child) => {
-        return this.matchReportSubject(change, child);
-      });
-    });
+    if (!contact.children) {
+      return;
+    }
+
+    return Object
+      .values(contact.children)
+      .some((children:Array<{}>) => children?.some(child => this.matchReportSubject(change, child)));
   }
 
   matchContact(change, contact) {
@@ -87,5 +79,11 @@ export class ContactChangeFilterService {
 
   isDeleted(change) {
     return !!change && !!change.deleted;
+  }
+
+  isRelevantChange(change, contact) {
+    return this.matchContact(change, contact) ||
+      this.isRelevantContact(change, contact) ||
+      this.isRelevantReport(change, contact);
   }
 }
