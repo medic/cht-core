@@ -1,17 +1,47 @@
-/*
-  This is a "Solution Style" tsconfig.json file, and is used by editors and TypeScript’s language server to improve development experience.
-  It is not intended to be used to perform a compilation.
-
-  To learn more about this file see: https://angular.io/config/solution-tsconfig.
-*/
+/* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.app.json"
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "sourceMap": true,
+    "declaration": false,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "target": "es2020",
+    "module": "es2020",
+    "skipLibCheck": true,
+    "lib": [
+      "es2016",
+      "dom"
+    ],
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "@mm-actions/*": ["src/ts/actions/*"],
+      "@mm-components/*": ["src/ts/components/*"],
+      "@mm-directives/*": ["src/ts/directives/*"],
+      "@mm-effects/*": ["src/ts/effects/*"],
+      "@mm-environments/*": ["src/ts/environments/*"],
+      "@mm-modals/*": ["src/ts/modals/*"],
+      "@mm-modules/*": ["src/ts/modules/*"],
+      "@mm-pipes/*": ["src/ts/pipes/*"],
+      "@mm-providers/*": ["src/ts/providers/*"],
+      "@mm-reducers/*": ["src/ts/reducers/*"],
+      "@mm-selectors/*": ["src/ts/selectors/*"],
+      "@mm-services/*": ["src/ts/services/*"]
     },
-    {
-      "path": "./tsconfig.spec.json"
-    }
-  ]
+    "strictNullChecks": true,
+    "alwaysStrict": true,
+    "noImplicitThis": true,
+    "outDir": "dist",
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+  },
+  "angularCompilerOptions": {
+    "fullTemplateTypeCheck": true,
+    "strictInjectionParameters": true,
+    "preserveWhitespaces": true,
+    "skipTemplateCodegen": false
+  }
 }

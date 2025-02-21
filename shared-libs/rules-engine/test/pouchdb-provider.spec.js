@@ -254,6 +254,29 @@ describe('pouchdb provider', () => {
       expect(secondTargetDoc._rev).not.to.equal(firstTargetDoc._rev);
     });
 
+    it('should throw pouchdb get errors', async () => {
+      const docTag = '2024-07';
+      const nextTargets = [{ id: 'target', score: 1 }];
+
+      sinon.stub(db, 'get').rejects(new Error('pouch crash'));
+
+      await expect(
+        pouchdbProvider(db).commitTargetDoc(nextTargets, docTag, { userContactDoc, userSettingsDoc })
+      ).to.eventually.be.rejectedWith('pouch crash');
+    });
+
+    it('should throw pouchdb put errors', async () => {
+      const docTag = '2024-07';
+      const nextTargets = [{ id: 'target', score: 1 }];
+
+      sinon.restore();
+      sinon.stub(db, 'put').rejects(new Error('pouch crash'));
+
+      await expect(
+        pouchdbProvider(db).commitTargetDoc(nextTargets, docTag, { userContactDoc, userSettingsDoc })
+      ).to.eventually.be.rejectedWith('pouch crash');
+    });
+
   });
 
   describe('contactsBySubjectId', () => {

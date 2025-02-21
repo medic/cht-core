@@ -39,9 +39,9 @@ describe('FastActionButtonComponent', () => {
 
     await TestBed
       .configureTestingModule({
-        declarations: [ FastActionButtonComponent ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          FastActionButtonComponent,
         ],
         providers: [
           provideMockStore(),

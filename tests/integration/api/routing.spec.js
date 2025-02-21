@@ -142,9 +142,9 @@ describe('routing', () => {
             .request(options)
             .catch(err => err)
             .then(result => {
-              expect(result.statusCode).to.equal(401);
-              expect(result.response.headers['logout-authorization']).to.equal('CHT-Core API');
-              expect(result.responseBody.error).to.equal('unauthorized');
+              expect(result.status).to.equal(401);
+              expect(result.headers.get('logout-authorization')).to.equal('CHT-Core API');
+              expect(result.body.error).to.equal('unauthorized');
             });
         });
       });
@@ -234,12 +234,12 @@ describe('routing', () => {
         results.forEach((result, idx) => {
           if (idx === 0) {
             // online user request
-            expect(result.statusCode).to.equal(404);
-            expect(result.responseBody.error).to.equal('not_found');
+            expect(result.status).to.equal(404);
+            expect(result.body.error).to.equal('not_found');
           } else {
             // offline user requests
-            expect(result.statusCode).to.equal(403);
-            expect(result.responseBody.error).to.equal('forbidden');
+            expect(result.status).to.equal(403);
+            expect(result.body.error).to.equal('forbidden');
           }
         });
       });
@@ -275,12 +275,12 @@ describe('routing', () => {
         results.forEach((result, idx) => {
           if (idx === 0) {
             // online user request
-            expect(result.statusCode).to.equal(404);
-            expect(result.responseBody.error).to.equal('not_found');
+            expect(result.status).to.equal(404);
+            expect(result.body.error).to.equal('not_found');
           } else {
             // offline user requests
-            expect(result.statusCode).to.equal(403);
-            expect(result.responseBody.error).to.equal('forbidden');
+            expect(result.status).to.equal(403);
+            expect(result.body.error).to.equal('forbidden');
           }
         });
       });
@@ -317,12 +317,12 @@ describe('routing', () => {
         results.forEach((result, idx) => {
           if (idx === 0) {
             // online user request
-            expect(result.statusCode).to.equal(404);
-            expect(result.responseBody.error).to.equal('not_found');
+            expect(result.status).to.equal(404);
+            expect(result.body.error).to.equal('not_found');
           } else {
             // offline user requests
-            expect(result.statusCode).to.equal(403);
-            expect(result.responseBody.error).to.equal('forbidden');
+            expect(result.status).to.equal(403);
+            expect(result.body.error).to.equal('forbidden');
           }
         });
       });
@@ -363,8 +363,8 @@ describe('routing', () => {
             expect(result.docs.length).to.be.above(0);
           } else {
             // offline user request
-            expect(result.statusCode).to.equal(403);
-            expect(result.responseBody.error).to.equal('forbidden');
+            expect(result.status).to.equal(403);
+            expect(result.body.error).to.equal('forbidden');
           }
         });
       });
@@ -406,8 +406,8 @@ describe('routing', () => {
             expect(result.fields).to.deep.equal([]);
           } else {
             // offline user requests
-            expect(result.statusCode).to.equal(403);
-            expect(result.responseBody.error).to.equal('forbidden');
+            expect(result.status).to.equal(403);
+            expect(result.body.error).to.equal('forbidden');
           }
         });
       });
@@ -444,8 +444,8 @@ describe('routing', () => {
             expect(result.indexes.length).to.equal(1);
           } else {
             // offline user request
-            expect(result.statusCode).to.equal(403);
-            expect(result.responseBody.error).to.equal('forbidden');
+            expect(result.status).to.equal(403);
+            expect(result.body.error).to.equal('forbidden');
           }
         });
       });
@@ -488,8 +488,8 @@ describe('routing', () => {
             expect(result.ok).to.equal(true);
           } else {
             // offline user request
-            expect(result.statusCode).to.equal(403);
-            expect(result.responseBody.error).to.equal('forbidden');
+            expect(result.status).to.equal(403);
+            expect(result.body.error).to.equal('forbidden');
           }
         });
       });
@@ -522,11 +522,11 @@ describe('routing', () => {
         results.forEach((result, idx) => {
           if (idx === 0) {
             // online user request
-            expect(result.statusCode).to.be.undefined;
+            expect(result.status).to.be.undefined;
           } else {
             // offline user requests
-            expect(result.statusCode).to.equal(403);
-            expect(result.responseBody.error).to.equal('forbidden');
+            expect(result.status).to.equal(403);
+            expect(result.body.error).to.equal('forbidden');
           }
         });
       });
@@ -559,8 +559,8 @@ describe('routing', () => {
           .catch(err => err)
       ]).then(results => {
         results.forEach(result => {
-          expect(result.statusCode).to.equal(403);
-          expect(result.responseBody.error).to.equal('forbidden');
+          expect(result.status).to.equal(403);
+          expect(result.body.error).to.equal('forbidden');
         });
       });
     });
@@ -658,8 +658,8 @@ describe('routing', () => {
         ])
         .then(results => {
           results.forEach(result => {
-            expect(result.statusCode).to.equal(403);
-            expect(result.responseBody.error).to.equal('forbidden');
+            expect(result.status).to.equal(403);
+            expect(result.body.error).to.equal('forbidden');
           });
         });
     });
@@ -695,8 +695,8 @@ describe('routing', () => {
           .catch(err => err),
       ]).then(results => {
         results.forEach(result => {
-          expect(result.statusCode).to.equal(403);
-          expect(result.responseBody.error).to.equal('forbidden');
+          expect(result.status).to.equal(403);
+          expect(result.body.error).to.equal('forbidden');
         });
       });
     });
@@ -739,17 +739,17 @@ describe('routing', () => {
 
       return createSession()
         .then(res => {
-          expect(res.statusCode).to.equal(200);
-          expect(res.headers['set-cookie'].length).to.equal(1);
-          const sessionCookie = res.headers['set-cookie'][0].split(';')[0];
+          expect(res.status).to.equal(200);
+          expect(res.headers.getSetCookie().length).to.equal(1);
+          const sessionCookie = res.headers.getSetCookie()[0].split(';')[0];
           expect(sessionCookie.split('=')[0]).to.equal('AuthSession');
           return sessionCookie;
         })
         .then(sessionCookie => getSession(sessionCookie))
         .then(res => {
-          expect(res.statusCode).to.equal(200);
-          expect(res.headers['set-cookie'].length).to.equal(1);
-          const [ content, age, path, expires, samesite ] = res.headers['set-cookie'][0].split('; ');
+          expect(res.status).to.equal(200);
+          expect(res.headers.getSetCookie().length).to.equal(1);
+          const [ content, age, path, expires, samesite ] = res.headers.getSetCookie()[0].split('; ');
 
           // check the cookie content is unchanged
           const [ contentKey, contentValue ] = content.split('=');
@@ -827,7 +827,7 @@ describe('routing', () => {
           return utils.requestOnTestDb(_.defaults(params, offlineRequestOptions)).catch(err => err);
         })
         .then(response => {
-          expect(response.statusCode).to.equal(403);
+          expect(response.status).to.equal(403);
         })
         .then(() => {
           const params = {
@@ -838,7 +838,7 @@ describe('routing', () => {
           return utils.requestOnMedicDb(_.defaults(params, offlineRequestOptions)).catch(err => err);
         })
         .then(response => {
-          expect(response.statusCode).to.equal(403);
+          expect(response.status).to.equal(403);
         })
         .then(() => utils.getDoc('settings'))
         .then(settings => {

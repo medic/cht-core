@@ -35,16 +35,14 @@ describe('SidebarMenuComponent', () => {
 
     await TestBed
       .configureTestingModule({
-        declarations: [
-          SidebarMenuComponent,
-          PanelHeaderComponent,
-          AuthDirective
-        ],
         imports: [
           RouterTestingModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           MatSidenavModule,
           MatIconModule,
+          SidebarMenuComponent,
+          PanelHeaderComponent,
+          AuthDirective,
         ],
         providers: [
           provideAnimations(),

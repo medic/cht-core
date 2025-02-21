@@ -57,7 +57,7 @@ export class RelativeDateService {
 
       try {
         options = JSON.parse(dataset);
-      } catch (e) {
+      } catch (_) {
         return;
       }
 

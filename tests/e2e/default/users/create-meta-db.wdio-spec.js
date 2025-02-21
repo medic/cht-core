@@ -9,9 +9,10 @@ describe('Create user meta db : ', () => {
   const USERNAME = 'fulltester';
   const FULL_NAME = 'Roger Milla';
   const PASSWORD = 'StrongP@ssword1';
+  const NEW_PASSWORD = 'Pa33word1';
 
   const OPTIONS = {
-    auth: { username: USERNAME, password: PASSWORD },
+    auth: { username: USERNAME, password: NEW_PASSWORD },
     method: 'GET',
     userName: USERNAME
   };
@@ -26,7 +27,12 @@ describe('Create user meta db : ', () => {
 
     await commonPage.goToMessages();
     await commonPage.logout();
-    await loginPage.login({ username: USERNAME, password: PASSWORD });
+    await browser.url('/');
+    await loginPage.setPasswordValue(PASSWORD);
+    await loginPage.setUsernameValue(USERNAME);
+    await (await loginPage.loginButton()).click();
+    await loginPage.passwordReset(PASSWORD, NEW_PASSWORD, NEW_PASSWORD);
+    await (await loginPage.updatePasswordButton()).click();
     await commonPage.waitForPageLoaded();
     await commonPage.goToReports();
 

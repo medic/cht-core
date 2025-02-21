@@ -21,7 +21,7 @@ describe('Settings Shared Library', () => {
   describe('getCredentials', () => {
 
     it('rejects if no key given', () => {
-      sinon.stub(request, 'get').rejects({ statusCode: 403, message: 'no perms' });
+      sinon.stub(request, 'get').rejects({ status: 403, message: 'no perms' });
 
       return lib
         .getCredentials()
@@ -33,7 +33,7 @@ describe('Settings Shared Library', () => {
     });
 
     it('should throw error from request', () => {
-      sinon.stub(request, 'get').rejects({ statusCode: 403, message: 'no perms' });
+      sinon.stub(request, 'get').rejects({ status: 403, message: 'no perms' });
 
       return lib
         .getCredentials('mykey')
@@ -45,7 +45,7 @@ describe('Settings Shared Library', () => {
     });
 
     it('should handle when credentials are not defined', () => {
-      sinon.stub(request, 'get').rejects({ statusCode: 404 });
+      sinon.stub(request, 'get').rejects({ status: 404 });
 
       return lib
         .getCredentials('mykey')
@@ -131,7 +131,7 @@ describe('Settings Shared Library', () => {
     });
 
     it('rejects with error from request', () => {
-      sinon.stub(request, 'get').rejects({ message: 'down', statusCode: 503 });
+      sinon.stub(request, 'get').rejects({ message: 'down', status: 503 });
       return lib.setCredentials('mykey', 'mypass')
         .then(() => expect.fail('exception expected'))
         .catch(err => {
@@ -143,7 +143,7 @@ describe('Settings Shared Library', () => {
 
     it('should encode credential id', () => {
       sinon.stub(request, 'get')
-        .onCall(0).rejects({ message: 'missing', statusCode: 404 })
+        .onCall(0).rejects({ message: 'missing', status: 404 })
         .onCall(1).resolves('mysecret');
       sinon.stub(request, 'put').resolves();
       return lib
@@ -161,7 +161,7 @@ describe('Settings Shared Library', () => {
 
     it('handles creating doc', () => {
       sinon.stub(request, 'get')
-        .withArgs(sinon.match.hasOwn('url', 'http://server.com/medic-vault/credential:mykey')).rejects({ message: 'missing', statusCode: 404 })
+        .withArgs(sinon.match.hasOwn('url', 'http://server.com/medic-vault/credential:mykey')).rejects({ message: 'missing', status: 404 })
         .withArgs(sinon.match.hasOwn('url', 'http://server.com/_node/_local/_config/couch_httpd_auth/secret')).resolves('mysecret');
       sinon.stub(request, 'put').resolves();
       return lib.setCredentials('mykey', 'mypass')
@@ -221,7 +221,7 @@ describe('Settings Shared Library', () => {
     it('set and get credentials with long secret', () => {
       const secret = 'myreallylongsecret - myreallylongsecret - myreallylongsecret'; // > 32 characters long
       const requestGet = sinon.stub(request, 'get');
-      requestGet.onCall(0).rejects({ message: 'missing', statusCode: 404 });
+      requestGet.onCall(0).rejects({ message: 'missing', status: 404 });
       requestGet.onCall(1).resolves(secret);
       sinon.stub(request, 'put').resolves();
       return lib
@@ -240,7 +240,7 @@ describe('Settings Shared Library', () => {
     it('set and get credentials with short secret', () => {
       const secret = 'secret'; // > 6 characters long
       const requestGet = sinon.stub(request, 'get');
-      requestGet.onCall(0).rejects({ message: 'missing', statusCode: 404 });
+      requestGet.onCall(0).rejects({ message: 'missing', status: 404 });
       requestGet.onCall(1).resolves(secret);
       sinon.stub(request, 'put').resolves();
       return lib
@@ -258,7 +258,7 @@ describe('Settings Shared Library', () => {
 
     it('should throw an error when couch secret is empty string', () => {
       const requestGet = sinon.stub(request, 'get');
-      requestGet.onCall(0).rejects({ message: 'missing', statusCode: 404 });
+      requestGet.onCall(0).rejects({ message: 'missing', status: 404 });
       requestGet.onCall(1).resolves('');
 
       return lib
@@ -272,7 +272,7 @@ describe('Settings Shared Library', () => {
 
     it('should handle error gracefully when secret is changed', () => {
       const requestGet = sinon.stub(request, 'get');
-      requestGet.onCall(0).rejects({ message: 'missing', statusCode: 404 });
+      requestGet.onCall(0).rejects({ message: 'missing', status: 404 });
       requestGet.onCall(1).resolves('oldsecret');
       sinon.stub(request, 'put').resolves();
       return lib

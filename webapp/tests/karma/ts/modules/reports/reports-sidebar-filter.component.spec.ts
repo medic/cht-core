@@ -52,8 +52,6 @@ describe('Reports Sidebar Filter Component', () => {
           BrowserAnimationsModule,
           BsDropdownModule,
           MatIconModule,
-        ],
-        declarations: [
           ReportsSidebarFilterComponent,
           DateFilterComponent,
           FacilityFilterComponent,

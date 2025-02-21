@@ -60,8 +60,6 @@ describe('TasksContentComponent', () => {
       imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterTestingModule,
-      ],
-      declarations: [
         TasksContentComponent,
         EnketoComponent,
       ],
@@ -69,9 +67,9 @@ describe('TasksContentComponent', () => {
         provideMockStore({ selectors: mockedSelectors }),
         { provide: ActivatedRoute, useValue: route },
         { provide: FormService, useValue: formService },
-        { provide: DbService, useValue: { get: () => ({ get })}},
+        { provide: DbService, useValue: { get: () => ({ get }) } },
         { provide: XmlFormsService, useValue: xmlFormsService },
-        { provide: PerformanceService, useValue: performanceService},
+        { provide: PerformanceService, useValue: performanceService },
         { provide: GeolocationService, useValue: geolocationService },
         { provide: Router, useValue: router },
         { provide: TasksForContactService, useValue: tasksForContactService },

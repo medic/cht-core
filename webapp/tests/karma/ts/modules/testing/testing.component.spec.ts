@@ -49,8 +49,6 @@ describe('Testing Component', () => {
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           FormsModule,
           MatIcon,
-        ],
-        declarations: [
           TestingComponent,
           ToolBarComponent,
           NavigationComponent,

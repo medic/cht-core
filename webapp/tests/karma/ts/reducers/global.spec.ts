@@ -263,7 +263,7 @@ describe('Global Reducer', () => {
       recordTelemetry: '.entry',
       cancelTranslationKey: 'a key',
       extra: 'property',
-      is: !'saved',
+      is: true,
     }));
     expect(state).to.deep.equal({
       navigation: {

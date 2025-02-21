@@ -146,7 +146,7 @@ export class EnketoService {
         id: 'contact-summary',
         xml: new DOMParser().parseFromString(xmlStr, 'text/xml'),
       };
-    } catch (e) {
+    } catch (_) {
       console.error('Error while converting app_summary.contact_summary.context to xml.');
       throw new Error('contact_summary context is misconfigured');
     }

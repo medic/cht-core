@@ -2,7 +2,6 @@
 
 const _ = require('lodash');
 const constants = require('@constants');
-const rpn = require('request-promise-native');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -31,6 +30,9 @@ let infrastructure = 'docker';
 const isDocker = () => infrastructure === 'docker';
 const isK3D = () => !isDocker();
 const K3D_DATA_PATH = '/data';
+const K3D_REGISTRY = 'registry.localhost';
+let K3D_REGISTRY_PORT;
+const K3D_REPO = () => `k3d-${K3D_REGISTRY}:${K3D_REGISTRY_PORT}`;
 
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
@@ -59,10 +61,6 @@ const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { 
 const existingFeedbackDocIds = [];
 const MINIMUM_BROWSER_VERSION = '90';
 const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
-const cookieJar = rpn.jar();
-
-// Cookies from the jar will be included on Node `fetch` calls
-global.fetch = require('fetch-cookie').default(global.fetch, cookieJar);
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const env = {
@@ -74,7 +72,7 @@ const env = {
 
 const dockerPlatformName = () => {
   try {
-    return JSON.parse(execSync(`docker version --format '{{json .Server.Platform.Name}}'`));
+    return JSON.parse(execSync(`docker version --format '{{json .Server.Platform.Name}}'`).toString());
   } catch (error) {
     console.log('docker version failed. NOTE this error is not relevant if running outside of docker');
     console.log(error.message);
@@ -89,7 +87,7 @@ const isDockerDesktop = () => {
 const dockerGateway = () => {
   const network = isDocker() ? NETWORK : `k3d-${PROJECT_NAME}`;
   try {
-    return JSON.parse(execSync(`docker network inspect ${network} --format='{{json .IPAM.Config}}'`));
+    return JSON.parse(execSync(`docker network inspect ${network} --format='{{json .IPAM.Config}}'`).toString());
   } catch (error) {
     console.log('docker network inspect failed. NOTE this error is not relevant if running outside of docker');
     console.log(error.message);
@@ -135,81 +133,115 @@ const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.buil
     });
 };
 
-const getSession = async () => {
-  if (cookieJar.getCookies(constants.BASE_URL).length) {
-    return;
-  }
-
-  const options = {
-    method: 'POST',
-    uri: `${constants.BASE_URL}/_session`,
-    json: true,
-    body: { name: auth.username, password: auth.password },
-    auth,
-    resolveWithFullResponse: true,
-  };
-  const response = await rpn(options);
-  const setCookie = response.headers?.['set-cookie'];
-  const header = Array.isArray(setCookie) ? setCookie.find(header => header.startsWith('AuthSession')) : setCookie;
-  if (header) {
-    try {
-      cookieJar.setCookie(rpn.cookie(header), constants.BASE_URL);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-};
-
-const isLoginRequest = options => {
-  return options.path === '/medic/login' && options.body.user !== auth.username;
-};
-
 const randomIp = () => {
   const section = () => (Math.floor(Math.random() * 255) + 1);
   return `${section()}.${section()}.${section()}.${section()}`;
 };
 
+const getRequestUri = (options) => {
+  let uri = (options.uri || `${constants.BASE_URL}${options.path}`);
+  if (options.qs) {
+    Object.keys(options.qs).forEach((key) => {
+      if (Array.isArray(options.qs[key])) {
+        options.qs[key] = JSON.stringify(options.qs[key]);
+      }
+    });
+    uri = `${uri}?${new URLSearchParams(options.qs).toString()}`;
+  }
+
+  return uri;
+};
+
+const setRequestContentType = (options) => {
+  let sendJson = true;
+  if (options.json === false ||
+      (options.headers['Content-Type'] && options.headers['Content-Type'] !== 'application/json')
+  ) {
+    sendJson = false;
+  }
+
+  if (sendJson) {
+    options.headers.Accept = 'application/json';
+    options.headers['Content-Type'] = 'application/json';
+    options.body = JSON.stringify(options.body);
+  }
+
+  return sendJson;
+};
+
+const setRequestEncoding = (options) => {
+  if (options.gzip) {
+    options.headers['Accept-Encoding'] = 'gzip';
+  }
+
+  if (options.gzip === false && !options.headers['Accept-Encoding']) {
+    options.headers['Accept-Encoding'] = 'identity';
+  }
+};
+
+const setRequestAuth = (options) => {
+  if (options.noAuth) {
+    return;
+  }
+
+  const auth = options.auth || { username: constants.USERNAME, password: constants.PASSWORD };
+  const basicAuth = btoa(`${auth.username}:${auth.password}`);
+  options.headers.Authorization = `Basic ${basicAuth}`;
+};
+
+const getRequestOptions = (options) => {
+  options = typeof options === 'string' ? { path: options } : _.clone(options);
+  options.headers = options.headers || {};
+  options.headers['X-Forwarded-For'] = randomIp();
+
+  const uri = getRequestUri(options);
+  const sendJson = setRequestContentType(options);
+
+  setRequestAuth(options);
+  setRequestEncoding(options);
+
+  return { uri, options, resolveWithFullResponse: options.resolveWithFullResponse, sendJson };
+};
+
+const getResponseBody = async (response, sendJson) => {
+  const receiveJson =  (!response.headers.get('content-type') && sendJson) ||
+                       response.headers.get('content-type')?.startsWith('application/json');
+  return receiveJson ? await response.json() : await response.text();
+};
+
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
-const request = async (options, { debug } = {}) => { //NOSONAR
-  options = typeof options === 'string' ? { path: options } : _.clone(options);
-  if (!options.noAuth && !options.auth && !isLoginRequest(options)) {
-    await getSession();
-    options.jar = cookieJar;
-  } else {
-    options.headers = options.headers || {};
-    options.headers['X-Forwarded-For'] = randomIp();
-  }
-  options.uri = options.uri || `${constants.BASE_URL}${options.path}`;
-  options.json = options.json === undefined ? true : options.json;
-
+const request = async (options, { debug } = {}) => {
+  const  { uri, options: requestInit, resolveWithFullResponse, sendJson } = getRequestOptions(options);
   if (debug) {
-    console.log('SENDING REQUEST');
-    console.log(JSON.stringify(options, null, 2));
+    console.debug('SENDING REQUEST', JSON.stringify({ ...options, uri, body: null }, null, 2));
   }
 
-  options.transform = (body, response, resolveWithFullResponse) => {
-    if (debug) {
-      console.log('RESPONSE');
-      console.log(response.statusCode);
-      console.log(response.body);
-    }
-    // we might get a json response for a non-json request.
-    const contentType = response.headers['content-type'];
-    if (contentType?.startsWith('application/json') && !options.json) {
-      response.body = JSON.parse(response.body);
-    }
-    // return full response if `resolveWithFullResponse` or if non-2xx status code (so errors can be inspected)
-    return resolveWithFullResponse || !(/^2/.test('' + response.statusCode)) ? response : response.body;
+  const response = await fetch(uri, requestInit);
+  const responseObj = {
+    ...response,
+    body: await getResponseBody(response, sendJson),
+    status: response.status,
+    ok: response.ok,
+    headers: response.headers
   };
 
-  try {
-    return await rpn(options);
-  } catch (err) {
-    err.responseBody = err?.response?.body;
-    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri} ${err.statusCode}`);
-    throw err;
+  if (debug) {
+    console.debug('RESPONSE', response.status, response.body);
   }
+
+  if (resolveWithFullResponse) {
+    return responseObj;
+  }
+
+  if (response.ok || (response.status > 300 && response.status < 399)) {
+    return responseObj.body;
+  }
+
+  console.warn(`Error with request: ${options.method || 'GET'} ${uri} ${responseObj.status}`);
+  const err = new Error(response.error || `${response.status} - ${JSON.stringify(responseObj.body)}`);
+  Object.assign(err, responseObj);
+  throw err;
 };
 
 const requestOnTestDb = (options, debug) => {
@@ -792,6 +824,14 @@ const deleteUsers = async (users, meta = false) => { //NOSONAR
   }
 };
 
+const deletePurgeDbs = async () => {
+  const dbs = await request({ path: '/_all_dbs' });
+  const purgeDbs = dbs.filter(db => db.includes('purged-role'));
+  for (const purgeDb of purgeDbs) {
+    await request({ path: `/${purgeDb}`, method: 'DELETE' });
+  }
+};
+
 const getCreatedUsers = async () => {
   const adminUserId = COUCH_USER_ID_PREFIX + constants.USERNAME;
   const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
@@ -804,15 +844,19 @@ const getCreatedUsers = async () => {
  * Creates users - optionally also creating their meta dbs
  * @param {Array} users - list of users to be created
  * @param {Boolean} meta - if true, creates meta db-s as well, default false
+ * @param {Boolean} password_change_required - if true, will require user to reset password on first time login
  * @return {Promise}
  * */
-const createUsers = async (users, meta = false) => {
+const createUsers = async (users, meta = false, password_change_required = false) => {
   const createUserOpts = { path: '/api/v1/users', method: 'POST' };
   const createUserV3Opts = { path: '/api/v3/users', method: 'POST' };
 
   for (const user of users) {
     const options = {
-      body: user,
+      body: {
+        ...user,
+        password_change_required: password_change_required ? undefined : false
+      },
       ...(Array.isArray(user.place) ? createUserV3Opts : createUserOpts)
     };
     await request(options);
@@ -1101,7 +1145,7 @@ const getTestComposeFilePath = file => path.resolve(__dirname, `../${file}-test.
 
 const generateK3DValuesFile = async () => {
   const view = {
-    repo: buildVersions.getRepo(),
+    repo: `${K3D_REPO()}/${buildVersions.getRepo()}`,
     tag: buildVersions.getImageTag(),
     db_name: constants.DB_NAME,
     user: constants.USERNAME,
@@ -1190,10 +1234,17 @@ const runCommand = (command, { verbose = true, overrideEnv = false } = {}) => {
 
 const createCluster = async (dataDir) => {
   const hostPort = process.env.NGINX_HTTPS_PORT ? `${process.env.NGINX_HTTPS_PORT}` : '443';
+  await runCommand(`k3d registry create ${K3D_REGISTRY}`);
+
+  const port = await runCommand(`docker container port k3d-${K3D_REGISTRY}`);
+  const match = port.trim().match(/:(\d+)$/);
+  K3D_REGISTRY_PORT = match[1];
+
   await runCommand(
     `k3d cluster create ${PROJECT_NAME} ` +
     `--port ${hostPort}:443@loadbalancer ` +
-    `--volume ${dataDir}:${K3D_DATA_PATH} --kubeconfig-switch-context=false`
+    `--volume ${dataDir}:${K3D_DATA_PATH} --kubeconfig-switch-context=false ` +
+    `--registry-use ${K3D_REPO()}`
   );
 };
 
@@ -1214,11 +1265,17 @@ const importImages = async () => {
     } catch {
       await runCommand(`docker pull ${image}`);
     }
-    await runCommand(`k3d image import ${image} -c ${PROJECT_NAME}`);
+    await runCommand(`docker tag ${image} ${K3D_REPO()}/${image}`);
+    await runCommand(`docker push ${K3D_REPO()}/${image}`);
   }
 };
 
 const cleanupOldCluster = async () => {
+  try {
+    await runCommand(`k3d registry delete ${K3D_REGISTRY}`);
+  } catch {
+    console.warn('No registry to clean up');
+  }
   try {
     await runCommand(`k3d cluster delete ${PROJECT_NAME}`);
   } catch {
@@ -1511,9 +1568,13 @@ const getUpdatedPermissions = async (roles, addPermissions, removePermissions) =
   return settings.permissions;
 };
 
-const updatePermissions = async (roles, addPermissions, removePermissions, ignoreReload) => {
+const updatePermissions = async (roles, addPermissions, removePermissions, options = {}) => {
   const permissions = await getUpdatedPermissions(roles, addPermissions, removePermissions);
-  await updateSettings({permissions}, { ignoreReload: ignoreReload });
+  const { ignoreReload = false, revert = false, refresh = false, sync = false } = options;
+  await updateSettings(
+    { permissions },
+    { ignoreReload, revert, refresh, sync }
+  );
 };
 
 const getSentinelDate = () => getContainerDate('sentinel');
@@ -1640,4 +1701,5 @@ module.exports = {
   toggleSentinelTransitions,
   runSentinelTasks,
   runCommand,
+  deletePurgeDbs,
 };

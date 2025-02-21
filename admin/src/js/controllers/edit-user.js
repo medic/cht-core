@@ -57,6 +57,12 @@ angular
       });
     };
 
+    const validateSkipPasswordPermission = () => {
+      $scope.skipPasswordChange = chtDatasource.v1.hasPermissions(
+        ['can_skip_password_change'], $scope.editUserModel.roles, $scope.permissions
+      );
+    };
+
     const formatDate = (settings, date) => {
       const format = settings.reported_date_format || 'DD-MMM-YYYY HH:mm:ss';
       return moment(date).format(format);
@@ -151,6 +157,7 @@ angular
     this.setupPromise = determineEditUserModel()
       .then(model => {
         $scope.editUserModel = model;
+        validateSkipPasswordPermission();
       })
       .catch(err => {
         $log.error('Error determining user model', err);
@@ -297,7 +304,6 @@ angular
       }
       return userHasPermission;
     };
-
 
     const isOnlineUser = (roles) => {
       if (!$scope.roles) {

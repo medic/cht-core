@@ -60,8 +60,6 @@ describe('Analytics Filter Component', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           MatIconModule,
-        ],
-        declarations: [
           AnalyticsFilterComponent,
         ],
         providers: [

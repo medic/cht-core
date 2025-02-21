@@ -18,6 +18,7 @@ describe('Create user for contacts', () => {
   const REPLACE_USER_FORM_ID = 'replace_user';
   const OTHER_REPLACE_FORM_ID = 'other_replace_form';
   const DISABLED_USER_PASSWORD = 'n3wPassword!';
+  const NEW_PASSWORD = 'Pa33word1';
 
   const USER_CONTACT = utils.deepFreeze(personFactory.build({ role: 'chw' }));
 
@@ -109,7 +110,7 @@ describe('Create user for contacts', () => {
       path: '/medic/login',
       body: { user: username, password, locale: 'en' },
       method: 'POST',
-      simple: false,
+      resolveWithFullResponse: true,
       noAuth: true,
     };
     return utils.request(opts);
@@ -118,7 +119,7 @@ describe('Create user for contacts', () => {
   const assertUserPasswordChanged = async (user) => {
     // Cannot login because user's password has been automatically reset
     const resp0 = await submitLoginRequest(user);
-    expect(resp0.statusCode).to.equal(401);
+    expect(resp0.status).to.equal(401);
 
     // Update user's password to something we know
     await utils.request({
@@ -129,7 +130,7 @@ describe('Create user for contacts', () => {
 
     // Can login with new password
     const resp1 = await submitLoginRequest({ ...user, password: DISABLED_USER_PASSWORD });
-    expect(resp1.statusCode).to.equal(302);
+    expect(resp1.status).to.equal(302);
   };
 
   const assertNewUserSettings = (newUserSettings, newContact, originalUser) => {
@@ -250,9 +251,15 @@ describe('Create user for contacts', () => {
 
         // Can still login as the original user (with the manually updated password)
         await commonPage.logout();
-        await loginPage.login({ ...ORIGINAL_USER, password: DISABLED_USER_PASSWORD });
+        await browser.url('/');
+        await loginPage.setUsernameValue(ORIGINAL_USER.username);
+        await loginPage.setPasswordValue(DISABLED_USER_PASSWORD);
+        await (await loginPage.loginButton()).click();
+        await loginPage.passwordReset(DISABLED_USER_PASSWORD, NEW_PASSWORD, NEW_PASSWORD);
+        await (await loginPage.updatePasswordButton()).click();
         await commonPage.waitForPageLoaded();
         await commonPage.sync();
+        await sentinelUtils.waitForSentinel();
         await commonPage.goToReports();
         const basicReportId3 = await createUserForContactsPage.submitBasicForm();
         const basicReport3 = await utils.getDoc(basicReportId3);
@@ -799,7 +806,7 @@ describe('Create user for contacts', () => {
       expect(updatedOriginalContact.user_for_contact).to.be.undefined;
       // Can still login as original user
       const resp1 = await submitLoginRequest(ONLINE_USER);
-      expect(resp1.statusCode).to.equal(302);
+      expect(resp1.status).to.equal(302);
       // New user not created
       const newUserSettings = await utils.getUserSettings({ contactId: replacementContactId });
       expect(newUserSettings).to.be.empty;

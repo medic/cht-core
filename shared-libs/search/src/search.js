@@ -9,6 +9,11 @@ _.flatten = require('lodash/flatten');
 _.intersection = require('lodash/intersection');
 const GenerateSearchRequests = require('./generate-search-requests');
 
+const ddocExists = (db, ddocId) => db
+  .get(ddocId)
+  .then(() => true)
+  .catch(() => false);
+
 module.exports = function(Promise, DB) {
   // Get the subset of rows, in appropriate order, according to options.
   const getPageRows = function(type, rows, options) {
@@ -111,17 +116,18 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  return function(type, filters, options, extensions) {
+  return async (type, filters, options, extensions) => {
     options = options || {};
     _.defaults(options, {
       limit: 50,
       skip: 0
     });
 
+    const offline = await ddocExists(DB, '_design/medic-offline-freetext');
     const cacheQueryResults = GenerateSearchRequests.shouldSortByLastVisitedDate(extensions);
     let requests;
     try {
-      requests = GenerateSearchRequests.generate(type, filters, extensions);
+      requests = GenerateSearchRequests.generate(type, filters, extensions, offline);
     } catch (err) {
       return Promise.reject(err);
     }

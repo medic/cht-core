@@ -317,9 +317,9 @@ describe('local place', () => {
         '-1',
         undefined,
       ].forEach((invalidSkip ) => {
-        it(`throws an error if cursor is invalid: ${String(invalidSkip)}`, async () => {
+        it(`throws an error if cursor is invalid: ${JSON.stringify(invalidSkip)}`, async () => {
           await expect(Place.v1.getPage(localContext)(placeTypeQualifier, invalidSkip as string, limit))
-            .to.be.rejectedWith(`Invalid cursor token: [${String(invalidSkip)}]`);
+            .to.be.rejectedWith(`Invalid cursor token: [${JSON.stringify(invalidSkip)}]`);
 
           expect(settingsGetAll.calledOnce).to.be.true;
           expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;

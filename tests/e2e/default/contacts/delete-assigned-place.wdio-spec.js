@@ -1,6 +1,5 @@
 const utils = require('@utils');
 const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
-const adminPage = require('@page-objects/default/admin/admin.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
@@ -17,6 +16,7 @@ describe('User Test Cases -> Creating Users ->', () => {
     name: 'district_hospital',
     type: 'district_hospital',
   });
+  const NEW_PASSWORD = 'Pa33word1';
 
   const person = personFactory.build({
     parent: {
@@ -59,9 +59,17 @@ describe('User Test Cases -> Creating Users ->', () => {
       password
     );
     await usersAdminPage.saveUser();
-    await adminPage.logout();
-    await loginPage.login({ username, password });
+
+    await commonPage.reloadSession();
+    await loginPage.setUsernameValue(username);
+    await loginPage.setPasswordValue(password);
+    await (await loginPage.loginButton()).click();
+    await loginPage.passwordReset(password, NEW_PASSWORD, NEW_PASSWORD);
+    await (await loginPage.updatePasswordButton()).click();
+    await commonPage.waitForPageLoaded();
+
     await commonPage.goToPeople();
+    await contactPage.getAllLHSContactsNames();
     await contactPage.selectLHSRowByText(districtHospital2.name);
     await commonPage.openMoreOptionsMenu();
 

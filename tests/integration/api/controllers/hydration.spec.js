@@ -269,8 +269,8 @@ describe('Hydration API', () => {
         .request(noAuthRequestOptions)
         .then(() => chai.assert.fail('Should not allow unauthenticated requests'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(401);
-          chai.expect(err.error).to.deep.include({ code: 401, error: 'unauthorized' });
+          chai.expect(err.status).to.equal(401);
+          chai.expect(err.body).to.deep.include({ code: 401, error: 'unauthorized' });
         });
     });
 
@@ -281,8 +281,8 @@ describe('Hydration API', () => {
         .request(noAuthRequestOptions)
         .then(() => chai.assert.fail('Should not allow unauthenticated requests'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(401);
-          chai.expect(err.error).to.deep.include({ code: 401, error: 'unauthorized' });
+          chai.expect(err.status).to.equal(401);
+          chai.expect(err.body).to.deep.include({ code: 401, error: 'unauthorized' });
         });
     });
   });
@@ -294,8 +294,8 @@ describe('Hydration API', () => {
         .request(offlineRequestOptions)
         .then(() => chai.assert.fail('Should not allow offline users'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(403);
-          chai.expect(err.error).to.deep.include({ code: 403, error: 'forbidden' });
+          chai.expect(err.status).to.equal(403);
+          chai.expect(err.body).to.deep.include({ code: 403, error: 'forbidden' });
         });
     });
 
@@ -306,8 +306,8 @@ describe('Hydration API', () => {
         .request(offlineRequestOptions)
         .then(() => chai.assert.fail('Should not allow offline users'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(403);
-          chai.expect(err.error).to.deep.include({ code: 403, error: 'forbidden' });
+          chai.expect(err.status).to.equal(403);
+          chai.expect(err.body).to.deep.include({ code: 403, error: 'forbidden' });
         });
     });
   });
@@ -318,8 +318,8 @@ describe('Hydration API', () => {
         .request(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail when no params'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(400);
-          chai.expect(err.error).to.deep.equal({
+          chai.expect(err.status).to.equal(400);
+          chai.expect(err.body).to.deep.equal({
             error: 'bad_request',
             reason: '`doc_ids` parameter must be a json array.'
           });
@@ -332,8 +332,8 @@ describe('Hydration API', () => {
         .request(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail when no params'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(400);
-          chai.expect(err.error).to.deep.equal({
+          chai.expect(err.status).to.equal(400);
+          chai.expect(err.body).to.deep.equal({
             error: 'bad_request',
             reason: '`doc_ids` parameter must be a json array.'
           });
@@ -480,8 +480,8 @@ describe('Hydration API', () => {
         .request(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail when no params'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(400);
-          chai.expect(err.error).to.deep.equal({
+          chai.expect(err.status).to.equal(400);
+          chai.expect(err.body).to.deep.equal({
             error: 'bad_request',
             reason: '`doc_ids` parameter must be a json array.'
           });
@@ -494,8 +494,8 @@ describe('Hydration API', () => {
         .request(onlineRequestOptions)
         .then(() => chai.assert.fail('Should fail when no params'))
         .catch(err => {
-          chai.expect(err.statusCode).to.equal(400);
-          chai.expect(err.error).to.deep.equal({
+          chai.expect(err.status).to.equal(400);
+          chai.expect(err.body).to.deep.equal({
             error: 'bad_request',
             reason: '`doc_ids` parameter must be a json array.'
           });
