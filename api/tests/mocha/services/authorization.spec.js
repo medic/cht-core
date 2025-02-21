@@ -398,16 +398,16 @@ describe('Authorization service', () => {
     });
 
     it('should add primary contacts when enabled', async () => {
-      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
+      db.medic.query.withArgs('medic/contacts_by_depth').onCall(0).resolves({
         rows: [
           { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa', primary_contact: 'contact' } },
           { id: '1', key: ['aaa', 1], value: { shortcode: 's1', primary_contact: 'contact2' } },
         ]
       });
-      sinon.stub(db.medic, 'allDocs').resolves({
+      db.medic.query.withArgs('medic/contacts_by_depth').onCall(1).resolves({
         rows: [
-          { id: 'contact', doc: { _id: 'contact', patient_id: 'contact_id' } },
-          { id: 'contact2', doc: { _id: 'contact2', patient_id: 'contact2_id' } },
+          { id: 'contact', key: ['contact'], value: { shortcode: 'contact_id', primary_contact: '13213' } },
+          { id: 'contact2', key: ['contact2'], value: { shortcode: 'contact2_id', primary_contact: 'dsada' } },
         ]
       });
       service.__get__('getDepth').returns({ contactDepth: 1, replicatePrimaryContacts: true });
@@ -423,22 +423,25 @@ describe('Authorization service', () => {
         ['aaa', 0], ['aaa', 1],
       ]);
       result.should.deep.include({ contactDepth: 1 });
-      db.medic.allDocs.args.should.deep.equal([[{ keys: ['contact2', 'contact'], include_docs: true }]]);
+      db.medic.query.callCount.should.equal(2);
+      db.medic.query.args[0].should.deep.equal(['medic/contacts_by_depth', { keys: [[ 'aaa', 0], [ 'aaa', 1]] }]);
+      db.medic.query.args[1].should.deep.equal(['medic/contacts_by_depth', { keys: [['contact2'], ['contact']] }]);
     });
 
     it('should only query for unknown primary contacts', async () => {
-      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
+      db.medic.query.withArgs('medic/contacts_by_depth').onCall(0).resolves({
         rows: [
           { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa', primary_contact: 'contact' } },
           { id: '1', key: ['aaa', 1], value: { shortcode: 's1', primary_contact: 'contact2' } },
           { id: 'contact2', key: ['aaa', 2], value: { shortcode: 'contact2_id' } },
         ]
       });
-      sinon.stub(db.medic, 'allDocs').resolves({
+      db.medic.query.withArgs('medic/contacts_by_depth').onCall(1).resolves({
         rows: [
-          { id: 'contact', doc: { _id: 'contact', patient_id: 'contact_id' } },
+          { id: 'contact', key: ['contact'], value: { shortcode: 'contact_id' } },
         ]
       });
+
       service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: 1, replicatePrimaryContacts: true });
       auth.hasAllPermissions.returns(true);
 
@@ -464,11 +467,16 @@ describe('Authorization service', () => {
           'contact2_id': 1,
         },
       });
-      db.medic.allDocs.args.should.deep.equal([[{ keys: ['contact'], include_docs: true }]]);
+      db.medic.query.callCount.should.equal(2);
+      db.medic.query.args[0].should.deep.equal([
+        'medic/contacts_by_depth',
+        { keys: [[ 'aaa', 0], [ 'aaa', 1], [ 'aaa', 2]] }
+      ]);
+      db.medic.query.args[1].should.deep.equal(['medic/contacts_by_depth', { keys: [['contact']] }]);
     });
     
     it('should set lowest place depth for primary contacts', async () => {
-      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
+      db.medic.query.withArgs('medic/contacts_by_depth').onCall(0).resolves({
         rows: [
           { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa', primary_contact: 'contact1' } },
           { id: '1', key: ['aaa', 1], value: { shortcode: 's1', primary_contact: 'contact1' } },
@@ -482,13 +490,13 @@ describe('Authorization service', () => {
           { id: 'contact4', key: ['aaa', 2], value: { shortcode: 'contact4_id' } },
         ]
       });
-
-      sinon.stub(db.medic, 'allDocs').resolves({
+      db.medic.query.withArgs('medic/contacts_by_depth').onCall(1).resolves({
         rows: [
-          { id: 'contact2', doc: { _id: 'contact2', patient_id: 'contact2_id' } },
-          { id: 'contact3', doc: { _id: 'contact3', patient_id: 'contact3_id' } },
+          { id: 'contact2', key: ['contact2'], value: { shortcode: 'contact2_id', primary_contact: 'dsa' } },
+          { id: 'contact3', key: ['contact3'], value: { shortcode: 'contact3_id'} },
         ]
       });
+
       service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: 1, replicatePrimaryContacts: true });
       auth.hasAllPermissions.returns(true);
 
@@ -524,269 +532,15 @@ describe('Authorization service', () => {
           'contact4_id': 2,
         },
       });
-      db.medic.allDocs.args.should.deep.equal([[{ keys: ['contact2', 'contact3'], include_docs: true }]]);
+
+      db.medic.query.callCount.should.equal(2);
+      db.medic.query.args[0].should.deep.equal([
+        'medic/contacts_by_depth',
+        { keys: [['aaa', 0], ['aaa', 1], ['aaa', 2], ['bbb', 0], ['bbb', 1], ['bbb', 2]] }
+      ]);
+      db.medic.query.args[1].should.deep.equal(['medic/contacts_by_depth', { keys: [['contact2'], ['contact3']] }]);
     }); 
 
-  });
-
-  describe('getAllowedDocIds', () => {
-    it('queries correct views with correct keys', () => {
-      return service
-        .getAllowedDocIds({ subjectIds, userCtx: { name: 'user' }})
-        .then(result => {
-          db.medic.query.callCount.should.equal(1);
-          db.medic.query.args[0].should.deep.equal([ 'medic/docs_by_replication_key', { keys: subjectIds } ]);
-
-          result.length.should.equal(2);
-          result.should.deep.equal(['_design/medic-client', 'org.couchdb.user:user']);
-        });
-    });
-
-    it('merges results from both view, except for sensitive ones, includes ddoc and user doc', () => {
-      const subjectIds = [
-        'sbj1', 'sbj2', 'sbj3', 'sbj4', 'facility_id', 'contact_id', 'c1', 'c2', 'c3', 'c4',
-        'facility_sh', 'contact_sh',
-      ];
-      const userCtx = {
-        name: 'user',
-        facility_id: ['facility_id'],
-        contact_id: 'contact_id',
-        facility: [{ _id: 'facility_id', place_id: 'facility_sh' }],
-        contact: { _id: 'contact_id', patient_id: 'contact_sh' },
-      };
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows: [
-          { id: 'r1', key: 'sbj1', value: { submitter: 'c1' } },
-          { id: 'r2', key: 'sbj3', value: { } },
-          { id: 'r3', key: 'sbj2', value: { submitter: 'nurse'} },
-          { id: 'r4', key: null, value: { submitter: 'c2' } },
-          { id: 'r5', key: 'facility_id', value: {} },
-          { id: 'r6', key: 'contact_id', value: {} },
-          { id: 'r7', key: 'facility_id', value: { submitter: 'c-unknown', private: true } }, //sensitive
-          { id: 'r8', key: 'contact_id', value: { submitter: 'c-unknown', private: 'something' } }, //sensitive
-          { id: 'r7', key: 'facility_sh', value: { submitter: 'c-unknown', private: true } }, //sensitive
-          { id: 'r8', key: 'contact_sh', value: { submitter: 'c-unknown', private: 'something' } }, //sensitive
-          { id: 'r9', key: 'facility_id', value: { submitter: 'c3' } },
-          { id: 'r10', key: 'contact_id', value: { submitter: 'c4' } },
-          { id: 'r11', key: 'sbj3', value: { } },
-          { id: 'r12', key: 'sbj4', value: { submitter: 'someone' } },
-          { id: 'r13', key: false, value: { submitter: 'someone else' } },
-          { id: 'r14', key: 'contact_id', value: { submitter: 'c-unknown', private: false } }, // not sensitive
-        ]});
-
-      return service
-        .getAllowedDocIds({ subjectIds, userCtx })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'r2', 'r3', 'r4',
-            'r5', 'r6', 'r9', 'r10',
-            'r11', 'r12', 'r13', 'r14'
-          ]);
-        });
-    });
-
-    it('merges results from view, except for sensitive, includes ddoc and user doc with multiple facilities', () => {
-      const subjectIds = [
-        'sbj1', 'sbj2', 'sbj3', 'sbj4', 'facility_id', 'contact_id', 'c1', 'c2', 'c3', 'c4',
-        'facility_sh', 'contact_sh',
-      ];
-      const userCtx = {
-        name: 'user',
-        facility_id: ['f1', 'f2'],
-        contact_id: 'contact_id',
-        facility: [{ _id: 'f1', place_id: 'f1_sh' }, { _id: 'f2', place_id: 'f2_sh' }],
-        contact: { _id: 'contact_id', patient_id: 'contact_sh' },
-      };
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows: [
-          { id: 'r1', key: 'sbj1', value: { submitter: 'c1' } },
-          { id: 'r2', key: 'sbj3', value: { } },
-          { id: 'r3', key: 'sbj2', value: { submitter: 'nurse'} },
-          { id: 'r4', key: null, value: { submitter: 'c2' } },
-          { id: 'r5', key: 'f1', value: {} },
-          { id: 'r55', key: 'f2', value: {} },
-          { id: 'r6', key: 'contact_id', value: {} },
-          { id: 'r7', key: 'f1', value: { submitter: 'c-unknown', private: true } }, //sensitive
-          { id: 'r77', key: 'f2', value: { submitter: 'c-unknown', private: true } }, //sensitive
-          { id: 'r8', key: 'contact_id', value: { submitter: 'c-unknown', private: 'something' } }, //sensitive
-          { id: 'r7', key: 'f1_sh', value: { submitter: 'c-unknown', private: true } }, //sensitive
-          { id: 'r77', key: 'f1_sh', value: { submitter: 'c-unknown', private: true } }, //sensitive
-          { id: 'r8', key: 'contact_sh', value: { submitter: 'c-unknown', private: 'something' } }, //sensitive
-          { id: 'r9', key: 'f1', value: { submitter: 'c3' } },
-          { id: 'r99', key: 'f2', value: { submitter: 'c3' } },
-          { id: 'r10', key: 'contact_id', value: { submitter: 'c4' } },
-          { id: 'r11', key: 'sbj3', value: { } },
-          { id: 'r12', key: 'sbj4', value: { submitter: 'someone' } },
-          { id: 'r13', key: false, value: { submitter: 'someone else' } },
-          { id: 'r14', key: 'contact_id', value: { submitter: 'c-unknown', private: false } }, // not sensitive
-        ]});
-
-      return service
-        .getAllowedDocIds({ subjectIds, userCtx })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'r2', 'r3', 'r4',
-            'r5', 'r55', 'r6', 'r9', 'r99', 'r10',
-            'r11', 'r12', 'r13', 'r14'
-          ]);
-        });
-    });
-
-    it('should not return duplicates', () => {
-      const subjectIds = ['subject', 'contact', 'parent'];
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows: [
-          { id: 'r1', key: 'subject', value: {} },
-          { id: 'r1', key: 'contact', value: {} },
-          { id: 'r1', key: 'parent', value: {} },
-          { id: 'r2', key: 'subject', value: {} },  // skipped cause r2 winning is not deleted
-          { id: 'r3', key: 'contact', value: {} },
-          { id: 'r2', key: 'parent', value: {} },
-        ]});
-
-      return service
-        .getAllowedDocIds({
-          subjectIds,
-          userCtx: { name: 'user', facility_id: ['facility_id'], contact_id: 'contact_id' }
-        })
-        .then(result => {
-          result.should.deep.equal(['_design/medic-client', 'org.couchdb.user:user', 'r1', 'r2', 'r3']);
-        });
-    });
-
-    it('should add all reports when reportDepth is not used', () => {
-      const subjectIds = ['subject', 'contact', 'parent'];
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'subject', value: { submitter: null, type: 'data_record' } },
-              { id: 'r2', key: 'contact', value: { type: 'data_record' } },
-              { id: 'r3', key: 'parent', value: { type: 'task' } },
-              { id: 'r4', key: 'contact', value: { type: 'target' } },
-              { id: 'r5', key: 'parent', value: { type: 'contact' } },
-              { id: 'r6', key: 'subject', value: { type: 'data_record', submitter: 'some_person' } },
-            ]
-        });
-
-      return service
-        .getAllowedDocIds({
-          subjectIds,
-          userCtx: { name: 'user', facility_id: ['facility_id'], contact_id: 'contact_id' },
-          contactDepth: 3,
-          reportDepth: -1,
-          subjectsDepth: {},
-        })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'r2', 'r3', 'r4', 'r5', 'r6'
-          ]);
-        });
-    });
-
-    it('should only add valid depth reports when reportDepth is used', () => {
-      const subjectIds = ['subject', 'contact', 'parent'];
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'subject', value: { submitter: null, type: 'data_record' } }, // depth 2
-              { id: 'r2', key: 'contact', value: { type: 'data_record' } }, // depth 1
-              { id: 'r3', key: 'parent', value: { type: 'task' } }, // not a report, but depth 0
-              { id: 'r4', key: 'contact', value: { type: 'target' } },  // not a report, but depth 1
-              { id: 'r5', key: 'parent', value: { type: 'contact' } },  // not a report, but depth 0
-              { id: 'r6', key: 'subject', value: { type: 'data_record', submitter: 'some_person' } }, // depth 2
-              { id: 'r7', key: 'contact', value: { type: 'data_record', submitter: 'some_person' } }, // depth 1
-              { id: 'r8', key: 'subject', value: { type: 'target' } },  // not a report, but depth 2
-              { id: 'r9', key: 'subject', value: { type: 'data_record', submitter: 'contact_id' } }, // depth 2, self
-            ]
-        });
-
-      return service
-        .getAllowedDocIds({
-          subjectIds,
-          userCtx: { name: 'user', facility_id: ['facility_id'], contact_id: 'contact_id' },
-          contactDepth: 2,
-          reportDepth: 1,
-          subjectsDepth: { 'parent': 0, 'contact': 1, 'subject': 2 },
-        })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r2', 'r3', 'r4', 'r5', 'r7', 'r8', 'r9'
-          ]);
-        });
-    });
-
-    it('should check all entries for a report to verify valid depth', () => {
-      const subjectIds = ['contact', 'parent', 'place'];
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } }, // depth 1
-              { id: 'r1', key: 'parent', value: { submitter: 'p', type: 'data_record' } }, // depth 0
-              { id: 'r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } }, // depth 1
-              { id: 'r2', key: 'parent', value: { submitter: 'contact', type: 'data_record' } }, // depth 0
-              { id: 'r3', key: 'contact', value: { submitter: 'contact', type: 'data_record' } }, // depth 1
-              { id: 'r4', key: 'place', value: { submitter: 'p', type: 'data_record' } }, // depth 1
-              { id: 'r5', key: 'place', value: { submitter: 'contact', type: 'data_record' } }, // depth 1
-            ]
-        });
-
-      return service
-        .getAllowedDocIds({
-          subjectIds,
-          userCtx: { name: 'user', facility_id: ['parent'], contact_id: 'contact' },
-          contactDepth: 1,
-          reportDepth: 0,
-          subjectsDepth: { 'parent': 0, 'contact': 1, 'place': 1 },
-        })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'r2', 'r3', 'r5'
-          ]);
-        });
-    });
-
-    it('should exclude tasks if param is passed', () => {
-      const subjectIds = ['contact', 'parent', 'place'];
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-              { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-              { id: 'ts-task3', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'r3', key: 'contact', value: { type: 'person' } },
-              { id: 'task2', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r5', key: 'place', value: { type: 'clinic' } },
-            ]
-        });
-
-      const ctx = {
-        subjectIds,
-        userCtx: { name: 'user', facility_id: ['parent'], contact_id: 'contact' },
-        subjectsDepth: { 'parent': 0, 'contact': 1, 'place': 1 },
-      };
-
-      return service
-        .getAllowedDocIds(ctx, { includeTasks: false })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'ts-r2', 'r3', 'ts-r5',
-          ]);
-        });
-    });
   });
 
   describe('getDocsByReplicationKey', () => {
@@ -1428,9 +1182,6 @@ describe('Authorization service', () => {
         service.allowedDoc(contact, ctx, viewResults).should.deep.equal(false);
 
         ctx.replicatePrimaryContacts = true;
-        service.allowedDoc(contact, ctx, viewResults).should.deep.equal(true);
-
-        ctx.subjectIds = [facility, 'pat_id'];
         service.allowedDoc(contact, ctx, viewResults).should.deep.equal(true);
 
         ctx.subjectIds = [facility, 'pat'];
@@ -3826,7 +3577,7 @@ describe('Authorization service', () => {
         ]
       });
 
-      db.medic.query.withArgs( 'medic/places_by_primary_contact').resolves({
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').resolves({
         rows: [
           {
             id: 'place_id',
@@ -3843,8 +3594,8 @@ describe('Authorization service', () => {
 
       const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
       result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user', 'contact_id', '123456', 'place_id']);
-      db.medic.query.withArgs( 'medic/places_by_primary_contact').args.should.deep.equal([[
-        'medic/places_by_primary_contact',
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
+        'medic/contacts_by_primary_contact',
         {
           include_docs: true,
           keys: ['contact_id', 'place_id']
@@ -3912,7 +3663,7 @@ describe('Authorization service', () => {
         ]
       });
 
-      db.medic.query.withArgs( 'medic/places_by_primary_contact').resolves({
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').resolves({
         rows: [
           {
             id: 'place_id',
@@ -3924,8 +3675,8 @@ describe('Authorization service', () => {
 
       const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
       result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user', 'contact', '123456', 'place_id']);
-      db.medic.query.withArgs( 'medic/places_by_primary_contact').args.should.deep.equal([[
-        'medic/places_by_primary_contact',
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
+        'medic/contacts_by_primary_contact',
         {
           include_docs: true,
           keys: ['contact']
@@ -3999,7 +3750,7 @@ describe('Authorization service', () => {
         ]
       });
 
-      db.medic.query.withArgs( 'medic/places_by_primary_contact').resolves({
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').resolves({
         rows: [
           {
             id: 'place',
@@ -4016,8 +3767,85 @@ describe('Authorization service', () => {
 
       const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
       result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user']);
-      db.medic.query.withArgs( 'medic/places_by_primary_contact').args.should.deep.equal([[
-        'medic/places_by_primary_contact',
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
+        'medic/contacts_by_primary_contact',
+        {
+          include_docs: true,
+          keys: ['contact']
+        }
+      ]]);
+    });
+
+    it('should assign correct subjectIds when replicating contacts with broken hierarchies', async () => {
+      const contact1 = {
+        _id: 'contact',
+        type: 'person',
+        parent: { _id: 'place', parent: { _id: 'facility' } },
+        patient_id: '123456',
+      };
+
+      const weirdDoc = {
+        _id: 'place',
+        type: 'contact',
+        contact: 'contact'
+      };
+
+      const docObjs = [
+        {
+          doc: contact1, // denied
+          viewResults: {
+            contactsByDepth: [
+              { key: ['facility', 2], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['place', 1], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['contact', 0], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+            ],
+            replicationKeys: [{ key: 'contact', value: { type: 'contact' }}],
+          }
+        }
+      ];
+
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { id: 'contact', doc: contact1 },
+        ]
+      });
+
+      const contactsByDepth = sinon.stub();
+      contactsByDepth.withArgs(contact1).returns(docObjs[0].viewResults.contactsByDepth);
+      contactsByDepth.withArgs(weirdDoc).returns();
+      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
+
+      const docsByReplicationKey = sinon.stub();
+      docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.replicationKeys);
+      docsByReplicationKey.withArgs(weirdDoc).returns([
+        { key: 'place', value: { type: 'contact' } }
+      ]);
+      viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      config.get.returns([
+        { role: 'user', depth: 1, report_depth: 0, replicate_primary_contacts: true },
+      ]);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'contact', key: ['shortcode', '123456'] },
+        ]
+      });
+
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').resolves({
+        rows: [
+          {
+            id: 'place',
+            key: 'contact',
+            doc: weirdDoc
+          },
+        ]
+      });
+
+      const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
+      result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user']);
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
+        'medic/contacts_by_primary_contact',
         {
           include_docs: true,
           keys: ['contact']

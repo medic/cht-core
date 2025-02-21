@@ -265,8 +265,7 @@ const allowedContact = (docId, docContactsByDepth, authorizationContext) => {
   }
 
   // this doc isn't allowed through its direct lineage, but can be a primary contact of a place that is.
-  const { shortcode } = docContactsByDepth[0].value;
-  return authorizationContext.subjectIds.includes(docId) || authorizationContext.subjectIds.includes(shortcode);
+  return authorizationContext.subjectIds.includes(docId);
 };
 
 /**
@@ -351,9 +350,9 @@ const addPrimaryContactsSubjects = async (authCtx, contacts) => {
   const unknownPrimaryContacts = _.uniq(primaryContactIds.filter(id => !contacts[id]));
 
   if (unknownPrimaryContacts.length) {
-    const result = await db.medic.allDocs({ keys: unknownPrimaryContacts, include_docs: true });
+    const result = await db.medic.query('medic/contacts_by_depth', { keys: unknownPrimaryContacts.map(id => [id] ) });
     result.rows.forEach(row => {
-      const subjects = registrationUtils.getSubjectIds(row.doc);
+      const subjects = getContactSubjects(row);
       authCtx.subjectIds.push(...subjects);
       contacts[row.id] = { subjects };
     });
@@ -427,7 +426,7 @@ const findContactsByReplicationKeys = (replicationKeys) => {
  */
 const getPrimaryPlaces = async (docs) => {
   const docIds = docs.map(doc => doc._id);
-  const queryResult = await db.medic.query('medic/places_by_primary_contact', { keys: docIds, include_docs: true });
+  const queryResult = await db.medic.query('medic/contacts_by_primary_contact', { keys: docIds, include_docs: true });
   return queryResult.rows.map(row => row.doc).filter(doc => doc);
 };
 
@@ -439,10 +438,6 @@ const getPrimaryPlaces = async (docs) => {
 const populateAllowedSubjectIds = (authorizationCtx, contacts) => {
   const initialSubjectIdsCount = authorizationCtx.subjectIds.length;
   contacts.forEach(contact => {
-    if (!contact) {
-      return;
-    }
-
     const viewResults = getViewResults(contact);
     if (!allowedDoc(contact._id, authorizationCtx, viewResults)) {
       return;
@@ -473,7 +468,7 @@ const populateAllowedSubjectIds = (authorizationCtx, contacts) => {
  *
  * @param {userCtx} userCtx
  * @param {{ doc:{}, viewResults:{} }[]} scopeDocsCtx
- * @returns {Promise<{subjectIds: (string)[]}
+ * @returns { Promise<AuthorizationContext> }
  */
 const getScopedAuthorizationContext = async (userCtx, scopeDocsCtx = []) => {
   const authorizationCtx = getContextObject(userCtx);
@@ -636,19 +631,6 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = tru
 };
 
 /**
- * Returns a list of document ids that the user is allowed to see and edit.
- * Excludes tasks if set.
- * @param {AuthorizationContext} authorizationContext
- * @param {boolean} includeTasks
- * @returns {Promise<string[]>}
- */
-const getAllowedDocIds = (authorizationContext, { includeTasks = true } = {}) => {
-  return getDocsByReplicationKey(authorizationContext).then(docsByReplicationKey => {
-    return filterAllowedDocIds(authorizationContext, docsByReplicationKey, { includeTasks });
-  });
-};
-
-/**
  * Evaluates medic/contacts_by_depth and medic/docs_by_replication_key view map functions over the document and
  * returns results, and whether the document is a user-settings document or not
  * @param {Object} doc - CouchDb document
@@ -669,7 +651,6 @@ module.exports = {
   allowedDoc,
   getViewResults,
   getAuthorizationContext,
-  getAllowedDocIds,
   getDocsByReplicationKey,
   filterAllowedDocIds,
   filterAllowedDocs,
