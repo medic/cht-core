@@ -54,7 +54,7 @@
     "ngx-bootstrap": "^19.0.2",
     "ngx-cookie-service": "^19.1.2",
     "odk-xform-compact-record-representation-for-sms": "^1.0.1",
-    "openrosa-xpath-evaluator": "^2.0.13",
+    "openrosa-xpath-evaluator": "^3.2.0",
     "partial-json-parser": "^1.2.2",
     "pojo2xml": "^1.7.2",
     "rxjs": "^7.8.1",
