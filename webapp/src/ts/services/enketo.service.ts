@@ -135,45 +135,59 @@ export class EnketoService {
     }
   }
 
-  private convertContactSummaryToXML(summary) {
-    if (!summary) {
-      return;
-    }
+  private convertContactSummaryToXML(contactSummary, userContactSummary) {
+    const convertSummary = (summary) => {
+      if (!summary) {
+        return;
+      }
+
+      const xmlStr = pojo2xml({ context: summary.context });
+      return new DOMParser().parseFromString(xmlStr, 'text/xml');
+    };
 
     try {
-      const xmlStr = pojo2xml({ context: summary.context });
-      return {
-        id: 'contact-summary',
-        xml: new DOMParser().parseFromString(xmlStr, 'text/xml'),
-      };
-    } catch (_) {
-      console.error('Error while converting app_summary.contact_summary.context to xml.');
+      const summaries:ContactSummary[] = [];
+      const contactSummaryXml = convertSummary(contactSummary);
+      if (contactSummaryXml) {
+        summaries.push({ id: 'contact-summary', xml: contactSummaryXml });
+      }
+      const userContactSummaryXml = convertSummary(userContactSummary);
+      if (userContactSummaryXml) {
+        summaries.push({
+          id: 'user-contact-summary',
+          xml: userContactSummaryXml,
+        });
+      }
+      return summaries;
+    } catch (e) {
+      console.error('Error while converting app_summary.contact_summary.context to xml.', e);
       throw new Error('contact_summary context is misconfigured');
     }
   }
 
-  private async getEnketoForm(wrapper, doc, instanceData, contactSummary, userSettings) {
-    const contactSummaryXML = this.convertContactSummaryToXML(contactSummary);
-    const instanceStr = await this.enketoPrepopulationDataService.get(userSettings, doc.model, instanceData);
+  private async getEnketoForm(xmlFormContext:XmlFormContext, userSettings) {
+    const instanceStr = this.enketoPrepopulationDataService.get(
+      userSettings,
+      xmlFormContext.doc.model,
+      xmlFormContext.instanceData
+    );
     const options: EnketoOptions = {
-      modelStr: doc.model,
+      modelStr: xmlFormContext.doc.model,
       instanceStr: instanceStr,
+      external: this.convertContactSummaryToXML(xmlFormContext.contactSummary, xmlFormContext.userContactSummary),
     };
-    if (contactSummaryXML) {
-      options.external = [contactSummaryXML];
-    }
-    const form = wrapper.find('form')[0];
+    const form = xmlFormContext.wrapper.find('form')[0];
     return new window.EnketoForm(form, options, { language: userSettings.language });
   }
 
   private renderFromXmls(xmlFormContext: XmlFormContext, userSettings) {
-    const { doc, instanceData, titleKey, wrapper, isFormInModal, contactSummary } = xmlFormContext;
+    const { doc, titleKey, wrapper, isFormInModal } = xmlFormContext;
 
     const formContainer = wrapper.find('.container').first();
     formContainer.html(doc.html.get(0)!);
 
     return this
-      .getEnketoForm(wrapper, doc, instanceData, contactSummary, userSettings)
+      .getEnketoForm(xmlFormContext, userSettings)
       .then((form) => {
         this.currentForm = form;
         const loadErrors = this.currentForm.init();
@@ -334,6 +348,7 @@ export class EnketoService {
       titleKey,
       isFormInModal,
       contactSummary: formContext.contactSummary,
+      userContactSummary: formContext.userContactSummary,
     };
     const form = await this.renderFromXmls(xmlFormContext, userSettings);
     const formContainer = xmlFormContext.wrapper.find('.container').first();
@@ -603,7 +618,7 @@ interface ContactSummary {
 interface EnketoOptions {
   modelStr: string;
   instanceStr: string;
-  external?: ContactSummary[];
+  external: ContactSummary[];
 }
 
 interface XmlFormContext {
@@ -612,12 +627,14 @@ interface XmlFormContext {
     model: string;
     title: string;
     hasContactSummary: boolean;
+    hasUserContactSummary: boolean;
   };
   wrapper: JQuery;
   instanceData: null | string | Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey?: string;
   isFormInModal?: boolean;
   contactSummary?: Record<string, any>;
+  userContactSummary?: unknown;
 }
 
 export class EnketoFormContext {
@@ -632,7 +649,7 @@ export class EnketoFormContext {
   isFormInModal?: boolean;
   userContact?: Nullable<Person.v1.Person>;
   contactSummary?: Record<string, any>;
-  userContactSummary?: unknown;
+  userContactSummary?: Record<string, any>;
 
   constructor(selector: string, type: string, formDoc: Record<string, any>, instanceData?) {
     this.selector = selector;

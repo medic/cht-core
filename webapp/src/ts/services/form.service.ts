@@ -184,7 +184,6 @@ export class FormService {
       formContext.contactSummary = await this.getContactSummary(doc, instanceData);
       formContext.userContactSummary = await this.getUserContactSummary(doc);
 
-
       if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
       }
