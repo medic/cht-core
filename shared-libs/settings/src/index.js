@@ -1,5 +1,8 @@
 const request = require('@medic/couch-request');
 const crypto = require('crypto');
+const logger = require('@medic/logger');
+const environment = require('@medic/environment');
+const semver = require('semver');
 
 const IV_LENGTH = 16;
 const KEY_LENGTH = 32;
@@ -128,8 +131,23 @@ const getCouchConfig = (param, nodeName) => {
   }
 };
 
+const getVersion = () => {
+  return request.get({ 
+    url: `${getCouchUrl()}/_design/${environment.ddoc}`,
+    json: true 
+  })
+    .then(ddoc => {
+      return semver.valid(ddoc.build_info?.version) || semver.valid(ddoc.deploy_info?.build) || ddoc.version || 'unknown';
+    })
+    .catch(err => {
+      logger.error('Error getting version: %o', err);
+      return 'unknown';
+    });
+};
+
 module.exports = {
   getCredentials,
   setCredentials,
   getCouchConfig,
+  getVersion,
 };

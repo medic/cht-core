@@ -16,12 +16,15 @@ const urlJoin = require('url-join');
 const request = require('@medic/couch-request');
 const vm = require('vm');
 const logger = require('@medic/logger');
+const os = require('os');
 
 const secureSettings = require('@medic/settings');
 
 const OUTBOUND_REQ_TIMEOUT = 10 * 1000;
 
 class OutboundError extends Error {}
+
+const CHT_AGENT = 'CHT';
 
 const fetchPassword = key => {
   return secureSettings.getCredentials(key).then(password => {
@@ -92,13 +95,38 @@ const mapDocumentToPayload = (doc, config, key) => {
   return toReturn;
 };
 
+//cache the version after first request so it doesnt request each push
+let chtVersion = '';
+
+const getUserAgent = () => {
+  if (chtVersion === '') {
+    return secureSettings.getVersion()
+      .then(v => {
+        chtVersion = v;
+        const platform = os.platform();
+        const arch = os.arch();
+        return `${CHT_AGENT}/${v} (${platform},${arch})`;
+      });
+  }
+  const platform = os.platform();
+  const arch = os.arch();
+  return Promise.resolve(`${CHT_AGENT}/${chtVersion} (${platform},${arch})`);
+}
+
 // Attempts to send a given payload using a given push config
 const sendPayload = (payload, config) => {
   const sendOptions = {
     url: urlJoin(config.destination.base_url, config.destination.path),
     body: payload,
     json: true,
-    timeout: OUTBOUND_REQ_TIMEOUT
+    timeout: OUTBOUND_REQ_TIMEOUT,
+    headers: {}
+  };
+
+  const setupUserAgent = () => {
+    return getUserAgent().then(userAgent => {
+      sendOptions.headers['User-Agent'] = userAgent;
+    });
   };
 
   const auth = () => {
@@ -126,9 +154,7 @@ const sendPayload = (payload, config) => {
       if (authConf.name && authConf.name.toLowerCase() === 'authorization') {
         return fetchPassword(authConf.value_key)
           .then(value => {
-            sendOptions.headers = {
-              Authorization: value
-            };
+            sendOptions.headers['Authorization'] = value
           });
       }
       logger.error(`Unsupported header name '${authConf.name}'. Supported: Authorization`);
@@ -168,25 +194,27 @@ const sendPayload = (payload, config) => {
     return Promise.reject(new OutboundError(`Invalid auth type '${authConf.type}'. Supported: basic, muso-sih`));
   };
 
-  return auth().then(() => {
-    if (logger.isDebugEnabled()) {
-      logger.debug('About to send outbound request');
-      const clone = JSON.parse(JSON.stringify(sendOptions));
-      if (clone.auth && clone.auth.password) {
-        // mask password before logging
-        clone.auth.password = '*****';
-      }
-      logger.debug(JSON.stringify(clone, null, 2));
-    }
-
-    return request.post(sendOptions)
-      .then(result => {
-        if (logger.isDebugEnabled()) {
-          logger.debug('result from outbound request');
-          logger.debug(JSON.stringify(result, null, 2));
+  return setupUserAgent()
+    .then(() => auth())
+    .then(() => {
+      if (logger.isDebugEnabled()) {
+        logger.debug('About to send outbound request');
+        const clone = JSON.parse(JSON.stringify(sendOptions));
+        if (clone.auth && clone.auth.password) {
+          // mask password before logging
+          clone.auth.password = '*****';
         }
-      });
-  });
+        logger.debug(JSON.stringify(clone, null, 2));
+      }
+
+      return request.post(sendOptions)
+        .then(result => {
+          if (logger.isDebugEnabled()) {
+            logger.debug('result from outbound request');
+            logger.debug(JSON.stringify(result, null, 2));
+          }
+        });
+    });
 };
 
 const orderedStringify = thing => {
