@@ -272,7 +272,7 @@ describe('Form service', () => {
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'some_parent' }] });
       const instanceData = { contact: { _id: '123-patient-contact'} };
 
-      EnketoPrepopulationData.resolves('<xml></xml>');
+      EnketoPrepopulationData.returns('<xml></xml>');
       const expectedErrorTitle = `Failed during the form "myform" rendering : `;
       const expectedErrorDetail = [ 'nope', 'still nope' ];
       const expectedErrorMessage = expectedErrorTitle + JSON.stringify(expectedErrorDetail);
@@ -315,7 +315,7 @@ describe('Form service', () => {
         .onSecondCall().resolves(VISIT_MODEL);
       enketoInit.returns([]);
       FileReader.utf8.resolves('<some-blob name="xml"/>');
-      EnketoPrepopulationData.resolves('<xml></xml>');
+      EnketoPrepopulationData.returns('<xml></xml>');
       return service.render(new EnketoFormContext('#div', 'task', mockEnketoDoc('myform'))).then(() => {
         expect(UserContact.callCount).to.equal(1);
         expect(EnketoPrepopulationData.callCount).to.equal(1);
@@ -343,7 +343,7 @@ describe('Form service', () => {
       FileReader.utf8
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
-      EnketoPrepopulationData.resolves(data);
+      EnketoPrepopulationData.returns(data);
       const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), data);
       return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
@@ -367,7 +367,7 @@ describe('Form service', () => {
       FileReader.utf8
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
-      EnketoPrepopulationData.resolves(data);
+      EnketoPrepopulationData.returns(data);
       const instanceData = {
         contact: {
           _id: 'fffff',
@@ -426,7 +426,7 @@ describe('Form service', () => {
       FileReader.utf8
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
-      EnketoPrepopulationData.resolves(data);
+      EnketoPrepopulationData.returns(data);
       const instanceData = {
         contact: {
           _id: 'fffff'
@@ -472,7 +472,7 @@ describe('Form service', () => {
         .onSecondCall().resolves(VISIT_MODEL);
       enketoInit.returns([]);
       FileReader.utf8.resolves('<some-blob name="xml"/>');
-      EnketoPrepopulationData.resolves(data);
+      EnketoPrepopulationData.returns(data);
       const instanceData = {
         contact: {
           _id: 'fffff'
@@ -485,7 +485,7 @@ describe('Form service', () => {
       const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
       return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
-        expect(EnketoForm.args[0][1].external).to.equal(undefined);
+        expect(EnketoForm.args[0][1].external).to.deep.equal([]);
         expect(ContactSummary.callCount).to.equal(0);
         expect(LineageModelGenerator.contact.callCount).to.equal(0);
       });
@@ -504,7 +504,7 @@ describe('Form service', () => {
       FileReader.utf8
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
-      EnketoPrepopulationData.resolves('<data><patient_id>123</patient_id></data>');
+      EnketoPrepopulationData.returns('<data><patient_id>123</patient_id></data>');
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
@@ -530,7 +530,7 @@ describe('Form service', () => {
     it('should execute the unload process before rendering the second form', async () => {
       enketoInit.returns([]);
       FileReader.utf8.resolves('<some-blob name="xml"/>');
-      EnketoPrepopulationData.resolves('<xml></xml>');
+      EnketoPrepopulationData.returns('<xml></xml>');
       UserContact.resolves({ contact_id: '123' });
       xmlFormsService.canAccessForm.resolves(true);
       dbGetAttachment
@@ -581,7 +581,7 @@ describe('Form service', () => {
       FileReader.utf8
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
-      EnketoPrepopulationData.resolves(data);
+      EnketoPrepopulationData.returns(data);
       const renderForm = sinon.spy(EnketoService.prototype, 'renderForm');
 
       try {

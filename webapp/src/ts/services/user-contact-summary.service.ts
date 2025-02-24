@@ -4,7 +4,7 @@ import { Store } from '@ngrx/store';
 import { CacheService } from '@mm-services/cache.service';
 import { Selectors } from '@mm-selectors/index';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
-import { UserSettings, UserSettingsService } from '@mm-services/user-settings.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
@@ -40,9 +40,9 @@ export class UserContactSummaryService {
     });
   }
 
-  get() {
+  get():Promise<Record<string, any>> {
     return new Promise((resolve, reject) => {
-      this.cache((err, userContactSummary) => {
+      this.cache((err, userContactSummary:Record<string, any>) => {
         if (err) {
           return reject(err);
         }
