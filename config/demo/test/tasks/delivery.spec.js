@@ -26,7 +26,9 @@ describe('Delivery tasks tests', () => {
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) {clock.restore();}
+    if (clock) {
+      clock.restore();
+    }
   });
 
   //ANC Home Visit: 12, 20, 26, 30, 34, 36, 38, 40 weeks (Known LMP)
@@ -58,9 +60,7 @@ describe('Delivery tasks tests', () => {
 
       if (deliveryTaskDays.includes(day)) {
         expect(taskForDelivery.length, day).to.equal(1);
-      }
-
-      else {
+      } else {
         expect(taskForDelivery.length, day).to.equal(0);
       }
     }
@@ -86,9 +86,7 @@ describe('Delivery tasks tests', () => {
         const tasksAfterDangerSignsFollowUp = await harness.getTasks();
         expect(tasksAfterDangerSignsFollowUp).to.be.empty;
         cleared = true;
-      }
-
-      else {
+      } else {
         expect(taskForDelivery).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.delivery.title' });
       }
     }
@@ -113,9 +111,7 @@ describe('Delivery tasks tests', () => {
         const tasksAfterDeliveryReport = await harness.getTasks();
         expect(tasksAfterDeliveryReport).to.be.empty;
         resolved = true;
-      }
-
-      else {
+      } else {
         expect(taskForDelivery).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.delivery.title' });
       }
     }

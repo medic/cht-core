@@ -12,14 +12,14 @@ const harness = new TestRunner();
 const now = '2000-04-30';
 
 describe('PNC danger sign follow up for mother tests', () => {
-  before(async () => { return await harness.start(); });
-  after(async () => { return await harness.stop(); });
+  before(() =>  harness.start());
+  after(() => harness.stop());
   beforeEach(async () => {
     await harness.clear();
     await harness.setNow(now);
     return await harness.loadForm('delivery');
   });
-  afterEach(() => { expect(harness.consoleErrors).to.be.empty; });
+  afterEach(() => expect(harness.consoleErrors).to.be.empty);
 
   it('PNC danger sign follow up for mother from delivery', async () => {
     const actionFormResult = await harness.fillForm(...deliveryReportScenarios.motherDangerSign);

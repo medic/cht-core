@@ -36,7 +36,9 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
-      if (!report) {return false;}
+      if (!report) {
+        return false;
+      }
       return getMostRecentLMPDateForPregnancy(contact, report);
     },
     date: 'reported',
@@ -90,7 +92,9 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
-      if (!isActivePregnancy(contact, report)) {return false;}
+      if (!isActivePregnancy(contact, report)) {
+        return false;
+      }
       const visitCount = countANCFacilityVisits(contact, report);
       return visitCount > 0;
     },
@@ -132,7 +136,9 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
-      if (!isActivePregnancy(contact, report)) {return false;}
+      if (!isActivePregnancy(contact, report)) {
+        return false;
+      }
       const visitCount = countANCFacilityVisits(contact, report);
       return visitCount > 3;
     },
@@ -149,7 +155,9 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
-      if (!isActivePregnancy(contact, report)) {return false;}
+      if (!isActivePregnancy(contact, report)) {
+        return false;
+      }
       const pregnancyRegistrationCount = 1;
       const pregnancyHomeVisitCount = getSubsequentPregnancyFollowUps(contact, report).length || 0;
       const facilityVisitCount = countANCFacilityVisits(contact, report) || 0;

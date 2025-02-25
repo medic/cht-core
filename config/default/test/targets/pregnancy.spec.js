@@ -31,8 +31,7 @@ describe('Pregnancy related targets test', () => {
       expect(activePregnancies).to.have.property('length', 1);
       if (day < MAX_DAYS_IN_PREGNANCY) {
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
-      }
-      else {
+      } else {
         expect(activePregnancies[0]).to.nested.not.include({ 'value.pass': 1 });
         expect(activePregnancies[0]).to.nested.not.include({ 'value.total': 1 });
       }
@@ -50,8 +49,7 @@ describe('Pregnancy related targets test', () => {
       expect(pregnanciesThisMonth).to.have.property('length', 1);
       if (moment('1999-08-01').add(day, 'days').isSame('1999-10-10', 'month')) {
         expect(pregnanciesThisMonth[0]).to.nested.include({ 'value.total': 1, 'value.pass': 1 });
-      }
-      else {
+      } else {
         expect(pregnanciesThisMonth[0]).to.nested.not.include({ 'value.pass': 1 });
         expect(pregnanciesThisMonth[0]).to.nested.not.include({ 'value.total': 1 });
       }
@@ -80,8 +78,7 @@ describe('Pregnancy related targets test', () => {
       expect(activePregnancies).to.have.property('length', 1);
       if (day < MAX_DAYS_IN_PREGNANCY) {
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
-      }
-      else {
+      } else {
         expect(activePregnancies[0]).to.nested.not.include({ 'value.pass': 1 });
         expect(activePregnancies[0]).to.nested.not.include({ 'value.total': 1 });
       }
@@ -109,8 +106,7 @@ describe('Pregnancy related targets test', () => {
       expect(activePregnancies).to.have.property('length', 1);
       if (day < MAX_DAYS_IN_PREGNANCY) {
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
-      }
-      else {
+      } else {
         expect(activePregnancies[0]).to.nested.not.include({ 'value.pass': 1 });
         expect(activePregnancies[0]).to.nested.not.include({ 'value.total': 1 });
       }
@@ -128,8 +124,7 @@ describe('Pregnancy related targets test', () => {
       expect(activePregnancies).to.have.property('length', 1);
       if (day < MAX_DAYS_IN_PREGNANCY) {
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
-      }
-      else {
+      } else {
         expect(activePregnancies[0]).to.nested.not.include({ 'value.pass': 1 });
         expect(activePregnancies[0]).to.nested.not.include({ 'value.total': 1 });
       }
@@ -152,8 +147,7 @@ describe('Pregnancy related targets test', () => {
       expect(activePregnancies).to.have.property('length', 1);
       if (day < MAX_DAYS_IN_PREGNANCY) {
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
-      }
-      else {
+      } else {
         expect(activePregnancies[0]).to.nested.not.include({ 'value.pass': 1 });
         expect(activePregnancies[0]).to.nested.not.include({ 'value.total': 1 });
       }
@@ -180,8 +174,7 @@ describe('Pregnancy related targets test', () => {
         activePregnancies = await harness.getTargets({ type: 'active-pregnancies-4+-visits' });
         expect(activePregnancies[0]).to.nested.not.include({ 'value.pass': 1 });
         expect(activePregnancies[0]).to.nested.not.include({ 'value.total': 1 });
-      }
-      else {
+      } else {
         activePregnancies = await harness.getTargets({ type: 'active-pregnancies-4+-visits' });
         expect(activePregnancies).to.have.property('length', 1);
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
@@ -194,8 +187,7 @@ describe('Pregnancy related targets test', () => {
       expect(activePregnancies).to.have.property('length', 1);
       if (day < MAX_DAYS_IN_PREGNANCY) {
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
-      }
-      else {
+      } else {
         expect(activePregnancies[0]).to.nested.not.include({ 'value.pass': 1 });
         expect(activePregnancies[0]).to.nested.not.include({ 'value.total': 1 });
       }
@@ -224,8 +216,7 @@ describe('Pregnancy related targets test', () => {
         activePregnancies = await harness.getTargets({ type: 'active-pregnancies-8+-contacts' });
         expect(activePregnancies[0]).to.nested.not.include({ 'value.pass': 1 });
         expect(activePregnancies[0]).to.nested.not.include({ 'value.total': 1 });
-      }
-      else {
+      } else {
         activePregnancies = await harness.getTargets({ type: 'active-pregnancies-8+-contacts' });
         expect(activePregnancies).to.have.property('length', 1);
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
@@ -238,8 +229,7 @@ describe('Pregnancy related targets test', () => {
       expect(activePregnancies).to.have.property('length', 1);
       if (day < MAX_DAYS_IN_PREGNANCY) {
         expect(activePregnancies[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
-      }
-      else {
+      } else {
         expect(activePregnancies[0]).to.nested.not.include({ 'value.pass': 1 });
         expect(activePregnancies[0]).to.nested.not.include({ 'value.total': 1 });
       }

@@ -32,7 +32,8 @@ function range(start, end, difference = 1) {
 
 //combine range from start to end separated by d days, task window edges, get unique and sort
 function getTaskTestDays(start, end, task, interval = 1) {
-  return [...new Set(range(start, end, interval).concat(getTaskWindowEdges(task)))].sort(function(a, b) {return a - b;});
+  return [...new Set(range(start, end, interval).concat(getTaskWindowEdges(task)))]
+    .sort((a, b) =>  a - b);
 }
 
 module.exports = {
