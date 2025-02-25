@@ -74,7 +74,7 @@
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
     "@faker-js/faker": "^9.4.0",
-    "@medic/eslint-config": "^1.1.0",
+    "@medic/eslint-config": "^1.2.0",
     "@medic/translation-checker": "^1.1.0",
     "@octokit/core": "^5.2.0",
     "@octokit/plugin-paginate-graphql": "^4.0.1",
