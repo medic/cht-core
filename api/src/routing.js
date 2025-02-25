@@ -80,6 +80,7 @@ const app = express.Router({ strict: true });
 const asyncLocalStorage = require('./services/async-storage');
 const moment = require('moment');
 const MAX_REQUEST_SIZE = '32mb';
+const sso = require('./controllers/sso');
 
 // requires content-type application/x-www-form-urlencoded header
 const formParser = bodyParser.urlencoded({ limit: MAX_REQUEST_SIZE, extended: false });
@@ -449,6 +450,9 @@ app.postJson('/api/v1/users/:username', users.update);
 app.postJson('/api/v3/users/:username', users.v3.update);
 app.delete('/api/v1/users/:username', users.delete);
 app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getUserSettings, users.info);
+
+const keycloak = sso.init(app);
+app.get(routePrefix + 'login/oidc', keycloak.protect(), sso.chtLogin);
 
 app.postJson('/api/v1/places', function(req, res) {
   auth
