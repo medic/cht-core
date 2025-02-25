@@ -137,7 +137,10 @@ const getVersion = () => {
     json: true 
   })
     .then(ddoc => {
-      return semver.valid(ddoc.build_info?.version) || semver.valid(ddoc.deploy_info?.build) || ddoc.version || 'unknown';
+      return semver.valid(ddoc.build_info?.version) ||
+        semver.valid(ddoc.deploy_info?.build) ||
+        ddoc.version ||
+        'unknown';
     })
     .catch(err => {
       logger.error('Error getting version: %o', err);

@@ -343,7 +343,7 @@ describe('outbound shared library', () => {
           assert.equal(request.post.args[0][0].url, 'http://test/foo');
           assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
           assert.equal(request.post.args[0][0].json, true);
-          assert.equal(request.post.args[0][0].headers['Authorization'], 'Bearer credentials');
+          assert.equal(request.post.args[0][0].headers.Authorization, 'Bearer credentials');
         });
     });
 

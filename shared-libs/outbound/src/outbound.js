@@ -111,7 +111,7 @@ const getUserAgent = () => {
   const platform = os.platform();
   const arch = os.arch();
   return Promise.resolve(`${CHT_AGENT}/${chtVersion} (${platform},${arch})`);
-}
+};
 
 // Attempts to send a given payload using a given push config
 const sendPayload = (payload, config) => {
@@ -154,7 +154,7 @@ const sendPayload = (payload, config) => {
       if (authConf.name && authConf.name.toLowerCase() === 'authorization') {
         return fetchPassword(authConf.value_key)
           .then(value => {
-            sendOptions.headers['Authorization'] = value
+            sendOptions.headers.Authorization = value;
           });
       }
       logger.error(`Unsupported header name '${authConf.name}'. Supported: Authorization`);
