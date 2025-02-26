@@ -1,8 +1,21 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { NgIf, NgFor, NgStyle, DatePipe } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
+import {
+  ContactSummaryContentComponent
+} from '@mm-components/contact-summary-content/contact-summary-content.component';
 
 @Component({
   selector: 'mm-duplicate-info',
   templateUrl: './duplicate-info.component.html',
+  imports: [
+    NgIf,
+    NgFor,
+    NgStyle,
+    DatePipe,
+    TranslatePipe,
+    ContactSummaryContentComponent
+  ]
 })
 export class DuplicateInfoComponent {
   @Input() entityType: string = '';
