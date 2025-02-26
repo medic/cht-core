@@ -11,7 +11,15 @@
     <div class="card">
       <mm-enketo formId="contact-form" [editing]="enketoContact?.docId" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()">
         <div duplicate-info>
-          <mm-duplicate-info [acknowledged]="acknowledged" [duplicates]="duplicates" (acknowledgedChange)="onAcknowledgeChange($event)" (navigateToDuplicate)="onNavigateToDuplicate($event)"></mm-duplicate-info>
+          <mm-duplicate-info 
+            [entityType]="entityType"
+            [duplicates]="duplicates"
+            [acknowledged]="acknowledged" 
+            (acknowledgedChange)="onAcknowledgeChange($event)" 
+            [summaryRequestInfo]="summaryRequestInfo"
+            (loadContactSummary)="onLoadContactSummary($event)"
+            (navigateToDuplicate)="onNavigateToDuplicate($event)">
+          </mm-duplicate-info>
         </div>
       </mm-enketo>
     </div>
