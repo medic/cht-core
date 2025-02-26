@@ -5,10 +5,16 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   templateUrl: './duplicate-info.component.html',
 })
 export class DuplicateInfoComponent {
+  @Input() entityType: string = '';
   @Input() acknowledged: boolean = false;
   @Output() acknowledgedChange = new EventEmitter<boolean>();
   @Output() navigateToDuplicate = new EventEmitter<string>();
-  @Input() duplicates: { _id: string; name: string; reported_date: string | Date; [key: string]: string | Date }[] = [];
+  @Input() duplicates: { _id: string; name: string; reported_date: number; [key: string]: string | number }[] = [];
+  @Output() loadContactSummary = new EventEmitter<string>();
+  // We need the loading prop to prohibit additional requests
+  // We need the contact id in order to appropriately indicate the loading & error elements
+  // In the latter case a 'retry' button should be displayed
+  @Input() summaryRequestInfo?: { contact_id: string, isLoading: boolean, error?: string };
 
   toggleAcknowledged() {
     this.acknowledged = !this.acknowledged;
@@ -19,22 +25,7 @@ export class DuplicateInfoComponent {
     this.navigateToDuplicate.emit(_id);
   }
 
-  // Handles collapse / expand of duplicate doc details
-  expandedSections = new Map<string, boolean>();
-
-  toggleSection(path: string): void {
-    this.expandedSections.set(path, !this.expandedSections.get(path));
-  }
-
-  isExpanded(path: string): boolean {
-    return this.expandedSections.get(path) || false;
-  }
-
-  isObject(value: any): boolean {
-    return value && typeof value === 'object' && !Array.isArray(value);
-  }
-
-  getPath(parentPath: string, key: string): string {
-    return parentPath ? `${parentPath}.${key}` : key;
+  _loadContactSummary(_id: string){
+    this.loadContactSummary.emit(_id);
   }
 }
