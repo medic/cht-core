@@ -479,10 +479,16 @@
     }
     
     .nested-section {
-      margin-left: 1.5rem;
+      display: block; 
+      border: 1px solid lightgray; 
+      border-radius: 5px;
+
+      label {
+        padding-left: 0%;
+      }
     }
     
-    .toggle-button {
+    .load-more-button {
       background: none;
       border: none;
       color: #007bff;
@@ -493,6 +499,10 @@
     
     .toggle-button:hover {
       text-decoration: underline;
+    }
+
+    .error_msg {
+      color: #e33030;
     }
   }
 }
