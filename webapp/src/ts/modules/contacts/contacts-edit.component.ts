@@ -16,10 +16,11 @@ import { TranslateService } from '@mm-services/translate.service';
 import { NgIf } from '@angular/common';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
+import { DuplicateInfoComponent } from '@mm-components/duplicate-info/duplicate-info.component';
 
 @Component({
   templateUrl: './contacts-edit.component.html',
-  imports: [NgIf, EnketoComponent, TranslatePipe]
+  imports: [NgIf, EnketoComponent, TranslatePipe, DuplicateInfoComponent]
 })
 export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
