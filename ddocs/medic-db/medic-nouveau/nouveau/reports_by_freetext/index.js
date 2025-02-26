@@ -32,6 +32,10 @@ function (doc) {
       });
     }
 
+    if (doc.contact && doc.contact._id) {
+      index('text', 'contact', doc.contact._id.toLowerCase());
+    }
+
     toIndex = toIndex.trim();
     if (toIndex) {
       index('text', 'default', toIndex, { store: true });
