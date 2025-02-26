@@ -30,7 +30,6 @@ import { AuthService } from '@mm-services/auth.service';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
-import { ComponentsModule } from '@mm-components/components.module';
 
 describe('Contacts content component', () => {
   let component: ContactsContentComponent;
