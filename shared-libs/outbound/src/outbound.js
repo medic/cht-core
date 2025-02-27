@@ -18,6 +18,7 @@ const vm = require('vm');
 const logger = require('@medic/logger');
 const os = require('os');
 
+const environment = require('@medic/environment');
 const secureSettings = require('@medic/settings');
 
 const OUTBOUND_REQ_TIMEOUT = 10 * 1000;
@@ -26,15 +27,14 @@ class OutboundError extends Error {}
 
 const CHT_AGENT = 'CHT';
 
-const fetchPassword = key => {
-  return secureSettings.getCredentials(key).then(password => {
-    if (!password) {
-      throw new OutboundError(
-        `Credentials for '${key}' have not been configured. See the Outbound documentation.`
-      );
-    }
-    return password;
-  });
+const fetchPassword = async key => {
+  const password = await secureSettings.getCredentials(key);
+  if (!password) {
+    throw new OutboundError(
+      `Credentials for '${key}' have not been configured. See the Outbound documentation.`
+    );
+  }
+  return password;
 };
 
 // Maps a source document to a destination format using the given push config
@@ -95,26 +95,82 @@ const mapDocumentToPayload = (doc, config, key) => {
   return toReturn;
 };
 
-//cache the version after first request so it doesnt request each push
-let chtVersion = '';
-
-const getUserAgent = () => {
-  if (chtVersion === '') {
-    return secureSettings.getVersion()
-      .then(v => {
-        chtVersion = v;
-        const platform = os.platform();
-        const arch = os.arch();
-        return `${CHT_AGENT}/${v} (${platform},${arch})`;
-      });
-  }
+const getUserAgent = async () => {
+  const chtVersion = await environment.getVersion();
   const platform = os.platform();
   const arch = os.arch();
-  return Promise.resolve(`${CHT_AGENT}/${chtVersion} (${platform},${arch})`);
+  return `${CHT_AGENT}/${chtVersion} (${platform},${arch})`;
+};
+
+const handleBasicAuth = async (authConf, sendOptions) => {
+  const password = await fetchPassword(authConf.password_key);
+  sendOptions.auth = {
+    username: authConf.username,
+    password: password,
+  };
+};
+
+const handleHeaderAuth = async (authConf, sendOptions) => {
+  if (authConf.name && authConf.name.toLowerCase() === 'authorization') {
+    const value = await fetchPassword(authConf.value_key);
+    sendOptions.headers.authorization = value;
+    return;
+  }
+  logger.error(`Unsupported header name '${authConf.name}'. Supported: Authorization`);
+  throw new OutboundError(`Unsupported header name '${authConf.name}'. Supported: Authorization`);
+};
+
+const handleMusoSihAuth = async (authConf, config, sendOptions) => {
+  const password = await fetchPassword(authConf.password_key);
+  const authOptions = {
+    form: {
+      login: authConf.username,
+      password: password
+    },
+    url: urlJoin(config.destination.base_url, authConf.path),
+    json: true,
+    timeout: OUTBOUND_REQ_TIMEOUT
+  };
+
+  const result = await request.post(authOptions);
+  // No that's not a spelling mistake, this API is sometimes French!
+  if (result.statut !== 200) {
+    logger.error('Non-200 status from Muso auth: %o', result);
+    throw new OutboundError(`Got ${result.statut} when requesting auth`);
+  }
+
+  sendOptions.qs = {
+    token: result.data.username_token
+  };
+};
+
+const handleAuth = async (config, sendOptions) => {
+  const authConf = config.destination.auth;
+
+  if (!authConf) {
+    return;
+  }
+
+  if (!authConf.type) {
+    throw new OutboundError('No auth.type, either declare the type or omit the auth property');
+  }
+
+  const authType = authConf.type.toLowerCase();
+
+  if (authType === 'basic') {
+    await handleBasicAuth(authConf, sendOptions);
+  } else if (authType === 'header') {
+    await handleHeaderAuth(authConf, sendOptions);
+  } else if (authType === 'muso-sih') {
+    await handleMusoSihAuth(authConf, config, sendOptions);
+  } else {
+    // Misconfigured auth type
+    throw new OutboundError(`Invalid auth type '${authConf.type}'. Supported: basic, muso-sih`);
+  }
 };
 
 // Attempts to send a given payload using a given push config
-const sendPayload = (payload, config) => {
+const sendPayload = async (payload, config) => {
   const sendOptions = {
     url: urlJoin(config.destination.base_url, config.destination.path),
     body: payload,
@@ -123,98 +179,30 @@ const sendPayload = (payload, config) => {
     headers: {}
   };
 
-  const setupUserAgent = () => {
-    return getUserAgent().then(userAgent => {
-      sendOptions.headers['User-Agent'] = userAgent;
-    });
+  const setupUserAgent = async () => {
+    const userAgent = await getUserAgent();
+    sendOptions.headers['user-agent'] = userAgent;
   };
 
-  const auth = () => {
-    const authConf = config.destination.auth;
+  // Execute the steps sequentially
+  await setupUserAgent();
+  await handleAuth(config, sendOptions);
 
-    if (!authConf) {
-      return Promise.resolve();
+  if (logger.isDebugEnabled()) {
+    logger.debug('About to send outbound request');
+    const clone = JSON.parse(JSON.stringify(sendOptions));
+    if (clone.auth && clone.auth.password) {
+      // mask password before logging
+      clone.auth.password = '*****';
     }
+    logger.debug(JSON.stringify(clone, null, 2));
+  }
 
-    if (!authConf.type) {
-      return Promise.reject(new OutboundError('No auth.type, either declare the type or omit the auth property'));
-    }
-
-    if (authConf.type.toLowerCase() === 'basic') {
-      return fetchPassword(authConf.password_key)
-        .then(password => {
-          sendOptions.auth = {
-            username: authConf.username,
-            password: password,
-          };
-        });
-    }
-
-    if (authConf.type.toLowerCase() === 'header') {
-      if (authConf.name && authConf.name.toLowerCase() === 'authorization') {
-        return fetchPassword(authConf.value_key)
-          .then(value => {
-            sendOptions.headers.Authorization = value;
-          });
-      }
-      logger.error(`Unsupported header name '${authConf.name}'. Supported: Authorization`);
-      throw new OutboundError(`Unsupported header name '${authConf.name}'. Supported: Authorization`);
-    }
-
-    if (authConf.type.toLowerCase() === 'muso-sih') {
-      return fetchPassword(authConf.password_key)
-        .then(password => {
-          const authOptions = {
-            form: {
-              login: authConf.username,
-              password: password
-            },
-            url: urlJoin(config.destination.base_url, authConf.path),
-            json: true,
-            timeout: OUTBOUND_REQ_TIMEOUT
-          };
-
-          return request
-            .post(authOptions)
-            .then(result => {
-              // No that's not a spelling mistake, this API is sometimes French!
-              if (result.statut !== 200) {
-                logger.error('Non-200 status from Muso auth: %o', result);
-                throw new OutboundError(`Got ${result.statut} when requesting auth`);
-              }
-
-              sendOptions.qs = {
-                token: result.data.username_token
-              };
-            });
-        });
-    }
-
-    // Misconfigured auth type
-    return Promise.reject(new OutboundError(`Invalid auth type '${authConf.type}'. Supported: basic, muso-sih`));
-  };
-
-  return setupUserAgent()
-    .then(() => auth())
-    .then(() => {
-      if (logger.isDebugEnabled()) {
-        logger.debug('About to send outbound request');
-        const clone = JSON.parse(JSON.stringify(sendOptions));
-        if (clone.auth && clone.auth.password) {
-          // mask password before logging
-          clone.auth.password = '*****';
-        }
-        logger.debug(JSON.stringify(clone, null, 2));
-      }
-
-      return request.post(sendOptions)
-        .then(result => {
-          if (logger.isDebugEnabled()) {
-            logger.debug('result from outbound request');
-            logger.debug(JSON.stringify(result, null, 2));
-          }
-        });
-    });
+  const result = await request.post(sendOptions);
+  if (logger.isDebugEnabled()) {
+    logger.debug('result from outbound request');
+    logger.debug(JSON.stringify(result, null, 2));
+  }
 };
 
 const orderedStringify = thing => {
@@ -322,23 +310,22 @@ module.exports = {
    *      - resolve with false: outbound didn't error, but wasn't sent out (because it's a duplicate of prior send)
    *      - reject with error: something went wrong
    */
-  send: (config, configName, record, recordInfo) => {
-    return Promise.resolve()
-      .then(() => mapDocumentToPayload(record, config, configName))
-      .then(payload => {
-        if (alreadySent(payload, configName, recordInfo)) {
-          logger.info(`Not pushing ${record._id} to ${configName} as payload is identical to previous push`);
-          return false;
-        }
+  send: async (config, configName, record, recordInfo) => {
+    try {
+      const payload = await mapDocumentToPayload(record, config, configName);
 
-        return sendPayload(payload, config)
-          .then(() => updateInfo(payload, recordInfo, configName))
-          .then(() => logger.info(`Pushed ${record._id} to ${configName}`))
-          .then(() => true);
-      })
-      .catch(err => {
-        logSendError(configName, record._id, err);
-        throw err;
-      });
+      if (alreadySent(payload, configName, recordInfo)) {
+        logger.info(`Not pushing ${record._id} to ${configName} as payload is identical to previous push`);
+        return false;
+      }
+
+      await sendPayload(payload, config);
+      updateInfo(payload, recordInfo, configName);
+      logger.info(`Pushed ${record._id} to ${configName}`);
+      return true;
+    } catch (err) {
+      logSendError(configName, record._id, err);
+      throw err;
+    }
   },
 };

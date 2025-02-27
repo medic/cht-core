@@ -2,6 +2,7 @@ const assert = require('chai').assert;
 const sinon = require('sinon');
 const rewire = require('rewire');
 const secureSettings = require('@medic/settings');
+const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
 let outbound;
 
@@ -267,7 +268,7 @@ describe('outbound shared library', () => {
         }
       };
 
-      sinon.stub(secureSettings, 'getVersion').resolves('4.18.0');
+      sinon.stub(environment, 'getVersion').resolves('4.18.0');
       sinon.stub(request, 'post').resolves();
 
       return outbound.__get__('sendPayload')(payload, conf)
@@ -276,7 +277,7 @@ describe('outbound shared library', () => {
           assert.equal(request.post.args[0][0].url, 'http://test/foo');
           assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
           assert.equal(request.post.args[0][0].json, true);
-          assert.match(request.post.args[0][0].headers['User-Agent'], /^CHT\/4\.18\.0/);
+          assert.match(request.post.args[0][0].headers['user-agent'], /^CHT\/4\.18\.0/);
         });
     });
 
@@ -343,7 +344,7 @@ describe('outbound shared library', () => {
           assert.equal(request.post.args[0][0].url, 'http://test/foo');
           assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
           assert.equal(request.post.args[0][0].json, true);
-          assert.equal(request.post.args[0][0].headers.Authorization, 'Bearer credentials');
+          assert.equal(request.post.args[0][0].headers.authorization, 'Bearer credentials');
         });
     });
 

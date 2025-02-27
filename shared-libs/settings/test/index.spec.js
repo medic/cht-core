@@ -292,38 +292,6 @@ describe('Settings Shared Library', () => {
   });
 
 
-  describe('getVersion', () => {
-    it('should return version from deploy info', () => {
-      environment.COUCH_URL = 'http://user:pass@localhost:6929/medic';
-      sinon.stub(request, 'get').resolves({ version: '3.14.0' });
-
-      return lib.getVersion().then(version => {
-        expect(version).to.equal('3.14.0');
-        expect(request.get.callCount).to.equal(1);
-      });
-    });
-
-    it('should return unknown if deploy-info request fails', () => {
-      environment.COUCH_URL = 'http://user:pass@localhost:6929/medic';
-      sinon.stub(request, 'get').rejects(new Error('Failed to fetch'));
-
-      return lib.getVersion().then(version => {
-        expect(version).to.equal('unknown');
-        expect(request.get.callCount).to.equal(1);
-      });
-    });
-
-    it('should return unknown if version is missing from response', () => {
-      environment.COUCH_URL = 'http://user:pass@localhost:6929/medic';
-      sinon.stub(request, 'get').resolves({});
-
-      return lib.getVersion().then(version => {
-        expect(version).to.equal('unknown');
-        expect(request.get.callCount).to.equal(1);
-      });
-    });
-  });
-
   describe('getCouchConfig', () => {
 
     it('should return the expected value', () => {
