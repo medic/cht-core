@@ -20,14 +20,14 @@ describe('SSO Login service', () => {
 
   describe('getSettingsDoc', () => {
     it('should return the correct settings document', async() => {
-      db.medic.get.withArgs('settings').resolves({ 'oidc_provider': { 'client_id': 'testClientId' } });
+      db.medic.get.withArgs('settings').resolves({ 'settings': { 'oidc_provider': { 'client_id': 'testClientId' } } });
 
       const settings = await service.getSettingsDoc();
 
       chai.expect(settings).to.not.equal(undefined);
-      chai.expect(settings).to.have.keys(['oidc_provider']);
-      chai.expect(settings.oidc_provider).to.have.keys(['client_id']);
-      chai.expect(settings.oidc_provider).to.include({ client_id: 'testClientId' });
+      chai.expect(settings.settings).to.have.keys(['oidc_provider']);
+      chai.expect(settings.settings.oidc_provider).to.have.keys(['client_id']);
+      chai.expect(settings.settings.oidc_provider).to.include({ client_id: 'testClientId' });
     });
   });
 
@@ -153,7 +153,7 @@ describe('SSO Login service', () => {
   describe('validateSsoLogin', () => {
 
     it('should return error message when oidc and password are present', async() => {
-      db.medic.get.withArgs('settings').resolves({ user: 'org.couchdb.user:someuser' });
+      db.medic.get.withArgs('settings').resolves({ 'settings': { 'oidc_provider': { 'client_id': 'testClientId' } } });
 
       const data = { password: 'testPassword', oidc_provider: 'testClientId' };
       const result = await service.validateSsoLogin(data);
@@ -178,7 +178,7 @@ describe('SSO Login service', () => {
 
     it('should return error message when oidc_provider is not in app settings', async() => {
       const data = { oidc_provider: 'testClientId' };
-      db.medic.get.withArgs('settings').resolves({ });
+      db.medic.get.withArgs('settings').resolves({ 'settings': { } });
     
       const result = await service.validateSsoLogin(data);
 
@@ -191,7 +191,7 @@ describe('SSO Login service', () => {
 
     it('should return error message when valid client id is not provided', async() => {
       const data = { oidc_provider: 'incorrectTestClientId' };
-      db.medic.get.withArgs('settings').resolves({ 'oidc_provider': { 'client_id': 'testClientId' } });
+      db.medic.get.withArgs('settings').resolves({ 'settings': { 'oidc_provider': { 'client_id': 'testClientId' } } });
     
       const result = await service.validateSsoLogin(data);
 
@@ -204,7 +204,7 @@ describe('SSO Login service', () => {
 
     it('should not return error message when valid client id is provided', async() => {
       const data = { oidc_provider: 'testClientId' };
-      db.medic.get.withArgs('settings').resolves({ 'oidc_provider': { 'client_id': 'testClientId' } });
+      db.medic.get.withArgs('settings').resolves({ 'settings': { 'oidc_provider': { 'client_id': 'testClientId' } } });
     
       const result = await service.validateSsoLogin(data);
 
@@ -215,7 +215,7 @@ describe('SSO Login service', () => {
 
     it('should generate password', async() => {
       const data = { oidc_provider: 'testClientId' };
-      db.medic.get.withArgs('settings').resolves({ 'oidc_provider': { 'client_id': 'testClientId' } });
+      db.medic.get.withArgs('settings').resolves({ 'settings': { 'oidc_provider': { 'client_id': 'testClientId' } } });
     
       const result = await service.validateSsoLogin(data);
 

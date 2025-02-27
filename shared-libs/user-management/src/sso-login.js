@@ -19,7 +19,8 @@ const validateSsoLogin = async(data) => {
     }; 
   }
     
-  const settings = await getSettingsDoc();
+  let settings = await getSettingsDoc();
+  settings = settings.settings;
 
   if (!settings){
     return {
