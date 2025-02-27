@@ -141,7 +141,8 @@ describe('Report API', () => {
 
   describe('GET /api/v1/report/uuid', async () => {
     const freetext = 'report';
-    const limit = 4;
+    const fourLimit = 4;
+    const twoLimit = 2;
     const endpoint = '/api/v1/report/uuid';
 
     it('returns a page of report ids for no limit and cursor passed', async () => {
@@ -166,7 +167,7 @@ describe('Report API', () => {
       // first request
       const qs = {
         freetext,
-        limit
+        limit: fourLimit
       };
       const opts = {
         path: `${endpoint}`,
@@ -216,7 +217,7 @@ describe('Report API', () => {
         // and enforce re-fetching logic
         const qs = {
           freetext: searchWord,
-          limit: 4
+          limit: fourLimit
         };
         const opts = {
           path: `${endpoint}`,
@@ -230,6 +231,29 @@ describe('Report API', () => {
         expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
           .to.deep.equalInAnyOrder(expectedContactIds);
         expect(responseCursor).to.be.equal(null);
+      });
+
+    it('returns a page of unique report ids for when multiple fields match the same freetext with lower limit',
+      async () => {
+        const expectedContactIds = [ report6._id, report7._id, report8._id ];
+        const qs = {
+          freetext: searchWord,
+          limit: twoLimit
+        };
+        const opts = {
+          path: `${endpoint}`,
+          qs
+        };
+        const responsePage = await utils.request(opts);
+
+        const responseIds = responsePage.data;
+        const responseCursor = responsePage.cursor;
+
+        expect(responseIds.length).to.be.equal(2);
+        expect(responseCursor).to.be.equal('2');
+        expect(responseIds).to.satisfy(subsetArray => {
+          return subsetArray.every(item => expectedContactIds.includes(item));
+        });
       });
 
     it(`throws error when user does not have can_view_reports permission`, async () => {

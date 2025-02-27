@@ -531,6 +531,28 @@ describe('Contact API', () => {
         expect(responseCursor).to.be.equal(null);
       });
 
+    it('returns a page of unique contact ids for when multiple fields match the same freetext with lower limit',
+      async () => {
+        const qs = {
+          freetext: searchWord,
+          limit: twoLimit
+        };
+        const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
+        const opts = {
+          path: `${endpoint}`,
+          qs
+        };
+        const responsePage = await utils.request(opts);
+        const responseIds = responsePage.data;
+        const responseCursor = responsePage.cursor;
+
+        expect(responseIds.length).to.be.equal(2);
+        expect(responseCursor).to.be.equal('2');
+        expect(responseIds).to.satisfy(subsetArray => {
+          return subsetArray.every(item => expectedContactIds.includes(item));
+        });
+      });
+
     it(`throws error when user does not have can_view_contacts permission`, async () => {
       const opts = {
         path: endpoint,

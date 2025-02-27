@@ -48,6 +48,11 @@ describe('cht-datasource Place', () => {
     type: placeType,
     contact: {}
   }));
+  const healthCenter2 = utils.deepFreeze(placeFactory.place().build({
+    name: 'healthCenter2',
+    type: 'health_center',
+    contact: {}
+  }));
 
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms',
@@ -72,7 +77,7 @@ describe('cht-datasource Place', () => {
 
   before(async () => {
     setAuth();
-    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic3]);
+    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic3, healthCenter2]);
     await utils.createUsers([userNoPerms, offlineUser]);
   });
 
@@ -131,6 +136,16 @@ describe('cht-datasource Place', () => {
                 contact: contact2
               }
             }
+          });
+        }
+      );
+
+      it(
+        'returns the place when the place has no primary contact and parents',
+        async () => {
+          const place = await getPlaceWithLineage(Qualifier.byUuid(healthCenter2._id));
+          expect(place).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
+            ...healthCenter2,
           });
         }
       );

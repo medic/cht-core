@@ -45,6 +45,11 @@ describe('Place API', () => {
     type: placeType,
     contact: {}
   }));
+  const healthCenter2 = utils.deepFreeze(placeFactory.place().build({
+    name: 'healthCenter2',
+    type: 'health_center',
+    contact: {}
+  }));
 
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms',
@@ -67,7 +72,7 @@ describe('Place API', () => {
   const expectedPlaces = [place0, clinic1, clinic3];
 
   before(async () => {
-    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic3]);
+    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic3, healthCenter2]);
     await utils.createUsers([userNoPerms, offlineUser]);
   });
 
@@ -129,6 +134,20 @@ describe('Place API', () => {
             contact: contact2
           }
         }
+      });
+    });
+
+    it('returns the place with lineage when the withLineage query parameter is provided ' +
+      'and the place has no primary contact and parents', async () => {
+      const opts = {
+        path: `${endpoint}/${healthCenter2._id}`,
+        qs: {
+          with_lineage: true
+        }
+      };
+      const place = await utils.request(opts);
+      expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+        ...healthCenter2,
       });
     });
 

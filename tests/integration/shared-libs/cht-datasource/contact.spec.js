@@ -332,13 +332,27 @@ describe('cht-datasource Contact', () => {
           const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
           // NOTE: adding a limit of 4 to deliberately fetch 4 contacts with the given search word
           // and enforce re-fetching logic
-          const responsePage = await getUuidsPage(Qualifier.byFreetext(searchWord), null, 4);
+          const responsePage = await getUuidsPage(Qualifier.byFreetext(searchWord), null, fourLimit);
           const responseIds = responsePage.data;
           const responseCursor = responsePage.cursor;
 
           expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
             .to.deep.equalInAnyOrder(expectedContactIds);
           expect(responseCursor).to.be.equal(null);
+        });
+
+      it('returns a page of unique contact ids for when multiple fields match the same freetext with lower limit',
+        async () => {
+          const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
+          const responsePage = await getUuidsPage(Qualifier.byFreetext(searchWord), null, twoLimit);
+          const responseIds = responsePage.data;
+          const responseCursor = responsePage.cursor;
+
+          expect(responseIds.length).to.be.equal(2);
+          expect(responseCursor).to.be.equal('2');
+          expect(responseIds).to.satisfy(subsetArray => {
+            return subsetArray.every(item => expectedContactIds.includes(item));
+          });
         });
 
       it('throws error when limit is invalid', async () => {

@@ -131,7 +131,8 @@ describe('cht-datasource Report', () => {
     describe('getUuidsPage', async () => {
       const getUuidsPage = Report.v1.getUuidsPage(dataContext);
       const freetext = 'report';
-      const limit = 4;
+      const fourLimit = 4;
+      const twoLimit = 2;
       const cursor = null;
       const invalidLimit = 'invalidLimit';
       const invalidCursor = 'invalidCursor';
@@ -148,8 +149,8 @@ describe('cht-datasource Report', () => {
 
       it('returns a page of report ids when limit and cursor is passed and cursor can be reused', async () => {
         const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
-        const firstPage = await getUuidsPage(Qualifier.byFreetext(freetext), cursor, limit);
-        const secondPage = await getUuidsPage(Qualifier.byFreetext(freetext), firstPage.cursor, limit);
+        const firstPage = await getUuidsPage(Qualifier.byFreetext(freetext), cursor, fourLimit);
+        const secondPage = await getUuidsPage(Qualifier.byFreetext(freetext), firstPage.cursor, fourLimit);
 
         const allReports = [ ...firstPage.data, ...secondPage.data ];
 
@@ -176,13 +177,27 @@ describe('cht-datasource Report', () => {
           const expectedContactIds = [ report6._id, report7._id, report8._id ];
           // NOTE: adding a limit of 4 to deliberately fetch 4 contacts with the given search word
           // and enforce re-fetching logic
-          const responsePage = await getUuidsPage(Qualifier.byFreetext(searchWord), null, 4);
+          const responsePage = await getUuidsPage(Qualifier.byFreetext(searchWord), null, fourLimit);
           const responseIds = responsePage.data;
           const responseCursor = responsePage.cursor;
 
           expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
             .to.deep.equalInAnyOrder(expectedContactIds);
           expect(responseCursor).to.be.equal(null);
+        });
+
+      it('returns a page of unique report ids for when multiple fields match the same freetext with lower limit',
+        async () => {
+          const expectedContactIds = [ report6._id, report7._id, report8._id ];
+          const responsePage = await getUuidsPage(Qualifier.byFreetext(searchWord), null, twoLimit);
+          const responseIds = responsePage.data;
+          const responseCursor = responsePage.cursor;
+
+          expect(responseIds.length).to.be.equal(2);
+          expect(responseCursor).to.be.equal('2');
+          expect(responseIds).to.satisfy(subsetArray => {
+            return subsetArray.every(item => expectedContactIds.includes(item));
+          });
         });
 
       it('throws error when limit is invalid', async () => {
@@ -195,7 +210,7 @@ describe('cht-datasource Report', () => {
 
       it('throws error when cursor is invalid', async () => {
         await expect(
-          getUuidsPage(Qualifier.byFreetext(freetext), invalidCursor, limit)
+          getUuidsPage(Qualifier.byFreetext(freetext), invalidCursor, fourLimit)
         ).to.be.rejectedWith(
           `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
         );
