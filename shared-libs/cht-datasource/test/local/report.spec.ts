@@ -320,7 +320,7 @@ describe('local report', () => {
         '-1',
         undefined,
       ].forEach((invalidCursor ) => {
-        it(`throws an error if cursor is invalid: ${String(invalidCursor)}`, async () => {
+        it(`throws an error if cursor is invalid: ${JSON.stringify(invalidCursor)}`, async () => {
           const freetext = 'nice report';
           const qualifier = {
             freetext,

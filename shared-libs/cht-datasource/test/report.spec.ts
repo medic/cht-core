@@ -168,7 +168,7 @@ describe('report', () => {
         1.1,
         false
       ].forEach((limitValue) => {
-        it(`throws an error if limit is invalid: ${String(limitValue)}`, async () => {
+        it(`throws an error if limit is invalid: ${JSON.stringify(limitValue)}`, async () => {
           isFreetextQualifier.returns(true);
           getIdsPage.resolves(pageData);
 
