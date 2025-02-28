@@ -144,14 +144,30 @@ const handleMusoSihAuth = async (authConf, config, sendOptions) => {
   };
 };
 
-const handleAuth = async (config, sendOptions) => {
-  const authConf = config.destination.auth;
-
+// Validates the auth configuration and throws an error if misconfigured
+const validateAuthConfig = (authConf) => {
   if (!authConf.type) {
     throw new OutboundError('No auth.type, either declare the type or omit the auth property');
   }
 
   const authType = authConf.type.toLowerCase();
+  const validTypes = ['basic', 'header', 'muso-sih'];
+
+  if (!validTypes.includes(authType)) {
+    throw new OutboundError(`Invalid auth type '${authConf.type}'. Supported: basic, header, muso-sih`);
+  }
+
+  return authType;
+};
+
+const handleAuth = async (config, sendOptions) => {
+  const authConf = config.destination.auth;
+
+  if (!authConf) {
+    return;
+  }
+
+  const authType = validateAuthConfig(authConf);
 
   if (authType === 'basic') {
     await handleBasicAuth(authConf, sendOptions);
@@ -159,9 +175,6 @@ const handleAuth = async (config, sendOptions) => {
     await handleHeaderAuth(authConf, sendOptions);
   } else if (authType === 'muso-sih') {
     await handleMusoSihAuth(authConf, config, sendOptions);
-  } else {
-    // Misconfigured auth type
-    throw new OutboundError(`Invalid auth type '${authConf.type}'. Supported: basic, muso-sih`);
   }
 };
 
@@ -177,9 +190,7 @@ const sendPayload = async (payload, config) => {
 
   sendOptions.headers['user-agent'] = await getUserAgent();
 
-  if (config.destination.auth) {
-    await handleAuth(config, sendOptions);
-  }
+  await handleAuth(config, sendOptions);
 
   if (logger.isDebugEnabled()) {
     logger.debug('About to send outbound request');
