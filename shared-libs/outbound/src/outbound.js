@@ -147,10 +147,6 @@ const handleMusoSihAuth = async (authConf, config, sendOptions) => {
 const handleAuth = async (config, sendOptions) => {
   const authConf = config.destination.auth;
 
-  if (!authConf) {
-    return;
-  }
-
   if (!authConf.type) {
     throw new OutboundError('No auth.type, either declare the type or omit the auth property');
   }
@@ -181,7 +177,9 @@ const sendPayload = async (payload, config) => {
 
   sendOptions.headers['user-agent'] = await getUserAgent();
 
-  await handleAuth(config, sendOptions);
+  if (config.destination.auth) {
+    await handleAuth(config, sendOptions);
+  }
 
   if (logger.isDebugEnabled()) {
     logger.debug('About to send outbound request');
