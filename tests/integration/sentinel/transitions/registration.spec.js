@@ -203,6 +203,115 @@ describe('registration', () => {
       });
   });
 
+  it('should not create a duplicate patient for same field value', async () => {
+    const settings = {
+      transitions: {
+        registration: true,
+      },
+      registrations: [ {
+        form: 'FORM',
+        events: [ {
+          name: 'on_create',
+          trigger: 'add_patient',
+          params: '',
+          bool_expr: ''
+        } ],
+        messages: [ {
+          recipient: 'reporting_unit',
+          event_type: 'report_accepted',
+          message: [ {
+            locale: 'en',
+            content: 'ok'
+          } ],
+        } ],
+        validations: {
+          list: [ {
+            property: 'patient_name',
+            rule: '(unique(\'patient_name\'))',
+            message: [ {
+              locale: 'en',
+              content: 'Patient is duplicate'
+            } ],
+          } ]
+        }
+      } ],
+      forms: {FORM: {}}
+    };
+
+    const patientPhone = '+111222';
+    const patientName = 'unique patient';
+    const patientReport = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: patientPhone,
+      fields: {
+        patient_name: patientName
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+      }
+    };
+    const duplicatePatientReport = {
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM',
+      from: patientPhone,
+      fields: {
+        patient_name: patientName
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent: {_id: 'clinic', parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
+      }
+    };
+    const docIds = [patientReport._id, duplicatePatientReport._id];
+
+    await utils.updateSettings(settings, { ignoreReload: 'sentinel' });
+    await utils.saveDoc(patientReport);
+    await sentinelUtils.waitForSentinel([patientReport._id]);
+    await utils.saveDoc(duplicatePatientReport);
+    await sentinelUtils.waitForSentinel([duplicatePatientReport._id]);
+    const infos = await sentinelUtils.getInfoDocs(docIds);
+
+    for (const info of infos) {
+      chai.expect(info).to.deep.nested.include({'transitions.registration.ok': true});
+    }
+
+    const updated = await utils.getDocs(docIds);
+    chai.expect(updated[0].patient_id).not.to.equal(undefined);
+    chai.expect(updated[0].tasks).to.have.lengthOf(1);
+    chai.expect(updated[0].tasks[0].messages[0]).to.include({
+      to: patientPhone,
+      message: 'ok'
+    });
+    chai.expect(updated[0].fields.patient_name).to.equal(patientName);
+
+    chai.expect(updated[1].patient_id).to.equal(undefined);
+    chai.expect(updated[1].fields.patient_name).to.equal(patientName);
+    chai.expect(updated[1].errors).to.be.ok;
+    chai.expect(updated[1].errors).to.have.lengthOf(1);
+    chai.expect(updated[1].errors[0].code).to.equal('invalid_patient_name');
+    chai.expect(updated[1].tasks).to.have.lengthOf(1);
+
+    const newPatientId = updated[0].patient_id;
+
+    const patients = await getContactsByReference([newPatientId]);
+
+    chai.expect(patients.rows).to.have.lengthOf(1);
+    chai.expect(patients.rows[0].doc).to.deep.include({
+      patient_id: newPatientId,
+      parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+      name: patientName,
+      type: 'person',
+      created_by: 'person',
+      source_id: patientReport._id,
+    });
+  });
+
   it('should fail transition on invalid phone', () => {
     const patientPhone = '+97796666';
     const patientNameAndInvalidPhone = { // has just the `patient_name` field, and should create this person

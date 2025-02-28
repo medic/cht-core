@@ -1,8 +1,17 @@
 import * as Doc from '../../../src/libs/doc';
 import sinon, { SinonStub } from 'sinon';
 import logger from '@medic/logger';
-import {fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey, queryDocsByRange} from '../../../src/local/libs/doc';
+import {
+  fetchAndFilter,
+  fetchAndFilterUuids,
+  getDocById,
+  getDocsByIds,
+  queryDocsByKey,
+  queryDocsByRange, queryDocUuidsByKey, queryDocUuidsByRange,
+} from '../../../src/local/libs/doc';
+import * as LocalDoc from '../../../src/local/libs/doc';
 import { expect } from 'chai';
+import { Nullable } from '../../../src';
 
 describe('local doc lib', () => {
   let dbGet: SinonStub;
@@ -150,6 +159,9 @@ describe('local doc lib', () => {
   });
 
   describe('queryDocsByRange', () => {
+    const limit = 3;
+    const skip = 2;
+
     it('returns lineage docs for the given id', async () => {
       const doc0 = { _id: 'doc0' };
       const doc1 = { _id: 'doc1' };
@@ -170,7 +182,9 @@ describe('local doc lib', () => {
       expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
         include_docs: true,
         startkey: doc0._id,
-        endkey: doc1._id
+        endkey: doc1._id,
+        limit: undefined,
+        skip: 0
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0], [doc1], [doc2]]);
     });
@@ -187,13 +201,15 @@ describe('local doc lib', () => {
       });
       isDoc.returns(true);
 
-      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc2._id);
+      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc2._id, limit, skip);
 
       expect(result).to.deep.equal([doc0, null, doc2]);
       expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
         startkey: doc0._id,
         endkey: doc2._id,
-        include_docs: true
+        include_docs: true,
+        limit,
+        skip,
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0], [null], [doc2]]);
     });
@@ -205,13 +221,15 @@ describe('local doc lib', () => {
       });
       isDoc.returns(false);
 
-      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc0._id);
+      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc0._id, limit, skip);
 
       expect(result).to.deep.equal([null]);
       expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
         startkey: doc0._id,
         endkey: doc0._id,
-        include_docs: true
+        include_docs: true,
+        limit,
+        skip
       })).to.be.true;
       expect(isDoc.calledOnceWithExactly(doc0)).to.be.true;
     });
@@ -281,6 +299,96 @@ describe('local doc lib', () => {
         skip
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0]]);
+    });
+  });
+
+  describe('queryDocUuidsByRange', () => {
+    const limit = 3;
+    const skip = 2;
+
+    it('returns docs uuids for the given keys', async () => {
+      const doc0 = { id: 'doc0' };
+      const doc1 = { id: 'doc1' };
+      const doc2 = { id: 'doc2' };
+      dbQuery.resolves({
+        rows: [
+          { ...doc0 },
+          { ...doc1 },
+          { ...doc2 }
+        ]
+      });
+
+      const result = await queryDocUuidsByRange(db, 'medic-client/contacts_by_type')(doc0.id, doc1.id);
+
+      expect(result).to.deep.equal([doc0.id, doc1.id, doc2.id]);
+
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+        include_docs: false,
+        startkey: doc0.id,
+        endkey: doc1.id,
+        limit: undefined,
+        skip: 0
+      })).to.be.true;
+    });
+
+    it('returns empty array if no doc is found', async () => {
+      const doc0 = { _id: 'doc0' };
+      const doc1 = { _id: 'doc1' };
+      dbQuery.resolves({
+        rows: []
+      });
+
+      const result = await queryDocUuidsByRange(db, 'medic-client/contacts_by_type')(doc0._id, doc1._id, limit, skip);
+
+      expect(result).to.deep.equal([]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+        startkey: doc0._id,
+        endkey: doc1._id,
+        include_docs: false,
+        limit,
+        skip
+      })).to.be.true;
+    });
+  });
+
+  describe('queryDocUuidsByKey', () => {
+    const limit = 100;
+    const skip = 0;
+    const contactType = 'person';
+
+    it('returns doc uuids based on key in pages', async () => {
+      const doc0 = { id: 'doc0' };
+      const doc1 = { id: 'doc1' };
+      const doc2 = { id: 'doc2' };
+
+      dbQuery.resolves({
+        rows: [
+          { ...doc0 },
+          { ...doc1 },
+          { ...doc2 }
+        ]
+      });
+
+      const result = await queryDocUuidsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+
+      expect(result).to.deep.equal([doc0.id, doc1.id, doc2.id]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+        include_docs: false,
+        key: contactType,
+        limit,
+        skip
+      })).to.be.true;
+    });
+
+    it('returns empty array if docs are not found', async () => {
+      dbQuery.resolves({ rows: [] });
+
+      const result = await queryDocUuidsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+
+      expect(result).to.deep.equal([]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+        include_docs: false, key: contactType, limit, skip
+      })).to.be.true;
     });
   });
 
@@ -370,6 +478,113 @@ describe('local doc lib', () => {
       expect(getFunction.firstCall.calledWith(3, 0)).to.be.true;
       expect(getFunction.secondCall.calledWith(6, 3)).to.be.true;
       expect(filterFunction.callCount).to.equal(6);
+    });
+  });
+
+  describe('fetchAndFilterUuids', () => {
+    let fetchAndFilterStub: sinon.SinonStub;
+
+    beforeEach(() => {
+      fetchAndFilterStub = sinon.stub(LocalDoc, 'fetchAndFilter');
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it('should filter out duplicate UUIDs', () => {
+      const uuids = [
+        '123e4567-e89b-12d3-a456-426614174000',
+        '123e4567-e89b-12d3-a456-426614174000',
+        '987fcdeb-51a2-43d7-9b56-254125174000'
+      ];
+
+      const getFunction = sinon.stub();
+      getFunction.resolves(uuids);
+
+      // Mock fetchAndFilter to be able to test the inner filter function
+      const fetchAndFilterStubFake = fetchAndFilterStub
+        .callsFake(<T>(
+          fn: (limit: number, skip: number) => Promise<Nullable<T>[]>,
+          filterFn: (doc: Nullable<string>) => boolean
+        ) => {
+          const results: string[] = [];
+          for (const uuid of uuids) {
+            if (filterFn(uuid)) {
+              results.push(uuid);
+            }
+          }
+          return results;
+        });
+
+      const result =  fetchAndFilterUuids(getFunction, 3);
+
+      expect(result).to.have.members(['123e4567-e89b-12d3-a456-426614174000', '987fcdeb-51a2-43d7-9b56-254125174000']);
+      expect(fetchAndFilterStubFake.calledOnce).to.be.true;
+    });
+
+    it('should filter out null values', () => {
+      const uuids = [
+        '123e4567-e89b-12d3-a456-426614174000',
+        null,
+        '987fcdeb-51a2-43d7-9b56-254125174000'
+      ] as (string | null)[];
+
+      const getFunction = sinon.stub();
+      getFunction.resolves(uuids);
+
+      fetchAndFilterStub
+        .callsFake(<T>(
+          fn: (limit: number, skip: number) => Promise<Nullable<T>[]>,
+          filterFn: (doc: Nullable<string>) => boolean
+        ) => {
+          const results: string[] = [];
+          for (const uuid of uuids) {
+            if (filterFn(uuid)) {
+              results.push(uuid!);
+            }
+          }
+          return results;
+        });
+
+      const result = fetchAndFilterUuids(getFunction, 3);
+
+      expect(result).to.have.length(2);
+      expect(result).to.not.include(null);
+    });
+
+    it('should respect the limit parameter', () => {
+      const getFunction = sinon.stub();
+      const limit = 2;
+
+      fetchAndFilterStub
+        .callsFake( (fn, filterFn, passedLimit) => {
+          expect(passedLimit).to.equal(limit);
+          return [];
+        });
+
+      fetchAndFilterUuids(getFunction, limit);
+    });
+
+    it('should handle empty results', () => {
+      const getFunction = sinon.stub();
+      getFunction.resolves([]);
+
+      fetchAndFilterStub
+        .returns([]);
+
+      const result = fetchAndFilterUuids(getFunction, 3);
+
+      expect(result).to.be.an('array').that.is.empty;
+    });
+
+    it('should propagate errors from getFunction', () => {
+      const error = new Error('API Error');
+      const getFunction = sinon.stub();
+
+      fetchAndFilterStub.throws(error);
+
+      expect(() => fetchAndFilterUuids(getFunction, 3)).to.throw('API Error');
     });
   });
 });

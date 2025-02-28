@@ -132,6 +132,7 @@ describe('place', () => {
       const cursor = '1';
       const pageData = { data: places, cursor };
       const limit = 3;
+      const stringifiedLimit = '3';
       const placeTypeQualifier = {contactType: 'place'} as const;
       const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;
@@ -159,6 +160,20 @@ describe('place', () => {
         getPage.resolves(pageData);
 
         const result = await Place.v1.getPage(dataContext)(placeTypeQualifier, cursor, limit);
+
+        expect(result).to.equal(pageData);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.getPage, Remote.Place.v1.getPage)).to.be.true;
+        expect(getPage.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
+        expect(isContactTypeQualifier.calledOnceWithExactly((placeTypeQualifier))).to.be.true;
+      });
+
+      it('retrieves places from the data context when cursor is not null and ' +
+        'limit is stringified number', async () => {
+        isContactTypeQualifier.returns(true);
+        getPage.resolves(pageData);
+
+        const result = await Place.v1.getPage(dataContext)(placeTypeQualifier, cursor, stringifiedLimit);
 
         expect(result).to.equal(pageData);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -205,7 +220,7 @@ describe('place', () => {
           getPage.resolves(places);
 
           await expect(Place.v1.getPage(dataContext)(placeTypeQualifier, cursor, limitValue as number))
-            .to.be.rejectedWith(`The limit must be a positive number: [${JSON.stringify(limitValue)}]`);
+            .to.be.rejectedWith(`The limit must be a positive integer: [${JSON.stringify(limitValue)}]`);
 
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
           expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.getPage, Remote.Place.v1.getPage))
@@ -220,13 +235,15 @@ describe('place', () => {
         '',
         1,
         false,
-      ].forEach((skipValue) => {
+      ].forEach((invalidCursor) => {
         it('throws an error if cursor is invalid', async () => {
           isContactTypeQualifier.returns(true);
           getPage.resolves(places);
 
-          await expect(Place.v1.getPage(dataContext)(placeTypeQualifier, skipValue as string, limit))
-            .to.be.rejectedWith(`Invalid cursor token: [${JSON.stringify(skipValue)}]`);
+          await expect(Place.v1.getPage(dataContext)(placeTypeQualifier, invalidCursor as string, limit))
+            .to.be.rejectedWith(
+              `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}]`
+            );
 
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
           expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.getPage, Remote.Place.v1.getPage))

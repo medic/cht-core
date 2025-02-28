@@ -13,7 +13,7 @@ import { DataContext, InvalidArgumentError } from '../../../src';
 
 describe('remote context lib', () => {
   const context = { url: 'hello.world' } as RemoteDataContext;
-  let fetchResponse: { ok: boolean, status: number, statusText: string, json: SinonStub };
+  let fetchResponse: { ok: boolean, status: number, statusText: string, json: SinonStub, text: SinonStub };
   let fetchStub: SinonStub;
   let loggerError: SinonStub;
 
@@ -22,7 +22,8 @@ describe('remote context lib', () => {
       ok: true,
       status: 200,
       statusText: 'OK',
-      json: sinon.stub().resolves()
+      json: sinon.stub().resolves(),
+      text: sinon.stub().resolves(),
     };
     fetchStub = sinon.stub(global, 'fetch').resolves(fetchResponse as unknown as Response);
     loggerError = sinon.stub(logger, 'error');
@@ -61,7 +62,6 @@ describe('remote context lib', () => {
   });
 
   describe('getRemoteDataContext', () => {
-
     [
       '',
       'hello.world',
@@ -74,7 +74,6 @@ describe('remote context lib', () => {
         expect(context).to.deep.include({ url: url ?? '' });
       });
     });
-
 
     [
       null,
@@ -124,11 +123,15 @@ describe('remote context lib', () => {
       fetchResponse.ok = false;
       fetchResponse.status = 400;
       fetchResponse.statusText = errorMsg;
+      // in case of 400 error which is for when input like query params is invalid
+      // messages like `Invalid limit` is stored in the text() method
+      fetchResponse.text.resolves(errorMsg);
       const expectedError = new InvalidArgumentError(errorMsg);
 
       await expect(getResource(context, path)(resourceId)).to.be.rejectedWith(errorMsg);
 
       expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}/${resourceId}?`)).to.be.true;
+      expect(fetchResponse.text.called).to.be.true;
       expect(fetchResponse.json.notCalled).to.be.true;
       expect(loggerError.args[0]).to.deep.equal([
         `Failed to fetch ${resourceId} from ${context.url}/${path}`,
@@ -207,11 +210,15 @@ describe('remote context lib', () => {
       fetchResponse.ok = false;
       fetchResponse.status = 400;
       fetchResponse.statusText = errorMsg;
+      // in case of 400 error which is for when input like query params is invalid
+      // messages like `Invalid limit` is stored in the text() method
+      fetchResponse.text.resolves(errorMsg);
       const expectedError = new InvalidArgumentError(errorMsg);
 
       await expect(getResources(context, path)(params)).to.be.rejectedWith(errorMsg);
 
       expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}?${stringifiedParams}`)).to.be.true;
+      expect(fetchResponse.text.called).to.be.true;
       expect(fetchResponse.json.notCalled).to.be.true;
       expect(loggerError.args[0]).to.deep.equal([
         `Failed to fetch resources from ${context.url}/${path} with params: ${stringifiedParams}`,

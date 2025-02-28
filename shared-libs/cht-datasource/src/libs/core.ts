@@ -1,6 +1,4 @@
 import { DataContext } from './data-context';
-import { ContactTypeQualifier, isContactTypeQualifier } from '../qualifier';
-import { InvalidArgumentError } from './error';
 
 /**
  * A value that could be `null`.
@@ -33,7 +31,7 @@ const isDataPrimitive = (value: unknown): value is DataPrimitive => {
     || value instanceof Date;
 };
 
-type DataArray = readonly DataValue[]
+type DataArray = readonly DataValue[];
 
 const isDataArray = (value: unknown): value is DataArray => {
   return Array.isArray(value) && value.every(v => isDataPrimitive(v) || isDataArray(v) || isDataObject(v));
@@ -87,7 +85,10 @@ export const isRecord = (value: unknown): value is Record<string, unknown> => {
 };
 
 /** @internal */
-export const hasField = (value: Record<string, unknown>, field: { name: string, type: string }): boolean => {
+export const hasField = <T extends Record<string, unknown>>(
+  value: T,
+  field: { name: keyof T, type: string }
+): value is T & Record<typeof field.name, string> => {
   const valueField = value[field.name];
   return typeof valueField === field.type;
 };
@@ -149,24 +150,11 @@ export const getPagedGenerator = async function* <S, T>(
 };
 
 /** @internal */
-export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is ContactTypeQualifier = (
-  qualifier: unknown
-) => {
-  if (!isContactTypeQualifier(qualifier)) {
-    throw new InvalidArgumentError(`Invalid contact type [${JSON.stringify(qualifier)}].`);
-  }
-};
+export interface NormalizedParent extends DataObject, Identifiable {
+  readonly parent?: NormalizedParent;
+}
 
-/** @internal */
-export const assertLimit: (limit: unknown) => asserts limit is number = (limit: unknown) => {
-  if (typeof limit !== 'number' || !Number.isInteger(limit) || limit <= 0) {
-    throw new InvalidArgumentError(`The limit must be a positive number: [${JSON.stringify(limit)}].`);
-  }
-};
-
-/** @internal */
-export const assertCursor: (cursor: unknown) => asserts cursor is Nullable<string> = (cursor: unknown) => {
-  if (cursor !== null && (typeof cursor !== 'string' || !cursor.length)) {
-    throw new InvalidArgumentError(`Invalid cursor token: [${JSON.stringify(cursor)}].`);
-  }
+/** @ignore */
+export const isNormalizedParent = (value: unknown): value is NormalizedParent => {
+  return isDataObject(value) && isIdentifiable(value) && (!value.parent || isNormalizedParent(value.parent));
 };

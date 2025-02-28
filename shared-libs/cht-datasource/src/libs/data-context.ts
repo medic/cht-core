@@ -13,7 +13,7 @@ export interface DataContext {
    * @param fn the function to execute
    * @returns the result of the function
    */
-  bind: <T>(fn: (ctx: DataContext) => T) => T
+  bind: <T>(fn: (ctx: DataContext) => T) => T;
 }
 
 const isDataContext = (context: unknown): context is DataContext => {
