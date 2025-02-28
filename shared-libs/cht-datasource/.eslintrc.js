@@ -67,6 +67,12 @@ module.exports = {
         }],
         ['jsdoc/check-tag-names']: ['error', { definedTags: ['typeParam']}],
       }
+    },
+    {
+      files: ['*.spec.ts'],
+      rules: {
+        ['@typescript-eslint/no-unused-expressions']: 'off',
+      }
     }
   ]
 };

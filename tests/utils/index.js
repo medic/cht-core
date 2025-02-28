@@ -1236,7 +1236,8 @@ const createCluster = async (dataDir) => {
   await runCommand(`k3d registry create ${K3D_REGISTRY}`);
 
   const port = await runCommand(`docker container port k3d-${K3D_REGISTRY}`);
-  K3D_REGISTRY_PORT = port.trim().replace('5000/tcp -> 0.0.0.0:', '');
+  const match = port.trim().match(/:(\d+)$/);
+  K3D_REGISTRY_PORT = match[1];
 
   await runCommand(
     `k3d cluster create ${PROJECT_NAME} ` +

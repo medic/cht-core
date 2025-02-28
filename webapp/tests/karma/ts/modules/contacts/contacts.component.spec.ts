@@ -125,8 +125,6 @@ describe('Contacts component', () => {
           RouterTestingModule,
           FormsModule,
           MatIconModule,
-        ],
-        declarations: [
           ContactsComponent,
           ContactsMoreMenuComponent,
           FreetextFilterComponent,

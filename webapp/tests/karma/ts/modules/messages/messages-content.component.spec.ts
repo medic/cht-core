@@ -20,7 +20,6 @@ import { SendMessageService } from '@mm-services/send-message.service';
 import { ModalService } from '@mm-services/modal.service';
 import { ActivatedRoute } from '@angular/router';
 import { MessagesActions } from '@mm-actions/messages';
-import { PipesModule } from '@mm-pipes/pipes.module';
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import { PerformanceService } from '@mm-services/performance.service';
 
@@ -74,13 +73,10 @@ describe('MessagesContentComponent', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
-          PipesModule,
           FormsModule,
-          CommonModule
-        ],
-        declarations: [
+          CommonModule,
           MessagesContentComponent,
-          SenderComponent,
+          SenderComponent
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),

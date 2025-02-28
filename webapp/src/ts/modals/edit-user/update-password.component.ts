@@ -8,6 +8,10 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { UpdatePasswordService } from '@mm-services/update-password.service';
 import { UserLoginService } from '@mm-services/user-login.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
+import { FormsModule } from '@angular/forms';
+import { NgClass } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
@@ -16,7 +20,8 @@ const HIDE_PASSWORD_ICON = '/login/images/hide-password.svg';
 
 @Component({
   selector: 'update-password',
-  templateUrl: './update-password.component.html'
+  templateUrl: './update-password.component.html',
+  imports: [ModalLayoutComponent, FormsModule, NgClass, TranslatePipe]
 })
 export class UpdatePasswordComponent {
   static id = 'update-password-modal';

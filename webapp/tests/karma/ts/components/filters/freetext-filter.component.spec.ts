@@ -28,8 +28,6 @@ describe('Freetext Filter Component', () => {
           FormsModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
-        ],
-        declarations: [
           FreetextFilterComponent,
         ],
         providers: [

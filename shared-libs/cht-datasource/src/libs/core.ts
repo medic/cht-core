@@ -157,4 +157,3 @@ export interface NormalizedParent extends DataObject, Identifiable {
 export const isNormalizedParent = (value: unknown): value is NormalizedParent => {
   return isDataObject(value) && isIdentifiable(value) && (!value.parent || isNormalizedParent(value.parent));
 };
-

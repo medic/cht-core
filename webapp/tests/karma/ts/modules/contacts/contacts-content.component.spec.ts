@@ -118,11 +118,9 @@ describe('Contacts content component', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           MatIconModule,
-        ],
-        declarations: [
           ContactsContentComponent,
           ResourceIconPipe,
-          FastActionButtonComponent
+          FastActionButtonComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),

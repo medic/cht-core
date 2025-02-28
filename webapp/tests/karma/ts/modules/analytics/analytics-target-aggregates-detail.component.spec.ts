@@ -51,10 +51,10 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
 
     return TestBed
       .configureTestingModule({
-        declarations: [ AnalyticsTargetAggregatesDetailComponent ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule
+          RouterTestingModule,
+          AnalyticsTargetAggregatesDetailComponent
         ],
         providers: [
           provideMockStore({ selectors: mockSelectors }),

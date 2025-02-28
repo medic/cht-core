@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
-import { Data } from '@angular/router';
+import { Data, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -9,10 +9,16 @@ import { AuthService } from '@mm-services/auth.service';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { NgIf } from '@angular/common';
+import { MatIconButton } from '@angular/material/button';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
+import { MatIcon } from '@angular/material/icon';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'mm-contacts-more-menu',
-  templateUrl: './contacts-more-menu.component.html'
+  templateUrl: './contacts-more-menu.component.html',
+  imports: [NgIf, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, RouterLink, TranslatePipe]
 })
 export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
   @Output() exportContacts: EventEmitter<any> = new EventEmitter();
