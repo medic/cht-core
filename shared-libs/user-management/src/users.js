@@ -8,6 +8,7 @@ const couchSettings = require('@medic/settings');
 const getRoles = require('./libs/types-and-roles');
 const roles = require('./roles');
 const tokenLogin = require('./token-login');
+const ssoLogin = require('./sso-login');
 const config = require('./libs/config');
 const moment = require('moment');
 const bulkUploadLog = require('./bulk-upload-log');
@@ -528,6 +529,9 @@ const missingFields = data => {
 
   if (tokenLogin.shouldEnableTokenLogin(data)) {
     required.push('phone');
+  } else if (data.oidc_provider) { 
+    /* if oidc_provider is provided, password is not required
+    and no other field is required */ 
   } else {
     required.push('password');
   }
@@ -697,6 +701,7 @@ const validateUserContact = (data, user) => {
  * @param {Boolean=} data.known Boolean to define if the user has logged in before.
  * @param {string=} data.type Deprecated. Used to infer user's roles
  * @param {string} appUrl request protocol://hostname
+ * @param {string=} data.oidc_provider Client ID for the OIDC Client. Can be set but not together with @param token_login|@param password
  */
 /* eslint-enable max-len */
 const createUserEntities = async (data, appUrl) => {
@@ -995,6 +1000,7 @@ module.exports = {
    * @param {Boolean=} data.known Boolean to define if the user has logged in before.
    * @param {string=} data.type Deprecated. Used to infer user's roles
    * @param {string} appUrl request protocol://hostname
+   * @param {string=} data.oidc_provider Client ID for the OIDC Client. Can be set but not together with @param token_login|@param password
    * @api public
    */
   /* eslint-enable max-len */
@@ -1012,6 +1018,12 @@ module.exports = {
     if (tokenLoginError) {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
+
+    const ssoLoginError = await ssoLogin.validateSsoLogin(data);
+    if (ssoLoginError) {
+      throw new Error(ssoLoginError.msg);
+    }
+
     const passwordError = validatePassword(data.password);
     if (passwordError) {
       return Promise.reject(passwordError);
@@ -1042,6 +1054,7 @@ module.exports = {
    * @param {Boolean=} users[].known Boolean to define if the user has logged in before.
    * @param {string=} users[].type Deprecated. Used to infer user's roles
    * @param {string} appUrl request protocol://hostname
+   * @param {string=} users[].oidc_provider Client ID for the OIDC Client. Can be set but not together with @param token_login|@param password
    */
   /* eslint-enable max-len */
   async createUsers(users, appUrl, ignoredUsers, logId) {
@@ -1083,6 +1096,11 @@ module.exports = {
         const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
         if (tokenLoginError) {
           throw new Error(tokenLoginError.msg);
+        }
+
+        const ssoLoginError = await ssoLogin.validateSsoLogin(user);
+        if (ssoLoginError) {
+          throw new Error(ssoLoginError.msg);
         }
 
         const passwordError = validatePassword(user.password);
@@ -1157,6 +1175,11 @@ module.exports = {
     const tokenLoginError = tokenLogin.validateTokenLogin(data, false, user, userSettings);
     if (tokenLoginError) {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
+    }
+
+    const ssoLoginError = await ssoLogin.validateSsoLogin(data);
+    if (ssoLoginError) {
+      throw new Error(ssoLoginError.msg);
     }
 
     await validateUserFacility(data, user);
