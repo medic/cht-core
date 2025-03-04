@@ -9,6 +9,8 @@ import { CookieService } from 'ngx-cookie-service';
 import { LanguageService, LanguageCookieService, SetLanguageService } from '@mm-services/language.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { provideMockStore } from '@ngrx/store/testing';
+import { GlobalActions } from '@mm-actions/global';
 
 describe('Language services', () => {
   afterEach(() => {
@@ -61,6 +63,8 @@ describe('Language services', () => {
     let ngxTranslateService;
     let formatDateService;
     let telemetryService;
+    let languageService;
+    let setLanguageAction;
     let setLanguageService:SetLanguageService;
 
     beforeEach(() => {
@@ -76,13 +80,17 @@ describe('Language services', () => {
       };
       formatDateService = { init: sinon.stub().resolves() };
       telemetryService = { record: sinon.stub() };
+      languageService = { useRtl: sinon.stub() };
+      setLanguageAction = sinon.stub(GlobalActions.prototype, 'setLanguage');
 
       TestBed.configureTestingModule({
         providers: [
+          provideMockStore(),
           { provide: LanguageCookieService, useValue: languageCookieService },
           { provide: NgxTranslateService, useValue: ngxTranslateService },
           { provide: FormatDateService, useValue: formatDateService },
           { provide: TelemetryService, useValue: telemetryService },
+          { provide: LanguageService, useValue: languageService },
         ]
       });
       setLanguageService = TestBed.inject(SetLanguageService);
@@ -90,6 +98,7 @@ describe('Language services', () => {
 
     it('should set language across services', async () => {
       const newLocale = 'new locale';
+      languageService.useRtl.returns(true);
       await setLanguageService.set(newLocale);
 
       expect((<any>moment.locale).callCount).to.equal(1);
@@ -103,6 +112,7 @@ describe('Language services', () => {
       expect((<any>$.fn).datepicker.defaults.language).to.equal('en');
       expect(telemetryService.record.callCount).to.equal(1);
       expect(telemetryService.record.args[0]).to.deep.equal(['user_settings:language:new locale']);
+      expect(setLanguageAction.args).to.deep.equal([[ { code: newLocale, rtl: true }]]);
     });
 
     it('should set supported datepicker language', async () => {
@@ -204,6 +214,14 @@ describe('Language services', () => {
         expect(languageService.useDevanagariScript()).to.equal(false);
         languageCookieService.get.returns('how to write exclusion tests????');
         expect(languageService.useDevanagariScript()).to.equal(false);
+      });
+    });
+
+    describe('setRtlLanguage', () => {
+      it('should add RTL languages to the list', () => {
+        languageService.setRtlLanguage('en');
+        expect(languageService.useRtl('en')).to.equal(true);
+        expect(languageService.useRtl('fr')).to.equal(false);
       });
     });
   });

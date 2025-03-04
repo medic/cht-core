@@ -48,6 +48,7 @@ import {
   MissingTranslationHandlerParams
 } from '@ngx-translate/core';
 import { DbService } from '@mm-services/db.service';
+import { LanguageService } from '@mm-services/language.service';
 import { TranslationLoaderProvider } from '@mm-providers/translation-loader.provider';
 import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -96,43 +97,45 @@ bootstrapper(POUCHDB_OPTIONS)
       enableProdMode();
     }
 
-    return bootstrapApplication(AppComponent, {
-      providers: [
-        importProvidersFrom(
-          BrowserModule,
-          AppRoutingModule,
-          RouterModule,
-          StoreModule.forRoot(reducers, { metaReducers }),
-          TranslateModule.forRoot({
-            loader: {
-              provide: TranslateLoader,
-              useFactory: (db: DbService) => new TranslationLoaderProvider(db),
-              deps: [DbService],
-            },
-            missingTranslationHandler: {
-              provide: MissingTranslationHandler,
-              useClass: MissingTranslationHandlerLog
-            },
-            compiler: {
-              provide: TranslateCompiler,
-              useClass: TranslateMessageFormatCompilerProvider,
-            },
-          }),
-          BsDropdownModule.forRoot(),
-          FormsModule,
-          EffectsModule.forRoot([GlobalEffects, ReportsEffects, ContactsEffects])
-        ),
-        { provide: APP_BASE_HREF, useValue: '/' },
-        AppRouteGuardProvider,
-        TrainingCardDeactivationGuardProvider,
-        AnalyticsRouteGuardProvider,
-        CookieService,
-        ParseProvider,
-        DatePipe,
-        provideHttpClient(withInterceptorsFromDi()),
-        provideAnimations()
-      ]
-    })
+    return bootstrapApplication(
+      AppComponent,
+      {
+        providers: [
+          importProvidersFrom(
+            BrowserModule,
+            AppRoutingModule,
+            RouterModule,
+            StoreModule.forRoot(reducers, { metaReducers }),
+            TranslateModule.forRoot({
+              loader: {
+                provide: TranslateLoader,
+                useFactory: (db: DbService, language: LanguageService) => new TranslationLoaderProvider(db, language),
+                deps: [DbService, LanguageService],
+              },
+              missingTranslationHandler: {
+                provide: MissingTranslationHandler,
+                useClass: MissingTranslationHandlerLog
+              },
+              compiler: {
+                provide: TranslateCompiler,
+                useClass: TranslateMessageFormatCompilerProvider,
+              },
+            }),
+            BsDropdownModule.forRoot(),
+            FormsModule,
+            EffectsModule.forRoot([GlobalEffects, ReportsEffects, ContactsEffects])
+          ),
+          { provide: APP_BASE_HREF, useValue: '/' },
+          AppRouteGuardProvider,
+          TrainingCardDeactivationGuardProvider,
+          AnalyticsRouteGuardProvider,
+          CookieService,
+          ParseProvider,
+          DatePipe,
+          provideHttpClient(withInterceptorsFromDi()),
+          provideAnimations()
+        ]
+      })
       .then((moduleRef) => {
         window.CHTCore = moduleRef.injector.get(IntegrationApiService);
       })

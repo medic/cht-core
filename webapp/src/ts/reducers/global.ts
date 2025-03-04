@@ -42,6 +42,7 @@ const initialState: GlobalState = {
   translationsLoaded: false,
   userFacilityIds: [],
   userContactId: null,
+  language: null,
 };
 
 const setShowContent = (state, showContent) => {
@@ -177,6 +178,9 @@ const _globalReducer = createReducer(
   on(Actions.setTrainingCard, (state, { payload: { trainingCard } }) => {
     return { ...state, trainingCard: { ...state.trainingCard, ...trainingCard } };
   }),
+  on(Actions.setLanguage, (state, { payload: { language } }) => {
+    return { ...state, language };
+  }),
 );
 
 export const globalReducer = (state, action) => {
@@ -211,6 +215,7 @@ export interface GlobalState {
   translationsLoaded: boolean;
   userFacilityIds: null | string[];
   userContactId: null | string;
+  language: null | Record<string, any>;
 }
 
 interface SidebarMenuState {

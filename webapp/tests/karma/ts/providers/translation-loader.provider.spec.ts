@@ -8,10 +8,15 @@ import { TranslationLoaderProvider } from '@mm-providers/translation-loader.prov
 describe('Translations Loader provider', () => {
   let provider:TranslationLoaderProvider;
   let DBGet;
+  let languageService;
 
   beforeEach(() => {
     DBGet = sinon.stub();
-    provider = new TranslationLoaderProvider(<DbService>{ get: () => ({ get: DBGet }) });
+    languageService = { setRtlLanguage: sinon.stub() };
+    provider = new TranslationLoaderProvider(
+      <DbService>{ get: () => ({ get: DBGet }) },
+      languageService,
+    );
   });
 
   afterEach(() => {

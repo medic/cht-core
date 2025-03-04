@@ -6,6 +6,8 @@ import { TranslateService as NgxTranslateService } from '@ngx-translate/core';
 import { SettingsService } from '@mm-services/settings.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { Store } from '@ngrx/store';
+import { GlobalActions } from '@mm-actions/global';
 
 @Injectable({
   providedIn: 'root'
@@ -46,12 +48,17 @@ export class LanguageCookieService {
   providedIn: 'root'
 })
 export class SetLanguageService {
+  private globalActions;
+
   constructor(
     private ngxTranslateService:NgxTranslateService,
     private telemetryService:TelemetryService,
     private languageCookieService:LanguageCookieService,
     private formatDateService:FormatDateService,
+    private languageService:LanguageService,
+    private store:Store,
   ) {
+    this.globalActions = new GlobalActions(this.store);
   }
 
   private setDatepickerLanguage(language) {
@@ -71,6 +78,7 @@ export class SetLanguageService {
 
     // formatDateService depends on the cookie, so also wait for the cookie to be updated
     await this.formatDateService.init();
+    this.globalActions.setLanguage({ code, rtl: this.languageService.useRtl(code) });
     this.telemetryService.record(`user_settings:language:${code}`);
   }
 }
@@ -89,9 +97,15 @@ export class LanguageService {
   private readonly DEFAULT_LOCALE = 'en';
   private readonly NEPALI_LOCALE = 'ne';
 
+  private rtlLanguages:string[] = [];
+
   private async fetchLocale() {
     const settings = await this.settingsService.get();
     return settings.locale || this.DEFAULT_LOCALE;
+  }
+
+  setRtlLanguage(code:string) {
+    this.rtlLanguages.push(code);
   }
 
   async get() {
@@ -107,5 +121,9 @@ export class LanguageService {
   useDevanagariScript() {
     const language = this.languageCookieService.get();
     return language === this.NEPALI_LOCALE;
+  }
+
+  useRtl(code:string) {
+    return this.rtlLanguages.includes(code);
   }
 }

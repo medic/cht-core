@@ -231,10 +231,51 @@ describe('translations', () => {
             hello: 'Hello UPDATED',
             bye: 'Goodbye UPDATED',
             added: 'ADDED'
-          }
+          },
+          rtl: false,
         }
       ]);
     });
+  });
+
+  it('should create new RTL language', async () => {
+    fs.promises.readdir.resolves(['messages-ar.properties']);
+    fs.promises.readFile.resolves('some buffer');
+
+    const docs = [{
+      doc: {
+        _id: 'messages-en',
+        code: 'en',
+        type: 'translations',
+        generic: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
+      }
+    }];
+
+    properties.parse.callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
+    sinon.stub(db.medic, 'bulkDocs').resolves();
+    await translations.run();
+
+    chai.expect(fs.promises.readdir.callCount).to.equal(1);
+    chai.expect(fs.promises.readFile.callCount).to.equal(1);
+    chai.expect(properties.parse.callCount).to.equal(1);
+    chai.expect(db.medic.allDocs.callCount).to.equal(1);
+    chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
+    chai.expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([
+      { // new
+        _id: 'messages-ar',
+        type: 'translations',
+        code: 'ar',
+        name: 'عربي (Arabic)',
+        enabled: true,
+        generic: {
+          hello: 'Hello UPDATED',
+          bye: 'Goodbye UPDATED',
+          added: 'ADDED'
+        },
+        rtl: true,
+      }
+    ]);
   });
 
   it('does not recreate deleted language', () => {
@@ -268,7 +309,8 @@ describe('translations', () => {
             added: 'ADDED'
           },
           name: 'Français (French)',
-          enabled: true
+          enabled: true,
+          rtl: false,
         }
       ]);
     });
@@ -450,6 +492,35 @@ describe('translations', () => {
         }
       ]);
     });
+  });
+
+  it('should set RTL languages', async () => {
+    fs.promises.readdir.resolves(['messages-ar.properties']);
+    fs.promises.readFile.resolves('some buffer');
+
+    const docs = [{
+      doc: {
+        _id: 'messages-ar',
+        code: 'ar',
+        type: 'translations',
+        generic: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
+      }
+    }];
+
+    properties.parse.callsArgWith(1, null, { hello: null, bye: 0, ciao: false, adios: 23, salut: true });
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
+    sinon.stub(db.medic, 'bulkDocs').resolves();
+    await translations.run();
+
+    chai.expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([
+      {
+        _id: 'messages-ar',
+        code: 'ar',
+        type: 'translations',
+        rtl: true,
+        generic: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
+      }
+    ]);
   });
 
   describe('getTranslationDocs', () => {
