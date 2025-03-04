@@ -276,7 +276,6 @@ describe('outbound shared library', () => {
           assert.equal(request.post.callCount, 1);
           assert.equal(request.post.args[0][0].url, 'http://test/foo');
           assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
-          assert.equal(request.post.args[0][0].json, true);
           assert.match(request.post.args[0][0].headers['user-agent'], /^CHT\/4\.18\.0/);
         });
     });
@@ -308,7 +307,6 @@ describe('outbound shared library', () => {
           assert.equal(request.post.callCount, 1);
           assert.equal(request.post.args[0][0].url, 'http://test/foo');
           assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
-          assert.equal(request.post.args[0][0].json, true);
           assert.deepEqual(request.post.args[0][0].auth, {
             username: 'admin',
             password: 'pass',
@@ -343,7 +341,6 @@ describe('outbound shared library', () => {
           assert.equal(request.post.callCount, 1);
           assert.equal(request.post.args[0][0].url, 'http://test/foo');
           assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
-          assert.equal(request.post.args[0][0].json, true);
           assert.equal(request.post.args[0][0].headers.authorization, 'Bearer credentials');
         });
     });
@@ -388,7 +385,6 @@ describe('outbound shared library', () => {
 
           assert.equal(post.args[1][0].url, 'http://test/foo');
           assert.deepEqual(post.args[1][0].body, {some: 'data'});
-          assert.equal(post.args[1][0].json, true);
           assert.equal(post.args[1][0].qs.token, 'j9NAhVDdVWkgo1xnbxA9V3Pmp');
         });
     });

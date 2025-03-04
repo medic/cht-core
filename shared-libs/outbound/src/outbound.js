@@ -128,7 +128,6 @@ const handleMusoSihAuth = async (authConf, config, sendOptions) => {
       password: password
     },
     url: urlJoin(config.destination.base_url, authConf.path),
-    json: true,
     timeout: OUTBOUND_REQ_TIMEOUT
   };
 
@@ -183,12 +182,11 @@ const sendPayload = async (payload, config) => {
   const sendOptions = {
     url: urlJoin(config.destination.base_url, config.destination.path),
     body: payload,
-    json: true,
     timeout: OUTBOUND_REQ_TIMEOUT,
-    headers: {}
+    headers: {
+      'user-agent': await getUserAgent()
+    }
   };
-
-  sendOptions.headers['user-agent'] = await getUserAgent();
 
   await handleAuth(config, sendOptions);
 

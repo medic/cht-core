@@ -1,4 +1,6 @@
-const { expect } = require('chai');
+const chai = require('chai');
+const { expect } = chai;
+chai.use(require('chai-exclude'));
 const sinon = require('sinon');
 const rewire = require('rewire');
 const logger = require('@medic/logger');
@@ -39,7 +41,7 @@ describe('environment', () => {
 
     const env = rewire('../src/index');
 
-    expect(env).to.deep.include({
+    expect(env).excluding(['getDeployInfo', 'getVersion']).to.deep.equal({
       couchUrl: 'https://admin:pass@couchdb:5984/medicdb',
       buildsUrl: 'https://staging.dev.medicmobile.org/_couch/builds_4',
       serverUrl: 'https://admin:pass@couchdb:5984/',

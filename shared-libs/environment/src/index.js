@@ -77,23 +77,20 @@ const getDeployInfo = async () => {
     return deployInfoCache;
   }
 
-  let ddoc;
   try {
-    ddoc = await request.get({
+    const ddoc = await request.get({
       url: `${couchUrl}/_design/${module.exports.ddoc}`,
-      json: true
     });
+    deployInfoCache = {
+      ...ddoc.build_info,
+      ...ddoc.deploy_info,
+      version: getVersionFromDdoc(ddoc)
+    };
+    return deployInfoCache;
   } catch (err) {
     logger.error('Error getting deploy info: %o', err);
     throw err;
   }
-
-  deployInfoCache = { 
-    ...ddoc.build_info, 
-    ...ddoc.deploy_info, 
-    version: getVersionFromDdoc(ddoc) 
-  };
-  return deployInfoCache;
 };
 
 const getVersion = async () => {
