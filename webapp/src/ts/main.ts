@@ -97,45 +97,43 @@ bootstrapper(POUCHDB_OPTIONS)
       enableProdMode();
     }
 
-    return bootstrapApplication(
-      AppComponent,
-      {
-        providers: [
-          importProvidersFrom(
-            BrowserModule,
-            AppRoutingModule,
-            RouterModule,
-            StoreModule.forRoot(reducers, { metaReducers }),
-            TranslateModule.forRoot({
-              loader: {
-                provide: TranslateLoader,
-                useFactory: (db: DbService, language: LanguageService) => new TranslationLoaderProvider(db, language),
-                deps: [DbService, LanguageService],
-              },
-              missingTranslationHandler: {
-                provide: MissingTranslationHandler,
-                useClass: MissingTranslationHandlerLog
-              },
-              compiler: {
-                provide: TranslateCompiler,
-                useClass: TranslateMessageFormatCompilerProvider,
-              },
-            }),
-            BsDropdownModule.forRoot(),
-            FormsModule,
-            EffectsModule.forRoot([GlobalEffects, ReportsEffects, ContactsEffects])
-          ),
-          { provide: APP_BASE_HREF, useValue: '/' },
-          AppRouteGuardProvider,
-          TrainingCardDeactivationGuardProvider,
-          AnalyticsRouteGuardProvider,
-          CookieService,
-          ParseProvider,
-          DatePipe,
-          provideHttpClient(withInterceptorsFromDi()),
-          provideAnimations()
-        ]
-      })
+    return bootstrapApplication(AppComponent, {
+      providers: [
+        importProvidersFrom(
+          BrowserModule,
+          AppRoutingModule,
+          RouterModule,
+          StoreModule.forRoot(reducers, { metaReducers }),
+          TranslateModule.forRoot({
+            loader: {
+              provide: TranslateLoader,
+              useFactory: (db: DbService, language: LanguageService) => new TranslationLoaderProvider(db, language),
+              deps: [DbService, LanguageService],
+            },
+            missingTranslationHandler: {
+              provide: MissingTranslationHandler,
+              useClass: MissingTranslationHandlerLog
+            },
+            compiler: {
+              provide: TranslateCompiler,
+              useClass: TranslateMessageFormatCompilerProvider,
+            },
+          }),
+          BsDropdownModule.forRoot(),
+          FormsModule,
+          EffectsModule.forRoot([GlobalEffects, ReportsEffects, ContactsEffects])
+        ),
+        { provide: APP_BASE_HREF, useValue: '/' },
+        AppRouteGuardProvider,
+        TrainingCardDeactivationGuardProvider,
+        AnalyticsRouteGuardProvider,
+        CookieService,
+        ParseProvider,
+        DatePipe,
+        provideHttpClient(withInterceptorsFromDi()),
+        provideAnimations()
+      ]
+    })
       .then((moduleRef) => {
         window.CHTCore = moduleRef.injector.get(IntegrationApiService);
       })
