@@ -58,8 +58,7 @@ describe('Contacts content component', () => {
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     contactChangeFilterService = {
       matchContact: sinon.stub(),
-      isRelevantContact: sinon.stub(),
-      isRelevantReport: sinon.stub(),
+      isRelevantChange: sinon.stub(),
       isDeleted: sinon.stub(),
     };
     settings = {};
@@ -289,6 +288,7 @@ describe('Contacts content component', () => {
       const changesCallback = changesService.subscribe.args[0][0].callback;
       const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
       contactChangeFilterService.matchContact.returns(true);
+      contactChangeFilterService.isRelevantChange.returns(true);
       contactChangeFilterService.isDeleted.returns(false);
 
       expect(changesFilter(change)).to.equal(true);
@@ -296,7 +296,7 @@ describe('Contacts content component', () => {
 
       changesCallback(change);
 
-      expect(contactChangeFilterService.matchContact.callCount).to.equal(2);
+      expect(contactChangeFilterService.matchContact.callCount).to.equal(1);
       expect(selectContact.callCount).to.equal(1);
       expect(selectContact.args[0][0]).to.equal('load contact');
       expect(!!component.summaryErrorStack).to.be.false;
@@ -305,6 +305,7 @@ describe('Contacts content component', () => {
     it('should redirect to parent when selected contact is deleted', () => {
       selectedContact.doc.parent = { _id: 'parent_id' };
       contactChangeFilterService.matchContact.returns(true);
+      contactChangeFilterService.isRelevantChange.returns(true);
       contactChangeFilterService.isDeleted.returns(true);
       const changesCallback = changesService.subscribe.args[0][0].callback;
       const changesFilter = changesService.subscribe.args[0][0].filter;
@@ -315,7 +316,7 @@ describe('Contacts content component', () => {
       expect(changesFilter(change)).to.equal(true);
       changesCallback(change);
 
-      expect(contactChangeFilterService.matchContact.callCount).to.equal(2);
+      expect(contactChangeFilterService.matchContact.callCount).to.equal(1);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'parent_id']]);
       expect(!!component.summaryErrorStack).to.be.false;
@@ -325,45 +326,26 @@ describe('Contacts content component', () => {
       const changesCallback = changesService.subscribe.args[0][0].callback;
       const changesFilter = changesService.subscribe.args[0][0].filter;
       contactChangeFilterService.matchContact.returns(true);
+      contactChangeFilterService.isRelevantChange.returns(true);
       contactChangeFilterService.isDeleted.returns(true);
 
       expect(changesFilter(change)).to.equal(true);
       changesCallback(change);
-      expect(contactChangeFilterService.matchContact.callCount).to.equal(2);
+      expect(contactChangeFilterService.matchContact.callCount).to.equal(1);
       expect(router.navigate.callCount).to.equal(1);
       expect(!!component.summaryErrorStack).to.be.false;
     });
 
-    it('should update information when relevant contact change is received', () => {
+    it('should update information when relevant change is received', () => {
       const changesCallback = changesService.subscribe.args[0][0].callback;
       const changesFilter = changesService.subscribe.args[0][0].filter;
       const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
-      contactChangeFilterService.matchContact.returns(false);
-      contactChangeFilterService.isRelevantContact.returns(true);
+      contactChangeFilterService.isRelevantChange.returns(true);
 
       expect(changesFilter(change)).to.equal(true);
       expect(selectContact.callCount).to.equal(0);
       changesCallback(change);
-      expect(contactChangeFilterService.matchContact.callCount).to.equal(2);
-      expect(contactChangeFilterService.isRelevantContact.callCount).to.equal(1);
-      expect(selectContact.callCount).to.equal(1);
-      expect(!!component.summaryErrorStack).to.be.false;
-    });
-
-    it('should update information when relevant report change is received', () => {
-      const changesCallback = changesService.subscribe.args[0][0].callback;
-      const changesFilter = changesService.subscribe.args[0][0].filter;
-      const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
-      contactChangeFilterService.matchContact.returns(false);
-      contactChangeFilterService.isRelevantReport.returns(true);
-      contactChangeFilterService.isRelevantContact.returns(false);
-
-      expect(changesFilter(change)).to.equal(true);
-      expect(selectContact.callCount).to.equal(0);
-      changesCallback(change);
-      expect(contactChangeFilterService.matchContact.callCount).to.equal(2);
-      expect(contactChangeFilterService.isRelevantContact.callCount).to.equal(1);
-      expect(contactChangeFilterService.isRelevantReport.callCount).to.equal(1);
+      expect(contactChangeFilterService.isRelevantChange.callCount).to.equal(1);
       expect(selectContact.callCount).to.equal(1);
       expect(!!component.summaryErrorStack).to.be.false;
     });
@@ -371,15 +353,11 @@ describe('Contacts content component', () => {
     it('does not update information when irrelevant change is received', () => {
       const changesFilter = changesService.subscribe.args[0][0].filter;
       const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
-      contactChangeFilterService.matchContact.returns(false);
-      contactChangeFilterService.isRelevantReport.returns(false);
-      contactChangeFilterService.isRelevantContact.returns(false);
+      contactChangeFilterService.isRelevantChange.returns(false);
 
       expect(changesFilter(change)).to.equal(false);
       expect(selectContact.callCount).to.equal(0);
-      expect(contactChangeFilterService.matchContact.callCount).to.equal(1);
-      expect(contactChangeFilterService.isRelevantContact.callCount).to.equal(1);
-      expect(contactChangeFilterService.isRelevantReport.callCount).to.equal(1);
+      expect(contactChangeFilterService.isRelevantChange.callCount).to.equal(1);
       expect(selectContact.callCount).to.equal(0);
       expect(!!component.summaryErrorStack).to.be.false;
     });
