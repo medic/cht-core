@@ -34,15 +34,11 @@ export class ContactChangeFilterService {
   }
 
   private wasChild(change, contact) {
-    if (!contact.children) {
-      return;
-    }
-
-    return Object
-      .values(contact.children)
-      .some((children:Array<{
-        doc: any;
-      }>) => children?.some(child => child.doc._id === change.doc._id));
+    return contact.children?.some(
+      (childType:{ contacts:[] }) => childType.contacts.some(
+        (child:{ doc:{_id: string}}) => child.doc._id === change.doc._id
+      )
+    );
   }
 
   private isAncestor(change, contact) {
@@ -50,13 +46,11 @@ export class ContactChangeFilterService {
   }
 
   private matchChildReportSubject(change, contact) {
-    if (!contact.children) {
-      return;
-    }
-
-    return Object
-      .values(contact.children)
-      .some((children:Array<{}>) => children?.some(child => this.matchReportSubject(change, child)));
+    return contact.children?.some(
+      (childType:{ contacts:[] }) => childType?.contacts?.some(
+        contact => this.matchReportSubject(change, contact)
+      )
+    );
   }
 
   matchContact(change, contact) {
@@ -74,7 +68,11 @@ export class ContactChangeFilterService {
     return this.isValidInput(change) &&
            this.isValidInput(contact) &&
            this.contactTypesService.includes(change.doc) &&
-           (this.isAncestor(change, contact) || this.isChild(change, contact) || this.wasChild(change, contact));
+           (
+             this.isAncestor(change, contact) ||
+             this.isChild(change, contact) ||
+             this.wasChild(change, contact)
+           );
   }
 
   isDeleted(change) {

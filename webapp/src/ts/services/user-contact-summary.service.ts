@@ -31,7 +31,8 @@ export class UserContactSummaryService {
     this.cache = this.cacheService.register({
       get: async (callback:Function) => {
         try {
-          callback(null, await this.loadSummary());
+          const summary = await this.loadSummary();
+          callback(null, summary);
         } catch (error) {
           callback(error);
         }
