@@ -6,10 +6,12 @@ import { Subscription } from 'rxjs';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { Filter } from '@mm-components/filters/filter';
+import { NgFor } from '@angular/common';
 
 @Component({
   selector: 'mm-form-type-filter',
-  templateUrl: './form-type-filter.component.html'
+  templateUrl: './form-type-filter.component.html',
+  imports: [NgFor]
 })
 export class FormTypeFilterComponent implements OnDestroy, OnInit {
   private globalActions: GlobalActions;

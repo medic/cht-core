@@ -29,7 +29,7 @@ describe('Auth', () => {
   describe('check', () => {
 
     it('returns error when not logged in', () => {
-      const get = sinon.stub(request, 'get').rejects({ statusCode: 401 });
+      const get = sinon.stub(request, 'get').rejects({ status: 401 });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0].url).to.equal('http://abc.com/_session');
@@ -139,12 +139,11 @@ describe('Auth', () => {
           host: 'localhost:5988',
           'user-agent': 'curl/8.6.0',
           accept: '*/*',
-          'content-type': 'application/json',
         },
       }]]);
     });
 
-    it('should clean content-length headers before forwarding', async () => {
+    it('should clean content-length and content-type headers before forwarding', async () => {
       sinon.stub(request, 'get').resolves({ userCtx: { name: 'theuser', roles: ['userrole'] }});
 
       req.headers['content-length'] = 100;
@@ -152,6 +151,13 @@ describe('Auth', () => {
       req.headers['Content-length'] = 44;
       req.headers['content-Length'] = 82;
       req.headers['CONTENT-LENGTH'] = 240;
+
+      req.headers['content-type'] = 'application/json';
+      req.headers['Content-Type'] = 'image/jpeg';
+      req.headers['Content-type'] = 'x-www-form-urlencoded';
+      req.headers['content-Type'] = 'multipart/form-data';
+      req.headers['CONTENT-TYPE'] = 'text/html';
+
 
       const result = await auth.getUserCtx(req);
       chai.expect(result).to.deep.equal({ name: 'theuser', roles: ['userrole'] });
@@ -162,18 +168,17 @@ describe('Auth', () => {
           host: 'localhost:5988',
           'user-agent': 'curl/8.6.0',
           accept: '*/*',
-          'content-type': 'application/json',
         },
       }]]);
     });
 
     it('should throw a custom 401 error', async () => {
-      sinon.stub(request, 'get').rejects({ statusCode: 401, error: 'not logged in' });
+      sinon.stub(request, 'get').rejects({ status: 401, error: 'not logged in' });
 
       await chai.expect(auth.getUserCtx(req)).to.be.rejected.and.eventually.deep.equal({
         code: 401,
         message: 'Not logged in',
-        err: { statusCode: 401, error: 'not logged in' }
+        err: { status: 401, error: 'not logged in' }
       });
 
       chai.expect(request.get.callCount).to.equal(1);

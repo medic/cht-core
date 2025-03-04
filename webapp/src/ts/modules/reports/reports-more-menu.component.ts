@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { Data, NavigationStart, Router } from '@angular/router';
+import { Data, NavigationStart, Router, RouterLink } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
@@ -11,11 +11,35 @@ import { AuthService } from '@mm-services/auth.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { ReportsActions } from '@mm-actions/reports';
+import { NgIf } from '@angular/common';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
+import { MatIcon } from '@angular/material/icon';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
+import {
+  ReportVerifyInvalidIconComponent,
+  ReportVerifyValidIconComponent
+} from '@mm-components/status-icons/status-icons.template';
+import { TranslatePipe } from '@ngx-translate/core';
 
 
 @Component({
   selector: 'mm-reports-more-menu',
-  templateUrl: './reports-more-menu.component.html'
+  templateUrl: './reports-more-menu.component.html',
+  imports: [
+    NgIf,
+    MatIconButton,
+    MatMenuTrigger,
+    MatIcon,
+    MatMenu,
+    MatMenuItem,
+    RouterLink,
+    PanelHeaderComponent,
+    MatButton,
+    ReportVerifyInvalidIconComponent,
+    ReportVerifyValidIconComponent,
+    TranslatePipe
+  ]
 })
 export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   @Output() exportReports: EventEmitter<any> = new EventEmitter();

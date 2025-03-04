@@ -1,10 +1,12 @@
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const constants = require('@constants');
 const utils = require('@utils');
 
-describe('Login page funcionality tests', () => {
+describe('Login page functionality tests', () => {
   const auth = {
     username: constants.USERNAME,
     password: constants.PASSWORD
@@ -162,6 +164,101 @@ describe('Login page funcionality tests', () => {
       expect(revealedPassword.value).to.equal('pass-456');
 
       await loginPage.login(auth);
+      await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
+    });
+  });
+
+  describe('Password Reset', () => {
+    const CURRENT_PASSWORD_INCORRECT = 'Current password is not correct';
+    const MISSING_ALL_FIELDS = 'Missing required fields: "Current password, New password, Confirm password"';
+    const MISSING_PASSWORD_CONFIRM = 'Missing required fields: "Confirm password"';
+    const PASSWORD_WEAK = 'The password is too easy to guess. Include a range of characters to make it more complex.';
+    const PASSWORD_MISMATCH = 'Password and confirm password must match';
+    const PASSWORD_SAME = 'New password must be different from current password';
+    const NEW_PASSWORD = 'Pa33word1';
+    const places = placeFactory.generateHierarchy();
+    const districtHospital = places.get('district_hospital');
+    const user = userFactory.build({ place: districtHospital._id, roles: ['chw'] });
+
+    before(async () => {
+      await utils.saveDocs([...places.values()]);
+      await utils.createUsers([user], false, true);
+    });
+
+    after(async () => {
+      await utils.deleteUsers([user]);
+    });
+
+    it('should verify all fields are missing', async () => {
+      await browser.url('/');
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setUsernameValue(user.username);
+      await (await loginPage.loginButton()).click();
+      await loginPage.passwordReset('', '', '');
+      await (await loginPage.updatePasswordButton()).click();
+      expect(await loginPage.getPasswordResetErrorMessage('fields-required')).to.equal(MISSING_ALL_FIELDS);
+    });
+
+    it('should verify confirm password is missing', async () => {
+      await browser.url('/');
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setUsernameValue(user.username);
+      await (await loginPage.loginButton()).click();
+      await loginPage.passwordReset(user.password, user.password, '');
+      await (await loginPage.updatePasswordButton()).click();
+      expect(await loginPage.getPasswordResetErrorMessage('fields-required')).to.equal(MISSING_PASSWORD_CONFIRM);
+    });
+
+    it('should verify password strength', async () => {
+      await browser.url('/');
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setUsernameValue(user.username);
+      await (await loginPage.loginButton()).click();
+      await loginPage.passwordReset(user.password, '12345678', '12345678');
+      await (await loginPage.updatePasswordButton()).click();
+      expect(await loginPage.getPasswordResetErrorMessage('password-weak')).to.equal(PASSWORD_WEAK);
+    });
+
+    it('should verify current password is not correct', async () => {
+      await browser.url('/');
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setUsernameValue(user.username);
+      await (await loginPage.loginButton()).click();
+      await loginPage.passwordReset('12', user.password, user.password);
+      await (await loginPage.updatePasswordButton()).click();
+      expect(await loginPage.getPasswordResetErrorMessage('current-password-incorrect')).to.equal(
+        CURRENT_PASSWORD_INCORRECT
+      );
+    });
+
+    it('should verify current password cannot be same as new password', async () => {
+      await browser.url('/');
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setUsernameValue(user.username);
+      await (await loginPage.loginButton()).click();
+      await loginPage.passwordReset(user.password, user.password, user.password);
+      await (await loginPage.updatePasswordButton()).click();
+      expect(await loginPage.getPasswordResetErrorMessage('password-same')).to.equal(PASSWORD_SAME);
+    });
+
+    it('should verify password and confirm password mismatch', async () => {
+      await browser.url('/');
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setUsernameValue(user.username);
+      await (await loginPage.loginButton()).click();
+      await loginPage.passwordReset(user.password, NEW_PASSWORD, 'pass');
+      await (await loginPage.updatePasswordButton()).click();
+      expect(await loginPage.getPasswordResetErrorMessage('password-mismatch')).to.equal(PASSWORD_MISMATCH);
+    });
+
+    it('should reset password successfully and redirect to webapp', async () => {
+      await browser.url('/');
+      await loginPage.setPasswordValue(user.password);
+      await loginPage.setUsernameValue(user.username);
+      await (await loginPage.loginButton()).click();
+      await loginPage.passwordReset(user.password, NEW_PASSWORD, NEW_PASSWORD);
+      await (await loginPage.updatePasswordButton()).click();
+      await commonPage.waitForPageLoaded();
       await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
     });
   });

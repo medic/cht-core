@@ -59,7 +59,7 @@ const destinationApp = express();
 const jsonParser = bodyParser.json({ limit: '32mb' });
 const inboxes = { working: [], broken: [] };
 destinationApp.use(jsonParser);
-destinationApp.post('/test-working', (req, res) => inboxes.working.push(req.body) && res.send('true'));
+destinationApp.post('/test-working', (req, res) => inboxes.working.push(req.body) && res.json('true'));
 destinationApp.post('/test-broken', (req, res) => inboxes.broken.push(req.body) && res.status(500).end());
 let server;
 let port;

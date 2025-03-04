@@ -351,7 +351,6 @@ describe('Users API', () => {
       const userDoc = await utils.usersDb.get(getUserId(username));
       chai.expect(userDoc.contact_id).to.equal(newContactId);
     });
-
   });
 
   describe('/api/v1/users-info', () => {
@@ -608,6 +607,7 @@ describe('Users API', () => {
       user = {
         username: 'testuser',
         password,
+        password_change_required: false,
         roles: ['district_admin'],
         place: {
           _id: 'fixture:test',
@@ -966,6 +966,7 @@ describe('Users API', () => {
           {
             username: 'offline2',
             password: password,
+            password_change_required: false,
             place: {
               _id: 'fixture:offline2',
               type: 'health_center',
@@ -981,6 +982,7 @@ describe('Users API', () => {
           {
             username: 'online2',
             password: password,
+            password_change_required: false,
             place: {
               _id: 'fixture:online2',
               type: 'health_center',
@@ -996,6 +998,7 @@ describe('Users API', () => {
           {
             username: 'offlineonline2',
             password: password,
+            password_change_required: false,
             place: {
               _id: 'fixture:offlineonline2',
               type: 'health_center',
@@ -1510,7 +1513,7 @@ describe('Users API', () => {
           .then(() => getUser(user))
           .then(user => firstTokenLogin = user.token_login)
           .then(() => {
-            const updates = { token_login: false, password };
+            const updates = { token_login: false, password, password_change_required: false };
             return utils.request({ path: `/api/v1/users/${user.username}`, method: 'POST', body: updates });
           })
           .then(response => {
@@ -2055,6 +2058,59 @@ describe('Users API', () => {
         expect(err.body.code).to.equal(400);
         expect(err.body.error.message).to.equal('Missing required fields: place');
       }
+    });
+  });
+
+  describe('POST /api/v1/users', () => {
+    let places;
+    let contact;
+
+    before(async () => {
+      const placeAttributes = {
+        parent: { _id: parentPlace._id },
+        type: 'health_center',
+      };
+      places = [
+        placeFactory.place().build({ ...placeAttributes, name: 'place1' }),
+      ];
+      contact = personFactory.build({
+        parent: { _id: places[0]._id, parent: places[0].parent },
+      });
+      await utils.saveDocs([...places, contact]);
+    });
+
+    afterEach(async () => {
+      await utils.revertSettings(true);
+    });
+
+    const createUserRequest = async (roles = ['chw'], permissions = []) => {
+      await utils.updatePermissions(roles, permissions, [], { ignoreReload: true });
+
+      const userPayload = {
+        username: uuid(),
+        password: password,
+        place: places[0]._id,
+        contact: contact._id,
+        roles: roles
+      };
+
+      await utils.request({
+        path: '/api/v1/users',
+        method: 'POST',
+        body: userPayload
+      });
+
+      return utils.usersDb.get(getUserId(userPayload.username));
+    };
+
+    it('should not set password_change_required when user has can_skip_password_change permission', async () => {
+      const userDoc = await createUserRequest(['chw'], ['can_skip_password_change']);
+      expect(userDoc.password_change_required).to.equal(false);
+    });
+
+    it('should set password_change_required when user does not have can_skip_password_change permission', async () => {
+      const userDoc = await createUserRequest(['chw'], ['can_edit']);
+      expect(userDoc.password_change_required).to.equal(true);
     });
   });
 });

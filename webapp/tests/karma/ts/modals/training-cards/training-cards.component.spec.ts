@@ -46,8 +46,6 @@ describe('TrainingCardsComponent', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ],
-        declarations: [
           TrainingCardsComponent,
           ModalLayoutComponent,
           TrainingCardsFormComponent,

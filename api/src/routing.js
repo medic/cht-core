@@ -37,8 +37,10 @@ const exportData = require('./controllers/export-data');
 const records = require('./controllers/records');
 const forms = require('./controllers/forms');
 const users = require('./controllers/users');
+const contact = require('./controllers/contact');
 const person = require('./controllers/person');
 const place = require('./controllers/place');
+const report = require('./controllers/report');
 const { people, places } = require('@medic/contacts')(config, db, dataContext);
 const upgrade = require('./controllers/upgrade');
 const settings = require('./controllers/settings');
@@ -298,6 +300,8 @@ app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
 app.get(routePrefix + 'login/token/:token?', login.tokenGet);
 app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
+app.get(routePrefix + 'password-reset', login.getPasswordReset);
+app.postJson(routePrefix + 'password-reset', login.resetPassword);
 app.get(routePrefix + 'privacy-policy', privacyPolicyController.get);
 
 // authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB
@@ -491,6 +495,12 @@ app.postJson('/api/v1/people', function(req, res) {
 
 app.get('/api/v1/person', person.v1.getAll);
 app.get('/api/v1/person/:uuid', person.v1.get);
+
+app.get('/api/v1/contact/uuid', contact.v1.getUuids);
+app.get('/api/v1/contact/:uuid', contact.v1.get);
+
+app.get('/api/v1/report/uuid', report.v1.getUuids);
+app.get('/api/v1/report/:uuid', report.v1.get);
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 

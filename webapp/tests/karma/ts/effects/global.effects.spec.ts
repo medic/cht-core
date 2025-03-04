@@ -49,11 +49,9 @@ describe('GlobalEffects', () => {
     cancelCallback = sinon.stub();
 
     TestBed.configureTestingModule({
-      declarations: [
-        NavigationConfirmComponent,
-      ],
       imports: [
         EffectsModule.forRoot([GlobalEffects]),
+        NavigationConfirmComponent,
       ],
       providers: [
         provideMockActions(() => actions$),

@@ -69,12 +69,14 @@ const mapDocumentToPayload = (doc, config, key) => {
       } catch (err) {
         throw new OutboundError(`Mapping error for '${key}/${dest}' JS error on source document: '${doc._id}': ${err}`);
       }
-    } else {
+    } else if (path) {
       try {
         srcValue = objectPath.get({doc}, path);
       } catch (err) {
         throw new OutboundError(`Mapping error for '${key}/${dest}' JS error on source document: '${doc._id}': ${err}`);
       }
+    } else {
+      throw new OutboundError(`Mapping error for '${key}/${dest}' either 'expr' or 'path' is required: '${doc._id}'`);
     }
 
     if (required && srcValue === undefined) {
@@ -116,7 +118,6 @@ const sendPayload = (payload, config) => {
           sendOptions.auth = {
             username: authConf.username,
             password: password,
-            sendImmediately: true
           };
         });
     }
@@ -147,7 +148,8 @@ const sendPayload = (payload, config) => {
             timeout: OUTBOUND_REQ_TIMEOUT
           };
 
-          return request.post(authOptions)
+          return request
+            .post(authOptions)
             .then(result => {
               // No that's not a spelling mistake, this API is sometimes French!
               if (result.statut !== 200) {

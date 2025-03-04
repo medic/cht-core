@@ -28,8 +28,8 @@ describe('Messages More Menu Component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          MessagesMoreMenuComponent,
         ],
-        declarations: [ MessagesMoreMenuComponent ],
         providers: [
           { provide: AuthService, useValue: authService },
           { provide: SessionService, useValue: sessionService },

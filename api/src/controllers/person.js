@@ -2,6 +2,7 @@ const { Person, Qualifier } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
+const { PermissionError } = require('../errors');
 
 const getPerson = ({ with_lineage }) => ctx.bind(
   with_lineage === 'true'
@@ -13,7 +14,7 @@ const getPageByType = () => ctx.bind(Person.v1.getPage);
 const checkUserPermissions = async (req) => {
   const userCtx = await auth.getUserCtx(req);
   if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, 'can_view_contacts')) {
-    return Promise.reject({ code: 403, message: 'Insufficient privileges' });
+    throw new PermissionError('Insufficient privileges');
   }
 };
 
@@ -32,9 +33,8 @@ module.exports = {
       await checkUserPermissions(req);
 
       const personType  = Qualifier.byContactType(req.query.type);
-      const limit = req.query.limit ? Number(req.query.limit) : req.query.limit;
 
-      const docs = await getPageByType()( personType, req.query.cursor, limit );
+      const docs = await getPageByType()( personType, req.query.cursor, req.query.limit );
 
       return res.json(docs);
     }),

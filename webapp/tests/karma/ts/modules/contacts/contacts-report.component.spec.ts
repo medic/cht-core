@@ -74,8 +74,6 @@ describe('contacts report component', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
-        ],
-        declarations: [
           ContactsReportComponent,
           EnketoComponent,
         ],

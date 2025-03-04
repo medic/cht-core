@@ -99,6 +99,12 @@ describe('bootstrapper', () => {
       return promise;
     });
 
+    global.localStorage = {
+      getItem: sinon.stub(),
+      setItem: sinon.stub(),
+      removeItem: sinon.stub(),
+    };
+
     $ = sinon.stub().returns({
       text: sinon.stub(),
       click: sinon.stub(),
@@ -207,6 +213,19 @@ describe('bootstrapper', () => {
     ]);
     expect(initialReplication.replicate.callCount).to.equal(1);
     expect(initialReplication.replicate.args).to.deep.equal([[ remoteMedicDb, localMedicDb ]]);
+  });
+
+  it('should handle password status change and localStorage cleanup', async () => {
+    setUserCtxCookie({ name: 'jim' });
+    sinon.stub(initialReplication, 'isReplicationNeeded').resolves(false);
+    sinon.stub(utils, 'setOptions');
+    sinon.stub(purger, 'purgeMeta').returns({ on: purgeOn });
+
+    localStorage.getItem.withArgs('passwordStatus').returns('PASSWORD_CHANGED');
+
+    await bootstrapper(pouchDbOptions);
+
+    expect(localStorage.removeItem.calledWith('passwordStatus')).to.be.true;
   });
 
   it('should redirect to login when no userCtx cookie found', async () => {

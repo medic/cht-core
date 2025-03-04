@@ -47,8 +47,6 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           MatExpansionModule,
           MatIconModule,
-        ],
-        declarations: [
           AnalyticsTargetAggregatesSidebarFilterComponent,
         ],
         providers: [

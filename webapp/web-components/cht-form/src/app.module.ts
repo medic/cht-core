@@ -12,7 +12,6 @@ import { StoreModule } from '@ngrx/store';
 import { LanguageService } from '@mm-services/language.service';
 
 @NgModule({
-  declarations: [AppComponent],
   imports: [
     BrowserModule,
     HttpClientModule,
@@ -29,13 +28,14 @@ import { LanguageService } from '@mm-services/language.service';
         useClass: TranslateMessageFormatCompilerProvider,
       },
     }),
+    AppComponent,
   ]
 })
 export class AppModule implements DoBootstrap {
   constructor(
     injector: Injector,
-    private dbService: DbService,
-    private translateService: TranslateService
+    private readonly dbService: DbService,
+    private readonly translateService: TranslateService
   ) {
     const chtForm = createCustomElement(AppComponent, { injector });
     customElements.define('cht-form', chtForm);

@@ -85,20 +85,21 @@ const parseResponseBody = body => {
 const sendMessage = (credentials, message) => {
   const url = getUrl(credentials.username === 'sandbox');
   logger.debug(`Sending message to "${url}"`);
-  return request.post({
-    url: url,
-    simple: false,
-    form: {
-      username: credentials.username,
-      from: credentials.from,
-      to: message.to,
-      message: message.content
-    },
-    headers: {
-      apikey: credentials.apiKey,
-      Accept: 'application/json'
-    }
-  })
+  return request
+    .post({
+      url: url,
+      json: false,
+      form: {
+        username: credentials.username,
+        from: credentials.from,
+        to: message.to,
+        message: message.content
+      },
+      headers: {
+        apikey: credentials.apiKey,
+        Accept: 'application/json'
+      }
+    })
     .then(body => {
       const result = parseResponseBody(body);
       if (!result) {

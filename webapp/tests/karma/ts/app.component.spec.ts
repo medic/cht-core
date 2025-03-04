@@ -190,14 +190,12 @@ describe('AppComponent', () => {
 
     await TestBed
       .configureTestingModule({
-        declarations: [
-          AppComponent,
-          SnackbarComponent,
-          SidebarMenuComponent,
-        ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
+          SnackbarComponent,
+          SidebarMenuComponent,
+          AppComponent,
         ],
         providers: [
           provideAnimations(),
@@ -213,7 +211,7 @@ describe('AppComponent', () => {
           { provide: UpdateServiceWorkerService, useValue: updateServiceWorkerService },
           { provide: LocationService, useValue: locationService },
           { provide: ModalService, useValue: modalService },
-          { provide: BrowserDetectorService, useValue: browserDetectorService},
+          { provide: BrowserDetectorService, useValue: browserDetectorService },
           { provide: FeedbackService, useValue: feedbackService },
           { provide: FormatDateService, useValue: formatDateService },
           { provide: XmlFormsService, useValue: xmlFormsService },
@@ -236,7 +234,7 @@ describe('AppComponent', () => {
           { provide: TrainingCardsService, useValue: trainingCardsService },
           { provide: UserSettingsService, useValue: userSettingsService },
           { provide: FormService, useValue: formService },
-          { provide: Router, useValue: router  },
+          { provide: Router, useValue: router },
         ]
       })
       .overrideComponent(SidebarMenuComponent, {

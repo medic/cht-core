@@ -8,7 +8,10 @@ import { AuthDirective } from '@mm-directives/auth.directive';
 import { AuthService } from '@mm-services/auth.service';
 
 
-@Component({ template: `` })
+@Component({
+  template: ``,
+  imports: [AuthDirective]
+})
 class TestComponent {}
 
 describe('Auth directive', () => {
@@ -23,7 +26,7 @@ describe('Auth directive', () => {
     };
 
     TestBed.configureTestingModule({
-      declarations: [ AuthDirective, TestComponent ],
+      imports: [AuthDirective, TestComponent],
       providers: [
         { provide: AuthService, useValue: authServiceMock },
       ]
