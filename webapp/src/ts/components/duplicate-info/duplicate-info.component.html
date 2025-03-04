@@ -1,0 +1,48 @@
+<div
+  id="duplicate_info"
+  [ngStyle]="{ display: duplicates.length > 0 ? 'block' : 'none' }">
+  <p class="results_header">
+    {{ ('duplicate_check.contact.' + entityType + '.duplication_message' | translate: { count: duplicates.length }) !== ('duplicate_check.contact.' + entityType + '.duplication_message') 
+     ? ('duplicate_check.contact.' + entityType + '.duplication_message' | translate: { count: duplicates.length }) 
+     : ('duplicate_check.contact.duplication_message' | translate: { count: duplicates.length }) }}
+  </p>
+  <div class="divider"></div>
+  <div>
+    <label for="check" class="acknowledge_label">
+      <input
+        id="check"
+        type="checkbox"
+        [checked]="acknowledged"
+        (change)="toggleAcknowledged()"
+        class="acknowledge_checkbox"/>
+      {{'duplicate_check.contact.acknowledge' | translate }}
+    </label>
+  </div>
+  <div class="divider"></div>
+  <div *ngFor="let duplicate of duplicates; let i = index" >
+    <div class="card">
+      <strong>{{ 'duplicate_check.contact.item_number' | translate }}</strong> {{ i + 1 }}
+      <hr>
+      <p>
+        <strong>{{ 'duplicate_check.contact.name'  | translate }}</strong> {{ duplicate.name }}
+        <br>
+        <strong>{{ 'duplicate_check.contact.created_on' | translate }}</strong> {{ duplicate.reported_date | date: 'EEE MMM dd yyyy HH:mm:ss' }}
+      </p>
+      <p *ngIf="summaryRequestInfo?.contact_id === duplicate._id && summaryRequestInfo?.error" class="error_msg">
+        <strong>{{ summaryRequestInfo?.error?.toString() }}</strong>
+      </p>
+      <button *ngIf="(!duplicate._summary && !summaryRequestInfo?.isLoading) || (!duplicate._summary && summaryRequestInfo?.contact_id === duplicate._id && summaryRequestInfo?.error)" class="load-more-button" (click)="_loadContactSummary(duplicate._id)">
+        {{ 'duplicate_check.contact.load_summary_info' | translate }}
+      </button>
+      <div *ngIf="summaryRequestInfo?.contact_id === duplicate._id && summaryRequestInfo?.isLoading" class="loader inline small"></div>
+      <div *ngIf="duplicate._summary?.fields" class="nested-section">
+        <mm-contact-summary-content 
+          [fields]="duplicate._summary.fields"
+          [contactsLoadingSummary]="false">
+        </mm-contact-summary-content>
+      </div>
+      <hr>
+      <button *ngIf="!summaryRequestInfo?.isLoading" class="btn submit btn-primary" (click)="_navigateToDuplicate(duplicate._id)">{{ 'duplicate_check.contact.go_to' | translate }}</button>
+    </div>
+  </div>
+</div>

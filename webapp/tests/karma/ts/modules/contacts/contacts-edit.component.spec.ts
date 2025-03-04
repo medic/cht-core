@@ -15,7 +15,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { DbService } from '@mm-services/db.service';
 import { Selectors } from '@mm-selectors/index';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { FormService } from '@mm-services/form.service';
+import { FormService, DuplicatesFoundError } from '@mm-services/form.service';
 import { GlobalActions } from '@mm-actions/global';
 
 
@@ -33,6 +33,7 @@ describe('ContactsEdit component', () => {
   let routeSnapshot;
   let stopPerformanceTrackStub;
   let performanceService;
+  const loadContactSummary = sinon.stub();
 
   beforeEach(() => {
     contactTypesService = {
@@ -54,16 +55,17 @@ describe('ContactsEdit component', () => {
     formService = {
       render: sinon.stub(),
       unload: sinon.stub(),
-      saveContact: sinon.stub()
+      saveContact: sinon.stub(),
+      loadContactSummary: loadContactSummary,
     };
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
-    lineageModelGeneratorService = { contact: sinon.stub().resolves({ doc: { } }) };
+    lineageModelGeneratorService = { contact: sinon.stub().resolves({ doc: {} }) };
 
     sinon.stub(console, 'error');
 
     const mockedSelectors = [
-      { selector: Selectors.getEnketoStatus, value: { } },
+      { selector: Selectors.getEnketoStatus, value: {} },
       { selector: Selectors.getEnketoSavingStatus, value: false },
       { selector: Selectors.getEnketoEditedStatus, value: false },
       { selector: Selectors.getEnketoError, value: false },
@@ -114,7 +116,7 @@ describe('ContactsEdit component', () => {
       cancelCallback();
 
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([[ '/contacts' ]]);
+      expect(router.navigate.args[0]).to.deep.equal([['/contacts']]);
     });
 
     it('cancelling falls back to parent contact if new contact and query `from` param is not equal to `list`',
@@ -130,7 +132,7 @@ describe('ContactsEdit component', () => {
         cancelCallback();
 
         expect(router.navigate.callCount).to.equal(1);
-        expect(router.navigate.args[0]).to.deep.equal([[ '/contacts', 'parent_id' ]]);
+        expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'parent_id']]);
       });
 
     it('cancelling falls back to parent contact if new contact and query does not have `from` param', async () => {
@@ -144,7 +146,7 @@ describe('ContactsEdit component', () => {
       cancelCallback();
 
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([[ '/contacts', 'parent_id' ]]);
+      expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'parent_id']]);
     });
 
     it('cancelling falls back to contact if edit contact', async () => {
@@ -158,7 +160,7 @@ describe('ContactsEdit component', () => {
       cancelCallback();
 
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([[ '/contacts', 'id' ]]);
+      expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'id']]);
     });
   });
 
@@ -624,7 +626,7 @@ describe('ContactsEdit component', () => {
       expect(setEnketoError.callCount).to.equal(0);
     });
 
-    it('should not save when invalid', async() => {
+    it('should not save when invalid', async () => {
       await createComponent();
       await fixture.whenStable();
 
@@ -705,7 +707,9 @@ describe('ContactsEdit component', () => {
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(1);
-      expect(formService.saveContact.args[0]).to.deep.equal([ form, null, 'clinic', undefined ]);
+      expect(formService.saveContact.args[0]).to.deep.equal([
+        { form, docId: null, type: 'clinic', xmlVersion: undefined }, false, undefined
+      ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'new_clinic_id']]);
     });
@@ -740,7 +744,9 @@ describe('ContactsEdit component', () => {
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(1);
-      expect(formService.saveContact.args[0]).to.deep.equal([ form, 'the_person', 'person', undefined ]);
+      expect(formService.saveContact.args[0]).to.deep.equal(
+        [{ form, docId: 'the_person', type: 'person', xmlVersion: undefined }, false, undefined]
+      );
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_person']]);
       expect(performanceService.track.calledThrice).to.be.true;
@@ -788,7 +794,9 @@ describe('ContactsEdit component', () => {
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(1);
-      expect(formService.saveContact.args[0]).to.deep.equal([ form, 'the_patient', 'patient', undefined ]);
+      expect(formService.saveContact.args[0]).to.deep.equal(
+        [{ form, docId: 'the_patient', type: 'patient', xmlVersion: undefined }, false, undefined]
+      );
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_patient']]);
       expect(performanceService.track.calledThrice).to.be.true;
@@ -804,6 +812,174 @@ describe('ContactsEdit component', () => {
         name: 'enketo:contacts:patient_create_form_id:edit:save',
         recordApdex: true,
       });
+    });
+
+    it('should catch duplicate siblings', async () => {
+      routeSnapshot.params = { type: 'clinic', parent_id: 'the_district' };
+      contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
+      contactTypesService.get.resolves({
+        create_form: 'clinic_create_form_id',
+        create_key: 'clinic_create_key',
+      });
+      dbGet
+        .withArgs('the_district')
+        .resolves({ _id: 'the_district', type: 'clinic' });
+      dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
+      const form = {
+        validate: sinon.stub().resolves(true),
+      };
+      formService.render.resolves(form);
+
+      await createComponent();
+      await fixture.whenStable();
+
+      formService.saveContact.rejects(new DuplicatesFoundError('Duplicates found', [
+        {
+          _id: 'sib2',
+          name: 'Sibling2',
+          parent: { _id: 'parent1' },
+          type: 'the_district',
+          reported_date: 1736845534000
+        }
+      ]));
+
+      await component.save();
+
+      expect(setEnketoSavingStatus.callCount).to.equal(2);
+      expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
+      expect(component.enketoContact.formInstance.validate.callCount).to.equal(1);
+      expect(formService.saveContact.callCount).to.equal(1);
+      expect(setEnketoError.callCount).to.equal(2);
+      expect(component.duplicates.length).to.equal(1);
+    });
+  });
+
+  describe('onNavigateDuplicate', () => {
+    it('should navigate to the duplicate item', async () => {
+      routeSnapshot.params = { id: 'the_person' };
+      lineageModelGeneratorService.contact.resolves({
+        doc: {
+          _id: 'the_person',
+          type: 'person',
+        }
+      });
+      contactTypesService.get.resolves({
+        create_form: 'person_create_form_id',
+        edit_form: 'person_edit_form_id',
+        create_key: 'person_create_key',
+      });
+      dbGet.resolves({ _id: 'person_edit_form_id', the: 'form' });
+      const form = {
+        validate: sinon.stub().resolves(true),
+      };
+      formService.render.resolves(form);
+
+      await createComponent();
+      await fixture.whenStable();
+
+      component.onNavigateToDuplicate('my_duplicate_id');
+
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'my_duplicate_id']]);
+    });
+  });
+  describe('onAcknowledgeChange', () => {
+    it('should set acknowledge to true', async () => {
+      routeSnapshot.params = { type: 'clinic', parent_id: 'the_district' };
+      contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
+      contactTypesService.get.resolves({
+        create_form: 'clinic_create_form_id',
+        create_key: 'clinic_create_key',
+      });
+      dbGet
+        .withArgs('the_district')
+        .resolves({ _id: 'the_district', type: 'clinic' });
+      dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
+      const form = {
+        validate: sinon.stub().resolves(true),
+      };
+      formService.render.resolves(form);
+      await createComponent();
+      await fixture.whenStable();
+
+      component.onAcknowledgeChange(true);
+      formService.saveContact.resolves({ docId: 'new_clinic_id' });
+      await component.save();
+      expect(formService.saveContact.args).to.deep.equal(
+        [[{ form, docId: null, type: 'clinic', xmlVersion: undefined }, true, undefined]]
+      );
+    });
+  });
+
+  describe('onLoadContactSummary', () => {
+    it('should return a contact summary', async () => {
+      loadContactSummary.resolves([
+        { label: 'label.short_name', value: 'tp1' },
+        { label: 'label.dob_type', value: 'exact' },
+      ]);
+      component.duplicates = [
+        {
+          _id: 'some_id',
+          name: 'test name',
+          short_name: 'tn',
+          date_of_birth: '1966-04-11',
+          dob_type: 'exact',
+          reported_date: '1740472311000'
+        }
+      ];
+      await component.onLoadContactSummary('some_id');
+      expect(component.summaryRequestInfo).to.deep.equal({
+        contact_id: 'some_id',
+        isLoading: false,
+        error: undefined
+      });
+      const sanitizedContact = loadContactSummary.getCall(0).args[0];
+      expect(sanitizedContact).to.not.have.property('name');
+      expect(sanitizedContact).to.not.have.property('reported_date');
+      expect(component.duplicates[0]._summary).to.deep.equal([
+        { label: 'label.short_name', value: 'tp1' },
+        { label: 'label.dob_type', value: 'exact' },
+      ]);
+    });
+
+    it('should catch summary load errors and add it to the state object for display', async () => {
+      loadContactSummary.throws(Error('Some error occurred during load'));
+      component.duplicates = [
+        {
+          _id: 'some_id',
+          name: 'test name',
+          short_name: 'tn',
+          date_of_birth: '1966-04-11',
+          dob_type: 'exact',
+          reported_date: '1740472311000'
+        }
+      ];
+      await component.onLoadContactSummary('some_id');
+      expect(component.summaryRequestInfo).to.deep.equal({
+        contact_id: 'some_id',
+        isLoading: false,
+        error: 'Unable to load summary data for contact some_id'
+      });
+    });
+
+    it('should catch contact resolution errors', async () => {
+      loadContactSummary.resetHistory();
+      component.duplicates = [
+        {
+          _id: 'different_id',
+          name: 'test name',
+          short_name: 'tn',
+          date_of_birth: '1966-04-11',
+          dob_type: 'exact',
+          reported_date: '1740472311000'
+        }
+      ];
+      try {
+        await component.onLoadContactSummary('some_id');
+      } catch (e){
+        expect(e).to.equal('Contact with ID some_id not found');
+      }
+      expect(loadContactSummary.callCount).to.equal(0);
     });
   });
 });

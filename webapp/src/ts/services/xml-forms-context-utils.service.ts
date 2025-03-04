@@ -1,4 +1,5 @@
 import * as moment from 'moment';
+const { distance } = require('fastest-levenshtein');
 import { Injectable } from '@angular/core';
 
 /**
@@ -31,4 +32,20 @@ export class XmlFormsContextUtilsService {
     return this.getDateDiff(contact, 'years');
   }
 
+  // The Levenshtein distance is a measure of the number of edits (insertions, deletions, and substitutions) 
+  // required to change one string into another.
+  levenshteinEq(current: string, existing: string, threshold: number = 3){
+    return current && existing ? distance(current, existing) <= threshold : false;
+  }
+
+  private readonly _normalizedLevenshteinEq = (str1: string, str2: string) :number => {
+    const maxLen = Math.max(str1.length, str2.length);
+    return (maxLen === 0) ? 0 : (distance(str1, str2) / maxLen);
+  };
+
+  // Normalize the distance by dividing by the length of the longer string. 
+  // This can make the metric more adaptable across different string lengths
+  normalizedLevenshteinEq(current: string, existing: string, threshold: number = 3){
+    return current && existing ? this._normalizedLevenshteinEq(current, existing)  <= threshold : false;
+  }
 }
