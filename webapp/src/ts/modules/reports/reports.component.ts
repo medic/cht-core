@@ -24,7 +24,6 @@ import { FastAction, FastActionButtonService } from '@mm-services/fast-action-bu
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
-import { Directionality } from '@angular/cdk/bidi';
 import { ButtonType, FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { NgIf, NgClass, NgFor } from '@angular/common';
@@ -98,7 +97,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   userParentPlace;
   fastActionList?: FastAction[];
   userLineageLevel;
-  isRtl;
 
   LIMIT_SELECT_ALL_REPORTS = 500;
 
@@ -122,11 +120,9 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private xmlFormsService:XmlFormsService,
     private performanceService: PerformanceService,
     private extractLineageService: ExtractLineageService,
-    dir: Directionality,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
-    this.isRtl = dir.value === 'rtl';
   }
 
   ngOnInit() {
