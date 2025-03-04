@@ -2,6 +2,7 @@ const assert = require('chai').assert;
 const sinon = require('sinon');
 const rewire = require('rewire');
 const secureSettings = require('@medic/settings');
+const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
 let outbound;
 
@@ -255,7 +256,7 @@ describe('outbound shared library', () => {
   });
 
   describe('push', () => {
-    it('should push on minimal configuration', () => {
+    it('should push on minimal configuration with version in User-Agent', () => {
       const payload = {
         some: 'data'
       };
@@ -267,6 +268,7 @@ describe('outbound shared library', () => {
         }
       };
 
+      sinon.stub(environment, 'getVersion').resolves('4.18.0');
       sinon.stub(request, 'post').resolves();
 
       return outbound.__get__('sendPayload')(payload, conf)
@@ -274,7 +276,7 @@ describe('outbound shared library', () => {
           assert.equal(request.post.callCount, 1);
           assert.equal(request.post.args[0][0].url, 'http://test/foo');
           assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
-          assert.equal(request.post.args[0][0].json, true);
+          assert.match(request.post.args[0][0].headers['user-agent'], /^CHT\/4\.18\.0/);
         });
     });
 
@@ -305,7 +307,6 @@ describe('outbound shared library', () => {
           assert.equal(request.post.callCount, 1);
           assert.equal(request.post.args[0][0].url, 'http://test/foo');
           assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
-          assert.equal(request.post.args[0][0].json, true);
           assert.deepEqual(request.post.args[0][0].auth, {
             username: 'admin',
             password: 'pass',
@@ -340,10 +341,7 @@ describe('outbound shared library', () => {
           assert.equal(request.post.callCount, 1);
           assert.equal(request.post.args[0][0].url, 'http://test/foo');
           assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
-          assert.equal(request.post.args[0][0].json, true);
-          assert.deepEqual(request.post.args[0][0].headers, {
-            Authorization: 'Bearer credentials'
-          });
+          assert.equal(request.post.args[0][0].headers.authorization, 'Bearer credentials');
         });
     });
 
@@ -387,7 +385,6 @@ describe('outbound shared library', () => {
 
           assert.equal(post.args[1][0].url, 'http://test/foo');
           assert.deepEqual(post.args[1][0].body, {some: 'data'});
-          assert.equal(post.args[1][0].json, true);
           assert.equal(post.args[1][0].qs.token, 'j9NAhVDdVWkgo1xnbxA9V3Pmp');
         });
     });
