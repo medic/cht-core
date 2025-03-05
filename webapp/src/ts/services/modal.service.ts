@@ -5,6 +5,7 @@ import { Store } from '@ngrx/store';
 
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { GlobalActions } from '@mm-actions/global';
+import { Selectors } from '@mm-selectors/index';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,7 @@ import { GlobalActions } from '@mm-actions/global';
 export class ModalService {
 
   private globalActions: GlobalActions;
+  private direction;
 
   constructor(
     private matDialog: MatDialog,
@@ -19,6 +21,9 @@ export class ModalService {
     private responsiveService: ResponsiveService,
   ) {
     this.globalActions = new GlobalActions(this.store);
+    this.store.select(Selectors.getDirection).subscribe(direction => {
+      this.direction = direction;
+    });
   }
 
   show(component: ComponentType<any>, config?: Record<string, any>): MatDialogRef<any> {
@@ -42,6 +47,7 @@ export class ModalService {
       width: '600px',
       maxWidth: '90vw',
       minHeight: '100px',
+      direction: this.direction,
       ...config,
     });
   }

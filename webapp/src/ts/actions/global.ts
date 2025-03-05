@@ -40,6 +40,7 @@ export const Actions = {
   setSearchBar: createSingleValueAction('SET_SEARCH_BAR', 'searchBar'),
   setTrainingCard: createSingleValueAction('SET_TRAINING_CARD', 'trainingCard'),
   clearTrainingCards: createAction('CLEAR_TRAINING_CARDS'),
+  setLanguage: createSingleValueAction('SET_LANGUAGE', 'language'),
 };
 
 export class GlobalActions {
@@ -242,6 +243,10 @@ export class GlobalActions {
 
   closeSidebarMenu() {
     return this.store.dispatch(Actions.closeSidebarMenu());
+  }
+
+  setLanguage(language) {
+    return this.store.dispatch(Actions.setLanguage(language));
   }
 
 }

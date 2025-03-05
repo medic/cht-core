@@ -48,6 +48,7 @@ import {
   MissingTranslationHandlerParams
 } from '@ngx-translate/core';
 import { DbService } from '@mm-services/db.service';
+import { LanguageService } from '@mm-services/language.service';
 import { TranslationLoaderProvider } from '@mm-providers/translation-loader.provider';
 import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -106,8 +107,8 @@ bootstrapper(POUCHDB_OPTIONS)
           TranslateModule.forRoot({
             loader: {
               provide: TranslateLoader,
-              useFactory: (db: DbService) => new TranslationLoaderProvider(db),
-              deps: [DbService],
+              useFactory: (db: DbService, language: LanguageService) => new TranslationLoaderProvider(db, language),
+              deps: [DbService, LanguageService],
             },
             missingTranslationHandler: {
               provide: MissingTranslationHandler,

@@ -9,6 +9,7 @@ import { AppComponent } from './app.component';
 import { TranslateService } from '@mm-services/translate.service';
 import { HttpClientModule } from '@angular/common/http';
 import { StoreModule } from '@ngrx/store';
+import { LanguageService } from '@mm-services/language.service';
 
 @NgModule({
   imports: [
@@ -18,8 +19,9 @@ import { StoreModule } from '@ngrx/store';
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
-        useFactory: (db: DbService) => new TranslationLoaderProvider(db),
-        deps: [DbService],
+        useFactory:
+          (db: DbService, languageService: LanguageService) => new TranslationLoaderProvider(db, languageService),
+        deps: [DbService, LanguageService],
       },
       compiler: {
         provide: TranslateCompiler,
