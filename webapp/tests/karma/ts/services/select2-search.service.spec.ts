@@ -81,6 +81,7 @@ describe('Select2SearchService', () => {
   describe('init', () => {
     it('should set empty value when initial value is empty', async () => {
       await service.init(selectEl, [ 'person' ], {initialValue: ''});
+      expect(selectEl.select2.args[0][0].dir).to.equal('rtl');
       expect(selectEl.val.callCount).to.equal(3);
       expect(selectEl.val.args[0]).to.deep.equal([ ]);    // first time the component reads the current value
       expect(selectEl.val.args[1]).to.deep.equal([ '' ]); // set the value

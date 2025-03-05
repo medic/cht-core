@@ -63,6 +63,7 @@ describe('Translations Loader provider', () => {
       expect(actual).to.deep.equal(expected);
       expect(DBGet.callCount).to.equal(1);
       expect(DBGet.args[0][0]).to.equal('messages-au');
+      expect(languageService.setRtlLanguage.called).to.equal(false);
     });
   }));
 
@@ -131,5 +132,14 @@ describe('Translations Loader provider', () => {
     tick();
     expect(DBGet.callCount).to.equal(2);
     expect(DBGet.args[1][0]).to.equal('messages-en');
+  }));
+
+  it('should set language as RTL', fakeAsync(() => {
+    DBGet.resolves({ rtl: true });
+    provider.getTranslation('au').subscribe(() => {
+      expect(DBGet.args[0][0]).to.equal('messages-au');
+      expect(languageService.setRtlLanguage.called).to.equal(true);
+      expect(languageService.setRtlLanguage.args[0]).to.deep.equal(['au']);
+    });
   }));
 });

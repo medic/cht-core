@@ -66,7 +66,6 @@ const defaultConfig = {
       .map(({ message }) => message)
       .filter(notAllowedLog);
     if (logs.length) {
-      console.warn(logs.join('\n'));
       test.callback(new Error(`Browser console logs are not empty: ${logs.join('\n')}`));
     }
   },

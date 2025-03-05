@@ -117,6 +117,7 @@ describe('Language services', () => {
 
     it('should set supported datepicker language', async () => {
       const newLocale = 'nl';
+      languageService.useRtl.returns(false);
       await setLanguageService.set(newLocale);
 
       expect((<any>moment.locale).callCount).to.equal(1);
@@ -126,6 +127,7 @@ describe('Language services', () => {
       expect(languageCookieService.set.callCount).to.equal(1);
       expect(languageCookieService.set.args[0]).to.deep.equal([newLocale]);
       expect(formatDateService.init.callCount).to.equal(1);
+      expect(setLanguageAction.args).to.deep.equal([[ { code: newLocale, rtl: false }]]);
 
       expect((<any>$.fn).datepicker.defaults.language).to.equal('nl');
     });
