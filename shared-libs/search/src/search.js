@@ -8,11 +8,7 @@ const _ = require('lodash/core');
 _.flatten = require('lodash/flatten');
 _.intersection = require('lodash/intersection');
 const GenerateSearchRequests = require('./generate-search-requests');
-
-const ddocExists = (db, ddocId) => db
-  .get(ddocId)
-  .then(() => true)
-  .catch(() => false);
+const { queryFreetext } = require('./freetext-query');
 
 module.exports = function(Promise, DB) {
   // Get the subset of rows, in appropriate order, according to options.
@@ -72,22 +68,24 @@ module.exports = function(Promise, DB) {
     return result;
   };
 
-  // Queries view as specified by request object coming from GenerateSearchQueries.
-  // request = {view, union: true, paramSets: [params1, ...] }
-  // or
-  // request = {view, params: {...} }
-  const queryView = function(request) {
-    const paramSets = request.union ? request.paramSets : [ request.params ];
-    return Promise.all(paramSets.map(function(params) {
-      return DB.query(request.view, params);
-    }))
-      .then(function(data) {
-        return _.flatten(data.map(function(datum) {
-          if (request.map) {
-            return datum.rows.map(request.map);
-          }
-          return datum.rows;
-        }), true);
+  const queryView = async (request) => DB
+    .query(request.view, request.params)
+    .then(data => {
+      if (request.map) {
+        return data.rows.map(request.map);
+      }
+      return data.rows;
+    });
+
+  const denormalizeUnionRequest = (request) => {
+    const { union, paramSets, ...requestData } = request;
+    if (!union) {
+      return [request];
+    }
+
+    return paramSets
+      .map((params) => {
+        return { params, ...requestData };
       });
   };
 
@@ -95,7 +93,11 @@ module.exports = function(Promise, DB) {
     request.params = request.params || {};
     request.params.limit = options.limit;
     request.params.skip = options.skip;
-    return queryView(request);
+
+    return Promise.all(
+      denormalizeUnionRequest(request)
+        .map(queryView)
+    ).then(data => data.flat());
   };
 
   const getRows = function(type, requests, options, cacheQueryResults) {
@@ -105,7 +107,17 @@ module.exports = function(Promise, DB) {
     }
     // multiple requests - have to manually paginate
     let queryResultsCache;
-    return Promise.all(requests.map(queryView))
+    const promisedRequestGroups = requests
+      .map(denormalizeUnionRequest)
+      .map(reqs => Promise.all(reqs.map(request => {
+        if (request.freetext) {
+          return queryFreetext(DB, request);
+        }
+        return queryView(request);
+      })));
+    return Promise
+      .all(promisedRequestGroups)
+      .then(responses => responses.map(response => response.flat()))
       .then(getIntersection)
       .then(function(results) {
         queryResultsCache = results;
@@ -123,11 +135,10 @@ module.exports = function(Promise, DB) {
       skip: 0
     });
 
-    const offline = await ddocExists(DB, '_design/medic-offline-freetext');
     const cacheQueryResults = GenerateSearchRequests.shouldSortByLastVisitedDate(extensions);
     let requests;
     try {
-      requests = GenerateSearchRequests.generate(type, filters, extensions, offline);
+      requests = GenerateSearchRequests.generate(type, filters, extensions);
     } catch (err) {
       return Promise.reject(err);
     }
