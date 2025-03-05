@@ -72,16 +72,14 @@ module.exports = {
 
         return authorization
           .getScopedAuthorizationContext(userCtx, [ stored, requested ])
-          .then(authorizationContext => {
+          .then(authCtx => {
             // user must be allowed to see existent document
-            if (stored && !authorization.allowedDoc(stored.doc._id, authorizationContext, stored.viewResults)) {
+            if (stored && !authorization.allowedDoc(stored.doc._id, authCtx, stored.viewResults)) {
               return false;
             }
 
             // user must be allowed to see new/updated document or be allowed to create this document
-            if (requested &&
-                !authorization.alwaysAllowCreate(requested.doc) &&
-                !authorization.allowedDoc(requested.doc._id, authorizationContext, requested.viewResults)) {
+            if (requested && !authorization.allowedDoc(requested.doc._id, authCtx, requested.viewResults)) {
               return false;
             }
 
