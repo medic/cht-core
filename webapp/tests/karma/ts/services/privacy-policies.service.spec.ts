@@ -244,7 +244,7 @@ describe('PrivacyPoliciesService', () => {
     it('should create acceptance log when it does not exist', async () => {
       userSettingsService.get.resolves({ _id: 'user_id', known: true });
       userSettingsService.put.resolves();
-      clock = sinon.useFakeTimers(6000);
+      clock = sinon.useFakeTimers({now:6000});
 
       await service.accept({ language: 'en', digest: 'the_digest' });
 
@@ -273,7 +273,7 @@ describe('PrivacyPoliciesService', () => {
         }],
       });
       userSettingsService.put.resolves();
-      clock = sinon.useFakeTimers(9568);
+      clock = sinon.useFakeTimers({now:9568});
 
       await service.accept({ language: 'en', digest: 'dig' });
 
@@ -310,7 +310,7 @@ describe('PrivacyPoliciesService', () => {
         }],
       });
       userSettingsService.put.resolves();
-      clock = sinon.useFakeTimers(6987);
+      clock = sinon.useFakeTimers({now:6987});
 
       await service.accept({ language: 'en', digest: 'my_digest' });
 
@@ -347,7 +347,7 @@ describe('PrivacyPoliciesService', () => {
         }],
       });
       userSettingsService.put.rejects({ my: 'err' });
-      clock = sinon.useFakeTimers(6987);
+      clock = sinon.useFakeTimers({now:6987});
 
       return service
         .accept({ language: 'en', digest: 'my_digest' })

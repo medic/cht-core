@@ -230,7 +230,8 @@ describe('FormsXmlCtrl controller', () => {
     let clock;
 
     beforeEach(() => {
-      clock = sinon.useFakeTimers(NOW);
+      clock = sinon.useFakeTimers({ now: NOW });
+
     });
 
     afterEach(() => {

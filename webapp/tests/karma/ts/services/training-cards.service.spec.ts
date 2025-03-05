@@ -65,7 +65,7 @@ describe('TrainingCardsService', () => {
   it('should show uncompleted training when none are completed', async () => {
     sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
     localDb.allDocs.resolves({ rows: [] });
-    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
     const xforms = [
       {
         _id: 'form:training:abc-789',
@@ -126,7 +126,7 @@ describe('TrainingCardsService', () => {
       { doc: { form: 'training:form-a' } },
       { doc: { form: 'training:form-b' } },
     ]});
-    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
     const xforms = [
       {
         _id: 'form:training:abc-456',
@@ -188,7 +188,7 @@ describe('TrainingCardsService', () => {
       { doc: { form: 'training:form-a' } },
       { doc: { form: 'training:form-b' } },
     ]});
-    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
     const xforms = [
       {
         _id: 'form:training:abc-789',
@@ -237,7 +237,7 @@ describe('TrainingCardsService', () => {
     localDb.allDocs.resolves({ rows: [
       { doc: { form: 'training:form-b' } },
     ]});
-    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
     const xforms = [
       {
         _id: 'form:training:abc-098',
@@ -293,7 +293,7 @@ describe('TrainingCardsService', () => {
   it('should not show training when privacy policy has not been accepted yet', async () => {
     sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
     localDb.allDocs.resolves({ rows: []});
-    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
     const xforms = [{
       _id: 'form:training:abc-100',
       internalId: 'training:form-c',
@@ -317,7 +317,7 @@ describe('TrainingCardsService', () => {
       { doc: { form: 'training:form-b' } },
       { doc: { form: 'training:form-c' } },
     ]});
-    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
     const xforms = [
       {
         _id: 'form:training:abc-123',
@@ -368,7 +368,7 @@ describe('TrainingCardsService', () => {
     localDb.allDocs.resolves({ rows: [
       { doc: { form: 'training:form-a' } },
     ]});
-    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
     const xforms = [
       {
         _id: 'form:training:abc-123',
@@ -411,7 +411,7 @@ describe('TrainingCardsService', () => {
   it('should not show training forms when all trainings start in the future', async () => {
     sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
     localDb.allDocs.resolves({ rows: [] });
-    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
     const xforms = [
       {
         _id: 'form:training:abc-123',
@@ -454,7 +454,7 @@ describe('TrainingCardsService', () => {
   it('should not show training forms if their internalID does not have the right prefix', async () => {
     sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
     localDb.allDocs.resolves({ rows: [] });
-    clock = sinon.useFakeTimers(new Date('2022-06-03 20:29:25'));
+    clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
     const xforms = [
       {
         _id: 'form:training:cards-1',
@@ -503,7 +503,7 @@ describe('TrainingCardsService', () => {
   it('should not show the modal when no training forms', async () => {
     sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
     localDb.allDocs.resolves({ rows: [] });
-    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
 
     await service.displayTrainingCards([], true, true);
 
@@ -533,7 +533,7 @@ describe('TrainingCardsService', () => {
   it('should catch exception', async () => {
     sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
     localDb.allDocs.rejects(new Error('some error'));
-    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
     const xforms = [{
       _id: 'form:training:abc-123',
       internalId: 'training:form-a',
@@ -559,7 +559,7 @@ describe('TrainingCardsService', () => {
   it('should display training if route has hideTraining false', async () => {
     sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
     localDb.allDocs.resolves({ rows: [ { doc: { form: 'training:form-b' } } ] });
-    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
     const xforms = [ {
       _id: 'form:training:abc-100',
       internalId: 'training:form-c',
@@ -582,7 +582,7 @@ describe('TrainingCardsService', () => {
     localDb.allDocs.resolves({ rows: [
       { doc: { form: 'training:form-b' } },
     ]});
-    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
     const xforms = [
       {
         _id: 'form:training:abc-098',
@@ -651,7 +651,7 @@ describe('TrainingCardsService', () => {
     localDb.allDocs.resolves({ rows: [
       { doc: { form: 'training:form-b' } },
     ]});
-    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
     const xforms = [
       {
         _id: 'form:training:abc-098',
@@ -722,7 +722,7 @@ describe('TrainingCardsService', () => {
       routeSnapshotService.get.returns({ data: { hideTraining: false } });
       sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'ronald' });
       window.localStorage.setItem('training-cards-last-viewed-date-ronald', '2024-05-23 20:29:25');
-      clock = sinon.useFakeTimers(new Date('2025-05-25 20:29:25'));
+      clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
       localDb.allDocs.resolves({ rows: [] });
       const xforms = [ {
         _id: 'form:training:abc-100',
@@ -739,7 +739,7 @@ describe('TrainingCardsService', () => {
       sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'ronald' });
       routeSnapshotService.get.returns({ data: { hideTraining: false } });
       window.localStorage.setItem('training-cards-last-viewed-date-ronald', '');
-      clock = sinon.useFakeTimers(new Date('2025-05-25 20:29:25'));
+      clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
       localDb.allDocs.resolves({ rows: [] });
       const xforms = [ {
         _id: 'form:training:abc-100',
@@ -756,7 +756,7 @@ describe('TrainingCardsService', () => {
       routeSnapshotService.get.returns({ data: { hideTraining: false } });
       sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'ronald' });
       window.localStorage.setItem('training-cards-last-viewed-date-ronald', '2024-05-23 20:29:25');
-      clock = sinon.useFakeTimers(new Date('2024-05-23 06:29:25'));
+      clock = sinon.useFakeTimers({now:new Date('2024-05-23 06:29:25')});
       localDb.allDocs.resolves({ rows: [] });
       const xforms = [ {
         _id: 'form:training:abc-100',
@@ -773,7 +773,7 @@ describe('TrainingCardsService', () => {
       routeSnapshotService.get.returns({ data: { hideTraining: false } });
       sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'sarah' });
       window.localStorage.setItem('training-cards-last-viewed-date-ronald', '2024-05-23 20:29:25');
-      clock = sinon.useFakeTimers(new Date('2024-05-23 06:29:25'));
+      clock = sinon.useFakeTimers({now:new Date('2024-05-23 06:29:25')});
       localDb.allDocs.resolves({ rows: [ { doc: { form: 'training:form-b' } } ] });
       const xforms = [ {
         _id: 'form:training:abc-100',
@@ -794,7 +794,7 @@ describe('TrainingCardsService', () => {
         { doc: { form: 'training:form-a' } },
         { doc: { form: 'training:form-b' } },
       ]});
-      clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+      clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
       const xforms = [
         {
           _id: 'form:training:abc-789',
@@ -854,7 +854,7 @@ describe('TrainingCardsService', () => {
         { doc: { form: 'training:form-a' } },
         { doc: { form: 'training:form-b' } },
       ]});
-      clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+      clock = sinon.useFakeTimers({now:new Date('2022-05-23 20:29:25')});
       const xforms = [
         ...Array.from({ length: 30 }).map((item, index) => ({
           _id: 'form:training:abc-123' + index,
