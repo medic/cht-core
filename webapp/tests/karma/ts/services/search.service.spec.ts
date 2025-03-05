@@ -9,6 +9,7 @@ import { SessionService } from '@mm-services/session.service';
 import { SearchFactoryService } from '@mm-services/search.service';
 import { DbService } from '@mm-services/db.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 describe('Search service', () => {
   let service:SearchService;
@@ -31,10 +32,11 @@ describe('Search service', () => {
 
     TestBed.configureTestingModule({
       providers: [
+        { provide: CHTDatasourceService, useValue: { } },
         { provide: DbService, useValue: { get: () => db } },
         { provide: GetDataRecordsService, useValue: { get: GetDataRecords } },
         { provide: SessionService, useValue: session },
-        { provide: SearchFactoryService, useValue: { get: () => searchStub } },
+        { provide: SearchFactoryService, useValue: { get: async () => searchStub } },
         { provide: PerformanceService, useValue: performanceService },
       ],
     });

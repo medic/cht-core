@@ -9,13 +9,14 @@ const Search = require('@medic/search');
   angular.module('inboxServices').factory('SearchFactory',
     function(
       $q,
+      CHTDatasource,
       DB
     ) {
 
       'ngInject';
 
       return function() {
-        return Search($q, DB());
+        return Search($q, DB(), CHTDatasource.dataContext);
       };
     });
 
