@@ -1,14 +1,11 @@
-// TODO Cannot use either of these in webapp....
-const environment = require('@medic/environment');
-
 const DEFAULT_IDS_PAGE_LIMIT = 10000;
 
-let promisedIsOffline = null;
+const ddocExists = async (db, ddocId) => {
+  const { rows } = await db.allDocs({ keys: [ddocId] });
+  return rows?.length && rows[0]?.error !== 'not_found';
+};
 
-const ddocExists = (db, ddocId) => db
-  .get(ddocId)
-  .then(() => true)
-  .catch(() => false);
+let promisedIsOffline = null;
 const isOffline = async (db) => {
   if (promisedIsOffline === null) {
     promisedIsOffline = ddocExists(db, '_design/medic-offline-freetext');
@@ -23,9 +20,9 @@ const SORT_BY_VIEW = {
 
 const isContactsByTypeFreetext = view => view === 'contacts_by_type_freetext';
 
-const getNouveauUrl = view => {
+const getNouveauPath = view => {
   const indexName = isContactsByTypeFreetext(view) ? 'contacts_by_freetext' : view;
-  return `${environment.couchUrl}/_design/medic/_nouveau/${indexName}`;
+  return `_design/medic/_nouveau/${indexName}`;
 };
 
 const getQuery = (key, startkey) => {
@@ -44,20 +41,17 @@ const getLuceneQueryString = (view, { key, startkey }) => {
   return getQuery(key, startkey);
 };
 
-const getRequestOptions = (view, params, bookmark) => {
-  return {
-    url: getNouveauUrl(view),
-    json: true,
-    body: {
-      bookmark,
-      limit: DEFAULT_IDS_PAGE_LIMIT,
-      sort: SORT_BY_VIEW[view],
-      q: getLuceneQueryString(view, params),
-    }
-  };
+const getRequestBody = (view, params, bookmark) => {
+  return JSON.stringify({
+    bookmark,
+    limit: DEFAULT_IDS_PAGE_LIMIT,
+    sort: SORT_BY_VIEW[view],
+    q: getLuceneQueryString(view, params),
+  });
 };
 
 /**
+ * @param fetch {function}
  * @param reqData {{
  *   view: string,
  *   params: {
@@ -73,16 +67,16 @@ const getRequestOptions = (view, params, bookmark) => {
  *   value: string
  * }[]>}
  */
-const queryNouveauIndex = async ({ view, params }, currentResults = [], bookmark = null) => {
-  const reqOptions = getRequestOptions(view, params, bookmark);
-  // TODO switch this to fetch. Have to sort out
-  // TODO Need to perhaps take in the datacontext - if remote, use given url. If local, extract the url from pouchInstance.
+const queryNouveauIndex = async (fetch, { view, params }, currentResults = [], bookmark = null) => {
+  const response = await fetch({
+    method: 'POST',
+    body: getRequestBody(view, params, bookmark)
+  });
+  if (!response.ok) {
+    throw new Error(response.statusText);
+  }
 
-  // db.name
-
-  const response = await request.post(reqOptions);
-
-  const newResults = response.hits.map(hit => {
+  const newResults = (await response.json()).hits.map(hit => {
     return {
       id: hit.id,
       key: params.key || params.startkey,
@@ -96,6 +90,23 @@ const queryNouveauIndex = async ({ view, params }, currentResults = [], bookmark
     return queryNouveauIndex({ view, params }, results, response.bookmark);
   }
   return results;
+};
+
+const getAuthenticatedFetch = (dataContext, view) => {
+  const nouveauPath = getNouveauPath(view);
+  const headers = new Headers();
+  headers.set('Content-Type', 'application/json');
+
+  if (dataContext.medicDb) {
+    // Using local data context, but online. Let Pouch handle auth.
+    // Currently, PouchDB does not support Nouveau queries, so we have to use the fetch
+    return (options) => dataContext.medicDb.fetch(nouveauPath, { headers, ...options });
+  }
+
+  const url = dataContext.url || '';
+  return (options) => {
+    return global.fetch(`${url}/medic/${nouveauPath}`, { headers, ...options });
+  };
 };
 
 const queryView = async (db, request) => db
@@ -113,7 +124,9 @@ const queryFreetext = async (dataContext, db, request) => {
   if (await isOffline(db)) {
     return queryView(db, { ...request, view: getOfflineViewId(request.view) });
   }
-  return queryNouveauIndex(request);
+
+  const fetch = getAuthenticatedFetch(dataContext, request.view);
+  return queryNouveauIndex(fetch, request);
 };
 
 module.exports = {

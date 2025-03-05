@@ -1,15 +1,15 @@
-const cht = require('@medic/cht-datasource');
-const chtDatasource = cht.getDatasource(cht.getRemoteDataContext());
-
 angular.module('inboxServices').factory('Auth',
   function(
     $log,
+    CHTDatasource,
     Session,
     Settings
   ) {
 
     'use strict';
     'ngInject';
+
+    const datasource = CHTDatasource.dataSource;
 
     /**
      * Receives a list of groups of permissions and returns a promise that will be resolved if the
@@ -37,7 +37,7 @@ angular.module('inboxServices').factory('Auth',
             return false;
           }
 
-          return chtDatasource.v1.hasAnyPermission(permissionsGroupList, userCtx.roles, settings.permissions);
+          return datasource.v1.hasAnyPermission(permissionsGroupList, userCtx.roles, settings.permissions);
         })
         .catch(() => false);
     };
@@ -63,7 +63,7 @@ angular.module('inboxServices').factory('Auth',
             return false;
           }
 
-          return chtDatasource.v1.hasPermissions(permissions, userCtx.roles, settings.permissions);
+          return datasource.v1.hasPermissions(permissions, userCtx.roles, settings.permissions);
         })
         .catch(() => false);
     };

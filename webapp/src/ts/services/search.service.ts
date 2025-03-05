@@ -8,6 +8,7 @@ import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,8 +16,9 @@ import { PerformanceService } from '@mm-services/performance.service';
 export class SearchFactoryService {
   constructor() {}
 
-  get(dbService) {
-    return Search(Promise, dbService.get());
+  async get(dbService, datasourceService) {
+    const dataContext = await datasourceService.get();
+    return Search(Promise, dbService.get(), dataContext);
   }
 }
 
@@ -24,16 +26,17 @@ export class SearchFactoryService {
   providedIn: 'root'
 })
 export class SearchService {
-  private searchFactory;
+  private readonly promisedSearchFactory;
   constructor(
-    private dbService:DbService,
-    private sessionService:SessionService,
-    private getDataRecordsService:GetDataRecordsService,
-    private searchFactoryService:SearchFactoryService,
-    private performanceService: PerformanceService,
-    private ngZone:NgZone,
+    private readonly datasourceService: CHTDatasourceService,
+    private readonly dbService:DbService,
+    private readonly sessionService:SessionService,
+    private readonly getDataRecordsService:GetDataRecordsService,
+    private readonly searchFactoryService:SearchFactoryService,
+    private readonly performanceService: PerformanceService,
+    private readonly ngZone:NgZone,
   ) {
-    this.searchFactory = this.searchFactoryService.get(this.dbService);
+    this.promisedSearchFactory = this.searchFactoryService.get(this.dbService, this.datasourceService);
   }
 
   private _currentQuery:any = {};
@@ -126,7 +129,7 @@ export class SearchService {
     return this.ngZone.runOutsideAngular(() => this._search(type, filters, options, extensions, docIds));
   }
 
-  private _search(type, filters, options:any = {}, extensions:any = {}, docIds: any[] | undefined = undefined) {
+  private async _search(type, filters, options:any = {}, extensions:any = {}, docIds: any[] | undefined = undefined) {
     console.debug('Doing Search', type, filters, options, extensions);
 
     _.defaults(options, {
@@ -138,8 +141,8 @@ export class SearchService {
       return Promise.resolve([]);
     }
     const trackPerformance = this.performanceService.track();
-    return this
-      .searchFactory(type, filters, options, extensions)
+    const searchFactory = await this.promisedSearchFactory;
+    return searchFactory(type, filters, options, extensions)
       .then((searchResults) => {
         const filterKeys = Object.keys(filters).filter(f => filters[f]).sort();
         // Will end up with entries like:
