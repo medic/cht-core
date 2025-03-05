@@ -367,6 +367,38 @@ describe('ContactType Utils', () => {
     });
   });
 
+  describe('isContact', () => {
+    it('should return falsy for falsy input', () => {
+      chai.expect(utils.isContact()).to.equal(false);
+      chai.expect(utils.isContact(false, false)).to.equal(false);
+      chai.expect(utils.isContact({}, false)).to.equal(false);
+      chai.expect(utils.isContact([], false)).to.equal(false);
+      chai.expect(utils.isContact(settings, 'whaaat')).to.equal(false);
+    });
+
+    it('should return falsy for non existent contact types', () => {
+      chai.expect(utils.isContact(settings, { type: 'other' })).to.equal(false);
+      chai.expect(utils.isContact(settings, { type: 'contact', contact_type: 'other' })).to.equal(false);
+    });
+
+    it('should return true for person types', () => {
+      chai.expect(utils.isContact({}, { type: 'person' })).to.equal(true);
+      chai.expect(utils.isContact(settings, { type: personType.id })).to.equal(true);
+      chai.expect(utils.isContact(settings, { type: patientType.id })).to.equal(true);
+      chai.expect(utils.isContact(settings, { type: 'contact', contact_type: personType.id })).to.equal(true);
+      chai.expect(utils.isContact(settings, { type: 'contact', contact_type: patientType.id })).to.equal(true);
+    });
+
+    it('should return true for place types', () => {
+      chai.expect(utils.isContact(settings, { type: districtHospitalType.id })).to.equal(true);
+      chai.expect(utils.isContact(settings, { type: clinicType.id })).to.equal(true);
+      chai.expect(
+        utils.isContact(settings, { type: 'contact', contact_type: districtHospitalType.id })
+      ).to.equal(true);
+      chai.expect(utils.isContact(settings, { type: 'contact', contact_type: clinicType.id })).to.equal(true);
+    });
+  });
+
   describe('isHardcodedType', () => {
     it('should return true for hardcoded types', () => {
       chai.expect(utils.isHardcodedType('district_hospital')).to.equal(true);
@@ -394,6 +426,68 @@ describe('ContactType Utils', () => {
 
     it('should return contact_types property', () => {
       chai.expect(utils.getContactTypes({ contact_types: [{ id: 'a' }] })).to.deep.equal([{ id: 'a' }]);
+    });
+  });
+
+  describe('getContactTypeIds', () => {
+    it('should return an array of contact type IDs when valid config is provided', () => {
+      const config = {
+        contact_types: [
+          { id: 'person', name: 'abc' },
+          { id: 'place', name: 'def' },
+          { id: 'xyz', name: 'ghi' }
+        ]
+      };
+
+      const result = utils.getContactTypeIds(config);
+
+      chai.expect(result).to.deep.equal(['person', 'place', 'xyz']);
+    });
+
+    it('should return empty array when config is null', () => {
+      const result = utils.getContactTypeIds(null);
+
+      chai.expect(result).to.deep.equal([]);
+    });
+
+    it('should return empty array when config is undefined', () => {
+      const result = utils.getContactTypeIds(undefined);
+
+      chai.expect(result).to.deep.equal([]);
+    });
+
+    it('should return empty array when contact_types is not an array', () => {
+      const config = {
+        contact_types: 'not an array'
+      };
+
+      const result = utils.getContactTypeIds(config);
+
+      chai.expect(result).to.deep.equal([]);
+    });
+
+    it('should return empty array when contact_types is not defined/declared', () => {
+      const config = {
+        some_other_property: 'value'
+      };
+
+      const result = utils.getContactTypeIds(config);
+
+      chai.expect(result).to.deep.equal([]);
+    });
+
+    it('should handle contact types without id property', () => {
+      const config = {
+        contact_types: [
+          { name: 'Email' },
+          { id: 'person', name: 'Phone' },
+          { name: 'SMS' }
+        ]
+      };
+
+      const result = utils.getContactTypeIds(config);
+
+      chai.expect(result).to.deep.equal([undefined, 'person', undefined]);
     });
   });
 

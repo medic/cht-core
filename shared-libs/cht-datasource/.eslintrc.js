@@ -30,7 +30,10 @@ module.exports = {
         jsdoc: {
           contexts: [
           ]
-        }
+        },
+        polyfills: [
+          'Report'
+        ]
       },
       rules: {
         ['@typescript-eslint/explicit-module-boundary-types']: ['error', { allowedNames: ['getDatasource'] }],
