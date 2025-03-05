@@ -1,4 +1,5 @@
 const db = require('../db');
+const dataContext = require('../data-context');
 const messages = require('../lib/messages');
 const utils = require('../lib/utils');
 const idGenerator = require('../lib/ids').generator(db);
@@ -6,7 +7,7 @@ const config = require('../config');
 const validation = require('@medic/validation');
 const logger = require('@medic/logger');
 
-validation.init({ db, translate: utils.translate, settings: config.getAll(), logger });
+validation.init({ db, translate: utils.translate, settings: config.getAll(), logger, dataContext });
 
 const findFirstMatchingMessage = (config, eventType) => {
   if (!config.messages || !config.messages.length) {
