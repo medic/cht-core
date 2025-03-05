@@ -5,7 +5,7 @@ const { getRiskFactorsFromPregnancy } = require('../../contact-summary-extras');
 let report = {};
 describe('Tests for getRiskFactorsFromPregnancy() method.', () => {
   before(() => harness.start());
-  after(async () => { return await harness.stop(); });
+  after(() => harness.stop());
   beforeEach(async () => {
     await harness.clear();
     // initialize report
