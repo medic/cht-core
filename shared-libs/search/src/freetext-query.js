@@ -1,4 +1,4 @@
-const request = require('@medic/couch-request');
+// TODO Cannot use either of these in webapp....
 const environment = require('@medic/environment');
 
 const DEFAULT_IDS_PAGE_LIMIT = 10000;
@@ -25,7 +25,7 @@ const isContactsByTypeFreetext = view => view === 'contacts_by_type_freetext';
 
 const getNouveauUrl = view => {
   const indexName = isContactsByTypeFreetext(view) ? 'contacts_by_freetext' : view;
-  return `${environment.serverUrl}medic/_design/medic/_nouveau/${indexName}`;
+  return `${environment.couchUrl}/_design/medic/_nouveau/${indexName}`;
 };
 
 const getQuery = (key, startkey) => {
@@ -75,6 +75,11 @@ const getRequestOptions = (view, params, bookmark) => {
  */
 const queryNouveauIndex = async ({ view, params }, currentResults = [], bookmark = null) => {
   const reqOptions = getRequestOptions(view, params, bookmark);
+  // TODO switch this to fetch. Have to sort out
+  // TODO Need to perhaps take in the datacontext - if remote, use given url. If local, extract the url from pouchInstance.
+
+  // db.name
+
   const response = await request.post(reqOptions);
 
   const newResults = response.hits.map(hit => {
@@ -104,11 +109,10 @@ const queryView = async (db, request) => db
 
 const getOfflineViewId = view => `medic-offline-freetext/${view}`;
 
-const queryFreetext = async (db, request) => {
+const queryFreetext = async (dataContext, db, request) => {
   if (await isOffline(db)) {
     return queryView(db, { ...request, view: getOfflineViewId(request.view) });
   }
-
   return queryNouveauIndex(request);
 };
 

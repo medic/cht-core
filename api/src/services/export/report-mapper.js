@@ -2,7 +2,8 @@ const _ = require('lodash');
 const objectPath = require('object-path');
 const db = require('../../db');
 const dateFormat = require('./date-format');
-const search = require('@medic/search')(Promise, db.medic);
+const dataContext = require('../data-context');
+const search = require('@medic/search')(Promise, db.medic, dataContext);
 const lineage = require('@medic/lineage')(Promise, db.medic);
 
 // Flattens a given object into an object where the keys are dot-notation

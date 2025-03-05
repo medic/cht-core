@@ -1,5 +1,7 @@
 const _ = require('lodash'); // #8494 don't use eslint/core as it throws an exception
 const Search = require('@medic/search');
+const cht = require('@medic/cht-datasource');
+const dataContext = cht.getRemoteDataContext();
 
 (function () {
 
@@ -15,7 +17,7 @@ const Search = require('@medic/search');
       'ngInject';
 
       return function() {
-        return Search($q, DB());
+        return Search($q, DB(), dataContext);
       };
     });
 
