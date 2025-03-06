@@ -213,7 +213,7 @@ describe('SSO Login service', () => {
       chai.expect(data).to.include({ oidc_provider: 'testClientId' });
     });
 
-    it('should generate password', async() => {
+    it('should generate password if creating user', async() => {
       const data = { oidc_provider: 'testClientId' };
       db.medic.get.withArgs('settings').resolves({ 'settings': { 'oidc_provider': { 'client_id': 'testClientId' } } });
     
@@ -223,6 +223,18 @@ describe('SSO Login service', () => {
 
       chai.expect(data).to.include({ oidc_provider: 'testClientId' });
       chai.expect(data).to.have.property('password');
+    });
+
+    it('should NOT generate password if updating user', async() => {
+      const data = { oidc_provider: 'testClientId' };
+      db.medic.get.withArgs('settings').resolves({ 'settings': { 'oidc_provider': { 'client_id': 'testClientId' } } });
+    
+      const result = await service.validateSsoLogin(data, false);
+
+      chai.expect(result).to.equal(undefined);
+
+      chai.expect(data).to.include({ oidc_provider: 'testClientId' });
+      chai.expect(data).to.not.have.property('password');
     });
 
   });

@@ -1019,9 +1019,9 @@ module.exports = {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
 
-    const ssoLoginError = await ssoLogin.validateSsoLogin(data);
+    const ssoLoginError = await ssoLogin.validateSsoLogin(data, true);
     if (ssoLoginError) {
-      throw new Error(ssoLoginError.msg);
+      return Promise.reject(error400(ssoLoginError.msg, ''));
     }
 
     const passwordError = validatePassword(data.password);
@@ -1098,7 +1098,7 @@ module.exports = {
           throw new Error(tokenLoginError.msg);
         }
 
-        const ssoLoginError = await ssoLogin.validateSsoLogin(user);
+        const ssoLoginError = await ssoLogin.validateSsoLogin(user, true);
         if (ssoLoginError) {
           throw new Error(ssoLoginError.msg);
         }
@@ -1177,9 +1177,9 @@ module.exports = {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
 
-    const ssoLoginError = await ssoLogin.validateSsoLogin(data);
+    const ssoLoginError = await ssoLogin.validateSsoLogin(data, false);
     if (ssoLoginError) {
-      throw new Error(ssoLoginError.msg);
+      return Promise.reject(error400(ssoLoginError.msg, ''));
     }
 
     await validateUserFacility(data, user);

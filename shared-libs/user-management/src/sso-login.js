@@ -9,10 +9,15 @@ const hasBothOidcAndTokenOrPasswordLogin = data => data.oidc_provider && (!!data
 
 const isSsoLoginEnabled = settings =>  !!settings && !!settings.oidc_provider && !!settings.oidc_provider.client_id;
 
-const isOidcClientIdValid = (settings, clientId) => !!settings.oidc_provider
- && clientId === settings.oidc_provider.client_id;
+const isOidcClientIdValid = (settings, clientId) => isSsoLoginEnabled(settings) && 
+  clientId === settings.oidc_provider.client_id;
 
-const validateSsoLogin = async(data) => {
+const validateSsoLogin = async(data, newUser = true) => {
+
+  if (!data.oidc_provider){
+    return;
+  }
+  
   if (hasBothOidcAndTokenOrPasswordLogin(data)){
     return {
       msg: 'Either OIDC Login only or Token/Password Login is allowed'
@@ -27,7 +32,7 @@ const validateSsoLogin = async(data) => {
       msg: 'Settings Doc Not Found'
     }; 
   }
-  if (!isSsoLoginEnabled(settings)){
+  if ( !!data.oidc_provider && !isSsoLoginEnabled(settings)){
     return {
       msg: 'OIDC Login is not enabled'
     }; 
@@ -38,7 +43,11 @@ const validateSsoLogin = async(data) => {
       msg: 'Invalid OIDC Client Id'
     }; 
   }
-  data.password = passwords.generate(); //TODO: Both create & update user are updating the passowrd
+
+  if (newUser){
+    data.password = passwords.generate();
+  }
+  
 };
 
 
