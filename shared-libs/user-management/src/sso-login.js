@@ -32,13 +32,13 @@ const validateSsoLogin = async(data, newUser = true) => {
       msg: 'Settings Doc Not Found'
     }; 
   }
-  if ( !!data.oidc_provider && !isSsoLoginEnabled(settings)){
+  if (!isSsoLoginEnabled(settings)){
     return {
       msg: 'OIDC Login is not enabled'
     }; 
 
   }
-  if (isSsoLoginEnabled(settings) && !isOidcClientIdValid(settings, data.oidc_provider)){
+  if (!isOidcClientIdValid(settings, data.oidc_provider)){
     return {
       msg: 'Invalid OIDC Client Id'
     }; 
