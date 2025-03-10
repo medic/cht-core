@@ -40,6 +40,7 @@ const globalState: GlobalState = {
   sidebarMenu: { isOpen: false },
   lastChangedDoc: { _id: '1234' },
   facilities: [ { _id: '1234' }, { _id: '1234' } ],
+  language: { code: 'en', rtl: false },
 };
 
 const state = {
