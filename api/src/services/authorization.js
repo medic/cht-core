@@ -43,14 +43,22 @@ const getUserSettingsId = username => `org.couchdb.user:${username}`;
 const getDefaultDocs = (userCtx) => [ ...DEFAULT_DDOCS, getUserSettingsId(userCtx?.name)];
 
 /**
- * Returns maximum allowed contact and report replication depth based on user's roles
+ * Returns maximum allowed contact and report replication depth and most permissive
+ * replicatePrimaryContacts setting for the highest depth based on user's roles
  * @param {userCtx} userCtx
- * @returns {{contactDepth: number, reportDepth: number}}
+ * @returns {{contactDepth: number, reportDepth: number, replicatePrimaryContacts:boolean}}
  */
 const getDepth = (userCtx) => {
+  const NO_VAL = -1;
   const depth = {
-    contactDepth: -1,
-    reportDepth: -1,
+    contactDepth: NO_VAL,
+    reportDepth: NO_VAL,
+    replicatePrimaryContacts: false,
+  };
+
+  const getReportDepth = (value) => {
+    value = parseInt(value, 10);
+    return isNaN(value) ? NO_VAL : value;
   };
 
   if (!userCtx.roles || !userCtx.roles.length) {
@@ -69,12 +77,21 @@ const getDepth = (userCtx) => {
       return;
     }
     const settingDepth = parseInt(setting.depth, 10);
-    if (!isNaN(settingDepth) && settingDepth > depth.contactDepth) {
+    if (isNaN(setting.depth)) {
+      return;
+    }
+
+    if (settingDepth > depth.contactDepth) {
       depth.contactDepth = settingDepth;
       depth.replicatePrimaryContacts = !!setting.replicate_primary_contacts;
+      depth.reportDepth = getReportDepth(setting.report_depth);
+      return;
+    }
 
-      const settingsReportDepth = parseInt(setting.report_depth);
-      depth.reportDepth = !isNaN(settingsReportDepth) ? settingsReportDepth : -1;
+    if (settingDepth === depth.contactDepth) {
+      depth.replicatePrimaryContacts = depth.replicatePrimaryContacts || !!setting.replicate_primary_contacts;
+      const settingsReportDepth = getReportDepth(setting.report_depth);
+      depth.reportDepth = Math.max(depth.reportDepth, settingsReportDepth);
     }
   });
 

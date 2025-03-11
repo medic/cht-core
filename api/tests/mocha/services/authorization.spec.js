@@ -44,26 +44,28 @@ describe('Authorization service', () => {
   });
 
   describe('getDepth', () => {
+    const defaultValue = { contactDepth: -1, reportDepth: -1, replicatePrimaryContacts: false };
+
     it('unlimited depth for no roles', () => {
-      service.__get__('getDepth')({}).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
-      service.__get__('getDepth')({ name: 'a'}).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
-      service.__get__('getDepth')({ roles: []}).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
+      service.__get__('getDepth')({}).should.deep.equal(defaultValue);
+      service.__get__('getDepth')({ name: 'a'}).should.deep.equal(defaultValue);
+      service.__get__('getDepth')({ roles: []}).should.deep.equal(defaultValue);
     });
 
     it('unlimited depth when no settings found', () => {
       config.get.returns(false);
-      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
+      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal(defaultValue);
     });
 
     it('unlimited depth when no settings for role is found, or settings depth is incorrect', () => {
       config.get.returns([ { role: 'role' }, { role: 'alpha' } ]);
-      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
+      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal(defaultValue);
 
       config.get.returns([ { role: 'some_role' } ]);
-      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
+      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal(defaultValue);
 
       config.get.returns([ { role: 'some_role', depth: 'aaa' } ]);
-      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
+      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal(defaultValue);
     });
 
     it('returns biggest value', () => {
@@ -82,29 +84,43 @@ describe('Authorization service', () => {
       });
     });
 
-    it('should return report depth associated with selected depth', () => {
+    it('should return most permissive report depth and replicatePrimaryContacts associated with highest depth', () => {
       const settings1 = [
         { role: 'a', depth: 1, report_depth: 0 },
-        { role: 'b', depth: 2, report_depth: 1 },
-        { role: 'c', report_depth: 3 },
-        { role: 'd', report_depth: 4 },
+        { role: 'b', depth: 2, report_depth: 1, replicate_primary_contacts: true },
+        { role: 'c', report_depth: 3 }, // invalid setting
+        { role: 'd', depth: 2, report_depth: 4 },
       ];
 
       config.get.returns(settings1);
       service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({
         contactDepth: 2,
-        reportDepth: 1,
-        replicatePrimaryContacts: false
+        reportDepth: 4,
+        replicatePrimaryContacts: true
       });
 
       const settings2 = [
         { role: 'a', depth: 1, report_depth: 0 },
-        { role: 'b', depth: 2, report_depth: 1 },
+        { role: 'b', depth: 2, report_depth: 1, replicate_primary_contacts: true },
         { role: 'c', depth: 3 },
         { role: 'd', depth: 4 },
       ];
 
       config.get.returns(settings2);
+      service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({
+        contactDepth: 4,
+        reportDepth: -1,
+        replicatePrimaryContacts: false
+      });
+
+      const settings3 = [
+        { role: 'a', depth: 1, report_depth: 0, replicate_primary_contacts: true },
+        { role: 'b', depth: 2, report_depth: 1 },
+        { role: 'c', depth: 3 },
+        { role: 'd', depth: 4 },
+      ];
+
+      config.get.returns(settings3);
       service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({
         contactDepth: 4,
         reportDepth: -1,
@@ -2507,7 +2523,7 @@ describe('Authorization service', () => {
             userCtx,
             subjectIds: ['_all', 'org.couchdb.user:user'],
             contactsByDepthKeys: [ ['facility_id'] ],
-            replicatePrimaryContacts: undefined,
+            replicatePrimaryContacts: false,
             subjectsDepth: {},
             contactDepth: -1,
             reportDepth: -1,
@@ -2525,7 +2541,7 @@ describe('Authorization service', () => {
             userCtx,
             subjectIds: ['_all', 'org.couchdb.user:user'],
             contactsByDepthKeys: [ ['facility_id'] ],
-            replicatePrimaryContacts: undefined,
+            replicatePrimaryContacts: false,
             subjectsDepth: {},
             contactDepth: -1,
             reportDepth: -1,
