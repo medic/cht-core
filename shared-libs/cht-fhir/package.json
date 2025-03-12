@@ -1,0 +1,21 @@
+{
+  "name": "@medic/cht-fhir",
+  "version": "1.0.0",
+  "description": "Provides a FHIR-compliant API for the CHT",
+  "main": "dist/index.js",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "postinstall": "rm -rf dist && npm run build",
+    "build": "tsc -p tsconfig.build.json",
+    "build-watch": "tsc --watch -p tsconfig.build.json",
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha \"test/**/*\"",
+    "gen-docs": "typedoc ./src/index.ts"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@medic/logger": "file:../logger"
+  }
+}
