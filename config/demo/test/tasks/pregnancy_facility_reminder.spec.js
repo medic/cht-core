@@ -28,7 +28,7 @@ describe('Pregnancy registration and scheduled visit', () => {
     await harness.setNow(now);
     return await harness.loadForm('pregnancy');
   });
-  afterEach(() => { expect(harness.consoleErrors).to.be.empty; });
+  afterEach(() => expect(harness.consoleErrors).to.be.empty);
 
   it('pregnancy registration and scheduled visit', async () => {
     const actionFormResult = await harness.fillForm(...pregnancyRegistrationScenarios.safe);
@@ -39,9 +39,7 @@ describe('Pregnancy registration and scheduled visit', () => {
       if (facilityReminderTaskDays.includes(day)) {
         const taskForFollowUpReminder = await harness.getTasks({ title: 'task.anc.facility_reminder.title' });
         expect(taskForFollowUpReminder).to.have.property('length', 1);
-      }
-
-      else {
+      } else {
         const tasks = await harness.getTasks({ title: 'task.anc.facility_reminder.title' });
         expect(tasks).to.be.empty;
       }
@@ -67,9 +65,7 @@ describe('Pregnancy registration and scheduled visit', () => {
         expect(tasksAfterFacilityReminder).to.be.empty;
         resolved = true;
 
-      }
-
-      else {
+      } else {
         const tasks = await harness.getTasks({ title: 'task.anc.facility_reminder.title' });
         expect(tasks).to.be.empty;
       }
@@ -94,9 +90,7 @@ describe('Pregnancy registration and scheduled visit', () => {
         const tasksAfterFacilityReminder = await harness.getTasks();
         expect(tasksAfterFacilityReminder).to.be.empty;
         cleared = true;
-      }
-
-      else {
+      } else {
         const tasks = await harness.getTasks();
         expect(tasks).to.be.empty;
       }
