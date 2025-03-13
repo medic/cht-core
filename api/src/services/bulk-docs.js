@@ -179,7 +179,6 @@ const filterAllowedDocs = (authorizationContext, docs) => {
   docs = docs.map(doc => ({
     doc,
     viewResults: authorization.getViewResults(doc),
-    allowed: authorization.alwaysAllowCreate(doc),
     get id() {
       return this.doc._id;
     },

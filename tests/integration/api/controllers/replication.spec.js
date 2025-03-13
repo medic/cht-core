@@ -38,7 +38,7 @@ const assertDocIds = (response, ...expectedIds) => {
   const receivedIds = response.doc_ids_revs
     .map(pair => pair.id)
     .filter(id => !isFormOrTranslation(id));
-  expect(receivedIds).to.include.members([ ...expectedIds, ...DEFAULT_EXPECTED ]);
+  expect(receivedIds.sort()).to.have.members([ ...expectedIds, ...DEFAULT_EXPECTED ].sort());
 };
 
 const users = [
@@ -432,7 +432,15 @@ describe('replication', () => {
         await utils.saveDocs(contacts);
         await utils.saveDocs(reports);
         const response = await requestDocs('chw-boss');
-        assertDocIds(response, ...chwBossIds, 'chwville_patient', 'valid_report_1', 'valid_report_2', 'valid_report_3');
+        assertDocIds(
+          response,
+          ...chwBossIds,
+          'chwville_patient',
+          'valid_report_1',
+          'valid_report_2',
+          'valid_report_3',
+          'fixture:user:chw'
+        );
       });
 
       it('should show reports to a user only if they are within the configured depth multifacility', async () => {
@@ -572,6 +580,185 @@ describe('replication', () => {
         await utils.saveDocs(docs);
         const response = await requestDocs('chw');
         assertDocIds(response, ...chwIds, 'target~chw', 'task~chw', 'valid_report_1', 'valid_report_2', 'some_contact');
+      });
+    });
+
+    describe('Replicating primary contacts', () => {
+      const docs = [
+        {
+          _id: 'depth_hc1',
+          type: 'health_center',
+          parent: { _id: 'PARENT_PLACE' },
+          contact: { _id: 'depth_person1' }
+        },
+        {
+          _id: 'depth_hc2',
+          type: 'health_center',
+          parent: { _id: 'PARENT_PLACE' },
+          contact: { _id: 'out_of_hierarchy' }
+        },
+        {
+          _id: 'depth_clinic',
+          type: 'clinic',
+          parent: { _id: 'depth_hc', parent: { _id: 'PARENT_PLACE' } },
+          contact: { _id: 'depth_person2' }
+        },
+        {
+          _id: 'depth_person1',
+          type: 'person',
+          parent: { _id: 'depth_clinic', parent: { _id: 'depth_hc', parent: { _id: 'PARENT_PLACE' } } },
+          patient_id: 'dp1'
+        },
+        {
+          _id: 'depth_person2',
+          type: 'person',
+          parent: { _id: 'depth_clinic', parent: { _id: 'depth_hc', parent: { _id: 'PARENT_PLACE' } } },
+          patient_id: 'dp2'
+        },
+        {
+          _id: 'out_of_hierarchy',
+          type: 'person',
+          patient_id: 'dp_out',
+          parent: { _id: 'other' },
+        },
+        {
+          _id: 'depth_person1_report',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'dp1' },
+          form: 'f',
+          contact: { _id: 'fixture:user:chw', }
+        },
+        {
+          _id: 'target~depth_person1',
+          type: 'target',
+          owner: 'depth_person1',
+        },
+        {
+          _id: 'depth_person2_report',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'dp2' },
+          form: 'f',
+          contact: { _id: 'fixture:user:chw', }
+        },
+        {
+          _id: 'target~depth_person2',
+          type: 'target',
+          owner: 'depth_person2',
+        },
+        {
+          _id: 'out_of_hierarchy_report',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'dp_out' },
+          form: 'f',
+          contact: { _id: 'fixture:user:chw', }
+        },
+        {
+          _id: 'target~out_of_hierarchy',
+          type: 'target',
+          owner: 'out_of_hierarchy',
+        },
+      ];
+
+      it('should not replicate too deep primary contacts when not set', async () => {
+        const docs = [
+          {
+            _id: 'depth_hc',
+            type: 'health_center',
+            parent: { _id: 'PARENT_PLACE' },
+            contact: { _id: 'depth_person1' }
+          },
+          {
+            _id: 'depth_clinic',
+            type: 'clinic',
+            parent: { _id: 'depth_hc', parent: { _id: 'PARENT_PLACE' } },
+            contact: { _id: 'depth_person' }
+          },
+          {
+            _id: 'depth_person1',
+            type: 'person',
+            parent: { _id: 'depth_clinic', parent: { _id: 'depth_hc', parent: { _id: 'PARENT_PLACE' } } },
+            patient_id: 'dp1'
+          },
+          {
+            _id: 'depth_person2',
+            type: 'person',
+            parent: { _id: 'depth_clinic', parent: { _id: 'depth_hc', parent: { _id: 'PARENT_PLACE' } } },
+            patient_id: 'dp2'
+          },
+        ];
+
+        await utils.updateSettings(
+          {
+            replication_depth: [
+              { role: 'district_admin', depth: 1 },
+            ]
+          },
+          { ignoreReload: true }
+        );
+        await utils.saveDocs(docs);
+        const response = await requestDocs('supervisor');
+        assertDocIds(response, ...supervisorIds, 'depth_hc');
+      });
+
+      it('should replicate deep primary contacts and out of hierarchy primary contacts when set', async () => {
+        await utils.updateSettings(
+          {
+            replication_depth: [
+              { role: 'district_admin', depth: 1, replicate_primary_contacts: true },
+            ]
+          },
+          { ignoreReload: true }
+        );
+        await utils.saveDocs(docs);
+        const response = await requestDocs('supervisor');
+        assertDocIds(
+          response,
+          ...supervisorIds,
+          'depth_hc1',
+          'depth_hc2',
+          'depth_person1',
+          'depth_person1_report',
+          'target~depth_person1',
+          'out_of_hierarchy',
+          'out_of_hierarchy_report',
+          'target~out_of_hierarchy',
+          'fixture:user:bob',
+          'fixture:user:chw-boss',
+          'fixture:user:clare',
+          'fixture:user:manager',
+          'fixture:user:steve',
+        );
+      });
+
+      it('should respect parent report replication depth for primary contacts', async () => {
+        await utils.updateSettings(
+          {
+            replication_depth: [
+              { role: 'district_admin', depth: 1, report_depth: 0, replicate_primary_contacts: true },
+            ]
+          },
+          { ignoreReload: true }
+        );
+        await utils.saveDocs(docs);
+        const response = await requestDocs('supervisor');
+        assertDocIds(
+          response,
+          ...supervisorIds,
+          'depth_hc1',
+          'depth_hc2',
+          'depth_person1',
+          'target~depth_person1',
+          'out_of_hierarchy',
+          'target~out_of_hierarchy',
+          'fixture:user:bob',
+          'fixture:user:chw-boss',
+          'fixture:user:clare',
+          'fixture:user:manager',
+          'fixture:user:steve',
+        );
       });
     });
 

@@ -6,6 +6,7 @@ const constants = require('@constants');
 const uuid = require('uuid').v4;
 
 const password = 'passwordSUP3RS3CR37!';
+const ERROR_TEXT = '403 - {"error":"forbidden","reason":"Insufficient privileges"}';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
@@ -157,6 +158,13 @@ const reportForPatient = (patientUuid, username, fields = [], needs_signoff = fa
   report.fields.needs_signoff = needs_signoff;
 
   return report;
+};
+
+const requestRejected = (opts) => {
+  return expect(utils.requestOnTestDb({ ...offlineRequestOptions, ...opts })).to.eventually.be.rejectedWith(ERROR_TEXT);
+};
+const requestSuccessful = (opts) => {
+  return utils.requestOnTestDb({ ...offlineRequestOptions, ...opts });
 };
 
 describe('db-doc handler', () => {
@@ -500,6 +508,124 @@ describe('db-doc handler', () => {
             }
           });
         });
+    });
+
+    it('GET primary contacts', async () => {
+      offlineRequestOptions.method = 'GET';
+
+      const docs = [
+        {
+          _id: 'existing_clinic', // depth 1
+          type: 'clinic',
+          parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+          contact: { _id: 'existing_person' }
+        },
+        {
+          _id: 'report_about_existing_clinic',
+          type: 'data_record',
+          form: 'form',
+          fields: { place_id: 'existing_clinic' },
+          contact: { _id: 'nevermind' },
+        },
+        {
+          _id: 'existing_person', // depth 2
+          type: 'person',
+          parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+          patient_id: 'existing_person_id'
+        },
+        {
+          _id: 'report_about_existing_person1',
+          type: 'data_record',
+          form: 'form',
+          fields: { patient_id: 'existing_person_id' },
+          contact: { _id: 'nevermind' },
+        },
+        {
+          _id: 'report_about_existing_person2',
+          type: 'data_record',
+          form: 'form',
+          fields: { patient_uuid: 'existing_person' },
+          contact: { _id: 'nevermind' },
+        },
+        {
+          _id: 'target~existing_person',
+          type: 'target',
+          owner: 'existing_person',
+        },
+        {
+          _id: 'existing_clinic2', // depth 1
+          type: 'clinic',
+          parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+          contact: { _id: 'existing_person2' }
+        },
+        {
+          _id: 'existing_person2', // out of hierarchy
+          type: 'person',
+          parent: { _id: 'other2', parent: { _id: 'other1' } },
+          patient_id: 'existing_person_id2'
+        },
+        {
+          _id: 'report_about_existing_person2_1',
+          type: 'data_record',
+          form: 'form',
+          fields: { patient_id: 'existing_person_id2' },
+          contact: { _id: 'nevermind' },
+        },
+        {
+          _id: 'target~existing_person2',
+          type: 'target',
+          owner: 'existing_person2',
+        },
+      ];
+
+      await utils.updateSettings({ replication_depth: [{ role: 'district_admin', depth: 1 }]}, { ignoreReload: true });
+      await utils.saveDocs(docs);
+
+      await requestSuccessful({ path: `/existing_clinic` });
+      await requestSuccessful({ path: '/report_about_existing_clinic'});
+      await requestRejected({ path: '/existing_person' });
+      await requestRejected({ path: '/report_about_existing_person1' });
+      await requestRejected({ path: '/report_about_existing_person2' });
+      await requestRejected({ path: '/target~existing_person' });
+
+      await requestSuccessful({ path: '/existing_clinic2' });
+      await requestRejected({ path: '/existing_person2' });
+      await requestRejected({ path: '/report_about_existing_person2_1' });
+      await requestRejected({ path: '/target~existing_person2' });
+
+      await utils.updateSettings(
+        { replication_depth: [{ role: 'district_admin', depth: 1, replicate_primary_contacts: true }]},
+        { ignoreReload: true, revert: true }
+      );
+
+      await requestSuccessful({ path: `/existing_clinic` });
+      await requestSuccessful({ path: '/report_about_existing_clinic'});
+      await requestSuccessful({ path: '/existing_person' });
+      await requestSuccessful({ path: '/report_about_existing_person1' });
+      await requestSuccessful({ path: '/report_about_existing_person2' });
+      await requestSuccessful({ path: '/target~existing_person' });
+
+      await requestSuccessful({ path: '/existing_clinic2' });
+      await requestSuccessful({ path: '/existing_person2' });
+      await requestSuccessful({ path: '/report_about_existing_person2_1' });
+      await requestSuccessful({ path: '/target~existing_person2' });
+
+      await utils.updateSettings(
+        { replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0, replicate_primary_contacts: true }]},
+        { ignoreReload: true, revert: true }
+      );
+
+      await requestSuccessful({ path: `/existing_clinic` });
+      await requestRejected({ path: '/report_about_existing_clinic'});
+      await requestSuccessful({ path: '/existing_person' });
+      await requestRejected({ path: '/report_about_existing_person1' });
+      await requestRejected({ path: '/report_about_existing_person2' });
+      await requestSuccessful({ path: '/target~existing_person' });
+
+      await requestSuccessful({ path: '/existing_clinic2' });
+      await requestSuccessful({ path: '/existing_person2' });
+      await requestRejected({ path: '/report_about_existing_person2_1' });
+      await requestSuccessful({ path: '/target~existing_person2' });
     });
 
     describe('GET with deletes', () => {
@@ -2310,7 +2436,7 @@ describe('db-doc handler', () => {
       });
   });
 
-  it('allows creation of feedback docs', () => {
+  it('does not allow creation of feedback docs', async () => {
     const doc = { _id: 'fb1', type: 'feedback', content: 'content' };
 
     Object.assign(offlineRequestOptions, {
@@ -2319,15 +2445,8 @@ describe('db-doc handler', () => {
       body: doc,
     });
 
-    return utils
-      .requestOnTestDb(offlineRequestOptions)
-      .then(result => {
-        chai.expect(result).excludingEvery('rev').to.deep.equal({ id: 'fb1', ok: true });
-        return utils.getDoc('fb1');
-      })
-      .then(result => {
-        chai.expect(result).to.deep.include(doc);
-      });
+    await expect(utils.requestOnTestDb({ ...offlineRequestOptions, path: `/`, body: doc, method: 'POST' }))
+      .to.eventually.be.rejectedWith('403 - {"error":"forbidden","reason":"Insufficient privileges"}');
   });
 
   it('does not allow updates of feedback docs', () => {
