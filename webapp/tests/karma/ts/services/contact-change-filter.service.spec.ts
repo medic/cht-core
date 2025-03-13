@@ -81,17 +81,19 @@ describe('ContactChangeFilter service', () => {
       const change3 = { doc: { _id: 'p2', type: 'clinic' } };
       const contact = {
         doc: { },
-        children: {
-          persons: [
-            { doc: { _id: 'p1' } },
-            { doc: { _id: 'p2' } }
-          ],
-          other: [
-            { doc: { _id: 'o1' } },
-            { doc: { _id: 'o2' } }
-          ],
-          someProperty: 'someValue'
-        }
+        children: [
+          {
+            type: { id: 'person' },
+            contacts: [ { doc: { _id: 'p1' } }, { doc: { _id: 'p2' } } ],
+          },
+          {
+            type: { id: 'other' },
+            contacts: [
+              { doc: { _id: 'o1' } },
+              { doc: { _id: 'o2' } }
+            ],
+          }
+        ],
       };
 
       expect(service.isRelevantContact(change1, contact)).to.equal(true);
@@ -121,18 +123,23 @@ describe('ContactChangeFilter service', () => {
       const change = { doc: { _id: 'oid', parent: { _id: 'opid' } } };
 
       const contact = {
-        doc: {_id: 'id', parent: {_id: 'pid'}},
-        children: {
-          persons: [
-            {doc: {_id: 'p1'}},
-            {doc: {_id: 'p2'}}
-          ],
-          other: [
-            {doc: {_id: 'o1'}},
-            {doc: {_id: 'o2'}}
-          ],
-          someProperty: 'someValue'
-        },
+        doc: { _id: 'id', parent: { _id: 'pid' }},
+        children: [
+          {
+            type: { id: 'person' },
+            contacts: [
+              { doc: { _id: 'p1' } },
+              { doc: { _id: 'p2' } }
+            ],
+          },
+          {
+            type: { id: 'other' },
+            contacts: [
+              { doc: { _id: 'o1'} },
+              { doc: { _id: 'o2'} }
+            ],
+          }
+        ],
         lineage: [
           {_id: '123'},
           {_id: '456'},
@@ -148,17 +155,22 @@ describe('ContactChangeFilter service', () => {
 
       const contact = {
         doc: {_id: 'id', parent: {_id: 'pid'}},
-        children: {
-          persons: [
-            {doc: {_id: 'p1'}},
-            {doc: {_id: 'p2'}}
-          ],
-          other: [
-            {doc: {_id: 'o1'}},
-            {doc: {_id: 'o2'}}
-          ],
-          someProperty: 'someValue'
-        },
+        children: [
+          {
+            type: { id: 'person' },
+            contacts: [
+              { doc: { _id: 'p1' } },
+              { doc: { _id: 'p2' } }
+            ],
+          },
+          {
+            type: { id: 'other' },
+            contacts: [
+              { doc: { _id: 'o1'} },
+              { doc: { _id: 'o2'} }
+            ],
+          }
+        ],
         lineage: [
           {_id: '123'},
           {_id: '456'},
@@ -194,15 +206,21 @@ describe('ContactChangeFilter service', () => {
 
       contact = {
         doc: { _id: 'id', patient_id: 'patient', place_id: 'place' },
-        children: {
-          persons: [
-            { doc: { _id: 'child_id1', patient_id: 'child_patient1', place_id: 'child_place1' }},
-            { doc: { _id: 'child_id2', patient_id: 'child_patient2', place_id: 'child_place2' }}
-          ],
-          clinics: [
-            { doc: { _id: 'child_id3', patient_id: 'child_patient3', place_id: 'child_place3' }}
-          ]
-        },
+        children: [
+          {
+            type: { id: 'person' },
+            contacts: [
+              { doc: { _id: 'child_id1', patient_id: 'child_patient1', place_id: 'child_place1' }},
+              { doc: { _id: 'child_id2', patient_id: 'child_patient2', place_id: 'child_place2' }}
+            ]
+          },
+          {
+            type: { id: 'clinic' },
+            contacts: [
+              { doc: { _id: 'child_id3', patient_id: 'child_patient3', place_id: 'child_place3' }}
+            ]
+          },
+        ],
       };
     });
 
