@@ -29,6 +29,13 @@ export class AppComponent {
     'person'
   ];
 
+  private readonly MOCK_CHT_API =  { v1: {
+    // Non-operable, but avoids error when loading form
+    getExtensionLib: () => {
+      return () => ({ t: 'str', v: '' });
+    }
+  } };
+
   private _formId = this.DEFAULT_FORM_ID;
   private _formXml?: string;
   private _formModel?: string;
@@ -54,8 +61,7 @@ export class AppComponent {
     private readonly translateService: TranslateService,
   ) {
     const zscoreUtil = {};
-    const api = {};
-    medicXpathExtensions.init(zscoreUtil, toBik_text, moment, api);
+    medicXpathExtensions.init(zscoreUtil, toBik_text, moment, this.MOCK_CHT_API);
   }
 
   @Input() set formId(value: string) {

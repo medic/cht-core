@@ -62,12 +62,11 @@ describe('AppComponent', () => {
 
     expect(component).to.exist;
     expect(medicXpathExtensionsInit.callCount).to.equal(1);
-    expect(medicXpathExtensionsInit.args[0]).to.deep.equal([
-      {},
-      toBik_text,
-      moment,
-      {}
-    ]);
+    expect(medicXpathExtensionsInit.args[0][0]).to.deep.equal({});
+    expect(medicXpathExtensionsInit.args[0][1]).to.equal(toBik_text);
+    expect(medicXpathExtensionsInit.args[0][2]).to.equal(moment);
+    const mockChtApi = medicXpathExtensionsInit.args[0][3];
+    expect(mockChtApi.v1.getExtensionLib()()).to.deep.equal({ t: 'str', v: '' });
     expect(component.formId).to.eq(FORM_ID);
     expect(component.editing).to.be.false;
     expect(component.status).to.deep.equal({
