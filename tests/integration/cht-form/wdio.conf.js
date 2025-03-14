@@ -11,14 +11,14 @@ const logPath = path.join('tests', 'logs');
 const browserLogPath = path.join(logPath, 'browser.console.log');
 const mockConfig = require('./mock-config');
 
+// DO NOT add entries to this array unless you are sure they are expected.
+// Often, errors in the logs indicate unexpected code has leaked into cht-form.
 const ALLOWED_LOG_MSGS = [
   'favicon.ico - Failed to load resource: the server responded with a status of 404 (Not Found)',
   'tag was parsed inside of a <select> which was not inserted into the document. This is not valid ' +
   'HTML and the behavior may be changed in future versions of chrome.',
   'invalid phone number',
-  'Error submitting form data:',
-  `Error initialising watching for db changes" TypeError: Cannot read properties of undefined (reading 'update_seq')`,
-  'Attempting changes initialisation in 5 seconds'
+  'Error submitting form data:'
 ];
 const notAllowedLog = (msg) => {
   return !ALLOWED_LOG_MSGS.some(allowedMsg => msg.includes(allowedMsg));
