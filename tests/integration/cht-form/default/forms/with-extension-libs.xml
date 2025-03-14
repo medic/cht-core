@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
+  <h:head>
+    <h:title>Calculate Average With Extension Libs</h:title>
+    <model>
+      <itext>
+        <translation lang="English (en)">
+          <text id="/with-extension-libs/page/first:label">
+            <value>First Number</value>
+          </text>
+          <text id="/with-extension-libs/page/message:label">
+            <value>The average is: <output value=" /with-extension-libs/page/average "/></value>
+          </text>
+          <text id="/with-extension-libs/page/second:label">
+            <value>Second Number</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <with-extension-libs id="with-extension-libs" prefix="J1!with-extension-libs!" delimiter="#" version="20250313163746">
+          <page>
+            <first/>
+            <second/>
+            <average/>
+            <message/>
+          </page>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </with-extension-libs>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/with-extension-libs/page/first" type="decimal"/>
+      <bind nodeset="/with-extension-libs/page/second" type="decimal"/>
+      <bind nodeset="/with-extension-libs/page/average" type="string" calculate="cht:extension-lib('average.js',  /with-extension-libs/page/first ,  /with-extension-libs/page/second )"/>
+      <bind nodeset="/with-extension-libs/page/message" readonly="true()" type="string"/>
+      <bind nodeset="/with-extension-libs/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/with-extension-libs/page">
+      <input ref="/with-extension-libs/page/first">
+        <label ref="jr:itext('/with-extension-libs/page/first:label')"/>
+      </input>
+      <input ref="/with-extension-libs/page/second">
+        <label ref="jr:itext('/with-extension-libs/page/second:label')"/>
+      </input>
+      <input ref="/with-extension-libs/page/message">
+        <label ref="jr:itext('/with-extension-libs/page/message:label')"/>
+      </input>
+    </group>
+  </h:body>
+</h:html>
