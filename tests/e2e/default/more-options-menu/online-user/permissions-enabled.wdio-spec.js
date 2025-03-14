@@ -109,7 +109,7 @@ describe('More Options Menu - Online User - Permissions enabled', () => {
     it('should enable the \'export\', \'review\' and \'delete\' options and hide the \'edit\' option in Report tab ' +
       'when a NON XML report is opened.', async () => {
       await reportPage.goToReportById(smsReportId);
-      await (await reportPage.rightPanelSelectors.reportBodyDetails()).waitForDisplayed();
+      await reportPage.rightPanelSelectors.reportBodyDetails().waitForDisplayed();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionEnabled('export')).to.be.true;
       expect(await commonPage.isMenuOptionEnabled('review')).to.be.true;
