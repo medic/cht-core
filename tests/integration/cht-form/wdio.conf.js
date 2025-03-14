@@ -68,6 +68,7 @@ const defaultConfig = {
     if (logs.length) {
       test.callback(new Error(`Browser console logs are not empty: ${logs.join('\n')}`));
     }
+    await mockConfig.cancelForm();
   },
 
   onComplete: () => { },

@@ -72,26 +72,17 @@ export class AppComponent {
     this.queueRenderForm();
   }
 
-  @Input() set formHtml(value: string) {
-    if (!value?.trim().length) {
-      throw new Error('The Form HTML must be populated.');
-    }
+  @Input() set formHtml(value: string | undefined) {
     this._formHtml = value;
     this.queueRenderForm();
   }
 
-  @Input() set formModel(value: string) {
-    if (!value?.trim().length) {
-      throw new Error('The Form Model must be populated.');
-    }
+  @Input() set formModel(value: string | undefined) {
     this._formModel = value;
     this.queueRenderForm();
   }
 
-  @Input() set formXml(value: string) {
-    if (!value?.trim().length) {
-      throw new Error('The Form XML must be populated.');
-    }
+  @Input() set formXml(value: string | undefined) {
     this._formXml = value;
     this.queueRenderForm();
   }
@@ -210,6 +201,7 @@ export class AppComponent {
     const currentForm = this.enketoService.getCurrentForm();
     if (currentForm) {
       this.enketoService.unload(currentForm);
+      $('.container.pages').empty();
     }
   }
 
@@ -242,15 +234,35 @@ export class AppComponent {
 
   private tearDownForm() {
     this.unloadForm();
-    this._formXml = undefined;
-    this._formHtml = undefined;
-    this._formModel = undefined;
-    this._contactSummary = undefined;
-    this._contactType = undefined;
-    this._content = null;
-    this._formId = this.DEFAULT_FORM_ID;
-    this._user = this.DEFAULT_USER;
+
     this.editing = false;
     this.status = { ...this.DEFAULT_STATUS };
+    this.currentRender = undefined;
+    this.reRenderForm = false;
+
+    // The web component framework does some kind of "lazy setting" where it will not call a setter with the same value
+    // twice. So, we cannot just reset the internal state of the "inputs" here. We need to call "through the front door"
+    //  so the context knows that the values have changed instead of just directly resetting the state of this class.
+    const myForm = document.getElementById('myform');
+    if (!myForm) {
+      return;
+    }
+
+    // @ts-expect-error it does exist
+    myForm.formXml = undefined;
+    // @ts-expect-error it does exist
+    myForm.formHtml = undefined;
+    // @ts-expect-error it does exist
+    myForm.formModel = undefined;
+    // @ts-expect-error it does exist
+    myForm.contactSummary = undefined;
+    // @ts-expect-error it does exist
+    myForm.contactType = undefined;
+    // @ts-expect-error it does exist
+    myForm.content = null;
+    // @ts-expect-error it does exist
+    myForm.formId = this.DEFAULT_FORM_ID;
+    // @ts-expect-error it does exist
+    myForm.user = this.DEFAULT_USER;
   }
 }
