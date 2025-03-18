@@ -8,7 +8,7 @@ import { ContactSaveService } from '@mm-services/contact-save.service';
 import { NgIf, DOCUMENT } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
-import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';lar/common';
+import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';
 
 @Component({
   selector: 'cht-form',
