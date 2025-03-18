@@ -46,8 +46,8 @@ export namespace v1 {
 
   /** @internal */
   export const getUuidsPage = ({ medicDb }: LocalDataContext) => {
-    const getByExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic-client/reports_by_freetext');
-    const getByStartsWithFreetext = queryDocUuidsByRange(medicDb, 'medic-client/reports_by_freetext');
+    const getByExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic/reports_by_freetext');
+    const getByStartsWithFreetext = queryDocUuidsByRange(medicDb, 'medic/reports_by_freetext');
 
     const getDocsFnForFreetextType = (
       qualifier: FreetextQualifier

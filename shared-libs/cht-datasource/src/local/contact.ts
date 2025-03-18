@@ -1,9 +1,9 @@
-import { LocalDataContext, SettingsService } from './libs/data-context';
+import { isOffline, LocalDataContext, SettingsService } from './libs/data-context';
 import {
   fetchAndFilterUuids,
   getDocById,
   queryDocUuidsByKey,
-  queryDocUuidsByRange
+  queryDocUuidsByRange, queryNouveauIndex
 } from './libs/doc';
 import { ContactTypeQualifier, FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
 import * as Contact from '../contact';
@@ -13,7 +13,7 @@ import logger from '@medic/logger';
 import contactTypeUtils from '@medic/contact-types-utils';
 import { getContactLineage, getLineageDocsById } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
-import { normalizeFreetext, validateCursor } from './libs/core';
+import { normalizeFreetext, QueryByKeyParams, QueryByRangeParams, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 import { isContactType, isContactTypeAndFreetextType } from '../libs/parameter-validators';
 
@@ -75,13 +75,39 @@ export namespace v1 {
   };
 
   /** @internal */
-  export const getUuidsPage = ({ medicDb, settings }: LocalDataContext) => {
+  export const getUuidsPage = ({ medicDb, settings, url }: LocalDataContext) => {
+    let offline = false;
+    const queryByKeys = (viewName: string) => {
+      return isOffline(medicDb).then((offline_: boolean) => {
+        if (offline_) {
+          offline = true;
+          return queryDocUuidsByKey(medicDb, `medic-offline-freetext/${viewName}`);
+        }
+
+        return queryNouveauIndex(viewName, url);
+      });
+    };
+
+    const queryByRange = (
+      viewName: string
+    ) => {
+      return isOffline(medicDb).then((offline_: boolean) => {
+        if (offline_) {
+          offline = true;
+          return queryDocUuidsByRange(medicDb, `medic-offline-freetext/${viewName}`);
+        }
+
+        return queryNouveauIndex(viewName, url);
+      });
+    };
+
     // Define query functions
-    const getByTypeExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic-client/contacts_by_type_freetext');
-    const getByExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic-client/contacts_by_freetext');
-    const getByType = queryDocUuidsByKey(medicDb, 'medic-client/contacts_by_type');
-    const getByTypeStartsWithFreetext = queryDocUuidsByRange(medicDb, 'medic-client/contacts_by_type_freetext');
-    const getByStartsWithFreetext = queryDocUuidsByRange(medicDb, 'medic-client/contacts_by_freetext');
+    // const getByTypeExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic-client/contacts_by_type_freetext');
+    const getByTypeExactMatchFreetext = queryByKeys('contacts_by_type_freetext').then(res => res);
+    const getByExactMatchFreetext = queryByKeys('contacts_by_freetext');
+    const getByType = queryByKeys('contacts_by_type');
+    const getByTypeStartsWithFreetext = queryByRange('contacts_by_type_freetext');
+    const getByStartsWithFreetext = queryByRange('medic-client/contacts_by_freetext');
 
     const determineGetDocsFn = (
       qualifier: ContactTypeQualifier | FreetextQualifier
@@ -152,10 +178,14 @@ export namespace v1 {
         }
       }
 
-      const skip = validateCursor(cursor);
       const getDocsFn = determineGetDocsFn(qualifier);
 
-      return await fetchAndFilterUuids(getDocsFn, limit)(limit, skip);
+      if (offline) {
+        const skip = validateCursor(cursor);
+        return await fetchAndFilterUuids(getDocsFn, limit)(limit, skip);
+      }
+
+      return getDocsFn();
     };
   };
 }

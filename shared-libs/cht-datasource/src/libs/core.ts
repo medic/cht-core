@@ -1,4 +1,5 @@
 import { DataContext } from './data-context';
+import { Doc } from './doc';
 
 /**
  * A value that could be `null`.
@@ -158,3 +159,14 @@ export interface NormalizedParent extends DataObject, Identifiable {
 export const isNormalizedParent = (value: unknown): value is NormalizedParent => {
   return isDataObject(value) && isIdentifiable(value) && (!value.parent || isNormalizedParent(value.parent));
 };
+
+/** @internal */
+export interface NouveauResponse {
+  update_latency: number;
+  total_hits_relation: string;
+  total_hits: number;
+  ranges: null;
+  hits: Doc[];
+  counts: null;
+  bookmark: string;
+}

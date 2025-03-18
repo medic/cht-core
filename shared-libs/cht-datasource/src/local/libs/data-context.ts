@@ -1,6 +1,7 @@
 import { Doc } from '../../libs/doc';
 import { AbstractDataContext, hasField, isRecord } from '../../libs/core';
 import { DataContext } from '../../libs/data-context';
+import { ddocExists } from './doc';
 
 /**
  * {@link PouchDB.Database}s to be used as the local data source.
@@ -19,7 +20,8 @@ export class LocalDataContext extends AbstractDataContext {
   /** @internal */
   constructor(
     readonly medicDb: PouchDB.Database<Doc>,
-    readonly settings: SettingsService
+    readonly settings: SettingsService,
+    readonly url: string
   ) {
     super();
   }
@@ -40,7 +42,7 @@ const assertSourceDatabases: (sourceDatabases: unknown) => asserts sourceDatabas
 
 /** @internal */
 export const isLocalDataContext = (context: DataContext): context is LocalDataContext => {
-  return 'settings' in context && 'medicDb' in context;
+  return 'settings' in context && 'medicDb' in context && 'url' in context;
 };
 
 /**
@@ -48,11 +50,21 @@ export const isLocalDataContext = (context: DataContext): context is LocalDataCo
  * cases requiring offline functionality. For all other use cases, use {@link getRemoteDataContext}.
  * @param settings service providing access to the app settings
  * @param sourceDatabases the PouchDB databases to use as the local datasource
+ * @param url the server url
  * @returns the local data context
  * @throws Error if the provided settings or source databases are invalid
  */
-export const getLocalDataContext = (settings: SettingsService, sourceDatabases: SourceDatabases): DataContext => {
+export const getLocalDataContext = (
+  settings: SettingsService,
+  sourceDatabases: SourceDatabases,
+  url: string
+): DataContext => {
   assertSettingsService(settings);
   assertSourceDatabases(sourceDatabases);
-  return new LocalDataContext(sourceDatabases.medic, settings);
+  return new LocalDataContext(sourceDatabases.medic, settings, url);
+};
+
+/** @internal */
+export const isOffline = async (db: PouchDB.Database<Doc>): Promise<boolean> => {
+  return ddocExists(db, '_design/medic-offline-freetext');
 };
