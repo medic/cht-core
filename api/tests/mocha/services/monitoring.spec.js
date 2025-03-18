@@ -162,13 +162,13 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
 };
 
 const NOUVEAU_DDOCS_BY_DB = {
-  [environment.db]: ['medic-nouveau'],
+  [environment.db]: ['medic'],
 };
 
 const NOUVEAU_INDEX_INFO_BY_DDOC = {
-  'medic-nouveau': {
+  'medic': {
     reports_by_freetext: {
-      name: '_design/medic-nouveau/reports_by_freetext',
+      name: '_design/medic/reports_by_freetext',
       search_index: {
         update_seq: 1956891,
         purge_seq: 0,
@@ -178,7 +178,7 @@ const NOUVEAU_INDEX_INFO_BY_DDOC = {
       },
     },
     contacts_by_freetext: {
-      name: '_design/medic-nouveau/contacts_by_freetext',
+      name: '_design/medic/contacts_by_freetext',
       search_index: {
         update_seq: 1956891,
         purge_seq: 0,
@@ -329,12 +329,12 @@ describe('Monitoring service', () => {
           nouveau_indexes: [
             {
               disk_size: 76815351,
-              name: '_design/medic-nouveau/contacts_by_freetext',
+              name: '_design/medic/contacts_by_freetext',
               num_docs: 207734,
             },
             {
               disk_size: 157258510,
-              name: '_design/medic-nouveau/reports_by_freetext',
+              name: '_design/medic/reports_by_freetext',
               num_docs: 183741,
             },
           ],
@@ -404,11 +404,11 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/contacts_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/contacts_by_freetext`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/reports_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
@@ -461,12 +461,12 @@ describe('Monitoring service', () => {
           nouveau_indexes: [
             {
               disk_size: 76815351,
-              name: '_design/medic-nouveau/contacts_by_freetext',
+              name: '_design/medic/contacts_by_freetext',
               num_docs: 207734,
             },
             {
               disk_size: 157258510,
-              name: '_design/medic-nouveau/reports_by_freetext',
+              name: '_design/medic/reports_by_freetext',
               num_docs: 183741,
             },
           ],
@@ -563,11 +563,11 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/contacts_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/contacts_by_freetext`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/reports_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
@@ -683,11 +683,11 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/contacts_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/contacts_by_freetext`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/reports_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
@@ -818,11 +818,11 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/contacts_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/contacts_by_freetext`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/reports_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
