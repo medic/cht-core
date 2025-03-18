@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, Output } from '@angular/core';
 import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import * as medicXpathExtensions from '../../../src/js/enketo/medic-xpath-extensions';
 import moment from 'moment';
@@ -7,6 +7,9 @@ import { TranslateService } from '@mm-services/translate.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
 import { NgIf } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';
+import { DOCUMENT } from '@angular/common';
 
 @Component({
   selector: 'cht-form',
@@ -29,12 +32,7 @@ export class AppComponent {
     'person'
   ];
 
-  private readonly MOCK_CHT_API =  { v1: {
-    // Non-operable, but avoids error when loading form
-    getExtensionLib: () => {
-      return () => ({ t: 'str', v: '' });
-    }
-  } };
+  private readonly chtDataSourceService: CHTDatasourceServiceStub;
 
   private _formId = this.DEFAULT_FORM_ID;
   private _formXml?: string;
@@ -56,12 +54,15 @@ export class AppComponent {
   @Output() onSubmit: EventEmitter<Object[]> = new EventEmitter();
 
   constructor(
+    chtDatasourceService: CHTDatasourceService,
     private readonly contactSaveService: ContactSaveService,
     private readonly enketoService: EnketoService,
     private readonly translateService: TranslateService,
+    @Inject(DOCUMENT) private readonly document: Document,
   ) {
+    this.chtDataSourceService = chtDatasourceService as unknown as CHTDatasourceServiceStub;
     const zscoreUtil = {};
-    medicXpathExtensions.init(zscoreUtil, toBik_text, moment, this.MOCK_CHT_API);
+    medicXpathExtensions.init(zscoreUtil, toBik_text, moment, this.chtDataSourceService.getSync());
   }
 
   @Input() set formId(value: string) {
@@ -110,6 +111,19 @@ export class AppComponent {
       throw new Error('The user must be populated.');
     }
     this._user = { ...this.DEFAULT_USER, ...user };
+    this.queueRenderForm();
+  }
+
+  @Input() set extensionLibs(value: Record<string, any> | undefined) {
+    if (!value) {
+      this.chtDataSourceService.clearExtensionLibs();
+      this.queueRenderForm();
+      return;
+    }
+
+    Object
+      .keys(value)
+      .forEach(key => this.chtDataSourceService.addExtensionLib(key, value[key]));
     this.queueRenderForm();
   }
 
@@ -201,7 +215,7 @@ export class AppComponent {
     const currentForm = this.enketoService.getCurrentForm();
     if (currentForm) {
       this.enketoService.unload(currentForm);
-      $('.container.pages').empty();
+      $(`#${this._formId} .container.pages`).empty();
     }
   }
 
@@ -243,26 +257,27 @@ export class AppComponent {
     // The web component framework does some kind of "lazy setting" where it will not call a setter with the same value
     // twice. So, we cannot just reset the internal state of the "inputs" here. We need to call "through the front door"
     //  so the context knows that the values have changed instead of just directly resetting the state of this class.
-    const myForm = document.getElementById('myform');
-    if (!myForm) {
-      return;
-    }
-
+    const myForm = this.document
+      .getElementById(this._formId)
+      ?.closest('cht-form');
+    const component = myForm || this;
     // @ts-expect-error it does exist
-    myForm.formXml = undefined;
+    component.formXml = undefined;
     // @ts-expect-error it does exist
-    myForm.formHtml = undefined;
+    component.formHtml = undefined;
     // @ts-expect-error it does exist
-    myForm.formModel = undefined;
+    component.formModel = undefined;
     // @ts-expect-error it does exist
-    myForm.contactSummary = undefined;
+    component.contactSummary = undefined;
     // @ts-expect-error it does exist
-    myForm.contactType = undefined;
+    component.contactType = undefined;
     // @ts-expect-error it does exist
-    myForm.content = null;
+    component.content = null;
     // @ts-expect-error it does exist
-    myForm.formId = this.DEFAULT_FORM_ID;
+    component.formId = this.DEFAULT_FORM_ID;
     // @ts-expect-error it does exist
-    myForm.user = this.DEFAULT_USER;
+    component.user = this.DEFAULT_USER;
+    // @ts-expect-error it does exist
+    component.extensionLibs = undefined;
   }
 }
