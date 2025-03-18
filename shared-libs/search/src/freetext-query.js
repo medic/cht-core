@@ -30,7 +30,7 @@ const getQuery = (key, startkey) => {
     return `exact_match:"${key}"`;
   }
   // Fuzzy match
-  return `"${startkey}"`;
+  return `${startkey}*`;
 };
 
 const getLuceneQueryString = (view, { key, startkey }) => {
