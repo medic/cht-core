@@ -5,11 +5,10 @@ import moment from 'moment';
 import { toBik_text } from 'bikram-sambat';
 import { TranslateService } from '@mm-services/translate.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
-import { NgIf } from '@angular/common';
+import { NgIf, DOCUMENT } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
-import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';
-import { DOCUMENT } from '@angular/common';
+import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';lar/common';
 
 @Component({
   selector: 'cht-form',
