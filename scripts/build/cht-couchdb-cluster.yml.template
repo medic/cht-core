@@ -66,7 +66,7 @@ services:
   nouveau:
     image: {{{ repo }}}/cht-couchdb-nouveau:{{ tag }}
     volumes:
-      - ${COUCHDB_NOUVEAU_DATA:-./srv_nouveau}:/data/nouveau
+      - ${DB1_DATA:-./srv1}/nouveau:/data/nouveau
     restart: always
     depends_on:
       - couchdb-1.local
