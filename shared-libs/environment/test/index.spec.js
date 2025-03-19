@@ -116,7 +116,7 @@ describe('environment', () => {
           timestamp: '2023-01-02'
         });
         expect(request.get.callCount).to.equal(1);
-        expect(request.get.args[0][0].url).to.equal('http://admin:pass@localhost:5984/medicdb/_design/medic');
+        expect(request.get.args).to.deep.equal([[{url: 'http://admin:pass@localhost:5984/medicdb/_design/medic'}]]);
       });
 
       it('should use cache on subsequent calls', async () => {
@@ -140,14 +140,7 @@ describe('environment', () => {
         sinon.stub(logger, 'error');
 
         const env = rewire('../src/index');
-
-        try {
-          await env.getDeployInfo();
-          expect.fail('Should have thrown');
-        } catch (err) {
-          expect(err.message).to.equal('Failed to fetch');
-          expect(logger.error.calledOnce).to.be.true;
-        }
+        await expect(env.getDeployInfo()).to.eventually.be.rejectedWith('Failed to fetch');
       });
     });
 

@@ -274,9 +274,18 @@ describe('outbound shared library', () => {
       return outbound.__get__('sendPayload')(payload, conf)
         .then(() => {
           assert.equal(request.post.callCount, 1);
-          assert.equal(request.post.args[0][0].url, 'http://test/foo');
-          assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
-          assert.match(request.post.args[0][0].headers['user-agent'], /^CHT\/4\.18\.0/);
+          assert.deepEqual(request.post.args, [
+            [
+              {
+                url: 'http://test/foo',
+                body: { some: 'data' },
+                timeout: 10000,
+                headers: {
+                  'user-agent': 'CHT/4.18.0 (linux,x64)'
+                }
+              }
+            ]
+          ]);
         });
     });
 
@@ -303,14 +312,24 @@ describe('outbound shared library', () => {
       return outbound.__get__('sendPayload')(payload, conf)
         .then(() => {
           assert.equal(secureSettings.getCredentials.callCount, 1);
-          assert.equal(secureSettings.getCredentials.args[0][0], 'test-config');
+          assert.deepEqual(secureSettings.getCredentials.args, [['test-config']]);
           assert.equal(request.post.callCount, 1);
-          assert.equal(request.post.args[0][0].url, 'http://test/foo');
-          assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
-          assert.deepEqual(request.post.args[0][0].auth, {
-            username: 'admin',
-            password: 'pass',
-          });
+          assert.deepEqual(request.post.args, [
+            [
+              {
+                url: 'http://test/foo',
+                body: { some: 'data' },
+                timeout: 10000,
+                headers: {
+                  'user-agent': 'CHT/unknown (linux,x64)'
+                },
+                auth: {
+                  username: 'admin',
+                  password: 'pass'
+                }
+              }
+            ]
+          ]);
         });
     });
 
@@ -337,11 +356,21 @@ describe('outbound shared library', () => {
       return outbound.__get__('sendPayload')(payload, conf)
         .then(() => {
           assert.equal(secureSettings.getCredentials.callCount, 1);
-          assert.equal(secureSettings.getCredentials.args[0][0], 'test-config');
+          assert.deepEqual(secureSettings.getCredentials.args, [['test-config']]);
           assert.equal(request.post.callCount, 1);
-          assert.equal(request.post.args[0][0].url, 'http://test/foo');
-          assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
-          assert.equal(request.post.args[0][0].headers.authorization, 'Bearer credentials');
+          assert.deepEqual(request.post.args, [
+            [
+              {
+                url: 'http://test/foo',
+                body: { some: 'data' },
+                timeout: 10000,
+                headers: {
+                  'user-agent': 'CHT/unknown (linux,x64)',
+                  'authorization': 'Bearer credentials'
+                }
+              }
+            ]
+          ]);
         });
     });
 
@@ -378,14 +407,31 @@ describe('outbound shared library', () => {
       return outbound.__get__('sendPayload')(payload, conf)
         .then(() => {
           assert.equal(post.callCount, 2);
-
-          assert.equal(post.args[0][0].form.login, 'admin');
-          assert.equal(post.args[0][0].form.password, 'pass');
-          assert.equal(post.args[0][0].url, 'http://test/login');
-
-          assert.equal(post.args[1][0].url, 'http://test/foo');
-          assert.deepEqual(post.args[1][0].body, {some: 'data'});
-          assert.equal(post.args[1][0].qs.token, 'j9NAhVDdVWkgo1xnbxA9V3Pmp');
+          assert.deepEqual(post.args, [
+            [
+              {
+                url: 'http://test/login',
+                form: {
+                  login: 'admin',
+                  password: 'pass'
+                },
+                timeout: 10000
+              }
+            ],
+            [
+              {
+                url: 'http://test/foo',
+                body: { some: 'data' },
+                timeout: 10000,
+                headers: {
+                  'user-agent': 'CHT/unknown (linux,x64)'
+                },
+                qs: {
+                  token: 'j9NAhVDdVWkgo1xnbxA9V3Pmp'
+                }
+              }
+            ]
+          ]);
         });
     });
 
