@@ -15,16 +15,16 @@ describe('Acessing the admin app', () => {
 
   it('should redirect to login when not logged in', async () => {
     await browser.url('/admin');
-    await (await loginPage.loginButton()).waitForDisplayed();
+    await loginPage.loginButton().waitForDisplayed();
 
     await browser.url('/admin/#/forms');
-    await (await loginPage.loginButton()).waitForDisplayed();
+    await loginPage.loginButton().waitForDisplayed();
 
     await browser.url('/medic/_design/medic-admin/_rewrite/');
-    await (await loginPage.loginButton()).waitForDisplayed();
+    await loginPage.loginButton().waitForDisplayed();
 
     await browser.url('/medic/_design/medic-admin/_rewrite/#/authorization/permissions');
-    await (await loginPage.loginButton()).waitForDisplayed();
+    await loginPage.loginButton().waitForDisplayed();
   });
 
   it('should show access error when accessing as an offline user', async () => {
@@ -55,16 +55,15 @@ describe('Acessing the admin app', () => {
     await loginPage.cookieLogin({ createUser: false });
 
     await browser.url('/admin');
-    await (await adminPage.adminNavbarLogo()).waitForDisplayed();
-    expect(await (await adminPage.adminNavbarLogo()).getText()).to.equal('App Management');
+    expect(await adminPage.adminNavbarLogo().getText()).to.equal('App Management');
 
     await browser.url('/admin#/forms');
-    await (await adminPage.adminNavbarLogo()).waitForDisplayed();
+    await adminPage.adminNavbarLogo().waitForDisplayed();
 
     await browser.url('/medic/_design/medic-admin/_rewrite/');
-    await (await adminPage.adminNavbarLogo()).waitForDisplayed();
+    await adminPage.adminNavbarLogo().waitForDisplayed();
 
     await browser.url('/medic/_design/medic-admin/_rewrite/#/authorization/permissions');
-    await (await adminPage.adminNavbarLogo()).waitForDisplayed();
+    await adminPage.adminNavbarLogo().waitForDisplayed();
   });
 });

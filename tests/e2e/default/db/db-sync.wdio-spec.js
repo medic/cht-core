@@ -26,7 +26,7 @@ describe('db-sync', () => {
   const report4 = uuid();
 
   const contact = { _id: restrictedContactId, parent: { _id: restrictedFacilityId } };
-  
+
   const restrictedUser = userSettings.build({
     _id: `org.couchdb.user:${restrictedUserName}`,
     type: 'user',
@@ -99,7 +99,7 @@ describe('db-sync', () => {
     });
     await sentinelUtils.waitForSentinel();
     await loginPage.login({ username: restrictedUserName, password: restrictedPass });
-    await (await commonElements.tabsSelector.analyticsTab()).waitForDisplayed();
+    await commonElements.tabsSelector.analyticsTab().waitForDisplayed();
   });
 
   after(async () => {
@@ -239,7 +239,7 @@ describe('db-sync', () => {
 
       // if the test fails, it helps to see which reports are read or not in the failpic
       await commonElements.goToReports();
-      await (await reportsPage.leftPanelSelectors.reportList()).waitForDisplayed();
+      await reportsPage.leftPanelSelectors.reportList().waitForDisplayed();
 
       await browser.waitUntil(async () => await reportsPage.getUnreadCount() === '2');
     });

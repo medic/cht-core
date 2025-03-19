@@ -72,13 +72,13 @@ describe('Login page functionality tests', () => {
 
     it('should log in using username and password fields', async () => {
       await loginPage.login(auth);
-      await (await commonPage.tabsSelector.analyticsTab()).waitForDisplayed();
-      await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
+      await commonPage.tabsSelector.analyticsTab().waitForDisplayed();
+      await commonPage.tabsSelector.messagesTab().waitForDisplayed();
     });
 
     it('should set correct cookies', async () => {
       await loginPage.login(auth);
-      await (await commonPage.tabsSelector.analyticsTab()).waitForDisplayed();
+      await commonPage.tabsSelector.analyticsTab().waitForDisplayed();
 
       const cookies = await browser.getCookies();
       expect(cookies.length).to.equal(3);
@@ -117,12 +117,12 @@ describe('Login page functionality tests', () => {
     it('should display the "session expired" modal and redirect to login page', async () => {
       // Login and ensure it's redirected to webapp
       await loginPage.login(auth);
-      await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
+      await commonPage.tabsSelector.messagesTab().waitForDisplayed();
       // Delete cookies and trigger a request to the server
       await browser.deleteCookies('AuthSession');
       await commonPage.goToReports();
 
-      const description = await (await modalPage.body()).getText();
+      const description = await modalPage.body().getText();
       expect(description).to.equal('Your session has expired and you have been logged out. Please login to continue.');
       await modalPage.submit();
       expect((await browser.getUrl()).includes('/medic/login')).to.be.true;
@@ -164,7 +164,7 @@ describe('Login page functionality tests', () => {
       expect(revealedPassword.value).to.equal('pass-456');
 
       await loginPage.login(auth);
-      await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
+      await commonPage.tabsSelector.messagesTab().waitForDisplayed();
     });
   });
 
