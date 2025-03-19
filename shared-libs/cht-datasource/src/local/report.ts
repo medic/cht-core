@@ -1,16 +1,16 @@
-import { LocalDataContext } from './libs/data-context';
+import { isOffline, LocalDataContext } from './libs/data-context';
 import {
   fetchAndFilterUuids,
   getDocById,
   queryDocUuidsByKey,
-  queryDocUuidsByRange
+  queryDocUuidsByRange, queryNouveauIndexUuids
 } from './libs/doc';
 import { FreetextQualifier, UuidQualifier, isKeyedFreetextQualifier } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
-import { normalizeFreetext, validateCursor } from './libs/core';
+import { normalizeFreetext, QueryParams, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 
 /** @internal */
@@ -45,9 +45,12 @@ export namespace v1 {
   };
 
   /** @internal */
-  export const getUuidsPage = ({ medicDb }: LocalDataContext) => {
-    const getByExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic/reports_by_freetext');
-    const getByStartsWithFreetext = queryDocUuidsByRange(medicDb, 'medic/reports_by_freetext');
+  export const getUuidsPage = async ({ medicDb, url }: LocalDataContext) => {
+    const offline = await isOffline(medicDb);
+
+    // Define offline query functions
+    const getByExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic-offline-freetext/reports_by_freetext');
+    const getByStartsWithFreetext = queryDocUuidsByRange(medicDb, 'medic-offline-freetext/reports_by_freetext');
 
     const getDocsFnForFreetextType = (
       qualifier: FreetextQualifier
@@ -63,15 +66,45 @@ export namespace v1 {
       );
     };
 
+    const callOnlineQueryNouveauFn = (
+      qualifier: FreetextQualifier,
+      limit: number,
+      cursor: Nullable<string>
+    ) => {
+      const viewName = 'reports_by_freetext';
+      let params: QueryParams;
+
+      if (isKeyedFreetextQualifier(qualifier)) {
+        params = {
+          key: [qualifier.freetext],
+          limit,
+          cursor
+        };
+      } else {
+        params = {
+          startKey: [qualifier.freetext],
+          endKey: [qualifier.freetext + END_OF_ALPHABET_MARKER],
+          limit,
+          cursor
+        };
+      }
+
+      return queryNouveauIndexUuids(viewName, url)(params);
+    };
+
     return async (
       qualifier: FreetextQualifier,
       cursor: Nullable<string>,
       limit:  number
     ): Promise<Page<string>> => {
-      const skip = validateCursor(cursor);
-      const getDocsFn = getDocsFnForFreetextType(qualifier);
+      if (offline) {
+        const skip = validateCursor(cursor);
+        const getDocsFn = getDocsFnForFreetextType(qualifier);
 
-      return await fetchAndFilterUuids(getDocsFn, limit)(limit, skip);
+        return await fetchAndFilterUuids(getDocsFn, limit)(limit, skip);
+      }
+
+      return callOnlineQueryNouveauFn(qualifier, limit, cursor);
     };
   };
 }
