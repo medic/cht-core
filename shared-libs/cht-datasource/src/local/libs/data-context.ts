@@ -57,7 +57,7 @@ export const isLocalDataContext = (context: DataContext): context is LocalDataCo
 export const getLocalDataContext = (
   settings: SettingsService,
   sourceDatabases: SourceDatabases,
-  url: string
+  url = ''
 ): DataContext => {
   assertSettingsService(settings);
   assertSourceDatabases(sourceDatabases);

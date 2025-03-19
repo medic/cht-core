@@ -16,18 +16,12 @@ export const normalizeFreetext = (
 ): string => {
   return freetext.trim().toLowerCase();
 };
-
+type QueryKey = string | string[];
 /** @internal */
-export interface QueryByKeyParams {
-  key: string | string[];
-  limit: number;
-  skip: number;
-}
-
-/** @internal */
-export interface QueryByRangeParams {
-  startKey: string | string[];
-  endKey: string;
-  limit: number;
-  skip: number;
+export interface QueryParams {
+  key?: QueryKey;
+  startKey?: QueryKey;
+  endKey?: QueryKey;
+  limit?: number;
+  cursor?: Nullable<string>;
 }

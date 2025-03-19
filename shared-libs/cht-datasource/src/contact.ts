@@ -109,7 +109,7 @@ export namespace v1 {
       assertLimit(limit);
       assertContactTypeFreetextQualifier(qualifier);
 
-      return fn(qualifier, cursor, Number(limit));
+      return (await fn)(qualifier, cursor, Number(limit));
     };
     return curriedFn;
   };

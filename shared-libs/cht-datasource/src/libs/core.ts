@@ -1,5 +1,4 @@
 import { DataContext } from './data-context';
-import { Doc } from './doc';
 
 /**
  * A value that could be `null`.
@@ -161,12 +160,26 @@ export const isNormalizedParent = (value: unknown): value is NormalizedParent =>
 };
 
 /** @internal */
+export interface NouveauHit {
+  order: {
+    value: string | number;
+    '@type': string;
+  }[];
+  id: string;
+  fields: {
+    sort_order: string;
+    [key: string]: unknown;  // For any other fields that might be present
+  };
+  doc?: unknown;  // Optional document data
+}
+
+/** @internal */
 export interface NouveauResponse {
   update_latency: number;
   total_hits_relation: string;
   total_hits: number;
   ranges: null;
-  hits: Doc[];
+  hits: NouveauHit[];
   counts: null;
   bookmark: string;
 }

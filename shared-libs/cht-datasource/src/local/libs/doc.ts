@@ -1,7 +1,7 @@
 import logger from '@medic/logger';
-import { NouveauResponse, Nullable, Page } from '../../libs/core';
+import { NouveauHit, NouveauResponse, Nullable, Page } from '../../libs/core';
 import { Doc, isDoc } from '../../libs/doc';
-import { QueryByKeyParams, QueryByRangeParams } from './core';
+import { QueryParams } from './core';
 import { getAuthenticatedFetch, getRequestBody } from './request-utils';
 import { DEFAULT_IDS_PAGE_LIMIT } from '../../libs/constants';
 
@@ -181,21 +181,29 @@ export const fetchAndFilterUuids = (
 
 /** @internal */
 export const ddocExists = async (db: PouchDB.Database<Doc>, ddocId: string): Promise<boolean> => {
-  const { rows } = await db.allDocs({ keys: [ddocId] });
-  return rows.length > 0;
+  try {
+    await db.get(ddocId);
+    return true;
+  } catch (err) {
+    logger.debug(err);
+    return false;
+  }
 };
 
-/** @internal */
+/**
+ * Similar to {@link fetchAndFilter} but by requesting nouveau endpoint
+ * @internal
+ */
 export const queryNouveauIndex = (
   viewName: string,
   url: string
 ): typeof recursionInner => {
   const fetch = getAuthenticatedFetch(viewName);
   const recursionInner = async (
-    params: QueryByKeyParams | QueryByRangeParams,
-    currentResults: Doc[]= [],
+    params: QueryParams,
+    currentResults: NouveauHit[]= [],
     bookmark: Nullable<string> = null
-  ): Promise<Page<Doc>> => {
+  ): Promise<Page<NouveauHit>> => {
     const response = await fetch(
       url, {
         method: 'POST',
@@ -221,4 +229,20 @@ export const queryNouveauIndex = (
     };
   };
   return recursionInner;
+};
+
+/** @internal */
+export const queryNouveauIndexUuids = (
+  viewName: string,
+  url: string
+) => {
+  return async (params: QueryParams): Promise<Page<string>> => {
+    const res = await queryNouveauIndex(viewName, url)(params);
+    const resWithIds = res.data.map(doc => doc.id);
+
+    return {
+      data: resWithIds,
+      cursor: res.cursor
+    };
+  };
 };

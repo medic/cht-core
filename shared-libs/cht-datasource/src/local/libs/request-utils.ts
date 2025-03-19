@@ -1,6 +1,5 @@
 import { isContactsByTypeFreetext, SORT_BY_VIEW } from './constants';
-import { QueryByKeyParams, QueryByRangeParams } from './core';
-import { DEFAULT_IDS_PAGE_LIMIT } from '../../libs/constants';
+import { QueryParams } from './core';
 import { Nullable } from '../../libs/core';
 
 const getNouveauPath = (view: string): string => {
@@ -22,12 +21,12 @@ export const getAuthenticatedFetch = (view: string) => {
 /** @internal */
 export const getRequestBody = (
   view: string,
-  params: QueryByKeyParams | QueryByRangeParams,
+  params: QueryParams,
   bookmark: Nullable<string>
 ): string => {
   return JSON.stringify({
-    bookmark,
-    limit: DEFAULT_IDS_PAGE_LIMIT,
+    bookmark: bookmark ?? params.cursor,
+    limit: params.limit,
     q: getLuceneQueryString(view, params),
     sort: SORT_BY_VIEW[view],
   });
@@ -35,7 +34,7 @@ export const getRequestBody = (
 
 const getLuceneQueryString = (
   view: string,
-  { key, startKey }: { key?: Nullable<string | string[]>, startKey?: Nullable<string | string[]>}
+  { key, startKey }: QueryParams
 ) => {
   if (isContactsByTypeFreetext(view)) {
     if (key) {
