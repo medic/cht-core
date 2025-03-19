@@ -26,7 +26,7 @@ export namespace v1 {
 
   /** @internal */
   export const getUuidsPage =
-    (remoteContext: RemoteDataContext) => (
+    async (remoteContext: RemoteDataContext) => (
       qualifier: ContactTypeQualifier | FreetextQualifier,
       cursor: Nullable<string>,
       limit: number
