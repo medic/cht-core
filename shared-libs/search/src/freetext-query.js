@@ -41,7 +41,7 @@ const getLuceneQueryString = (view, { key, startkey }) => {
     return `contact_type:"${(key || startkey)[0]}" AND ${getQuery(key?.[1], startkey?.[1])}`;
   }
 
-  return getQuery(key, startkey);
+  return getQuery(key?.[0], startkey?.[0]);
 };
 
 const getRequestBody = (view, params, bookmark) => {
