@@ -25,12 +25,15 @@ const getNouveauPath = view => {
   return `_design/medic/_nouveau/${indexName}`;
 };
 
+const NOUVEAU_SPECIAL_CHARS_REGEX = /[+\-&|!(){}[\]^"~*?:\\/]/g;
+const getEscapedKey = key => key.replace(NOUVEAU_SPECIAL_CHARS_REGEX, '\\$&');
+
 const getQuery = (key, startkey) => {
   if (key) {
     return `exact_match:"${key}"`;
   }
   // Fuzzy match
-  return `${startkey}*`;
+  return `${getEscapedKey(startkey)}*`;
 };
 
 const getLuceneQueryString = (view, { key, startkey }) => {
