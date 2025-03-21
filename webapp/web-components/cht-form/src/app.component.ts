@@ -1,12 +1,14 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, Output } from '@angular/core';
 import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import * as medicXpathExtensions from '../../../src/js/enketo/medic-xpath-extensions';
 import moment from 'moment';
 import { toBik_text } from 'bikram-sambat';
 import { TranslateService } from '@mm-services/translate.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
-import { NgIf } from '@angular/common';
+import { NgIf, DOCUMENT } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';
 
 @Component({
   selector: 'cht-form',
@@ -29,6 +31,8 @@ export class AppComponent {
     'person'
   ];
 
+  private readonly chtDataSourceService: CHTDatasourceServiceStub;
+
   private _formId = this.DEFAULT_FORM_ID;
   private _formXml?: string;
   private _formModel?: string;
@@ -49,13 +53,15 @@ export class AppComponent {
   @Output() onSubmit: EventEmitter<Object[]> = new EventEmitter();
 
   constructor(
+    chtDatasourceService: CHTDatasourceService,
     private readonly contactSaveService: ContactSaveService,
     private readonly enketoService: EnketoService,
     private readonly translateService: TranslateService,
+    @Inject(DOCUMENT) private readonly document: Document,
   ) {
+    this.chtDataSourceService = chtDatasourceService as unknown as CHTDatasourceServiceStub;
     const zscoreUtil = {};
-    const api = {};
-    medicXpathExtensions.init(zscoreUtil, toBik_text, moment, api);
+    medicXpathExtensions.init(zscoreUtil, toBik_text, moment, this.chtDataSourceService.getSync());
   }
 
   @Input() set formId(value: string) {
@@ -66,26 +72,17 @@ export class AppComponent {
     this.queueRenderForm();
   }
 
-  @Input() set formHtml(value: string) {
-    if (!value?.trim().length) {
-      throw new Error('The Form HTML must be populated.');
-    }
+  @Input() set formHtml(value: string | undefined) {
     this._formHtml = value;
     this.queueRenderForm();
   }
 
-  @Input() set formModel(value: string) {
-    if (!value?.trim().length) {
-      throw new Error('The Form Model must be populated.');
-    }
+  @Input() set formModel(value: string | undefined) {
     this._formModel = value;
     this.queueRenderForm();
   }
 
-  @Input() set formXml(value: string) {
-    if (!value?.trim().length) {
-      throw new Error('The Form XML must be populated.');
-    }
+  @Input() set formXml(value: string | undefined) {
     this._formXml = value;
     this.queueRenderForm();
   }
@@ -113,6 +110,19 @@ export class AppComponent {
       throw new Error('The user must be populated.');
     }
     this._user = { ...this.DEFAULT_USER, ...user };
+    this.queueRenderForm();
+  }
+
+  @Input() set extensionLibs(value: Record<string, any> | undefined) {
+    if (!value) {
+      this.chtDataSourceService.clearExtensionLibs();
+      this.queueRenderForm();
+      return;
+    }
+
+    Object
+      .keys(value)
+      .forEach(key => this.chtDataSourceService.addExtensionLib(key, value[key]));
     this.queueRenderForm();
   }
 
@@ -204,6 +214,7 @@ export class AppComponent {
     const currentForm = this.enketoService.getCurrentForm();
     if (currentForm) {
       this.enketoService.unload(currentForm);
+      $(`#${this._formId} .container.pages`).empty();
     }
   }
 
@@ -236,15 +247,36 @@ export class AppComponent {
 
   private tearDownForm() {
     this.unloadForm();
-    this._formXml = undefined;
-    this._formHtml = undefined;
-    this._formModel = undefined;
-    this._contactSummary = undefined;
-    this._contactType = undefined;
-    this._content = null;
-    this._formId = this.DEFAULT_FORM_ID;
-    this._user = this.DEFAULT_USER;
+
     this.editing = false;
     this.status = { ...this.DEFAULT_STATUS };
+    this.currentRender = undefined;
+    this.reRenderForm = false;
+
+    // The web component framework does some kind of "lazy setting" where it will not call a setter with the same value
+    // twice. So, we cannot just reset the internal state of the "inputs" here. We need to call "through the front door"
+    //  so the context knows that the values have changed instead of just directly resetting the state of this class.
+    const myForm = this.document
+      .getElementById(this._formId)
+      ?.closest('cht-form');
+    const component = myForm || this;
+    // @ts-expect-error it does exist
+    component.formXml = undefined;
+    // @ts-expect-error it does exist
+    component.formHtml = undefined;
+    // @ts-expect-error it does exist
+    component.formModel = undefined;
+    // @ts-expect-error it does exist
+    component.contactSummary = undefined;
+    // @ts-expect-error it does exist
+    component.contactType = undefined;
+    // @ts-expect-error it does exist
+    component.content = null;
+    // @ts-expect-error it does exist
+    component.formId = this.DEFAULT_FORM_ID;
+    // @ts-expect-error it does exist
+    component.user = this.DEFAULT_USER;
+    // @ts-expect-error it does exist
+    component.extensionLibs = undefined;
   }
 }
