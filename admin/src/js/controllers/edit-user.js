@@ -1,8 +1,6 @@
 const moment = require('moment');
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
-const cht = require('@medic/cht-datasource');
-const chtDatasource = cht.getDatasource(cht.getRemoteDataContext());
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 const SHOW_PASSWORD_ICON = '/login/images/show-password.svg';
@@ -27,6 +25,7 @@ angular
     $scope,
     $translate,
     $uibModalInstance,
+    CHTDatasource,
     ContactTypes,
     CreateUser,
     DB,
@@ -38,6 +37,7 @@ angular
     'use strict';
     'ngInject';
 
+    const datasource = CHTDatasource.datasource;
     $scope.cancel = () => $uibModalInstance.dismiss();
 
     const getRoles = roles => {
@@ -58,7 +58,7 @@ angular
     };
 
     const validateSkipPasswordPermission = () => {
-      $scope.skipPasswordChange = chtDatasource.v1.hasPermissions(
+      $scope.skipPasswordChange = datasource.v1.hasPermissions(
         ['can_skip_password_change'], $scope.editUserModel.roles, $scope.permissions
       );
     };
@@ -293,7 +293,7 @@ angular
         return true;
       }
 
-      const userHasPermission = chtDatasource.v1.hasPermissions(
+      const userHasPermission = datasource.v1.hasPermissions(
         ['can_have_multiple_places'], $scope.editUserModel.roles, $scope.permissions
       );
 
