@@ -20,7 +20,9 @@ describe('Death related targets tests', () => {
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) {clock.restore();}
+    if (clock) {
+      clock.restore();
+    }
   });
 
   it('death this month target test this month', async () => {
