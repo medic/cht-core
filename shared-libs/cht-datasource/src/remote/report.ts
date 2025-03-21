@@ -15,7 +15,8 @@ export namespace v1 {
   ): Promise<Nullable<Report.v1.Report>> => getReport(remoteContext)(identifier.uuid);
 
   /** @internal */
-  export const getUuidsPage = (remoteContext: RemoteDataContext) => (
+  // eslint-disable-next-line @typescript-eslint/require-await
+  export const getUuidsPage = async (remoteContext: RemoteDataContext) => (
     qualifier: FreetextQualifier,
     cursor: Nullable<string>,
     limit: number

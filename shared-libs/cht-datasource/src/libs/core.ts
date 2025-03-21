@@ -158,3 +158,28 @@ export interface NormalizedParent extends DataObject, Identifiable {
 export const isNormalizedParent = (value: unknown): value is NormalizedParent => {
   return isDataObject(value) && isIdentifiable(value) && (!value.parent || isNormalizedParent(value.parent));
 };
+
+/** @internal */
+export interface NouveauHit {
+  order: {
+    value: string | number;
+    '@type': string;
+  }[];
+  id: string;
+  fields: {
+    sort_order: string;
+    [key: string]: unknown;  // For any other fields that might be present
+  };
+  doc?: unknown;  // Optional document data
+}
+
+/** @internal */
+export interface NouveauResponse {
+  update_latency: number;
+  total_hits_relation: string;
+  total_hits: number;
+  ranges: null;
+  hits: NouveauHit[];
+  counts: null;
+  bookmark: string;
+}
