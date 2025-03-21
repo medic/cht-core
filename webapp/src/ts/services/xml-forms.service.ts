@@ -9,6 +9,7 @@ import { FileReaderService } from '@mm-services/file-reader.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
+import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
 
 export const TRAINING_FORM_ID_PREFIX: string = 'form:training:';
 export const CONTACT_FORM_ID_PREFIX: string = 'form:contact:';
@@ -29,6 +30,7 @@ export class XmlFormsService {
     private dbService:DbService,
     private fileReaderService: FileReaderService,
     private userContactService:UserContactService,
+    private userContactSummaryService: UserContactSummaryService,
     private xmlFormsContextUtilsService:XmlFormsContextUtilsService,
     private parseProvider:ParseProvider,
     private ngZone:NgZone,
@@ -94,13 +96,12 @@ export class XmlFormsService {
       });
   }
 
-  private evaluateExpression(expression, doc, user, contactSummary) {
+  private evaluateExpression(expression, doc, user, contactSummary, userContactSummary) {
     const context = {
       contact: doc,
-      user: user,
-      summary: contactSummary
+      user: { ...user, summary: userContactSummary },
+      summary: contactSummary,
     };
-
     return this.parseProvider.parse(expression)(this.xmlFormsContextUtilsService, context);
   }
 
@@ -108,23 +109,22 @@ export class XmlFormsService {
     return this.ngZone.runOutsideAngular(() => this._filterAll(forms, options));
   }
 
-  private _filterAll(forms, options) {
-    return this.userContactService.get().then(user => {
-      // clone the forms list so we don't affect future filtering
-      forms = forms.slice();
-      const promises = forms.map(form => this.filter(form, options, user));
-      return Promise
-        .all(promises)
-        .then((resolutions) => {
-          // always splice in reverse...
-          for (let i = resolutions.length - 1; i >= 0; i--) {
-            if (!resolutions[i]) {
-              forms.splice(i, 1);
-            }
-          }
-          return forms;
-        });
-    });
+  private async _filterAll(forms, options) {
+    const user = await this.userContactService.get();
+    const userContactSummary = await this.userContactSummaryService.getContext();
+
+    // clone the forms list so we don't affect future filtering
+    forms = forms.slice();
+    const promises = forms.map(form => this.filter(form, options, user, userContactSummary));
+    const resolutions = await Promise.all(promises);
+
+    for (let i = resolutions.length - 1; i >= 0; i--) {
+      // always splice in reverse...
+      if (!resolutions[i]) {
+        forms.splice(i, 1);
+      }
+    }
+    return forms;
   }
 
   private filterContactTypes (context, doc) {
@@ -151,7 +151,7 @@ export class XmlFormsService {
     });
   }
 
-  private checkFormExpression(form, doc, user, contactSummary) {
+  private checkFormExpression(form, user, userContactSummary, options?) {
     if (!form.context?.expression) {
       return true;
     }
@@ -159,9 +159,10 @@ export class XmlFormsService {
     try {
       return this.evaluateExpression(
         form.context.expression,
-        doc,
+        options?.doc,
         user,
-        contactSummary
+        options?.contactSummary,
+        userContactSummary,
       );
     } catch (err) {
       console.error(`Unable to evaluate expression for form: ${form._id}`, err);
@@ -203,8 +204,9 @@ export class XmlFormsService {
    * To match all forms, then reportForms, contactForms and trainingCards should be undefined.
    *
    * @param user {Object} : User context document from CouchDB.
+   * @param userContactSummary {Object} : Compiled contact summary for the user context document
    */
-  private filter(form, options, user) {
+  private filter(form, options, user, userContactSummary) {
     const isContactForm = form._id.indexOf(CONTACT_FORM_ID_PREFIX) === 0;
     const isTrainingCard = form._id.indexOf(TRAINING_FORM_ID_PREFIX) === 0;
     const isCollectForm = !!form.context?.collect;
@@ -236,10 +238,10 @@ export class XmlFormsService {
 
     return this
       .filterContactTypes(form.context, options.doc)
-      .then(valid => valid && this.canAccessForm(form, user, options));
+      .then(valid => valid && this.canAccessForm(form, user, userContactSummary, options));
   }
 
-  async canAccessForm(form, userContact, options?) {
+  async canAccessForm(form, userContact, userContactSummary, options?) {
     if (!await this.checkFormPermissions(form)) {
       return false;
     }
@@ -248,7 +250,7 @@ export class XmlFormsService {
       return true;
     }
 
-    return await this.checkFormExpression(form, options?.doc, userContact, options?.contactSummary);
+    return await this.checkFormExpression(form, userContact, userContactSummary, options);
   }
 
   private notify(error, forms?) {
@@ -256,7 +258,7 @@ export class XmlFormsService {
   }
 
   /**
-   * @memberof XmlForms
+   * @memberof XmlFormsService
    * @param {Object} doc The document find the xform attachment for
    * @returns {String} The name of the xform attachment.
    */
@@ -279,7 +281,7 @@ export class XmlFormsService {
    * which the user is allowed to complete. Listens for changes and invokes
    * the callback again when needed.
    *
-   * @memberof XmlForms
+   * @memberof XmlFormsService
    *
    * @param {String} name Uniquely identify the callback to stop duplicate registration
    *
@@ -326,7 +328,7 @@ export class XmlFormsService {
   }
 
   /**
-   * @memberof XmlForms
+   * @memberof XmlFormsService
    * @param {String} internalId The value of the desired doc's internalId field.
    * @returns {Promise} Resolves a doc containing an xform with the given
    *    internal identifier if the user is allowed to see it.
@@ -373,7 +375,7 @@ export class XmlFormsService {
   }
 
   /**
-   * @memberof XmlForms
+   * @memberof XmlFormsService
    * @param {Object} [options={}] Described in the "listen" function below.
    * @returns {Promise} Resolves an array of docs which contain an
    *   xform the user is allow to complete.

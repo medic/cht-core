@@ -104,15 +104,11 @@ export class FormService {
       ])
       .then(([html, model]) => {
         const $html = $(html);
-        const hasContactSummary = $(model).find('> instance[id="contact-summary"]').length;
-        const hasUserContactSummary = $(model).find('> instance[id="user-contact-summary"]').length;
 
         return {
           html: $html,
           model: model,
           title: form.title,
-          hasContactSummary,
-          hasUserContactSummary,
         };
       });
   }
@@ -141,7 +137,7 @@ export class FormService {
 
   private getContactSummary(doc, instanceData) {
     const contact = instanceData?.contact;
-    if (!doc.hasContactSummary || !contact) {
+    if (!contact) {
       return Promise.resolve();
     }
     return Promise
@@ -150,23 +146,19 @@ export class FormService {
         this.getLineage(contact),
         this.getTargetDocs(contact),
       ])
-      .then(([reports, lineage, targetDocs]) => this.contactSummaryService.get(contact, reports, lineage, targetDocs));
-  }
-
-  private async getUserContactSummary(doc) {
-    if (!doc.hasUserContactSummary) {
-      return;
-    }
-    return await this.userContactSummaryService.get();
+      .then(([reports, lineage, targetDocs]) => {
+        return this.contactSummaryService.getContext(contact, reports, lineage, targetDocs);
+      });
   }
 
   private canAccessForm(formContext: EnketoFormContext) {
     return this.xmlFormsService.canAccessForm(
       formContext.formDoc,
       formContext.userContact,
+      formContext.userContactSummary,
       {
         doc: typeof formContext.instanceData !== 'string' && formContext.instanceData?.contact,
-        contactSummary: formContext.contactSummary?.context,
+        contactSummary: formContext.contactSummary,
         shouldEvaluateExpression: formContext.shouldEvaluateExpression(),
       },
     );
@@ -182,7 +174,6 @@ export class FormService {
         this.userSettingsService.getWithLanguage()
       ]);
       formContext.contactSummary = await this.getContactSummary(doc, instanceData);
-      formContext.userContactSummary = await this.getUserContactSummary(doc);
 
       if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
@@ -209,6 +200,7 @@ export class FormService {
   private async _render(formContext: EnketoFormContext) {
     await this.inited;
     formContext.userContact = await this.getUserContact(formContext.requiresContact());
+    formContext.userContactSummary = await this.userContactSummaryService.getContext();
     return this.renderForm(formContext);
   }
 

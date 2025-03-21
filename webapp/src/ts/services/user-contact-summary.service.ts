@@ -43,13 +43,13 @@ export class UserContactSummaryService {
 
   get():Promise<Record<string, any>> {
     return new Promise((resolve, reject) => {
-      this.cache((err, userContactSummary:Record<string, any>) => {
-        if (err) {
-          return reject(err);
-        }
-        resolve(userContactSummary);
-      });
+      this.cache((err, userContactSummary:Record<string, any>) => err ? reject(err) : resolve(userContactSummary));
     });
+  }
+
+  async getContext() {
+    const summary = await this.get();
+    return summary?.context;
   }
 
   private async loadSummary() {

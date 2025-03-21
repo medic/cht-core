@@ -141,7 +141,7 @@ export class EnketoService {
         return;
       }
 
-      const xmlStr = pojo2xml({ context: summary.context });
+      const xmlStr = pojo2xml({ context: summary });
       return new DOMParser().parseFromString(xmlStr, 'text/xml');
     };
 

@@ -14,6 +14,7 @@ import { ParseProvider } from '@mm-providers/parse.provider';
 import { PipesService } from '@mm-services/pipes.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { FeedbackService } from '@mm-services/feedback.service';
+import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
 
 describe('XmlForms service', () => {
   let dbGet;
@@ -22,6 +23,7 @@ describe('XmlForms service', () => {
   let Changes;
   let hasAuth;
   let UserContact;
+  let userContactSummary;
   let getContactType;
   let getTypeId;
   let contextUtils;
@@ -57,6 +59,7 @@ describe('XmlForms service', () => {
     Changes = sinon.stub();
     hasAuth = sinon.stub();
     UserContact = sinon.stub();
+    userContactSummary = sinon.stub();
     getContactType = sinon.stub();
     fileReaderService = sinon.stub();
     feedbackService = { submit: sinon.stub() };
@@ -82,6 +85,7 @@ describe('XmlForms service', () => {
         { provide: XmlFormsContextUtilsService, useValue: contextUtils },
         { provide: ContactTypesService, useValue: { get: getContactType, getTypeId } },
         { provide: UserContactService, useValue: { get: UserContact } },
+        { provide: UserContactSummaryService, useValue: { getContext: userContactSummary }},
         ParseProvider,
         { provide: PipesService, useValue: pipesService },
         { provide: FileReaderService, useValue: { utf8: fileReaderService } },
@@ -1463,11 +1467,12 @@ describe('XmlForms service', () => {
         _attachments: { xml: { stub: true } },
       };
       const userContact = { name: 'Frank' };
+      const userContactSummary = { muted: false };
       hasAuth.withArgs('can_view_this_form').resolves(true);
       dbQuery.resolves([]);
       const service = getService();
 
-      const result = await service.canAccessForm(form, userContact);
+      const result = await service.canAccessForm(form, userContact, userContactSummary);
 
       expect(result).to.be.true;
       expect(hasAuth.calledOnce).to.be.true;
@@ -1484,15 +1489,33 @@ describe('XmlForms service', () => {
         _attachments: { xml: { stub: true } },
       };
       const userContact = { name: 'Anna' };
+      const userContactSummary = { muted: false };
       hasAuth.withArgs('can_view_this_form').resolves(true);
       dbQuery.resolves([]);
       const service = getService();
 
-      const result = await service.canAccessForm(form, userContact);
+      const result = await service.canAccessForm(form, userContact, userContactSummary);
 
       expect(result).to.be.false;
       expect(hasAuth.calledOnce).to.be.true;
       expect(hasAuth.args[0][0]).to.equal('can_view_this_form');
+    });
+
+    it('should pass correct user contact summary to form expression', async () => {
+      const form = {
+        type: 'form',
+        context: {
+          expression: 'user.summary.can_see_form === true',
+        },
+        _attachments: { xml: { stub: true } },
+      };
+
+      const userContact = { name: 'Anna' };
+      dbQuery.resolves([]);
+      const service = getService();
+
+      expect(await service.canAccessForm(form, userContact, { can_see_form: true })).to.be.true;
+      expect(await service.canAccessForm(form, userContact, { can_see_form: false })).to.be.false;
     });
 
     it('should return false when user cannot access the form because missing permissions', async () => {
@@ -1505,11 +1528,12 @@ describe('XmlForms service', () => {
         _attachments: { xml: { stub: true } },
       };
       const userContact = { name: 'Frank' };
+      const userContactSummary = { muted: false };
       hasAuth.withArgs('can_view_this_form').resolves(false);
       dbQuery.resolves([]);
       const service = getService();
 
-      const result = await service.canAccessForm(form, userContact);
+      const result = await service.canAccessForm(form, userContact, userContactSummary);
 
       expect(result).to.be.false;
       expect(hasAuth.calledOnce).to.be.true;
