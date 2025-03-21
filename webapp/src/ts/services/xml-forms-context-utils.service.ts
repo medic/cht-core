@@ -1,5 +1,5 @@
 import * as moment from 'moment';
-const { distance } = require('fastest-levenshtein');
+import { distance } from 'fastest-levenshtein';
 import { Injectable } from '@angular/core';
 
 /**
@@ -45,7 +45,7 @@ export class XmlFormsContextUtilsService {
 
   // Normalize the distance by dividing by the length of the longer string. 
   // This can make the metric more adaptable across different string lengths
-  normalizedLevenshteinEq(current: string, existing: string, threshold: number = 3){
+  normalizedLevenshteinEq(current: string, existing: string, threshold: number = 0.42857142857142855){
     return current && existing ? this._normalizedLevenshteinEq(current, existing)  <= threshold : false;
   }
 }

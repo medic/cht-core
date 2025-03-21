@@ -444,7 +444,7 @@
     display: block;
   }
 
-  #duplicate_info {
+  #duplicate_contacts {
     width: 100%; 
     min-height: 20px; 
     padding-left: 20px; 
@@ -471,30 +471,38 @@
       margin-bottom: 5px;
     }
 
-    .card {
-      border: 1px solid #ddd;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border-radius: 5px;
+    mat-expansion-panel mat-expansion-panel-header {
+      width: 100%;
+      height: 60px;
+      padding: 0 20px;
+      cursor: pointer;
+      user-select: none;
+
+      .loader.inline.small {
+        position: absolute;
+        right: 5px;
+      }
+
+      .mat-content {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .mat-expansion-indicator::after {
+        border-width: 0 3px 3px 0;
+        padding: 4px;
+        color: @text-normal-color;
+      }
     }
     
     .nested-section {
       display: block; 
       border: 1px solid lightgray; 
       border-radius: 5px;
-    }
-    
-    .load-more-button {
-      background: none;
-      border: none;
-      color: #007bff;
-      cursor: pointer;
-      font-weight: bold;
-      padding-left: 0px;
-    }
-    
-    .toggle-button:hover {
-      text-decoration: underline;
+
+      .btn.submit.btn-primary {
+        justify-self: flex-end;
+      }
     }
 
     .error_msg {

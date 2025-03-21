@@ -10,16 +10,36 @@
   <div class="col-sm-8 item-content material" [hidden]="loadingContent || contentError">
     <div class="card">
       <mm-enketo formId="contact-form" [editing]="enketoContact?.docId" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()">
-        <div duplicate-info>
-          <mm-duplicate-info 
-            [entityType]="entityType"
-            [duplicates]="duplicates"
-            [acknowledged]="acknowledged" 
-            (acknowledgedChange)="onAcknowledgeChange($event)" 
-            [summaryRequestInfo]="summaryRequestInfo"
-            (loadContactSummary)="onLoadContactSummary($event)"
-            (navigateToDuplicate)="onNavigateToDuplicate($event)">
-          </mm-duplicate-info>
+        <div duplicate-contacts>
+          <div id="duplicate_contacts" [ngStyle]="{ display: duplicates.length > 0 ? 'block' : 'none' }">
+            <p class="results_header">
+              {{ ('duplicate_check.contact.' + entityType + '.duplication_message' | translate) !== ('duplicate_check.contact.' + entityType + '.duplication_message') 
+              ? ('duplicate_check.contact.' + entityType + '.duplication_message' | translate) 
+              : ('duplicate_check.contact.duplication_message' | translate) }}
+            </p>
+            <div class="divider"></div>
+            <mat-accordion multi>
+              <ng-container *ngFor="let duplicate of duplicates; let i = index" >
+                <mm-duplicate-contacts
+                  [duplicate]="duplicate"
+                  [loadContactSummary]="onLoadContactSummary"
+                  (navigateToDuplicate)="onNavigateToDuplicate($event)">
+                </mm-duplicate-contacts>
+              </ng-container>
+            </mat-accordion>
+            <div class="divider"></div>
+            <div>
+              <label for="check" class="acknowledge_label">
+                <input
+                  id="check"
+                  type="checkbox"
+                  [checked]="duplicatesAcknowledged"
+                  (change)="toggleDuplicatesAcknowledged()"
+                  class="acknowledge_checkbox"/>
+                {{'duplicate_check.contact.acknowledge' | translate }}
+              </label>
+            </div>
+          </div>
         </div>
       </mm-enketo>
     </div>
