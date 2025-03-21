@@ -121,20 +121,32 @@ describe('XmlFormsContextUtils service', () => {
 
   });
 
-  describe('Levenshtein', () => {
-    describe('normalizedLevenshteinEq', () => {
-      it('should return true for a threshold of 0.4285', () => {
-        // Score/distance / maxLength
-        // 3 (3 characters need to be added to make str1 = str2) / 5 (Test123 is the larger string)
-        // ~  0.42857142857142855
-        expect(service.normalizedLevenshteinEq('Test123', 'Test', 0.42857142857142855)).to.equal(true);
-      });
+  describe('normalizedLevenshteinEq', () => {
+    it('should return true for a threshold of 0.4285', () => {
+      // Score/distance / maxLength
+      // 3 (3 characters need to be added to make str1 = str2) / 5 (Test123 is the larger string)
+      // ~  0.42857142857142855
+      expect(service.normalizedLevenshteinEq('Test123', 'Test', 0.42857142857142855)).to.equal(true);
     });
-  
-    describe('levenshteinEq', () => {
-      it('should return true for a threshold of 3', () => {
-        expect(service.levenshteinEq('Test123', 'Test', 3)).to.equal(true);
-      });
+
+    it('should handle nullish parameters', () => {
+      const val:any = undefined;
+      expect(service.normalizedLevenshteinEq(val, 'Test', 3)).to.equal(false);
+      expect(service.normalizedLevenshteinEq('Test123', val, 3)).to.equal(false);
+      expect(service.normalizedLevenshteinEq('Test123', 'Test', val)).to.equal(true); // Default is 0.42857142857142855
+    });
+  });
+
+  describe('levenshteinEq', () => {
+    it('should return true for a threshold of 3', () => {
+      expect(service.levenshteinEq('Test123', 'Test', 3)).to.equal(true);
+    });
+
+    it('should handle nullish parameters', () => {
+      const val:any = undefined;
+      expect(service.levenshteinEq(val, 'Test', 3)).to.equal(false);
+      expect(service.levenshteinEq('Test123', val, 3)).to.equal(false);
+      expect(service.levenshteinEq('Test123', 'Test', val)).to.equal(true); // Default is 3
     });
   });
 });

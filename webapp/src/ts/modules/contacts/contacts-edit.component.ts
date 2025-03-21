@@ -13,14 +13,15 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { NgIf } from '@angular/common';
+import { NgIf, NgFor, NgStyle } from '@angular/common';
+import { MatAccordion } from '@angular/material/expansion';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
-import { DuplicateInfoComponent } from '@mm-components/duplicate-info/duplicate-info.component';
+import { DuplicateContactsComponent } from '@mm-components/duplicate-contacts/duplicate-contacts.component';
 
 @Component({
   templateUrl: './contacts-edit.component.html',
-  imports: [NgIf, EnketoComponent, TranslatePipe, DuplicateInfoComponent]
+  imports: [NgIf, NgFor, NgStyle, MatAccordion, EnketoComponent, TranslatePipe, DuplicateContactsComponent]
 })
 export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
@@ -61,45 +62,38 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private trackMetadata = { action: '', form: '' };
 
   private duplicateCheck?: DuplicatesCheck;
-  acknowledged = false;
-  onAcknowledgeChange(value: boolean) {
-    this.acknowledged = value;
+  duplicatesAcknowledged = false;
+
+  duplicates: Duplicate[] = [];
+  entityType: string = '';
+
+  private readonly omitProperties = ['reported_date', 'name'];
+
+  toggleDuplicatesAcknowledged() {
+    this.duplicatesAcknowledged = !this.duplicatesAcknowledged;
   }
 
   onNavigateToDuplicate(_id: string) {
     this.router.navigate(['/contacts', _id]);
   }
+  
+  onLoadContactSummary = async (id: string) => {
+    const contact = this.duplicates.find(x => x._id === id);
 
-  private readonly omitProperties = ['_summary', 'reported_date', 'name'];
-  summaryRequestInfo?: { contact_id: string, isLoading: boolean, error?: string } = undefined;
-  async onLoadContactSummary(id: string) {
-    this.summaryRequestInfo = { contact_id: id, isLoading: true, error: undefined };
-    try {
-      const contact = this.duplicates.find(x => x._id === id);
-
-      if (!contact) {
-        throw new Error(`Contact with ID ${id} not found`);
-      }
-
-      // Remove "reserved" fields
-      const sanitizedContact = Object.keys(contact).reduce((acc, key) => {
-        if (!this.omitProperties.includes(key)) {
-          acc[key] = contact[key];
-        }
-        return acc;
-      }, {});
-
-      contact._summary = await this.formService.loadContactSummary(sanitizedContact);
-    } catch (e) {
-      console.error(e);
-      this.summaryRequestInfo.error = `Unable to load summary data for contact ${id}`;
-    } finally {
-      this.summaryRequestInfo.isLoading = false;
+    if (!contact) {
+      throw new Error(`Contact with ID ${id} not found`);
     }
-  }
 
-  duplicates: Duplicate[] = [];
-  entityType: string = '';
+    // Remove "reserved" fields
+    const sanitizedContact = Object.keys(contact).reduce((acc, key) => {
+      if (!this.omitProperties.includes(key)) {
+        acc[key] = contact[key];
+      }
+      return acc;
+    }, {});
+
+    return await this.formService.loadContactSummary(sanitizedContact);
+  };
 
   ngOnInit() {
     this.trackRender = this.performanceService.track();
@@ -376,7 +370,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         return this.formService
           .saveContact({
             form, docId, type: this.enketoContact.type, xmlVersion: this.xmlVersion
-          }, this.acknowledged, this.duplicateCheck)
+          }, this.duplicatesAcknowledged, this.duplicateCheck)
           .then((result) => {
             console.debug('saved contact', result);
 

@@ -883,7 +883,7 @@ describe('ContactsEdit component', () => {
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'my_duplicate_id']]);
     });
   });
-  describe('onAcknowledgeChange', () => {
+  describe('toggleDuplicatesAcknowledged', () => {
     it('should set acknowledge to true', async () => {
       routeSnapshot.params = { type: 'clinic', parent_id: 'the_district' };
       contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
@@ -902,7 +902,7 @@ describe('ContactsEdit component', () => {
       await createComponent();
       await fixture.whenStable();
 
-      component.onAcknowledgeChange(true);
+      component.toggleDuplicatesAcknowledged();
       formService.saveContact.resolves({ docId: 'new_clinic_id' });
       await component.save();
       expect(formService.saveContact.args).to.deep.equal(
@@ -927,42 +927,17 @@ describe('ContactsEdit component', () => {
           reported_date: '1740472311000'
         }
       ];
-      await component.onLoadContactSummary('some_id');
-      expect(component.summaryRequestInfo).to.deep.equal({
-        contact_id: 'some_id',
-        isLoading: false,
-        error: undefined
-      });
+      const result = await component.onLoadContactSummary('some_id');
       const sanitizedContact = loadContactSummary.getCall(0).args[0];
       expect(sanitizedContact).to.not.have.property('name');
       expect(sanitizedContact).to.not.have.property('reported_date');
-      expect(component.duplicates[0]._summary).to.deep.equal([
+      expect(result).to.deep.equal([
         { label: 'label.short_name', value: 'tp1' },
         { label: 'label.dob_type', value: 'exact' },
       ]);
     });
 
-    it('should catch summary load errors and add it to the state object for display', async () => {
-      loadContactSummary.throws(Error('Some error occurred during load'));
-      component.duplicates = [
-        {
-          _id: 'some_id',
-          name: 'test name',
-          short_name: 'tn',
-          date_of_birth: '1966-04-11',
-          dob_type: 'exact',
-          reported_date: '1740472311000'
-        }
-      ];
-      await component.onLoadContactSummary('some_id');
-      expect(component.summaryRequestInfo).to.deep.equal({
-        contact_id: 'some_id',
-        isLoading: false,
-        error: 'Unable to load summary data for contact some_id'
-      });
-    });
-
-    it('should catch contact resolution errors', async () => {
+    it('should throw for contact resolution errors', async () => {
       loadContactSummary.resetHistory();
       component.duplicates = [
         {
@@ -977,7 +952,7 @@ describe('ContactsEdit component', () => {
       try {
         await component.onLoadContactSummary('some_id');
       } catch (e){
-        expect(e).to.equal('Contact with ID some_id not found');
+        expect(e.message).to.equal('Contact with ID some_id not found');
       }
       expect(loadContactSummary.callCount).to.equal(0);
     });
