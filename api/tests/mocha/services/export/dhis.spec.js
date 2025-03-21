@@ -17,7 +17,10 @@ describe('dhis export service', () => {
   let medic;
 
   beforeEach(async () => {
-    sinon.useFakeTimers(NOW.valueOf());
+    sinon.useFakeTimers({ 
+      now: NOW.valueOf(), 
+      toFake: ['Date'] 
+    });
     medic = await memdownMedic(path.resolve('.'));
     sinon.stub(db, 'medic').value(medic);
   });

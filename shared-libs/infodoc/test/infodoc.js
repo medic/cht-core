@@ -415,7 +415,8 @@ describe('infodoc', () => {
     it('updateTransition should set transition data', () => {
       const now = new Date('2024-04-15');
       const then = new Date('2024-04-12');
-      clock = sinon.useFakeTimers(then.valueOf());
+      clock = sinon.useFakeTimers({ now: then.valueOf() });
+
       const change = { seq: 12, doc: { _rev: 2 }, info: {}};
       lib.updateTransition(change, 'update_clinics', true);
       assert.deepEqual(
