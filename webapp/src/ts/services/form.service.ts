@@ -14,6 +14,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
+import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -58,6 +59,7 @@ export class FormService {
     private enketoService: EnketoService,
     private targetAggregatesService: TargetAggregatesService,
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
+    private userContactSummaryService: UserContactSummaryService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -102,12 +104,11 @@ export class FormService {
       ])
       .then(([html, model]) => {
         const $html = $(html);
-        const hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
+
         return {
           html: $html,
           model: model,
           title: form.title,
-          hasContactSummary: hasContactSummary
         };
       });
   }
@@ -136,7 +137,7 @@ export class FormService {
 
   private getContactSummary(doc, instanceData) {
     const contact = instanceData?.contact;
-    if (!doc.hasContactSummary || !contact) {
+    if (!contact) {
       return Promise.resolve();
     }
     return Promise
@@ -145,16 +146,19 @@ export class FormService {
         this.getLineage(contact),
         this.getTargetDocs(contact),
       ])
-      .then(([reports, lineage, targetDocs]) => this.contactSummaryService.get(contact, reports, lineage, targetDocs));
+      .then(([reports, lineage, targetDocs]) => {
+        return this.contactSummaryService.getContext(contact, reports, lineage, targetDocs);
+      });
   }
 
   private canAccessForm(formContext: EnketoFormContext) {
     return this.xmlFormsService.canAccessForm(
       formContext.formDoc,
       formContext.userContact,
+      formContext.userContactSummary,
       {
         doc: typeof formContext.instanceData !== 'string' && formContext.instanceData?.contact,
-        contactSummary: formContext.contactSummary?.context,
+        contactSummary: formContext.contactSummary,
         shouldEvaluateExpression: formContext.shouldEvaluateExpression(),
       },
     );
@@ -196,6 +200,7 @@ export class FormService {
   private async _render(formContext: EnketoFormContext) {
     await this.inited;
     formContext.userContact = await this.getUserContact(formContext.requiresContact());
+    formContext.userContactSummary = await this.userContactSummaryService.getContext();
     return this.renderForm(formContext);
   }
 
