@@ -1,4 +1,4 @@
-describe.skip('Auth service', function() {
+describe('Auth service', function() {
 
   'use strict';
 
