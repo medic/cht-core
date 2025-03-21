@@ -443,6 +443,72 @@
   .pages.or .or-repeat-info[role="page"] {
     display: block;
   }
+
+  #duplicate_contacts {
+    width: 100%; 
+    min-height: 20px; 
+    padding-left: 20px; 
+    padding-right: 20px; 
+    background-color: #ffe7e8;
+
+    .results_header {
+      font-size: large; 
+      color: #e33030;
+    }
+
+    .acknowledge_label {
+      -webkit-user-select: none; -ms-user-select: none; user-select: none;
+    }
+
+    .acknowledge_checkbox {
+      margin-right: 5px;
+    }
+
+    .divider {
+      background-color: #e33030; 
+      height: 1px; 
+      margin-top: 5px; 
+      margin-bottom: 5px;
+    }
+
+    mat-expansion-panel mat-expansion-panel-header {
+      width: 100%;
+      height: 60px;
+      padding: 0 20px;
+      cursor: pointer;
+      user-select: none;
+
+      .loader.inline.small {
+        position: absolute;
+        right: 5px;
+      }
+
+      .mat-content {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .mat-expansion-indicator::after {
+        border-width: 0 3px 3px 0;
+        padding: 4px;
+        color: @text-normal-color;
+      }
+    }
+    
+    .nested-section {
+      display: block; 
+      border: 1px solid lightgray; 
+      border-radius: 5px;
+
+      .btn.submit.btn-primary {
+        justify-self: flex-end;
+      }
+    }
+
+    .error_msg {
+      color: #e33030;
+    }
+  }
 }
 
 @media (max-width: @media-mobile) {

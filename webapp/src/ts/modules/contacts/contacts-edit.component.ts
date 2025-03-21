@@ -5,7 +5,7 @@ import { isEqual as _isEqual } from 'lodash-es';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { FormService } from '@mm-services/form.service';
+import { FormService, DuplicatesFoundError, Duplicate, DuplicatesCheck } from '@mm-services/form.service';
 import { EnketoFormContext } from '@mm-services/enketo.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
@@ -13,25 +13,27 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { NgIf } from '@angular/common';
+import { NgIf, NgFor, NgStyle } from '@angular/common';
+import { MatAccordion } from '@angular/material/expansion';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
+import { DuplicateContactsComponent } from '@mm-components/duplicate-contacts/duplicate-contacts.component';
 
 @Component({
   templateUrl: './contacts-edit.component.html',
-  imports: [NgIf, EnketoComponent, TranslatePipe]
+  imports: [NgIf, NgFor, NgStyle, MatAccordion, EnketoComponent, TranslatePipe, DuplicateContactsComponent]
 })
 export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
-    private store:Store,
-    private route:ActivatedRoute,
-    private router:Router,
-    private lineageModelGeneratorService:LineageModelGeneratorService,
-    private formService:FormService,
-    private contactTypesService:ContactTypesService,
-    private dbService:DbService,
-    private performanceService:PerformanceService,
-    private translateService:TranslateService,
+    private store: Store,
+    private route: ActivatedRoute,
+    private router: Router,
+    private lineageModelGeneratorService: LineageModelGeneratorService,
+    private formService: FormService,
+    private contactTypesService: ContactTypesService,
+    private dbService: DbService,
+    private performanceService: PerformanceService,
+    private translateService: TranslateService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -58,6 +60,40 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private trackEditDuration;
   private trackSave;
   private trackMetadata = { action: '', form: '' };
+
+  private duplicateCheck?: DuplicatesCheck;
+  duplicatesAcknowledged = false;
+
+  duplicates: Duplicate[] = [];
+  entityType: string = '';
+
+  private readonly omitProperties = ['reported_date', 'name'];
+
+  toggleDuplicatesAcknowledged() {
+    this.duplicatesAcknowledged = !this.duplicatesAcknowledged;
+  }
+
+  onNavigateToDuplicate(_id: string) {
+    this.router.navigate(['/contacts', _id]);
+  }
+  
+  onLoadContactSummary = async (id: string) => {
+    const contact = this.duplicates.find(x => x._id === id);
+
+    if (!contact) {
+      throw new Error(`Contact with ID ${id} not found`);
+    }
+
+    // Remove "reserved" fields
+    const sanitizedContact = Object.keys(contact).reduce((acc, key) => {
+      if (!this.omitProperties.includes(key)) {
+        acc[key] = contact[key];
+      }
+      return acc;
+    }, {});
+
+    return await this.formService.loadContactSummary(sanitizedContact);
+  };
 
   ngOnInit() {
     this.trackRender = this.performanceService.track();
@@ -127,7 +163,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private setCancelCallback() {
-    const cancelCallback = (router:Router, routeSnapshot) => {
+    const cancelCallback = (router: Router, routeSnapshot) => {
       if (routeSnapshot.queryParams?.from === 'list') {
         router.navigate(['/contacts']);
       } else {
@@ -160,6 +196,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     try {
       const contact = await this.getContact();
       const contactTypeId = this.contactTypesService.getTypeId(contact) || this.routeSnapshot.params?.type;
+      this.entityType = contactTypeId;
       const contactType = await this.contactTypesService.get(contactTypeId);
       if (!contactType) {
         throw new Error(`Unknown contact type "${contactTypeId}"`);
@@ -276,6 +313,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private async renderForm(formId: string, titleKey: string) {
     const formDoc = await this.dbService.get().get(formId);
     this.xmlVersion = formDoc.xmlVersion;
+    this.duplicateCheck = formDoc.duplicate_check;
 
     this.globalActions.setEnketoEditedStatus(false);
 
@@ -287,7 +325,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.trackMetadata.form = formId;
     this.trackRender?.stop({
-      name: [ 'enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'render' ].join(':'),
+      name: ['enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'render'].join(':'),
       recordApdex: true,
     });
     this.trackEditDuration = this.performanceService.track();
@@ -310,7 +348,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     this.trackEditDuration?.stop({
-      name: [ 'enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'user_edit_time' ].join(':'),
+      name: ['enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'user_edit_time'].join(':'),
     });
     this.trackSave = this.performanceService.track();
 
@@ -330,7 +368,9 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         $('form.or').trigger('beforesave');
 
         return this.formService
-          .saveContact(form, docId, this.enketoContact.type, this.xmlVersion)
+          .saveContact({
+            form, docId, type: this.enketoContact.type, xmlVersion: this.xmlVersion
+          }, this.duplicatesAcknowledged, this.duplicateCheck)
           .then((result) => {
             console.debug('saved contact', result);
 
@@ -338,7 +378,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
             this.globalActions.setEnketoEditedStatus(false);
 
             this.trackSave?.stop({
-              name: [ 'enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'save' ].join(':'),
+              name: ['enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'save'].join(':'),
               recordApdex: true,
             });
 
@@ -349,6 +389,10 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
             this.router.navigate(['/contacts', result.docId]);
           })
           .catch((err) => {
+            if (err instanceof DuplicatesFoundError) {
+              this.duplicates = err.duplicates;
+            }
+
             console.error('Error submitting form data', err);
 
             this.globalActions.setEnketoSavingStatus(false);
