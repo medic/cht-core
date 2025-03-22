@@ -543,5 +543,6 @@ module.exports = {
   },
   validateSession,
   setCookies,
-  redirectToApp
+  redirectToApp,
+  sendLoginErrorResponse
 };

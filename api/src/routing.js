@@ -451,8 +451,12 @@ app.postJson('/api/v3/users/:username', users.v3.update);
 app.delete('/api/v1/users/:username', users.delete);
 app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getUserSettings, users.info);
 
-const keycloak = sso.init(app);
-app.get(routePrefix + 'login/oidc', keycloak.protect(), sso.chtLogin);
+sso.init(pathPrefix);
+app.get(`${routePrefix}login/${sso.SSO_PATH}`, sso.authorize);
+app.get(`${routePrefix}${sso.SSO_AUTHORIZE_PATH}`, sso.authorize);
+// app.get(sso.SSO_AUTHORIZE_GET_TOKEN_PATH, sso.login);
+// app.get(routePrefix + 'login/oidc/get_token', sso.authorize);
+app.get(`${routePrefix}${sso.SSO_AUTHORIZE_GET_TOKEN_PATH}`, sso.login);
 
 app.postJson('/api/v1/places', function(req, res) {
   auth

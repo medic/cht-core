@@ -1,56 +1,144 @@
-const session = require('express-session');
-const Keycloak = require('keycloak-connect');
-const serverUtils = require('../server-utils');
+const client = require('openid-client');
 
 const config = require('../config');
 const db = require('../db');
 const dataContext = require('../services/data-context');
-const { ssoLogin } = require('@medic/user-management')(config, db, dataContext);
+const { users } = require('@medic/user-management')(config, db, dataContext);
+const logger = require('@medic/logger');
 
-const { validateSession, setCookies, redirectToApp } = require('./login');
+const { validateSession, setCookies, sendLoginErrorResponse } = require('./login');
+
+const SSO_PATH = "oidc";
+const SSO_AUTHORIZE_PATH = `${SSO_PATH}/authorize`;
+const SSO_AUTHORIZE_GET_TOKEN_PATH = `${SSO_PATH}/get_token`;
+
+let ASConfig;
+let code_verifier;
+let state;
+let pathPrefix;
+
+const init = async (routePrefix) => {
+  pathPrefix = routePrefix;
+  const ASConfigSettings = {
+    server: new URL('https://127-0-0-1.local-ip.medicmobile.org:8443/realms/cht/.well-known/openid-configuration'),
+    clientSecret: 'H9sE3aJJ2IFfLgu8CFykRDacfoWQWKov',
+    client: 'cht-client'
+  };
+
+  ASConfig = await client.discovery(
+    ASConfigSettings.server,
+    ASConfigSettings.client,
+    ASConfigSettings.clientSecret,
+  );
+
+  logger.info('Authorization server config auth config loaded successfully.');
+
+  return ASConfig;
+}
+
+const getCurrentUrl = (req) => {
+  return new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
+}
+
+const getSsoBaseUrl = (req) => {
+  return new URL(`${req.protocol}://${req.get('host')}${pathPrefix}`);
+}
+
+const getAuthorizationUrl = async (req) => {
+  code_verifier = client.randomPKCECodeVerifier();
+
+  const code_challenge_method = 'S256';
+  const code_challenge = await client.calculatePKCECodeChallenge(code_verifier);
+
+  const redirectUrl = `${getSsoBaseUrl(req).href}${SSO_AUTHORIZE_GET_TOKEN_PATH}`;
+
+  let parameters = {
+    redirect_uri: redirectUrl,
+    scope: 'openid'
+  }
+ 
+  if (ASConfig.serverMetadata().supportsPKCE()) {
+    parameters = { ...parameters, ...{ code_challenge_method, code_challenge } }
+  }
+
+  return client.buildAuthorizationUrl(ASConfig, parameters);
+}
+
+const getIdToken = async (req) => {
+  let params = {};
+
+  if (ASConfig.serverMetadata().supportsPKCE()) {
+    params = {
+      idTokenExpected: true,
+      pkceCodeVerifier: code_verifier,
+      state: state
+    }
+  }
+
+  let tokens = await client.authorizationCodeGrant(ASConfig, getCurrentUrl(req), params);
+
+  const { id_token } = tokens;
+
+  const { name, preferred_username, email } = tokens.claims();
+
+  const user = {
+    name,
+    username: preferred_username,
+    email
+  }
+
+  const auth = {
+    id_token,
+    user
+  }
+
+  return auth;
+}
+
+const getUserPassword = async username => {
+  const user = await users.getUser(username);
+
+  if (!user || !user.id) {
+    throw { status: 401, error: `Invalid. Could login ${username} using SSO.`};
+  }
+
+  const password = await users.resetPassword(username);
+  return { user: user.username, password };
+};
+
+const login = async (req, res) => {
+  try {
+    const auth = await getIdToken(req, res);
+
+    const {user, password} = await getUserPassword(auth.user.username)
+
+    req.body = { user, password };
+    const sessionRes = await validateSession(req);
+    const redirectUrl = await setCookies(req, res, sessionRes);
+
+    res.redirect(redirectUrl);
+  } catch (e) {
+    return sendLoginErrorResponse(e, res);
+  }
+};
+
+const redirectToSSOAuthorize =  (req, res) => {
+  res.redirect(301, `${getSsoBaseUrl(req).href}${SSO_AUTHORIZE_PATH}`);
+}
+
+const authorize = async (req, res) => {
+  const redirectUrl = await getAuthorizationUrl(req);
+
+  res.redirect(301, redirectUrl.href);
+}
 
 module.exports = {
-    init: (app) => {
-      const Keycloak = require('keycloak-connect');
-      const memoryStore = new session.MemoryStore();
-
-      // get this from settng doc & secrets store
-      const keyClockConfig = {
-        "realm": "cht",
-        "auth-server-url": "https://127-0-0-1.local-ip.medicmobile.org:8443/",
-        "ssl-required": "external",
-        "resource": "cht-client",
-        "credentials": {
-          "secret": "H9sE3aJJ2IFfLgu8CFykRDacfoWQWKov"
-        },
-        "confidential-port": 0
-      }
-
-      const keycloak = new Keycloak({ store: memoryStore }, keyClockConfig);
-
-      app.use(session({
-          secret: 'mymKWhjV<T=-*VW<;cC5Y6U-{F.ppK+])',
-          resave: false,
-          saveUninitialized: true,
-          store: memoryStore
-      }));
-      app.use(keycloak.middleware());
-      return keycloak;
-    },
-    chtLogin: async (req, res) => {
-      try {
-        const username = req.kauth.grant.access_token.content.preferred_username;
-
-        const {user, password} = await ssoLogin(username);
-        req.body = { user, password };
-
-        const sessionRes = await validateSession(req);
-        const redirectUrl = await setCookies(req, res, sessionRes);
-        res.redirect(redirectUrl);
-      } catch (err) {
-        console.log('error during sso login: ', err);
-        serverUtils.error(err, req, res);
-      }
-    }
+  init,
+  redirectToSSOAuthorize,
+  authorize,
+  login,
+  SSO_AUTHORIZE_GET_TOKEN_PATH,
+  SSO_AUTHORIZE_PATH,
+  SSO_PATH,
 }
  
