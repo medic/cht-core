@@ -18,7 +18,8 @@ describe('CHT Datasource Service', () => {
   it('getSync', () => {
     const chtApi = service.getSync();
 
-    expect(chtApi).to.have.property('v1');
+expect(chtApi).to.have.keys(['v1']);
+expect(chtApi.v1).to.have.keys(['getExtensionLib']);
     expect(chtApi.v1).to.have.property('getExtensionLib');
     expect(chtApi.v1.getExtensionLib).to.be.a('function');
   });
