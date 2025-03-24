@@ -39,7 +39,11 @@ export class DuplicateContactsComponent {
     this.navigateToDuplicate.emit(_id);
   }
 
-  async _loadContactSummary(duplicateId: string){
+  async _loadContactSummary(duplicateId?: string){
+    if (!duplicateId){
+      return;
+    }
+    
     if (this.isLoading){
       return;
     }
@@ -54,6 +58,13 @@ export class DuplicateContactsComponent {
       console.error(err);
     } finally {
       this.isLoading = false;
+    }
+  }
+
+  onKeyDown(event: KeyboardEvent, duplicateId?: string) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this._loadContactSummary(duplicateId);
     }
   }
 }

@@ -1,5 +1,6 @@
 <mat-expansion-panel
   (click)="_loadContactSummary(duplicate?._id)" 
+  (keydown)="onKeyDown($event, duplicate?._id)"
   [hideToggle]="isLoading">
   <mat-expansion-panel-header>
     <mat-panel-title> <strong>{{ 'duplicate_check.contact.name'  | translate }} </strong> {{ duplicate?.name }} </mat-panel-title>
