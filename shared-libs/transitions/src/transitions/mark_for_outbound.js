@@ -22,7 +22,7 @@ const relevantTo = (doc) => {
   return Object.keys(pushes)
     .filter(key => {
       const conf = pushes[key];
-      return conf.relevant_to && vm.runInNewContext(conf.relevant_to, {doc});
+      return conf.relevant_to && vm.runInNewContext(conf.relevant_to, { doc });
     })
     .map(key => [pushes[key], key]);
 };
@@ -50,15 +50,15 @@ const markForOutbound = (change) => {
           // Successfully sent, outbound.send wrote to the infodoc
           return db.sentinel.get(change.info._id)
             .then(infoDoc => {
-            infoDoc.completed_tasks = change.info.completed_tasks;
-            return db.sentinel.put(infoDoc);
-          })
-          .catch(err => {
-            if (err.status !== 404) {
-              throw err;
-            }
-            return db.sentinel.put(change.info);
-          });
+              infoDoc.completed_tasks = change.info.completed_tasks;
+              return db.sentinel.put(infoDoc);
+            })
+            .catch(err => {
+              if (err.status !== 404) {
+                throw err;
+              }
+              return db.sentinel.put(change.info);
+            });
         }
       })
       .catch(() => {
