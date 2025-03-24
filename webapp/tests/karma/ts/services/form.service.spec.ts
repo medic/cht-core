@@ -300,8 +300,12 @@ describe('Form service', () => {
             internalId: 'myform',
           },
           { contact_id: '123-user-contact' },
-          { chw: true },
-          { doc: { _id: '123-patient-contact' }, contactSummary: { pregnant: false }, shouldEvaluateExpression: true },
+          { instanceId: 'user-contact-summary', summary: { chw: true } },
+          {
+            doc: { _id: '123-patient-contact' },
+            contactSummary: { instanceId: 'contact-summary', summary: { pregnant: false }},
+            shouldEvaluateExpression: true
+          },
         ]);
         expect(enketoInit.callCount).to.equal(1);
         expect(error.message).to.equal(expectedErrorMessage);
@@ -472,6 +476,39 @@ describe('Form service', () => {
       });
     });
 
+    it('does not get contact summary when the form has no instance for it', () => {
+      const data = '<data><patient_id>123</patient_id></data>';
+      UserContact.resolves({
+        _id: '456',
+        contact_id: '123',
+        facility_id: '789'
+      });
+      xmlFormsService.canAccessForm.resolves(true);
+      dbGetAttachment
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves(VISIT_MODEL);
+      enketoInit.returns([]);
+      FileReader.utf8.resolves('<some-blob name="xml"/>');
+      EnketoPrepopulationData.resolves(data);
+      const instanceData = {
+        contact: {
+          _id: 'fffff'
+        },
+        inputs: {
+          patient_id: 123,
+          name: 'sharon'
+        }
+      };
+      const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
+      return service.render(formContext).then(() => {
+        expect(EnketoForm.callCount).to.equal(1);
+        expect(EnketoForm.args[0][1].external).to.deep.equal([]);
+        expect(ContactSummary.callCount).to.equal(0);
+        expect(userContactSummaryService.getContext.callCount).to.equal(0);
+        expect(LineageModelGenerator.contact.callCount).to.equal(0);
+      });
+    });
+
     it('ContactSummary receives empty lineage if contact doc is missing', () => {
       LineageModelGenerator.contact.rejects({ code: 404 });
 
@@ -606,7 +643,7 @@ describe('Form service', () => {
             internalId: 'myform',
           },
           { contact_id: '123-user-contact' },
-          { chw: true },
+          undefined,
           { doc: undefined, contactSummary: undefined, shouldEvaluateExpression: true },
         ]);
         expect(enketoInit.notCalled).to.be.true;

@@ -135,7 +135,7 @@ export class EnketoService {
     }
   }
 
-  private convertContactSummaryToXML(contactSummary, userContactSummary) {
+  private convertContactSummaryToXML(contactSummaries) {
     const convertSummary = (summary) => {
       if (!summary) {
         return;
@@ -147,17 +147,16 @@ export class EnketoService {
 
     try {
       const summaries:ContactSummary[] = [];
-      const contactSummaryXml = convertSummary(contactSummary);
-      if (contactSummaryXml) {
-        summaries.push({ id: 'contact-summary', xml: contactSummaryXml });
-      }
-      const userContactSummaryXml = convertSummary(userContactSummary);
-      if (userContactSummaryXml) {
-        summaries.push({
-          id: 'user-contact-summary',
-          xml: userContactSummaryXml,
-        });
-      }
+      contactSummaries.forEach(contactSummary => {
+        const contactSummaryXml = convertSummary(contactSummary?.summary);
+        if (contactSummaryXml) {
+          summaries.push({
+            id: contactSummary.instanceId,
+            xml: contactSummaryXml
+          });
+        }
+      });
+
       return summaries;
     } catch (e) {
       console.error('Error while converting app_summary.contact_summary.context to xml.', e);
@@ -174,7 +173,7 @@ export class EnketoService {
     const options: EnketoOptions = {
       modelStr: xmlFormContext.doc.model,
       instanceStr: instanceStr,
-      external: this.convertContactSummaryToXML(xmlFormContext.contactSummary, xmlFormContext.userContactSummary),
+      external: this.convertContactSummaryToXML([xmlFormContext.contactSummary, xmlFormContext.userContactSummary]),
     };
     const form = xmlFormContext.wrapper.find('form')[0];
     return new window.EnketoForm(form, options, { language: userSettings.language });
@@ -626,15 +625,13 @@ interface XmlFormContext {
     html: JQuery;
     model: string;
     title: string;
-    hasContactSummary: boolean;
-    hasUserContactSummary: boolean;
   };
   wrapper: JQuery;
   instanceData: null | string | Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey?: string;
   isFormInModal?: boolean;
-  contactSummary?: Record<string, any>;
-  userContactSummary?: unknown;
+  contactSummary?: { instanceId: string, summary: Record<string, any> };
+  userContactSummary?: { instanceId: string, summary: Record<string, any> };
 }
 
 export class EnketoFormContext {
@@ -648,8 +645,8 @@ export class EnketoFormContext {
   titleKey?: string;
   isFormInModal?: boolean;
   userContact?: Nullable<Person.v1.Person>;
-  contactSummary?: Record<string, any>;
-  userContactSummary?: Record<string, any>;
+  contactSummary?: { instanceId: string, summary: Record<string, any> };
+  userContactSummary?: { instanceId: string, summary: Record<string, any> };
 
   constructor(selector: string, type: string, formDoc: Record<string, any>, instanceData?) {
     this.selector = selector;
