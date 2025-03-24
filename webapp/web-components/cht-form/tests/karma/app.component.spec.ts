@@ -106,9 +106,9 @@ describe('AppComponent', () => {
       selector: `#${FORM_ID}`,
       type: 'report',
       formDoc: { _id: FORM_ID },
-      instanceData: null,
-      contactSummary: undefined
+      instanceData: undefined
     });
+    expect(actualContext.contactSummary).to.be.undefined;
     expect(actualContext.editedListener).to.exist;
     expect(actualContext.valuechangeListener).to.exist;
     expect(enketoService.renderForm.args[0][1]).to.deep.equal({
@@ -182,7 +182,7 @@ describe('AppComponent', () => {
     // Null out the optional fields and render again
     component.contactSummary = undefined;
     component.contactType = undefined;
-    component.content = null;
+    component.content = undefined;
     component.extensionLibs = undefined;
     tick();
 
@@ -195,9 +195,9 @@ describe('AppComponent', () => {
       selector: `#${formId}`,
       type: 'report',
       formDoc: { _id: formId },
-      instanceData: null,
-      contactSummary: undefined
+      instanceData: undefined
     });
+    expect(actualContext.contactSummary).to.be.undefined;
     expect(enketoService.renderForm.args[2][1]).to.deep.equal({
       html: $(FORM_HTML),
       model: formModel,
@@ -270,9 +270,9 @@ describe('AppComponent', () => {
         selector: `#${formId}`,
         type: 'report',
         formDoc: { _id: formId },
-        instanceData: null,
-        contactSummary: undefined
+        instanceData: undefined
       });
+      expect(actualContext.contactSummary).to.be.undefined;
     } finally {
       global.MutationObserver = MutationObserver;
     }
@@ -296,9 +296,9 @@ describe('AppComponent', () => {
       selector: `#${FORM_ID}`,
       type: 'report',
       formDoc: { _id: FORM_ID },
-      instanceData: { ...content, source: 'contact' },
-      contactSummary: undefined
+      instanceData: { ...content, source: 'contact' }
     });
+    expect(actualContext.contactSummary).to.be.undefined;
   }));
 
   it('renders form with given source value even if contact is provided', fakeAsync(async () => {
@@ -322,9 +322,9 @@ describe('AppComponent', () => {
       selector: `#${FORM_ID}`,
       type: 'report',
       formDoc: { _id: FORM_ID },
-      instanceData: content,
-      contactSummary: undefined
+      instanceData: content
     });
+    expect(actualContext.contactSummary).to.be.undefined;
   }));
 
   it('re-renders form when any field is set', fakeAsync(async () => {
@@ -467,8 +467,6 @@ describe('AppComponent', () => {
     component.formModel = formModel;
     tick();
     component.formHtml = formHtml;
-    tick();
-    component.editing = true;
 
     expect(enketoService.getCurrentForm.callCount).to.equal(7);
     expect(enketoService.renderForm.callCount).to.equal(1);
@@ -540,8 +538,6 @@ describe('AppComponent', () => {
     component.formModel = formModel;
     tick();
     component.formHtml = formHtml;
-    tick();
-    component.editing = true;
 
     expect(enketoService.getCurrentForm.callCount).to.equal(8);
     expect(enketoService.renderForm.callCount).to.equal(1);
@@ -609,8 +605,6 @@ describe('AppComponent', () => {
     component.formModel = formModel;
     tick();
     component.formHtml = formHtml;
-    tick();
-    component.editing = true;
 
     expect(enketoService.getCurrentForm.callCount).to.equal(8);
     expect(enketoService.renderForm.callCount).to.equal(1);
@@ -727,9 +721,6 @@ describe('AppComponent', () => {
     component.formModel = formModel;
     tick();
     component.formHtml = formHtml;
-    tick();
-    component.editing = true;
-    component.status = { saving: true, error: 'some error' };
 
     expect(enketoService.getCurrentForm.callCount).to.equal(9);
     expect(chtDatasourceService.addExtensionLib.args).to.deep.equal([['hello', 'world'], ['world', 'hello']]);
@@ -777,7 +768,7 @@ describe('AppComponent', () => {
       selector: `#${FORM_ID}`,
       type: 'report',
       formDoc: { _id: FORM_ID },
-      instanceData: null,
+      instanceData: undefined,
       contactSummary: undefined
     });
     expect(actualContext.editedListener).to.exist;

@@ -10,6 +10,8 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';
 
+const DEFAULT_FORM_ID = 'cht-form-id';
+
 @Component({
   selector: 'cht-form',
   templateUrl: './app.component.html',
@@ -17,12 +19,7 @@ import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-da
   imports: [NgIf, TranslatePipe],
 })
 export class AppComponent {
-  private readonly DEFAULT_FORM_ID = 'cht-form-id';
   private readonly DEFAULT_USER = { contact_id: 'default_user', language: 'en' } as const;
-  private readonly DEFAULT_STATUS = {
-    saving: false as boolean,
-    error: null as string | null,
-  } as const;
 
   private readonly HARDCODED_TYPES = [
     'district_hospital',
@@ -33,20 +30,15 @@ export class AppComponent {
 
   private readonly chtDataSourceService: CHTDatasourceServiceStub;
 
-  private _formId = this.DEFAULT_FORM_ID;
+  private formContext = new ChtFormEnketoFormContext();
+
   private _formXml?: string;
   private _formModel?: string;
   private _formHtml?: string;
-  private _contactSummary?: Record<string, any>;
-  private _contactType?: string;
-  private _content: Record<string, any> | null = null;
   private _user: typeof this.DEFAULT_USER & Record<string, any> = this.DEFAULT_USER;
 
   private currentRender?: Promise<void>;
   private reRenderForm = false;
-
-  @Input() editing = false;
-  @Input() status = { ...this.DEFAULT_STATUS };
 
   @Output() onRender: EventEmitter<void> = new EventEmitter();
   @Output() onCancel: EventEmitter<void> = new EventEmitter();
@@ -68,7 +60,7 @@ export class AppComponent {
     if (!value?.trim().length) {
       throw new Error('The Form Id must be populated.');
     }
-    this._formId = value;
+    this.formContext.formId = value;
     this.queueRenderForm();
   }
 
@@ -88,20 +80,20 @@ export class AppComponent {
   }
 
   @Input() set contactSummary(value: Record<string, any> | undefined) {
-    this._contactSummary = value ? { context: value } : undefined;
+    this.formContext.contactSummary = value ? { context: value } : undefined;
     this.queueRenderForm();
   }
 
   @Input() set contactType(value: string | undefined) {
-    this._contactType = value;
+    this.formContext.contactType = value;
     this.queueRenderForm();
   }
 
-  @Input() set content(value: Record<string, any> | null) {
-    this._content = value;
-    if (this._content?.contact && !this._content.source) {
-      this._content.source = 'contact';
+  @Input() set content(value: Record<string, any> | undefined) {
+    if (value?.contact && !value.source) {
+      value.source = 'contact';
     }
+    this.formContext.content = value;
     this.queueRenderForm();
   }
 
@@ -126,8 +118,17 @@ export class AppComponent {
     this.queueRenderForm();
   }
 
+  @Input() get editing() {
+    return this.formContext.editing;
+  }
+
+
+  @Input() get status() {
+    return this.formContext.status;
+  }
+
   get formId(): string {
-    return this._formId;
+    return this.formContext.formId;
   }
 
   cancelForm(): void {
@@ -136,25 +137,26 @@ export class AppComponent {
   }
 
   async submitForm(): Promise<void> {
-    this.status.saving = true;
+    this.formContext.status.saving = true;
 
     try {
       const submittedDocs = await this.getDocsFromForm();
       this.onSubmit.emit(submittedDocs);
     } catch (e) {
       console.error('Error submitting form data: ', e);
-      this.status.error = await this.translateService.get('error.report.save');
+      this.formContext.status.error = await this.translateService.get('error.report.save');
     } finally {
-      this.status.saving = false;
+      this.formContext.status.saving = false;
     }
   }
 
   private async getDocsFromForm() {
     const currentForm = this.enketoService.getCurrentForm();
-    if (this._contactType) {
-      const typeFields = this.HARDCODED_TYPES.includes(this._contactType)
-        ? { type: this._contactType }
-        : { type: 'contact', contact_type: this._contactType };
+    const { contactType } = this.formContext;
+    if (contactType) {
+      const typeFields = this.HARDCODED_TYPES.includes(contactType)
+        ? { type: contactType }
+        : { type: 'contact', contact_type: contactType };
       const { preparedDocs } = await this.contactSaveService.save(currentForm, null, typeFields, null);
       return preparedDocs;
     }
@@ -163,7 +165,12 @@ export class AppComponent {
       xml: this._formXml,
       doc: {}
     };
-    return this.enketoService.completeNewReport(this._formId, currentForm, formDoc, this._content?.contact);
+    return this.enketoService.completeNewReport(
+      this.formContext.formId,
+      currentForm,
+      formDoc,
+      this.formContext.content?.contact
+    );
   }
 
   private queueRenderForm() {
@@ -189,24 +196,15 @@ export class AppComponent {
       return;
     }
 
-    const selector = `#${this._formId}`;
     // Can have a race condition where the formId is set here but the Angular attribute data binding has not updated
     // the DOM yet (the formId is used as the id of the .enketo element)
-    if (!$(selector).length) {
-      return this.waitForSelector(selector)
+    if (!$(this.formContext.selector).length) {
+      return this.waitForSelector(this.formContext.selector)
         .then(() => this.renderForm());
     }
 
-    const editedListener = () => this.editing = true;
-    const valuechangeListener = () => this.status.error = null;
-    const formDoc = { _id: this._formId };
-    const type = this._contactType ? 'contact': 'report';
-    const formContext = new EnketoFormContext(selector, type, formDoc, this._content);
-    formContext.editedListener = editedListener;
-    formContext.valuechangeListener = valuechangeListener;
-    formContext.contactSummary = this._contactSummary;
     const formDetails = this.getFormDetails();
-    await this.enketoService.renderForm(formContext, formDetails, this._user);
+    await this.enketoService.renderForm(this.formContext, formDetails, this._user);
     this.onRender.emit();
   }
 
@@ -214,7 +212,7 @@ export class AppComponent {
     const currentForm = this.enketoService.getCurrentForm();
     if (currentForm) {
       this.enketoService.unload(currentForm);
-      $(`#${this._formId} .container.pages`).empty();
+      $(`${this.formContext.selector} .container.pages`).empty();
     }
   }
 
@@ -247,9 +245,7 @@ export class AppComponent {
 
   private tearDownForm() {
     this.unloadForm();
-
-    this.editing = false;
-    this.status = { ...this.DEFAULT_STATUS };
+    this.formContext = new ChtFormEnketoFormContext();
     this.currentRender = undefined;
     this.reRenderForm = false;
 
@@ -257,7 +253,7 @@ export class AppComponent {
     // twice. So, we cannot just reset the internal state of the "inputs" here. We need to call "through the front door"
     //  so the context knows that the values have changed instead of just directly resetting the state of this class.
     const myForm = this.document
-      .getElementById(this._formId)
+      .getElementById(this.formContext.formId)
       ?.closest('cht-form');
     const component = myForm || this;
     // @ts-expect-error it does exist
@@ -271,12 +267,43 @@ export class AppComponent {
     // @ts-expect-error it does exist
     component.contactType = undefined;
     // @ts-expect-error it does exist
-    component.content = null;
+    component.content = undefined;
     // @ts-expect-error it does exist
-    component.formId = this.DEFAULT_FORM_ID;
+    component.formId = DEFAULT_FORM_ID;
     // @ts-expect-error it does exist
     component.user = this.DEFAULT_USER;
     // @ts-expect-error it does exist
     component.extensionLibs = undefined;
+  }
+}
+
+class ChtFormEnketoFormContext implements EnketoFormContext {
+  readonly editedListener = () => this.editing = true;
+  readonly valuechangeListener = () => this.status.error = null;
+  contactSummary?: Record<string, any>;
+  readonly status = {
+    saving: false,
+    error: null as string | null
+  };
+
+  formId = DEFAULT_FORM_ID;
+  contactType?: string;
+  content?: Record<string, any>;
+  editing = false;
+
+  get formDoc() {
+    return { _id: this.formId };
+  }
+
+  get instanceData() {
+    return this.content;
+  }
+
+  get selector() {
+    return `#${this.formId}`;
+  }
+
+  get type() {
+    return this.contactType ? 'contact': 'report';
   }
 }
