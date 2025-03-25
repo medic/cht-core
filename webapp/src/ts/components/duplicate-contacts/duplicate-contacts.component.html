@@ -1,0 +1,25 @@
+<mat-expansion-panel
+  (click)="_loadContactSummary(duplicate?._id)" 
+  (keydown)="onKeyDown($event, duplicate?._id)"
+  [hideToggle]="isLoading">
+  <mat-expansion-panel-header>
+    <mat-panel-title> <strong>{{ 'duplicate_check.contact.name'  | translate }} </strong> {{ duplicate?.name }} </mat-panel-title>
+    <mat-panel-description> <strong>{{ 'duplicate_check.contact.created_on' | translate }} </strong> {{ duplicate?.reported_date | simpleDate }} </mat-panel-description>
+    <div 
+      *ngIf="isLoading" 
+      class="loader inline small">
+    </div>
+  </mat-expansion-panel-header>
+  
+  <p *ngIf="error" class="error_msg">
+    <strong>{{ error!.toString() }}</strong>
+    <button class="btn submit btn-primary" (click)="_loadContactSummary(duplicate?._id)">{{ 'duplicate_check.contact.retry' | translate }}</button>
+  </p>
+  <div *ngIf="_summary?.fields" class="nested-section">
+    <mm-contact-summary-content 
+      [fields]="_summary?.fields"
+      [contactsLoadingSummary]="isLoading">
+    </mm-contact-summary-content>
+    <button class="btn submit btn-primary" (click)="_navigateToDuplicate(duplicate?._id)">{{ 'duplicate_check.contact.open' | translate }}</button>
+  </div>
+</mat-expansion-panel>
