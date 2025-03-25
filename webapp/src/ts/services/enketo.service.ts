@@ -135,7 +135,7 @@ export class EnketoService {
     }
   }
 
-  private convertContactSummaryToXML(contactSummaries) {
+  private convertContactSummaryToXML(contactSummaries:(ContactSummary|undefined)[]) {
     const convertSummary = (summary) => {
       if (!summary) {
         return;
@@ -146,12 +146,12 @@ export class EnketoService {
     };
 
     try {
-      const summaries:ContactSummary[] = [];
+      const summaries:ContactSummaryXml[] = [];
       contactSummaries.forEach(contactSummary => {
-        const contactSummaryXml = convertSummary(contactSummary?.summary);
-        if (contactSummaryXml) {
+        const contactSummaryXml = convertSummary(contactSummary?.context);
+        if (contactSummary && contactSummaryXml) {
           summaries.push({
-            id: contactSummary.instanceId,
+            id: contactSummary.id,
             xml: contactSummaryXml
           });
         }
@@ -609,7 +609,11 @@ export class EnketoService {
   }
 }
 
-interface ContactSummary {
+export interface ContactSummary {
+  id: string;
+  context: Record<string, any>;
+}
+interface ContactSummaryXml {
   id: string;
   xml: Document;
 }
@@ -617,7 +621,7 @@ interface ContactSummary {
 interface EnketoOptions {
   modelStr: string;
   instanceStr: string;
-  external: ContactSummary[];
+  external: ContactSummaryXml[];
 }
 
 interface XmlFormContext {
@@ -630,8 +634,8 @@ interface XmlFormContext {
   instanceData: null | string | Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey?: string;
   isFormInModal?: boolean;
-  contactSummary?: { instanceId: string, summary: Record<string, any> };
-  userContactSummary?: { instanceId: string, summary: Record<string, any> };
+  contactSummary?: ContactSummary;
+  userContactSummary?: ContactSummary;
 }
 
 export class EnketoFormContext {
@@ -645,8 +649,8 @@ export class EnketoFormContext {
   titleKey?: string;
   isFormInModal?: boolean;
   userContact?: Nullable<Person.v1.Person>;
-  contactSummary?: { instanceId: string, summary: Record<string, any> };
-  userContactSummary?: { instanceId: string, summary: Record<string, any> };
+  contactSummary?: ContactSummary;
+  userContactSummary?: ContactSummary;
 
   constructor(selector: string, type: string, formDoc: Record<string, any>, instanceData?) {
     this.selector = selector;

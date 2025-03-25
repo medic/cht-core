@@ -297,7 +297,7 @@ describe('Enketo service', () => {
       enketoInit.returns([]);
       EnketoPrepopulationData.returns(data);
       const formContext = new EnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
-      formContext.contactSummary = { instanceId: 'contact-summary', summary: { pregnant: true } };
+      formContext.contactSummary = { id: 'contact-summary', context: { pregnant: true } };
       const doc = {
         html: $('<div>my form</div>'),
         model: VISIT_MODEL_WITH_CONTACT_SUMMARY,
@@ -328,7 +328,7 @@ describe('Enketo service', () => {
       enketoInit.returns([]);
       EnketoPrepopulationData.returns(data);
       const formContext = new EnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
-      formContext.userContactSummary =  { instanceId: 'user-contact-summary', summary: { chw: true } };
+      formContext.userContactSummary =  { id: 'user-contact-summary', context: { chw: true } };
       const doc = {
         html: $('<div>my form</div>'),
         model: VISIT_MODEL_WITH_CONTACT_SUMMARY,
@@ -359,8 +359,8 @@ describe('Enketo service', () => {
       enketoInit.returns([]);
       EnketoPrepopulationData.returns(data);
       const formContext = new EnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
-      formContext.contactSummary =  { instanceId: 'contact-summary', summary: { pregnant: true } };
-      formContext.userContactSummary =  { instanceId: 'user-contact-summary', summary: { chw: true } };
+      formContext.contactSummary =  { id: 'contact-summary', context: { pregnant: true } };
+      formContext.userContactSummary =  { id: 'user-contact-summary', context: { chw: true } };
       const doc = {
         html: $('<div>my form</div>'),
         model: VISIT_MODEL_WITH_CONTACT_SUMMARY,

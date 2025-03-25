@@ -157,7 +157,7 @@ describe('AppComponent', () => {
       type: 'contact',
       formDoc: { _id: formId },
       instanceData: content,
-      contactSummary: { context: contactSummary }
+      contactSummary: { id: 'contact-summary', context: contactSummary }
     });
     expect(actualContext.editedListener).to.exist;
     expect(actualContext.valuechangeListener).to.exist;
@@ -356,7 +356,7 @@ describe('AppComponent', () => {
       type: 'contact',
       formDoc: { _id: formId },
       instanceData: content,
-      contactSummary: { context: contactSummary }
+      contactSummary: { id: 'contact-summary', context: contactSummary }
     });
     expect(actualContext.editedListener).to.exist;
     expect(actualContext.valuechangeListener).to.exist;

@@ -20,7 +20,7 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
+import { ContactSummary, EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
 import { reduce as _reduce } from 'lodash-es';
@@ -139,7 +139,7 @@ export class FormService {
     return this.targetAggregatesService.getTargetDocs(contact, this.userFacilityIds, this.userContactId);
   }
 
-  private async getContactSummary(formDoc, instanceData) {
+  private async getContactSummary(formDoc, instanceData):Promise<ContactSummary|undefined> {
     const instanceId = 'contact-summary';
     const contact = instanceData?.contact;
     if (!this.modelHasInstance(formDoc.model, instanceId) || !contact) {
@@ -153,20 +153,20 @@ export class FormService {
     ]);
 
     return {
-      instanceId: instanceId,
-      summary: await this.contactSummaryService.getContext(contact, reports, lineage, targetDocs)
+      id: instanceId,
+      context: await this.contactSummaryService.getContext(contact, reports, lineage, targetDocs)
     };
   }
 
-  private async getUserContactSummary(formDoc) {
+  private async getUserContactSummary(formDoc):Promise<ContactSummary|undefined> {
     const instanceId = 'user-contact-summary';
     if (!this.modelHasInstance(formDoc.model, instanceId)) {
       return;
     }
 
     return {
-      instanceId: instanceId,
-      summary: await this.userContactSummaryService.getContext(),
+      id: instanceId,
+      context: await this.userContactSummaryService.getContext(),
     };
   }
 
@@ -174,10 +174,10 @@ export class FormService {
     return this.xmlFormsService.canAccessForm(
       formContext.formDoc,
       formContext.userContact,
-      formContext.userContactSummary,
+      formContext.userContactSummary?.context,
       {
         doc: typeof formContext.instanceData !== 'string' && formContext.instanceData?.contact,
-        contactSummary: formContext.contactSummary,
+        contactSummary: formContext.contactSummary?.context,
         shouldEvaluateExpression: formContext.shouldEvaluateExpression(),
       },
     );

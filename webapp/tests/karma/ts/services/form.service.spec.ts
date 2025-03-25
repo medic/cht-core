@@ -300,10 +300,10 @@ describe('Form service', () => {
             internalId: 'myform',
           },
           { contact_id: '123-user-contact' },
-          { instanceId: 'user-contact-summary', summary: { chw: true } },
+          { chw: true },
           {
             doc: { _id: '123-patient-contact' },
-            contactSummary: { instanceId: 'contact-summary', summary: { pregnant: false }},
+            contactSummary: { pregnant: false },
             shouldEvaluateExpression: true
           },
         ]);
