@@ -33,7 +33,7 @@ export class AppComponent {
   private _formXml?: string;
   private _formModel?: string;
   private _formHtml?: string;
-  private _contactSummary?: Record<string, any>;
+  private _contactSummary?: { instanceId: string, summary: Record<string, any> };
   private _contactType?: string;
   private _content: Record<string, any> | null = null;
   private _user: typeof this.DEFAULT_USER & Record<string, any> = this.DEFAULT_USER;
@@ -91,7 +91,7 @@ export class AppComponent {
   }
 
   @Input() set contactSummary(value: Record<string, any> | undefined) {
-    this._contactSummary = value ? { context: value } : undefined;
+    this._contactSummary = value ? { instanceId: 'contact-summary', summary: value } : undefined;
     this.queueRenderForm();
   }
 
