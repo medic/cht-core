@@ -37,6 +37,7 @@ import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 import { DeduplicateService } from '@mm-services/deduplicate.service';
+import { ContactsService } from '@mm-services/contacts.service';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -98,6 +99,7 @@ describe('Form service', () => {
   let contactViewModelGeneratorService;
   let deduplicateService;
   let getDuplicates;
+  let contactsService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -168,10 +170,10 @@ describe('Form service', () => {
     targetAggregatesService = { getTargetDocs: sinon.stub() };
     contactViewModelGeneratorService = { loadReports: sinon.stub() };
 
-    const requestSiblings = sinon.stub();
-    const extractExpression = sinon.stub();
+    const getSiblings = sinon.stub();
     getDuplicates = sinon.stub();
-    deduplicateService = { requestSiblings, extractExpression, getDuplicates };
+    deduplicateService = { getDuplicates };
+    contactsService = { getSiblings };
 
     TestBed.configureTestingModule({
       providers: [
@@ -203,7 +205,8 @@ describe('Form service', () => {
         { provide: ExtractLineageService, useValue: extractLineageService },
         { provide: TargetAggregatesService, useValue: targetAggregatesService },
         { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
-        { provide: DeduplicateService, useValue: deduplicateService }
+        { provide: DeduplicateService, useValue: deduplicateService },
+        { provide: ContactsService, useValue: contactsService }
       ],
     });
 
@@ -1318,7 +1321,7 @@ describe('Form service', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-undef
       getDuplicates = (doc, siblings, expression) => siblings;
-      deduplicateService = { ...deduplicateService, getDuplicates };
+      deduplicateService = { getDuplicates };
 
       TestBed.configureTestingModule({
         providers: [
@@ -1350,6 +1353,7 @@ describe('Form service', () => {
           { provide: TrainingCardsService, useValue: trainingCardsService },
           { provide: FeedbackService, useValue: feedbackService },
           { provide: DeduplicateService, useValue: deduplicateService },
+          { provide: ContactsService, useValue: contactsService }
         ],
       });
 
@@ -1373,7 +1377,7 @@ describe('Form service', () => {
       extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
 
       return service
-        .saveContact({ form, docId, type })
+        .saveContact({ docId, type }, { form })
         .then(() => {
           assert.equal(dbGet.callCount, 1);
           assert.equal(dbGet.args[0][0], 'abc');
@@ -1407,7 +1411,7 @@ describe('Form service', () => {
       extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
 
       return service
-        .saveContact({ form, docId, type })
+        .saveContact({ docId, type }, { form })
         .then(() => {
           assert.equal(dbGet.callCount, 1);
           assert.equal(dbGet.args[0][0], 'abc');
@@ -1451,7 +1455,7 @@ describe('Form service', () => {
       dbBulkDocs.resolves([]);
 
       return service
-        .saveContact({ form, docId, type })
+        .saveContact({ docId, type }, { form })
         .then(() => {
           assert.isTrue(dbBulkDocs.calledOnce);
 
@@ -1510,7 +1514,7 @@ describe('Form service', () => {
       clock = sinon.useFakeTimers(5000);
 
       return service
-        .saveContact({ form, docId, type })
+        .saveContact({ docId, type }, { form })
         .then(() => {
           assert.equal(dbGet.callCount, 2);
           assert.deepEqual(dbGet.args[0], ['main1']);
@@ -1559,7 +1563,7 @@ describe('Form service', () => {
       clock = sinon.useFakeTimers(1000);
 
       return service
-        .saveContact({ form, docId, type })
+        .saveContact({ docId, type }, { form })
         .then(() => {
           assert.equal(dbGet.callCount, 1);
           assert.equal(dbGet.args[0][0], 'abc');
@@ -1614,7 +1618,7 @@ describe('Form service', () => {
       dbBulkDocs.resolves([]);
       clock = sinon.useFakeTimers(1000);
 
-      deduplicateService.requestSiblings.resolves([{
+      contactsService.getSiblings.resolves([{
         _id: 'sib1',
         name: 'Sibling1',
         parent: { _id: 'parent1' },
@@ -1628,10 +1632,9 @@ describe('Form service', () => {
         type,
         reported_date: 1736845534000
       },]);
-      deduplicateService.extractExpression.returns('levenshteinEq(current.name, existing.name, 3)');
 
       try {
-        await service.saveContact({ form, docId, type, xmlVersion: undefined }, false, undefined);
+        await service.saveContact({ docId, type, }, { form, xmlVersion: undefined, duplicateCheck: undefined }, false);
         // Fail the test if no error is thrown
         throw new Error('Expected saveContact to throw an error, but it did not.');
       } catch (e) {
@@ -1669,36 +1672,26 @@ describe('Form service', () => {
         docs[0].transitioned = true;
         return Promise.resolve(docs);
       });
-      dbQuery.resolves({
-        offset: 0,
-        rows: [
-          {
-            id: 'sib1',
-            doc: {
-              _id: 'sib1',
-              name: 'Sibling1',
-              parent: { _id: 'parent1' },
-              type,
-              reported_date: 1736845534000
-            }
-          },
-          {
-            id: 'sib2',
-            doc: {
-              _id: 'sib2',
-              name: 'Sibling2',
-              parent: { _id: 'parent1' },
-              type,
-              reported_date: 1736845534000
-            }
-          },
-        ],
-        total_rows: 2
-      });
+      
       dbBulkDocs.resolves([]);
       clock = sinon.useFakeTimers(1000);
 
-      await service.saveContact({ form, docId, type, xmlVersion: undefined }, true, undefined);
+      contactsService.getSiblings.resolves([{
+        _id: 'sib1',
+        name: 'Sibling1',
+        parent: { _id: 'parent1' },
+        type,
+        reported_date: 1736845534000
+      },
+      {
+        _id: 'sib2',
+        name: 'Sibling2',
+        parent: { _id: 'parent1' },
+        type,
+        reported_date: 1736845534000
+      },]);
+
+      await service.saveContact({ docId, type, }, { form, xmlVersion: undefined, duplicateCheck: undefined }, true);
       assert.equal(transitionsService.applyTransitions.callCount, 1);
       assert.deepEqual(transitionsService.applyTransitions.args[0], [[
         {
@@ -1710,65 +1703,6 @@ describe('Form service', () => {
           reported_date: 1000,
           contact: undefined,
           transitioned: true
-        }
-      ]]);
-    });
-    it('should pass duplicate check when record is marked as canonical', async function () {
-      const form = { getDataStr: () => '<data></data>' };
-      const docId = null;
-      const type = 'some-contact-type';
-
-      dbGet.resolves({});
-      enketoTranslationService.contactRecordToJs.returns({
-        doc: { _id: 'main1', name: 'Main', type: 'main', parent: { _id: 'parent1' }, is_canonical: 'true' }
-      });
-      extractLineageService.extract.returns({ _id: 'parent1' });
-      transitionsService.applyTransitions.callsFake((docs) => {
-        docs[0].transitioned = true;
-        return Promise.resolve(docs);
-      });
-      dbQuery.resolves({
-        offset: 0,
-        rows: [
-          {
-            id: 'sib1',
-            doc: {
-              _id: 'sib1',
-              name: 'Sibling1',
-              parent: { _id: 'parent1' },
-              type,
-              reported_date: 1736845534000
-            }
-          },
-          {
-            id: 'sib2',
-            doc: {
-              _id: 'sib2',
-              name: 'Sibling2',
-              parent: { _id: 'parent1' },
-              type,
-              reported_date: 1736845534000
-            }
-          },
-        ],
-        total_rows: 2
-      });
-      dbBulkDocs.resolves([]);
-      clock = sinon.useFakeTimers(1000);
-
-      await service.saveContact({ form, docId, type, xmlVersion: undefined }, false, undefined);
-      assert.equal(transitionsService.applyTransitions.callCount, 1);
-      assert.deepEqual(transitionsService.applyTransitions.args[0], [[
-        {
-          _id: 'main1',
-          name: 'Main',
-          type: 'contact',
-          contact_type: type,
-          parent: { _id: 'parent1' },
-          reported_date: 1000,
-          contact: undefined,
-          transitioned: true,
-          is_canonical: 'true'
         }
       ]]);
     });

@@ -708,7 +708,9 @@ describe('ContactsEdit component', () => {
       expect(setEnketoError.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(1);
       expect(formService.saveContact.args[0]).to.deep.equal([
-        { form, docId: null, type: 'clinic', xmlVersion: undefined }, false, undefined
+        { docId: null, type: 'clinic' }, 
+        { form, xmlVersion: undefined, duplicateCheck: undefined }, 
+        false
       ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'new_clinic_id']]);
@@ -744,9 +746,11 @@ describe('ContactsEdit component', () => {
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(1);
-      expect(formService.saveContact.args[0]).to.deep.equal(
-        [{ form, docId: 'the_person', type: 'person', xmlVersion: undefined }, false, undefined]
-      );
+      expect(formService.saveContact.args[0]).to.deep.equal([
+        { docId: 'the_person', type: 'person',  },
+        { form, xmlVersion: undefined, duplicateCheck: undefined }, 
+        false
+      ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_person']]);
       expect(performanceService.track.calledThrice).to.be.true;
@@ -794,9 +798,11 @@ describe('ContactsEdit component', () => {
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(1);
-      expect(formService.saveContact.args[0]).to.deep.equal(
-        [{ form, docId: 'the_patient', type: 'patient', xmlVersion: undefined }, false, undefined]
-      );
+      expect(formService.saveContact.args[0]).to.deep.equal([
+        { docId: 'the_patient', type: 'patient' }, 
+        { form, xmlVersion: undefined, duplicateCheck: undefined },
+        false
+      ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_patient']]);
       expect(performanceService.track.calledThrice).to.be.true;
@@ -836,10 +842,11 @@ describe('ContactsEdit component', () => {
       formService.saveContact.rejects(new DuplicatesFoundError('Duplicates found', [
         {
           _id: 'sib2',
+          _rev: '1',
           name: 'Sibling2',
           parent: { _id: 'parent1' },
           type: 'the_district',
-          reported_date: 1736845534000
+          reported_date: new Date(1736845534000)
         }
       ]));
 
@@ -905,9 +912,11 @@ describe('ContactsEdit component', () => {
       component.toggleDuplicatesAcknowledged();
       formService.saveContact.resolves({ docId: 'new_clinic_id' });
       await component.save();
-      expect(formService.saveContact.args).to.deep.equal(
-        [[{ form, docId: null, type: 'clinic', xmlVersion: undefined }, true, undefined]]
-      );
+      expect(formService.saveContact.args[0]).to.deep.equal([
+        { docId: null, type: 'clinic' }, 
+        { form, xmlVersion: undefined, duplicateCheck: undefined },
+        true
+      ]);
     });
   });
 

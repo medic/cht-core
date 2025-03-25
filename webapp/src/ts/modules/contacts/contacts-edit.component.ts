@@ -5,7 +5,7 @@ import { isEqual as _isEqual } from 'lodash-es';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { FormService, DuplicatesFoundError, Duplicate, DuplicatesCheck } from '@mm-services/form.service';
+import { FormService, DuplicatesFoundError, Contact, DuplicateCheck } from '@mm-services/form.service';
 import { EnketoFormContext } from '@mm-services/enketo.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
@@ -61,10 +61,10 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private trackSave;
   private trackMetadata = { action: '', form: '' };
 
-  private duplicateCheck?: DuplicatesCheck;
+  private duplicateCheck?: DuplicateCheck;
   duplicatesAcknowledged = false;
 
-  duplicates: Duplicate[] = [];
+  duplicates: Contact.v1.Contact[] = [];
   entityType: string = '';
 
   private readonly omitProperties = ['reported_date', 'name'];
@@ -368,9 +368,11 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         $('form.or').trigger('beforesave');
 
         return this.formService
-          .saveContact({
-            form, docId, type: this.enketoContact.type, xmlVersion: this.xmlVersion
-          }, this.duplicatesAcknowledged, this.duplicateCheck)
+          .saveContact(
+            { docId, type: this.enketoContact.type }, 
+            { form, xmlVersion: this.xmlVersion, duplicateCheck: this.duplicateCheck}, 
+            this.duplicatesAcknowledged
+          )
           .then((result) => {
             console.debug('saved contact', result);
 

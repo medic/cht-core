@@ -26,7 +26,9 @@ import { reduce as _reduce } from 'lodash-es';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
-import { DeduplicateService, Doc, DuplicateCheck } from '@mm-services/deduplicate.service';
+import { DeduplicateService, DuplicateCheck } from '@mm-services/deduplicate.service';
+import { ContactsService } from '@mm-services/contacts.service';
+import { Contact } from '@medic/cht-datasource';
 
 /**
  * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
@@ -59,7 +61,8 @@ export class FormService {
     private enketoService: EnketoService,
     private targetAggregatesService: TargetAggregatesService,
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
-    private readonly deduplicateService: DeduplicateService
+    private readonly deduplicateService: DeduplicateService,
+    private readonly contactsService: ContactsService
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -332,34 +335,34 @@ export class FormService {
     }, null);
   }
 
-  private async checkForDuplicates(doc, acknowledged: boolean, duplicateCheck?: DuplicateCheck): Promise<Array<Doc>> {
-    const parentId = doc ? doc.parent?._id : undefined;
-    const contactType = doc ? doc.contact_type ?? doc.type : undefined;
-    const expression = this.deduplicateService.extractExpression(duplicateCheck);
-    acknowledged = acknowledged ?? false;
+  private async checkForDuplicates(
+    doc: Contact.v1.Contact,
+    duplicatesAcknowledged: boolean,
+    duplicateCheck?: DuplicateCheck
+  ): Promise<Array<Contact.v1.Contact>> {
+    duplicatesAcknowledged = duplicatesAcknowledged ?? false;
 
-    if (!expression || acknowledged) {
-      return [];
-    }
-
-    return this.deduplicateService.getDuplicates(
+    return !duplicatesAcknowledged ? this.deduplicateService.getDuplicates(
       doc,
-      await this.deduplicateService.requestSiblings(parentId, contactType),
-      expression
-    );
+      await this.contactsService.getSiblings(doc),
+      duplicateCheck
+    ) : [];
   }
 
   async saveContact(
     contactInfo: {
-      form: any;
       docId: string | undefined;
       type: string | undefined;
-      xmlVersion: string | undefined;
     },
-    acknowledged: boolean,
-    duplicateCheck?: DuplicateCheck
+    formInfo: {
+      form: any;
+      xmlVersion: string | undefined;
+      duplicateCheck?: DuplicateCheck
+    },
+    duplicatesAcknowledged: boolean,
   ) {
-    const { form, docId, type, xmlVersion } = contactInfo;
+    const { docId, type } = contactInfo;
+    const { form, xmlVersion, duplicateCheck } = formInfo;
     const typeFields = this.contactTypesService.isHardcodedType(type)
       ? { type }
       : { type: 'contact', contact_type: type };
@@ -371,10 +374,10 @@ export class FormService {
 
     const duplicates = await this.checkForDuplicates(
       primaryDoc || preparedDocs.preparedDocs[0],
-      acknowledged,
+      duplicatesAcknowledged,
       duplicateCheck
     );
-    if (duplicates.length) {
+    if (duplicates?.length) {
       throw new DuplicatesFoundError('Duplicates found', duplicates);
     }
 
@@ -394,14 +397,13 @@ export class FormService {
   }
 }
 export class DuplicatesFoundError extends Error {
-  duplicates: Duplicate[];
+  duplicates: Contact.v1.Contact[];
 
-  constructor(message: string, duplicates: Duplicate[]) {
+  constructor(message: string, duplicates: Contact.v1.Contact[]) {
     super(message);
     this.message = message;
     this.duplicates = duplicates;
     this.name = 'DuplicatesFoundError';
   }
 }
-export type Duplicate = Doc;
-export type DuplicatesCheck = DuplicateCheck;
+export { DuplicateCheck, Contact };

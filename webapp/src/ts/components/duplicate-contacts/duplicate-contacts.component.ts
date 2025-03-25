@@ -11,6 +11,7 @@ import {
 import {
   ContactSummaryContentComponent
 } from '@mm-components/contact-summary-content/contact-summary-content.component';
+import { Contact } from '@medic/cht-datasource';
 
 @Component({
   selector: 'mm-duplicate-contacts',
@@ -27,7 +28,7 @@ import {
   ]
 })
 export class DuplicateContactsComponent {
-  @Input() duplicate: { _id: string; name: string; reported_date: number;[key: string]: string | number; } | undefined;
+  @Input() duplicate: Contact.v1.Contact | undefined;
   @Input() loadContactSummary: ((id: string) => Promise<void>) | undefined;
   @Input() isLoading: boolean = false;
   @Input() error?: string = undefined;

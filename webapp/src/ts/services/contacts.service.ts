@@ -4,6 +4,7 @@ import { flattenDeep as _flattenDeep } from 'lodash-es';
 import { CacheService } from '@mm-services/cache.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
+import { Contact } from '@medic/cht-datasource';
 
 @Injectable({
   providedIn: 'root'
@@ -59,6 +60,24 @@ export class ContactsService {
         .all(relevantCaches)
         .then(results => _flattenDeep(results));
     });
+  }
+
+  async getSiblings(contact: Contact.v1.Contact) {
+    const parentId = contact ? contact.parent?._id : undefined;
+    const contactType = contact ? contact.contact_type ?? contact.type : undefined;
+
+    if (!contactType) {
+      return [];
+    }
+
+    const results = parentId
+      ? (await this.dbService.get().query('medic-client/contacts_by_parent', {
+        key: [parentId, contactType],
+        include_docs: true
+      }))?.rows.map((row: { doc: Contact.v1.Contact }) => row.doc)
+      : await this.get([contactType]);
+
+    return results ?? [];
   }
 }
 
