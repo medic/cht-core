@@ -3,7 +3,10 @@
   [class.select-mode]="selectMode"
   [class.sidebar-filter-active]="isSidebarFilterOpen"
   [class.search-bar-active]="openSearch"
-  [class.old-nav]="hasOldNav">
+  [class.old-nav]="hasOldNav"
+  [class.rtl]="direction === 'rtl'"
+  [dir]="direction"
+>
 
   <div class="bootstrap-layer">
     <div>

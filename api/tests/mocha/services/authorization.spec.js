@@ -6,7 +6,6 @@ const viewMapUtils = require('@medic/view-map-utils');
 const rewire = require('rewire');
 const service = rewire('../../../src/services/authorization');
 
-const should = require('chai').should();
 const { assert } = require('chai');
 const userCtx = {
   name: 'user',
@@ -14,6 +13,7 @@ const userCtx = {
   facility_id: ['facility_id'],
   contact: { _id: 'contact_id', patient_id: 'contact_shortcode', name: 'contact', type: 'person' },
   facility: [{ _id: 'facility_id', place_id: 'facility_shortcode', name: 'health center', type: 'health_center' }],
+  roles: ['user']
 };
 const userCtxMultiFacility = {
   name: 'user',
@@ -44,26 +44,28 @@ describe('Authorization service', () => {
   });
 
   describe('getDepth', () => {
+    const defaultValue = { contactDepth: -1, reportDepth: -1, replicatePrimaryContacts: false };
+
     it('unlimited depth for no roles', () => {
-      service.__get__('getDepth')({}).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
-      service.__get__('getDepth')({ name: 'a'}).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
-      service.__get__('getDepth')({ roles: []}).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
+      service.__get__('getDepth')({}).should.deep.equal(defaultValue);
+      service.__get__('getDepth')({ name: 'a'}).should.deep.equal(defaultValue);
+      service.__get__('getDepth')({ roles: []}).should.deep.equal(defaultValue);
     });
 
     it('unlimited depth when no settings found', () => {
       config.get.returns(false);
-      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
+      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal(defaultValue);
     });
 
     it('unlimited depth when no settings for role is found, or settings depth is incorrect', () => {
       config.get.returns([ { role: 'role' }, { role: 'alpha' } ]);
-      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
+      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal(defaultValue);
 
       config.get.returns([ { role: 'some_role' } ]);
-      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
+      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal(defaultValue);
 
       config.get.returns([ { role: 'some_role', depth: 'aaa' } ]);
-      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal({ contactDepth: -1, reportDepth: -1 });
+      service.__get__('getDepth')({ roles: ['some_role'] }).should.deep.equal(defaultValue);
     });
 
     it('returns biggest value', () => {
@@ -75,29 +77,55 @@ describe('Authorization service', () => {
       ];
 
       config.get.returns(settings);
-      service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({ contactDepth: 4, reportDepth: -1 });
+      service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({
+        contactDepth: 4,
+        reportDepth: -1,
+        replicatePrimaryContacts: false
+      });
     });
 
-    it('should return report depth associated with selected depth', () => {
+    it('should return most permissive report depth and replicatePrimaryContacts associated with highest depth', () => {
       const settings1 = [
         { role: 'a', depth: 1, report_depth: 0 },
-        { role: 'b', depth: 2, report_depth: 1 },
-        { role: 'c', report_depth: 3 },
-        { role: 'd', report_depth: 4 },
+        { role: 'b', depth: 2, report_depth: 1, replicate_primary_contacts: true },
+        { role: 'c', report_depth: 3 }, // invalid setting
+        { role: 'd', depth: 2, report_depth: 4 },
       ];
 
       config.get.returns(settings1);
-      service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({ contactDepth: 2, reportDepth: 1 });
+      service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({
+        contactDepth: 2,
+        reportDepth: 4,
+        replicatePrimaryContacts: true
+      });
 
       const settings2 = [
         { role: 'a', depth: 1, report_depth: 0 },
-        { role: 'b', depth: 2, report_depth: 1 },
+        { role: 'b', depth: 2, report_depth: 1, replicate_primary_contacts: true },
         { role: 'c', depth: 3 },
         { role: 'd', depth: 4 },
       ];
 
       config.get.returns(settings2);
-      service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({ contactDepth: 4, reportDepth: -1 });
+      service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({
+        contactDepth: 4,
+        reportDepth: -1,
+        replicatePrimaryContacts: false
+      });
+
+      const settings3 = [
+        { role: 'a', depth: 1, report_depth: 0, replicate_primary_contacts: true },
+        { role: 'b', depth: 2, report_depth: 1 },
+        { role: 'c', depth: 3 },
+        { role: 'd', depth: 4 },
+      ];
+
+      config.get.returns(settings3);
+      service.__get__('getDepth')({ roles: ['a', 'b', 'd'] }).should.deep.equal({
+        contactDepth: 4,
+        reportDepth: -1,
+        replicatePrimaryContacts: false
+      });
     });
   });
 
@@ -179,7 +207,10 @@ describe('Authorization service', () => {
 
     it('returns contactsByDepthKeys array, contact and report depths', () => {
       db.medic.query.withArgs('medic/contacts_by_depth').resolves({
-        rows: [{ id: 1, key: 'key', value: 's1' }, { id: 2, key: 'key', value: 's2' }]
+        rows: [
+          { id: 1, key: 'key', value: { shortcode: 's1', primary_contact: undefined } },
+          { id: 2, key: 'key', value: { shortcode: 's2' } }
+        ]
       });
       service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: -1 });
       auth.hasAllPermissions.returns(false);
@@ -199,7 +230,10 @@ describe('Authorization service', () => {
 
     it('returns contactsByDepthKeys array, contact and report depths with multiple facilities', () => {
       db.medic.query.withArgs('medic/contacts_by_depth').resolves({
-        rows: [{ id: 1, key: 'key', value: 's1' }, { id: 2, key: 'key', value: 's2' }]
+        rows: [
+          { id: 2, key: 'key', value: { shortcode: 's2' } },
+          { id: 1, key: 'key', value: { shortcode: 's1' } }
+        ]
       });
       service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: -1 });
       auth.hasAllPermissions.returns(false);
@@ -222,10 +256,10 @@ describe('Authorization service', () => {
     it('should compile subjectsDepth when using reportDepth', () => {
       db.medic.query.withArgs('medic/contacts_by_depth').resolves({
         rows: [
-          { id: 'aaa', key: ['aaa', 0], value: 'aaa' },
-          { id: '1', key: ['aaa', 1], value: 's1' },
-          { id: '2', key: ['aaa', 2], value: 's2' },
-          { id: '3', key: ['aaa', 2], value: '3' },
+          { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa' } },
+          { id: '1', key: ['aaa', 1], value: { shortcode: 's1' } },
+          { id: '2', key: ['aaa', 2], value: { shortcode: 's2' } },
+          { id: '3', key: ['aaa', 2], value: { shortcode: '3' } },
         ]
       });
       service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: 1 });
@@ -254,14 +288,14 @@ describe('Authorization service', () => {
     it('should compile subjectsDepth when using reportDepth and multiple facility', () => {
       db.medic.query.withArgs('medic/contacts_by_depth').resolves({
         rows: [
-          { id: 'aaa', key: ['aaa', 0], value: 'aaa' },
-          { id: '1', key: ['aaa', 1], value: 's1' },
-          { id: '2', key: ['aaa', 2], value: 's2' },
-          { id: '3', key: ['aaa', 2], value: '3' },
-          { id: 'bbb', key: ['bbb', 0], value: 'bbb' },
-          { id: '11', key: ['bbb', 1], value: 's11' },
-          { id: '22', key: ['bbb', 2], value: 's22' },
-          { id: '33', key: ['bbb', 2], value: '33' },
+          { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa' }, },
+          { id: '1', key: ['aaa', 1], value: { shortcode: 's1' }, },
+          { id: '2', key: ['aaa', 2], value: { shortcode: 's2' } },
+          { id: '3', key: ['aaa', 2], value: { shortcode: '3' } },
+          { id: 'bbb', key: ['bbb', 0], value: { shortcode: 'bbb' } },
+          { id: '11', key: ['bbb', 1], value: { shortcode: 's11' } },
+          { id: '22', key: ['bbb', 2], value: { shortcode: 's22' } },
+          { id: '33', key: ['bbb', 2], value: { shortcode: '33' } },
         ]
       });
       service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: 1 });
@@ -303,9 +337,9 @@ describe('Authorization service', () => {
     it('should compile subjectsDepth when user has access to unassigned', () => {
       db.medic.query.withArgs('medic/contacts_by_depth').resolves({
         rows: [
-          { id: 'aaa', key: ['aaa', 0], value: 'aaa' },
-          { id: '1', key: ['aaa', 1], value: 's1' },
-          { id: '2', key: ['aaa', 2], value: 's2' },
+          { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa' } },
+          { id: '1', key: ['aaa', 1], value: { shortcode: 's1' } },
+          { id: '2', key: ['aaa', 2], value: { shortcode: 's2' } },
         ]
       });
       service.__get__('getDepth').returns({ contactDepth: 3, reportDepth: 2 });
@@ -336,12 +370,12 @@ describe('Authorization service', () => {
     it('should compile subjectsDepth when user has access to unassigned with multiple facilities', () => {
       db.medic.query.withArgs('medic/contacts_by_depth').resolves({
         rows: [
-          { id: 'aaa', key: ['aaa', 0], value: 'aaa' },
-          { id: '1', key: ['aaa', 1], value: 's1' },
-          { id: '2', key: ['aaa', 2], value: 's2' },
-          { id: 'bbb', key: ['bbb', 0], value: 'bbb' },
-          { id: '11', key: ['bbb', 1], value: 's11' },
-          { id: '22', key: ['bbb', 2], value: 's22' },
+          { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa' } },
+          { id: '1', key: ['aaa', 1], value: { shortcode: 's1' } },
+          { id: '2', key: ['aaa', 2], value: { shortcode: 's2' } },
+          { id: 'bbb', key: ['bbb', 0], value: { shortcode: 'bbb' } },
+          { id: '11', key: ['bbb', 1], value: { shortcode: 's11' } },
+          { id: '22', key: ['bbb', 2], value: { shortcode: 's22' } },
         ]
       });
       service.__get__('getDepth').returns({ contactDepth: 3, reportDepth: 2 });
@@ -379,266 +413,150 @@ describe('Authorization service', () => {
         });
     });
 
-  });
+    it('should add primary contacts when enabled', async () => {
+      db.medic.query.withArgs('medic/contacts_by_depth').onCall(0).resolves({
+        rows: [
+          { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa', primary_contact: 'contact' } },
+          { id: '1', key: ['aaa', 1], value: { shortcode: 's1', primary_contact: 'contact2' } },
+        ]
+      });
+      db.medic.query.withArgs('medic/contacts_by_depth').onCall(1).resolves({
+        rows: [
+          { id: 'contact', key: ['contact'], value: { shortcode: 'contact_id', primary_contact: '13213' } },
+          { id: 'contact2', key: ['contact2'], value: { shortcode: 'contact2_id', primary_contact: 'dsada' } },
+        ]
+      });
+      service.__get__('getDepth').returns({ contactDepth: 1, replicatePrimaryContacts: true });
+      auth.hasAllPermissions.returns(true);
 
-  describe('getAllowedDocIds', () => {
-    it('queries correct views with correct keys', () => {
-      return service
-        .getAllowedDocIds({ subjectIds, userCtx: { name: 'user' }})
-        .then(result => {
-          db.medic.query.callCount.should.equal(1);
-          db.medic.query.args[0].should.deep.equal([ 'medic/docs_by_replication_key', { keys: subjectIds } ]);
+      const result = await service.getAuthorizationContext({ facility_id: ['aaa'], name: 'peter' });
 
-          result.length.should.equal(2);
-          result.should.deep.equal(['_design/medic-client', 'org.couchdb.user:user']);
-        });
+      result.subjectIds.should.have.members([
+        '_all', 'org.couchdb.user:peter',
+        '1', 's1', 'aaa', 'contact', 'contact2', 'contact_id', 'contact2_id'
+      ]);
+      result.contactsByDepthKeys.should.deep.equal([
+        ['aaa', 0], ['aaa', 1],
+      ]);
+      result.should.deep.include({ contactDepth: 1 });
+      db.medic.query.callCount.should.equal(2);
+      db.medic.query.args[0].should.deep.equal(['medic/contacts_by_depth', { keys: [[ 'aaa', 0], [ 'aaa', 1]] }]);
+      db.medic.query.args[1].should.deep.equal(['medic/contacts_by_depth', { keys: [['contact2'], ['contact']] }]);
     });
 
-    it('merges results from both view, except for sensitive ones, includes ddoc and user doc', () => {
-      const subjectIds = [
-        'sbj1', 'sbj2', 'sbj3', 'sbj4', 'facility_id', 'contact_id', 'c1', 'c2', 'c3', 'c4',
-        'facility_sh', 'contact_sh',
-      ];
-      const userCtx = {
-        name: 'user',
-        facility_id: ['facility_id'],
-        contact_id: 'contact_id',
-        facility: [{ _id: 'facility_id', place_id: 'facility_sh' }],
-        contact: { _id: 'contact_id', patient_id: 'contact_sh' },
-      };
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows: [
-          { id: 'r1', key: 'sbj1', value: { submitter: 'c1' } },
-          { id: 'r2', key: 'sbj3', value: { } },
-          { id: 'r3', key: 'sbj2', value: { submitter: 'nurse'} },
-          { id: 'r4', key: null, value: { submitter: 'c2' } },
-          { id: 'r5', key: 'facility_id', value: {} },
-          { id: 'r6', key: 'contact_id', value: {} },
-          { id: 'r7', key: 'facility_id', value: { submitter: 'c-unknown', private: true } }, //sensitive
-          { id: 'r8', key: 'contact_id', value: { submitter: 'c-unknown', private: 'something' } }, //sensitive
-          { id: 'r7', key: 'facility_sh', value: { submitter: 'c-unknown', private: true } }, //sensitive
-          { id: 'r8', key: 'contact_sh', value: { submitter: 'c-unknown', private: 'something' } }, //sensitive
-          { id: 'r9', key: 'facility_id', value: { submitter: 'c3' } },
-          { id: 'r10', key: 'contact_id', value: { submitter: 'c4' } },
-          { id: 'r11', key: 'sbj3', value: { } },
-          { id: 'r12', key: 'sbj4', value: { submitter: 'someone' } },
-          { id: 'r13', key: false, value: { submitter: 'someone else' } },
-          { id: 'r14', key: 'contact_id', value: { submitter: 'c-unknown', private: false } }, // not sensitive
-        ]});
+    it('should only query for unknown primary contacts', async () => {
+      db.medic.query.withArgs('medic/contacts_by_depth').onCall(0).resolves({
+        rows: [
+          { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa', primary_contact: 'contact' } },
+          { id: '1', key: ['aaa', 1], value: { shortcode: 's1', primary_contact: 'contact2' } },
+          { id: 'contact2', key: ['aaa', 2], value: { shortcode: 'contact2_id' } },
+        ]
+      });
+      db.medic.query.withArgs('medic/contacts_by_depth').onCall(1).resolves({
+        rows: [
+          { id: 'contact', key: ['contact'], value: { shortcode: 'contact_id' } },
+        ]
+      });
 
-      return service
-        .getAllowedDocIds({ subjectIds, userCtx })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'r2', 'r3', 'r4',
-            'r5', 'r6', 'r9', 'r10',
-            'r11', 'r12', 'r13', 'r14'
-          ]);
-        });
+      service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: 1, replicatePrimaryContacts: true });
+      auth.hasAllPermissions.returns(true);
+
+      const result = await service.getAuthorizationContext({ facility_id: ['aaa'], name: 'peter' });
+
+      result.subjectIds.should.have.members([
+        '_all', 'org.couchdb.user:peter',
+        '1', 's1', 'aaa', 'contact', 'contact2', 'contact_id', 'contact2_id'
+      ]);
+      result.contactsByDepthKeys.should.deep.equal([
+        ['aaa', 0], ['aaa', 1], ['aaa', 2]
+      ]);
+      result.should.deep.include({
+        contactDepth: 2,
+        reportDepth: 1,
+        subjectsDepth: {
+          'aaa': 0,
+          '1': 1,
+          's1': 1,
+          'contact': 0,
+          'contact_id': 0,
+          'contact2': 1,
+          'contact2_id': 1,
+        },
+      });
+      db.medic.query.callCount.should.equal(2);
+      db.medic.query.args[0].should.deep.equal([
+        'medic/contacts_by_depth',
+        { keys: [[ 'aaa', 0], [ 'aaa', 1], [ 'aaa', 2]] }
+      ]);
+      db.medic.query.args[1].should.deep.equal(['medic/contacts_by_depth', { keys: [['contact']] }]);
     });
+    
+    it('should set lowest place depth for primary contacts', async () => {
+      db.medic.query.withArgs('medic/contacts_by_depth').onCall(0).resolves({
+        rows: [
+          { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa', primary_contact: 'contact1' } },
+          { id: '1', key: ['aaa', 1], value: { shortcode: 's1', primary_contact: 'contact1' } },
+          { id: 'contact1', key: ['aaa', 2], value: { shortcode: 'contact1_id' } },
 
-    it('merges results from view, except for sensitive, includes ddoc and user doc with multiple facilities', () => {
-      const subjectIds = [
-        'sbj1', 'sbj2', 'sbj3', 'sbj4', 'facility_id', 'contact_id', 'c1', 'c2', 'c3', 'c4',
-        'facility_sh', 'contact_sh',
-      ];
-      const userCtx = {
-        name: 'user',
-        facility_id: ['f1', 'f2'],
-        contact_id: 'contact_id',
-        facility: [{ _id: 'f1', place_id: 'f1_sh' }, { _id: 'f2', place_id: 'f2_sh' }],
-        contact: { _id: 'contact_id', patient_id: 'contact_sh' },
-      };
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows: [
-          { id: 'r1', key: 'sbj1', value: { submitter: 'c1' } },
-          { id: 'r2', key: 'sbj3', value: { } },
-          { id: 'r3', key: 'sbj2', value: { submitter: 'nurse'} },
-          { id: 'r4', key: null, value: { submitter: 'c2' } },
-          { id: 'r5', key: 'f1', value: {} },
-          { id: 'r55', key: 'f2', value: {} },
-          { id: 'r6', key: 'contact_id', value: {} },
-          { id: 'r7', key: 'f1', value: { submitter: 'c-unknown', private: true } }, //sensitive
-          { id: 'r77', key: 'f2', value: { submitter: 'c-unknown', private: true } }, //sensitive
-          { id: 'r8', key: 'contact_id', value: { submitter: 'c-unknown', private: 'something' } }, //sensitive
-          { id: 'r7', key: 'f1_sh', value: { submitter: 'c-unknown', private: true } }, //sensitive
-          { id: 'r77', key: 'f1_sh', value: { submitter: 'c-unknown', private: true } }, //sensitive
-          { id: 'r8', key: 'contact_sh', value: { submitter: 'c-unknown', private: 'something' } }, //sensitive
-          { id: 'r9', key: 'f1', value: { submitter: 'c3' } },
-          { id: 'r99', key: 'f2', value: { submitter: 'c3' } },
-          { id: 'r10', key: 'contact_id', value: { submitter: 'c4' } },
-          { id: 'r11', key: 'sbj3', value: { } },
-          { id: 'r12', key: 'sbj4', value: { submitter: 'someone' } },
-          { id: 'r13', key: false, value: { submitter: 'someone else' } },
-          { id: 'r14', key: 'contact_id', value: { submitter: 'c-unknown', private: false } }, // not sensitive
-        ]});
 
-      return service
-        .getAllowedDocIds({ subjectIds, userCtx })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'r2', 'r3', 'r4',
-            'r5', 'r55', 'r6', 'r9', 'r99', 'r10',
-            'r11', 'r12', 'r13', 'r14'
-          ]);
-        });
-    });
+          { id: 'bbb', key: ['bbb', 0], value: { shortcode: 'bbb', primary_contact: 'contact2' } },
+          { id: '2', key: ['bbb', 1], value: { shortcode: 's2', primary_contact: 'contact2' } },
+          { id: '3', key: ['bbb', 1], value: { shortcode: 's3', primary_contact: 'contact3' } },
 
-    it('should not return duplicates', () => {
-      const subjectIds = ['subject', 'contact', 'parent'];
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows: [
-          { id: 'r1', key: 'subject', value: {} },
-          { id: 'r1', key: 'contact', value: {} },
-          { id: 'r1', key: 'parent', value: {} },
-          { id: 'r2', key: 'subject', value: {} },  // skipped cause r2 winning is not deleted
-          { id: 'r3', key: 'contact', value: {} },
-          { id: 'r2', key: 'parent', value: {} },
-        ]});
+          { id: 'contact4', key: ['aaa', 2], value: { shortcode: 'contact4_id' } },
+        ]
+      });
+      db.medic.query.withArgs('medic/contacts_by_depth').onCall(1).resolves({
+        rows: [
+          { id: 'contact2', key: ['contact2'], value: { shortcode: 'contact2_id', primary_contact: 'dsa' } },
+          { id: 'contact3', key: ['contact3'], value: { shortcode: 'contact3_id'} },
+        ]
+      });
 
-      return service
-        .getAllowedDocIds({
-          subjectIds,
-          userCtx: { name: 'user', facility_id: ['facility_id'], contact_id: 'contact_id' }
-        })
-        .then(result => {
-          result.should.deep.equal(['_design/medic-client', 'org.couchdb.user:user', 'r1', 'r2', 'r3']);
-        });
-    });
+      service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: 1, replicatePrimaryContacts: true });
+      auth.hasAllPermissions.returns(true);
 
-    it('should add all reports when reportDepth is not used', () => {
-      const subjectIds = ['subject', 'contact', 'parent'];
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'subject', value: { submitter: null, type: 'data_record' } },
-              { id: 'r2', key: 'contact', value: { type: 'data_record' } },
-              { id: 'r3', key: 'parent', value: { type: 'task' } },
-              { id: 'r4', key: 'contact', value: { type: 'target' } },
-              { id: 'r5', key: 'parent', value: { type: 'contact' } },
-              { id: 'r6', key: 'subject', value: { type: 'data_record', submitter: 'some_person' } },
-            ]
-        });
+      const result = await service.getAuthorizationContext({ facility_id: ['aaa', 'bbb'], name: 'peter' });
 
-      return service
-        .getAllowedDocIds({
-          subjectIds,
-          userCtx: { name: 'user', facility_id: ['facility_id'], contact_id: 'contact_id' },
-          contactDepth: 3,
-          reportDepth: -1,
-          subjectsDepth: {},
-        })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'r2', 'r3', 'r4', 'r5', 'r6'
-          ]);
-        });
-    });
+      result.subjectIds.should.have.members([
+        '_all', 'org.couchdb.user:peter',
+        '1', 's1', 'aaa', '2', 's2', 'bbb', '3', 's3',
+        'contact1', 'contact2', 'contact1_id', 'contact2_id', 'contact3', 'contact3_id', 'contact4', 'contact4_id'
+      ]);
+      result.contactsByDepthKeys.should.deep.equal([
+        ['aaa', 0], ['aaa', 1], ['aaa', 2], ['bbb', 0], ['bbb', 1], ['bbb', 2]
+      ]);
+      result.should.deep.include({
+        contactDepth: 2,
+        reportDepth: 1,
+        subjectsDepth: {
+          'aaa': 0,
+          '1': 1,
+          's1': 1,
+          'bbb': 0,
+          '2': 1,
+          's2': 1,
+          '3': 1,
+          's3': 1,
+          'contact1': 0,
+          'contact1_id': 0,
+          'contact2': 0,
+          'contact2_id': 0,
+          'contact3': 1,
+          'contact3_id': 1,
+          'contact4': 2,
+          'contact4_id': 2,
+        },
+      });
 
-    it('should only add valid depth reports when reportDepth is used', () => {
-      const subjectIds = ['subject', 'contact', 'parent'];
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'subject', value: { submitter: null, type: 'data_record' } }, // depth 2
-              { id: 'r2', key: 'contact', value: { type: 'data_record' } }, // depth 1
-              { id: 'r3', key: 'parent', value: { type: 'task' } }, // not a report, but depth 0
-              { id: 'r4', key: 'contact', value: { type: 'target' } },  // not a report, but depth 1
-              { id: 'r5', key: 'parent', value: { type: 'contact' } },  // not a report, but depth 0
-              { id: 'r6', key: 'subject', value: { type: 'data_record', submitter: 'some_person' } }, // depth 2
-              { id: 'r7', key: 'contact', value: { type: 'data_record', submitter: 'some_person' } }, // depth 1
-              { id: 'r8', key: 'subject', value: { type: 'target' } },  // not a report, but depth 2
-              { id: 'r9', key: 'subject', value: { type: 'data_record', submitter: 'contact_id' } }, // depth 2, self
-            ]
-        });
+      db.medic.query.callCount.should.equal(2);
+      db.medic.query.args[0].should.deep.equal([
+        'medic/contacts_by_depth',
+        { keys: [['aaa', 0], ['aaa', 1], ['aaa', 2], ['bbb', 0], ['bbb', 1], ['bbb', 2]] }
+      ]);
+      db.medic.query.args[1].should.deep.equal(['medic/contacts_by_depth', { keys: [['contact2'], ['contact3']] }]);
+    }); 
 
-      return service
-        .getAllowedDocIds({
-          subjectIds,
-          userCtx: { name: 'user', facility_id: ['facility_id'], contact_id: 'contact_id' },
-          contactDepth: 2,
-          reportDepth: 1,
-          subjectsDepth: { 'parent': 0, 'contact': 1, 'subject': 2 },
-        })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r2', 'r3', 'r4', 'r5', 'r7', 'r8', 'r9'
-          ]);
-        });
-    });
-
-    it('should check all entries for a report to verify valid depth', () => {
-      const subjectIds = ['contact', 'parent', 'place'];
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } }, // depth 1
-              { id: 'r1', key: 'parent', value: { submitter: 'p', type: 'data_record' } }, // depth 0
-              { id: 'r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } }, // depth 1
-              { id: 'r2', key: 'parent', value: { submitter: 'contact', type: 'data_record' } }, // depth 0
-              { id: 'r3', key: 'contact', value: { submitter: 'contact', type: 'data_record' } }, // depth 1
-              { id: 'r4', key: 'place', value: { submitter: 'p', type: 'data_record' } }, // depth 1
-              { id: 'r5', key: 'place', value: { submitter: 'contact', type: 'data_record' } }, // depth 1
-            ]
-        });
-
-      return service
-        .getAllowedDocIds({
-          subjectIds,
-          userCtx: { name: 'user', facility_id: ['parent'], contact_id: 'contact' },
-          contactDepth: 1,
-          reportDepth: 0,
-          subjectsDepth: { 'parent': 0, 'contact': 1, 'place': 1 },
-        })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'r2', 'r3', 'r5'
-          ]);
-        });
-    });
-
-    it('should exclude tasks if param is passed', () => {
-      const subjectIds = ['contact', 'parent', 'place'];
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-              { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-              { id: 'ts-task3', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'r3', key: 'contact', value: { type: 'person' } },
-              { id: 'task2', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r5', key: 'place', value: { type: 'clinic' } },
-            ]
-        });
-
-      const ctx = {
-        subjectIds,
-        userCtx: { name: 'user', facility_id: ['parent'], contact_id: 'contact' },
-        subjectsDepth: { 'parent': 0, 'contact': 1, 'place': 1 },
-      };
-
-      return service
-        .getAllowedDocIds(ctx, { includeTasks: false })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'ts-r2', 'r3', 'ts-r5',
-          ]);
-        });
-    });
   });
 
   describe('getDocsByReplicationKey', () => {
@@ -1060,7 +978,7 @@ describe('Authorization service', () => {
       beforeEach(() => {
         viewResults = {
           replicationKeys: [{ key: 'a', value: {} }],
-          contactsByDepth: [{ key: ['parent1'], value: 'patient_id' }],
+          contactsByDepth: [{ key: ['parent1'], value: { shortcode: 'patient_id' } }],
         };
         facility = userCtx.facility_id[0];
         feed = { userCtx, contactsByDepthKeys: [[facility]], subjectIds };
@@ -1075,9 +993,12 @@ describe('Authorization service', () => {
 
       it('returns true for valid contacts', () => {
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: [facility], value: 'patient_id' }, { key: [facility, 2], value: 'patient_id' }
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: [facility], value: { shortcode: 'patient_id' } },
+          { key: [facility, 2], value: { shortcode: 'patient_id' } }
         ];
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
 
@@ -1087,44 +1008,58 @@ describe('Authorization service', () => {
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: [facility], value: 'patient_id' }, { key: [facility, 1], value: 'patient_id' }
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: [facility], value: { shortcode: 'patient_id' } },
+          { key: [facility, 1], value: { shortcode: 'patient_id' } }
         ];
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: ['parent2'], value: 'patient_id' }, { key: ['parent2', 2], value: 'patient_id' },
-          { key: [facility], value: 'patient_id' }, { key: [facility, 3], value: 'patient_id' }
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: ['parent2'], value: { shortcode: 'patient_id' } },
+          { key: ['parent2', 2], value: { shortcode: 'patient_id' } },
+          { key: [facility], value: { shortcode: 'patient_id' } },
+          { key: [facility, 3], value: { shortcode: 'patient_id' } }
         ];
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
       });
 
       it('returns false for not allowed contacts', () => {
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: ['parent2'], value: 'patient_id' }, { key: ['parent2', 2], value: 'patient_id' }
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: ['parent2'], value: { shortcode: 'patient_id' } },
+          { key: ['parent2', 2], value: { shortcode: 'patient_id' } }
         ];
         service.allowedDoc(contact, feed, viewResults).should.equal(false);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
         ];
         service.allowedDoc(contact, feed, viewResults).should.equal(false);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
         ];
         service.allowedDoc(contact, feed, viewResults).should.equal(false);
       });
 
       it('respects depth', () => {
         viewResults.contactsByDepth = [
-          { key: [facility], value: 'patient_id' }, { key: [facility, 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' }
+          { key: [facility], value: { shortcode: 'patient_id' } },
+          { key: [facility, 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } }
         ];
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
         service
@@ -1135,9 +1070,12 @@ describe('Authorization service', () => {
           .should.deep.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact_id'], value: 'patient_id' }, { key: ['contact_id', 0], value: 'patient_id' },
-          { key: [facility], value: 'patient_id' }, { key: [facility, 1], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 2], value: 'patient_id' }
+          { key: ['contact_id'], value: { shortcode: 'patient_id' } },
+          { key: ['contact_id', 0], value: { shortcode: 'patient_id' } },
+          { key: [facility], value: { shortcode: 'patient_id' } },
+          { key: [facility, 1], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 2], value: { shortcode: 'patient_id' } }
         ];
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
         service
@@ -1148,9 +1086,12 @@ describe('Authorization service', () => {
           .should.deep.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: [facility], value: 'patient_id' }, { key: [facility, 2], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: [facility], value: { shortcode: 'patient_id' } },
+          { key: [facility, 2], value: { shortcode: 'patient_id' } },
         ];
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
         service
@@ -1164,10 +1105,14 @@ describe('Authorization service', () => {
           .should.deep.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: ['parent2'], value: 'patient_id' }, { key: ['parent2', 2], value: 'patient_id' },
-          { key: [facility], value: 'patient_id' }, { key: [facility, 3], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: ['parent2'], value: { shortcode: 'patient_id' } },
+          { key: ['parent2', 2], value: { shortcode: 'patient_id' } },
+          { key: [facility], value: { shortcode: 'patient_id' } },
+          { key: [facility, 3], value: { shortcode: 'patient_id' } },
         ];
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
         service
@@ -1186,8 +1131,10 @@ describe('Authorization service', () => {
 
       it('should ignore report depth', () => {
         viewResults.contactsByDepth = [
-          { key: [facility], value: 'patient_id' }, { key: [facility, 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
+          { key: [facility], value: { shortcode: 'patient_id' } },
+          { key: [facility, 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
         ];
         const ctx = { userCtx, subjectIds, contactsByDepthKeys: [[facility]], reportDepth: 0 };
 
@@ -1199,9 +1146,12 @@ describe('Authorization service', () => {
         service.allowedDoc(contact, ctx, viewResults).should.deep.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact_id'], value: 'patient_id' }, { key: ['contact_id', 0], value: 'patient_id' },
-          { key: [facility], value: 'patient_id' }, { key: [facility, 1], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 2], value: 'patient_id' },
+          { key: ['contact_id'], value: { shortcode: 'patient_id' } },
+          { key: ['contact_id', 0], value: { shortcode: 'patient_id' } },
+          { key: [facility], value: { shortcode: 'patient_id' } },
+          { key: [facility, 1], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 2], value: { shortcode: 'patient_id' } },
         ];
 
         ctx.contactsByDepthKeys = keysByDepth[0];
@@ -1212,9 +1162,12 @@ describe('Authorization service', () => {
         service.allowedDoc(contact, ctx, viewResults).should.deep.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: [facility], value: 'patient_id' }, { key: [facility, 2], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: [facility], value: { shortcode: 'patient_id' } },
+          { key: [facility, 2], value: { shortcode: 'patient_id' } },
         ];
 
         ctx.contactsByDepthKeys = keysByDepth[0];
@@ -1224,6 +1177,35 @@ describe('Authorization service', () => {
         ctx.contactsByDepthKeys = keysByDepth[2];
         service.allowedDoc(contact, ctx, viewResults).should.deep.equal(true);
       });
+
+      it('should allow primary contacts when set', () => {
+        const ctx = { userCtx, subjectIds, contactsByDepthKeys: [[facility]], reportDepth: 0, depth: 2 };
+
+        contact = 'pat';
+        ctx.replicatePrimaryContacts = false;
+        ctx.contactsByDepthKeys = keysByDepth[0];
+        ctx.subjectIds = [facility, 'pat_id', 'pat'];
+
+        viewResults.contactsByDepth = [
+          { key: ['pat'], value: { shortcode: 'pat_id' } },
+          { key: ['pat', 0], value: { shortcode: 'pat_id' } },
+          { key: ['hc'], value: { shortcode: 'pat_id' } },
+          { key: ['hc', 1], value: { shortcode: 'pat_id' } },
+          { key: ['fac'], value: { shortcode: 'pat_id' } },
+          { key: ['fac', 2], value: { shortcode: 'pat_id' } },
+        ];
+
+        service.allowedDoc(contact, ctx, viewResults).should.deep.equal(false);
+
+        ctx.replicatePrimaryContacts = true;
+        service.allowedDoc(contact, ctx, viewResults).should.deep.equal(true);
+
+        ctx.subjectIds = [facility, 'pat'];
+        service.allowedDoc(contact, ctx, viewResults).should.deep.equal(true);
+
+        ctx.subjectIds = [facility];
+        service.allowedDoc(contact, ctx, viewResults).should.deep.equal(false);
+      });
     });
 
     describe('allowedContact multi-facility', () => {
@@ -1232,7 +1214,7 @@ describe('Authorization service', () => {
       beforeEach(() => {
         viewResults = {
           replicationKeys: [{ key: 'a', value: {} }],
-          contactsByDepth: [{ key: ['parent1'], value: 'patient_id' }],
+          contactsByDepth: [{ key: ['parent1'], value: { shortcode: 'patient_id' } }],
         };
         facility1 = userCtxMultiFacility.facility_id[0];
         facility2 = userCtxMultiFacility.facility_id[1];
@@ -1251,9 +1233,12 @@ describe('Authorization service', () => {
 
       it('returns true for valid contacts', () => {
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: [facility1], value: 'patient_id' }, { key: [facility1, 2], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: [facility1], value: { shortcode: 'patient_id' } },
+          { key: [facility1, 2], value: { shortcode: 'patient_id' } },
         ];
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
 
@@ -1263,44 +1248,58 @@ describe('Authorization service', () => {
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: [facility2], value: 'patient_id' }, { key: [facility2, 1], value: 'patient_id' }
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: [facility2], value: { shortcode: 'patient_id' } },
+          { key: [facility2, 1], value: { shortcode: 'patient_id' } }
         ];
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: ['parent2'], value: 'patient_id' }, { key: ['parent2', 2], value: 'patient_id' },
-          { key: [facility2], value: 'patient_id' }, { key: [facility2, 3], value: 'patient_id' }
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: ['parent2'], value: { shortcode: 'patient_id' } },
+          { key: ['parent2', 2], value: { shortcode: 'patient_id' } },
+          { key: [facility2], value: { shortcode: 'patient_id' } },
+          { key: [facility2, 3], value: { shortcode: 'patient_id' } }
         ];
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
       });
 
       it('returns false for not allowed contacts', () => {
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: ['parent2'], value: 'patient_id' }, { key: ['parent2', 2], value: 'patient_id' }
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: ['parent2'], value: { shortcode: 'patient_id' } },
+          { key: ['parent2', 2], value: { shortcode: 'patient_id' } }
         ];
         service.allowedDoc(contact, feed, viewResults).should.equal(false);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
         ];
         service.allowedDoc(contact, feed, viewResults).should.equal(false);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
         ];
         service.allowedDoc(contact, feed, viewResults).should.equal(false);
       });
 
       it('respects depth', () => {
         viewResults.contactsByDepth = [
-          { key: [facility1], value: 'patient_id' }, { key: [facility1, 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' }
+          { key: [facility1], value: { shortcode: 'patient_id' } },
+          { key: [facility1, 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } }
         ];
         const ctx = { userCtx: userCtxMultiFacility, subjectIds };
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
@@ -1312,9 +1311,12 @@ describe('Authorization service', () => {
           .should.deep.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact_id'], value: 'patient_id' }, { key: ['contact_id', 0], value: 'patient_id' },
-          { key: [facility2], value: 'patient_id' }, { key: [facility2, 1], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 2], value: 'patient_id' }
+          { key: ['contact_id'], value: { shortcode: 'patient_id' } },
+          { key: ['contact_id', 0], value: { shortcode: 'patient_id' } },
+          { key: [facility2], value: { shortcode: 'patient_id' } },
+          { key: [facility2, 1], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 2], value: { shortcode: 'patient_id' } }
         ];
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
         service
@@ -1325,9 +1327,12 @@ describe('Authorization service', () => {
           .should.deep.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: [facility1], value: 'patient_id' }, { key: [facility1, 2], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: [facility1], value: { shortcode: 'patient_id' } },
+          { key: [facility1, 2], value: { shortcode: 'patient_id' } },
         ];
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
         service
@@ -1341,10 +1346,14 @@ describe('Authorization service', () => {
           .should.deep.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: ['parent2'], value: 'patient_id' }, { key: ['parent2', 2], value: 'patient_id' },
-          { key: [facility2], value: 'patient_id' }, { key: [facility2, 3], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: ['parent2'], value: { shortcode: 'patient_id' } },
+          { key: ['parent2', 2], value: { shortcode: 'patient_id' } },
+          { key: [facility2], value: { shortcode: 'patient_id' } },
+          { key: [facility2, 3], value: { shortcode: 'patient_id' } },
         ];
         service.allowedDoc(contact, feed, viewResults).should.deep.equal(true);
         service
@@ -1363,8 +1372,10 @@ describe('Authorization service', () => {
 
       it('should ignore report depth', () => {
         viewResults.contactsByDepth = [
-          { key: [facility1], value: 'patient_id' }, { key: [facility1, 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
+          { key: [facility1], value: { shortcode: 'patient_id' } },
+          { key: [facility1, 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
         ];
         const ctx = {
           userCtx: userCtxMultiFacility,
@@ -1381,9 +1392,12 @@ describe('Authorization service', () => {
         service.allowedDoc(contact, ctx, viewResults).should.deep.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact_id'], value: 'patient_id' }, { key: ['contact_id', 0], value: 'patient_id' },
-          { key: [facility1], value: 'patient_id' }, { key: [facility1, 1], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 2], value: 'patient_id' },
+          { key: ['contact_id'], value: { shortcode: 'patient_id' } },
+          { key: ['contact_id', 0], value: { shortcode: 'patient_id' } },
+          { key: [facility1], value: { shortcode: 'patient_id' } },
+          { key: [facility1, 1], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 2], value: { shortcode: 'patient_id' } },
         ];
 
         ctx.contactsByDepthKeys = keysByDepth[0];
@@ -1394,9 +1408,12 @@ describe('Authorization service', () => {
         service.allowedDoc(contact, ctx, viewResults).should.deep.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: [facility2], value: 'patient_id' }, { key: [facility2, 2], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: [facility2], value: { shortcode: 'patient_id' } },
+          { key: [facility2, 2], value: { shortcode: 'patient_id' } },
         ];
 
         ctx.contactsByDepthKeys = keysByDepth[0];
@@ -1947,7 +1964,7 @@ describe('Authorization service', () => {
       let facility;
       beforeEach(() => {
         facility = userCtx.facility_id[0];
-        viewResults = { contactsByDepth: [{ key: ['parent1'], value: 'patient_id'}] };
+        viewResults = { contactsByDepth: [{ key: ['parent1'], value: { shortcode: 'patient_id' }}] };
         feed = { userCtx, contactsByDepthKeys: [[facility]], subjectIds, subjectsDepth: {} };
         keysByDepth = {
           0: [[facility, 0]],
@@ -1960,49 +1977,64 @@ describe('Authorization service', () => {
 
       it('returns nbr of new subjects for allowed contacts', () => {
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: [facility], value: 'patient_id' }, { key: [facility, 2], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: [facility], value: { shortcode: 'patient_id' } },
+          { key: [facility, 2], value: { shortcode: 'patient_id' } },
         ];
         service.updateContext(true, feed, viewResults).should.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: [facility], value: null },
-          { key: [facility, 0], value: null },
+          { key: [facility], value: {} },
+          { key: [facility, 0], value: { } },
         ];
         service.updateContext(true, feed, viewResults).should.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: [facility], value: 'patient_id'}, { key: [facility, 1], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: [facility], value: { shortcode: 'patient_id' }},
+          { key: [facility, 1], value: { shortcode: 'patient_id' } },
         ];
         service.updateContext(true, feed, viewResults).should.equal(false);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: ['parent2'], value: 'patient_id' }, { key: ['parent2', 2], value: 'patient_id' },
-          { key: [facility], value: 'patient_id' }, { key: [facility, 3], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: ['parent2'], value: { shortcode: 'patient_id' } },
+          { key: ['parent2', 2], value: { shortcode: 'patient_id' } },
+          { key: [facility], value: { shortcode: 'patient_id' } },
+          { key: [facility, 3], value: { shortcode: 'patient_id' } },
         ];
         service.updateContext(true, feed, viewResults).should.equal(false);
       });
 
       it('returns false for not allowed contacts', () => {
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: ['parent2'], value: 'patient_id' }, { key: ['parent2', 2], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: ['parent2'], value: { shortcode: 'patient_id' } },
+          { key: ['parent2', 2], value: { shortcode: 'patient_id' } },
         ];
         service.updateContext(false, feed, viewResults).should.equal(false);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
         ];
         service.updateContext(false, feed, viewResults).should.equal(false);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
         ];
         service.updateContext(false, feed, viewResults).should.equal(false);
       });
@@ -2010,10 +2042,10 @@ describe('Authorization service', () => {
       it('adds valid contact _id and reference to subjects list, while keeping them unique', () => {
         feed.subjectIds = [];
         viewResults.contactsByDepth = [
-          { key: ['new_contact_id'], value: 'new_patient_id' },
-          { key: ['new_contact_id', 0], value: 'new_patient_id' },
-          { key: [facility], value: 'new_patient_id' },
-          { key: [facility, 1], value: 'new_patient_id' }
+          { key: ['new_contact_id'], value: { shortcode: 'new_patient_id' } },
+          { key: ['new_contact_id', 0], value: { shortcode: 'new_patient_id' } },
+          { key: [facility], value: { shortcode: 'new_patient_id' } },
+          { key: [facility, 1], value: { shortcode: 'new_patient_id' } }
         ];
 
         service.updateContext(true, feed, viewResults).should.equal(true);
@@ -2025,10 +2057,10 @@ describe('Authorization service', () => {
         feed.subjectsDepth.should.deep.equal({ new_patient_id: 1, new_contact_id: 1 });
 
         viewResults.contactsByDepth = [
-          { key: ['second_new_contact_id'], value: 'second_patient_id' },
-          { key: ['second_new_contact_id', 0], value: 'second_patient_id' },
-          { key: ['parent1'], value: 'second_patient_id' },
-          { key: ['parent1', 1], value: 'second_patient_id' },
+          { key: ['second_new_contact_id'], value: { shortcode: 'second_patient_id' } },
+          { key: ['second_new_contact_id', 0], value: { shortcode: 'second_patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'second_patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'second_patient_id' } },
         ];
         service.updateContext(false, feed, viewResults).should.equal(false);
         feed.subjectIds.should.deep.equal(['new_patient_id', 'new_contact_id']);
@@ -2039,10 +2071,10 @@ describe('Authorization service', () => {
         feed.subjectIds = ['person_id', 'person_id', 'contact_id', 'person_ref', 'contact_id', 'person_ref', 's'];
 
         viewResults.contactsByDepth = [
-          { key: ['person_id'], value: 'person_ref' },
-          { key: ['person_id', 0], value: 'person_ref' },
-          { key: ['parent1'], value: 'person_ref' },
-          { key: ['parent1', 1], value: 'person_ref' },
+          { key: ['person_id'], value: { shortcode: 'person_ref' } },
+          { key: ['person_id', 0], value: { shortcode: 'person_ref' } },
+          { key: ['parent1'], value: { shortcode: 'person_ref' } },
+          { key: ['parent1', 1], value: { shortcode: 'person_ref' } },
         ];
 
         service.updateContext(false, feed, viewResults).should.equal(false);
@@ -2053,26 +2085,26 @@ describe('Authorization service', () => {
         feed.subjectIds = [];
 
         viewResults.contactsByDepth = [
-          { key: ['person_id'], value: 'person_ref' },
-          { key: ['person_id', 0], value: 'person_ref' },
-          { key: ['clinic_id'], value: 'person_ref' },
-          { key: ['clinic_id', 1], value: 'person_ref' },
-          { key: ['hc_id'], value: 'person_ref' },
-          { key: ['hc_id', 2], value: 'person_ref' },
-          { key: ['facility_id'], value: 'person_ref' },
-          { key: ['facility_id', 3], value: 'person_ref' },
+          { key: ['person_id'], value: { shortcode: 'person_ref' } },
+          { key: ['person_id', 0], value: { shortcode: 'person_ref' } },
+          { key: ['clinic_id'], value: { shortcode: 'person_ref' } },
+          { key: ['clinic_id', 1], value: { shortcode: 'person_ref' } },
+          { key: ['hc_id'], value: { shortcode: 'person_ref' } },
+          { key: ['hc_id', 2], value: { shortcode: 'person_ref' } },
+          { key: ['facility_id'], value: { shortcode: 'person_ref' } },
+          { key: ['facility_id', 3], value: { shortcode: 'person_ref' } },
         ];
         service.updateContext(true, feed, viewResults).should.equal(true);
         feed.subjectIds.should.have.deep.members(['person_id', 'person_ref']);
         feed.subjectsDepth.should.deep.equal({ person_id: 3, person_ref: 3 });
 
         viewResults.contactsByDepth = [
-          { key: ['clinic_id'], value: 'clinic_ref' },
-          { key: ['clinic_id', 0], value: 'clinic_ref' },
-          { key: ['hc_id'], value: 'clinic_ref' },
-          { key: ['hc_id', 1], value: 'clinic_ref' },
-          { key: ['facility_id'], value: 'clinic_ref' },
-          { key: ['facility_id', 2], value: 'clinic_ref' },
+          { key: ['clinic_id'], value: { shortcode: 'clinic_ref' } },
+          { key: ['clinic_id', 0], value: { shortcode: 'clinic_ref' } },
+          { key: ['hc_id'], value: { shortcode: 'clinic_ref' } },
+          { key: ['hc_id', 1], value: { shortcode: 'clinic_ref' } },
+          { key: ['facility_id'], value: { shortcode: 'clinic_ref' } },
+          { key: ['facility_id', 2], value: { shortcode: 'clinic_ref' } },
         ];
         service.updateContext(true, feed, viewResults).should.equal(true);
         feed.subjectIds.should.have.deep.members(['person_id', 'person_ref', 'clinic_id', 'clinic_ref']);
@@ -2082,10 +2114,10 @@ describe('Authorization service', () => {
         });
 
         viewResults.contactsByDepth = [
-          { key: ['hc_id'], value: 'hc_ref' },
-          { key: ['hc_id', 0], value: 'hc_ref' },
-          { key: ['facility_id'], value: 'hc_ref' },
-          { key: ['facility_id', 1], value: 'hc_ref' },
+          { key: ['hc_id'], value: { shortcode: 'hc_ref' } },
+          { key: ['hc_id', 0], value: { shortcode: 'hc_ref' } },
+          { key: ['facility_id'], value: { shortcode: 'hc_ref' } },
+          { key: ['facility_id', 1], value: { shortcode: 'hc_ref' } },
         ];
         service.updateContext(true, feed, viewResults).should.equal(true);
         feed.subjectIds.should.have.deep.members([
@@ -2097,6 +2129,22 @@ describe('Authorization service', () => {
           hc_id: 1, hc_ref: 1,
         });
       });
+
+      it('should handle primary contacts', () => {
+        feed.subjectIds = [];
+
+        viewResults.contactsByDepth = [
+          { key: ['clinic_id'], value: { shortcode: 'clinic', primary_contact: 'juli' } },
+          { key: ['clinic_id', 0], value: { shortcode: 'clinic', primary_contact: 'juli' } },
+        ];
+        service.updateContext(true, feed, viewResults).should.equal(true);
+        feed.subjectIds.should.have.deep.members([ 'clinic_id', 'clinic' ]);
+        service.updateContext(true, feed, viewResults).should.equal(false);
+
+        feed.replicatePrimaryContacts = true;
+        service.updateContext(true, feed, viewResults).should.equal(true);
+        feed.subjectIds.should.have.deep.members([ 'clinic_id', 'clinic', 'juli' ]);
+      });
     });
 
     describe('updateContext multi-facility', () => {
@@ -2105,7 +2153,7 @@ describe('Authorization service', () => {
       beforeEach(() => {
         facility1 = userCtxMultiFacility.facility_id[0];
         facility2 = userCtxMultiFacility.facility_id[1];
-        viewResults = { contactsByDepth: [{ key: ['parent1'], value: 'patient_id'}] };
+        viewResults = { contactsByDepth: [{ key: ['parent1'], value: { shortcode: 'patient_id' }}] };
         feed = {
           userCtx: userCtxMultiFacility,
           contactsByDepthKeys: [[facility1], [facility2]],
@@ -2126,51 +2174,66 @@ describe('Authorization service', () => {
 
       it('returns nbr of new subjects for allowed contacts', () => {
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: [facility1], value: 'patient_id' }, { key: [facility1, 2], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: [facility1], value: { shortcode: 'patient_id' } },
+          { key: [facility1, 2], value: { shortcode: 'patient_id' } },
         ];
         service.updateContext(true, feed, viewResults).should.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: [facility1], value: null },
-          { key: [facility1, 0], value: null },
-          { key: [facility2], value: null },
-          { key: [facility2, 0], value: null },
+          { key: [facility1], value: { } },
+          { key: [facility1, 0], value: { } },
+          { key: [facility2], value: { } },
+          { key: [facility2, 0], value: { } },
         ];
         service.updateContext(true, feed, viewResults).should.equal(true);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: [facility1], value: 'patient_id'}, { key: [facility1, 1], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: [facility1], value: { shortcode: 'patient_id' }},
+          { key: [facility1, 1], value: { shortcode: 'patient_id' } },
         ];
         service.updateContext(true, feed, viewResults).should.equal(false);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: ['parent2'], value: 'patient_id' }, { key: ['parent2', 2], value: 'patient_id' },
-          { key: [facility2], value: 'patient_id' }, { key: [facility2, 3], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: ['parent2'], value: { shortcode: 'patient_id' } },
+          { key: ['parent2', 2], value: { shortcode: 'patient_id' } },
+          { key: [facility2], value: { shortcode: 'patient_id' } },
+          { key: [facility2, 3], value: { shortcode: 'patient_id' } },
         ];
         service.updateContext(true, feed, viewResults).should.equal(false);
       });
 
       it('returns false for not allowed contacts', () => {
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
-          { key: ['parent2'], value: 'patient_id' }, { key: ['parent2', 2], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
+          { key: ['parent2'], value: { shortcode: 'patient_id' } },
+          { key: ['parent2', 2], value: { shortcode: 'patient_id' } },
         ];
         service.updateContext(false, feed, viewResults).should.equal(false);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
         ];
         service.updateContext(false, feed, viewResults).should.equal(false);
 
         viewResults.contactsByDepth = [
-          { key: ['contact'], value: 'patient_id' }, { key: ['contact', 0], value: 'patient_id' },
-          { key: ['parent1'], value: 'patient_id' }, { key: ['parent1', 1], value: 'patient_id' },
+          { key: ['contact'], value: { shortcode: 'patient_id' } },
+          { key: ['contact', 0], value: { shortcode: 'patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'patient_id' } },
         ];
         service.updateContext(false, feed, viewResults).should.equal(false);
       });
@@ -2178,10 +2241,10 @@ describe('Authorization service', () => {
       it('adds valid contact _id and reference to subjects list, while keeping them unique', () => {
         feed.subjectIds = [];
         viewResults.contactsByDepth = [
-          { key: ['new_contact_id'], value: 'new_patient_id' },
-          { key: ['new_contact_id', 0], value: 'new_patient_id' },
-          { key: [facility1], value: 'new_patient_id' },
-          { key: [facility1, 1], value: 'new_patient_id' }
+          { key: ['new_contact_id'], value: { shortcode: 'new_patient_id' } },
+          { key: ['new_contact_id', 0], value: { shortcode: 'new_patient_id' } },
+          { key: [facility1], value: { shortcode: 'new_patient_id' } },
+          { key: [facility1, 1], value: { shortcode: 'new_patient_id' } }
         ];
 
         service.updateContext(true, feed, viewResults).should.equal(true);
@@ -2193,10 +2256,10 @@ describe('Authorization service', () => {
         feed.subjectsDepth.should.deep.equal({ new_patient_id: 1, new_contact_id: 1 });
 
         viewResults.contactsByDepth = [
-          { key: ['second_new_contact_id'], value: 'second_patient_id' },
-          { key: ['second_new_contact_id', 0], value: 'second_patient_id' },
-          { key: ['parent1'], value: 'second_patient_id' },
-          { key: ['parent1', 1], value: 'second_patient_id' },
+          { key: ['second_new_contact_id'], value: { shortcode: 'second_patient_id' } },
+          { key: ['second_new_contact_id', 0], value: { shortcode: 'second_patient_id' } },
+          { key: ['parent1'], value: { shortcode: 'second_patient_id' } },
+          { key: ['parent1', 1], value: { shortcode: 'second_patient_id' } },
         ];
         service.updateContext(false, feed, viewResults).should.equal(false);
         feed.subjectIds.should.deep.equal(['new_patient_id', 'new_contact_id']);
@@ -2207,10 +2270,10 @@ describe('Authorization service', () => {
         feed.subjectIds = ['person_id', 'person_id', 'contact_id', 'person_ref', 'contact_id', 'person_ref', 's'];
 
         viewResults.contactsByDepth = [
-          { key: ['person_id'], value: 'person_ref' },
-          { key: ['person_id', 0], value: 'person_ref' },
-          { key: ['parent1'], value: 'person_ref' },
-          { key: ['parent1', 1], value: 'person_ref' },
+          { key: ['person_id'], value: { shortcode: 'person_ref' } },
+          { key: ['person_id', 0], value: { shortcode: 'person_ref' } },
+          { key: ['parent1'], value: { shortcode: 'person_ref' } },
+          { key: ['parent1', 1], value: { shortcode: 'person_ref' } },
         ];
 
         service.updateContext(false, feed, viewResults).should.equal(false);
@@ -2221,26 +2284,26 @@ describe('Authorization service', () => {
         feed.subjectIds = [];
 
         viewResults.contactsByDepth = [
-          { key: ['person_id'], value: 'person_ref' },
-          { key: ['person_id', 0], value: 'person_ref' },
-          { key: ['clinic_id'], value: 'person_ref' },
-          { key: ['clinic_id', 1], value: 'person_ref' },
-          { key: ['hc_id'], value: 'person_ref' },
-          { key: ['hc_id', 2], value: 'person_ref' },
-          { key: [facility1], value: 'person_ref' },
-          { key: [facility1, 3], value: 'person_ref' },
+          { key: ['person_id'], value: { shortcode: 'person_ref' } },
+          { key: ['person_id', 0], value: { shortcode: 'person_ref' } },
+          { key: ['clinic_id'], value: { shortcode: 'person_ref' } },
+          { key: ['clinic_id', 1], value: { shortcode: 'person_ref' } },
+          { key: ['hc_id'], value: { shortcode: 'person_ref' } },
+          { key: ['hc_id', 2], value: { shortcode: 'person_ref' } },
+          { key: [facility1], value: { shortcode: 'person_ref' } },
+          { key: [facility1, 3], value: { shortcode: 'person_ref' } },
         ];
         service.updateContext(true, feed, viewResults).should.equal(true);
         feed.subjectIds.should.have.deep.members(['person_id', 'person_ref']);
         feed.subjectsDepth.should.deep.equal({ person_id: 3, person_ref: 3 });
 
         viewResults.contactsByDepth = [
-          { key: ['clinic_id'], value: 'clinic_ref' },
-          { key: ['clinic_id', 0], value: 'clinic_ref' },
-          { key: ['hc_id'], value: 'clinic_ref' },
-          { key: ['hc_id', 1], value: 'clinic_ref' },
-          { key: [facility2], value: 'clinic_ref' },
-          { key: [facility2, 2], value: 'clinic_ref' },
+          { key: ['clinic_id'], value: { shortcode: 'clinic_ref' } },
+          { key: ['clinic_id', 0], value: { shortcode: 'clinic_ref' } },
+          { key: ['hc_id'], value: { shortcode: 'clinic_ref' } },
+          { key: ['hc_id', 1], value: { shortcode: 'clinic_ref' } },
+          { key: [facility2], value: { shortcode: 'clinic_ref' } },
+          { key: [facility2, 2], value: { shortcode: 'clinic_ref' } },
         ];
         service.updateContext(true, feed, viewResults).should.equal(true);
         feed.subjectIds.should.have.deep.members(['person_id', 'person_ref', 'clinic_id', 'clinic_ref']);
@@ -2250,10 +2313,10 @@ describe('Authorization service', () => {
         });
 
         viewResults.contactsByDepth = [
-          { key: ['hc_id'], value: 'hc_ref' },
-          { key: ['hc_id', 0], value: 'hc_ref' },
-          { key: [facility2], value: 'hc_ref' },
-          { key: [facility2, 1], value: 'hc_ref' },
+          { key: ['hc_id'], value: { shortcode: 'hc_ref' } },
+          { key: ['hc_id', 0], value: { shortcode: 'hc_ref' } },
+          { key: [facility2], value: { shortcode: 'hc_ref' } },
+          { key: [facility2, 1], value: { shortcode: 'hc_ref' } },
         ];
         service.updateContext(true, feed, viewResults).should.equal(true);
         feed.subjectIds.should.have.deep.members([
@@ -2318,7 +2381,7 @@ describe('Authorization service', () => {
           id: 2,
           viewResults: {
             replicationKeys: [{ key: 'something', value: null }],
-            contactsByDepth: [{ key: [2, 0], value: 'subject2' }, { key: ['a'], value: null }],
+            contactsByDepth: [{ key: [2, 0], value: { id: 2, shortcode: 'subject2' } }, { key: ['a'], value: {} }],
           },
         },
         { id: 3, viewResults: { replicationKeys: [{ key: '_all', value: null }] } },
@@ -2326,7 +2389,7 @@ describe('Authorization service', () => {
           id: 1,
           viewResults: {
             replicationKeys: [{ key: 'something', value: null }],
-            contactsByDepth: [{ key: [1], value: 'subject1' }, { key: ['a'], value: null }],
+            contactsByDepth: [{ key: [1], value: { id: 1, shortcode: 'subject1' } }, { key: ['a'], value: {} }],
           },
         },
         { id: 9, viewResults: {}, allowed: true },
@@ -2348,7 +2411,7 @@ describe('Authorization service', () => {
           id: 2,
           viewResults: {
             replicationKeys: [{ key: 'something', value: null }],
-            contactsByDepth: [{ key: [2, 0], value: 'subject2'}, { key: ['a'], value: null }],
+            contactsByDepth: [{ key: [2, 0], value: { id: 2, shortcode: 'subject2' } }, { key: ['a'], value: { } }],
           },
         },
         { id: 3, viewResults: { replicationKeys: [{ key: '_all', value: null }]} },
@@ -2356,7 +2419,7 @@ describe('Authorization service', () => {
           id: 1,
           viewResults: {
             replicationKeys: [{ key: 'something', value: null }],
-            contactsByDepth: [{ key: [1], value: 'subject1' }, { key: ['a'], value: null }],
+            contactsByDepth: [{ key: [1], value: { id: 1, shortcode: 'subject1' } }, { key: ['a'], value: { } }],
           },
         },
         { id: 9, viewResults: {}, allowed: true },
@@ -2401,14 +2464,14 @@ describe('Authorization service', () => {
           id: 2,
           viewResults: {
             replicationKeys: [{ key: 'something', value: null }],
-            contactsByDepth: [{ key: [1], value: 'subject1' }],
+            contactsByDepth: [{ key: [1], value: { id: 2, shortcode: 'subject1' } }],
           },
         },
         {
           id: 3,
           viewResults: {
             replicationKeys: [{ key: 'something', value: null }],
-            contactsByDepth: [{ key: [1], value: 'subject2' }],
+            contactsByDepth: [{ key: [1], value: { id: 3, shortcode: 'subject2' } }],
           },
         },
         {
@@ -2430,14 +2493,14 @@ describe('Authorization service', () => {
           id: 2,
           viewResults: {
             replicationKeys: [{ key: 'something', value: null }],
-            contactsByDepth: [{ key: [1], value: 'subject1' }],
+            contactsByDepth: [{ key: [1], value: { id: 2, shortcode: 'subject1' } }],
           },
         },
         {
           id: 3,
           viewResults: {
             replicationKeys: [{ key: 'something', value: null, }],
-            contactsByDepth: [{ key: [1], value: 'subject2' }],
+            contactsByDepth: [{ key: [1], value: { id: 3, shortcode: 'subject2' } }],
           },
         },
         {
@@ -2447,46 +2510,6 @@ describe('Authorization service', () => {
             contactsByDepth: false,
           },
         },
-      ]);
-    });
-
-    it('takes doc.allowed into consideration', () => {
-      const authzContext = {
-        userCtx: {},
-        subjectIds: [],
-        contactsByDepthKeys: [[1]],
-        subjectsDepth: {},
-      };
-
-      const docs = [
-        { id: 4, viewResults: {} },
-        { id: 5, viewResults: {}, allowed: true },
-        {
-          id: 2,
-          viewResults: {
-            replicationKeys: [{ key: 'a', value: null }],
-            contactsByDepth: [{ key: [1], value: 'subject2' }]
-          },
-          allowed: false
-        },
-        { id: 3, viewResults: {} },
-        { id: 1, viewResults: {}, allowed: true }
-      ];
-
-      const results = service.filterAllowedDocs(authzContext, docs);
-
-      results.length.should.equal(3);
-      results.should.deep.equal([
-        { id: 5, viewResults: {}, allowed: true },
-        {
-          id: 2,
-          viewResults: {
-            replicationKeys: [{ key: 'a', value: null }],
-            contactsByDepth: [{ key: [1], value: 'subject2' }],
-          },
-          allowed: false,
-        },
-        { id: 1, viewResults: {}, allowed: true }
       ]);
     });
   });
@@ -2500,6 +2523,7 @@ describe('Authorization service', () => {
             userCtx,
             subjectIds: ['_all', 'org.couchdb.user:user'],
             contactsByDepthKeys: [ ['facility_id'] ],
+            replicatePrimaryContacts: false,
             subjectsDepth: {},
             contactDepth: -1,
             reportDepth: -1,
@@ -2517,6 +2541,7 @@ describe('Authorization service', () => {
             userCtx,
             subjectIds: ['_all', 'org.couchdb.user:user'],
             contactsByDepthKeys: [ ['facility_id'] ],
+            replicatePrimaryContacts: false,
             subjectsDepth: {},
             contactDepth: -1,
             reportDepth: -1,
@@ -2525,7 +2550,6 @@ describe('Authorization service', () => {
     });
 
     it('should get view results if missing', () => {
-      db.medic.query.resolves({ rows: [] });
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
       const contactsByDepth = sinon.stub();
       const docsByReplicationKey = sinon.stub();
@@ -2569,9 +2593,9 @@ describe('Authorization service', () => {
           doc: c1, // allowed
           viewResults: {
             contactsByDepth: [
-              { key: ['c1'], value: '123456' },
-              { key: ['p1'], value: '123456' },
-              { key: ['facility_id'], value: '123456' },
+              { key: ['c1'], value: { shortcode: '123456' } },
+              { key: ['p1'], value: { shortcode: '123456' }  },
+              { key: ['facility_id'], value: { shortcode: '123456' }  },
             ],
             replicationKeys: [{ key: 'c1', value: { type: 'contact' }}],
           }
@@ -2580,9 +2604,9 @@ describe('Authorization service', () => {
           doc: c2, // denied
           viewResults: {
             contactsByDepth: [
-              { key: ['c2'], value: 'place1' },
-              { key: ['p3'], value: 'place1' },
-              { key: ['p4'], value: 'place1' },
+              { key: ['c2'], value: { shortcode: 'place1' } },
+              { key: ['p3'], value: { shortcode: 'place1' } },
+              { key: ['p4'], value: { shortcode: 'place1' } },
             ],
             replicationKeys: [{ key: 'c2', value: { type: 'contact' }}],
           }
@@ -2591,9 +2615,9 @@ describe('Authorization service', () => {
           doc: c3, // allowed
           viewResults: {
             contactsByDepth: [
-              { key: ['c3'], value: null },
-              { key: ['p1'], value: null },
-              { key: ['facility_id'], value: null },
+              { key: ['c3'], value: { _id: 'c3' } },
+              { key: ['p1'], value: { _id: 'p1' } },
+              { key: ['facility_id'], value: { _id: 'facility_id' } },
             ],
             replicationKeys: [{ key: 'c3', value: { type: 'contact' }}]
           },
@@ -2602,9 +2626,9 @@ describe('Authorization service', () => {
           doc: c4, // denied
           viewResults: {
             contactsByDepth: [
-              { key: ['c4'], value: null },
-              { key: ['p3'], value: null },
-              { key: ['p4'], value: null },
+              { key: ['c4'], value: { _id: 'c4' } },
+              { key: ['p3'], value: { _id: 'p3' } },
+              { key: ['p4'], value: { _id: 'p4' } },
             ],
             replicationKeys: [{ key: 'c4', value: { type: 'contact' }}],
           },
@@ -2613,54 +2637,50 @@ describe('Authorization service', () => {
           doc: c5, // allowed
           viewResults: {
             contactsByDepth: [
-              { key: ['c5'], value: 'place5' },
-              { key: ['p2'], value: 'place5' },
-              { key: ['facility_id'], value: 'place5' },
+              { key: ['c5'], value: { shortcode: 'place5' } },
+              { key: ['p2'], value: { shortcode: 'place5' }},
+              { key: ['facility_id'], value: { shortcode: 'place5' } },
             ],
             replicationKeys: [{ key: 'c5', value: { type: 'contact' }}],
           },
         },
       ];
 
-      db.medic.query.resolves({ rows: [] });
-      sinon.stub(db.medic, 'allDocs');
-
-      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.any })).resolves({ rows: [] });
-      db.medic.allDocs
-        .withArgs(sinon.match({ keys: sinon.match.array }))
-        .resolves({ rows: [
+      sinon.stub(db.medic, 'allDocs').resolves({ rows:
+        [
           { id: 'c1', doc: c1 },
           { id: 'c2', doc: c2 },
           { id: 'c3', doc: c3 },
           { id: 'c4', doc: c4 },
           { id: 'c5', doc: c5 },
-        ] });
+        ]
+      });
 
       const contactsByDepth = sinon.stub();
       contactsByDepth.withArgs(c1).returns([
-        { key: ['c1'], value: '123456' },
-        { key: ['p1'], value: '123456' },
-        { key: ['facility_id'], value: '123456' },
+        { key: ['c1'], value: { _id: c1._id, shortcode: '123456' } },
+        { key: ['p1'], value: { _id: c1._id, shortcode: '123456' } },
+        { key: ['facility_id'], value: { _id: c1._id, shortcode: '123456' } },
       ]);
       contactsByDepth.withArgs(c2).returns([
-        { key: ['c2'], value: 'place1' },
-        { key: ['p3'], value: 'place1' },
-        { key: ['p4'], value: 'place1' },
+        { key: ['c2'], value: { _id: c2._id, shortcode: 'place1' } },
+        { key: ['p3'], value: { _id: c2._id, shortcode: 'place1' } },
+        { key: ['p4'], value: { _id: c2._id, shortcode: 'place1' } },
       ]);
       contactsByDepth.withArgs(c3).returns([
-        { key: ['c3'], value: null },
-        { key: ['p1'], value: null },
-        { key: ['facility_id'], value: null },
+        { key: ['c3'], value: { _id: c3._id } },
+        { key: ['p1'], value: { _id: c3._id } },
+        { key: ['facility_id'], value: { _id: c3._id } },
       ]);
       contactsByDepth.withArgs(c4).returns([
-        { key: ['c4'], value: null },
-        { key: ['p3'], value: null },
-        { key: ['p4'], value: null },
+        { key: ['c4'], value: { _id: c4._id } },
+        { key: ['p3'], value: { _id: c4._id } },
+        { key: ['p4'], value: { _id: c4._id } },
       ]);
       contactsByDepth.withArgs(c5).returns([
-        { key: ['c5'], value: 'place5' },
-        { key: ['p2'], value: 'place5' },
-        { key: ['facility_id'], value: 'place5' },
+        { key: ['c5'], value: { _id: c5._id, shortcode: 'place5' } },
+        { key: ['p2'], value: { _id: c5._id, shortcode: 'place5' } },
+        { key: ['facility_id'], value: { _id: c5._id, shortcode: 'place5' } },
       ]);
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(c1).returns([{ key: 'c1', value: {  type: 'contact'  }}]);
@@ -2756,15 +2776,8 @@ describe('Authorization service', () => {
         },
       ];
 
-      db.medic.query.resolves({ rows: [
-        { id: 'patient1doc', key: ['shortcode', 'patient1'] },
-        { id: 'patient2doc', key: ['shortcode', 'patient2'] },
-      ] });
-      sinon.stub(db.medic, 'allDocs');
-      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
-      db.medic.allDocs
-        .withArgs(sinon.match({ keys: sinon.match.array }))
-        .resolves({ rows: [
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
           {
             id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } }
           },
@@ -2791,29 +2804,37 @@ describe('Authorization service', () => {
 
       const contactsByDepth = sinon.stub();
       contactsByDepth.withArgs(sinon.match({ _id: 'c1' })).returns([
-        { key: ['c1'], value: null }, { key: ['p1'], value: null }, { key: ['facility_id'], value: null },
+        { key: ['c1'], value: { _id: 'c1' } },
+        { key: ['p1'], value: { _id: 'c1' } },
+        { key: ['facility_id'], value: { _id: 'c1' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient1doc' })).returns([
-        { key: ['patient1doc'], value: 'patient1' },
-        { key: ['p1'], value: 'patient1' },
-        { key: ['facility_id'], value: 'patient1' },
+        { key: ['patient1doc'], value: { shortcode: 'patient1' } },
+        { key: ['p1'], value: { shortcode: 'patient1' } },
+        { key: ['facility_id'], value: { shortcode: 'patient1' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'c2' })).returns([
-        { key: ['c2'], value: null }, { key: ['p2'], value: null }, { key: ['p3'], value: null },
+        { key: ['c2'], value: { _id: 'c2' } },
+        { key: ['p2'], value: { _id: 'c2' } },
+        { key: ['p3'], value: { _id: 'c2' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient2doc' })).returns([
-        { key: ['patient2doc'], value: 'patient1' },
-        { key: ['p2'], value: 'patient2' },
-        { key: ['p3'], value: 'patient2' },
+        { key: ['patient2doc'], value: { shortcode: 'patient2' } },
+        { key: ['p2'], value: { shortcode: 'patient2' } },
+        { key: ['p3'], value: { shortcode: 'patient2' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'c3' })).returns([
-        { key: ['c3'], value: null }, { key: ['p2'], value: null }, { key: ['p3'], value: null },
+        { key: ['c3'], value: { _id: 'c3' } },
+        { key: ['p2'], value: { _id: 'c3' } },
+        { key: ['p3'], value: { _id: 'c3' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient3doc' })).returns([
-        { key: ['patient3doc'], value: null }, { key: ['facility_id'], value: null },
+        { key: ['patient3doc'], value: { _id: 'patient3doc' } },
+        { key: ['facility_id'], value: { _id: 'patient3doc' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient4doc' })).returns([
-        { key: ['patient4doc'], value: null }, { key: ['p3'], value: null },
+        { key: ['patient4doc'], value: { _id: 'patient4doc' } },
+        { key: ['p3'], value: { _id: 'patient4doc' } },
       ]);
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([
@@ -2838,6 +2859,13 @@ describe('Authorization service', () => {
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'patient1doc', key: ['shortcode', 'patient1'] },
+          { id: 'patient2doc', key: ['shortcode', 'patient2'] },
+        ]
+      });
 
       return service
         .getScopedAuthorizationContext(userCtx, docObjs)
@@ -2905,15 +2933,8 @@ describe('Authorization service', () => {
         },
       ];
 
-      db.medic.query.resolves({ rows: [
-        { id: 'patient1doc', key: ['shortcode', 'patient1'] },
-        { id: 'patient2doc', key: ['shortcode', 'patient2'] },
-      ] });
-      sinon.stub(db.medic, 'allDocs');
-      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
-      db.medic.allDocs
-        .withArgs(sinon.match({ keys: sinon.match.array }))
-        .resolves({ rows: [
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
           { id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
           {
             id: 'patient1doc', doc: { _id: 'patient1doc', type: 'person', patient_id: 'patient1',
@@ -2932,29 +2953,36 @@ describe('Authorization service', () => {
 
       const contactsByDepth = sinon.stub();
       contactsByDepth.withArgs(sinon.match({ _id: 'c1' })).returns([
-        { key: ['c1'], value: null }, { key: ['p1'], value: null }, { key: ['facility_id'], value: null },
+        { key: ['c1'], value: { _id: 'c1' } },
+        { key: ['p1'], value: { _id: 'c1' } },
+        { key: ['facility_id'], value: { _id: 'c1' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient1doc' })).returns([
-        { key: ['patient1doc'], value: 'patient1' },
-        { key: ['p1'], value: 'patient1' },
-        { key: ['facility_id'], value: 'patient1' },
+        { key: ['patient1doc'], value: { shortcode: 'patient1' } },
+        { key: ['p1'], value: { shortcode: 'patient1' } },
+        { key: ['facility_id'], value: { shortcode: 'patient1' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'c2' })).returns([
-        { key: ['c2'], value: null }, { key: ['p2'], value: null }, { key: ['p3'], value: null },
+        { key: ['c2'], value: { _id: 'c2' } },
+        { key: ['p2'], value: { _id: 'c2' } },
+        { key: ['p3'], value: { _id: 'c2' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient2doc' })).returns([
-        { key: ['patient2doc'], value: 'patient2' },
-        { key: ['p2'], value: 'patient2' },
-        { key: ['p3'], value: 'patient2' },
+        { key: ['patient2doc'], value: { shortcode: 'patient2' } },
+        { key: ['p2'], value: { shortcode: 'patient2' } },
+        { key: ['p3'], value: { shortcode: 'patient2' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'p1' })).returns([
-        { key: ['p1'], value: null }, { key: ['facility_id'], value: null },
+        { key: ['p1'], value: { _id: 'p1' } },
+        { key: ['facility_id'], value: { _id: 'p1' } },
       ]);
-      contactsByDepth.withArgs(sinon.match({ _id: 'facility_id' })).returns([{ key: ['facility_id'], value: null }]);
+      contactsByDepth.withArgs(sinon.match({ _id: 'facility_id' })).returns([
+        { key: ['facility_id'], value: { _id: 'facility_id' } }
+      ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'p2' })).returns([
-        { key: ['p2'], value: null }, { key: ['p3'], value: null },
+        { key: ['p2'], value: { _id: 'p2' } }, { key: ['p3'], value: { _id: 'p2' } },
       ]);
-      contactsByDepth.withArgs(sinon.match({ _id: 'p3' })).returns([{ key: ['p3'], value: null }]);
+      contactsByDepth.withArgs(sinon.match({ _id: 'p3' })).returns([{ key: ['p3'], value: { _id: 'p3' } }]);
 
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([{ key: 'c1', value: {  type: 'contact'  }}]);
@@ -2974,6 +3002,13 @@ describe('Authorization service', () => {
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'patient1doc', key: ['shortcode', 'patient1'] },
+          { id: 'patient2doc', key: ['shortcode', 'patient2'] },
+        ]
+      });
 
       return service
         .getScopedAuthorizationContext(userCtx, docObjs)
@@ -3015,9 +3050,9 @@ describe('Authorization service', () => {
           },
           viewResults: {
             contactsByDepth: [
-              { key: ['c1'], value: 'contact1' },
-              { key: ['p1'], value: 'contact1' },
-              { key: ['facility_id'], value: 'contact1' },
+              { key: ['c1'], value: { shortcode: 'contact1' } },
+              { key: ['p1'], value: { shortcode: 'contact1' } },
+              { key: ['facility_id'], value: { shortcode: 'contact1' } },
             ],
             replicationKeys: [{ key: 'c1', value: {  type: 'contact'  }}]
           },
@@ -3026,9 +3061,9 @@ describe('Authorization service', () => {
           doc: { _id: 'c2', type: 'person', parent: { _id: 'p2', parent: { _id: 'p3' } }, patient_id: 'contact2' },
           viewResults: {
             contactsByDepth: [
-              { key: ['c2'], value: 'contact2' },
-              { key: ['p2'], value: 'contact2' },
-              { key: ['p3'], value: 'contact2' },
+              { key: ['c2'], value: { shortcode: 'contact2' } },
+              { key: ['p2'], value: { shortcode: 'contact2' } },
+              { key: ['p3'], value: { shortcode: 'contact2' } },
             ],
             replicationKeys: [{ key: 'c2', value: {  type: 'contact'  }}]
           },
@@ -3055,15 +3090,8 @@ describe('Authorization service', () => {
         },
       ];
 
-      db.medic.query.resolves({ rows: [
-        { id: 'patient1doc', key: ['shortcode', 'patient1'] },
-        { id: 'patient2doc', key: ['shortcode', 'patient2'] },
-      ] });
-      sinon.stub(db.medic, 'allDocs');
-      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
-      db.medic.allDocs
-        .withArgs(sinon.match({ keys: sinon.match.array }))
-        .resolves({ rows: [
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
           {
             id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } },
               patient_id: 'contact1' }
@@ -3084,24 +3112,24 @@ describe('Authorization service', () => {
 
       const contactsByDepth = sinon.stub();
       contactsByDepth.withArgs(sinon.match({ _id: 'c1' })).returns([
-        { key: ['c1'], value: 'contact1' },
-        { key: ['p1'], value: 'contact1' },
-        { key: ['facility_id'], value: 'contact1' },
+        { key: ['c1'], value: { shortcode: 'contact1' } },
+        { key: ['p1'], value: { shortcode: 'contact1' } },
+        { key: ['facility_id'], value: { shortcode: 'contact1' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient1doc' })).returns([
-        { key: ['patient1doc'], value: 'patient1' },
-        { key: ['p1'], value: 'patient1' },
-        { key: ['facility_id'], value: 'patient1' },
+        { key: ['patient1doc'], value: { shortcode: 'patient1' } },
+        { key: ['p1'], value: { shortcode: 'patient1' } },
+        { key: ['facility_id'], value: { shortcode: 'patient1' } },
       ]);
-      contactsByDepth.withArgs(sinon.match({ _id: 'c2' })).returns([
-        { key: ['c2'], value: 'contact2' },
-        { key: ['p2'], value: 'contact2' },
-        { key: ['p3'], value: 'contact2' },
+      contactsByDepth.withArgs(sinon.match()).returns([
+        { key: ['c2'], value: { shortcode: 'contact2' } },
+        { key: ['p2'], value: { shortcode: 'contact2' } },
+        { key: ['p3'], value: { shortcode: 'contact2' } },
       ]);
       contactsByDepth.withArgs(sinon.match({ _id: 'patient2doc' })).returns([
-        { key: ['patient2doc'], value: 'patient2' },
-        { key: ['p2'], value: 'patient2' },
-        { key: ['p3'], value: 'patient2' },
+        { key: ['patient2doc'], value: { shortcode: 'patient2' } },
+        { key: ['p2'], value: { shortcode: 'patient2' } },
+        { key: ['p3'], value: { shortcode: 'patient2' } },
       ]);
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([{ key: 'c1', value: {  type: 'contact'  }}]);
@@ -3115,6 +3143,13 @@ describe('Authorization service', () => {
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'patient1doc', key: ['shortcode', 'patient1'] },
+          { id: 'patient2doc', key: ['shortcode', 'patient2'] },
+        ]
+      });
 
       return service
         .getScopedAuthorizationContext(userCtx, docObjs)
@@ -3144,7 +3179,7 @@ describe('Authorization service', () => {
 
     it('adds unassigned key if the user has required permissions', () => {
       auth.hasAllPermissions.returns(true);
-      config.get.returns(true);
+      config.get.withArgs('district_admins_access_unallocated_messages').returns(true);
 
       const docObjs = [
         { // unallocated
@@ -3167,7 +3202,7 @@ describe('Authorization service', () => {
 
     it('should not add unassigned key if the user does not have required permissions', () => {
       auth.hasAllPermissions.returns(false);
-      config.get.returns(true);
+      config.get.withArgs('district_admins_access_unallocated_messages').returns(true);
 
       const docObjs = [
         { // unallocated
@@ -3203,12 +3238,8 @@ describe('Authorization service', () => {
         },
       ];
 
-      db.medic.query.resolves({ rows: [ { id: 'patient1doc', key: ['shortcode', 'patient1'] } ] });
-      sinon.stub(db.medic, 'allDocs');
-      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
-      db.medic.allDocs
-        .withArgs(sinon.match({ keys: sinon.match.array }))
-        .resolves({ rows: [
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
           { id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
           {
             id: 'patient1doc',
@@ -3225,20 +3256,20 @@ describe('Authorization service', () => {
       contactsByDepth
         .withArgs(sinon.match({ _id: 'c1' }))
         .returns([
-          { key: ['c1'], value: null },
-          { key: ['c1', 0], value: null },
-          { key: ['facility_id'], value: null },
-          { key: ['facility_id', 1], value: null },
+          { key: ['c1'], value: { _id: 'c1' } },
+          { key: ['c1', 0], value: { _id: 'c1' } },
+          { key: ['facility_id'], value: { _id: 'c1' } },
+          { key: ['facility_id', 1], value: { _id: 'c1' } },
         ]);
       contactsByDepth
         .withArgs(sinon.match({ _id: 'patient1doc' }))
         .returns([
-          { key: ['patient1doc'], value: 'patient1' },
-          { key: ['patient1doc', 0], value: 'patient1' },
-          { key: ['p1'], value: 'patient1' },
-          { key: ['p1', 1], value: 'patient1' },
-          { key: ['facility_id'], value: 'patient1' },
-          { key: ['facility_id', 2], value: 'patient1' }
+          { key: ['patient1doc'], value: { shortcode: 'patient1' } },
+          { key: ['patient1doc', 0], value: { shortcode: 'patient1' } },
+          { key: ['p1'], value: { shortcode: 'patient1' } },
+          { key: ['p1', 1], value: { shortcode: 'patient1' } },
+          { key: ['facility_id'], value: { shortcode: 'patient1' } },
+          { key: ['facility_id', 2], value: { shortcode: 'patient1' } }
         ]);
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([{ key: 'c1', value: {  type: 'contact'  }}]);
@@ -3248,6 +3279,12 @@ describe('Authorization service', () => {
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'patient1doc', key: ['shortcode', 'patient1'] },
+        ]
+      });
 
       return service
         .getScopedAuthorizationContext(userCtx, docObjs)
@@ -3300,12 +3337,8 @@ describe('Authorization service', () => {
         },
       ];
 
-      db.medic.query.resolves({ rows: [ { id: 'patient1doc', key: ['shortcode', 'patient1'] } ] });
-      sinon.stub(db.medic, 'allDocs');
-      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
-      db.medic.allDocs
-        .withArgs(sinon.match({ keys: sinon.match.array }))
-        .resolves({ rows: [
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
           { id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
           {
             id: 'patient1doc',
@@ -3322,34 +3355,34 @@ describe('Authorization service', () => {
       contactsByDepth
         .withArgs(sinon.match({ _id: 'c1' }))
         .returns([
-          { key: ['c1'], value: null },
-          { key: ['c1', 0], value: null },
-          { key: ['facility_id'], value: null },
-          { key: ['facility_id', 1], value: null },
+          { key: ['c1'], value: { _id: 'c1' } },
+          { key: ['c1', 0], value: { _id: 'c1' } },
+          { key: ['facility_id'], value: { _id: 'c1' } },
+          { key: ['facility_id', 1], value: { _id: 'c1' } },
         ]);
       contactsByDepth
         .withArgs(sinon.match({ _id: 'patient1doc' }))
         .returns([
-          { key: ['patient1doc'], value: 'patient1' },
-          { key: ['patient1doc', 0], value: 'patient1' },
-          { key: ['p1'], value: 'patient1' },
-          { key: ['p1', 1], value: 'patient1' },
-          { key: ['facility_id'], value: 'patient1' },
-          { key: ['facility_id', 2], value: 'patient1' }
+          { key: ['patient1doc'], value: { shortcode: 'patient1' } },
+          { key: ['patient1doc', 0], value: { shortcode: 'patient1' } },
+          { key: ['p1'], value: { shortcode: 'patient1' } },
+          { key: ['p1', 1], value: { shortcode: 'patient1' } },
+          { key: ['facility_id'], value: { shortcode: 'patient1' } },
+          { key: ['facility_id', 2], value: { shortcode: 'patient1' } }
         ]);
       contactsByDepth
         .withArgs(sinon.match({ _id: 'p1' }))
         .returns([
-          { key: ['p1'], value: null },
-          { key: ['p1', 0], value: null },
-          { key: ['facility_id'], value: null },
-          { key: ['facility_id', 1], value: null }
+          { key: ['p1'], value: { _id: 'p1' } },
+          { key: ['p1', 0], value: { _id: 'p1' } },
+          { key: ['facility_id'], value: { _id: 'p1' } },
+          { key: ['facility_id', 1], value: { _id: 'p1' } }
         ]);
       contactsByDepth
         .withArgs(sinon.match({ _id: 'facility_id' }))
         .returns([
-          { key: ['facility_id'], value: null },
-          { key: ['facility_id', 0], value: null }
+          { key: ['facility_id'], value: { _id: 'facility_id' } },
+          { key: ['facility_id', 0], value: { _id: 'facility_id' } }
         ]);
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([{ key: 'c1', value: {  type: 'contact'  }}]);
@@ -3363,6 +3396,12 @@ describe('Authorization service', () => {
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'patient1doc', key: ['shortcode', 'patient1'] },
+        ]
+      });
 
       return service
         .getScopedAuthorizationContext(userCtx, docObjs)
@@ -3413,12 +3452,12 @@ describe('Authorization service', () => {
           doc: c1, // allowed
           viewResults: {
             contactsByDepth: [
-              { key: ['c1'], value: '123456' },
-              { key: ['c1', 0], value: '123456' },
-              { key: ['p1'], value: '123456' },
-              { key: ['p1', 1], value: '123456' },
-              { key: ['facility_id'], value: '123456' },
-              { key: ['facility_id', 2], value: '123456' }
+              { key: ['c1'], value: { _id: c1._id, shortcode: c1.patient_id } },
+              { key: ['c1', 0], value: { _id: c1._id, shortcode: c1.patient_id } },
+              { key: ['p1'], value: { _id: c1._id, shortcode: c1.patient_id } },
+              { key: ['p1', 1], value: { _id: c1._id, shortcode: c1.patient_id } },
+              { key: ['facility_id'], value: { _id: c1._id, shortcode: c1.patient_id } },
+              { key: ['facility_id', 2], value: { _id: c1._id, shortcode: c1.patient_id } }
             ],
             replicationKeys: [{ key: 'c1', value: {  type: 'contact'  }}]
           }
@@ -3427,46 +3466,40 @@ describe('Authorization service', () => {
           doc: c2, // denied
           viewResults: {
             contactsByDepth: [
-              { key: ['c2'], value: 'place1' },
-              { key: ['c2', 0], value: 'place1' },
-              { key: ['p3'], value: 'place1' },
-              { key: ['p3', 1], value: 'place1' },
-              { key: ['p4'], value: 'place1' },
-              { key: ['p4', 2], value: 'place1' },
+              { key: ['c2'], value: { _id: c2._id, shortcode: c2.place_id } },
+              { key: ['c2', 0], value: { _id: c2._id, shortcode: c2.place_id } },
+              { key: ['p3'], value: { _id: c2._id, shortcode: c2.place_id } },
+              { key: ['p3', 1], value: { _id: c2._id, shortcode: c2.place_id } },
+              { key: ['p4'], value: { _id: c2._id, shortcode: c2.place_id } },
+              { key: ['p4', 2], value: { _id: c2._id, shortcode: c2.place_id } },
             ],
             replicationKeys: [{ key: 'c2', value: {  type: 'contact'  }}]
           }
         },
       ];
 
-      db.medic.query.resolves({ rows: [] });
-      sinon.stub(db.medic, 'allDocs');
-
-      db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.any })).resolves({ rows: [] });
-      db.medic.allDocs
-        .withArgs(sinon.match({ keys: sinon.match.array }))
-        .resolves({ rows: [ { id: 'c1', doc: c1 }, { id: 'c2', doc: c2 } ] });
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [ { id: 'c1', doc: c1 }, { id: 'c2', doc: c2 } ] });
 
       const contactsByDepth = sinon.stub();
       contactsByDepth.withArgs(c1).returns([
-        { key: ['c1'], value: '123456' },
-        { key: ['c1', 0], value: '123456' },
-        { key: ['p1'], value: '123456' },
-        { key: ['p1', 1], value: '123456' },
-        { key: ['facility_id'], value: '123456' },
-        { key: ['facility_id', 2], value: '123456' },
+        { key: ['c1'], value: { _id: c1._id, shortcode: c1.patient_id } },
+        { key: ['c1', 0], value: { _id: c1._id, shortcode: c1.patient_id } },
+        { key: ['p1'], value: { _id: c1._id, shortcode: c1.patient_id } },
+        { key: ['p1', 1], value: { _id: c1._id, shortcode: c1.patient_id } },
+        { key: ['facility_id'], value: { _id: c1._id, shortcode: c1.patient_id } },
+        { key: ['facility_id', 2], value: { _id: c1._id, shortcode: c1.patient_id } }
       ]);
       contactsByDepth.withArgs(c2).returns([
-        { key: ['c2'], value: 'place1' },
-        { key: ['c2', 0], value: 'place1' },
-        { key: ['p3'], value: 'place1' },
-        { key: ['p3', 1], value: 'place1' },
-        { key: ['p4'], value: 'place1' },
-        { key: ['p4', 2], value: 'place1' },
+        { key: ['c2'], value: { _id: c2._id, shortcode: c2.place_id } },
+        { key: ['c2', 0], value: { _id: c2._id, shortcode: c2.place_id } },
+        { key: ['p3'], value: { _id: c2._id, shortcode: c2.place_id } },
+        { key: ['p3', 1], value: { _id: c2._id, shortcode: c2.place_id } },
+        { key: ['p4'], value: { _id: c2._id, shortcode: c2.place_id } },
+        { key: ['p4', 2], value: { _id: c2._id, shortcode: c2.place_id } },
       ]);
       const docsByReplicationKey = sinon.stub();
-      docsByReplicationKey.withArgs(c1).returns([{ key: 'c1', value: {  type: 'contact'  }}]);
-      docsByReplicationKey.withArgs(c2).returns([{ key: 'c2', value: {  type: 'contact'  }}]);
+      docsByReplicationKey.withArgs(c1).returns([{ key: 'c1', value: { type: 'contact' }}]);
+      docsByReplicationKey.withArgs(c2).returns([{ key: 'c2', value: { type: 'contact' }}]);
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
@@ -3497,6 +3530,343 @@ describe('Authorization service', () => {
             '123456': 2,
           });
         });
+    });
+
+    it('should assign correct subjectIds when replicating hierarchy primary contacts', async () => {
+      const contact1 = {
+        _id: 'contact_id',
+        type: 'person',
+        parent: { _id: 'place_id', parent: { _id: 'facility_id' } },
+        patient_id: '123456',
+      };
+
+      const contact2 = {
+        _id: 'place_id',
+        parent_id: 'facility_id',
+        type: 'contact',
+        contact: 'contact_id'
+      };
+
+      const docObjs = [
+        {
+          doc: contact1,
+          viewResults: {
+            contactsByDepth: [
+              { key: ['contact_id', 0], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['place_id', 1], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['facility_id', 2], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+            ],
+            replicationKeys: [{ key: 'contact', value: { type: 'contact' }}],
+          }
+        }
+      ];
+
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { id: 'contact_id', doc: contact1 },
+          { id: 'place_id', doc: contact2 },
+        ]
+      });
+
+      const contactsByDepth = sinon.stub();
+      contactsByDepth.withArgs(contact1).returns(docObjs[0].viewResults.contactsByDepth);
+      contactsByDepth.withArgs(contact2).returns([
+        { key: ['place_id', 0], value: { _id: 'place_id', primary_contact: contact1._id } },
+        { key: ['facility_id', 1], value: { _id: 'place_id', primary_contact: contact1._id } },
+      ]);
+      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
+
+      const docsByReplicationKey = sinon.stub();
+      docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.replicationKeys);
+      docsByReplicationKey.withArgs(contact2).returns([
+        { key: 'place_id', value: { type: 'contact_id' } }
+      ]);
+      viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      config.get.returns([
+        { role: 'user', depth: 1, report_depth: 0, replicate_primary_contacts: true },
+      ]);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'contact_id', key: ['shortcode', '123456'] },
+        ]
+      });
+
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').resolves({
+        rows: [
+          {
+            id: 'place_id',
+            key: 'contact_id',
+            doc: {
+              _id: 'place_id',
+              parent: { _id: 'facility_id' },
+              type: 'contact',
+              contact: 'contact_id'
+            }
+          },
+        ]
+      });
+
+      const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
+      result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user', 'contact_id', '123456', 'place_id']);
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
+        'medic/contacts_by_primary_contact',
+        {
+          include_docs: true,
+          keys: ['contact_id', 'place_id']
+        }
+      ]]);
+    });
+
+    it('should assign correct subjectIds when replicating out of hierarchy primary contacts', async () => {
+      const contact1 = {
+        _id: 'contact',
+        type: 'person',
+        parent: { _id: 'place', parent: { _id: 'facility' } },
+        patient_id: '123456',
+      };
+
+      const contact2 = {
+        _id: 'place_id',
+        parent_id: 'facility_id',
+        type: 'contact',
+        contact: 'contact'
+      };
+
+      const docObjs = [
+        {
+          doc: contact1, // allowed
+          viewResults: {
+            contactsByDepth: [
+              { key: ['facility', 2], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['place', 1], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['contact', 0], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+            ],
+            replicationKeys: [{ key: 'contact', value: { type: 'contact' }}],
+          }
+        }
+      ];
+
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { id: 'contact', doc: contact1 },
+        ]
+      });
+
+      const contactsByDepth = sinon.stub();
+      contactsByDepth.withArgs(contact1).returns(docObjs[0].viewResults.contactsByDepth);
+      contactsByDepth.withArgs(contact2).returns([
+        { key: ['facility_id', 1], value: { _id: 'place_id', primary_contact: contact1._id } },
+        { key: ['place_id', 0], value: { _id: 'place_id', primary_contact: contact1._id } },
+      ]);
+      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
+
+      const docsByReplicationKey = sinon.stub();
+      docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.replicationKeys);
+      docsByReplicationKey.withArgs(contact2).returns([
+        { key: 'place_id', value: { type: 'contact' } }
+      ]);
+      viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      config.get.returns([
+        { role: 'user', depth: 1, report_depth: 0, replicate_primary_contacts: true },
+      ]);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'contact', key: ['shortcode', '123456'] },
+        ]
+      });
+
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').resolves({
+        rows: [
+          {
+            id: 'place_id',
+            key: 'contact',
+            doc: contact2
+          },
+        ]
+      });
+
+      const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
+      result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user', 'contact', '123456', 'place_id']);
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
+        'medic/contacts_by_primary_contact',
+        {
+          include_docs: true,
+          keys: ['contact']
+        }
+      ]]);
+      db.medic.allDocs.args.should.deep.equal([[
+        {
+          include_docs: true,
+          keys: ['contact'],
+        }
+      ]]);
+    });
+
+    it('should assign correct subjectIds when replicating disallowed primary contacts', async () => {
+      const contact1 = {
+        _id: 'contact',
+        type: 'person',
+        parent: { _id: 'place', parent: { _id: 'facility' } },
+        patient_id: '123456',
+      };
+
+      const contact2 = {
+        _id: 'place',
+        parent_id: 'facility',
+        type: 'contact',
+        contact: 'contact'
+      };
+
+      const docObjs = [
+        {
+          doc: contact1, // denied
+          viewResults: {
+            contactsByDepth: [
+              { key: ['facility', 2], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['place', 1], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['contact', 0], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+            ],
+            replicationKeys: [{ key: 'contact', value: { type: 'contact' }}],
+          }
+        }
+      ];
+
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { id: 'contact', doc: contact1 },
+        ]
+      });
+
+      const contactsByDepth = sinon.stub();
+      contactsByDepth.withArgs(contact1).returns(docObjs[0].viewResults.contactsByDepth);
+      contactsByDepth.withArgs(contact2).returns([
+        { key: ['facility', 1], value: { _id: 'place', primary_contact: contact1._id } },
+        { key: ['place', 0], value: { _id: 'place', primary_contact: contact1._id } },
+      ]);
+      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
+
+      const docsByReplicationKey = sinon.stub();
+      docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.replicationKeys);
+      docsByReplicationKey.withArgs(contact2).returns([
+        { key: 'place', value: { type: 'contact' } }
+      ]);
+      viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      config.get.returns([
+        { role: 'user', depth: 1, report_depth: 0, replicate_primary_contacts: true },
+      ]);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'contact', key: ['shortcode', '123456'] },
+        ]
+      });
+
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').resolves({
+        rows: [
+          {
+            id: 'place',
+            key: 'contact',
+            doc: {
+              _id: 'place',
+              parent: { _id: 'facility' },
+              type: 'contact',
+              contact: 'contact'
+            }
+          },
+        ]
+      });
+
+      const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
+      result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user']);
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
+        'medic/contacts_by_primary_contact',
+        {
+          include_docs: true,
+          keys: ['contact']
+        }
+      ]]);
+    });
+
+    it('should assign correct subjectIds when replicating contacts with broken hierarchies', async () => {
+      const contact1 = {
+        _id: 'contact',
+        type: 'person',
+        parent: { _id: 'place', parent: { _id: 'facility' } },
+        patient_id: '123456',
+      };
+
+      const weirdDoc = {
+        _id: 'place',
+        type: 'contact',
+        contact: 'contact'
+      };
+
+      const docObjs = [
+        {
+          doc: contact1, // denied
+          viewResults: {
+            contactsByDepth: [
+              { key: ['facility', 2], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['place', 1], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+              { key: ['contact', 0], value: { _id: contact1._id, shortcode: contact1.patient_id } },
+            ],
+            replicationKeys: [{ key: 'contact', value: { type: 'contact' }}],
+          }
+        }
+      ];
+
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { id: 'contact', doc: contact1 },
+        ]
+      });
+
+      const contactsByDepth = sinon.stub();
+      contactsByDepth.withArgs(contact1).returns(docObjs[0].viewResults.contactsByDepth);
+      contactsByDepth.withArgs(weirdDoc).returns();
+      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
+
+      const docsByReplicationKey = sinon.stub();
+      docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.replicationKeys);
+      docsByReplicationKey.withArgs(weirdDoc).returns([
+        { key: 'place', value: { type: 'contact' } }
+      ]);
+      viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+
+      config.get.returns([
+        { role: 'user', depth: 1, report_depth: 0, replicate_primary_contacts: true },
+      ]);
+
+      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+        rows: [
+          { id: 'contact', key: ['shortcode', '123456'] },
+        ]
+      });
+
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').resolves({
+        rows: [
+          {
+            id: 'place',
+            key: 'contact',
+            doc: weirdDoc
+          },
+        ]
+      });
+
+      const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
+      result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user']);
+      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
+        'medic/contacts_by_primary_contact',
+        {
+          include_docs: true,
+          keys: ['contact']
+        }
+      ]]);
     });
 
     describe('getReplicationKeys', () => {
@@ -3542,7 +3912,6 @@ describe('Authorization service', () => {
       it('should execute query with unique subject ids', () => {
         db.medic.query.resolves({ rows: [] });
         sinon.stub(db.medic, 'allDocs');
-        db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
         db.medic.allDocs.withArgs(sinon.match({ keys: sinon.match.array })).resolves({
           rows: [
             { id: 'a', doc: { _id: 'a' } },
@@ -3569,7 +3938,6 @@ describe('Authorization service', () => {
           { id: 'person2', key: ['shortcode', 'patient_2'] },
         ] });
         sinon.stub(db.medic, 'allDocs');
-        db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.string })).resolves({ rows: [] });
         db.medic.allDocs.withArgs(sinon.match({ keys: sinon.match.array })).resolves({ rows: [
           { id: 'contact1', key: 'contact1', doc: { _id: 'contact1' } },
           { id: 'person1', key: 'person1', doc: { _id: 'person1' } },
@@ -3599,23 +3967,6 @@ describe('Authorization service', () => {
             include_docs: true,
           }]);
         });
-      });
-    });
-
-    describe('getPatientId', () => {
-      const getContactShortcode = service.__get__('getContactShortcode');
-      it('should not crash with incorrect input', () => {
-        should.not.exist(getContactShortcode());
-        getContactShortcode(false).should.equal(false);
-        should.not.exist(getContactShortcode({}));
-        should.not.exist(getContactShortcode({ contactsByDepth: [] }));
-      });
-
-      it('should return patient_id', () => {
-        getContactShortcode({ contactsByDepth: [{ key: ['parent'], value: 'patient' }] }).should.equal('patient');
-        getContactShortcode(
-          { contactsByDepth: [{ key: ['parent'], value: 'patient' }, { key: ['parent', 0], value: 'patient' }] }
-        ).should.equal('patient');
       });
     });
   });

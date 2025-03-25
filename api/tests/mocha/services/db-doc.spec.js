@@ -20,7 +20,6 @@ describe('db-doc service', () => {
     method = 'GET';
 
     sinon.stub(authorization, 'allowedDoc');
-    sinon.stub(authorization, 'alwaysAllowCreate');
     sinon.stub(authorization, 'getScopedAuthorizationContext').resolves({ userCtx, subjectIds: [] });
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
     sinon.stub(db.medic, 'get').resolves({});
@@ -307,7 +306,6 @@ describe('db-doc service', () => {
       it('returns false for not allowed existent doc', () => {
         db.medic.get.resolves(doc);
         authorization.allowedDoc.returns(false);
-        authorization.alwaysAllowCreate.returns(false);
 
         return service
           .filterOfflineRequest(userCtx, params, method, query, body)
@@ -315,7 +313,6 @@ describe('db-doc service', () => {
             result.should.equal(false);
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx, subjectIds: []}, { view: doc} ]);
-            authorization.alwaysAllowCreate.callCount.should.equal(0);
             authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
               userCtx,
               [ { doc, viewResults: { view: doc }}, undefined ]
@@ -323,10 +320,9 @@ describe('db-doc service', () => {
           });
       });
 
-      it('returns false for not allowed and always allowed to create existent doc', () => {
+      it('returns false for not allowed to create existent doc', () => {
         db.medic.get.resolves(doc);
         authorization.allowedDoc.returns(false);
-        authorization.alwaysAllowCreate.returns(true);
 
         return service
           .filterOfflineRequest(userCtx, params, method, query, body)
@@ -388,10 +384,9 @@ describe('db-doc service', () => {
           });
       });
 
-      it('returns false for not allowed, always allowed to create existent doc', () => {
+      it('returns false for not allowed to create existent doc', () => {
         db.medic.get.resolves(doc);
         authorization.allowedDoc.returns(false);
-        authorization.alwaysAllowCreate.returns(true);
 
         return service
           .filterOfflineRequest(userCtx, params, method, query, body)
@@ -399,7 +394,6 @@ describe('db-doc service', () => {
             result.should.equal(false);
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx, subjectIds: []}, { view: doc } ]);
-            authorization.alwaysAllowCreate.callCount.should.equal(0);
           });
       });
 
@@ -443,24 +437,6 @@ describe('db-doc service', () => {
               [ undefined, { doc: body, viewResults: { view: body } }]
             ]);
             result.should.equal(false);
-          });
-      });
-
-      it('returns true for not allowed, but always allowed to create request doc', () => {
-        authorization.allowedDoc.returns(false);
-        authorization.alwaysAllowCreate.returns(true);
-
-        return service
-          .filterOfflineRequest(userCtx, params, method, query, body)
-          .then(result => {
-            authorization.alwaysAllowCreate.callCount.should.equal(1);
-            authorization.allowedDoc.callCount.should.equal(0);
-            db.medic.get.callCount.should.equal(0);
-            authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
-              userCtx,
-              [ undefined, { doc: body, viewResults: { view: body } }]
-            ]);
-            result.should.equal(true);
           });
       });
 
@@ -589,33 +565,15 @@ describe('db-doc service', () => {
           });
       });
 
-      it('returns true for non-existent always allowed to create doc', () => {
-        db.medic.get.rejects({ status: 404 });
-        authorization.allowedDoc.returns(false);
-        authorization.alwaysAllowCreate.returns(true);
-
-        return service
-          .filterOfflineRequest(userCtx, params, method, query, body)
-          .then(result => {
-            authorization.allowedDoc.callCount.should.equal(0);
-            authorization.alwaysAllowCreate.callCount.should.equal(1);
-            db.medic.get.callCount.should.equal(1);
-            result.should.equal(true);
-          });
-      });
-
-      it('returns false for existent always allowed to create doc', () => {
+      it('returns false for existent doc', () => {
         db.medic.get.resolves(doc);
-
         authorization.allowedDoc.returns(false);
-        authorization.alwaysAllowCreate.returns(true);
 
         return service
           .filterOfflineRequest(userCtx, params, method, query, body)
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx, subjectIds: [] }, { view: doc } ]);
-            authorization.alwaysAllowCreate.callCount.should.equal(0);
             db.medic.get.callCount.should.equal(1);
             result.should.equal(false);
           });
