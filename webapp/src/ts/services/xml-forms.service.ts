@@ -96,11 +96,12 @@ export class XmlFormsService {
       });
   }
 
-  private evaluateExpression(expression, doc, user, contactSummary, userContactSummary) {
+  private evaluateExpression(expression, contact:{ doc, summary }, user: { doc, summary }) {
     const context = {
-      contact: doc,
-      user: { ...user, summary: userContactSummary },
-      summary: contactSummary,
+      contact: contact.doc,
+      summary: contact.summary,
+      user: user.doc,
+      userSummary: user.summary,
     };
     return this.parseProvider.parse(expression)(this.xmlFormsContextUtilsService, context);
   }
@@ -159,10 +160,8 @@ export class XmlFormsService {
     try {
       return this.evaluateExpression(
         form.context.expression,
-        options?.doc,
-        user,
-        options?.contactSummary,
-        userContactSummary,
+        { doc: options?.doc, summary: options?.contactSummary },
+        { doc: user, summary: userContactSummary },
       );
     } catch (err) {
       console.error(`Unable to evaluate expression for form: ${form._id}`, err);

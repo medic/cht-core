@@ -1505,7 +1505,7 @@ describe('XmlForms service', () => {
       const form = {
         type: 'form',
         context: {
-          expression: 'user.summary.can_see_form === true',
+          expression: 'userSummary.can_see_form === true',
         },
         _attachments: { xml: { stub: true } },
       };
