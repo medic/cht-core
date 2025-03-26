@@ -529,10 +529,7 @@ const missingFields = data => {
 
   if (tokenLogin.shouldEnableTokenLogin(data)) {
     required.push('phone');
-  } else if (data.oidc_provider) { 
-    /* if oidc_provider is provided, password is not required
-    and no other field is required */ 
-  } else {
+  } else if (!data.oidc_provider) {
     required.push('password');
   }
 
@@ -696,12 +693,13 @@ const validateUserContact = (data, user) => {
  * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
  * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this
  *   user.
+ * @param {string=} data.oidc_provider Client ID for the OIDC Client. Can be set but not together 
+ * with @param token_login|@param password
  * @param {string=} data.fullname Full name
  * @param {string=} data.email Email address
  * @param {Boolean=} data.known Boolean to define if the user has logged in before.
  * @param {string=} data.type Deprecated. Used to infer user's roles
  * @param {string} appUrl request protocol://hostname
- * @param {string=} data.oidc_provider Client ID for the OIDC Client. Can be set but not together with @param token_login|@param password
  */
 /* eslint-enable max-len */
 const createUserEntities = async (data, appUrl) => {
@@ -896,6 +894,10 @@ const createMultiFacilityUser = async (data, appUrl) => {
   if (tokenLoginError) {
     throw error400(tokenLoginError.msg, tokenLoginError.key);
   }
+  const ssoLoginError = await ssoLogin.validateSsoLogin(data);
+  if (ssoLoginError) {
+    throw error400(ssoLoginError.msg);
+  }
   const passwordError = validatePassword(data.password);
   if (passwordError) {
     throw passwordError;
@@ -995,12 +997,13 @@ module.exports = {
    * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
    * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for
    *   this user.
+   * @param {string=} data.oidc_provider Client ID for the OIDC Client. Can be set but not together 
+   * with @param token_login|@param password
    * @param {string=} data.fullname Full name
    * @param {string=} data.email Email address
    * @param {Boolean=} data.known Boolean to define if the user has logged in before.
    * @param {string=} data.type Deprecated. Used to infer user's roles
    * @param {string} appUrl request protocol://hostname
-   * @param {string=} data.oidc_provider Client ID for the OIDC Client. Can be set but not together with @param token_login|@param password
    * @api public
    */
   /* eslint-enable max-len */
@@ -1019,9 +1022,9 @@ module.exports = {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
 
-    const ssoLoginError = await ssoLogin.validateSsoLogin(data, true);
+    const ssoLoginError = await ssoLogin.validateSsoLogin(data);
     if (ssoLoginError) {
-      return Promise.reject(error400(ssoLoginError.msg, ''));
+      return Promise.reject(error400(ssoLoginError.msg));
     }
 
     const passwordError = validatePassword(data.password);
@@ -1049,12 +1052,13 @@ module.exports = {
    * @param {string=} users[].phone Valid phone number. Required if token_login is enabled for the user.
    * @param {Boolean=} users[].token_login A boolean representing whether or not the Login by SMS should be enabled for
    *   this user.
+   * @param {string=} users[].oidc_provider Client ID for the OIDC Client. Can be set but not together 
+   * with @param token_login|@param password
    * @param {string=} users[].fullname Full name
    * @param {string=} users[].email Email address
    * @param {Boolean=} users[].known Boolean to define if the user has logged in before.
    * @param {string=} users[].type Deprecated. Used to infer user's roles
    * @param {string} appUrl request protocol://hostname
-   * @param {string=} users[].oidc_provider Client ID for the OIDC Client. Can be set but not together with @param token_login|@param password
    */
   /* eslint-enable max-len */
   async createUsers(users, appUrl, ignoredUsers, logId) {
@@ -1098,7 +1102,7 @@ module.exports = {
           throw new Error(tokenLoginError.msg);
         }
 
-        const ssoLoginError = await ssoLogin.validateSsoLogin(user, true);
+        const ssoLoginError = await ssoLogin.validateSsoLogin(user);
         if (ssoLoginError) {
           throw new Error(ssoLoginError.msg);
         }
@@ -1179,7 +1183,7 @@ module.exports = {
 
     const ssoLoginError = await ssoLogin.validateSsoLogin(data, false);
     if (ssoLoginError) {
-      return Promise.reject(error400(ssoLoginError.msg, ''));
+      return Promise.reject(error400(ssoLoginError.msg));
     }
 
     await validateUserFacility(data, user);
