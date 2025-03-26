@@ -57,6 +57,9 @@ describe('TasksComponent', () => {
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterTestingModule,
         MatIconModule,
+        TasksComponent,
+        NavigationComponent,
+        ToolBarComponent,
       ],
       providers: [
         provideMockStore(),
@@ -67,11 +70,6 @@ describe('TasksComponent', () => {
         { provide: NavigationService, useValue: {} },
         { provide: UserContactService, useValue: userContactService },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
-      ],
-      declarations: [
-        TasksComponent,
-        NavigationComponent,
-        ToolBarComponent,
       ],
     });
 

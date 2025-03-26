@@ -9,10 +9,29 @@ import { filter } from 'rxjs/operators';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { FastAction, IconType } from '@mm-services/fast-action-button.service';
 import { Selectors } from '@mm-selectors/index';
+import { NgIf, NgFor } from '@angular/common';
+import { MatFabButton, MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
+import { MatList, MatListItem } from '@angular/material/list';
+import { TranslatePipe } from '@ngx-translate/core';
+import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 
 @Component({
   selector: 'mm-fast-action-button',
   templateUrl: './fast-action-button.component.html',
+  imports: [
+    NgIf,
+    MatFabButton,
+    MatIcon,
+    MatButton,
+    PanelHeaderComponent,
+    MatList,
+    NgFor,
+    MatListItem,
+    TranslatePipe,
+    ResourceIconPipe,
+  ],
 })
 export class FastActionButtonComponent implements OnInit, OnDestroy {
 
@@ -28,6 +47,7 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   iconTypeResource = IconType.RESOURCE;
   iconTypeFontAwesome = IconType.FONT_AWESOME;
   buttonTypeFlat = ButtonType.FLAT;
+  direction;
 
   constructor(
     private store: Store,
@@ -35,7 +55,11 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
     private responsiveService: ResponsiveService,
     private matBottomSheet: MatBottomSheet,
     private matDialog: MatDialog,
-  ) { }
+  ) {
+    this.store.select(Selectors.getDirection).subscribe(direction => {
+      this.direction = direction;
+    });
+  }
 
   ngOnInit() {
     this.subscribeToStore();
@@ -87,6 +111,7 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
       autoFocus: false,
       minWidth: 300,
       minHeight: 150,
+      direction: this.direction,
     });
   }
 

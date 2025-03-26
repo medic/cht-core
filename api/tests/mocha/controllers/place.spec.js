@@ -5,6 +5,7 @@ const auth = require('../../../src/auth');
 const controller = require('../../../src/controllers/place');
 const dataContext = require('../../../src/services/data-context');
 const serverUtils = require('../../../src/server-utils');
+const {PermissionError} = require('../../../src/errors');
 
 describe('Place Controller', () => {
   const userCtx = { hello: 'world' };
@@ -32,6 +33,8 @@ describe('Place Controller', () => {
   afterEach(() => sinon.restore());
 
   describe('v1', () => {
+    const privilegeError = new PermissionError('Insufficient privileges');
+
     describe('get', () => {
       let placeGet;
       let placeGetWithLineage;
@@ -51,11 +54,6 @@ describe('Place Controller', () => {
           .returns(placeGetWithLineage);
       });
 
-      afterEach(() => {
-        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
-        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      });
-
       it('returns a place', async () => {
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
@@ -70,6 +68,8 @@ describe('Place Controller', () => {
         expect(placeGetWithLineage.notCalled).to.be.true;
         expect(res.json.calledOnceWithExactly(place)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns a place with lineage when the query parameter is set to "true"', async () => {
@@ -87,6 +87,8 @@ describe('Place Controller', () => {
         expect(placeGetWithLineage.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(res.json.calledOnceWithExactly(place)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns a place without lineage when the query parameter is set something else', async () => {
@@ -104,6 +106,8 @@ describe('Place Controller', () => {
         expect(placeGetWithLineage.notCalled).to.be.true;
         expect(res.json.calledOnceWithExactly(place)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns a 404 error if place is not found', async () => {
@@ -123,10 +127,11 @@ describe('Place Controller', () => {
           req,
           res
         )).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if user does not have can_view_contacts permission', async () => {
-        const error = { code: 403, message: 'Insufficient privileges' };
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(false);
 
@@ -137,11 +142,17 @@ describe('Place Controller', () => {
         expect(placeGet.notCalled).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(PermissionError);
+        expect(serverUtilsError.firstCall.args[0].message).to.equal(privilegeError.message);
+        expect(serverUtilsError.firstCall.args[0].code).to.equal(privilegeError.code);
+        expect(serverUtilsError.firstCall.args[1]).to.equal(req);
+        expect(serverUtilsError.firstCall.args[2]).to.equal(res);
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if not an online user', async () => {
-        const error = { code: 403, message: 'Insufficient privileges' };
         isOnlineOnly.returns(false);
 
         await controller.v1.get(req, res);
@@ -151,7 +162,14 @@ describe('Place Controller', () => {
         expect(placeGet.notCalled).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(PermissionError);
+        expect(serverUtilsError.firstCall.args[0].message).to.equal(privilegeError.message);
+        expect(serverUtilsError.firstCall.args[0].code).to.equal(privilegeError.code);
+        expect(serverUtilsError.firstCall.args[1]).to.equal(req);
+        expect(serverUtilsError.firstCall.args[2]).to.equal(res);
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
     });
 
@@ -180,11 +198,6 @@ describe('Place Controller', () => {
         qualifierByContactType.returns(placeTypeQualifier);
       });
 
-      afterEach(() => {
-        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
-        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      });
-
       it('returns a page of places with correct query params', async () => {
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
@@ -198,10 +211,11 @@ describe('Place Controller', () => {
         expect(placeGetPageByType.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly(places)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if user does not have can_view_contacts permission', async () => {
-        const error = { code: 403, message: 'Insufficient privileges' };
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(false);
 
@@ -212,11 +226,17 @@ describe('Place Controller', () => {
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(placeGetPageByType.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(PermissionError);
+        expect(serverUtilsError.firstCall.args[0].message).to.equal(privilegeError.message);
+        expect(serverUtilsError.firstCall.args[0].code).to.equal(privilegeError.code);
+        expect(serverUtilsError.firstCall.args[1]).to.equal(req);
+        expect(serverUtilsError.firstCall.args[2]).to.equal(res);
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns error if not an online user', async () => {
-        const error = { code: 403, message: 'Insufficient privileges' };
         isOnlineOnly.returns(false);
 
         await controller.v1.getAll(req, res);
@@ -226,7 +246,14 @@ describe('Place Controller', () => {
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(placeGetPageByType.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(error, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(PermissionError);
+        expect(serverUtilsError.firstCall.args[0].message).to.equal(privilegeError.message);
+        expect(serverUtilsError.firstCall.args[0].code).to.equal(privilegeError.code);
+        expect(serverUtilsError.firstCall.args[1]).to.equal(req);
+        expect(serverUtilsError.firstCall.args[2]).to.equal(res);
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns 400 error when placeType is invalid', async () => {
@@ -243,6 +270,8 @@ describe('Place Controller', () => {
         expect(placeGetPageByType.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('rethrows error in case of other errors', async () => {
@@ -259,6 +288,8 @@ describe('Place Controller', () => {
         expect(placeGetPageByType.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
     });
   });

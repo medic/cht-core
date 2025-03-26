@@ -5,10 +5,14 @@ import { take } from 'rxjs/operators';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { Select2SearchService } from '@mm-services/select2-search.service';
 import { UpdateFacilityService } from '@mm-services/update-facility.service';
+import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
+import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'edit-report',
-  templateUrl: './edit-report.component.html'
+  templateUrl: './edit-report.component.html',
+  imports: [ModalLayoutComponent, FormsModule, TranslatePipe]
 })
 export class EditReportComponent implements AfterViewInit {
   static id = 'edit-report-modal';

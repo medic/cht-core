@@ -49,6 +49,8 @@ const selectContact = async (contactName, label, searchTerm = '') => {
 
 const clearSelectedContact = async (label) => {
   await (await select2Selection(label)).$('.select2-selection__clear').click();
+  //To close the widget
+  await formTitle().click();
 };
 
 const submitForm = async ({ waitForPageLoaded = true, ignoreValidationErrors = false } = {}) => {

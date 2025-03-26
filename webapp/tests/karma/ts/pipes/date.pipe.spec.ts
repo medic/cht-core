@@ -58,14 +58,7 @@ describe('date pipes', () => {
 
     TestBed
       .configureTestingModule({
-        providers: [
-          { provide: RelativeDateService, useValue: relativeDateService },
-          { provide: FormatDateService, useValue: formatDateService },
-          { provide: TranslateService, useValue: translateService },
-          { provide: DomSanitizer, useValue: { bypassSecurityTrustHtml: sinon.stub().returnsArg(0) } },
-        ],
-        declarations: [
-          AgePipe,
+        imports: [AgePipe,
           AutoreplyPipe,
           DayMonthPipe,
           FullDatePipe,
@@ -74,7 +67,12 @@ describe('date pipes', () => {
           SimpleDateTimePipe,
           SimpleDatePipe,
           StatePipe,
-          WeeksPregnantPipe,
+          WeeksPregnantPipe,],
+        providers: [
+          { provide: RelativeDateService, useValue: relativeDateService },
+          { provide: FormatDateService, useValue: formatDateService },
+          { provide: TranslateService, useValue: translateService },
+          { provide: DomSanitizer, useValue: { bypassSecurityTrustHtml: sinon.stub().returnsArg(0) } },
         ]
       });
 
@@ -258,7 +256,24 @@ describe('date pipes', () => {
 
 
 describe('date pipes rendering', () => {
-  @Component({ template: `` })
+  @Component({
+    template: ``,
+    standalone: true,
+    imports: [
+      AsyncPipe,
+      AgePipe,
+      AutoreplyPipe,
+      DateOfDeathPipe,
+      DayMonthPipe,
+      FullDatePipe,
+      RelativeDatePipe,
+      RelativeDayPipe,
+      SimpleDatePipe,
+      SimpleDateTimePipe,
+      StatePipe,
+      WeeksPregnantPipe,
+    ]
+  })
   class TestComponent {
     @Input() date;
     @Input() task;
@@ -302,13 +317,6 @@ describe('date pipes rendering', () => {
       .configureTestingModule({
         imports: [
           AsyncPipe,
-        ],
-        providers: [
-          { provide: RelativeDateService, useValue: relativeDate },
-          { provide: FormatDateService, useValue: formatDate },
-          { provide: TranslateService, useValue: translate },
-        ],
-        declarations: [
           AgePipe,
           AutoreplyPipe,
           DayMonthPipe,
@@ -320,6 +328,11 @@ describe('date pipes rendering', () => {
           StatePipe,
           WeeksPregnantPipe,
           TestComponent,
+        ],
+        providers: [
+          { provide: RelativeDateService, useValue: relativeDate },
+          { provide: FormatDateService, useValue: formatDate },
+          { provide: TranslateService, useValue: translate },
         ]
       })
       .compileComponents();

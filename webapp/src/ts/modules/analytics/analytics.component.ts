@@ -4,9 +4,13 @@ import { Subscription } from 'rxjs';
 
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
+import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filter/analytics-filter.component';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
-  templateUrl: './analytics.component.html'
+  templateUrl: './analytics.component.html',
+  imports: [ToolBarComponent, AnalyticsFilterComponent, RouterOutlet]
 })
 export class AnalyticsComponent implements OnInit, OnDestroy {
   private globalActions;

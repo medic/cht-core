@@ -29,8 +29,6 @@ describe('EditMessageGroupComponent', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ],
-        declarations: [
           EditMessageGroupComponent,
           ModalLayoutComponent,
           PanelHeaderComponent,

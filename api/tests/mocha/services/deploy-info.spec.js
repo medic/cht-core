@@ -5,7 +5,6 @@ const rewire = require('rewire');
 const fs = require('fs');
 
 const environment = require('@medic/environment');
-const db = require('../../../src/db');
 const resources = require('../../../src/resources');
 
 let service;
@@ -21,89 +20,40 @@ describe('deploy info', () => {
 
   describe('get', () => {
     it('should get deploy info from ddoc', async () => {
-      const ddoc = {
-        _id: '_design/medic',
-        deploy_info: {
-          timestamp: 1000,
-          user: 'my user',
-        },
-        build_info: {
-          base_version: '4.6.0',
-          build: '4.6.0.6922454971',
-          time: 'human readable',
-          version: '4.6.0',
-        },
-        version: '4.6.0.6922454971',
-      };
-
-      sinon.stub(environment, 'ddoc').value('medic');
-      sinon.stub(db.medic, 'get').resolves(ddoc);
-
-      const deployInfo = await service.get();
-
-      expect(deployInfo).to.deep.equal({
+      const deployInfo = {
         timestamp: 1000,
         user: 'my user',
         version: '4.6.0',
         base_version: '4.6.0',
         build: '4.6.0.6922454971',
         time: 'human readable',
-      });
-
-      expect(db.medic.get.args).to.deep.equal([['_design/medic']]);
-    });
-
-    it('should cache deploy info', async () => {
-      const ddoc = {
-        _id: '_design/medic',
-        deploy_info: {
-          timestamp: 2000,
-          user: 'admin',
-          version: '4.0.0-beta.1',
-        },
-        version: '4.0.0-beta.1',
       };
 
-      sinon.stub(environment, 'ddoc').value('medic');
-      sinon.stub(db.medic, 'get').resolves(ddoc);
+      sinon.stub(environment, 'getDeployInfo').resolves(deployInfo);
 
-      const deployInfo = await service.get();
+      const result = await service.get();
 
-      expect(deployInfo).to.deep.equal({
-        timestamp: 2000,
-        user: 'admin',
-        version: '4.0.0-beta.1',
-      });
-      expect(db.medic.get.callCount).to.equal(1);
-
-      expect(await service.get()).to.deep.equal(deployInfo);
-      expect(await service.get()).to.deep.equal(deployInfo);
-      expect(await service.get()).to.deep.equal(deployInfo);
-
-      expect(db.medic.get.callCount).to.equal(1);
+      expect(result).to.deep.equal(deployInfo);
+      expect(environment.getDeployInfo.callCount).to.equal(1);
     });
 
     it('should work with undefined deploy info and build info', async () => {
-      const ddoc = {
-        _id: '_design/medic',
-        version: '20000',
-      };
+      const deployInfo = { version: '20000' };
 
-      sinon.stub(environment, 'ddoc').value('medic');
-      sinon.stub(db.medic, 'get').resolves(ddoc);
+      sinon.stub(environment, 'getDeployInfo').resolves(deployInfo);
 
-      expect(await service.get()).to.deep.equal({ version: '20000' });
+      expect(await service.get()).to.deep.equal(deployInfo);
     });
 
-    it('should throw error when db.get fails', async () => {
-      sinon.stub(environment, 'ddoc').value('medic');
-      sinon.stub(db.medic, 'get').rejects({ error: 'whatever' });
+    it('should throw error when getDeployInfo fails', async () => {
+      const error = { error: 'whatever' };
+      sinon.stub(environment, 'getDeployInfo').rejects(error);
 
       try {
         await service.get();
         expect.fail('Should have thrown');
       } catch (err) {
-        expect(err).to.deep.equal({ error: 'whatever' });
+        expect(err).to.deep.equal(error);
       }
     });
   });
@@ -115,31 +65,21 @@ describe('deploy info', () => {
 
       service = rewire('../../../src/services/deploy-info');
 
-      const ddoc = {
-        _id: '_design/medic',
-        deploy_info: {
-          timestamp: 2000,
-          user: 'admin',
-          version: '4.10.0-beta.1',
-        },
+      const deployInfo = {
+        timestamp: 2000,
+        user: 'admin',
         version: '4.10.0-beta.1',
       };
 
-      sinon.stub(environment, 'ddoc').value('medic');
-      sinon.stub(db.medic, 'get').resolves(ddoc);
+      sinon.stub(environment, 'getDeployInfo').resolves(deployInfo);
 
       await service.store();
 
       expect(fs.promises.writeFile.calledOnce).to.equal(true);
       expect(fs.promises.writeFile.args[0]).to.deep.equal([
         '/webapp-path/deploy-info.json',
-        JSON.stringify({
-          timestamp: 2000,
-          user: 'admin',
-          version: '4.10.0-beta.1',
-        })
+        JSON.stringify(deployInfo)
       ]);
     });
   });
 });
-

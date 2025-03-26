@@ -34,8 +34,6 @@ describe('PrivacyPoliciesComponent', () => {
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
           MatIcon,
-        ],
-        declarations: [
           PrivacyPolicyComponent,
           ToolBarComponent,
           NavigationComponent,

@@ -38,6 +38,8 @@ export const Selectors = {
   getUserContactId: createSelector(getGlobalState, (globalState) => globalState.userContactId),
   getTrainingCardFormId: createSelector(getGlobalState, (globalState) => globalState.trainingCard?.formId),
   getTrainingCard: createSelector(getGlobalState, (globalState) => globalState.trainingCard),
+  getLanguage: createSelector(getGlobalState, (globalState) => globalState.language),
+  getDirection: createSelector(getGlobalState, (globalState) => globalState.language?.rtl ? 'rtl' : 'ltr'),
 
   // enketo
   getEnketoStatus: createSelector(getGlobalState, (globalState) => globalState.enketoStatus),

@@ -6,10 +6,14 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Selectors } from '@mm-selectors/index';
 import { ContactsActions } from '@mm-actions/contacts';
 import { ChangesService } from '@mm-services/changes.service';
+import { NgIf, NgFor } from '@angular/common';
+import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'contacts-deceased',
-  templateUrl: './contacts-deceased.component.html'
+  templateUrl: './contacts-deceased.component.html',
+  imports: [NgIf, NgFor, ContentRowListItemComponent, TranslatePipe]
 })
 export class ContactsDeceasedComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();

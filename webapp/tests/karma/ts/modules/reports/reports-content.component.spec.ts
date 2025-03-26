@@ -85,9 +85,7 @@ describe('Reports Content Component', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
-          CommonModule
-        ],
-        declarations: [
+          CommonModule,
           ReportsContentComponent,
           EditMessageGroupComponent,
           FormIconPipe,
@@ -95,7 +93,7 @@ describe('Reports Content Component', () => {
           RelativeDatePipe,
           FastActionButtonComponent,
           SenderComponent,
-          ReportVerifyInvalidIconComponent,
+          ReportVerifyInvalidIconComponent
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),

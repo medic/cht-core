@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { combineLatest, Subject, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 
@@ -10,10 +10,31 @@ import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
 
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
+import { NgIf, NgClass, NgFor } from '@angular/common';
+import {
+  AnalyticsTargetsDetailsComponent
+} from '@mm-components/analytics-targets-details/analytics-targets-details.component';
+import {
+  AnalyticsTargetsProgressComponent
+} from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
+import { TranslatePipe } from '@ngx-translate/core';
+import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
+import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 
 @Component({
   selector: 'analytics-target-aggregates-detail',
-  templateUrl: './analytics-target-aggregates-detail.component.html'
+  templateUrl: './analytics-target-aggregates-detail.component.html',
+  imports: [
+    NgIf,
+    NgClass,
+    NgFor,
+    RouterLink,
+    AnalyticsTargetsDetailsComponent,
+    AnalyticsTargetsProgressComponent,
+    TranslatePipe,
+    ResourceIconPipe,
+    TranslateFromPipe
+  ]
 })
 export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestroy, AfterViewInit {
   private targetAggregatesActions: TargetAggregatesActions;
@@ -22,6 +43,7 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
   selected: any = null;
   error: any = null;
   reportingPeriod;
+  direction;
   private aggregates = null;
   private viewInited = new Subject();
 
@@ -53,11 +75,13 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
     const subscriptionStore = combineLatest(
       this.store.select(Selectors.getTargetAggregates),
       this.store.select(Selectors.getSelectedTargetAggregate),
-      this.store.select(Selectors.getTargetAggregatesError)
-    ).subscribe(([aggregates, selected, error]) => {
+      this.store.select(Selectors.getTargetAggregatesError),
+      this.store.select(Selectors.getDirection),
+    ).subscribe(([aggregates, selected, error, direction]) => {
       this.aggregates = aggregates;
       this.selected = selected;
       this.error = error;
+      this.direction = direction;
       if (this.selected) {
         this.reportingPeriod = this.getReportingPeriodText(this.selected);
       }

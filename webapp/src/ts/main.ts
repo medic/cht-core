@@ -1,3 +1,13 @@
+import { IntegrationApiService } from '@mm-services/integration-api.service';
+
+const logger = reducer => {
+  // default, no options
+  return storeLogger({
+    collapsed: true,
+  })(reducer);
+};
+const metaReducers = environment.production ? [] : [logger];
+
 // While we already do this earlier in the index.html we have to check again for Karma
 // tests as they don't hit that code
 if (!window.startupTimes) {
@@ -8,17 +18,47 @@ window.startupTimes.firstCodeExecution = performance.now();
 window.PouchDB = require('pouchdb-browser').default;
 window.$ = window.jQuery = require('jquery');
 
-import { enableProdMode } from '@angular/core';
+import { enableProdMode, importProvidersFrom } from '@angular/core';
 import '@angular/compiler';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import pouchdbDebug from 'pouchdb-debug';
 import * as $ from 'jquery';
 
-import { AppModule } from './app.module';
 import { environment } from '@mm-environments/environment';
 import { POUCHDB_OPTIONS } from './constants';
 
 import * as bootstrapper from '../js/bootstrapper';
+import { APP_BASE_HREF, DatePipe } from '@angular/common';
+import { AppRouteGuardProvider } from './app-route.guard.provider';
+import { TrainingCardDeactivationGuardProvider } from './training-card.guard.provider';
+import { AnalyticsRouteGuardProvider } from '@mm-modules/analytics/analytics-route.guard.provider';
+import { CookieService } from 'ngx-cookie-service';
+import { ParseProvider } from '@mm-providers/parse.provider';
+import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
+import { AppRoutingModule } from './app-routing.module';
+import { RouterModule } from '@angular/router';
+import { withInterceptorsFromDi, provideHttpClient } from '@angular/common/http';
+import { StoreModule } from '@ngrx/store';
+import { reducers } from '@mm-reducers/index';
+import { storeLogger } from 'ngrx-store-logger';
+import {
+  TranslateModule,
+  TranslateLoader,
+  MissingTranslationHandler,
+  TranslateCompiler,
+  MissingTranslationHandlerParams
+} from '@ngx-translate/core';
+import { DbService } from '@mm-services/db.service';
+import { LanguageService } from '@mm-services/language.service';
+import { TranslationLoaderProvider } from '@mm-providers/translation-loader.provider';
+import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { FormsModule } from '@angular/forms';
+import { EffectsModule } from '@ngrx/effects';
+import { GlobalEffects } from '@mm-effects/global.effects';
+import { ReportsEffects } from '@mm-effects/reports.effects';
+import { ContactsEffects } from '@mm-effects/contacts.effects';
+import { AppComponent } from './app.component';
 
 // Moment additional locales
 require('../js/moment-locales/tl');
@@ -45,6 +85,10 @@ Object.defineProperties($, {
   htmlPrefilter: { value: (html) => html.replace(rxhtmlTag, '<$1></$2>') }
 });
 
+class MissingTranslationHandlerLog implements MissingTranslationHandler {
+  handle = (params: MissingTranslationHandlerParams) => params.key;
+}
+
 window.PouchDB.plugin(pouchdbDebug);
 bootstrapper(POUCHDB_OPTIONS)
   .then(() => {
@@ -53,19 +97,45 @@ bootstrapper(POUCHDB_OPTIONS)
       enableProdMode();
     }
 
-    return platformBrowserDynamic()
-      .bootstrapModule(AppModule, { preserveWhitespaces: true })
+    return bootstrapApplication(AppComponent, {
+      providers: [
+        importProvidersFrom(
+          BrowserModule,
+          AppRoutingModule,
+          RouterModule,
+          StoreModule.forRoot(reducers, { metaReducers }),
+          TranslateModule.forRoot({
+            loader: {
+              provide: TranslateLoader,
+              useFactory: (db: DbService, language: LanguageService) => new TranslationLoaderProvider(db, language),
+              deps: [DbService, LanguageService],
+            },
+            missingTranslationHandler: {
+              provide: MissingTranslationHandler,
+              useClass: MissingTranslationHandlerLog
+            },
+            compiler: {
+              provide: TranslateCompiler,
+              useClass: TranslateMessageFormatCompilerProvider,
+            },
+          }),
+          BsDropdownModule.forRoot(),
+          FormsModule,
+          EffectsModule.forRoot([GlobalEffects, ReportsEffects, ContactsEffects])
+        ),
+        { provide: APP_BASE_HREF, useValue: '/' },
+        AppRouteGuardProvider,
+        TrainingCardDeactivationGuardProvider,
+        AnalyticsRouteGuardProvider,
+        CookieService,
+        ParseProvider,
+        DatePipe,
+        provideHttpClient(withInterceptorsFromDi()),
+        provideAnimations()
+      ]
+    })
       .then((moduleRef) => {
-        window.CHTCore = moduleRef.instance.integration;
-        // backwards compatibility with the old way of reaching these services, the syntax looked like:
-        // angular.element(document.body).injector().get(<serviceName>);
-        window.angular = {
-          element: () => ({
-            injector: () => ({
-              get: service => moduleRef.instance.integration.get(service),
-            })
-          })
-        };
+        window.CHTCore = moduleRef.injector.get(IntegrationApiService);
       })
       .catch(err => console.error(err));
   })

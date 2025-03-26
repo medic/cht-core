@@ -35,9 +35,7 @@ describe('Date Filter Component', () => {
           RouterTestingModule,
           BrowserAnimationsModule,
           BsDropdownModule.forRoot(),
-        ],
-        declarations: [
-          DateFilterComponent
+          DateFilterComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),

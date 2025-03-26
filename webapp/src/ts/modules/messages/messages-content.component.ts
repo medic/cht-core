@@ -23,6 +23,12 @@ import { SendMessageService } from '@mm-services/send-message.service';
 import { ModalService } from '@mm-services/modal.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { PerformanceService } from '@mm-services/performance.service';
+import { NgIf, NgFor, NgClass, AsyncPipe } from '@angular/common';
+import { SenderComponent } from '@mm-components/sender/sender.component';
+import { AuthDirective } from '@mm-directives/auth.directive';
+import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
+import { AutoreplyPipe, StatePipe } from '@mm-pipes/date.pipe';
 
 /**
 *  In this context the URL parameter "id", can be:
@@ -33,7 +39,19 @@ import { PerformanceService } from '@mm-services/performance.service';
 */
 @Component({
   selector: 'messages-content',
-  templateUrl: './messages-content.component.html'
+  templateUrl: './messages-content.component.html',
+  imports: [
+    NgIf,
+    SenderComponent,
+    NgFor,
+    NgClass,
+    AuthDirective,
+    FormsModule,
+    AsyncPipe,
+    TranslatePipe,
+    AutoreplyPipe,
+    StatePipe
+  ]
 })
 export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
   private userCtx;

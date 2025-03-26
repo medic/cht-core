@@ -44,8 +44,8 @@ describe('Reports More Menu Component', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           MatExpansionModule,
+          ReportsMoreMenuComponent,
         ],
-        declarations: [ ReportsMoreMenuComponent ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
           { provide: AuthService, useValue: authService },
