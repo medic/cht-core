@@ -84,6 +84,68 @@ describe('mark_for_outbound', () => {
       stopMockApp();
     });
 
+    it('correctly creates and sends multiple outbound requests immediately', () => {
+      const report = makeReport();
+      const config = {
+        transitions: {
+          mark_for_outbound: true
+        },
+        outbound: {
+          test1: {
+            relevant_to: 'doc.type === "data_record" && doc.form === "test"',
+            destination: {
+              base_url: utils.hostURL(server.address().port),
+              path: WORKING_ENDPOINT
+            },
+            mapping: {
+              id: 'doc._id',
+              rev: 'doc._rev'
+            }
+          },
+          test2: {
+            relevant_to: 'doc.type === "data_record" && doc.form === "test"',
+            destination: {
+              base_url: utils.hostURL(server.address().port),
+              path: WORKING_ENDPOINT
+            },
+            mapping: {
+              id: 'doc._id',
+              rev: 'doc._rev'
+            }
+          }
+        }
+      };
+
+      return utils
+        .updateSettings(config, { ignoreReload: 'sentinel' })
+        .then(() => utils.saveDoc(report))
+        .then(() => sentinelUtils.waitForSentinel([report._id]))
+        .then(getTasks)
+        .then(tasks => {
+          expect(tasks).to.be.empty;
+        })
+        .then(() => utils.getDoc(report._id))
+        .then(report => {
+          expect(brokenEndpointRequests).to.be.empty;
+          expect(workingEndpointRequests).to.have.lengthOf(1);
+          expect(workingEndpointRequests[0]).to.deep.equal({
+            id: report._id,
+            rev: report._rev
+          });
+        })
+        .then(() => sentinelUtils.getInfoDoc(report._id))
+        .then(infoDoc => {
+          expect(infoDoc).to.nested.include({
+            type: 'info',
+            doc_id: report._id,
+            'completed_tasks[0].type': 'outbound',
+            'completed_tasks[0].name': 'test1',
+            'completed_tasks[1].type': 'outbound',
+            'completed_tasks[1].name': 'test2'
+          });
+        });
+    });
+
     it('correctly creates and sends an outbound request immediately', () => {
       const report = makeReport();
       const config = {
