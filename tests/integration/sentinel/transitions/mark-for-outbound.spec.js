@@ -148,7 +148,8 @@ describe('mark_for_outbound', () => {
             },
             mapping: {
               id: 'doc._id',
-              rev: 'doc._rev'
+              rev: 'doc._rev',
+              record: '1'
             }
           },
           test2: {
@@ -159,7 +160,8 @@ describe('mark_for_outbound', () => {
             },
             mapping: {
               id: 'doc._id',
-              rev: 'doc._rev'
+              rev: 'doc._rev',
+              record: '2'
             }
           }
         }
@@ -176,10 +178,16 @@ describe('mark_for_outbound', () => {
         .then(() => utils.getDoc(report._id))
         .then(report => {
           expect(brokenEndpointRequests).to.be.empty;
-          expect(workingEndpointRequests).to.have.lengthOf(1);
+          expect(workingEndpointRequests).to.have.lengthOf(2);
           expect(workingEndpointRequests[0]).to.deep.equal({
             id: report._id,
-            rev: report._rev
+            rev: report._rev,
+            record: '1'
+          });
+          expect(workingEndpointRequests[1]).to.deep.equal({
+            id: report._id,
+            rev: report._rev,
+            record: '2'
           });
         })
         .then(() => sentinelUtils.getInfoDoc(report._id))
