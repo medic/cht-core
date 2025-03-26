@@ -135,8 +135,8 @@ describe('mark_for_outbound', () => {
 
     it('correctly creates and sends multiple outbound requests immediately', () => {
       const report = makeReport();
-      report.fields.data_test1 = 'owl_1';
-      report.fields.data_test2 = 'owl_2';
+      report.data_test1 = 'owl_1';
+      report.data_test2 = 'owl_2';
       const config = {
         transitions: {
           mark_for_outbound: true
@@ -151,7 +151,7 @@ describe('mark_for_outbound', () => {
             mapping: {
               id: 'doc._id',
               rev: 'doc._rev',
-              data: 'doc.fields.data_test1'
+              data: 'doc.data_test1'
             }
           },
           test2: {
@@ -163,7 +163,7 @@ describe('mark_for_outbound', () => {
             mapping: {
               id: 'doc._id',
               rev: 'doc._rev',
-              data: 'doc.fields.data_test2'
+              data: 'doc.data_test2'
             }
           }
         }
@@ -184,12 +184,12 @@ describe('mark_for_outbound', () => {
           expect(workingEndpointRequests[0]).to.deep.equal({
             id: report._id,
             rev: report._rev,
-            data: report.fields.data_test1
+            data: report.data_test1
           });
           expect(workingEndpointRequests[1]).to.deep.equal({
             id: report._id,
             rev: report._rev,
-            data: report.fields.data_test2
+            data: report.data_test2
           });
         })
         .then(() => sentinelUtils.getInfoDoc(report._id))
