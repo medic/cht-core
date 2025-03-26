@@ -2402,6 +2402,7 @@ describe('Users service', () => {
         password_change_required: true
       }]]);
     });
+    
   });
 
   describe('setContactParent', () => {
@@ -3318,6 +3319,7 @@ describe('Users service', () => {
         password_change_required: false
       });
     });
+    
   });
 
   describe('validateNewUsername', () => {
@@ -4202,5 +4204,613 @@ describe('Users service', () => {
       ]);
     });
   });
+
+  describe('sso-login', () => {
+    describe('createMultiFacilityUser', () => {
+
+
+      it('returns error if oidc and password are present', async () => {
+        const data = {
+          username: 'x',
+          place: 'x',
+          contact: 't',
+          type: 'national-manager',
+          password: 'testPassword',
+          oidc_provider: 'testClientId',
+        };
+        await chai.expect(service.createMultiFacilityUser(data)).to.be.eventually.rejectedWith(Error)
+          .and.have.property('code', 400);
+      });
+
+      it('returns error if oidc and token_login are present', async () => {
+        const data = {
+          username: 'x',
+          place: 'x',
+          contact: 't',
+          type: 'national-manager',
+          token_login: true,
+          oidc_provider: 'testClientId',
+        };
+        await chai.expect(service.createMultiFacilityUser(data)).to.be.eventually.rejectedWith(Error)
+          .and.have.property('code', 400);
+      });
+
+      it('returns error if oidc not configured in settings', async () => {
+
+        config.get.returns({ });
+      
+        const data = {
+          username: 'x',
+          place: 'x',
+          contact: 't',
+          type: 'national-manager',
+          oidc_provider: 'testClientId',
+        };
+
+        await chai.expect(service.createMultiFacilityUser(data)).to.be.eventually.rejectedWith(Error)
+          .and.have.property('code', 400);
+      });
+
+      it('returns error if oidc_provider (clientId) is different from clientId in settings', async () => {
+
+        config.get.returns({ 'oidc_provider': { 'client_id': 'differentClientId' }});
+      
+        const data = {
+          username: 'x',
+          place: 'x',
+          contact: 't',
+          type: 'national-manager',
+          oidc_provider: 'testClientId',
+        };
+
+        await chai.expect(service.createMultiFacilityUser(data)).to.be.eventually.rejectedWith(Error)
+          .and.have.property('code', 400);
+      });
+
+      it('succeeds if oidc_provider is set', async () => {
+        const generatedPassword = 'password.123';
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        sinon.stub(places, 'placesExist').resolves();
+        sinon.stub(people, 'isAPerson').returns(true);
+        sinon.stub(passwords, 'generate').returns(generatedPassword);
+        sinon.stub(roles, 'hasAllPermissions').returns(true);
+        config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' }});
+
+
+        db.medic.put.resolves({ id: 'success' });
+        db.users.put.resolves({ id: 'success' });
+
+        const userData = {
+          username: 'x',
+          place: ['x', 'y', 'z'],
+          contact: 'h',
+          roles: ['test-role'],
+          oidc_provider: 'testClientId'
+        };
+        db.medic.get.withArgs('h').resolves({ parent: { _id: 'u', parent: { _id: 'z' } } });
+
+        await service.createMultiFacilityUser(userData);
+
+        chai.expect(db.medic.put.args).to.deep.equal([[{
+          facility_id: ['x', 'y', 'z'],
+          contact_id: 'h',
+          roles: ['test-role'],
+          type: 'user-settings',
+          _id: 'org.couchdb.user:x',
+          name: 'x'
+        }]]);
+      
+
+        chai.expect(db.users.put.args).to.deep.equal([[{
+          facility_id: ['x', 'y', 'z'],
+          contact_id: 'h',
+          roles: ['test-role'],
+          type: 'user',
+          _id: 'org.couchdb.user:x',
+          name: 'x',
+          password: generatedPassword,
+          password_change_required: false, 
+          oidc: true,
+        }]]);
+
+      });
+
+    });
+    describe('createUser', () => {
+
+
+      it('returns error if oidc and password are present', async () => {
+        const data = {
+          username: 'x',
+          place: 'x',
+          contact: { parent: 'x' },
+          roles: ['a'],
+          password: 'testPassword',
+          oidc_provider: 'testClientId',
+        };
+      
+        return service.createUser(data, 'http://realhost').catch(err => {
+          chai.expect(err.code).to.equal(400);
+          chai.expect(err.message).to.equal('Either OIDC Login only or Token/Password Login is allowed');
+          chai.expect(db.medic.put.callCount).to.equal(0);
+          chai.expect(db.users.put.callCount).to.equal(0);
+        });
+      });
+
+      it('returns error if oidc and token_login are present', async () => {
+        const data = {
+          username: 'x',
+          place: 'x',
+          contact: { parent: 'x' },
+          roles: ['a'],
+          token_login: true,
+          oidc_provider: 'testClientId',
+        };
+      
+        return service.createUser(data, 'http://realhost').catch(err => {
+          chai.expect(err.code).to.equal(400);
+          chai.expect(err.message).to.equal('Either OIDC Login only or Token/Password Login is allowed');
+          chai.expect(db.medic.put.callCount).to.equal(0);
+          chai.expect(db.users.put.callCount).to.equal(0);
+        });
+      });
+
+      it('returns error if oidc not configured in settings', async () => {
+
+        config.get.returns({ });
+
+        const data = {
+          username: 'x',
+          place: 'x',
+          contact: { parent: 'x' },
+          roles: ['a'],
+          oidc_provider: 'testClientId',
+        };
+
+        return service.createUser(data, 'http://realhost').catch(err => {
+          chai.expect(err.code).to.equal(400);
+          chai.expect(err.message).to.equal('OIDC Login is not enabled');
+          chai.expect(db.medic.put.callCount).to.equal(0);
+          chai.expect(db.users.put.callCount).to.equal(0);
+        });
+      });
+
+      it('returns error if oidc_provider (clientId) is different from clientId in settings', async () => {
+
+        config.get.returns({ 'oidc_provider': { 'client_id': 'differentClientId' }});
+      
+        const data = {
+          username: 'x',
+          place: 'x',
+          contact: { parent: 'x' },
+          roles: ['a'],
+          oidc_provider: 'testClientId',
+        };
+
+        return service.createUser(data, 'http://realhost').catch(err => {
+          chai.expect(err.code).to.equal(400);
+          chai.expect(err.message).to.equal('Invalid OIDC Client Id');
+          chai.expect(db.medic.put.callCount).to.equal(0);
+          chai.expect(db.users.put.callCount).to.equal(0);
+        });
+      });
+
+      it('succeeds if oidc_provider is set', () => {
+        const generatedPassword = 'password.123';
+
+        const data = {
+          username: 'x',
+          phone: '987654321',
+          roles: ['a'],
+          oidc_provider: 'testClientId',
+        };
+
+        db.medic.put.withArgs(sinon.match({ _id: 'org.couchdb.user:x' }))
+          .resolves({ id: 'org.couchdb.user:x' });
+        db.users.put.withArgs(sinon.match({ _id: 'org.couchdb.user:x' }))
+          .resolves({ id: 'org.couchdb.user:x' });
+
+        db.users.get.withArgs('org.couchdb.user:x')
+          .onCall(0).rejects({ status: 404 })
+          .onCall(1).resolves({
+            _id: 'org.couchdb.user:x',
+            type: 'user',
+            roles: ['a'],
+            name: 'x',
+          });
+        db.medic.get.withArgs('org.couchdb.user:x')
+          .onCall(0).rejects({ status: 404 })
+          .onCall(1).resolves({
+            _id: 'org.couchdb.user:x',
+            type: 'user-settings',
+            roles: ['a'],
+            name: 'x',
+          });
+
+        config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' }});
+        
+        sinon.stub(roles, 'isOffline').withArgs(['rambler']).returns(false);
+        sinon.stub(roles, 'hasAllPermissions').returns(false);
+        sinon.stub(passwords, 'generate').returns(generatedPassword);
+        sinon.stub(places, 'getPlace').resolves({ _id: 'xy' });
+        
+
+        return service.createUser(data, 'http://realhost').then(() => {
+          chai.expect(db.medic.put.callCount).to.equal(1);
+          const settings = db.medic.put.args[0][0];
+          chai.expect(settings.phone).to.equal('987654321');
+          chai.expect(settings.roles).to.include('a');
+
+          chai.expect(db.users.put.callCount).to.equal(1);
+          const user = db.users.put.args[0][0];
+
+          chai.expect(user.password).to.equal(generatedPassword);
+          chai.expect(user.oidc).to.equal(true);
+          chai.expect(user.roles).to.include('a');
+        });
+      });
+      
+    });
+    describe('createUsers', () => {
+
+
+      it('returns error if oidc and password are present', async () => {
+        db.medicLogs.get.resolves({ progress: {} });
+        db.medicLogs.put.resolves({});
+
+        const data = {
+          username: 'x',
+          place: 'x',
+          contact: 't',
+          type: 'national-manager',
+          password: 'testPassword',
+          oidc_provider: 'testClientId',
+        };
+
+        const response = await service.createUsers([data]);
+        chai.expect(response[0].error).to.equal('Either OIDC Login only or Token/Password Login is allowed');
+        chai.expect(db.medic.put.callCount).to.equal(0);
+      });
+
+      it('returns error if oidc and token_login are present', async () => {
+        db.medicLogs.get.resolves({ progress: {} });
+        db.medicLogs.put.resolves({});
+
+        const data = {
+          username: 'x',
+          place: 'x',
+          contact: 't',
+          type: 'national-manager',
+          token_login: true,
+          oidc_provider: 'testClientId',
+        };
+
+        const response = await service.createUsers([data]);
+        chai.expect(response[0].error).to.equal('Either OIDC Login only or Token/Password Login is allowed');
+        chai.expect(db.medic.put.callCount).to.equal(0);
+      });
+
+      it('returns error if oidc not configured in settings', async () => {
+        db.medicLogs.get.resolves({ progress: {} });
+        db.medicLogs.put.resolves({});
+        config.get.returns({ });
+      
+        const data = {
+          username: 'x',
+          place: 'x',
+          contact: 't',
+          type: 'national-manager',
+          oidc_provider: 'testClientId',
+        };
+
+        const response = await service.createUsers([data]);
+        chai.expect(response[0].error).to.equal('OIDC Login is not enabled');
+        chai.expect(db.medic.put.callCount).to.equal(0);
+      });
+
+      it('returns error if oidc_provider (clientId) is different from clientId in settings', async () => {
+        db.medicLogs.get.resolves({ progress: {} });
+        db.medicLogs.put.resolves({});
+        config.get.returns({ 'oidc_provider': { 'client_id': 'differentClientId' }});
+      
+        const data = {
+          username: 'x',
+          place: 'x',
+          contact: 't',
+          type: 'national-manager',
+          oidc_provider: 'testClientId',
+        };
+
+        const response = await service.createUsers([data]);
+        chai.expect(response[0].error).to.equal('Invalid OIDC Client Id');
+        chai.expect(db.medic.put.callCount).to.equal(0);
+      });
+
+      it('succeeds and response contains the user, contact and user settings fields for each user', async () => {
+        const users = [
+          {
+            username: 'user1',
+            place: 'foo',
+            contact: 'user1',
+            type: 'national-manager',
+            oidc_provider: 'testClientId',
+          },
+          {
+            username: 'user2',
+            place: 'foo',
+            contact: 'user2',
+            type: 'national-manager',
+            oidc_provider: 'testClientId',
+          },
+        ];
+        const medicGet = db.medic.get;
+        const medicPut = db.medic.put;
+        const medicQuery = db.medic.query;
+        const usersPut = db.users.put;
+
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+        sinon.stub(roles, 'hasAllPermissions').returns(false);
+        sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
+        config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' }});
+
+        medicGet.withArgs('user1')
+          .onFirstCall().rejects({ status: 404 })
+          .onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 })
+          .withArgs('user2')
+          .onFirstCall().rejects({ status: 404 })
+          .onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 });
+
+
+        usersPut.callsFake(user => Promise.resolve({ id: user._id, rev: 1 }));
+        medicQuery.resolves({ rows: [] });
+        medicPut.callsFake(userSettings => Promise.resolve({ id: userSettings._id, rev: 1 }));
+
+        db.medicLogs.get.resolves({ progress: {} });
+        db.medicLogs.put.resolves({});
+        const getOrCreatePerson = sinon.stub(people, 'getOrCreatePerson').resolves({
+          _id: 'contact_id',
+          _rev: 1,
+        });
+  
+        const response = await service.createUsers(users);
+  
+        chai.expect(response).to.deep.equal([
+          {
+            contact: {
+              id: 'contact_id',
+              rev: 1,
+            },
+            user: {
+              id: 'org.couchdb.user:user1',
+              rev: 1,
+            },
+            'user-settings': {
+              id: 'org.couchdb.user:user1',
+              rev: 1,
+            },
+          },
+          {
+            contact: {
+              id: 'contact_id',
+              rev: 1,
+            },
+            user: {
+              id: 'org.couchdb.user:user2',
+              rev: 1,
+            },
+            'user-settings': {
+              id: 'org.couchdb.user:user2',
+              rev: 1,
+            },
+          },
+        ]);
+        chai.expect(getOrCreatePerson.callCount).to.equal(2);
+        chai.expect(getOrCreatePerson.args).to.deep.equal([['user1'], ['user2']]);
+      });
+
+      it('some users succeed and some fail insertioon', async () => {
+        const users = [
+          {
+            username: 'user1',
+            place: 'foo',
+            contact: 'user1',
+            type: 'national-manager',
+            oidc_provider: 'testClientId',
+          },
+          {
+            username: 'user2',
+            place: 'foo',
+            contact: 'user2',
+            type: 'national-manager',
+            oidc_provider: 'testClientId',
+            password: 'password1234@#$%',
+          },
+          {
+            username: 'user3',
+            place: 'foo',
+            contact: 'user3',
+            type: 'national-manager',
+            oidc_provider: 'inValidTestClientId',
+          },
+        ];
+        const medicGet = db.medic.get;
+        const medicPut = db.medic.put;
+        const medicQuery = db.medic.query;
+        const usersPut = db.users.put;
+
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+        sinon.stub(roles, 'hasAllPermissions').returns(false);
+        sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
+        config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' }});
+
+        medicGet.withArgs('user1')
+          .onFirstCall().rejects({ status: 404 })
+          .onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 })
+          .withArgs('user2')
+          .onFirstCall().rejects({ status: 404 })
+          .onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 })
+          .withArgs('user3')
+          .onFirstCall().rejects({ status: 404 })
+          .onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 });
+
+
+        usersPut.callsFake(user => Promise.resolve({ id: user._id, rev: 1 }));
+        medicQuery.resolves({ rows: [] });
+        medicPut.callsFake(userSettings => Promise.resolve({ id: userSettings._id, rev: 1 }));
+
+        db.medicLogs.get.resolves({ progress: {} });
+        db.medicLogs.put.resolves({});
+        const getOrCreatePerson = sinon.stub(people, 'getOrCreatePerson').resolves({
+          _id: 'contact_id',
+          _rev: 1,
+        });
+  
+        const response = await service.createUsers(users);
+  
+        chai.expect(response).to.deep.equal([
+          {
+            contact: {
+              id: 'contact_id',
+              rev: 1,
+            },
+            user: {
+              id: 'org.couchdb.user:user1',
+              rev: 1,
+            },
+            'user-settings': {
+              id: 'org.couchdb.user:user1',
+              rev: 1,
+            },
+          },
+          {
+            error: 'Either OIDC Login only or Token/Password Login is allowed',
+          },
+          {
+            error: 'Invalid OIDC Client Id',
+          },
+        ]);
+        chai.expect(getOrCreatePerson.callCount).to.equal(1);
+        chai.expect(getOrCreatePerson.args).to.deep.equal([['user1']]);
+      });
+
+
+    });
+    describe('updateUser', () => {
+
+
+      it('returns error if oidc and password are present', async () => {
+        const data = {
+          password: 'testPassword',
+          oidc_provider: 'testClientId',
+        };
+      
+        return service.updateUser('paul', data, true).catch(err => {
+          chai.expect(err.code).to.equal(400);
+          chai.expect(err.message).to.equal('Either OIDC Login only or Token/Password Login is allowed');
+          chai.expect(db.medic.put.callCount).to.equal(0);
+          chai.expect(db.users.put.callCount).to.equal(0);
+        });
+      });
+
+      it('returns error if oidc and token_login are present', async () => {
+        const data = {
+          token_login: true,
+          oidc_provider: 'testClientId',
+        };
+      
+        return service.updateUser('paul', data, true).catch(err => {
+          chai.expect(err.code).to.equal(400);
+          chai.expect(err.message).to.equal('Either OIDC Login only or Token/Password Login is allowed');
+          chai.expect(db.medic.put.callCount).to.equal(0);
+          chai.expect(db.users.put.callCount).to.equal(0);
+        });
+      });
+
+      it('returns error if oidc not configured in settings', async () => {
+
+        config.get.returns({ });
+      
+        const data = {
+          oidc_provider: 'testClientId',
+        };
+
+        return service.updateUser('paul', data, true).catch(err => {
+          chai.expect(err.code).to.equal(400);
+          chai.expect(err.message).to.equal('OIDC Login is not enabled');
+          chai.expect(db.medic.put.callCount).to.equal(0);
+          chai.expect(db.users.put.callCount).to.equal(0);
+        });
+      });
+
+      it('returns error if oidc_provider (clientId) is different from clientId in settings', async () => {
+
+        config.get.returns({ 'oidc_provider': { 'client_id': 'differentClientId' }});
+      
+        const data = {
+          oidc_provider: 'testClientId',
+        };
+
+        return service.updateUser('paul', data, true).catch(err => {
+          chai.expect(err.code).to.equal(400);
+          chai.expect(err.message).to.equal('Invalid OIDC Client Id');
+          chai.expect(db.medic.put.callCount).to.equal(0);
+          chai.expect(db.users.put.callCount).to.equal(0);
+        });
+      });
+
+      it('succeeds if oidc_provider is set', () => {
+        const generatedPassword = 'password.123';
+
+        const data = {
+          oidc_provider: 'testClientId',
+          phone: '879'
+        };
+
+        db.users.get.withArgs('org.couchdb.user:paul')
+          .resolves({
+            name: 'paul',
+            type: 'user',
+            roles: ['district_admin'],
+            facility_id: 'maine',
+          });
+
+        db.medic.get.withArgs('org.couchdb.user:paul')
+          .resolves({
+            _id: 'org.couchdb.user:paul',
+            type: 'user-settings',
+            roles: ['district_admin'],
+            phone: '+40755696969',
+            name: 'paul',
+            facility_id: 'maine',
+            known: false,
+          });
+
+
+        db.medic.put.resolves({});
+        db.users.put.resolves({});
+
+        sinon.stub(places, 'placesExist').resolves();
+        sinon.stub(roles, 'isOffline').withArgs(['rambler']).returns(false);
+        sinon.stub(roles, 'hasAllPermissions').returns(false);
+        sinon.stub(passwords, 'generate').returns(generatedPassword);
+        config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' }});
+
+        return service.updateUser('paul', data, true).then(() => {
+          chai.expect(db.medic.put.callCount).to.equal(1);
+          const settings = db.medic.put.args[0][0];
+          chai.expect(settings.phone).to.equal('879');
+
+          chai.expect(db.users.put.callCount).to.equal(1);
+          const user = db.users.put.args[0][0];
+          chai.expect(user.password).to.equal(generatedPassword);
+          chai.expect(user.oidc).to.equal(true);
+        });
+      });
+      
+    });
+
+  }); 
 });
 

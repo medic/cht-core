@@ -2113,4 +2113,432 @@ describe('Users API', () => {
       expect(userDoc.password_change_required).to.equal(true);
     });
   });
+
+  describe('sso-login', () => {
+    let user;
+    const correctOidcClientId = 'correctOidcCLientId';
+    const incorrectOidcClientId = 'incorrectOidcClientId';
+
+    const getUser = (user) => {
+      const opts = { path: `/_users/${getUserId(user.username)}` };
+      return utils.request(opts);
+    };
+    const getUserSettings = (user) => {
+      return utils.requestOnMedicDb({ path: `/${getUserId(user.username)}` });
+    };
+    const getSettings = () => {
+      return utils.requestOnMedicDb({ path: `/settings` });
+    };
+
+    const parentPlace = {
+      _id: 'PARENT_PLACE',
+      type: 'district_hospital',
+      name: 'Big Parent Hostpital'
+    };
+
+    before(() => utils.saveDoc(parentPlace));
+    after(() => utils.revertDb([], true));
+
+    beforeEach(() => {
+      user = {
+        username: 'testuser',
+        password_change_required: false,
+        roles: ['district_admin'],
+        place: {
+          _id: 'fixture:test',
+          type: 'health_center',
+          name: 'TestVille',
+          parent: 'PARENT_PLACE'
+        },
+        contact: {
+          _id: 'fixture:user:testuser',
+          name: 'Bob'
+        },
+      };
+    });
+    afterEach(() => utils.deleteUsers([user]).then(() => utils.revertDb(['PARENT_PLACE'], true)));
+
+    const expectCorrectUser = (user, extra = {}) => {
+      const defaultProps = {
+        name: 'testuser',
+        type: 'user',
+        roles: ['district_admin'],
+        facility_id: 'fixture:test',
+        contact_id: 'fixture:user:testuser',
+      };
+      chai.expect(user).to.shallowDeepEqual(Object.assign(defaultProps, extra));
+    };
+    const expectCorrectUserSettings = (userSettings, extra = {}) => {
+      const defaultProps = {
+        name: 'testuser',
+        type: 'user-settings',
+        roles: ['district_admin'],
+        facility_id: 'fixture:test',
+        contact_id: 'fixture:user:testuser',
+      };
+      chai.expect(userSettings).to.shallowDeepEqual(Object.assign(defaultProps, extra));
+    };
+
+    describe('when oidc_provider is provided', () => {
+
+      it('should fail to create/update a user when password is also provided', () => {
+        user.oidc_provider = correctOidcClientId;
+        user.password = password;
+
+        return utils
+          .request({ path: '/api/v1/users', method: 'POST', body: user })
+          .then(() => chai.assert.fail('should have thrown'))
+          .catch(err => {
+            chai.expect(err).to.shallowDeepEqual({
+              status: 400,
+              body: { code: 400, error: { message: 'Either OIDC Login only or Token/Password Login is allowed' }}
+            });
+          });
+
+      });
+
+      it('should fail to create/update a user when token_login is also active', () => {
+        user.oidc_provider = correctOidcClientId;
+        user.token_login = true;
+
+        return utils
+          .request({ path: '/api/v1/users', method: 'POST', body: user })
+          .then(() => chai.assert.fail('should have thrown'))
+          .catch(err => {
+            chai.expect(err).to.shallowDeepEqual({
+              status: 400,
+              body: { code: 400, error: { message: 'Either OIDC Login only or Token/Password Login is allowed' }}
+            });
+          });
+
+      });
+
+
+      it('should fail to create/update a user if OIDC provider is not configured in settings', () => {
+        user.oidc_provider = correctOidcClientId;
+
+        return getSettings()
+          .then( settingsDoc => {
+            chai.expect(settingsDoc.settings.oidc_provider).to.be.undefined;
+          })
+          .then(() => {
+            return utils.request({ path: '/api/v1/users', method: 'POST', body: user });
+          })
+          .then(() => chai.assert.fail('should have thrown'))
+          .catch(err => {
+            chai.expect(err).to.shallowDeepEqual({
+              status: 400,
+              body: { code: 400, error: { message: 'OIDC Login is not enabled' }}
+            });
+          });
+
+      });
+
+      it('should fail to create/update a user if OIDC provider client id doesn\'t match the passed clientId', () => {
+        user.oidc_provider = incorrectOidcClientId;
+        const settings = { oidc_provider: { client_id: correctOidcClientId} };
+
+        return utils
+          .updateSettings(settings, { ignoreReload: true })
+          .then(() => { 
+            return getSettings(); 
+          })
+          .then( settingsDoc => {
+            chai.expect(settingsDoc.settings.oidc_provider).to.not.be.undefined;
+            chai.expect(settingsDoc.settings.oidc_provider.client_id).to.equal(correctOidcClientId);
+          })
+          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(() => chai.assert.fail('should have thrown'))
+          .catch(err => {
+            chai.expect(err).to.shallowDeepEqual({
+              status: 400,
+              body: { code: 400, error: { message: 'Invalid OIDC Client Id' }}
+            });
+          });
+
+      });
+
+      it('should create/update a user correctly with oidc_provider', () => {
+        user.oidc_provider = correctOidcClientId;
+        const settings = { oidc_provider: { client_id: correctOidcClientId} };
+
+        return utils
+          .updateSettings(settings, { ignoreReload: true })
+          .then(() => { 
+            return getSettings(); 
+          })
+          .then( settingsDoc => {
+            chai.expect(settingsDoc.settings.oidc_provider).to.not.be.undefined;
+            chai.expect(settingsDoc.settings.oidc_provider.client_id).to.equal(correctOidcClientId);
+          })
+          .then(() => utils.request({ path: '/api/v1/users', method: 'POST', body: user }))
+          .then(response => {
+            chai.expect(response).to.shallowDeepEqual({
+              user: { id: getUserId(user.username) },
+              'user-settings': { id: getUserId(user.username) },
+              contact: { id: 'fixture:user:testuser' },
+            });
+
+            return Promise.all([ getUser(user), getUserSettings(user) ]);
+          })
+          .then(([ user, userSettings ]) => {
+            expectCorrectUser(user);
+            expectCorrectUserSettings(userSettings);
+            chai.expect(user.oidc_provider).to.be.undefined;
+            chai.expect(userSettings.oidc_provider).to.be.undefined;
+          })
+          .then(() => {
+            const updates = {
+              roles: ['new_role'],
+              phone: '12345',
+              oidc_provider: correctOidcClientId,
+            };
+
+            const opts = { path: `/api/v1/users/${user.username}`, body: updates, method: 'POST' };
+            return utils.request(opts);
+          })
+          .then(response => {
+            chai.expect(response).to.shallowDeepEqual({
+              user: { id: getUserId(user.username) },
+              'user-settings': { id: getUserId(user.username) },
+            });
+
+            return Promise.all([ getUser(user), getUserSettings(user) ]);
+          })
+          .then(([ user, userSettings ]) => {
+            expectCorrectUser(user, { roles: ['new_role'] });
+            expectCorrectUserSettings(userSettings, { roles: ['new_role'], phone: '12345' });
+            chai.expect(user.oidc_provider).to.be.undefined;
+            chai.expect(userSettings.oidc_provider).to.be.undefined;
+          });
+
+      });
+
+      it('should create and update many users correctly with oidc_provider', async () => {
+        const users = [
+          {
+            username: 'offline1000',
+            oidc_provider: correctOidcClientId,
+            phone: '+40754898989',
+            place: {
+              _id: 'fixture:offline1000',
+              type: 'health_center',
+              name: 'Offline2 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline1000',
+              name: 'Offline1000User'
+            },
+            roles: ['district_admin', 'this', 'user', 'will', 'be', 'offline1000']
+          },
+          {
+            username: 'online1000',
+            oidc_provider: correctOidcClientId,
+            phone: '+40755898989',
+            place: {
+              _id: 'fixture:online1000',
+              type: 'health_center',
+              name: 'Online1000 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:online1000',
+              name: 'Online1000User'
+            },
+            roles: ['national_admin']
+          },
+          {
+            username: 'offlineonline1000',
+            phone: '+40756898989',
+            oidc_provider: correctOidcClientId,
+            place: {
+              _id: 'fixture:offlineonline1000',
+              type: 'health_center',
+              name: 'Online1000 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offlineonline1000',
+              name: 'Online1000User'
+            },
+            roles: ['district_admin', 'mm-online1000']
+          },
+        ];
+        const settings = {
+          app_url: utils.getOrigin(),
+          oidc_provider: { 
+            client_id: correctOidcClientId
+          }
+        };
+        await utils.updateSettings(settings, { ignoreReload: true });
+        const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
+        response.forEach((responseUser, index) => {
+          chai.expect(responseUser).to.shallowDeepEqual({
+            user: { id: getUserId(users[index].username) },
+            'user-settings': { id: getUserId(users[index].username) },
+            contact: { id: users[index].contact._id },
+          });
+        });
+
+        for (const user of users) {
+          let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
+          const extraProps = {
+            facility_id: user.place._id,
+            contact_id: user.contact._id,
+            name: user.username,
+            roles: user.roles,
+          };
+          expectCorrectUser(userInDb, extraProps);
+          expectCorrectUserSettings(userSettings, { ...extraProps, contact_id: user.contact._id });
+
+          const updates = {
+            roles: ['new_role'],
+            phone: '+40744898989',
+            oidc_provider: correctOidcClientId,
+          };
+          const updateResponse = await utils.request({
+            path: `/api/v1/users/${user.username}`,
+            body: updates,
+            method: 'POST',
+          });
+          chai.expect(updateResponse).to.shallowDeepEqual({
+            user: { id: getUserId(user.username) },
+            'user-settings': { id: getUserId(user.username) },
+          });
+
+          [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
+          expectCorrectUser(userInDb, { ...extraProps, roles: ['new_role'] });
+          expectCorrectUserSettings(userSettings, {
+            ...extraProps,
+            contact_id: user.contact._id,
+            roles: ['new_role'],
+            phone: '+40744898989',
+          });
+          
+        }
+      });
+
+      it('should create many users where one fails to be created with oidc_provider', async () => {
+        const users = [
+          {
+            username: 'offline5000',
+            password: password,
+            oidc_provider: correctOidcClientId,
+            place: {
+              _id: 'fixture:offline5000',
+              type: 'health_center',
+              name: 'Offline5000 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline5000',
+              name: 'Offline5User'
+            },
+            roles: ['district_admin', 'will_not_be_created', 'is_password_login_and_oidc_login' ]
+          },
+          {
+            username: 'offline6000',
+            oidc_provider: incorrectOidcClientId,
+            place: {
+              _id: 'fixture:offline6000',
+              type: 'health_center',
+              name: 'Offline6000 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline6000',
+              name: 'Offline6000User'
+            },
+            roles: ['district_admin', 'will_not_be_created', 'has_incorrect_client_id' ]
+          },
+          {
+            username: 'offline7000',
+            oidc_provider: correctOidcClientId,
+            place: {
+              _id: 'fixture:offline7000',
+              type: 'health_center',
+              name: 'Offline7000 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline7',
+              name: 'Offline7000User'
+            },
+            roles: ['district_admin', 'this', 'user', 'will', 'be', 'created']
+          },
+        ];
+        const settings = {
+          app_url: utils.getOrigin(),
+          oidc_provider: { 
+            client_id: correctOidcClientId
+          }
+        };
+        await utils.updateSettings(settings, { ignoreReload: true });
+
+        const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
+        chai.expect(response).to.shallowDeepEqual([
+          {
+            error: 'Either OIDC Login only or Token/Password Login is allowed',
+          },
+          {
+            error: 'Invalid OIDC Client Id',
+          },
+          {
+            user: { id: getUserId(users[2].username) },
+            'user-settings': { id: getUserId(users[2].username) },
+            contact: { id: users[2].contact._id },
+          },
+        ]);
+
+      });
+
+
+
+    });
+
+    it('should create and update a user correctly w/o oidc_provider', () => {
+      user.password = password;
+
+      return utils
+        .request({ path: '/api/v1/users', method: 'POST', body: user })
+        .then(response => {
+          chai.expect(response).to.shallowDeepEqual({
+            user: { id: getUserId(user.username) },
+            'user-settings': { id: getUserId(user.username) },
+            contact: { id: 'fixture:user:testuser' },
+          });
+
+          return Promise.all([ getUser(user), getUserSettings(user) ]);
+        })
+        .then(([ user, userSettings ]) => {
+          expectCorrectUser(user);
+          expectCorrectUserSettings(userSettings);
+        })
+        .then(() => expectPasswordLoginToWork(user))
+        .then(() => {
+          const updates = {
+            roles: ['new_role'],
+            phone: '12345',
+          };
+
+          const opts = { path: `/api/v1/users/${user.username}`, body: updates, method: 'POST' };
+          return utils.request(opts);
+        })
+        .then(response => {
+          chai.expect(response).to.shallowDeepEqual({
+            user: { id: getUserId(user.username) },
+            'user-settings': { id: getUserId(user.username) },
+          });
+
+          return Promise.all([ getUser(user), getUserSettings(user) ]);
+        })
+        .then(([ user, userSettings ]) => {
+          expectCorrectUser(user, { roles: ['new_role'] });
+          expectCorrectUserSettings(userSettings, { roles: ['new_role'], phone: '12345' });
+        })
+        .then(() => expectPasswordLoginToWork(user));
+    });
+    
+  });
 });
