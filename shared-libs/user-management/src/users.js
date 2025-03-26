@@ -51,6 +51,7 @@ const USER_EDITABLE_FIELDS = RESTRICTED_USER_EDITABLE_FIELDS.concat([
   'contact',
   'type',
   'roles',
+  'oidc',
 ]);
 
 const RESTRICTED_SETTINGS_EDITABLE_FIELDS = [
@@ -1104,7 +1105,7 @@ module.exports = {
 
         const ssoLoginError = await ssoLogin.validateSsoLogin(user);
         if (ssoLoginError) {
-          throw new Error(ssoLoginError.msg);
+          throw error400(ssoLoginError.msg);
         }
 
         const passwordError = validatePassword(user.password);
@@ -1168,6 +1169,12 @@ module.exports = {
    * @param      {String}    appUrl      request protocol://hostname
    */
   updateUser: async (username, data, fullAccess, appUrl) => {
+    //1st validation performed, to go before passwd validation below
+    const ssoLoginError = await ssoLogin.validateSsoLogin(data, false);
+    if (ssoLoginError) {
+      return Promise.reject(error400(ssoLoginError.msg));
+    }
+
     await validateUpdateAttempt(data, fullAccess);
     hydratePayload(data);
 
@@ -1180,12 +1187,7 @@ module.exports = {
     if (tokenLoginError) {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
-
-    const ssoLoginError = await ssoLogin.validateSsoLogin(data, false);
-    if (ssoLoginError) {
-      return Promise.reject(error400(ssoLoginError.msg));
-    }
-
+    
     await validateUserFacility(data, user);
     await validateUserContact(data, user);
 

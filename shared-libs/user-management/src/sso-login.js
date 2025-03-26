@@ -33,6 +33,7 @@ const validateSsoLogin = async(data) => {
     }; 
   }
 
+  data.oidc = true;
   data.password = passwords.generate();
   data.password_change_required = false;
   

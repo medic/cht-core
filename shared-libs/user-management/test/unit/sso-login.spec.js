@@ -75,10 +75,10 @@ describe('SSO Login service', () => {
 
       expect(result).to.equal(undefined);
 
-      expect(data).to.include({ oidc_provider: 'testClientId' });
+      expect(data).to.include({ oidc_provider: 'testClientId', });
     });
 
-    it('should generate password if creating user', async() => {
+    it('should generate password and set oidc=true if creating or updating user', async() => {
       const data = { oidc_provider: 'testClientId' };
       config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' }});
     
@@ -87,6 +87,7 @@ describe('SSO Login service', () => {
       expect(result).to.equal(undefined);
 
       expect(data).to.include({ oidc_provider: 'testClientId' });
+      expect(data).to.include({ oidc: true, });
       expect(data).to.have.property('password');
     });
 
