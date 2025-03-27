@@ -45,7 +45,7 @@ export namespace v1 {
   };
 
   /** @internal */
-  export const getUuidsPage = ({ medicDb, url }: LocalDataContext) => {
+  export const getUuidsPage = ({ medicDb }: LocalDataContext) => {
     // Define offline query functions
     const getByExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic-offline-freetext/reports_by_freetext');
     const getByStartsWithFreetext = queryDocUuidsByRange(medicDb, 'medic-offline-freetext/reports_by_freetext');
@@ -87,7 +87,7 @@ export namespace v1 {
         };
       }
 
-      return queryNouveauIndexUuids(viewName, url)(params);
+      return queryNouveauIndexUuids(viewName)(params);
     };
 
     return async (
