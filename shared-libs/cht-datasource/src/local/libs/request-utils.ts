@@ -1,7 +1,6 @@
 import { isContactsByTypeFreetext, SORT_BY_VIEW } from './constants';
 import { QueryParams } from './core';
 import { Nullable } from '../../libs/core';
-import { Doc } from '../../libs/doc';
 import PouchDB from 'pouchdb-core';
 import PouchDBAdapterHttp from 'pouchdb-adapter-http';
 import PouchDBSessionAuth from 'pouchdb-session-authentication';
