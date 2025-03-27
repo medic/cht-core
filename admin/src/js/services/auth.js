@@ -9,7 +9,7 @@ angular.module('inboxServices').factory('Auth',
     'use strict';
     'ngInject';
 
-    const datasource = CHTDatasource.dataSource;
+    const datasource = CHTDatasource.datasource;
 
     /**
      * Receives a list of groups of permissions and returns a promise that will be resolved if the
