@@ -111,7 +111,7 @@ module.exports = function(Promise, DB, dataContext) {
       .map(denormalizeUnionRequest)
       .map(reqs => Promise.all(reqs.map(request => {
         if (request.freetext) {
-          return queryFreetext(dataContext, DB, request);
+          return queryFreetext(dataContext, DB, request, type);
         }
         return queryView(request);
       })));
@@ -157,4 +157,3 @@ module.exports = function(Promise, DB, dataContext) {
       });
   };
 };
-

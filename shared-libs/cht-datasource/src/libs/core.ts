@@ -135,16 +135,21 @@ export const getPagedGenerator = async function* <S, T>(
 ): AsyncGenerator<T, null> {
   const limit = 100;
   let cursor: Nullable<string> =  null;
+  let docs: Page<T>;
+  const getDocsDataLength = (docs: Page<T>) => docs.data.length;
 
   do {
-    const docs = await fetchFunction(fetchFunctionArgs, cursor, limit);
+    docs = await fetchFunction(fetchFunctionArgs, cursor, limit);
 
     for (const doc of docs.data) {
       yield doc;
     }
 
     cursor = docs.cursor;
-  } while (cursor);
+    // 1. W10= is the base64 representation of an empty array which is returned by Nouveau which will evaluate to '[]'
+    // 2. This check was changed because in online mode(querying Nouveau) the cursor returned can be not W10= so to
+    //    prevent infinite querying the check for existence of docs was required
+  } while (getDocsDataLength(docs) > 0 && cursor && atob(cursor) !== '[]');
 
   return null;
 };

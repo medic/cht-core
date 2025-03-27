@@ -8,9 +8,11 @@
     "outDir": "dist",
     "sourceMap": true,
     "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo",
+    "esModuleInterop": true
   },
   "files": [
-    "src/auth.js"
+    "src/auth.js",
+    "decs.d.ts"
   ],
   "include": [
     "src/**/*.ts",

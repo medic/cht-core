@@ -211,14 +211,8 @@ export const queryNouveauIndex = (
       }
     );
 
-    // this is to match what clouseau view is doing when
-    // limit and cursor values are given which do not exist for eg: cursor 100000
-    if (response.status === 500) {
-      return {
-        data: [],
-        cursor: null
-      };
-    } else if (!response.ok) {
+    console.log('response', response);
+    if (!response.ok) {
       throw new Error(response.statusText);
     }
 
