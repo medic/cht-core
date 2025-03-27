@@ -9,6 +9,7 @@ import { AppComponent } from '../../src/app.component';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 import { EnketoService } from '@mm-services/enketo.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 describe('AppComponent', () => {
   const FORM_ID = 'cht-form-id';
@@ -20,6 +21,7 @@ describe('AppComponent', () => {
     language: 'en',
   } as const;
 
+  let chtDatasourceService;
   let contactSaveService;
   let enketoService;
   let fixture;
@@ -31,6 +33,11 @@ describe('AppComponent', () => {
   };
 
   beforeEach(async () => {
+    chtDatasourceService = {
+      getSync: sinon.stub(),
+      addExtensionLib: sinon.stub(),
+      clearExtensionLibs: sinon.stub(),
+    };
     contactSaveService = { save: sinon.stub() };
     enketoService = {
       renderForm: sinon
@@ -47,6 +54,7 @@ describe('AppComponent', () => {
           AppComponent
         ],
         providers: [
+          { provide: CHTDatasourceService, useValue: chtDatasourceService },
           { provide: ContactSaveService, useValue: contactSaveService },
           { provide: EnketoService, useValue: enketoService },
         ]
@@ -58,16 +66,12 @@ describe('AppComponent', () => {
 
   it('creates component and init XPath extensions', async () => {
     const medicXpathExtensionsInit = sinon.spy(medicXpathExtensions, 'init');
+    const mockChtApi = {};
+    chtDatasourceService.getSync.returns(mockChtApi);
     const component = await getComponent();
 
     expect(component).to.exist;
-    expect(medicXpathExtensionsInit.callCount).to.equal(1);
-    expect(medicXpathExtensionsInit.args[0]).to.deep.equal([
-      {},
-      toBik_text,
-      moment,
-      {}
-    ]);
+    expect(medicXpathExtensionsInit.args).to.deep.equal([[{}, toBik_text, moment, mockChtApi]]);
     expect(component.formId).to.eq(FORM_ID);
     expect(component.editing).to.be.false;
     expect(component.status).to.deep.equal({
@@ -102,9 +106,9 @@ describe('AppComponent', () => {
       selector: `#${FORM_ID}`,
       type: 'report',
       formDoc: { _id: FORM_ID },
-      instanceData: null,
-      contactSummary: undefined
+      instanceData: undefined
     });
+    expect(actualContext.contactSummary).to.be.undefined;
     expect(actualContext.editedListener).to.exist;
     expect(actualContext.valuechangeListener).to.exist;
     expect(enketoService.renderForm.args[0][1]).to.deep.equal({
@@ -142,6 +146,11 @@ describe('AppComponent', () => {
     tick();
     component.content = content;
     tick();
+    component.extensionLibs = {
+      hello: 'world',
+      world: 'hello'
+    };
+    tick();
     component.formXml = FORM_XML;
     tick();
     component.formModel = formModel;
@@ -149,6 +158,7 @@ describe('AppComponent', () => {
     component.formHtml = FORM_HTML;
     tick();
 
+    expect(chtDatasourceService.addExtensionLib.args).to.deep.equal([['hello', 'world'], ['world', 'hello']]);
     expect(enketoService.renderForm.callCount).to.equal(1);
     expect(onRender.callCount).to.equal(1);
     const actualContext = enketoService.renderForm.args[0][0];
@@ -172,10 +182,12 @@ describe('AppComponent', () => {
     // Null out the optional fields and render again
     component.contactSummary = undefined;
     component.contactType = undefined;
-    component.content = null;
+    component.content = undefined;
+    component.extensionLibs = undefined;
     tick();
 
-    // Form is rendered again, but without instanceData or contactSummary
+    // Form is rendered again, but without optional fields
+    expect(chtDatasourceService.clearExtensionLibs.calledOnceWithExactly()).to.be.true;
     expect(enketoService.renderForm.callCount).to.equal(3);
     expect(onRender.callCount).to.equal(3);
     const actualContext1 = enketoService.renderForm.args[2][0];
@@ -183,9 +195,9 @@ describe('AppComponent', () => {
       selector: `#${formId}`,
       type: 'report',
       formDoc: { _id: formId },
-      instanceData: null,
-      contactSummary: undefined
+      instanceData: undefined
     });
+    expect(actualContext.contactSummary).to.be.undefined;
     expect(enketoService.renderForm.args[2][1]).to.deep.equal({
       html: $(FORM_HTML),
       model: formModel,
@@ -258,9 +270,9 @@ describe('AppComponent', () => {
         selector: `#${formId}`,
         type: 'report',
         formDoc: { _id: formId },
-        instanceData: null,
-        contactSummary: undefined
+        instanceData: undefined
       });
+      expect(actualContext.contactSummary).to.be.undefined;
     } finally {
       global.MutationObserver = MutationObserver;
     }
@@ -284,9 +296,9 @@ describe('AppComponent', () => {
       selector: `#${FORM_ID}`,
       type: 'report',
       formDoc: { _id: FORM_ID },
-      instanceData: { ...content, source: 'contact' },
-      contactSummary: undefined
+      instanceData: { ...content, source: 'contact' }
     });
+    expect(actualContext.contactSummary).to.be.undefined;
   }));
 
   it('renders form with given source value even if contact is provided', fakeAsync(async () => {
@@ -310,9 +322,9 @@ describe('AppComponent', () => {
       selector: `#${FORM_ID}`,
       type: 'report',
       formDoc: { _id: FORM_ID },
-      instanceData: content,
-      contactSummary: undefined
+      instanceData: content
     });
+    expect(actualContext.contactSummary).to.be.undefined;
   }));
 
   it('re-renders form when any field is set', fakeAsync(async () => {
@@ -379,21 +391,6 @@ describe('AppComponent', () => {
     it(`throws error when setting [${value}] Form Id`, fakeAsync(async () => {
       const component = await getComponent();
       expect(() => component.formId = value as unknown as string).to.throw('The Form Id must be populated.');
-    }));
-
-    it(`throws error when setting [${value}] Form HTML`, fakeAsync(async () => {
-      const component = await getComponent();
-      expect(() => component.formHtml = value as unknown as string).to.throw('The Form HTML must be populated.');
-    }));
-
-    it(`throws error when setting [${value}] Form Model`, fakeAsync(async () => {
-      const component = await getComponent();
-      expect(() => component.formModel = value as unknown as string).to.throw('The Form Model must be populated.');
-    }));
-
-    it(`throws error when setting [${value}] Form XML`, fakeAsync(async () => {
-      const component = await getComponent();
-      expect(() => component.formXml = value as unknown as string).to.throw('The Form XML must be populated.');
     }));
   });
 
@@ -470,8 +467,6 @@ describe('AppComponent', () => {
     component.formModel = formModel;
     tick();
     component.formHtml = formHtml;
-    tick();
-    component.editing = true;
 
     expect(enketoService.getCurrentForm.callCount).to.equal(7);
     expect(enketoService.renderForm.callCount).to.equal(1);
@@ -543,8 +538,6 @@ describe('AppComponent', () => {
     component.formModel = formModel;
     tick();
     component.formHtml = formHtml;
-    tick();
-    component.editing = true;
 
     expect(enketoService.getCurrentForm.callCount).to.equal(8);
     expect(enketoService.renderForm.callCount).to.equal(1);
@@ -612,8 +605,6 @@ describe('AppComponent', () => {
     component.formModel = formModel;
     tick();
     component.formHtml = formHtml;
-    tick();
-    component.editing = true;
 
     expect(enketoService.getCurrentForm.callCount).to.equal(8);
     expect(enketoService.renderForm.callCount).to.equal(1);
@@ -720,19 +711,22 @@ describe('AppComponent', () => {
     tick();
     component.content = content;
     tick();
+    component.extensionLibs = {
+      hello: 'world',
+      world: 'hello'
+    };
+    tick();
     component.formXml = formXml;
     tick();
     component.formModel = formModel;
     tick();
     component.formHtml = formHtml;
-    tick();
-    component.editing = true;
-    component.status = { saving: true, error: 'some error' };
 
-    expect(enketoService.getCurrentForm.callCount).to.equal(8);
+    expect(enketoService.getCurrentForm.callCount).to.equal(9);
+    expect(chtDatasourceService.addExtensionLib.args).to.deep.equal([['hello', 'world'], ['world', 'hello']]);
     expect(enketoService.renderForm.callCount).to.equal(1);
     enketoService.getCurrentForm
-      .onCall(8)
+      .onCall(9)
       .returns(currentForm);
 
     let cancelEmitted = false;
@@ -743,8 +737,8 @@ describe('AppComponent', () => {
     component.cancelForm();
     tick();
     expect(cancelEmitted).to.be.true;
-    expect(enketoService.getCurrentForm.callCount).to.equal(9);
-
+    expect(enketoService.getCurrentForm.callCount).to.equal(12);
+    expect(chtDatasourceService.clearExtensionLibs.calledOnceWithExactly()).to.be.true;
     expect(enketoService.unload.callCount).to.equal(1);
     expect(enketoService.unload.args[0]).to.deep.equal([currentForm]);
     expect(component.formId).to.equal(FORM_ID);
@@ -765,7 +759,8 @@ describe('AppComponent', () => {
     expect(enketoService.renderForm.callCount).to.equal(1);
     component.formHtml = FORM_HTML;
     tick();
-    expect(enketoService.getCurrentForm.callCount).to.equal(12);
+    expect(enketoService.getCurrentForm.callCount).to.equal(15);
+    expect(chtDatasourceService.addExtensionLib.callCount).to.equal(2);
     expect(enketoService.renderForm.callCount).to.equal(2);
     // New form has been rendered with default values (internal data was reset)
     const actualContext = enketoService.renderForm.args[1][0];
@@ -773,7 +768,7 @@ describe('AppComponent', () => {
       selector: `#${FORM_ID}`,
       type: 'report',
       formDoc: { _id: FORM_ID },
-      instanceData: null,
+      instanceData: undefined,
       contactSummary: undefined
     });
     expect(actualContext.editedListener).to.exist;

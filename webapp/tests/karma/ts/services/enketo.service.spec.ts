@@ -9,9 +9,10 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 import { AttachmentService } from '@mm-services/attachment.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
+import { EnketoService } from '@mm-services/enketo.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
+import { WebappEnketoFormContext } from '@mm-services/form.service';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -296,7 +297,7 @@ describe('Enketo service', () => {
       };
       enketoInit.returns([]);
       EnketoPrepopulationData.returns(data);
-      const formContext = new EnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
+      const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
       formContext.contactSummary = { id: 'contact-summary', context: { pregnant: true } };
       const doc = {
         html: $('<div>my form</div>'),
@@ -327,7 +328,7 @@ describe('Enketo service', () => {
       };
       enketoInit.returns([]);
       EnketoPrepopulationData.returns(data);
-      const formContext = new EnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
+      const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
       formContext.userContactSummary =  { id: 'user-contact-summary', context: { chw: true } };
       const doc = {
         html: $('<div>my form</div>'),
@@ -1248,46 +1249,5 @@ describe('Enketo service', () => {
       expect(pauseStubs.video).to.be.undefined;
       expect(pauseStubs.audio).to.be.undefined;
     }));
-  });
-});
-
-describe('EnketoFormContext', () => {
-  it('should construct object correctly', () => {
-    const context = new EnketoFormContext('#sel', 'task', { doc: 1 }, { data: 1 });
-    expect(context).to.deep.include({
-      selector: '#sel',
-      type: 'task',
-      formDoc: { doc: 1 },
-      instanceData: { data: 1 },
-    });
-  });
-
-  it('shouldEvaluateExpression should return false for tasks', () => {
-    const ctx = new EnketoFormContext('a', 'task', {}, {});
-    expect(ctx.shouldEvaluateExpression()).to.eq(false);
-  });
-
-  it('shouldEvaluateExpression should return false for editing reports', () => {
-    const ctx = new EnketoFormContext('a', 'report', {}, {});
-    ctx.editing = true;
-    expect(ctx.shouldEvaluateExpression()).to.eq(false);
-  });
-
-  it('shouldEvaluateExpression should return true for reports and contact forms', () => {
-    const ctxReport = new EnketoFormContext('a', 'report', {}, {});
-    expect(ctxReport.shouldEvaluateExpression()).to.eq(true);
-
-    const ctxContact = new EnketoFormContext('a', 'contact', {}, {});
-    expect(ctxContact.shouldEvaluateExpression()).to.eq(true);
-  });
-
-  it('requiresContact should return true when type is not contact', () => {
-    const ctxReport = new EnketoFormContext('a', 'report', {}, {});
-    expect(ctxReport.requiresContact()).to.eq(true);
-  });
-
-  it('requiresContact should return false when type is contact', () => {
-    const ctxReport = new EnketoFormContext('a', 'contact', {}, {});
-    expect(ctxReport.requiresContact()).to.eq(false);
   });
 });
