@@ -79,7 +79,7 @@ export namespace v1 {
       assertCursor(cursor);
       assertLimit(limit);
 
-      return (await fn)(qualifier, cursor, Number(limit));
+      return fn(qualifier, cursor, Number(limit));
     };
     return curriedFn;
   };

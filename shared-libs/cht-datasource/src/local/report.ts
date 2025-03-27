@@ -45,9 +45,7 @@ export namespace v1 {
   };
 
   /** @internal */
-  export const getUuidsPage = async ({ medicDb, url }: LocalDataContext) => {
-    const offline = await isOffline(medicDb);
-
+  export const getUuidsPage = ({ medicDb, url }: LocalDataContext) => {
     // Define offline query functions
     const getByExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic-offline-freetext/reports_by_freetext');
     const getByStartsWithFreetext = queryDocUuidsByRange(medicDb, 'medic-offline-freetext/reports_by_freetext');
@@ -97,6 +95,8 @@ export namespace v1 {
       cursor: Nullable<string>,
       limit:  number
     ): Promise<Page<string>> => {
+      // placing this check inside the curried function because the offline state might change at runtime
+      const offline = await isOffline(medicDb);
       if (offline) {
         const skip = validateCursor(cursor);
         const getDocsFn = getDocsFnForFreetextType(qualifier);

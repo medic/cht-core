@@ -16,7 +16,7 @@ export namespace v1 {
 
   /** @internal */
   // eslint-disable-next-line @typescript-eslint/require-await
-  export const getUuidsPage = async (remoteContext: RemoteDataContext) => (
+  export const getUuidsPage = (remoteContext: RemoteDataContext) => (
     qualifier: FreetextQualifier,
     cursor: Nullable<string>,
     limit: number

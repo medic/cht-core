@@ -204,12 +204,10 @@ export const queryNouveauIndex = (
     currentResults: NouveauHit[]= [],
     bookmark: Nullable<string> = null
   ): Promise<Page<NouveauHit>> => {
-    const response = await fetch(
-      'http://localhost:5988', {
-        method: 'POST',
-        body: getRequestBody(viewName, params, bookmark)
-      }
-    );
+    const response = await fetch(url, {
+      method: 'POST',
+      body: getRequestBody(viewName, params, bookmark)
+    });
 
     if (!response.ok) {
       throw new Error(response.statusText);
@@ -238,7 +236,6 @@ export const queryNouveauIndexUuids = (
 ) => {
   return async (params: QueryParams): Promise<Page<string>> => {
     const res = await queryNouveauIndex(viewName, url)(params);
-    console.log('res', res);
     const resWithIds = res.data.map(doc => doc.id);
 
     return {
