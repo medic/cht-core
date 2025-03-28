@@ -20,7 +20,7 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { EnketoFormContext, EnketoService, FormType, ContactSummary } from '@mm-services/enketo.service';
+import { ContactSummary, EnketoFormContext, EnketoService, FormType } from '@mm-services/enketo.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
 import { reduce as _reduce } from 'lodash-es';
@@ -385,7 +385,8 @@ export class WebappEnketoFormContext implements EnketoFormContext {
   valuechangeListener?: () => void;
   titleKey?: string;
   isFormInModal?: boolean;
-  contactSummary?: Record<string, any>;
+  contactSummary?: ContactSummary;
+  userContactSummary?: ContactSummary;
 
   editing?: boolean;
   userContact?: Nullable<Person.v1.Person>;

@@ -359,7 +359,7 @@ describe('Enketo service', () => {
       };
       enketoInit.returns([]);
       EnketoPrepopulationData.returns(data);
-      const formContext = new EnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
+      const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
       formContext.contactSummary =  { id: 'contact-summary', context: { pregnant: true } };
       formContext.userContactSummary =  { id: 'user-contact-summary', context: { chw: true } };
       const doc = {
