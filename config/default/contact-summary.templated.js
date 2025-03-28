@@ -15,6 +15,7 @@ const context = {
   muted: false,
   show_pregnancy_form: isReadyForNewPregnancy(thisContact, allReports),
   show_delivery_form: isReadyForDelivery(thisContact, allReports),
+  contact: thisContact
 };
 
 const fields = [
