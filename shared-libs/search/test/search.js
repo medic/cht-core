@@ -18,7 +18,7 @@ describe('Search service', function() {
       get: sinon.stub().rejects()
     };
 
-    service = Search(Promise, DB);
+    service = Search(DB);
   });
 
   afterEach(function() {

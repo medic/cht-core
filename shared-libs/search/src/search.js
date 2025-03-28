@@ -10,7 +10,7 @@ _.intersection = require('lodash/intersection');
 const GenerateSearchRequests = require('./generate-search-requests');
 const { queryFreetext } = require('./freetext-query');
 
-module.exports = function(Promise, DB, dataContext) {
+module.exports = function(DB, dataContext) {
   // Get the subset of rows, in appropriate order, according to options.
   const getPageRows = function(type, rows, options) {
     // When paginating reports, because we're calculating paging from the end of the results array,
