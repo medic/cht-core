@@ -6,7 +6,7 @@
     "name": "Medic Mobile, Inc",
     "email": "hello@medic.org",
     "phone": "+14157469758",
-    "description": "Medic designs, delivers, and supports world-class, open-source software for health workers providing care in the world’s hardest-to-reach communities. We believe providing communities with sophisticated, human-centered technology is an effective tool on the path to achieving a more just world, where universal health coverage is a reality and health is a secured human right.",
+    "description": "Medic is a 501(c)(3) nonprofit organization that stewards an vibrant community that builds open-source software for health workers providing care in the world’s hardest-to-reach communities. Medic believes that providing communities with sophisticated, human-centered technology is an effective tool on the path to achieving a more just world, where universal health coverage is a reality and health is a secured human right.",
     "webpageUrl": {
       "url": "https://github.com/medic"
     }
@@ -14,32 +14,32 @@
   "projects": [{
     "guid": "cht-core",
     "name": "CHT Core",
-    "description": "The CHT Core Framework makes it faster to build responsive, offline-first digital health apps that equip health workers to provide better care in their communities. It is a central resource of the Community Health Toolkit.",
+    "description": "The CHT Core Framework makes it faster to build responsive, offline-first digital health apps that equip health workers to provide better care in their communities. It is a central resource of the Community Health Toolkit, which is a Digital Public Good.",
     "webpageUrl": {
-      "url": "https://github.com/medic/cht-core"
+      "url": "https://communityhealthtoolkit.org/"
     },
     "repositoryUrl": {
       "url": "https://github.com/medic/cht-core"
     },
     "licenses": ["spdx:AGPL-3.0-only"],
-    "tags": ["health", "medical", "mobile", "data"]
+    "tags": ["health", "medical", "mobile", "data", "digital-health", "healthcare", "digital-public-good", "community-health"]
   }],
   "funding": {
     "channels": [{
-      "guid": "github-sponsors",
+      "guid": "donate",
       "type": "payment-provider",
-      "address": "https://github.com/sponsors/medic",
-      "description": "GitHub Sponsor"
+      "address": "https://medic.org/donate/",
+      "description": "Donation"
     }],
     "plans": [{
       "guid": "development",
       "status": "active",
-      "name": "CHT Core developent plan",
-      "description": "",
+      "name": "CHT Core development plan",
+      "description": "Pay anything you wish to show your support for the project. Thank you for your support!",
       "amount": 0,
       "currency": "USD",
       "frequency": "one-time",
-      "channels": ["github-sponsors"]
+      "channels": ["donate"]
     }]
   }
 }
