@@ -13,10 +13,9 @@ import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
-import { FormService } from '@mm-services/form.service';
+import { FormService, WebappEnketoFormContext } from '@mm-services/form.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { EnketoFormContext } from '@mm-services/enketo.service';
 import { NgIf } from '@angular/common';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -237,7 +236,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private async renderForm(formDoc, reportContent, model) {
-    const formContext = new EnketoFormContext('#report-form', 'report', formDoc, reportContent);
+    const formContext = new WebappEnketoFormContext('#report-form', 'report', formDoc, reportContent);
     formContext.editing = !!reportContent;
     formContext.editedListener = this.markFormEdited.bind(this);
     formContext.valuechangeListener = this.resetFormError.bind(this);
