@@ -133,7 +133,7 @@ describe('mark_for_outbound', () => {
         });
     });
 
-    it('correctly creates and sends multiple outbound requests immediately', () => {
+    it('correctly creates and sends multiple outbound requests for the same report immediately', () => {
       const report = makeReport();
       report.data_test1 = 'owl_1';
       report.data_test2 = 'owl_2';
