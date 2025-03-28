@@ -12,7 +12,7 @@ let clock;
 
 describe('task-states', () => {
   before(() => {
-    clock = sinon.useFakeTimers(NOW);
+    clock = sinon.useFakeTimers({now:NOW});
     TaskStates = rewire('../src/task-states');
     definedStates = Object.keys(TaskStates).filter(key => typeof TaskStates[key] === 'string');
   });
