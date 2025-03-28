@@ -4,14 +4,13 @@ const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios } = require(
 const harness = new TestRunner();
 
 describe('Pregnancy home visit form analytic field tests', () => {
-  before(async () => { return await harness.start(); });
-  after(async () => { return await harness.stop(); });
-  beforeEach(
-    async () => {
-      await harness.clear();
-      await harness.setNow(new Date('2000-01-01'));//UTC 00:00
-      return harness.loadForm('pregnancy');
-    });
+  before(() => harness.start());
+  after(() => harness.stop());
+  beforeEach(async () => {
+    await harness.clear();
+    await harness.setNow(new Date('2000-01-01'));//UTC 00:00
+    return harness.loadForm('pregnancy');
+  });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
   });
