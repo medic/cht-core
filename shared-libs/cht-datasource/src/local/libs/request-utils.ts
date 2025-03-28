@@ -1,13 +1,6 @@
 import { isContactsByTypeFreetext, SORT_BY_VIEW } from './constants';
 import { QueryParams } from './core';
 import { Nullable } from '../../libs/core';
-import PouchDB from 'pouchdb-core';
-import PouchDBAdapterHttp from 'pouchdb-adapter-http';
-import PouchDBSessionAuth from 'pouchdb-session-authentication';
-
-PouchDB.plugin(PouchDBAdapterHttp);
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-PouchDB.plugin(PouchDBSessionAuth);
 
 const getNouveauPath = (view: string): string => {
   const indexName = isContactsByTypeFreetext(view) ? 'contacts_by_freetext' : view;
@@ -21,7 +14,7 @@ export const getAuthenticatedFetch = (view: string) => {
   headers.set('Content-Type', 'application/json');
 
   return (url: string, options: RequestInit | undefined): Promise<Response> => {
-    return PouchDB.fetch(`http://localhost:5988/medic/${nouveauPath}`, { headers, ...options });
+    return global.fetch(`http://localhost:5988/medic/${nouveauPath}`, { headers, ...options });
   };
 };
 
