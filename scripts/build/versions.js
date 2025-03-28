@@ -61,5 +61,5 @@ module.exports = {
   getRepo,
   escapeBranchName,
   SERVICES: ['api', 'sentinel'],
-  INFRASTRUCTURE: ['couchdb', 'haproxy', 'haproxy-healthcheck', 'nginx'],
+  INFRASTRUCTURE: ['couchdb', 'couchdb-nouveau', 'haproxy', 'haproxy-healthcheck', 'nginx'],
 };

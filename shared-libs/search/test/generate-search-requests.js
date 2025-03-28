@@ -204,8 +204,9 @@ describe('GenerateSearchRequests service', () => {
       },
     });
     chai.expect(result[1]).to.deep.equal({
-      view: 'medic-client/contacts_by_type_freetext',
+      view: 'contacts_by_type_freetext',
       union: false,
+      freetext: true,
       params: {
         endkey: [ 'person', 'someth\ufff0' ],
         startkey: [ 'person', 'someth' ],
@@ -270,11 +271,11 @@ describe('GenerateSearchRequests service', () => {
     it('reports with exact matching', () => {
       const result = service('reports', { search: 'patient_id:123 form:D' });
       chai.expect(result.length).to.equal(2);
-      chai.expect(result[0].view).to.equal('medic-client/reports_by_freetext');
+      chai.expect(result[0].view).to.equal('reports_by_freetext');
       chai.expect(result[0].params).to.deep.equal({
         key: [ 'patient_id:123' ]
       });
-      chai.expect(result[1].view).to.equal('medic-client/reports_by_freetext');
+      chai.expect(result[1].view).to.equal('reports_by_freetext');
       chai.expect(result[1].params).to.deep.equal({
         key: [ 'form:d' ]
       });
@@ -289,12 +290,12 @@ describe('GenerateSearchRequests service', () => {
     it('reports ignores short words but keeps long ones - #7288', () => {
       const result = service('reports', { search: 'a be see d elephant' });
       chai.expect(result.length).to.equal(2);
-      chai.expect(result[0].view).to.equal('medic-client/reports_by_freetext');
+      chai.expect(result[0].view).to.equal('reports_by_freetext');
       chai.expect(result[0].params).to.deep.equal({
         startkey: [ 'see' ],
         endkey: [ 'see\ufff0' ],
       });
-      chai.expect(result[1].view).to.equal('medic-client/reports_by_freetext');
+      chai.expect(result[1].view).to.equal('reports_by_freetext');
       chai.expect(result[1].params).to.deep.equal({
         startkey: [ 'elephant' ],
         endkey: [ 'elephant\ufff0' ],
@@ -304,7 +305,7 @@ describe('GenerateSearchRequests service', () => {
     it('reports starts with', () => {
       const result = service('reports', { search: 'someth' });
       chai.expect(result.length).to.equal(1);
-      chai.expect(result[0].view).to.equal('medic-client/reports_by_freetext');
+      chai.expect(result[0].view).to.equal('reports_by_freetext');
       chai.expect(result[0].params).to.deep.equal({
         startkey: [ 'someth' ],
         endkey: [ 'someth\ufff0' ],
@@ -314,7 +315,7 @@ describe('GenerateSearchRequests service', () => {
     it('contacts starts with', () => {
       const result = service('contacts', { search: 'someth' });
       chai.expect(result.length).to.equal(1);
-      chai.expect(result[0].view).to.equal('medic-client/contacts_by_freetext');
+      chai.expect(result[0].view).to.equal('contacts_by_freetext');
       chai.expect(result[0].params).to.deep.equal({
         startkey: [ 'someth' ],
         endkey: [ 'someth\ufff0' ],
@@ -324,12 +325,12 @@ describe('GenerateSearchRequests service', () => {
     it('contacts multiple words', () => {
       const result = service('contacts', { search: 'some thing' });
       chai.expect(result.length).to.equal(2);
-      chai.expect(result[0].view).to.equal('medic-client/contacts_by_freetext');
+      chai.expect(result[0].view).to.equal('contacts_by_freetext');
       chai.expect(result[0].params).to.deep.equal({
         startkey: [ 'some' ],
         endkey: [ 'some\ufff0' ],
       });
-      chai.expect(result[1].view).to.equal('medic-client/contacts_by_freetext');
+      chai.expect(result[1].view).to.equal('contacts_by_freetext');
       chai.expect(result[1].params).to.deep.equal({
         startkey: [ 'thing' ],
         endkey: [ 'thing\ufff0' ],
@@ -339,11 +340,11 @@ describe('GenerateSearchRequests service', () => {
     it('mixing starts with and exact matching', () => {
       const result = service('contacts', { search: 'patient_id:123 visit' });
       chai.expect(result.length).to.equal(2);
-      chai.expect(result[0].view).to.equal('medic-client/contacts_by_freetext');
+      chai.expect(result[0].view).to.equal('contacts_by_freetext');
       chai.expect(result[0].params).to.deep.equal({
         key: [ 'patient_id:123' ]
       });
-      chai.expect(result[1].view).to.equal('medic-client/contacts_by_freetext');
+      chai.expect(result[1].view).to.equal('contacts_by_freetext');
       chai.expect(result[1].params).to.deep.equal({
         startkey: [ 'visit' ],
         endkey: [ 'visit\ufff0' ],
@@ -363,7 +364,7 @@ describe('GenerateSearchRequests service', () => {
       };
       const result = service('contacts', filters);
       chai.expect(result.length).to.equal(1);
-      chai.expect(result[0].view).to.equal('medic-client/contacts_by_type_freetext');
+      chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
       chai.expect(result[0].params).to.deep.equal({
         startkey: [ 'clinic', 'someth' ],
         endkey: [ 'clinic', 'someth\ufff0' ],
@@ -386,12 +387,12 @@ describe('GenerateSearchRequests service', () => {
       };
       const result = service('contacts', filters);
       chai.expect(result.length).to.equal(2);
-      chai.expect(result[0].view).to.equal('medic-client/contacts_by_type_freetext');
+      chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
       chai.expect(result[0].params).to.deep.equal({
         startkey: [ 'clinic', 'see' ],
         endkey: [ 'clinic', 'see\ufff0' ],
       });
-      chai.expect(result[1].view).to.equal('medic-client/contacts_by_type_freetext');
+      chai.expect(result[1].view).to.equal('contacts_by_type_freetext');
       chai.expect(result[1].params).to.deep.equal({
         startkey: [ 'clinic', 'elephant' ],
         endkey: [ 'clinic', 'elephant\ufff0' ],
@@ -408,12 +409,12 @@ describe('GenerateSearchRequests service', () => {
       };
       const result = service('contacts', filters);
       chai.expect(result.length).to.equal(2);
-      chai.expect(result[0].view).to.equal('medic-client/contacts_by_type_freetext');
+      chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
       chai.expect(result[0].params).to.deep.equal({
         startkey: [ 'clinic', 'some' ],
         endkey: [ 'clinic', 'some\ufff0' ],
       });
-      chai.expect(result[1].view).to.equal('medic-client/contacts_by_type_freetext');
+      chai.expect(result[1].view).to.equal('contacts_by_type_freetext');
       chai.expect(result[1].params).to.deep.equal({
         startkey: [ 'clinic', 'thing' ],
         endkey: [ 'clinic', 'thing\ufff0' ],
@@ -430,7 +431,7 @@ describe('GenerateSearchRequests service', () => {
       };
       const result = service('contacts', filters);
       chai.expect(result.length).to.equal(2);
-      chai.expect(result[0].view).to.equal('medic-client/contacts_by_type_freetext');
+      chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
       chai.expect(result[0].union).to.equal(true);
       chai.expect(result[0].paramSets).to.deep.equal([
         {
@@ -442,7 +443,7 @@ describe('GenerateSearchRequests service', () => {
           endkey: [ 'district_hospital', 'some\ufff0' ],
         }
       ]);
-      chai.expect(result[1].view).to.equal('medic-client/contacts_by_type_freetext');
+      chai.expect(result[1].view).to.equal('contacts_by_type_freetext');
       chai.expect(result[1].union).to.equal(true);
       chai.expect(result[1].paramSets).to.deep.equal([
         {
@@ -459,12 +460,12 @@ describe('GenerateSearchRequests service', () => {
     it('trim whitespace from search query - #2769', () => {
       const result = service('contacts', { search: '\t  some     thing    ' });
       chai.expect(result.length).to.equal(2);
-      chai.expect(result[0].view).to.equal('medic-client/contacts_by_freetext');
+      chai.expect(result[0].view).to.equal('contacts_by_freetext');
       chai.expect(result[0].params).to.deep.equal({
         startkey: [ 'some' ],
         endkey: [ 'some\ufff0' ],
       });
-      chai.expect(result[1].view).to.equal('medic-client/contacts_by_freetext');
+      chai.expect(result[1].view).to.equal('contacts_by_freetext');
       chai.expect(result[1].params).to.deep.equal({
         startkey: [ 'thing' ],
         endkey: [ 'thing\ufff0' ],

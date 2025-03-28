@@ -1,5 +1,5 @@
 # base build
-FROM nginx:1.25.1-alpine as base_nginx
+FROM nginx:1.25.1-alpine AS base_nginx
 RUN apk add --update --no-cache \
     curl \
     socat \
