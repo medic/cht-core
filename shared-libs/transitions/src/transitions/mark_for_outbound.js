@@ -48,8 +48,17 @@ const markForOutbound = (change) => {
       .then(sent => {
         if (sent) {
           // Successfully sent, outbound.send wrote to the infodoc
-
-          return db.sentinel.put(change.info);
+          return db.sentinel.get(change.info._id)
+            .then(infoDoc => {
+            infoDoc.completed_tasks = change.info.completed_tasks;
+            return db.sentinel.put(infoDoc);
+          })
+          .catch(err => {
+            if (err.status !== 404) {
+              throw err;
+            }
+            return db.sentinel.put(change.info);
+          });
         }
       })
       .catch(() => {
