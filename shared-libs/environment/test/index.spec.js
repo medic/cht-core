@@ -1,7 +1,10 @@
-const { expect } = require('chai');
+const chai = require('chai');
+const { expect } = chai;
+chai.use(require('chai-exclude'));
 const sinon = require('sinon');
 const rewire = require('rewire');
 const logger = require('@medic/logger');
+const request = require('@medic/couch-request');
 
 let originalEnv;
 const stubProcessEnv = (props) => {
@@ -38,7 +41,7 @@ describe('environment', () => {
 
     const env = rewire('../src/index');
 
-    expect(env).to.deep.equal({
+    expect(env).excluding(['getDeployInfo', 'getVersion']).to.deep.equal({
       couchUrl: 'https://admin:pass@couchdb:5984/medicdb',
       buildsUrl: 'https://staging.dev.medicmobile.org/_couch/builds_4',
       serverUrl: 'https://admin:pass@couchdb:5984/',
@@ -55,6 +58,9 @@ describe('environment', () => {
       },
       isTesting: false
     });
+
+    expect(env.getDeployInfo).to.be.a('function');
+    expect(env.getVersion).to.be.a('function');
   });
 
   it('should export custom builds url, proxies changes and testing', () => {
@@ -72,6 +78,93 @@ describe('environment', () => {
       proxies: {
         changeOrigin: true
       }
+    });
+  });
+
+  describe('deploy info', () => {
+    beforeEach(() => {
+      stubProcessEnv({ COUCH_URL: 'http://admin:pass@localhost:5984/medicdb' });
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      process.env = originalEnv;
+    });
+
+    describe('getDeployInfo', () => {
+      it('should return deploy info with version from build_info', async () => {
+        const ddoc = {
+          _id: '_design/medic',
+          build_info: {
+            version: '4.1.0',
+            date: '2023-01-01',
+            base_version: '4.0.0'
+          },
+          deploy_info: {
+            timestamp: '2023-01-02'
+          }
+        };
+
+        sinon.stub(request, 'get').resolves(ddoc);
+        const env = rewire('../src/index');
+
+        const result = await env.getDeployInfo();
+        expect(result).to.deep.equal({
+          version: '4.1.0',
+          date: '2023-01-01',
+          base_version: '4.0.0',
+          timestamp: '2023-01-02'
+        });
+        expect(request.get.callCount).to.equal(1);
+        expect(request.get.args).to.deep.equal([[{url: 'http://admin:pass@localhost:5984/medicdb/_design/medic'}]]);
+      });
+
+      it('should use cache on subsequent calls', async () => {
+        const ddoc = {
+          _id: '_design/medic',
+          build_info: { version: '4.1.0' }
+        };
+
+        sinon.stub(request, 'get').resolves(ddoc);
+        const env = rewire('../src/index');
+
+        const result1 = await env.getDeployInfo();
+        const result2 = await env.getDeployInfo();
+
+        expect(result1).to.deep.equal(result2);
+        expect(request.get.callCount).to.equal(1);
+      });
+
+      it('should throw error if request fails', async () => {
+        sinon.stub(request, 'get').rejects(new Error('Failed to fetch'));
+        sinon.stub(logger, 'error');
+
+        const env = rewire('../src/index');
+        await expect(env.getDeployInfo()).to.eventually.be.rejectedWith('Failed to fetch');
+      });
+    });
+
+    describe('getVersion', () => {
+      it('should return version from deploy info', async () => {
+        const ddoc = {
+          _id: '_design/medic',
+          build_info: { version: '4.1.0' }
+        };
+
+        sinon.stub(request, 'get').resolves(ddoc);
+        const env = rewire('../src/index');
+
+        const version = await env.getVersion();
+        expect(version).to.equal('4.1.0');
+      });
+
+      it('should return unknown on error', async () => {
+        sinon.stub(request, 'get').rejects(new Error('Failed to fetch'));
+        const env = rewire('../src/index');
+
+        const version = await env.getVersion();
+        expect(version).to.equal('unknown');
+      });
     });
   });
 });

@@ -20,7 +20,7 @@
       <div class="body">
         <mm-analytics-targets-progress
           *ngIf="target.type === 'percent'"
-          [target]="target" [value]="target.value"
+          [target]="target" [value]="target.value" [direction]="direction"
           [aggregate]="false">
         </mm-analytics-targets-progress>
         <div class="count" *ngIf="target.type !== 'percent'">

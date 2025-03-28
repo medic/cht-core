@@ -19,13 +19,14 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
+import { EnketoFormContext, EnketoService, FormType } from '@mm-services/enketo.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
 import { reduce as _reduce } from 'lodash-es';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
+import { Nullable, Person } from '@medic/cht-datasource';
 
 /**
  * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
@@ -148,7 +149,7 @@ export class FormService {
       .then(([reports, lineage, targetDocs]) => this.contactSummaryService.get(contact, reports, lineage, targetDocs));
   }
 
-  private canAccessForm(formContext: EnketoFormContext) {
+  private canAccessForm(formContext: WebappEnketoFormContext) {
     return this.xmlFormsService.canAccessForm(
       formContext.formDoc,
       formContext.userContact,
@@ -160,7 +161,7 @@ export class FormService {
     );
   }
 
-  private async renderForm(formContext: EnketoFormContext) {
+  private async renderForm(formContext: WebappEnketoFormContext) {
     const { formDoc, instanceData } = formContext;
 
     try {
@@ -189,11 +190,11 @@ export class FormService {
     this.userContactId = userContactId;
   }
 
-  render(formContext: EnketoFormContext) {
+  render(formContext: WebappEnketoFormContext) {
     return this.ngZone.runOutsideAngular(() => this._render(formContext));
   }
 
-  private async _render(formContext: EnketoFormContext) {
+  private async _render(formContext: WebappEnketoFormContext) {
     await this.inited;
     formContext.userContact = await this.getUserContact(formContext.requiresContact());
     return this.renderForm(formContext);
@@ -351,3 +352,40 @@ export class FormService {
   }
 }
 
+export class WebappEnketoFormContext implements EnketoFormContext {
+  readonly selector: string;
+  readonly formDoc: Record<string, any>;
+  readonly type: FormType;
+  readonly instanceData?: string | Record<string, any>;
+  editedListener?: () => void;
+  valuechangeListener?: () => void;
+  titleKey?: string;
+  isFormInModal?: boolean;
+  contactSummary?: Record<string, any>;
+
+  editing?: boolean;
+  userContact?: Nullable<Person.v1.Person>;
+
+  constructor(selector: string, type: FormType, formDoc: Record<string, any>, instanceData?) {
+    this.selector = selector;
+    this.type = type;
+    this.formDoc = formDoc;
+    this.instanceData = instanceData;
+  }
+
+  shouldEvaluateExpression() {
+    if (this.type === 'task') {
+      return false;
+    }
+
+    if (this.type === 'report' && this.editing) {
+      return false;
+    }
+    return true;
+  }
+
+  requiresContact() {
+    // Users can access contact forms even when they don't have a contact associated.
+    return this.type !== 'contact';
+  }
+}
