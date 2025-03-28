@@ -59,7 +59,7 @@ describe('mark for outbound', () => {
         .then(() => {
           assert.equal(outbound.send.callCount, 1);
           assert.equal(db.sentinel.put.callCount, 1);
-          assert.equal(db.sentinel.get.callCount, 1);
+          assert.equal(db.sentinel.get.callCount, 2);
           assert.equal(logger.info.callCount, 1);
         });
     });
