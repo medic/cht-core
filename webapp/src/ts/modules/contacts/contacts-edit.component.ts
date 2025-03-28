@@ -5,7 +5,7 @@ import { isEqual as _isEqual } from 'lodash-es';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { FormService, DuplicatesFoundError, Duplicate, DuplicatesCheck } from '@mm-services/form.service';
+import { FormService, DuplicatesFoundError } from '@mm-services/form.service';
 import { EnketoFormContext } from '@mm-services/enketo.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
@@ -13,14 +13,17 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { NgIf } from '@angular/common';
+import { NgIf, NgFor, NgStyle } from '@angular/common';
+import { MatAccordion } from '@angular/material/expansion';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
-import { DuplicateInfoComponent } from '@mm-components/duplicate-info/duplicate-info.component';
+import { DuplicateContactsComponent } from '@mm-components/duplicate-contacts/duplicate-contacts.component';
+import { DuplicateCheck } from '@mm-services/deduplicate.service';
+import { Contact } from '@medic/cht-datasource';
 
 @Component({
   templateUrl: './contacts-edit.component.html',
-  imports: [NgIf, EnketoComponent, TranslatePipe, DuplicateInfoComponent]
+  imports: [NgIf, NgFor, NgStyle, MatAccordion, EnketoComponent, TranslatePipe, DuplicateContactsComponent]
 })
 export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
@@ -60,46 +63,18 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private trackSave;
   private trackMetadata = { action: '', form: '' };
 
-  private duplicateCheck?: DuplicatesCheck;
-  acknowledged = false;
-  onAcknowledgeChange(value: boolean) {
-    this.acknowledged = value;
-  }
+  private duplicateCheck?: DuplicateCheck;
+  duplicatesAcknowledged = false;
 
-  onNavigateToDuplicate(_id: string) {
-    this.router.navigate(['/contacts', _id]);
-  }
+  duplicates: Contact.v1.Contact[] = [];
+  duplicateMessage: string = '';
 
-  private readonly omitProperties = ['_summary', 'reported_date', 'name'];
-  summaryRequestInfo?: { contact_id: string, isLoading: boolean, error?: string } = undefined;
-  async onLoadContactSummary(id: string) {
-    this.summaryRequestInfo = { contact_id: id, isLoading: true, error: undefined };
-    try {
-      const contact = this.duplicates.find(x => x._id === id);
-
-      if (!contact) {
-        throw new Error(`Contact with ID ${id} not found`);
-      }
-
-      // Remove "reserved" fields
-      const sanitizedContact = Object.keys(contact).reduce((acc, key) => {
-        if (!this.omitProperties.includes(key)) {
-          acc[key] = contact[key];
-        }
-        return acc;
-      }, {});
-
-      contact._summary = await this.formService.loadContactSummary(sanitizedContact);
-    } catch (e) {
-      console.error(e);
-      this.summaryRequestInfo.error = `Unable to load summary data for contact ${id}`;
-    } finally {
-      this.summaryRequestInfo.isLoading = false;
+  toggleDuplicatesAcknowledged() {
+    this.duplicatesAcknowledged = !this.duplicatesAcknowledged;
+    if (this.duplicatesAcknowledged) {
+      this.resetFormError();
     }
   }
-
-  duplicates: Duplicate[] = [];
-  entityType: string = '';
 
   ngOnInit() {
     this.trackRender = this.performanceService.track();
@@ -202,7 +177,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     try {
       const contact = await this.getContact();
       const contactTypeId = this.contactTypesService.getTypeId(contact) || this.routeSnapshot.params?.type;
-      this.entityType = contactTypeId;
+      this.duplicateMessage = await this.getDeduplicationMessage(contactTypeId);
       const contactType = await this.contactTypesService.get(contactTypeId);
       if (!contactType) {
         throw new Error(`Unknown contact type "${contactTypeId}"`);
@@ -244,6 +219,16 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     return this.lineageModelGeneratorService
       .contact(id, { merge: true })
       .then((result) => result.doc);
+  }
+
+  private async getDeduplicationMessage(entityType: string) {
+    const typedKey = `duplicate_check.contact.${entityType}.duplication_message`;
+    const typedMessage = await this.translateService.get(typedKey);
+    if (typedMessage !== typedKey) {
+      return typedMessage;
+    }
+
+    return this.translateService.get('duplicate_check.contact.duplication_message');
   }
 
   private async getForm(contact, contactType) {
@@ -374,9 +359,11 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         $('form.or').trigger('beforesave');
 
         return this.formService
-          .saveContact({
-            form, docId, type: this.enketoContact.type, xmlVersion: this.xmlVersion
-          }, this.acknowledged, this.duplicateCheck)
+          .saveContact(
+            { docId, type: this.enketoContact.type }, 
+            { form, xmlVersion: this.xmlVersion, duplicateCheck: this.duplicateCheck}, 
+            this.duplicatesAcknowledged
+          )
           .then((result) => {
             console.debug('saved contact', result);
 

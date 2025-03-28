@@ -40,51 +40,6 @@ describe('Deduplicate', () => {
     sinon.restore();
   });
 
-  describe('requestSiblings', () => {
-    it('should return results filtered by parent and contact type', async function () {
-      query.resolves({
-        offset: 0,
-        rows: [
-          { id: 'sib1', doc: { _id: 'sib1', name: 'Sibling1', parent: { _id: 'parent1' }, contact_type: 'some_type' } },
-          { id: 'sib2', doc: { _id: 'sib2', name: 'Sibling2', parent: { _id: 'parent1' }, contact_type: 'some_type' } },
-        ],
-        total_rows: 6
-      });
-      const siblings = await service.requestSiblings('parent1', 'some_type');
-      expect(siblings.length).to.equal(2);
-      expect(siblings).to.deep.equal([
-        { _id: 'sib1', name: 'Sibling1', parent: { _id: 'parent1' }, contact_type: 'some_type' },
-        { _id: 'sib2', name: 'Sibling2', parent: { _id: 'parent1' }, contact_type: 'some_type' },
-      ]);
-    });
-  });
-
-  describe('extractExpression', () => {
-    it('should return a default expression when no object is provided', () => {
-      expect(service.extractExpression(undefined)).to.equal('levenshteinEq(current.name, existing.name, 3) && ' +
-        'ageInYears(current.date_of_birth) === ageInYears(existing.date_of_birth)');
-    });
-
-    it('should return the "user defined" expression', () => {
-      const expression = 'levenshtein("current.phone_number", "existing.phone_number")';
-      expect(service.extractExpression({
-        expression
-      })).to.equal(expression);
-    });
-
-    it('should return null when a object with the expression and disabled properties is provided', () => {
-      expect(service.extractExpression({
-        expression: 'This should not be returned',
-        disabled: true,
-      })).to.equal(null);
-    });
-
-    it('should return a default expression when the object has no expression or disable property defined', () => {
-      expect(service.extractExpression({})).to.equal('levenshteinEq(current.name, existing.name, 3) && ' +
-        'ageInYears(current.date_of_birth) === ageInYears(existing.date_of_birth)');
-    });
-  });
-
   describe('getDuplicates', () => {
     it('should return duplicates based on default matching', () => {
       const doc = {

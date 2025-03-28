@@ -444,65 +444,41 @@
     display: block;
   }
 
-  #duplicate_info {
-    width: 100%; 
-    min-height: 20px; 
-    padding-left: 20px; 
-    padding-right: 20px; 
-    background-color: #ffe7e8;
-
+  #duplicate_contacts {
     .results_header {
-      font-size: large; 
-      color: #e33030;
+      font-size: @font-large;
+      padding: 0;
     }
-
     .acknowledge_label {
       -webkit-user-select: none; -ms-user-select: none; user-select: none;
+      margin: 15px 0 0 0;
     }
-
-    .acknowledge_checkbox {
-      margin-right: 5px;
-    }
-
-    .divider {
-      background-color: #e33030; 
-      height: 1px; 
-      margin-top: 5px; 
-      margin-bottom: 5px;
-    }
-
-    .card {
-      border: 1px solid #ddd;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border-radius: 5px;
-    }
-    
-    .nested-section {
-      display: block; 
-      border: 1px solid lightgray; 
-      border-radius: 5px;
-
-      label {
-        padding-left: 0%;
+    mat-expansion-panel {
+      mat-expansion-panel-header {
+        height: auto;
+        .mat-content {
+          font-size: @font-large;
+          display: flex;
+          flex-direction: column;
+          padding: 0.5em 0;
+        }
+        .mat-expansion-indicator::after {
+          border-width: 0 3px 3px 0;
+          padding: 4px;
+          color: @text-normal-color;
+        }
       }
-    }
-    
-    .load-more-button {
-      background: none;
-      border: none;
-      color: #007bff;
-      cursor: pointer;
-      font-weight: bold;
-      padding-left: 0px;
-    }
-    
-    .toggle-button:hover {
-      text-decoration: underline;
-    }
-
-    .error_msg {
-      color: #e33030;
+      .nested-section {
+        font-size: @font-medium;
+        justify-content: center;
+        display: flex;
+        .error_msg {
+          color: #a94442;
+        }
+      }
+      mat-action-row {
+        font-size: @font-medium;
+      }
     }
   }
 }
