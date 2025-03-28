@@ -21,7 +21,11 @@ const queryFreetext = async (dataContext, db, request, type) => {
   if (type === 'reports') {
     generator = datasource.v1.report.getUuidsByFreetext(request.params.key);
   } else if (type === 'contacts') {
-    generator = datasource.v1.contact.getUuidsByFreetext(request.params.key);
+    if (request.params.type) {
+      generator = datasource.v1.contact.getUuidsByTypeFreetext(request.params.key, request.params.type);
+    } else {
+      generator = datasource.v1.contact.getUuidsByFreetext(request.params.key);
+    }
   }
 
   return iterateGenerator(generator);

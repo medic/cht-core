@@ -186,7 +186,8 @@ const makeCombinedParams = (freetextRequest, typeKey) => {
   const type = typeKey[0];
   const params = {};
   if (freetextRequest.params.key) {
-    params.key = [ type, freetextRequest.params.key[0] ];
+    params.key = freetextRequest.params.key;
+    params.type = type;
   } else {
     params.startkey = [ type, freetextRequest.params.startkey[0] ];
     params.endkey = [ type, freetextRequest.params.endkey[0] ];
