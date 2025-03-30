@@ -13,7 +13,7 @@
     },
     "projects": [
         {
-            "guid": "cht",
+            "guid": "medic",
             "name": "Community Health Toolkit (CHT)",
             "description": "The Community Health Toolkit (CHT) is a open-source project led by a group of organizations who have come together to support the development of digital health initiatives in the hardest-to-reach areas. It provides a collection of open source technologies and open access design, technical, and implementer resources that help you build and deploy digital tools for community health. Together, we envision a world where healthcare is of the highest attainable quality, equitable, accessible, and delivered by people who are trusted in their communities. The Community Health Toolkit is a Digital Public Good.",
             "webpageUrl": {
