@@ -418,24 +418,20 @@ export class ContactsComponent implements OnInit, OnDestroy {
       searchFilters = this.filters;
     }
 
-    const extensions:any = {};
     if (this.lastVisitedDateExtras) {
-      extensions.displayLastVisitedDate = true;
-      extensions.visitCountSettings = this.visitCountSettings;
+      options.displayLastVisitedDate = true;
+      options.visitCountSettings = this.visitCountSettings;
     }
     if (this.isSortedByLastVisited()) {
-      extensions.sortByLastVisitedDate = true;
+      options.sortByLastVisitedDate = true;
     }
 
-    let docIds;
     if (options.withIds) {
-      docIds = this.contactsList.map((item) => {
-        return item._id;
-      });
+      options.additionalDocIds = this.contactsList.map(({ _id }) => _id);
     }
 
     return this.searchService
-      .search('contacts', searchFilters, options, extensions, docIds)
+      .search('contacts', searchFilters, options)
       .then(updatedContacts => {
         // If you have a home place make sure it is at the top
         this.usersHomePlaces?.forEach(homePlace => {
