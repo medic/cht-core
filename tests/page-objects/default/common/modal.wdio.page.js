@@ -17,7 +17,7 @@ const getModalDetails = async () => {
 };
 
 const checkModalHasClosed = async () => {
-  return await (await modal()).waitForDisplayed({ timeout: 60000, reverse: true });
+  return await (await modal()).waitForDisplayed({ timeout: 5000, reverse: true });
 };
 
 const submit = async (timeout) => {

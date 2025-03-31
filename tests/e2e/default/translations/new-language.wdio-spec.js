@@ -24,8 +24,7 @@ describe('Adding new language', () => {
     await utils.addTranslations(langCode, translations);
 
     await waitForServiceWorker.promise;
-    await browser.refresh();
-    await commonPage.waitForPageLoaded();
+    await commonPage.refresh();
   };
 
   before(async () => {
@@ -52,10 +51,7 @@ describe('Adding new language', () => {
 
   it('should add new translations', async () => {
     await commonPage.goToBase();
-    await userSettingsElements.setLanguage(ENG_LANG_CODE);
-
     await addTranslations(NEW_LANG_CODE, NEW_TRANSLATIONS);
-    await commonPage.goToBase();
     await userSettingsElements.setLanguage(NEW_LANG_CODE);
     await browser.waitUntil(async () => await (await commonPage.tabsSelector.analyticsTab()).getText() === 'Analytiks');
 
