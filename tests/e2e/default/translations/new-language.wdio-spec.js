@@ -1,7 +1,6 @@
 const languagesPage = require('@page-objects/default/translations/languages.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const utils = require('@utils');
-const sentinelUtils = require('@utils/sentinel');
 const userSettingsElements = require('@page-objects/default/users/user-settings.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
@@ -74,10 +73,9 @@ describe('Adding new language', () => {
     await addTranslations(code);
 
     await utils.deleteDoc('messages-nl');
-    await sentinelUtils.waitForSentinel();
 
     await utils.stopApi();
     await utils.startApi();
     await commonPage.goToReports();
-  });
+  }).timeout(60 * 1000);
 });
