@@ -18,6 +18,14 @@ function(doc) {
       id: doc._id,
       device: {
         userAgent: doc.device && doc.device.userAgent,
+        storageFree: doc.device
+            && doc.device.deviceInfo
+            && doc.device.deviceInfo.storage
+            && doc.device.deviceInfo.storage.free,
+        storageTotal: doc.device
+            && doc.device.deviceInfo
+            && doc.device.deviceInfo.storage
+            && doc.device.deviceInfo.storage.total,
         versions: {
           apk: doc.device && doc.device.deviceInfo && doc.device.deviceInfo.app && doc.device.deviceInfo.app.version,
           android: doc.device
