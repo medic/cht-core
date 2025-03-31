@@ -14,7 +14,7 @@ export const getAuthenticatedFetch = (view: string) => {
   headers.set('Content-Type', 'application/json');
 
   return (url: string, options: RequestInit | undefined): Promise<Response> => {
-    return global.fetch(`http://localhost:5988/medic/${nouveauPath}`, { headers, ...options });
+    return fetch(`${url}/medic/${nouveauPath}`, { headers, ...options });
   };
 };
 
@@ -46,19 +46,19 @@ const getLuceneQueryString = (
     }
   }
 
-  return getQuery(key, startKey);
+  return getQuery(key ? key[0] : null, startKey ? startKey[0] : null);
 };
 
-// Helper function to convert parameter to string
-const paramToString = (param: string | string[]): string => Array.isArray(param) ? param.join(' ') : param;
+const NOUVEAU_SPECIAL_CHARS_REGEX = /[+\-&|!(){}[\]^"~*?:\\/]/g;
+const getEscapedKey = (key: string) => key.replace(NOUVEAU_SPECIAL_CHARS_REGEX, '\\$&');
 
-const getQuery = (key?: Nullable<string | string[]>, startKey?: Nullable<string | string[]>): string => {
+const getQuery = (key?: Nullable<string>, startKey?: Nullable<string>): string => {
   if (key) {
-    return `exact_match:"${paramToString(key)}"`;
+    return `exact_match:"${key}"`;
   }
 
   if (startKey) {
-    return `"${paramToString(startKey)}"`;
+    return `${getEscapedKey(startKey)}*`;
   }
 
   return '';
