@@ -12,6 +12,8 @@ services:
       - "SVC_NAME=${SVC_NAME:-couchdb}"
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-info}"
     restart: always
+    depends_on:
+      - nouveau
     logging:
       driver: "local"
       options:
@@ -23,10 +25,8 @@ services:
   nouveau:
     image: {{{ repo }}}/cht-couchdb-nouveau:{{ tag }}
     volumes:
-      - ${COUCHDB_DATA:-./srv}/nouveau:/opt/nouveau/data
+      - ${COUCHDB_DATA:-./srv}/nouveau:/data/nouveau
     restart: always
-    depends_on:
-      - couchdb
     logging:
       driver: "local"
       options:
