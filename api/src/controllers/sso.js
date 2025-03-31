@@ -5,30 +5,58 @@ const db = require('../db');
 const dataContext = require('../services/data-context');
 const { users } = require('@medic/user-management')(config, db, dataContext);
 const logger = require('@medic/logger');
+const secureSettings = require('@medic/settings');
 
 const { validateSession, setCookies, sendLoginErrorResponse } = require('./login');
+const settingsService = require('../services/settings');
+
 
 const SSO_PATH = "oidc";
 const SSO_AUTHORIZE_PATH = `${SSO_PATH}/authorize`;
 const SSO_AUTHORIZE_GET_TOKEN_PATH = `${SSO_PATH}/get_token`;
+
+const OIDC_CLIENT_SECRET_KEY = "oidc:client-secret";
 
 let ASConfig;
 let code_verifier;
 let state;
 let pathPrefix;
 
+const getOidcClientSecret = async (key) => {
+  const secret = await secureSettings.getCredentials(key);
+
+  if(!secret)
+  {
+    const err = `No OIDC client secret '${key}' configured.`
+    logger.error(err);
+    throw { status: 400, error: err};
+  }
+
+  return secret;
+};
+
 const init = async (routePrefix) => {
   pathPrefix = routePrefix;
-  const ASConfigSettings = {
-    server: new URL('https://127-0-0-1.local-ip.medicmobile.org:8443/realms/cht/.well-known/openid-configuration'),
-    clientSecret: 'H9sE3aJJ2IFfLgu8CFykRDacfoWQWKov',
-    client: 'cht-client'
-  };
+
+  const settings = await settingsService.get()
+
+  if(!settings.oidc_provider) {
+    logger.info("Authorization server config settings not provided.");
+    return;
+  }
+
+
+  const {
+    discovery_url,
+    client_id
+  } = settings.oidc_provider;
+
+  const clientSecret = await getOidcClientSecret(OIDC_CLIENT_SECRET_KEY);
 
   ASConfig = await client.discovery(
-    ASConfigSettings.server,
-    ASConfigSettings.client,
-    ASConfigSettings.clientSecret,
+    new URL(discovery_url),
+    client_id,
+    clientSecret
   );
 
   logger.info('Authorization server config auth config loaded successfully.');
