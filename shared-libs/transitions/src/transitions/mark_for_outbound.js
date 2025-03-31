@@ -15,6 +15,8 @@ const outbound = require('@medic/outbound');
 const NAME = 'mark_for_outbound';
 const CONFIGURED_PUSHES = 'outbound';
 const TIME_FRAME_DURATION = 5 * 60 * 1000;
+const infodocLib = require('@medic/infodoc');
+infodocLib.initLib(db.medic, db.sentinel);
 
 const relevantTo = (doc) => {
   const pushes = config.get(CONFIGURED_PUSHES) || {};
@@ -48,17 +50,7 @@ const markForOutbound = (change) => {
       .then(sent => {
         if (sent) {
           // Successfully sent, outbound.send wrote to the infodoc
-          return db.sentinel.get(change.info._id)
-            .then(infoDoc => {
-              infoDoc.completed_tasks = change.info.completed_tasks;
-              return db.sentinel.put(infoDoc);
-            })
-            .catch(err => {
-              if (err.status !== 404) {
-                throw err;
-              }
-              return db.sentinel.put(change.info);
-            });
+          return infodocLib.saveCompletedTasks(change.info._id, change.info);
         }
       })
       .catch(() => {
