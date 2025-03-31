@@ -50,7 +50,7 @@ const markForOutbound = (change) => {
       .then(sent => {
         if (sent) {
           // Successfully sent, outbound.send wrote to the infodoc
-          return infodocLib.saveCompletedTasks(change.info.doc_id, change.info);
+          return infodocLib.saveCompletedTasks(change.info.doc_id, change.info, change.info.completed_tasks);
         }
       })
       .catch(() => {

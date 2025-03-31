@@ -155,8 +155,8 @@ const saveTransitions = change => {
   return saveProperty(change.id, change.info, 'transitions', {});
 };
 
-const saveCompletedTasks = (id, infodoc) => {
-  return saveProperty(id, infodoc, 'completed_tasks', []);
+const saveCompletedTasks = (id, infodoc, completedTasks = []) => {
+  return saveProperty(id, infodoc, 'completed_tasks', completedTasks);
 };
 
 const saveProperty = async (id, infodoc, property, defaultValue = {}) => {
@@ -282,7 +282,7 @@ module.exports = {
   bulkGet: changes => resolveInfoDocs(changes, false),
   bulkUpdate: bulkUpdate,
   saveTransitions: saveTransitions,
-  saveCompletedTasks: (id, infodoc) => saveCompletedTasks(id, infodoc),
+  saveCompletedTasks: saveCompletedTasks,
 
   // Used to update infodoc metadata that occurs at write time. A delete does not count as a write
   // in this instance, as deletes resolve as infodoc cleanups once sentinel's background-cleanup
