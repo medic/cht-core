@@ -1,5 +1,5 @@
 import { isContactsByTypeFreetext, SORT_BY_VIEW } from './constants';
-import { QueryParams } from './core';
+import { QueryKey, QueryParams } from './core';
 import { Nullable } from '../../libs/core';
 
 const getNouveauPath = (view: string): string => {
@@ -46,7 +46,7 @@ const getLuceneQueryString = (
     }
   }
 
-  return getQuery(key ? key[0] : null, startKey ? startKey[0] : null);
+  return getQuery(getFirstItem(key), getFirstItem(startKey));
 };
 
 const NOUVEAU_SPECIAL_CHARS_REGEX = /[+\-&|!(){}[\]^"~*?:\\/]/g;
@@ -62,4 +62,11 @@ const getQuery = (key?: Nullable<string>, startKey?: Nullable<string>): string =
   }
 
   return '';
+};
+
+const getFirstItem = (queryKey?: QueryKey): Nullable<string> => {
+  if (!queryKey) {
+    return null;
+  }
+  return Array.isArray(queryKey) ? queryKey[0] : queryKey;
 };
