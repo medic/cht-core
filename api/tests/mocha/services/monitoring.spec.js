@@ -328,14 +328,14 @@ describe('Monitoring service', () => {
           view_indexes: getExpectedViewIndexes(environment.db),
           nouveau_indexes: [
             {
-              disk_size: 76815351,
-              name: '_design/medic/contacts_by_freetext',
-              num_docs: 207734,
+              file_size: 76815351,
+              name: 'medic/contacts_by_freetext',
+              doc_count: 207734,
             },
             {
-              disk_size: 157258510,
-              name: '_design/medic/reports_by_freetext',
-              num_docs: 183741,
+              file_size: 157258510,
+              name: 'medic/reports_by_freetext',
+              doc_count: 183741,
             },
           ],
         },
@@ -350,7 +350,7 @@ describe('Monitoring service', () => {
             file: 500
           },
           view_indexes: getExpectedViewIndexes(`${environment.db}-sentinel`),
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         users: {
           doc_count: 50,
@@ -363,7 +363,7 @@ describe('Monitoring service', () => {
             file: 501
           },
           view_indexes: getExpectedViewIndexes('_users'),
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         usersmeta: {
           doc_count: 40,
@@ -376,7 +376,7 @@ describe('Monitoring service', () => {
             file: 5000
           },
           view_indexes: getExpectedViewIndexes(`${environment.db}-users-meta`),
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         }
       });
       chai.expect(actual.messaging).to.deep.equal({
@@ -460,14 +460,14 @@ describe('Monitoring service', () => {
           view_indexes: getExpectedViewIndexes(environment.db),
           nouveau_indexes: [
             {
-              disk_size: 76815351,
-              name: '_design/medic/contacts_by_freetext',
-              num_docs: 207734,
+              file_size: 76815351,
+              name: 'medic/contacts_by_freetext',
+              doc_count: 207734,
             },
             {
-              disk_size: 157258510,
-              name: '_design/medic/reports_by_freetext',
-              num_docs: 183741,
+              file_size: 157258510,
+              name: 'medic/reports_by_freetext',
+              doc_count: 183741,
             },
           ],
         },
@@ -482,7 +482,7 @@ describe('Monitoring service', () => {
             file: 500
           },
           view_indexes: getExpectedViewIndexes(`${environment.db}-sentinel`),
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         users: {
           doc_count: 50,
@@ -495,7 +495,7 @@ describe('Monitoring service', () => {
             file: 501
           },
           view_indexes: getExpectedViewIndexes('_users'),
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         usersmeta: {
           doc_count: 40,
@@ -508,7 +508,7 @@ describe('Monitoring service', () => {
             file: 5000
           },
           view_indexes: getExpectedViewIndexes(`${environment.db}-users-meta`),
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         }
       });
       chai.expect(actual.messaging).to.deep.equal({
@@ -631,7 +631,7 @@ describe('Monitoring service', () => {
             file: -1
           },
           view_indexes: [],
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         users: {
           doc_count: -1,
@@ -644,7 +644,7 @@ describe('Monitoring service', () => {
             file: -1
           },
           view_indexes: [],
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         usersmeta: {
           doc_count: -1,
@@ -657,7 +657,7 @@ describe('Monitoring service', () => {
             file: -1
           },
           view_indexes: [],
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         }
       });
       chai.expect(actual.messaging).to.deep.equal({
@@ -739,7 +739,7 @@ describe('Monitoring service', () => {
             file: -1
           },
           view_indexes: [],
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         users: {
           doc_count: -1,
@@ -752,7 +752,7 @@ describe('Monitoring service', () => {
             file: -1
           },
           view_indexes: [],
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         usersmeta: {
           doc_count: -1,
@@ -765,7 +765,7 @@ describe('Monitoring service', () => {
             file: -1
           },
           view_indexes: [],
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         }
       });
       chai.expect(actual.messaging).to.deep.equal({

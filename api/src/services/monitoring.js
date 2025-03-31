@@ -34,6 +34,9 @@ const NOUVEAU_INDEXES_TO_MONITOR = {
       'reports_by_freetext',
     ],
   },
+  sentinel: {},
+  usersmeta: {},
+  users: {},
 };
 
 const MESSAGE_QUEUE_STATUS_KEYS = ['due', 'scheduled', 'muted', 'failed', 'delivered'];
@@ -143,9 +146,9 @@ const mapDbInfo = (dbInfo, viewIndexInfos, nouveauIndexInfos) => {
       },
     })),
     nouveau_indexes: nouveauIndexInfos?.map(nouveauIndexInfo => ({
-      name: nouveauIndexInfo.name || '',
-      num_docs: defaultNumber(nouveauIndexInfo.search_index.num_docs),
-      disk_size: defaultNumber(nouveauIndexInfo.search_index.disk_size),
+      name: nouveauIndexInfo.name,
+      doc_count: defaultNumber(nouveauIndexInfo.search_index.num_docs),
+      file_size: defaultNumber(nouveauIndexInfo.search_index.disk_size),
     })),
   };
 };
@@ -186,6 +189,7 @@ const fetchNouveauIndexInfo = (db, designDoc, indexName) => request
     url: `${environment.serverUrl}/${db}/_design/${designDoc}/_nouveau_info/${indexName}`,
     json: true
   })
+  .then(data => ({ ...data, name: `${designDoc}/${indexName}` }))
   .catch(err => {
     logger.error('Error fetching nouveau index info: %o', err);
     return null;
