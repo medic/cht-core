@@ -1207,7 +1207,6 @@ const startServices = async () => {
   env.DB1_DATA = makeTempDir('ci-dbdata');
   env.DB2_DATA = makeTempDir('ci-dbdata');
   env.DB3_DATA = makeTempDir('ci-dbdata');
-  env.COUCHDB_NOUVEAU_DATA = makeTempDir('ci-nouveaudata');
 
   await dockerComposeCmd('up -d');
   const services = await dockerComposeCmd('ps -q');
