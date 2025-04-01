@@ -32,6 +32,9 @@ import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { SummaryPipe } from '@mm-pipes/message.pipe';
 import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
+import { 
+  ContactSummaryContentComponent 
+} from '@mm-components/contact-summary-content/contact-summary-content.component';
 
 @Component({
   selector: 'contacts-content',
@@ -51,7 +54,8 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
     ResourceIconPipe,
     SummaryPipe,
     FormIconNamePipe,
-    LocalizeNumberPipe
+    LocalizeNumberPipe,
+    ContactSummaryContentComponent
   ]
 })
 export class ContactsContentComponent implements OnInit, OnDestroy {
