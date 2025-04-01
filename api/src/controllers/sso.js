@@ -9,6 +9,7 @@ const secureSettings = require('@medic/settings');
 
 const { validateSession, setCookies, sendLoginErrorResponse } = require('./login');
 const settingsService = require('../services/settings');
+const { error } = require('console');
 
 
 const SSO_PATH = "oidc";
@@ -29,7 +30,7 @@ const getOidcClientSecret = async (key) => {
   {
     const err = `No OIDC client secret '${key}' configured.`
     logger.error(err);
-    throw { status: 400, error: err};
+    throw err;
   }
 
   return secret;
@@ -51,21 +52,21 @@ const init = async (routePrefix) => {
     client_id
   } = settings.oidc_provider;
 
-  const clientSecret = await getOidcClientSecret(OIDC_CLIENT_SECRET_KEY);
+  try {
+    const clientSecret = await getOidcClientSecret(OIDC_CLIENT_SECRET_KEY);
 
-  ASConfig = await client.discovery(
-    new URL(discovery_url),
-    client_id,
-    clientSecret
-  );
+    ASConfig = await client.discovery(
+      new URL(discovery_url),
+      client_id,
+      clientSecret
+    );
+  } catch (e) {
+    throw { status: 400, error: e};
+  } 
 
   logger.info('Authorization server config auth config loaded successfully.');
 
   return ASConfig;
-}
-
-const getCurrentUrl = (req) => {
-  return new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
 }
 
 const getSsoBaseUrl = (req) => {
@@ -73,6 +74,7 @@ const getSsoBaseUrl = (req) => {
 }
 
 const getAuthorizationUrl = async (req) => {
+
   code_verifier = client.randomPKCECodeVerifier();
 
   const code_challenge_method = 'S256';
@@ -103,7 +105,9 @@ const getIdToken = async (req) => {
     }
   }
 
-  let tokens = await client.authorizationCodeGrant(ASConfig, getCurrentUrl(req), params);
+  const currentUrl =  new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
+
+  let tokens = await client.authorizationCodeGrant(ASConfig, currentUrl, params);
 
   const { id_token } = tokens;
 
@@ -127,7 +131,7 @@ const getUserPassword = async username => {
   const user = await users.getUser(username);
 
   if (!user || !user.id) {
-    throw { status: 401, error: `Invalid. Could login ${username} using SSO.`};
+    throw { status: 401, error: `Invalid. Could not login ${username} using SSO.`};
   }
 
   const password = await users.resetPassword(username);
