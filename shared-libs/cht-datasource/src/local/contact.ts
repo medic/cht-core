@@ -159,7 +159,6 @@ export namespace v1 {
       // For startswith search
       return {
         startKey: [qualifier.contactType, qualifier.freetext],
-        endKey: [qualifier.contactType, qualifier.freetext + END_OF_ALPHABET_MARKER],
         limit,
         cursor
       };
@@ -182,7 +181,6 @@ export namespace v1 {
       // For startswith search
       return {
         startKey: [qualifier.freetext],
-        endKey: [qualifier.freetext + END_OF_ALPHABET_MARKER],
         limit,
         cursor
       };

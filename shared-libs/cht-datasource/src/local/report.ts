@@ -81,7 +81,6 @@ export namespace v1 {
       } else {
         params = {
           startKey: [qualifier.freetext],
-          endKey: [qualifier.freetext + END_OF_ALPHABET_MARKER],
           limit,
           cursor
         };

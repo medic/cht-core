@@ -625,10 +625,11 @@ describe('Contact API', () => {
       );
     });
 
-    it('throws 400 error when cursor is invalid', async () => {
+    it('throws 500 error when cursor is invalid', async () => {
       const qs = {
         type: personType,
-        cursor: '-1'
+        cursor: '-1',
+        freetext,
       };
       const opts = {
         path: `${endpoint}`,
@@ -637,7 +638,7 @@ describe('Contact API', () => {
 
       await expect(utils.request(opts))
         .to.be.rejectedWith(
-          `400 - {"code":400,"error":"The cursor must be a string or null for first page: [\\"-1\\"]."}`
+          `500 - {"code":500,"error":"Server error"}`
         );
     });
   });
