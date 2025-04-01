@@ -23,6 +23,8 @@ const setLanguage = async (code) => {
   await commonPage.openUserSettings();
   await openEditSettings();
   await selectLanguage(code);
+  await modalPage.checkModalHasClosed();
+  await browser.pause(500); // wait for the elements to change translations
 };
 
 module.exports = {

@@ -50,29 +50,32 @@ describe('Adding new language', () => {
 
   it('should add new translations', async () => {
     await commonPage.goToBase();
+    await userSettingsElements.setLanguage('en');
     await addTranslations(NEW_LANG_CODE, NEW_TRANSLATIONS);
     await userSettingsElements.setLanguage(NEW_LANG_CODE);
-    await browser.waitUntil(async () => await (await commonPage.tabsSelector.analyticsTab()).getText() === 'Analytiks');
+    await browser.waitUntil(
+      async () => await (await commonPage.tabsSelector.analyticsTab()).getText() === NEW_TRANSLATIONS.Analytics
+    );
 
     // Check for translations in the UI
     await commonPage.goToMessages();
     await commonPage.waitForPageLoaded();
-    expect(await messagesPage.getMessageLoadingStatus()).to.equal('Geen boodskappe gevind nie');
+    expect(await messagesPage.getMessageLoadingStatus()).to.equal(NEW_TRANSLATIONS['No messages found']);
 
     await commonPage.goToReports();
     await commonPage.waitForPageLoaded();
-    expect(await reportsPage.getReportListLoadingStatus()).to.equal('Geen verslae gevind nie');
+    expect(await reportsPage.getReportListLoadingStatus()).to.equal(NEW_TRANSLATIONS['reports.none']);
 
     await commonPage.goToPeople();
     await commonPage.waitForPageLoaded();
-    expect(await contactsPage.getContactListLoadingStatus()).to.equal('Geen mense gevind nie');
+    expect(await contactsPage.getContactListLoadingStatus()).to.equal(NEW_TRANSLATIONS['No contacts found']);
   });
 
   it('should support deleting translations', async () => {
     const code = 'nl';
     await addTranslations(code);
 
-    await utils.deleteDoc('messages-nl');
+    await utils.deleteDoc(`messages-${code}`);
 
     await utils.stopApi();
     await utils.startApi();
