@@ -6,6 +6,7 @@ const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page'
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
+const modalPage = require('@page-objects/default/common/modal.wdio.page');
 
 describe('Adding new language', () => {
   const ENG_LANG_CODE = 'en';
@@ -23,6 +24,7 @@ describe('Adding new language', () => {
     await utils.addTranslations(langCode, translations);
 
     await waitForServiceWorker.promise;
+    await modalPage.cancel(10000);
     await commonPage.refresh();
   };
 
@@ -46,10 +48,21 @@ describe('Adding new language', () => {
   it('should be set as Default language ', async () => {
     expect(await languagesPage.selectLanguage(languagesPage.defaultLanguageDropdown, NEW_LANG_CODE)).to.be.true;
     expect(await languagesPage.selectLanguage(languagesPage.outgoingLanguageDropdown, NEW_LANG_CODE)).to.be.true;
+    await commonPage.goToBase();
   });
 
+  it('should support deleting translations', async () => {
+    const code = 'nl';
+    await addTranslations(code);
+
+    await utils.deleteDoc(`messages-${code}`);
+
+    await utils.stopApi();
+    await utils.startApi();
+    await commonPage.goToReports();
+  }).timeout(180 * 1000);
+
   it('should add new translations', async () => {
-    await commonPage.goToBase();
     await userSettingsElements.setLanguage('en');
     await addTranslations(NEW_LANG_CODE, NEW_TRANSLATIONS);
     await userSettingsElements.setLanguage(NEW_LANG_CODE);
@@ -70,15 +83,4 @@ describe('Adding new language', () => {
     await commonPage.waitForPageLoaded();
     expect(await contactsPage.getContactListLoadingStatus()).to.equal(NEW_TRANSLATIONS['No contacts found']);
   });
-
-  it('should support deleting translations', async () => {
-    const code = 'nl';
-    await addTranslations(code);
-
-    await utils.deleteDoc(`messages-${code}`);
-
-    await utils.stopApi();
-    await utils.startApi();
-    await commonPage.goToReports();
-  }).timeout(180 * 1000);
 });
