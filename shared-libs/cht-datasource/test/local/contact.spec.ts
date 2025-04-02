@@ -389,7 +389,7 @@ describe('local contact', () => {
           expect(getByType.notCalled).to.be.true;
           expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
           expect(getByStartsWithFreetext.notCalled).to.be.true;
-          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly('contacts_by_freetext')).to.be.true;
+          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'contacts_by_freetext')).to.be.true;
           expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
             key: [qualifier.freetext],
             limit,
@@ -450,7 +450,7 @@ describe('local contact', () => {
           expect(getByExactMatchFreetext.notCalled).to.be.true;
           expect(getByType.notCalled).to.be.true;
           expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
-          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly('contacts_by_freetext')).to.be.true;
+          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'contacts_by_freetext')).to.be.true;
           expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
             startKey: [qualifier.freetext],
             limit,
@@ -512,7 +512,7 @@ describe('local contact', () => {
           expect(getByType.notCalled).to.be.true;
           expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
           expect(getByStartsWithFreetext.notCalled).to.be.true;
-          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly('contacts_by_type_freetext')).to.be.true;
+          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'contacts_by_type_freetext')).to.be.true;
           expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
             key: [qualifier.contactType, qualifier.freetext],
             limit,
@@ -575,7 +575,7 @@ describe('local contact', () => {
           expect(getByExactMatchFreetext.notCalled).to.be.true;
           expect(getByType.notCalled).to.be.true;
           expect(getByStartsWithFreetext.notCalled).to.be.true;
-          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly('contacts_by_type_freetext')).to.be.true;
+          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'contacts_by_type_freetext')).to.be.true;
           expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
             startKey: [qualifier.contactType, qualifier.freetext],
             limit,
@@ -691,7 +691,7 @@ describe('local contact', () => {
         expect(getByType.notCalled).to.be.true;
         expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
         expect(getByStartsWithFreetext.notCalled).to.be.true;
-        expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly('contacts_by_freetext')).to.be.true;
+        expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'contacts_by_freetext')).to.be.true;
         expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
           key: [qualifier.freetext],
           limit,
@@ -750,7 +750,7 @@ describe('local contact', () => {
         expect(getByExactMatchFreetext.notCalled).to.be.true;
         expect(getByType.notCalled).to.be.true;
         expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
-        expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly('contacts_by_freetext')).to.be.true;
+        expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'contacts_by_freetext')).to.be.true;
         expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
           startKey: [qualifier.freetext],
           limit,
@@ -811,7 +811,7 @@ describe('local contact', () => {
           expect(getByType.notCalled).to.be.true;
           expect(getByTypeStartsWithFreetext.notCalled).to.be.true;
           expect(getByStartsWithFreetext.notCalled).to.be.true;
-          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly('contacts_by_type_freetext')).to.be.true;
+          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'contacts_by_type_freetext')).to.be.true;
           expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
             key: [qualifier.contactType, qualifier.freetext],
             limit,
@@ -872,7 +872,7 @@ describe('local contact', () => {
         expect(getByExactMatchFreetext.notCalled).to.be.true;
         expect(getByType.notCalled).to.be.true;
         expect(getByStartsWithFreetext.notCalled).to.be.true;
-        expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly('contacts_by_type_freetext')).to.be.true;
+        expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'contacts_by_type_freetext')).to.be.true;
         expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
           startKey: [qualifier.contactType, qualifier.freetext],
           limit,

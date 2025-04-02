@@ -168,7 +168,7 @@ describe('local report', () => {
           expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
           expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
           expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
-          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly('reports_by_freetext')).to.be.true;
+          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'reports_by_freetext')).to.be.true;
           expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
             key: [qualifier.freetext],
             limit,
@@ -217,7 +217,7 @@ describe('local report', () => {
           expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
           expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
           expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
-          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly('reports_by_freetext')).to.be.true;
+          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'reports_by_freetext')).to.be.true;
           expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
             startKey: [qualifier.freetext],
             limit,
@@ -265,7 +265,7 @@ describe('local report', () => {
         expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
         expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
-        expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly('reports_by_freetext')).to.be.true;
+        expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'reports_by_freetext')).to.be.true;
         expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
           key: [qualifier.freetext],
           limit,
@@ -312,7 +312,7 @@ describe('local report', () => {
         expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
         expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
-        expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly('reports_by_freetext')).to.be.true;
+        expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'reports_by_freetext')).to.be.true;
         expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
           startKey: [qualifier.freetext],
           limit,
