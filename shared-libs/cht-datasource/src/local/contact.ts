@@ -201,7 +201,7 @@ export namespace v1 {
         params = buildFreetextParams(qualifier, limit, cursor);
       }
 
-      return queryNouveauIndexUuids(viewName)(params);
+      return queryNouveauIndexUuids(medicDb, viewName)(params);
     };
 
     return async (

@@ -1,6 +1,7 @@
 import { isContactsByTypeFreetext, SORT_BY_VIEW } from './constants';
 import { QueryKey, QueryParams } from './core';
 import { Nullable } from '../../libs/core';
+import { Doc } from '../../libs/doc';
 
 const getNouveauPath = (view: string): string => {
   const indexName = isContactsByTypeFreetext(view) ? 'contacts_by_freetext' : view;
@@ -8,13 +9,16 @@ const getNouveauPath = (view: string): string => {
 };
 
 /** @internal */
-export const getAuthenticatedFetch = (view: string) => {
+export const getAuthenticatedFetch = (db: PouchDB.Database<Doc>, view: string) => {
   const nouveauPath = getNouveauPath(view);
   const headers = new Headers();
   headers.set('Content-Type', 'application/json');
 
   return (url: string, options: RequestInit | undefined): Promise<Response> => {
-    return fetch(`${url}/medic/${nouveauPath}`, { headers, ...options });
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call
+    return db.fetch(`${url}/medic/${nouveauPath}`, { headers, ...options });
   };
 };
 

@@ -195,15 +195,16 @@ export const ddocExists = async (db: PouchDB.Database<Doc>, ddocId: string): Pro
  * @internal
  */
 export const queryNouveauIndex = (
+  db: PouchDB.Database<Doc>,
   viewName: string,
 ): typeof recursionInner => {
-  const fetch = getAuthenticatedFetch(viewName);
+  const fetch = getAuthenticatedFetch(db, viewName);
   const recursionInner = async (
     params: QueryParams,
     currentResults: NouveauHit[]= [],
     bookmark: Nullable<string> = null
   ): Promise<Page<NouveauHit>> => {
-    const response = await fetch('http://localhost:5988', {
+    const response = await fetch('', {
       method: 'POST',
       body: getRequestBody(viewName, params, bookmark)
     });
@@ -230,10 +231,11 @@ export const queryNouveauIndex = (
 
 /** @internal */
 export const queryNouveauIndexUuids = (
+  db: PouchDB.Database<Doc>,
   viewName: string,
 ) => {
   return async (params: QueryParams): Promise<Page<string>> => {
-    const res = await queryNouveauIndex(viewName)(params);
+    const res = await queryNouveauIndex(db, viewName)(params);
     const resWithIds = res.data.map(doc => doc.id);
 
     return {

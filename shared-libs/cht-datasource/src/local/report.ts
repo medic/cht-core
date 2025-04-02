@@ -86,7 +86,7 @@ export namespace v1 {
         };
       }
 
-      return queryNouveauIndexUuids(viewName)(params);
+      return queryNouveauIndexUuids(medicDb, viewName)(params);
     };
 
     return async (
