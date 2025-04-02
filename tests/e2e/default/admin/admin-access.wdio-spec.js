@@ -55,6 +55,7 @@ describe('Acessing the admin app', () => {
     await loginPage.cookieLogin({ createUser: false });
 
     await browser.url('/admin');
+    await adminPage.adminNavbarLogo().waitForDisplayed();
     expect(await adminPage.adminNavbarLogo().getText()).to.equal('App Management');
 
     await browser.url('/admin#/forms');

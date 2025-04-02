@@ -64,10 +64,12 @@ const userSettingsSelectors = {
 
 const getJsonErrorText = async () => await $('pre').getText();
 
-const isHamburgerMenuOpen = async () => {
+/*const isHamburgerMenuOpen = async () => {
   return await $('mat-sidenav-container.mat-drawer-container-has-open').isExisting();
+};*/
+const isHamburgerMenuOpen = async () => {
+  return await $('mat-sidenav-container.mat-drawer-container-has-open .mat-drawer-opened').isDisplayed();
 };
-
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
     await hamburgerMenuSelectors.hamburgerMenu().click();
@@ -221,7 +223,9 @@ const getFastActionItemsLabels = async () => {
 };
 
 const clickFastActionFlat = async ({ actionId, waitForList }) => {
-  await (await fabSelectors.fastActionFlat()).waitForDisplayed();
+  await fabSelectors.fastActionFlat().waitForDisplayed();
+  await fabSelectors.fastActionFlat().waitForClickable();
+
   waitForList = waitForList === undefined ? await fabSelectors.multipleActions().isExisting() : waitForList;
   await fabSelectors.fastActionFlat().click();
   if (waitForList) {
@@ -387,8 +391,8 @@ const syncAndWaitForSuccess = async (timeout = 20000) => {
   await syncButton().click();
   await closeReloadModal(false);
   await openHamburgerMenu();
-  if (await syncInProgress().isExisting()) {
-    await syncInProgress().waitForDisplayed({ reverse: true, timeout });
+  if (await hamburgerMenuSelectors.syncInProgress().isExisting()) {
+    await hamburgerMenuSelectors.syncInProgress().waitForDisplayed({ reverse: true, timeout });
   }
   await syncSuccess().waitForDisplayed({ timeout });
 };

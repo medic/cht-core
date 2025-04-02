@@ -21,7 +21,7 @@ const desktopCapability = {
     ...wdioBaseConfig.config.capabilities[0]['goog:chromeOptions'],
     args: [
       ...wdioBaseConfig.config.capabilities[0]['goog:chromeOptions'].args,
-      'window-size=1440, 1024',
+      'window-size=1440,1024',
     ],
   }
 };

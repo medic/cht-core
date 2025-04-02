@@ -19,6 +19,7 @@ const passwordResetMessageField = (errorMsg) => $(`p.error.${errorMsg}`);
 const privacyPolicyPageLink = () => $('a[translate="privacy.policy"]');
 
 const getErrorMessage = async () => {
+  await errorMessageField().waitForDisplayed();
   return await errorMessageField().getText();
 };
 
@@ -121,6 +122,7 @@ const changeLanguage = async (languageCode, userTranslation) => {
 };
 
 const getTokenError = async (reason) => {
+  await tokenLoginError(reason).waitForDisplayed();
   return await tokenLoginError(reason).getText();
 };
 
