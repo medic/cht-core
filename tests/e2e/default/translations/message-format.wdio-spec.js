@@ -34,13 +34,14 @@ describe('MessageFormat', () => {
 
     // wait for language to load
     await browser.waitUntil(async () => {
-      return await commonPage.isElementPresent('div*=Reports {{thing}}');
+      return await commonPage.getReportsButtonLabel().getText() === 'Reports {{thing}}';
     }, {
       timeout: 2000,
       timeoutMsg: 'Timed out waiting for translations to update'
     });
 
-    const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
-    expect(tabsButtonLabelsNames).to.include.members(['Reports {{thing}}', 'Tasks {thing', 'Messages {thing}']);
+    expect(await commonPage.getReportsButtonLabel().getText()).to.equal('Reports {{thing}}');
+    expect(await commonPage.getTasksButtonLabel().getText()).to.equal('Tasks {thing');
+    expect(await commonPage.getMessagesButtonLabel().getText()).to.equal('Messages {thing}');
   });
 });

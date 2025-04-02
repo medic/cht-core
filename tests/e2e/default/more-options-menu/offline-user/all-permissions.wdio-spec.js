@@ -153,4 +153,3 @@ describe('More Options Menu - Offline User', () => {
     });
   });
 });
-

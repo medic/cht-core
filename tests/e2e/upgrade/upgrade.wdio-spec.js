@@ -123,7 +123,7 @@ describe('Performing an upgrade', () => {
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToAboutPage();
-    await (await aboutPage.aboutCard()).waitForDisplayed();
+    await aboutPage.aboutCard().waitForDisplayed();
     const expected = TAG || `${utils.escapeBranchName(BRANCH)} (`;
     expect(await aboutPage.getVersion()).to.include(expected);
     await commonPage.logout();
@@ -137,6 +137,6 @@ describe('Performing an upgrade', () => {
     const currentVersion = await upgradePage.getCurrentVersion();
     expect(version.getVersion(true)).to.include(currentVersion);
     expect((await getUpgradeLogs()).length).to.equal(0);
-    await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true });
+    await upgradePage.deploymentInProgress().waitForDisplayed({ reverse: true });
   });
 });

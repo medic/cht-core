@@ -15,7 +15,7 @@ describe('About page', () => {
 
   it('should open the about page', async () => {
     await commonPage.goToAboutPage();
-    await (await aboutPage.userName()).waitForDisplayed();
+    await aboutPage.userName().waitForDisplayed();
   });
 
   it('should display partners', async () => {

@@ -32,14 +32,14 @@ describe('Delete Reports', () => {
 
   const savedReportIds = [];
 
-  beforeEach(async () => {
-    await utils.saveDocs([ ...places.values(), patient ]);
-    (await utils.saveDocs(reports)).forEach(savedReport => savedReportIds.push(savedReport.id));
-    await utils.createUsers([ onlineUser ]);
-    await loginPage.login(onlineUser);
-    await commonElements.waitForPageLoaded();
-    await commonElements.goToReports();
-  });
+  // beforeEach(async () => {
+  //   await utils.saveDocs([ ...places.values(), patient ]);
+  //   (await utils.saveDocs(reports)).forEach(savedReport => savedReportIds.push(savedReport.id));
+  //   await utils.createUsers([ onlineUser ]);
+  //   await loginPage.login(onlineUser);
+  //   await commonElements.waitForPageLoaded();
+  //   await commonElements.goToReports();
+  // });
 
   after(async () => {
     await utils.deleteUsers([onlineUser]);
@@ -47,16 +47,23 @@ describe('Delete Reports', () => {
   });
 
   it('Should delete report', async () => {
-    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
+    await utils.saveDocs([ ...places.values(), patient ]);
+    (await utils.saveDocs(reports)).forEach(savedReport => savedReportIds.push(savedReport.id));
+    await utils.createUsers([ onlineUser ]);
+    await loginPage.login(onlineUser);
+    await commonElements.waitForPageLoaded();
+    await commonElements.goToReports();
+    
+    await reportsPage.leftPanelSelectors.firstReport().waitForDisplayed();
 
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[0])).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[1])).isDisplayed()).to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[0]).isDisplayed()).to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[1]).isDisplayed()).to.be.true;
 
     await reportsPage.openReport(savedReportIds[1]);
     await commonElements.accessDeleteOption();
     await commonElements.goToReports();
 
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[0])).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[1])).isDisplayed()).to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[0]).isDisplayed()).to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(savedReportIds[1]).isDisplayed()).to.be.true;
   });
 });

@@ -83,7 +83,7 @@ const baseConfig = {
   // and 30 processes will get spawned. The property handles how many capabilities
   // from the same test should run tests.
   //
-  maxInstances: 10,
+  maxInstances: 1,
   //
   // If you have trouble getting all important capabilities together, check out the
   // Sauce Labs platform configurator - a great tool to configure your capabilities:
@@ -107,7 +107,7 @@ const baseConfig = {
       binary: utils.isMinimumChromeVersion
         ? '/node_modules/chromedriver/bin/chromedriver'
         : undefined
-    }
+    },
     // If outputDir is provided WebdriverIO can capture driver session logs
     // it is possible to configure which logTypes to include/exclude.
     // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
@@ -160,7 +160,9 @@ const baseConfig = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: utils.isMinimumChromeVersion ? ['chromedriver'] : ['devtools'],
+  services: utils.isMinimumChromeVersion
+        ? [['chromedriver', {}]]
+        : [['devtools', {}]],
   //
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
@@ -187,7 +189,7 @@ const baseConfig = {
       outputDir: ALLURE_OUTPUT,
       disableWebdriverStepsReporting: true
     }],
-    'spec',
+    ['spec', {}],
   ],
   //
   // Options to be passed to Mocha.
