@@ -78,5 +78,5 @@ describe('Adding new language', () => {
     await utils.stopApi();
     await utils.startApi();
     await commonPage.goToReports();
-  }).timeout(180 * 1000);
+  }).timeout(120 * 1000);
 });
