@@ -122,7 +122,7 @@ describe('More Options Menu - Offline User', () => {
     });
   });
 
-  describe.only('All permissions disabled', () => {
+  describe('All permissions disabled', () => {
     before(async () => {
       const allPermissions = ['can_edit', 'can_delete_contacts', 'can_export_all',
         'can_export_contacts', 'can_export_messages',
