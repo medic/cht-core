@@ -6,10 +6,17 @@ const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page'
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
-const modalPage = require('@page-objects/default/common/modal.wdio.page');
+
+
+const addTranslations = async (langCode, translations = {}) => {
+  const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
+  await utils.addTranslations(langCode, translations);
+
+  await waitForServiceWorker.promise;
+  await commonPage.refresh();
+};
 
 describe('Adding new language', () => {
-  const ENG_LANG_CODE = 'en';
   const NEW_LANG_NAME = 'Afrikaans';
   const NEW_LANG_CODE = 'afr';
   const NEW_TRANSLATIONS = {
@@ -19,22 +26,12 @@ describe('Adding new language', () => {
     'Analytics': 'Analytiks'
   };
 
-  const addTranslations = async (langCode, translations = {}) => {
-    const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
-    await utils.addTranslations(langCode, translations);
-
-    await waitForServiceWorker.promise;
-    await modalPage.cancel(10000);
-    await commonPage.refresh();
-  };
-
   before(async () => {
-    await utils.enableLanguages([NEW_LANG_CODE, 'nl']);
+    await utils.enableLanguages([NEW_LANG_CODE]);
     await loginPage.cookieLogin();
   });
 
   after(async () => {
-    await browser.setCookies({ name: 'locale', value: ENG_LANG_CODE });
     await utils.revertSettings(true);
   });
 
@@ -50,17 +47,6 @@ describe('Adding new language', () => {
     expect(await languagesPage.selectLanguage(languagesPage.outgoingLanguageDropdown, NEW_LANG_CODE)).to.be.true;
     await commonPage.goToBase();
   });
-
-  it('should support deleting translations', async () => {
-    const code = 'nl';
-    await addTranslations(code);
-
-    await utils.deleteDoc(`messages-${code}`);
-
-    await utils.stopApi();
-    await utils.startApi();
-    await commonPage.goToReports();
-  }).timeout(180 * 1000);
 
   it('should add new translations', async () => {
     await userSettingsElements.setLanguage('en');
@@ -83,4 +69,14 @@ describe('Adding new language', () => {
     await commonPage.waitForPageLoaded();
     expect(await contactsPage.getContactListLoadingStatus()).to.equal(NEW_TRANSLATIONS['No contacts found']);
   });
+
+  it('should support deleting translations', async () => {
+    await addTranslations(NEW_LANG_CODE, NEW_TRANSLATIONS);
+
+    await utils.deleteDoc(`messages-${NEW_LANG_CODE}`);
+
+    await utils.stopApi();
+    await utils.startApi();
+    await commonPage.goToReports();
+  }).timeout(180 * 1000);
 });
