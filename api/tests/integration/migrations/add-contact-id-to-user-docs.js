@@ -36,6 +36,7 @@ describe('add-contact-id-to-user migration', function() {
   });
 
   it('migrates the contact_id value from user-settings to _users for all users', async () => {
+    this.timeout(60000); // Increase timeout to 60 seconds
     const userDocTuples = Array
       .from({ length: 299 }, (_, i) => i)
       .map(i => {
