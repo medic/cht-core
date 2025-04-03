@@ -125,6 +125,10 @@ const getRedirectUrl = function() {
   }
 };
 
+const getSSOLoginUrl = function(){
+  window.location.href = '/medic/login/oidc';
+};
+
 const checkSession = function() {
   if (getCookie('login') === 'force') {
     // require user to login regardless of session state
@@ -213,6 +217,11 @@ document.addEventListener('DOMContentLoaded', function() {
       navigator.serviceWorker.register('/service-worker.js');
     }
   }
+
+  const ssoLoginButton = document.getElementById('login-sso');
+  ssoLoginButton.addEventListener('click', function(){
+    getSSOLoginUrl();
+  });
 
   checkUnsupportedBrowser();
 });

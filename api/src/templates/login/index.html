@@ -32,6 +32,9 @@
         <button id="login" class="btn" translate="login"></button>
         <div class="loader"></div>
       </form>
+      <% if(hasOidcProvider) { %>
+        <button id="login-sso" class="btn" translate="login.sso"></button>
+      <% } %>
       <div id="locale" class="wrapper">
         <% locales.forEach(function(locale) { %>
           <a href="#" name="{{ locale.key }}" class="locale">{{ locale.label }}</a>

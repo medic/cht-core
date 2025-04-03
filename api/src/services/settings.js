@@ -49,6 +49,17 @@ const getDeprecatedTransitions = () => {
     }));
 };
 
+const hasOidcProvider = async () => {
+  const settingsDoc = await getDoc();
+  if(!settingsDoc){
+    return false;
+  }
+  if(!!settingsDoc.settings && !!settingsDoc.settings.oidc_provider){
+    return true;
+  }
+  return false;
+};
+
 module.exports = {
   get: () => {
     return getDoc()
@@ -116,4 +127,5 @@ module.exports = {
   },
   getDeprecatedTransitions: getDeprecatedTransitions,
   SETTINGS_DOC_ID: SETTINGS_DOC_ID,
+  hasOidcProvider,
 };

@@ -16,6 +16,7 @@ const translations = require('../translations');
 const template = require('../services/template');
 const rateLimitService = require('../services/rate-limit');
 const serverUtils = require('../server-utils');
+const appSettings = require('../services/settings');
 
 const PASSWORD_RESET_URL = '/medic/password-reset';
 
@@ -38,6 +39,7 @@ const templates = {
       'login.hide_password',
       'login.incorrect',
       'login.show_password',
+      'login.sso',
       'login.unsupported_browser',
       'login.unsupported_browser.outdated_cht_android',
       'login.unsupported_browser.outdated_webview_apk',
@@ -176,14 +178,16 @@ const render = (page, req, extras = {}) => {
       getTemplate(page),
       getEnabledLocales(),
       brandingService.get(),
-      privacyPolicy.exists()
+      privacyPolicy.exists(),
+      appSettings.hasOidcProvider()
     ])
-    .then(([ template, locales, branding, hasPrivacyPolicy ]) => {
+    .then(([ template, locales, branding, hasPrivacyPolicy, hasOidcProvider ]) => {
       const options = Object.assign(
         {
           branding,
           locales,
           hasPrivacyPolicy,
+          hasOidcProvider,
           defaultLocale: getBestLocaleCode(acceptLanguageHeader, locales, config.get('locale')),
           translations: getTranslationsString(page)
         },
@@ -495,6 +499,10 @@ module.exports = {
         res.send(body);
       })
       .catch(next);
+  },
+  getSSOLogin: (req, res) => {
+    // Placeholder url. Change to redirect to KeyCloak UI for SSO login
+    res.redirect('https://www.google.com');
   },
   resetPassword: async (req, res) => {
     const limited = await rateLimitService.isLimited(req);

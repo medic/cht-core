@@ -296,6 +296,7 @@ app.get('/extension-libs/:name', extensionLibs.get);
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
+app.get(routePrefix + 'login/oidc', login.getSSOLogin);
 app.get(routePrefix + 'login/token/:token?', login.tokenGet);
 app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
 app.get(routePrefix + 'password-reset', login.getPasswordReset);
