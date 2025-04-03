@@ -98,7 +98,7 @@ const sync = async (expectReload, timeout) => {
 const getVisibleLoaders = async () => {
   const visible = [];
   for (const loader of await loaders()) {
-    if (await loader.isDisplayedInViewport()) {
+    if (await loader.isDisplayed()) {
       visible.push(loader);
     }
   }
