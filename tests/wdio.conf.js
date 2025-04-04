@@ -94,6 +94,7 @@ const baseConfig = {
     browserName: 'chrome',
     browserVersion: utils.isMinimumChromeVersion ? CHROME_VERSION : undefined,
     acceptInsecureCerts: true,
+    'wdio:enforceWebDriverClassic': true,
     'goog:chromeOptions': {
       args: DEBUG ? CHROME_OPTIONS_ARGS_DEBUG : CHROME_OPTIONS_ARGS,
       binary: utils.isMinimumChromeVersion ? '/usr/bin/google-chrome-stable' : undefined
