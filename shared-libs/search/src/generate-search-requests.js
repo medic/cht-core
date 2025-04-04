@@ -1,7 +1,6 @@
 const _ = require('lodash/core');
 const moment = require('moment');
 
-const END_OF_ALPHABET = '\ufff0';
 const MINIMUM_SEARCH_TERM_LENGTH = 3;
 
 const getKeysArray = (keys) => keys.map(key => [ key ]);
@@ -84,19 +83,14 @@ const placeRequest = (filters) => {
 
 const freetextRequestParams = (word) => {
   const params = {};
-  if (word.indexOf(':') !== -1) {
-    // use exact match
-    params.key = [ word ];
-    return params;
-  }
-  
+
   // use starts with
   if (word.length < MINIMUM_SEARCH_TERM_LENGTH) {
     return;
   }
-  
-  params.startkey = [ word ];
-  params.endkey = [ word + END_OF_ALPHABET ];
+
+  params.key = word;
+
   return params;
 };
 
@@ -192,7 +186,8 @@ const makeCombinedParams = (freetextRequest, typeKey) => {
   const type = typeKey[0];
   const params = {};
   if (freetextRequest.params.key) {
-    params.key = [ type, freetextRequest.params.key[0] ];
+    params.key = freetextRequest.params.key;
+    params.type = type;
   } else {
     params.startkey = [ type, freetextRequest.params.startkey[0] ];
     params.endkey = [ type, freetextRequest.params.endkey[0] ];
