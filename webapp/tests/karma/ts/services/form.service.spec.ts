@@ -36,6 +36,8 @@ import { EnketoTranslationService } from '@mm-services/enketo-translation.servic
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
+import { DeduplicateService } from '@mm-services/deduplicate.service';
+import { ContactsService } from '@mm-services/contacts.service';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -94,6 +96,9 @@ describe('Form service', () => {
   let extractLineageService;
   let targetAggregatesService;
   let contactViewModelGeneratorService;
+  let deduplicateService;
+  let getDuplicates;
+  let contactsService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -163,6 +168,11 @@ describe('Form service', () => {
     targetAggregatesService = { getTargetDocs: sinon.stub() };
     contactViewModelGeneratorService = { loadReports: sinon.stub() };
 
+    const getSiblings = sinon.stub();
+    getDuplicates = sinon.stub();
+    deduplicateService = { getDuplicates };
+    contactsService = { getSiblings };
+
     TestBed.configureTestingModule({
       providers: [
         provideMockStore(),
@@ -193,6 +203,8 @@ describe('Form service', () => {
         { provide: ExtractLineageService, useValue: extractLineageService },
         { provide: TargetAggregatesService, useValue: targetAggregatesService },
         { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
+        { provide: DeduplicateService, useValue: deduplicateService },
+        { provide: ContactsService, useValue: contactsService }
       ],
     });
 
@@ -266,11 +278,11 @@ describe('Form service', () => {
       ContactSummary.resolves({ context: { pregnant: false } });
       Search.resolves([{ _id: 'some_report' }]);
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'some_parent' }] });
-      const instanceData = { contact: { _id: '123-patient-contact'} };
+      const instanceData = { contact: { _id: '123-patient-contact' } };
 
       EnketoPrepopulationData.resolves('<xml></xml>');
       const expectedErrorTitle = `Failed during the form "myform" rendering : `;
-      const expectedErrorDetail = [ 'nope', 'still nope' ];
+      const expectedErrorDetail = ['nope', 'still nope'];
       const expectedErrorMessage = expectedErrorTitle + JSON.stringify(expectedErrorDetail);
       enketoInit.returns(expectedErrorDetail);
 
@@ -389,7 +401,7 @@ describe('Form service', () => {
         expect(xmlStr).to.equal('<context><pregnant>true</pregnant></context>');
         expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
         expect(contactViewModelGeneratorService.loadReports.args[0]).to.deep.equal(
-          [ { doc: instanceData.contact }, [] ]
+          [{ doc: instanceData.contact }, []]
         );
         expect(LineageModelGenerator.contact.callCount).to.equal(1);
         expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
@@ -543,8 +555,8 @@ describe('Form service', () => {
       expect(enketoInit.calledOnce).to.be.true;
       expect(form.editStatus).to.be.false;
       expect(dbGetAttachment.calledTwice).to.be.true;
-      expect(dbGetAttachment.args[0]).to.have.members([ 'form:firstForm', 'form.html' ]);
-      expect(dbGetAttachment.args[1]).to.have.members([ 'form:firstForm', 'model.xml' ]);
+      expect(dbGetAttachment.args[0]).to.have.members(['form:firstForm', 'form.html']);
+      expect(dbGetAttachment.args[1]).to.have.members(['form:firstForm', 'model.xml']);
 
       sinon.resetHistory();
       dbGetAttachment
@@ -561,8 +573,8 @@ describe('Form service', () => {
       expect(enketoInit.calledOnce).to.be.true;
       expect(form.editStatus).to.be.false;
       expect(dbGetAttachment.calledTwice).to.be.true;
-      expect(dbGetAttachment.args[0]).to.have.members([ 'form:secondForm', 'form.html' ]);
-      expect(dbGetAttachment.args[1]).to.have.members([ 'form:secondForm', 'model.xml' ]);
+      expect(dbGetAttachment.args[0]).to.have.members(['form:secondForm', 'form.html']);
+      expect(dbGetAttachment.args[1]).to.have.members(['form:secondForm', 'model.xml']);
     });
 
     it('should throw exception if fails to get user settings', fakeAsync(async () => {
@@ -675,7 +687,7 @@ describe('Form service', () => {
       trainingCardsService.isTrainingCardForm.returns(true);
       trainingCardsService.getTrainingCardDocId.returns('training:user-jim:');
       form.validate.resolves(true);
-      dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+      dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
       UserContact.resolves({ _id: '123', phone: '555' });
 
       return service
@@ -1069,7 +1081,7 @@ describe('Form service', () => {
 
     describe('Saving attachments', () => {
       it('should save attachments', async () => {
-        const file = { name: 'my_file', type: 'image', foo: 'bar'  };
+        const file = { name: 'my_file', type: 'image', foo: 'bar' };
         sinon
           .stub(FileManager, 'getCurrentFiles')
           .returns([file]);
@@ -1305,6 +1317,8 @@ describe('Form service', () => {
         contactRecordToJs: sinon.stub(),
       };
 
+      getDuplicates.returnsArg(1);
+
       TestBed.configureTestingModule({
         providers: [
           provideMockStore(),
@@ -1334,6 +1348,8 @@ describe('Form service', () => {
           { provide: TranslateService, useValue: translateService },
           { provide: TrainingCardsService, useValue: trainingCardsService },
           { provide: FeedbackService, useValue: feedbackService },
+          { provide: DeduplicateService, useValue: deduplicateService },
+          { provide: ContactsService, useValue: contactsService }
         ],
       });
 
@@ -1357,7 +1373,7 @@ describe('Form service', () => {
       extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
 
       return service
-        .saveContact(form, docId, type)
+        .saveContact({ docId, type }, { form })
         .then(() => {
           assert.equal(dbGet.callCount, 1);
           assert.equal(dbGet.args[0][0], 'abc');
@@ -1391,7 +1407,7 @@ describe('Form service', () => {
       extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
 
       return service
-        .saveContact(form, docId, type)
+        .saveContact({ docId, type }, { form })
         .then(() => {
           assert.equal(dbGet.callCount, 1);
           assert.equal(dbGet.args[0][0], 'abc');
@@ -1418,12 +1434,12 @@ describe('Form service', () => {
       const type = 'some-contact-type';
 
       enketoTranslationService.contactRecordToJs.returns({
-        doc: { _id: 'main1', type: 'main', contact: 'NEW'},
+        doc: { _id: 'main1', type: 'main', contact: 'NEW' },
         siblings: {
           contact: { _id: 'sis1', type: 'sister', parent: 'PARENT', },
         },
         repeats: {
-          child_data: [ { _id: 'kid1', type: 'child', parent: 'PARENT', } ],
+          child_data: [{ _id: 'kid1', type: 'child', parent: 'PARENT', }],
         },
       });
 
@@ -1435,7 +1451,7 @@ describe('Form service', () => {
       dbBulkDocs.resolves([]);
 
       return service
-        .saveContact(form, docId, type)
+        .saveContact({ docId, type }, { form })
         .then(() => {
           assert.isTrue(dbBulkDocs.calledOnce);
 
@@ -1494,7 +1510,7 @@ describe('Form service', () => {
       clock = sinon.useFakeTimers(5000);
 
       return service
-        .saveContact(form, docId, type)
+        .saveContact({ docId, type }, { form })
         .then(() => {
           assert.equal(dbGet.callCount, 2);
           assert.deepEqual(dbGet.args[0], ['main1']);
@@ -1543,7 +1559,7 @@ describe('Form service', () => {
       clock = sinon.useFakeTimers(1000);
 
       return service
-        .saveContact(form, docId, type)
+        .saveContact({ docId, type }, { form })
         .then(() => {
           assert.equal(dbGet.callCount, 1);
           assert.equal(dbGet.args[0][0], 'abc');
@@ -1579,6 +1595,155 @@ describe('Form service', () => {
           assert.equal(setLastChangedDoc.callCount, 1);
           assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
         });
+    });
+
+    it('should throw an error with duplicates found', async function () {
+      const form = { getDataStr: () => '<data></data>' };
+      const docId = null;
+      const type = 'some-contact-type';
+
+      dbGet.resolves({});
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', name: 'Main', type: 'main', parent: { _id: 'parent1' } }
+      });
+      extractLineageService.extract.returns({ _id: 'parent1' });
+      transitionsService.applyTransitions.callsFake((docs) => {
+        docs[0].transitioned = true;
+        return Promise.resolve(docs);
+      });
+      dbBulkDocs.resolves([]);
+      clock = sinon.useFakeTimers(1000);
+
+      contactsService.getSiblings.resolves([{
+        _id: 'sib1',
+        name: 'Sibling1',
+        parent: { _id: 'parent1' },
+        type,
+        reported_date: 1736845534000
+      },
+      {
+        _id: 'sib2',
+        name: 'Sibling2',
+        parent: { _id: 'parent1' },
+        type,
+        reported_date: 1736845534000
+      },]);
+
+      try {
+        await service.saveContact({ docId, type, }, { form, xmlVersion: undefined, duplicateCheck: undefined }, false);
+        // Fail the test if no error is thrown
+        throw new Error('Expected saveContact to throw an error, but it did not.');
+      } catch (e) {
+        expect(e.message).to.include('Duplicates found');
+        expect(e.duplicates).to.have.lengthOf(2);
+        expect(e.duplicates).to.deep.equal([
+          {
+            _id: 'sib1',
+            name: 'Sibling1',
+            parent: { _id: 'parent1' },
+            type,
+            reported_date: 1736845534000
+          },
+          {
+            _id: 'sib2',
+            name: 'Sibling2',
+            parent: { _id: 'parent1' },
+            type,
+            reported_date: 1736845534000
+          }
+        ]);
+      }
+    });
+    it('should pass duplicate check when duplicates are acknowledged', async function () {
+      const form = { getDataStr: () => '<data></data>' };
+      const docId = null;
+      const type = 'some-contact-type';
+
+      dbGet.resolves({});
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', name: 'Main', type: 'main', parent: { _id: 'parent1' } }
+      });
+      extractLineageService.extract.returns({ _id: 'parent1' });
+      transitionsService.applyTransitions.callsFake((docs) => {
+        docs[0].transitioned = true;
+        return Promise.resolve(docs);
+      });
+      
+      dbBulkDocs.resolves([]);
+      clock = sinon.useFakeTimers(1000);
+
+      contactsService.getSiblings.resolves([{
+        _id: 'sib1',
+        name: 'Sibling1',
+        parent: { _id: 'parent1' },
+        type,
+        reported_date: 1736845534000
+      },
+      {
+        _id: 'sib2',
+        name: 'Sibling2',
+        parent: { _id: 'parent1' },
+        type,
+        reported_date: 1736845534000
+      },]);
+
+      await service.saveContact({ docId, type, }, { form, xmlVersion: undefined, duplicateCheck: undefined }, true);
+      assert.equal(transitionsService.applyTransitions.callCount, 1);
+      assert.deepEqual(transitionsService.applyTransitions.args[0], [[
+        {
+          _id: 'main1',
+          name: 'Main',
+          type: 'contact',
+          contact_type: type,
+          parent: { _id: 'parent1' },
+          reported_date: 1000,
+          contact: undefined,
+          transitioned: true
+        }
+      ]]);
+    });
+  });
+
+  describe('load contact summary', () => {
+    beforeEach(() => {
+      service = TestBed.inject(FormService);
+    });
+
+    it('should produce a summary for the provided contact', async function () {
+      const contact = {
+        _id: '123456789',
+        name: 'Test person',
+        short_name: 'tp1',
+        phone_number: '+27723301855',
+        date_of_birth: '1966-01-11',
+        dob_type: 'exact'
+      };
+      contactViewModelGeneratorService.loadReports.resolves([{ _id: 'somereport' }]);
+      targetAggregatesService.getTargetDocs.resolves([{ _id: 't1' }, { _id: 't2' }]);
+      LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'someparent' }] });
+      ContactSummary.resolves({ 
+        context: { pregnant: true },
+        fields: [
+          { label: 'label.short_name', value: contact.short_name },
+          { label: 'label.dob_type', value: contact.dob_type },
+        ],
+        cards: []
+      });
+      const summary = await service.loadContactSummary(contact);
+      expect(ContactSummary.callCount).to.equal(1);
+      expect(ContactSummary.args[0][0]._id).to.equal('123456789');
+      expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
+      expect(targetAggregatesService.getTargetDocs.callCount).to.equal(1);
+      expect(summary).to.deep.equal({
+        cards: [],
+        context: {
+          pregnant: true,
+        },
+        fields: [ 
+          { label: 'label.short_name', value: 'tp1' },
+          { label: 'label.dob_type', value: 'exact' },
+        ],
+      });
     });
   });
 });
