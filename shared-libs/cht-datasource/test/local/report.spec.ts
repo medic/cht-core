@@ -129,6 +129,57 @@ describe('local report', () => {
       });
 
       it(
+        'returns a page of report identifiers for freetext only qualifier with : delimiter for offline mode',
+        async () => {
+          const freetext = 'has:delimiter';
+          const qualifier = {
+            freetext
+          };
+          const docs = [
+            { type: reportType, _id: '1', form: 'yes' },
+            { type: reportType, _id: '2', form: 'yes' },
+            { type: reportType, _id: '3', form: 'yes' }
+          ];
+          const getPaginatedDocsResult = {
+            cursor: '3',
+            data: docs.map(doc => doc._id)
+          };
+          const expectedResult = {
+            cursor: '3',
+            data: ['1', '2', '3']
+          };
+          isOffline.resolves(true);
+          fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
+
+          const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
+          const fetchAndFilterUuidsOuterFirstArg =
+          fetchAndFilterUuidsOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
+
+          expect(res).to.deep.equal(expectedResult);
+          expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
+          expect(
+            queryDocUuidsByKeyOuter.getCall(0).args
+          ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+          expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+          expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+          expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
+          expect(
+            queryDocUuidsByRangeOuter.getCall(0).args
+          ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+          expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
+          expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
+          expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
+          expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+          // call the argument to check which one of the inner functions was called
+          fetchAndFilterUuidsOuterFirstArg(limit, Number(cursor));
+          expect(queryDocUuidsByKeyInner.calledWithExactly([qualifier.freetext], limit, Number(cursor))).to.be.true;
+          expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+          expect(queryNouveauIndexUuidsInner.notCalled).to.be.true;
+          expect(queryNouveauIndexUuidsOuter.notCalled).to.be.true;
+        }
+      );
+      
+      it(
         'returns a page of report identifiers for freetext only qualifier with : delimiter for online mode',
         async () => {
           const freetext = 'has:delimiter';
@@ -174,6 +225,62 @@ describe('local report', () => {
             limit,
             cursor
           })).to.be.true;
+        }
+      );
+
+      it(
+        'returns a page of report identifiers for freetext only qualifier without : delimiter for offline mode',
+        async () => {
+          const freetext = 'does not have colon delimiter';
+          const qualifier = {
+            freetext
+          };
+          const docs = [
+            { type: reportType, _id: '1', form: 'yes' },
+            { type: reportType, _id: '2', form: 'yes' },
+            { type: reportType, _id: '3', form: 'yes' }
+          ];
+          const getPaginatedDocsResult = {
+            cursor: '3',
+            data: docs.map(doc => doc._id)
+          };
+          const expectedResult = {
+            cursor: '3',
+            data: ['1', '2', '3']
+          };
+          isOffline.resolves(true);
+          fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
+
+          const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
+          const fetchAndFilterOuterFirstArg =
+          fetchAndFilterUuidsOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
+
+          expect(res).to.deep.equal(expectedResult);
+          expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
+          expect(
+            queryDocUuidsByKeyOuter.getCall(0).args
+          ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+          expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+          expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+          expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
+          expect(
+            queryDocUuidsByRangeOuter.getCall(0).args
+          ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+          expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
+          expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
+          expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
+          expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+          // call the argument to check which one of the inner functions was called
+          fetchAndFilterOuterFirstArg(limit, Number(cursor));
+          expect(queryDocUuidsByRangeInner.calledWithExactly(
+            [qualifier.freetext],
+            [qualifier.freetext + END_OF_ALPHABET_MARKER],
+            limit,
+            Number(cursor)
+          )).to.be.true;
+          expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+          expect(queryNouveauIndexUuidsInner.notCalled).to.be.true;
+          expect(queryNouveauIndexUuidsOuter.notCalled).to.be.true;
         }
       );
 
@@ -227,6 +334,57 @@ describe('local report', () => {
       );
 
       it('returns a page of report identifiers for freetext only qualifier' +
+        'with : delimiter for not-null cursor for offline mode', async () => {
+        const freetext = 'has:delimiter';
+        const qualifier = {
+          freetext
+        };
+        const docs = [
+          { type: reportType, _id: '1', form: 'yes' },
+          { type: reportType, _id: '2', form: 'yes' },
+          { type: reportType, _id: '3', form: 'yes' }
+        ];
+        const getPaginatedDocsResult = {
+          cursor: '8',
+          data: docs.map(doc => doc._id)
+        };
+        const expectedResult = {
+          cursor: '8',
+          data: ['1', '2', '3']
+        };
+        isOffline.resolves(true);
+        fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
+
+        const res = await Report.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
+        const fetchAndFilterUuidsOuterFirstArg =
+          fetchAndFilterUuidsOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
+        expect(
+          queryDocUuidsByKeyOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+        expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+        expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+        expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
+        expect(
+          queryDocUuidsByRangeOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+        expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
+        expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
+        expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterUuidsOuterFirstArg(limit, Number(notNullCursor));
+        expect(
+          queryDocUuidsByKeyInner.calledWithExactly([qualifier.freetext], limit, Number(notNullCursor))
+        ).to.be.true;
+        expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+        expect(queryNouveauIndexUuidsInner.notCalled).to.be.true;
+        expect(queryNouveauIndexUuidsOuter.notCalled).to.be.true;
+      });
+
+      it('returns a page of report identifiers for freetext only qualifier' +
         'with : delimiter for not-null cursor for online mode', async () => {
         const freetext = 'has:delimiter';
         const qualifier = {
@@ -271,6 +429,60 @@ describe('local report', () => {
           limit,
           cursor: notNullCursor
         })).to.be.true;
+      });
+
+      it('returns a page of report identifiers for freetext only qualifier' +
+        'without : delimiter for not-null cursor for offline mode', async () => {
+        const freetext = 'does not have colon delimiter';
+        const qualifier = {
+          freetext
+        };
+        const docs = [
+          { type: reportType, _id: '1', form: 'yes' },
+          { type: reportType, _id: '2', form: 'yes' },
+          { type: reportType, _id: '3', form: 'yes' }
+        ];
+        const getPaginatedDocsResult = {
+          cursor: '8',
+          data: docs.map(doc => doc._id)
+        };
+        const expectedResult = {
+          cursor: '8',
+          data: ['1', '2', '3']
+        };
+        isOffline.resolves(true);
+        fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
+
+        const res = await Report.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
+        const fetchAndFilterUuidsOuterFirstArg =
+          fetchAndFilterUuidsOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
+        expect(
+          queryDocUuidsByKeyOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+        expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+        expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+        expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
+        expect(
+          queryDocUuidsByRangeOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+        expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
+        expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
+        expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
+        expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
+        // call the argument to check which one of the inner functions was called
+        fetchAndFilterUuidsOuterFirstArg(limit, Number(notNullCursor));
+        expect(queryDocUuidsByRangeInner.calledWithExactly(
+          [qualifier.freetext],
+          [qualifier.freetext + END_OF_ALPHABET_MARKER],
+          limit,
+          Number(notNullCursor)
+        )).to.be.true;
+        expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+        expect(queryNouveauIndexUuidsInner.notCalled).to.be.true;
+        expect(queryNouveauIndexUuidsOuter.notCalled).to.be.true;
       });
 
       it('returns a page of report identifiers for freetext only qualifier' +
