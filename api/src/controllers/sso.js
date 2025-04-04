@@ -1,4 +1,4 @@
-const client = require('openid-client');
+const client = require('../openid-client-wrapper');
 
 const config = require('../config');
 const db = require('../db');
@@ -9,8 +9,6 @@ const secureSettings = require('@medic/settings');
 
 const { validateSession, setCookies, sendLoginErrorResponse } = require('./login');
 const settingsService = require('../services/settings');
-const { error } = require('console');
-
 
 const SSO_PATH = "oidc";
 const SSO_AUTHORIZE_PATH = `${SSO_PATH}/authorize`;
