@@ -65,11 +65,13 @@ const userSettingsSelectors = {
 const getJsonErrorText = async () => await $('pre').getText();
 
 const isHamburgerMenuOpen = async () => {
-  return await $('mat-sidenav-container.mat-drawer-container-has-open .mat-drawer-opened').isDisplayed();
+  return await hamburgerMenuSelectors.closeSideBarMenu().isDisplayed();
+  //return await $('mat-sidenav-container.mat-drawer-container-has-open .mat-drawer-opened').isDisplayed();
 };
 
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
+    await hamburgerMenuSelectors.hamburgerMenu().waitForClickable();
     await hamburgerMenuSelectors.hamburgerMenu().click();
   }
   await hamburgerMenuSelectors.closeSideBarMenu().waitForDisplayed();
@@ -78,9 +80,9 @@ const openHamburgerMenu = async () => {
 const closeHamburgerMenu = async () => {
   if (await isHamburgerMenuOpen()) {
     await hamburgerMenuSelectors.closeSideBarMenu().waitForClickable();
+
     await hamburgerMenuSelectors.closeSideBarMenu().click();
   }
-
   await hamburgerMenuSelectors.sideBarMenuTitle().waitForDisplayed({ reverse: true });
 };
 
