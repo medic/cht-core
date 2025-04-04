@@ -11,8 +11,8 @@ const harness = new TestRunner();
 const now = '2000-01-01';
 
 describe('Pregnancy danger sign tests', () => {
-  before(async () => { return await harness.start(); });
-  after(async () => { return await harness.stop(); });
+  before(() =>  harness.start());
+  after(() => harness.stop());
   beforeEach(async () => {
     await harness.clear();
     await harness.setNow(now);
