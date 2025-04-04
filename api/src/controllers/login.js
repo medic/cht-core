@@ -541,4 +541,8 @@ module.exports = {
       next(e);
     }
   },
+  validateSession,
+  setCookies,
+  redirectToApp,
+  sendLoginErrorResponse
 };
