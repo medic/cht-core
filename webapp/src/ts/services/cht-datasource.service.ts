@@ -146,7 +146,7 @@ export class CHTDatasourceService {
   }
 
   async getDataContext() {
-    this.isInitialized();
+    await this.isInitialized();
     return this.dataContext;
   }
 }

@@ -100,6 +100,7 @@ require('./services/add-attachment');
 require('./services/auth');
 require('./services/cache');
 require('./services/changes');
+require('./services/cht-datasource');
 require('./services/contact-muted');
 require('./services/contact-types');
 require('./services/db');
