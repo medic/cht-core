@@ -40,11 +40,11 @@ describe('request-utils', () => {
 
       // Act
       const fetchFn = getAuthenticatedFetch(db, view);
-      const result = await fetchFn('', options);
+      const result = await fetchFn(options);
 
       // Assert
       expect(
-        dbFetchStub.calledOnceWithExactly('/medic/_design/medic/_nouveau/reports', { headers: headers, ...options})
+        dbFetchStub.calledOnceWithExactly('_design/medic/_nouveau/reports', { headers: headers, ...options})
       ).to.be.true;
       expect(result).to.equal(mockResponse);
     });
@@ -58,12 +58,12 @@ describe('request-utils', () => {
 
       // Act
       const fetchFn = getAuthenticatedFetch(db, view);
-      const result = await fetchFn('', { method: 'GET' });
+      const result = await fetchFn({ method: 'GET' });
 
       // Assert
       expect(
         dbFetchStub.calledOnceWithExactly(
-          '/medic/_design/medic/_nouveau/contacts_by_freetext',
+          '_design/medic/_nouveau/contacts_by_freetext',
           { headers: headers, ...options}
         )
       ).to.be.true;
@@ -84,7 +84,7 @@ describe('request-utils', () => {
 
       // Act
       const fetchFn = getAuthenticatedFetch(db, view);
-      await fetchFn('', options);
+      await fetchFn(options);
 
       // Assert
       const passedOptions = dbFetchStub.firstCall.args[1] as RequestInit & { headers: Headers };
@@ -92,22 +92,6 @@ describe('request-utils', () => {
       expect(passedOptions.body).to.equal(JSON.stringify({ query: 'test' }));
       expect(passedOptions.credentials).to.equal('include');
       expect(passedOptions.headers instanceof Headers).to.be.true;
-    });
-
-    it('should handle custom base URLs', async () => {
-      // Arrange
-      const view = 'reports';
-      const baseUrl = '/custom/base';
-      const mockResponse = { ok: true };
-
-      dbFetchStub.resolves(mockResponse);
-
-      // Act
-      const fetchFn = getAuthenticatedFetch(db, view);
-      await fetchFn(baseUrl, { method: 'GET' });
-
-      // Assert
-      expect(dbFetchStub.firstCall.args[0]).to.equal('/custom/base/medic/_design/medic/_nouveau/reports');
     });
 
     it('should propagate errors from db.fetch', async () => {
@@ -119,7 +103,7 @@ describe('request-utils', () => {
 
       // Act & Assert
       const fetchFn = getAuthenticatedFetch(db, view);
-      await expect(fetchFn('', { method: 'GET' })).to.be.rejectedWith(error);
+      await expect(fetchFn({ method: 'GET' })).to.be.rejectedWith(error);
     });
 
     it('should return a function that can be called multiple times', async () => {
@@ -131,13 +115,13 @@ describe('request-utils', () => {
 
       // Act
       const fetchFn = getAuthenticatedFetch(db, view);
-      await fetchFn('', { method: 'GET' });
-      await fetchFn('', { method: 'POST' });
+      await fetchFn({ method: 'GET' });
+      await fetchFn({ method: 'POST' });
 
       // Assert
       expect(dbFetchStub.calledTwice).to.be.true;
-      expect(dbFetchStub.firstCall.args[0]).to.equal('/medic/_design/medic/_nouveau/reports');
-      expect(dbFetchStub.secondCall.args[0]).to.equal('/medic/_design/medic/_nouveau/reports');
+      expect(dbFetchStub.firstCall.args[0]).to.equal('_design/medic/_nouveau/reports');
+      expect(dbFetchStub.secondCall.args[0]).to.equal('_design/medic/_nouveau/reports');
     });
   });
 

@@ -689,7 +689,7 @@ describe('local doc lib', () => {
 
       // Assert
       expect(getAuthenticatedFetchStub.calledOnceWith(db, viewName)).to.be.true;
-      expect(fetchStub.calledOnceWith('', {
+      expect(fetchStub.calledOnceWith({
         method: 'POST',
         body: JSON.stringify(requestBody)
       })).to.be.true;

@@ -14,11 +14,11 @@ export const getAuthenticatedFetch = (db: PouchDB.Database<Doc>, view: string) =
   const headers = new Headers();
   headers.set('Content-Type', 'application/json');
 
-  return (url: string, options: RequestInit | undefined): Promise<Response> => {
+  return (options: RequestInit | undefined): Promise<Response> => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call
-    return db.fetch(`${url}/medic/${nouveauPath}`, { headers, ...options });
+    return db.fetch(nouveauPath, { headers, ...options });
   };
 };
 

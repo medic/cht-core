@@ -204,7 +204,7 @@ export const queryNouveauIndex = (
     currentResults: NouveauHit[]= [],
     bookmark: Nullable<string> = null
   ): Promise<Page<NouveauHit>> => {
-    const response = await fetch('', {
+    const response = await fetch({
       method: 'POST',
       body: getRequestBody(viewName, params, bookmark)
     });
