@@ -144,9 +144,15 @@ const hideSnackbar = () => {
 
 const getVisibleLoaders = async () => {
   const visible = [];
-  const loaders = await $$('.container-fluid .loader').getElements();
+  const loaderArray = await $$('.container-fluid .loader');
 
-  // Check if loaders array is empty before iterating
+  // Check if there are any loaders before trying to get the elements
+  if (await loaderArray.length === 0) {
+    return visible;
+  }
+
+  const loaders = await loaderArray.getElements();
+
   for (const loader of loaders) {
     if (await loader.isDisplayed({ withinViewport: true })) {
       visible.push(loader);
@@ -178,11 +184,8 @@ const waitForPageLoaded = async () => {
   // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
   // so waiting for the main page to load.
   await waitForAngularLoaded();
-  // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
-  // get all loaders.
-  do {
-    await waitForLoaders();
-  } while (await getVisibleLoaders().length > 0);
+
+  await waitForLoaders();
 };
 
 const clickFastActionById = async (id) => {
