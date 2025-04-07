@@ -145,9 +145,11 @@ const hideSnackbar = () => {
 const getVisibleLoaders = async () => {
   const visible = [];
   const loaders = await $$('.container-fluid .loader').getElements();
-  for (let i = 0; i < loaders.length; i++) {
-    if (await loaders[i].isDisplayed({ withinViewport: true })) {
-      visible.push(loaders[i]);
+
+  // Check if loaders array is empty before iterating
+  for (const loader of loaders) {
+    if (await loader.isDisplayed({ withinViewport: true })) {
+      visible.push(loader);
     }
   }
 
