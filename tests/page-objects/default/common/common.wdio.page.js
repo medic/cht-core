@@ -387,15 +387,30 @@ const syncAndNotWaitForSuccess = async () => {
   await syncButton().click();
 };
 
-const syncAndWaitForSuccess = async (timeout = 20000) => {
-  await openHamburgerMenu();
-  await syncButton().click();
-  await closeReloadModal(false);
-  await openHamburgerMenu();
-  if (await hamburgerMenuSelectors.syncInProgress().isExisting()) {
-    await hamburgerMenuSelectors.syncInProgress().waitForDisplayed({ reverse: true, timeout });
+const syncAndWaitForSuccess = async (expectReload, timeout = RELOAD_SYNC_TIMEOUT, retry = 10) => {
+  if (retry < 0) {
+    throw new Error('Failed to sync after 10 retries');
   }
-  await hamburgerMenuSelectors.syncSuccess().waitForDisplayed({ timeout });
+  try {
+    await openHamburgerMenu();
+    if (!await hamburgerMenuSelectors.syncInProgress().isDisplayed({ withinViewport: true })) {
+      await hamburgerMenuSelectors.syncButton().click();
+    }
+
+    await hamburgerMenuSelectors.syncInProgress().waitForDisplayed({ timeout, reverse: true });
+    await browser.waitUntil(async () => {
+      return (await hamburgerMenuSelectors.syncSuccess().isDisplayed()) ||
+             (await modalPage.isDisplayed());
+    }, { timeout });
+    await openHamburgerMenu();
+
+    if (!await hamburgerMenuSelectors.syncSuccess().isDisplayed({ withinViewport: true })) {
+      throw new Error('Failed to sync');
+    }
+  } catch (err) {
+    console.error(err);
+    return await syncAndWaitForSuccess(expectReload, timeout, retry - 1);
+  }
 };
 
 const hideModalOverlay = () => {
