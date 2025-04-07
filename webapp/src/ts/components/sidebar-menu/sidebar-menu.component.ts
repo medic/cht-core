@@ -13,11 +13,12 @@ import { ModalService } from '@mm-services/modal.service';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
-import { NgFor, NgIf } from '@angular/common';
+import { NgFor, NgIf, NgClass } from '@angular/common';
 import { AuthDirective } from '@mm-directives/auth.directive';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
+import { StorageInfoService, StorageStatus } from '@mm-services/storage-info.service';
 
 @Component({
   selector: 'mm-sidebar-menu',
@@ -32,6 +33,7 @@ import { RelativeDatePipe } from '@mm-pipes/date.pipe';
     AuthDirective,
     MatIcon,
     NgIf,
+    NgClass,
     TranslatePipe,
     RelativeDatePipe,
   ],
@@ -46,12 +48,17 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
   secondaryOptions: MenuOption[] = [];
   adminAppPath: string = '';
 
+  status: StorageStatus = StorageStatus.STARTUP;
+  private availableSpace: number = 0;
+  storageUsagePercentage: number = 0;
+
   constructor(
     private store: Store,
     private locationService: LocationService,
     private dbSyncService: DBSyncService,
     private modalService: ModalService,
     private router: Router,
+    private readonly storageInfoService: StorageInfoService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -62,6 +69,7 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
     this.setSecondaryOptions();
     this.subscribeToStore();
     this.subscribeToRouter();
+    this.subscribeToStorageInfo();
   }
 
   ngOnDestroy() {
@@ -81,6 +89,16 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
 
   logout() {
     this.modalService.show(LogoutConfirmComponent);
+  }
+
+  private subscribeToStorageInfo() {
+    this.subscriptions.add(
+      this.storageInfoService.storageInfo$.subscribe(info => {
+        this.status = info.status;
+        this.availableSpace = info.availableBytes ?? 0;
+        this.storageUsagePercentage = info.storageUsagePercentage ?? 0;
+      })
+    );
   }
 
   private subscribeToRouter() {
@@ -179,6 +197,26 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
         click: () => this.openFeedback()
       },
     ];
+  }
+
+  get storagePressureClass(): string {
+    if (this.storageUsagePercentage < 50) {
+      return 'progress-bar-green';
+    } else if (this.storageUsagePercentage < 75) {
+      return 'progress-bar-yellow';
+    }
+    return 'progress-bar-red';
+  }
+
+  get availableStorageSpace(): string {
+    switch (this.status) {
+    case StorageStatus.NORMAL:
+      return `${StorageInfoService.bytesToGB(this.availableSpace)} GB`;
+    case StorageStatus.STARTUP:
+      return 'Calculating...';
+    default:
+      return 'Error calculating available space';
+    }
   }
 }
 
