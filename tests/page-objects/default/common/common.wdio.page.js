@@ -165,7 +165,8 @@ const waitForLoaderToDisappear = async (element) => {
 const waitForLoaders = async () => {
   await browser.waitUntil(async () => {
     const visibleLoaders = await getVisibleLoaders();
-    return !visibleLoaders.length;
+    // Check if visibleLoaders is defined before checking its length
+    return !visibleLoaders || !visibleLoaders.length;
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
