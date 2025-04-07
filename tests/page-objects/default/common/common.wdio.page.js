@@ -144,20 +144,19 @@ const hideSnackbar = () => {
 
 const getVisibleLoaders = async () => {
   const visible = [];
-  const loaderArray = await $$('.container-fluid .loader');
+    const loaderArray = await $$('.container-fluid .loader');
 
-  // Check if there are any loaders before trying to get the elements
-  if (await loaderArray.length === 0) {
-    return visible;
-  }
-
-  const loaders = await loaderArray.getElements();
-
-  for (const loader of loaders) {
-    if (await loader.isDisplayed({ withinViewport: true })) {
-      visible.push(loader);
+    if (!loaderArray || await loaderArray.length === 0) {
+      return visible;
     }
-  }
+
+    const loaders = await loaderArray.getElements();
+
+    for (const loader of loaders) {
+      if (await loader.isDisplayed({ withinViewport: true })) {
+        visible.push(loader);
+      }
+    }
 
   return visible;
 };
@@ -170,9 +169,15 @@ const waitForLoaderToDisappear = async (element) => {
 
 const waitForLoaders = async () => {
   await browser.waitUntil(async () => {
-    const visibleLoaders = await getVisibleLoaders();
-    // Check if visibleLoaders is defined before checking its length
-    return !visibleLoaders || !visibleLoaders.length;
+    try {
+      const visibleLoaders = await getVisibleLoaders();
+      // Check if visibleLoaders is defined before checking its length
+      return !visibleLoaders || !visibleLoaders.length;
+    } catch (error) {
+      // If there's an error (like index out of bounds), assume no loaders are visible
+      console.log('Error checking for loaders:', error.message);
+      return true;
+    }
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
