@@ -18,11 +18,12 @@ const runBatch = (ddoc, view, viewParams, iteratee) => {
   });
   // using request here instead of PouchDB because
   // PouchDB doesn't support startkey_docid: #5319
-  return request.get({
-    url: fullUrl,
-    json: true,
-    auth: { user: environment.username, pass: environment.password },
-  })
+  return request
+    .get({
+      url: fullUrl,
+      json: true,
+      auth: { username: environment.username, password: environment.password },
+    })
     .then(result => {
       logger.info(`        Processing doc ${result.offset}`);
       let nextPage;

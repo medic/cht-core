@@ -6,16 +6,18 @@ import { DbService } from '@mm-services/db.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { LanguageService } from '@mm-services/language.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ValidationService {
   constructor(
-    private dbService:DbService,
-    private settingsService:SettingsService,
-    private translateLocaleService:TranslateLocaleService,
-    private languageService:LanguageService,
+    private readonly dbService:DbService,
+    private readonly settingsService:SettingsService,
+    private readonly translateLocaleService:TranslateLocaleService,
+    private readonly languageService:LanguageService,
+    private readonly chtDatasourceService: CHTDatasourceService
   ) {
   }
 
@@ -33,7 +35,8 @@ export class ValidationService {
       settings: this.settings,
       db: { medic: this.dbService.get() },
       translate: this.translate.bind(this),
-      logger: console
+      logger: console,
+      dataContext: this.chtDatasourceService.getDataContext()
     });
     this.inited = true;
   }

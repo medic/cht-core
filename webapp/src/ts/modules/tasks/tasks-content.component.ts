@@ -3,8 +3,7 @@ import { Store } from '@ngrx/store';
 import { combineLatest, Subject, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { FormService } from '@mm-services/form.service';
-import { EnketoFormContext } from '@mm-services/enketo.service';
+import { FormService, WebappEnketoFormContext } from '@mm-services/form.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -15,9 +14,15 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { DbService } from '@mm-services/db.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
+import { NgIf, NgClass, NgFor } from '@angular/common';
+import { EnketoComponent } from '@mm-components/enketo/enketo.component';
+import { TranslatePipe } from '@ngx-translate/core';
+import { SimpleDatePipe } from '@mm-pipes/date.pipe';
+import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 
 @Component({
-  templateUrl: './tasks-content.component.html'
+  templateUrl: './tasks-content.component.html',
+  imports: [NgIf, NgClass, NgFor, EnketoComponent, TranslatePipe, SimpleDatePipe, TranslateFromPipe]
 })
 export class TasksContentComponent implements OnInit, OnDestroy {
   constructor(
@@ -219,7 +224,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   private renderForm(action, formDoc) {
     this.globalActions.setEnketoEditedStatus(false);
 
-    const formContext = new EnketoFormContext('#task-report', 'task', formDoc, action.content);
+    const formContext = new WebappEnketoFormContext('#task-report', 'task', formDoc, action.content);
     formContext.editedListener = this.markFormEdited.bind(this);
     formContext.valuechangeListener = this.resetFormError.bind(this);
 

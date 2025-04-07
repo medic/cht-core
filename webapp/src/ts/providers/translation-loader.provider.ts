@@ -5,10 +5,14 @@ import { from } from 'rxjs';
 import { DbService } from '@mm-services/db.service';
 import * as translationUtils from '@medic/translation-utils';
 import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-matcher.provider';
+import { LanguageService } from '@mm-services/language.service';
 
 @Injectable()
 export class TranslationLoaderProvider implements TranslateLoader {
-  constructor(private db:DbService) {}
+  constructor(
+    private db: DbService,
+    private languageService: LanguageService
+  ) {}
 
   private loadingPromises = {};
 
@@ -38,11 +42,12 @@ export class TranslationLoaderProvider implements TranslateLoader {
     const promise =  this.db
       .get()
       .get(translationsDocId)
-      .then(doc => {
+      .then((doc:{ generic:{}; custom:{}; rtl: boolean }) => {
         const values = Object.assign(doc.generic || {}, doc.custom || {});
         if (testing) {
           mapTesting(values);
         }
+        doc.rtl && this.languageService.setRtlLanguage(locale);
         return translationUtils.loadTranslations(values);
       })
       .catch(err => {

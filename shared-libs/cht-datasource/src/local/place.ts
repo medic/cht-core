@@ -1,14 +1,17 @@
 import { Doc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
-import { deepCopy, isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
+import { isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Place from '../place';
-import {fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey} from './libs/doc';
+import { fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
-import { Contact } from '../libs/contact';
 import logger from '@medic/logger';
-import { getLineageDocsById, getPrimaryContactIds, hydrateLineage, hydratePrimaryContact } from './libs/lineage';
+import {
+  getContactLineage,
+  getLineageDocsById,
+} from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
+import { validateCursor } from './libs/core';
 
 /** @internal */
 export namespace v1 {
@@ -40,7 +43,8 @@ export namespace v1 {
   /** @internal */
   export const getWithLineage = ({ medicDb, settings }: LocalDataContext) => {
     const getLineageDocs = getLineageDocsById(medicDb);
-    const getMedicDocsById = getDocsByIds(medicDb);
+    const getLineage = getContactLineage(medicDb);
+
     return async (identifier: UuidQualifier): Promise<Nullable<Place.v1.PlaceWithLineage>> => {
       const [place, ...lineagePlaces] = await getLineageDocs(identifier.uuid);
       if (!isPlace(settings)(place, identifier.uuid)) {
@@ -53,11 +57,7 @@ export namespace v1 {
       }
 
       const places: NonEmptyArray<Nullable<Doc>> = [place, ...lineagePlaces];
-      const contactUuids = getPrimaryContactIds(places);
-      const contacts = await getMedicDocsById(contactUuids);
-      const [placeWithContact, ...linagePlacesWithContact] = places.map(hydratePrimaryContact(contacts));
-      const placeWithLineage = hydrateLineage(placeWithContact as Contact, linagePlacesWithContact);
-      return deepCopy(placeWithLineage);
+      return await getLineage(places) as Nullable<Place.v1.PlaceWithLineage>;
     };
   };
 
@@ -77,11 +77,7 @@ export namespace v1 {
         throw new InvalidArgumentError(`Invalid contact type [${placeType.contactType}].`);
       }
 
-      // Adding a number skip variable here so as not to confuse ourselves
-      const skip = Number(cursor);
-      if (isNaN(skip) || skip < 0 || !Number.isInteger(skip)) {
-        throw new InvalidArgumentError(`Invalid cursor token: [${String(cursor)}].`);
-      }
+      const skip = validateCursor(cursor);
 
       const getDocsByPageWithPlaceType = (
         limit: number,

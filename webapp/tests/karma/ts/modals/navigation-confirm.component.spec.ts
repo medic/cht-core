@@ -23,8 +23,6 @@ describe('NavigationConfirmModal', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ],
-        declarations: [
           NavigationConfirmComponent,
           ModalLayoutComponent,
           PanelHeaderComponent,

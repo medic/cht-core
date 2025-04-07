@@ -1,8 +1,6 @@
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { getRemoteDataContext, Place, Qualifier } = require('@medic/cht-datasource');
-const { expect } = require('chai');
 const userFactory = require('@factories/cht/users/users');
 
 describe('Place API', () => {
@@ -24,6 +22,7 @@ describe('Place API', () => {
   });
   const placeType = 'clinic';
   const clinic1 = utils.deepFreeze(placeFactory.place().build({
+    name: 'clinic1',
     parent: {
       _id: place1._id,
       parent: {
@@ -33,7 +32,10 @@ describe('Place API', () => {
     type: placeType,
     contact: {}
   }));
-  const clinic2 = utils.deepFreeze(placeFactory.place().build({
+  // this is named as clinic3 and not clinic2 because placeMap.get('clinic')
+  // generates the name `clinic2` always and this is to not cause conflict and confusion
+  const clinic3 = utils.deepFreeze(placeFactory.place().build({
+    name: 'clinic3',
     parent: {
       _id: place1._id,
       parent: {
@@ -41,6 +43,11 @@ describe('Place API', () => {
       }
     },
     type: placeType,
+    contact: {}
+  }));
+  const healthCenter2 = utils.deepFreeze(placeFactory.place().build({
+    name: 'healthCenter2',
+    type: 'health_center',
     contact: {}
   }));
 
@@ -62,11 +69,10 @@ describe('Place API', () => {
     },
     roles: ['chw']
   }));
-  const dataContext = getRemoteDataContext(utils.getOrigin());
-  const expectedPlaces = [place0, clinic1, clinic2];
+  const expectedPlaces = [place0, clinic1, clinic3];
 
   before(async () => {
-    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic2]);
+    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic3, healthCenter2]);
     await utils.createUsers([userNoPerms, offlineUser]);
   });
 
@@ -76,16 +82,24 @@ describe('Place API', () => {
   });
 
   describe('GET /api/v1/place/:uuid', async () => {
-    const getPlace = Place.v1.get(dataContext);
-    const getPlaceWithLineage = Place.v1.getWithLineage(dataContext);
+    const endpoint = '/api/v1/place';
 
     it('returns the place matching the provided UUID', async () => {
-      const place = await getPlace(Qualifier.byUuid(place0._id));
+      const opts = {
+        path: `${endpoint}/${place0._id}`,
+      };
+      const place = await utils.request(opts);
       expect(place).excluding(['_rev', 'reported_date']).to.deep.equal(place0);
     });
 
     it('returns the place with lineage when the withLineage query parameter is provided', async () => {
-      const place = await getPlaceWithLineage(Qualifier.byUuid(place0._id));
+      const opts = {
+        path: `${endpoint}/${place0._id}`,
+        qs: {
+          with_lineage: true
+        }
+      };
+      const place = await utils.request(opts);
       expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
         ...place0,
         contact: contact0,
@@ -100,9 +114,48 @@ describe('Place API', () => {
       });
     });
 
-    it('returns null when no place is found for the UUID', async () => {
-      const place = await getPlace(Qualifier.byUuid('invalid-uuid'));
-      expect(place).to.be.null;
+    it('returns the place with lineage when the withLineage query parameter is provided ' +
+      'and the place has no primary contact', async () => {
+      const opts = {
+        path: `${endpoint}/${clinic3._id}`,
+        qs: {
+          with_lineage: true
+        }
+      };
+      const place = await utils.request(opts);
+      expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+        ...clinic3,
+        contact: {},
+        parent: {
+          ...place1,
+          contact: contact1,
+          parent: {
+            ...place2,
+            contact: contact2
+          }
+        }
+      });
+    });
+
+    it('returns the place with lineage when the withLineage query parameter is provided ' +
+      'and the place has no primary contact and parents', async () => {
+      const opts = {
+        path: `${endpoint}/${healthCenter2._id}`,
+        qs: {
+          with_lineage: true
+        }
+      };
+      const place = await utils.request(opts);
+      expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+        ...healthCenter2,
+      });
+    });
+
+    it('throws 404 error when no place is found for the UUID', async () => {
+      const opts = {
+        path: `${endpoint}/invalid-uuid`,
+      };
+      await expect(utils.request(opts)).to.be.rejectedWith('404 - {"code":404,"error":"Place not found"}');
     });
 
     [
@@ -120,13 +173,18 @@ describe('Place API', () => {
   });
 
   describe('GET /api/v1/place', async () => {
-    const getPage = Place.v1.getPage(dataContext);
     const limit = 2;
-    const cursor = null;
     const invalidContactType = 'invalidPlace';
+    const endpoint = '/api/v1/place';
 
     it('returns a page of places for no limit and cursor passed', async () => {
-      const responsePage = await getPage(Qualifier.byContactType(placeType));
+      const opts = {
+        path: `${endpoint}`,
+        qs: {
+          type: placeType
+        }
+      };
+      const responsePage = await utils.request(opts);
       const responsePlaces = responsePage.data;
       const responseCursor = responsePage.cursor;
 
@@ -136,8 +194,11 @@ describe('Place API', () => {
     });
 
     it('returns a page of places when limit and cursor is passed and cursor can be reused', async () => {
-      const firstPage = await getPage(Qualifier.byContactType(placeType), cursor, limit);
-      const secondPage = await getPage(Qualifier.byContactType(placeType), firstPage.cursor, limit);
+      const firstPage = await utils.request({ path: endpoint, qs: { type: placeType, limit } });
+      const secondPage = await utils.request({
+        path: endpoint,
+        qs: { type: placeType, cursor: firstPage.cursor, limit }
+      });
 
       const allPeople = [...firstPage.data, ...secondPage.data];
 
@@ -187,8 +248,9 @@ describe('Place API', () => {
         path: `/api/v1/place?${queryString}`,
       };
 
-      await expect(utils.request(opts))
-        .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive number: [${-1}]."}`);
+      await expect(utils.request(opts)).to.be.rejectedWith(
+        `400 - {"code":400,"error":"The limit must be a positive integer: [\\"-1\\"]."}`
+      );
     });
 
     it('throws 400 error when cursor is invalid', async () => {
@@ -203,22 +265,8 @@ describe('Place API', () => {
 
       await expect(utils.request(opts))
         .to.be.rejectedWith(
-          `400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`
+          `400 - {"code":400,"error":"The cursor must be a string or null for first page: [\\"-1\\"]."}`
         );
-    });
-  });
-
-  describe('Place.v1.getAll', async () => {
-    it('fetches all data by iterating through generator', async () => {
-      const docs = [];
-
-      const generator = Place.v1.getAll(dataContext)(Qualifier.byContactType(placeType));
-
-      for await (const doc of generator) {
-        docs.push(doc);
-      }
-
-      expect(docs).excluding(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPlaces);
     });
   });
 });

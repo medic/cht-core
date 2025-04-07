@@ -28,7 +28,6 @@ const generateFormData = async (formPath) => {
 const loadForm = async (config, formType, formName) => {
   const formPath = getFormPath(config, formType, formName);
   const formData = await generateFormData(formPath);
-  await browser.url(getBaseURL());
   await browser.execute((formData, formType, formName) => {
     const myForm = document.getElementById('myform');
     myForm.formHtml = formData.formHtml;
@@ -59,9 +58,19 @@ const submitForm = async () => {
   });
 };
 
+const cancelForm = async () => {
+  await browser.executeAsync((resolve) => {
+    const myForm = document.getElementById('myform');
+    myForm.addEventListener('onCancel', () => resolve());
+    $('.enketo .cancel').click();
+  });
+};
+
 module.exports = {
+  getBaseURL,
   loadForm,
   startMockApp,
   stopMockApp,
-  submitForm
+  submitForm,
+  cancelForm
 };

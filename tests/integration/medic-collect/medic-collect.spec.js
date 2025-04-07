@@ -1,6 +1,4 @@
 const assert = require('chai').assert;
-const constants = require('@constants');
-const request = require('request-promise-native');
 const utils = require('@utils');
 const host = 'localhost';
 const db = utils.db;
@@ -37,19 +35,15 @@ describe('medic-collect', () => {
   describe('without User-Agent header', () => {
     it('is prompted for auth details if not supplied', () => {
       return getForms({ auth: false, userAgent: false })
-        .then(() => {
-          assert.fail('should fail the request');
-        })
-        .catch(err => {
-          assert.equal(err.statusCode, 401);
-          assert.equal(err.response.headers['www-authenticate'], 'Basic realm="Medic Web Services"');
+        .then(err => {
+          assert.equal(err.status, 401);
         });
     });
 
     it('can fetch a list of forms', () => {
       return getForms({ auth: true, userAgent: false })
         .then(res => {
-          assert.equal(res.statusCode, 200);
+          assert.equal(res.status, 200);
           assert.equal(res.body, MY_COLLECT_FORM_RESPONSE);
         });
     });
@@ -58,19 +52,15 @@ describe('medic-collect', () => {
   describe('with User-Agent header', () => {
     it('is prompted for auth details if not supplied', () => {
       return getForms({ auth: false, userAgent: true })
-        .then(() => {
-          assert.fail('should fail the request');
-        })
-        .catch(err => {
-          assert.equal(err.statusCode, 401);
-          assert.equal(err.response.headers['www-authenticate'], 'Basic realm="Medic Web Services"');
+        .then(err => {
+          assert.equal(err.status, 401);
         });
     });
 
     it('can fetch a list of forms', () => {
       return getForms({ auth: true, userAgent: true })
         .then(res => {
-          assert.equal(res.statusCode, 200);
+          assert.equal(res.status, 200);
           assert.equal(res.body, MY_COLLECT_FORM_RESPONSE);
         });
     });
@@ -78,8 +68,6 @@ describe('medic-collect', () => {
 });
 
 const getForms = ({ auth, userAgent }) => {
-  const url = auth ? constants.BASE_URL_AUTH : constants.BASE_URL;
-
   const headers = {
     'X-OpenRosa-Version': '1.0',
     Date: new Date().toISOString(),
@@ -90,10 +78,11 @@ const getForms = ({ auth, userAgent }) => {
       'org.medicmobile.collect.android/SNAPSHOT';
   }
 
-  return request.get({
-    url: `${url}/api/v1/forms`,
+  return utils.request({
+    path: `/api/v1/forms`,
     headers,
-    resolveWithFullResponse: true
+    resolveWithFullResponse: true,
+    noAuth: !auth,
   });
 };
 

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { findIndex as _findIndex } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
@@ -23,10 +23,32 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { PerformanceService } from '@mm-services/performance.service';
-import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
+import { ButtonType, FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
+import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
+import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
+import { ContactsMoreMenuComponent } from '@mm-modules/contacts/contacts-more-menu.component';
+import { NgFor, NgIf } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
+import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
+import { DateOfDeathPipe } from '@mm-pipes/date.pipe';
+import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 
 @Component({
-  templateUrl: './contacts.component.html'
+  templateUrl: './contacts.component.html',
+  imports: [
+    ToolBarComponent,
+    SearchBarComponent,
+    ContactsMoreMenuComponent,
+    NgFor,
+    RouterLink,
+    NgIf,
+    FastActionButtonComponent,
+    RouterOutlet,
+    TranslatePipe,
+    ResourceIconPipe,
+    DateOfDeathPipe,
+    LocalizeNumberPipe
+  ]
 })
 export class ContactsComponent implements OnInit, OnDestroy {
   private readonly PAGE_SIZE = 25;
@@ -396,24 +418,20 @@ export class ContactsComponent implements OnInit, OnDestroy {
       searchFilters = this.filters;
     }
 
-    const extensions:any = {};
     if (this.lastVisitedDateExtras) {
-      extensions.displayLastVisitedDate = true;
-      extensions.visitCountSettings = this.visitCountSettings;
+      options.displayLastVisitedDate = true;
+      options.visitCountSettings = this.visitCountSettings;
     }
     if (this.isSortedByLastVisited()) {
-      extensions.sortByLastVisitedDate = true;
+      options.sortByLastVisitedDate = true;
     }
 
-    let docIds;
     if (options.withIds) {
-      docIds = this.contactsList.map((item) => {
-        return item._id;
-      });
+      options.additionalDocIds = this.contactsList.map(({ _id }) => _id);
     }
 
     return this.searchService
-      .search('contacts', searchFilters, options, extensions, docIds)
+      .search('contacts', searchFilters, options)
       .then(updatedContacts => {
         // If you have a home place make sure it is at the top
         this.usersHomePlaces?.forEach(homePlace => {

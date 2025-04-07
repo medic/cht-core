@@ -17,7 +17,7 @@ describe('well-known', () => {
       })
         .then(() => chai.expect.fail('should have thrown'))
         .catch(error => {
-          chai.expect(error.response.statusCode).to.equal(404);
+          chai.expect(error.status).to.equal(404);
         });
     });
 

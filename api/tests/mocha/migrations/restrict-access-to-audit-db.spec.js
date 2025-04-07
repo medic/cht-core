@@ -26,8 +26,8 @@ describe('restrict-access-to-audit-db', () => {
     sinon.stub(environment, 'db').returns('database');
     const url = `${environment.protocol}//${environment.host}:${environment.port}/${environment.db}-audit/_security`;
     const auth = {
-      user: environment.username,
-      pass: environment.password
+      username: environment.username,
+      password: environment.password
     };
     const body = {
       admins: { names: [], roles: [ 'audit-writer' ] },

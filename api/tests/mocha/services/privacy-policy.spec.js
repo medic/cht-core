@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const service = require('../../../src/services/privacy-policy');
 const db = require('../../../src/db');
 const config = require('../../../src/config');
+const logger = require('@medic/logger');
 
 describe('Privacy Policy service', () => {
 
@@ -121,6 +122,27 @@ describe('Privacy Policy service', () => {
       return service.get('sw').then(response => {
         chai.expect(response).to.equal('frenchpp');
       });
+    });
+
+    it('should throw error when doc does not exist', async () => {
+      sinon.spy(logger, 'error');
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      await chai.expect(service.get('sw')).to.be.rejected.and.eventually.deep.equal({ status: 404 });
+      chai.expect(logger.error.called).to.equal(false);
+    });
+
+    it('should throw error when doc has no policies', async () => {
+      sinon.stub(db.medic, 'get').resolves({ privacy_policies: {} });
+      sinon.spy(logger, 'error');
+      await chai.expect(service.get('sw')).to.be.rejected.and.eventually.deep.include({ status: 404 });
+      chai.expect(logger.error.called).to.equal(false);
+    });
+
+    it('should throw error on misconfigured doc', async () => {
+      sinon.stub(db.medic, 'get').resolves({ });
+      sinon.spy(logger, 'error');
+      await chai.expect(service.get('sw')).to.be.rejected.and.eventually.deep.include({ status: 404 });
+      chai.expect(logger.error.called).to.equal(false);
     });
 
   });

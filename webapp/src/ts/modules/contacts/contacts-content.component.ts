@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { first, take } from 'rxjs/operators';
 import * as moment from 'moment';
@@ -22,10 +22,37 @@ import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
+import { NgIf, NgClass, NgFor, LowerCasePipe } from '@angular/common';
+import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
+import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
+import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
+import { AuthDirective } from '@mm-directives/auth.directive';
+import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
+import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
+import { SummaryPipe } from '@mm-pipes/message.pipe';
+import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
+import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 
 @Component({
   selector: 'contacts-content',
-  templateUrl: './contacts-content.component.html'
+  templateUrl: './contacts-content.component.html',
+  imports: [
+    NgIf,
+    ErrorLogComponent,
+    FastActionButtonComponent,
+    NgClass,
+    NgFor,
+    TranslateDirective,
+    AuthDirective,
+    ContentRowListItemComponent,
+    RouterLink,
+    LowerCasePipe,
+    TranslatePipe,
+    ResourceIconPipe,
+    SummaryPipe,
+    FormIconNamePipe,
+    LocalizeNumberPipe
+  ]
 })
 export class ContactsContentComponent implements OnInit, OnDestroy {
   subscriptions: Subscription = new Subscription();

@@ -1,8 +1,6 @@
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { getRemoteDataContext, Person, Qualifier } = require('@medic/cht-datasource');
-const { expect } = require('chai');
 const userFactory = require('@factories/cht/users/users');
 
 describe('Person API', () => {
@@ -47,7 +45,6 @@ describe('Person API', () => {
     roles: ['chw']
   }));
   const allDocItems = [contact0, contact1, contact2, place0, place1, place2, patient];
-  const dataContext = getRemoteDataContext(utils.getOrigin());
   const personType = 'person';
   const e2eTestUser = {
     '_id': 'e2e_contact_test_id',
@@ -96,16 +93,24 @@ describe('Person API', () => {
   });
 
   describe('GET /api/v1/person/:uuid', async () => {
-    const getPerson = Person.v1.get(dataContext);
-    const getPersonWithLineage = Person.v1.getWithLineage(dataContext);
+    const endpoint = '/api/v1/person';
 
     it('returns the person matching the provided UUID', async () => {
-      const person = await getPerson(Qualifier.byUuid(patient._id));
+      const opts = {
+        path: `${endpoint}/${patient._id}`,
+      };
+      const person = await utils.request(opts);
       expect(person).excluding(['_rev', 'reported_date']).to.deep.equal(patient);
     });
 
     it('returns the person with lineage when the withLineage query parameter is provided', async () => {
-      const person = await getPersonWithLineage(Qualifier.byUuid(patient._id));
+      const opts = {
+        path: `${endpoint}/${patient._id}`,
+        qs: {
+          with_lineage: true
+        }
+      };
+      const person = await utils.request(opts);
       expect(person).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
         ...patient,
         parent: {
@@ -123,9 +128,11 @@ describe('Person API', () => {
       });
     });
 
-    it('returns null when no person is found for the UUID', async () => {
-      const person = await getPerson(Qualifier.byUuid('invalid-uuid'));
-      expect(person).to.be.null;
+    it('throws 404 error when no person is found for the UUID', async () => {
+      const opts = {
+        path: `${endpoint}/invalid-uuid`,
+      };
+      await expect(utils.request(opts)).to.be.rejectedWith('404 - {"code":404,"error":"Person not found"}');
     });
 
     [
@@ -143,13 +150,18 @@ describe('Person API', () => {
   });
 
   describe('GET /api/v1/person', async () => {
-    const getPage = Person.v1.getPage(dataContext);
     const limit = 4;
-    const cursor = null;
     const invalidContactType = 'invalidPerson';
+    const endpoint = '/api/v1/person';
 
     it('returns a page of people for no limit and cursor passed', async () => {
-      const responsePage = await getPage(Qualifier.byContactType(personType));
+      const opts = {
+        path: `${endpoint}`,
+        qs: {
+          type: personType
+        }
+      };
+      const responsePage = await utils.request(opts);
       const responsePeople = responsePage.data;
       const responseCursor = responsePage.cursor;
 
@@ -158,8 +170,11 @@ describe('Person API', () => {
     });
 
     it('returns a page of people when limit and cursor is passed and cursor can be reused', async () => {
-      const firstPage = await getPage(Qualifier.byContactType(personType), cursor, limit);
-      const secondPage = await getPage(Qualifier.byContactType(personType), firstPage.cursor, limit);
+      const firstPage = await utils.request({ path: endpoint, qs: { type: personType, limit } });
+      const secondPage = await utils.request({
+        path: endpoint,
+        qs: { type: personType, cursor: firstPage.cursor, limit }
+      });
 
       const allPeople = [...firstPage.data, ...secondPage.data];
 
@@ -194,7 +209,6 @@ describe('Person API', () => {
       const opts = {
         path: `/api/v1/person?${queryString}`,
       };
-
       await expect(utils.request(opts))
         .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid contact type [${invalidContactType}]."}`);
     });
@@ -209,8 +223,9 @@ describe('Person API', () => {
         path: `/api/v1/person?${queryString}`,
       };
 
-      await expect(utils.request(opts))
-        .to.be.rejectedWith(`400 - {"code":400,"error":"The limit must be a positive number: [${-1}]."}`);
+      await expect(utils.request(opts)).to.be.rejectedWith(
+        `400 - {"code":400,"error":"The limit must be a positive integer: [\\"-1\\"]."}`
+      );
     });
 
     it('throws 400 error when cursor is invalid', async () => {
@@ -225,22 +240,8 @@ describe('Person API', () => {
 
       await expect(utils.request(opts))
         .to.be.rejectedWith(
-          `400 - {"code":400,"error":"Invalid cursor token: [${-1}]."}`
+          `400 - {"code":400,"error":"The cursor must be a string or null for first page: [\\"-1\\"]."}`
         );
-    });
-  });
-
-  describe('Person.v1.getAll', async () => {
-    it('fetches all data by iterating through generator', async () => {
-      const docs = [];
-
-      const generator = Person.v1.getAll(dataContext)(Qualifier.byContactType(personType));
-
-      for await (const doc of generator) {
-        docs.push(doc);
-      }
-
-      expect(docs).excluding(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPeople);
     });
   });
 });

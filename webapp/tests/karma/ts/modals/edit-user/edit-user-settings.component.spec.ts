@@ -57,8 +57,6 @@ describe('EditUserSettingsComponent', () => {
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
           FormsModule,
-        ],
-        declarations: [
           EditUserSettingsComponent,
           ModalLayoutComponent,
           PanelHeaderComponent,

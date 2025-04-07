@@ -10,7 +10,6 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.component';
-import { ComponentsModule } from '@mm-components/components.module';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { DbService } from '@mm-services/db.service';
@@ -76,22 +75,19 @@ describe('ContactsEdit component', () => {
       imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterTestingModule,
-        ComponentsModule,
+        EnketoComponent,
+        ContactsEditComponent,
       ],
       providers: [
         provideMockStore({ selectors: mockedSelectors }),
         { provide: TranslateService, useValue: translateService },
         { provide: DbService, useValue: { get: () => ({ get: dbGet }) } },
-        { provide: Router, useValue: router  },
+        { provide: Router, useValue: router },
         { provide: ActivatedRoute, useValue: route },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
         { provide: FormService, useValue: formService },
         { provide: ContactTypesService, useValue: contactTypesService },
-        { provide: PerformanceService, useValue: performanceService},
-      ],
-      declarations: [
-        EnketoComponent,
-        ContactsEditComponent,
+        { provide: PerformanceService, useValue: performanceService },
       ],
     });
 

@@ -72,13 +72,11 @@ describe('Reports effects', () => {
     };
 
     TestBed.configureTestingModule({
-      declarations: [
+      imports: [
+        EffectsModule.forRoot([ReportsEffects]),
         SendMessageComponent,
         EditReportComponent,
         VerifyReportComponent,
-      ],
-      imports: [
-        EffectsModule.forRoot([ReportsEffects]),
       ],
       providers: [
         provideMockActions(() => actions$),
@@ -86,7 +84,7 @@ describe('Reports effects', () => {
         { provide: ReportViewModelGeneratorService, useValue: reportViewModelGeneratorService },
         { provide: MarkReadService, useValue: markReadService },
         { provide: ModalService, useValue: modalService },
-        { provide: DbService, useValue: { get: sinon.stub().returns(dbService)} },
+        { provide: DbService, useValue: { get: sinon.stub().returns(dbService) } },
         { provide: Router, useValue: router },
         { provide: SearchService, useValue: searchService },
         { provide: AuthService, useValue: authService },

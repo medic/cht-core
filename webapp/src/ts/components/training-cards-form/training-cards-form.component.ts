@@ -3,18 +3,25 @@ import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
 import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { FormService } from '@mm-services/form.service';
+import { FormService, WebappEnketoFormContext } from '@mm-services/form.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
-import { EnketoFormContext } from '@mm-services/enketo.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
+import { NgIf } from '@angular/common';
+import { EnketoComponent } from '@mm-components/enketo/enketo.component';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'training-cards-form',
   templateUrl: './training-cards-form.component.html',
+  imports: [
+    NgIf,
+    EnketoComponent,
+    TranslatePipe,
+  ],
 })
 export class TrainingCardsFormComponent implements OnInit, OnDestroy {
   @Input() isEmbedded = true;
@@ -115,7 +122,7 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
 
   private async renderForm(formDoc) {
     try {
-      const formContext = new EnketoFormContext(`#${this.FORM_WRAPPER_ID}`, 'training-card', formDoc);
+      const formContext = new WebappEnketoFormContext(`#${this.FORM_WRAPPER_ID}`, 'training-card', formDoc);
       formContext.isFormInModal = !this.isEmbedded;
       formContext.valuechangeListener = this.resetFormError.bind(this);
 

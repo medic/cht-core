@@ -41,8 +41,8 @@ describe('Contacts More Menu Component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          ContactsMoreMenuComponent,
         ],
-        declarations: [ ContactsMoreMenuComponent ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
           { provide: AuthService, useValue: authService },

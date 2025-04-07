@@ -162,13 +162,13 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
 };
 
 const NOUVEAU_DDOCS_BY_DB = {
-  [environment.db]: ['medic-nouveau'],
+  [environment.db]: ['medic'],
 };
 
 const NOUVEAU_INDEX_INFO_BY_DDOC = {
-  'medic-nouveau': {
+  'medic': {
     reports_by_freetext: {
-      name: '_design/medic-nouveau/reports_by_freetext',
+      name: '_design/medic/reports_by_freetext',
       search_index: {
         update_seq: 1956891,
         purge_seq: 0,
@@ -178,7 +178,7 @@ const NOUVEAU_INDEX_INFO_BY_DDOC = {
       },
     },
     contacts_by_freetext: {
-      name: '_design/medic-nouveau/contacts_by_freetext',
+      name: '_design/medic/contacts_by_freetext',
       search_index: {
         update_seq: 1956891,
         purge_seq: 0,
@@ -328,14 +328,14 @@ describe('Monitoring service', () => {
           view_indexes: getExpectedViewIndexes(environment.db),
           nouveau_indexes: [
             {
-              disk_size: 76815351,
-              name: '_design/medic-nouveau/contacts_by_freetext',
-              num_docs: 207734,
+              file_size: 76815351,
+              name: 'medic/contacts_by_freetext',
+              doc_count: 207734,
             },
             {
-              disk_size: 157258510,
-              name: '_design/medic-nouveau/reports_by_freetext',
-              num_docs: 183741,
+              file_size: 157258510,
+              name: 'medic/reports_by_freetext',
+              doc_count: 183741,
             },
           ],
         },
@@ -350,7 +350,7 @@ describe('Monitoring service', () => {
             file: 500
           },
           view_indexes: getExpectedViewIndexes(`${environment.db}-sentinel`),
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         users: {
           doc_count: 50,
@@ -363,7 +363,7 @@ describe('Monitoring service', () => {
             file: 501
           },
           view_indexes: getExpectedViewIndexes('_users'),
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         usersmeta: {
           doc_count: 40,
@@ -376,7 +376,7 @@ describe('Monitoring service', () => {
             file: 5000
           },
           view_indexes: getExpectedViewIndexes(`${environment.db}-users-meta`),
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         }
       });
       chai.expect(actual.messaging).to.deep.equal({
@@ -404,11 +404,11 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/contacts_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/contacts_by_freetext`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/reports_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
@@ -460,14 +460,14 @@ describe('Monitoring service', () => {
           view_indexes: getExpectedViewIndexes(environment.db),
           nouveau_indexes: [
             {
-              disk_size: 76815351,
-              name: '_design/medic-nouveau/contacts_by_freetext',
-              num_docs: 207734,
+              file_size: 76815351,
+              name: 'medic/contacts_by_freetext',
+              doc_count: 207734,
             },
             {
-              disk_size: 157258510,
-              name: '_design/medic-nouveau/reports_by_freetext',
-              num_docs: 183741,
+              file_size: 157258510,
+              name: 'medic/reports_by_freetext',
+              doc_count: 183741,
             },
           ],
         },
@@ -482,7 +482,7 @@ describe('Monitoring service', () => {
             file: 500
           },
           view_indexes: getExpectedViewIndexes(`${environment.db}-sentinel`),
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         users: {
           doc_count: 50,
@@ -495,7 +495,7 @@ describe('Monitoring service', () => {
             file: 501
           },
           view_indexes: getExpectedViewIndexes('_users'),
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         usersmeta: {
           doc_count: 40,
@@ -508,7 +508,7 @@ describe('Monitoring service', () => {
             file: 5000
           },
           view_indexes: getExpectedViewIndexes(`${environment.db}-users-meta`),
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         }
       });
       chai.expect(actual.messaging).to.deep.equal({
@@ -563,11 +563,11 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/contacts_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/contacts_by_freetext`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/reports_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
@@ -631,7 +631,7 @@ describe('Monitoring service', () => {
             file: -1
           },
           view_indexes: [],
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         users: {
           doc_count: -1,
@@ -644,7 +644,7 @@ describe('Monitoring service', () => {
             file: -1
           },
           view_indexes: [],
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         usersmeta: {
           doc_count: -1,
@@ -657,7 +657,7 @@ describe('Monitoring service', () => {
             file: -1
           },
           view_indexes: [],
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         }
       });
       chai.expect(actual.messaging).to.deep.equal({
@@ -683,11 +683,11 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/contacts_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/contacts_by_freetext`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/reports_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
@@ -739,7 +739,7 @@ describe('Monitoring service', () => {
             file: -1
           },
           view_indexes: [],
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         users: {
           doc_count: -1,
@@ -752,7 +752,7 @@ describe('Monitoring service', () => {
             file: -1
           },
           view_indexes: [],
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         },
         usersmeta: {
           doc_count: -1,
@@ -765,7 +765,7 @@ describe('Monitoring service', () => {
             file: -1
           },
           view_indexes: [],
-          nouveau_indexes: undefined,
+          nouveau_indexes: [],
         }
       });
       chai.expect(actual.messaging).to.deep.equal({
@@ -818,11 +818,11 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/contacts_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/contacts_by_freetext`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic-nouveau/_nouveau_info/reports_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],

@@ -504,7 +504,7 @@ describe('bulk-get handler', () => {
           if (result.results) {
             chai.expect(result.results.length).to.equal(0);
           } else {
-            chai.expect(result.responseBody).to.equal('Server error');
+            chai.expect(result.body).to.equal('Server error');
           }
         });
       });
@@ -765,6 +765,148 @@ describe('bulk-get handler', () => {
           }));
         chai.expect(result.results).to.deep.equal(expected);
       });
+  });
+
+  describe('replicating primary contacts', () => {
+    const existingDocs = [
+      {
+        _id: 'existing_clinic', // depth 1
+        type: 'clinic',
+        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+        contact: { _id: 'existing_person' }
+      },
+      {
+        _id: 'report_about_existing_clinic',
+        type: 'data_record',
+        form: 'form',
+        fields: { place_id: 'existing_clinic' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'existing_person', // depth 2
+        type: 'person',
+        parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+        patient_id: 'existing_person_id'
+      },
+      {
+        _id: 'report_about_existing_person1',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'existing_person_id' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'report_about_existing_person2',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_uuid: 'existing_person' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'target~existing_person',
+        type: 'target',
+        owner: 'existing_person',
+      },
+      {
+        _id: 'existing_clinic2', // depth 1
+        type: 'clinic',
+        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+        contact: { _id: 'existing_person2' }
+      },
+      {
+        _id: 'existing_person2', // out of hierarchy
+        type: 'person',
+        parent: { _id: 'other2', parent: { _id: 'other1' } },
+        patient_id: 'existing_person_id2'
+      },
+      {
+        _id: 'report_about_existing_person2_1',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'existing_person_id2' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'target~existing_person2',
+        type: 'target',
+        owner: 'existing_person2',
+      },
+    ];
+
+    beforeEach(() => {
+      existingDocs.forEach(doc => (delete doc._rev));
+    });
+
+    it('should not return out of depth primary contacts when not allowed', async () => {
+      const settings = {
+        replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 1 }]
+      };
+      await utils.updateSettings(settings, { ignoreReload: true });
+      await utils.saveDocsRevs(existingDocs);
+
+      const docs = existingDocs.map(doc => ({ id: doc._id, rev: doc._rev }));
+      offlineRequestOptions.body = { docs };
+
+      const results = await utils.requestOnMedicDb(offlineRequestOptions);
+
+      const allowedIds = [
+        'existing_clinic', 'report_about_existing_clinic',
+        'existing_clinic2',
+      ];
+      const expected = existingDocs
+        .filter(doc => allowedIds.includes(doc._id))
+        .map(doc => ({
+          id: doc._id,
+          docs: [{ ok: doc }]
+        }));
+      chai.expect(results.results).to.deep.equal(expected);
+    }); 
+    
+    it('should return out of depth primary contacts when allowed', async () => {
+      const settings = {
+        replication_depth: [{ role: 'district_admin', depth: 1, replicate_primary_contacts: true }]
+      };
+      await utils.updateSettings(settings, { ignoreReload: true });
+      await utils.saveDocsRevs(existingDocs);
+
+      const docs = existingDocs.map(doc => ({ id: doc._id, rev: doc._rev }));
+      offlineRequestOptions.body = { docs };
+
+      const results = await utils.requestOnMedicDb(offlineRequestOptions);
+
+      const expected = existingDocs
+        .map(doc => ({
+          id: doc._id,
+          docs: [{ ok: doc }]
+        }));
+      chai.expect(results.results).to.deep.equal(expected);
+    }); 
+    
+    it('should respect report replication depth for primary contacts', async () => {
+      const settings = {
+        replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0, replicate_primary_contacts: true }]
+      };
+      await utils.updateSettings(settings, { ignoreReload: true });
+      await utils.saveDocsRevs(existingDocs);
+
+      const docs = existingDocs.map(doc => ({ id: doc._id, rev: doc._rev }));
+      offlineRequestOptions.body = { docs };
+
+      const results = await utils.requestOnMedicDb(offlineRequestOptions);
+
+      const allowedIds = [
+        'existing_clinic',
+        'existing_person', 'target~existing_person',
+        'existing_clinic2', 'existing_person2', 'target~existing_person2'
+      ];
+      const expected = existingDocs
+        .filter(doc => allowedIds.includes(doc._id))
+        .map(doc => ({
+          id: doc._id,
+          docs: [{ ok: doc }]
+        }));
+      chai.expect(results.results).to.deep.equal(expected);
+    }); 
   });
 
   it('should not return sensitive documents', () => {

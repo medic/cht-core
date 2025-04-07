@@ -30,7 +30,10 @@ module.exports = {
         jsdoc: {
           contexts: [
           ]
-        }
+        },
+        polyfills: [
+          'Report'
+        ]
       },
       rules: {
         ['@typescript-eslint/explicit-module-boundary-types']: ['error', { allowedNames: ['getDatasource'] }],
@@ -63,6 +66,12 @@ module.exports = {
           exemptedBy: ['inheritdoc', 'private', 'internal']
         }],
         ['jsdoc/check-tag-names']: ['error', { definedTags: ['typeParam']}],
+      }
+    },
+    {
+      files: ['*.spec.ts'],
+      rules: {
+        ['@typescript-eslint/no-unused-expressions']: 'off',
       }
     }
   ]

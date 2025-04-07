@@ -125,8 +125,6 @@ describe('Contacts component', () => {
           RouterTestingModule,
           FormsModule,
           MatIconModule,
-        ],
-        declarations: [
           ContactsComponent,
           ContactsMoreMenuComponent,
           FreetextFilterComponent,
@@ -602,8 +600,6 @@ describe('Contacts component', () => {
           'contacts',
           { types: { selected: ['childType'] } },
           { limit: 25 },
-          {},
-          undefined,
         ]
       );
     });
@@ -624,12 +620,11 @@ describe('Contacts component', () => {
         [
           'contacts',
           { types: { selected: ['childType'] } },
-          { limit: 25 },
           {
+            limit: 25,
             displayLastVisitedDate: true,
             visitCountSettings: {},
           },
-          undefined,
         ]
       );
     }));
@@ -663,12 +658,11 @@ describe('Contacts component', () => {
         [
           'contacts',
           { types: { selected: ['childType'] } },
-          { limit: 25 },
           {
+            limit: 25,
             displayLastVisitedDate: true,
             visitCountSettings: { monthStartDate: false, visitCountGoal: 1 },
           },
-          undefined,
         ]
       );
     }));
@@ -702,12 +696,11 @@ describe('Contacts component', () => {
         [
           'contacts',
           { types: { selected: ['childType'] } },
-          { limit: 25 },
           {
+            limit: 25,
             displayLastVisitedDate: true,
             visitCountSettings: { monthStartDate: false, visitCountGoal: 1 },
           },
-          undefined,
         ]
       );
       component.sortDirection = 'somethingElse';
@@ -745,13 +738,12 @@ describe('Contacts component', () => {
         [
           'contacts',
           { types: { selected: ['childType'] } },
-          { limit: 25 },
           {
+            limit: 25,
             displayLastVisitedDate: true,
             visitCountSettings: { monthStartDate: 25, visitCountGoal: 125 },
             sortByLastVisitedDate: true,
           },
-          undefined,
         ]
       );
       component.sortDirection = 'somethingElse';
@@ -915,9 +907,13 @@ describe('Contacts component', () => {
                   [
                     'contacts',
                     { types: { selected: ['childType'] } },
-                    { limit: 60, withIds: false, silent: true },
-                    { displayLastVisitedDate: true, visitCountSettings: {} },
-                    undefined,
+                    {
+                      limit: 60,
+                      withIds: false,
+                      silent: true,
+                      displayLastVisitedDate: true,
+                      visitCountSettings: {}
+                    },
                   ]
                 );
               }
@@ -948,26 +944,29 @@ describe('Contacts component', () => {
                 expect(searchService.search.args[1]).to.deep.equal([
                   'contacts',
                   { types: { selected: ['childType'] } },
-                  { limit: 24, withIds: true, silent: true },
                   {
+                    limit: 24,
+                    withIds: true,
+                    silent: true,
                     displayLastVisitedDate: true,
                     visitCountSettings: {},
                     sortByLastVisitedDate: true,
+                    additionalDocIds: ['district-id', 0, 1, 2, 3, 4]
                   },
-                  ['district-id', 0, 1, 2, 3, 4],
                 ]);
 
                 for (let i = 2; i < 6; i++) {
                   expect(searchService.search.args[i]).to.deep.equal([
                     'contacts',
                     { types: { selected: ['childType'] } },
-                    { limit: 24, withIds: false, silent: true },
                     {
+                      limit: 24,
+                      withIds: false,
+                      silent: true,
                       displayLastVisitedDate: true,
                       visitCountSettings: {},
                       sortByLastVisitedDate: true,
                     },
-                    undefined,
                   ]);
                 }
               });
@@ -1001,12 +1000,13 @@ describe('Contacts component', () => {
                 expect(searchService.search.args[i]).to.deep.equal([
                   'contacts',
                   { types: { selected: ['childType'] } },
-                  { limit: 24, withIds: false, silent: true },
                   {
+                    limit: 24,
+                    withIds: false,
+                    silent: true,
                     displayLastVisitedDate: true,
                     visitCountSettings: {},
                   },
-                  undefined,
                 ]);
               }
             });
@@ -1038,26 +1038,29 @@ describe('Contacts component', () => {
                 expect(searchService.search.args[1]).to.deep.equal([
                   'contacts',
                   { types: { selected: ['childType'] } },
-                  { limit: 24, withIds: true, silent: true },
                   {
+                    limit: 24,
+                    withIds: true,
+                    silent: true,
                     displayLastVisitedDate: true,
                     visitCountSettings: {},
                     sortByLastVisitedDate: true,
+                    additionalDocIds: ['district-id', 0, 1, 2, 3, 4],
                   },
-                  ['district-id', 0, 1, 2, 3, 4],
                 ]);
 
                 for (let i = 2; i < 6; i++) {
                   expect(searchService.search.args[i]).to.deep.equal([
                     'contacts',
                     { types: { selected: ['childType'] } },
-                    { limit: 24, withIds: false, silent: true },
                     {
+                      limit: 24,
+                      withIds: false,
+                      silent: true,
                       displayLastVisitedDate: true,
                       visitCountSettings: {},
                       sortByLastVisitedDate: true,
                     },
-                    undefined,
                   ]);
                 }
               });
@@ -1094,8 +1097,6 @@ describe('Contacts component', () => {
                   'contacts',
                   { types: { selected: ['childType'] } },
                   { limit: 24, withIds: false, silent: true },
-                  {},
-                  undefined,
                 ]);
               }
             });
@@ -1136,8 +1137,6 @@ describe('Contacts component', () => {
                       'contacts',
                       { types: { selected: ['childType'] } },
                       { limit: 24, withIds: false, silent: true },
-                      {},
-                      undefined,
                     ]);
                   }
                 });
@@ -1163,8 +1162,6 @@ describe('Contacts component', () => {
             'contacts',
             { types: { selected: ['childType'] } },
             { limit: 25 },
-            {},
-            undefined,
           ]);
         }));
       });

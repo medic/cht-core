@@ -1,14 +1,21 @@
 import { expect } from 'chai';
 import {
-  AbstractDataContext, deepCopy, findById, getLastElement, getPagedGenerator,
+  AbstractDataContext,
+  deepCopy,
+  findById,
+  getLastElement,
+  getPagedGenerator,
   hasField,
-  hasFields, isDataObject, isIdentifiable,
-  isNonEmptyArray,
+  hasFields,
+  isDataObject,
+  isIdentifiable,
+  isNonEmptyArray, isNormalizedParent,
   isRecord,
   isString,
   NonEmptyArray
 } from '../../src/libs/core';
 import sinon, { SinonStub } from 'sinon';
+import * as Core from '../../src/libs/core';
 
 describe('core lib', () => {
   afterEach(() => sinon.restore());
@@ -266,6 +273,31 @@ describe('core lib', () => {
       expect(result.done).to.be.true;
       expect(result.value).to.be.equal(null);
       expect(fetchFunctionStub.calledOnce).to.be.true;
+    });
+  });
+
+  describe('isNormalizedParent', () => {
+    let isDataObject: SinonStub;
+
+    beforeEach(() => isDataObject = sinon.stub(Core, 'isDataObject'));
+    afterEach(() => sinon.restore());
+
+    ([
+      [{ _id: 'my-id' }, true, true],
+      [{ _id: 'my-id' }, false, false],
+      [{ hello: 'my-id' }, true, false],
+      [{ _id: 1 }, true, false],
+      [{ _id: 'my-id', parent: 'hello' }, true, false],
+      [{ _id: 'my-id', parent: null }, true, true],
+      [{ _id: 'my-id', parent: { hello: 'world' } }, true, false],
+      [{ _id: 'my-id', parent: { _id: 'parent-id' } }, true, true],
+      [{ _id: 'my-id', parent: { _id: 'parent-id', parent: { hello: 'world' } } }, true, false],
+      [{ _id: 'my-id', parent: { _id: 'parent-id', parent: { _id: 'grandparent-id' } } }, true, true],
+    ] as [unknown, boolean, boolean][]).forEach(([value, dataObj, expected]) => {
+      it(`evaluates ${JSON.stringify(value)}`, () => {
+        isDataObject.returns(dataObj);
+        expect(isNormalizedParent(value)).to.equal(expected);
+      });
     });
   });
 });

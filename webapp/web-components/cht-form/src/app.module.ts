@@ -9,9 +9,9 @@ import { AppComponent } from './app.component';
 import { TranslateService } from '@mm-services/translate.service';
 import { HttpClientModule } from '@angular/common/http';
 import { StoreModule } from '@ngrx/store';
+import { LanguageService } from '@mm-services/language.service';
 
 @NgModule({
-  declarations: [AppComponent],
   imports: [
     BrowserModule,
     HttpClientModule,
@@ -19,21 +19,23 @@ import { StoreModule } from '@ngrx/store';
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
-        useFactory: (db: DbService) => new TranslationLoaderProvider(db),
-        deps: [DbService],
+        useFactory:
+          (db: DbService, languageService: LanguageService) => new TranslationLoaderProvider(db, languageService),
+        deps: [DbService, LanguageService],
       },
       compiler: {
         provide: TranslateCompiler,
         useClass: TranslateMessageFormatCompilerProvider,
       },
     }),
+    AppComponent,
   ]
 })
 export class AppModule implements DoBootstrap {
   constructor(
     injector: Injector,
-    private dbService: DbService,
-    private translateService: TranslateService
+    private readonly dbService: DbService,
+    private readonly translateService: TranslateService
   ) {
     const chtForm = createCustomElement(AppComponent, { injector });
     customElements.define('cht-form', chtForm);

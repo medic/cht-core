@@ -144,4 +144,9 @@ export class CHTDatasourceService {
       }
     };
   }
+
+  async getDataContext() {
+    await this.isInitialized();
+    return this.dataContext;
+  }
 }

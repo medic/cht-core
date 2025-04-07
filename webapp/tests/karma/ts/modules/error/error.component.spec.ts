@@ -34,12 +34,10 @@ describe('ErrorComponent', () => {
 
     await TestBed
       .configureTestingModule({
-        declarations: [
-          ErrorComponent,
-          ToolBarComponent,
-        ],
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          ErrorComponent,
+          ToolBarComponent,
         ],
         providers: [
           provideMockStore({ selectors: [] }),

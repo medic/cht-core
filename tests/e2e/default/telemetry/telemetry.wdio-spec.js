@@ -1,4 +1,3 @@
-const { Key } = require('webdriverio');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const utils = require('@utils');
 const moment = require('moment');
@@ -189,11 +188,6 @@ describe('Telemetry', () => {
 
       expect(await getTelemetryEntryByKey('search_match:contacts_by_type_freetext:name')).to.have.lengthOf(2);
       expect(await getTelemetryEntryByKey('search_match:contacts_by_type_freetext:phone')).to.have.lengthOf(2);
-
-      const searchField = await $('.select2-search__field');
-      if (await searchField.isDisplayed()) {
-        await browser.keys(Key.Escape);
-      }
 
       for (const searchTerm of searchTerms) {
         await genericForm.selectContact(patient.name, 'Select the contact without type', searchTerm);

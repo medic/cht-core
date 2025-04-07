@@ -84,7 +84,7 @@ describe('bulk-docs handler', () => {
   before(async () => {
     await utils.saveDoc(parentPlace);
     await sUtils.waitForSentinel();
-    await utils.updatePermissions(['district_admin'], ['can_have_multiple_places'], [], true);
+    await utils.updatePermissions(['district_admin'], ['can_have_multiple_places'], [], { ignoreReload: true });
     await utils.createUsers(users);
   });
 
@@ -286,13 +286,13 @@ describe('bulk-docs handler', () => {
           }).then(result => {
             chai.expect(result.length).to.equal(8);
             chai.expect(result[0]).excluding('_rev').to.deep.equal(docs[0]);
-            chai.expect(result[1]).to.deep.nested.include({ 'responseBody.error': 'not_found' });
+            chai.expect(result[1]).to.deep.nested.include({ 'body.error': 'not_found' });
             chai.expect(result[2]).excluding('_rev').to.deep.equal(existentDocs[2]);
             chai.expect(result[3]).excluding('_rev').to.deep.equal(existentDocs[3]);
             chai.expect(result[4]).excluding('_rev').to.deep.equal(existentDocs[0]);
 
             chai.expect(result[5]).excluding('_rev').to.deep.equal(docs[5]);
-            chai.expect(result[6]).to.deep.nested.include({ 'responseBody.error': 'not_found' });
+            chai.expect(result[6]).to.deep.nested.include({ 'body.error': 'not_found' });
             chai.expect(result[7]).excluding( ['_rev', '_id']).to.deep.equal(docs[7]);
 
             return sUtils.waitForSentinel(ids).then(() => sUtils.getInfoDocs(ids));
@@ -757,12 +757,12 @@ describe('bulk-docs handler', () => {
         chai.expect(results.length).to.equal(8);
 
         chai.expect(results[0]).excluding('_rev').to.deep.equal(docs[0]);
-        chai.expect(results[1]).to.deep.nested.include({ 'responseBody.error': 'not_found' });
+        chai.expect(results[1]).to.deep.nested.include({ 'body.error': 'not_found' });
         chai.expect(results[2]).excluding('_rev').to.deep.equal(existentDocs[2]);
         chai.expect(results[3]).excluding('_rev').to.deep.equal(existentDocs[3]);
         chai.expect(results[4]).excluding('_rev').to.deep.equal(existentDocs[0]);
         chai.expect(results[5]).excluding('_rev').to.deep.equal(docs[5]);
-        chai.expect(results[6]).to.deep.nested.include({ 'responseBody.error': 'not_found' });
+        chai.expect(results[6]).to.deep.nested.include({ 'body.error': 'not_found' });
         chai.expect(results[7]).excluding(['_rev', '_id']).to.deep.equal(docs[7]);
       });
   });
@@ -804,7 +804,7 @@ describe('bulk-docs handler', () => {
           chai.expect(result[0]).to.include({ id: 'denied_report', error: 'forbidden' });
         } else {
           // CouchDB interprets this as an attachment POST request
-          chai.expect(result).to.deep.nested.include({ 'responseBody.error': 'method_not_allowed' });
+          chai.expect(result).to.deep.nested.include({ 'body.error': 'method_not_allowed' });
         }
       });
     });
@@ -862,9 +862,9 @@ describe('bulk-docs handler', () => {
       })
       .then(results => {
         chai.expect(results[0]).to.deep.equal(docs[0]);
-        chai.expect(results[1]).to.include({ statusCode: 404 });
+        chai.expect(results[1]).to.include({ status: 404 });
         chai.expect(results[2]).to.deep.equal(docs[2]);
-        chai.expect(results[3]).to.include({ statusCode: 404 });
+        chai.expect(results[3]).to.include({ status: 404 });
       });
   });
 
@@ -1306,5 +1306,274 @@ describe('bulk-docs handler', () => {
           { id: 'denied_target', error: 'forbidden' },
         ]);
       });
+  });
+
+  describe('editing primary conacts', () => {
+    const existingDocs = [
+      {
+        _id: 'existing_clinic', // depth 1
+        type: 'clinic',
+        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+        contact: { _id: 'existing_person' }
+      },
+      {
+        _id: 'report_about_existing_clinic',
+        type: 'data_record',
+        form: 'form',
+        fields: { place_id: 'existing_clinic' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'existing_person', // depth 2
+        type: 'person',
+        parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+        patient_id: 'existing_person_id'
+      },
+      {
+        _id: 'report_about_existing_person1',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'existing_person_id' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'report_about_existing_person2',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_uuid: 'existing_person' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'target~existing_person',
+        type: 'target',
+        owner: 'existing_person',
+      },
+      {
+        _id: 'existing_clinic2', // depth 1
+        type: 'clinic',
+        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+        contact: { _id: 'existing_person2' }
+      },
+      {
+        _id: 'existing_person2', // out of hierarchy
+        type: 'person',
+        parent: { _id: 'other2', parent: { _id: 'other1' } },
+        patient_id: 'existing_person_id2'
+      },
+      {
+        _id: 'report_about_existing_person2_1',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'existing_person_id2' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'target~existing_person2',
+        type: 'target',
+        owner: 'existing_person2',
+      },
+    ];
+
+    const newDocs = [
+      {
+        _id: 'new_clinic', // depth 1
+        type: 'clinic',
+        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+        contact: { _id: 'new_person' }
+      },
+      {
+        _id: 'report_about_new_clinic',
+        type: 'data_record',
+        form: 'form',
+        fields: { place_id: 'new_clinic' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'new_person', // depth 2
+        type: 'person',
+        parent: { _id: 'new_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
+        patient_id: 'new_person_id'
+      },
+      {
+        _id: 'report_about_new_person1',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'new_person_id' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'report_about_new_person2',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_uuid: 'new_person' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'target~new_person',
+        type: 'target',
+        owner: 'new_person',
+      },
+      {
+        _id: 'new_clinic2', // depth 1
+        type: 'clinic',
+        parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
+        contact: { _id: 'new_person2' }
+      },
+      {
+        _id: 'new_person2', // out of hierarchy
+        type: 'person',
+        parent: { _id: 'other2', parent: { _id: 'other1' } },
+        patient_id: 'new_person_id2'
+      },
+      {
+        _id: 'report_about_new_person2_1',
+        type: 'data_record',
+        form: 'form',
+        fields: { patient_id: 'new_person_id2' },
+        contact: { _id: 'nevermind' },
+      },
+      {
+        _id: 'target~new_person2',
+        type: 'target',
+        owner: 'new_person2',
+      },
+    ];
+
+    beforeEach(() => {
+      existingDocs.forEach(doc => (delete doc._rev));
+      newDocs.forEach(doc => (delete doc._rev));
+    });
+
+    it('should block editing of out of depth primary contacts when not allowed', async () => {
+      const settings = {
+        replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 1 }]
+      };
+      await utils.updateSettings(settings, { ignoreReload: true });
+      await utils.saveDocsRevs(existingDocs);
+      offlineRequestOptions.body = { docs: [...existingDocs, ...newDocs], new_edits: true };
+      const results = await utils.requestOnMedicDb(offlineRequestOptions);
+
+      chai.expect(results).excludingEvery('rev').to.deep.equal([
+        { id: 'existing_clinic', ok: true },
+        { id: 'report_about_existing_clinic', ok: true },
+        { id: 'existing_person', error: 'forbidden' },
+        { id: 'report_about_existing_person1', error: 'forbidden' },
+        { id: 'report_about_existing_person2', error: 'forbidden' },
+        { id: 'target~existing_person', error: 'forbidden' },
+        { id: 'existing_clinic2', ok: true },
+        { id: 'existing_person2', error: 'forbidden' },
+        { id: 'report_about_existing_person2_1', error: 'forbidden' },
+        { id: 'target~existing_person2', error: 'forbidden' },
+        { id: 'new_clinic', ok: true },
+        { id: 'report_about_new_clinic', ok: true },
+        { id: 'new_person', error: 'forbidden' },
+        { id: 'report_about_new_person1', error: 'forbidden' },
+        { id: 'report_about_new_person2', error: 'forbidden' },
+        { id: 'target~new_person', error: 'forbidden' },
+        { id: 'new_clinic2', ok: true },
+        { id: 'new_person2', error: 'forbidden' },
+        { id: 'report_about_new_person2_1', error: 'forbidden' },
+        { id: 'target~new_person2', error: 'forbidden' },
+      ]);
+    });
+
+    it('should allow editing of out of depth primary contacts when allowed', async () => {
+      const settings = {
+        replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 1, replicate_primary_contacts: true }]
+      };
+      await utils.updateSettings(settings, { ignoreReload: true });
+      await utils.saveDocsRevs(existingDocs);
+      offlineRequestOptions.body = { docs: [...existingDocs, ...newDocs], new_edits: true };
+      const results = await utils.requestOnMedicDb(offlineRequestOptions);
+
+      chai.expect(results).excludingEvery('rev').to.deep.equal([
+        { id: 'existing_clinic', ok: true },
+        { id: 'report_about_existing_clinic', ok: true },
+        { id: 'existing_person', ok: true },
+        { id: 'report_about_existing_person1', ok: true },
+        { id: 'report_about_existing_person2', ok: true },
+        { id: 'target~existing_person', ok: true },
+        { id: 'existing_clinic2', ok: true },
+        { id: 'existing_person2', ok: true },
+        { id: 'report_about_existing_person2_1', ok: true },
+        { id: 'target~existing_person2', ok: true },
+        { id: 'new_clinic', ok: true },
+        { id: 'report_about_new_clinic', ok: true },
+        { id: 'new_person', ok: true },
+        { id: 'report_about_new_person1', ok: true },
+        { id: 'report_about_new_person2', ok: true},
+        { id: 'target~new_person', ok: true },
+        { id: 'new_clinic2', ok: true },
+        { id: 'new_person2', ok: true },
+        { id: 'report_about_new_person2_1', ok: true },
+        { id: 'target~new_person2', ok: true },
+      ]);
+    });
+
+    it('should allow editing of out of depth primary contacts when allowed', async () => {
+      const settings = {
+        replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 1, replicate_primary_contacts: true }]
+      };
+      await utils.updateSettings(settings, { ignoreReload: true });
+      await utils.saveDocsRevs(existingDocs);
+      offlineRequestOptions.body = { docs: [...existingDocs, ...newDocs], new_edits: true };
+      const results = await utils.requestOnMedicDb(offlineRequestOptions);
+
+      chai.expect(results).excludingEvery('rev').to.deep.equal([
+        { id: 'existing_clinic', ok: true },
+        { id: 'report_about_existing_clinic', ok: true },
+        { id: 'existing_person', ok: true },
+        { id: 'report_about_existing_person1', ok: true },
+        { id: 'report_about_existing_person2', ok: true },
+        { id: 'target~existing_person', ok: true },
+        { id: 'existing_clinic2', ok: true },
+        { id: 'existing_person2', ok: true },
+        { id: 'report_about_existing_person2_1', ok: true },
+        { id: 'target~existing_person2', ok: true },
+        { id: 'new_clinic', ok: true },
+        { id: 'report_about_new_clinic', ok: true },
+        { id: 'new_person', ok: true },
+        { id: 'report_about_new_person1', ok: true },
+        { id: 'report_about_new_person2', ok: true},
+        { id: 'target~new_person', ok: true },
+        { id: 'new_clinic2', ok: true },
+        { id: 'new_person2', ok: true },
+        { id: 'report_about_new_person2_1', ok: true },
+        { id: 'target~new_person2', ok: true },
+      ]);
+    });
+
+    it('should respect report depth for primary contacts', async () => {
+      const settings = {
+        replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0, replicate_primary_contacts: true }]
+      };
+      await utils.updateSettings(settings, { ignoreReload: true });
+      await utils.saveDocsRevs(existingDocs);
+      offlineRequestOptions.body = { docs: [...existingDocs, ...newDocs], new_edits: true };
+      const results = await utils.requestOnMedicDb(offlineRequestOptions);
+
+      chai.expect(results).excludingEvery('rev').to.deep.equal([
+        { id: 'existing_clinic', ok: true },
+        { id: 'report_about_existing_clinic', error: 'forbidden' },
+        { id: 'existing_person', ok: true },
+        { id: 'report_about_existing_person1', error: 'forbidden' },
+        { id: 'report_about_existing_person2', error: 'forbidden' },
+        { id: 'target~existing_person', ok: true },
+        { id: 'existing_clinic2', ok: true },
+        { id: 'existing_person2', ok: true },
+        { id: 'report_about_existing_person2_1', error: 'forbidden' },
+        { id: 'target~existing_person2', ok: true },
+        { id: 'new_clinic', ok: true },
+        { id: 'report_about_new_clinic', error: 'forbidden' },
+        { id: 'new_person', ok: true },
+        { id: 'report_about_new_person1', error: 'forbidden' },
+        { id: 'report_about_new_person2', error: 'forbidden' },
+        { id: 'target~new_person', ok: true },
+        { id: 'new_clinic2', ok: true },
+        { id: 'new_person2', ok: true },
+        { id: 'report_about_new_person2_1', error: 'forbidden' },
+        { id: 'target~new_person2', ok: true },
+      ]);
+    });
   });
 });
