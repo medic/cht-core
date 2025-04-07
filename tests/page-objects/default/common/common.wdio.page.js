@@ -146,7 +146,7 @@ const getVisibleLoaders = async () => {
   const visible = [];
   const loaders = await $$('.container-fluid .loader').getElements();
   for (let i = 0; i < loaders.length; i++) {
-    if (await loaders[i].isDisplayedInViewport()) {
+    if (await loaders[i].isDisplayed({ withinViewport: true })) {
       visible.push(loaders[i]);
     }
   }
