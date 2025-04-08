@@ -5,8 +5,7 @@ import { isEqual as _isEqual } from 'lodash-es';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { FormService } from '@mm-services/form.service';
-import { EnketoFormContext } from '@mm-services/enketo.service';
+import { FormService, WebappEnketoFormContext } from '@mm-services/form.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
 import { Selectors } from '@mm-selectors/index';
@@ -279,7 +278,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.globalActions.setEnketoEditedStatus(false);
 
-    const formContext = new EnketoFormContext('#contact-form', 'contact', formDoc, this.getFormInstanceData());
+    const formContext = new WebappEnketoFormContext('#contact-form', 'contact', formDoc, this.getFormInstanceData());
     formContext.editedListener = this.markFormEdited.bind(this);
     formContext.valuechangeListener = this.resetFormError.bind(this);
     formContext.titleKey = titleKey;

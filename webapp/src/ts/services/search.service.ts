@@ -14,11 +14,17 @@ import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
   providedIn: 'root'
 })
 export class SearchFactoryService {
+  private searchFn?: Function;
+
   constructor() {}
 
-  async get(dbService, datasourceService) {
-    const dataContext = await datasourceService.get();
-    return Search(Promise, dbService.get(), dataContext);
+  async get(dbService: DbService, datasourceService: CHTDatasourceService): Promise<Function> {
+    if (!this.searchFn) {
+      const dataContext = await datasourceService.get();
+      this.searchFn = Search(dbService.get(), dataContext) as Function;
+    }
+
+    return this.searchFn;
   }
 }
 
@@ -26,7 +32,6 @@ export class SearchFactoryService {
   providedIn: 'root'
 })
 export class SearchService {
-  private readonly promisedSearchFactory;
   constructor(
     private readonly datasourceService: CHTDatasourceService,
     private readonly dbService:DbService,
@@ -35,9 +40,7 @@ export class SearchService {
     private readonly searchFactoryService:SearchFactoryService,
     private readonly performanceService: PerformanceService,
     private readonly ngZone:NgZone,
-  ) {
-    this.promisedSearchFactory = this.searchFactoryService.get(this.dbService, this.datasourceService);
-  }
+  ) { }
 
   private _currentQuery:any = {};
 
@@ -125,11 +128,23 @@ export class SearchService {
       });
   }
 
-  search(type, filters: Filter, options:any = {}, extensions:any = {}, docIds: any[] | undefined = undefined) {
-    return this.ngZone.runOutsideAngular(() => this._search(type, filters, options, extensions, docIds));
+  search(type, filters: Filter, options:SearchOptions = {}) {
+    return this.ngZone.runOutsideAngular(() => this._search(type, filters, options));
   }
 
-  private async _search(type, filters, options:any = {}, extensions:any = {}, docIds: any[] | undefined = undefined) {
+  private async _search(
+    type,
+    filters,
+    {
+      sortByLastVisitedDate,
+      hydrateContactNames,
+      displayLastVisitedDate,
+      visitCountSettings,
+      additionalDocIds = [],
+      ...options
+    }: SearchOptions
+  ) {
+    const extensions = { sortByLastVisitedDate };
     console.debug('Doing Search', type, filters, options, extensions);
 
     _.defaults(options, {
@@ -141,65 +156,57 @@ export class SearchService {
       return Promise.resolve([]);
     }
     const trackPerformance = this.performanceService.track();
-    const searchFactory = await this.promisedSearchFactory;
-    return searchFactory(type, filters, options, extensions)
-      .then((searchResults) => {
-        const filterKeys = Object.keys(filters).filter(f => filters[f]).sort();
-        // Will end up with entries like:
-        //   search:reports:search                      <-- text search of reports
-        //   search:reports:date:search:valid:verified  <-- maximum selected search of reports with text search
-        //   search:contacts:search                     <-- text search of contacts
-        //   search:contacts:types                      <-- default viewing of contact list
-        trackPerformance?.stop({ name: [ 'search', type, ...filterKeys ].join(':') });
+    const searchFn = await this.searchFactoryService.get(this.dbService, this.datasourceService);
+    try {
+      const searchResults = await searchFn(type, filters, options, extensions);
 
-        if (docIds && docIds.length) {
-          docIds.forEach((docId) => {
-            if (searchResults.docIds.indexOf(docId) === -1) {
-              searchResults.docIds.push(docId);
-            }
-          });
+      const filterKeys = Object.keys(filters).filter(f => filters[f]).sort();
+      // Will end up with entries like:
+      //   search:reports:search                      <-- text search of reports
+      //   search:reports:date:search:valid:verified  <-- maximum selected search of reports with text search
+      //   search:contacts:search                     <-- text search of contacts
+      //   search:contacts:types                      <-- default viewing of contact list
+      trackPerformance?.stop({ name: [ 'search', type, ...filterKeys ].join(':') });
+
+      additionalDocIds
+        .filter(docId => searchResults.docIds.indexOf(docId) === -1)
+        .forEach(docId => searchResults.docIds.push(docId));
+      const dataRecordsPromise = this.getDataRecordsService.get(
+        searchResults.docIds,
+        { hydrateContactNames, include_docs: options.include_docs }
+      );
+
+      if (!displayLastVisitedDate) {
+        return dataRecordsPromise;
+      }
+
+
+      const lastVisitedDatePromise = this.getLastVisitedDates(
+        searchResults.docIds,
+        searchResults.queryResultsCache,
+        visitCountSettings
+      );
+
+      const [dataRecords, lastVisitedDates] = await Promise.all([
+        dataRecordsPromise,
+        lastVisitedDatePromise
+      ]);
+
+      lastVisitedDates.forEach((dateResult) => {
+        const relevantDataRecord = dataRecords.find((dataRecord) => {
+          return dataRecord._id === dateResult.key;
+        });
+
+        if (relevantDataRecord) {
+          Object.assign(relevantDataRecord, dateResult.value);
+          relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
         }
-        const dataRecordsPromise = this.getDataRecordsService.get(searchResults.docIds, options);
-
-        if (!extensions.displayLastVisitedDate) {
-          return dataRecordsPromise;
-        }
-
-
-        const lastVisitedDatePromise = this.getLastVisitedDates(
-          searchResults.docIds,
-          searchResults.queryResultsCache,
-          extensions.visitCountSettings
-        );
-
-        return Promise
-          .all([
-            dataRecordsPromise,
-            lastVisitedDatePromise
-          ])
-          .then(([dataRecords, lastVisitedDates]) => {
-            lastVisitedDates.forEach((dateResult) => {
-              const relevantDataRecord = dataRecords.find((dataRecord) => {
-                return dataRecord._id === dateResult.key;
-              });
-
-              if (relevantDataRecord) {
-                Object.assign(relevantDataRecord, dateResult.value);
-                relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
-              }
-            });
-
-            return dataRecords;
-          });
-      })
-      .then((results) => {
-        this._currentQuery = {};
-        return results;
-      })
-      .catch((err) => {
-        this._currentQuery = {};
-        throw err;
       });
+
+      return dataRecords;
+    } finally {
+      this._currentQuery = {};
+    }
   }
 }
 
@@ -208,4 +215,16 @@ export interface Filter {
   search?: string;
   parent?: string;
   subjectIds?: string[];
+}
+
+interface SearchOptions {
+  force?: boolean,
+  limit?: number,
+  skip?: number,
+  hydrateContactNames?: boolean,
+  include_docs?: boolean,
+  sortByLastVisitedDate?: boolean,
+  displayLastVisitedDate?: boolean,
+  visitCountSettings?: Record<string, unknown>,
+  additionalDocIds?: string[]
 }

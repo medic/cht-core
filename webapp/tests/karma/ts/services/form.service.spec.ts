@@ -20,7 +20,7 @@ import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulatio
 import { AttachmentService } from '@mm-services/attachment.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
-import { FormService } from '@mm-services/form.service';
+import { FormService, WebappEnketoFormContext } from '@mm-services/form.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TransitionsService } from '@mm-services/transitions.service';
@@ -30,7 +30,7 @@ import { FeedbackService } from '@mm-services/feedback.service';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
+import { EnketoService } from '@mm-services/enketo.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
@@ -242,7 +242,7 @@ describe('Form service', () => {
     it('renders error when user does not have associated contact', () => {
       UserContact.resolves();
       return service
-        .render(new EnketoFormContext('#', 'report', { }))
+        .render(new WebappEnketoFormContext('#', 'report', { }))
         .then(() => {
           expect.fail('Should throw error');
         })
@@ -274,7 +274,7 @@ describe('Form service', () => {
       const expectedErrorMessage = expectedErrorTitle + JSON.stringify(expectedErrorDetail);
       enketoInit.returns(expectedErrorDetail);
 
-      const formContext = new EnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
+      const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
 
       try {
         await service.render(formContext);
@@ -312,7 +312,7 @@ describe('Form service', () => {
       enketoInit.returns([]);
       FileReader.utf8.resolves('<some-blob name="xml"/>');
       EnketoPrepopulationData.resolves('<xml></xml>');
-      return service.render(new EnketoFormContext('#div', 'task', mockEnketoDoc('myform'))).then(() => {
+      return service.render(new WebappEnketoFormContext('#div', 'task', mockEnketoDoc('myform'))).then(() => {
         expect(UserContact.callCount).to.equal(1);
         expect(EnketoPrepopulationData.callCount).to.equal(1);
         expect(FileReader.utf8.callCount).to.equal(2);
@@ -340,7 +340,7 @@ describe('Form service', () => {
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
       EnketoPrepopulationData.resolves(data);
-      const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), data);
+      const formContext = new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform'), data);
       return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].modelStr).to.equal('my model');
@@ -378,7 +378,7 @@ describe('Form service', () => {
       contactViewModelGeneratorService.loadReports.resolves([{ _id: 'somereport' }]);
       targetAggregatesService.getTargetDocs.resolves([{ _id: 't1' }, { _id: 't2' }]);
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'someparent' }] });
-      const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
+      const formContext = new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
       service.setUserContext(['facility'], 'contact');
       return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
@@ -440,7 +440,7 @@ describe('Form service', () => {
         }
       });
       LineageModelGenerator.contact.resolves({ lineage: [] });
-      const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
+      const formContext = new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
       return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
@@ -478,7 +478,7 @@ describe('Form service', () => {
           name: 'sharon'
         }
       };
-      const formContext = new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
+      const formContext = new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
       return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external).to.equal(undefined);
@@ -512,7 +512,7 @@ describe('Form service', () => {
       };
       ContactSummary.resolves({ context: { pregnant: true } });
       Search.resolves([{ _id: 'somereport' }]);
-      const formContext = new EnketoFormContext('div', 'report',  mockEnketoDoc('myform'), instanceData);
+      const formContext = new WebappEnketoFormContext('div', 'report',  mockEnketoDoc('myform'), instanceData);
       return service.render(formContext).then(() => {
         expect(LineageModelGenerator.contact.callCount).to.equal(1);
         expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
@@ -533,7 +533,7 @@ describe('Form service', () => {
         .onFirstCall().resolves('<div>first form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
 
-      await service.render(new EnketoFormContext('#div', 'report',  mockEnketoDoc('firstForm')));
+      await service.render(new WebappEnketoFormContext('#div', 'report',  mockEnketoDoc('firstForm')));
       expect(form.resetView.notCalled).to.be.true;
       expect(UserContact.calledOnce).to.be.true;
       expect(EnketoPrepopulationData.calledOnce).to.be.true;
@@ -551,7 +551,7 @@ describe('Form service', () => {
         .onFirstCall().resolves('<div>second form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
 
-      await service.render(new EnketoFormContext('#div', 'report', mockEnketoDoc('secondForm')));
+      await service.render(new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('secondForm')));
       expect(form.resetView.calledOnce).to.be.true;
       expect(UserContact.calledOnce).to.be.true;
       expect(EnketoPrepopulationData.calledOnce).to.be.true;
@@ -581,7 +581,7 @@ describe('Form service', () => {
       const renderForm = sinon.spy(EnketoService.prototype, 'renderForm');
 
       try {
-        await service.render(new EnketoFormContext('div', 'report', mockEnketoDoc('myform'), data));
+        await service.render(new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform'), data));
         flush();
         expect.fail('Should throw error');
       } catch (error) {
@@ -602,7 +602,7 @@ describe('Form service', () => {
       ContactSummary.resolves({ context: { pregnant: false } });
 
       try {
-        await service.render(new EnketoFormContext('div', 'report', mockEnketoDoc('myform')));
+        await service.render(new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform')));
         flush();
         expect.fail('Should throw error');
       } catch (error) {
@@ -1580,5 +1580,46 @@ describe('Form service', () => {
           assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
         });
     });
+  });
+});
+
+describe('WebappEnketoFormContext', () => {
+  it('should construct object correctly', () => {
+    const context = new WebappEnketoFormContext('#sel', 'task', { doc: 1 }, { data: 1 });
+    expect(context).to.deep.include({
+      selector: '#sel',
+      type: 'task',
+      formDoc: { doc: 1 },
+      instanceData: { data: 1 },
+    });
+  });
+
+  it('shouldEvaluateExpression should return false for tasks', () => {
+    const ctx = new WebappEnketoFormContext('a', 'task', {}, {});
+    expect(ctx.shouldEvaluateExpression()).to.eq(false);
+  });
+
+  it('shouldEvaluateExpression should return false for editing reports', () => {
+    const ctx = new WebappEnketoFormContext('a', 'report', {}, {});
+    ctx.editing = true;
+    expect(ctx.shouldEvaluateExpression()).to.eq(false);
+  });
+
+  it('shouldEvaluateExpression should return true for reports and contact forms', () => {
+    const ctxReport = new WebappEnketoFormContext('a', 'report', {}, {});
+    expect(ctxReport.shouldEvaluateExpression()).to.eq(true);
+
+    const ctxContact = new WebappEnketoFormContext('a', 'contact', {}, {});
+    expect(ctxContact.shouldEvaluateExpression()).to.eq(true);
+  });
+
+  it('requiresContact should return true when type is not contact', () => {
+    const ctxReport = new WebappEnketoFormContext('a', 'report', {}, {});
+    expect(ctxReport.requiresContact()).to.eq(true);
+  });
+
+  it('requiresContact should return false when type is contact', () => {
+    const ctxReport = new WebappEnketoFormContext('a', 'contact', {}, {});
+    expect(ctxReport.requiresContact()).to.eq(false);
   });
 });

@@ -12,7 +12,7 @@ const iterateGenerator = async (gen) => {
   return rows;
 };
 
-const queryFreetext = async (dataContext, db, request, type) => {
+const queryFreetext = async (dataContext, request, type) => {
   try {
     const datasource = getDatasource(dataContext);
     let generator;

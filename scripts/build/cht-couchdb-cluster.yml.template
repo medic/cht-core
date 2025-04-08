@@ -18,6 +18,8 @@ services:
         max-size: "${LOG_MAX_SIZE:-50m}"
         max-file: "${LOG_MAX_FILES:-20}"
     restart: always
+    depends_on:
+      - nouveau
     networks:
       cht-net:
 
@@ -39,6 +41,8 @@ services:
         max-size: "${LOG_MAX_SIZE:-50m}"
         max-file: "${LOG_MAX_FILES:-20}"
     restart: always
+    depends_on:
+      - nouveau
     networks:
       cht-net:
 
@@ -60,6 +64,21 @@ services:
         max-size: "${LOG_MAX_SIZE:-50m}"
         max-file: "${LOG_MAX_FILES:-20}"
     restart: always
+    depends_on:
+      - nouveau
+    networks:
+      cht-net:
+
+  nouveau:
+    image: {{{ repo }}}/cht-couchdb-nouveau:{{ tag }}
+    volumes:
+      - ${DB1_DATA:-./srv1}/nouveau:/data/nouveau
+    restart: always
+    logging:
+      driver: "local"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
     networks:
       cht-net:
 

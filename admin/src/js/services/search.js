@@ -8,7 +8,6 @@ const Search = require('@medic/search');
   // To make it easier to mock out
   angular.module('inboxServices').factory('SearchFactory',
     function(
-      $q,
       CHTDatasource,
       DB
     ) {
@@ -16,7 +15,7 @@ const Search = require('@medic/search');
       'ngInject';
 
       return function() {
-        return Search($q, DB(), CHTDatasource.dataContext);
+        return Search(DB(), CHTDatasource.dataContext);
       };
     });
 
