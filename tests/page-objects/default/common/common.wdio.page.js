@@ -144,19 +144,19 @@ const hideSnackbar = () => {
 
 const getVisibleLoaders = async () => {
   const visible = [];
-    const loaderArray = await $$('.container-fluid .loader');
+  const loaderArray = await $$('.container-fluid .loader');
 
-    if (!loaderArray || await loaderArray.length === 0) {
-      return visible;
+  if (!loaderArray || await loaderArray.length === 0) {
+    return visible;
+  }
+
+  const loaders = await loaderArray.getElements();
+
+  for (const loader of loaders) {
+    if (await loader.isDisplayed({ withinViewport: true })) {
+      visible.push(loader);
     }
-
-    const loaders = await loaderArray.getElements();
-
-    for (const loader of loaders) {
-      if (await loader.isDisplayed({ withinViewport: true })) {
-        visible.push(loader);
-      }
-    }
+  }
 
   return visible;
 };
