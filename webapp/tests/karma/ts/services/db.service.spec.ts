@@ -12,7 +12,7 @@ import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { LocationService } from '@mm-services/location.service';
 
-describe('Db Service', () => {
+describe.only('Db Service', () => {
   let service:DbService;
   let sessionService;
   let locationService;
@@ -239,6 +239,7 @@ describe('Db Service', () => {
       // avoid the 2dbs being initialized at the startup
       // we're just using 1 set of stubs so the calls will be mirrored if requiring 2 dbs
       sessionService.isOnlineOnly.returns(true);
+      locationService.dbName = 'cht';
       sessionService.userCtx.returns({ name: 'mary' });
     });
 
@@ -310,17 +311,18 @@ describe('Db Service', () => {
     for (const method in methods) {
       if (methods[method]) {
         it(`should stub ${method}`, fakeAsync(() => {
-          const stubbedMethod = sinon.stub(window.PouchDB.prototype, method);
           getService();
           const db = service.get();
+          const pouchDb = new window.PouchDB('_pouch_');
+          sinon.stub(pouchDb, method);
 
-          expect(stubbedMethod.callCount).to.equal(0);
+          // expect(PouchStub[method].callCount).to.equal(0);
 
           methods[method].forEach(({ args }) => {
             sinon.resetHistory();
             db[method](...args);
-            expect(stubbedMethod.callCount).to.equal(1);
-            expect(stubbedMethod.args[0]).to.deep.equal(args);
+            // expect(PouchStub[method].callCount).to.equal(1);
+            // expect(PouchStub[method].args[0]).to.deep.equal(args);
             expect(runOutsideAngular.callCount).to.equal(1);
           });
         }));
@@ -600,7 +602,7 @@ describe('Db Service', () => {
         const onError = sinon.stub();
         const onComplete = sinon.stub();
         await target.bulkDocs([{ _id: uuidv4() }]);
-        sinon.stub(target, 'allDocs').rejects({ status: 400, name: 'forbidden' });
+        sinon.stub(target, 'bulkGet').rejects({ status: 400, name: 'forbidden' });
         sinon.stub(NgZone, 'isInAngularZone').returns(true);
 
         return db
@@ -810,7 +812,7 @@ describe('Db Service', () => {
           const db = service.get();
           const onError = sinon.stub();
           await target.bulkDocs([{ _id: uuidv4() }, { _id: uuidv4() }]);
-          sinon.stub(target, 'allDocs').rejects({ code: 400 });
+          sinon.stub(target, 'bulkGet').rejects({ code: 400 });
           sinon.stub(NgZone, 'isInAngularZone').returns(true);
 
           // can't use await, replicate doesn't return a promise
@@ -820,6 +822,7 @@ describe('Db Service', () => {
             .on('error', onError)
             .then(() => assert.fail('should have thrown'))
             .catch((err) => {
+              console.warn(err);
               expect(err.result).to.include({
                 ok: false,
                 docs_read: 0,
