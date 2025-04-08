@@ -1,6 +1,6 @@
 const db = require('../../db');
 const dataContext = require('../data-context');
-const search = require('@medic/search')(Promise, db.medic, dataContext);
+const search = require('@medic/search')(db.medic, dataContext);
 const lineage = require('@medic/lineage')(Promise, db.medic);
 
 module.exports = {
