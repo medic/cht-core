@@ -401,7 +401,7 @@ const syncAndWaitForSuccess = async (expectReload, timeout = RELOAD_SYNC_TIMEOUT
              (await modalPage.isDisplayed());
     }, { timeout });
 
-    if(await modalPage.isDisplayed()) {
+    if (await modalPage.isDisplayed()) {
       await closeReloadModal(true, RELOAD_SYNC_TIMEOUT);
     }
     await openHamburgerMenu();
