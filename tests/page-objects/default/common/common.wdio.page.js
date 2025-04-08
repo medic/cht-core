@@ -400,6 +400,10 @@ const syncAndWaitForSuccess = async (expectReload, timeout = RELOAD_SYNC_TIMEOUT
       return (await hamburgerMenuSelectors.syncSuccess().isDisplayed()) ||
              (await modalPage.isDisplayed());
     }, { timeout });
+
+    if(await modalPage.isDisplayed()) {
+      await closeReloadModal(true, RELOAD_SYNC_TIMEOUT);
+    }
     await openHamburgerMenu();
 
     if (!await hamburgerMenuSelectors.syncSuccess().isDisplayed({ withinViewport: true })) {
