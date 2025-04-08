@@ -15,17 +15,7 @@ const iterateGenerator = async (gen) => {
 const queryFreetext = async (dataContext, request, type) => {
   try {
     const datasource = getDatasource(dataContext);
-    let generator;
-
-    if (type === 'reports') {
-      generator = datasource.v1.report.getUuidsByFreetext(request.params.key);
-    } else if (type === 'contacts') {
-      if (request.params.type) {
-        generator = datasource.v1.contact.getUuidsByTypeFreetext(request.params.key, request.params.type);
-      } else {
-        generator = datasource.v1.contact.getUuidsByFreetext(request.params.key);
-      }
-    }
+    const generator = getGeneratorByType(datasource, request, type);
 
     return await iterateGenerator(generator);
   } catch (error) {
@@ -35,6 +25,20 @@ const queryFreetext = async (dataContext, request, type) => {
     // is being called the exception needs ot be handled which can be done later on
     return [];
   }
+};
+
+const getGeneratorByType = (datasource, request, type) => {
+  if (type === 'reports') {
+    return datasource.v1.report.getUuidsByFreetext(request.params.key);
+  }
+
+  if (type === 'contacts') {
+    return request.params.type
+      ? datasource.v1.contact.getUuidsByTypeFreetext(request.params.key, request.params.type)
+      : datasource.v1.contact.getUuidsByFreetext(request.params.key);
+  }
+
+  return null;
 };
 
 module.exports = {
