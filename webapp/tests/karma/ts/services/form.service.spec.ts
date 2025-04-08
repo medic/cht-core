@@ -20,7 +20,7 @@ import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulatio
 import { AttachmentService } from '@mm-services/attachment.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
-import { FormService, WebappEnketoFormContext } from '@mm-services/form.service';
+import { DuplicatesFoundError, FormService, WebappEnketoFormContext } from '@mm-services/form.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TransitionsService } from '@mm-services/transitions.service';
@@ -38,6 +38,7 @@ import { TargetAggregatesService } from '@mm-services/target-aggregates.service'
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 import { DeduplicateService } from '@mm-services/deduplicate.service';
 import { ContactsService } from '@mm-services/contacts.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -99,6 +100,8 @@ describe('Form service', () => {
   let deduplicateService;
   let getDuplicates;
   let contactsService;
+  let performanceService;
+  let performanceTracking;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -172,6 +175,8 @@ describe('Form service', () => {
     getDuplicates = sinon.stub();
     deduplicateService = { getDuplicates };
     contactsService = { getSiblings };
+    performanceTracking = { stop: sinon.stub() };
+    performanceService = { track: sinon.stub().returns(performanceTracking) };
 
     TestBed.configureTestingModule({
       providers: [
@@ -204,7 +209,8 @@ describe('Form service', () => {
         { provide: TargetAggregatesService, useValue: targetAggregatesService },
         { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
         { provide: DeduplicateService, useValue: deduplicateService },
-        { provide: ContactsService, useValue: contactsService }
+        { provide: ContactsService, useValue: contactsService },
+        { provide: PerformanceService, useValue: performanceService },
       ],
     });
 
@@ -1317,7 +1323,7 @@ describe('Form service', () => {
         contactRecordToJs: sinon.stub(),
       };
 
-      getDuplicates.returnsArg(1);
+      getDuplicates.returnsArg(2);
 
       TestBed.configureTestingModule({
         providers: [
@@ -1614,46 +1620,36 @@ describe('Form service', () => {
       dbBulkDocs.resolves([]);
       clock = sinon.useFakeTimers(1000);
 
-      contactsService.getSiblings.resolves([{
-        _id: 'sib1',
-        name: 'Sibling1',
-        parent: { _id: 'parent1' },
-        type,
-        reported_date: 1736845534000
-      },
-      {
-        _id: 'sib2',
-        name: 'Sibling2',
-        parent: { _id: 'parent1' },
-        type,
-        reported_date: 1736845534000
-      },]);
+      const duplicates = [
+        {
+          _id: 'sib1',
+          name: 'Sibling1',
+          parent: { _id: 'parent1' },
+          type,
+          reported_date: 1736845534000
+        },
+        {
+          _id: 'sib2',
+          name: 'Sibling2',
+          parent: { _id: 'parent1' },
+          type,
+          reported_date: 1736845534000
+        }
+      ];
+      contactsService.getSiblings.resolves(duplicates);
 
-      try {
-        await service.saveContact({ docId, type, }, { form, xmlVersion: undefined, duplicateCheck: undefined }, false);
-        // Fail the test if no error is thrown
-        throw new Error('Expected saveContact to throw an error, but it did not.');
-      } catch (e) {
-        expect(e.message).to.include('Duplicates found');
-        expect(e.duplicates).to.have.lengthOf(2);
-        expect(e.duplicates).to.deep.equal([
-          {
-            _id: 'sib1',
-            name: 'Sibling1',
-            parent: { _id: 'parent1' },
-            type,
-            reported_date: 1736845534000
-          },
-          {
-            _id: 'sib2',
-            name: 'Sibling2',
-            parent: { _id: 'parent1' },
-            type,
-            reported_date: 1736845534000
-          }
-        ]);
-      }
+      await expect(service.saveContact(
+        { docId, type, },
+        { form, xmlVersion: undefined, duplicateCheck: undefined },
+        false
+      )).to.be.rejectedWith(DuplicatesFoundError, 'Duplicates found')
+        .and.eventually.have.property('duplicates', duplicates);
+      expect(performanceService.track.calledOnceWithExactly()).to.be.true;
+      expect(performanceTracking.stop.calledOnceWithExactly({
+        name: `enketo:contacts:${type}:duplicate_check`
+      })).to.be.true;
     });
+
     it('should pass duplicate check when duplicates are acknowledged', async function () {
       const form = { getDataStr: () => '<data></data>' };
       const docId = null;
@@ -1701,6 +1697,8 @@ describe('Form service', () => {
           transitioned: true
         }
       ]]);
+      expect(performanceService.track.notCalled).to.be.true;
+      expect(performanceTracking.stop.notCalled).to.be.true;
     });
   });
 

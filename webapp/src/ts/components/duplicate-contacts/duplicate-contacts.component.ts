@@ -33,12 +33,10 @@ import { Contact } from '@medic/cht-datasource';
   ]
 })
 export class DuplicateContactsComponent {
-  @Input() duplicate: Contact.v1.Contact | undefined;
+  @Input() duplicate?: Contact.v1.Contact;
   isLoading: boolean = false;
-  error?: string = undefined;
-  _summary;
-
-  private readonly omitProperties = ['reported_date', 'name'];
+  error?: string;
+  contactSummary?: Record<string, unknown>;
 
   constructor(
     private readonly router: Router,
@@ -46,31 +44,19 @@ export class DuplicateContactsComponent {
     private readonly translateService: TranslateService
   ){}
 
-  _navigateToDuplicate() {
+  navigateToDuplicate() {
     this.router.navigate(['/contacts', this.duplicate!._id]);
   }
   
-  _loadContactSummary = async () => {
-    if (!this.duplicate?._id){
-      return;
-    }
-    
-    if (this.isLoading){
+  loadContactSummary = async () => {
+    if (this.contactSummary || !this.duplicate?._id || this.isLoading){
       return;
     }
 
     this.isLoading = true;
-    this.error = undefined;
     
     try {
-      const sanitizedContact = Object.keys(this.duplicate).reduce((acc, key) => {
-        if (!this.omitProperties.includes(key)) {
-          acc[key] = this.duplicate![key];
-        }
-        return acc;
-      }, {});
-
-      this._summary = await this.formService.loadContactSummary(sanitizedContact);
+      this.contactSummary = await this.formService.loadContactSummary(this.duplicate);
     } catch (err){
       this.error = await this.translateService.get('duplicate_check.contact.summary_error');
       console.error(err);

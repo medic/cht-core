@@ -159,51 +159,51 @@ describe('Contacts Service', () => {
     });
   });
 
-  it('should bust cache by correct type', () => {
+  it('should bust cache by correct type', async () => {
     query.resolves({ rows: [] });
 
-    return service.get(['clinic']).then(() => {
-      expect(contactTypesService.getPlaceTypes.callCount).to.equal(1);
-      expect(cacheService.register.callCount).to.equal(3);
+    await service.get(['clinic']);
 
-      const forDistrictHospital = cacheService.register.args[0][0];
-      const forHealthCenter = cacheService.register.args[1][0];
-      const forClinic = cacheService.register.args[2][0];
+    expect(contactTypesService.getPlaceTypes.callCount).to.equal(1);
+    expect(cacheService.register.callCount).to.equal(3);
 
-      const doc = { _id: 'someDoc', type: 'something', contact_type: 'otherthing' };
-      contactTypesService.getTypeId.withArgs(doc).returns('the correct type');
+    const forDistrictHospital = cacheService.register.args[0][0];
+    const forHealthCenter = cacheService.register.args[1][0];
+    const forClinic = cacheService.register.args[2][0];
 
-      expect(forDistrictHospital.invalidate(doc)).to.equal(false);
-      expect(forHealthCenter.invalidate(doc)).to.equal(false);
-      expect(forClinic.invalidate(doc)).to.equal(false);
+    const doc = { _id: 'someDoc', type: 'something', contact_type: 'otherthing' };
+    contactTypesService.getTypeId.withArgs(doc).returns('the correct type');
 
-      expect(contactTypesService.getTypeId.callCount).to.equal(3);
-      expect(contactTypesService.getTypeId.args).to.deep.equal([[doc], [doc], [doc],]);
+    expect(forDistrictHospital.invalidate({ doc })).to.equal(false);
+    expect(forHealthCenter.invalidate({ doc })).to.equal(false);
+    expect(forClinic.invalidate({ doc })).to.equal(false);
 
-      sinon.resetHistory();
+    expect(contactTypesService.getTypeId.callCount).to.equal(3);
+    expect(contactTypesService.getTypeId.args).to.deep.equal([[doc], [doc], [doc],]);
 
-      const otherDoc = { _id: 'someDoc', type: 'something', contact_type: 'otherthing' };
-      contactTypesService.getTypeId.withArgs(otherDoc).returns('district_hospital');
+    sinon.resetHistory();
 
-      expect(forDistrictHospital.invalidate(otherDoc)).to.equal(true);
-      expect(forHealthCenter.invalidate(otherDoc)).to.equal(false);
-      expect(forClinic.invalidate(otherDoc)).to.equal(false);
+    const otherDoc = { _id: 'someDoc', type: 'something', contact_type: 'otherthing' };
+    contactTypesService.getTypeId.withArgs(otherDoc).returns('district_hospital');
 
-      expect(contactTypesService.getTypeId.callCount).to.equal(3);
-      expect(contactTypesService.getTypeId.args).to.deep.equal([[otherDoc], [otherDoc], [otherDoc],]);
+    expect(forDistrictHospital.invalidate({ doc: otherDoc })).to.equal(true);
+    expect(forHealthCenter.invalidate({ doc: otherDoc })).to.equal(false);
+    expect(forClinic.invalidate({ doc: otherDoc })).to.equal(false);
 
-      sinon.resetHistory();
+    expect(contactTypesService.getTypeId.callCount).to.equal(3);
+    expect(contactTypesService.getTypeId.args).to.deep.equal([[otherDoc], [otherDoc], [otherDoc],]);
 
-      const thirdDoc = { _id: 'someDoc', type: 'something', contact_type: 'otherthing' };
-      contactTypesService.getTypeId.withArgs(thirdDoc).returns('clinic');
+    sinon.resetHistory();
 
-      expect(forDistrictHospital.invalidate(thirdDoc)).to.equal(false);
-      expect(forHealthCenter.invalidate(thirdDoc)).to.equal(false);
-      expect(forClinic.invalidate(thirdDoc)).to.equal(true);
+    const thirdDoc = { _id: 'someDoc', type: 'something', contact_type: 'otherthing' };
+    contactTypesService.getTypeId.withArgs(thirdDoc).returns('clinic');
 
-      expect(contactTypesService.getTypeId.callCount).to.equal(3);
-      expect(contactTypesService.getTypeId.args).to.deep.equal([[thirdDoc], [thirdDoc], [thirdDoc],]);
-    });
+    expect(forDistrictHospital.invalidate({ doc: thirdDoc })).to.equal(false);
+    expect(forHealthCenter.invalidate({ doc: thirdDoc })).to.equal(false);
+    expect(forClinic.invalidate({ doc: thirdDoc })).to.equal(true);
+
+    expect(contactTypesService.getTypeId.callCount).to.equal(3);
+    expect(contactTypesService.getTypeId.args).to.deep.equal([[thirdDoc], [thirdDoc], [thirdDoc],]);
   });
 
   it('should get siblings filtered by parent and contact type', async function () {

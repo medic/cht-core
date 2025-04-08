@@ -36,7 +36,7 @@ export class ContactsService {
                 })
                 .catch(callback);
             },
-            invalidate: (doc) => type.id === this.contactTypesService.getTypeId(doc),
+            invalidate: ({ doc }) => type.id === this.contactTypesService.getTypeId(doc),
           });
         });
         return cacheByType;

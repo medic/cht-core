@@ -22,7 +22,7 @@ import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
-import { NgIf, NgClass, NgFor, LowerCasePipe } from '@angular/common';
+import { NgIf, NgClass, NgFor } from '@angular/common';
 import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
@@ -49,7 +49,6 @@ import {
     AuthDirective,
     ContentRowListItemComponent,
     RouterLink,
-    LowerCasePipe,
     TranslatePipe,
     ResourceIconPipe,
     SummaryPipe,
