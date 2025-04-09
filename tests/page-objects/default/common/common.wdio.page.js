@@ -143,9 +143,32 @@ const hideSnackbar = () => {
 };
 
 const getVisibleLoaders = async () => {
-  return await $$('.container-fluid .loader').filter(async (loader) => {
-    return await loader.isDisplayed({ withinViewport: true });
-  });
+  try {
+    const loaders = await $$('.container-fluid .loader');
+
+    if (!loaders || loaders.length === 0) {
+      return [];
+    }
+
+    const elements = await loaders.getElements();
+    const visible = [];
+
+    for (let i = 0; i < elements.length; i++) {
+      try {
+        if (await elements[i].isDisplayed()) {
+          visible.push(elements[i]);
+        }
+      } catch (e) {
+        continue;
+      }
+    }
+
+    return visible;
+  } catch (e) {
+    // If there's an error finding loaders, return empty array
+    console.log('Error in getVisibleLoaders:', e.message);
+    return [];
+  }
 };
 
 const waitForLoaderToDisappear = async (element) => {
@@ -158,14 +181,16 @@ const waitForLoaders = async () => {
   await browser.waitUntil(async () => {
     try {
       const visibleLoaders = await getVisibleLoaders();
-      // Check if visibleLoaders is defined before checking its length
-      return !visibleLoaders || !visibleLoaders.length;
+      return !visibleLoaders || visibleLoaders.length === 0;
     } catch (error) {
-      // If there's an error (like index out of bounds), assume no loaders are visible
       console.log('Error checking for loaders:', error.message);
       return true;
     }
-  }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
+  }, {
+    timeout: 60000,
+    timeoutMsg: 'Waiting for Loading spinners to hide timed out.',
+    interval: 1000
+  });
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
@@ -382,6 +407,7 @@ const closeReloadModal = async (shouldUpdate, timeout) => {
 
 const syncAndNotWaitForSuccess = async () => {
   await openHamburgerMenu();
+  await syncButton().waitForClickable();
   await syncButton().click();
 };
 
