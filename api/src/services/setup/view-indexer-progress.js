@@ -56,7 +56,6 @@ const updateRunningTasks = (indexers, activeTasks = []) => {
       indexers.push(indexer);
     }
 
-    console.log(`${task.node}-${task.pid} progress`, task.progress);
     indexer.tasks[`${task.node}-${task.pid}`] = task.progress;
   });
 };
@@ -100,13 +99,9 @@ const getIndexers = async (indexers = []) => {
       return DDOC_PREFIX.test(String(task.design_document));
     });
     // We assume all previous tasks have finished.
-    console.log("indexers 1", indexers);
     indexers.forEach(setTasksToComplete);
-    console.log("indexers 2", indexers);
     updateRunningTasks(indexers, tasks);
-    console.log("indexers 3", indexers);
     indexers.forEach(calculateAverageProgress);
-    console.log("indexers 4", indexers);
     return indexers;
   } catch (err) {
     logger.error('Error while querying active tasks: %o', err);

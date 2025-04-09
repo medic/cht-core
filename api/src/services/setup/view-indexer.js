@@ -12,17 +12,13 @@ let continueIndexing;
 const indexViews = async (viewsToIndex) => {
   continueIndexing = true;
 
-  console.log("viewsToIndex", viewsToIndex);
   if (!Array.isArray(viewsToIndex)) {
-    console.log("not array");
     await upgradeLogService.setIndexed();
     return;
   }
 
   await upgradeLogService.setIndexing();
   const indexResult = await Promise.all(viewsToIndex.map(indexView => indexView()));
-  console.log("indexResult", indexResult);
-  console.log("continueIndexing", continueIndexing);
   if (continueIndexing) {
     await upgradeLogService.setIndexed();
   }
@@ -117,7 +113,6 @@ const indexNouveauIndex = async (dbName, ddocId, indexName) => {
 };
 
 const stopIndexing = () => {
-  console.trace("************ stopIndexing");
   continueIndexing = false;
 };
 
