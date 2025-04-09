@@ -157,6 +157,20 @@ describe('login', () => {
         .then(() => loginWithData({ user: user.username, password }))
         .then(response => expectRedirectToPasswordReset(response));
     });
+
+    it('should fail if sso user', async () => {
+      const optsEdit = {
+        path: `/api/v1/users/${user.username}`,
+        method: 'POST',
+        body: { oidc: true },
+      };
+      await utils.request(optsEdit);
+      
+      const response = loginWithData({ user: user.username, password: 'random' });
+      expectLoginToFail(response);
+      expect(response.message).to.equal('Password Login Not Permitted For SSO Users');
+      
+    });
   });
 
   describe('token login', () => {

@@ -383,11 +383,22 @@ const sendLoginErrorResponse = (e, res) => {
 
 const login = async (req, res) => {
   try {
+    await validateNotSsoUser(req);
     const sessionRes = await validateSession(req);
     const redirectUrl = await setCookies(req, res, sessionRes);
     res.status(302).send(redirectUrl);
   } catch (e) {
     return sendLoginErrorResponse(e, res);
+  }
+};
+
+const validateNotSsoUser = async (req) => {
+  if (req?.body?.user){
+    const userDoc = await users.getUserDoc(req.body.user);
+
+    if (userDoc?.oidc === true){
+      throw { status: 401, error: 'Password Login Not Permitted For SSO Users' };
+    }
   }
 };
 

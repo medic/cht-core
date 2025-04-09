@@ -632,7 +632,9 @@ describe('login controller', () => {
       const post = sinon.stub(request, 'post').rejects('boom');
       const status = sinon.stub(res, 'status').returns(res);
       const json = sinon.stub(res, 'json').returns(res);
+      const getUserDoc = sinon.stub(users, 'getUserDoc').resolves();
       return controller.post(req, res).then(() => {
+        chai.expect(getUserDoc.callCount).to.equal(1);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(500);
@@ -720,8 +722,10 @@ describe('login controller', () => {
       const status = sinon.stub(res, 'status').returns(res);
       const json = sinon.stub(res, 'json').returns(res);
       const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects({ code: 401 });
+      const getUserDoc = sinon.stub(users, 'getUserDoc').resolves();
       return controller.post(req, res).then(() => {
         chai.expect(post.callCount).to.equal(1);
+        chai.expect(getUserDoc.callCount).to.equal(1);
         chai.expect(getUserCtx.callCount).to.equal(11);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(401);
@@ -740,8 +744,10 @@ describe('login controller', () => {
       const status = sinon.stub(res, 'status').returns(res);
       const json = sinon.stub(res, 'json').returns(res);
       const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects('boom');
+      const getUserDoc = sinon.stub(users, 'getUserDoc').resolves();
       return controller.post(req, res).then(() => {
         chai.expect(post.callCount).to.equal(1);
+        chai.expect(getUserDoc.callCount).to.equal(1);
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(401);
@@ -974,6 +980,42 @@ describe('login controller', () => {
         chai.expect(res.status.callCount).to.equal(1);
         chai.expect(res.status.args[0][0]).to.equal(302);
         chai.expect(res.send.args[0][0]).to.equal('/admin/');
+      });
+    });
+
+    it('returns 401 when SSO user attempts password login', () => {
+      req.body = { user: 'sharon', password: 'p4ss' };
+      
+      const post = sinon.stub(request, 'post').resolves();
+      const status = sinon.stub(res, 'status').returns(res);
+      const json = sinon.stub(res, 'json').returns(res);
+      const getUserDoc = sinon.stub(users, 'getUserDoc').resolves({ oidc: true });
+
+      return controller.post(req, res).then(() => {
+        chai.expect(post.callCount).to.equal(0);
+        chai.expect(getUserDoc.callCount).to.equal(1);
+        chai.expect(status.callCount).to.equal(1);
+        chai.expect(status.args[0][0]).to.equal(401);
+        chai.expect(json.callCount).to.equal(1);
+        chai.expect(json.args[0][0]).to.deep.equal({ error: 'Password Login Not Permitted For SSO Users' });
+      });
+    });
+
+    it('returns 401 when SSO user attempts password login', () => {
+      req.body = { user: 'sharon', password: 'p4ss' };
+      
+      const post = sinon.stub(request, 'post').resolves();
+      const status = sinon.stub(res, 'status').returns(res);
+      const json = sinon.stub(res, 'json').returns(res);
+      const getUserDoc = sinon.stub(users, 'getUserDoc').resolves({ oidc: true });
+
+      return controller.post(req, res).then(() => {
+        chai.expect(post.callCount).to.equal(0);
+        chai.expect(getUserDoc.callCount).to.equal(1);
+        chai.expect(status.callCount).to.equal(1);
+        chai.expect(status.args[0][0]).to.equal(401);
+        chai.expect(json.callCount).to.equal(1);
+        chai.expect(json.args[0][0]).to.deep.equal({ error: 'Password Login Not Permitted For SSO Users' });
       });
     });
   });
