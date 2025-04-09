@@ -51,6 +51,8 @@ if (UNIT_TEST_ENV) {
     'wipeCacheDb',
     'addRoleAsAdmin',
     'addRoleAsMember',
+    'compactView',
+    'nouveauCleanup'
   ];
 
   const notStubbed = (first, second) => {
@@ -154,7 +156,7 @@ if (UNIT_TEST_ENV) {
     json: true,
   });
 
-  module.exports.compactNouveau = () => request.post({
+  module.exports.nouveauCleanup = () => request.post({
     url: `${environment.couchUrl}/_nouveau_cleanup`,
     json: true,
   });

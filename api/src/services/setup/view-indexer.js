@@ -57,6 +57,28 @@ const getViewsToIndex = async () => {
 };
 
 /**
+ * Attempts to make a request, retrying on socket timeout errors
+ * @param {Object} requestArgs - Arguments for the request
+ * @return {Promise} - Resolves with the request result or undefined if stopped
+ */
+const waitForRequest = async (requestArgs) => {
+  do {
+    try {
+      return await request.get(requestArgs);
+    } catch (error) {
+      if (!continueIndexing) {
+        return;
+      }
+      
+      const isTimeout = error && error.error && SOCKET_TIMEOUT_ERROR_CODE.includes(error.error.code);
+      if (!isTimeout) {
+        throw error;
+      }
+    }
+  } while (continueIndexing);
+};
+
+/**
  * Returns a promise that resolves when a view is indexed.
  * Retries querying the view until no error is thrown
  * @param {String} dbName
@@ -65,23 +87,11 @@ const getViewsToIndex = async () => {
  * @return {Promise}
  */
 const indexView = async (dbName, ddocId, viewName) => {
-  do {
-    try {
-      return await request.get({
-        uri: `${environment.serverUrl}/${dbName}/${ddocId}/_view/${viewName}`,
-        json: true,
-        qs: { limit: 1 },
-      });
-    } catch (requestError) {
-      if (!continueIndexing) {
-        return;
-      }
-
-      if (!requestError || !requestError.error || !SOCKET_TIMEOUT_ERROR_CODE.includes(requestError.error.code)) {
-        throw requestError;
-      }
-    }
-  } while (continueIndexing);
+  return await waitForRequest({
+    uri: `${environment.serverUrl}/${dbName}/${ddocId}/_view/${viewName}`,
+    json: true,
+    qs: { limit: 1 },
+  });
 };
 
 /**
@@ -93,23 +103,11 @@ const indexView = async (dbName, ddocId, viewName) => {
  * @return {Promise}
  */
 const indexNouveauIndex = async (dbName, ddocId, indexName) => {
-  do {
-    try {
-      return await request.get({
-        uri: `${environment.serverUrl}/${dbName}/_design/${ddocId}/_nouveau/${indexName}`,
-        json: true,
-        qs: { q: '*:*', limit: 1 },
-      });
-    } catch (requestError) {
-      if (!continueIndexing) {
-        return;
-      }
-
-      if (!requestError || !requestError.error || !SOCKET_TIMEOUT_ERROR_CODE.includes(requestError.error.code)) {
-        throw requestError;
-      }
-    }
-  } while (continueIndexing);
+  return await waitForRequest({
+    uri: `${environment.serverUrl}/${dbName}/_design/${ddocId}/_nouveau/${indexName}`,
+    json: true,
+    qs: { q: '*:*', limit: 1 },
+  });
 };
 
 const stopIndexing = () => {

@@ -24,6 +24,7 @@ const mockDb = (db) => {
   sinon.stub(db, 'viewCleanup');
 };
 
+
 'use strict';
 
 describe('Setup utils', () => {
@@ -155,6 +156,10 @@ describe('Setup utils', () => {
   });
 
   describe('cleanup', () => {
+    beforeEach(() => {
+      sinon.stub(db, 'nouveauCleanup').returns(new Promise(() => {}));
+    });
+
     it('should start db compact and view cleanup for every database', () => {
       mockDb(db.medic);
       mockDb(db.sentinel);
