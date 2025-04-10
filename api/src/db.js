@@ -51,7 +51,6 @@ if (UNIT_TEST_ENV) {
     'wipeCacheDb',
     'addRoleAsAdmin',
     'addRoleAsMember',
-    'compactView',
     'nouveauCleanup'
   ];
 
@@ -150,11 +149,6 @@ if (UNIT_TEST_ENV) {
         return tasks;
       });
   };
-
-  module.exports.compactView = (db, ddoc) => request.post({
-    url: `${environment.serverUrl}/${db}/_compact/${ddoc}`,
-    json: true,
-  });
 
   module.exports.nouveauCleanup = () => request.post({
     url: `${environment.couchUrl}/_nouveau_cleanup`,

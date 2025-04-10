@@ -2,7 +2,7 @@ function(doc) {
   var skip = ['_id', '_rev', 'type', 'refid', 'content'];
 
   var indexMaybe = function(type, fieldName, value, opts) {
-    if(String(value).length <= 2) { // Too short
+    if(String(value).length < 3) { // Too short
       return;
     }
     index(type, fieldName, value, opts);

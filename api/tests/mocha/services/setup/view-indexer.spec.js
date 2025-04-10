@@ -81,7 +81,7 @@ describe('View indexer service', () => {
         [{
           uri: 'http://localhost/thedb/_design/_design/:staged:three/_nouveau/index1',
           json: true,
-          qs: { limit: 1, q: "*:*" },
+          qs: { limit: 1, q: '*:*' },
         }],
         [{
           uri: 'http://localhost/thedb-users-meta/_design/:staged:four/_view/view',

@@ -62,27 +62,13 @@ const getViewsToIndex = async () => {
  * @return {Promise} - Resolves with the request result or undefined if stopped
  */
 const waitForRequest = async (requestArgs) => {
-  const handleRequest = async () => {
+  do {
     try {
       return await request.get(requestArgs);
-    } catch (error) {
-      if (!continueIndexing) {
-        return;
+    } catch (requestError) {
+      if (continueIndexing && !SOCKET_TIMEOUT_ERROR_CODE.includes(requestError?.error?.code)) {
+        throw requestError;
       }
-
-      const isTimeout = error && error.error && SOCKET_TIMEOUT_ERROR_CODE.includes(error.error.code);
-      if (isTimeout) {
-        return null;
-      }
-
-      throw error;
-    }
-  };
-
-  do {
-    const result = await handleRequest();
-    if (result !== null) {
-      return result;
     }
   } while (continueIndexing);
 };

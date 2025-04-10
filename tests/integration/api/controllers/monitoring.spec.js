@@ -19,7 +19,7 @@ const VIEW_INDEXES_BY_DB = {
 };
 
 const NOUVEAU_INDEXES_BY_DB = {
-  ['medic-test']: ['medic/contacts_by_freetext', 'medic/reports_by_freetext'],
+  'medic-test': ['medic/contacts_by_freetext', 'medic/reports_by_freetext'],
 };
 
 const getAppVersion = async () => {
