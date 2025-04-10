@@ -58,13 +58,11 @@ const getViewsToIndex = async () => {
 
 /**
  * Attempts to make a request, retrying on socket timeout errors
- * Ignoring sonar since this function cannot be simplified any further
  * @param {Object} requestArgs - Arguments for the request
  * @return {Promise} - Resolves with the request result or undefined if stopped
  */
-//NOSONAR_BEGIN
 const waitForRequest = async (requestArgs) => {
-  do {
+	const handleRequest = async () => {
     try {
       return await request.get(requestArgs);
     } catch (requestError) {
@@ -72,9 +70,12 @@ const waitForRequest = async (requestArgs) => {
         throw requestError;
       }
     }
+	}
+
+  do {
+		handleRequest();
   } while (continueIndexing);
 };
-//NOSONAR_END
 
 /**
  * Returns a promise that resolves when a view is indexed.
