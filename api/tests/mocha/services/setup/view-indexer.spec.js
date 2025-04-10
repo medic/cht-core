@@ -33,6 +33,7 @@ describe('View indexer service', () => {
         rows: [
           { doc: { _id: '_design/:staged:one', views: { view1: {}, view2: {}, view3: {}} } },
           { doc: { _id: '_design/:staged:three', views: { view4: {} }} },
+          { doc: { _id: '_design/:staged:three', nouveau: { index1: {} }} },
         ]
       });
       sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [] });
@@ -48,14 +49,14 @@ describe('View indexer service', () => {
 
       const result = await viewIndexer.getViewsToIndex();
 
-      expect(result.length).to.equal(5);
+      expect(result.length).to.equal(6);
       result.forEach(item => expect(item).to.be.a('function'));
 
       expect(request.get.callCount).to.equal(0);
 
       await Promise.all(result.map(item => item()));
 
-      expect(request.get.callCount).to.equal(5);
+      expect(request.get.callCount).to.equal(6);
       expect(request.get.args).to.deep.equal([
         [{
           uri: 'http://localhost/thedb/_design/:staged:one/_view/view1',
@@ -76,6 +77,11 @@ describe('View indexer service', () => {
           uri: 'http://localhost/thedb/_design/:staged:three/_view/view4',
           json: true,
           qs: { limit: 1 },
+        }],
+        [{
+          uri: 'http://localhost/thedb/_design/_design/:staged:three/_nouveau/index1',
+          json: true,
+          qs: { limit: 1, q: "*:*" },
         }],
         [{
           uri: 'http://localhost/thedb-users-meta/_design/:staged:four/_view/view',

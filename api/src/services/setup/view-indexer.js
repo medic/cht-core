@@ -38,14 +38,14 @@ const getViewsToIndex = async () => {
   for (const database of DATABASES) {
     const stagedDdocs = await ddocsService.getStagedDdocs(database);
     stagedDdocs.forEach(ddoc => {
-      if (ddoc.views && !_.isObject(ddoc.views)) {
+      if (ddoc.views && _.isObject(ddoc.views)) {
         const ddocViewIndexPromises = Object
           .keys(ddoc.views)
           .map(viewName => indexView.bind({}, database.name, ddoc._id, viewName));
         viewsToIndex.push(...ddocViewIndexPromises);
       }
 
-      if (ddoc.nouveau && !_.isObject(ddoc.nouveau)) {
+      if (ddoc.nouveau && _.isObject(ddoc.nouveau)) {
         const ddocNouveauIndexPromises = Object
           .keys(ddoc.nouveau)
           .map(indexName => indexNouveauIndex.bind({}, database.name, ddoc._id, indexName));
@@ -62,18 +62,27 @@ const getViewsToIndex = async () => {
  * @return {Promise} - Resolves with the request result or undefined if stopped
  */
 const waitForRequest = async (requestArgs) => {
-  do {
+  const handleRequest = async () => {
     try {
       return await request.get(requestArgs);
     } catch (error) {
       if (!continueIndexing) {
         return;
       }
-      
+
       const isTimeout = error && error.error && SOCKET_TIMEOUT_ERROR_CODE.includes(error.error.code);
-      if (!isTimeout) {
-        throw error;
+      if (isTimeout) {
+        return null;
       }
+
+      throw error;
+    }
+  };
+
+  do {
+    const result = await handleRequest();
+    if (result !== null) {
+      return result;
     }
   } while (continueIndexing);
 };
