@@ -4385,12 +4385,12 @@ describe('Users service', () => {
 
       it('returns error if oidc validation fails for some users', async () => {
         const error0 = 'OIDC Login is not enabled';
-        const error1 = 'a different error'
+        const error1 = 'a different error';
         validateSsoLogin.onFirstCall().returns({ msg: error0 });
         validateSsoLogin.onSecondCall().callsFake(user => {
           user.password = GENERATED_PASSWORD;
         });
-        validateSsoLogin.onThirdCall().returns({ msg: error1 })
+        validateSsoLogin.onThirdCall().returns({ msg: error1 });
         getPlace.resolves(userContact.parent);
         sinon.stub(places, 'getPlace').resolves(userContact.parent);
         sinon.stub(people, 'getOrCreatePerson').resolves(userContact);
