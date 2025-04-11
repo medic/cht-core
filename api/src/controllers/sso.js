@@ -1,4 +1,4 @@
-const client = require('../openid-client-wrapper');
+const { createHmac } = require('crypto');
 
 const config = require('../config');
 const db = require('../db');
@@ -6,8 +6,11 @@ const dataContext = require('../services/data-context');
 const { users } = require('@medic/user-management')(config, db, dataContext);
 const logger = require('@medic/logger');
 const secureSettings = require('@medic/settings');
+const environment = require('@medic/environment');
+const request = require('@medic/couch-request');
 
-const { validateSession, setCookies, sendLoginErrorResponse } = require('./login');
+const client = require('../openid-client-wrapper');
+const { setCookies, sendLoginErrorResponse } = require('./login');
 const settingsService = require('../services/settings');
 
 const SSO_PATH = "oidc";
@@ -44,7 +47,6 @@ const init = async (routePrefix) => {
     return;
   }
 
-
   const {
     discovery_url,
     client_id
@@ -72,12 +74,10 @@ const getSsoBaseUrl = (req) => {
 }
 
 const getAuthorizationUrl = async (req) => {
-
   code_verifier = client.randomPKCECodeVerifier();
 
   const code_challenge_method = 'S256';
   const code_challenge = await client.calculatePKCECodeChallenge(code_verifier);
-
   const redirectUrl = `${getSsoBaseUrl(req).href}${SSO_AUTHORIZE_GET_TOKEN_PATH}`;
 
   let parameters = {
@@ -104,48 +104,101 @@ const getIdToken = async (req) => {
   }
 
   const currentUrl =  new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
-
-  let tokens = await client.authorizationCodeGrant(ASConfig, currentUrl, params);
-
+  const tokens = await client.authorizationCodeGrant(ASConfig, currentUrl, params);
   const { id_token } = tokens;
-
   const { name, preferred_username, email } = tokens.claims();
 
-  const user = {
-    name,
-    username: preferred_username,
-    email
-  }
-
-  const auth = {
+  return {
     id_token,
-    user
+    user: {
+      name,
+      username: preferred_username,
+      email
+    }
   }
-
-  return auth;
 }
 
-const getUserPassword = async username => {
-  const user = await users.getUser(username);
+const makeCookie = (username, salt, secret, authTimeout) => {
+  // an adaptation of https://medium.com/@eiri/couchdb-cookie-authentication-6dd0af6817da
+  const expiry = Math.floor(Date.now() / 1000) + authTimeout;
 
-  if (!user || !user.id) {
-    throw { status: 401, error: `Invalid. Could not login ${username} using SSO.`};
+  const msg = `${username}:${expiry.toString(16).toUpperCase()}`;
+
+  const key = `${secret}${salt}`;
+
+  const hmac = createHmac('sha1', key).update(msg).digest();
+
+  const control = new Uint8Array(hmac);
+
+  const cookie = Buffer.concat([
+    Buffer.from(msg),
+    Buffer.from(':'),
+    Buffer.from(control)
+  ]).toString('base64')
+
+  return cookie.replace(/=+$/, "").replaceAll("/", "_").replaceAll("+", "-");
+}
+
+const getSession = async cookie => {
+  const sessionRes = await request.get({
+    url: new URL('/_session', environment.serverUrlNoAuth).toString(),
+    json: true,
+    simple: false,
+    headers: {
+      'Cookie': cookie
+    }
+  });
+
+  if(!sessionRes || sessionRes.status !== 200) {
+    logger.error(`Could not get session. Status: ${sessionRes.status} - ${sessionRes.body}`)
+    throw { error: 'Could not log in', status: 401 }
   }
 
-  const password = await users.resetPassword(username);
-  return { user: user.username, password };
+  return sessionRes;
+};
+
+const getCouchConfigUrl = (nodeName = '_local') => {
+  const couchUrl = process.env.COUCH_URL;
+  const serverUrl =  couchUrl && couchUrl.slice(0, couchUrl.lastIndexOf('/'));
+
+  if (!serverUrl) {
+    logger.error(`Failed to find the CouchDB server from env COUCH_URL: ${COUCH_URL}`);
+    throw {status: 400, error: 'An error occured when logging in.'}
+  }
+
+  return `${serverUrl}/_node/${nodeName}/_config`;
+};
+
+const getCookie = async (username) => {
+  const secret = await request.get({
+    url: `${getCouchConfigUrl()}/couch_httpd_auth/secret`,
+    json: true
+  });
+
+  if(!secret) {
+    logger.error('CouchDB Secret has not been set.');
+    throw { status: 400, error: 'An error occurred when logging in.' };
+  }
+
+  const userDoc = await users.getUserDoc(username);
+
+  const authTimeout = await request.get({
+    url: `${getCouchConfigUrl()}/couch_httpd_auth/timeout`,
+    json: true
+  });
+
+  const cookie = makeCookie(username, userDoc.salt, secret, authTimeout);
+
+  return `AuthSession=${cookie}`;
 };
 
 const login = async (req, res) => {
+  req.body = { locale: 'en' };
   try {
     const auth = await getIdToken(req, res);
-
-    const {user, password} = await getUserPassword(auth.user.username)
-
-    req.body = { user, password };
-    const sessionRes = await validateSession(req);
-    const redirectUrl = await setCookies(req, res, sessionRes);
-
+    const cookie = await getCookie(auth.user.username);
+    const sessionRes = await getSession(cookie);
+    const redirectUrl = await setCookies(req, res, sessionRes, cookie);
     res.redirect(redirectUrl);
   } catch (e) {
     return sendLoginErrorResponse(e, res);

@@ -221,8 +221,8 @@ const setUserCtxCookie = (res, userCtx) => {
   cookie.setUserCtx(res, JSON.stringify(content));
 };
 
-const setCookies = async (req, res, sessionRes) => {
-  const sessionCookie = getSessionCookie(sessionRes);
+const setCookies = async (req, res, sessionRes, cookie=null) => {
+  const sessionCookie = !cookie ? getSessionCookie(sessionRes) : cookie;
   if (!sessionCookie) {
     throw { status: 401, error: 'Not logged in' };
   }
