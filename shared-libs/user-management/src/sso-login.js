@@ -1,15 +1,12 @@
 const config = require('./libs/config');
 const passwords = require('./libs/passwords');
 
-const hasBothOidcAndTokenOrPasswordLogin = data => data.oidc_provider && (!!data.password || data.token_login === true);
+const hasBothOidcAndTokenOrPasswordLogin = data => data.oidc && (data.password || data.token_login);
 
 const isSsoLoginEnabled = settings => !!settings?.oidc_provider?.client_id;
 
-const isOidcClientIdValid = (settings, clientId) => clientId === settings?.oidc_provider?.client_id;
-
-const validateSsoLogin = async(data) => {
-
-  if (!data.oidc_provider){
+const validateSsoLogin = (data) => {
+  if (!data.oidc){
     return;
   }
   
@@ -27,19 +24,24 @@ const validateSsoLogin = async(data) => {
     }; 
 
   }
-  if (!isOidcClientIdValid(settings, data.oidc_provider)){
-    return {
-      msg: 'Invalid OIDC Client Id'
-    }; 
-  }
 
-  data.oidc = true;
   data.password = passwords.generate();
   data.password_change_required = false;
-  
 };
 
+const validateSsoLoginUpdate = (data, updatedUser) => {
+  if (!data.oidc && !data.password && !data.token_login) {
+    return;
+  }
+  // token_login is set on updateUser later, so check data here
+  if (updatedUser.oidc && data.token_login) {
+    return { msg: 'Either OIDC Login only or Token/Password Login is allowed' };
+  }
+
+  return validateSsoLogin(updatedUser);
+};
 
 module.exports = {
-  validateSsoLogin
+  validateSsoLogin,
+  validateSsoLoginUpdate
 };

@@ -530,7 +530,7 @@ const missingFields = data => {
 
   if (tokenLogin.shouldEnableTokenLogin(data)) {
     required.push('phone');
-  } else if (!data.oidc_provider) {
+  } else if (!data.oidc) {
     required.push('password');
   }
 
@@ -895,7 +895,7 @@ const createMultiFacilityUser = async (data, appUrl) => {
   if (tokenLoginError) {
     throw error400(tokenLoginError.msg, tokenLoginError.key);
   }
-  const ssoLoginError = await ssoLogin.validateSsoLogin(data);
+  const ssoLoginError = ssoLogin.validateSsoLogin(data);
   if (ssoLoginError) {
     throw error400(ssoLoginError.msg);
   }
@@ -1023,7 +1023,7 @@ module.exports = {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
 
-    const ssoLoginError = await ssoLogin.validateSsoLogin(data);
+    const ssoLoginError = ssoLogin.validateSsoLogin(data);
     if (ssoLoginError) {
       return Promise.reject(error400(ssoLoginError.msg));
     }
@@ -1103,7 +1103,7 @@ module.exports = {
           throw new Error(tokenLoginError.msg);
         }
 
-        const ssoLoginError = await ssoLogin.validateSsoLogin(user);
+        const ssoLoginError = ssoLogin.validateSsoLogin(user);
         if (ssoLoginError) {
           throw error400(ssoLoginError.msg);
         }
@@ -1169,12 +1169,6 @@ module.exports = {
    * @param      {String}    appUrl      request protocol://hostname
    */
   updateUser: async (username, data, fullAccess, appUrl) => {
-    //1st validation performed, to go before passwd validation below
-    const ssoLoginError = await ssoLogin.validateSsoLogin(data, false);
-    if (ssoLoginError) {
-      return Promise.reject(error400(ssoLoginError.msg));
-    }
-
     await validateUpdateAttempt(data, fullAccess);
     hydratePayload(data);
 
@@ -1187,7 +1181,11 @@ module.exports = {
     if (tokenLoginError) {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
-    
+    const ssoLoginError = ssoLogin.validateSsoLoginUpdate(data, user);
+    if (ssoLoginError) {
+      return Promise.reject(error400(ssoLoginError.msg));
+    }
+
     await validateUserFacility(data, user);
     await validateUserContact(data, user);
 
