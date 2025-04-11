@@ -44,7 +44,7 @@ export class DeduplicateService {
       .filter((existing) => parsed(this.xmlFormsContextUtilsService, { current, existing }))
       .sort((a: Contact.v1.Contact, b: Contact.v1.Contact) => {
         // Desc order - reverse order by switching props
-        return new Date(b.reported_date || 0).getTime() - new Date(a.reported_date || 0).getTime();
+        return new Date(b.reported_date ?? 0).getTime() - new Date(a.reported_date ?? 0).getTime();
       });
 
     this.telemetryService.record(

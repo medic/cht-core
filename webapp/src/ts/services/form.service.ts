@@ -383,7 +383,7 @@ export class FormService {
     const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
 
     const duplicates = await this.checkForDuplicates(
-      primaryDoc || preparedDocs.preparedDocs[0],
+      primaryDoc ?? preparedDocs.preparedDocs[0],
       type,
       duplicatesAcknowledged,
       duplicateCheck
