@@ -62,7 +62,7 @@ const getViewsToIndex = async () => {
  * @return {Promise} - Resolves with the request result or undefined if stopped
  */
 const waitForRequest = async (requestArgs) => {
-  const handleRequest = async () => {
+  do {
     try {
       return await request.get(requestArgs);
     } catch (requestError) {
@@ -70,10 +70,6 @@ const waitForRequest = async (requestArgs) => {
         throw requestError;
       }
     }
-  };
-
-  do {
-    await handleRequest();
   } while (continueIndexing);
 };
 
