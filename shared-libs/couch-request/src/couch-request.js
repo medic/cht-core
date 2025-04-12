@@ -160,6 +160,30 @@ const getResponseBody = async (response, sendJson) => {
   return content;
 };
 
+const sanitizeErrorResponse = (body) => {
+  if (!body) {
+    return 'No response body';
+  }
+  
+  if (typeof body === 'string') {
+    // Remove any potential password/auth data from error strings
+    return body.replace(/(?:password|auth)[:=].*?(?:[&\s]|$)/gi, '******');
+  }
+  
+  if (typeof body === 'object') {
+    const sanitized = { ...body };
+    // Remove sensitive fields from error objects
+    ['password', 'auth', 'authorization', 'key', 'secret', 'token'].forEach(field => {
+      if (field in sanitized) {
+        sanitized[field] = '******';
+      }
+    });
+    return sanitized;
+  }
+  
+  return body;
+};
+
 const request = async (options = {}) => {
   setRequestOptions(options);
 
@@ -180,8 +204,16 @@ const request = async (options = {}) => {
     return responseObj.body;
   }
 
-  const err = new Error(response.error || `${response.status} - ${JSON.stringify(responseObj.body)}`);
-  Object.assign(err, responseObj);
+  const sanitizedBody = sanitizeErrorResponse(responseObj.body);
+  const err = new Error(`${response.status} - ${JSON.stringify(sanitizedBody)}`);
+  
+  // Add all necessary properties including 'ok'
+  err.status = response.status;
+  err.statusCode = response.status;
+  err.body = sanitizedBody;
+  err.headers = response.headers;
+  err.ok = response.ok;
+  
   throw err;
 };
 
