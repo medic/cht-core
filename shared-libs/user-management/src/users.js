@@ -51,6 +51,7 @@ const USER_EDITABLE_FIELDS = RESTRICTED_USER_EDITABLE_FIELDS.concat([
   'contact',
   'type',
   'roles',
+  'oidc',
 ]);
 
 const RESTRICTED_SETTINGS_EDITABLE_FIELDS = [
@@ -695,6 +696,8 @@ const validateUserContact = (data, user) => {
  * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
  * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this
  *   user.
+ * @param {string=} data.oidc_provider Client ID for the OIDC Client. Can be set but not together 
+ * with @param token_login|@param password
  * @param {string=} data.fullname Full name
  * @param {string=} data.email Email address
  * @param {Boolean=} data.known Boolean to define if the user has logged in before.
@@ -1000,6 +1003,8 @@ module.exports = {
    * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
    * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for
    *   this user.
+   * @param {string=} data.oidc_provider Client ID for the OIDC Client. Can be set but not together 
+   * with @param token_login|@param password
    * @param {string=} data.fullname Full name
    * @param {string=} data.email Email address
    * @param {Boolean=} data.known Boolean to define if the user has logged in before.
@@ -1022,6 +1027,12 @@ module.exports = {
     if (tokenLoginError) {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
+
+    const ssoLoginError = ssoLogin.validateSsoLogin(data);
+    if (ssoLoginError) {
+      return Promise.reject(error400(ssoLoginError.msg));
+    }
+
     const passwordError = validatePassword(data.password);
     if (passwordError) {
       return Promise.reject(passwordError);
@@ -1047,6 +1058,8 @@ module.exports = {
    * @param {string=} users[].phone Valid phone number. Required if token_login is enabled for the user.
    * @param {Boolean=} users[].token_login A boolean representing whether or not the Login by SMS should be enabled for
    *   this user.
+   * @param {string=} users[].oidc_provider Client ID for the OIDC Client. Can be set but not together 
+   * with @param token_login|@param password
    * @param {string=} users[].fullname Full name
    * @param {string=} users[].email Email address
    * @param {Boolean=} users[].known Boolean to define if the user has logged in before.
@@ -1093,6 +1106,11 @@ module.exports = {
         const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
         if (tokenLoginError) {
           throw new Error(tokenLoginError.msg);
+        }
+
+        const ssoLoginError = ssoLogin.validateSsoLogin(user);
+        if (ssoLoginError) {
+          throw error400(ssoLoginError.msg);
         }
 
         const passwordError = validatePassword(user.password);

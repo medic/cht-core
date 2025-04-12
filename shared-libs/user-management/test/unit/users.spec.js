@@ -5,6 +5,7 @@ const rewire = require('rewire');
 
 const couchSettings = require('@medic/settings');
 const tokenLogin = require('../../src/token-login');
+const ssoLogin = require('../../src/sso-login');
 const config = require('../../src/libs/config');
 const db = require('../../src/libs/db');
 const dataContext = require('../../src/libs/data-context');
@@ -2402,6 +2403,7 @@ describe('Users service', () => {
         password_change_required: true
       }]]);
     });
+    
   });
 
   describe('setContactParent', () => {
@@ -3318,6 +3320,7 @@ describe('Users service', () => {
         password_change_required: false
       });
     });
+    
   });
 
   describe('validateNewUsername', () => {
@@ -4202,5 +4205,454 @@ describe('Users service', () => {
       ]);
     });
   });
+
+  describe('sso-login', () => {
+    const GENERATED_PASSWORD = 'password.123';
+    let userContact;
+    let ssoUserData;
+    let validateSsoLogin;
+
+    beforeEach(() => {
+      userContact = { _id: 'h', parent: { _id: 'u', parent: { _id: 'z' } } };
+      ssoUserData = {
+        username: 'x',
+        contact: userContact._id,
+        roles: ['test-role'],
+        oidc: true,
+      };
+      validateSsoLogin = sinon
+        .stub(ssoLogin, 'validateSsoLogin');
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      sinon.stub(people, 'isAPerson').returns(true);
+      sinon.stub(roles, 'hasAllPermissions').returns(true);
+      db.medic.put.resolves({ id: 'success' });
+      db.users.put.resolves({ id: 'success' });
+      db.medic.get.withArgs('h').resolves(userContact);
+    });
+
+    describe('createMultiFacilityUser', () => {
+      beforeEach(() => {
+        ssoUserData.place = [userContact.parent._id, 'y', 'z'];
+      });
+
+      it('returns error if oidc validation fails', async () => {
+        const message = 'OIDC Login is not enabled';
+        validateSsoLogin.returns({ msg: message });
+
+        await chai.expect(service.createMultiFacilityUser(ssoUserData))
+          .to.be.eventually.rejectedWith(Error)
+          .and.to.deep.include({ code: 400, message });
+
+        chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
+        chai.expect(db.medic.put.notCalled).to.be.true;
+        chai.expect(db.users.put.notCalled).to.be.true;
+        chai.expect(service.__get__('validateNewUsername').notCalled).to.be.true;
+        chai.expect(people.isAPerson.notCalled).to.be.true;
+        chai.expect(roles.hasAllPermissions.notCalled).to.be.true;
+      });
+
+      it('succeeds if oidc validation passes', async () => {
+        validateSsoLogin.callsFake(user => {
+          user.password = GENERATED_PASSWORD;
+        });
+        sinon.stub(places, 'placesExist').resolves();
+
+        await service.createMultiFacilityUser(ssoUserData);
+
+        const expectedUser = {
+          facility_id: ssoUserData.place,
+          contact_id: ssoUserData.contact,
+          roles: ssoUserData.roles,
+          _id: `org.couchdb.user:${ssoUserData.username}`,
+          name: ssoUserData.username,
+        };
+        chai.expect(db.medic.put.calledOnceWithExactly({
+          ...expectedUser,
+          type: 'user-settings',
+        })).to.be.true;
+        chai.expect(db.users.put.calledOnceWithExactly({
+          ...expectedUser,
+          type: 'user',
+          password: GENERATED_PASSWORD,
+          password_change_required: false,
+          oidc: true,
+        })).to.be.true;
+        chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
+        chai.expect(service.__get__('validateNewUsername').calledOnceWithExactly(ssoUserData.username)).to.be.true;
+        chai.expect(places.placesExist.calledOnceWithExactly(ssoUserData.place)).to.be.true;
+        chai.expect(people.isAPerson.args).to.deep.equal([[userContact], [userContact], [userContact]]);
+        chai.expect(roles.hasAllPermissions.args).to.deep.equal([
+          [ssoUserData.roles, ['can_have_multiple_places']],
+          [ssoUserData.roles, ['can_skip_password_change']],
+        ]);
+      });
+    });
+
+    describe('createUser', () => {
+      beforeEach(() => {
+        ssoUserData.place = userContact.parent._id;
+      });
+
+      it('returns error if oidc validation fails', async () => {
+        const message = 'OIDC Login is not enabled';
+        validateSsoLogin.returns({ msg: message });
+
+        await chai.expect(service.createUser(ssoUserData))
+          .to.be.eventually.rejectedWith(Error)
+          .and.to.deep.include({ code: 400, message });
+
+        chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
+        chai.expect(db.medic.put.notCalled).to.be.true;
+        chai.expect(db.users.put.notCalled).to.be.true;
+        chai.expect(service.__get__('validateNewUsername').notCalled).to.be.true;
+        chai.expect(people.isAPerson.notCalled).to.be.true;
+        chai.expect(roles.hasAllPermissions.notCalled).to.be.true;
+      });
+
+      it('succeeds if oidc validation passes', async () => {
+        validateSsoLogin.callsFake(user => {
+          user.password = GENERATED_PASSWORD;
+        });
+        getPlace.resolves(userContact.parent);
+        sinon.stub(places, 'getPlace').resolves(userContact.parent);
+        sinon.stub(people, 'getOrCreatePerson').resolves(userContact);
+        const expectedUser = {
+          facility_id: [ssoUserData.place],
+          contact_id: ssoUserData.contact,
+          roles: ssoUserData.roles,
+          _id: `org.couchdb.user:${ssoUserData.username}`,
+          name: ssoUserData.username,
+        };
+
+        await service.createUser(ssoUserData);
+
+        chai.expect(db.medic.put.calledOnceWithExactly({
+          ...expectedUser,
+          type: 'user-settings',
+        })).to.be.true;
+        chai.expect(db.users.put.calledOnceWithExactly({
+          ...expectedUser,
+          type: 'user',
+          password: GENERATED_PASSWORD,
+          password_change_required: false,
+          oidc: true,
+        })).to.be.true;
+        chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
+        chai.expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(expectedUser.facility_id[0]))).to.be.true;
+        chai.expect(places.getPlace.calledOnceWithExactly(expectedUser.facility_id[0])).to.be.true;
+        chai.expect(people.getOrCreatePerson.calledOnceWithExactly(expectedUser.contact_id)).to.be.true;
+        chai.expect(service.__get__('validateNewUsername').calledOnceWithExactly(expectedUser.name)).to.be.true;
+        chai.expect(people.isAPerson.calledOnceWithExactly(userContact)).to.be.true;
+        chai.expect(roles.hasAllPermissions.calledOnceWithExactly(
+          expectedUser.roles,
+          ['can_skip_password_change']
+        )).to.be.true;
+      });
+    });
+
+    describe('createUsers', () => {
+      let ssoUserData1;
+      let ssoUserData2;
+
+      beforeEach(() => {
+        ssoUserData.place = userContact.parent._id;
+        ssoUserData1 = {
+          ...ssoUserData,
+          username: 'user1',
+        };
+        ssoUserData2 = {
+          ...ssoUserData,
+          username: 'user2',
+        };
+        db.medicLogs.get.resolves({ progress: {} });
+      });
+
+      it('returns error if oidc validation fails', async () => {
+        const error = 'OIDC Login is not enabled';
+        validateSsoLogin.returns({ msg: error });
+
+        const response = await service.createUsers([ssoUserData]);
+
+        chai.expect(response).to.deep.equal([{ error }]);
+        chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
+        chai.expect(db.medicLogs.get.args).to.deep.equal([[undefined], [undefined]]);
+        chai.expect(db.medic.put.notCalled).to.be.true;
+        chai.expect(db.users.put.notCalled).to.be.true;
+        chai.expect(service.__get__('validateNewUsername').notCalled).to.be.true;
+        chai.expect(people.isAPerson.notCalled).to.be.true;
+        chai.expect(roles.hasAllPermissions.notCalled).to.be.true;
+      });
+
+      it('returns error if oidc validation fails for some users', async () => {
+        const error0 = 'OIDC Login is not enabled';
+        const error1 = 'a different error';
+        validateSsoLogin.onFirstCall().returns({ msg: error0 });
+        validateSsoLogin.onSecondCall().callsFake(user => {
+          user.password = GENERATED_PASSWORD;
+        });
+        validateSsoLogin.onThirdCall().returns({ msg: error1 });
+        getPlace.resolves(userContact.parent);
+        sinon.stub(places, 'getPlace').resolves(userContact.parent);
+        sinon.stub(people, 'getOrCreatePerson').resolves(userContact);
+        const expectedUser1 = {
+          facility_id: [ssoUserData.place],
+          contact_id: ssoUserData.contact,
+          roles: ssoUserData.roles,
+          _id: `org.couchdb.user:${ssoUserData1.username}`,
+          name: ssoUserData1.username,
+        };
+
+        const response = await service.createUsers([ssoUserData, ssoUserData1, ssoUserData2]);
+
+        chai.expect(response).to.deep.equal([
+          { error: error0 },
+          {
+            contact: { id: expectedUser1.contact_id, rev: undefined },
+            user: { id: 'success', rev: undefined },
+            'user-settings': { id: 'success', rev: undefined }
+          },
+          { error: error1 }
+        ]);
+        chai.expect(db.medic.put.calledOnceWithExactly({ ...expectedUser1, type: 'user-settings' })).to.be.true;
+        chai.expect(db.users.put.calledOnceWithExactly({
+          ...expectedUser1,
+          type: 'user',
+          password: GENERATED_PASSWORD,
+          password_change_required: false,
+          oidc: true,
+        })).to.be.true;
+        chai.expect(db.medicLogs.get.args).to.deep.equal([[undefined], [undefined], [undefined], [undefined]]);
+        chai.expect(validateSsoLogin.args).to.deep.equal([
+          [ssoUserData],
+          [ssoUserData1],
+          [ssoUserData2],
+        ]);
+        const [placeId] = expectedUser1.facility_id;
+        chai.expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(placeId))).to.be.true;
+        chai.expect(places.getPlace.calledOnceWithExactly(placeId)).to.be.true;
+        chai.expect(people.getOrCreatePerson.calledOnceWithExactly(expectedUser1.contact_id)).to.be.true;
+        chai.expect(service.__get__('validateNewUsername').calledOnceWithExactly(expectedUser1.name)).to.be.true;
+        chai.expect(people.isAPerson.calledOnceWithExactly(userContact)).to.be.true;
+        chai.expect(roles.hasAllPermissions.calledOnceWithExactly(
+          expectedUser1.roles,
+          ['can_skip_password_change']
+        )).to.be.true;
+      });
+
+      it('succeeds if oidc validation passes', async () => {
+        validateSsoLogin.callsFake(user => {
+          user.password = GENERATED_PASSWORD;
+        });
+        getPlace.resolves(userContact.parent);
+        sinon.stub(places, 'getPlace').resolves(userContact.parent);
+        sinon.stub(people, 'getOrCreatePerson').resolves(userContact);
+        const expectedUser = {
+          facility_id: [ssoUserData.place],
+          contact_id: ssoUserData.contact,
+          roles: ssoUserData.roles,
+          _id: `org.couchdb.user:${ssoUserData.username}`,
+          name: ssoUserData.username,
+        };
+        const expectedUser1 = {
+          ...expectedUser,
+          name: ssoUserData1.username,
+          _id: `org.couchdb.user:${ssoUserData1.username}`,
+        };
+        const expectedUser2 = {
+          ...expectedUser,
+          name: ssoUserData2.username,
+          _id: `org.couchdb.user:${ssoUserData2.username}`,
+        };
+
+        const response = await service.createUsers([ssoUserData, ssoUserData1, ssoUserData2]);
+
+        chai.expect(response).to.deep.equal([
+          {
+            contact: { id: expectedUser.contact_id, rev: undefined },
+            user: { id: 'success', rev: undefined },
+            'user-settings': { id: 'success', rev: undefined }
+          },
+          {
+            contact: { id: expectedUser1.contact_id, rev: undefined },
+            user: { id: 'success', rev: undefined },
+            'user-settings': { id: 'success', rev: undefined }
+          },
+          {
+            contact: { id: expectedUser2.contact_id, rev: undefined },
+            user: { id: 'success', rev: undefined },
+            'user-settings': { id: 'success', rev: undefined }
+          }
+        ]);
+
+        chai.expect(db.medic.put.args).to.deep.equal([
+          [{ ...expectedUser, type: 'user-settings' }],
+          [{ ...expectedUser1, type: 'user-settings' }],
+          [{ ...expectedUser2, type: 'user-settings' }],
+        ]);
+        chai.expect(db.users.put.args).to.deep.equal([
+          [{
+            ...expectedUser,
+            type: 'user',
+            password: GENERATED_PASSWORD,
+            password_change_required: false,
+            oidc: true,
+          }],
+          [{
+            ...expectedUser1,
+            type: 'user',
+            password: GENERATED_PASSWORD,
+            password_change_required: false,
+            oidc: true,
+          }],
+          [{
+            ...expectedUser2,
+            type: 'user',
+            password: GENERATED_PASSWORD,
+            password_change_required: false,
+            oidc: true,
+          }],
+        ]);
+        chai.expect(db.medicLogs.get.args).to.deep.equal([[undefined], [undefined], [undefined], [undefined]]);
+        chai.expect(validateSsoLogin.args).to.deep.equal([
+          [ssoUserData],
+          [ssoUserData1],
+          [ssoUserData2],
+        ]);
+        const [placeId] = expectedUser.facility_id;
+        const placeQualifier = Qualifier.byUuid(placeId);
+        chai.expect(getPlace.args).to.deep.equal([[placeQualifier], [placeQualifier], [placeQualifier]]);
+        chai.expect(places.getPlace.args).to.deep.equal([[placeId], [placeId], [placeId]]);
+        chai.expect(people.getOrCreatePerson.args).to.deep.equal([
+          [expectedUser.contact_id],
+          [expectedUser1.contact_id],
+          [expectedUser2.contact_id]
+        ]);
+        chai.expect(service.__get__('validateNewUsername').args).to.deep.equal([
+          [expectedUser.name],
+          [expectedUser1.name],
+          [expectedUser2.name]
+        ]);
+        chai.expect(people.isAPerson.args).to.deep.equal([
+          [userContact],
+          [userContact],
+          [userContact]
+        ]);
+        chai.expect(roles.hasAllPermissions.args).to.deep.equal([
+          [expectedUser.roles, ['can_skip_password_change']],
+          [expectedUser1.roles, ['can_skip_password_change']],
+          [expectedUser2.roles, ['can_skip_password_change']],
+        ]);
+      });
+    });
+
+    describe('updateUser', () => {
+      let validateSsoLoginUpdate;
+
+      beforeEach(() => {
+        validateSsoLoginUpdate = sinon.stub(ssoLogin, 'validateSsoLoginUpdate');
+      });
+
+      it('returns error if oidc validation fails', async () => {
+        const message = 'OIDC Login is not enabled';
+        validateSsoLoginUpdate.returns({ msg: message });
+        const existingUserData = {
+          facility_id: [ssoUserData.place],
+          contact_id: ssoUserData.contact,
+          roles: ssoUserData.roles,
+          _id: `org.couchdb.user:${ssoUserData.username}`,
+          name: ssoUserData.username,
+        };
+        const existingUserSettings = {
+          ...existingUserData,
+          type: 'user-settings',
+        };
+        db.medic.get.resolves({ ...existingUserSettings });
+        const existingUser = {
+          ...existingUserData,
+          type: 'user',
+          password: 'existingPassword',
+        };
+        db.users.get.resolves({ ...existingUser });
+        const updates = { oidc: true };
+
+        await chai.expect(service.updateUser(ssoUserData.username, { ...updates }, true))
+          .to.be.eventually.rejectedWith(Error)
+          .and.to.deep.include({ code: 400, message });
+
+        const updatedUser = {
+          ...existingUser,
+          ...updates,
+        };
+        chai.expect(validateSsoLoginUpdate.calledOnceWithExactly(
+          { ...updates, contact_id: undefined, facility_id: undefined },
+          updatedUser
+        )).to.be.true;
+        chai.expect(db.medic.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
+        chai.expect(db.users.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
+        chai.expect(db.medic.put.notCalled).to.be.true;
+        chai.expect(db.users.put.notCalled).to.be.true;
+      });
+
+      it('succeeds when oidc validation passes and called with full access', async () => {
+        validateSsoLoginUpdate.callsFake((_, user) => {
+          user.password = GENERATED_PASSWORD;
+        });
+        const existingUserData = {
+          facility_id: [ssoUserData.place],
+          contact_id: ssoUserData.contact,
+          roles: ssoUserData.roles,
+          _id: `org.couchdb.user:${ssoUserData.username}`,
+          name: ssoUserData.username,
+        };
+        const existingUserSettings = {
+          ...existingUserData,
+          type: 'user-settings',
+        };
+        db.medic.get.resolves({ ...existingUserSettings });
+        const existingUser = {
+          ...existingUserData,
+          type: 'user',
+          password: 'existingPassword',
+        };
+        db.users.get.resolves({ ...existingUser });
+        db.users.put.resolves({ id: existingUserData._id });
+        db.medic.put.resolves({ id: existingUserData._id });
+        const updates = { oidc: true };
+
+        const response = await service.updateUser(ssoUserData.username, { ...updates }, true);
+
+        chai.expect(response).to.deep.equal({
+          user: { id: existingUser._id, rev: undefined },
+          'user-settings': { id: existingUser._id, rev: undefined },
+        });
+        const updatedUser = {
+          ...existingUser,
+          ...updates,
+          password: GENERATED_PASSWORD,
+        };
+        chai.expect(validateSsoLoginUpdate.calledOnceWithExactly(
+          { ...updates, contact_id: undefined, facility_id: undefined },
+          updatedUser
+        )).to.be.true;
+        chai.expect(db.medic.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
+        chai.expect(db.users.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
+        chai.expect(db.medic.put.calledOnceWithExactly(existingUserSettings)).to.be.true;
+        chai.expect(db.users.put.calledOnceWithExactly(updatedUser)).to.be.true;
+      });
+
+      it('returns error when changing oidc without full access', async () => {
+        const updates = { oidc: true };
+
+        await chai.expect(service.updateUser(ssoUserData.username, { ...updates }, false))
+          .to.be.eventually.rejectedWith(Error)
+          .and.to.deep.include({
+            status: 401,
+            message: 'You do not have permission to modify: oidc',
+          });
+
+        chai.expect(validateSsoLoginUpdate.notCalled).to.be.true;
+      });
+    });
+  }); 
 });
 

@@ -4,19 +4,11 @@ const db = require('./libs/db');
 const tokenLogin = require('./token-login');
 
 const isSSOLoginGloballyEnabled = () => {
-  const ssoLoginConfig = config.get('sso_login');
-  return Boolean(ssoLoginConfig?.enabled);
+  return isSsoLoginEnabled()
 };
 
 const shouldEnableSSOLogin = (data) => {
-  return isSSOLoginGloballyEnabled() && data.sso_login_enabled === true;
-};
-
-const validateSSOLoginCreate = (data) => {
-  if (shouldEnableSSOLogin(data)) {
-    data.password = passwords.generate();
-    data.password_change_required = false;
-  }
+  return isSSOLoginGloballyEnabled() && data.oidc === true;
 };
 
 const validateSSOLoginEdit = (data, user) => {
@@ -114,8 +106,47 @@ const manageSSOLogin = (data, appUrl, response) => {
   return enableSSOLogin(appUrl, response);
 };
 
+const hasBothOidcAndTokenOrPasswordLogin = data => data.oidc && (data.password || data.token_login);
+
+const isSsoLoginEnabled = settings => !!settings?.oidc_provider?.client_id;
+
+const validateSSOLoginCreate = (data) => {
+  if (!data.oidc){
+    return;
+  }
+  
+  if (hasBothOidcAndTokenOrPasswordLogin(data)){
+    return {
+      msg: 'Either OIDC Login only or Token/Password Login is allowed'
+    }; 
+  }
+
+  const settings = config.get();
+
+  if (!isSsoLoginEnabled(settings)){
+    return {
+      msg: 'OIDC Login is not enabled'
+    }; 
+
+  }
+
+  data.password = passwords.generate();
+  data.password_change_required = false;
+};
+
+const validateSsoLoginUpdate = (data, updatedUser) => {
+  // token_login is set on updateUser later, so check data here
+  if (updatedUser.oidc && data.token_login) {
+    return { msg: 'Either OIDC Login only or Token/Password Login is allowed' };
+  }
+
+  return validateSSOLoginEdit(data, updatedUser);
+};
+
+
 module.exports = {
   shouldEnableSSOLogin,
   validateSSOLogin,
-  manageSSOLogin
+  manageSSOLogin,
+  validateSsoLoginUpdate
 };
