@@ -14,8 +14,5 @@
   "scripts": {
     "toc": "doctoc --github --maxlevel 2 README.md",
     "run-watch": "TZ=UTC nodemon --inspect=0.0.0.0:9229 --ignore 'build/static' --ignore 'build/public' --watch ./ --watch '../shared-libs/**/src/**' server.js -- --allow-cors"
-  },
-  "dependencies": {
-    "openid-client": "^6.3.4"
   }
 }

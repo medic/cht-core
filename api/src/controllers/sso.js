@@ -12,109 +12,102 @@ const request = require('@medic/couch-request');
 const client = require('../openid-client-wrapper');
 const { setCookies, sendLoginErrorResponse } = require('./login');
 const settingsService = require('../services/settings');
-
-const SSO_PATH = "oidc";
-const SSO_AUTHORIZE_PATH = `${SSO_PATH}/authorize`;
-const SSO_AUTHORIZE_GET_TOKEN_PATH = `${SSO_PATH}/get_token`;
+const { setTimeout } = require('later');
 
 const OIDC_CLIENT_SECRET_KEY = "oidc:client-secret";
 
+const SERVER_ERROR = new Error({ status: 500, error: 'An error occurred when logging in.' });
+
 let ASConfig;
 let code_verifier;
-let state;
-let pathPrefix;
 
-const getOidcClientSecret = async (key) => {
-  const secret = await secureSettings.getCredentials(key);
-
-  if(!secret)
-  {
-    const err = `No OIDC client secret '${key}' configured.`
-    logger.error(err);
-    throw err;
+const networkCallRetry = async (call, retryCount = 3) => {
+  try {
+    return await call();
+  } catch (err) {
+    if (retryCount == 1) {
+      throw err;
+    }
+    logger.debug(`Retrying ${call.name}.`)
+    return await setTimeout(networkCallRetry(call, --retryCount), 10)
   }
+}
 
-  return secret;
-};
-
-const init = async (routePrefix) => {
-  pathPrefix = routePrefix;
-
+const init = async () => {
   const settings = await settingsService.get()
-
   if(!settings.oidc_provider) {
-    logger.info("Authorization server config settings not provided.");
+    logger.info('Authorization server config settings not provided.');
     return;
   }
 
-  const {
-    discovery_url,
-    client_id
-  } = settings.oidc_provider;
+  const clientSecret = await secureSettings.getCredentials(OIDC_CLIENT_SECRET_KEY);
+  if(!clientSecret) {
+    const err = `No OIDC client secret '${OIDC_CLIENT_SECRET_KEY}' configured.`
+    logger.error(err)
+    throw new Error(err);
+  }
 
   try {
-    const clientSecret = await getOidcClientSecret(OIDC_CLIENT_SECRET_KEY);
-
-    ASConfig = await client.discovery(
-      new URL(discovery_url),
-      client_id,
-      clientSecret
-    );
+    ASConfig = await networkCallRetry(
+      () => client.discovery(new URL(settings.oidc_provider.discovery_url), settings.oidc_provider.client_id, clientSecret),
+      3
+    )
   } catch (e) {
-    throw { status: 400, error: e};
-  } 
+    logger.error(e)
+    const err = 'The SSO provider is unreachable.';
+    throw new Error({ status: 503, error: err });
+  }
 
   logger.info('Authorization server config auth config loaded successfully.');
 
   return ASConfig;
 }
 
-const getSsoBaseUrl = (req) => {
-  return new URL(`${req.protocol}://${req.get('host')}${pathPrefix}`);
-}
-
-const getAuthorizationUrl = async (req) => {
+const getAuthorizationUrl = async (serverConfig, redirectUrl) => {
   code_verifier = client.randomPKCECodeVerifier();
 
   const code_challenge_method = 'S256';
   const code_challenge = await client.calculatePKCECodeChallenge(code_verifier);
-  const redirectUrl = `${getSsoBaseUrl(req).href}${SSO_AUTHORIZE_GET_TOKEN_PATH}`;
 
   let parameters = {
     redirect_uri: redirectUrl,
     scope: 'openid'
   }
- 
-  if (ASConfig.serverMetadata().supportsPKCE()) {
+
+  if(serverConfig?.serverMetadata()?.supportsPKCE()) {
     parameters = { ...parameters, ...{ code_challenge_method, code_challenge } }
   }
 
-  return client.buildAuthorizationUrl(ASConfig, parameters);
+  return client.buildAuthorizationUrl(serverConfig, parameters);
 }
 
-const getIdToken = async (req) => {
+const getIdToken = async (serverConfig, currentUrl) => {
   let params = {};
 
-  if (ASConfig.serverMetadata().supportsPKCE()) {
+  if(serverConfig?.serverMetadata()?.supportsPKCE()) {
     params = {
       idTokenExpected: true,
-      pkceCodeVerifier: code_verifier,
-      state: state
+      pkceCodeVerifier: code_verifier
     }
   }
 
-  const currentUrl =  new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
-  const tokens = await client.authorizationCodeGrant(ASConfig, currentUrl, params);
-  const { id_token } = tokens;
-  const { name, preferred_username, email } = tokens.claims();
+  try {
+    const tokens = await networkCallRetry(() => client.authorizationCodeGrant(ASConfig, currentUrl, params), 3);
 
-  return {
-    id_token,
-    user: {
-      name,
-      username: preferred_username,
-      email
+    const { id_token } = tokens;
+    const { name, preferred_username, email } = tokens.claims();
+
+    return {
+      id_token,
+      user: {
+        name,
+        username: preferred_username,
+        email
+      }
     }
+  } catch (err) {
+    logger.error(err);
+    throw SERVER_ERROR;
   }
 }
 
@@ -139,89 +132,66 @@ const makeCookie = (username, salt, secret, authTimeout) => {
   return cookie.replace(/=+$/, "").replaceAll("/", "_").replaceAll("+", "-");
 }
 
-const getSession = async cookie => {
-  const sessionRes = await request.get({
-    url: new URL('/_session', environment.serverUrlNoAuth).toString(),
-    json: true,
-    simple: false,
-    headers: {
-      'Cookie': cookie
-    }
-  });
-
-  if(!sessionRes || sessionRes.status !== 200) {
-    logger.error(`Could not get session. Status: ${sessionRes.status} - ${sessionRes.body}`)
-    throw { error: 'Could not log in', status: 401 }
-  }
-
-  return sessionRes;
-};
-
-const getCouchConfigUrl = (nodeName = '_local') => {
-  const couchUrl = process.env.COUCH_URL;
-  const serverUrl =  couchUrl && couchUrl.slice(0, couchUrl.lastIndexOf('/'));
-
-  if (!serverUrl) {
-    logger.error(`Failed to find the CouchDB server from env COUCH_URL: ${COUCH_URL}`);
-    throw {status: 400, error: 'An error occured when logging in.'}
-  }
-
-  return `${serverUrl}/_node/${nodeName}/_config`;
-};
-
 const getCookie = async (username) => {
-  const secret = await request.get({
-    url: `${getCouchConfigUrl()}/couch_httpd_auth/secret`,
-    json: true
-  });
+  let secret;
+  let authTimeout;
+  let salt;
 
-  if(!secret) {
-    logger.error('CouchDB Secret has not been set.');
-    throw { status: 400, error: 'An error occurred when logging in.' };
+  try {
+    const userDoc = await users.getUserDoc(username);
+    salt = userDoc.salt;
+  } catch (err) {
+    logger.error(err);
+    throw new Error({ status: 401, error: 'You are not enabled for log in using SSO.'});
   }
 
-  const userDoc = await users.getUserDoc(username);
+  try {
+    secret = await request.get({
+      url: new URL('_node/_local/_config/couch_httpd_auth/secret', environment.serverUrl).toString(),
+      json: true
+    });
 
-  const authTimeout = await request.get({
-    url: `${getCouchConfigUrl()}/couch_httpd_auth/timeout`,
-    json: true
-  });
+    authTimeout = await request.get({
+      url: new URL('_node/_local/_config/couch_httpd_auth/timeout', environment.serverUrl).toString(),
+      json: true
+    });
 
-  const cookie = makeCookie(username, userDoc.salt, secret, authTimeout);
+  } catch (err) {
+    logger.error(err);
+    throw SERVER_ERROR;
+  }
+
+  const cookie = makeCookie(username, salt, secret, authTimeout);
 
   return `AuthSession=${cookie}`;
 };
 
 const login = async (req, res) => {
   req.body = { locale: 'en' };
+  const currentUrl =  new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
   try {
-    const auth = await getIdToken(req, res);
+    const auth = await getIdToken(ASConfig, currentUrl);
     const cookie = await getCookie(auth.user.username);
-    const sessionRes = await getSession(cookie);
-    const redirectUrl = await setCookies(req, res, sessionRes, cookie);
+    const redirectUrl = await setCookies(req, res, null, cookie);
     res.redirect(redirectUrl);
   } catch (e) {
+    logger.error(e);
     return sendLoginErrorResponse(e, res);
   }
 };
 
-const redirectToSSOAuthorize =  (req, res) => {
-  res.redirect(301, `${getSsoBaseUrl(req).href}${SSO_AUTHORIZE_PATH}`);
-}
-
 const authorize = async (req, res) => {
-  const redirectUrl = await getAuthorizationUrl(req);
-
-  res.redirect(301, redirectUrl.href);
+  const redirectUrl = new URL(
+    `/${environment.db}/oidc/get_token`,
+    `${req.protocol}://${req.get('host')}`
+  ).toString();
+  const authUrl = await getAuthorizationUrl(ASConfig, redirectUrl);
+  res.redirect(301, authUrl.href);
 }
 
 module.exports = {
   init,
-  redirectToSSOAuthorize,
   authorize,
-  login,
-  SSO_AUTHORIZE_GET_TOKEN_PATH,
-  SSO_AUTHORIZE_PATH,
-  SSO_PATH,
+  login
 }
  

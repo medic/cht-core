@@ -6,7 +6,7 @@ const {
   buildAuthorizationUrl,
   authorizationCodeGrant,
 } = require('openid-client');
-  
+
 module.exports = {
   discovery,
   randomPKCECodeVerifier,
