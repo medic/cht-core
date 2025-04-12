@@ -8,13 +8,32 @@ describe('Lineage', function() {
   let get;
   let query;
   let DB;
+  let datasource;
 
   beforeEach(function() {
     allDocs = sinon.stub();
     get = sinon.stub();
     query = sinon.stub();
     DB = { allDocs, get, query };
+    
+    // Mock cht-datasource
+    datasource = {
+      v1: {
+        contact: {
+          getByUuid: sinon.stub().resolves(null),
+          getByUuidWithLineage: sinon.stub().resolves(null)
+        }
+      }
+    };
+    
+    // Create a dummy dataContext
+    const dataContext = {};
+    
     lineage = lineageFactory(Promise, DB);
+    // Force our own datasource to be used
+    lineage = require('../src/hydration')(Promise, DB, dataContext, datasource);
+    lineage.minify = require('../src/minify').minify;
+    lineage.minifyLineage = require('../src/minify').minifyLineage;
   });
 
   afterEach(function() {

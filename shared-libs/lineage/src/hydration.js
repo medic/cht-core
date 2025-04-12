@@ -46,7 +46,11 @@ const getContactIds = (contacts) => {
   return _.uniq(ids);
 };
 
-module.exports = function(Promise, DB) {
+module.exports = function(Promise, DB, dataContext, datasource) {
+  // Store reference to DB functions for test purposes
+  const allDocs = DB.allDocs;
+  const get = DB.get;
+  
   const fillParentsInDocs = function(doc, lineage) {
     if (!doc || !lineage.length) {
       return doc;
@@ -257,6 +261,25 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchDoc = function(id) {
+    // If datasource is available, try to fetch the contact using it
+    if (datasource && datasource.v1 && datasource.v1.contact) {
+      return datasource.v1.contact.getByUuid(id)
+        .then(contact => {
+          if (contact) {
+            return contact;
+          }
+          // If not found as a contact or if datasource not available, fall back to direct DB fetch
+          return DB.get(id)
+            .catch(function(err) {
+              if (err.status === 404) {
+                err.statusCode = 404;
+              }
+              throw err;
+            });
+        });
+    }
+    
+    // Original implementation if datasource not available
     return DB.get(id)
       .catch(function(err) {
         if (err.status === 404) {
@@ -419,7 +442,6 @@ module.exports = function(Promise, DB) {
           const reconstructLineage = (docWithLineage, parents) => {
             const parentIds = extractParentIds(docWithLineage);
             return parentIds.map(id => {
-              // how can we use hashmaps?
               return getContactById(parents, id);
             });
           };
