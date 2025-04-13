@@ -93,7 +93,6 @@ const getIdToken = async (serverConfig, currentUrl) => {
 
   try {
     const tokens = await networkCallRetry(() => client.authorizationCodeGrant(ASConfig, currentUrl, params), 3);
-
     const { id_token } = tokens;
     const { name, preferred_username, email } = tokens.claims();
 
@@ -114,22 +113,26 @@ const getIdToken = async (serverConfig, currentUrl) => {
 const makeCookie = (username, salt, secret, authTimeout) => {
   // an adaptation of https://medium.com/@eiri/couchdb-cookie-authentication-6dd0af6817da
   const expiry = Math.floor(Date.now() / 1000) + authTimeout;
-
-  const msg = `${username}:${expiry.toString(16).toUpperCase()}`;
-
+  const msg = `${username}:${expiry.toString(16)
+    .toUpperCase()}`;
   const key = `${secret}${salt}`;
-
-  const hmac = createHmac('sha1', key).update(msg).digest();
-
+  const hmac = createHmac('sha1', key)
+    .update(msg)
+    .digest();
   const control = new Uint8Array(hmac);
-
-  const cookie = Buffer.concat([
+  let cookie = Buffer.concat([
     Buffer.from(msg),
     Buffer.from(':'),
     Buffer.from(control)
-  ]).toString('base64')
+  ]).toString('base64');
 
-  return cookie.replace(/=+$/, "").replaceAll("/", "_").replaceAll("+", "-");
+  while (cookie.endsWith('=')) {
+    cookie = cookie.slice(0, -1);
+  }
+
+  return cookie
+    .replaceAll("/", "_")
+    .replaceAll("+", "-");
 }
 
 const getCookie = async (username) => {
@@ -155,7 +158,6 @@ const getCookie = async (username) => {
       url: new URL('_node/_local/_config/couch_httpd_auth/timeout', environment.serverUrl).toString(),
       json: true
     });
-
   } catch (err) {
     logger.error(err);
     throw SERVER_ERROR;
