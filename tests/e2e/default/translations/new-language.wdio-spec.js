@@ -14,6 +14,8 @@ const addTranslations = async (langCode, translations = {}) => {
 
   await waitForServiceWorker.promise;
   await commonPage.refresh();
+  await commonPage.closeReloadModal(true);
+
 };
 
 describe('Adding new language', () => {
@@ -53,7 +55,7 @@ describe('Adding new language', () => {
     await addTranslations(NEW_LANG_CODE, NEW_TRANSLATIONS);
     await userSettingsElements.setLanguage(NEW_LANG_CODE);
     await browser.waitUntil(
-      async () => await (await commonPage.tabsSelector.analyticsTab()).getText() === NEW_TRANSLATIONS.Analytics
+      async () => await commonPage.tabsSelector.analyticsTab().getText() === NEW_TRANSLATIONS.Analytics
     );
 
     // Check for translations in the UI
