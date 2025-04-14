@@ -20,20 +20,18 @@ const checkModalHasClosed = async () => {
   return await modal().waitForDisplayed({ timeout: 5000, reverse: true });
 };
 
-const submit = async (timeout) => {
-  await submitButton().waitForClickable({ timeout });
+const submit = async () => {
   await submitButton().click();
   await checkModalHasClosed();
 };
 
-const cancel = async (timeout) => {
-  await cancelButton().waitForClickable({ timeout });
+const cancel = async () => {
   await cancelButton().click();
   await checkModalHasClosed();
 };
 
 const checkModalIsOpen = async () => {
-  return await (await modal()).waitForDisplayed({ timeout: 5000 });
+  return await modal().waitForDisplayed({ timeout: 5000 });
 };
 
 const isDisplayed = async () => {
