@@ -143,32 +143,20 @@ const hideSnackbar = () => {
 };
 
 const getVisibleLoaders = async () => {
-  try {
-    const loaders = await $$('.container-fluid .loader');
 
-    if (!loaders || loaders.length === 0) {
-      return [];
-    }
-
-    const elements = await loaders.getElements();
-    const visible = [];
-
-    for (let i = 0; i < elements.length; i++) {
-      try {
-        if (await elements[i].isDisplayed()) {
-          visible.push(elements[i]);
-        }
-      } catch (e) {
-        continue;
-      }
-    }
-
-    return visible;
-  } catch (e) {
-    // If there's an error finding loaders, return empty array
-    console.log('Error in getVisibleLoaders:', e.message);
-    return [];
+  /*
+  for await (const img of $$('img')) {
+    console.log(await img.getAttribute('src'))
   }
+  */
+  const visible = [];
+  for await (const loader of $$('.container-fluid .loader')) {
+    if (await loader.isDisplayed({ withinViewport: true })) {
+      visible.push(loader);
+    }
+  }
+
+  return visible;
 };
 
 const waitForLoaderToDisappear = async (element) => {
@@ -179,18 +167,9 @@ const waitForLoaderToDisappear = async (element) => {
 
 const waitForLoaders = async () => {
   await browser.waitUntil(async () => {
-    try {
-      const visibleLoaders = await getVisibleLoaders();
-      return !visibleLoaders || visibleLoaders.length === 0;
-    } catch (error) {
-      console.log('Error checking for loaders:', error.message);
-      return true;
-    }
-  }, {
-    timeout: 60000,
-    timeoutMsg: 'Waiting for Loading spinners to hide timed out.',
-    interval: 1000
-  });
+    const visibleLoaders = await getVisibleLoaders();
+    return !visibleLoaders.length;
+  }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
@@ -201,8 +180,11 @@ const waitForPageLoaded = async () => {
   // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
   // so waiting for the main page to load.
   await waitForAngularLoaded();
-
-  await waitForLoaders();
+  // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
+  // get all loaders.
+  do {
+    await waitForLoaders();
+  } while ((await getVisibleLoaders()).length > 0);
 };
 
 const clickFastActionById = async (id) => {
