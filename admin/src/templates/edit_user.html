@@ -76,12 +76,12 @@
     </div>
 
     <div class="form-group" ng-if="allowSSOLogin">
-      <input type="checkbox" id="ssoLogin" ng-true-value="true" ng-false-value="" ng-model="editUserModel.sso_login_enabled">
+      <input type="checkbox" id="ssoLogin" ng-true-value="true" ng-false-value="" ng-model="editUserModel.oidc">
       <label for="ssoLogin" translate class="form-check-label">configuration.enable.sso.login</label>
       <div class="help-block" translate>configuration.enable.sso.login.help</div>
     </div>
 
-    <div ng-if="!editUserModel.sso_login_enabled">
+    <div ng-if="!editUserModel.oidc">
 
       <div class="form-group" ng-if="allowTokenLogin && !editUserModel.tokenLoginEnabled">
         <input type="checkbox" id="tokenLogin" ng-true-value="true" ng-false-value="" ng-model="editUserModel.token_login">

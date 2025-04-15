@@ -52,7 +52,7 @@ describe('EditUserCtrl controller', () => {
       facility_id: ['abc'],
       contact_id: 'xyz',
       roles: [ 'district-manager', 'supervisor' ],
-      language: 'zz',
+      language: 'zz'
     };
     translate = sinon.stub();
     Translate = { fieldIsRequired: sinon.stub() };
@@ -178,6 +178,7 @@ describe('EditUserCtrl controller', () => {
           passwordFieldType: 'password',
           showPasswordIcon: '/login/images/show-password.svg',
           hidePasswordIcon: '/login/images/hide-password.svg',
+          oidc: false
         });
       });
     });
