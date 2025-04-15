@@ -69,7 +69,7 @@ angular
     };
 
     const allowTokenLogin = settings => settings.token_login && settings.token_login.enabled;
-    const allowSSOLogin = settings => settings.sso_login && settings.sso_login.enabled;
+    const allowSSOLogin = settings => settings.oidc_provider && settings.oidc_provider.client_id;
 
     /**
      * Ensures that facility_id is an array for backward compatibility.
@@ -135,7 +135,7 @@ angular
             passwordFieldType: $scope.model.passwordFieldType,
             showPasswordIcon: $scope.model.showPasswordIcon,
             hidePasswordIcon: $scope.model.hidePasswordIcon,
-            sso_login_enabled: $scope.model.sso_login_enabled,
+            oidc: $scope.model.oidc === true,
           });
         });
     };
@@ -213,7 +213,7 @@ angular
     const validatePasswordForEditUser = () => {
       const newUser = !$scope.editUserModel.id;
       const tokenLogin = $scope.editUserModel.token_login;
-      if (tokenLogin ||$scope.editUserModel.sso_login_enabled) {
+      if (tokenLogin ||$scope.editUserModel.oidc) {
         // when enabling token_login or sso_login, password is not required
         return true;
       }

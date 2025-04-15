@@ -1028,7 +1028,7 @@ module.exports = {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
 
-    const ssoLoginError = ssoLogin.validateSsoLogin(data);
+    const ssoLoginError = ssoLogin.validateSsoLogin(data, true);
     if (ssoLoginError) {
       return Promise.reject(error400(ssoLoginError.msg));
     }
@@ -1108,7 +1108,7 @@ module.exports = {
           throw new Error(tokenLoginError.msg);
         }
 
-        const ssoLoginError = ssoLogin.validateSsoLogin(user);
+        const ssoLoginError = ssoLogin.validateSsoLogin(user, true);
         if (ssoLoginError) {
           throw error400(ssoLoginError.msg);
         }
@@ -1187,7 +1187,7 @@ module.exports = {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
 
-    const ssoLoginError = ssoLogin.validateSSOLogin(data, false, user, userSettings);
+    const ssoLoginError = ssoLogin.validateSSOLogin(data, false, user);
     if (ssoLoginError) {
       return Promise.reject(error400(ssoLoginError.msg, ssoLoginError.key));
     }

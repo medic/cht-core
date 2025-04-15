@@ -12,8 +12,8 @@ const shouldEnableSSOLogin = (data) => {
 };
 
 const validateSSOLoginEdit = (data, user) => {
-  const disablingSSO = data.sso_login_enabled === false;
-  const wasUsingSSO = user.sso_login_enabled;
+  const disablingSSO = data.oidc === false;
+  const wasUsingSSO = user.oidc;
 
   if (disablingSSO && wasUsingSSO && !data.password) {
     return {
@@ -46,11 +46,11 @@ const enableSSOLogin = (appUrl, response) => {
       db.medic.get(response['user-settings'].id),
     ])
     .then(([ user, userSettings ]) => {
-      user.sso_login_enabled = true;
+      user.oidc = true;
 
-      userSettings.sso_login_enabled = true;
+      userSettings.oidc = true;
 
-      response.sso_login_enabled = true;
+      response.oidc = true;
 
       return Promise.all([ db.users.put(user), db.medic.put(userSettings) ]);
     })
@@ -59,7 +59,7 @@ const enableSSOLogin = (appUrl, response) => {
 
 /**
  * Disables token-login for a user.
- * Deletes the `sso_login_enabled` properties from the user and userSettings doc.
+ * Deletes the `oidc` properties from the user and userSettings doc.
  * Clears pending tasks in existent SMSs
  *
  * @param {Object} response - the response of previous actions
@@ -72,12 +72,12 @@ const disableSSOLogin = (response) => {
       db.medic.get(response['user-settings'].id),
     ])
     .then(([ user, userSettings ]) => {
-      if (!user.sso_login_enabled) {
+      if (!user.oidc) {
         return;
       }
 
-      delete user.sso_login_enabled;
-      delete userSettings.sso_login_enabled;
+      delete user.oidc;
+      delete userSettings.oidc;
 
       return Promise.all([
         db.medic.put(userSettings),
@@ -95,7 +95,7 @@ const disableSSOLogin = (response) => {
  * @returns {Promise<{Object}>} - updated response to be sent to the client
  */
 const manageSSOLogin = (data, appUrl, response) => {
-  if (data.sso_login_enabled === false) {
+  if (data.oidc === false) {
     return disableSSOLogin(response);
   }
 
@@ -108,7 +108,10 @@ const manageSSOLogin = (data, appUrl, response) => {
 
 const hasBothOidcAndTokenOrPasswordLogin = data => data.oidc && (data.password || data.token_login);
 
-const isSsoLoginEnabled = settings => !!settings?.oidc_provider?.client_id;
+const isSsoLoginEnabled = () => {
+  const settings = config.get();
+  return !!settings?.oidc_provider?.client_id;
+}
 
 const validateSSOLoginCreate = (data) => {
   if (!data.oidc){
@@ -121,9 +124,7 @@ const validateSSOLoginCreate = (data) => {
     }; 
   }
 
-  const settings = config.get();
-
-  if (!isSsoLoginEnabled(settings)){
+  if (!isSsoLoginEnabled()){
     return {
       msg: 'OIDC Login is not enabled'
     }; 
