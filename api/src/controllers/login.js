@@ -319,15 +319,21 @@ const loginByToken = (req, res) => {
         throw { status: 401, error: 'invalid' };
       }
 
-      return tokenLogin.resetPassword(userId).then(({ user, password }) => {
-        req.body = { user, password, locale: req.body.locale };
+      return users.getUserDoc(userId)
+        .then(userDoc => {
+          if (userDoc.oidc_provider) {
+            throw { status: 400, error: 'Token login not allowed for OIDC users' };
+          }
+          return tokenLogin.resetPassword(userId).then(({ user, password }) => {
+              req.body = { user, password, locale: req.body.locale };
 
-        return createSessionRetry(req)
-          .then(sessionRes => setCookies(req, res, sessionRes))
-          .then(redirectUrl => {
-            return tokenLogin.deactivateTokenLogin(userId).then(() => res.status(302).send(redirectUrl));
-          });
-      });
+              return createSessionRetry(req)
+                .then(sessionRes => setCookies(req, res, sessionRes))
+                .then(redirectUrl => {
+                  return tokenLogin.deactivateTokenLogin(userId).then(() => res.status(302).send(redirectUrl));
+                });
+            });
+        });
     })
     .catch((err = {}) => {
       logger.error('Error while logging in with token', err);
