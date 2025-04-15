@@ -180,12 +180,21 @@ const waitForAngularLoaded = async (timeout = 40000) => {
 
 const waitForPageLoaded = async () => {
   await waitForAngularLoaded();
+
+  let attempts = 0;
+  const maxAttempts = 10;
+
   do {
     const stillHasLoaders = await waitForLoaders();
     if (!stillHasLoaders) {
       break;
     }
-  } while (true);
+    attempts++;
+  } while (attempts < maxAttempts);
+
+  if (attempts >= maxAttempts) {
+    console.log('Warning: Maximum attempts reached waiting for loaders to disappear');
+  }
 };
 
 const clickFastActionById = async (id) => {
