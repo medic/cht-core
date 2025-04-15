@@ -143,16 +143,13 @@ const hideSnackbar = () => {
 };
 
 const getVisibleLoaders = async () => {
-
-  /*
-  for await (const img of $$('img')) {
-    console.log(await img.getAttribute('src'))
-  }
-  */
   const visible = [];
-  for await (const loader of $$('.container-fluid .loader')) {
-    if (await loader.isDisplayed({ withinViewport: true })) {
-      visible.push(loader);
+  const loaders = await $$('.container-fluid .loader').getElements();
+  if (loaders && loaders.length > 0) {
+    for (const loader of loaders) {
+      if (await loader.isDisplayed({ withinViewport: true })) {
+        visible.push(loader);
+      }
     }
   }
 
