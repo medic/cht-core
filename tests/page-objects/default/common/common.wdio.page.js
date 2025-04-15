@@ -147,8 +147,13 @@ const getVisibleLoaders = async () => {
   const loaders = await $$('.container-fluid .loader').getElements();
   if (loaders && loaders.length > 0) {
     for (const loader of loaders) {
-      if (await loader.isDisplayed({ withinViewport: true })) {
-        visible.push(loader);
+      try {
+        if (await loader.isDisplayed({ withinViewport: true })) {
+          visible.push(loader);
+        }
+      } catch (error) {
+        // Handle the case where the loader no longer exists
+        console.log('Loader no longer exists in the DOM');
       }
     }
   }
