@@ -145,19 +145,20 @@ const hideSnackbar = () => {
 const getVisibleLoaders = async () => {
   const visible = [];
   const loaders = await $$('.container-fluid .loader').getElements();
-  if (loaders && loaders.length > 0) {
-    for (const loader of loaders) {
-      try {
-        if (await loader.isDisplayed({ withinViewport: true })) {
-          visible.push(loader);
-        }
-      } catch (error) {
-        // Handle the case where the loader no longer exists
-        console.log('Loader no longer exists in the DOM');
-      }
+  if (!loaders.length) {
+    return visible;
+  }
+  // Instead of iterating through the loaders array, query for each loader individually
+  // This avoids issues with stale references
+  for (let i = 0; i < loaders.length; i++) {
+    // Use a more specific selector to get a fresh reference to each loader
+    // This avoids the index out of bounds issue
+    const loaderSelector = `.container-fluid .loader:nth-child(${i + 1})`;
+    const loader = await $(loaderSelector);
+    if (await loader.isExisting() && await loader.isDisplayed({ withinViewport: true })) {
+      visible.push(loader);
     }
   }
-
   return visible;
 };
 
@@ -168,15 +169,10 @@ const waitForLoaderToDisappear = async (element) => {
 };
 
 const waitForLoaders = async () => {
-  let hasVisibleLoaders = false;
-
   await browser.waitUntil(async () => {
     const visibleLoaders = await getVisibleLoaders();
-    hasVisibleLoaders = visibleLoaders.length > 0;
-    return !hasVisibleLoaders;
+    return !visibleLoaders.length;
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
-
-  return hasVisibleLoaders;
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
@@ -184,22 +180,14 @@ const waitForAngularLoaded = async (timeout = 40000) => {
 };
 
 const waitForPageLoaded = async () => {
+  // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
+  // so waiting for the main page to load.
   await waitForAngularLoaded();
-
-  let attempts = 0;
-  const maxAttempts = 10;
-
+  // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
+  // get all loaders.
   do {
-    const stillHasLoaders = await waitForLoaders();
-    if (!stillHasLoaders) {
-      break;
-    }
-    attempts++;
-  } while (attempts < maxAttempts);
-
-  if (attempts >= maxAttempts) {
-    console.log('Warning: Maximum attempts reached waiting for loaders to disappear');
-  }
+    await waitForLoaders();
+  } while ((await getVisibleLoaders()).length > 0);
 };
 
 const clickFastActionById = async (id) => {
