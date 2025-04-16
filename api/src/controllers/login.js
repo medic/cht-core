@@ -303,7 +303,7 @@ const createSessionRetry = (req, retry=10) => {
  * Generates a session cookie for a user identified by supplied token and hash request params.
  * The user's password is reset in the process.
  */
-const loginByToken = (req, res) => {
+const loginByToken = async (req, res) => {
   if (!tokenLogin.isTokenLoginEnabled()) {
     return res.status(400).json({ error: 'disabled', reason: 'Token login disabled' });
   }
@@ -312,35 +312,32 @@ const loginByToken = (req, res) => {
     return res.status(400).json({ error: 'missing', reason: 'Missing required param' });
   }
 
-  return tokenLogin
-    .getUserByToken(req.params.token)
-    .then(userId => {
+    try {
+      const userId = await tokenLogin.getUserByToken(req.params.token);
       if (!userId) {
-        throw { status: 401, error: 'invalid' };
+        return res.status(401).json({ error: 'invalid', reason: 'Invalid token' });
       }
 
-      return users.getUserDoc(userId)
-        .then(userDoc => {
-          if (userDoc.oidc_provider) {
-            throw { status: 400, error: 'Token login not allowed for OIDC users' };
-          }
-          return tokenLogin.resetPassword(userId).then(({ user, password }) => {
-              req.body = { user, password, locale: req.body.locale };
+      const userDoc = await users.getUserDoc(userId);
+      if (userDoc.oidc) {
+        return res.status(400).json({ error: 'Token login not allowed for OIDC users' });
+      }
+      
+      const { user, password } = await tokenLogin.resetPassword(userId);
+      req.body = { user, password, locale: req.body.locale };
 
-              return createSessionRetry(req)
-                .then(sessionRes => setCookies(req, res, sessionRes))
-                .then(redirectUrl => {
-                  return tokenLogin.deactivateTokenLogin(userId).then(() => res.status(302).send(redirectUrl));
-                });
-            });
-        });
-    })
-    .catch((err = {}) => {
+      const sessionRes = await createSessionRetry(req);
+      const redirectUrl = await setCookies(req, res, sessionRes);
+      
+      await tokenLogin.deactivateTokenLogin(userId);
+      return res.status(302).send(redirectUrl);
+    }
+    catch(err ) {
       logger.error('Error while logging in with token', err);
       const status = err.status || err.code || 400;
       const message = err.error || err.message || 'Unexpected error logging in';
       res.status(status).json({ error: message });
-    });
+    };
 };
 
 const renderLogin = (req) => {
