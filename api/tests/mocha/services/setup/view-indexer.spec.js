@@ -33,14 +33,14 @@ describe('View indexer service', () => {
         rows: [
           { doc: { _id: '_design/:staged:one', views: { view1: {}, view2: {}, view3: {}} } },
           { doc: { _id: '_design/:staged:three', views: { view4: {} }} },
-          { doc: { _id: '_design/:staged:three', nouveau: { index1: {} }} },
+          { doc: { _id: '_design/:staged:four', nouveau: { index1: {} }, views: { view5: {} }} },
         ]
       });
       sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [] });
       sinon.stub(db.medicLogs, 'allDocs').resolves({ rows: [{ doc: { _id: '_design/:staged:two' } }] });
       sinon.stub(db.medicUsersMeta, 'allDocs').resolves({
         rows: [
-          { doc: { _id: '_design/:staged:four', views: { view: {} }} },
+          { doc: { _id: '_design/:staged:five', views: { view: {} }} },
         ],
       });
 
@@ -49,14 +49,14 @@ describe('View indexer service', () => {
 
       const result = await viewIndexer.getViewsToIndex();
 
-      expect(result.length).to.equal(6);
+      expect(result.length).to.equal(7);
       result.forEach(item => expect(item).to.be.a('function'));
 
       expect(request.get.callCount).to.equal(0);
 
       await Promise.all(result.map(item => item()));
 
-      expect(request.get.callCount).to.equal(6);
+      expect(request.get.callCount).to.equal(7);
       expect(request.get.args).to.deep.equal([
         [{
           uri: 'http://localhost/thedb/_design/:staged:one/_view/view1',
@@ -79,12 +79,17 @@ describe('View indexer service', () => {
           qs: { limit: 1 },
         }],
         [{
-          uri: 'http://localhost/thedb/_design/_design/:staged:three/_nouveau/index1',
+          uri: 'http://localhost/thedb/_design/:staged:four/_view/view5',
+          json: true,
+          qs: { limit: 1 },
+        }],
+        [{
+          uri: 'http://localhost/thedb/_design/:staged:four/_nouveau/index1',
           json: true,
           qs: { limit: 1, q: '*:*' },
         }],
         [{
-          uri: 'http://localhost/thedb-users-meta/_design/:staged:four/_view/view',
+          uri: 'http://localhost/thedb-users-meta/_design/:staged:five/_view/view',
           json: true,
           qs: { limit: 1 },
         }],

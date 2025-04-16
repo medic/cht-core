@@ -3,6 +3,7 @@ const { expect } = require('chai');
 const rewire = require('rewire');
 const fs = require('fs');
 const request = require('@medic/couch-request');
+const logger = require('@medic/logger');
 
 const db = require('../../../../src/db');
 const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
@@ -158,15 +159,15 @@ describe('Setup utils', () => {
   describe('cleanup', () => {
     beforeEach(() => {
       sinon.stub(db, 'nouveauCleanup').returns(new Promise(() => {}));
-    });
-
-    it('should start db compact and view cleanup for every database', () => {
+      sinon.stub(logger, 'error');
       mockDb(db.medic);
       mockDb(db.sentinel);
       mockDb(db.medicLogs);
       mockDb(db.medicUsersMeta);
       mockDb(db.users);
+    });
 
+    it('should start db compact and view cleanup for every database', () => {
       utils.cleanup();
 
       expect(db.medic.compact.callCount).to.equal(1);
@@ -180,19 +181,52 @@ describe('Setup utils', () => {
       expect(db.medicLogs.viewCleanup.callCount).to.equal(1);
       expect(db.medicUsersMeta.viewCleanup.callCount).to.equal(1);
       expect(db.users.viewCleanup.callCount).to.equal(1);
+
+      expect(db.nouveauCleanup.callCount).to.equal(1);
     });
 
-    it('should catch errors', async () => {
-      mockDb(db.medic);
-      mockDb(db.sentinel);
-      mockDb(db.medicLogs);
-      mockDb(db.medicUsersMeta);
-      mockDb(db.users);
+    it('should catch compact errors and log them', async () => {
+      const error = { some: 'error' };
+      db.sentinel.compact.returns(Promise.reject(error));
 
-      db.sentinel.compact.rejects({ some: 'error' });
       utils.cleanup();
 
       await Promise.resolve();
+      await Promise.resolve();
+
+      expect(db.medic.compact.callCount).to.equal(1);
+      // this should return an error, but the other compacts
+      // and viewCleanups whould be called.
+      expect(db.sentinel.compact.callCount).to.equal(1);
+      expect(db.medicLogs.compact.callCount).to.equal(1);
+      expect(db.medicUsersMeta.compact.callCount).to.equal(1);
+      expect(db.users.compact.callCount).to.equal(1);
+
+      expect(db.medic.viewCleanup.callCount).to.equal(1);
+      expect(db.nouveauCleanup.callCount).to.equal(1);
+      expect(db.sentinel.viewCleanup.callCount).to.equal(1);
+      expect(db.medicLogs.viewCleanup.callCount).to.equal(1);
+      expect(db.medicUsersMeta.viewCleanup.callCount).to.equal(1);
+      expect(db.users.viewCleanup.callCount).to.equal(1);
+
+      expect(logger.error.callCount).to.be.at.least(1);
+      expect(logger.error.args[0][0]).to.include('Error while running cleanup');
+      expect(logger.error.args[0][1]).to.deep.equal(error);
+    });
+
+    it('should catch nouveau cleanup errors and log them', async () => {
+      const error = { some: 'error' };
+      db.nouveauCleanup.returns(Promise.reject(error));
+
+      utils.cleanup();
+
+      await Promise.resolve();
+
+      expect(db.nouveauCleanup.callCount).to.equal(1);
+
+      expect(logger.error.callCount).to.be.at.least(1);
+      expect(logger.error.args[0][0]).to.include('Error while running cleanup');
+      expect(logger.error.args[0][1]).to.deep.equal(error);
     });
   });
 

@@ -62,13 +62,16 @@ const getViewsToIndex = async () => {
  * @return {Promise} - Resolves with the request result or undefined if stopped
  */
 const waitForRequest = async (requestArgs) => {
+  const handleError = (requestError) => {
+    if (continueIndexing && !SOCKET_TIMEOUT_ERROR_CODE.includes(requestError?.error?.code)) {
+      throw requestError;
+    }
+  };
   do {
     try {
       return await request.get(requestArgs);
     } catch (requestError) {
-      if (continueIndexing && !SOCKET_TIMEOUT_ERROR_CODE.includes(requestError?.error?.code)) {
-        throw requestError;
-      }
+      handleError(requestError);
     }
   } while (continueIndexing);
 };
@@ -99,7 +102,7 @@ const indexView = async (dbName, ddocId, viewName) => {
  */
 const indexNouveauIndex = async (dbName, ddocId, indexName) => {
   return await waitForRequest({
-    uri: `${environment.serverUrl}/${dbName}/_design/${ddocId}/_nouveau/${indexName}`,
+    uri: `${environment.serverUrl}/${dbName}/${ddocId}/_nouveau/${indexName}`,
     json: true,
     qs: { q: '*:*', limit: 1 },
   });
