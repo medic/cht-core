@@ -75,7 +75,7 @@
       <span class="help-block">{{errors.contact}}</span>
     </div>
 
-    <div class="form-group" ng-if="allowSSOLogin">
+    <div class="form-group" ng-if="allowSSOLogin && (!editUserModel.tokenLoginEnabled || editUserModel.token_login === false)">
       <input type="checkbox" id="ssoLogin" ng-true-value="true" ng-false-value="" ng-model="editUserModel.oidc">
       <label for="ssoLogin" translate class="form-check-label">configuration.enable.sso.login</label>
       <div class="help-block" translate>configuration.enable.sso.login.help</div>

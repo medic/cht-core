@@ -228,7 +228,8 @@ const validateTokenLoginCreate = (data) => {
 };
 
 const validateTokenLoginEdit = (data, user, userSettings) => {
-  if (shouldDisableTokenLogin(data) && user.token_login && !data.password) {
+  const passwordOrSso = data.password || user.oidc;
+  if (shouldDisableTokenLogin(data) && user.token_login && !passwordOrSso) {
     // when disabling token login for a user that had it enabled, setting a password is required
     return {
       msg: 'Password is required when disabling token login.',

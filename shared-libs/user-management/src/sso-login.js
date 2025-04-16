@@ -1,7 +1,6 @@
 const config = require('./libs/config');
 const passwords = require('./libs/passwords');
 const db = require('./libs/db');
-const tokenLogin = require('./token-login');
 
 const isSSOLoginGloballyEnabled = () => {
   return isSsoLoginEnabled()
@@ -9,36 +8,6 @@ const isSSOLoginGloballyEnabled = () => {
 
 const shouldEnableSSOLogin = (data) => {
   return isSSOLoginGloballyEnabled() && data.oidc === true;
-};
-
-const validateSSOLoginEdita = async (data, user) => {
-  const wasUsingSSO = user.oidc;
-
-  if (wasUsingSSO && 'oidc' in data && data.oidc === undefined) {
-    return {
-      msg: 'Explicitly disable sso login.',
-      key: 'sso.user.disable.undefined',
-    };
-  }
-
-  const disablingSSO = data.oidc === false;
-
-  if (disablingSSO && wasUsingSSO && !data.password) {
-    return {
-      msg: 'Password is required when disabling sso login.',
-      key: 'sso.user.disable.password',
-    };
-  }
-
-  if (shouldEnableSSOLogin(data)) {
-    user.password = passwords.generate();
-    user.password_change_required = false;
-
-    // disable token login fo user here if it was enabled
-    if (user.token_login) {
-      tokenLogin.disableTokenLogin(user);
-    }
-  }
 };
 
 const validateSSOLoginEdit = async (data, updatedUser) => {
@@ -54,7 +23,9 @@ const validateSSOLoginEdit = async (data, updatedUser) => {
 
   const disablingSSO = data.oidc === false;
 
-  if (disablingSSO && wasUsingSSO && !data.password) {
+  const passwordOrTokenLogin = data.password || data.token_login;
+
+  if (disablingSSO && wasUsingSSO && !passwordOrTokenLogin) {
     return {
       msg: 'Password is required when disabling sso login.',
       key: 'sso.user.disable.password',
@@ -64,11 +35,6 @@ const validateSSOLoginEdit = async (data, updatedUser) => {
   if (shouldEnableSSOLogin(data)) {
     updatedUser.password = passwords.generate();
     updatedUser.password_change_required = false;
-
-    // disable token login fo user here if it was enabled
-    if (user.token_login) {
-      tokenLogin.disableTokenLogin(user);
-    }
   }
 };
 

@@ -178,7 +178,7 @@ describe('EditUserCtrl controller', () => {
           passwordFieldType: 'password',
           showPasswordIcon: '/login/images/show-password.svg',
           hidePasswordIcon: '/login/images/hide-password.svg',
-          oidc: false
+          oidc: undefined
         });
       });
     });
