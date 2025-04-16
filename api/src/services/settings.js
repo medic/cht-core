@@ -50,14 +50,8 @@ const getDeprecatedTransitions = () => {
 };
 
 const hasOidcProvider = async () => {
-  const settingsDoc = await getDoc();
-  if(!settingsDoc){
-    return false;
-  }
-  if(!!settingsDoc.settings && !!settingsDoc.settings.oidc_provider){
-    return true;
-  }
-  return false;
+  const settings = await module.exports.get();
+  return !!settings?.oidc_provider;
 };
 
 module.exports = {
