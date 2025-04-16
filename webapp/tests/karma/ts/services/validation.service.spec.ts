@@ -8,6 +8,7 @@ import { DbService } from '@mm-services/db.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TranslateLocaleService } from '@mm-services//translate-locale.service';
 import { LanguageService} from '@mm-services/language.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 describe('Validation Service', () => {
   let service:ValidationService;
@@ -15,12 +16,14 @@ describe('Validation Service', () => {
   let settingsService;
   let translateLocaleService;
   let languageService;
+  let chtDatasourceService;
 
   beforeEach(() => {
     dbService = { get: sinon.stub() };
     settingsService = { get: sinon.stub() };
     translateLocaleService = { instant: sinon.stub() };
     languageService = { get: sinon.stub() };
+    chtDatasourceService = { getDataContext: sinon.stub() };
     sinon.stub(validation, 'init');
     sinon.stub(validation, 'validate');
 
@@ -30,6 +33,7 @@ describe('Validation Service', () => {
         { provide: DbService, useValue: dbService },
         { provide: TranslateLocaleService, useValue: translateLocaleService },
         { provide: LanguageService, useValue: languageService },
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
       ]
     });
     service = TestBed.inject(ValidationService);

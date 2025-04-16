@@ -11,11 +11,15 @@ import { SettingsService } from '@mm-services/settings.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
+import { Store } from '@ngrx/store';
+import { Selectors } from '@mm-selectors/index';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Select2SearchService {
+  private direction;
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly formatProvider: FormatProvider,
@@ -26,7 +30,12 @@ export class Select2SearchService {
     private readonly settingsService: SettingsService,
     private readonly contactMutedService: ContactMutedService,
     private readonly searchTelemetryService: SearchTelemetryService,
-  ) { }
+    private store: Store,
+  ) {
+    this.store.select(Selectors.getDirection).subscribe(direction => {
+      this.direction = direction;
+    });
+  }
 
   private defaultTemplateResult(row) {
     if (!row.doc) {
@@ -154,7 +163,8 @@ export class Select2SearchService {
       templateResult: options.templateResult,
       templateSelection: options.templateSelection,
       width: '100%',
-      minimumInputLength: this.sessionService.isOnlineOnly() ? 3 : 0
+      minimumInputLength: this.sessionService.isOnlineOnly() ? 3 : 0,
+      dir: this.direction,
     });
 
     if (options.allowNew) {

@@ -34,7 +34,7 @@ module.exports = {
     db = options.db;
     translate = options.translate;
     settings = options.settings || options.config;
-    validationUtils.init(db);
+    validationUtils.init(db, options.dataContext);
 
     inited = true;
   },

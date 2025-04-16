@@ -27,6 +27,8 @@ const LOCAL_NAME_MAP = {
   ar: 'عربي (Arabic)'
 };
 
+const RTL_LANGUAGES =  ['ar'];
+
 const extractLocaleCode = filename => {
   const parts = TRANSLATION_FILE_NAME_REGEX.exec(filename);
   if (parts && parts[1]) {
@@ -54,7 +56,8 @@ const createDoc = attachment => {
     code: attachment.code,
     name: LOCAL_NAME_MAP[attachment.code] || attachment.code,
     enabled: true,
-    generic: attachment.generic
+    generic: attachment.generic,
+    rtl: RTL_LANGUAGES.includes(attachment.code),
   };
 };
 
@@ -86,6 +89,11 @@ const overwrite = (translationFiles, docs) => {
     if (!_.isEqual(doc.generic, file.generic)) {
       // backup the modified attachment
       doc.generic = file.generic;
+      updatedDocs.push(doc);
+    }
+
+    if (RTL_LANGUAGES.includes(file.code) && !doc.rtl) {
+      doc.rtl = true;
       updatedDocs.push(doc);
     }
   });

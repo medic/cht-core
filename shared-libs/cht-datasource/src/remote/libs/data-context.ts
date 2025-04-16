@@ -50,7 +50,8 @@ export const getResource = (context: RemoteDataContext, path: string) => async <
       if (response.status === 404) {
         return null;
       } else if (response.status === 400) {
-        throw new InvalidArgumentError(response.statusText);
+        const errorMessage = await response.text();
+        throw new InvalidArgumentError(errorMessage);
       }
       throw new Error(response.statusText);
     }
@@ -70,7 +71,8 @@ export const getResources = (context: RemoteDataContext, path: string) => async 
   try {
     const response = await fetch(`${context.url}/${path}?${params}`);
     if (response.status === 400) {
-      throw new InvalidArgumentError(response.statusText);
+      const errorMessage = await response.text();
+      throw new InvalidArgumentError(errorMessage);
     } else if (!response.ok) {
       throw new Error(response.statusText);
     }

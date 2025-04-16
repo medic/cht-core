@@ -14,7 +14,6 @@ const selectLanguage = async (code) => {
   await browser.waitUntil(async () => (await (await languageDropDown()).getValue()).length);
   await (await languageDropDown()).selectByAttribute('value', code);
   await modalPage.submit();
-  await modalPage.checkModalHasClosed();
 };
 
 const setLanguage = async (code) => {
@@ -23,6 +22,7 @@ const setLanguage = async (code) => {
   await commonPage.openUserSettings();
   await openEditSettings();
   await selectLanguage(code);
+  await browser.pause(500); // wait for the elements to change translations
 };
 
 module.exports = {

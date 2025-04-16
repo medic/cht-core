@@ -488,6 +488,7 @@ const openTrainingMaterials = async () => {
 const openEditProfile = async () => {
   await (await userSettingsSelectors.editProfileButton()).waitForClickable();
   await (await userSettingsSelectors.editProfileButton()).click();
+  await modalPage.checkModalIsOpen();
 };
 
 const openAppManagement = async () => {
