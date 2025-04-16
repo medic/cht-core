@@ -1,5 +1,4 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
-import { MatIconModule } from '@angular/material/icon';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
@@ -33,6 +32,7 @@ import { FastActionButtonComponent } from '@mm-components/fast-action-button/fas
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { PerformanceService } from '@mm-services/performance.service';
+import { MaterialTestModule } from '../../test-utils/material-test.module';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -124,7 +124,7 @@ describe('Contacts component', () => {
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
           FormsModule,
-          MatIconModule,
+          MaterialTestModule,
           ContactsComponent,
           ContactsMoreMenuComponent,
           FreetextFilterComponent,

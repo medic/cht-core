@@ -5,7 +5,7 @@ const baseConfig = require('./karma-unit.base.conf');
 
 module.exports = function (config) {
   config.set({
-    ...baseConfig,
+    ...baseConfig,  
     basePath: '../../',
     logLevel: config.LOG_INFO,
     coverageReporter: {

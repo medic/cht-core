@@ -1,5 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
-import { MatIconModule } from '@angular/material/icon';
+import { MaterialTestModule } from '../../test-utils/material-test.module';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -128,7 +128,7 @@ describe('Reports Component', () => {
           RouterTestingModule,
           BrowserAnimationsModule,
           MatExpansionModule,
-          MatIconModule,
+          MaterialTestModule,
           ReportsComponent,
           ReportsSidebarFilterComponent,
           SearchBarComponent,

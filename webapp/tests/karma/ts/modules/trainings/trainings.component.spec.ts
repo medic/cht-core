@@ -1,7 +1,7 @@
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
-import { MatIconModule } from '@angular/material/icon';
+import { MaterialTestModule } from '../../test-utils/material-test.module';
 import { RouterModule } from '@angular/router';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -46,7 +46,7 @@ describe('TrainingsComponent', () => {
       .configureTestingModule({
         imports: [
           RouterModule,
-          MatIconModule,
+          MaterialTestModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           TrainingsComponent,
           ModalLayoutComponent,

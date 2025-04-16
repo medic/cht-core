@@ -8,6 +8,8 @@ import { NavigationComponent } from '@mm-components/navigation/navigation.compon
 import { NavigationService } from '@mm-services/navigation.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
+import { configureTestingModule } from '../../test-utils/test-setup';
+import { MaterialTestModule } from '../../test-utils/material-test.module';
 
 describe('NavigationComponent', () => {
   let component: NavigationComponent;
@@ -16,7 +18,7 @@ describe('NavigationComponent', () => {
   let store;
   let navigationService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     const mockedSelectors = [
       { selector: Selectors.getCancelCallback, value: null },
       { selector: Selectors.getTitle, value: null },
@@ -30,23 +32,21 @@ describe('NavigationComponent', () => {
       navigationCancel: sinon.stub(GlobalActions.prototype, 'navigationCancel'),
     };
 
-    return TestBed
-      .configureTestingModule({
-        imports: [
-          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ],
-        providers: [
-          provideMockStore({ selectors: mockedSelectors }),
-          { provide: NavigationService, useValue: navigationService },
-        ]
-      })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(NavigationComponent);
-        component = fixture.componentInstance;
-        store = TestBed.inject(MockStore);
-        fixture.detectChanges();
-      });
+    configureTestingModule({
+      imports: [
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+        MaterialTestModule,
+      ],
+      providers: [
+        provideMockStore({ selectors: mockedSelectors }),
+        { provide: NavigationService, useValue: navigationService },
+      ]
+    });
+
+    fixture = TestBed.createComponent(NavigationComponent);
+    component = fixture.componentInstance;
+    store = TestBed.inject(MockStore);
+    fixture.detectChanges();
   });
 
   afterEach(() => {

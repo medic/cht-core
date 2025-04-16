@@ -1,5 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
-import { MatIconModule } from '@angular/material/icon';
+import { MaterialTestModule } from '../../test-utils/material-test.module';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
@@ -51,7 +51,7 @@ describe('Reports Sidebar Filter Component', () => {
           MatExpansionModule,
           BrowserAnimationsModule,
           BsDropdownModule,
-          MatIconModule,
+          MaterialTestModule,
           ReportsSidebarFilterComponent,
           DateFilterComponent,
           FacilityFilterComponent,
