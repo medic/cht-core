@@ -144,17 +144,25 @@ const hideSnackbar = () => {
 
 const getVisibleLoaders = async () => {
   const visible = [];
-  const loaders = await $$('.container-fluid .loader');
-  for (const loader of loaders) {
-    try {
+
+  // Get all loaders in the page
+  const loaders = await $$('.loader').getElements();
+  if (loaders.length) {
+    // Add a small pause to let the DOM stabilize
+    await browser.pause(100);
+    // Instead of iterating through the loaders array, query for each loader individually
+    // This avoids issues with stale references
+    for (let i = 0; i < loaders.length; i++) {
+      // Use a more specific selector to get a fresh reference to each loader
+      // This avoids the index out of bounds issue
+      const loaderSelector = `.loader:nth-child(${i + 1})`;
+      const loader = await $(loaderSelector);
       if (await loader.isExisting() && await loader.isDisplayed({ withinViewport: true })) {
         visible.push(loader);
       }
-    } catch (err) {
-      // If we get any error checking the loader, log it and continue
-      console.log('Error checking loader:', err.message);
     }
   }
+
   return visible;
 };
 
