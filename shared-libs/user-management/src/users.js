@@ -720,6 +720,7 @@ const createUserEntities = async (data, appUrl) => {
   await createUser(data, response);
   await createUserSettings(data, response);
   await tokenLogin.manageTokenLogin(data, appUrl, response);
+  await ssoLogin.manageSSOLogin(data, response);
   return response;
 };
 
@@ -916,7 +917,7 @@ const createMultiFacilityUser = async (data, appUrl) => {
   await createUser(data, response);
   await createUserSettings(data, response);
   await tokenLogin.manageTokenLogin(data, appUrl, response);
-  await ssoLogin.manageSSOLogin(data, appUrl, response);
+  await ssoLogin.manageSSOLogin(data, response);
   return response;
 };
 
@@ -1187,7 +1188,7 @@ module.exports = {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
 
-    const ssoLoginError = ssoLogin.validateSSOLogin(data, false, user);
+    const ssoLoginError = await ssoLogin.validateSSOLogin(data, false, user);
     if (ssoLoginError) {
       return Promise.reject(error400(ssoLoginError.msg, ssoLoginError.key));
     }
@@ -1201,7 +1202,7 @@ module.exports = {
     };
 
     await tokenLogin.manageTokenLogin(data, appUrl, response);
-    await ssoLogin.manageSSOLogin(data, appUrl, response);
+    await ssoLogin.manageSSOLogin(data, response);
 
     return response;
   },

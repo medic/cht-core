@@ -117,7 +117,7 @@ angular
               expired: tokenLoginData.expiration_date <= new Date().getTime(),
             };
 
-          return $q.resolve({
+          const m = {
             id: $scope.model._id,
             username: $scope.model.name,
             fullname: $scope.model.fullname,
@@ -135,8 +135,9 @@ angular
             passwordFieldType: $scope.model.passwordFieldType,
             showPasswordIcon: $scope.model.showPasswordIcon,
             hidePasswordIcon: $scope.model.hidePasswordIcon,
-            oidc: $scope.model.oidc === true,
-          });
+            oidc: $scope.model.oidc
+          };
+          return $q.resolve(m);
         });
     };
 
@@ -507,6 +508,10 @@ angular
         .then(updates => {
           if (!haveUpdates(updates)) {
             return;
+          }
+
+          if ('oidc' in updates && updates.oidc === undefined) {
+            updates.oidc = false;
           }
 
           if ($scope.editUserModel.id) {

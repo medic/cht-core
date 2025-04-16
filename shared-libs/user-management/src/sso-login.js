@@ -11,14 +11,22 @@ const shouldEnableSSOLogin = (data) => {
   return isSSOLoginGloballyEnabled() && data.oidc === true;
 };
 
-const validateSSOLoginEdit = (data, user) => {
-  const disablingSSO = data.oidc === false;
+const validateSSOLoginEdita = async (data, user) => {
   const wasUsingSSO = user.oidc;
+
+  if (wasUsingSSO && 'oidc' in data && data.oidc === undefined) {
+    return {
+      msg: 'Explicitly disable sso login.',
+      key: 'sso.user.disable.undefined',
+    };
+  }
+
+  const disablingSSO = data.oidc === false;
 
   if (disablingSSO && wasUsingSSO && !data.password) {
     return {
       msg: 'Password is required when disabling sso login.',
-      key: 'password.length.minimum',
+      key: 'sso.user.disable.password',
     };
   }
 
@@ -33,13 +41,44 @@ const validateSSOLoginEdit = (data, user) => {
   }
 };
 
+const validateSSOLoginEdit = async (data, updatedUser) => {
+  const user = await db.users.get(updatedUser._id);
+  const wasUsingSSO = user.oidc;
+
+  if (wasUsingSSO && 'oidc' in data && data.oidc === undefined) {
+    return {
+      msg: 'Explicitly disable sso login.',
+      key: 'sso.user.disable.undefined',
+    };
+  }
+
+  const disablingSSO = data.oidc === false;
+
+  if (disablingSSO && wasUsingSSO && !data.password) {
+    return {
+      msg: 'Password is required when disabling sso login.',
+      key: 'sso.user.disable.password',
+    };
+  }
+
+  if (shouldEnableSSOLogin(data)) {
+    updatedUser.password = passwords.generate();
+    updatedUser.password_change_required = false;
+
+    // disable token login fo user here if it was enabled
+    if (user.token_login) {
+      tokenLogin.disableTokenLogin(user);
+    }
+  }
+};
+
 const validateSSOLogin = (data, newUser = true, user = {}) => {
   return newUser
     ? validateSSOLoginCreate(data)
     : validateSSOLoginEdit(data, user);
 };
 
-const enableSSOLogin = (appUrl, response) => {
+const enableSSOLogin = (response) => {
   return Promise
     .all([
       db.users.get(response.user.id),
@@ -72,10 +111,6 @@ const disableSSOLogin = (response) => {
       db.medic.get(response['user-settings'].id),
     ])
     .then(([ user, userSettings ]) => {
-      if (!user.oidc) {
-        return;
-      }
-
       delete user.oidc;
       delete userSettings.oidc;
 
@@ -94,7 +129,7 @@ const disableSSOLogin = (response) => {
  * @param {Object} response - the response of previous actions
  * @returns {Promise<{Object}>} - updated response to be sent to the client
  */
-const manageSSOLogin = (data, appUrl, response) => {
+const manageSSOLogin = (data, response) => {
   if (data.oidc === false) {
     return disableSSOLogin(response);
   }
@@ -103,7 +138,10 @@ const manageSSOLogin = (data, appUrl, response) => {
     return Promise.resolve(response);
   }
 
-  return enableSSOLogin(appUrl, response);
+  if (data.oidc === true)
+  {
+    return enableSSOLogin(response);
+  }
 };
 
 const hasBothOidcAndTokenOrPasswordLogin = data => data.oidc && (data.password || data.token_login);
