@@ -179,15 +179,13 @@ const render = (page, req, extras = {}) => {
       getEnabledLocales(),
       brandingService.get(),
       privacyPolicy.exists(),
-      appSettings.hasOidcProvider()
     ])
-    .then(([ template, locales, branding, hasPrivacyPolicy, hasOidcProvider ]) => {
+    .then(([ template, locales, branding, hasPrivacyPolicy ]) => {
       const options = Object.assign(
         {
           branding,
           locales,
           hasPrivacyPolicy,
-          hasOidcProvider,
           defaultLocale: getBestLocaleCode(acceptLanguageHeader, locales, config.get('locale')),
           translations: getTranslationsString(page)
         },
@@ -341,8 +339,9 @@ const loginByToken = (req, res) => {
     });
 };
 
-const renderLogin = (req) => {
-  return render('login', req);
+const renderLogin = async (req) => {
+  const hasOidcProvider = await appSettings.hasOidcProvider();
+  return render('login', req, { hasOidcProvider });
 };
 
 const renderPasswordReset = (req) => {
