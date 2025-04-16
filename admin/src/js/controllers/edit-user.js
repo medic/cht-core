@@ -69,6 +69,7 @@ angular
     };
 
     const allowTokenLogin = settings => settings.token_login && settings.token_login.enabled;
+    const allowSSOLogin = settings => settings.sso_login && settings.sso_login.enabled;
 
     /**
      * Ensures that facility_id is an array for backward compatibility.
@@ -95,6 +96,7 @@ angular
           $scope.permissions = settings.permissions;
           $scope.roles = settings.roles;
           $scope.allowTokenLogin = allowTokenLogin(settings);
+          $scope.allowSSOLogin = allowSSOLogin(settings);
           if (!$scope.model) {
             return $q.resolve({});
           }
@@ -133,6 +135,7 @@ angular
             passwordFieldType: $scope.model.passwordFieldType,
             showPasswordIcon: $scope.model.showPasswordIcon,
             hidePasswordIcon: $scope.model.hidePasswordIcon,
+            sso_login_enabled: $scope.model.sso_login_enabled,
           });
         });
     };
@@ -210,8 +213,8 @@ angular
     const validatePasswordForEditUser = () => {
       const newUser = !$scope.editUserModel.id;
       const tokenLogin = $scope.editUserModel.token_login;
-      if (tokenLogin) {
-        // when enabling token_login, password is not required
+      if (tokenLogin ||$scope.editUserModel.sso_login_enabled) {
+        // when enabling token_login or sso_login, password is not required
         return true;
       }
 
@@ -593,4 +596,3 @@ angular
 
     };
   });
-
