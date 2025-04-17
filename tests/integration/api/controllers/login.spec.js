@@ -78,6 +78,11 @@ const setupTokenLoginSettings = (configureAppUrl = false) => {
     .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }));
 };
 
+const setupOidcLoginSettings = async (clientId) => {
+  const settings = { oidc_provider: { client_id: clientId } };
+  return await utils.updateSettings(settings, { ignoreReload: true });
+};
+
 describe('login', () => {
   before(() => utils.saveDoc(parentPlace));
   after(() => utils.revertDb([], true));
@@ -157,18 +162,29 @@ describe('login', () => {
         .then(() => loginWithData({ user: user.username, password }))
         .then(response => expectRedirectToPasswordReset(response));
     });
+    
 
     it('should fail if sso user', async () => {
-      const optsEdit = {
-        path: `/api/v1/users/${user.username}`,
-        method: 'POST',
-        body: { oidc: true },
+      await setupOidcLoginSettings('clientId');
+
+      const newUser = {
+        username: user.username,
+        oidc: true,
+        place: {
+          type: 'health_center',
+          name: 'Online place',
+          parent: 'PARENT_PLACE'
+        },
+        contact: {
+          name: 'OnlineUser'
+        },
+        roles: ['district_admin'], 
       };
-      await utils.request(optsEdit);
-      
-      const response = loginWithData({ user: user.username, password: 'random' });
-      expectLoginToFail(response);
-      expect(response.message).to.equal('Password Login Not Permitted For SSO Users');
+      await utils.request({ path: '/api/v2/users', method: 'POST', body: newUser });
+
+      const response = await loginWithData({ user: user.username, password: 'random' });
+      expect(response.status).to.equal(401);
+      expect(response.body.error).to.equal('Password Login Not Permitted For SSO Users');
       
     });
   });

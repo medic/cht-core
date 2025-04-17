@@ -394,10 +394,16 @@ const login = async (req, res) => {
 
 const validateNotSsoUser = async (req) => {
   if (req?.body?.user){
-    const userDoc = await users.getUserDoc(req.body.user);
-
-    if (userDoc?.oidc === true){
-      throw { status: 401, error: 'Password Login Not Permitted For SSO Users' };
+    
+    try {
+      const userDoc = await users.getUserDoc(req.body.user);
+      if (userDoc?.oidc === true){
+        throw { status: 401, error: 'Password Login Not Permitted For SSO Users' };
+      }
+    } catch (error) {
+      if (error.status === 401){
+        throw error;
+      }
     }
   }
 };

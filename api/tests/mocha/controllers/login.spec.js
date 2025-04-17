@@ -1000,24 +1000,6 @@ describe('login controller', () => {
         chai.expect(json.args[0][0]).to.deep.equal({ error: 'Password Login Not Permitted For SSO Users' });
       });
     });
-
-    it('returns 401 when SSO user attempts password login', () => {
-      req.body = { user: 'sharon', password: 'p4ss' };
-      
-      const post = sinon.stub(request, 'post').resolves();
-      const status = sinon.stub(res, 'status').returns(res);
-      const json = sinon.stub(res, 'json').returns(res);
-      const getUserDoc = sinon.stub(users, 'getUserDoc').resolves({ oidc: true });
-
-      return controller.post(req, res).then(() => {
-        chai.expect(post.callCount).to.equal(0);
-        chai.expect(getUserDoc.callCount).to.equal(1);
-        chai.expect(status.callCount).to.equal(1);
-        chai.expect(status.args[0][0]).to.equal(401);
-        chai.expect(json.callCount).to.equal(1);
-        chai.expect(json.args[0][0]).to.deep.equal({ error: 'Password Login Not Permitted For SSO Users' });
-      });
-    });
   });
 
   describe('getIdentity', () => {
