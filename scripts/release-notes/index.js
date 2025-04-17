@@ -279,16 +279,26 @@ const formatCommits = (commits) => {
   return lines.join('\n');
 };
 
+const formatDate = () => {
+  const now = new Date();
+  return now.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+};
+
 const output = ({ warnings, types }, commits) => {
   console.log(`
 ---
 title: "${MILESTONE_NAME} release notes"
 linkTitle: "${MILESTONE_NAME}"
+date: ${formatDate()}
 weight:
 description: >
 relevantLinks: >
 toc_hide: true
 ---
+
+## Release Date
+
+${formatDate()}
 
 ## Known issues
 
