@@ -257,5 +257,38 @@ describe('login', () => {
         .then(() => loginWithTokenLink(tokenLogin.token))
         .then(response => expectLoginToFail(response)); // fails after being activated the 1st time
     });
+
+    it('should reject token login for SSO users', () => {
+      user.phone = '+40755565656';
+      user.token_login = true;
+      const createOpts = {
+        path: '/api/v1/users',
+        method: 'POST',
+        body: user
+      };
+      return setupTokenLoginSettings()
+        .then(() => utils.request(createOpts))
+        .then(() => getUser(user))
+        .then(userDoc => {
+          // grab the token and mark as SSO user
+          const token = userDoc.token_login.token;
+          userDoc.oidc = 'some-provider';
+          return utils.request({
+            method: 'PUT',
+            path: `/_users/${userDoc._id}`,
+            body: userDoc
+          }).then(() => token);
+        })
+        .then(token => loginWithTokenLink(token))
+        .then(response => {
+          chai.expect(response.headers.getSetCookie()).to.deep.equal([]);
+          // status 400 with SSO-specific message
+          chai.expect(response.status).to.equal(400);
+          chai.expect(response.body).to.deep.equal({
+            error: 'invalid',
+            reason: 'Token login not allowed for SSO users'
+          });
+        });
+    });
   });
 });
