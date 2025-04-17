@@ -14,7 +14,7 @@ const { setCookies, sendLoginErrorResponse } = require('./login');
 const settingsService = require('../services/settings');
 const { setTimeout } = require('later');
 
-const OIDC_CLIENT_SECRET_KEY = "oidc:client-secret";
+const OIDC_CLIENT_SECRET_KEY = 'oidc:client-secret';
 
 const SERVER_ERROR = new Error({ status: 500, error: 'An error occurred when logging in.' });
 
@@ -25,35 +25,37 @@ const networkCallRetry = async (call, retryCount = 3) => {
   try {
     return await call();
   } catch (err) {
-    if (retryCount == 1) {
+    if (retryCount === 1) {
       throw err;
     }
-    logger.debug(`Retrying ${call.name}.`)
-    return await setTimeout(networkCallRetry(call, --retryCount), 10)
+    logger.debug(`Retrying ${call.name}.`);
+    return await setTimeout(networkCallRetry(call, --retryCount), 10);
   }
-}
+};
 
 const init = async () => {
-  const settings = await settingsService.get()
-  if(!settings.oidc_provider) {
+  const settings = await settingsService.get();
+  if (!settings.oidc_provider) {
     logger.info('Authorization server config settings not provided.');
     return;
   }
 
   const clientSecret = await secureSettings.getCredentials(OIDC_CLIENT_SECRET_KEY);
-  if(!clientSecret) {
-    const err = `No OIDC client secret '${OIDC_CLIENT_SECRET_KEY}' configured.`
-    logger.error(err)
+  if (!clientSecret) {
+    const err = `No OIDC client secret '${OIDC_CLIENT_SECRET_KEY}' configured.`;
+    logger.error(err);
     throw new Error(err);
   }
 
   try {
     ASConfig = await networkCallRetry(
-      () => client.discovery(new URL(settings.oidc_provider.discovery_url), settings.oidc_provider.client_id, clientSecret),
+      () => client.discovery(
+        new URL(settings.oidc_provider.discovery_url), settings.oidc_provider.client_id, clientSecret
+      ),
       3
-    )
+    );
   } catch (e) {
-    logger.error(e)
+    logger.error(e);
     const err = 'The SSO provider is unreachable.';
     throw new Error({ status: 503, error: err });
   }
@@ -61,7 +63,7 @@ const init = async () => {
   logger.info('Authorization server config auth config loaded successfully.');
 
   return ASConfig;
-}
+};
 
 const getAuthorizationUrl = async (serverConfig, redirectUrl) => {
   code_verifier = client.randomPKCECodeVerifier();
@@ -72,23 +74,23 @@ const getAuthorizationUrl = async (serverConfig, redirectUrl) => {
   let parameters = {
     redirect_uri: redirectUrl,
     scope: 'openid'
-  }
+  };
 
-  if(serverConfig?.serverMetadata()?.supportsPKCE()) {
-    parameters = { ...parameters, ...{ code_challenge_method, code_challenge } }
+  if (serverConfig?.serverMetadata()?.supportsPKCE()) {
+    parameters = { ...parameters, ...{ code_challenge_method, code_challenge } };
   }
 
   return client.buildAuthorizationUrl(serverConfig, parameters);
-}
+};
 
 const getIdToken = async (serverConfig, currentUrl) => {
   let params = {};
 
-  if(serverConfig?.serverMetadata()?.supportsPKCE()) {
+  if (serverConfig?.serverMetadata()?.supportsPKCE()) {
     params = {
       idTokenExpected: true,
       pkceCodeVerifier: code_verifier
-    }
+    };
   }
 
   try {
@@ -103,12 +105,12 @@ const getIdToken = async (serverConfig, currentUrl) => {
         username: preferred_username,
         email
       }
-    }
+    };
   } catch (err) {
     logger.error(err);
     throw SERVER_ERROR;
   }
-}
+};
 
 const makeCookie = (username, salt, secret, authTimeout) => {
   // an adaptation of https://medium.com/@eiri/couchdb-cookie-authentication-6dd0af6817da
@@ -131,9 +133,9 @@ const makeCookie = (username, salt, secret, authTimeout) => {
   }
 
   return cookie
-    .replaceAll("/", "_")
-    .replaceAll("+", "-");
-}
+    .replaceAll('/', '_')
+    .replaceAll('+', '-');
+};
 
 const getCookie = async (username) => {
   let secret;
@@ -189,11 +191,10 @@ const authorize = async (req, res) => {
   ).toString();
   const authUrl = await getAuthorizationUrl(ASConfig, redirectUrl);
   res.redirect(301, authUrl.href);
-}
+};
 
 module.exports = {
   init,
   authorize,
   login
-}
- 
+};

@@ -8,17 +8,11 @@ const { users } = require('@medic/user-management')(config, db, dataContext);
 const template = require('../../../src/services/template');
 const secureSettings = require('@medic/settings');
 const settingsService = require('../../../src/services/settings');
-const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
 
 const client = require('../../../src/openid-client-wrapper.js');
 
 let controller;
-
-let req;
-let res;
-
-const pathPrefix = '/' + environment.db + '/';
 
 describe('sso controller', () => {
   let clock;
@@ -28,55 +22,35 @@ describe('sso controller', () => {
       client_id: 'client_id',
       clientSecret: 'client-secret'
     }
-  }
+  };
 
   const ASConfig = {
     serverMetadata: () => ({
       supportsPKCE: () => true,
     }),
-    clientMetadata: () => {return {client_id: 'id'}}
-  }
+    clientMetadata: () => ({client_id: 'id'})
+  };
 
-  const id_token = 'token123'
-    , name = 'ari'
-    , preferred_username = 'ari'
-    , email = 'ari@test';
+  const id_token = 'token123';
+  const name = 'ari';
+  const preferred_username = 'ari';
+  const email = 'ari@test';
 
   const claims = () => {
     return { name, preferred_username, email };
-  }
+  };
 
   const init = async () => {
     sinon.stub(settingsService, 'get').returns(settings);
 
     sinon.stub(secureSettings, 'getCredentials').resolves('secret');
     await controller.init();
-  }
+  };
 
   beforeEach(async () => {
     template.clear();
     clock = sinon.useFakeTimers(1743782507000); // 'Fri Apr 04 2025 19:01:47 GMT+0300 (East Africa Time)'
     controller = rewire('../../../src/controllers/sso');
-
-    req = {
-      query: {},
-      body: {},
-      hostname: 'xx.app.medicmobile.org',
-      protocol: 'http',
-      headers: {cookie: ''},
-      get: function () {
-        return this.hostname;
-      }
-    };
-    res = {
-      redirect: () => 'https://fake-url.com',
-      send: () => {},
-      status: () => ({json: () => {}}),
-      json: () => {},
-      cookie: () => {},
-      clearCookie: () => {},
-      setHeader: () => {}
-    };
 
     sinon.stub(client, 'discovery').resolves(ASConfig);
     sinon.stub(client, 'randomPKCECodeVerifier').returns('verifier123');
@@ -98,8 +72,12 @@ describe('sso controller', () => {
 
     it('should use settings config', async() => {
       await init();
-      chai.expect(client.discovery.calledWith(new URL(settings.oidc_provider.discovery_url), settings.oidc_provider.client_id, 'secret')).to.be.true;
-    })
+      chai.expect(client.discovery.calledWith(
+        new URL(settings.oidc_provider.discovery_url),
+        settings.oidc_provider.client_id,
+        'secret'
+      )).to.be.true;
+    });
 
     it('should throw an error if no secret is found', async () => {
       sinon.stub(settingsService, 'get').returns(settings);
@@ -123,7 +101,7 @@ describe('sso controller', () => {
 
   describe('networkCallRetry', () => {
     it('should retry 3 times', async () => {
-      const fn = sinon.fake.throws("Error");
+      const fn = sinon.fake.throws('Error');
       try {
         await controller.__get__('networkCallRetry')(fn, 3);
         chai.expect.fail('Error');
@@ -188,17 +166,17 @@ describe('sso controller', () => {
         await controller.__get__('getIdToken')(ASConfig, 'http://current_url/');
         chai.expect.fail('Error');
       } catch (err) {
-        chai.expect(err).to.be.equal(controller.__get__("SERVER_ERROR"));
+        chai.expect(err).to.be.equal(controller.__get__('SERVER_ERROR'));
       }
     });
   });
 
   describe('make cookie', () => {
     it('should generate a valid cookie', () => {
-      const username = 'odin',
-        salt = '19cba3729c50c92d894edeea0fb9c1c4',
-        secret = 'c0673d7e-0310-44bc-a919-9e6330904f80',
-        authTimeout = 30;
+      const username = 'odin';
+      const salt = '19cba3729c50c92d894edeea0fb9c1c4';
+      const secret = 'c0673d7e-0310-44bc-a919-9e6330904f80';
+      const authTimeout = 30;
 
       const cookie = controller.__get__('makeCookie')(username, salt, secret, authTimeout);
       chai.expect(cookie).to.be.equal('b2Rpbjo2N0YwMDI4OTrzYR70nsFmwmMSkvPju5RW1OCbew');
@@ -219,7 +197,6 @@ describe('sso controller', () => {
 
     it('should throw and error if secret or auth timeout is not set', async () => {
       await init();
-      const username = 'odin';
       const user = { id: 'user123', username: 'user123', salt: 'salt' };
       sinon.stub(users, 'getUserDoc').returns(user);
       sinon.stub(request, 'get').throws(new Error('error'));
@@ -227,7 +204,7 @@ describe('sso controller', () => {
         await controller.__get__('getCookie')('odin');
         chai.expect.fail('Error');
       } catch (err) {
-        chai.expect(err).to.be.equal(controller.__get__("SERVER_ERROR"));
+        chai.expect(err).to.be.equal(controller.__get__('SERVER_ERROR'));
       }
     });
   });
