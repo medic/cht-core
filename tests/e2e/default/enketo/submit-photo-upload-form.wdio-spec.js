@@ -15,7 +15,7 @@ describe('Submit Photo Upload form', () => {
   });
 
   after(async () => {
-    await utils.deleteDocs(['photo-upload']);
+    await utils.deleteDocs(['form:photo-upload']);
     await utils.revertDb([/^form:/], true);
   });
 

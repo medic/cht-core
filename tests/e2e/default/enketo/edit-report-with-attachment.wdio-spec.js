@@ -21,7 +21,7 @@ describe('Edit report with attachment', () => {
   });
 
   after(async () => {
-    await utils.deleteDocs(['one-text-form']);
+    await utils.deleteDocs(['form:one-text-form']);
     await utils.revertDb([/^form:/], true);
   });
 

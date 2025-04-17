@@ -20,7 +20,7 @@ describe('Phone widget', () => {
   });
 
   after(async () => {
-    await utils.deleteDocs(['phone_widget']);
+    await utils.deleteDocs(['form:phone_widget']);
     await utils.revertDb([/^form:/], true);
   });
 

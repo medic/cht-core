@@ -14,7 +14,7 @@ describe('Countdown timer widget', () => {
   });
 
   after(async () => {
-    await utils.deleteDocs(['countdown-timer']);
+    await utils.deleteDocs(['form:countdown-timer']);
     await utils.revertDb([/^form:/], true);
   });
 
