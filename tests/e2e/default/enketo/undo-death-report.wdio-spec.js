@@ -29,6 +29,12 @@ describe('Submit an undo death report', () => {
     await commonPage.sync({ expectReload: true });
   });
 
+  after(async () => {
+    await utils.deleteUsers([offlineUser]);
+    await utils.revertDb([/^form:/], true);
+  });
+
+
   it('should submit an undo death report, ' +
     'verify that it was registered successfully and ' +
     'verify that the counter for the Deaths, in the targets section, was set to 0.', async () => {

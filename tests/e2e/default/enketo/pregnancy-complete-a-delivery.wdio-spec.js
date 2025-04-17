@@ -54,6 +54,11 @@ describe('Contact Delivery Form', () => {
     await loginPage.login(offlineUser);
   });
 
+  after(async () => {
+    await utils.deleteUsers([offlineUser]);
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('Complete a delivery: Process a delivery with a live child and facility birth, ' +
     'verify that the past pregnancy card is present and the report was created,' +
     'verify that the child registered during birth is created and displayed the proper information,' +

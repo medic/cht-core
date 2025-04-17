@@ -23,6 +23,10 @@ describe('Pregnancy danger sign follow-up form', () => {
     await commonPage.hideSnackbar();
   });
 
+  after(async () => {
+    await utils.revertDb([/^form:/], true);
+  });
+
   beforeEach(async () => {
     await commonPage.goToReports();
     await commonPage.openFastActionReport('pregnancy_danger_sign_follow_up', false);
