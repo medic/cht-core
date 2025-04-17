@@ -41,8 +41,7 @@ describe('Training Cards', () => {
   });
 
   after(async () => {
-    await utils.deleteUsers([user]);
-    await utils.deleteDocs([`form:${formDocId}`]);t
+    await utils.deleteDocs([`form:${formDocId}`]);
     await utils.revertDb([/^form:/], true);
   });
 
