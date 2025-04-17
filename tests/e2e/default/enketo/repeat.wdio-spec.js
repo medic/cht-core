@@ -29,6 +29,12 @@ describe('RepeatForm', () => {
     await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/repeat-translation-select`));
   });
 
+  after(async () => {
+    await utils.deleteUsers([hierarchy.user]);
+    await utils.deleteDocs(['repeat-translation-count', 'repeat-translation-button', 'repeat-translation-select']);
+    await utils.revertDb([/^form:/], true);
+  });
+
   afterEach(async () => {
     await browser.deleteCookies();
     await browser.refresh();

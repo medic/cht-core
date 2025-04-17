@@ -83,6 +83,12 @@ describe('Enketo Widgets', () => {
     await loginPage.login(offlineUser);
   });
 
+  after(async () => {
+    await utils.deleteUsers([offlineUser]);
+    await utils.deleteDocs(['enketo_widgets_test']);
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('should submit Enketo Widgets form - People\'s tab', async () => {
     await commonPage.goToPeople(offlineUser.contact._id);
     const medicId = await contactPage.getContactMedicID();

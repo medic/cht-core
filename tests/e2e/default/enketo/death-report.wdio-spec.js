@@ -25,6 +25,11 @@ describe('Submit a death report', () => {
     await loginPage.login(offlineUser);
   });
 
+  after(async () => {
+    await utils.deleteUsers([ offlineUser ]);
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('should create and edit a death, verify the report created and the tile from the Targets section.', async () => {
     const deathDate = moment();
     const deathNote = 'Test note';

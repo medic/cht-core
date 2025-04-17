@@ -40,6 +40,12 @@ describe('Training Cards', () => {
     await commonPage.waitForPageLoaded();
   });
 
+  after(async () => {
+    await utils.deleteUsers([user]);
+    await utils.deleteDocs([`form:${formDocId}`]);t
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('should cancel training and not save it as completed', async () => {
     await trainingCardsPage.waitForTrainingCards();
 

@@ -30,6 +30,11 @@ describe('Health Facility ANC Reminder task', () => {
     await commonPage.goToPeople(pregnantWoman._id);
   });
 
+  after(async () => {
+    await utils.deleteUsers([offlineUser]);
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('should submit the health facility ANC reminder task', async () => {
     await commonPage.openFastActionReport('pregnancy');
     await pregnancyForm.submitDefaultPregnancy();

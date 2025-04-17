@@ -13,6 +13,11 @@ describe('Countdown timer widget', () => {
     await commonPage.hideSnackbar();
   });
 
+  after(async () => {
+    await utils.deleteDocs(['countdown-timer']);
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('interact with timer and submit', async () => {
     await commonPage.goToReports();
 

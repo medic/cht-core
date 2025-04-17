@@ -30,6 +30,12 @@ describe('DB Object Widget', () => {
     await loginPage.login(offlineUser);
   });
 
+  after(async () => {
+    await utils.deleteUsers([ offlineUser ]);
+    await utils.deleteDocs(['db-object-form']);
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('should load contacts in non-relevant inputs group and from calculations', async () => {
     await commonPage.goToReports();
     await commonPage.openFastActionReport('db-object-form', false);

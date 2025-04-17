@@ -14,6 +14,11 @@ describe('Submit Enketo form', () => {
     await loginPage.cookieLogin();
   });
 
+  after(async () => {
+    await utils.deleteDocs(['assessment', 'required-note']);
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('submits on reports tab', async () => {
     await commonPage.goToReports();
     await commonPage.openFastActionReport('assessment', false);

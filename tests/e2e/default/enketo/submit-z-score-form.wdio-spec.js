@@ -81,6 +81,11 @@ describe('Submit Z-Score form', () => {
     await commonPage.hideSnackbar();
   });
 
+  after(async () => {
+    await utils.deleteDocs(['z-score']);
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('Autofills zscore fields with correct values', async () => {
     await commonPage.goToReports();
     await commonPage.openFastActionReport('z-score', false);

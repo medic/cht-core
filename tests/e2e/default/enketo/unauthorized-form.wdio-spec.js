@@ -34,6 +34,12 @@ describe('Unauthorized form', () => {
     await loginPage.login(offlineUser);
   });
 
+  after(async () => {
+    await utils.deleteUsers([offlineUser]);
+    await utils.revertDb([/^form:/], true);
+    await utils.revertSettings(true);
+  });
+
   afterEach(async () => await utils.revertSettings(true));
 
   it('should display unauthorized error message in reports tab when form expression does not match', async () => {

@@ -19,6 +19,11 @@ describe('Phone widget', () => {
     await commonPage.hideSnackbar();
   });
 
+  after(async () => {
+    await utils.deleteDocs(['phone_widget']);
+    await utils.revertDb([/^form:/], true);
+  });
+
   // Only testing the duplicate checking logic here.
   // The rest of the phone widget logic is covered by the cht-form integration tests
 
