@@ -97,7 +97,7 @@ describe('version', () => {
     it('Returns the current version of the app', () => {
       const deploy_info = {
         timestamp: '2022-02-15T08:27:25.997Z',
-        user: 'docker cli',
+        user: 'cht-conf cli',
         version: '1.0.0.123456',
         base_version: '1.0.0'
       };
@@ -106,7 +106,7 @@ describe('version', () => {
     it('returns the base_version if it is defined', () => {
       const deploy_info = {
         timestamp: '2022-02-15T08:27:25.997Z',
-        user: 'docker cli',
+        user: 'cht-conf cli',
         base_version: '1.0.0'
       };
       chai.expect(service.currentVersion(deploy_info)).to.deep.equal(v(1, 0, 0));
