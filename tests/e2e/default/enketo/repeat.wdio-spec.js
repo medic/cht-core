@@ -31,7 +31,7 @@ describe('RepeatForm', () => {
 
   after(async () => {
     await utils.deleteUsers([hierarchy.user]);
-    await utils.deleteDocs(['repeat-translation-count', 'repeat-translation-button', 'repeat-translation-select']);
+    await utils.deleteDocs(['form:repeat-translation-count', 'form:repeat-translation-button', 'form:repeat-translation-select']);
     await utils.revertDb([/^form:/], true);
   });
 

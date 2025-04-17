@@ -17,7 +17,7 @@ describe('Extension lib xpath function', () => {
   });
 
   after(async () => {
-    await utils.deleteDocs(['extension-lib-average-calculator']);
+    await utils.deleteDocs(['form:extension-lib-average-calculator']);
     await utils.revertDb([/^form:/], true);
   });
 

@@ -15,7 +15,7 @@ describe('Submit Enketo form', () => {
   });
 
   after(async () => {
-    await utils.deleteDocs(['assessment', 'required-note']);
+    await utils.deleteDocs(['form:assessment', 'form:required-note']);
     await utils.revertDb([/^form:/], true);
   });
 

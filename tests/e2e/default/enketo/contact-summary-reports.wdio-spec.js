@@ -38,7 +38,7 @@ describe('Contact summary', () => {
   });
 
   after(async () => {
-    await utils.deleteDocs(['contact-summary-reports']);
+    await utils.deleteDocs(['form:contact-summary-reports']);
     await utils.revertDb([/^form:/], true);
     await utils.revertSettings(true);
   });

@@ -32,7 +32,7 @@ describe('DB Object Widget', () => {
 
   after(async () => {
     await utils.deleteUsers([ offlineUser ]);
-    await utils.deleteDocs(['db-object-form']);
+    await utils.deleteDocs(['form:db-object-form']);
     await utils.revertDb([/^form:/], true);
   });
 

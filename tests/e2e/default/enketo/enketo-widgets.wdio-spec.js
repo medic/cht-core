@@ -85,7 +85,7 @@ describe('Enketo Widgets', () => {
 
   after(async () => {
     await utils.deleteUsers([offlineUser]);
-    await utils.deleteDocs(['enketo_widgets_test']);
+    await utils.deleteDocs(['form:enketo_widgets_test']);
     await utils.revertDb([/^form:/], true);
   });
 
