@@ -11,7 +11,8 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
-//const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Pregnancy registration', () => {
@@ -31,6 +32,10 @@ describe('Pregnancy registration', () => {
 
   afterEach(async () => {
     await utils.revertDb([/^form:/], true);
+    await commonPage.goToBase();
+    if(await modalPage.isDisplayed()) {
+      await modalPage.submit();
+    }
   });
 
   after(async () => {
@@ -43,14 +48,14 @@ describe('Pregnancy registration', () => {
     'validate that the report related the pregnancy was created, and ' +
     'validate that the counters for the active pregnancies and the new pregnancies were updated.', async () => {
 
-    //const edd = moment().add(8, 'days');
+    const edd = moment().add(8, 'days');
     const nextANCVisit = moment().add(2, 'day');
 
     await commonPage.goToPeople(pregnantWoman._id);
     await commonPage.openFastActionReport('pregnancy');
     await pregnancyForm.submitDefaultPregnancy(false);
 
-    /*const summaryTexts = [
+    const summaryTexts = [
       pregnantWoman.name,
       '38', //weeks pregnant
       edd.format('D MMM, YYYY'),
@@ -73,17 +78,17 @@ describe('Pregnancy registration', () => {
       'Getting tired easily',
       'Swelling of face and hands',
       'Breathlessness'
-    ];*/
+    ];
 
-    //await commonEnketoPage.validateSummaryReport(summaryTexts);
+    await commonEnketoPage.validateSummaryReport(summaryTexts);
     await genericForm.submitForm();
 
     expect(await (await contactPage.pregnancyCardSelectors.pregnancyCard()).isDisplayed()).to.be.true;
 
     // Validate pregnancy card and its information
     const pregnancyCardInfo = await contactPage.getPregnancyCardInfo();
-    //expect(pregnancyCardInfo.weeksPregnant).to.equal('38');
-    //expect(Date.parse(pregnancyCardInfo.deliveryDate)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
+    expect(pregnancyCardInfo.weeksPregnant).to.equal('38');
+    expect(Date.parse(pregnancyCardInfo.deliveryDate)).to.equal(Date.parse(edd.format('D MMM, YYYY')));
     expect(pregnancyCardInfo.risk).to.equal('High risk');
     expect(Date.parse(pregnancyCardInfo.ancVisit)).to.equal(Date.parse(nextANCVisit.format('D MMM, YYYY')));
 
