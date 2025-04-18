@@ -33,7 +33,7 @@ describe('Pregnancy registration', () => {
   afterEach(async () => {
     await utils.revertDb([/^form:/], true);
     await commonPage.goToBase();
-    if(await modalPage.isDisplayed()) {
+    if (await modalPage.isDisplayed()) {
       await modalPage.submit();
     }
   });
