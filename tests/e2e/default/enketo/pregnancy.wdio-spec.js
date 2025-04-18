@@ -29,9 +29,12 @@ describe('Pregnancy registration', () => {
     await loginPage.login(offlineUser);
   });
 
+  afterEach(async () => {
+    await utils.revertDb([/^form:/], true);
+  });
+
   after(async () => {
     await utils.deleteUsers([offlineUser]);
-    await utils.revertDb([/^form:/], true);
   });
 
   it('should submit a new pregnancy, ' +
