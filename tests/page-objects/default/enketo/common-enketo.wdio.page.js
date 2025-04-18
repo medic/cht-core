@@ -57,6 +57,8 @@ const setInputValue = async (question, value) => {
 };
 
 const setDateValue = async (question, value) => {
+  console.log('setDateValue: ', value);
+  console.log('question: ', question);
   await setValue('input.ignore.input-small', question, value);
   //To close the date widget
   await formTitle().click();
@@ -76,7 +78,8 @@ const addFileInputValue = async (question, value, { repeatIndex = 0 } = {}) => {
 const validateSummaryReport = async (textArray) => {
   const element = await getCurrentPageSection();
   for (const text of textArray) {
-    expect(await (await element.$(`span*=${text}`)).isDisplayed()).to.be.true;
+    console.log('Validating text: ', text);
+    expect(await element.$(`span*=${text}`).isDisplayed()).to.be.true;
   }
 };
 
