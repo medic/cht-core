@@ -6,7 +6,8 @@ const saveServiceWorkerContents = async () => {
   // this is silly
   // Because the service worker is generated at runtime, we need to have API booted to generate the file.
   // We also need to treat linting the service-worker as an E2E test, since results could differ based on node version.
-  // To run on all supported node versions, we boot the API via Docker containers, where the API extracts and saves resources
+  // To run on all supported node versions, we boot the API via Docker containers 
+  // where the API extracts and saves resources
   // extracted resources within the container, the actual service worker file is not accessible without Docker cli.
   // Local tests don't boot API in Docker, and the service worker file is saved in a different location.
   // I'm saving the output of the service-worker API request, and I run eslint over this file later.
