@@ -23,7 +23,7 @@
             <li ng-repeat="indexer in indexerProgress">
               <div class="col-xs-3">{{indexer.database}}/{{indexer.ddoc}}</div>
               <div class="col-xs-9 progress">
-                <div class="progress-bar" role="progress" ng-style="width: {{indexer.progress}}%;" aria-valuenow="{{indexer.progress}}" aria-valuemin="0" aria-valuemax="100">{{indexer.progress}}%</div>
+                <div class="progress-bar" role="progressbar" ng-style="width: {{indexer.progress}}%;" aria-valuenow="{{indexer.progress}}" aria-valuemin="0" aria-valuemax="100">{{indexer.progress}}%</div>
               </div>
             </li>
           </ul>
