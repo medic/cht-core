@@ -585,6 +585,7 @@ describe('couch-request', () => {
       body: 'this is text',
       status: 201,
       headers: new Headers({ foo: 'bar', bar: 'baz' }),
+      streamed: true,
     }));
 
     const opts = {
@@ -599,6 +600,7 @@ describe('couch-request', () => {
       status: 201,
       ok: true,
       headers: new Headers({ foo: 'bar', bar: 'baz', 'content-type': 'application/json' }),
+      streamed: true,
     });
   });
 
