@@ -1,0 +1,11 @@
+{
+  "name": "@medic/audit",
+  "version": "1.0.0",
+  "description": "Common utility functions for tracking docs changes",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}

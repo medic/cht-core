@@ -644,7 +644,7 @@ describe('couch-request', () => {
 
   it('should not add request id header when client request is not set', async () => {
     const asyncLocalStorage = { getRequestId: sinon.stub().returns(false) };
-    couchRequest.initialize(asyncLocalStorage, 'header-name');
+    couchRequest.setStore(asyncLocalStorage, 'header-name');
 
     const response = await couchRequest.get({ uri: 'http://test.com:5984/test' });
 
@@ -665,7 +665,7 @@ describe('couch-request', () => {
 
   it('should set request id header when set', async () => {
     const asyncLocalStorage = { getRequestId: sinon.stub().returns('req_uuid') };
-    couchRequest.initialize(asyncLocalStorage, 'header-name');
+    couchRequest.setStore(asyncLocalStorage, 'header-name');
 
     const response = await couchRequest.get({ uri: 'http://test.com:5984/test' });
     chai.expect(response).to.equal('yes');
@@ -686,7 +686,7 @@ describe('couch-request', () => {
 
   it('should add request id header when headers are already set', async () => {
     const asyncLocalStorage = { getRequestId: sinon.stub().returns('req_uuid') };
-    couchRequest.initialize(asyncLocalStorage, 'header-name');
+    couchRequest.setStore(asyncLocalStorage, 'header-name');
 
     const response = await couchRequest.get({ uri: 'http://test.com:5984/b', headers: { 'authorization': 'Basic 123' } });
     chai.expect(response).to.equal('yes');
@@ -705,4 +705,8 @@ describe('couch-request', () => {
       }
     ]]);
   });
+  
+  it('should call auditlib fetchCallback with correct request data', async () => {
+    // todo
+  }); 
 });

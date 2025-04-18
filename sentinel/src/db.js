@@ -1,6 +1,7 @@
 const logger = require('@medic/logger');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
+const audit = require('@medic/audit');
 
 const { UNIT_TEST_ENV } = process.env;
 
@@ -72,6 +73,9 @@ if (UNIT_TEST_ENV) {
   module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, {
     fetch: fetchFn,
   });
+  module.exports.audit = new PouchDB(`${couchUrl}-audit`);
+  audit.initLib(module.exports.medic, module.exports.audit, 'sentinel');
+  request.setAudit(audit);
 
   module.exports.allDbs = () => request.get({ url: `${environment.serverUrl}/_all_dbs`, json: true });
   module.exports.get = db => new PouchDB(`${environment.serverUrl}/${db}`);

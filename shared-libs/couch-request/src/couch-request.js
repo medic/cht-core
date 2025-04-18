@@ -2,6 +2,7 @@ const environment = require('@medic/environment');
 const path = require('path');
 let asyncLocalStorage;
 let requestIdHeader;
+let auditLib;
 
 const JSON_HEADER_VALUE = 'application/json';
 const CONTENT_TYPE = 'content-type';
@@ -169,8 +170,11 @@ const request = async (options = {}) => {
     body: await getResponseBody(response, options.headers[CONTENT_TYPE] === JSON_HEADER_VALUE),
     status: response.status,
     ok: response.ok,
-    headers: response.headers
+    headers: response.headers,
+    streamed: true,
   };
+
+  void auditLib?.fetchCallback(options.uri, options, responseObj);
 
   if (options.simple === false) {
     return responseObj;
@@ -221,9 +225,12 @@ const request = async (options = {}) => {
  */
 
 module.exports = {
-  initialize: (store, header) => {
+  setStore: (store, header) => {
     asyncLocalStorage = store;
     requestIdHeader = header.toLowerCase();
+  },
+  setAudit: (audit) => {
+    auditLib = audit;
   },
 
   /**

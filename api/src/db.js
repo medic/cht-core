@@ -2,11 +2,13 @@ const PouchDB = require('pouchdb-core');
 const logger = require('@medic/logger');
 const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
+
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-session-authentication'));
 PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 const asyncLocalStorage = require('./services/async-storage');
+const audit = require('@medic/audit');
 const { REQUEST_ID_HEADER } = require('./server-utils');
 
 const { UNIT_TEST_ENV } = process.env;
@@ -80,7 +82,10 @@ if (UNIT_TEST_ENV) {
     if (requestId) {
       opts.headers.set(REQUEST_ID_HEADER, requestId);
     }
-    return PouchDB.fetch(url, opts);
+    return PouchDB.fetch(url, opts).then(response => {
+      void audit.fetchCallback(url, opts, response);
+      return response;
+    });
   };
 
   const DB = new PouchDB(environment.couchUrl, { fetch });
@@ -92,9 +97,13 @@ if (UNIT_TEST_ENV) {
   module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch });
   module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch });
   module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch });
+  module.exports.audit = new PouchDB(`${environment.couchUrl}-audit`);
   module.exports.createVault = () => module.exports.vault.info();
   module.exports.users = new PouchDB(getDbUrl('_users'), { fetch });
   module.exports.builds = new PouchDB(environment.buildsUrl);
+
+  audit.initLib(module.exports.medic, module.exports.audit, 'api', asyncLocalStorage);
+  request.setAudit(audit);
 
   // Get the DB with the given name
   module.exports.get = name => new PouchDB(getDbUrl(name), { fetch });

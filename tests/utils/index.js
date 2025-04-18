@@ -58,6 +58,7 @@ const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
 const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
+const auditDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-audit`, { auth });
 const existingFeedbackDocIds = [];
 const MINIMUM_BROWSER_VERSION = '90';
 const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
@@ -251,7 +252,7 @@ const requestOnTestDb = (options, debug) => {
     };
   }
   const pathAndReqType = `${options.path}${options.method}`;
-  if (pathAndReqType !== '/GET') {
+  if (pathAndReqType !== 'GET') {
     options.path = '/' + constants.DB_NAME + (options.path || '');
   }
   return request(options, debug);
@@ -1624,6 +1625,7 @@ module.exports = {
   sentinelDb,
   logsDb,
   usersDb,
+  auditDb,
 
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,
