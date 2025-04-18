@@ -11,7 +11,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
-const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+//const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Pregnancy registration', () => {
@@ -50,7 +50,7 @@ describe('Pregnancy registration', () => {
     await commonPage.openFastActionReport('pregnancy');
     await pregnancyForm.submitDefaultPregnancy(false);
 
-    const summaryTexts = [
+    /*const summaryTexts = [
       pregnantWoman.name,
       '38', //weeks pregnant
       edd.format('D MMM, YYYY'),
@@ -73,7 +73,7 @@ describe('Pregnancy registration', () => {
       'Getting tired easily',
       'Swelling of face and hands',
       'Breathlessness'
-    ];
+    ];*/
 
     //await commonEnketoPage.validateSummaryReport(summaryTexts);
     await genericForm.submitForm();
