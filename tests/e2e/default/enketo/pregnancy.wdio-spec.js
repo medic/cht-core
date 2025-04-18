@@ -43,7 +43,7 @@ describe('Pregnancy registration', () => {
     'validate that the report related the pregnancy was created, and ' +
     'validate that the counters for the active pregnancies and the new pregnancies were updated.', async () => {
 
-    const edd = moment().add(8, 'days');
+    //const edd = moment().add(8, 'days');
     const nextANCVisit = moment().add(2, 'day');
 
     await commonPage.goToPeople(pregnantWoman._id);
