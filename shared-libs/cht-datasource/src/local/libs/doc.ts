@@ -41,8 +41,20 @@ export const queryDocsByRange = (
   view: string
 ) => async (
   startkey: unknown,
-  endkey: unknown
-): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, startkey, endkey});
+  endkey: unknown,
+  limit?: number,
+  skip = 0
+): Promise<Nullable<Doc>[]> => queryDocs(
+  db,
+  view,
+  {
+    include_docs: true,
+    startkey,
+    endkey,
+    limit,
+    skip,
+  }
+);
 
 /** @internal */
 export const queryDocsByKey = (
@@ -54,6 +66,45 @@ export const queryDocsByKey = (
   skip: number
 ): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, key, limit, skip });
 
+const queryDocUuids = (
+  db: PouchDB.Database<Doc>,
+  view: string,
+  options: PouchDB.Query.Options<Doc, Record<string, unknown>>
+) => db
+  .query(view, options)
+  .then(({ rows }) => rows.map(({ id }) => id as string));
+
+/** @internal */
+export const queryDocUuidsByRange = (
+  db: PouchDB.Database<Doc>,
+  view: string
+) => async (
+  startkey: unknown,
+  endkey: unknown,
+  limit?: number,
+  skip = 0
+): Promise<string[]> => queryDocUuids(
+  db,
+  view,
+  {
+    include_docs: false,
+    startkey,
+    endkey,
+    limit,
+    skip,
+  }
+);
+
+/** @internal */
+export const queryDocUuidsByKey = (
+  db: PouchDB.Database<Doc>,
+  view: string
+) => async (
+  key: unknown,
+  limit: number,
+  skip: number
+): Promise<string[]> => queryDocUuids(db, view, { include_docs: false, key, limit, skip });
+
 /**
  * Resolves a page containing an array of T using the getFunction to retrieve documents from the database
  * and the filterFunction to validate the returned documents are all of type T.
@@ -62,7 +113,7 @@ export const queryDocsByKey = (
  * the necessary data by over-fetching during followup calls if some retrieved docs are rejected by the filterFunction.
  * @internal
  */
-export const fetchAndFilter = <T extends Doc>(
+export const fetchAndFilter = <T>(
   getFunction: (limit: number, skip: number) => Promise<Nullable<T>[]>,
   filterFunction: (doc: Nullable<T>, uuid?: string) => boolean,
   limit: number,
@@ -101,4 +152,26 @@ export const fetchAndFilter = <T extends Doc>(
     );
   };
   return recursionInner;
+};
+
+/** @internal */
+export const fetchAndFilterUuids = (
+  getFunction: (limit: number, skip: number) => Promise<string[]>,
+  limit: number,
+): ReturnType<typeof fetchAndFilter<string>> => {
+  const uuidSet = new Set<string>();
+  const filterFn = (uuid: Nullable<string>): boolean => {
+    if (!uuid) {
+      return false;
+    }
+    const { size } = uuidSet;
+    uuidSet.add(uuid);
+    return uuidSet.size !== size;
+  };
+
+  return fetchAndFilter(
+    getFunction,
+    filterFn,
+    limit
+  );
 };

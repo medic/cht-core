@@ -1,16 +1,18 @@
-import { Contact, NormalizedParent } from '../../libs/contact';
+import * as Contact from '../../contact';
+import * as Person from '../../person';
 import {
   DataObject,
+  deepCopy,
   findById,
   getLastElement,
   isIdentifiable,
   isNonEmptyArray,
   isNotNull,
-  NonEmptyArray,
+  NonEmptyArray, NormalizedParent,
   Nullable
 } from '../../libs/core';
 import { Doc } from '../../libs/doc';
-import { queryDocsByRange } from './doc';
+import { getDocsByIds, queryDocsByRange } from './doc';
 import logger from '@medic/logger';
 
 /**
@@ -71,9 +73,9 @@ const mergeLineage = (lineage: DataObject[], parent: DataObject): DataObject => 
 
 /** @internal */
 export const hydrateLineage = (
-  contact: Contact,
+  contact: Contact.v1.Contact,
   lineage: Nullable<Doc>[]
-): Contact => {
+): Contact.v1.Contact => {
   const fullLineage = lineage
     .map((place, index) => {
       if (place) {
@@ -87,5 +89,35 @@ export const hydrateLineage = (
       return { _id: parentId };
     });
   const hierarchy: NonEmptyArray<DataObject> = [contact, ...fullLineage];
-  return mergeLineage(hierarchy.slice(0, -1), getLastElement(hierarchy)) as Contact;
+  return mergeLineage(hierarchy.slice(0, -1), getLastElement(hierarchy)) as Contact.v1.Contact;
+};
+
+/** @internal */
+export const getContactLineage = (medicDb: PouchDB.Database<Doc>) => {
+  const getMedicDocsById = getDocsByIds(medicDb);
+
+  return async (
+    places: NonEmptyArray<Nullable<Doc>>,
+    person?: Person.v1.Person,
+  ): Promise<Nullable<Contact.v1.ContactWithLineage>>  => {
+    const primaryContactUuids = getPrimaryContactIds(places);
+    const uuidsToFetch = person ? primaryContactUuids.filter(uuid => uuid !== person._id) : primaryContactUuids;
+    const fetchedContacts = await getMedicDocsById(uuidsToFetch);
+    const allContacts = person ? [person, ...fetchedContacts] : fetchedContacts;
+    const contactsWithHydratedPrimaryContact = places.map(
+      hydratePrimaryContact(allContacts)
+    );
+
+    if (person) {
+      return deepCopy(hydrateLineage(
+        person,
+        contactsWithHydratedPrimaryContact
+      ));
+    }
+
+    return deepCopy(hydrateLineage(
+      contactsWithHydratedPrimaryContact[0] as Contact.v1.Contact,
+      contactsWithHydratedPrimaryContact.slice(1)
+    ));
+  };
 };

@@ -3,11 +3,13 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const validation = require('../src/validation');
 const logger = require('@medic/logger');
+const { Qualifier, Report } = require('@medic/cht-datasource');
 
 let clock;
 let db;
 let config;
 let translate;
+let dataContext;
 
 const stubMe = (functionName) => {
   logger.error(new Error(
@@ -18,15 +20,22 @@ const stubMe = (functionName) => {
 };
 
 describe('validations', () => {
+  let reportGetUuids;
+  let qualifier;
 
   beforeEach(() => {
     db = { medic: { query: () => stubMe('query'), allDocs: () => stubMe('allDocs') } };
+    dataContext = { bind: sinon.stub() };
     config = {};
     translate = sinon.stub().returnsArg(0);
     sinon.stub(logger, 'debug');
     sinon.stub(logger, 'error');
 
-    validation.init({ db, config, translate });
+    reportGetUuids = sinon.stub();
+    dataContext.bind.returns(reportGetUuids);
+    qualifier = sinon.stub(Qualifier, 'byFreetext');
+
+    validation.init({ db, config, translate, dataContext });
   });
 
   afterEach(() => {
@@ -82,8 +91,12 @@ describe('validations', () => {
       });
   });
 
-  it('pass unique validation when no doc found', () => {
-    const view = sinon.stub(db.medic, 'query').resolves({ rows: [] });
+  it('pass unique validation when no doc found for text', () => {
+    const freetext = 'patient_id:111';
+    qualifier.returns({ freetext });
+    const mockGeneratorL = async function* () {
+    };
+    reportGetUuids.resolves(mockGeneratorL());
     const validations = [
       {
         property: 'patient_id',
@@ -95,22 +108,23 @@ describe('validations', () => {
       patient_id: '111',
     };
     return validation.validate(doc, validations).then(errors => {
-      assert.equal(view.callCount, 1);
-      assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
-      assert.deepEqual(view.args[0][1], { key: ['patient_id:111'] });
       assert.equal(errors.length, 0);
+      assert.equal(dataContext.bind.callCount, 1);
+      assert.equal(dataContext.bind.args[0][0], Report.v1.getUuids);
+      assert.equal(qualifier.callCount, 1);
+      assert.equal(qualifier.args[0][0], freetext);
+      assert.equal(reportGetUuids.callCount, 1);
+      assert.deepEqual(reportGetUuids.args[0][0], { freetext });
     });
   });
 
-  it('pass unique validation when doc is the same', () => {
-    const view = sinon.stub(db.medic, 'query').resolves({
-      rows: [
-        {
-          id: 'same',
-          doc: { _id: 'same', errors: [] },
-        },
-      ],
-    });
+  it('pass unique validation when doc is the same for field value', () => {
+    const freetext = 'patient_id:111 222';
+    qualifier.returns({ freetext });
+    const mockGeneratorL = async function* () {
+      yield 'same';
+    };
+    reportGetUuids.resolves(mockGeneratorL());
     const validations = [
       {
         property: 'patient_id',
@@ -119,20 +133,26 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      patient_id: '111',
+      patient_id: '111 222',
     };
     return validation.validate(doc, validations).then(errors => {
-      assert.equal(view.callCount, 1);
-      assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
-      assert.deepEqual(view.args[0][1], { key: ['patient_id:111'] });
+      assert.equal(dataContext.bind.callCount, 1);
+      assert.equal(dataContext.bind.args[0][0], Report.v1.getUuids);
+      assert.equal(qualifier.callCount, 1);
+      assert.equal(qualifier.args[0][0], freetext);
+      assert.equal(reportGetUuids.callCount, 1);
+      assert.deepEqual(reportGetUuids.args[0][0], { freetext });
       assert.equal(errors.length, 0);
     });
   });
 
-  it('pass unique validation when doc has errors', () => {
-    const view = sinon.stub(db.medic, 'query').resolves({
-      rows: [{ id: 'different' }],
-    });
+  it('pass unique validation when doc has errors for field value', () => {
+    const freetext = 'patient_id:111 222';
+    qualifier.returns({ freetext });
+    const mockGeneratorL = async function* () {
+      yield 'different';
+    };
+    reportGetUuids.resolves(mockGeneratorL());
     const allDocs = sinon.stub(db.medic, 'allDocs').resolves({
       rows: [
         {
@@ -149,13 +169,16 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      patient_id: '111',
+      patient_id: '111 222',
     };
     return validation.validate(doc, validations).then(errors => {
       assert.equal(logger.error.callCount, 0);
-      assert.equal(view.callCount, 1);
-      assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
-      assert.deepEqual(view.args[0][1], { key: ['patient_id:111'] });
+      assert.equal(dataContext.bind.callCount, 1);
+      assert.equal(dataContext.bind.args[0][0], Report.v1.getUuids);
+      assert.equal(qualifier.callCount, 1);
+      assert.equal(qualifier.args[0][0], freetext);
+      assert.equal(reportGetUuids.callCount, 1);
+      assert.deepEqual(reportGetUuids.args[0][0], { freetext });
       assert.equal(allDocs.callCount, 1);
       assert.deepEqual(allDocs.args[0][0], { keys: ['different'], include_docs: true });
       assert.equal(errors.length, 0);
@@ -200,10 +223,18 @@ describe('validations', () => {
     });
   });
 
-  it('fail multiple field unique validation on doc with no errors', () => {
-    const view = sinon.stub(db.medic, 'query').resolves({
-      rows: [{ id: 'different' }],
-    });
+  it('fail multiple field unique validation on doc with field values with no errors', () => {
+    const freetext1 = 'xyz:444';
+    const freetext2 = 'abc:cheese burger';
+    qualifier
+      .onCall(0).returns({ freetext: freetext1 })
+      .onCall(1).returns({ freetext: freetext2 });
+    const mockGenerator = async function* () {
+      yield 'different';
+    };
+    reportGetUuids
+      .onCall(0).resolves(mockGenerator())
+      .onCall(1).resolves(mockGenerator());
     const allDocs = sinon.stub(db.medic, 'allDocs').resolves({
       rows: [
         {
@@ -227,14 +258,18 @@ describe('validations', () => {
     const doc = {
       _id: 'same',
       xyz: '444',
-      abc: 'CHeeSE', // value is lowercased as it is in the view map definition
+      abc: 'CHeeSE BuRgEr', // value is lowercased as it is in the view map definition
     };
     return validation.validate(doc, validations).then(errors => {
-      assert.equal(view.callCount, 2);
-      assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
-      assert.deepEqual(view.args[0][1], { key: ['xyz:444'] });
-      assert.equal(view.args[1][0], 'medic-client/reports_by_freetext');
-      assert.deepEqual(view.args[1][1], { key: ['abc:cheese'] });
+      assert.equal(dataContext.bind.callCount, 2);
+      assert.equal(dataContext.bind.args[0][0], Report.v1.getUuids);
+      assert.equal(dataContext.bind.args[1][0], Report.v1.getUuids);
+      assert.equal(qualifier.callCount, 2);
+      assert.equal(qualifier.args[0][0], freetext1);
+      assert.equal(qualifier.args[1][0], freetext2);
+      assert.equal(reportGetUuids.callCount, 2);
+      assert.deepEqual(reportGetUuids.args[0][0], { freetext: freetext1 });
+      assert.deepEqual(reportGetUuids.args[1][0], { freetext: freetext2 });
       assert.equal(allDocs.callCount, 1);
       assert.deepEqual(allDocs.args[0][0], { keys: ['different'], include_docs: true });
       assert.deepEqual(errors, [
@@ -424,11 +459,14 @@ describe('validations', () => {
     });
   });
 
-  it('pass uniqueWithin validation on old doc', () => {
+  it('pass uniqueWithin validation on old doc with field values', () => {
     clock = sinon.useFakeTimers();
-    sinon.stub(db.medic, 'query').resolves({
-      rows: [{ id: 'different' }],
-    });
+    const freetext = 'xyz:444 555';
+    qualifier.returns({ freetext });
+    const mockGenerator = async function* () {
+      yield 'different';
+    };
+    reportGetUuids.resolves(mockGenerator());
     sinon.stub(db.medic, 'allDocs').resolves({
       rows: [
         {
@@ -457,10 +495,16 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      xyz: '444',
+      xyz: '444 555',
     };
     return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 0);
+      assert.equal(dataContext.bind.callCount, 1);
+      assert.equal(dataContext.bind.args[0][0], Report.v1.getUuids);
+      assert.equal(qualifier.callCount, 1);
+      assert.equal(qualifier.args[0][0], freetext);
+      assert.equal(reportGetUuids.callCount, 1);
+      assert.deepEqual(reportGetUuids.args[0][0], { freetext });
     });
   });
 
@@ -596,10 +640,18 @@ describe('validations', () => {
     });
   });
 
-  it('pass exists validation when matching document', () => {
-    const view = sinon.stub(db.medic, 'query').resolves({
-      rows: [{ id: 'different' }],
-    });
+  it('pass exists validation when matching document with field values', () => {
+    const freetext1 = 'patient_id:444 555';
+    const freetext2 = 'form:registration';
+    qualifier
+      .onCall(0).returns({ freetext: freetext1 })
+      .onCall(1).returns({ freetext: freetext2 });
+    const mockGenerator = async function* () {
+      yield 'different';
+    };
+    reportGetUuids
+      .onCall(0).resolves(mockGenerator())
+      .onCall(1).resolves(mockGenerator());
     sinon.stub(db.medic, 'allDocs').resolves({
       rows: [
         {
@@ -622,14 +674,18 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      patient_id: '444',
+      patient_id: '444 555',
     };
     return validation.validate(doc, validations).then(errors => {
-      assert.equal(view.callCount, 2);
-      assert.equal(view.args[0][0], 'medic-client/reports_by_freetext');
-      assert.deepEqual(view.args[0][1], { key: ['patient_id:444'] });
-      assert.equal(view.args[1][0], 'medic-client/reports_by_freetext');
-      assert.deepEqual(view.args[1][1], { key: ['form:registration'] });
+      assert.equal(dataContext.bind.callCount, 2);
+      assert.equal(dataContext.bind.args[0][0], Report.v1.getUuids);
+      assert.equal(dataContext.bind.args[1][0], Report.v1.getUuids);
+      assert.equal(qualifier.callCount, 2);
+      assert.equal(qualifier.args[0][0], freetext1);
+      assert.equal(qualifier.args[1][0], freetext2);
+      assert.equal(reportGetUuids.callCount, 2);
+      assert.deepEqual(reportGetUuids.args[0][0], { freetext: freetext1 });
+      assert.deepEqual(reportGetUuids.args[1][0], { freetext: freetext2 });
       assert.deepEqual(errors, []);
     });
   });
@@ -971,12 +1027,28 @@ describe('validations', () => {
         });
       });
 
-      it('should pass when L exists', () => {
-        sinon.stub(db.medic, 'query')
-          .onCall(0).resolves({ rows: [{ id: 'different1' }] })  // once for patient_id=444
-          .onCall(1).resolves({ rows: [{ id: 'different1' }] })  // once for form=L
-          .onCall(2).resolves({ rows: [{ id: 'different2' }] })  // once for patient_id=444
-          .onCall(3).resolves({ rows: [] }); // once for form=G
+      it('should pass when L exists for field value', () => {
+        const freetext1 = 'patient_id:444 987';
+        const freetext2 = 'form:l';
+        const freetext3 = 'form:g';
+        qualifier
+          .onCall(0).returns({ freetext: freetext1 })
+          .onCall(1).returns({ freetext: freetext2 })
+          .onCall(2).returns({ freetext: freetext1 })
+          .onCall(3).returns({ freetext: freetext3 });
+        const mockGeneratorDifferent1 = async function* () {
+          yield 'different1';
+        };
+        const mockGeneratorDifferent2 = async function* () {
+          yield 'different2';
+        };
+        const mockGeneratorEmpty = async function* () {
+        };
+        reportGetUuids
+          .onCall(0).resolves(mockGeneratorDifferent1()) // once for patient_id=444
+          .onCall(1).resolves(mockGeneratorDifferent1()) // once for form=L
+          .onCall(2).resolves(mockGeneratorDifferent2()) // once for patient_id=444
+          .onCall(3).resolves(mockGeneratorEmpty()); // once for form=G
         sinon.stub(db.medic, 'allDocs').resolves({
           rows: [{
             id: 'different1',
@@ -985,21 +1057,52 @@ describe('validations', () => {
         });
         const doc = {
           _id: 'same',
-          patient_id: '444',
+          patient_id: '444 987',
         };
         return validation.validate(doc, validations).then(errors => {
-          assert.equal(db.medic.query.callCount, 4); // TODO maybe should be 2, bcause we can short-circuit
+          assert.equal(dataContext.bind.callCount, 4);
+          assert.equal(dataContext.bind.args[0][0], Report.v1.getUuids);
+          assert.equal(dataContext.bind.args[1][0], Report.v1.getUuids);
+          assert.equal(dataContext.bind.args[2][0], Report.v1.getUuids);
+          assert.equal(dataContext.bind.args[3][0], Report.v1.getUuids);
+          assert.equal(qualifier.callCount, 4);
+          assert.equal(qualifier.args[0][0], freetext1);
+          assert.equal(qualifier.args[1][0], freetext2);
+          assert.equal(qualifier.args[2][0], freetext1);
+          assert.equal(qualifier.args[3][0], freetext3);
+          assert.equal(reportGetUuids.callCount, 4);
+          assert.deepEqual(reportGetUuids.args[0][0], { freetext: freetext1 });
+          assert.deepEqual(reportGetUuids.args[1][0], { freetext: freetext2 });
+          assert.deepEqual(reportGetUuids.args[2][0], { freetext: freetext1 });
+          assert.deepEqual(reportGetUuids.args[3][0], { freetext: freetext3 });
           assert.equal(db.medic.allDocs.callCount, 1);
           assert.equal(errors.length, 0);
         });
       });
 
-      it('should pass when G exists', () => {
-        sinon.stub(db.medic, 'query')
-          .onCall(0).resolves({ rows: [{ id: 'different1' }] })  // once for patient_id=444
-          .onCall(1).resolves({ rows: [] })  // once for form=L
-          .onCall(2).resolves({ rows: [{ id: 'different2' }] })  // once for patient_id=444
-          .onCall(3).resolves({ rows: [{ id: 'different2' }] }); // once for form=G
+      it('should pass when G exists with field value', () => {
+        const freetext1 = 'patient_id:444 456';
+        const freetext2 = 'form:l';
+        const freetext3 = 'form:g';
+        qualifier
+          .onCall(0).returns({ freetext: freetext1 })  // once for patient_id=444
+          .onCall(1).returns({ freetext: freetext2 }) // once for form=L
+          .onCall(2).returns({ freetext: freetext1 }) // once for patient_id=444
+          .onCall(3).returns({ freetext: freetext3 }); // once for form=G
+
+        const mockGeneratorDifferent1 = async function* () {
+          yield 'different1';
+        };
+        const mockGeneratorDifferent2 = async function* () {
+          yield 'different2';
+        };
+        const mockGeneratorEmpty = async function* () {
+        };
+        reportGetUuids
+          .onCall(0).resolves(mockGeneratorDifferent1()) // once for patient_id=444
+          .onCall(1).resolves(mockGeneratorEmpty()) // once for form=L
+          .onCall(2).resolves(mockGeneratorDifferent2()) // once for patient_id=444
+          .onCall(3).resolves(mockGeneratorDifferent2()); // once for form=G
         sinon.stub(db.medic, 'allDocs').resolves({
           rows: [{
             id: 'different2',
@@ -1008,21 +1111,49 @@ describe('validations', () => {
         });
         const doc = {
           _id: 'same',
-          patient_id: '444',
+          patient_id: '444 456',
         };
         return validation.validate(doc, validations).then(errors => {
-          assert.equal(db.medic.query.callCount, 4);
+          assert.equal(dataContext.bind.callCount, 4);
+          assert.equal(dataContext.bind.args[0][0], Report.v1.getUuids);
+          assert.equal(dataContext.bind.args[1][0], Report.v1.getUuids);
+          assert.equal(dataContext.bind.args[2][0], Report.v1.getUuids);
+          assert.equal(dataContext.bind.args[3][0], Report.v1.getUuids);
+          assert.equal(qualifier.callCount, 4);
+          assert.equal(qualifier.args[0][0], freetext1);
+          assert.equal(qualifier.args[1][0], freetext2);
+          assert.equal(qualifier.args[2][0], freetext1);
+          assert.equal(qualifier.args[3][0], freetext3);
+          assert.equal(reportGetUuids.callCount, 4);
+          assert.deepEqual(reportGetUuids.args[0][0], { freetext: freetext1 });
+          assert.deepEqual(reportGetUuids.args[1][0], { freetext: freetext2 });
+          assert.deepEqual(reportGetUuids.args[2][0], { freetext: freetext1 });
+          assert.deepEqual(reportGetUuids.args[3][0], { freetext: freetext3 });
           assert.equal(db.medic.allDocs.callCount, 1);
           assert.equal(errors.length, 0);
         });
       });
 
-      it('should pass when L and G exist', () => {
-        sinon.stub(db.medic, 'query')
-          .onCall(0).resolves({ rows: [{ id: 'different1' }] }) // once for patient_id=444
-          .onCall(1).resolves({ rows: [{ id: 'different1' }] }) // once for form=L
-          .onCall(2).resolves({ rows: [{ id: 'different2' }] })  // once for patient_id=444
-          .onCall(3).resolves({ rows: [{ id: 'different2' }] }); // once for form=G
+      it('should pass when L and G exist for field value', () => {
+        const freetext1 = 'patient_id:444';
+        const freetext2 = 'form:l';
+        const freetext3 = 'form:g';
+        qualifier
+          .onCall(0).returns({ freetext: freetext1 })  // once for patient_id=444
+          .onCall(1).returns({ freetext: freetext2 }) // once for form=L
+          .onCall(2).returns({ freetext: freetext1 }) // once for patient_id=444
+          .onCall(3).returns({ freetext: freetext3 }); // once for form=G
+        const mockGeneratorDifferent1 = async function* () {
+          yield 'different1';
+        };
+        const mockGeneratorDifferent2 = async function* () {
+          yield 'different2';
+        };
+        reportGetUuids
+          .onCall(0).resolves(mockGeneratorDifferent1()) // once for patient_id=444
+          .onCall(1).resolves(mockGeneratorDifferent1()) // once for form=L
+          .onCall(2).resolves(mockGeneratorDifferent2()) // once for patient_id=444
+          .onCall(3).resolves(mockGeneratorDifferent2()); // once for form=G
         sinon.stub(db.medic, 'allDocs')
           .onCall(0).resolves({
             rows: [{
@@ -1041,11 +1172,26 @@ describe('validations', () => {
           patient_id: '444',
         };
         return validation.validate(doc, validations).then(errors => {
-          assert.equal(db.medic.query.callCount, 4);
+          assert.equal(dataContext.bind.callCount, 4);
+          assert.equal(dataContext.bind.args[0][0], Report.v1.getUuids);
+          assert.equal(dataContext.bind.args[1][0], Report.v1.getUuids);
+          assert.equal(dataContext.bind.args[2][0], Report.v1.getUuids);
+          assert.equal(dataContext.bind.args[3][0], Report.v1.getUuids);
+          assert.equal(qualifier.callCount, 4);
+          assert.equal(qualifier.args[0][0], freetext1);
+          assert.equal(qualifier.args[1][0], freetext2);
+          assert.equal(qualifier.args[2][0], freetext1);
+          assert.equal(qualifier.args[3][0], freetext3);
+          assert.equal(reportGetUuids.callCount, 4);
+          assert.deepEqual(reportGetUuids.args[0][0], { freetext: freetext1 });
+          assert.deepEqual(reportGetUuids.args[1][0], { freetext: freetext2 });
+          assert.deepEqual(reportGetUuids.args[2][0], { freetext: freetext1 });
+          assert.deepEqual(reportGetUuids.args[3][0], { freetext: freetext3 });
           assert.equal(db.medic.allDocs.callCount, 2);
           assert.equal(errors.length, 0);
         });
       });
+
     });
 
     describe('rule length and exists', () => {
@@ -1088,11 +1234,18 @@ describe('validations', () => {
         });
       });
 
-
-      it('should pass when long enough and exists', () => {
-        sinon.stub(db.medic, 'query')
-          .onCall(0).resolves({ rows: [{ id: 'different1' }] }) // once for patient_id=444
-          .onCall(1).resolves({ rows: [{ id: 'different1' }] }); // once for form=G
+      it('should pass when long enough and exists for text', () => {
+        const freetext1 = 'patient_id:123 456';
+        const freetext2 = 'form:g';
+        qualifier
+          .onCall(0).returns({ freetext: freetext1 })
+          .onCall(1).returns({ freetext: freetext2 });
+        const mockGenerator = async function* () {
+          yield 'different1';
+        };
+        reportGetUuids
+          .onCall(0).resolves(mockGenerator()) // once for patient_id=123
+          .onCall(1).resolves(mockGenerator()); // once for form=G
         sinon.stub(db.medic, 'allDocs')
           .onCall(0).resolves({
             rows: [{
@@ -1102,10 +1255,20 @@ describe('validations', () => {
           });
         const doc = {
           _id: 'same',
-          patient_id: '123',
+          patient_id: '123 456',
         };
         return validation.validate(doc, validations).then(errors => {
           assert.equal(errors.length, 0);
+          assert.equal(dataContext.bind.callCount, 2);
+          assert.equal(dataContext.bind.args[0][0], Report.v1.getUuids);
+          assert.equal(dataContext.bind.args[1][0], Report.v1.getUuids);
+          assert.equal(qualifier.callCount, 2);
+          assert.equal(qualifier.args[0][0], freetext1);
+          assert.equal(qualifier.args[1][0], freetext2);
+          assert.equal(reportGetUuids.callCount, 2);
+          assert.deepEqual(reportGetUuids.args[0][0], { freetext: freetext1 });
+          assert.deepEqual(reportGetUuids.args[1][0], { freetext: freetext2 });
+          assert.equal(db.medic.allDocs.callCount, 1);
         });
       });
 

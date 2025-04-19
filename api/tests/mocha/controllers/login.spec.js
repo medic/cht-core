@@ -10,6 +10,7 @@ const auth = require('../../../src/auth');
 const cookie = require('../../../src/services/cookie');
 const branding = require('../../../src/services/branding');
 const rateLimit = require('../../../src/services/rate-limit');
+const settings = require('../../../src/services/settings');
 const db = require('../../../src/db');
 const translations = require('../../../src/translations');
 const privacyPolicy = require('../../../src/services/privacy-policy');
@@ -152,6 +153,11 @@ describe('login controller', () => {
   });
 
   describe('get', () => {
+    let hasOidcProvider;
+
+    beforeEach(() => {
+      hasOidcProvider = sinon.stub(settings, 'hasOidcProvider').resolves(false);
+    });
 
     it('send login page', () => {
       sinon.stub(translations, 'getEnabledLocales').resolves([]);
@@ -174,6 +180,7 @@ describe('login controller', () => {
         chai.expect(setHeader.args[0][1]).to.equal(linkResources);
         chai.expect(fs.promises.readFile.callCount).to.equal(1);
         chai.expect(translations.getEnabledLocales.callCount).to.equal(1);
+        chai.expect(hasOidcProvider.calledOnceWithExactly()).to.be.true;
       });
     });
 
@@ -195,6 +202,7 @@ describe('login controller', () => {
         chai.expect(setHeader.callCount).to.equal(1);
         chai.expect(setHeader.args[0][0]).to.equal('Link');
         chai.expect(setHeader.args[0][1]).to.equal(linkResources);
+        chai.expect(hasOidcProvider.calledOnceWithExactly()).to.be.true;
       });
     });
 
@@ -212,12 +220,14 @@ describe('login controller', () => {
         .then(() => {
           chai.expect(readFile.callCount).to.equal(1);
           chai.expect(template.callCount).to.equal(1);
+          chai.expect(hasOidcProvider.calledOnceWithExactly()).to.be.true;
         })
         .then(() => controller.get(req, res)) // second request
         .then(() => {
           // should be cached
           chai.expect(readFile.callCount).to.equal(1);
           chai.expect(template.callCount).to.equal(1);
+          chai.expect(hasOidcProvider.calledTwice).to.be.true;
         });
     });
 
@@ -239,6 +249,7 @@ describe('login controller', () => {
         chai.expect(setHeader.callCount).to.equal(1);
         chai.expect(setHeader.args[0][0]).to.equal('Link');
         chai.expect(setHeader.args[0][1]).to.equal(linkResources);
+        chai.expect(hasOidcProvider.calledOnceWithExactly()).to.be.true;
       });
     });
 
@@ -252,6 +263,7 @@ describe('login controller', () => {
 
       return controller.get(req, res).then(() => {
         chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. de');
+        chai.expect(hasOidcProvider.calledOnceWithExactly()).to.be.true;
       });
     });
 
@@ -265,6 +277,7 @@ describe('login controller', () => {
 
       return controller.get(req, res).then(() => {
         chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. de');
+        chai.expect(hasOidcProvider.calledOnceWithExactly()).to.be.true;
       });
     });
 
@@ -280,6 +293,7 @@ describe('login controller', () => {
 
       return controller.get(req, res).then(() => {
         chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. fr');
+        chai.expect(hasOidcProvider.calledOnceWithExactly()).to.be.true;
       });
     });
   });
@@ -1004,6 +1018,12 @@ describe('login controller', () => {
   });
 
   describe('renderLogin', () => {
+    let hasOidcProvider;
+
+    beforeEach(() => {
+      hasOidcProvider = sinon.stub(settings, 'hasOidcProvider').resolves(false);
+    });
+
     it('should get branding and render the login page', () => {
       sinon.stub(translations, 'getEnabledLocales').resolves([]);
       sinon.stub(branding, 'get').resolves({
@@ -1021,6 +1041,7 @@ describe('login controller', () => {
         chai.expect(branding.get.callCount).to.equal(1);
         chai.expect(fs.promises.readFile.callCount).to.equal(1);
         chai.expect(translations.getEnabledLocales.callCount).to.equal(1);
+        chai.expect(hasOidcProvider.calledOnceWithExactly()).to.be.true;
       });
     });
 
@@ -1036,6 +1057,7 @@ describe('login controller', () => {
           'LOGIN PAGE GOES HERE. %7B%22en%22%3A%7B%22login%22%3A%22English%22%7D%7D xyz CHT'
         );
         chai.expect(translations.getEnabledLocales.callCount).to.equal(1);
+        chai.expect(hasOidcProvider.calledOnceWithExactly()).to.be.true;
       });
     });
   });

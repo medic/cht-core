@@ -6,6 +6,7 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { provideMockStore } from '@ngrx/store/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { Selectors } from '@mm-selectors/index';
 
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { AuthService } from '@mm-services/auth.service';
@@ -37,6 +38,10 @@ describe('FastActionButtonComponent', () => {
     matDialogRef = { close: sinon.stub() };
     matDialog = { open: sinon.stub().returns(matDialogRef) };
 
+    const mockedSelectors = [
+      { selector: Selectors.getDirection, value: 'rtl' },
+    ];
+
     await TestBed
       .configureTestingModule({
         imports: [
@@ -44,7 +49,7 @@ describe('FastActionButtonComponent', () => {
           FastActionButtonComponent,
         ],
         providers: [
-          provideMockStore(),
+          provideMockStore({ selectors: mockedSelectors }),
           { provide: Router, useValue: router },
           { provide: AuthService, useValue: authService },
           { provide: SessionService, useValue: sessionService },
@@ -249,6 +254,7 @@ describe('FastActionButtonComponent', () => {
           autoFocus: false,
           minWidth: 300,
           minHeight: 150,
+          direction: 'rtl'
         },
       ]);
     });
@@ -279,6 +285,7 @@ describe('FastActionButtonComponent', () => {
           autoFocus: false,
           minWidth: 300,
           minHeight: 150,
+          direction: 'rtl'
         },
       ]);
     });

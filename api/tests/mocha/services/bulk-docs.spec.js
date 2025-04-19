@@ -28,7 +28,6 @@ describe('Bulk Docs Service', function () {
     sinon.stub(authorization, 'getAuthorizationContext').resolves({});
     sinon.stub(authorization, 'filterAllowedDocs').returns([]);
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
-    sinon.stub(authorization, 'alwaysAllowCreate').returns(false);
     sinon.stub(authorization, 'allowedDoc');
   });
 
@@ -190,12 +189,10 @@ describe('Bulk Docs Service', function () {
     it('calls authorization.filterAllowedDocs with correct parameters, returns filtered list of docs', () => {
       const docs = [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }];
       const authzContext = { userCtx: {} };
-      authorization.alwaysAllowCreate.withArgs({ _id: 2}).returns(true);
-      authorization.alwaysAllowCreate.withArgs({ _id: 4}).returns(true);
       authorization.filterAllowedDocs.returns([
-        { doc: { _id: 1 }, viewResults: { view: { _id: 1 } }, allowed: false, id: 1 },
-        { doc: { _id: 2 }, viewResults: { view: { _id: 2 } }, allowed: true, id: 2 },
-        { doc: { _id: 4 }, viewResults: { view: { _id: 4 } }, allowed: true, id: 4 },
+        { doc: { _id: 1 }, viewResults: { view: { _id: 1 } }, id: 1 },
+        { doc: { _id: 2 }, viewResults: { view: { _id: 2 } }, id: 2 },
+        { doc: { _id: 4 }, viewResults: { view: { _id: 4 } }, id: 4 },
       ]);
 
       const result = service._filterAllowedDocs(authzContext, docs);
@@ -204,11 +201,11 @@ describe('Bulk Docs Service', function () {
       authorization.filterAllowedDocs.args[0].should.deep.equal([
         authzContext,
         [
-          { doc: { _id: 1 }, viewResults: { view: { _id: 1 } }, allowed: false, id: 1 },
-          { doc: { _id: 2 }, viewResults: { view: { _id: 2 } }, allowed: true, id: 2 },
-          { doc: { _id: 3 }, viewResults: { view: { _id: 3 } }, allowed: false, id: 3 },
-          { doc: { _id: 4 }, viewResults: { view: { _id: 4 } }, allowed: true, id: 4 },
-          { doc: { _id: 5 }, viewResults: { view: { _id: 5 } }, allowed: false, id: 5 }
+          { doc: { _id: 1 }, viewResults: { view: { _id: 1 } }, id: 1 },
+          { doc: { _id: 2 }, viewResults: { view: { _id: 2 } }, id: 2 },
+          { doc: { _id: 3 }, viewResults: { view: { _id: 3 } }, id: 3 },
+          { doc: { _id: 4 }, viewResults: { view: { _id: 4 } }, id: 4 },
+          { doc: { _id: 5 }, viewResults: { view: { _id: 5 } }, id: 5 }
         ]
       ]);
 
@@ -285,9 +282,9 @@ describe('Bulk Docs Service', function () {
       const docs = [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }];
 
       authorization.filterAllowedDocs.returns([
-        { id: 1, doc: { _id: 1 }, viewResults: { view: { _id: 1 }}, allowed: false },
-        { id: 5, doc: { _id: 5 }, viewResults: { view: { _id: 5 }}, allowed: false },
-        { id: 3, doc: { _id: 3 }, viewResults: { view: { _id: 3 }}, allowed: false },
+        { id: 1, doc: { _id: 1 }, viewResults: { view: { _id: 1 }} },
+        { id: 5, doc: { _id: 5 }, viewResults: { view: { _id: 5 }} },
+        { id: 3, doc: { _id: 3 }, viewResults: { view: { _id: 3 }} },
       ]);
 
       return service._filterRequestDocs({ }, docs).then(result => {
@@ -295,11 +292,11 @@ describe('Bulk Docs Service', function () {
         result.should.deep.equal([{ _id: 1 }, { _id: 5 }, { _id: 3 }]);
         authorization.filterAllowedDocs.callCount.should.equal(1);
         authorization.filterAllowedDocs.args[0][1].should.deep.equal([
-          { id: 1, doc: { _id: 1 }, viewResults: { view: { _id: 1 }}, allowed: false },
-          { id: 2, doc: { _id: 2 }, viewResults: { view: { _id: 2 }}, allowed: false },
-          { id: 3, doc: { _id: 3 }, viewResults: { view: { _id: 3 }}, allowed: false },
-          { id: 4, doc: { _id: 4 }, viewResults: { view: { _id: 4 }}, allowed: false },
-          { id: 5, doc: { _id: 5 }, viewResults: { view: { _id: 5 }}, allowed: false },
+          { id: 1, doc: { _id: 1 }, viewResults: { view: { _id: 1 }} },
+          { id: 2, doc: { _id: 2 }, viewResults: { view: { _id: 2 }} },
+          { id: 3, doc: { _id: 3 }, viewResults: { view: { _id: 3 }} },
+          { id: 4, doc: { _id: 4 }, viewResults: { view: { _id: 4 }} },
+          { id: 5, doc: { _id: 5 }, viewResults: { view: { _id: 5 }} },
         ]);
       });
     });
@@ -323,11 +320,11 @@ describe('Bulk Docs Service', function () {
         authorization.getViewResults.callCount.should.equal(10);
         authorization.filterAllowedDocs.callCount.should.equal(1);
         authorization.filterAllowedDocs.args[0][1].should.deep.equal([
-          { id: 'a', doc: { _id: 'a' }, viewResults: { view: { _id: 'a' } }, allowed: false },
-          { id: 'b', doc: { _id: 'b' }, viewResults: { view: { _id: 'b' } }, allowed: false },
-          { id: 'c', doc: { _id: 'c' }, viewResults: { view: { _id: 'c' } }, allowed: false },
-          { id: 'd', doc: { _id: 'd' }, viewResults: { view: { _id: 'd' } }, allowed: false },
-          { id: 'e', doc: { _id: 'e' }, viewResults: { view: { _id: 'e' } }, allowed: false }
+          { id: 'a', doc: { _id: 'a' }, viewResults: { view: { _id: 'a' } } },
+          { id: 'b', doc: { _id: 'b' }, viewResults: { view: { _id: 'b' } } },
+          { id: 'c', doc: { _id: 'c' }, viewResults: { view: { _id: 'c' } } },
+          { id: 'd', doc: { _id: 'd' }, viewResults: { view: { _id: 'd' } } },
+          { id: 'e', doc: { _id: 'e' }, viewResults: { view: { _id: 'e' } } }
         ]);
 
         db.medic.allDocs.callCount.should.equal(1);
@@ -343,10 +340,10 @@ describe('Bulk Docs Service', function () {
 
       authorization.getViewResults.withArgs({ key: 'g' }).returns({ view1: 'g' });
       authorization.filterAllowedDocs.returns([
-        { id: 'a', doc: { _id: 'a' }, viewResults: { view: { _id: 'a' } }, allowed: false },
-        { id: 'b', doc: { _id: 'b' }, viewResults: { view: { _id: 'b' } }, allowed: false },
-        { id: 'd', doc: { _id: 'd' }, viewResults: { view: { _id: 'd' } }, allowed: false },
-        { id: undefined, doc: { key: 'g' }, viewResults: { view1: 'g' }, allowed: false }
+        { id: 'a', doc: { _id: 'a' }, viewResults: { view: { _id: 'a' } } },
+        { id: 'b', doc: { _id: 'b' }, viewResults: { view: { _id: 'b' } } },
+        { id: 'd', doc: { _id: 'd' }, viewResults: { view: { _id: 'd' } } },
+        { id: undefined, doc: { key: 'g' }, viewResults: { view1: 'g' } }
       ]);
 
       db.medic.allDocs.resolves({ rows: [
@@ -365,13 +362,13 @@ describe('Bulk Docs Service', function () {
         result.should.deep.equal([{ _id: 'a' }, { _id: 'd' }, { key: 'g' }]);
         authorization.filterAllowedDocs.callCount.should.equal(1);
         authorization.filterAllowedDocs.args[0][1].should.deep.equal([
-          { id: 'a', doc: { _id: 'a' }, viewResults: { view: { _id: 'a' } }, allowed: false },
-          { id: 'b', doc: { _id: 'b' }, viewResults: { view: { _id: 'b' } }, allowed: false },
-          { id: 'c', doc: { _id: 'c' }, viewResults: { view: { _id: 'c' } }, allowed: false },
-          { id: 'd', doc: { _id: 'd' }, viewResults: { view: { _id: 'd' } }, allowed: false },
-          { id: 'e', doc: { _id: 'e' }, viewResults: { view: { _id: 'e' } }, allowed: false },
-          { id: 'f', doc: { _id: 'f' }, viewResults: { view: { _id: 'f' } }, allowed: false },
-          { id: undefined, doc: { key: 'g' }, viewResults: { view1: 'g' }, allowed: false }
+          { id: 'a', doc: { _id: 'a' }, viewResults: { view: { _id: 'a' } } },
+          { id: 'b', doc: { _id: 'b' }, viewResults: { view: { _id: 'b' } } },
+          { id: 'c', doc: { _id: 'c' }, viewResults: { view: { _id: 'c' } } },
+          { id: 'd', doc: { _id: 'd' }, viewResults: { view: { _id: 'd' } } },
+          { id: 'e', doc: { _id: 'e' }, viewResults: { view: { _id: 'e' } } },
+          { id: 'f', doc: { _id: 'f' }, viewResults: { view: { _id: 'f' } } },
+          { id: undefined, doc: { key: 'g' }, viewResults: { view1: 'g' } }
         ]);
       });
     });
@@ -379,11 +376,11 @@ describe('Bulk Docs Service', function () {
     it('returns filtered list along with allowed new docs', () => {
       const docs = [{ _id: 'a' }, { _id: 'b' }, { _id: 'c' }, { _id: 'd' }, { _id: 'e' }, { _id: 'f' }];
       authorization.filterAllowedDocs.returns([
-        { id: 'a', doc: { _id: 'a' }, viewResults: { view: { _id: 'a' } }, allowed: false },
-        { id: 'b', doc: { _id: 'b' }, viewResults: { view: { _id: 'b' } }, allowed: false },
-        { id: 'd', doc: { _id: 'd' }, viewResults: { view: { _id: 'd' } }, allowed: false },
-        { id: 'e', doc: { _id: 'e' }, viewResults: { view: { _id: 'e' } }, allowed: false },
-        { id: 'f', doc: { _id: 'f' }, viewResults: { view: { _id: 'f' } }, allowed: false },
+        { id: 'a', doc: { _id: 'a' }, viewResults: { view: { _id: 'a' } } },
+        { id: 'b', doc: { _id: 'b' }, viewResults: { view: { _id: 'b' } } },
+        { id: 'd', doc: { _id: 'd' }, viewResults: { view: { _id: 'd' } } },
+        { id: 'e', doc: { _id: 'e' }, viewResults: { view: { _id: 'e' } } },
+        { id: 'f', doc: { _id: 'f' }, viewResults: { view: { _id: 'f' } } },
       ]);
 
       db.medic.allDocs
@@ -519,10 +516,6 @@ describe('Bulk Docs Service', function () {
         { doc: { _id: 'fb1' }},
         { doc: { _id: 'fb2' }}
       ]);
-
-      authorization.alwaysAllowCreate
-        .withArgs({ _id: 'fb1'}).returns(true)
-        .withArgs({ _id: 'fb2'}).returns(true);
 
       db.medic.allDocs
         .withArgs({ keys: ['b', 'c', 'g', 'deleted', 'fb1', 'fb2'], include_docs: true })

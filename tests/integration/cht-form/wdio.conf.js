@@ -11,6 +11,8 @@ const logPath = path.join('tests', 'logs');
 const browserLogPath = path.join(logPath, 'browser.console.log');
 const mockConfig = require('./mock-config');
 
+// DO NOT add entries to this array unless you are sure they are expected.
+// Often, errors in the logs indicate unexpected code has leaked into cht-form.
 const ALLOWED_LOG_MSGS = [
   'favicon.ico - Failed to load resource: the server responded with a status of 404 (Not Found)',
   'tag was parsed inside of a <select> which was not inserted into the document. This is not valid ' +
@@ -66,6 +68,7 @@ const defaultConfig = {
     if (logs.length) {
       test.callback(new Error(`Browser console logs are not empty: ${logs.join('\n')}`));
     }
+    await mockConfig.cancelForm();
   },
 
   onComplete: () => { },
