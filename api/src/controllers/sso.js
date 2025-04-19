@@ -19,7 +19,6 @@ const OIDC_CLIENT_SECRET_KEY = 'oidc:client-secret';
 const SERVER_ERROR = new Error({ status: 500, error: 'An error occurred when logging in.' });
 
 let ASConfig;
-let code_verifier;
 
 const networkCallRetry = async (call, retryCount = 3) => {
   try {
@@ -66,32 +65,18 @@ const init = async () => {
 };
 
 const getAuthorizationUrl = async (serverConfig, redirectUrl) => {
-  code_verifier = client.randomPKCECodeVerifier();
-
-  const code_challenge_method = 'S256';
-  const code_challenge = await client.calculatePKCECodeChallenge(code_verifier);
-
-  let parameters = {
+  const parameters = {
     redirect_uri: redirectUrl,
     scope: 'openid'
   };
-
-  if (serverConfig?.serverMetadata()?.supportsPKCE()) {
-    parameters = { ...parameters, ...{ code_challenge_method, code_challenge } };
-  }
 
   return client.buildAuthorizationUrl(serverConfig, parameters);
 };
 
 const getIdToken = async (serverConfig, currentUrl) => {
-  let params = {};
-
-  if (serverConfig?.serverMetadata()?.supportsPKCE()) {
-    params = {
-      idTokenExpected: true,
-      pkceCodeVerifier: code_verifier
-    };
-  }
+  const params = {
+    idTokenExpected: true
+  };
 
   try {
     const tokens = await networkCallRetry(() => client.authorizationCodeGrant(ASConfig, currentUrl, params), 3);

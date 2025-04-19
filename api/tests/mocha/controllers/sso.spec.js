@@ -53,8 +53,6 @@ describe('sso controller', () => {
     controller = rewire('../../../src/controllers/sso');
 
     sinon.stub(client, 'discovery').resolves(ASConfig);
-    sinon.stub(client, 'randomPKCECodeVerifier').returns('verifier123');
-    sinon.stub(client, 'calculatePKCECodeChallenge').resolves('challenge123');
     sinon.stub(client, 'buildAuthorizationUrl').returns('https://fake-url.com');
   });
 
@@ -117,19 +115,6 @@ describe('sso controller', () => {
       const url = await controller.__get__('getAuthorizationUrl')(ASConfig, 'http://localhost/medic/oidc/get_token');
       chai.expect(url).to.equal('https://fake-url.com');
     });
-
-    it('should set PKCE paramemers', async () => {
-      await init();
-      const redirect = 'http://localhost/medic/oidc/get_token';
-      const expectedParams = {
-        redirect_uri: redirect,
-        scope: 'openid',
-        code_challenge_method: 'S256',
-        code_challenge: 'challenge123'
-      };
-      await controller.__get__('getAuthorizationUrl')(ASConfig, redirect);
-      chai.expect(client.buildAuthorizationUrl.calledWith(ASConfig, expectedParams)).to.be.true;
-    });
   });
 
   describe('getToken', async () => {
@@ -145,18 +130,6 @@ describe('sso controller', () => {
           email
         }
       });
-    });
-
-    it('should set PKCE paramemers', async () => {
-      await init();
-      const expectedParams = {
-        idTokenExpected: true,
-        pkceCodeVerifier: 'random'
-      };
-      sinon.stub(client, 'authorizationCodeGrant').resolves({ id_token, claims });
-      controller.__set__('code_verifier', 'random');
-      await controller.__get__('getIdToken')(ASConfig, 'http://current_url/');
-      chai.expect(client.authorizationCodeGrant.calledWith(ASConfig, 'http://current_url/', expectedParams)).to.be.true;
     });
 
     it('should throw and error if oidc provider is unavailable', async () => {
