@@ -18,6 +18,7 @@ const dataContext = require('../../../src/services/data-context');
 const { tokenLogin, roles, users } = require('@medic/user-management')(config, db, dataContext);
 const template = require('../../../src/services/template');
 const serverUtils = require('../../../src/server-utils');
+const { error } = require('console');
 
 let controller;
 
@@ -440,7 +441,11 @@ describe('login controller', () => {
     it('should reject token login for SSO users', () => {
       sinon.stub(auth, 'getUserCtx').rejects({ code: 401});
       sinon.stub(tokenLogin, 'isTokenLoginEnabled').returns(true);
-      sinon.stub(tokenLogin, 'getUserByToken').resolves('sso-user-id');
+      sinon.stub(tokenLogin, 'getUserByToken').rejects({
+        status: 401,
+        error: 'invalid',
+        reason: 'Token login not allowed for SSO users'
+      });
       sinon.stub(users, 'getUserDoc').resolves({ _id: 'sso-user-id', oidc: 'some-provider'});
       sinon.stub(res, 'status').returns(res);
       sinon.stub(res, 'json').returns(res);
@@ -448,9 +453,9 @@ describe('login controller', () => {
       req.params = { token: 'any-token' };
       return controller.tokenPost(req, res).then(() => {
         chai.expect(res.status.callCount).to.equal(1);
-        chai.expect(res.status.args[0][0]).to.equal(400);
+        chai.expect(res.status.args[0][0]).to.equal(401);
         chai.expect(res.json.callCount).to.equal(1);
-        chai.expect(res.json.args[0][0]).to.deep({
+        chai.expect(res.json.args[0][0]).to.deep.equal({
           error: 'invalid',
           reason: 'Token login not allowed for SSO users'
         });

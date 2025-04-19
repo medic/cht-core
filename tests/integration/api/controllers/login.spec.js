@@ -68,10 +68,13 @@ const getUser = (user) => {
   return utils.request(opts);
 };
 
-const setupTokenLoginSettings = (configureAppUrl = false) => {
+const setupTokenLoginSettings = (configureAppUrl = false, configureOidc = false) => {
   const settings = { token_login: { translation_key: 'login_sms', enabled: true } };
   if (configureAppUrl) {
     settings.app_url = utils.getOrigin();
+  }
+  if (configureOidc) {
+    settings.oidc_provider = { client_id: 'test-client-id' };
   }
   return utils
     .updateSettings(settings, { ignoreReload: true })
@@ -266,27 +269,24 @@ describe('login', () => {
         method: 'POST',
         body: user
       };
-      return setupTokenLoginSettings()
+      return setupTokenLoginSettings(false, true)
         .then(() => utils.request(createOpts))
         .then(() => getUser(user))
         .then(userDoc => {
           // grab the token and mark as SSO user
           const token = userDoc.token_login.token;
           userDoc.oidc = 'some-provider';
-          return utils.request({
-            method: 'PUT',
-            path: `/_users/${userDoc._id}`,
-            body: userDoc
-          }).then(() => token);
+          return utils.usersDb
+            .put(userDoc)
+            .then(() => token);
         })
         .then(token => loginWithTokenLink(token))
         .then(response => {
           chai.expect(response.headers.getSetCookie()).to.deep.equal([]);
-          // status 400 with SSO-specific message
-          chai.expect(response.status).to.equal(400);
+          // status 401 with SSO-specific message
+          chai.expect(response.status).to.equal(401);
           chai.expect(response.body).to.deep.equal({
-            error: 'invalid',
-            reason: 'Token login not allowed for SSO users'
+            error: 'Token login not allowed for SSO users'
           });
         });
     });

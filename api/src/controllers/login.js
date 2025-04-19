@@ -304,6 +304,10 @@ const createSessionRetry = (req, retry=10) => {
  * The user's password is reset in the process.
  */
 const loginByToken = async (req, res) => {
+  if (!tokenLogin.isTokenLoginEnabled()) {
+    return res.status(400).json({ error: 'disabled', reason: 'Token login disabled' });
+  }
+
   if (!req.params || !req.params.token) {
     return res.status(400).json({ error: 'missing', reason: 'Missing required param' });
   }
@@ -311,16 +315,7 @@ const loginByToken = async (req, res) => {
   try {
     const userId = await tokenLogin.getUserByToken(req.params.token);
     if (!userId) {
-      return res.status(401).json({ error: 'invalid', reason: 'Invalid token' });
-    }
-
-    const userDoc = await users.getUserDoc(userId);
-    if (userDoc.oidc) {
-      return res.status(400).json({ error: 'invalid', reason: 'Token login not allowed for SSO users' });
-    }
-
-    if (!tokenLogin.isTokenLoginEnabled()) {
-      return res.status(400).json({ error: 'disabled', reason: 'Token login disabled' });
+      return res.status(401).json({ error: 'invalid'});
     }
     
     const { user, password } = await tokenLogin.resetPassword(userId);
@@ -335,7 +330,11 @@ const loginByToken = async (req, res) => {
     logger.error('Error while logging in with token', err);
     const status = err.status || err.code || 400;
     const message = err.error || err.message || 'Unexpected error logging in';
-    res.status(status).json({ error: message });
+    const response = { error: message };
+    if(err.reason) {
+      response.reason = err.reason;
+    }
+    res.status(status).json(response);
   }
 };
 
