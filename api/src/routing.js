@@ -80,7 +80,6 @@ const app = express.Router({ strict: true });
 const asyncLocalStorage = require('./services/async-storage');
 const moment = require('moment');
 const MAX_REQUEST_SIZE = '32mb';
-const sso = require('./controllers/sso');
 
 // requires content-type application/x-www-form-urlencoded header
 const formParser = bodyParser.urlencoded({ limit: MAX_REQUEST_SIZE, extended: false });
@@ -301,6 +300,8 @@ app.get(routePrefix + 'login/token/:token?', login.tokenGet);
 app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
 app.get(routePrefix + 'password-reset', login.getPasswordReset);
 app.postJson(routePrefix + 'password-reset', login.resetPassword);
+app.get(routePrefix + 'login/oidc', login.oidcAuthorize);
+app.get(routePrefix + 'login/oidc/get_token', login.oidcLogin);
 app.get(routePrefix + 'privacy-policy', privacyPolicyController.get);
 
 // authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB
@@ -450,10 +451,6 @@ app.postJson('/api/v1/users/:username', users.update);
 app.postJson('/api/v3/users/:username', users.v3.update);
 app.delete('/api/v1/users/:username', users.delete);
 app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getUserSettings, users.info);
-
-sso.init();
-app.get(routePrefix + 'login/oidc', sso.authorize);
-app.get(routePrefix + 'oidc/get_token', sso.login);
 
 app.postJson('/api/v1/places', function(req, res) {
   auth

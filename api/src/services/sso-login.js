@@ -2,7 +2,7 @@ const { createHmac } = require('crypto');
 
 const config = require('../config');
 const db = require('../db');
-const dataContext = require('../services/data-context');
+const dataContext = require('./data-context');
 const { users } = require('@medic/user-management')(config, db, dataContext);
 const logger = require('@medic/logger');
 const secureSettings = require('@medic/settings');
@@ -10,15 +10,12 @@ const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
 
 const client = require('../openid-client-wrapper');
-const { setCookies, sendLoginErrorResponse } = require('./login');
-const settingsService = require('../services/settings');
+const settingsService = require('./settings');
 const { setTimeout } = require('later');
 
 const OIDC_CLIENT_SECRET_KEY = 'oidc:client-secret';
 
 const SERVER_ERROR = new Error({ status: 500, error: 'An error occurred when logging in.' });
-
-let ASConfig;
 
 const networkCallRetry = async (call, retryCount = 3) => {
   try {
@@ -32,10 +29,14 @@ const networkCallRetry = async (call, retryCount = 3) => {
   }
 };
 
-const init = async () => {
+/**
+ * Establishes connection to oidc server config to get server metadata.
+ * 
+ * @returns {object} OIDC server config.
+ */
+const oidcServerSConfig = async () => {
   const settings = await settingsService.get();
   if (!settings.oidc_provider) {
-    logger.info('Authorization server config settings not provided.');
     return;
   }
 
@@ -46,40 +47,52 @@ const init = async () => {
     throw new Error(err);
   }
 
-  try {
-    ASConfig = await networkCallRetry(
-      () => client.discovery(
-        new URL(settings.oidc_provider.discovery_url), settings.oidc_provider.client_id, clientSecret
-      ),
-      3
-    );
-  } catch (e) {
-    logger.error(e);
-    const err = 'The SSO provider is unreachable.';
-    throw new Error({ status: 503, error: err });
-  }
+  const idServerConfig = await networkCallRetry(
+    () => client.discovery(
+      new URL(settings.oidc_provider.discovery_url), settings.oidc_provider.client_id, clientSecret
+    ),
+    3
+  );
 
   logger.info('Authorization server config auth config loaded successfully.');
-
-  return ASConfig;
+  return idServerConfig;
 };
 
-const getAuthorizationUrl = async (serverConfig, redirectUrl) => {
-  const parameters = {
+/**
+ * Get authorization url to redirect user to for authorization. 
+ * 
+ * @param {string} redirectUrl Url to redirect to after authorization completes in oidc server.
+ * @returns {string} OIDC authorization url.
+ */
+const getAuthorizationUrl = async (redirectUrl) => {
+  const params = {
     redirect_uri: redirectUrl,
     scope: 'openid'
   };
 
-  return client.buildAuthorizationUrl(serverConfig, parameters);
+  try {
+    const serverConfig = await oidcServerSConfig();
+    return client.buildAuthorizationUrl(serverConfig, params);
+  } catch (err) {
+    logger.error(err);
+    throw SERVER_ERROR;
+  }
 };
 
-const getIdToken = async (serverConfig, currentUrl) => {
-  const params = {
-    idTokenExpected: true
-  };
+/** 
+ * Get id token from code grant returned from the oidc provider.
+ * 
+ * @param {string} currentUrl Current url that contains authorization code grant.
+ * @returns {object} Token id and user details.
+ */
+const getIdToken = async (currentUrl) => {
 
   try {
-    const tokens = await networkCallRetry(() => client.authorizationCodeGrant(ASConfig, currentUrl, params), 3);
+    const serverConfig = await oidcServerSConfig();
+    const tokens = await networkCallRetry(
+      () => client.authorizationCodeGrant(serverConfig, currentUrl, { idTokenExpected: true }),
+      3
+    );
     const { id_token } = tokens;
     const { name, preferred_username, email } = tokens.claims();
 
@@ -97,6 +110,15 @@ const getIdToken = async (serverConfig, currentUrl) => {
   }
 };
 
+/**
+ * Makes a CouchDB session cookie value string.
+ *  
+ * @param {string} username Username.
+ * @param {string} salt CouchDB user salt value.
+ * @param {string} secret  CouchDB secret value.
+ * @param {number} authTimeout Cooke timeout.
+ * @returns {string} Cookie string.
+ */
 const makeCookie = (username, salt, secret, authTimeout) => {
   // an adaptation of https://medium.com/@eiri/couchdb-cookie-authentication-6dd0af6817da
   const expiry = Math.floor(Date.now() / 1000) + authTimeout;
@@ -122,6 +144,12 @@ const makeCookie = (username, salt, secret, authTimeout) => {
     .replaceAll('+', '-');
 };
 
+/**
+ * Gets a session cookie. 
+ * 
+ * @param {string} username Username.
+ * @returns {string} Session cookie.
+ */
 const getCookie = async (username) => {
   let secret;
   let authTimeout;
@@ -155,31 +183,8 @@ const getCookie = async (username) => {
   return `AuthSession=${cookie}`;
 };
 
-const login = async (req, res) => {
-  req.body = { locale: 'en' };
-  const currentUrl =  new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
-  try {
-    const auth = await getIdToken(ASConfig, currentUrl);
-    const cookie = await getCookie(auth.user.username);
-    const redirectUrl = await setCookies(req, res, null, cookie);
-    res.redirect(redirectUrl);
-  } catch (e) {
-    logger.error(e);
-    return sendLoginErrorResponse(e, res);
-  }
-};
-
-const authorize = async (req, res) => {
-  const redirectUrl = new URL(
-    `/${environment.db}/oidc/get_token`,
-    `${req.protocol}://${req.get('host')}`
-  ).toString();
-  const authUrl = await getAuthorizationUrl(ASConfig, redirectUrl);
-  res.redirect(301, authUrl.href);
-};
-
 module.exports = {
-  init,
-  authorize,
-  login
+  getAuthorizationUrl,
+  getCookie,
+  getIdToken
 };

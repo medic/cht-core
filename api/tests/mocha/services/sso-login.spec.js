@@ -5,16 +5,14 @@ const db = require('../../../src/db');
 const config = require('../../../src/config');
 const dataContext = require('../../../src/services/data-context');
 const { users } = require('@medic/user-management')(config, db, dataContext);
-const template = require('../../../src/services/template');
 const secureSettings = require('@medic/settings');
 const settingsService = require('../../../src/services/settings');
 const request = require('@medic/couch-request');
 
 const client = require('../../../src/openid-client-wrapper.js');
+let service;
 
-let controller;
-
-describe('sso controller', () => {
+describe('SSO login', () => {
   let clock;
   const settings =  {
     oidc_provider: {
@@ -40,20 +38,9 @@ describe('sso controller', () => {
     return { name, preferred_username, email };
   };
 
-  const init = async () => {
-    sinon.stub(settingsService, 'get').returns(settings);
-
-    sinon.stub(secureSettings, 'getCredentials').resolves('secret');
-    await controller.init();
-  };
-
   beforeEach(async () => {
-    template.clear();
     clock = sinon.useFakeTimers(1743782507000); // 'Fri Apr 04 2025 19:01:47 GMT+0300 (East Africa Time)'
-    controller = rewire('../../../src/controllers/sso');
-
-    sinon.stub(client, 'discovery').resolves(ASConfig);
-    sinon.stub(client, 'buildAuthorizationUrl').returns('https://fake-url.com');
+    service = rewire('../../../src/services/sso-login');
   });
 
   afterEach(() => {
@@ -61,28 +48,25 @@ describe('sso controller', () => {
     sinon.restore();
   });
 
-  describe('init', () => {
+  describe('oidcServerSConfig', () => {
     it('should return authorization server config object', async () => {
-      await init();
-      const config = await controller.__get__('ASConfig');
-      chai.expect(config).to.be.deep.equal(ASConfig);
-    });
-
-    it('should use settings config', async() => {
-      await init();
+      sinon.stub(settingsService, 'get').returns(settings);
+      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
+      sinon.stub(client, 'discovery').resolves(ASConfig);
+      const config = await service.__get__('oidcServerSConfig')();
       chai.expect(client.discovery.calledWith(
         new URL(settings.oidc_provider.discovery_url),
         settings.oidc_provider.client_id,
         'secret'
       )).to.be.true;
+      chai.expect(config).to.be.deep.equal(ASConfig);
     });
 
     it('should throw an error if no secret is found', async () => {
       sinon.stub(settingsService, 'get').returns(settings);
       sinon.stub(secureSettings, 'getCredentials').resolves(null);
-
       try {
-        await controller.init();
+        await service.__get__('oidcServerSConfig')();
         chai.expect.fail('Expected error to be thrown');
       } catch (err) {
         chai.expect(err.message).to.equal('No OIDC client secret \'oidc:client-secret\' configured.');
@@ -92,16 +76,16 @@ describe('sso controller', () => {
     it('should not return server config if SSO is not enabled.', async () => {
       sinon.stub(settingsService, 'get').returns({});
       sinon.stub(secureSettings, 'getCredentials').resolves('secret');
-      const config = await controller.init();
+      const config = await service.__get__('oidcServerSConfig')();
       chai.expect(config).to.be.undefined;
     });
-  });
 
-  describe('networkCallRetry', () => {
-    it('should retry 3 times', async () => {
-      const fn = sinon.fake.throws('Error');
+    it('should retry call to oidc provider 3 times', async () => {
+      sinon.stub(settingsService, 'get').returns(settings);
+      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
+      const fn = sinon.stub(client, 'discovery').throws('Error');
       try {
-        await controller.__get__('networkCallRetry')(fn, 3);
+        await service.__get__('oidcServerSConfig')();
         chai.expect.fail('Error');
       } catch (err) {
         chai.expect(fn.calledThrice).to.be.true;
@@ -111,17 +95,28 @@ describe('sso controller', () => {
 
   describe('getAuthorizationUrl', () => {
     it('should return the authorization URL', async () => {
-      await init();
-      const url = await controller.__get__('getAuthorizationUrl')(ASConfig, 'http://localhost/medic/oidc/get_token');
+      sinon.stub(client, 'buildAuthorizationUrl').returns('https://fake-url.com');
+      service.__set__('oidcServerSConfig', () => ASConfig);
+      const url = await service.getAuthorizationUrl('http://localhost/medic/oidc/get_token');
       chai.expect(url).to.equal('https://fake-url.com');
+    });
+
+    it('should throw and error if oidc provider is unavailable', async () => {
+      service.__set__('oidcServerSConfig', sinon.fake.throws('Error'));
+      try {
+        await service.getAuthorizationUrl('http://localhost/medic/oidc/get_token');
+        chai.expect.fail('Error');
+      } catch (err) {
+        chai.expect(err).to.be.equal(service.__get__('SERVER_ERROR'));
+      }
     });
   });
 
   describe('getToken', async () => {
     it('should return a token', async () => {
-      await init();
+      service.__set__('oidcServerSConfig', () => ASConfig);
       sinon.stub(client, 'authorizationCodeGrant').resolves({ id_token, claims });
-      const token = await controller.__get__('getIdToken')(ASConfig, 'http://current_url/');
+      const token = await service.getIdToken('http://current_url/');
       chai.expect(token).to.deep.equal({
         id_token,
         user: {
@@ -133,13 +128,13 @@ describe('sso controller', () => {
     });
 
     it('should throw and error if oidc provider is unavailable', async () => {
-      await init();
-      sinon.stub(client, 'authorizationCodeGrant').throws(new Error('error'));
+      service.__set__('oidcServerSConfig', sinon.fake.throws('Error'));
+
       try {
-        await controller.__get__('getIdToken')(ASConfig, 'http://current_url/');
+        await service.getIdToken('http://current_url/');
         chai.expect.fail('Error');
       } catch (err) {
-        chai.expect(err).to.be.equal(controller.__get__('SERVER_ERROR'));
+        chai.expect(err).to.be.equal(service.__get__('SERVER_ERROR'));
       }
     });
   });
@@ -151,7 +146,7 @@ describe('sso controller', () => {
       const secret = 'c0673d7e-0310-44bc-a919-9e6330904f80';
       const authTimeout = 30;
 
-      const cookie = controller.__get__('makeCookie')(username, salt, secret, authTimeout);
+      const cookie = service.__get__('makeCookie')(username, salt, secret, authTimeout);
       chai.expect(cookie).to.be.equal('b2Rpbjo2N0YwMDI4OTrzYR70nsFmwmMSkvPju5RW1OCbew');
     });
   });
@@ -162,22 +157,22 @@ describe('sso controller', () => {
       const user = { id: 'user123', username: 'user123', salt: 'salt' };
       sinon.stub(users, 'getUserDoc').returns(user);
       sinon.stub(request, 'get').returns('value');
-      controller.__set__('makeCookie', sinon.fake.returns('cookie'));
+      service.__set__('makeCookie', sinon.fake.returns('cookie'));
 
-      const cookie = await controller.__get__('getCookie')(username);
+      const cookie = await service.getCookie(username);
       chai.expect(cookie).to.be.equal(`AuthSession=cookie`);
     });
 
     it('should throw and error if secret or auth timeout is not set', async () => {
-      await init();
+      service.__set__('oidcServerSConfig', ASConfig);
       const user = { id: 'user123', username: 'user123', salt: 'salt' };
       sinon.stub(users, 'getUserDoc').returns(user);
       sinon.stub(request, 'get').throws(new Error('error'));
       try {
-        await controller.__get__('getCookie')('odin');
+        await service.getCookie('odin');
         chai.expect.fail('Error');
       } catch (err) {
-        chai.expect(err).to.be.equal(controller.__get__('SERVER_ERROR'));
+        chai.expect(err).to.be.equal(service.__get__('SERVER_ERROR'));
       }
     });
   });
