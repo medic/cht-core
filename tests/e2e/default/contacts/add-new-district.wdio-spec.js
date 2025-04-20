@@ -18,7 +18,7 @@ describe('Add new district tests : ', () => {
   it('should add new district with a new person', async () => {
     await commonPage.goToPeople();
     const district = 'TestDistrict';
-    await contactPage.addPlace({ placeName: 'TestDistrict', contactName: 'Tester' }, false);
+    await contactPage.addPlace({ placeName: 'TestDistrict', contactName: 'Tester' }, { rightSideAction: false });
 
     await sentinelUtils.waitForSentinel();
     await commonPage.waitForPageLoaded();

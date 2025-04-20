@@ -26,7 +26,7 @@ describe('Create new lineage structure ', () => {
   });
 
   it('should create new health center', async () => {
-    await contactPage.addPlace({ placeName: centerName, contactName: centerContact }, false);
+    await contactPage.addPlace({ placeName: centerName, contactName: centerContact }, { rightSideAction: false });
     await sentinelUtils.waitForSentinel(); // prevent stale element references
     expect(await contactPage.getPrimaryContactName()).to.equal(centerContact);
   });
@@ -99,7 +99,7 @@ describe('Create new lineage structure ', () => {
 
   it('should edit the name of the Family', async () => {
     const name = 'Sumeria';
-    const updatedName = 'Kaleb';
+    const updatedName = 'Kalebb';
 
     await contactPage.selectLHSRowByText(household);
 

@@ -443,6 +443,45 @@
   .pages.or .or-repeat-info[role="page"] {
     display: block;
   }
+
+  #duplicate_contacts {
+    margin-bottom: 15px;
+    .results_header {
+      font-size: @font-large;
+      padding: 0;
+    }
+    .acknowledge_label {
+      -webkit-user-select: none; -ms-user-select: none; user-select: none;
+      margin: 15px 0 0 0;
+    }
+    mat-expansion-panel {
+      mat-expansion-panel-header {
+        height: auto;
+        .mat-content {
+          font-size: @font-large;
+          display: flex;
+          flex-direction: column;
+          padding: 0.5em 0;
+        }
+        .mat-expansion-indicator::after {
+          border-width: 0 3px 3px 0;
+          padding: 4px;
+          color: @text-normal-color;
+        }
+      }
+      .nested-section {
+        font-size: @font-medium;
+        justify-content: center;
+        display: flex;
+        .loading-status {
+          margin: 0;
+        }
+      }
+      mat-action-row {
+        font-size: @font-medium;
+      }
+    }
+  }
 }
 
 @media (max-width: @media-mobile) {

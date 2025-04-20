@@ -22,7 +22,7 @@ import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
-import { NgIf, NgClass, NgFor, LowerCasePipe } from '@angular/common';
+import { NgIf, NgClass, NgFor } from '@angular/common';
 import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
@@ -32,6 +32,9 @@ import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { SummaryPipe } from '@mm-pipes/message.pipe';
 import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
+import { 
+  ContactSummaryContentComponent 
+} from '@mm-components/contact-summary-content/contact-summary-content.component';
 
 @Component({
   selector: 'contacts-content',
@@ -46,12 +49,12 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
     AuthDirective,
     ContentRowListItemComponent,
     RouterLink,
-    LowerCasePipe,
     TranslatePipe,
     ResourceIconPipe,
     SummaryPipe,
     FormIconNamePipe,
-    LocalizeNumberPipe
+    LocalizeNumberPipe,
+    ContactSummaryContentComponent
   ]
 })
 export class ContactsContentComponent implements OnInit, OnDestroy {
