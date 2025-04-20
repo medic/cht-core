@@ -17,6 +17,7 @@ const template = require('../services/template');
 const rateLimitService = require('../services/rate-limit');
 const serverUtils = require('../server-utils');
 const appSettings = require('../services/settings');
+const sso = require('../services/sso-login');
 
 const PASSWORD_RESET_URL = '/medic/password-reset';
 
@@ -542,6 +543,33 @@ module.exports = {
         return loginByToken(req, res);
       }
       next(e);
+    }
+  },
+  oidcLogin: async (req, res) => {
+    req.body = { locale: 'en' };
+    const currentUrl =  new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
+    try {
+      const auth = await sso.getIdToken(currentUrl);
+      const cookie = await sso.getCookie(auth.user.username);
+      const redirectUrl = await setCookies(req, res, null, cookie);
+      res.redirect(redirectUrl);
+    } catch (e) {
+      logger.error(e);
+      return sendLoginErrorResponse(e, res);
+    }
+  },
+  oidcAuthorize: async (req, res) => {
+    const redirectUrl = new URL(
+      `/${environment.db}/login/oidc/get_token`,
+      `${req.protocol}://${req.get('host')}`
+    ).toString();
+
+    try {
+      const authUrl = await sso.getAuthorizationUrl(redirectUrl);
+      res.redirect(301, authUrl.href);
+    } catch (e) {
+      logger.error(e);
+      return sendLoginErrorResponse(e, res);
     }
   },
   validateSession,

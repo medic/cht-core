@@ -19,11 +19,13 @@ const dataContext = require('../../../src/services/data-context');
 const { tokenLogin, roles, users } = require('@medic/user-management')(config, db, dataContext);
 const template = require('../../../src/services/template');
 const serverUtils = require('../../../src/server-utils');
+const sso = require('../../../src/services/sso-login');
 
 let controller;
 
 let req;
 let res;
+let redirect;
 
 const DEFAULT_BRANDING = {
   logo: 'xyz',
@@ -36,16 +38,18 @@ describe('login controller', () => {
   beforeEach(() => {
     template.clear();
     controller = rewire('../../../src/controllers/login');
+    redirect = sinon.fake();
 
     req = {
       query: {},
       body: {},
       hostname: 'xx.app.medicmobile.org',
       protocol: 'http',
-      headers: {cookie: ''}
+      headers: {cookie: ''},
+      get: () => 'xx.app.medicmobile.org'
     };
     res = {
-      redirect: () => {},
+      redirect: redirect,
       send: () => {},
       status: () => {},
       json: () => {},
@@ -1062,4 +1066,44 @@ describe('login controller', () => {
     });
   });
 
+  describe('oidcLogin', async () => {
+    it('should get token and redirect to homepage', async () => {
+      sinon.stub(sso, 'getIdToken').returns({ id_token: 'token', user: { username: 'lil' }});
+      const getCookie = sinon.stub(sso, 'getCookie').returns('AuthSession=cookie');
+      const setCookies = sinon.fake.returns('/');
+      controller.__set__('setCookies', setCookies);
+      await controller.oidcLogin(req, res);
+      chai.expect(redirect.calledWith('/')).to.be.true;
+      chai.expect(getCookie.calledWith('lil')).to.be.true;
+      chai.expect(setCookies.calledWith(req, res, null, 'AuthSession=cookie')).to.be.true;
+    });
+
+    it('should return login error response', async () => {
+      sinon.stub(sso, 'getIdToken').throws('Error');
+      controller.__set__('sendLoginErrorResponse', sinon.fake());
+      await controller.oidcLogin(req, res);
+      chai.expect(redirect.called).to.be.false;
+    });
+  });
+
+  describe('oidcAuthorize', async() => {
+    it('should redirect to oidc provider', async () => {
+      const getAuthorizationUrl = sinon.stub(sso, 'getAuthorizationUrl').returns(new URL('https://oidc.server'));
+      sinon.stub(environment, 'db').returns('medic');
+      await controller.oidcAuthorize(req, res);
+      chai.expect(redirect.calledWith(301, 'https://oidc.server/')).to.be.true;
+      chai.expect(getAuthorizationUrl.calledWith('http://xx.app.medicmobile.org/medic/login/oidc/get_token')).to.be.true;
+    });
+
+    it('should return login error response', async () => {
+      const e = new Error('Error');
+      sinon.stub(sso, 'getAuthorizationUrl').throws(e);
+      sinon.stub(environment, 'db').returns('medic');
+      const sendErrorResponse = sinon.fake();
+      controller.__set__('sendLoginErrorResponse', sendErrorResponse);
+      await controller.oidcAuthorize(req, res);
+      chai.expect(redirect.called).to.be.false;
+      chai.expect(sendErrorResponse.calledWith(e, res));
+    });
+  });
 });

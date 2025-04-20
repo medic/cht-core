@@ -32,7 +32,6 @@ const proxyForChanges = require('http-proxy').createProxyServer({
   changeOrigin: environment.proxies.changeOrigin
 });
 const login = require('./controllers/login');
-const sso = require('./controllers/sso');
 const smsGateway = require('./controllers/sms-gateway');
 const exportData = require('./controllers/export-data');
 const records = require('./controllers/records');
@@ -303,8 +302,8 @@ app.get(routePrefix + 'login/token/:token?', login.tokenGet);
 app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
 app.get(routePrefix + 'password-reset', login.getPasswordReset);
 app.postJson(routePrefix + 'password-reset', login.resetPassword);
-app.get(routePrefix + 'login/oidc', sso.oidcAuthorize);
-app.get(routePrefix + 'login/oidc/get_token', sso.oidcLogin);
+app.get(routePrefix + 'login/oidc', login.oidcAuthorize);
+app.get(routePrefix + 'login/oidc/get_token', login.oidcLogin);
 app.get(routePrefix + 'privacy-policy', privacyPolicyController.get);
 
 // authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB
