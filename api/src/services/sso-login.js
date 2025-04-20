@@ -1,4 +1,5 @@
 const { createHmac } = require('crypto');
+const {setTimeout} = require('node:timers/promises');
 
 const config = require('../config');
 const db = require('../db');
@@ -11,7 +12,6 @@ const request = require('@medic/couch-request');
 
 const client = require('../openid-client-wrapper');
 const settingsService = require('./settings');
-const { setTimeout } = require('later');
 
 const OIDC_CLIENT_SECRET_KEY = 'oidc:client-secret';
 
@@ -25,7 +25,8 @@ const networkCallRetry = async (call, retryCount = 3) => {
       throw err;
     }
     logger.debug(`Retrying ${call.name}.`);
-    return await setTimeout(networkCallRetry(call, --retryCount), 10);
+    await setTimeout(10);
+    return await networkCallRetry(call, --retryCount);
   }
 };
 

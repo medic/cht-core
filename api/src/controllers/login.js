@@ -16,7 +16,6 @@ const translations = require('../translations');
 const template = require('../services/template');
 const rateLimitService = require('../services/rate-limit');
 const serverUtils = require('../server-utils');
-const { getAuthorizationUrl, getIdToken, getCookie } = require('../services/sso-login');
 const appSettings = require('../services/settings');
 
 const PASSWORD_RESET_URL = '/medic/password-reset';
@@ -544,28 +543,6 @@ module.exports = {
       }
       next(e);
     }
-  },
-  oidcLogin: async (req, res) => {
-    req.body = { locale: 'en' };
-    const currentUrl =  new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
-    try {
-      const auth = await getIdToken(currentUrl);
-      const cookie = await getCookie(auth.user.username);
-      const redirectUrl = await setCookies(req, res, null, cookie);
-      res.redirect(redirectUrl);
-    } catch (e) {
-      logger.error(e);
-      return sendLoginErrorResponse(e, res);
-    }
-  },
-  oidcAuthorize: async (req, res) => {
-    const redirectUrl = new URL(
-      `/${environment.db}/login/oidc/get_token`,
-      `${req.protocol}://${req.get('host')}`
-    ).toString();
-
-    const authUrl = await getAuthorizationUrl(redirectUrl);
-    res.redirect(301, authUrl.href);
   },
   validateSession,
   setCookies,
