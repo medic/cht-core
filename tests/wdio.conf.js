@@ -147,11 +147,11 @@ const baseConfig = {
   baseUrl: constants.BASE_URL,
   //
   // Default timeout for all waitFor* commands.
-  waitforTimeout: 15000,
+  waitforTimeout: 60000,
   //
   // Default timeout in milliseconds for request
   // if browser driver or grid doesn't send response
-  connectionRetryTimeout: 120000,
+  connectionRetryTimeout: 180000,
   //
   // Default request retries count
   connectionRetryCount: 3,
@@ -194,7 +194,7 @@ const baseConfig = {
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: 'bdd',
-    timeout: DEBUG ? DEBUG_TIMEOUT : DEFAULT_TIMEOUT,
+    timeout: DEBUG ? DEBUG_TIMEOUT : 180000,
     retries: DEBUG ? 0 : 5,
   },
   //

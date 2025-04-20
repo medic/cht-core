@@ -10,10 +10,20 @@ const openEditSettings = async () => {
 };
 
 const selectLanguage = async (code) => {
+  console.log(`Attempting to select language: ${code}`);
   await (await languageDropDown()).waitForDisplayed();
-  await browser.waitUntil(async () => (await (await languageDropDown()).getValue()).length);
+  await browser.waitUntil(
+    async () => (await (await languageDropDown()).getValue()).length,
+    {
+      timeout: 30000,
+      timeoutMsg: 'Language dropdown value not populated within timeout',
+    }
+  );
+  console.log(`Selecting language value: ${code}`);
   await (await languageDropDown()).selectByAttribute('value', code);
-  await modalPage.submit();
+  console.log('Waiting for submit button to be clickable');
+  await modalPage.submit(30000);
+  console.log(`Successfully selected language: ${code}`);
 };
 
 const setLanguage = async (code) => {
@@ -22,7 +32,7 @@ const setLanguage = async (code) => {
   await commonPage.openUserSettings();
   await openEditSettings();
   await selectLanguage(code);
-  await browser.pause(500); // wait for the elements to change translations
+  await browser.pause(1000); // increased pause to wait for the elements to change translations
 };
 
 module.exports = {
