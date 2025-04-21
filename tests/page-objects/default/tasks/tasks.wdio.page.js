@@ -18,6 +18,23 @@ const getTasks = async () => {
     timeoutMsg: 'Expected tasks list to be displayed'
   });
 
+  await browser.waitUntil(async () => {
+    const tasks = await $$(`${TASK_LIST_SELECTOR} li.content-row`);
+    if (!tasks.length) {
+      return false;
+    }
+    for (const task of tasks) {
+      if (!(await task.isDisplayed())) {
+        return false;
+      }
+    }
+    return true;
+  }, {
+    timeout: 10000,
+    interval: 500,
+    timeoutMsg: 'Expected task elements to be present and displayed'
+  });
+
   return $$(`${TASK_LIST_SELECTOR} li.content-row`);
 };
 
