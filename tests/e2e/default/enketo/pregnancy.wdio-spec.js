@@ -34,8 +34,9 @@ describe('Pregnancy registration', () => {
     await commonPage.goToReports();
     const reports = await reportsPage.reportsListDetails();
     for (const report of reports) {
-      if (report.heading === womanName && report.form === 'Pregnancy registration') {
+      if (report.heading === pregnantWoman.name && report.form === 'Pregnancy registration') {
         await reportsPage.deleteReport(report.dataId);
+        console.log('Report deleted');
       }
     }
     await commonPage.goToBase();
