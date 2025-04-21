@@ -31,8 +31,7 @@ describe('Pregnancy registration', () => {
   });
 
   afterEach(async () => {
-    await utils.revertDb([/^form:/], true);
-    await commonPage.sync();
+    await commonPage.goToBase();
     if (await modalPage.isDisplayed()) {
       await modalPage.submit();
     }
@@ -40,6 +39,7 @@ describe('Pregnancy registration', () => {
 
   after(async () => {
     await utils.deleteUsers([offlineUser]);
+    await utils.revertDb([/^form:/], true);
   });
 
   it('should submit a new pregnancy, ' +
