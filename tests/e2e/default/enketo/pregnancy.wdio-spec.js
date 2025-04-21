@@ -40,6 +40,7 @@ describe('Pregnancy registration', () => {
 
   after(async () => {
     await utils.deleteUsers([offlineUser]);
+    await utils.revertDb([/^form:/], true);
   });
 
   it('should submit a new pregnancy, ' +
