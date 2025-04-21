@@ -412,7 +412,49 @@ describe('Export Data Service', () => {
       ]);
     });
   });
+  it('includes user_storage_usage field', async () => {
+    const rows = [
+      {
+        key: ['user1', 'device-id-123'],
+        value: {
+          date: '2023-05-01',
+          id: 'telemetry-2023-05-01-user1-device-id-123',
+          device: {
+            userAgent: 'ExampleAgent/1.0',
+            versions: {
+              cht: '4.0.0',
+              settings: '4-abc123'
+            }
+          },
+          user_storage_usage: {
+            total_docs: 50,
+            total_attachments: 10,
+            total_size_bytes: 20480
+          }
+        }
+      }
+    ];
 
+    sinon.stub(db.medicUsersMeta, 'query').resolves({ rows });
+
+    const actual = await service.exportObject('user-devices');
+
+    actual.should.deep.equal([
+      {
+        username: 'user1',
+        device_id: 'device-id-123',
+        date: '2023-05-01',
+        user_agent: 'ExampleAgent/1.0',
+        cht_version: '4.0.0',
+        settings_version: '4-abc123',
+        user_storage_usage: {
+          total_docs: 50,
+          total_attachments: 10,
+          total_size_bytes: 20480
+        }
+      }
+    ]);
+  });
   it('handles invalid user agents', async () => {
     const rows = [
       {

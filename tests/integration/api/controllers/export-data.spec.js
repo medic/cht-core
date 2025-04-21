@@ -537,6 +537,10 @@ describe('Export Data V2.0', () => {
       const result = await utils.request({ path: '/api/v2/export/user-devices' });
 
       expect(result).to.deep.equal(expectedData);
+      result.forEach(entry => {
+        expect(entry).to.have.property('storageFree');
+        expect(entry).to.have.property('storageTotal');
+      });
     });
 
     it('Only returns latest data for each user device', async () => {
@@ -581,6 +585,11 @@ describe('Export Data V2.0', () => {
       const result = await utils.request({ path: '/api/v2/export/user-devices' });
 
       expect(result).to.deep.equal([userDataDifferentDevice, userDataLatest]);
+
+      result.forEach(entry => {
+        expect(entry).to.have.property('storageFree');
+        expect(entry).to.have.property('storageTotal');
+      });
     });
   });
 
