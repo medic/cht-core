@@ -1,4 +1,5 @@
 const { getDatasource } = require('@medic/cht-datasource');
+const logger = require('@medic/logger');
 
 const iterateGenerator = async (gen) => {
   const rows = [];
@@ -19,6 +20,7 @@ const queryFreetext = async (dataContext, request, type) => {
 
     return await iterateGenerator(generator);
   } catch (error) {
+    logger.error('Error while querying freetext: ', error);
     // NOTE: added this exception clause to return an empty list
     // because the previous implementation was doing so
     // if an exception was raised here then, wherever search lib
