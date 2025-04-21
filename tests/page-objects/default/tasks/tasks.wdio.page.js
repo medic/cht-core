@@ -9,7 +9,17 @@ const FORM_TITLE_SELECTOR = `${TASK_FORM_SELECTOR} h3#form-title`;
 const NO_SELECTED_TASK_SELECTOR = '.empty-selection';
 
 const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"`);
-const getTasks = () => $$(`${TASK_LIST_SELECTOR} li.content-row`);
+const getTasks = async () => {
+  await browser.waitUntil(async () => {
+    const tasksList = await $(TASK_LIST_SELECTOR);
+    return await tasksList.isDisplayed();
+  }, {
+    timeout: 10000,
+    timeoutMsg: 'Expected tasks list to be displayed'
+  });
+
+  return $$(`${TASK_LIST_SELECTOR} li.content-row`);
+};
 
 const getTaskInfo = async (taskElement) => {
   await taskElement.scrollIntoView();
