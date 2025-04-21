@@ -78,7 +78,6 @@ const addFileInputValue = async (question, value, { repeatIndex = 0 } = {}) => {
 const validateSummaryReport = async (textArray) => {
   const element = await getCurrentPageSection();
   for (const text of textArray) {
-    console.log('Validating text: ', text);
     expect(await element.$(`span*=${text}`).isDisplayed()).to.be.true;
   }
 };
