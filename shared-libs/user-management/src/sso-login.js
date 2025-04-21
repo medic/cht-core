@@ -3,7 +3,7 @@ const passwords = require('./libs/passwords');
 const db = require('./libs/db');
 
 const isSSOLoginGloballyEnabled = () => {
-  return isSsoLoginEnabled()
+  return isSsoLoginEnabled();
 };
 
 const shouldEnableSSOLogin = (data) => {
@@ -104,8 +104,7 @@ const manageSSOLogin = (data, response) => {
     return Promise.resolve(response);
   }
 
-  if (data.oidc === true)
-  {
+  if (data.oidc === true) {
     return enableSSOLogin(response);
   }
 };
@@ -115,7 +114,7 @@ const hasBothOidcAndTokenOrPasswordLogin = data => data.oidc && (data.password |
 const isSsoLoginEnabled = () => {
   const settings = config.get();
   return !!settings?.oidc_provider?.client_id;
-}
+};
 
 const validateSSOLoginCreate = (data) => {
   if (!data.oidc){
