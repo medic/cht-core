@@ -10,6 +10,11 @@ const getContactTypes = config => {
   return config && Array.isArray(config.contact_types) && config.contact_types || [];
 };
 
+const getContactTypeIds = config => {
+  const contactTypesObjects = getContactTypes(config);
+  return contactTypesObjects.map((item) => item.id);
+};
+
 const getTypeId = (doc) => {
   if (!doc) {
     return;
@@ -67,6 +72,10 @@ const isPlace = (config, contact) => {
   return isPlaceType(type);
 };
 
+const isContact = (config, contact) => {
+  return isPlace(config, contact) || isPerson(config, contact);
+};
+
 const isSameContactType = (contacts) => {
   const contactTypes = new Set(contacts.map(contact => getTypeId(contact)));
   return contactTypes.size === 1;
@@ -98,10 +107,12 @@ module.exports = {
   getContactType,
   isPerson,
   isPlace,
+  isContact,
   isSameContactType,
   isHardcodedType,
   HARDCODED_TYPES,
   getContactTypes,
+  getContactTypeIds,
   getChildren,
   getPlaceTypes,
   getPersonTypes,

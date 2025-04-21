@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import { ActivatedRoute } from '@angular/router';
 import { TestBed, fakeAsync, flush } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { provideMockStore } from '@ngrx/store/testing';
 
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
@@ -10,6 +11,7 @@ import { SearchService } from '@mm-services/search.service';
 import { Select2SearchService } from '@mm-services/select2-search.service';
 import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
+import { Selectors } from '@mm-selectors/index';
 
 describe('Select2SearchService', () => {
   let service: Select2SearchService;
@@ -62,6 +64,7 @@ describe('Select2SearchService', () => {
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
       ],
       providers: [
+        provideMockStore({ selectors: [{ selector: Selectors.getDirection, value: 'rtl' }], }),
         { provide: ActivatedRoute, useValue: activatedRoute },
         { provide: ContactMutedService, useValue: contactMutedService },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
@@ -78,6 +81,7 @@ describe('Select2SearchService', () => {
   describe('init', () => {
     it('should set empty value when initial value is empty', async () => {
       await service.init(selectEl, [ 'person' ], {initialValue: ''});
+      expect(selectEl.select2.args[0][0].dir).to.equal('rtl');
       expect(selectEl.val.callCount).to.equal(3);
       expect(selectEl.val.args[0]).to.deep.equal([ ]);    // first time the component reads the current value
       expect(selectEl.val.args[1]).to.deep.equal([ '' ]); // set the value

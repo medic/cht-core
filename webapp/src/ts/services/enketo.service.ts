@@ -1,7 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
-import { Nullable, Person } from '@medic/cht-datasource';
 import type JQuery from 'jquery';
 import * as FileManager from '../../js/enketo/file-manager.js';
 
@@ -614,45 +613,22 @@ interface XmlFormContext {
     hasContactSummary: boolean;
   };
   wrapper: JQuery;
-  instanceData: null | string | Record<string, any>; // String for report forms, Record<> for contact forms.
+  instanceData?: string | Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey?: string;
   isFormInModal?: boolean;
   contactSummary?: Record<string, any>;
 }
 
-export class EnketoFormContext {
-  selector: string;
-  formDoc: Record<string, any>;
-  type: string; // 'contact'|'report'|'task'|'training-card'
-  editing?: boolean;
-  instanceData: null | string | Record<string, any>;
-  editedListener?: () => void;
-  valuechangeListener?: () => void;
-  titleKey?: string;
-  isFormInModal?: boolean;
-  userContact?: Nullable<Person.v1.Person>;
-  contactSummary?: Record<string, any>;
+export type FormType = 'contact' | 'report' | 'task' | 'training-card';
 
-  constructor(selector: string, type: string, formDoc: Record<string, any>, instanceData?) {
-    this.selector = selector;
-    this.type = type;
-    this.formDoc = formDoc;
-    this.instanceData = instanceData;
-  }
-
-  shouldEvaluateExpression() {
-    if (this.type === 'task') {
-      return false;
-    }
-
-    if (this.type === 'report' && this.editing) {
-      return false;
-    }
-    return true;
-  }
-
-  requiresContact() {
-    // Users can access contact forms even when they don't have a contact associated.
-    return this.type !== 'contact';
-  }
+export interface EnketoFormContext {
+  readonly selector: string;
+  readonly formDoc: Record<string, any>;
+  readonly type: FormType;
+  readonly instanceData?: string | Record<string, any>;
+  readonly editedListener?: () => void;
+  readonly valuechangeListener?: () => void;
+  readonly titleKey?: string;
+  readonly isFormInModal?: boolean;
+  readonly contactSummary?: Record<string, any>;
 }

@@ -16,6 +16,7 @@ const translations = require('../translations');
 const template = require('../services/template');
 const rateLimitService = require('../services/rate-limit');
 const serverUtils = require('../server-utils');
+const appSettings = require('../services/settings');
 
 const PASSWORD_RESET_URL = '/medic/password-reset';
 
@@ -38,6 +39,7 @@ const templates = {
       'login.hide_password',
       'login.incorrect',
       'login.show_password',
+      'login.sso',
       'login.unsupported_browser',
       'login.unsupported_browser.outdated_cht_android',
       'login.unsupported_browser.outdated_webview_apk',
@@ -176,7 +178,7 @@ const render = (page, req, extras = {}) => {
       getTemplate(page),
       getEnabledLocales(),
       brandingService.get(),
-      privacyPolicy.exists()
+      privacyPolicy.exists(),
     ])
     .then(([ template, locales, branding, hasPrivacyPolicy ]) => {
       const options = Object.assign(
@@ -337,8 +339,9 @@ const loginByToken = (req, res) => {
     });
 };
 
-const renderLogin = (req) => {
-  return render('login', req);
+const renderLogin = async (req) => {
+  const hasOidcProvider = await appSettings.hasOidcProvider();
+  return render('login', req, { hasOidcProvider });
 };
 
 const renderPasswordReset = (req) => {

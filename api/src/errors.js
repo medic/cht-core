@@ -13,7 +13,15 @@ class NotFoundError extends Error {
   }
 }
 
+class PermissionError extends Error {
+  constructor(message, ...args) {
+    super(message, ...args);
+    this.code = 403;
+  }
+}
+
 module.exports = {
   PublicError,
   NotFoundError,
+  PermissionError,
 };
