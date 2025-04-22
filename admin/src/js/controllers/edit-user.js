@@ -214,12 +214,13 @@ angular
     const validatePasswordForEditUser = () => {
       const newUser = !$scope.editUserModel.id;
       const tokenLogin = $scope.editUserModel.token_login;
-      if (tokenLogin ||$scope.editUserModel.oidc) {
+      const ssoLogin = $scope.editUserModel.oidc;
+      if (tokenLogin || ssoLogin) {
         // when enabling token_login or sso_login, password is not required
         return true;
       }
 
-      if (newUser || tokenLogin === false) {
+      if (newUser || tokenLogin === false || ssoLogin === false) {
         // for new users or when disabling token_login for users who have it enabled
         return validatePasswordFields();
       }
