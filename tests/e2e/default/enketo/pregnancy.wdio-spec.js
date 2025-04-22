@@ -38,7 +38,6 @@ describe('Pregnancy registration', () => {
       if (report.heading === pregnantWoman.name && report.form === 'Pregnancy registration') {
         await utils.deleteDocs([report.dataId]);
         await commonPage.sync();
-        console.log('Report deleted and synced');
       }
     }
     await commonPage.goToBase();
