@@ -68,8 +68,6 @@ describe('Pregnancy Visit', () => {
     await analyticsPage.goToTargets();
 
     const targets = await analyticsPage.getTargets();
-    console.log('Targets in CI:', JSON.stringify(targets, null, 2));
-
     expect(targets).to.have.deep.members([
       {title: 'Deaths', goal: '0', count: '0', countNumberColor: TARGET_MET_COLOR},
       {title: 'New pregnancies', goal: '20', count: '1', countNumberColor: TARGET_UNMET_COLOR},
@@ -90,12 +88,12 @@ describe('Pregnancy Visit', () => {
     await commonPage.openFastActionReport('pregnancy_home_visit');
     await pregnancyVisitForm.submitDefaultPregnancyVisit();
 
+    await commonPage.refresh();
+
     await commonPage.goToAnalytics();
     await analyticsPage.goToTargets();
 
     const targetsAfterAddingVisits = await analyticsPage.getTargets();
-    console.log('Targets in CI after adding visits:', JSON.stringify(targetsAfterAddingVisits, null, 2));
-
     expect(targetsAfterAddingVisits).to.have.deep.members([
       {title: 'Deaths', goal: '0', count: '0', countNumberColor: TARGET_MET_COLOR},
       {title: 'New pregnancies', goal: '20', count: '1', countNumberColor: TARGET_UNMET_COLOR},
