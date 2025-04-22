@@ -19,27 +19,16 @@ const getModalDetails = async () => {
 const checkModalHasClosed = async () => {
   return await (await modal()).waitForDisplayed({ timeout: 5000, reverse: true });
 };
-
-const submit = async (timeout = 30000) => {
-  try {
-    await (await submitButton()).waitForClickable({ timeout });
-    await (await submitButton()).click();
-    await checkModalHasClosed();
-  } catch (error) {
-    console.error('Error during modal submit:', error);
-    throw error;
-  }
+const submit = async (timeout) => {
+  await (await submitButton()).waitForClickable({ timeout });
+  await (await submitButton()).click();
+  await checkModalHasClosed();
 };
 
-const cancel = async (timeout = 30000) => {
-  try {
-    await (await cancelButton()).waitForClickable({ timeout });
-    await (await cancelButton()).click();
-    await checkModalHasClosed();
-  } catch (error) {
-    console.error('Error during modal cancel:', error);
-    throw error;
-  }
+const cancel = async (timeout) => {
+  await (await cancelButton()).waitForClickable({ timeout });
+  await (await cancelButton()).click();
+  await checkModalHasClosed();
 };
 
 const checkModalIsOpen = async () => {
