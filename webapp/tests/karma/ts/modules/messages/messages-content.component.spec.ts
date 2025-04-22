@@ -22,6 +22,8 @@ import { ActivatedRoute } from '@angular/router';
 import { MessagesActions } from '@mm-actions/messages';
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import { PerformanceService } from '@mm-services/performance.service';
+import { AuthDirective } from '@mm-directives/auth.directive';
+import { AuthService } from '@mm-services/auth.service';
 
 describe('MessagesContentComponent', () => {
   let component: MessagesContentComponent;
@@ -76,7 +78,8 @@ describe('MessagesContentComponent', () => {
           FormsModule,
           CommonModule,
           MessagesContentComponent,
-          SenderComponent
+          SenderComponent,
+          AuthDirective,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
@@ -90,6 +93,7 @@ describe('MessagesContentComponent', () => {
           { provide: ModalService, useValue: modalService },
           { provide: ActivatedRoute, useValue: activatedRoute },
           { provide: PerformanceService, useValue: performanceService },
+          { provide: AuthService, useValue: { has: sinon.stub() } },
         ]
       })
       .compileComponents()
