@@ -482,7 +482,7 @@ const openAboutMenu = async () => {
 };
 
 const openUserSettings = async () => {
-  await hamburgerMenuSelectors.userSettingsButton().waitForClickable();
+  //await hamburgerMenuSelectors.userSettingsButton().waitForClickable();
   await hamburgerMenuSelectors.userSettingsButton().click();
 };
 
@@ -498,7 +498,7 @@ const openTrainingMaterials = async () => {
 };
 
 const openEditProfile = async () => {
-  await userSettingsSelectors.editProfileButton().waitForClickable();
+  //await userSettingsSelectors.editProfileButton().waitForClickable();
   await userSettingsSelectors.editProfileButton().click();
   await modalPage.checkModalIsOpen();
 };
