@@ -31,12 +31,11 @@ describe('Pregnancy Visit', () => {
     await commonPage.goToReports();
     const reports = await reportsPage.reportsListDetails();
     for (const report of reports) {
-      console.log('Report length: ', reports.length);
       if (report.heading === pregnantWoman.name) {
         await utils.deleteDocs([report.dataId]);
-        await commonPage.sync();
       }
     }
+    await commonPage.sync();
     await commonPage.goToBase();
     if (await modalPage.isDisplayed()) {
       await modalPage.submit();
@@ -68,7 +67,10 @@ describe('Pregnancy Visit', () => {
     await commonPage.goToAnalytics();
     await analyticsPage.goToTargets();
 
-    expect(await analyticsPage.getTargets()).to.have.deep.members([
+    const targets = await analyticsPage.getTargets();
+    console.log('Targets in CI:', JSON.stringify(targets, null, 2));
+
+    expect(targets).to.have.deep.members([
       {title: 'Deaths', goal: '0', count: '0', countNumberColor: TARGET_MET_COLOR},
       {title: 'New pregnancies', goal: '20', count: '1', countNumberColor: TARGET_UNMET_COLOR},
       {title: 'Live births', count: '0', countNumberColor: TARGET_MET_COLOR},
@@ -91,7 +93,10 @@ describe('Pregnancy Visit', () => {
     await commonPage.goToAnalytics();
     await analyticsPage.goToTargets();
 
-    expect(await analyticsPage.getTargets()).to.have.deep.members([
+    const targetsAfterAddingVisits = await analyticsPage.getTargets();
+    console.log('Targets in CI after adding visits:', JSON.stringify(targetsAfterAddingVisits, null, 2));
+
+    expect(targetsAfterAddingVisits).to.have.deep.members([
       {title: 'Deaths', goal: '0', count: '0', countNumberColor: TARGET_MET_COLOR},
       {title: 'New pregnancies', goal: '20', count: '1', countNumberColor: TARGET_UNMET_COLOR},
       {title: 'Live births', count: '0', countNumberColor: TARGET_MET_COLOR},
