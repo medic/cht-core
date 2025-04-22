@@ -482,7 +482,7 @@ const openAboutMenu = async () => {
 };
 
 const openUserSettings = async () => {
-  const userSettingsButton = await hamburgerMenuSelectors.userSettingsButton();
+  const userSettingsButton = await hamburgerMenuSelectors.userSettingsButton;
   await userSettingsButton().click();
 };
 
