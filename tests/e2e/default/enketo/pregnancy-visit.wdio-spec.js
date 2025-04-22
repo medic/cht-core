@@ -26,6 +26,22 @@ describe('Pregnancy Visit', () => {
     await loginPage.login(offlineUser);
   });
 
+  afterEach(async () => {
+    await commonPage.goToReports();
+    const reports = await reportsPage.reportsListDetails();
+    for (const report of reports) {
+      console.log('Report length: ', reports.length);
+      if (report.heading === pregnantWoman.name) {
+        await utils.deleteDocs([report.dataId]);
+        await commonPage.sync();
+      }
+    }
+    await commonPage.goToBase();
+    if (await modalPage.isDisplayed()) {
+      await modalPage.submit();
+    }
+  });
+
   after(async () => {
     await utils.deleteUsers([offlineUser]);
     await utils.revertDb([/^form:/], true);
