@@ -68,10 +68,13 @@ const getUser = (user) => {
   return utils.request(opts);
 };
 
-const setupTokenLoginSettings = (configureAppUrl = false) => {
+const setupTokenLoginSettings = (configureAppUrl = false, configureOidc = false) => {
   const settings = { token_login: { translation_key: 'login_sms', enabled: true } };
   if (configureAppUrl) {
     settings.app_url = utils.getOrigin();
+  }
+  if (configureOidc) {
+    settings.oidc_provider = { client_id: 'test-client-id' };
   }
   return utils
     .updateSettings(settings, { ignoreReload: true })
@@ -256,6 +259,36 @@ describe('login', () => {
         .then(response => expectLoginToWork(response))
         .then(() => loginWithTokenLink(tokenLogin.token))
         .then(response => expectLoginToFail(response)); // fails after being activated the 1st time
+    });
+
+    it('should reject token login for SSO users', () => {
+      user.phone = '+40755565656';
+      user.token_login = true;
+      const createOpts = {
+        path: '/api/v1/users',
+        method: 'POST',
+        body: user
+      };
+      return setupTokenLoginSettings(false, true)
+        .then(() => utils.request(createOpts))
+        .then(() => getUser(user))
+        .then(userDoc => {
+          // grab the token and mark as SSO user
+          const token = userDoc.token_login.token;
+          userDoc.oidc = 'some-provider';
+          return utils.usersDb
+            .put(userDoc)
+            .then(() => token);
+        })
+        .then(token => loginWithTokenLink(token))
+        .then(response => {
+          chai.expect(response.headers.getSetCookie()).to.deep.equal([]);
+          // status 401 with SSO-specific message
+          chai.expect(response.status).to.equal(401);
+          chai.expect(response.body).to.deep.equal({
+            error: 'Token login not allowed for SSO users'
+          });
+        });
     });
   });
 });
