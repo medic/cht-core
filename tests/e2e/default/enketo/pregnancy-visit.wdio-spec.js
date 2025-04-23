@@ -63,7 +63,6 @@ describe('Pregnancy Visit', () => {
     expect(heading).to.equal(pregnantWoman.name);
     expect(form).to.equal('Pregnancy home visit');
 
-    await browser.pause(500);
     // Verify that the target tile was updated for pregnancies with 1+ visits
     await commonPage.goToAnalytics();
     await analyticsPage.goToTargets();
@@ -88,6 +87,8 @@ describe('Pregnancy Visit', () => {
     await pregnancyVisitForm.submitDefaultPregnancyVisit();
     await commonPage.openFastActionReport('pregnancy_home_visit');
     await pregnancyVisitForm.submitDefaultPregnancyVisit();
+
+    await browser.pause(500);
 
     await commonPage.goToAnalytics();
     await analyticsPage.goToTargets();
