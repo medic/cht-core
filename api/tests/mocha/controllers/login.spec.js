@@ -18,7 +18,6 @@ const dataContext = require('../../../src/services/data-context');
 const { tokenLogin, roles, users } = require('@medic/user-management')(config, db, dataContext);
 const template = require('../../../src/services/template');
 const serverUtils = require('../../../src/server-utils');
-const { error } = require('console');
 
 let controller;
 

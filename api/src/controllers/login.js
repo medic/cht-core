@@ -331,7 +331,7 @@ const loginByToken = async (req, res) => {
     const status = err.status || err.code || 400;
     const message = err.error || err.message || 'Unexpected error logging in';
     const response = { error: message };
-    if(err.reason) {
+    if (err.reason) {
       response.reason = err.reason;
     }
     res.status(status).json(response);
