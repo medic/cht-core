@@ -283,7 +283,6 @@ const getUserByToken = (token) => {
         throw expired;
       }
 
-      // SSO/OIDC user check
       if (user.oidc && config.get().oidc_provider?.client_id) {
         const err = new Error('Token login not allowed for SSO users');
         err.status = 401;

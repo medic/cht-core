@@ -330,11 +330,7 @@ const loginByToken = async (req, res) => {
     logger.error('Error while logging in with token', err);
     const status = err.status || err.code || 400;
     const message = err.error || err.message || 'Unexpected error logging in';
-    const response = { error: message };
-    if (err.reason) {
-      response.reason = err.reason;
-    }
-    res.status(status).json(response);
+    res.status(status).json({ error: message });
   }
 };
 
