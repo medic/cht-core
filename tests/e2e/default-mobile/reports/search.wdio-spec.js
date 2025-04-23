@@ -113,4 +113,26 @@ describe('Search Reports', () => {
     expect(await (await reportsPage.leftPanelSelectors.reportByUUID(hospitalReport.id)).isDisplayed()).to.be.true;
     expect(await (await reportsPage.leftPanelSelectors.reportByUUID(healthCenterReport.id)).isDisplayed()).to.be.true;
   });
+
+  it('should be able to do an exact match search by a field and then return all data when clearing search',
+    async () => {
+      const [ hospitalSMS, healthCenterSMS, hospitalReport, healthCenterReport ] = reportDocs;
+      await commonPage.goToReports();
+
+      // Asserting first load reports
+      expect((await reportsPage.reportsListDetails()).length).to.equal(reportDocs.length);
+
+      await searchPage.performSearch(`note:${searchWord}`);
+      await commonPage.waitForLoaders();
+      expect((await reportsPage.reportsListDetails()).length).to.equal(2);
+      expect(await (await reportsPage.leftPanelSelectors.reportByUUID(hospitalSMS.id)).isDisplayed()).to.be.true;
+      expect(await (await reportsPage.leftPanelSelectors.reportByUUID(hospitalReport.id)).isDisplayed()).to.be.true;
+
+      await searchPage.searchPageDefault.clearSearch();
+      expect((await reportsPage.reportsListDetails()).length).to.equal(reportDocs.length);
+      expect(await (await reportsPage.leftPanelSelectors.reportByUUID(hospitalSMS.id)).isDisplayed()).to.be.true;
+      expect(await (await reportsPage.leftPanelSelectors.reportByUUID(healthCenterSMS.id)).isDisplayed()).to.be.true;
+      expect(await (await reportsPage.leftPanelSelectors.reportByUUID(hospitalReport.id)).isDisplayed()).to.be.true;
+      expect(await (await reportsPage.leftPanelSelectors.reportByUUID(healthCenterReport.id)).isDisplayed()).to.be.true;
+    });
 });

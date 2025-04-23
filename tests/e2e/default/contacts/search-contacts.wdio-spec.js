@@ -108,6 +108,23 @@ describe('Contact Search', () => {
       expect(url.endsWith('/contacts')).to.equal(true);
     });
 
+    it('should be able to do exact match searching by a field', async () => {
+      await contactPage.getAllLHSContactsNames();
+
+      await searchPage.performSearch('name:sittu');
+      expect(await contactPage.getAllLHSContactsNames()).to.have.members([
+        sittuPerson.name,
+      ]);
+
+      await searchPage.clearSearch();
+      expect(await contactPage.getAllLHSContactsNames()).to.have.members([
+        potuHealthCenter.name,
+        sittuHealthCenter.name,
+        places.get('district_hospital').name,
+        places.get('health_center').name,
+      ]);
+    });
+
     it('should have no results when searching by non-existent field value', async () => {
       const randomWord = 'lorem-ipsum';
       await contactPage.getAllLHSContactsNames();
