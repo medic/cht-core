@@ -270,7 +270,7 @@ const getFastActionFlatText = async () => {
 };
 
 const closeFastActionList = async () => {
-  await (await fabSelectors.fastActionListCloseButton()).click();
+  await fabSelectors.fastActionListCloseButton().click();
 };
 
 const isReportActionDisplayed = async () => {
@@ -302,7 +302,7 @@ const isTargetMenuItemPresent = () => isElementPresent('=Target');
 
 const isTargetAggregatesMenuItemPresent = () => isElementPresent('=Target aggregates');
 
-const isMoreOptionsMenuPresent = async () => await (await kebabMenuSelectors.moreOptionsMenu()).isDisplayed();
+const isMoreOptionsMenuPresent = async () => await kebabMenuSelectors.moreOptionsMenu().isDisplayed();
 
 const navigateToLogoutModal = async () => {
   await openHamburgerMenu();
@@ -462,8 +462,8 @@ const sync = async ({
 };
 
 const openReportBugAndFetchProperties = async () => {
-  await (await hamburgerMenuSelectors.feedbackMenuOption()).waitForClickable();
-  await (await hamburgerMenuSelectors.feedbackMenuOption()).click();
+  await hamburgerMenuSelectors.feedbackMenuOption().waitForClickable();
+  await hamburgerMenuSelectors.feedbackMenuOption().click();
   return await modalPage.getModalDetails();
 };
 
@@ -476,9 +476,9 @@ const closeReportBug = async () => {
 };
 
 const openAboutMenu = async () => {
-  await (await hamburgerMenuSelectors.aboutButton()).waitForClickable();
-  await (await hamburgerMenuSelectors.aboutButton()).click();
-  await (await $('.about.page .mat-primary')).waitForDisplayed();
+  await hamburgerMenuSelectors.aboutButton().waitForClickable();
+  await hamburgerMenuSelectors.aboutButton().click();
+  await $('.about.page .mat-primary').waitForDisplayed();
 };
 
 const openUserSettings = async () => {
@@ -488,12 +488,12 @@ const openUserSettings = async () => {
 
 const openUserSettingsAndFetchProperties = async () => {
   await openUserSettings();
-  await (await userSettingsSelectors.editProfileButton()).waitForDisplayed();
+  await userSettingsSelectors.editProfileButton().waitForDisplayed();
 };
 
 const openTrainingMaterials = async () => {
-  await (await hamburgerMenuSelectors.trainingMaterialsButton()).waitForClickable();
-  await (await hamburgerMenuSelectors.trainingMaterialsButton()).click();
+  await hamburgerMenuSelectors.trainingMaterialsButton().waitForClickable();
+  await hamburgerMenuSelectors.trainingMaterialsButton().click();
   await waitForPageLoaded();
 };
 
@@ -504,9 +504,9 @@ const openEditProfile = async () => {
 };
 
 const openAppManagement = async () => {
-  await (await hamburgerMenuSelectors.appManagementButton()).waitForClickable();
-  await (await hamburgerMenuSelectors.appManagementButton()).click();
-  await (await $('.navbar-brand')).waitForDisplayed();
+  await hamburgerMenuSelectors.appManagementButton().waitForClickable();
+  await hamburgerMenuSelectors.appManagementButton().click();
+  await $('.navbar-brand').waitForDisplayed();
 };
 
 const getTextForElements = async (elements) => {
@@ -535,7 +535,7 @@ const loadNextInfiniteScrollPage = async () => {
 };
 
 const getErrorLog = async () => {
-  await (await $('error-log')).waitForDisplayed();
+  await $('error-log').waitForDisplayed();
 
   const errorMessage = await $('.error-details span').getText();
   const userDetails = await $$('.error-details dl dd');

@@ -26,17 +26,17 @@ const getCorrectFieldsetSection = async (section) => {
 };
 
 const isElementDisplayed = async (type, text) => {
-  return await (await getCurrentPageSection()).$(`${type}*=${text}`).isDisplayed();
+  return await getCurrentPageSection().$(`${type}*=${text}`).isDisplayed();
 };
 
 const selectRadioButton = async (question, value) => {
-  await (await radioButtonElement(question, value)).waitForClickable();
-  await (await radioButtonElement(question, value)).click();
+  await radioButtonElement(question, value).waitForClickable();
+  await radioButtonElement(question, value).click();
 };
 
 const selectCheckBox = async (question, value) => {
   const page = await getCurrentPageSection();
-  const checkbox = await (await getCorrectFieldsetSection(page))
+  const checkbox = await getCorrectFieldsetSection(page)
     .$(`legend*=${question}`)
     .nextElement()
     .$(`label*=${value}`);
