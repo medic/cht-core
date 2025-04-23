@@ -37,9 +37,10 @@ describe('Pregnancy registration', () => {
       console.log('Report length: ', reports.length);
       if (report.heading === pregnantWoman.name && report.form === 'Pregnancy registration') {
         await utils.deleteDocs([report.dataId]);
-        await commonPage.sync();
       }
     }
+    await commonPage.sync();
+
     await commonPage.goToBase();
     if (await modalPage.isDisplayed()) {
       await modalPage.submit();
