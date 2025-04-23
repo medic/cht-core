@@ -15,7 +15,6 @@ const monitoredPaths = [
   { method: 'POST', path: new RegExp(`/${environment.db}/$`) },
   { method: 'PUT', path: new RegExp(`/${environment.db}/(?!.*/)[A-Za-z0-9_]+`) },
 ];
-const auditQueue = [];
 
 const initLib = (medicDb, auditDb, app, store) => {
   db.medic = medicDb;
@@ -33,11 +32,11 @@ const auditRecord = (body) => {
   if (!body.ok || !body.rev || ignore.includes(body.id)) {
     return;
   }
-  auditQueue.push({
+  return {
     date: new Date(),
     id: body.id,
     rev: body.rev,
-  });
+  };
 };
 
 const getAuditDoc = (auditRecord, rev) => ({
@@ -46,7 +45,7 @@ const getAuditDoc = (auditRecord, rev) => ({
   history: [],
 });
 
-const flush = async (requestMetadata) => {
+const write = async (auditQueue, requestMetadata) => {
   const ids = auditQueue.map((auditRecord) => auditRecord.id);
   const existingAuditDocs = (await db.audit.allDocs({ keys: ids, include_docs: true }));
 
@@ -73,12 +72,8 @@ const flush = async (requestMetadata) => {
 };
 
 const recordAudit = async (body, requestMetadata) => {
-  if (Array.isArray(body)) {
-    body.map(doc => auditRecord(doc));
-  } else {
-    auditRecord(body);
-  }
-  await flush(requestMetadata);
+  const auditQueue = Array.isArray(body) ? body.map(doc => auditRecord(doc)) : [auditRecord(body)];
+  await write(auditQueue, requestMetadata);
 };
 
 const prepareBody = (monitoredUrl, requestBody, responseBody) => {

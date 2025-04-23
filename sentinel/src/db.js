@@ -66,7 +66,10 @@ if (UNIT_TEST_ENV) {
     // Adding audit flags (haproxy) Service and user that made the request initially.
     opts.headers.set('X-Medic-Service', 'sentinel');
     opts.headers.set('X-Medic-User', 'sentinel');
-    return PouchDB.fetch(url, opts);
+    return PouchDB.fetch(url, opts).then(response => {
+      void audit.fetchCallback(url, opts, response);
+      return response;
+    });
   };
 
   module.exports.medic = new PouchDB(couchUrl, { fetch: fetchFn });
