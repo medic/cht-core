@@ -30,8 +30,8 @@ const isElementDisplayed = async (type, text) => {
 };
 
 const selectRadioButton = async (question, value) => {
-  await radioButtonElement(question, value).waitForClickable();
-  await radioButtonElement(question, value).click();
+  await (await radioButtonElement(question, value)).waitForClickable();
+  await (await radioButtonElement(question, value)).click();
 };
 
 const selectCheckBox = async (question, value) => {
