@@ -20,16 +20,16 @@ const openDuplicateButton = () => $('#duplicate_contacts button.btn-primary');
 const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
   if (waitForLoad) {
     if ((await validationErrors()).length) {
-      await  formTitle().click(); // focus out to trigger re-validation
+      await (await formTitle()).click(); // focus out to trigger re-validation
       await waitForValidationErrorsToDisappear();
     }
   }
 
   for (let i = 0; i < numberOfPages; i++) {
     const currentPageId = (await currentFormView()).elementId;
-    await  nextButton().waitForDisplayed();
-    await  nextButton().waitForClickable();
-    await  nextButton().click();
+    await (await nextButton()).waitForDisplayed();
+    await (await nextButton()).waitForClickable();
+    await (await nextButton()).click();
     waitForLoad && await browser.waitUntil(async () => (await currentFormView()).elementId !== currentPageId);
   }
 };
@@ -37,7 +37,7 @@ const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
 const selectContact = async (contactName, label, searchTerm = '') => {
   const searchField = await $('.select2-search__field');
   if (!await searchField.isDisplayed()) {
-    await  select2Selection(label).click();
+    await (await select2Selection(label)).click();
   }
 
   await searchField.setValue(searchTerm || contactName);
@@ -47,12 +47,12 @@ const selectContact = async (contactName, label, searchTerm = '') => {
   await contact.click();
 
   await browser.waitUntil(async () => {
-    return (await  select2Selection(label).getText()).toLowerCase().endsWith(contactName.toLowerCase());
+    return (await (await select2Selection(label)).getText()).toLowerCase().endsWith(contactName.toLowerCase());
   });
 };
 
 const clearSelectedContact = async (label) => {
-  await  select2Selection(label).$('.select2-selection__clear').click();
+  await (await select2Selection(label)).$('.select2-selection__clear').click();
   //To close the widget
   await formTitle().click();
 };
@@ -62,37 +62,37 @@ const submitForm = async ({ waitForPageLoaded = true, ignoreValidationErrors = f
   if (!ignoreValidationErrors) {
     await waitForValidationErrorsToDisappear();
   }
-  await  submitButton().waitForClickable();
-  await  submitButton().click();
+  await (await submitButton()).waitForClickable();
+  await (await submitButton()).click();
   if (waitForPageLoaded) {
     await commonPage.waitForPageLoaded();
   }
 };
 
 const cancelForm = async () => {
-  await  cancelButton().waitForClickable();
-  await  cancelButton().click();
+  await (await cancelButton()).waitForClickable();
+  await (await cancelButton()).click();
 };
 
 const getErrorMessage = async () => {
-  await  errorContainer().waitForDisplayed();
-  return await  errorContainer().getText();
+  await (await errorContainer()).waitForDisplayed();
+  return await (await errorContainer()).getText();
 };
 
 const getFormTitle = async () => {
-  await  formTitle().waitForDisplayed();
-  return await  formTitle().getText();
+  await (await formTitle()).waitForDisplayed();
+  return await (await formTitle()).getText();
 };
 
 const getDBObjectWidgetValues = async (field) => {
   const widget = $(`[data-contains-ref-target="${field}"] .selection`);
-  await  widget.waitForClickable();
-  await  widget.click();
+  await (await widget).waitForClickable();
+  await (await widget).click();
 
   const dropdown = $('.select2-dropdown--below');
-  await  dropdown.waitForDisplayed();
+  await (await dropdown).waitForDisplayed();
   const firstElement = $('.select2-results__options > li');
-  await  firstElement.waitForClickable();
+  await (await firstElement).waitForClickable();
 
   const list = await $$('.select2-results__options > li');
   const contacts = [];
@@ -110,8 +110,8 @@ const getDuplicateContactHeadings = async () => {
   await waitForDuplicateContacts();
   const duplicates = await duplicateContacts();
   return duplicates.map(async (duplicate) => {
-    const name = await  duplicate.$('mat-panel-title').getText();
-    const createdOn = await  duplicate.$('mat-panel-description').getText();
+    const name = await (await duplicate.$('mat-panel-title')).getText();
+    const createdOn = await (await duplicate.$('mat-panel-description')).getText();
     return {
       name: name.split('\n')[1].trim(),
       createdOn: createdOn.split('\n')[1].trim()

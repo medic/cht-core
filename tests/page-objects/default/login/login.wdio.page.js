@@ -19,13 +19,13 @@ const passwordResetMessageField = (errorMsg) => $(`p.error.${errorMsg}`);
 const privacyPolicyPageLink = () => $('a[translate="privacy.policy"]');
 
 const getErrorMessage = async () => {
-  await  errorMessageField().waitForDisplayed();
-  return await  errorMessageField().getText();
+  await (await errorMessageField()).waitForDisplayed();
+  return await (await errorMessageField()).getText();
 };
 
 const getPasswordResetErrorMessage = async (errorMsg) => {
-  await  passwordResetMessageField(errorMsg).waitForDisplayed();
-  return await  passwordResetMessageField(errorMsg).getText();
+  await (await passwordResetMessageField(errorMsg)).waitForDisplayed();
+  return await (await passwordResetMessageField(errorMsg)).getText();
 };
 
 const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
@@ -35,7 +35,7 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
   await setPasswordValue(password);
   await setUsernameValue(username);
   await changeLocale(locale);
-  await  loginButton().click();
+  await (await loginButton()).click();
 
   if (createUser) {
     await browser.waitUntil(async () => {
@@ -113,17 +113,17 @@ const changeLanguage = async (languageCode, userTranslation) => {
     await browser.url('/');
   }
   await changeLocale(languageCode);
-  await browser.waitUntil(async () => await  labelForUser().getText() === userTranslation);
+  await browser.waitUntil(async () => await (await labelForUser()).getText() === userTranslation);
   return {
-    user: await  labelForUser().getText(),
-    pass: await  labelForPassword().getText(),
-    error: await  errorMessageField().getHTML(false),
+    user: await (await labelForUser()).getText(),
+    pass: await (await labelForPassword()).getText(),
+    error: await (await errorMessageField()).getHTML(false),
   };
 };
 
 const getTokenError = async (reason) => {
-  await  tokenLoginError(reason).waitForDisplayed();
-  return await  tokenLoginError(reason).getText();
+  await (await tokenLoginError(reason)).waitForDisplayed();
+  return await (await tokenLoginError(reason)).getText();
 };
 
 const getToLoginLinkText = async () => {
@@ -132,46 +132,46 @@ const getToLoginLinkText = async () => {
 };
 
 const togglePassword = async () => {
-  await  passwordField().waitForDisplayed();
-  await  passwordToggleButton().waitForClickable();
-  await  passwordToggleButton().click();
+  await (await passwordField()).waitForDisplayed();
+  await (await passwordToggleButton()).waitForClickable();
+  await (await passwordToggleButton()).click();
 
   return {
-    type: await  passwordField().getAttribute('type'),
-    value: await  passwordField().getValue(),
+    type: await (await passwordField()).getAttribute('type'),
+    value: await (await passwordField()).getValue(),
   };
 };
 
 const setPasswordValue = async (password) => {
-  await  passwordField().waitForDisplayed();
-  await  passwordField().setValue(password);
+  await (await passwordField()).waitForDisplayed();
+  await (await passwordField()).setValue(password);
 };
 
 const setConfirmPasswordValue = async (confirmPassword) => {
-  await  confirmPasswordField().waitForDisplayed();
-  await  confirmPasswordField().setValue(confirmPassword);
+  await (await confirmPasswordField()).waitForDisplayed();
+  await (await confirmPasswordField()).setValue(confirmPassword);
 };
 
 const setCurrentPasswordValue = async (currentPassword) => {
-  await  currentPasswordField().waitForDisplayed();
-  await  currentPasswordField().setValue(currentPassword);
+  await (await currentPasswordField()).waitForDisplayed();
+  await (await currentPasswordField()).setValue(currentPassword);
 };
 
 const setUsernameValue = async (username) => {
-  await  userField().waitForDisplayed();
-  await  userField().setValue(username);
+  await (await userField()).waitForDisplayed();
+  await (await userField()).setValue(username);
 };
 
 const passwordReset = async (currentPassword, password, confirmPassword) => {
   await setCurrentPasswordValue(currentPassword);
-  await  resetPasswordField().waitForDisplayed();
-  await  resetPasswordField().setValue(password);
+  await (await resetPasswordField()).waitForDisplayed();
+  await (await resetPasswordField()).setValue(password);
   await setConfirmPasswordValue(confirmPassword);
-  await  updatePasswordButton().click();
+  await (await updatePasswordButton()).click();
 };
 
 const goToPrivacyPolicyPage = async () => {
-  await  privacyPolicyPageLink().click();
+  await (await privacyPolicyPageLink()).click();
 };
 
 module.exports = {

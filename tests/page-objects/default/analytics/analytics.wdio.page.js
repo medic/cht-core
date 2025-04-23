@@ -20,32 +20,32 @@ const emptySelectionNoError = () => $(`${EMPTY_SELECTION}:not(.selection-error)`
 
 const getTargetInfo = async (targetElement) => {
   const target = {
-    title: await  targetTitle(targetElement).getText()
+    title: await (await targetTitle(targetElement)).getText()
   };
 
-  if (await  targetGoal(targetElement).isExisting()) {
-    const fullText = await  targetGoalValue(targetElement).getText();
+  if (await (await targetGoal(targetElement)).isExisting()) {
+    const fullText = await (await targetGoalValue(targetElement)).getText();
     target.goal = fullText.split(' ').pop();
   }
 
-  if (await  targetCountNumber(targetElement).isExisting()) {
-    target.count = await  targetCountNumber(targetElement).getText();
+  if (await (await targetCountNumber(targetElement)).isExisting()) {
+    target.count = await (await targetCountNumber(targetElement)).getText();
   }
 
-  if (await  targetCountNumberColor(targetElement).isExisting()) {
-    target.countNumberColor = (await  targetCountNumberColor(targetElement).getCSSProperty('color')).parsed.hex;
+  if (await (await targetCountNumberColor(targetElement)).isExisting()) {
+    target.countNumberColor = (await (await targetCountNumberColor(targetElement)).getCSSProperty('color')).parsed.hex;
   }
 
-  if (await  targetProgressNumber(targetElement).isExisting()) {
-    target.percent = await  targetNumberPercent(targetElement).getText();
-    target.percentCount = await  targetNumberPercentCount(targetElement).getText();
+  if (await (await targetProgressNumber(targetElement)).isExisting()) {
+    target.percent = await (await targetNumberPercent(targetElement)).getText();
+    target.percentCount = await (await targetNumberPercentCount(targetElement)).getText();
   }
 
   return target;
 };
 
 const getTargets = async () => {
-  await  targetWrap().waitForDisplayed();
+  await (await targetWrap()).waitForDisplayed();
   const displayedTargets = await targets();
 
   const targetList = [];

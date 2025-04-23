@@ -59,27 +59,27 @@ const expectModulesToBeAvailable = async (modules) => {
 };
 
 const goToTargetAggregates = async (enabled) => {
-  await  $(`${NAVIGATION_LINK}[href="#/analytics/target-aggregates"]`).click();
+  await (await $(`${NAVIGATION_LINK}[href="#/analytics/target-aggregates"]`)).click();
   if (enabled) {
-    await  $(AGGREGATE_LIST).waitForDisplayed();
+    await (await $(AGGREGATE_LIST)).waitForDisplayed();
     return;
   }
-  await  $(CONTENT_DISABLED).waitForDisplayed();
+  await (await $(CONTENT_DISABLED)).waitForDisplayed();
 };
 
 const checkContentDisabled = async () => {
   await commonPage.goToUrl('/#/analytics/target-aggregates');
   await commonPage.waitForPageLoaded();
-  await  $(CONTENT_DISABLED).waitForDisplayed();
+  await (await $(CONTENT_DISABLED)).waitForDisplayed();
 };
 
 const getTargetItem = async (target, period, place) => {
   const item = await lineItem(target.id);
   return {
-    title: await  item.$('h4').getText(),
-    counter: await  item.$('.aggregate-status span').getText(),
-    place: await  item.$(`li*=${place}`).isDisplayed(),
-    period: await  item.$(`li*=${period}`).isDisplayed(),
+    title: await (await item.$('h4')).getText(),
+    counter: await (await item.$('.aggregate-status span')).getText(),
+    place: await (await item.$(`li*=${place}`)).isDisplayed(),
+    period: await (await item.$(`li*=${period}`)).isDisplayed(),
   };
 };
 
@@ -88,7 +88,7 @@ const openTargetDetails = async (target) => {
   await item.waitForClickable();
   await item.click();
   await commonPage.waitForLoaders();
-  await  targetDetail.title(target.title).waitForDisplayed();
+  await (await targetDetail.title(target.title)).waitForDisplayed();
 };
 
 const getAggregateDetailListLength = async () => {
@@ -96,7 +96,7 @@ const getAggregateDetailListLength = async () => {
 };
 
 const getAggregateTargetProgressBar = async (contactId) => {
-  const length = await  aggregateDetailContactItem(contactId).$$(AGGREGATE_DETAIL_PROGRESS_BAR).length;
+  const length = await (await aggregateDetailContactItem(contactId)).$$(AGGREGATE_DETAIL_PROGRESS_BAR).length;
   if (!length) {
     return { length };
   }
@@ -125,19 +125,19 @@ const getAggregateTargetGoal = async (contactId) => {
 };
 
 const clickOnTargetAggregateListItem = async (contactId) => {
-  await  aggregateDetailContactItem(contactId).waitForClickable();
-  await  aggregateDetailContactItem(contactId).click();
+  await (await aggregateDetailContactItem(contactId)).waitForClickable();
+  await (await aggregateDetailContactItem(contactId)).click();
 };
 
 const openSidebarFilter = async () => {
-  await  sidebarFilter.filterBtn().waitForClickable();
-  await  sidebarFilter.filterBtn().click();
-  await  sidebarFilter.closeBtn().waitForDisplayed();
+  await (await sidebarFilter.filterBtn()).waitForClickable();
+  await (await sidebarFilter.filterBtn()).click();
+  await (await sidebarFilter.closeBtn()).waitForDisplayed();
 };
 
 const selectFilterOption = async (option) => {
-  await  sidebarFilter.optionRadioBtn(option).waitForClickable();
-  await  sidebarFilter.optionRadioBtn(option).click();
+  await (await sidebarFilter.optionRadioBtn(option)).waitForClickable();
+  await (await sidebarFilter.optionRadioBtn(option)).click();
 };
 
 module.exports = {

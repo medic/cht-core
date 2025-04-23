@@ -13,12 +13,12 @@ const loaders = () => $$('.container-fluid .loader');
 
 const goToMessages = async () => {
   await commonPage.goToUrl(`/#/messages`);
-  await  messagesTab().waitForDisplayed();
+  await (await messagesTab()).waitForDisplayed();
 };
 
 const goToTasks = async () => {
   await commonPage.goToUrl(`/#/tasks`);
-  await  taskTab().waitForDisplayed();
+  await (await taskTab()).waitForDisplayed();
   await waitForPageLoaded();
 };
 
@@ -36,7 +36,7 @@ const goToPeople = async (contactId = '', shouldLoad = true) => {
 
 const goToAnalytics = async () => {
   await commonPage.goToUrl(`/#/analytics`);
-  await  analyticsTab().waitForDisplayed();
+  await (await analyticsTab()).waitForDisplayed();
   await waitForPageLoaded();
 };
 
@@ -51,31 +51,31 @@ const hideModalOverlay = () => {
 };
 
 const isHamburgerMenuOpen = async () => {
-  return await  $('.header .dropdown.open #header-dropdown-link').isExisting();
+  return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
 };
 
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
-    await  hamburgerMenu().waitForClickable();
-    await  hamburgerMenu().click();
+    await (await hamburgerMenu()).waitForClickable();
+    await (await hamburgerMenu()).click();
   }
 };
 
 const closeHamburgerMenu = async () => {
   if (await isHamburgerMenuOpen()) {
-    await  hamburgerMenu().waitForClickable();
-    await  hamburgerMenu().click();
+    await (await hamburgerMenu()).waitForClickable();
+    await (await hamburgerMenu()).click();
   }
 };
 
 const syncAndWaitForSuccess = async (timeout = 20000) => {
   await openHamburgerMenu();
-  await  syncButton().click();
+  await (await syncButton()).click();
   await openHamburgerMenu();
-  if (await  syncInProgress().isExisting()) {
-    await  syncInProgress().waitForDisplayed({ reverse: true, timeout });
+  if (await (await syncInProgress()).isExisting()) {
+    await (await syncInProgress()).waitForDisplayed({ reverse: true, timeout });
   }
-  await  syncSuccess().waitForDisplayed({ timeout });
+  await (await syncSuccess()).waitForDisplayed({ timeout });
 };
 
 const sync = async (expectReload, timeout) => {
@@ -107,7 +107,7 @@ const getVisibleLoaders = async () => {
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
-  await  $('#header-dropdown-link').waitForDisplayed({ timeout });
+  await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
 };
 
 const waitForPageLoaded = async () => {
@@ -129,10 +129,10 @@ const goToBase = async () => {
 const logout = async () => {
   await openHamburgerMenu();
 
-  await  commonPage.logoutButton().waitForClickable();
-  await  commonPage.logoutButton().click();
+  await (await commonPage.logoutButton()).waitForClickable();
+  await (await commonPage.logoutButton()).click();
 
-  await  modalPage.body().waitForDisplayed();
+  await (await modalPage.body()).waitForDisplayed();
   await modalPage.submit();
   await browser.pause(100); // wait for login page js to execute
 };

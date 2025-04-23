@@ -112,7 +112,7 @@ const selectSortOrder = async (sortLabel) => {
 };
 
 const search = async (query) => {
-  if (!await  searchSelectors.searchBox().isDisplayed()) {
+  if (!await (await searchSelectors.searchBox()).isDisplayed()) {
     await mobileSearchPage.performSearch(query);
   } else {
     await searchPage.performSearch(query);
@@ -151,23 +151,23 @@ const selectRHSRowById = async (id) => {
 };
 
 const getReportFiltersText = async () => {
-  await  reportsCardSelectors.reportFilter().waitForDisplayed();
+  await (await reportsCardSelectors.reportFilter()).waitForDisplayed();
   return (await reportsCardSelectors.reportFilters()).map(filter => filter.getText());
 };
 
 const getReportTaskFiltersText = async () => {
-  await  tasksCardSelectors.taskFilter().waitForDisplayed();
-  return await  tasksCardSelectors.taskFilters().map(filter => filter.getText());
+  await (await tasksCardSelectors.taskFilter()).waitForDisplayed();
+  return await (await tasksCardSelectors.taskFilters()).map(filter => filter.getText());
 };
 
 const waitForContactLoaded = async (type) => {
-  type && await  contactCardSelectors.contactCardIcon(type).waitForDisplayed();
-  await  contactCardSelectors.contactCardName().waitForDisplayed();
-  await  contactCardSelectors.contactSummaryContainer().waitForDisplayed();
+  type && await (await contactCardSelectors.contactCardIcon(type)).waitForDisplayed();
+  await (await contactCardSelectors.contactCardName()).waitForDisplayed();
+  await (await contactCardSelectors.contactSummaryContainer()).waitForDisplayed();
 };
 
 const waitForContactUnloaded = async () => {
-  await  rightPanelSelectors.emptySelection().waitForDisplayed();
+  await (await rightPanelSelectors.emptySelection()).waitForDisplayed();
 };
 
 const addPlace = async (
@@ -244,7 +244,7 @@ const addPerson = async (
     await sentinelUtils.waitForSentinel();
   }
   if (waitForComplete) {
-    await  contactCardSelectors.contactCardIcon(type).waitForDisplayed();
+    await (await contactCardSelectors.contactCardIcon(type)).waitForDisplayed();
     return (await contactCardSelectors.contactCardName()).getText();
   }
 };
@@ -252,7 +252,7 @@ const addPerson = async (
 const editPerson = async (currentName, { name, phone, dob }) => {
   await selectLHSRowByText(currentName);
   await commonPage.accessEditOption();
-  await  genericForm.nextPage();
+  await (await genericForm.nextPage());
 
   if (name !== undefined) {
     await commonEnketoPage.setInputValue('Full name', name);
@@ -278,18 +278,18 @@ const deletePerson = async () => {
 };
 
 const getContactSummaryField = async (fieldName) => {
-  await  contactCardSelectors.contactSummaryContainer().waitForDisplayed();
-  const field = await  contactCardSelectors.contactSummaryContainer()
+  await (await contactCardSelectors.contactSummaryContainer()).waitForDisplayed();
+  const field = await (await contactCardSelectors.contactSummaryContainer())
     .$(`.cell.${fieldName.toLowerCase().replace(/\./g, '\\.')}`);
-  return await  field.$('p:not(.summary_label)').getText();
+  return await (await field.$('p:not(.summary_label)')).getText();
 };
 
 const getPrimaryContactName = async () => {
-  return await  peopleCardSelectors.primaryContactName().getText();
+  return await (await peopleCardSelectors.primaryContactName()).getText();
 };
 
 const getAllLHSContactsNames = async () => {
-  await  leftPanelSelectors.contentRow().waitForDisplayed();
+  await (await leftPanelSelectors.contentRow()).waitForDisplayed();
   return commonPage.getTextForElements(leftPanelSelectors.contactName);
 };
 
@@ -298,12 +298,12 @@ const getAllRHSPeopleNames = () => {
 };
 
 const getAllRHSReportsNames = async () => {
-  await  reportsCardSelectors.rhsReportListElement().waitForDisplayed();
+  await (await reportsCardSelectors.rhsReportListElement()).waitForDisplayed();
   return commonPage.getTextForElements(reportsCardSelectors.rhsReportElementList);
 };
 
 const getAllRHSTaskNames = async () => {
-  await  tasksCardSelectors.rhsTaskListElement().waitForDisplayed();
+  await (await tasksCardSelectors.rhsTaskListElement()).waitForDisplayed();
   return commonPage.getTextForElements(tasksCardSelectors.rhsTaskListElementList);
 };
 
@@ -311,8 +311,8 @@ const allContactsList = async () => {
   const parentCards = await rightPanelSelectors.childrenCards();
 
   return parentCards.map(async (parent) => ({
-    heading: await  parent.$('h3').getText(),
-    contactNames: await  parent.$$('.children h4 span').map(filter => filter.getText())
+    heading: await (await parent.$('h3')).getText(),
+    contactNames: await (await parent.$$('.children h4 span')).map(filter => filter.getText())
   }));
 };
 
@@ -330,8 +330,8 @@ const openFormWithWarning = async (formId) => {
 };
 
 const openReport = async () => {
-  await  reportsCardSelectors.rhsReportListElement().waitForDisplayed();
-  await  reportsCardSelectors.rhsReportListElement().click();
+  await (await reportsCardSelectors.rhsReportListElement()).waitForDisplayed();
+  await (await reportsCardSelectors.rhsReportListElement()).click();
 };
 
 const getContactCardTitle = async () => {
@@ -384,8 +384,8 @@ const getCurrentContactId = async () => {
 };
 
 const getContactListLoadingStatus = async () => {
-  await  leftPanelSelectors.contactListLoadingStatus().waitForDisplayed();
-  return await  leftPanelSelectors.contactListLoadingStatus().getText();
+  await (await leftPanelSelectors.contactListLoadingStatus()).waitForDisplayed();
+  return await (await leftPanelSelectors.contactListLoadingStatus()).getText();
 };
 
 const getDisplayedContactsNames = async () => {
@@ -412,7 +412,7 @@ const getCurrentPersonEditFormValues = async (sexValue, roleValue) => {
 const filterReportViewAll = async () => {
   const tabsContainer = $(`${RHS_REPORT_LIST_CARD} .action-header .table-filter`);
   await tabsContainer.scrollIntoView();
-  await  tabsContainer.$('*=View all').click();
+  await (await tabsContainer.$('*=View all')).click();
 };
 
 const openFirstContact = async () => {

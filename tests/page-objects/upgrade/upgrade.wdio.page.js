@@ -15,7 +15,7 @@ const getInstallButtonSelector = (branch, tag) => {
 
 const getInstallButton = async (branch, tag) => {
   const element = await $(getInstallButtonSelector(branch, tag));
-  const parent = await  element.parentElement().parentElement();
+  const parent = await (await element.parentElement()).parentElement();
   return await parent.$('.btn-primary');
 };
 
@@ -40,14 +40,14 @@ const upgradeModalConfirm = async () => {
 
 const getCurrentVersion = async () => {
   const version = () => $('dl.horizontal dd');
-  await browser.waitUntil(async () => await  version().getText());
-  return await  version().getText();
+  await browser.waitUntil(async () => await (await version()).getText());
+  return await (await version()).getText();
 };
 
 const getBuild = async () => {
   const version = () => $('dl.horizontal dd:nth-child(4)');
-  await browser.waitUntil(async () => await  version().getText());
-  return await  version().getText();
+  await browser.waitUntil(async () => await (await version()).getText());
+  return await (await version()).getText();
 };
 
 const upgradeVersion = async (branch, tag, testFrontend=true) => {
@@ -57,16 +57,16 @@ const upgradeVersion = async (branch, tag, testFrontend=true) => {
   const installButton = await getInstallButton(branch, tag);
   await installButton.scrollIntoView({ block: 'center', inline: 'center' });
   await installButton.click();
-  await  upgradeModalConfirm().click();
+  await (await upgradeModalConfirm()).click();
 
-  await  cancelUpgradeButton().waitForDisplayed();
-  await  deploymentInProgress().waitForDisplayed();
-  await  deploymentInProgress().waitForDisplayed({ reverse: true, timeout: 150000 });
+  await (await cancelUpgradeButton()).waitForDisplayed();
+  await (await deploymentInProgress()).waitForDisplayed();
+  await (await deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 150000 });
 
   if (testFrontend) {
     // https://github.com/medic/cht-core/issues/9186
     // this is an unfortunate incompatibility between current API and admin app in the old version
-    await  deploymentComplete().waitForDisplayed();
+    await (await deploymentComplete()).waitForDisplayed();
   }
 };
 
