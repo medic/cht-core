@@ -203,10 +203,6 @@ angular
           return false;
         }
 
-        // remove assigned password
-        $scope.editUserModel.password = '';
-        $scope.editUserModel.passwordConfirm = '';
-
         return true;
       });
     };
@@ -217,6 +213,10 @@ angular
       const ssoLogin = $scope.editUserModel.oidc;
       if (tokenLogin || ssoLogin) {
         // when enabling token_login or sso_login, password is not required
+
+        // if user had populated before enabling token/sso, remove assigned password
+        $scope.editUserModel.password = '';
+        $scope.editUserModel.passwordConfirm = '';
         return true;
       }
 
@@ -510,6 +510,8 @@ angular
           if (!haveUpdates(updates)) {
             return;
           }
+
+          console.log(updates);
 
           if ('oidc' in updates && updates.oidc === undefined) {
             updates.oidc = false;

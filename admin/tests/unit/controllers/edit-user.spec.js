@@ -886,6 +886,25 @@ describe('EditUserCtrl controller', () => {
         });
     });
 
+    it('should clear password fields when oidc is enabled for new sso-enabled users', () => {
+      return mockCreateNewUser()
+        .setupPromise
+        .then(() => {
+          scope.editUserModel.username = 'newuser';
+          scope.editUserModel.roles = [ 'data-entry' ];
+          scope.editUserModel.oidc = true;
+          scope.editUserModel.password = 'pass123';
+
+          return scope.editUser();
+        })
+        .then(() => {
+          chai.expect(CreateUser.createSingleUser.callCount).to.equal(1);
+          chai.expect(CreateUser.createSingleUser.args[0][0]).to.deep.not.include({
+            password: 'pass123'
+          });
+        });
+    });
+
     it('should require password when disabling sso login', () => {
       Translate.fieldIsRequired.withArgs('Password').resolves('password required');
 
