@@ -439,6 +439,11 @@ angular
         .then(existingModel => {
           const updates = {};
           getUpdatedKeys(model, existingModel).forEach(key => {
+            if (key === 'oidc' && model[key] === undefined) {
+              updates[key] = false;
+              return;
+            }
+
             updates[key] = model[key];
           });
 
@@ -509,12 +514,6 @@ angular
         .then(updates => {
           if (!haveUpdates(updates)) {
             return;
-          }
-
-          console.log(updates);
-
-          if ('oidc' in updates && updates.oidc === undefined) {
-            updates.oidc = false;
           }
 
           if ($scope.editUserModel.id) {

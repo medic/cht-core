@@ -867,6 +867,7 @@ describe('EditUserCtrl controller', () => {
     });
 
     it('should not require password when oidc is enabled for new sso-enabled users', () => {
+      mockGetReplicationLimit();
       return mockCreateNewUser()
         .setupPromise
         .then(() => {
@@ -887,6 +888,7 @@ describe('EditUserCtrl controller', () => {
     });
 
     it('should clear password fields when oidc is enabled for new sso-enabled users', () => {
+      mockGetReplicationLimit();
       return mockCreateNewUser()
         .setupPromise
         .then(() => {
@@ -901,6 +903,28 @@ describe('EditUserCtrl controller', () => {
           chai.expect(CreateUser.createSingleUser.callCount).to.equal(1);
           chai.expect(CreateUser.createSingleUser.args[0][0]).to.deep.not.include({
             password: 'pass123'
+          });
+        });
+    });
+
+    it('should disable sso login', () => {
+      mockGetReplicationLimit();
+      userToEdit.oidc = true;
+      return mockEditAUser(userToEdit)
+        .setupPromise
+        .then(() => {
+          scope.editUserModel.oidc = undefined;
+          scope.editUserModel.roles = [ 'data-entry' ];
+          scope.editUserModel.password = 'Password123.';
+          scope.editUserModel.passwordConfirm = 'Password123.';
+
+          return scope.editUser();
+        })
+        .then(() => {
+          console.log(scope.errors);
+          chai.expect(UpdateUser.callCount).to.equal(1);
+          chai.expect(UpdateUser.args[0][1]).to.deep.include({
+            oidc: false
           });
         });
     });
@@ -924,17 +948,6 @@ describe('EditUserCtrl controller', () => {
     });
 
     it('should not require password when disabling sso login to token login', () => {
-      Settings = sinon.stub().resolves({
-        roles: {
-          'district-manager': { name: 'xyz', offline: true }, 'data-entry': { name: 'abc' },
-          supervisor: { name: 'qrt', offline: true },
-          'national-manager': { name: 'national-manager', offline: false }
-        },
-        token_login: {
-          translation_key: 'key',
-          app_url: 'url',
-        }
-      });
       mockGetReplicationLimit();
       userToEdit.oidc = true;
       return mockEditAUser(userToEdit)
@@ -957,17 +970,6 @@ describe('EditUserCtrl controller', () => {
     });
 
     it('should not require password when disabling token login to sso login', () => {
-      Settings = sinon.stub().resolves({
-        roles: {
-          'district-manager': { name: 'xyz', offline: true }, 'data-entry': { name: 'abc' },
-          supervisor: { name: 'qrt', offline: true },
-          'national-manager': { name: 'national-manager', offline: false }
-        },
-        token_login: {
-          translation_key: 'key',
-          app_url: 'url',
-        }
-      });
       mockGetReplicationLimit();
       userToEdit.token_login = true;
       return mockEditAUser(userToEdit)
@@ -1007,13 +1009,6 @@ describe('EditUserCtrl controller', () => {
     });
 
     it('should not overwrite sso oidc property when editing and making no changes', () => {
-      Settings = sinon.stub().resolves({
-        roles: {
-          'district-manager': { name: 'xyz', offline: true }, 'data-entry': { name: 'abc' },
-          supervisor: { name: 'qrt', offline: true },
-          'national-manager': { name: 'national-manager', offline: false }
-        }
-      });
       mockGetReplicationLimit();
 
       userToEdit.oidc = true;
