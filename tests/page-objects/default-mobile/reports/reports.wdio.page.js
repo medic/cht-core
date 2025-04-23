@@ -9,10 +9,10 @@ const selectedReportsCount = () => $('.mobile.multiselect-bar-container .selecti
 const closeOpenReportBtn = () => $('.navigation .filter-bar-back');
 
 const verifyMultiselectElementsDisplay = async (shouldHide=false) => {
-  await (await deleteAllButton()).waitForClickable( { reverse: shouldHide });
-  await (await selectedReportsCount()).waitForDisplayed({ reverse: shouldHide });
+  await  deleteAllButton().waitForClickable( { reverse: shouldHide });
+  await  selectedReportsCount().waitForDisplayed({ reverse: shouldHide });
   return {
-    countLabel: shouldHide ? false : await (await selectedReportsCount()).getText(),
+    countLabel: shouldHide ? false : await  selectedReportsCount().getText(),
     selectedCount: (await reportsPageDefault.leftPanelSelectors.selectedReportsCheckboxes()).length,
   };
 };
@@ -36,7 +36,7 @@ const deselectAll = async () => {
 const selectReports = async (uuids) => {
   for (const uuid of uuids) {
     if (!(await reportsPageDefault.isReportSelected(uuid))) {
-      await (await reportsPageDefault.leftPanelSelectors.reportCheckbox(uuid)).click();
+      await  reportsPageDefault.leftPanelSelectors.reportCheckbox(uuid).click();
     }
   }
   return verifyMultiselectElementsDisplay();
@@ -45,27 +45,27 @@ const selectReports = async (uuids) => {
 const deselectReports = async (uuids, shouldHideElements=false) => {
   for (const uuid of uuids) {
     if (await reportsPageDefault.isReportSelected(uuid)) {
-      await (await reportsPageDefault.leftPanelSelectors.reportCheckbox(uuid)).click();
+      await  reportsPageDefault.leftPanelSelectors.reportCheckbox(uuid).click();
     }
   }
   return verifyMultiselectElementsDisplay(shouldHideElements);
 };
 
 const deleteSelectedReports = async () => {
-  await (await deleteAllButton()).waitForDisplayed();
-  await (await deleteAllButton()).click();
+  await  deleteAllButton().waitForDisplayed();
+  await  deleteAllButton().click();
 
-  await (await reportsPageDefault.deleteDialogSelectors.bulkDeleteModal()).waitForDisplayed();
-  await (await modalPage.submit());
-  await (await modalPage.checkModalHasClosed());
+  await  reportsPageDefault.deleteDialogSelectors.bulkDeleteModal().waitForDisplayed();
+  await  modalPage.submit();
+  await  modalPage.checkModalHasClosed();
 
   await commonElements.waitForPageLoaded();
-  await (await reportsPageDefault.leftPanelSelectors.reportList()).waitForDisplayed();
+  await  reportsPageDefault.leftPanelSelectors.reportList().waitForDisplayed();
 };
 
 const closeReport = async () => {
-  await (await closeOpenReportBtn()).waitForDisplayed();
-  await (await closeOpenReportBtn()).click();
+  await  closeOpenReportBtn().waitForDisplayed();
+  await  closeOpenReportBtn().click();
   await reportsPageDefault.rightPanelSelectors.reportBodyDetails().waitForDisplayed({ reverse: true });
 };
 

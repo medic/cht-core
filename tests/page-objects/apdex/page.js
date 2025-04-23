@@ -8,7 +8,7 @@ module.exports = class Page {
   async waitForDisplayedAndRetry(selector, retry = 20) {
     const TIME_OUT = 1000 * 60 * 20;
     try {
-      return await (await $(selector)).waitForDisplayed({ timeout: TIME_OUT });
+      return await  $(selector).waitForDisplayed({ timeout: TIME_OUT });
     } catch (error) {
       if (retry < 0) {
         console.error('Error: ', error);
@@ -20,7 +20,7 @@ module.exports = class Page {
 
   async clickElement(selector) {
     if (await this.waitForDisplayedAndRetry(selector)) {
-      await (await $(selector)).click();
+      await  $(selector).click();
     }
   }
 
@@ -55,7 +55,7 @@ module.exports = class Page {
     }
 
     if (await this.waitForDisplayedAndRetry(selector)) {
-      await (await $(selector)).setValue(value);
+      await  $(selector).setValue(value);
     }
   }
 

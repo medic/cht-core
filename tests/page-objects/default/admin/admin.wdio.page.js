@@ -8,14 +8,14 @@ const logoutButton = () => $('span=Log out');
 
 const toggleLanguage = async (locale, shouldEnable) => {
   await languagesPanel().waitForDisplayed();
-  await (await localePanelHeader(locale)).click();
+  await  localePanelHeader(locale).click();
   const languageAccordion = await localePanelBody(locale);
   await languageAccordion.waitForDisplayed();
   await utils.delayPromise(500); // wait for animation to complete
   const buttonLabel = shouldEnable ? 'Enable' : 'Disable';
   const button = languageAccordion.$(`span=${buttonLabel}`);
   await button.waitForClickable();
-  await (await button).click();
+  await  button.click();
   await browser.waitUntil(async () => {
     const settings = await utils.getSettings();
     const language = settings.languages.find(language => language.locale === locale);

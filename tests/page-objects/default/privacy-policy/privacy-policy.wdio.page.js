@@ -7,7 +7,7 @@ const privacyConfig = () => $('.privacy-policy.configuration');
 
 const goToPrivacyPolicyConfig = async () => {
   await browser.url(utils.getBaseUrl() + 'privacy-policy');
-  await (await privacyConfig()).waitForDisplayed();
+  await  privacyConfig().waitForDisplayed();
 };
 
 const acceptPrivacyPolicy = async () => {
@@ -25,7 +25,7 @@ const waitForPolicy = async (elm, { header, paragraph, language }) => {
     timeoutMsg: `Timed out waiting for ${language} Privacy Policy to Display`
   };
   await browser.waitUntil(async () => {
-    const wrapperText = await (await elm).getText();
+    const wrapperText = await  elm.getText();
     return wrapperText.includes(header) && wrapperText.includes(paragraph);
   }, timeoutOpts);
 };
