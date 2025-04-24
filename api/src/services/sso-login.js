@@ -165,15 +165,8 @@ const getCookie = async (username) => {
   }
 
   try {
-    secret = await request.get({
-      url: new URL('_node/_local/_config/couch_httpd_auth/secret', environment.serverUrl).toString(),
-      json: true
-    });
-
-    authTimeout = await request.get({
-      url: new URL('_node/_local/_config/couch_httpd_auth/timeout', environment.serverUrl).toString(),
-      json: true
-    });
+    secret = await secureSettings.getCouchConfig('couch_httpd_auth/secret');
+    authTimeout = await secureSettings.getCouchConfig('couch_httpd_auth/timeout');
   } catch (err) {
     logger.error(err);
     throw SERVER_ERROR;
