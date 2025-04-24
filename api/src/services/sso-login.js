@@ -7,8 +7,6 @@ const dataContext = require('./data-context');
 const { users } = require('@medic/user-management')(config, db, dataContext);
 const logger = require('@medic/logger');
 const secureSettings = require('@medic/settings');
-const environment = require('@medic/environment');
-const request = require('@medic/couch-request');
 
 const client = require('../openid-client-wrapper');
 const settingsService = require('./settings');
