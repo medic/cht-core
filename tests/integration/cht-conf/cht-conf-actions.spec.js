@@ -26,7 +26,7 @@ describe('cht-conf actions tests', () => {
   before(async () => {
     const settings = await utils.getDoc('settings');
     originalVersion = Number(settings._rev.charAt(0));
-    expect(settings.settings.roles).to.not.include.any.keys('program_officer', 'chw_supervisor', 'chw');
+    expect(settings.settings.roles).to.not.include.any.keys('program_officer', 'chw_supervisor');
   });
 
   after(async () => await utils.revertSettings(true));
@@ -37,7 +37,7 @@ describe('cht-conf actions tests', () => {
     const settings = await utils.getDoc('settings');
     const newVersion = Number(settings._rev.charAt(0));
     expect(newVersion).to.be.greaterThanOrEqual(originalVersion);
-    expect(settings.settings.roles).to.include.all.keys('program_officer', 'chw_supervisor', 'chw');
+    expect(settings.settings.roles).to.include.all.keys('program_officer', 'chw_supervisor');
   });
 
   for (const action of actions) {

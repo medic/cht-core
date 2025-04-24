@@ -224,7 +224,6 @@ describe('auditing', () => {
         include_docs: true
       });
       expect(auditDocs.rows.length).to.equal(Math.ceil(revCount / MAX_HISTORY_LIMIT));
-      console.warn(auditDocs.rows.map(row => row.doc));
 
       expect(auditDocs.rows[0].doc.history.length).to.equal(revCount % MAX_HISTORY_LIMIT);
       expect(auditDocs.rows[1].doc.history.length).to.equal(MAX_HISTORY_LIMIT);

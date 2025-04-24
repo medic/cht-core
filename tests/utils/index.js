@@ -252,7 +252,7 @@ const requestOnTestDb = (options, debug) => {
     };
   }
   const pathAndReqType = `${options.path}${options.method}`;
-  if (pathAndReqType !== 'GET') {
+  if (pathAndReqType !== '/GET') {
     options.path = '/' + constants.DB_NAME + (options.path || '');
   }
   return request(options, debug);

@@ -46,6 +46,12 @@ const getAuditDoc = (auditRecord, rev) => ({
 });
 
 const write = async (auditQueue, requestMetadata) => {
+  auditQueue = auditQueue.filter(Boolean);
+
+  if (!auditQueue.length) {
+    return;
+  }
+
   const ids = auditQueue.map((auditRecord) => auditRecord.id);
   const existingAuditDocs = (await db.audit.allDocs({ keys: ids, include_docs: true }));
 
