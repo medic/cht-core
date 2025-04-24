@@ -58,7 +58,8 @@ const upgradeVersion = async (branch, tag, testFrontend=true) => {
   const installButton = await getInstallButton(branch, tag);
   await installButton.scrollIntoView({ block: 'center', inline: 'center' });
   await installButton.click();
-  await upgradeModalConfirm().click();
+  const confirmButton = await upgradeModalConfirm();
+  await confirmButton.click();
 
   await cancelUpgradeButton().waitForDisplayed();
   await deploymentInProgress().waitForDisplayed();
