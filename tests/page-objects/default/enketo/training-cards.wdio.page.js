@@ -15,11 +15,11 @@ const leftPanelSelectors = {
 };
 
 const waitForTrainingCards = async () => {
-  await (await trainingCardsForm()).waitForDisplayed();
+  await trainingCardsForm().waitForDisplayed();
 };
 
 const checkTrainingCardIsNotDisplayed = async () => {
-  await (await trainingCardsForm()).waitForDisplayed({ reverse: true });
+  await trainingCardsForm().waitForDisplayed({ reverse: true });
 };
 
 const getTrainingTitle = async () => {
@@ -29,7 +29,7 @@ const getTrainingTitle = async () => {
 };
 
 const getCardContent = async (context, field) => {
-  return await (await cardText(context, field)).getText();
+  return await cardText(context, field).getText();
 };
 
 const getNextCardContent = async (context, field) => {
@@ -43,8 +43,8 @@ const quitTraining = async () => {
 };
 
 const confirmQuitTraining = async () => {
-  await (await quitTrainingBtn()).waitForClickable();
-  await (await quitTrainingBtn()).click();
+  await quitTrainingBtn().waitForClickable();
+  await quitTrainingBtn().click();
   await modalPage.checkModalHasClosed();
 };
 
@@ -56,12 +56,12 @@ const submitTraining = async (checkModal = true) => {
 };
 
 const openTrainingMaterial = async (formID) => {
-  await (await leftPanelSelectors.trainingByUUID(formID)).waitForClickable();
-  await (await leftPanelSelectors.trainingByUUID(formID)).click();
+  await leftPanelSelectors.trainingByUUID(formID).waitForClickable();
+  await leftPanelSelectors.trainingByUUID(formID).click();
 };
 
 const getAllTrainingsText = async () => {
-  await (await leftPanelSelectors.allTrainings()[0]).waitForDisplayed();
+  await leftPanelSelectors.allTrainings()[0].waitForDisplayed();
   return commonElements.getTextForElements(leftPanelSelectors.trainingRowsText);
 };
 
