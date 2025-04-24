@@ -26,7 +26,7 @@ const getCorrectFieldsetSection = async (section) => {
 };
 
 const isElementDisplayed = async (type, text) => {
-  return await getCurrentPageSection().$(`${type}*=${text}`).isDisplayed();
+  return await (await getCurrentPageSection()).$(`${type}*=${text}`).isDisplayed();
 };
 
 const selectRadioButton = async (question, value) => {
@@ -36,7 +36,7 @@ const selectRadioButton = async (question, value) => {
 
 const selectCheckBox = async (question, value) => {
   const page = await getCurrentPageSection();
-  const checkbox = await getCorrectFieldsetSection(page)
+  const checkbox = await (await getCorrectFieldsetSection(page))
     .$(`legend*=${question}`)
     .nextElement()
     .$(`label*=${value}`);
