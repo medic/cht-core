@@ -346,7 +346,7 @@
       <bind nodeset="/covid19_rdt_provision/inputs/user/facility_id" type="string"/>
       <bind nodeset="/covid19_rdt_provision/inputs/user/name" type="string"/>
       <bind nodeset="/covid19_rdt_provision/inputs/source" type="string"/>
-      <bind nodeset="/covid19_rdt_provision/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/_id" type="string"/>
       <bind nodeset="/covid19_rdt_provision/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/covid19_rdt_provision/inputs/contact/first_name" type="string"/>
       <bind nodeset="/covid19_rdt_provision/inputs/contact/last_name" type="string"/>
@@ -427,7 +427,7 @@ concat( /covid19_rdt_provision/patient_age_in_years , ' years old')))"/>
     <group appearance="field-list" ref="/covid19_rdt_provision/inputs">
       <group ref="/covid19_rdt_provision/inputs/user"/>
       <group appearance="field-list" ref="/covid19_rdt_provision/inputs/contact">
-        <input appearance="db-object" ref="/covid19_rdt_provision/inputs/contact/_id">
+        <input appearance="select-contact type-person" ref="/covid19_rdt_provision/inputs/contact/_id">
           <label ref="jr:itext('/covid19_rdt_provision/inputs/contact/_id:label')"/>
         </input>
         <group ref="/covid19_rdt_provision/inputs/contact/parent">

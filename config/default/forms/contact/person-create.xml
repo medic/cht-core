@@ -924,7 +924,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       </group>
     </group>
     <group ref="/data/init">
-      <input appearance="db-object" ref="/data/init/parent_id">
+      <input appearance="select-contact" ref="/data/init/parent_id">
         <label ref="jr:itext('/data/init/parent_id:label')"/>
         <hint ref="jr:itext('/data/init/parent_id:hint')"/>
       </input>

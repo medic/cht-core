@@ -277,7 +277,7 @@
       <bind nodeset="/pregnancy_danger_sign_follow_up/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/inputs/source" type="string"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/inputs/source_id" type="string"/>
-      <bind nodeset="/pregnancy_danger_sign_follow_up/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/pregnancy_danger_sign_follow_up/inputs/contact/_id" type="string"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/inputs/contact/name" type="string"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/inputs/contact/short_name" type="string"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/inputs/contact/patient_id" type="string"/>
@@ -322,7 +322,7 @@ or selected(../reduced_or_no_fetal_movements, 'yes')
 or selected(../breaking_water, 'yes')
 or selected(../easily_tired, 'yes')
 or selected(../face_hand_swelling, 'yes')
-or selected(../breathlessness, 'yes')), 
+or selected(../breathlessness, 'yes')),
 'yes', 'no')"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_label_translator" type="select1" calculate="&quot;woman&quot;"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_label" type="string" calculate="jr:choice-name( /pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_label_translator ,' /pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_label_translator ')"/>
@@ -354,7 +354,7 @@ or selected(../breathlessness, 'yes')),
   <h:body class="pages">
     <group appearance="field-list" ref="/pregnancy_danger_sign_follow_up/inputs">
       <group ref="/pregnancy_danger_sign_follow_up/inputs/contact">
-        <input appearance="db-object" ref="/pregnancy_danger_sign_follow_up/inputs/contact/_id">
+        <input appearance="select-contact type-person" ref="/pregnancy_danger_sign_follow_up/inputs/contact/_id">
           <label ref="jr:itext('/pregnancy_danger_sign_follow_up/inputs/contact/_id:label')"/>
         </input>
         <group ref="/pregnancy_danger_sign_follow_up/inputs/contact/parent">

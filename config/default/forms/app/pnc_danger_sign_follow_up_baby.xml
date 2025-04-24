@@ -245,7 +245,7 @@
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/source" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/source_id" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/delivery_uuid" type="string"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/contact/_id" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/contact/name" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/contact/short_name" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/inputs/contact/patient_id" type="string"/>
@@ -280,7 +280,7 @@ selected(../drowsy, 'yes') or
 selected(../stiff, 'yes') or
 selected(../yellow_skin, 'yes') or
 selected(../fever, 'yes') or
-selected(../blue_skin, 'yes'), 'yes', 
+selected(../blue_skin, 'yes'), 'yes',
 if(selected(../infected_umbilical_cord, 'no') and
 selected(../convulsion, 'no') and
 selected(../difficulty_feeding, 'no') and
@@ -317,7 +317,7 @@ selected(../blue_skin, 'no'), 'no', ''))"/>
   <h:body class="pages">
     <group appearance="field-list" ref="/pnc_danger_sign_follow_up_baby/inputs">
       <group ref="/pnc_danger_sign_follow_up_baby/inputs/contact">
-        <input appearance="db-object" ref="/pnc_danger_sign_follow_up_baby/inputs/contact/_id">
+        <input appearance="select-contact type-person" ref="/pnc_danger_sign_follow_up_baby/inputs/contact/_id">
           <label ref="jr:itext('/pnc_danger_sign_follow_up_baby/inputs/contact/_id:label')"/>
         </input>
         <group ref="/pnc_danger_sign_follow_up_baby/inputs/contact/parent">

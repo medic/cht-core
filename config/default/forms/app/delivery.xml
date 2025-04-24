@@ -1337,10 +1337,10 @@
       <bind nodeset="/delivery/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/delivery/inputs/source" type="string"/>
       <bind nodeset="/delivery/inputs/source_id" type="string"/>
-      <bind nodeset="/delivery/inputs/user/contact_id" type="db:person"/>
+      <bind nodeset="/delivery/inputs/user/contact_id" type="string"/>
       <bind nodeset="/delivery/inputs/user/name" type="string"/>
       <bind nodeset="/delivery/inputs/user/phone" type="string"/>
-      <bind nodeset="/delivery/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/delivery/inputs/contact/_id" type="string"/>
       <bind nodeset="/delivery/inputs/contact/name" type="string"/>
       <bind nodeset="/delivery/inputs/contact/short_name" type="string"/>
       <bind nodeset="/delivery/inputs/contact/patient_id" type="string"/>
@@ -1596,12 +1596,12 @@ if(selected( /delivery/pnc_visits/pnc_visits_attended , '6_weeks'), 1, 0))"/>
     <group appearance="field-list" ref="/delivery/inputs">
       <group ref="/delivery/inputs/user">
         <label ref="jr:itext('/delivery/inputs/user:label')"/>
-        <input appearance="db-object" ref="/delivery/inputs/user/contact_id">
+        <input appearance="select-contact type-person" ref="/delivery/inputs/user/contact_id">
           <label ref="jr:itext('/delivery/inputs/user/contact_id:label')"/>
         </input>
       </group>
       <group ref="/delivery/inputs/contact">
-        <input appearance="db-object" ref="/delivery/inputs/contact/_id">
+        <input appearance="select-contact type-person" ref="/delivery/inputs/contact/_id">
           <label ref="jr:itext('/delivery/inputs/contact/_id:label')"/>
         </input>
         <group ref="/delivery/inputs/contact/parent">

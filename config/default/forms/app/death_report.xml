@@ -165,7 +165,7 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
       <bind nodeset="/death_report/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/death_report/inputs/source" type="string"/>
       <bind nodeset="/death_report/inputs/source_id" type="string"/>
-      <bind nodeset="/death_report/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/death_report/inputs/contact/_id" type="string"/>
       <bind nodeset="/death_report/inputs/contact/name" type="string"/>
       <bind nodeset="/death_report/inputs/contact/short_name" type="string"/>
       <bind nodeset="/death_report/inputs/contact/patient_id" type="string"/>
@@ -188,10 +188,10 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
       <bind nodeset="/death_report/death_details/death_information" type="string"/>
       <bind nodeset="/death_report/group_review/submit" readonly="true()" type="string"/>
       <bind nodeset="/death_report/group_review/r_summary_details" readonly="true()" type="string"/>
-      <bind nodeset="/death_report/group_review/c_patient_age" type="string" calculate="if(../../patient_age_in_days &lt; 31, 
+      <bind nodeset="/death_report/group_review/c_patient_age" type="string" calculate="if(../../patient_age_in_days &lt; 31,
 concat(../../patient_age_in_days, ' days old'),
-if(../../patient_age_in_months &lt; 12, 
-concat(../../patient_age_in_months, ' months old'), 
+if(../../patient_age_in_months &lt; 12,
+concat(../../patient_age_in_months, ' months old'),
 concat(../../patient_age_in_years, ' years old')))"/>
       <bind nodeset="/death_report/group_review/r_patient_details" readonly="true()" type="string"/>
       <bind nodeset="/death_report/group_review/r_death_info" readonly="true()" type="string"/>
@@ -215,7 +215,7 @@ concat(../../patient_age_in_years, ' years old')))"/>
     <group appearance="field-list" ref="/death_report/inputs">
       <group ref="/death_report/inputs/contact">
         <label ref="jr:itext('/death_report/inputs/contact:label')"/>
-        <input appearance="db-object" ref="/death_report/inputs/contact/_id">
+        <input appearance="select-contact type-person" ref="/death_report/inputs/contact/_id">
           <label ref="jr:itext('/death_report/inputs/contact/_id:label')"/>
         </input>
         <group ref="/death_report/inputs/contact/parent">

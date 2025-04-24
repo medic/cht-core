@@ -107,7 +107,7 @@
       <bind nodeset="/undo_death_report/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/undo_death_report/inputs/source" type="string"/>
       <bind nodeset="/undo_death_report/inputs/source_id" type="string"/>
-      <bind nodeset="/undo_death_report/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/undo_death_report/inputs/contact/_id" type="string"/>
       <bind nodeset="/undo_death_report/inputs/contact/name" type="string"/>
       <bind nodeset="/undo_death_report/inputs/contact/short_name" type="string"/>
       <bind nodeset="/undo_death_report/inputs/contact/patient_id" type="string"/>
@@ -137,7 +137,7 @@
   <h:body class="pages">
     <group appearance="field-list" ref="/undo_death_report/inputs">
       <group ref="/undo_death_report/inputs/contact">
-        <input appearance="db-object" ref="/undo_death_report/inputs/contact/_id">
+        <input appearance="select-contact type-person" ref="/undo_death_report/inputs/contact/_id">
           <label ref="jr:itext('/undo_death_report/inputs/contact/_id:label')"/>
         </input>
         <group ref="/undo_death_report/inputs/contact/parent">

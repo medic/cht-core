@@ -1224,7 +1224,7 @@
       <bind nodeset="/pregnancy_home_visit/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/pregnancy_home_visit/inputs/source" type="string"/>
       <bind nodeset="/pregnancy_home_visit/inputs/source_id" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/pregnancy_home_visit/inputs/contact/_id" type="string"/>
       <bind nodeset="/pregnancy_home_visit/inputs/contact/name" type="string"/>
       <bind nodeset="/pregnancy_home_visit/inputs/contact/short_name" type="string"/>
       <bind nodeset="/pregnancy_home_visit/inputs/contact/patient_id" type="string"/>
@@ -1303,7 +1303,7 @@ selected(../pregnancy_summary/g_age_correct, 'no')"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/new_edd" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/edd_check_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/lmp_date_8601_new" type="string" calculate="format-date-time(
-if(selected(../update_method/g_age_update_method, 'method_weeks'), date-time(decimal-date-time(today()) - (../update_method/lmp_weeks_new * 7)), 
+if(selected(../update_method/g_age_update_method, 'method_weeks'), date-time(decimal-date-time(today()) - (../update_method/lmp_weeks_new * 7)),
 if(selected(../update_method/g_age_update_method, 'method_edd'), date-time(decimal-date-time(../update_method/u_edd_new) - 280), 0)
 ), &quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/lmp_date_new" type="string" calculate="format-date-time(../lmp_date_8601_new, &quot;%e %b, %Y&quot;)"/>
@@ -1378,7 +1378,7 @@ or selected(../reduced_or_no_fetal_movements, 'yes')
 or selected(../breaking_water, 'yes')
 or selected(../easily_tired, 'yes')
 or selected(../face_hand_swelling, 'yes')
-or selected(../breathlessness, 'yes'), 
+or selected(../breathlessness, 'yes'),
 'yes',
 if(selected(../vaginal_bleeding, 'no')
 and selected(../fits, 'no')
@@ -1536,7 +1536,7 @@ if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7) &gt; decima
   <h:body class="pages">
     <group appearance="field-list" ref="/pregnancy_home_visit/inputs">
       <group ref="/pregnancy_home_visit/inputs/contact">
-        <input appearance="db-object" ref="/pregnancy_home_visit/inputs/contact/_id">
+        <input appearance="select-contact type-person" ref="/pregnancy_home_visit/inputs/contact/_id">
           <label ref="jr:itext('/pregnancy_home_visit/inputs/contact/_id:label')"/>
         </input>
         <group ref="/pregnancy_home_visit/inputs/contact/parent">

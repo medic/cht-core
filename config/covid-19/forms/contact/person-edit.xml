@@ -966,9 +966,9 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/init/note_place" readonly="true()" type="string"/>
       <bind nodeset="/data/init/change_parent" type="select1" required="true()"/>
       <bind nodeset="/data/init/edited_place_type" type="select1" relevant="selected( /data/init/change_parent , 'true')" required="true()"/>
-      <bind nodeset="/data/init/id_district_hospital" type="db:district_hospital" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'district_hospital')" required="true()"/>
-      <bind nodeset="/data/init/id_health_center" type="db:health_center" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'health_center')" required="true()"/>
-      <bind nodeset="/data/init/id_clinic" type="db:clinic" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'clinic')" required="true()"/>
+      <bind nodeset="/data/init/id_district_hospital" type="string" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'district_hospital')" required="true()"/>
+      <bind nodeset="/data/init/id_health_center" type="string" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'health_center')" required="true()"/>
+      <bind nodeset="/data/init/id_clinic" type="string" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'clinic')" required="true()"/>
       <bind nodeset="/data/person/parent" type="string" calculate="coalesce(coalesce(coalesce( /data/init/id_district_hospital ,  /data/init/id_health_center ),  /data/init/id_clinic ), /data/person/parent )"/>
       <bind nodeset="/data/person/_id" type="string" readonly="true()"/>
       <bind nodeset="/data/person/type" type="string" readonly="true()"/>
@@ -1022,7 +1022,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       </group>
     </group>
     <group appearance="field-list" ref="/data/init">
-      <input appearance="db-object hidden" ref="/data/init/person_parent">
+      <input appearance="select-contact hidden" ref="/data/init/person_parent">
         <label ref="jr:itext('/data/init/person_parent:label')"/>
       </input>
       <input appearance="hidden" ref="/data/init/type"/>
@@ -1030,7 +1030,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <input ref="/data/init/note_place">
         <label ref="jr:itext('/data/init/note_place:label')"/>
       </input>
-      <select1 appearance="horizontal-compact" ref="/data/init/change_parent">
+      <select1 appearance="columns-pack" ref="/data/init/change_parent">
         <label ref="jr:itext('/data/init/change_parent:label')"/>
         <item>
           <label ref="jr:itext('/data/init/change_parent/true:label')"/>
@@ -1041,7 +1041,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <value>false</value>
         </item>
       </select1>
-      <select1 appearance="horizontal-compact" ref="/data/init/edited_place_type">
+      <select1 appearance="columns-pack" ref="/data/init/edited_place_type">
         <label ref="jr:itext('/data/init/edited_place_type:label')"/>
         <item>
           <label ref="jr:itext('/data/init/edited_place_type/district_hospital:label')"/>
@@ -1056,13 +1056,13 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <value>clinic</value>
         </item>
       </select1>
-      <input appearance="db-object bind-id-only" ref="/data/init/id_district_hospital">
+      <input appearance="select-contact type-district_hospital bind-id-only" ref="/data/init/id_district_hospital">
         <label ref="jr:itext('/data/init/id_district_hospital:label')"/>
       </input>
-      <input appearance="db-object bind-id-only" ref="/data/init/id_health_center">
+      <input appearance="select-contact type-health_center bind-id-only" ref="/data/init/id_health_center">
         <label ref="jr:itext('/data/init/id_health_center:label')"/>
       </input>
-      <input appearance="db-object bind-id-only" ref="/data/init/id_clinic">
+      <input appearance="select-contact type-clinic bind-id-only" ref="/data/init/id_clinic">
         <label ref="jr:itext('/data/init/id_clinic:label')"/>
       </input>
     </group>
@@ -1088,7 +1088,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
         <input ref="/data/person/ephemeral_dob/age_months">
           <label ref="jr:itext('/data/person/ephemeral_dob/age_months:label')"/>
         </input>
-        <select appearance="horizontal" ref="/data/person/ephemeral_dob/dob_method">
+        <select appearance="columns" ref="/data/person/ephemeral_dob/dob_method">
           <label ref="jr:itext('/data/person/ephemeral_dob/dob_method:label')"/>
           <item>
             <label ref="jr:itext('/data/person/ephemeral_dob/dob_method/approx:label')"/>
@@ -1105,7 +1105,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <input ref="/data/person/phone_alternate">
         <label ref="jr:itext('/data/person/phone_alternate:label')"/>
       </input>
-      <select1 appearance="horizontal" ref="/data/person/sex">
+      <select1 appearance="columns" ref="/data/person/sex">
         <label ref="jr:itext('/data/person/sex:label')"/>
         <item>
           <label ref="jr:itext('/data/person/sex/female:label')"/>

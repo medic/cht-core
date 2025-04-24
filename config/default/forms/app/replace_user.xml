@@ -411,7 +411,7 @@ Please contact your administrator if you do not receive a login link.</value>
         <input ref="/replace_user/new_contact/ephemeral_dob/age_months">
           <label ref="jr:itext('/replace_user/new_contact/ephemeral_dob/age_months:label')"/>
         </input>
-        <select appearance="horizontal" ref="/replace_user/new_contact/ephemeral_dob/dob_method">
+        <select appearance="columns" ref="/replace_user/new_contact/ephemeral_dob/dob_method">
           <item>
             <label ref="jr:itext('/replace_user/new_contact/ephemeral_dob/dob_method/approx:label')"/>
             <value>approx</value>
@@ -421,7 +421,7 @@ Please contact your administrator if you do not receive a login link.</value>
           <label ref="jr:itext('/replace_user/new_contact/ephemeral_dob/dob_debug:label')"/>
         </input>
       </group>
-      <select1 appearance="horizontal" ref="/replace_user/new_contact/sex">
+      <select1 appearance="columns" ref="/replace_user/new_contact/sex">
         <label ref="jr:itext('/replace_user/new_contact/sex:label')"/>
         <item>
           <label ref="jr:itext('/replace_user/new_contact/sex/male:label')"/>
