@@ -14,6 +14,7 @@ const settingsService = require('./settings');
 const OIDC_CLIENT_SECRET_KEY = 'oidc:client-secret';
 
 const SERVER_ERROR = new Error({ status: 500, error: 'An error occurred when logging in.' });
+const USER_UNAUTHORIZED = new Error({ status: 401, error: 'You are not enabled for log in using SSO.'});
 
 const networkCallRetry = async (call, retryCount = 3) => {
   try {
@@ -184,9 +185,13 @@ const getCookie = async (username) => {
   try {
     const userDoc = await users.getUserDoc(username);
     salt = userDoc.salt;
+
+    if (!salt) {
+      throw new Error(`The user doc for ${username} does not have salt set.`);
+    }
   } catch (err) {
     logger.error(err);
-    throw new Error({ status: 401, error: 'You are not enabled for log in using SSO.'});
+    throw USER_UNAUTHORIZED;
   }
 
   try {

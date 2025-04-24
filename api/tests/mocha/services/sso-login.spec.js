@@ -201,7 +201,7 @@ describe('SSO login', () => {
   });
 
   describe('get cookie', () => {
-    it('should generate generate a cookie header value', async () => {
+    it('should generate a cookie header value', async () => {
       const username = 'odin';
       const user = { id: 'user123', username: 'user123', salt: 'salt' };
       sinon.stub(users, 'getUserDoc').returns(user);
@@ -210,6 +210,29 @@ describe('SSO login', () => {
 
       const cookie = await service.getCookie(username);
       chai.expect(cookie).to.be.equal(`AuthSession=cookie`);
+    });
+
+    it('should throw an error if user is not found', async () => {
+      sinon.stub(users, 'getUserDoc').throws(`Failed to find user with name [odin] in the [test] database.`);
+
+      try {
+        await service.getCookie('odin');
+        chai.expect.fail('Expected test to fail.');
+      } catch (err) {
+        chai.expect(err).to.be.equal(service.__get__('USER_UNAUTHORIZED'));
+      }
+    });
+
+    it('should throw an error if user salt is missing', async () => {
+      const user = { id: 'user123', username: 'user123'};
+      sinon.stub(users, 'getUserDoc').returns(user);
+
+      try {
+        await service.getCookie('odin');
+        chai.expect.fail('Expected test to fail.');
+      } catch (err) {
+        chai.expect(err).to.be.equal(service.__get__('USER_UNAUTHORIZED'));
+      }
     });
 
     it('should throw and error if secret or auth timeout is not set', async () => {
