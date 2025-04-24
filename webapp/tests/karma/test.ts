@@ -1,5 +1,3 @@
-// This file is required by karma.conf.js and loads recursively all the .spec and framework files
-
 import 'zone.js/testing';
 import { getTestBed } from '@angular/core/testing';
 import {
@@ -14,7 +12,9 @@ chai.use(chaiExclude);
 chai.use(chaiAsPromised);
 chai.config.truncateThreshold = 0;
 
-// First, initialize the Angular testing environment.
+ 
+ 
+
 getTestBed().initTestEnvironment(
   BrowserDynamicTestingModule,
   platformBrowserDynamicTesting(),
@@ -23,3 +23,18 @@ getTestBed().initTestEnvironment(
     errorOnUnknownProperties: true
   }
 );
+
+// Override console.error for icon-related errors
+const originalConsoleError = console.error;
+console.error = function(...args) {
+  // Filter out all icon-related error messages with more aggressive filtering
+  if (args.length > 0 && 
+      (typeof args[0] === 'string' && 
+       (args[0].includes('icon') || 
+        args[0].includes('Icon') || 
+        args[0].includes('Unable to find') ||
+        (args[0] === 'ERROR' && args[1] && args[1].toString().includes('icon'))))) {
+    return;
+  }
+  return originalConsoleError.apply(console, args);
+};

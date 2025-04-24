@@ -1,6 +1,6 @@
 import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatIconModule } from '@angular/material/icon';
+import { MaterialTestModule } from '../../test-utils/material-test.module';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -46,7 +46,7 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
           FormsModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           MatExpansionModule,
-          MatIconModule,
+          MaterialTestModule,
           AnalyticsTargetAggregatesSidebarFilterComponent,
         ],
         providers: [

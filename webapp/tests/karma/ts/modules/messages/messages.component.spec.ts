@@ -1,5 +1,5 @@
 import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
-import { MatIconModule } from '@angular/material/icon';
+import { MaterialTestModule } from '../../test-utils/material-test.module';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { provideMockStore } from '@ngrx/store/testing';
@@ -73,7 +73,7 @@ describe('Messages Component', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           RouterTestingModule,
-          MatIconModule,
+          MaterialTestModule,
           MessagesComponent,
           RelativeDatePipe,
           NavigationComponent,

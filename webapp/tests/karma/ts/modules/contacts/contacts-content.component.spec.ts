@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
-import { MatIconModule } from '@angular/material/icon';
+import { MaterialTestModule } from '../../test-utils/material-test.module';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { of } from 'rxjs';
 import { expect } from 'chai';
@@ -117,7 +117,7 @@ describe('Contacts content component', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          MatIconModule,
+          MaterialTestModule,
           ContactsContentComponent,
           ResourceIconPipe,
           FastActionButtonComponent,

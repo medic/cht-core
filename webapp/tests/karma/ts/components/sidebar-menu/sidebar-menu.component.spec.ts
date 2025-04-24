@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatIconModule } from '@angular/material/icon';
+import { MaterialTestModule } from '../../test-utils/material-test.module';
 import { provideMockStore } from '@ngrx/store/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
@@ -39,7 +39,7 @@ describe('SidebarMenuComponent', () => {
           RouterTestingModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           MatSidenavModule,
-          MatIconModule,
+          MaterialTestModule,
           SidebarMenuComponent,
           PanelHeaderComponent,
           AuthDirective,
