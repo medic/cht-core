@@ -52,7 +52,22 @@ const oidcServerSConfig = async () => {
     )
   );
 
-  logger.info('Authorization server config auth config loaded successfully.');
+  const {
+    issuer,
+    authorization_endpoint,
+    token_endpoint,
+  } = idServerConfig.serverMetadata();
+
+  const { client_id } = idServerConfig.clientMetadata();
+
+  const connectionMetadata = `
+  issuer: ${issuer}
+  authorization_endpoint: ${authorization_endpoint}
+  token_endpoint: ${token_endpoint}
+  client_id: ${client_id}
+  `;
+
+  logger.info(`Authorization server config auth config loaded successfully. ${connectionMetadata}`);
   return idServerConfig;
 };
 
