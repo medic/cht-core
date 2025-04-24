@@ -35,15 +35,29 @@ const networkCallRetry = async (call, retryCount = 3) => {
  */
 const oidcServerSConfig = async () => {
   const settings = await settingsService.get();
+
   if (!settings.oidc_provider) {
-    return;
+    throw new Error(`oidc_provider config is missing in settings.`);
+  }
+
+  let err = '';
+
+  if (!settings.oidc_provider.discovery_url) {
+    err = `oidc_provider.discovery_url has not been set.`;
+  }
+
+  if (!settings.oidc_provider.client_id) {
+    err = err === ''? err : `${err} `;
+    err = `${err}oidc_provider.client_id has not been set.`;
+  }
+
+  if (err) {
+    throw new Error(err);
   }
 
   const clientSecret = await secureSettings.getCredentials(OIDC_CLIENT_SECRET_KEY);
   if (!clientSecret) {
-    const err = `No OIDC client secret '${OIDC_CLIENT_SECRET_KEY}' configured.`;
-    logger.error(err);
-    throw new Error(err);
+    throw new Error(`No OIDC client secret '${OIDC_CLIENT_SECRET_KEY}' configured.`);
   }
 
   const idServerConfig = await networkCallRetry(
@@ -67,7 +81,7 @@ const oidcServerSConfig = async () => {
   client_id: ${client_id}
   `;
 
-  logger.info(`Authorization server config auth config loaded successfully. ${connectionMetadata}`);
+  logger.debug(`Authorization server config auth config loaded successfully. ${connectionMetadata}`);
   return idServerConfig;
 };
 

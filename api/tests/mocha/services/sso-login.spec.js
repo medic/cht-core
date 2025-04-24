@@ -17,8 +17,7 @@ describe('SSO login', () => {
   const settings =  {
     oidc_provider: {
       discovery_url: 'http://discovery.url',
-      client_id: 'client_id',
-      clientSecret: 'client-secret'
+      client_id: 'client_id'
     }
   };
 
@@ -62,6 +61,63 @@ describe('SSO login', () => {
       chai.expect(config).to.be.deep.equal(ASConfig);
     });
 
+    it('should throw an error if oidc_provider config is not set', async () => {
+      sinon.stub(settingsService, 'get').returns({});
+      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
+      try {
+        await service.__get__('oidcServerSConfig')();
+        chai.expect.fail('Expected error to be thrown');
+      } catch (err) {
+        chai.expect(err.message).to.equal('oidc_provider config is missing in settings.');
+      }
+    });
+
+    it('should throw an error if oidc_provider config properties are not set', async () => {
+      sinon.stub(settingsService, 'get').returns({
+        oidc_provider: {
+        }
+      });
+      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
+      try {
+        await service.__get__('oidcServerSConfig')();
+        chai.expect.fail('Expected error to be thrown');
+      } catch (err) {
+        chai.expect(err.message).to.equal(
+          'oidc_provider.discovery_url has not been set. oidc_provider.client_id has not been set.'
+        );
+      }
+    });
+
+    it('should throw an error if oidc_provider.discovery_url config is not set', async () => {
+      sinon.stub(settingsService, 'get').returns({
+        oidc_provider: {
+          client_id: 'client_id'
+        }
+      });
+      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
+      try {
+        await service.__get__('oidcServerSConfig')();
+        chai.expect.fail('Expected error to be thrown');
+      } catch (err) {
+        chai.expect(err.message).to.equal('oidc_provider.discovery_url has not been set.');
+      }
+    });
+
+    it('should throw an error if oidc_provider.client_id config is not set', async () => {
+      sinon.stub(settingsService, 'get').returns({
+        oidc_provider: {
+          discovery_url: 'http://discovery.url'
+        }
+      });
+      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
+      try {
+        await service.__get__('oidcServerSConfig')();
+        chai.expect.fail('Expected error to be thrown');
+      } catch (err) {
+        chai.expect(err.message).to.equal('oidc_provider.client_id has not been set.');
+      }
+    });
+
     it('should throw an error if no secret is found', async () => {
       sinon.stub(settingsService, 'get').returns(settings);
       sinon.stub(secureSettings, 'getCredentials').resolves(null);
@@ -71,13 +127,6 @@ describe('SSO login', () => {
       } catch (err) {
         chai.expect(err.message).to.equal('No OIDC client secret \'oidc:client-secret\' configured.');
       }
-    });
-
-    it('should not return server config if SSO is not enabled.', async () => {
-      sinon.stub(settingsService, 'get').returns({});
-      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
-      const config = await service.__get__('oidcServerSConfig')();
-      chai.expect(config).to.be.undefined;
     });
 
     it('should retry call to oidc provider 3 times', async () => {
