@@ -37,23 +37,14 @@ const networkCallRetry = async (call, retryCount = 3) => {
 const oidcServerSConfig = async () => {
   const settings = await settingsService.get();
 
-  if (!settings.oidc_provider) {
+  const config = settings.oidc_provider;
+
+  if (!config) {
     throw new Error(`oidc_provider config is missing in settings.`);
   }
-
-  let err = '';
-
-  if (!settings.oidc_provider.discovery_url) {
-    err = `oidc_provider.discovery_url has not been set.`;
-  }
-
-  if (!settings.oidc_provider.client_id) {
-    err = err === ''? err : `${err} `;
-    err = `${err}oidc_provider.client_id has not been set.`;
-  }
-
-  if (err) {
-    throw new Error(err);
+  
+  if (!config.discovery_url || !config.client_id) {
+    throw new Error(`Either or both discovery_url and client_id is not set in oidc_provider config.`);
   }
 
   const clientSecret = await secureSettings.getCredentials(OIDC_CLIENT_SECRET_KEY);

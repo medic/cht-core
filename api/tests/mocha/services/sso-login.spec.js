@@ -72,22 +72,6 @@ describe('SSO login', () => {
       }
     });
 
-    it('should throw an error if oidc_provider config properties are not set', async () => {
-      sinon.stub(settingsService, 'get').returns({
-        oidc_provider: {
-        }
-      });
-      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
-      try {
-        await service.__get__('oidcServerSConfig')();
-        chai.expect.fail('Expected error to be thrown');
-      } catch (err) {
-        chai.expect(err.message).to.equal(
-          'oidc_provider.discovery_url has not been set. oidc_provider.client_id has not been set.'
-        );
-      }
-    });
-
     it('should throw an error if oidc_provider.discovery_url config is not set', async () => {
       sinon.stub(settingsService, 'get').returns({
         oidc_provider: {
@@ -99,7 +83,9 @@ describe('SSO login', () => {
         await service.__get__('oidcServerSConfig')();
         chai.expect.fail('Expected error to be thrown');
       } catch (err) {
-        chai.expect(err.message).to.equal('oidc_provider.discovery_url has not been set.');
+        chai.expect(err.message).to.equal(
+          'Either or both discovery_url and client_id is not set in oidc_provider config.'
+        );
       }
     });
 
@@ -114,7 +100,9 @@ describe('SSO login', () => {
         await service.__get__('oidcServerSConfig')();
         chai.expect.fail('Expected error to be thrown');
       } catch (err) {
-        chai.expect(err.message).to.equal('oidc_provider.client_id has not been set.');
+        chai.expect(err.message).to.equal(
+          'Either or both discovery_url and client_id is not set in oidc_provider config.'
+        );
       }
     });
 
