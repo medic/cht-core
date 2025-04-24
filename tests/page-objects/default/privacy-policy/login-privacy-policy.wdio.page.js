@@ -10,11 +10,11 @@ const bottomBackButton = async () => {
 };
 
 const scrollToBottom = async () => {
-  await bottomBackButton().scrollIntoView();
+  await (await bottomBackButton()).scrollIntoView();
 };
 
 const goBackToLoginPage = async (backButton) => {
-  await (backButton).click();
+  await backButton.click();
 };
 
 module.exports = {
