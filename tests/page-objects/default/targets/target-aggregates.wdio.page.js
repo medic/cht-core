@@ -30,18 +30,18 @@ const aggregateDetailContactItem = (contactId) => {
   return $(`${AGGREGATE_DETAIL_CONTACT_LIST}[data-record-id="${contactId}"]`); // a
 };
 
-const aggregateDetailContactsProcessBar = async (contactId) => {
-  const contactItem = await aggregateDetailContactItem(contactId);
+const aggregateDetailContactsProcessBar = (contactId) => {
+  const contactItem = aggregateDetailContactItem(contactId);
   return contactItem.$(`${AGGREGATE_DETAIL_PROGRESS_BAR} span`);
 };
 
-const aggregateDetailContactsGoal = async (contactId) => {
-  const contactItem = await aggregateDetailContactItem(contactId);
+const aggregateDetailContactsGoal = (contactId) => {
+  const contactItem = aggregateDetailContactItem(contactId);
   return contactItem.$$('.goal');
 };
 
 const getAggregateDetailContact = async (contactId) => {
-  const contactItem = await aggregateDetailContactItem(contactId);
+  const contactItem = aggregateDetailContactItem(contactId);
   return {
     recordId: await contactItem.getAttribute('data-record-id'),
     name: await contactItem.$('h4').getText(),
@@ -53,50 +53,52 @@ const getAggregateDetailContact = async (contactId) => {
 
 const expectModulesToBeAvailable = async (modules) => {
   for (const module of modules) {
-    const element = await $(`${NAVIGATION_LINK}[href="${module}"]`);
+    const element = $(`${NAVIGATION_LINK}[href="${module}"]`);
     expect(await element.isExisting()).to.be.true;
   }
 };
 
 const goToTargetAggregates = async (enabled) => {
-  await (await $(`${NAVIGATION_LINK}[href="#/analytics/target-aggregates"]`)).click();
+  await $(`${NAVIGATION_LINK}[href="#/analytics/target-aggregates"]`).click();
   if (enabled) {
-    await (await $(AGGREGATE_LIST)).waitForDisplayed();
+    await $(AGGREGATE_LIST).waitForDisplayed();
     return;
   }
-  await (await $(CONTENT_DISABLED)).waitForDisplayed();
+  await $(CONTENT_DISABLED).waitForDisplayed();
 };
 
 const checkContentDisabled = async () => {
   await commonPage.goToUrl('/#/analytics/target-aggregates');
   await commonPage.waitForPageLoaded();
-  await (await $(CONTENT_DISABLED)).waitForDisplayed();
+  await $(CONTENT_DISABLED).waitForDisplayed();
 };
 
 const getTargetItem = async (target, period, place) => {
-  const item = await lineItem(target.id);
+  const item = lineItem(target.id);
   return {
-    title: await (await item.$('h4')).getText(),
-    counter: await (await item.$('.aggregate-status span')).getText(),
-    place: await (await item.$(`li*=${place}`)).isDisplayed(),
-    period: await (await item.$(`li*=${period}`)).isDisplayed(),
+    title: await item.$('h4').getText(),
+    counter: await item.$('.aggregate-status span').getText(),
+    place: await item.$(`li*=${place}`).isDisplayed(),
+    period: await item.$(`li*=${period}`).isDisplayed(),
   };
 };
 
 const openTargetDetails = async (target) => {
-  const item = await lineItem(target.id);
+  const item = lineItem(target.id);
   await item.waitForClickable();
   await item.click();
   await commonPage.waitForLoaders();
-  await (await targetDetail.title(target.title)).waitForDisplayed();
+  await targetDetail.title(target.title).waitForDisplayed();
 };
 
 const getAggregateDetailListLength = async () => {
-  return await $$(AGGREGATE_DETAIL_CONTACT_LIST).length;
+  const elements = await $$(AGGREGATE_DETAIL_CONTACT_LIST);
+  return elements.length;
 };
 
 const getAggregateTargetProgressBar = async (contactId) => {
-  const length = await (await aggregateDetailContactItem(contactId)).$$(AGGREGATE_DETAIL_PROGRESS_BAR).length;
+  const contactItem = aggregateDetailContactItem(contactId);
+  const length = await contactItem.$$(AGGREGATE_DETAIL_PROGRESS_BAR).length;
   if (!length) {
     return { length };
   }
@@ -113,7 +115,7 @@ const getAggregateTargetProgressBar = async (contactId) => {
 
 const getAggregateTargetGoal = async (contactId) => {
   const goal = await aggregateDetailContactsGoal(contactId);
-  const length =  goal.length;
+  const length = goal.length;
   if (!length) {
     return { length };
   }
@@ -125,19 +127,20 @@ const getAggregateTargetGoal = async (contactId) => {
 };
 
 const clickOnTargetAggregateListItem = async (contactId) => {
-  await (await aggregateDetailContactItem(contactId)).waitForClickable();
-  await (await aggregateDetailContactItem(contactId)).click();
+  const contactItem = aggregateDetailContactItem(contactId);
+  await contactItem.waitForClickable();
+  await contactItem.click();
 };
 
 const openSidebarFilter = async () => {
-  await (await sidebarFilter.filterBtn()).waitForClickable();
-  await (await sidebarFilter.filterBtn()).click();
-  await (await sidebarFilter.closeBtn()).waitForDisplayed();
+  await sidebarFilter.filterBtn().waitForClickable();
+  await sidebarFilter.filterBtn().click();
+  await sidebarFilter.closeBtn().waitForDisplayed();
 };
 
 const selectFilterOption = async (option) => {
-  await (await sidebarFilter.optionRadioBtn(option)).waitForClickable();
-  await (await sidebarFilter.optionRadioBtn(option)).click();
+  await sidebarFilter.optionRadioBtn(option).waitForClickable();
+  await sidebarFilter.optionRadioBtn(option).click();
 };
 
 module.exports = {

@@ -36,9 +36,9 @@ const goToAdminUpgrade = async () => {
 };
 
 const openAddUserDialog = async () => {
-  await (await addUserButton()).waitForDisplayed();
-  await (await addUserButton()).click();
-  await (await addUserDialog()).waitForDisplayed();
+  await addUserButton().waitForDisplayed();
+  await addUserButton().click();
+  await addUserDialog().waitForDisplayed();
   // wait for animations to finish
   await browser.pause(500);
 };
@@ -51,9 +51,9 @@ const scrollToBottomOfModal = async () => {
 };
 
 const inputAddUserFields = async (username, fullname, role, places, contact, password, confirmPassword = password) => {
-  await (await userName()).setValue(username);
-  await (await userFullName()).setValue(fullname);
-  await (await $(`#role-select input[value="${role}"]`)).click();
+  await userName().setValue(username);
+  await userFullName().setValue(fullname);
+  await $(`#role-select input[value="${role}"]`).click();
 
   // we need to scroll to the bottom to bring the select2 elements into view
   // scrollIntoView doesn't work because they're within a scrollable div (the modal)
@@ -73,45 +73,45 @@ const inputAddUserFields = async (username, fullname, role, places, contact, pas
     await selectContact(contact);
   }
 
-  await (await userPassword()).setValue(password);
-  await (await userConfirmPassword()).setValue(confirmPassword);
+  await userPassword().setValue(password);
+  await userConfirmPassword().setValue(confirmPassword);
 };
 
 const inputUploadUsersFields = async (filePath) => {
-  await (await $('input[type="file"]')).addValue(filePath);
+  await $('input[type="file"]').addValue(filePath);
 };
 
 const setSelect2 = async (id, value) => {
-  const input = await $(`span.select2-selection[aria-labelledby=select2-${id}-container]`);
+  const input = $(`span.select2-selection[aria-labelledby=select2-${id}-container]`);
   await input.waitForExist();
   await input.click();
 
-  const searchField = await $(
+  const searchField = $(
     `.select2-container--open .select2-search__field`
   );
   await searchField.waitForExist();
   await searchField.setValue(value);
 
-  const option = await $('.name');
+  const option = $('.name');
   await option.waitForExist();
   await option.waitForClickable();
   await option.click();
 };
 
 const setPlaceSelectMultiple = async (value) => {
-  const input = await $(`span.select2-selection--multiple`);
+  const input = $(`span.select2-selection--multiple`);
   await input.waitForExist();
   await input.click();
 
-  const searchField = await $('span.select2-selection--multiple .select2-search__field');
+  const searchField = $('span.select2-selection--multiple .select2-search__field');
   await searchField.waitForExist();
   await searchField.setValue(value);
 
-  const option = await $('.name');
+  const option = $('.name');
   await option.waitForExist();
   await option.waitForClickable();
   await option.click();
-  await browser.waitUntil(async () => await (await $('.select2-selection__choice')).isDisplayed(),  1000);
+  await browser.waitUntil(async () => await $('.select2-selection__choice').isDisplayed(),  1000);
 };
 
 const selectPlace = async (places) => {
@@ -125,105 +125,105 @@ const selectContact = async (associatedContact) => {
 };
 
 const saveUser = async (isSuccessExpected = true)  => {
-  await (await saveUserButton()).waitForClickable();
-  await (await saveUserButton()).click();
+  await saveUserButton().waitForClickable();
+  await saveUserButton().click();
   if (isSuccessExpected) {
-    await (await addUserDialog()).waitForDisplayed({ reverse: true });
+    await addUserDialog().waitForDisplayed({ reverse: true });
   }
 };
 
 const uploadUsers = async () => {
-  await (await confirmUploadUsersButton()).waitForDisplayed();
-  await (await confirmUploadUsersButton()).click();
+  await confirmUploadUsersButton().waitForDisplayed();
+  await confirmUploadUsersButton().click();
 };
 
 const logout = async () => {
-  await (await logoutButton()).waitForDisplayed();
-  await (await logoutButton()).click();
+  await logoutButton().waitForDisplayed();
+  await logoutButton().click();
 };
 
 const getAllUsernames = async () => {
-  await (await usernameText()).waitForDisplayed();
+  await usernameText().waitForDisplayed();
   return commonElements.getTextForElements(usernameTextList);
 };
 
 const getUsernameErrorText = async () => {
-  return await (await usernameErrorMessage()).getText();
+  return await usernameErrorMessage().getText();
 };
 
 const getPasswordErrorText = async () => {
-  await (await passwordErrorMessage()).waitForDisplayed();
-  return await (await passwordErrorMessage()).getText();
+  await passwordErrorMessage().waitForDisplayed();
+  return await passwordErrorMessage().getText();
 };
 
 const setUserPassword = async (password) => {
-  await (await userPassword()).waitForDisplayed();
-  await (await userPassword()).setValue(password);
+  await userPassword().waitForDisplayed();
+  await userPassword().setValue(password);
 };
 
 const setUserConfirmPassword = async (password) => {
-  await (await userConfirmPassword()).waitForDisplayed();
-  await (await userConfirmPassword()).setValue(password);
+  await userConfirmPassword().waitForDisplayed();
+  await userConfirmPassword().setValue(password);
 };
 
 const togglePassword = async () => {
-  await (await userPassword()).waitForDisplayed();
-  await (await userConfirmPassword()).waitForDisplayed();
-  await (await passwordToggleButton()).waitForClickable();
-  await (await passwordToggleButton()).click();
+  await userPassword().waitForDisplayed();
+  await userConfirmPassword().waitForDisplayed();
+  await passwordToggleButton().waitForClickable();
+  await passwordToggleButton().click();
 
   return {
-    type: await (await userPassword()).getAttribute('type'),
-    value: await (await userPassword()).getValue(),
-    confirmType: await (await userConfirmPassword()).getAttribute('type'),
-    confirmValue: await (await userConfirmPassword()).getValue(),
+    type: await userPassword().getAttribute('type'),
+    value: await userPassword().getValue(),
+    confirmType: await userConfirmPassword().getAttribute('type'),
+    confirmValue: await userConfirmPassword().getValue(),
   };
 };
 
 const getPlaceErrorText = async () => {
-  return await (await placeErrorMessage()).getText();
+  return await placeErrorMessage().getText();
 };
 
 const getContactErrorText = async () => {
-  return await (await contactErrorMessage()).getText();
+  return await contactErrorMessage().getText();
 };
 
 const getSuccessfullyUploadedUsers = async () => {
-  return await (await successfullyUploadedUsers()).getText();
+  return await successfullyUploadedUsers().getText();
 };
 
 const getPreviouslyUploadedUsers = async () => {
-  return await (await previouslyUploadedUsers()).getText();
+  return await previouslyUploadedUsers().getText();
 };
 
 const getFailedUploadedUsers = async () => {
-  return await (await failedUploadedUsers()).getText();
+  return await failedUploadedUsers().getText();
 };
 
 const backToUserList = async () => {
-  await (await backToUserListButton()).waitForDisplayed();
-  await (await backToUserListButton()).click();
+  await backToUserListButton().waitForDisplayed();
+  await backToUserListButton().click();
 };
 
 const openUploadUsersDialog = async () => {
-  await (await uploadUsersButton()).waitForDisplayed();
-  await (await uploadUsersButton()).click();
-  await (await uploadUsersDialog()).waitForDisplayed();
+  await uploadUsersButton().waitForDisplayed();
+  await uploadUsersButton().click();
+  await uploadUsersDialog().waitForDisplayed();
   // wait for animations to finish
   await browser.pause(500);
 };
 
 const waitForUploadSummary = async () => {
-  await (await uploadSummaryDialog()).waitForDisplayed();
+  await uploadSummaryDialog().waitForDisplayed();
 };
 
 const closeAddUserDialog = async () => {
-  await (await cancelButton()).waitForClickable();
-  await (await cancelButton()).click();
-  await (await addUserDialog()).waitForDisplayed({ reverse: true });
+  await cancelButton().waitForClickable();
+  await cancelButton().click();
+  await addUserDialog().waitForDisplayed({ reverse: true });
 };
 const scrollToRole = async () => {
-  await (await $('#role-select')).scrollIntoView();
+  await $('#role-select').scrollIntoView();
 };
 
 module.exports = {
