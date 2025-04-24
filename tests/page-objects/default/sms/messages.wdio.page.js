@@ -21,13 +21,13 @@ const submitReplyBtn = () => replyMessageActions().$('.submit');
 const messages = () => $$(`${MESSAGE_CONTENT} li`);
 
 const openMessage = async (identifier) => {
-  const message = await messageInList(identifier);
+  const message = messageInList(identifier);
   await message.waitForClickable();
   await message.click();
 };
 
 const getMessageInListDetails = async (identifier) => {
-  const sms = await messageInList(identifier);
+  const sms = messageInList(identifier);
   const lineageValue = await sms.$('.horizontal.lineage').isExisting() ?
     await sms.$('.horizontal.lineage').getText() : '';
   return {
@@ -51,8 +51,8 @@ const navigateFromConversationToContact = async () => {
   await commonPage.waitForPageLoaded();
 };
 
-const getMessageContent = async  (index = 1) => {
-  const sms = await $(`${MESSAGE_CONTENT} li:nth-child(${index})`);
+const getMessageContent = async (index = 1) => {
+  const sms = $(`${MESSAGE_CONTENT} li:nth-child(${index})`);
   await sms.waitForDisplayed();
   return {
     content: await sms.$('p[test-id="sms-content"]').getText(),
@@ -62,17 +62,17 @@ const getMessageContent = async  (index = 1) => {
 };
 
 const searchSelect = async (recipient, option) => {
-  await (await recipientField()).setValue(recipient);
-  await (await $('.loading-results')).waitForDisplayed({ reverse: true });
-  const selection = await (await $('.select2-results__options')).$(`.*=${option}`);
+  await recipientField().setValue(recipient);
+  await $('.loading-results').waitForDisplayed({ reverse: true });
+  const selection = $('.select2-results__options').$(`.*=${option}`);
   await selection.click();
-  await browser.waitUntil(async () => await (await $('.select2-selection__choice')).isDisplayed(),  1000);
+  await browser.waitUntil(async () => await $('.select2-selection__choice').isDisplayed(), 1000);
 };
 
 const sendMessage = async (message, recipient, entryText) => {
-  await (await sendMessageModal()).waitForDisplayed();
+  await sendMessageModal().waitForDisplayed();
   await searchSelect(recipient, entryText);
-  await (await messageText()).setValue(message);
+  await messageText().setValue(message);
   await modalPage.submit();
   await modalPage.checkModalHasClosed();
 };
@@ -94,47 +94,47 @@ const sendReplyNewRecipient = async (recipient, entryText) => {
 };
 
 const sendMessageToContact = async (message) => {
-  await (await messageText()).setValue(message);
+  await messageText().setValue(message);
   await modalPage.submit();
   await modalPage.checkModalHasClosed();
 };
 
 const exportMessages = async () => {
   await commonPage.openMoreOptionsMenu();
-  await (await exportButton()).waitForClickable();
-  await (await exportButton()).click();
+  await exportButton().waitForClickable();
+  await exportButton().click();
 };
 
 const getMessageLoadingStatus = async () => {
-  await (await messagesLoadingStatus()).waitForDisplayed();
-  return await (await messagesLoadingStatus()).getText();
+  await messagesLoadingStatus().waitForDisplayed();
+  return await messagesLoadingStatus().getText();
 };
 
 const sendReply = async (message) => {
   const numberOfMessages = await getAmountOfMessagesByPhone();
-  await (await replyMessage()).setValue(message);
-  await (await replyMessageActions()).waitForExist();
-  await (await submitReplyBtn()).waitForClickable();
-  await (await submitReplyBtn()).click();
+  await replyMessage().setValue(message);
+  await replyMessageActions().waitForExist();
+  await submitReplyBtn().waitForClickable();
+  await submitReplyBtn().click();
   await browser.waitUntil(async () => await getAmountOfMessagesByPhone() > numberOfMessages);
 };
 
 const replyAddRecipients = async (message) => {
-  await (await replyMessage()).setValue(message);
-  await (await replyMessageActions()).waitForExist();
-  await (await addRecipient()).waitForClickable();
-  await (await addRecipient()).click();
-  await (await sendMessageModal()).waitForDisplayed();
+  await replyMessage().setValue(message);
+  await replyMessageActions().waitForExist();
+  await addRecipient().waitForClickable();
+  await addRecipient().click();
+  await sendMessageModal().waitForDisplayed();
 };
 
 const getAmountOfMessagesByPhone = async () => {
-  await (await $(MESSAGE_CONTENT)).waitForDisplayed();
-  const listedMessages = (await messages());
+  await $(MESSAGE_CONTENT).waitForDisplayed();
+  const listedMessages = await messages();
   return listedMessages.length;
 };
 
 const getMessagesModalDetails = async () => {
-  await (await sendMessageModal()).waitForDisplayed();
+  await sendMessageModal().waitForDisplayed();
   return {
     recipient: await $(`${SEND_MESSAGE_MODAL} .select2-selection__choice`).getText(),
     message: await messageText().getValue(),
