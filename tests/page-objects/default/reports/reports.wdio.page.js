@@ -186,7 +186,7 @@ const verifyMultiselectElementsDisplay = async (shouldHide=false) => {
 };
 
 const isSelectAll = async () => {
-  return $(`${leftPanelSelectors.selectAllCheckbox}:checked`).isExisting();
+  return await $(`${leftPanelSelectors.selectAllCheckbox}:checked`).isExisting();
 };
 
 const selectAll = async () => {
