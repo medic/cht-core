@@ -33,6 +33,7 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { PerformanceService } from '@mm-services/performance.service';
 import { MaterialTestModule } from '../../test-utils/material-test.module';
+import { resetStoreSelectors } from '../../test-utils/reset-store';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -163,7 +164,7 @@ describe('Contacts component', () => {
   }));
 
   afterEach(() => {
-    store.resetSelectors();
+    resetStoreSelectors();
     sinon.restore();
   });
 

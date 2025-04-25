@@ -33,6 +33,7 @@ import { SessionService } from '@mm-services/session.service';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import { ReportVerifyInvalidIconComponent } from '@mm-components/status-icons/status-icons.template';
+import { resetStoreSelectors } from '../../test-utils/reset-store';
 
 describe('Reports Content Component', () => {
   let component: ReportsContentComponent;
@@ -125,7 +126,7 @@ describe('Reports Content Component', () => {
   }));
 
   afterEach(() => {
-    store.resetSelectors();
+    resetStoreSelectors();
     sinon.restore();
   });
 

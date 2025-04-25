@@ -3,6 +3,7 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { By } from '@angular/platform-browser';
 
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { NavigationService } from '@mm-services/navigation.service';
@@ -92,5 +93,17 @@ describe('NavigationComponent', () => {
       expect(navigationService.goBack.callCount).to.equal(1);
       expect(globalActions.unsetSelected.callCount).to.equal(1);
     });
+  });
+
+  it('should render back icon correctly', async () => {
+    // Set isCancelCallbackSet to false to get the back button
+    component.isCancelCallbackSet = false;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // Check if the back icon is properly rendered
+    const backIcon = fixture.debugElement.query(By.css('.mat-icon-back'));
+    expect(backIcon).to.exist;
+    expect(backIcon.attributes.svgIcon).to.equal('icon-back');
   });
 });

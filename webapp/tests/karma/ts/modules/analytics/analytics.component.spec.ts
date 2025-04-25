@@ -5,6 +5,7 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { resetStoreSelectors } from '../../test-utils/reset-store';
 
 import { AnalyticsComponent } from '@mm-modules/analytics/analytics.component';
 import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filter/analytics-filter.component';
@@ -82,7 +83,7 @@ describe('AnalyticsComponent', () => {
   }));
 
   afterEach(() => {
-    store.resetSelectors();
+    resetStoreSelectors();
     sinon.restore();
   });
 

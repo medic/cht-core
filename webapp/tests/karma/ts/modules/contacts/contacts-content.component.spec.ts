@@ -6,6 +6,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { resetStoreSelectors } from '../../test-utils/reset-store';
 
 import { ContactsContentComponent } from '@mm-modules/contacts/contacts-content.component';
 import { ContactsActions } from '@mm-actions/contacts';
@@ -157,7 +158,7 @@ describe('Contacts content component', () => {
   }));
 
   afterEach(() => {
-    store.resetSelectors();
+    resetStoreSelectors();
     sinon.restore();
   });
 

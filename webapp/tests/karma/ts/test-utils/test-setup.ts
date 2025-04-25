@@ -25,3 +25,18 @@ export const configureTestingModule = (config: TestModuleMetadata): void => {
   // Configure TestBed
   TestBed.configureTestingModule(config);
 };
+
+// Monkey patch TestBed.configureTestingModule to automatically add MaterialTestModule to all tests
+const originalConfigureTestingModule = TestBed.configureTestingModule;
+TestBed.configureTestingModule = function(config: TestModuleMetadata) {
+  // Ensure imports array exists
+  config.imports = config.imports || [];
+
+  // Add MaterialTestModule if it doesn't already exist
+  if (!config.imports.some(module => module === MaterialTestModule ||
+    (typeof module === 'object' && module.constructor?.name === 'MaterialTestModule'))) {
+    config.imports.push(MaterialTestModule);
+  }
+
+  return originalConfigureTestingModule.call(this, config);
+};

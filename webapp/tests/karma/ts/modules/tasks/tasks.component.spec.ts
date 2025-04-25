@@ -19,6 +19,7 @@ import { Selectors } from '@mm-selectors/index';
 import { NavigationService } from '@mm-services/navigation.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { UserContactService } from '@mm-services/user-contact.service';
+import { resetStoreSelectors } from '../../test-utils/reset-store';
 
 describe('TasksComponent', () => {
   let getComponent;
@@ -84,7 +85,7 @@ describe('TasksComponent', () => {
   });
 
   afterEach(() => {
-    store.resetSelectors();
+    resetStoreSelectors();
     sinon.restore();
     clock?.restore();
   });

@@ -9,6 +9,8 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { ReportsComponent } from '@mm-modules/reports/reports.component';
 import { ChangesService } from '@mm-services/changes.service';
@@ -36,6 +38,7 @@ import { FastActionButtonService } from '@mm-services/fast-action-button.service
 import { FeedbackService } from '@mm-services/feedback.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
+import { resetStoreSelectors } from '../../test-utils/reset-store';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -129,6 +132,8 @@ describe('Reports Component', () => {
           BrowserAnimationsModule,
           MatExpansionModule,
           MaterialTestModule,
+          MatBottomSheetModule,
+          MatDialogModule,
           ReportsComponent,
           ReportsSidebarFilterComponent,
           SearchBarComponent,
@@ -141,11 +146,8 @@ describe('Reports Component', () => {
           { provide: ChangesService, useValue: changesService },
           { provide: AddReadStatusService, useValue: addReadStatusService },
           { provide: SearchService, useValue: searchService },
-          // Needed because of ngx-translate provider's constructor.
           { provide: SettingsService, useValue: {} },
-          // Needed because of facility filter
           { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } },
-          // Needed because of Reports Sidebar Filter
           { provide: PerformanceService, useValue: performanceService },
           { provide: SessionService, useValue: sessionService },
           { provide: DbService, useValue: { get: sinon.stub().resolves() } },
@@ -160,6 +162,8 @@ describe('Reports Component', () => {
           { provide: FastActionButtonService, useValue: fastActionButtonService },
           { provide: FeedbackService, useValue: feedbackService },
           { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
+          { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
       })
       .compileComponents()
@@ -172,7 +176,7 @@ describe('Reports Component', () => {
   }));
 
   afterEach(() => {
-    store.resetSelectors();
+    resetStoreSelectors();
     sinon.restore();
   });
 
