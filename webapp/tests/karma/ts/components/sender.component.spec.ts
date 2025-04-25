@@ -96,9 +96,15 @@ describe('sender directive', function() {
       console.warn('Test warning: Lineage elements not found in DOM');
     }
     
-    if (lineage1) expect(lineage1.innerText).to.equal('Clarks House');
-    if (lineage2) expect(lineage2.innerText).to.equal('Smallville');
-    if (lineage3) expect(lineage3.innerText).to.equal('Metropolis');
+    if (lineage1) {
+      expect(lineage1.innerText).to.equal('Clarks House');
+    }
+    if (lineage2) {
+      expect(lineage2.innerText).to.equal('Smallville');
+    }
+    if (lineage3) {
+      expect(lineage3.innerText).to.equal('Metropolis');
+    }
   });
 
   it('should render sender as a link when message has a contact with id', async () => {
@@ -132,9 +138,15 @@ describe('sender directive', function() {
       console.warn('Test warning: Lineage elements not found in DOM');
     }
     
-    if (lineage1) expect(lineage1.innerText).to.equal('Clarks House');
-    if (lineage2) expect(lineage2.innerText).to.equal('Smallville');
-    if (lineage3) expect(lineage3.innerText).to.equal('Metropolis');
+    if (lineage1) {
+      expect(lineage1.innerText).to.equal('Clarks House');
+    }
+    if (lineage2) {
+      expect(lineage2.innerText).to.equal('Smallville');
+    }
+    if (lineage3) {
+      expect(lineage3.innerText).to.equal('Metropolis');
+    }
   });
 
   it('should render sender as a link when message has a doc with id', async () => {

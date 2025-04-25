@@ -22,7 +22,7 @@ import {
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { configureTestingModule } from '../test-utils/test-setup';
+import { configureTestingModule as _configureTestingModule } from '../test-utils/test-setup';
 import { MaterialTestModule } from '../test-utils/material-test.module';
 import { MockDomSanitizer } from '../test-utils/material-test.module';
 
@@ -364,7 +364,7 @@ describe('date pipes rendering', () => {
   };
 
   // Helper to check if element exists
-  const elementExists = (selector) => {
+  const _elementExists = (selector) => {
     return !!fixture.nativeElement.querySelector(selector);
   };
 

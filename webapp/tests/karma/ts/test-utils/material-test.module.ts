@@ -60,11 +60,11 @@ export class MockMatIconRegistry implements Partial<MatIconRegistry> {
     return of(svg);
   }
 
-  registerFontClassAlias(alias: string, _className: string = alias) {
+  registerFontClassAlias(alias: string, _classNames: string = alias) {
     return this as any;
   }
 
-  setDefaultFontSetClass(...classNames: string[]) {
+  setDefaultFontSetClass(..._classNames: string[]) {
     return this as any;
   }
 
