@@ -65,7 +65,7 @@ describe('RepeatForm', () => {
       await assertLabels({ selector: melbourneLabelPath, count: 1, labelText: 'ML (NE)' });
 
       await commonEnketoPage.setInputValue('How many? NE', 3);
-      await (await genericForm.formTitle()).click();
+      await genericForm.formTitle().click();
 
       await assertLabels({ selector: cityLabelPath, count: 3, labelText: 'Select a city: - NE' });
       await assertLabels({ selector: melbourneLabelPath, count: 3, labelText: 'ML (NE)' });
@@ -84,7 +84,7 @@ describe('RepeatForm', () => {
       await assertLabels({ selector: melbourneLabelPath, count: 1, labelText: 'Melbourne' });
 
       await commonEnketoPage.setInputValue('How many? NE', 3);
-      await (await genericForm.formTitle()).click();
+      await genericForm.formTitle().click();
 
       await assertLabels({ selector: cityLabelPath, count: 3, labelText: 'Select a city:' });
       await assertLabels({ selector: melbourneLabelPath, count: 3, labelText: 'Melbourne' });

@@ -56,7 +56,7 @@ describe('Submit a death report', () => {
 
     // Verify the patient's card information
     expect(await contactPage.getContactDeceasedStatus()).to.equal('Deceased');
-    expect(await (await contactPage.deathCardSelectors.deathCard()).isDisplayed()).to.be.true;
+    expect(await contactPage.deathCardSelectors.deathCard().isDisplayed()).to.be.true;
     const deathCardInfo = await contactPage.getDeathCardInfo();
     expect(Date.parse(deathCardInfo.deathDate)).to.equal(Date.parse(deathDate.format('D MMM, YYYY')));
     expect(deathCardInfo.deathPlace).to.equal('Health facility');

@@ -63,7 +63,7 @@ describe('Phone widget', () => {
     await commonPage.goToPeople(person1._id);
     await commonPage.accessEditOption();
 
-    await (await genericForm.nextPage());
+    await genericForm.nextPage();
     // Try setting phone to number of the other person
     await commonEnketoPage.setInputValue('Phone Number', person0.phone);
 

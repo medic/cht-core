@@ -147,12 +147,12 @@ describe('Enketo Widgets', () => {
     await commonEnketoPage.setInputValue('What is the patient\'s name?', 'Eli');
     await commonEnketoPage.setInputValue('What is the patient\'s uuid?', '123 456 789');
 
-    expect(await (await enketoWidgetsPage.patientNameErrorLabel()).isExisting()).to.be.true;
+    expect(await enketoWidgetsPage.patientNameErrorLabel().isExisting()).to.be.true;
 
     await commonEnketoPage.setInputValue('What is the patient\'s name?', 'Elias');
     await commonEnketoPage.setInputValue('What is the patient\'s id?', '12345');
 
-    expect(await (await enketoWidgetsPage.patientNameErrorLabel()).isExisting()).to.be.false;
+    expect(await enketoWidgetsPage.patientNameErrorLabel().isExisting()).to.be.false;
 
     await genericForm.submitForm();
 

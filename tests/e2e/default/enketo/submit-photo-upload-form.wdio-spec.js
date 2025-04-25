@@ -25,7 +25,7 @@ describe('Submit Photo Upload form', () => {
     await enketoWidgetsPage.selectImage('photo-upload', path.join(__dirname, '/images/photo-for-upload-form.png'));
     await (enketoWidgetsPage.imagePreview('photo-upload')).waitForDisplayed();
     await genericForm.submitForm();
-    await (await enketoWidgetsPage.reportImagePreview()).waitForDisplayed();
+    await enketoWidgetsPage.reportImagePreview().waitForDisplayed();
   });
 
   it('submit and edit (no changes)', async () => {
@@ -40,7 +40,7 @@ describe('Submit Photo Upload form', () => {
     await (enketoWidgetsPage.imagePreview('photo-upload')).waitForDisplayed();
     await genericForm.submitForm();
 
-    await (await enketoWidgetsPage.reportImagePreview()).waitForDisplayed();
+    await enketoWidgetsPage.reportImagePreview().waitForDisplayed();
     const updatedReport = await utils.getDoc(reportId);
     expect(updatedReport.fields).excludingEvery(['instanceID', 'meta']).to.deep.equal(initialReport.fields);
     expect(updatedReport._attachments).excludingEvery('revpos').to.deep.equal(initialReport._attachments);
@@ -61,7 +61,7 @@ describe('Submit Photo Upload form', () => {
     await (enketoWidgetsPage.imagePreview('photo-upload')).waitForDisplayed();
     await genericForm.submitForm();
 
-    await (await enketoWidgetsPage.reportImagePreview()).waitForDisplayed();
+    await enketoWidgetsPage.reportImagePreview().waitForDisplayed();
     const updatedReport = await utils.getDoc(reportId);
     expect(updatedReport.fields).excludingEvery(['instanceID', 'meta']).not.to.deep.equal(initialReport.fields);
     expect(updatedReport._attachments).excludingEvery('revpos').not.to.deep.equal(initialReport._attachments);
