@@ -769,23 +769,20 @@ describe('couch-request', () => {
     });
   });
 
-  describe('error handling', () => {
-    it('should sanitize sensitive data in error objects', async () => {
-      global.fetch.resolves(buildResponse({
-        body: { 
-          error: 'auth_error', 
-          reason: 'Invalid credentials',
-          username: 'admin',
-          password: 'secret',
-          auth: { token: '12345' }
-        },
-        status: 401,
-      }));
+  it('should sanitize sensitive data in error objects', async () => {
+    global.fetch.resolves(buildResponse({
+      body: { 
+        error: 'auth_error', 
+        reason: 'Invalid credentials',
+        username: 'admin',
+        password: 'secret',
+        auth: { token: '12345' }
+      },
+      status: 401,
+    }));
 
-      try {
-        await couchRequest.get({ url: 'http://test.com:5984/b' });
-        expect.fail('should have thrown');
-      } catch (error) {
+    await expect(couchRequest.get({ url: 'http://test.com:5984/b' })).to.be.rejectedWith(Error)
+      .then(error => {
         // Verify error message doesn't contain sensitive data
         expect(error.message).to.not.include('secret');
         expect(error.message).to.not.include('12345');
@@ -799,20 +796,18 @@ describe('couch-request', () => {
         // But other fields should remain
         expect(error.body).to.have.property('error', 'auth_error');
         expect(error.body).to.have.property('reason', 'Invalid credentials');
-      }
-    });
+      });
+  });
 
-    it('should sanitize sensitive data in error strings', async () => {
-      global.fetch.resolves(buildResponse({
-        body: 'Error occurred with auth=supersecret&user=admin&password=123456',
-        status: 500,
-        json: false
-      }));
+  it('should sanitize sensitive data in error strings', async () => {
+    global.fetch.resolves(buildResponse({
+      body: 'Error occurred with auth=supersecret&user=admin&password=123456',
+      status: 500,
+      json: false
+    }));
 
-      try {
-        await couchRequest.get({ url: 'http://test.com:5984/b' });
-        expect.fail('should have thrown');
-      } catch (error) {
+    await expect(couchRequest.get({ url: 'http://test.com:5984/b' })).to.be.rejectedWith(Error)
+      .then(error => {
         // Verify error message doesn't contain sensitive data
         expect(error.message).to.not.include('supersecret');
         expect(error.message).to.not.include('admin');
@@ -820,7 +815,6 @@ describe('couch-request', () => {
         
         // Basic error structure should still be preserved
         expect(error.status).to.equal(500);
-      }
-    });
+      });
   });
 });
