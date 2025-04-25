@@ -1,4 +1,6 @@
 const environment = require('@medic/environment');
+const PouchDB = require('pouchdb-core');
+PouchDB.plugin(require('pouchdb-adapter-http'));
 
 const MAX_HISTORY_LIMIT = 10;
 
@@ -6,22 +8,13 @@ const ignore = [
   'service-worker-meta'
 ];
 
-const db = {};
-let application;
-let asyncLocalStorage;
+const db = new PouchDB(`${environment.couchUrl}-audit`);
 
 const monitoredPaths = [
   { method: 'POST', path: new RegExp(`/${environment.db}/_bulk_docs/?`), bulk: true },
   { method: 'POST', path: new RegExp(`/${environment.db}/$`) },
   { method: 'PUT', path: new RegExp(`/${environment.db}/(?!.*/)[A-Za-z0-9_]+`) },
 ];
-
-const initLib = (medicDb, auditDb, app, store) => {
-  db.medic = medicDb;
-  db.audit = auditDb;
-  asyncLocalStorage = store;
-  application = app;
-};
 
 const isMonitoredUrl = (uri, method) => monitoredPaths.find(
   (monitoredPath) => {
@@ -45,6 +38,14 @@ const getAuditDoc = (auditRecord, rev) => ({
   history: [],
 });
 
+const getAuditHistoryEntry = ({ rev }, requestMetadata) => ({
+  rev,
+  request_id: requestMetadata?.requestId,
+  user: requestMetadata?.user || environment.username,
+  date: new Date(),
+  service: environment.getService(),
+});
+
 const write = async (auditQueue, requestMetadata) => {
   auditQueue = auditQueue.filter(Boolean);
 
@@ -53,7 +54,7 @@ const write = async (auditQueue, requestMetadata) => {
   }
 
   const ids = auditQueue.map((auditRecord) => auditRecord.id);
-  const existingAuditDocs = (await db.audit.allDocs({ keys: ids, include_docs: true }));
+  const existingAuditDocs = (await db.allDocs({ keys: ids, include_docs: true }));
 
   const newAuditDocs = [];
 
@@ -64,16 +65,10 @@ const write = async (auditQueue, requestMetadata) => {
       auditDoc.history = [];
     }
 
-    auditDoc.history.push({
-      rev: audit.rev,
-      request_id: requestMetadata?.requestId,
-      user: requestMetadata?.user || environment.username,
-      date: audit.date,
-      application: application,
-    });
+    auditDoc.history.push(getAuditHistoryEntry(audit, requestMetadata));
     newAuditDocs.push(auditDoc);
   });
-  await db.audit.bulkDocs(newAuditDocs);
+  await db.bulkDocs(newAuditDocs);
   auditQueue.splice(0, auditQueue.length);
 };
 
@@ -101,7 +96,7 @@ const prepareBody = (monitoredUrl, requestBody, responseBody) => {
   return responseBody;
 };
 
-const fetchCallback = async (url, opts, response) => {
+const fetchCallback = async (url, opts, response, requestMetadata) => {
   if (!response.ok || !response.headers.get('content-type')?.startsWith('application/json')) {
     return;
   }
@@ -111,9 +106,6 @@ const fetchCallback = async (url, opts, response) => {
     return;
   }
 
-  // get metadata early, to avoid promise chain ending before this gets executed
-  const requestMetadata = asyncLocalStorage?.getRequest();
-
   let body;
   if (response.streamed) {
     body = response.body;
@@ -122,25 +114,20 @@ const fetchCallback = async (url, opts, response) => {
     body = await clone.json();
   }
   body = prepareBody(monitoredUrl, opts.body, body);
-
   await recordAudit(body, requestMetadata);
 };
 
-const expressCallback = async (req, responseBody) => {
+const expressCallback = async (req, responseBody, requestMetadata) => {
   const monitoredUrl = isMonitoredUrl(req.originalUrl, req.method);
   if (!monitoredUrl) {
     return;
   }
-
-  // get metadata early, to avoid promise chain ending before this gets executed
-  const requestMetadata = asyncLocalStorage?.getRequest();
 
   const body = prepareBody(monitoredUrl, req.body, responseBody);
   await recordAudit(body, requestMetadata);
 };
 
 module.exports = {
-  initLib,
   fetchCallback,
   expressCallback,
 };

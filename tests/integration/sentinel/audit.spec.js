@@ -75,7 +75,7 @@ const checkAudit = (audit, doc) => {
   expect(lastChange.rev).to.equal(doc._rev);
   expect(lastChange.user).to.equal(constants.USERNAME);
   expect(lastChange.date).to.be.ok;
-  expect(lastChange.application).to.equal('sentinel');
+  expect(lastChange.service).to.equal('sentinel');
 };
 
 describe('auditing', () => {

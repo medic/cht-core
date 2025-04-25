@@ -75,38 +75,37 @@ if (UNIT_TEST_ENV) {
     module.exports[fn] = () => notStubbed(fn);
   });
 } else {
-  const fetch = (url, opts) => {
+  const service = 'api';
+  environment.setService(service);
+
+  const fetchFn = (url, opts) => {
     // Adding audit flag (haproxy) Service that made the request initially.
-    opts.headers.set('X-Medic-Service', 'api');
-    const requestId = asyncLocalStorage.getRequestId();
-    if (requestId) {
-      opts.headers.set(REQUEST_ID_HEADER, requestId);
+    opts.headers.set('X-Medic-Service', service);
+    const requestMetadata = asyncLocalStorage.getRequest();
+    if (requestMetadata.requestId) {
+      opts.headers.set(REQUEST_ID_HEADER, requestMetadata.requestId);
     }
     return PouchDB.fetch(url, opts).then(response => {
-      void audit.fetchCallback(url, opts, response);
+      void audit.fetchCallback(url, opts, response, requestMetadata);
       return response;
     });
   };
 
-  const DB = new PouchDB(environment.couchUrl, { fetch });
+  const DB = new PouchDB(environment.couchUrl, { fetch: fetchFn });
   const getDbUrl = name => `${environment.serverUrl}/${name}`;
 
   DB.setMaxListeners(0);
   module.exports.medic = DB;
-  module.exports.medicUsersMeta = new PouchDB(`${environment.couchUrl}-users-meta`, { fetch });
-  module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch });
-  module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch });
-  module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch });
-  module.exports.audit = new PouchDB(`${environment.couchUrl}-audit`);
+  module.exports.medicUsersMeta = new PouchDB(`${environment.couchUrl}-users-meta`, { fetch: fetchFn });
+  module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch: fetchFn });
+  module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch: fetchFn });
+  module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch: fetchFn });
   module.exports.createVault = () => module.exports.vault.info();
-  module.exports.users = new PouchDB(getDbUrl('_users'), { fetch });
+  module.exports.users = new PouchDB(getDbUrl('_users'), { fetch: fetchFn });
   module.exports.builds = new PouchDB(environment.buildsUrl);
 
-  audit.initLib(module.exports.medic, module.exports.audit, 'api', asyncLocalStorage);
-  request.setAudit(audit);
-
   // Get the DB with the given name
-  module.exports.get = name => new PouchDB(getDbUrl(name), { fetch });
+  module.exports.get = name => new PouchDB(getDbUrl(name), { fetch: fetchFn });
   module.exports.close = db => {
     if (!db || db._destroyed || db._closed) {
       return;
@@ -121,7 +120,7 @@ if (UNIT_TEST_ENV) {
 
   // Resolves with the PouchDB object if the DB with the given name exists
   module.exports.exists = name => {
-    const db = new PouchDB(getDbUrl(name), { skip_setup: true, fetch });
+    const db = new PouchDB(getDbUrl(name), { skip_setup: true, fetch: fetchFn });
     return db
       .info()
       .then(result => {

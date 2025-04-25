@@ -10,17 +10,91 @@ describe('Audit', () => {
     lib = rewire('../src/index');
   });
 
-  describe('initLib', () => {
-    it('should set databases, async store and app name', () => {
-      const medicDb = { name: 'medic' };
-      const auditDb = { name: 'medic' };
-      const store = { method: sinon.stub() };
+  describe('fetchCallback', () => {
+    const getResponse = (ok, json, streamed, body) => {
+      return {
+        ok,
+        json: sinon.stub().resolves(body),
+        streamed,
+        body: sinon.stub().value(body),
+        headers: {
+          get: sinon.stub().withArgs('content-type').returns(json ? 'application/json' : 'text/plain')
+        }
+      };
+    };
 
-      lib.initLib(medicDb, auditDb, 'sentinel', store);
+    beforeEach(() => {
+      medicDb = { name: 'medic',  };
+      lib.initLib({ name: 'medic' }, { name: 'audit' }, 'sentinel', { method: sinon.stub() });
+    });
 
-      expect(lib.__get__('db').medic).to.equal(medicDb);
-      expect(lib.__get__('db').audit).to.equal(auditDb);
-      expect(lib.__get__('asyncLocalStorage')).to.equal(store);
+    it('should skip invalid requests', async () => {
+      const response = getResponse(false, true, false, { ok: false, error: 'not_found' });
+
+
+
+    });
+
+    it('should skin non-json responses', async () => {
+
+    });
+
+    it('should skip non-write requests', async () => {
+
+    });
+
+    it('should record audit on db-doc POST', async () => {
+
+    });
+
+    it('should record audit on db-doc PUT', async () => {
+
+    });
+
+    it('should record audit on _bulk_docs', async () => {
+
+    });
+
+    it('should record audit on _bulk_docs with new_edits', async () => {
+
+    });
+
+    it('should skip adding request ids when local storage is not set', async () => {
+
+    });
+  });
+
+  describe('expressCallback', () => {
+    it('should skip invalid requests', async () => {
+
+    });
+
+    it('should skin non-json responses', async () => {
+
+    });
+
+    it('should skip non-write requests', async () => {
+
+    });
+
+    it('should record audit on db-doc POST', async () => {
+
+    });
+
+    it('should record audit on db-doc PUT', async () => {
+
+    });
+
+    it('should record audit on _bulk_docs', async () => {
+
+    });
+
+    it('should record audit on _bulk_docs with new_edits', async () => {
+
+    });
+
+    it('should skip adding request ids when local storage is not set', async () => {
+
     });
   });
 });

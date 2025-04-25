@@ -1,8 +1,8 @@
 const environment = require('@medic/environment');
+const audit = require('@medic/audit');
 const path = require('path');
 let asyncLocalStorage;
 let requestIdHeader;
-let auditLib;
 
 const JSON_HEADER_VALUE = 'application/json';
 const CONTENT_TYPE = 'content-type';
@@ -174,7 +174,8 @@ const request = async (options = {}) => {
     streamed: true,
   };
 
-  void auditLib?.fetchCallback(options.uri, options, responseObj);
+  const requestMetadata = asyncLocalStorage?.getRequest();
+  void audit.fetchCallback(options.uri, options, responseObj, requestMetadata);
 
   if (options.simple === false) {
     return responseObj;
@@ -228,9 +229,6 @@ module.exports = {
   setStore: (store, header) => {
     asyncLocalStorage = store;
     requestIdHeader = header.toLowerCase();
-  },
-  setAudit: (audit) => {
-    auditLib = audit;
   },
 
   /**

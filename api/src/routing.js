@@ -906,7 +906,7 @@ proxyForAuth.on('proxyRes', (proxyRes, req, res) => {
     }
     res.json(body);
 
-    audit.expressCallback(req, body);
+    audit.expressCallback(req, body, asyncLocalStorage.getRequest());
   });
 });
 

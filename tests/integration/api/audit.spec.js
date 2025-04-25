@@ -32,7 +32,7 @@ const checkAudit = ({ audit, doc }, user, requestId) => {
   expect(lastChange.rev).to.equal(doc._rev);
   expect(lastChange.user).to.equal(user || constants.USERNAME);
   expect(lastChange.date).to.be.ok;
-  expect(lastChange.application).to.equal('api');
+  expect(lastChange.service).to.equal('api');
   requestId && expect(lastChange.request_id).to.be.ok;
 };
 

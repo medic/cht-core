@@ -1,5 +1,4 @@
 const logger = require('@medic/logger');
-const request = require('@medic/couch-request');
 const semver = require('semver');
 
 const { COUCH_URL, BUILDS_URL, PROXY_CHANGE_ORIGIN = false } = process.env;
@@ -24,6 +23,7 @@ if (!COUCH_URL) {
 let couchUrl;
 let serverUrl;
 let serverUrlNoAuth;
+let service;
 
 try {
   // strip trailing slash from to prevent bugs in path matching
@@ -73,6 +73,7 @@ const getVersionFromDdoc = (ddoc) => {
 };
 
 const getDeployInfo = async () => {
+  const request = require('@medic/couch-request');
   if (deployInfoCache) {
     return deployInfoCache;
   }
@@ -105,3 +106,5 @@ const getVersion = async () => {
 module.exports.isTesting = module.exports.db === 'medic-test';
 module.exports.getDeployInfo = getDeployInfo;
 module.exports.getVersion = getVersion;
+module.exports.setService = (s) => service = s;
+module.exports.getService = () => service;
