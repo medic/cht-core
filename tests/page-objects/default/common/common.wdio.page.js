@@ -65,22 +65,18 @@ const userSettingsSelectors = {
 const getJsonErrorText = async () => await $('pre').getText();
 
 const isHamburgerMenuOpen = async () => {
-  return await hamburgerMenuSelectors.closeSideBarMenu().isDisplayed();
-  //return await $('mat-sidenav-container.mat-drawer-container-has-open .mat-drawer-opened').isDisplayed();
+  return await $('mat-sidenav-container.mat-drawer-container-has-open .mat-drawer-opened').isDisplayed();
 };
 
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
-    await hamburgerMenuSelectors.hamburgerMenu().waitForClickable();
     await hamburgerMenuSelectors.hamburgerMenu().click();
   }
-  await hamburgerMenuSelectors.closeSideBarMenu().waitForDisplayed();
+  await browser.waitUntil(isHamburgerMenuOpen);
 };
 
 const closeHamburgerMenu = async () => {
   if (await isHamburgerMenuOpen()) {
-    await hamburgerMenuSelectors.closeSideBarMenu().waitForClickable();
-
     await hamburgerMenuSelectors.closeSideBarMenu().click();
   }
   await hamburgerMenuSelectors.sideBarMenuTitle().waitForDisplayed({ reverse: true });
@@ -145,10 +141,8 @@ const hideSnackbar = () => {
 const getVisibleLoaders = async () => {
   const visible = [];
 
-  // Get all loaders in the page
   const loaders = await $$('.loader').getElements();
   if (loaders.length) {
-    // Add a small pause to let the DOM stabilize
     await browser.pause(100);
     // Instead of iterating through the loaders array, query for each loader individually
     // This avoids issues with stale references

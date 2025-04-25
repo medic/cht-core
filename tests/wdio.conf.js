@@ -181,8 +181,7 @@ const baseConfig = {
   reporters: [
     ['allure', {
       outputDir: ALLURE_OUTPUT,
-      disableWebdriverStepsReporting: true,
-      addConsoleLogs: true
+      disableWebdriverStepsReporting: true
     }],
     'spec'
   ],
