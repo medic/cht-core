@@ -45,16 +45,16 @@ describe('Reports Search', () => {
 
     await searchPage.performSearch('sittu');
     await commonPage.waitForLoaders();
-    expect((await reportsPage.reportsListDetails()).length).to.equal(2);
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(sittuSMSPregnancy.id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(sittuPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await reportsPage.reportsListDetails().length).to.equal(2);
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(sittuSMSPregnancy.id).isDisplayed()).to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(sittuPregnancy.id).isDisplayed()).to.be.true;
 
     await searchPage.clearSearch();
-    expect((await reportsPage.reportsListDetails()).length).to.equal(reportDocs.length);
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(sittuSMSPregnancy.id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(potuSMSPregnancy.id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(sittuPregnancy.id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(potuPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await reportsPage.reportsListDetails().length).to.equal(reportDocs.length);
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(sittuSMSPregnancy.id).isDisplayed()).to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(potuSMSPregnancy.id).isDisplayed()).to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(sittuPregnancy.id).isDisplayed()).to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(potuPregnancy.id).isDisplayed()).to.be.true;
   });
 
   it('should return results when searching by case_id', async () => {
@@ -67,8 +67,8 @@ describe('Reports Search', () => {
     await reportsPage.openReport(sittuPregnancy.id);
     await reportsPage.clickOnCaseId();
     await commonPage.waitForLoaders();
-    expect((await reportsPage.reportsListDetails()).length).to.equal(2);
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(sittuPregnancy.id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.leftPanelSelectors.reportByUUID(potuPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await reportsPage.reportsListDetails().length).to.equal(2);
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(sittuPregnancy.id).isDisplayed()).to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(potuPregnancy.id).isDisplayed()).to.be.true;
   });
 });
