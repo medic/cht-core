@@ -18,7 +18,7 @@ const vm = require('vm');
 const logger = require('@medic/logger');
 const os = require('os');
 
-const environment = require('@medic/environment');
+const serverInfo = require('@medic/server-info');
 const secureSettings = require('@medic/settings');
 
 const OUTBOUND_REQ_TIMEOUT = 10 * 1000;
@@ -96,7 +96,7 @@ const mapDocumentToPayload = (doc, config, key) => {
 };
 
 const getUserAgent = async () => {
-  const chtVersion = await environment.getVersion();
+  const chtVersion = await serverInfo.getVersion();
   const platform = os.platform();
   const arch = os.arch();
   return `${CHT_AGENT}/${chtVersion} (${platform},${arch})`;
