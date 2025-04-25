@@ -35,16 +35,19 @@ describe('Search Reports', () => {
     const [ hospitalSMS, healthCenterSMS, hospitalReport, healthCenterReport ] = reportDocs;
     await commonPage.goToReports();
     // Asserting first load reports
-    expect(await reportsPage.reportsListDetails().length).to.equal(reportDocs.length);
+    await reportsPage.searchReports('test');
+    await commonPage.waitForPageLoaded();
+    const reportsList = await reportsPage.reportsListDetails();
+    expect(reportsList.length).to.equal(reportDocs.length);
 
     await searchPage.performSearch('+64275555556');
     await commonPage.waitForLoaders();
-    expect(await reportsPage.reportsListDetails().length).to.equal(2);
+    expect((await reportsPage.reportsListDetails()).length).to.equal(2);
     expect(await reportsPage.leftPanelSelectors.reportByUUID(hospitalSMS.id).isDisplayed()).to.be.true;
     expect(await reportsPage.leftPanelSelectors.reportByUUID(healthCenterSMS.id).isDisplayed()).to.be.true;
 
     await searchPage.searchPageDefault.clearSearch();
-    expect(await reportsPage.reportsListDetails().length).to.equal(reportDocs.length);
+    expect((await reportsPage.reportsListDetails()).length).to.equal(reportDocs.length);
     expect(await reportsPage.leftPanelSelectors.reportByUUID(hospitalSMS.id).isDisplayed()).to.be.true;
     expect(await reportsPage.leftPanelSelectors.reportByUUID(healthCenterSMS.id).isDisplayed()).to.be.true;
     expect(await reportsPage.leftPanelSelectors.reportByUUID(hospitalReport.id).isDisplayed()).to.be.true;
@@ -56,12 +59,15 @@ describe('Search Reports', () => {
     const healthCenterReport = reportDocs[3];
     await commonPage.goToReports();
     // Asserting first load reports
-    expect(await reportsPage.reportsListDetails().length).to.equal(reportDocs.length);
+    await reportsPage.searchReports('test');
+    await commonPage.waitForPageLoaded();
+    const reportsList = await reportsPage.reportsListDetails();
+    expect(reportsList.length).to.equal(reportDocs.length);
 
     await reportsPage.openReport(hospitalReport.id);
     await reportsPage.clickOnCaseId();
     await commonPage.waitForLoaders();
-    expect(await reportsPage.reportsListDetails().length).to.equal(2);
+    expect((await reportsPage.reportsListDetails()).length).to.equal(2);
     expect(await reportsPage.leftPanelSelectors.reportByUUID(hospitalReport.id).isDisplayed()).to.be.true;
     expect(await reportsPage.leftPanelSelectors.reportByUUID(healthCenterReport.id).isDisplayed()).to.be.true;
   });
