@@ -56,14 +56,12 @@ const isHamburgerMenuOpen = async () => {
 
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
-    await hamburgerMenu().waitForClickable();
     await hamburgerMenu().click();
   }
 };
 
 const closeHamburgerMenu = async () => {
   if (await isHamburgerMenuOpen()) {
-    await hamburgerMenu().waitForClickable();
     await hamburgerMenu().click();
   }
 };
@@ -129,7 +127,6 @@ const goToBase = async () => {
 const logout = async () => {
   await openHamburgerMenu();
 
-  await commonPage.logoutButton().waitForClickable();
   await commonPage.logoutButton().click();
 
   await modalPage.body().waitForDisplayed();

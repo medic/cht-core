@@ -43,7 +43,6 @@ const quitTraining = async () => {
 };
 
 const confirmQuitTraining = async () => {
-  await quitTrainingBtn().waitForClickable();
   await quitTrainingBtn().click();
   await modalPage.checkModalHasClosed();
 };
@@ -56,7 +55,6 @@ const submitTraining = async (checkModal = true) => {
 };
 
 const openTrainingMaterial = async (formID) => {
-  await leftPanelSelectors.trainingByUUID(formID).waitForClickable();
   await leftPanelSelectors.trainingByUUID(formID).click();
 };
 

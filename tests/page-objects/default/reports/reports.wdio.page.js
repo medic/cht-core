@@ -150,7 +150,6 @@ const reportsListDetails = async () => {
 
 const toggleReportSummary = async (expand = false) => {
   const reportSummary = await rightPanelSelectors.reportSummary();
-  await reportSummary.waitForClickable();
   await reportSummary.click();
   await rightPanelSelectors.reportBodyDetails().waitForDisplayed({ reverse: expand });
 };
@@ -177,7 +176,7 @@ const deleteSelectedReports = async () => {
 
 const verifyMultiselectElementsDisplay = async (shouldHide=false) => {
   await rightPanelSelectors.reportBody().waitForDisplayed( { reverse: shouldHide });
-  await rightPanelSelectors.deleteAllButton().waitForClickable( { reverse: shouldHide });
+  await rightPanelSelectors.deleteAllButton().waitForDisplayed( { reverse: shouldHide });
   await rightPanelSelectors.selectedReportsCount().waitForDisplayed({ reverse: shouldHide });
   return {
     countLabel: shouldHide ? false : await rightPanelSelectors.selectedReportsCount().getText(),
@@ -255,7 +254,6 @@ const filterByForm = async (formName) => {
   await sidebarFilterSelectors.formAccordionBody().waitForDisplayed();
   const option = sidebarFilterSelectors.formAccordionBody().$(`a*=${formName}`);
   await option.waitForDisplayed();
-  await option.waitForClickable();
   await option.click();
 };
 
@@ -264,7 +262,6 @@ const filterByStatus = async (statusOption) => {
   await sidebarFilterSelectors.statusAccordionBody().waitForDisplayed();
   const option = sidebarFilterSelectors.statusAccordionBody().$(`a*=${statusOption}`);
   await option.waitForDisplayed();
-  await option.waitForClickable();
   await option.click();
 };
 
@@ -274,7 +271,6 @@ const filterByFacility = async (parentFacility, reportFacility) => {
 
   const parent = sidebarFilterSelectors.facilityAccordionBody().$(`a*=${parentFacility}`);
   await parent.waitForDisplayed();
-  await parent.waitForClickable();
   await parent.click();
 
   const facility = sidebarFilterSelectors
@@ -282,14 +278,12 @@ const filterByFacility = async (parentFacility, reportFacility) => {
     .$('.mm-dropdown-submenu')
     .$(`a*=${reportFacility}`);
   await facility.waitForDisplayed();
-  await facility.waitForClickable();
   const checkbox = facility.previousElement();
   await checkbox.click();
 };
 
 const setSidebarFilterDate = async (fieldPromise, calendarIdx, date) => {
   await fieldPromise.waitForDisplayed();
-  await fieldPromise.waitForClickable();
   await fieldPromise.click();
 
   const dateRangePicker = `.daterangepicker:nth-of-type(${calendarIdx})`;
@@ -344,7 +338,6 @@ const getReportDetailFieldValueByLabel = async (label) => {
 
 const clickOnCaseId = async () => {
   await rightPanelSelectors.reportBodyDetails().waitForDisplayed();
-  await rightPanelSelectors.reportCaseIdFilter().waitForClickable();
   await rightPanelSelectors.reportCaseIdFilter().click();
 };
 
@@ -387,7 +380,6 @@ const openSelectedReport = async (listElement) => {
 const openReport = async (reportId) => {
   await leftPanelSelectors.firstReport().waitForDisplayed();
   const reportListItem = leftPanelSelectors.reportByUUID(reportId);
-  await reportListItem.waitForClickable();
   await reportListItem.click();
   await rightPanelSelectors.reportBodyDetails().waitForDisplayed();
 };
@@ -403,13 +395,11 @@ const openReview = async () => {
 
 const closeReview = async () => {
   await reviewDialogSelectors.container().waitForDisplayed();
-  await reviewDialogSelectors.closeButton().waitForClickable();
   await reviewDialogSelectors.closeButton().click();
 };
 
 const openReviewAndSelectOption = async (optionId) => {
   await openReview();
-  await reviewDialogSelectors.optionById(optionId).waitForClickable();
   await reviewDialogSelectors.optionById(optionId).click();
 };
 
@@ -456,7 +446,6 @@ const verifyReport = async () => {
 
 const openFirstReport = async () => {
   const firstReport = leftPanelSelectors.firstReport();
-  await firstReport.waitForClickable();
   await openSelectedReport(firstReport);
 };
 

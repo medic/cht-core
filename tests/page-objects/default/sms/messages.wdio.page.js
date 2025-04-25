@@ -22,7 +22,6 @@ const messages = () => $$(`${MESSAGE_CONTENT} li`);
 
 const openMessage = async (identifier) => {
   const message = messageInList(identifier);
-  await message.waitForClickable();
   await message.click();
 };
 
@@ -46,7 +45,6 @@ const getMessageHeader = async () => {
 };
 
 const navigateFromConversationToContact = async () => {
-  await $(`${MESSAGE_HEADER} a.name`).waitForClickable();
   await $(`${MESSAGE_HEADER} a.name`).click();
   await commonPage.waitForPageLoaded();
 };
@@ -101,7 +99,6 @@ const sendMessageToContact = async (message) => {
 
 const exportMessages = async () => {
   await commonPage.openMoreOptionsMenu();
-  await exportButton().waitForClickable();
   await exportButton().click();
 };
 
@@ -114,7 +111,6 @@ const sendReply = async (message) => {
   const numberOfMessages = await getAmountOfMessagesByPhone();
   await replyMessage().setValue(message);
   await replyMessageActions().waitForExist();
-  await submitReplyBtn().waitForClickable();
   await submitReplyBtn().click();
   await browser.waitUntil(async () => await getAmountOfMessagesByPhone() > numberOfMessages);
 };
@@ -122,7 +118,6 @@ const sendReply = async (message) => {
 const replyAddRecipients = async (message) => {
   await replyMessage().setValue(message);
   await replyMessageActions().waitForExist();
-  await addRecipient().waitForClickable();
   await addRecipient().click();
   await sendMessageModal().waitForDisplayed();
 };

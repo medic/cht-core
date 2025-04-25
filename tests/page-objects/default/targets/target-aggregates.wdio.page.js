@@ -85,7 +85,6 @@ const getTargetItem = async (target, period, place) => {
 
 const openTargetDetails = async (target) => {
   const item = lineItem(target.id);
-  await item.waitForClickable();
   await item.click();
   await commonPage.waitForLoaders();
   await targetDetail.title(target.title).waitForDisplayed();
@@ -128,18 +127,15 @@ const getAggregateTargetGoal = async (contactId) => {
 
 const clickOnTargetAggregateListItem = async (contactId) => {
   const contactItem = aggregateDetailContactItem(contactId);
-  await contactItem.waitForClickable();
   await contactItem.click();
 };
 
 const openSidebarFilter = async () => {
-  await sidebarFilter.filterBtn().waitForClickable();
   await sidebarFilter.filterBtn().click();
   await sidebarFilter.closeBtn().waitForDisplayed();
 };
 
 const selectFilterOption = async (option) => {
-  await sidebarFilter.optionRadioBtn(option).waitForClickable();
   await sidebarFilter.optionRadioBtn(option).click();
 };
 

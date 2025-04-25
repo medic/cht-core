@@ -96,7 +96,6 @@ const sortMenuSelectors = {
 };
 
 const openSortMenu = async () => {
-  await sortMenuSelectors.sortIcon().waitForClickable();
   await sortMenuSelectors.sortIcon().click();
   await sortMenuSelectors.sortDropdown().waitForDisplayed();
 };
@@ -138,14 +137,12 @@ const selectLHSRowByText = async (text, executeSearch = true, strict = true) => 
   if (!row) {
     throw new Error(`Contact "${text}" was not found`);
   }
-  await row.waitForClickable();
   await row.click();
   await waitForContactLoaded();
 };
 
 const selectRHSRowById = async (id) => {
   const contact = await $(`.card.children.persons .content-row > a[href="#/contacts/${id}"]`);
-  await contact.waitForClickable();
   await contact.click();
   await waitForContactLoaded();
 };
@@ -417,12 +414,10 @@ const filterReportViewAll = async () => {
 
 const openFirstContact = async () => {
   const firstContact = leftPanelSelectors.firstContact();
-  await firstContact.waitForClickable();
   await firstContact.click();
 };
 
 const openPrimaryContactSearchDropdown = async () => {
-  await editDistrictHospitalSelectors.primaryContactSearchDropdown().waitForClickable();
   await editDistrictHospitalSelectors.primaryContactSearchDropdown().click();
 };
 
@@ -433,7 +428,6 @@ const inputPrimaryContactSearchValue = async (searchQuery) => {
 };
 
 const selectPrimaryContactSearchFirstResult = async () => {
-  await editDistrictHospitalSelectors.primaryContactSearchFirstResult().waitForClickable();
   await editDistrictHospitalSelectors.primaryContactSearchFirstResult().click();
 };
 

@@ -28,7 +28,6 @@ const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
   for (let i = 0; i < numberOfPages; i++) {
     const currentPageId = (await currentFormView()).elementId;
     await nextButton().waitForDisplayed();
-    await nextButton().waitForClickable();
     await nextButton().click();
     waitForLoad && await browser.waitUntil(async () => (await currentFormView()).elementId !== currentPageId);
   }
@@ -62,7 +61,6 @@ const submitForm = async ({ waitForPageLoaded = true, ignoreValidationErrors = f
   if (!ignoreValidationErrors) {
     await waitForValidationErrorsToDisappear();
   }
-  await submitButton().waitForClickable();
   await submitButton().click();
   if (waitForPageLoaded) {
     await commonPage.waitForPageLoaded();
@@ -70,7 +68,6 @@ const submitForm = async ({ waitForPageLoaded = true, ignoreValidationErrors = f
 };
 
 const cancelForm = async () => {
-  await cancelButton().waitForClickable();
   await cancelButton().click();
 };
 
@@ -86,13 +83,12 @@ const getFormTitle = async () => {
 
 const getDBObjectWidgetValues = async (field) => {
   const widget = $(`[data-contains-ref-target="${field}"] .selection`);
-  await widget.waitForClickable();
   await widget.click();
 
   const dropdown = $('.select2-dropdown--below');
   await dropdown.waitForDisplayed();
   const firstElement = $('.select2-results__options > li');
-  await firstElement.waitForClickable();
+  await firstElement.waitForDisplayed();
 
   const list = await $$('.select2-results__options > li');
   const contacts = [];
@@ -122,7 +118,6 @@ const getDuplicateContactHeadings = async () => {
 const getDuplicateContactSummaryField = async (index, fieldName) => {
   const duplicateContact = (await duplicateContacts())[index];
   const contactSummary = await duplicateContact.$('#contact_summary');
-  await duplicateContact.waitForClickable();
   await duplicateContact.click();
   await contactSummary.waitForDisplayed();
   const field = await contactSummary.$(`.cell.${fieldName}`);
@@ -131,13 +126,11 @@ const getDuplicateContactSummaryField = async (index, fieldName) => {
 
 const checkAcknowledgeDuplicatesBox = async () => {
   const checkBox = await acknowledgeCheckBox();
-  await checkBox.waitForClickable();
   await checkBox.click();
 };
 
 const openDuplicateContact = async () => {
   const openButton = await openDuplicateButton();
-  await openButton.waitForClickable();
   await openButton.click();
 };
 

@@ -133,7 +133,6 @@ const getToLoginLinkText = async () => {
 
 const togglePassword = async () => {
   await passwordField().waitForDisplayed();
-  await passwordToggleButton().waitForClickable();
   await passwordToggleButton().click();
 
   return {

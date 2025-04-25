@@ -30,7 +30,6 @@ const isElementDisplayed = async (type, text) => {
 };
 
 const selectRadioButton = async (question, value) => {
-  await (await radioButtonElement(question, value)).waitForClickable();
   await (await radioButtonElement(question, value)).click();
 };
 
@@ -40,7 +39,6 @@ const selectCheckBox = async (question, value) => {
     .$(`legend*=${question}`)
     .nextElement()
     .$(`label*=${value}`);
-  await checkbox.waitForClickable();
   await checkbox.click();
 };
 

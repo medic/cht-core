@@ -9,7 +9,7 @@ const selectedReportsCount = () => $('.mobile.multiselect-bar-container .selecti
 const closeOpenReportBtn = () => $('.navigation .filter-bar-back');
 
 const verifyMultiselectElementsDisplay = async (shouldHide=false) => {
-  await deleteAllButton().waitForClickable( { reverse: shouldHide });
+  await deleteAllButton().waitForDisplayed( { reverse: shouldHide });
   await selectedReportsCount().waitForDisplayed({ reverse: shouldHide });
   return {
     countLabel: shouldHide ? false : await selectedReportsCount().getText(),

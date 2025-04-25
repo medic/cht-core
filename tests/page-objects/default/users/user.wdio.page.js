@@ -94,7 +94,6 @@ const setSelect2 = async (id, value) => {
 
   const option = $('.name');
   await option.waitForExist();
-  await option.waitForClickable();
   await option.click();
 };
 
@@ -109,7 +108,6 @@ const setPlaceSelectMultiple = async (value) => {
 
   const option = $('.name');
   await option.waitForExist();
-  await option.waitForClickable();
   await option.click();
   await browser.waitUntil(async () => await $('.select2-selection__choice').isDisplayed(),  1000);
 };
@@ -125,7 +123,6 @@ const selectContact = async (associatedContact) => {
 };
 
 const saveUser = async (isSuccessExpected = true)  => {
-  await saveUserButton().waitForClickable();
   await saveUserButton().click();
   if (isSuccessExpected) {
     await addUserDialog().waitForDisplayed({ reverse: true });
@@ -169,7 +166,6 @@ const setUserConfirmPassword = async (password) => {
 const togglePassword = async () => {
   await userPassword().waitForDisplayed();
   await userConfirmPassword().waitForDisplayed();
-  await passwordToggleButton().waitForClickable();
   await passwordToggleButton().click();
 
   return {
@@ -218,7 +214,6 @@ const waitForUploadSummary = async () => {
 };
 
 const closeAddUserDialog = async () => {
-  await cancelButton().waitForClickable();
   await cancelButton().click();
   await addUserDialog().waitForDisplayed({ reverse: true });
 };

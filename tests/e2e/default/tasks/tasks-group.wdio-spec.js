@@ -122,7 +122,7 @@ describe('Tasks group landing page', () => {
   };
 
   const expectTasksGroupLeaveModal = async () => {
-    await modalPage.body().waitForClickable();
+    await modalPage.body().waitForDisplayed();
     expect(await modalPage.body().getText()).to.equal(
       'Are you sure you want to leave this page? You will no longer be able to see this household\'s other tasks.'
     );
