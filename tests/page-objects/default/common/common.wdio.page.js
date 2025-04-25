@@ -112,7 +112,7 @@ const accessReviewOption = async () => {
 
 const toggleMenuAndCaptureScreenshot = async (menuOption, reverse, pageName, screenshotName) => {
   await openHamburgerMenu();
-  await hamburguerMenuItemByOption(menuOption).waitForClickable({ reverse });
+  await hamburguerMenuItemByOption(menuOption).waitForDisplayed({ reverse });
   await generateScreenshot(pageName, screenshotName);
   if (reverse) {
     await closeHamburgerMenu();
@@ -231,7 +231,6 @@ const getFastActionItemsLabels = async () => {
 
 const clickFastActionFlat = async ({ actionId, waitForList }) => {
   await fabSelectors.fastActionFlat().waitForDisplayed();
-  await fabSelectors.fastActionFlat().waitForClickable();
 
   waitForList = waitForList === undefined ? await fabSelectors.multipleActions().isExisting() : waitForList;
   await fabSelectors.fastActionFlat().click();
@@ -390,7 +389,6 @@ const closeReloadModal = async (shouldUpdate, timeout) => {
 
 const syncAndNotWaitForSuccess = async () => {
   await openHamburgerMenu();
-  await syncButton().waitForClickable();
   await syncButton().click();
 };
 
@@ -456,7 +454,6 @@ const sync = async ({
 };
 
 const openReportBugAndFetchProperties = async () => {
-  await hamburgerMenuSelectors.feedbackMenuOption().waitForClickable();
   await hamburgerMenuSelectors.feedbackMenuOption().click();
   return await modalPage.getModalDetails();
 };
@@ -470,7 +467,6 @@ const closeReportBug = async () => {
 };
 
 const openAboutMenu = async () => {
-  await hamburgerMenuSelectors.aboutButton().waitForClickable();
   await hamburgerMenuSelectors.aboutButton().click();
   await $('.about.page .mat-primary').waitForDisplayed();
 };
@@ -486,19 +482,16 @@ const openUserSettingsAndFetchProperties = async () => {
 };
 
 const openTrainingMaterials = async () => {
-  await hamburgerMenuSelectors.trainingMaterialsButton().waitForClickable();
   await hamburgerMenuSelectors.trainingMaterialsButton().click();
   await waitForPageLoaded();
 };
 
 const openEditProfile = async () => {
-  //await userSettingsSelectors.editProfileButton().waitForClickable();
   await userSettingsSelectors.editProfileButton().click();
   await modalPage.checkModalIsOpen();
 };
 
 const openAppManagement = async () => {
-  await hamburgerMenuSelectors.appManagementButton().waitForClickable();
   await hamburgerMenuSelectors.appManagementButton().click();
   await $('.navbar-brand').waitForDisplayed();
 };
