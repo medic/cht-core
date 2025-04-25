@@ -35,8 +35,6 @@ describe('Search Reports', () => {
     const [ hospitalSMS, healthCenterSMS, hospitalReport, healthCenterReport ] = reportDocs;
     await commonPage.goToReports();
     // Asserting first load reports
-    await reportsPage.searchReports('test');
-    await commonPage.waitForPageLoaded();
     const reportsList = await reportsPage.reportsListDetails();
     expect(reportsList.length).to.equal(reportDocs.length);
 
@@ -59,8 +57,6 @@ describe('Search Reports', () => {
     const healthCenterReport = reportDocs[3];
     await commonPage.goToReports();
     // Asserting first load reports
-    await reportsPage.searchReports('test');
-    await commonPage.waitForPageLoaded();
     const reportsList = await reportsPage.reportsListDetails();
     expect(reportsList.length).to.equal(reportDocs.length);
 
