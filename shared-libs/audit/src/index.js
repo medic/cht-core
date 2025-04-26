@@ -55,7 +55,6 @@ const write = async (auditQueue, requestMetadata) => {
 
   const ids = auditQueue.map((auditRecord) => auditRecord.id);
   const existingAuditDocs = (await db.allDocs({ keys: ids, include_docs: true }));
-
   const newAuditDocs = [];
 
   auditQueue.forEach((audit, idx) => {
@@ -68,6 +67,7 @@ const write = async (auditQueue, requestMetadata) => {
     auditDoc.history.push(getAuditHistoryEntry(audit, requestMetadata));
     newAuditDocs.push(auditDoc);
   });
+  // todo handle conflicts?
   await db.bulkDocs(newAuditDocs);
   auditQueue.splice(0, auditQueue.length);
 };
