@@ -1,6 +1,8 @@
 const chai = require('chai');
 chai.use(require('chai-shallow-deep-equal'));
 const utils = require('@utils');
+const express = require('express');
+const bodyParser = require('body-parser');
 
 let user;
 const password = 'passwordSUP3RS3CR37!';
@@ -288,6 +290,145 @@ describe('login', () => {
           chai.expect(response.body).to.deep.equal({
             error: 'Token login not allowed for SSO users'
           });
+        });
+    });
+  });
+
+  describe('SSO login', () => {
+    const loginWithSso = () => {
+      const opts = {
+        path: `/medic/login/oidc`,
+        method: 'GET',
+        resolveWithFullResponse: false,
+        noAuth: true,
+        redirect: 'manual',
+        headers: { 'X-Forwarded-For': randomIp() },
+      };
+      return utils.request(opts);
+    };
+
+    const setupOidcSettings = () => {
+      const settings = {
+        oidc_provider: {
+          discovery_url: `${oidcBaseUrl}/.well_known/openid-configuration`,
+          client_id: 'test-client-id'
+        }
+      };
+
+      return utils.updateSettings(settings, { ignoreReload: true });
+    };
+
+    let server;
+
+    const oidcBaseUrl = 'http://localhost:3000';
+
+    const mockApp = express();
+
+    mockApp.use(bodyParser.json());
+
+    mockApp.get('.well_known/openid-configuration', (req, res) => {
+      res.json({
+        issuer: `${oidcBaseUrl}`,
+        authorization_endpoint: `${oidcBaseUrl}/connect/authorize`,
+        token_endpoint: `${oidcBaseUrl}/connect/token`,
+        token_endpoint_auth_methods_supported: ['client_secret_basic', 'private_key_jwt'],
+        token_endpoint_auth_signing_alg_values_supported: ['RS256', 'ES256'],
+        userinfo_endpoint: `${oidcBaseUrl}/connect/userinfo`,
+        check_session_iframe: `${oidcBaseUrl}connect/check_session`,
+        end_session_endpoint: `${oidcBaseUrl}/connect/end_session`,
+        jwks_uri: `${oidcBaseUrl}/jwks.json`,
+        registration_endpoint: `${oidcBaseUrl}/connect/register`,
+        scopes_supported: ['openid', 'profile', 'email'],
+        response_types_supported: ['code', 'code id_token', 'id_token', 'id_token token'],
+        acr_values_supported: ['urn:mace:incommon:iap:silver', 'urn:mace:incommon:iap:bronze'],
+        subject_types_supported: ['public', 'pairwise'],
+        userinfo_signing_alg_values_supported: ['RS256', 'ES256', 'HS256'],
+        userinfo_encryption_alg_values_supported: ['RSA-OAEP-256', 'A128KW'],
+        userinfo_encryption_enc_values_supported: ['A128CBC-HS256', 'A128GCM'],
+        id_token_signing_alg_values_supported: ['RS256', 'ES256', 'HS256'],
+        id_token_encryption_alg_values_supported: ['RSA-OAEP-256', 'A128KW'],
+        id_token_encryption_enc_values_supported: ['A128CBC-HS256', 'A128GCM'],
+        request_object_signing_alg_values_supported: ['none', 'RS256', 'ES256'],
+        display_values_supported: ['page', 'popup'],
+        claim_types_supported: ['normal', 'distributed'],
+        claims_supported: [
+          'sub', 'iss', 'auth_time', 'acr',
+          'name', 'given_name', 'family_name', 'nickname',
+          'profile', 'picture', 'website',
+          'email', 'email_verified', 'locale', 'zoneinfo',
+          'http://example.info/claims/groups'
+        ],
+        claims_parameter_supported: true,
+        service_documentation: 'http://server.example.com/connect/service_documentation.html',
+        ui_locales_supported: ['en-US']
+      });
+    });
+
+    mockApp.get('/oidc/discovery', (req, res) => {
+      const conf = {
+        clientMetadata: () => {},
+        serverMetadata: () => ({
+          issuer: `${oidcBaseUrl}/issuer`,
+          authorization_endpoint: `${oidcBaseUrl}/connect/authorize`,
+          token_endpoint: `${oidcBaseUrl}/connect/token`,
+        })
+      };
+      res.json(conf);
+    });
+
+    mockApp.get('/oidc/authorize', (req, res) => {
+      res.redirect(`${utils.hostURL}/medic/login/oidc/get_token?code=SplxlOBeZQQYbYS6WxSbIA&state=af0ifjsldkj`);
+    });
+
+    mockApp.get('/oidc/token', (req, res) => {
+      res.json({
+        access_token: 'SlAV32hkKG',
+        token_type: 'Bearer',
+        refresh_token: '8xLOxBtZp8',
+        expires_in: 3600,
+        id_token: `eyJhbGciOiJSUzI1NiIsImtpZCI6IjFlOWdkazcifQ.ewogImlzc
+          yI6ICJodHRwOi8vc2VydmVyLmV4YW1wbGUuY29tIiwKICJzdWIiOiAiMjQ4Mjg5
+          NzYxMDAxIiwKICJhdWQiOiAiczZCaGRSa3F0MyIsCiAibm9uY2UiOiAibi0wUzZ
+          fV3pBMk1qIiwKICJleHAiOiAxMzExMjgxOTcwLAogImlhdCI6IDEzMTEyODA5Nz
+          AKfQ.ggW8hZ1EuVLuxNuuIJKX_V8a_OMXzR0EHR9R6jgdqrOOF4daGU96Sr_P6q
+          Jp6IcmD3HP99Obi1PRs-cwh3LO-p146waJ8IhehcwL7F09JdijmBqkvPeB2T9CJ
+          NqeGpe-gccMg4vfKjkM8FcGvnzZUN4_KSP0aAp1tOJ1zZwgjxqGByKHiOtX7Tpd
+          QyHE5lcMiKPXfEIQILVq0pc_E2DzL7emopWoaoZTF_m0_N0YzFC6g6EJbOEoRoS
+          K5hoDalrcvRYLSrQAZZKflyuVCyixEoV9GfNQC3_osjzw2PAithfubEEBLuVVk4
+          XUVrWOLrLl0nx7RkKU8NXNHq-rvKMzqg`
+      });
+    });
+
+    const startMockApp = () => {
+      return new Promise(resolve => {
+        server = mockApp.listen(resolve);
+      });
+    };
+
+    const stopMockApp = () => {
+      server && server.close();
+    };
+
+    beforeEach(() => startMockApp());
+
+    afterEach(() => stopMockApp());
+
+    it('should log in successfully', () => {
+      delete user.password;
+      user.oidc = true;
+
+      const createOpts = {
+        path: '/api/v1/users',
+        method: 'POST',
+        body: user
+      };
+
+      return setupOidcSettings()
+        .then(() => utils.request(createOpts))
+        .then(() => loginWithSso())
+        .then(response => {
+          //console.log(response);
+          expectLoginToWork(response);
         });
     });
   });

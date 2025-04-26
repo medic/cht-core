@@ -52,6 +52,11 @@ const oidcServerSConfig = async () => {
     throw new Error(`No OIDC client secret '${OIDC_CLIENT_SECRET_KEY}' configured.`);
   }
 
+
+  if (settings.oidc_provider.discovery_url) {
+    throw new Error('making call to: ', settings.oidc_provider.discovery_url);
+  }
+
   const idServerConfig = await networkCallRetry(
     () => client.discovery(
       new URL(settings.oidc_provider.discovery_url), settings.oidc_provider.client_id, clientSecret

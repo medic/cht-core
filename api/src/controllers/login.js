@@ -566,7 +566,8 @@ module.exports = {
       res.redirect(301, authUrl.href);
     } catch (e) {
       logger.error(e);
-      return sendLoginErrorResponse(e, res);
+      throw e;
+      // return sendLoginErrorResponse(e, res);
     }
   },
   validateSession,
