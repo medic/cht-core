@@ -705,4 +705,116 @@ describe('couch-request', () => {
       }
     ]]);
   });
+
+  describe('sanitizeErrorResponse function', () => {
+    let sanitizeErrorResponse;
+    
+    beforeEach(() => {
+      sanitizeErrorResponse = couchRequest.__get__('sanitizeErrorResponse');
+    });
+
+    it('should handle empty/undefined body', () => {
+      expect(sanitizeErrorResponse(undefined)).to.equal('No response body');
+      expect(sanitizeErrorResponse(null)).to.equal('No response body');
+    });
+
+    it('should sanitize sensitive fields from string body', () => {
+      const stringWithCredentials = 'http://user:pass@example.com?password=secret&auth=token&pass=mysecret';
+      const sanitized = sanitizeErrorResponse(stringWithCredentials);
+      
+      // Check that sensitive fields are removed
+      expect(sanitized).to.not.include('password=secret');
+      expect(sanitized).to.not.include('auth=token');
+      expect(sanitized).to.not.include('pass=mysecret');
+      expect(sanitized).to.not.include('user:pass');
+    });
+
+    it('should remove sensitive fields from object body', () => {
+      const objectWithCredentials = {
+        url: 'http://example.com',
+        password: 'supersecret',
+        auth: { token: '12345' },
+        authorization: 'Bearer abc123',
+        key: 'api-key',
+        secret: 'api-secret',
+        token: 'oauth-token',
+        username: 'admin',
+        user: 'root',
+        pass: 'password123',
+        otherData: 'should remain'
+      };
+      
+      const sanitized = sanitizeErrorResponse(objectWithCredentials);
+      
+      // Check that sensitive fields are completely removed (not just masked)
+      expect(sanitized).to.not.have.property('password');
+      expect(sanitized).to.not.have.property('auth');
+      expect(sanitized).to.not.have.property('authorization');
+      expect(sanitized).to.not.have.property('key');
+      expect(sanitized).to.not.have.property('secret');
+      expect(sanitized).to.not.have.property('token');
+      expect(sanitized).to.not.have.property('username');
+      expect(sanitized).to.not.have.property('user');
+      expect(sanitized).to.not.have.property('pass');
+      
+      // But other fields should remain
+      expect(sanitized).to.have.property('otherData', 'should remain');
+      expect(sanitized).to.have.property('url', 'http://example.com');
+    });
+
+    it('should return other data types unchanged', () => {
+      expect(sanitizeErrorResponse(123)).to.equal(123);
+      expect(sanitizeErrorResponse(true)).to.equal(true);
+      // Arrays may be converted to objects in the sanitization process
+    });
+  });
+
+  it('should sanitize sensitive data in error objects', async () => {
+    global.fetch.resolves(buildResponse({
+      body: { 
+        error: 'auth_error', 
+        reason: 'Invalid credentials',
+        username: 'admin',
+        password: 'secret',
+        auth: { token: '12345' }
+      },
+      status: 401,
+    }));
+
+    await expect(couchRequest.get({ url: 'http://test.com:5984/b' })).to.be.rejectedWith(Error)
+      .then(error => {
+        // Verify error message doesn't contain sensitive data
+        expect(error.message).to.not.include('secret');
+        expect(error.message).to.not.include('12345');
+        expect(error.message).to.not.include('admin');
+        
+        // Verify error body has sensitive fields removed
+        expect(error.body).to.not.have.property('password');
+        expect(error.body).to.not.have.property('auth');
+        expect(error.body).to.not.have.property('username');
+        
+        // But other fields should remain
+        expect(error.body).to.have.property('error', 'auth_error');
+        expect(error.body).to.have.property('reason', 'Invalid credentials');
+      });
+  });
+
+  it('should sanitize sensitive data in error strings', async () => {
+    global.fetch.resolves(buildResponse({
+      body: 'Error occurred with auth=supersecret&user=admin&password=123456',
+      status: 500,
+      json: false
+    }));
+
+    await expect(couchRequest.get({ url: 'http://test.com:5984/b' })).to.be.rejectedWith(Error)
+      .then(error => {
+        // Verify error message doesn't contain sensitive data
+        expect(error.message).to.not.include('supersecret');
+        expect(error.message).to.not.include('admin');
+        expect(error.message).to.not.include('123456');
+        
+        // Basic error structure should still be preserved
+        expect(error.status).to.equal(500);
+      });
+  });
 });
