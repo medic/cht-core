@@ -1,6 +1,6 @@
 const environment = require('@medic/environment');
 const PouchDB = require('pouchdb-core');
-const logger = require('@medic/logger');
+//const logger = require('@medic/logger');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 
 const MAX_HISTORY_LIMIT = 10;
