@@ -187,7 +187,7 @@ describe('Setup utils', () => {
 
     it('should catch compact errors and log them', async () => {
       const error = { some: 'error' };
-      db.sentinel.compact.returns(Promise.reject(error));
+      db.sentinel.compact.rejects(error);
 
       utils.cleanup();
 
@@ -216,7 +216,7 @@ describe('Setup utils', () => {
 
     it('should catch nouveau cleanup errors and log them', async () => {
       const error = { some: 'error' };
-      db.nouveauCleanup.returns(Promise.reject(error));
+      db.nouveauCleanup.rejects(error);
 
       utils.cleanup();
 
