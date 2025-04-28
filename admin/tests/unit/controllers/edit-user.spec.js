@@ -878,12 +878,12 @@ describe('EditUserCtrl controller', () => {
           return scope.editUser();
         })
         .then(() => {
-          chai.expect(CreateUser.createSingleUser.callCount).to.equal(1);
-          chai.expect(CreateUser.createSingleUser.args[0][0]).to.deep.include({
+          chai.expect(CreateUser.createSingleUser.calledOnceWithExactly({
             username: 'newuser',
             roles: ['data-entry'],
             oidc: true,
-          });
+            place: undefined
+          })).to.be.true;
         });
     });
 
@@ -900,10 +900,12 @@ describe('EditUserCtrl controller', () => {
           return scope.editUser();
         })
         .then(() => {
-          chai.expect(CreateUser.createSingleUser.callCount).to.equal(1);
-          chai.expect(CreateUser.createSingleUser.args[0][0]).to.deep.not.include({
-            password: 'pass123'
-          });
+          chai.expect(CreateUser.createSingleUser.calledOnceWithExactly({
+            username: 'newuser',
+            roles: ['data-entry'],
+            oidc: true,
+            place: undefined
+          })).to.be.true;
         });
     });
 
@@ -921,11 +923,16 @@ describe('EditUserCtrl controller', () => {
           return scope.editUser();
         })
         .then(() => {
-          console.log(scope.errors);
-          chai.expect(UpdateUser.callCount).to.equal(1);
-          chai.expect(UpdateUser.args[0][1]).to.deep.include({
-            oidc: false
-          });
+          chai.expect(UpdateUser.calledOnceWithExactly(
+            userToEdit.name,
+            {
+              roles: ['data-entry'],
+              oidc: false,
+              password: 'Password123.',
+              contact: undefined,
+              place: undefined
+            }
+          )).to.be.true;
         });
     });
 
@@ -961,11 +968,17 @@ describe('EditUserCtrl controller', () => {
           return scope.editUser();
         })
         .then(() => {
-          chai.expect(UpdateUser.callCount).to.equal(1);
-          chai.expect(UpdateUser.args[0][1]).to.deep.include({
-            oidc: false,
-            token_login: true
-          });
+          chai.expect(UpdateUser.calledOnceWithExactly(
+            userToEdit.name,
+            {
+              roles: ['data-entry'],
+              oidc: false,
+              phone: '+40755696969',
+              token_login: true,
+              contact: undefined,
+              place: undefined
+            }
+          )).to.be.true;
         });
     });
 
@@ -983,11 +996,17 @@ describe('EditUserCtrl controller', () => {
           return scope.editUser();
         })
         .then(() => {
-          chai.expect(UpdateUser.callCount).to.equal(1);
-          chai.expect(UpdateUser.args[0][1]).to.deep.include({
-            oidc: true,
-            token_login: false
-          });
+          chai.expect(UpdateUser.calledOnceWithExactly(
+            userToEdit.name,
+            {
+              roles: ['data-entry'],
+              oidc: true,
+              phone: '+40755696969',
+              token_login: false,
+              contact: undefined,
+              place: undefined
+            }
+          )).to.be.true;
         });
     });
 
@@ -1001,6 +1020,7 @@ describe('EditUserCtrl controller', () => {
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
+          scope.editUserModel.oidc = true;
           return scope.editUser();
         })
         .then(() => {
@@ -1021,11 +1041,15 @@ describe('EditUserCtrl controller', () => {
           return scope.editUser();
         })
         .then(() => {
-          chai.expect(UpdateUser.callCount).to.equal(1);
-          chai.expect(UpdateUser.args[0][1]).to.deep.include({
-            phone: '+40755696969',
-            roles: ['data-entry']
-          });
+          chai.expect(UpdateUser.calledOnceWithExactly(
+            userToEdit.name,
+            {
+              roles: ['data-entry'],
+              phone: '+40755696969',
+              contact: undefined,
+              place: undefined
+            }
+          )).to.be.true;
         });
     });
   });
