@@ -39,7 +39,7 @@ describe('environment', () => {
 
     const env = rewire('../src/index');
 
-    expect(env).to.deep.equal({
+    expect(env).excludingEvery(['setService', 'getService']).to.deep.equal({
       couchUrl: 'https://admin:pass@couchdb:5984/medicdb',
       buildsUrl: 'https://staging.dev.medicmobile.org/_couch/builds_4',
       serverUrl: 'https://admin:pass@couchdb:5984/',
@@ -54,8 +54,11 @@ describe('environment', () => {
       proxies: {
         changeOrigin: false,
       },
-      isTesting: false
+      isTesting: false,
     });
+
+    expect(env.setService).to.be.a('function');
+    expect(env.getService).to.be.a('function');
   });
 
   it('should export custom builds url, proxies changes and testing', () => {
@@ -73,6 +76,17 @@ describe('environment', () => {
       proxies: {
         changeOrigin: true
       }
+    });
+  });
+
+  describe('service', () => {
+    it('should set service and get service', () => {
+      const service = 'sentinel';
+      const env = rewire('../src/index');
+
+      expect(env.getService()).to.equal(undefined);
+      env.setService(service);
+      expect(env.getService()).to.equal(service);
     });
   });
 });

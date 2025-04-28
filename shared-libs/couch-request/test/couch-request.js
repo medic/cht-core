@@ -2,12 +2,14 @@ const chai = require('chai').use(require('chai-as-promised'));
 const expect = chai.expect;
 const sinon = require('sinon');
 const rewire = require('rewire');
+
 chai.config.truncateThreshold = 0;
 
 describe('couch-request', () => {
   let couchRequest;
   let uri;
   let response;
+  let audit;
 
   const buildResponse = ({ status=200, body, headers=new Headers(), json=true } = {}) => {
     if (json) {
@@ -33,6 +35,8 @@ describe('couch-request', () => {
     uri = `http://admin:password@test.com:5984/medic/_all_docs`;
     sinon.stub(global, 'fetch').resolves(buildResponse({ body: 'yes' }));
 
+    audit = require('@medic/audit');
+    sinon.stub(audit, 'fetchCallback');
     couchRequest = rewire('../src/couch-request');
   });
 
@@ -106,6 +110,26 @@ describe('couch-request', () => {
         uri: 'http://test.com:5984/medic/test',
       }
     ]);
+
+    expect(audit.fetchCallback.args).to.deep.equal([[
+      'http://test.com:5984/medic/test',
+      {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          authorization: `Basic ${btoa('admin:password')}`,
+        },
+        servername: 'test.com',
+        uri: 'http://test.com:5984/medic/test',
+      },
+      {
+        ...response,
+        streamed: true,
+        body: 'yes'
+      },
+      undefined,
+    ]]);
   });
 
   it('should use url', async () => {
@@ -645,7 +669,10 @@ describe('couch-request', () => {
 
 
   it('should not add request id header when client request is not set', async () => {
-    const asyncLocalStorage = { getRequestId: sinon.stub().returns(false) };
+    const asyncLocalStorage = {
+      getRequestId: sinon.stub().returns(false),
+      getRequest: sinon.stub().returns({ }),
+    };
     couchRequest.setStore(asyncLocalStorage, 'header-name');
 
     const response = await couchRequest.get({ uri: 'http://test.com:5984/test' });
@@ -666,11 +693,14 @@ describe('couch-request', () => {
   });
 
   it('should set request id header when set', async () => {
-    const asyncLocalStorage = { getRequestId: sinon.stub().returns('req_uuid') };
+    const asyncLocalStorage = {
+      getRequestId: sinon.stub().returns('req_uuid'),
+      getRequest: sinon.stub().returns({ requestId: 'req_uuid', user: 'test' }),
+    };
     couchRequest.setStore(asyncLocalStorage, 'header-name');
 
-    const response = await couchRequest.get({ uri: 'http://test.com:5984/test' });
-    chai.expect(response).to.equal('yes');
+    const resp = await couchRequest.get({ uri: 'http://test.com:5984/test' });
+    chai.expect(resp).to.equal('yes');
     chai.expect(global.fetch.args).to.deep.equal([[
       'http://test.com:5984/test',
       {
@@ -684,10 +714,33 @@ describe('couch-request', () => {
         uri: 'http://test.com:5984/test',
       }
     ]]);
+
+    expect(audit.fetchCallback.args).to.deep.equal([[
+      'http://test.com:5984/test',
+      {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          'header-name': 'req_uuid'
+        },
+        servername: 'test.com',
+        uri: 'http://test.com:5984/test',
+      },
+      {
+        ...response,
+        streamed: true,
+        body: 'yes'
+      },
+      { requestId: 'req_uuid', user: 'test' },
+    ]]);
   });
 
   it('should add request id header when headers are already set', async () => {
-    const asyncLocalStorage = { getRequestId: sinon.stub().returns('req_uuid') };
+    const asyncLocalStorage = {
+      getRequestId: sinon.stub().returns('req_uuid'),
+      getRequest: sinon.stub().returns({ requestId: 'req_uuid', user: 'test' }),
+    };
     couchRequest.setStore(asyncLocalStorage, 'header-name');
 
     const response = await couchRequest.get({ uri: 'http://test.com:5984/b', headers: { 'authorization': 'Basic 123' } });
@@ -707,8 +760,4 @@ describe('couch-request', () => {
       }
     ]]);
   });
-  
-  it('should call auditlib fetchCallback with correct request data', async () => {
-    // todo
-  }); 
 });
