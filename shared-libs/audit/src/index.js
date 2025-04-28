@@ -104,6 +104,7 @@ const fetchCallback = async (url, opts, response, requestMetadata) => {
   }
 
   const monitoredUrl = isMonitoredUrl(url, opts.method);
+  console.warn(monitoredUrl); // eslint-disable-line
   if (!monitoredUrl) {
     return;
   }
@@ -121,6 +122,7 @@ const fetchCallback = async (url, opts, response, requestMetadata) => {
 
 const expressCallback = async (req, responseBody, requestMetadata) => {
   const monitoredUrl = isMonitoredUrl(req.originalUrl, req.method);
+  console.warn(monitoredUrl); // eslint-disable-line
   if (!monitoredUrl) {
     return;
   }
