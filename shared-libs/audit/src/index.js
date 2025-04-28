@@ -104,7 +104,6 @@ const fetchCallback = async (url, opts, response, requestMetadata) => {
   }
 
   const monitoredUrl = isMonitoredUrl(url, opts.method);
-  logger.warn('%o', monitoredUrl);
   if (!monitoredUrl) {
     return;
   }
@@ -122,7 +121,6 @@ const fetchCallback = async (url, opts, response, requestMetadata) => {
 
 const expressCallback = async (req, responseBody, requestMetadata) => {
   const monitoredUrl = isMonitoredUrl(req.originalUrl, req.method);
-  logger.warn('%o', monitoredUrl);
   if (!monitoredUrl) {
     return;
   }
