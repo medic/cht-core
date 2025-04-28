@@ -1,5 +1,6 @@
 const environment = require('@medic/environment');
 const PouchDB = require('pouchdb-core');
+const logger = require('@medic/logger');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 
 const MAX_HISTORY_LIMIT = 10;
@@ -60,7 +61,8 @@ const write = async (auditQueue, requestMetadata) => {
   auditQueue.forEach((audit, idx) => {
     const auditDoc = existingAuditDocs.rows[idx].doc || getAuditDoc(audit);
     if (auditDoc.history.length >= MAX_HISTORY_LIMIT) {
-      newAuditDocs.push({ ...auditDoc, _id: `${auditDoc._id}:${new Date().getTime()}`, _rev: undefined });
+      const oldRev = auditDoc.history.at(-1).rev;
+      newAuditDocs.push({ ...auditDoc, _id: `${auditDoc._id}:${oldRev}`, _rev: undefined });
       auditDoc.history = [];
     }
 
@@ -105,6 +107,8 @@ const fetchCallback = async (url, opts, response, requestMetadata) => {
   if (!monitoredUrl) {
     return;
   }
+
+  logger.warn('%o', monitoredUrl);
 
   let body;
   if (response.streamed) {
