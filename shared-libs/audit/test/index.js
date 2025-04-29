@@ -20,7 +20,7 @@ describe('Audit', () => {
     };
     lib.__set__('db', db);
 
-    sinon.stub(environment, 'db').get(() => 'http://admin:pass@localhost:5984/medic');
+    sinon.stub(environment, 'db').get(() => 'medic');
     sinon.stub(environment, 'username').get(() => 'admin');
     sinon.stub(environment, 'getService').returns('api');
   });
