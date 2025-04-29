@@ -160,6 +160,28 @@ const getResponseBody = async (response, sendJson) => {
   return content;
 };
 
+const sanitizeErrorResponse = (body) => {
+  if (!body) {
+    return 'No response body';
+  }
+  
+  if (typeof body === 'string') {
+    return body.replace(/(?:password|auth|user|pass)[:=].*?(?:[&\s]|$)/gi, '');
+  }
+  
+  if (typeof body === 'object') {
+    const sanitized = { ...body };
+
+    ['password', 'auth', 'authorization', 'key', 'secret', 'token', 'username', 'user', 'pass'].forEach(field => {
+      if (field in sanitized) {
+        delete sanitized[field]; 
+      }
+    });
+    return sanitized;
+  }
+  
+  return body;
+};
 const request = async (options = {}) => {
   setRequestOptions(options);
 
@@ -180,8 +202,15 @@ const request = async (options = {}) => {
     return responseObj.body;
   }
 
-  const err = new Error(response.error || `${response.status} - ${JSON.stringify(responseObj.body)}`);
-  Object.assign(err, responseObj);
+  const sanitizedBody = sanitizeErrorResponse(responseObj.body);
+  const err = new Error(`${response.status} - ${JSON.stringify(sanitizedBody)}`);
+  
+  err.status = response.status;
+  err.statusCode = response.status;
+  err.body = sanitizedBody;
+  err.headers = response.headers;
+  err.ok = response.ok;
+  
   throw err;
 };
 
