@@ -10,6 +10,8 @@ const ignore = [
 
 const db = new PouchDB(`${environment.couchUrl}-audit`);
 
+console.warn(`/${environment.db}/_bulk_docs/?`); // eslint-disable-line
+
 const monitoredPaths = [
   { method: 'POST', path: new RegExp(`/${environment.db}/_bulk_docs/?`), bulk: true },
   { method: 'POST', path: new RegExp(`/${environment.db}/$`) },
