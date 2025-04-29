@@ -81,6 +81,7 @@ const matchReminder = (reminder) => {
       // schedule.prev doesn't have a setting to be inclusive or exclusive to the given time frame limits
       // if `getReminderWindowStart` returns the moment when the reminder ran last, we check that `previous` is after
       // this moment, so we don't run the same reminder twice
+      console.warn(moment(previous)); // eslint-disable-line no-console
       return (previous instanceof Date && start.isBefore(previous)) ? moment(previous) : false;
     });
 };
