@@ -13,16 +13,16 @@ describe('Audit', () => {
 
   beforeEach(() => {
     clock = sinon.useFakeTimers(1000);
+    sinon.stub(environment, 'db').get(() => 'medic');
+    sinon.stub(environment, 'username').get(() => 'admin');
+    sinon.stub(environment, 'getService').returns('api');
+
     lib = rewire('../src/index');
     db = {
       allDocs: sinon.stub().resolves({ rows: [] }),
       bulkDocs: sinon.stub().resolves([]),
     };
     lib.__set__('db', db);
-
-    sinon.stub(environment, 'db').get(() => 'medic');
-    sinon.stub(environment, 'username').get(() => 'admin');
-    sinon.stub(environment, 'getService').returns('api');
   });
 
   afterEach(() => {
