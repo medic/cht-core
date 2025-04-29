@@ -10,8 +10,6 @@ const ignore = [
 
 const db = new PouchDB(`${environment.couchUrl}-audit`);
 
-console.warn(`/${environment.db}/_bulk_docs/?`); // eslint-disable-line
-
 const monitoredPaths = [
   { method: 'POST', path: new RegExp(`/${environment.db}/_bulk_docs/?`), bulk: true },
   { method: 'POST', path: new RegExp(`/${environment.db}/$`) },
@@ -72,7 +70,6 @@ const write = async (auditQueue, requestMetadata) => {
   });
   // todo handle conflicts?
   await db.bulkDocs(newAuditDocs);
-  auditQueue.splice(0, auditQueue.length);
 };
 
 const recordAudit = async (body, requestMetadata) => {
@@ -105,7 +102,6 @@ const fetchCallback = async (url, opts, response, requestMetadata) => {
   }
 
   const monitoredUrl = isMonitoredUrl(url, opts.method);
-  console.warn(monitoredUrl, url); // eslint-disable-line
   if (!monitoredUrl) {
     return;
   }
@@ -123,7 +119,6 @@ const fetchCallback = async (url, opts, response, requestMetadata) => {
 
 const expressCallback = async (req, responseBody, requestMetadata) => {
   const monitoredUrl = isMonitoredUrl(req.originalUrl, req.method);
-  console.warn(monitoredUrl, req.originalUrl); // eslint-disable-line
   if (!monitoredUrl) {
     return;
   }
