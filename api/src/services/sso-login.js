@@ -36,15 +36,14 @@ const networkCallRetry = async (call, retryCount = 3) => {
  */
 const oidcServerSConfig = async () => {
   const settings = await settingsService.get();
-
-  const config = settings.oidc_provider;
-
-  if (!config) {
+  if (!settings.oidc_provider) {
     throw new Error(`oidc_provider config is missing in settings.`);
   }
+
+  const { allow_insecure_requests, client_id, discovery_url } = settings.oidc_provider;
   
-  if (!config.discovery_url || !config.client_id) {
-    throw new Error(`Either or both discovery_url and client_id is not set in oidc_provider config.`);
+  if (!discovery_url?.length || !client_id?.length) {
+    throw new Error(`The discovery_url and client_id must be provided in the oidc_provider config.`);
   }
 
   const clientSecret = await secureSettings.getCredentials(OIDC_CLIENT_SECRET_KEY);
@@ -52,15 +51,10 @@ const oidcServerSConfig = async () => {
     throw new Error(`No OIDC client secret '${OIDC_CLIENT_SECRET_KEY}' configured.`);
   }
 
-
-  if (settings.oidc_provider.discovery_url) {
-    throw new Error('making call to: ', settings.oidc_provider.discovery_url);
-  }
-
+  const execute = allow_insecure_requests ? [client.allowInsecureRequests] : [];
+  const discoveryUrl = new URL(discovery_url);
   const idServerConfig = await networkCallRetry(
-    () => client.discovery(
-      new URL(settings.oidc_provider.discovery_url), settings.oidc_provider.client_id, clientSecret
-    )
+    () => client.discovery(discoveryUrl, client_id, clientSecret, null, { execute })
   );
 
   const {
@@ -69,13 +63,10 @@ const oidcServerSConfig = async () => {
     token_endpoint,
   } = idServerConfig.serverMetadata();
 
-  const { client_id } = idServerConfig.clientMetadata();
-
   const connectionMetadata = `
   issuer: ${issuer}
   authorization_endpoint: ${authorization_endpoint}
   token_endpoint: ${token_endpoint}
-  client_id: ${client_id}
   `;
 
   logger.debug(`Authorization server config auth config loaded successfully. ${connectionMetadata}`);
@@ -91,7 +82,7 @@ const oidcServerSConfig = async () => {
 const getAuthorizationUrl = async (redirectUrl) => {
   const params = {
     redirect_uri: redirectUrl,
-    scope: 'openid'
+    scope: 'openid email'
   };
 
   try {
