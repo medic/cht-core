@@ -158,7 +158,11 @@ const runReminders = async (expectedLogs) => {
   const waitForLogs = await utils.waitForSentinelLogs(true, /Task reminders completed/);
   await utils.runSentinelTasks();
   await waitForLogs.promise;
-  return await getReminderLogs(expectedLogs);
+  const logs = await getReminderLogs(expectedLogs);
+
+  const settings = await utils.getSettings();
+  console.warn(settings.reminders);
+  return logs;
 };
 
 const getReminderDocs = () => {
