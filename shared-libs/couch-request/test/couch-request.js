@@ -33,6 +33,12 @@ describe('couch-request', () => {
     uri = `http://admin:password@test.com:5984/medic/_all_docs`;
     sinon.stub(global, 'fetch').resolves(buildResponse({ body: 'yes' }));
 
+    const environmentMock = { getVersion: sinon.stub().resolves('3.0.0') };
+    sinon.stub(require('@medic/environment'), 'getVersion').callsFake(environmentMock.getVersion);
+    
+    sinon.stub(require('os'), 'platform').returns('test-platform');
+    sinon.stub(require('os'), 'arch').returns('test-arch');
+
     couchRequest = rewire('../src/couch-request');
   });
 
@@ -704,6 +710,30 @@ describe('couch-request', () => {
         uri: 'http://test.com:5984/b',
       }
     ]]);
+  });
+
+  it('should automatically add user-agent header to requests', async () => {
+    const getUserAgent = couchRequest.__get__('getUserAgent');
+    
+    const userAgent = await getUserAgent();
+    expect(userAgent).to.equal('CHT/3.0.0 (test-platform,test-arch)');
+    
+    await couchRequest.get({ url: 'http://test.com:5984/test-user-agent' });
+    
+    const requestOptions = global.fetch.args[0][1];
+    expect(requestOptions.headers['user-agent']).to.equal('CHT/3.0.0 (test-platform,test-arch)');
+  });
+
+  it('should not override user-agent header if already specified', async () => {
+    await couchRequest.get({ 
+      url: 'http://test.com:5984/test-user-agent',
+      headers: {
+        'user-agent': 'CustomAgent/1.0'
+      }
+    });
+    
+    const requestOptions = global.fetch.args[0][1];
+    expect(requestOptions.headers['user-agent']).to.equal('CustomAgent/1.0');
   });
 
   describe('sanitizeErrorResponse function', () => {
