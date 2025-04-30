@@ -211,7 +211,7 @@ describe('reminders', () => {
         message: 'something do should {{name}}'
       },
     ];
-    console.warn(remindersConfig);
+    console.log(JSON.stringify(remindersConfig, null, 2));
 
     await utils
       .updateSettings(
