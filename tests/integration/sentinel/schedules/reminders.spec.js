@@ -127,21 +127,6 @@ const start = moment().utc();
 // and expect the same results
 const momentToTextExpression = date => `at ${date.format('HH:mm')} on ${date.format('ddd')}`;
 
-const remindersConfig = [
-  {
-    form: 'FORM1',
-    text_expression: momentToTextExpression(start.clone().subtract(1, 'hour')),
-    message: '{{name}} should do something'
-  },
-  {
-    form: 'FORM2',
-    text_expression: momentToTextExpression(start.clone().subtract(5, 'minute')),
-    mute_after_form_for: '2 days',
-    message: 'something do should {{name}}'
-  },
-];
-console.warn('remindersConfig', remindersConfig);
-
 const forms = {
   FORM1: {
     meta: { code: 'FORM1' },
@@ -210,7 +195,24 @@ const assertReminder = ({ form, reminder, place, message }) => {
 };
 
 describe('reminders', () => {
+  let remindersConfig;
+
   before(() => {
+    remindersConfig = [
+      {
+        form: 'FORM1',
+        text_expression: momentToTextExpression(start.clone().subtract(1, 'hour')),
+        message: '{{name}} should do something'
+      },
+      {
+        form: 'FORM2',
+        text_expression: momentToTextExpression(start.clone().subtract(5, 'minute')),
+        mute_after_form_for: '2 days',
+        message: 'something do should {{name}}'
+      },
+    ];
+    console.warn(remindersConfig);
+
     return utils
       .updateSettings(
         { transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig },
