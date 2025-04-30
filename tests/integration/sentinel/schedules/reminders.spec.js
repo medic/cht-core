@@ -140,7 +140,8 @@ const remindersConfig = [
     message: 'something do should {{name}}'
   },
 ];
-console.warn(remindersConfig);
+console.warn('remindersConfig', remindersConfig);
+
 const forms = {
   FORM1: {
     meta: { code: 'FORM1' },
