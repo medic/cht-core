@@ -289,6 +289,7 @@ const runReminder = (reminder = {}) => {
       return;
     }
     logger.debug('Running reminder %o', reminder);
+    console.warn(scheduledDate); // eslint-disable-line no-console
     const start = performance.now();
     return sendReminders(reminder, scheduledDate).then(() => createReminderLog(reminder, scheduledDate, start));
   });

@@ -167,6 +167,13 @@ const getReminderLogs = (expectedLogs) => {
   });
 };
 
+const runReminders = async (expectedLogs) => {
+  const waitForLogs = await utils.waitForSentinelLogs(true, /Task reminders completed/);
+  await utils.runSentinelTasks();
+  await waitForLogs.promise;
+  return await getReminderLogs(expectedLogs);
+};
+
 const getReminderDocs = () => {
   const opts = {
     startkey: 'reminder:',
@@ -217,9 +224,7 @@ describe('reminders', () => {
     let reminder2Date;
     let reminder2Date2;
     let reminder2Date3;
-    return utils
-      .runSentinelTasks()
-      .then(() => getReminderLogs(2))
+    return runReminders(2)
       .then(({ rows: reminderLogs }) => {
         chai.expect(reminderLogs[0].id.startsWith('reminderlog:FORM1:')).to.be.true;
         chai.expect(reminderLogs[0].doc.reminder).to.deep.equal(remindersConfig[0]);
@@ -277,8 +282,7 @@ describe('reminders', () => {
           { ignoreReload: true }
         );
       })
-      .then(() => utils.runSentinelTasks())
-      .then(() => getReminderLogs(3))
+      .then(() => runReminders(3))
       .then(({ rows: reminderLogs }) => {
         // Only the 2nd reminder ran. Because reminders are executed in a series, we know that 1st reminder was skipped
         // once we get a log for the 2nd reminder. It's just a hack because we have no way of knowing that the
@@ -380,8 +384,7 @@ describe('reminders', () => {
           { ignoreReload: true }
         );
       })
-      .then(() => utils.runSentinelTasks())
-      .then(() => getReminderLogs(4))
+      .then(() => runReminders(4))
       .then(({ rows: reminderLogs }) => {
         chai.expect(reminderLogs).to.have.lengthOf(4);
         reminderLogs.forEach(log => chai.expect(log.doc._rev.startsWith('1-')).to.be.true);
