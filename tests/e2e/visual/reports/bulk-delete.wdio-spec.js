@@ -107,11 +107,6 @@ describe('Bulk delete reports functionality test', () => {
   const reportUuids = [];
 
   before(async () => {
-    // Set up the window for screenshots
-    await resizeWindowForScreenshots();
-
-    // Login and save test data
-    await loginPage.cookieLogin();
     const results = await utils.saveDocs(docs);
     results.forEach(result => {
       savedUuids.push(result.id);
@@ -120,13 +115,17 @@ describe('Bulk delete reports functionality test', () => {
         reportUuids.push(result.id);
       }
     });
-
-    // Wait for indexing
+    await loginPage.cookieLogin();
     await browser.pause(3000);
   });
 
+  after(async () => {
+      await utils.revertDb([], true);
+    });
 
   it('should select 3 reports by ID and capture screenshots', async () => {
+    await resizeWindowForScreenshots();
+
     await commonElements.goToReports();
     await commonElements.waitForLoaders();
     await browser.pause(2000);
