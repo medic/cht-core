@@ -197,7 +197,7 @@ const assertReminder = ({ form, reminder, place, message }) => {
 describe('reminders', () => {
   let remindersConfig;
 
-  before(() => {
+  before(async () => {
     remindersConfig = [
       {
         form: 'FORM1',
@@ -213,12 +213,14 @@ describe('reminders', () => {
     ];
     console.warn(remindersConfig);
 
-    return utils
+    await utils
       .updateSettings(
         { transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig },
         { ignoreReload: 'sentinel' }
-      )
-      .then(() => utils.saveDocs(contacts));
+      );
+    await utils.saveDocs(contacts);
+    const settings = await utils.getSettings();
+    expect(settings.reminders).to.deep.equal(remindersConfig);
   });
 
   after(() => utils.revertDb([], true));
