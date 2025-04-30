@@ -59,6 +59,6 @@ Builds brought to you courtesy of GitHub Actions.
 
 Copyright 2013-2025 Medic Mobile, Inc. <hello@medic.org>
 
-## License
+## License 
 
 The software is provided under AGPL-3.0. Contributions to this project are accepted under the same license.
