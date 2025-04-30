@@ -3,6 +3,7 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const reportFactory = require('@factories/cht/reports/generic-report');
+const reportsPageMobile = require('@page-objects/default-mobile/reports/reports.wdio.page');
 const personFactory = require('@factories/cht/contacts/person');
 const { resizeWindowForScreenshots, generateScreenshot, isMobile } = require('@utils/screenshots');
 
