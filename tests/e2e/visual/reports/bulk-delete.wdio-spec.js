@@ -10,7 +10,7 @@ const { resizeWindowForScreenshots, generateScreenshot, isMobile } = require('@u
 describe('Bulk delete reports functionality test', () => {
   // Create test contact and reports
   const contact = personFactory.build();
-
+  const REPORTED_DATE = Date.now() - (13 * 60 * 60 * 1000);
   const reports = [
     reportFactory
       .report()
