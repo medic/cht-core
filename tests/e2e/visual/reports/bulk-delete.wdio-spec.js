@@ -96,7 +96,7 @@ describe('Bulk delete reports functionality test', () => {
         contact: {
           _id: contact._id,
         },
-        reported_date: Date.now() - (13 * 60 * 60 * 1000),
+        reported_date: REPORTED_DATE,
         from: 'Unknown sender',
       }),
   ];
