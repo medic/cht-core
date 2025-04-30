@@ -4,7 +4,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const personFactory = require('@factories/cht/contacts/person');
-const { resizeWindowForScreenshots, generateScreenshot } = require('@utils/screenshots');
+const { resizeWindowForScreenshots, generateScreenshot, isMobile } = require('@utils/screenshots');
 
 describe('Bulk delete reports functionality test', () => {
   // Create test contact and reports
@@ -137,20 +137,17 @@ describe('Bulk delete reports functionality test', () => {
     // Select 3 reports by their IDs
     const selectedIds = reportUuids.slice(0, 3);
   
-    const windowSize = await browser.getWindowSize();
-    const isMobile = windowSize.width <= 768;
+    const isMobileDevice = await isMobile();
 
-    const reportsPageObj = isMobile
+    const reportsPageObj = isMobileDevice
       ? require('@page-objects/default-mobile/reports/reports.wdio.page')
       : reportsPage;
   
     const selectSomeResult = await reportsPageObj.selectReports(selectedIds);
   
-    // On mobile, selectedCount/countLabel may be different or undefined, so just check checkboxes
-    if (!isMobile) {
+    if (!isMobileDevice) {
       expect(selectSomeResult.selectedCount).to.equal(3);
     } else {
-      // Optionally, check that 3 checkboxes are checked
       const checked = await reportsPageObj.reportsPageDefault.leftPanelSelectors.selectedReportsCheckboxes();
       expect(checked.length).to.equal(3);
     }
