@@ -8,9 +8,7 @@ const { resizeWindowForScreenshots, generateScreenshot, isMobile } = require('@u
 
 describe('Bulk delete reports functionality test', () => {
   // Create test contact and reports
-  const contact = personFactory.build({
-    _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32',
-  });
+  const contact = personFactory.build();
 
   const reports = [
     reportFactory
