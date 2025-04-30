@@ -120,8 +120,8 @@ describe('Bulk delete reports functionality test', () => {
   });
 
   after(async () => {
-      await utils.revertDb([], true);
-    });
+    await utils.revertDb([], true);
+  });
 
   it('should select 3 reports by ID and capture screenshots', async () => {
     await resizeWindowForScreenshots();
