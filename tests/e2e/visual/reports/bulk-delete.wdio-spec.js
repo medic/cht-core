@@ -138,7 +138,7 @@ describe('Bulk delete reports functionality test', () => {
     const isMobileDevice = await isMobile();
 
     const reportsPageObj = isMobileDevice
-      ? require('@page-objects/default-mobile/reports/reports.wdio.page')
+      ? reportsPageMobile
       : reportsPage;
   
     const selectSomeResult = await reportsPageObj.selectReports(selectedIds);
