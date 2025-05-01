@@ -1,3 +1,4 @@
+const environment = require('@medic/environment');
 const path = require('path');
 const os = require('os');
 let asyncLocalStorage;
@@ -26,8 +27,6 @@ const addServername = isTrue(process.env.ADD_SERVERNAME_TO_HTTP_AGENT);
 //
 
 const getUserAgent = async () => {
-  // lazy load environment to avoid circular dependency
-  const environment = require('@medic/environment');
   const chtVersion = await environment.getVersion();
   const platform = os.platform();
   const arch = os.arch();
@@ -155,8 +154,6 @@ const setRequestOptions = async (options) => {
   const sendJson = getSendJson(options);
   setRequestContentType(options, sendJson);
   if (addServername) {
-    // lazy load environment to avoid circular dependency
-    const environment = require('@medic/environment');
     options.servername = environment.host;
   }
 };
