@@ -16,9 +16,7 @@ const urlJoin = require('url-join');
 const request = require('@medic/couch-request');
 const vm = require('vm');
 const logger = require('@medic/logger');
-const os = require('os');
 
-const environment = require('@medic/environment');
 const secureSettings = require('@medic/settings');
 
 const OUTBOUND_REQ_TIMEOUT = 10 * 1000;
