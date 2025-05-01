@@ -6,7 +6,7 @@ let requestIdHeader;
 
 const JSON_HEADER_VALUE = 'application/json';
 const CONTENT_TYPE = 'content-type';
-const CHT_AGENT = 'CHT';
+const CHT_AGENT = 'Community Health Toolkit';
 
 const isString = value => typeof value === 'string' || value instanceof String;
 const isTrue = value => isString(value) ? value.toLowerCase() === 'true' : value === true;
