@@ -102,6 +102,7 @@ const handleBasicAuth = async (authConf, sendOptions) => {
 };
 
 const handleHeaderAuth = async (authConf, sendOptions) => {
+  sendOptions.headers = sendOptions.headers || {};
   if (authConf.name && authConf.name.toLowerCase() === 'authorization') {
     const value = await fetchPassword(authConf.value_key);
     sendOptions.headers.authorization = value;
