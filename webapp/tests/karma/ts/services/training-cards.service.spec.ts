@@ -454,7 +454,7 @@ describe('TrainingCardsService', () => {
   it('should not show training forms if their internalID does not have the right prefix', async () => {
     sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
     localDb.allDocs.resolves({ rows: [] });
-    clock = sinon.useFakeTimers({now: new Date('2022-05-23 20:29:25')});
+    clock = sinon.useFakeTimers({now: new Date('2022-06-03 20:29:25')});
     const xforms = [
       {
         _id: 'form:training:cards-1',
@@ -722,7 +722,7 @@ describe('TrainingCardsService', () => {
       routeSnapshotService.get.returns({ data: { hideTraining: false } });
       sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'ronald' });
       window.localStorage.setItem('training-cards-last-viewed-date-ronald', '2024-05-23 20:29:25');
-      clock = sinon.useFakeTimers({now: new Date('2022-05-23 20:29:25')});
+      clock = sinon.useFakeTimers({now: new Date('2025-05-25 20:29:25')});
       localDb.allDocs.resolves({ rows: [] });
       const xforms = [ {
         _id: 'form:training:abc-100',
