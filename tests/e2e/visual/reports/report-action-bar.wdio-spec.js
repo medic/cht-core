@@ -44,12 +44,13 @@ describe('Visual: Reports - More Options Menu & Floating Action Button', () => {
       await reportsPage.leftPanelSelectors.reportByUUID(savedUuids[0]).click();
       await reportsPage.rightPanelSelectors.reportBodyDetails().waitForDisplayed();
       await commonElements.openMoreOptionsMenu();
-      await generateScreenshot('report', 'mobile-more-options-menu');
+      await generateScreenshot('report', 'more-options-menu');
     } else {
       // For desktop: show more options menu from reports list
       await commonElements.openMoreOptionsMenu();
-      await generateScreenshot('report', 'desktop-more-options-menu');
+      await generateScreenshot('report', 'more-options-menu');
     }
   });
+
 
 });
