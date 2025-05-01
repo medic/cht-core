@@ -299,6 +299,7 @@ module.exports = {
   // called from schedule/index.js every 5 minutes, for now
   execute: () => {
     const reminders = config.get('reminders') || [];
+    console.warn(reminders); // eslint-disable-line no-console
     return reminders
       .filter(reminder => {
         if (isConfigValid(reminder)) {
