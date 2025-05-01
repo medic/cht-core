@@ -33,9 +33,13 @@ const getOidcBaseUrl = () => {
   return dns.lookup(os.hostname(), { family: 4 })
     .then(() => {
       // const address = `https://${getIpAddress().replace(/\./g, '-')}.local-ip.medicmobile.org:3000`;
-      const address = `${hostURL}:3000`;
+      const address = hostURL(3000);
+      // const address = `http://host.docker.internal:3000`;
+      // const address = `http://localhost:3000`;
       // const address = getIpAddress();
+      // const address = 'http://172.17.0.1:3000';
       console.log('addr_name: ', address);
+      console.log('host id address', getIpAddress());
       return address;
     });
 };

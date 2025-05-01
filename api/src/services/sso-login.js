@@ -89,6 +89,7 @@ const getAuthorizationUrl = async (redirectUrl) => {
     const serverConfig = await oidcServerSConfig();
     return client.buildAuthorizationUrl(serverConfig, params);
   } catch (err) {
+    console.log(err);
     logger.error(err);
     throw SERVER_ERROR;
   }
