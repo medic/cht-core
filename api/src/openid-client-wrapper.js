@@ -5,6 +5,7 @@ const {
   calculatePKCECodeChallenge,
   buildAuthorizationUrl,
   authorizationCodeGrant,
+  allowInsecureRequests,
 } = require('openid-client');
 
 module.exports = {
@@ -13,4 +14,5 @@ module.exports = {
   calculatePKCECodeChallenge,
   buildAuthorizationUrl,
   authorizationCodeGrant,
+  allowInsecureRequests,
 };
