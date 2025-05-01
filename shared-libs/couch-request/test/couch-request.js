@@ -107,6 +107,7 @@ describe('couch-request', () => {
           accept: 'application/json',
           'content-type': 'application/json',
           authorization: `Basic ${btoa('admin:password')}`,
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/test',
@@ -129,6 +130,7 @@ describe('couch-request', () => {
           accept: 'application/json',
           'content-type': 'application/json',
           authorization: `Basic ${btoa('admin:password')}`,
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/omg',
@@ -152,6 +154,7 @@ describe('couch-request', () => {
           accept: 'application/json',
           'content-type': 'application/json',
           authorization: `Basic ${btoa('admin:pass')}`,
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/doc/attachment',
@@ -180,6 +183,7 @@ describe('couch-request', () => {
           accept: 'application/json',
           'content-type': 'application/json',
           authorization: `Basic ${btoa('admin:pass')}`,
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic?number=2&string=yes&array=%5B%22one%22%2C%22two%22%5D&boolean=true',
@@ -203,6 +207,7 @@ describe('couch-request', () => {
           accept: 'application/json',
           'content-type': 'application/json',
           authorization: `Basic ${btoa('admin:123456')}`,
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/oops',
@@ -226,6 +231,7 @@ describe('couch-request', () => {
           accept: 'application/json',
           'content-type': 'application/json',
           authorization: `Basic ${btoa('admin:123456')}`,
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/omg',
@@ -243,6 +249,7 @@ describe('couch-request', () => {
         headers: {
           accept: 'application/json',
           'content-type': 'application/json',
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/a',
@@ -264,6 +271,7 @@ describe('couch-request', () => {
           accept: 'application/json',
           'content-type': 'application/json',
           authorization: 'Bearer something',
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://marvel.net:5984/a',
@@ -306,6 +314,7 @@ describe('couch-request', () => {
         headers: {
           accept: 'application/json',
           'content-type': 'application/json',
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/a',
@@ -327,6 +336,7 @@ describe('couch-request', () => {
         headers: {
           accept: 'application/json',
           'content-type': 'application/json',
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         body: JSON.stringify({ foo: 'bar' }),
         servername: 'test.com',
@@ -349,6 +359,7 @@ describe('couch-request', () => {
         method: 'POST',
         headers: {
           'content-type': 'application/x-www-form-urlencoded',
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         body: 'foo=bar&bar=baz',
         servername: 'test.com',
@@ -372,6 +383,7 @@ describe('couch-request', () => {
         headers: {
           'content-type': 'application/x-www-form-urlencoded',
           accept: 'application/json',
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         body: 'foo=bar&bar=baz',
         servername: 'test.com',
@@ -392,7 +404,9 @@ describe('couch-request', () => {
       'http://test.com:5984/b',
       {
         method: 'POST',
-        headers: {},
+        headers: {
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
+        },
         body: 'some random text',
         servername: 'test.com',
         uri: 'http://test.com:5984/b',
@@ -414,6 +428,7 @@ describe('couch-request', () => {
         method: 'POST',
         headers: {
           'content-type': 'text/html',
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         body: 'some random text',
         servername: 'test.com',
@@ -468,6 +483,7 @@ describe('couch-request', () => {
         headers: {
           'content-type': 'application/json',
           accept: 'application/json',
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/b',
@@ -493,6 +509,7 @@ describe('couch-request', () => {
         headers: {
           accept: 'application/json',
           'content-type': 'application/json',
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/b',
@@ -517,6 +534,7 @@ describe('couch-request', () => {
         headers: {
           accept: 'application/json',
           'content-type': 'application/json',
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         uri: 'http://test.com:5984/b',
       }
@@ -640,6 +658,7 @@ describe('couch-request', () => {
         headers: {
           accept: 'application/json',
           'content-type': 'application/json',
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/test',
@@ -662,6 +681,7 @@ describe('couch-request', () => {
         headers: {
           accept: 'application/json',
           'content-type': 'application/json',
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/test',
@@ -682,7 +702,8 @@ describe('couch-request', () => {
         headers: {
           accept: 'application/json',
           'content-type': 'application/json',
-          'header-name': 'req_uuid'
+          'header-name': 'req_uuid',
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/test',
@@ -705,6 +726,7 @@ describe('couch-request', () => {
           'content-type': 'application/json',
           'header-name': 'req_uuid',
           'authorization': 'Basic 123',
+          'user-agent': 'Community Health Toolkit/3.0.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/b',
@@ -715,13 +737,20 @@ describe('couch-request', () => {
   it('should automatically add user-agent header to requests', async () => {
     const getUserAgent = couchRequest.__get__('getUserAgent');
     
+    // Temporarily restore the NODE_ENV to allow user-agent header for this test only
+    const origNodeEnv = process.env.NODE_ENV;
+    delete process.env.NODE_ENV;
+    
     const userAgent = await getUserAgent();
-    expect(userAgent).to.equal('CHT/3.0.0 (test-platform,test-arch)');
+    expect(userAgent).to.equal('Community Health Toolkit/3.0.0 (test-platform,test-arch)');
     
     await couchRequest.get({ url: 'http://test.com:5984/test-user-agent' });
     
     const requestOptions = global.fetch.args[0][1];
-    expect(requestOptions.headers['user-agent']).to.equal('CHT/3.0.0 (test-platform,test-arch)');
+    expect(requestOptions.headers['user-agent']).to.equal('Community Health Toolkit/3.0.0 (test-platform,test-arch)');
+    
+    // Restore NODE_ENV
+    process.env.NODE_ENV = origNodeEnv;
   });
 
   it('should not override user-agent header if already specified', async () => {
