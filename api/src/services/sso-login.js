@@ -104,9 +104,11 @@ const getIdToken = async (currentUrl) => {
 
   try {
     const serverConfig = await oidcServerSConfig();
+
     const tokens = await networkCallRetry(
       () => client.authorizationCodeGrant(serverConfig, currentUrl, { idTokenExpected: true })
     );
+
     const { id_token } = tokens;
     const { name, preferred_username, email } = tokens.claims();
 

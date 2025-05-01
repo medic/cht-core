@@ -136,6 +136,7 @@
     "jasmine-spec-reporter": "^7.0.0",
     "jsdoc": "^4.0.4",
     "json-diff": "^1.0.6",
+    "jsonwebtoken": "^9.0.2",
     "jsverify": "^0.8.4",
     "just-diff": "^6.0.2",
     "karma": "^6.4.2",
