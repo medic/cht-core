@@ -795,7 +795,7 @@ describe('RulesEngineService', () => {
   it('should cancel all ensure freshness threads', async () => {
     fetchTargetsResult = sinon.stub().resolves([]);
     fetchTasksResult = sinon.stub().resolves([]);
-    clock = sinon.useFakeTimers({ now:1000});
+    clock = sinon.useFakeTimers({ now: 1000});
     service = TestBed.inject(RulesEngineService);
 
     await service.isEnabled();
@@ -817,7 +817,7 @@ describe('RulesEngineService', () => {
   });
 
   it('should record correct telemetry data with emitted events', async () => {
-    clock = sinon.useFakeTimers({ now:1000});
+    clock = sinon.useFakeTimers({ now: 1000});
     let fetchTargetResultPromise;
     const fetchTasksResultPromise: any[] = [];
     fetchTargetsResult = sinon.stub().callsFake(() => new Promise(resolve => fetchTargetResultPromise = resolve));
@@ -882,7 +882,7 @@ describe('RulesEngineService', () => {
 
   it('should record correct telemetry data for disabled actions', async () => {
     authService.has.withArgs('can_view_tasks').resolves(false);
-    clock = sinon.useFakeTimers({ now:1000});
+    clock = sinon.useFakeTimers({ now: 1000});
     fetchTargetsResult = sinon.stub().resolves([]);
     fetchTasksResult = sinon.stub().resolves([]);
     service = TestBed.inject(RulesEngineService);
@@ -941,7 +941,7 @@ describe('RulesEngineService', () => {
         Failed: 22,
       };
 
-      clock = sinon.useFakeTimers({ now:1000});
+      clock = sinon.useFakeTimers({ now: 1000});
       let fetchTasksBreakdownResult;
       rulesEngineCoreStubs.fetchTasksBreakdown.callsFake(() => new Promise(r => fetchTasksBreakdownResult = r));
       service = TestBed.inject(RulesEngineService);
@@ -968,7 +968,7 @@ describe('RulesEngineService', () => {
         Draft: 7,
       };
 
-      clock = sinon.useFakeTimers({ now:1000});
+      clock = sinon.useFakeTimers({ now: 1000});
       let fetchTasksBreakdownResult;
       rulesEngineCoreStubs.fetchTasksBreakdown.callsFake(() => new Promise(r => fetchTasksBreakdownResult = r));
       service = TestBed.inject(RulesEngineService);

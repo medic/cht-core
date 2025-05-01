@@ -773,7 +773,7 @@ describe('outbound schedule', () => {
       configGet.returns(configs);
       batch.resolvesArg(0);
 
-      clock = sinon.useFakeTimers({now:new Date('2023-07-11T03:05:00+0000').getTime()});
+      clock = sinon.useFakeTimers({ now:new Date('2023-07-11T03:05:00+0000').getTime()});
 
       return outbound.execute().then((dueConfigs) => {
         assert.equal(configGet.callCount, 1);
@@ -845,7 +845,7 @@ describe('outbound schedule', () => {
 
       singlePush.resolves();
 
-      clock = sinon.useFakeTimers({now:new Date('2024-09-10T03:05:00+0000').getTime()});
+      clock = sinon.useFakeTimers({ now:new Date('2024-09-10T03:05:00+0000').getTime()});
 
       return outbound.execute().then(() => {
         assert.equal(singlePush.callCount, 1);
