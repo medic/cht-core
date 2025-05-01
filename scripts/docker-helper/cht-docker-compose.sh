@@ -362,10 +362,8 @@ total_containers=\"$(get_global_running_container_count)\"\
     if [ "$RUNNING" == "true" ]; then
       logs=$(docker logs -n1 "${container}")
       logs=$(echo "$logs" | tr -d '"')
-
-      # todo - maybe grab horti logs if container contains "medic-os"?
-      # docker exec -it helper_test_medic-os_1  tail -n3 /srv/storage/horticulturalist/logs/horticulturalist.lo
-    else
+      
+      else
       RUNNING="false"
       logs="NA"
     fi
