@@ -158,7 +158,7 @@
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_baby id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" delimiter="#" version="2022-09-26 09:13:25">
+        <pnc_danger_sign_follow_up_baby id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" delimiter="#" version="2025-05-01 22:21:47">
           <inputs>
             <meta>
               <location>
@@ -280,7 +280,7 @@ selected(../drowsy, 'yes') or
 selected(../stiff, 'yes') or
 selected(../yellow_skin, 'yes') or
 selected(../fever, 'yes') or
-selected(../blue_skin, 'yes'), 'yes',
+selected(../blue_skin, 'yes'), 'yes', 
 if(selected(../infected_umbilical_cord, 'no') and
 selected(../convulsion, 'no') and
 selected(../difficulty_feeding, 'no') and

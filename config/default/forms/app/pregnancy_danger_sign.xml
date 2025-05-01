@@ -167,7 +167,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_danger_sign id="pregnancy_danger_sign" prefix="J1!pregnancy_danger_sign!" delimiter="#" version="2022-09-26 11:20:33">
+        <pregnancy_danger_sign id="pregnancy_danger_sign" prefix="J1!pregnancy_danger_sign!" delimiter="#" version="2025-05-01 22:25:50">
           <inputs>
             <meta>
               <location>
@@ -303,7 +303,7 @@ or selected(../reduced_or_no_fetal_movements, 'yes')
 or selected(../breaking_water, 'yes')
 or selected(../easily_tired, 'yes')
 or selected(../face_hand_swelling, 'yes')
-or selected(../breathlessness, 'yes'),
+or selected(../breathlessness, 'yes'), 
 'yes',
 if(selected(../vaginal_bleeding, 'no')
 and selected(../fits, 'no')
