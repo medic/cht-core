@@ -1,0 +1,13 @@
+<div class="row flex grid" id="contact_summary" *ngIf="!contactsLoadingSummary">
+  <div class="col col-xs-12 col-sm-{{field.width || 12}}" *ngFor="let field of fields">
+    <div class="cell {{field.label | lowercase}}">
+      <span *ngIf="field.icon" class="field-icon" [innerHTML]="field.icon | resourceIcon"></span>
+      <div>
+        <p class="summary_label" translate *ngIf="field.label">{{field.label}}</p>
+        <p *ngIf="field.translate" translate [translateParams]="field.context">{{field.value}}</p>
+        <p *ngIf="!field.translate && field.filter" [innerHTML]="field.value"></p>
+        <p *ngIf="!field.translate && !field.filter">{{field.value}}</p>
+      </div>
+    </div>
+  </div>
+</div>

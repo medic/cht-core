@@ -191,7 +191,10 @@ const updateServiceWorker = async () => {
 };
 
 const setDdocsVersion = () => {
-  const version = versions.getVersion();
+  let version = versions.getVersion();
+  if (!process.env.TAG) {
+    version = `${version}-${new Date().getTime()}`;
+  }
   const databases = fs.readdirSync(ddocsBuildPath);
   databases.forEach(database => {
     const dbPath = path.resolve(ddocsBuildPath, database);
