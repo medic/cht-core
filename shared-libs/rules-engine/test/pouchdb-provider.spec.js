@@ -151,7 +151,7 @@ describe('pouchdb provider', () => {
     db = await memdownMedic('../..');
     await db.bulkDocs(fixtures);
 
-    clock = sinon.useFakeTimers({ now:100000000});
+    clock = sinon.useFakeTimers({now: 100000000});
     sinon.spy(db, 'put');
     sinon.spy(db, 'query');
   });

@@ -6,7 +6,7 @@ const extras = require('../../nools-extras');
 
 describe('Date related tests', () => {
   beforeEach(() => {
-    sinon.useFakeTimers({now:new Date()});
+    sinon.useFakeTimers({now: new Date()});
   });
   afterEach(() => {
     sinon.restore();

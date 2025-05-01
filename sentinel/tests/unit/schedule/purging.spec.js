@@ -12,7 +12,7 @@ let scheduler;
 describe('Purging Schedule', () => {
 
   beforeEach(() => {
-    clock = sinon.useFakeTimers({ now:new Date()});
+    clock = sinon.useFakeTimers({now: new Date()});
     scheduler = rewire('../../../src/schedule/purging');
   });
 

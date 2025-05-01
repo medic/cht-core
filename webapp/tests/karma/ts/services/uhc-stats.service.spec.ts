@@ -19,7 +19,7 @@ describe('UHCStats Service', () => {
   let authService;
 
   beforeEach(() => {
-    clock = sinon.useFakeTimers({ now:moment('2021-04-07 18:18:18').valueOf()});
+    clock = sinon.useFakeTimers({now: moment('2021-04-07 18:18:18').valueOf()});
     localDb = { query: sinon.stub() };
     dbService = { get: sinon.stub().returns(localDb) };
     sessionService = { isAdmin: sinon.stub() };

@@ -118,7 +118,7 @@ describe('Target Checkpoint Migration', () => {
   describe('setHasRun', () => {
     it('should write flag local doc', async () => {
       const now = 123345;
-      clock = sinon.useFakeTimers({ now:now});
+      clock = sinon.useFakeTimers({now: now});
       localDb.put = sinon.stub().resolves();
       await migration.setHasRun(dbService);
       expect(localDb.put.args).to.deep.equal([[{

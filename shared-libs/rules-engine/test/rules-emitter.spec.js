@@ -218,7 +218,7 @@ for (const rulesAreDeclarative of declarativeScenarios) {
 
       it('trigger task.anc.pregnancy_home_visit', async () => {
         const time = moment('2000-01-01');
-        clock = sinon.useFakeTimers({ now:time.valueOf()});
+        clock = sinon.useFakeTimers({now: time.valueOf()});
 
         const initialized = rulesEmitter.initialize(engineSettings({ rulesAreDeclarative }));
         expect(initialized).to.be.true;
