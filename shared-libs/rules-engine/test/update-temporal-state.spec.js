@@ -10,7 +10,7 @@ let clock;
 
 describe('update-temporal-states', () => {
   beforeEach(() => {
-    clock = sinon.useFakeTimers({now:NOW});
+    clock = sinon.useFakeTimers({ now:NOW});
   });
 
   afterEach(() => {

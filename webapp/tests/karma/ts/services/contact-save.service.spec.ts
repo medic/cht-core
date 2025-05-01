@@ -200,7 +200,7 @@ describe('ContactSave service', () => {
       .returns({ _id: 'contact', parent: { _id: 'def' } })
       .withArgs(sinon.match({ _id: 'def' }))
       .returns({ _id: 'def' });
-    clock = sinon.useFakeTimers({now:5000});
+    clock = sinon.useFakeTimers({ now:5000});
 
     return service
       .save(form, docId, type)

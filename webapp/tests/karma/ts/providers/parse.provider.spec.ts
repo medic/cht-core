@@ -246,7 +246,7 @@ describe('Parse provider', () => {
         getInstance: sinon.stub().returns(new AgePipe(formatDateService, relativeDateService, sanitizer)),
       };
       const today = moment('2020-10-30');
-      clock = sinon.useFakeTimers({now:today.valueOf()});
+      clock = sinon.useFakeTimers({ now:today.valueOf()});
 
       provider = new ParseProvider(pipesService);
       let birthDate = moment('2019-01-01').valueOf();

@@ -104,7 +104,7 @@ describe(`Rules Engine Integration Tests`, () => {
   let configHashSalt = 0;
 
   beforeEach(() => {
-    clock = sinon.useFakeTimers({now:TEST_START});
+    clock = sinon.useFakeTimers({ now:TEST_START});
   });
 
   afterEach(() => {

@@ -61,7 +61,7 @@ describe('Date Filter Component', () => {
   });
 
   it('ngAfterViewInit should initialize daterangepicker', () => {
-    clock = sinon.useFakeTimers({now:moment().valueOf()});
+    clock = sinon.useFakeTimers({ now:moment().valueOf()});
 
     component.ngAfterViewInit();
 
@@ -95,7 +95,7 @@ describe('Date Filter Component', () => {
   });
 
   it('should apply filter correctly', () => {
-    clock = sinon.useFakeTimers({now:moment().valueOf()});
+    clock = sinon.useFakeTimers({ now:moment().valueOf()});
     const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
     const from = moment().subtract(2, 'days');
     const to = moment();
