@@ -104,7 +104,7 @@ describe('EditMessageGroupComponent', () => {
   describe('addTask', () => {
     it('should add task', () => {
       const NOW = 10000;
-      clock = sinon.useFakeTimers(NOW);
+      clock = sinon.useFakeTimers({now: NOW});
       component.report = { _id: 'report' };
       component.group = {
         number: 3,
