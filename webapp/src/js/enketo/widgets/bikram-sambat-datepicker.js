@@ -5,6 +5,14 @@ const $ = require('jquery');
 require('enketo-core/src/js/plugins');
 const bikram_sambat_bs = require('bikram-sambat-bootstrap');
 
+// Add access to the underlying bikram-sambat module if available
+try {
+  // Try to get direct access to the underling bikram-sambat library if available
+  bikram_sambat_bs.bs = require('bikram-sambat');
+} catch (e) {
+  console.warn('Failed to directly load bikram-sambat module:', e);
+}
+
 // Try to load nepali-date-picker in different ways to ensure it's available
 try {
   require('nepali-date-picker/dist/nepaliDatePicker.min.js');
@@ -62,6 +70,9 @@ class Bikramsambatdatepicker extends Widget {
       const $group = $parent.find('.bikram-sambat-input-group');
       const $calendarButton = $group.find('.calendar-btn');
 
+      // Also sync the values when the form is initialized
+      syncInputValues($group);
+
       // Add hidden input and initialize it
       const $hiddenDateInput = $('<input type="text" class="nepali-datepicker-input">');
       $calendarButton.after($hiddenDateInput);
@@ -71,12 +82,20 @@ class Bikramsambatdatepicker extends Widget {
         if (typeof $.fn.nepaliDatePicker === 'function') {
           // Delay init until input is added to DOM
           setTimeout(() => {
+            // Configure nepali date picker
             $hiddenDateInput.nepaliDatePicker({
               ndpYear: true,
               ndpMonth: true,
+              ndpYearCount: 10,
               disableAfter: null,
               dateFormat: '%y-%m-%d',
-              closeOnDateSelect: true
+              closeOnDateSelect: true,
+              onChange: function() {
+                // Trigger dateChange event which our code will handle
+                setTimeout(() => {
+                  $(this).trigger('dateChange');
+                }, 50);
+              }
             });
 
             // Show calendar on button click
@@ -88,26 +107,67 @@ class Bikramsambatdatepicker extends Widget {
               // This ensures the library can properly attach the calendar
               $hiddenDateInput.css({
                 'position': 'fixed',
-                'left': '50%',
-                'top': '50%',
-                'transform': 'translate(-50%, -50%)',
+                'left': '-9999px',
                 'opacity': '0',
-                'pointer-events': 'auto'
+                'z-index': '9999', 
+                'pointer-events': 'auto',
+                'visibility': 'visible'
               }).focus();
+              
+              // Add overlay to handle clicks outside
+              if (!$('.nepali-date-picker-overlay').length) {
+                $('<div class="nepali-date-picker-overlay"></div>').appendTo('body');
+              }
               
               // Force the date picker to show
               try {
                 $hiddenDateInput.nepaliDatePicker('show');
                 
-                // If the above doesn't work, try direct access to the calendar
+                // Position the calendar in the center of the screen
                 setTimeout(() => {
-                  if ($('.nepali-date-picker').length && $('.nepali-date-picker').is(':hidden')) {
-                    $('.nepali-date-picker').show();
+                  $('.nepali-date-picker-overlay').addClass('active');
+                  
+                  if ($('.nepali-date-picker').length) {
+                    $('.nepali-date-picker').css({
+                      'position': 'fixed',
+                      'top': '50%',
+                      'left': '50%',
+                      'transform': 'translate(-50%, -50%)',
+                      'z-index': '9999',
+                      'display': 'block',
+                      'visibility': 'visible',
+                      'opacity': '1',
+                      'pointer-events': 'auto'
+                    });
+                    
+                    // Handle clicks outside to close
+                    $('.nepali-date-picker-overlay').on('click', function(e) {
+                      $hiddenDateInput.nepaliDatePicker('hide');
+                      $('.nepali-date-picker-overlay').removeClass('active');
+                      $(this).off('click');
+                    });
+                    
+                    // Handle Escape key to close the date picker
+                    $(document).on('keydown.nepaliDatePicker', function(e) {
+                      if (e.keyCode === 27) { // Escape key
+                        $hiddenDateInput.nepaliDatePicker('hide');
+                        $('.nepali-date-picker-overlay').removeClass('active');
+                        $(document).off('keydown.nepaliDatePicker');
+                      }
+                    });
                   }
                 }, 100);
               } catch(err) {
                 console.error('Error showing date picker:', err);
               }
+            });
+
+            // When date is selected, close the picker
+            $hiddenDateInput.on('dateSelect', function() {
+              setTimeout(() => {
+                $('.nepali-date-picker-overlay').removeClass('active');
+                $(document).off('keydown.nepaliDatePicker');
+              }, 100);
             });
 
             // Sync selected date to inputs
@@ -116,7 +176,7 @@ class Bikramsambatdatepicker extends Widget {
               if (!selectedDate) return;
 
               try {
-                console.log('Received date:', selectedDate);
+                console.log('Received date from picker:', selectedDate);
                 
                 // Extract date components from selected date
                 let year, month, day;
@@ -146,19 +206,36 @@ class Bikramsambatdatepicker extends Widget {
                   return;
                 }
 
-                // Ensure all values are converted from Nepali digits if needed
-                year =  year;
-                month = convertNepaliDigitsToArabic(month);
-                day =  day;
+                // Keep original Nepali digits when possible, but ensure valid values
+                console.log('Extracted date components:', { day, month, year });
                 
-                console.log('Final date components:', { day, month, year });
-
-                // Set values in the input fields
+                // Make sure we have month as a number before converting to name
+                const monthNum = parseInt(convertNepaliDigitsToArabic(month), 10);
+                if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+                  console.error('Invalid month number:', month);
+                  return;
+                }
+                
+                // Get month name for display and storage
+                const monthNames = [
+                  'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ',
+                  'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत'
+                ];
+                const monthName = monthNames[monthNum - 1];
+                
+                // Set values in the input fields (preserve Nepali digits if present)
                 $group.find('input[name=day]').val(day);
                 $group.find('input[name=year]').val(year);
                 
-                // Update month dropdown and hidden input
-                updateMonthDropdown($group, month);
+                // Update month dropdown display and set hidden input to month name
+                $group.find('input[name=month]').val(monthName);
+                $group.find('.month-dropdown button').text(monthName);
+                
+                console.log('Setting form values:', { 
+                  day: day, 
+                  month: monthName, 
+                  year: year 
+                });
                 
                 // Update the gregorian date using bikram_sambat_bs methods
                 updateGregorianDate($group, $realDateInput);
@@ -171,8 +248,7 @@ class Bikramsambatdatepicker extends Widget {
             $group.find('.month-dropdown .dropdown-menu a').on('click', function(e) {
               e.preventDefault();
               const monthName = $(this).text();
-              const monthNumber = getMonthNumberFromName(monthName);
-              $group.find('input[name=month]').val(monthNumber);
+              $group.find('input[name=month]').val(monthName);
               $group.find('.month-dropdown button').text(monthName);
               $group.find('.month-dropdown').removeClass('open');
               
@@ -213,53 +289,124 @@ class Bikramsambatdatepicker extends Widget {
 function updateGregorianDate($group, $realDateInput) {
   try {
     const day = $group.find('input[name=day]').val();
-    const month = $group.find('input[name=month]').val();
+    const monthName = $group.find('input[name=month]').val();
     const year = $group.find('input[name=year]').val();
     
-    if (day && month && year) {
-      // Convert Nepali digits to Arabic numerals if needed
-      const dayArabic =  day;
-      const monthArabic = convertNepaliDigitsToArabic(month);
-      const yearArabic =  year;
+    if (day && monthName && year) {
+      // Convert Nepali digits to Arabic numerals if needed for calculation
+      const dayArabic = convertNepaliDigitsToArabic(day);
+      const yearArabic = convertNepaliDigitsToArabic(year);
+      
+      // Get month number from name
+      const monthNum = getMonthNumberFromName(monthName);
+      if (!monthNum) {
+        console.warn('Invalid month name:', monthName);
+        return;
+      }
       
       // Make sure values are valid
       const dayNum = parseInt(dayArabic, 10);
-      const monthNum = parseInt(monthArabic, 10);
+      const monthNumber = parseInt(monthNum, 10);
       const yearNum = parseInt(yearArabic, 10);
       
-      if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) {
-        console.warn('Invalid date values:', {day, month, year});
-        console.warn('Converted values:', {dayArabic, monthArabic, yearArabic});
+      if (isNaN(dayNum) || isNaN(monthNumber) || isNaN(yearNum)) {
+        console.warn('Invalid date values:', {day, monthName, year});
         return;
       }
       
       // Validate day value based on month
-      const maxDaysInMonth = bikram_sambat_bs.getDaysInMonth(yearNum, monthNum);
+      let maxDaysInMonth;
+      // Check if getDaysInMonth function exists, otherwise use fallback
+      if (typeof bikram_sambat_bs.getDaysInMonth === 'function') {
+        maxDaysInMonth = bikram_sambat_bs.getDaysInMonth(yearNum, monthNumber);
+      } else {
+        // Fallback: Define maximum days for each month of Nepali calendar
+        // Values for common years, adjust if needed
+        const daysInMonthFallback = {
+          1: 31, 2: 31, 3: 32, 4: 32, 5: 31, 6: 30, 7: 30, 8: 29, 9: 30, 10: 29, 11: 30, 12: 30
+        };
+        maxDaysInMonth = daysInMonthFallback[monthNumber] || 30;
+      }
+      
       if (dayNum < 1 || dayNum > maxDaysInMonth) {
-        console.warn(`Invalid day value: ${dayNum}. Month ${monthNum} in year ${yearNum} has ${maxDaysInMonth} days.`);
+        console.warn(`Invalid day value: ${dayNum}. Month ${monthName} in year ${yearNum} has ${maxDaysInMonth} days.`);
         return;
       }
       
-      // Format with leading zeros if needed
-      const formattedDay = dayNum.toString().padStart(2, '0');
-      const formattedMonth = monthNum.toString().padStart(2, '0');
+      console.log('Converting BS date:', { year: yearNum, month: monthNumber, day: dayNum });
       
-      // Create BS date string
-      const bsDate = `${yearNum}-${formattedMonth}-${formattedDay}`;
+      // Try different conversion methods based on what's available
+      let gregDate = null;
       
-      // Use bikram_sambat_bs functions to convert to Gregorian
-      if (typeof bikram_sambat_bs.convertBsToAd === 'function') {
-        const gregDate = bikram_sambat_bs.convertBsToAd(bsDate);
-        if (gregDate) {
-          $realDateInput.val(gregDate).trigger('change');
+      // Method 1: Use bikram_sambat_bs's getDate_greg_text function which is the most reliable
+      if (typeof bikram_sambat_bs.getDate_greg_text === 'function') {
+        try {
+          // This is the primary method that should work
+          gregDate = bikram_sambat_bs.getDate_greg_text({
+            find: function(selector) {
+              return {
+                val: function() { 
+                  if (selector === '[name=year]') return yearNum;
+                  if (selector === '[name=month]') return monthNumber;
+                  if (selector === '[name=day]') return dayNum;
+                  return '';
+                }
+              };
+            }
+          });
+          console.log('Converted using getDate_greg_text:', gregDate);
+        } catch (error) {
+          console.error('Error using getDate_greg_text:', error);
         }
-      } else if (typeof bikram_sambat_bs.bs2ad === 'function') {
-        const gregDate = bikram_sambat_bs.bs2ad(bsDate);
-        if (gregDate) {
-          $realDateInput.val(gregDate).trigger('change');
+      }
+      
+      // Method 2: Try the underlaying bs.toGreg_text function if available
+      if (!gregDate && bikram_sambat_bs.bs && typeof bikram_sambat_bs.bs.toGreg_text === 'function') {
+        try {
+          gregDate = bikram_sambat_bs.bs.toGreg_text(yearNum, monthNumber, dayNum);
+          console.log('Converted using bs.toGreg_text:', gregDate);
+        } catch (error) {
+          console.error('Error using bs.toGreg_text:', error);
         }
+      }
+      
+      // Method 3: Try our custom converter functions if provided
+      if (!gregDate && typeof bikram_sambat_bs.convertBsToAd === 'function') {
+        try {
+          // Format with leading zeros if needed
+          const formattedDay = dayNum.toString().padStart(2, '0');
+          const formattedMonth = monthNumber.toString().padStart(2, '0');
+          
+          // Create BS date string
+          const bsDate = `${yearNum}-${formattedMonth}-${formattedDay}`;
+          gregDate = bikram_sambat_bs.convertBsToAd(bsDate);
+          console.log('Converted using convertBsToAd:', gregDate);
+        } catch (error) {
+          console.error('Error using convertBsToAd:', error);
+        }
+      }
+      
+      // Method 4: Final fallback to bs2ad
+      if (!gregDate && typeof bikram_sambat_bs.bs2ad === 'function') {
+        try {
+          // Format with leading zeros if needed
+          const formattedDay = dayNum.toString().padStart(2, '0');
+          const formattedMonth = monthNumber.toString().padStart(2, '0');
+          
+          // Create BS date string
+          const bsDate = `${yearNum}-${formattedMonth}-${formattedDay}`;
+          gregDate = bikram_sambat_bs.bs2ad(bsDate);
+          console.log('Converted using bs2ad:', gregDate);
+        } catch (error) {
+          console.error('Error using bs2ad:', error);
+        }
+      }
+      
+      // If we have a Gregorian date, update the input
+      if (gregDate) {
+        $realDateInput.val(gregDate).trigger('change');
       } else {
-        console.error('No BS to AD conversion function found in bikram_sambat_bs');
+        console.error('Failed to convert BS date to AD. No conversion method succeeded.');
       }
     }
   } catch (error) {
@@ -318,8 +465,9 @@ function updateMonthDropdown($group, monthNumber) {
   
   const monthIndex = monthNum - 1;
   if (monthIndex >= 0 && monthIndex < monthNames.length) {
-    $group.find('input[name=month]').val(monthNum);
-    $group.find('.month-dropdown button').text(monthNames[monthIndex]);
+    const monthName = monthNames[monthIndex];
+    $group.find('input[name=month]').val(monthName);
+    $group.find('.month-dropdown button').text(monthName);
     $group.find('.month-dropdown .dropdown-menu li').removeClass('active');
     $group.find('.month-dropdown .dropdown-menu li').eq(monthIndex).addClass('active');
     return true;
@@ -435,7 +583,8 @@ function addNepalDatePickerCSS() {
         height: 1px;
         width: 1px;
         border: none;
-        pointer-events: auto !important;
+        z-index: 9999;
+        visibility: hidden;
       }
       
       /* Nepali date picker styles */
@@ -588,6 +737,7 @@ function addNepalDatePickerCSS() {
         padding: 5px;
         position: absolute;
         width: 100%;
+        z-index: 10000;
       }
       .nepali-date-picker .scrollbar-wrapper {
         border-left: 1px solid rgba(204,204,204,.2);
@@ -631,6 +781,21 @@ function addNepalDatePickerCSS() {
       }
       .drop-down-content li:last-child {
         border-bottom: none;
+      }
+      
+      /* Calendar popup overlay */
+      .nepali-date-picker-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.3);
+        z-index: 9998;
+        display: none;
+      }
+      .nepali-date-picker-overlay.active {
+        display: block;
       }
       
       /* Scrollbar styles */
@@ -702,3 +867,38 @@ const TEMPLATE = `
     </button>
   </div>
 `;
+
+// Helper function to sync all inputs and ensure consistent state
+function syncInputValues($group) {
+  try {
+    const day = $group.find('input[name=day]').val();
+    const monthValue = $group.find('input[name=month]').val();
+    const year = $group.find('input[name=year]').val();
+    
+    // If we have all values, make sure they're consistent
+    if (day && monthValue && year) {
+      // Already good, just update month dropdown if needed
+      if (monthValue) {
+        // If monthValue is a name, just update display
+        if (isNaN(parseInt(convertNepaliDigitsToArabic(monthValue), 10))) {
+          $group.find('.month-dropdown button').text(monthValue);
+        } 
+        // If monthValue is a number, convert to name
+        else {
+          const monthNum = parseInt(convertNepaliDigitsToArabic(monthValue), 10);
+          if (monthNum >= 1 && monthNum <= 12) {
+            const monthNames = [
+              'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ',
+              'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत'
+            ];
+            const monthName = monthNames[monthNum - 1];
+            $group.find('input[name=month]').val(monthName);
+            $group.find('.month-dropdown button').text(monthName);
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error syncing input values:', error);
+  }
+}
