@@ -49,7 +49,10 @@ const getMessage = (value, locale) => {
 };
 
 module.exports = {
-  set: (newSettings) => settings = newSettings,
+  set: (newSettings) => {
+    settings = newSettings;
+    console.warn(settings.reminders); // eslint-disable-line no-console
+  },
   setTranslationCache: (newTranslations) => translationCache = newTranslations,
   setTransitionsLib: (newTransitionsLib) => transitionsLib = newTransitionsLib,
 
