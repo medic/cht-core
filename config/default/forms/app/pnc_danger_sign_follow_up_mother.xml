@@ -128,7 +128,7 @@
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_mother id="pnc_danger_sign_follow_up_mother" prefix="J1!pnc_danger_sign_follow_up_mother!" delimiter="#" version="2022-09-26 09:14:27">
+        <pnc_danger_sign_follow_up_mother id="pnc_danger_sign_follow_up_mother" prefix="J1!pnc_danger_sign_follow_up_mother!" delimiter="#" version="2025-05-01 22:23:28">
           <inputs>
             <meta>
               <location>
@@ -215,7 +215,7 @@
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/source" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/source_id" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/delivery_uuid" type="string"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/contact/_id" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/contact/name" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/contact/short_name" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/contact/patient_id" type="string"/>
@@ -276,7 +276,7 @@ selected(../convulsion, 'no'), 'no', ''))"/>
   <h:body class="pages">
     <group appearance="field-list" ref="/pnc_danger_sign_follow_up_mother/inputs">
       <group ref="/pnc_danger_sign_follow_up_mother/inputs/contact">
-        <input appearance="db-object" ref="/pnc_danger_sign_follow_up_mother/inputs/contact/_id">
+        <input appearance="select-contact type-person" ref="/pnc_danger_sign_follow_up_mother/inputs/contact/_id">
           <label ref="jr:itext('/pnc_danger_sign_follow_up_mother/inputs/contact/_id:label')"/>
         </input>
         <group ref="/pnc_danger_sign_follow_up_mother/inputs/contact/parent">
