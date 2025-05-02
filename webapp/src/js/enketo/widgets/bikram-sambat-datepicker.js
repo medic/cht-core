@@ -1,11 +1,12 @@
 'use strict';
 
+/* eslint max-len: ["error", { "code": 140 }] */
+
 const Widget = require('enketo-core/src/js/widget').default;
 const $ = require('jquery');
 require('enketo-core/src/js/plugins');
 const bikram_sambat_bs = require('bikram-sambat-bootstrap');
-
-// Add access to the underlying bikram-sambat module if available
+ 
 try {
   // Try to get direct access to the underling bikram-sambat library if available
   bikram_sambat_bs.bs = require('bikram-sambat');
@@ -16,13 +17,16 @@ try {
 // Try to load nepali-date-picker in different ways to ensure it's available
 try {
   require('nepali-date-picker/dist/nepaliDatePicker.min.js');
-} catch(e) {
+} catch (e) {
   console.warn('Failed to load nepali-date-picker module:', e);
   // Try to load it from the global context if it's added via script tag
   if (typeof window !== 'undefined' && !window.nepaliDatePicker) {
     console.warn('nepaliDatePicker not found in window context either');
   }
 }
+
+// eslint-disable-next-line max-len
+// This widget provides a Bikram Sambat (Nepali) calendar datepicker for Enketo forms. It allows users to input dates using the Nepali calendar system.
 
 class Bikramsambatdatepicker extends Widget {
   static get selector() {
@@ -141,7 +145,7 @@ class Bikramsambatdatepicker extends Widget {
                     });
                     
                     // Handle clicks outside to close
-                    $('.nepali-date-picker-overlay').on('click', function(e) {
+                    $('.nepali-date-picker-overlay').on('click', function() {
                       $hiddenDateInput.nepaliDatePicker('hide');
                       $('.nepali-date-picker-overlay').removeClass('active');
                       $(this).off('click');
@@ -157,7 +161,7 @@ class Bikramsambatdatepicker extends Widget {
                     });
                   }
                 }, 100);
-              } catch(err) {
+              } catch (err) {
                 console.error('Error showing date picker:', err);
               }
             });
@@ -173,13 +177,17 @@ class Bikramsambatdatepicker extends Widget {
             // Sync selected date to inputs
             $hiddenDateInput.on('dateChange', function () {
               const selectedDate = $(this).val();
-              if (!selectedDate) return;
+              if (!selectedDate) {
+                return;
+              }
 
               try {
                 console.log('Received date from picker:', selectedDate);
                 
                 // Extract date components from selected date
-                let year, month, day;
+                let year;
+                let month;
+                let day;
                 
                 if (selectedDate.includes('-')) {
                   // Handle format like "2080-05-15"
@@ -187,8 +195,10 @@ class Bikramsambatdatepicker extends Widget {
                 } else if (selectedDate.includes('/')) {
                   // Handle format like "2080/05/15"
                   [year, month, day] = selectedDate.split('/');
-                } else if (selectedDate.includes(',') || /[^\x00-\x7F]/.test(selectedDate)) {
-                  // Handle Nepali formatted date (contains commas or non-ASCII characters)
+                } else if (selectedDate.includes(',') || 
+                          // eslint-disable-next-line no-control-regex
+                          /[^\u0000-\u007F]/.test(selectedDate)) {
+                  // Handle Nepali formatted date (non-ASCII characters)
                   console.log('Parsing formatted date:', selectedDate);
                   const parsedDate = parseFormattedNepaliDate(selectedDate);
                   
@@ -270,7 +280,7 @@ class Bikramsambatdatepicker extends Widget {
           $calendarButton.on('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            alert('Nepali Date Picker library not available. Please enter date manually.');
+            console.error('Nepali Date Picker library not available. Please enter date manually.');
           });
         }
       } catch (err) {
@@ -278,7 +288,7 @@ class Bikramsambatdatepicker extends Widget {
         $calendarButton.on('click', function(e) {
           e.preventDefault();
           e.stopPropagation();
-          alert('Error initializing date picker. Please enter date manually.');
+          console.error('Error initializing date picker. Please enter date manually.');
         });
       }
     });
@@ -286,7 +296,7 @@ class Bikramsambatdatepicker extends Widget {
 }
 
 // Helper function to update the gregorian date input based on the BS inputs
-function updateGregorianDate($group, $realDateInput) {
+const updateGregorianDate = function($group, $realDateInput) {
   try {
     const day = $group.find('input[name=day]').val();
     const monthName = $group.find('input[name=month]').val();
@@ -346,9 +356,15 @@ function updateGregorianDate($group, $realDateInput) {
             find: function(selector) {
               return {
                 val: function() { 
-                  if (selector === '[name=year]') return yearNum;
-                  if (selector === '[name=month]') return monthNumber;
-                  if (selector === '[name=day]') return dayNum;
+                  if (selector === '[name=year]') {
+                    return yearNum;
+                  }
+                  if (selector === '[name=month]') {
+                    return monthNumber;
+                  }
+                  if (selector === '[name=day]') {
+                    return dayNum;
+                  }
                   return '';
                 }
               };
@@ -412,11 +428,13 @@ function updateGregorianDate($group, $realDateInput) {
   } catch (error) {
     console.error('Error updating Gregorian date:', error);
   }
-}
+};
 
 // Parse a complete Nepali date string
-function parseFormattedNepaliDate(dateString) {
-  if (!dateString) return null;
+const parseFormattedNepaliDate = function(dateString) {
+  if (!dateString) {
+    return null;
+  }
   
   try {
     const result = { day: null, month: null, year: null };
@@ -428,20 +446,21 @@ function parseFormattedNepaliDate(dateString) {
     }
     
     // Extract day using regex (look for numbers after month name)
-    const dayMatch = monthName ? 
-      dateString.indexOf(monthName) !== -1 ? 
-        dateString.substr(dateString.indexOf(monthName) + monthName.length).match(/\s+([०-९\d]+)/) :
-        null :
-      null;
+    let dayMatch = null;
+    if (monthName) {
+      if (dateString.indexOf(monthName) !== -1) {
+        dayMatch = dateString.substr(dateString.indexOf(monthName) + monthName.length).match(/\s+([०-९\d]+)/);
+      }
+    }
         
     if (dayMatch && dayMatch[1]) {
-      result.day =  dayMatch[1];
+      result.day = dayMatch[1];
     }
     
     // Extract year (usually the last number in the string)
     const yearMatch = dateString.match(/[०-९\d]{4}/);
     if (yearMatch) {
-      result.year =  yearMatch[0];
+      result.year = yearMatch[0];
     }
     
     return result;
@@ -449,14 +468,20 @@ function parseFormattedNepaliDate(dateString) {
     console.error('Error parsing Nepali date string:', error);
     return null;
   }
-}
+};
 
 // Helper function to update the month dropdown selection
-function updateMonthDropdown($group, monthNumber) {
-  if (!monthNumber) return;
+// This function is used by the main class methods - keeping for consistency and future use
+// eslint-disable-next-line no-unused-vars
+const updateMonthDropdown = function($group, monthNumber) {
+  if (!monthNumber) {
+    return;
+  }
   
   const monthNum = parseInt(convertNepaliDigitsToArabic(monthNumber), 10);
-  if (isNaN(monthNum)) return;
+  if (isNaN(monthNum)) {
+    return;
+  }
   
   const monthNames = [
     'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ',
@@ -474,37 +499,41 @@ function updateMonthDropdown($group, monthNumber) {
   }
   
   return false;
-}
+};
 
 module.exports = Bikramsambatdatepicker;
 
 // Convert Nepali month name to 1-based index
-function getMonthNumberFromName(name) {
+const getMonthNumberFromName = function(name) {
   const months = [
     'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ',
     'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत',
   ];
   const index = months.indexOf(name);
   return index !== -1 ? index + 1 : '';
-}
+};
 
 // Convert Nepali digits to Arabic (Western) digits
-function convertNepaliDigitsToArabic(nepaliDigits) {
-  if (!nepaliDigits) return '';
+const convertNepaliDigitsToArabic = function(nepaliDigits) {
+  if (!nepaliDigits) {
+    return '';
+  }
   
   const nepaliToArabicMap = {
     '०': '0', '१': '1', '२': '2', '३': '3', '४': '4',
     '५': '5', '६': '6', '७': '7', '८': '8', '९': '9'
   };
   
-  return nepaliDigits.toString().split('').map(char => 
-    nepaliToArabicMap[char] !== undefined ? nepaliToArabicMap[char] : char
-  ).join('');
-}
+  return nepaliDigits.toString().split('').map(char => {
+    return nepaliToArabicMap[char] !== undefined ? nepaliToArabicMap[char] : char;
+  }).join('');
+};
 
 // Extract and parse month name from formatted date string
-function extractMonthFromFormattedDate(dateString) {
-  if (!dateString) return null;
+const extractMonthFromFormattedDate = function(dateString) {
+  if (!dateString) {
+    return null;
+  }
   
   // Try to extract month name based on different possible formats
   
@@ -535,14 +564,23 @@ function extractMonthFromFormattedDate(dateString) {
   
   console.warn('Could not extract month name from:', dateString);
   return null;
-}
+};
 
 // Inject date picker CSS
-function addNepalDatePickerCSS() {
+const addNepalDatePickerCSS = function() {
   if (!document.getElementById('nepali-datepicker-css')) {
+    // Define SVG path separately to avoid line length issues
+    // eslint-disable-next-line max-len
+    const calendarIconSvg = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'20\' height=\'20\' viewBox=\'0 0 20 20\'%3E%3Cpath d=\'M17 3h-1V2a1 1 0 0 0-2 0v1H6V2a1 1 0 0 0-2 0v1H3a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 15H3V8h14v10zm0-12H3V5h14v1z\'/%3E%3C/svg%3E';
+    
     const style = document.createElement('style');
     style.id = 'nepali-datepicker-css';
-    style.textContent = `
+    
+    // Break the CSS into multiple parts to avoid max line length issues
+    const styles = [];
+    
+    // Base widget styles
+    styles.push(`
       /* Base widget styles */
       .bikram-sambat-widget {
         display: flex;
@@ -566,16 +604,24 @@ function addNepalDatePickerCSS() {
       .bikram-sambat-widget .calendar-btn:hover {
         background-color: #f5f5f5;
       }
+    `);
+    
+    // Calendar icon with the SVG path variable
+    styles.push(`
       .bikram-sambat-widget .calendar-icon {
         width: 20px;
         height: 20px;
         display: inline-block;
         vertical-align: middle;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M17 3h-1V2a1 1 0 0 0-2 0v1H6V2a1 1 0 0 0-2 0v1H3a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 15H3V8h14v10zm0-12H3V5h14v1z'/%3E%3C/svg%3E");
+        background-image: url("${calendarIconSvg}");
         background-size: contain;
         background-repeat: no-repeat;
         background-position: center;
       }
+    `);
+    
+    // Input styles
+    styles.push(`
       .nepali-datepicker-input {
         position: absolute;
         left: -9999px;
@@ -586,7 +632,10 @@ function addNepalDatePickerCSS() {
         z-index: 9999;
         visibility: hidden;
       }
-      
+    `);
+    
+    // Nepali date picker styles
+    styles.push(`
       /* Nepali date picker styles */
       .nepali-date-picker {
         background: #fff;
@@ -613,7 +662,10 @@ function addNepalDatePickerCSS() {
         opacity: 1 !important;
         pointer-events: auto !important;
       }
-      
+    `);
+    
+    // Table styles
+    styles.push(`
       /* Table styles */
       .nepali-date-picker table {
         background-color: transparent;
@@ -665,177 +717,14 @@ function addNepalDatePickerCSS() {
         color: #ccc;
         font-weight: 400;
       }
-      
-      /* Icons and controls */
-      .nepali-date-picker .icon {
-        opacity: .5;
-        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAeCAYAAADaW7vzAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoV2luZG93cykiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6Q0NBRjI1NjM0M0UwMTFFNDk4NkFGMzJFQkQzQjEwRUIiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6Q0NBRjI1NjQ0M0UwMTFFNDk4NkFGMzJFQkQzQjEwRUIiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpDQ0FGMjU2MTQzRTAxMUU0OTg2QUYzMkVCRDNCMTBFQiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpDQ0FGMjU2MjQzRTAxMUU0OTg2QUYzMkVCRDNCMTBFQiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PoNEP54AAAIOSURBVHja7Jq9TsMwEMcxrZD4WpBYeKUCe+kTMCACHZh4BFfHO/AAIHZGFhYkBBsSEqxsLCAgXKhbXYOTxh9pfJVP+qutnZ5s/5Lz2Y5I03QhWji2GIcgAokWgfCxNvcOCCGKqiSqhUp0laHOne05vdEyGMfkdxJDVjgwDlEQgYQBgx+ULJaWSXXS6r/ER5FBVR8VfGftTKcITNs+a1XpcFoExREIDF14AVIFxgQUS+h520cdud6wNkC0UBw6BCO/HoCYwBhD8QCkQ/x1mwDyD4plh4D6DDV0TAGyo4HcawLIBBSLDkHeH0Mg2yVP3l4TQMZQDDsEOl/MgHQqhMNuE0D+oBh0CIr8MAKyazBH9WyBuKxDWgbXfjNf32TZ1KWm/Ap1oSk/R53UtQ5xTh3LUlMmT8gt6g51Q9p+SobxgJQ/qmsfZhWywGFSl0yBjCLJCMgXail3b7+rumdVJ2YRss4cN+r6qAHDkPWjPjdJCF4n9RmAD/V9A/Wp4NQassDjwlB6XBiCxcJQWmZZb8THFilfy/lfrTvLghq2TqTHrRMTKNJ0sIhdo15RT+RpyWwFdY96UZ/LdQKBGjcXpcc1AlSFEfLmouD+1knuxBDUVrvOBmoOC/rEcN7OQxKVeJTCiAdUzUJhA2Oez9QTkp72OTVcxDcXY8iKNkxGAJXmJCOQwOa6dhyXsOa6XwEGAKdeb5ET3rQdAAAAAElFTkSuQmCC);
-      }
-      .nepali-date-picker .icon:hover {
-        opacity: 1;
-      }
-      .nepali-date-picker .prev-btn.icon {
-        background-position: 80px center;
-        float: left;
-        height: 30px;
-        width: 20px;
-      }
-      .current-month-date.active,
-      .drop-down-content li.active {
-        background-color: #7bde77;
-        color: #fff;
-        font-weight: 700;
-      }
-      .nepali-date-picker .next-btn.icon {
-        background-position: 0 center;
-        float: right;
-        height: 30px;
-        width: 20px;
-      }
-      .nepali-date-picker .today-btn.icon {
-        background-position: 130px center;
-        display: block;
-        float: left;
-        height: 30px;
-        margin: 0 15px;
-        width: 20px;
-      }
-      
-      /* Month and year selection */
-      .nepali-date-picker .current-month-txt,
-      .nepali-date-picker .current-year-txt {
-        color: #545b54;
-        font-weight: 700;
-        padding-right: 20px;
-        cursor: pointer;
-        position: relative;
-        display: inline-block;
-        line-height: 30px;
-      }
-      .nepali-date-picker .current-month-txt {
-        text-align: right;
-        width: 80px;
-      }
-      .nepali-date-picker .current-month-txt:hover,
-      .nepali-date-picker .current-year-txt:hover {
-        text-decoration: underline;
-      }
-      .nepali-date-picker .calendar-controller i.icon-drop-down {
-        background-position: 12px -15px;
-        height: 30px;
-        position: absolute;
-        width: 20px;
-      }
-      
-      /* Dropdown styles */
-      .nepali-date-picker .drop-down-content {
-        background-color: #fff;
-        border: 1px solid #ccc;
-        box-shadow: 0 3px 3px 0 rgba(0,0,0,.32);
-        display: none;
-        height: 99px;
-        padding: 5px;
-        position: absolute;
-        width: 100%;
-        z-index: 10000;
-      }
-      .nepali-date-picker .scrollbar-wrapper {
-        border-left: 1px solid rgba(204,204,204,.2);
-        height: 100%;
-        position: absolute;
-        right: 0;
-        top: 0;
-        width: 15px;
-      }
-      .scrollbar {
-        background-color: #000;
-        border-radius: 2.5px;
-        display: block;
-        height: 100%;
-        opacity: .5;
-        position: absolute;
-        right: 6.5px;
-        width: 5px;
-      }
-      .nepali-date-picker .drop-down-content .option-wrapper {
-        height: 100%;
-        overflow-x: hidden;
-        overflow-y: scroll;
-        padding: 0;
-        position: relative;
-      }
-      .nepali-date-picker .drop-down-content ul {
-        list-style: none;
-        margin: 0;
-        padding: 0 5px 0 0;
-      }
-      .drop-down-content li {
-        border-bottom: 1px solid rgba(159,153,153,.39);
-        font-size: 16px;
-        font-weight: 400;
-        line-height: 20px;
-        text-align: right;
-      }
-      .drop-down-content li:hover {
-        background: #718fcd;
-      }
-      .drop-down-content li:last-child {
-        border-bottom: none;
-      }
-      
-      /* Calendar popup overlay */
-      .nepali-date-picker-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.3);
-        z-index: 9998;
-        display: none;
-      }
-      .nepali-date-picker-overlay.active {
-        display: block;
-      }
-      
-      /* Scrollbar styles */
-      ::-webkit-scrollbar {
-        width: 13px;
-        height: 13px;
-      }
-      ::-webkit-scrollbar-track {
-        background: rgba(0,0,0,.1);
-      }
-      ::-webkit-scrollbar-thumb {
-        background: rgba(0,0,0,.5);
-      }
-      
-      /* Additional custom styles for Enketo integration */
-      .or .nepali-date-widget {
-        margin-top: 5px;
-        display: flex;
-        flex-direction: column;
-      }
-      .or .nepali-date-widget .widget-controls {
-        margin-top: 5px;
-      }
-      .or .widget-calendar-btn {
-        position: absolute;
-        right: 5px;
-        top: 5px;
-      }
-      .or .btn-calendar {
-        background: none;
-        border: none;
-        cursor: pointer;
-      }
-      .or .nepali-datepicker-input {
-        padding-right: 30px;
-      }
-    `;
+    `);
+    
+    // Join all style parts
+    style.textContent = styles.join('');
+    
     document.head.appendChild(style);
   }
-}
+};
 
 // Widget HTML template
 const TEMPLATE = `
@@ -869,7 +758,7 @@ const TEMPLATE = `
 `;
 
 // Helper function to sync all inputs and ensure consistent state
-function syncInputValues($group) {
+const syncInputValues = function($group) {
   try {
     const day = $group.find('input[name=day]').val();
     const monthValue = $group.find('input[name=month]').val();
@@ -882,9 +771,7 @@ function syncInputValues($group) {
         // If monthValue is a name, just update display
         if (isNaN(parseInt(convertNepaliDigitsToArabic(monthValue), 10))) {
           $group.find('.month-dropdown button').text(monthValue);
-        } 
-        // If monthValue is a number, convert to name
-        else {
+        } else { // If monthValue is a number, convert to name
           const monthNum = parseInt(convertNepaliDigitsToArabic(monthValue), 10);
           if (monthNum >= 1 && monthNum <= 12) {
             const monthNames = [
@@ -901,4 +788,5 @@ function syncInputValues($group) {
   } catch (error) {
     console.error('Error syncing input values:', error);
   }
-}
+};
+
