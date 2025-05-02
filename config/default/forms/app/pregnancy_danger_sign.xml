@@ -167,7 +167,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_danger_sign id="pregnancy_danger_sign" prefix="J1!pregnancy_danger_sign!" delimiter="#" version="2022-09-26 11:20:33">
+        <pregnancy_danger_sign id="pregnancy_danger_sign" prefix="J1!pregnancy_danger_sign!" delimiter="#" version="2025-05-01 22:25:50">
           <inputs>
             <meta>
               <location>
@@ -262,7 +262,7 @@
       <bind nodeset="/pregnancy_danger_sign/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/pregnancy_danger_sign/inputs/source" type="string"/>
       <bind nodeset="/pregnancy_danger_sign/inputs/source_id" type="string"/>
-      <bind nodeset="/pregnancy_danger_sign/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/pregnancy_danger_sign/inputs/contact/_id" type="string"/>
       <bind nodeset="/pregnancy_danger_sign/inputs/contact/name" type="string"/>
       <bind nodeset="/pregnancy_danger_sign/inputs/contact/short_name" type="string"/>
       <bind nodeset="/pregnancy_danger_sign/inputs/contact/patient_id" type="string"/>
@@ -348,7 +348,7 @@ and selected(../breathlessness, 'no'), 'no', ''))"/>
     <group appearance="field-list" ref="/pregnancy_danger_sign/inputs">
       <group ref="/pregnancy_danger_sign/inputs/contact">
         <label ref="jr:itext('/pregnancy_danger_sign/inputs/contact:label')"/>
-        <input appearance="db-object" ref="/pregnancy_danger_sign/inputs/contact/_id">
+        <input appearance="select-contact type-person" ref="/pregnancy_danger_sign/inputs/contact/_id">
           <label ref="jr:itext('/pregnancy_danger_sign/inputs/contact/_id:label')"/>
         </input>
         <group ref="/pregnancy_danger_sign/inputs/contact/parent">
