@@ -52,5 +52,47 @@ describe('Visual: Reports - More Options Menu & Floating Action Button', () => {
     }
   });
 
+  // it('should click FAB button and capture screenshots', async () => {
+  //   await resizeWindowForScreenshots();
+  //   await commonElements.goToReports();
+  //   await commonElements.waitForLoaders();
+    
+  //   // Initial state screenshot
+  //   await generateScreenshot('fab-button', 'before-fab-click');
+    
+  //   // Get FAB button and click
+  //   const fabButton = await $('.fast-action-fab-button');
+  //   await fabButton.waitForDisplayed();
+  //   await fabButton.click();
+  //   await browser.pause(1000); // Wait for animation
+    
+  //   // Take screenshot after FAB is opened
+  //   await generateScreenshot('fab-button', 'after-fab-click');
+    
+  //   // If you want to test specific actions in the FAB menu
+  //   const fabActions = await $$('.fab-action-item');
+  //   if (fabActions.length > 0) {
+  //     // Optionally click first action
+  //     await fabActions[0].click();
+  //     await browser.pause(1000);
+  //     await generateScreenshot('fab-button', 'after-action-click');
+  //   }
+  // });
+
+  it('should test FAB button responsiveness', async () => {
+    // Test FAB on mobile viewport
+    await browser.setWindowSize(375, 667); // iPhone SE viewport
+    await commonElements.goToReports();
+    await commonElements.waitForLoaders();
+    
+    const fabButton = await $('.fast-action-fab-button');
+    await fabButton.waitForDisplayed();
+    await generateScreenshot('fab-button', 'mobile-fab-button');
+    
+    // Click and capture expanded state
+    await fabButton.click();
+    await browser.pause(1000);
+    await generateScreenshot('fab-button', 'mobile-fab-expanded');
+  });
 
 });
