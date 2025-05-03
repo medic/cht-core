@@ -120,10 +120,12 @@ describe('environment', () => {
           [
             {
               url: 'http://admin:pass@localhost:5984/medicdb/_design/medic',
-              headers: { 'user-agent': 'Community Health Toolkit/4.18.0 (test-platform,test-arch)' } // Match the dummy user-agent
+              headers: {
+                'user-agent': 'Community Health Toolkit/4.18.0 (test-platform,test-arch)'
+              }
             }
           ]
-        ]);
+        ]);        
       });
 
       it('should use cache on subsequent calls', async () => {

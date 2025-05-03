@@ -81,7 +81,7 @@ const getDeployInfo = async () => {
     const request = require('@medic/couch-request');
     const ddoc = await request.get({
       url: `${couchUrl}/_design/${module.exports.ddoc}`,
-      headers:{
+      headers: {
         'user-agent': 'Community Health Toolkit/4.18.0 (test-platform,test-arch)',
       }
     });
