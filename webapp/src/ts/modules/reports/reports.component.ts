@@ -465,10 +465,34 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async selectAllReports() {
-    if (this.areAllReportsSelected()) {
-      return;
+    const alreadyLoaded = this.reportsList?.length || 0;
+    const desiredLimit = this.LIMIT_SELECT_ALL_REPORTS; // 500 or more
+  
+    // If not all reports are loaded, load the rest
+    if (this.moreItems && alreadyLoaded < desiredLimit) {
+      let allReports = [...this.reportsList];
+      let skip = alreadyLoaded;
+  
+      while (this.moreItems && allReports.length < desiredLimit) {
+        const batch = await this.searchService
+          .search('reports', this.filters, { limit: PAGE_SIZE, skip, hydrateContactNames: true })
+          .then((reports) => this.addReadStatusService.updateReports(reports))
+          .then((updatedReports) => this.prepareReports(updatedReports));
+  
+        allReports = allReports.concat(batch);
+        skip += PAGE_SIZE;
+  
+        // Stop if less than page size returned
+        if (batch.length < PAGE_SIZE) break;
+      }
+  
+      this.reportsActions.updateReportsList(allReports);
+      this.moreItems = allReports.length >= skip;
+      this.hasReports = !!allReports.length;
+      this.loading = false;
+      this.appending = false;
     }
-
+  
     try {
       if (this.isSidebarFilterOpen) {
         this.toggleFilter();
