@@ -131,14 +131,14 @@ describe('auditing', () => {
 
     const remindersConfig = [
       {
-        form: 'FORM1',
-        text_expression: momentToTextExpression(start.clone().subtract(1, 'hour')),
+        form: 'FORMX',
+        text_expression: momentToTextExpression(start.clone().subtract(30, 'minutes')),
         message: '{{name}} should do something'
       },
     ];
     const forms = {
       FORM1: {
-        meta: { code: 'FORM1' },
+        meta: { code: 'FORMX' },
         fields: { param: { position: 0, type: 'string' } }
       },
     };

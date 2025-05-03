@@ -60,7 +60,6 @@ const initConfig = () => {
     .then(doc => {
       _.defaults(doc.settings, DEFAULT_CONFIG);
       config = doc.settings;
-      console.warn('settings: ', config.reminders); // eslint-disable-line no-console
       initTransitionLib();
       require('./transitions').loadTransitions();
       logger.debug(
