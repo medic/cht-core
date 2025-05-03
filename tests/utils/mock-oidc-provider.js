@@ -1,47 +1,20 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-
 const jwt = require('jsonwebtoken');
+const path = require('path');
+
+const { generateKeyPairSync } = require('crypto');
 const { hostURL } = require('@utils');
+const { BASE_URL, DB_NAME } = require('@constants');
 
-const redirectUrl = `${hostURL}/login/oidc/get_token`;
+const appTokenUrl = `${BASE_URL}/${DB_NAME}/login/oidc/get_token`;
 
-
-const dns = require('node:dns').promises;
-const os = require('os');
-
-const getIpAddress = () => {
-  const networkInterfaces = os.networkInterfaces();
-  const localHostIps = ['127.0.0.1', '127.0.1.1'];
-
-  for (const interface in networkInterfaces) {
-    if (!Object.hasOwn(networkInterfaces, interface)) {
-      continue;
-    }
-    const each = networkInterfaces[interface];
-
-    for (let idx = 0; idx < each.length; idx ++) {
-      const address = each[idx];
-      if (address.family === 'IPv4' && localHostIps.indexOf(address.address) === -1) {
-        return address.address;
-      }
-    }
-  }
-};
+const authenticatedRedirectUrl = `${appTokenUrl}?code=dummy`;
 
 const getOidcBaseUrl = () => {
-  return dns.lookup(os.hostname(), { family: 4 })
-    .then(() => {
-      // const address = `https://${getIpAddress().replace(/\./g, '-')}.local-ip.medicmobile.org:3000`;
-      const address = hostURL(3000);
-      // const address = `http://host.docker.internal:3000`;
-      // const address = `http://localhost:3000`;
-      // const address = getIpAddress();
-      // const address = 'http://172.17.0.1:3000';
-      console.log('addr_name: ', address);
-      console.log('host id address', getIpAddress());
-      return address;
-    });
+  const address = `${hostURL(3000, true)}`;
+  console.log('address: ', address);
+  return address;
 };
 
 const getJWT_KEYS = (secret = 'secret') => generateKeyPairSync(
@@ -84,19 +57,20 @@ const mockApp = express();
 
 mockApp.use(bodyParser.json());
 
-mockApp.get('/.well-known/openid-configuration', async (req, res) => {
-  const oidcBaseUrl = await getOidcBaseUrl();
+mockApp.get('/.well-known/openid-configuration', (req, res) => {
+  const oidcBaseUrl = getOidcBaseUrl();
+  // using a dump of oidc spec example
   res.json({
     issuer: `${oidcBaseUrl}`,
-    authorization_endpoint: `${oidcBaseUrl}/connect/authorize`,
-    token_endpoint: `${oidcBaseUrl}/connect/token`,
+    authorization_endpoint: path.join(oidcBaseUrl, 'connect/authorize'),
+    token_endpoint: path.join(oidcBaseUrl, 'connect/token'),
     token_endpoint_auth_methods_supported: ['client_secret_basic', 'private_key_jwt'],
     token_endpoint_auth_signing_alg_values_supported: ['RS256', 'ES256'],
-    userinfo_endpoint: `${oidcBaseUrl}/connect/userinfo`,
-    check_session_iframe: `${oidcBaseUrl}connect/check_session`,
-    end_session_endpoint: `${oidcBaseUrl}/connect/end_session`,
-    jwks_uri: `${oidcBaseUrl}/jwks.json`,
-    registration_endpoint: `${oidcBaseUrl}/connect/register`,
+    userinfo_endpoint: path.join(oidcBaseUrl, 'connect/userinfo'),
+    check_session_iframe: path.join(oidcBaseUrl, 'connect/check_session'),
+    end_session_endpoint: path.join(oidcBaseUrl, 'connect/end_session'),
+    jwks_uri: path.join(oidcBaseUrl, 'jwks.json'),
+    registration_endpoint: path.join(oidcBaseUrl, '/connect/register'),
     scopes_supported: ['openid', 'profile', 'email'],
     response_types_supported: ['code', 'code id_token', 'id_token', 'id_token token'],
     acr_values_supported: ['urn:mace:incommon:iap:silver', 'urn:mace:incommon:iap:bronze'],
@@ -123,14 +97,18 @@ mockApp.get('/.well-known/openid-configuration', async (req, res) => {
   });
 });
 
+/**
+ * For completeness.
+ *
+ * The integration tests do not actually invoke this for a response. The tests test test up until
+ * the point of redirecting to this endpoint.
+ */
 mockApp.get('/connect/authorize', (req, res) => {
-  res.redirect(redirectUrl);
+  res.redirect(302, authenticatedRedirectUrl);
 });
 
-mockApp.post('/connect/token', async (req, res) => {
-  const oidcBaseUrl = await getOidcBaseUrl();
-  res.set('Content-Type', 'application/json');
-  res.setHeader('Content-Type', 'application/json');
+mockApp.post('/connect/token', (req, res) => {
+  const oidcBaseUrl = getOidcBaseUrl();
   res.json({
     access_token: 'SlAV32hkKG',
     token_type: 'Bearer',
@@ -140,13 +118,8 @@ mockApp.post('/connect/token', async (req, res) => {
   });
 });
 
-mockApp.get('/connect/token', (req, res) => {
-  res.json({access_token: 'sdfdfdfdf'});
-});
-
 const startOidcServer = (callback) => {
   const server = mockApp.listen(3000, () => {
-    console.log('server started...');
     callback();
   });
   return server;
@@ -157,7 +130,9 @@ const stopOidcServer = (server) => {
 };
 
 module.exports = {
-  getOidcBaseUrl,
+  oidcBaseUrl: getOidcBaseUrl(),
+  appTokenUrl,
+  authenticatedRedirectUrl,
   startOidcServer,
   stopOidcServer
 };

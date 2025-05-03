@@ -94,6 +94,30 @@ const dockerGateway = () => {
   }
 };
 
+/**
+ * Get IP address of host from the network interfaces.
+ *
+ * @returns IP address.
+ */
+const getHostIpAddress = () => {
+  const networkInterfaces = os.networkInterfaces();
+  const localHostIps = ['127.0.0.1', '127.0.1.1'];
+
+  for (const interface in networkInterfaces) {
+    if (!Object.hasOwn(networkInterfaces, interface)) {
+      continue;
+    }
+    const each = networkInterfaces[interface];
+
+    for (let idx = 0; idx < each.length; idx ++) {
+      const address = each[idx];
+      if (address.family === 'IPv4' && localHostIps.indexOf(address.address) === -1) {
+        return address.address;
+      }
+    }
+  }
+};
+
 const getHostRoot = () => {
   if (isDockerDesktop()) {
     // Docker Desktop networking requires a special host name for connecting to host machine.
@@ -104,8 +128,16 @@ const getHostRoot = () => {
   return gateway?.[0]?.Gateway || 'localhost';
 };
 
-const hostURL = (port = 80) => {
-  const url = new URL(`http://${getHostRoot()}`);
+const hostURL = (port = 80, getHostIp = false) => {
+  const root = getHostIp ? getHostIpAddress() : getHostRoot();
+
+  console.log(`root: ${root}`);
+
+  if (!root) {
+    return;
+  }
+
+  const url = new URL(`http://${root}`);
   url.port = port;
   return url.href;
 };

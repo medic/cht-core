@@ -13,8 +13,8 @@ const settingsService = require('./settings');
 
 const OIDC_CLIENT_SECRET_KEY = 'oidc:client-secret';
 
-const SERVER_ERROR = new Error({ status: 500, error: 'An error occurred when logging in.' });
-const USER_UNAUTHORIZED = new Error({ status: 401, error: 'You are not enabled for log in using SSO.'});
+const SERVER_ERROR = { status: 500, error: 'An error occurred when logging in.' };
+const USER_UNAUTHORIZED = { status: 401, error: 'You are not enabled for log in using SSO.'};
 
 const networkCallRetry = async (call, retryCount = 3) => {
   try {
@@ -89,8 +89,7 @@ const getAuthorizationUrl = async (redirectUrl) => {
     const serverConfig = await oidcServerSConfig();
     return client.buildAuthorizationUrl(serverConfig, params);
   } catch (err) {
-    console.log(err);
-    logger.error(err);
+    logger.error('Error getting authorization url: %o', err);
     throw SERVER_ERROR;
   }
 };
@@ -122,7 +121,7 @@ const getIdToken = async (currentUrl) => {
       }
     };
   } catch (err) {
-    logger.error(err);
+    logger.error('Error getting id token: %o', err);
     throw SERVER_ERROR;
   }
 };
@@ -180,7 +179,7 @@ const getCookie = async (username) => {
       throw new Error(`The user doc for ${username} does not have salt set.`);
     }
   } catch (err) {
-    logger.error(err);
+    logger.error('Error getting user doc: %o', err);
     throw USER_UNAUTHORIZED;
   }
 
@@ -188,7 +187,7 @@ const getCookie = async (username) => {
     secret = await secureSettings.getCouchConfig('couch_httpd_auth/secret');
     authTimeout = await secureSettings.getCouchConfig('couch_httpd_auth/timeout');
   } catch (err) {
-    logger.error(err);
+    logger.error('Error getting CouchDB secret and auth timeout: %o', err);
     throw SERVER_ERROR;
   }
 

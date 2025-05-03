@@ -549,9 +549,9 @@ module.exports = {
       const auth = await sso.getIdToken(currentUrl);
       const cookie = await sso.getCookie(auth.user.username);
       const redirectUrl = await setCookies(req, res, null, cookie);
-      res.redirect(redirectUrl);
+      res.status(302).send(redirectUrl);
     } catch (e) {
-      logger.error(e);
+      logger.error('Error logging in via SSO: %o', e);
       return sendLoginErrorResponse(e, res);
     }
   },
@@ -563,11 +563,10 @@ module.exports = {
 
     try {
       const authUrl = await sso.getAuthorizationUrl(redirectUrl);
-      res.redirect(301, authUrl.href);
+      res.status(302).send(authUrl.href);
     } catch (e) {
-      logger.error(e);
-      throw e;
-      // return sendLoginErrorResponse(e, res);
+      logger.error('Error getting authorization redirect url for SSO: %o', e);
+      return sendLoginErrorResponse(e, res);
     }
   },
   validateSession,
