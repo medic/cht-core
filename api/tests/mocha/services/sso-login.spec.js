@@ -84,7 +84,7 @@ describe('SSO login', () => {
         chai.expect.fail('Expected error to be thrown');
       } catch (err) {
         chai.expect(err.message).to.equal(
-          'Either or both discovery_url and client_id is not set in oidc_provider config.'
+          'The discovery_url and client_id must be provided in the oidc_provider config.'
         );
       }
     });
@@ -101,7 +101,7 @@ describe('SSO login', () => {
         chai.expect.fail('Expected error to be thrown');
       } catch (err) {
         chai.expect(err.message).to.equal(
-          'Either or both discovery_url and client_id is not set in oidc_provider config.'
+          'The discovery_url and client_id must be provided in the oidc_provider config.'
         );
       }
     });

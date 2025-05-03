@@ -49,9 +49,8 @@ describe('login controller', () => {
       get: () => 'xx.app.medicmobile.org'
     };
     res = {
-      redirect: redirect,
       send: () => {},
-      status: () => {},
+      status: () => ({ send: redirect }),
       json: () => {},
       cookie: () => {},
       clearCookie: () => {},
@@ -1114,7 +1113,7 @@ describe('login controller', () => {
       const getAuthorizationUrl = sinon.stub(sso, 'getAuthorizationUrl').returns(new URL('https://oidc.server'));
       sinon.stub(environment, 'db').returns('medic');
       await controller.oidcAuthorize(req, res);
-      chai.expect(redirect.calledWith(301, 'https://oidc.server/')).to.be.true;
+      chai.expect(redirect.calledWith('https://oidc.server/')).to.be.true;
       chai.expect(getAuthorizationUrl.calledWith('http://xx.app.medicmobile.org/medic/login/oidc/get_token')).to.be.true;
     });
 
