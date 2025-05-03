@@ -457,7 +457,7 @@ const deleteSentinelDocs = async (docsToKeep) => {
   const allDocs = await sentinelDb.allDocs({ include_docs: true });
   const sentinelDocsToDelete = allDocs.rows
     .filter(row => row.value)
-    .filter(({ id }) => !docsToKeep.includes(id.replace(/-info$/, '')) || !id.startsWith('_design'))
+    .filter(({ id }) => !docsToKeep.includes(id.replace(/-info$/, '')) && !id.startsWith('_design'))
     .map(({ id, value }) => ({
       _id: id,
       _rev: value.rev,
