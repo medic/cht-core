@@ -280,7 +280,7 @@ const formatCommits = (commits) => {
 };
 
 const output = ({ warnings, types }, commits) => {
-  const currentDate = new Date().toISOString().split("T")[0];  // Format: YYYY-MM-DD
+  const currentDate = new Date().toISOString().split('T')[0];  // Format: YYYY-MM-DD
   console.log(`
 ---
 title: "${MILESTONE_NAME} release notes"
