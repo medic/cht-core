@@ -465,53 +465,64 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async selectAllReports() {
-    const alreadyLoaded = this.reportsList?.length || 0;
-    const desiredLimit = this.LIMIT_SELECT_ALL_REPORTS; // 500 or more
+    const alreadyLoaded = this.reportsList?.length ?? 0;
+    const desiredLimit = this.LIMIT_SELECT_ALL_REPORTS;
   
-    // If not all reports are loaded, load the rest
     if (this.moreItems && alreadyLoaded < desiredLimit) {
-      let allReports = [...this.reportsList];
-      let skip = alreadyLoaded;
-  
-      while (this.moreItems && allReports.length < desiredLimit) {
-        const batch = await this.searchService
-          .search('reports', this.filters, { limit: PAGE_SIZE, skip, hydrateContactNames: true })
-          .then((reports) => this.addReadStatusService.updateReports(reports))
-          .then((updatedReports) => this.prepareReports(updatedReports));
-  
-        allReports = allReports.concat(batch);
-        skip += PAGE_SIZE;
-  
-        // Stop if less than page size returned
-        if (batch.length < PAGE_SIZE) break;
-      }
-  
-      this.reportsActions.updateReportsList(allReports);
-      this.moreItems = allReports.length >= skip;
-      this.hasReports = !!allReports.length;
-      this.loading = false;
-      this.appending = false;
+      await this.loadRemainingReports(alreadyLoaded, desiredLimit);
     }
   
     try {
-      if (this.isSidebarFilterOpen) {
-        this.toggleFilter();
-      }
-
-      this.globalActions.setLoadingContent(true);
-
-      const reports = await this.searchService.search(
-        'reports',
-        this.filters,
-        { limit: this.LIMIT_SELECT_ALL_REPORTS, hydrateContactNames: true }
-      );
-      const preparedReports = await this.prepareReports(reports, true);
-      this.reportsActions.setSelectedReports(preparedReports);
-      this.globalActions.unsetComponents();
-
+      await this.finalizeReportSelection();
     } catch (error) {
       console.error('Error selecting all', error);
     }
+  }
+  
+  async loadRemainingReports(alreadyLoaded, desiredLimit) {
+    let allReports = [...this.reportsList];
+    let skip = alreadyLoaded;
+  
+    while (this.moreItems && allReports.length < desiredLimit) {
+      const batch = await this.fetchReportsBatch(skip);
+      allReports = allReports.concat(batch);
+      skip += PAGE_SIZE;
+      if (batch.length < PAGE_SIZE) break;
+    }
+  
+    this.reportsActions.updateReportsList(allReports);
+    this.moreItems = allReports.length >= skip;
+    this.hasReports = !!allReports.length;
+    this.loading = false;
+    this.appending = false;
+  }
+  
+  async fetchReportsBatch(skip) {
+    const reports = await this.searchService.search('reports', this.filters, {
+      limit: PAGE_SIZE,
+      skip,
+      hydrateContactNames: true
+    });
+  
+    const updated = await this.addReadStatusService.updateReports(reports);
+    return this.prepareReports(updated);
+  }
+  
+  async finalizeReportSelection() {
+    if (this.isSidebarFilterOpen) {
+      this.toggleFilter();
+    }
+  
+    this.globalActions.setLoadingContent(true);
+  
+    const reports = await this.searchService.search('reports', this.filters, {
+      limit: this.LIMIT_SELECT_ALL_REPORTS,
+      hydrateContactNames: true
+    });
+  
+    const prepared = await this.prepareReports(reports, true);
+    this.reportsActions.setSelectedReports(prepared);
+    this.globalActions.unsetComponents();
   }
 
   deselectAllReports() {
