@@ -135,6 +135,6 @@ describe('Test utils', () => {
     }
 
     const allSpecs = await glob(path.join(pathToDefaultTesting, '/**/*.wdio-spec.js'));
-    assert.sameMembers(allSpecs, suiteSpecs.flat());
+    expect(allSpecs).to.have.same.members(suiteSpecs.flat());
   });
 });
