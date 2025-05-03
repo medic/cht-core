@@ -4,7 +4,8 @@ const config = require('../../config');
 const dateFormat = require('./date-format');
 const messageUtils = require('@medic/message-utils');
 const registrationUtils = require('@medic/registration-utils');
-const lineage = require('@medic/lineage')(Promise, db.medic);
+const datasource = require('@medic/cht-datasource');
+const lineage = require('@medic/lineage')(Promise, db.medic, datasource);
 
 const normalizeResponse = doc => {
   return {

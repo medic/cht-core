@@ -1,7 +1,8 @@
 const _ = require('lodash');
 const async = require('async');
 const db = require('../db');
-const lineage = require('@medic/lineage')(Promise, db.medic);
+const datasource = require('@medic/cht-datasource');
+const lineage = require('@medic/lineage')(Promise, db.medic, datasource);
 const utils = require('../lib/utils');
 const logger = require('@medic/logger');
 const config = require('../config');

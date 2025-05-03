@@ -1,6 +1,7 @@
 const db = require('../db');
 const config = require('../config');
-const lineage = require('@medic/lineage')(Promise, db.medic);
+const datasource = require('@medic/cht-datasource');
+const lineage = require('@medic/lineage')(Promise, db.medic, datasource);
 const phoneNumber = require('@medic/phone-number');
 const serverUtils = require('../server-utils');
 

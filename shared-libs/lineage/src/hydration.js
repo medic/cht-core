@@ -1,6 +1,7 @@
 const _ = require('lodash/core');
 _.uniq = require('lodash/uniq');
 const utils = require('./utils');
+const logger = require('@medic/logger');
 
 const deepCopy = obj => JSON.parse(JSON.stringify(obj));
 
@@ -46,7 +47,7 @@ const getContactIds = (contacts) => {
   return _.uniq(ids);
 };
 
-module.exports = function(Promise, DB) {
+module.exports = function(Promise, DB, datasource) {
   const fillParentsInDocs = function(doc, lineage) {
     if (!doc || !lineage.length) {
       return doc;
@@ -213,22 +214,108 @@ module.exports = function(Promise, DB) {
   * @returns {Map} map with [k, v] pairs of [shortcode, uuid]
   */
   const contactUuidByShortcode = function(shortcodes) {
-    const keys = shortcodes
-      .filter(shortcode => shortcode)
-      .map(shortcode => [ 'shortcode', shortcode ]);
+    if (!datasource) {
+      // Fallback to old implementation if datasource is not provided
+      const keys = shortcodes
+        .filter(shortcode => shortcode)
+        .map(shortcode => [ 'shortcode', shortcode ]);
 
-    return DB.query('medic-client/contacts_by_reference', { keys })
-      .then(function(results) {
-        const findIdWithKey = key => {
-          const matchingRow = results.rows.find(row => row.key[1] === key);
-          return matchingRow && matchingRow.id;
-        };
+      return DB.query('medic-client/contacts_by_reference', { keys })
+        .then(function(results) {
+          const findIdWithKey = key => {
+            const matchingRow = results.rows.find(row => row.key[1] === key);
+            return matchingRow && matchingRow.id;
+          };
 
-        return new Map(shortcodes.map(shortcode => ([ shortcode, findIdWithKey(shortcode) || shortcode, ])));
-      });
+          return new Map(shortcodes.map(shortcode => ([ shortcode, findIdWithKey(shortcode) || shortcode, ])));
+        });
+    }
+    
+    // Filter out empty shortcodes
+    const filteredShortcodes = shortcodes.filter(shortcode => shortcode);
+    
+    if (filteredShortcodes.length === 0) {
+      return Promise.resolve(new Map(shortcodes.map(shortcode => [shortcode, shortcode])));
+    }
+    
+    // Use cht-datasource to get contacts by reference
+    // This is a bit tricky as cht-datasource doesn't have a direct equivalent
+    // We'll need to query each shortcode individually and build the map
+    return Promise.all(
+      filteredShortcodes.map(shortcode => {
+        // Assuming datasource has a method to query by reference
+        // If not, we'll need to fall back to the legacy implementation
+        return datasource.Contact.v1.getUuidsPage({
+          freetext: shortcode
+        })
+        .then(result => {
+          // If we found a match, use the first result
+          if (result && result.docs && result.docs.length > 0) {
+            return [shortcode, result.docs[0]];
+          }
+          // Otherwise, use the shortcode itself
+          return [shortcode, shortcode];
+        })
+        .catch(err => {
+          logger.warn(`Error fetching contact by shortcode ${shortcode}:`, err);
+          return [shortcode, shortcode];
+        });
+      })
+    )
+    .then(results => {
+      // Convert the results to a Map
+      const resultMap = new Map(results);
+      
+      // Make sure all original shortcodes are in the map
+      return new Map(shortcodes.map(shortcode => [
+        shortcode, 
+        resultMap.get(shortcode) || shortcode
+      ]));
+    });
   };
 
   const fetchLineageById = function(id) {
+    if (!datasource) {
+      // Fallback to old implementation if datasource is not provided
+      const options = {
+        startkey: [id],
+        endkey: [id, {}],
+        include_docs: true
+      };
+      return DB.query('medic-client/docs_by_id_lineage', options)
+        .then(function(result) {
+          return result.rows.map(function(row) {
+            return row.doc;
+          });
+        });
+    }
+    
+    // Use cht-datasource to get contact with lineage
+    return datasource.Contact.v1.getWithLineage({ uuid: id })
+      .then(contactWithLineage => {
+        if (!contactWithLineage) {
+          return [];
+        }
+        
+        // Convert the nested lineage structure to an array format
+        const lineageArray = [];
+        let current = contactWithLineage;
+        
+        while (current) {
+          lineageArray.push(current);
+          current = current.parent;
+        }
+        
+        return lineageArray;
+      })
+      .catch(err => {
+        logger.error('Error fetching lineage with datasource:', err);
+        // Fallback to old implementation if datasource fails
+        return fetchLineageByIdLegacy(id);
+      });
+  };
+  
+  const fetchLineageByIdLegacy = function(id) {
     const options = {
       startkey: [id],
       endkey: [id, {}],
@@ -257,8 +344,29 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchDoc = function(id) {
-    return DB.get(id)
-      .catch(function(err) {
+    if (!datasource) {
+      // Fallback to old implementation if datasource is not provided
+      return DB.get(id)
+        .catch(function(err) {
+          if (err.status === 404) {
+            err.statusCode = 404;
+          }
+          throw err;
+        });
+    }
+    
+    // Use cht-datasource to get contact
+    return datasource.Contact.v1.get({ uuid: id })
+      .then(contact => {
+        if (!contact) {
+          const err = new Error(`Document not found: ${id}`);
+          err.status = 404;
+          err.statusCode = 404;
+          throw err;
+        }
+        return contact;
+      })
+      .catch(err => {
         if (err.status === 404) {
           err.statusCode = 404;
         }
@@ -362,16 +470,32 @@ module.exports = function(Promise, DB) {
       return Promise.resolve([]);
     }
 
-    return DB.allDocs({ keys, include_docs: true })
-      .then(function(results) {
-        return results.rows
-          .map(function(row) {
-            return row.doc;
+    if (!datasource) {
+      // Fallback to old implementation if datasource is not provided
+      return DB.allDocs({ keys, include_docs: true })
+        .then(function(results) {
+          return results.rows
+            .map(function(row) {
+              return row.doc;
+            })
+            .filter(function(doc) {
+              return !!doc;
+            });
+        });
+    }
+    
+    // Use cht-datasource to get contacts
+    // Since cht-datasource doesn't have a bulk get method for contacts yet,
+    // we need to fetch them one by one and combine the results
+    return Promise.all(
+      keys.map(id => 
+        datasource.Contact.v1.get({ uuid: id })
+          .catch(err => {
+            logger.warn(`Error fetching contact ${id}:`, err);
+            return null; // Return null for contacts that couldn't be fetched
           })
-          .filter(function(doc) {
-            return !!doc;
-          });
-      });
+      )
+    ).then(contacts => contacts.filter(contact => !!contact));
   };
 
   const hydrateDocs = function(docs) {
@@ -454,24 +578,42 @@ module.exports = function(Promise, DB) {
       return Promise.resolve([]);
     }
 
-    if (docIds.length === 1) {
-      return fetchHydratedDoc(docIds[0])
-        .then(doc => [doc])
-        .catch(err => {
-          if (err.status === 404) {
-            return [];
-          }
+    if (!datasource) {
+      // Fallback to old implementation if datasource is not provided
+      if (docIds.length === 1) {
+        return fetchHydratedDoc(docIds[0])
+          .then(doc => [doc])
+          .catch(err => {
+            if (err.status === 404) {
+              return [];
+            }
 
-          throw err;
+            throw err;
+          });
+      }
+
+      return DB
+        .allDocs({ keys: docIds, include_docs: true })
+        .then(result => {
+          const docs = result.rows.map(row => row.doc).filter(doc => doc);
+          return hydrateDocs(docs);
         });
     }
-
-    return DB
-      .allDocs({ keys: docIds, include_docs: true })
-      .then(result => {
-        const docs = result.rows.map(row => row.doc).filter(doc => doc);
-        return hydrateDocs(docs);
-      });
+    
+    // Use cht-datasource to get contacts with lineage
+    return Promise.all(
+      docIds.map(id => 
+        datasource.Contact.v1.getWithLineage({ uuid: id })
+          .catch(err => {
+            if (err.status === 404) {
+              logger.warn(`Contact not found with id ${id}`);
+              return null;
+            }
+            logger.error(`Error fetching contact with lineage ${id}:`, err);
+            throw err;
+          })
+      )
+    ).then(contacts => contacts.filter(contact => !!contact));
   };
 
   return {

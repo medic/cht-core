@@ -3,7 +3,8 @@ const objectPath = require('object-path');
 const db = require('../../db');
 const dateFormat = require('./date-format');
 const search = require('@medic/search')(Promise, db.medic);
-const lineage = require('@medic/lineage')(Promise, db.medic);
+const datasource = require('@medic/cht-datasource');
+const lineage = require('@medic/lineage')(Promise, db.medic, datasource);
 
 // Flattens a given object into an object where the keys are dot-notation
 // paths to the flattened values:

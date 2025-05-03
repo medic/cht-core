@@ -9,6 +9,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@medic/contact-types-utils": "file:../contact-types-utils"
+    "@medic/contact-types-utils": "file:../contact-types-utils",
+    "@medic/cht-datasource": "file:../cht-datasource"
   }
 }
