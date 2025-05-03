@@ -82,7 +82,7 @@ const oidcServerSConfig = async () => {
 const getAuthorizationUrl = async (redirectUrl) => {
   const params = {
     redirect_uri: redirectUrl,
-    scope: 'openid'
+    scope: 'openid email'
   };
 
   try {
