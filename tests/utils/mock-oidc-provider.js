@@ -12,7 +12,7 @@ const appTokenUrl = `${BASE_URL}/${DB_NAME}/login/oidc/get_token`;
 const authenticatedRedirectUrl = `${appTokenUrl}?code=dummy`;
 
 const getOidcBaseUrl = () => {
-  const address = `${hostURL(3000, true)}`;
+  const address = `${hostURL(3000)}`;
   console.log('address: ', address);
   return address;
 };
