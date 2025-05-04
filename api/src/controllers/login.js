@@ -41,6 +41,7 @@ const templates = {
       'login.incorrect',
       'login.show_password',
       'login.sso',
+      'login.sso.invalid',
       'login.unsupported_browser',
       'login.unsupported_browser.outdated_cht_android',
       'login.unsupported_browser.outdated_webview_apk',
@@ -444,6 +445,13 @@ const passwordResetValidation = async (username, currentPassword, password) => {
   return { isValid: true };
 };
 
+const handleSsoLoginError = (err, req, res) => {
+  const redirectUrl = url.format({
+    pathname: path.join('/', environment.db, 'login'),
+    query: { sso_error: err.status === 401? 'ssoinvalid': 'ssoerror' }
+  });
+  res.status(302).redirect(redirectUrl);
+};
 
 module.exports = {
   renderLogin,
@@ -549,10 +557,10 @@ module.exports = {
       const auth = await sso.getIdToken(currentUrl);
       const cookie = await sso.getCookie(auth.user.username);
       const redirectUrl = await setCookies(req, res, null, cookie);
-      res.status(302).send(redirectUrl);
+      res.status(302).redirect(redirectUrl);
     } catch (e) {
       logger.error('Error logging in via SSO: %o', e);
-      return sendLoginErrorResponse(e, res);
+      return handleSsoLoginError(e, req, res);
     }
   },
   oidcAuthorize: async (req, res) => {
@@ -563,10 +571,10 @@ module.exports = {
 
     try {
       const authUrl = await sso.getAuthorizationUrl(redirectUrl);
-      res.status(302).send(authUrl.href);
+      res.status(302).redirect(authUrl.href);
     } catch (e) {
       logger.error('Error getting authorization redirect url for SSO: %o', e);
-      return sendLoginErrorResponse(e, res);
+      return handleSsoLoginError(e, req, res);
     }
   },
   validateSession,

@@ -108,7 +108,9 @@ form {
 .password-required .error.password-required,
 .password-same .error.password-same,
 .current-password-incorrect .error.current-password-incorrect,
-.fields-required .error.fields-required
+.fields-required .error.fields-required,
+.ssoinvalid .error.invalid,
+.ssoerror .error.unknown
 {
   display: block;
 }

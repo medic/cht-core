@@ -50,7 +50,7 @@ describe('login controller', () => {
     };
     res = {
       send: () => {},
-      status: () => ({ send: redirect }),
+      status: () => ({ redirect }),
       json: () => {},
       cookie: () => {},
       clearCookie: () => {},
@@ -1102,9 +1102,9 @@ describe('login controller', () => {
 
     it('should return login error response', async () => {
       sinon.stub(sso, 'getIdToken').throws('Error');
-      controller.__set__('sendLoginErrorResponse', sinon.fake());
+      sinon.stub(environment, 'db').returns('medic');
       await controller.oidcLogin(req, res);
-      chai.expect(redirect.called).to.be.false;
+      chai.expect(redirect.calledWith(`/medic/login?sso_error=ssoerror`)).to.be.true;
     });
   });
 
@@ -1121,11 +1121,8 @@ describe('login controller', () => {
       const e = new Error('Error');
       sinon.stub(sso, 'getAuthorizationUrl').throws(e);
       sinon.stub(environment, 'db').returns('medic');
-      const sendErrorResponse = sinon.fake();
-      controller.__set__('sendLoginErrorResponse', sendErrorResponse);
       await controller.oidcAuthorize(req, res);
-      chai.expect(redirect.called).to.be.false;
-      chai.expect(sendErrorResponse.calledWith(e, res));
+      chai.expect(redirect.calledWith(`/medic/login?sso_error=ssoerror`)).to.be.true;
     });
   });
 });

@@ -125,6 +125,16 @@ const getRedirectUrl = function() {
   }
 };
 
+const getSsoError = function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const sso_error = urlParams.get('sso_error');
+
+  if (!sso_error || ['ssoinvalid', 'ssoerror'].indexOf(sso_error) === -1) {
+    return;
+  }
+  return sso_error;
+};
+
 const getSSOLoginUrl = function(){
   window.location.href = '/medic/login/oidc';
 };
@@ -229,5 +239,10 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('pageshow', (event) => {
   if (event.persisted) {
     checkSession();
+  }
+
+  const ssoError = getSsoError();
+  if (ssoError) {
+    setState(ssoError);
   }
 });
