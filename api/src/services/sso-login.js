@@ -10,22 +10,43 @@ const secureSettings = require('@medic/settings');
 
 const client = require('../openid-client-wrapper');
 const settingsService = require('./settings');
+const {
+  ClientError,
+  ResponseBodyError,
+  AuthorizationResponseError,
+  WWWAuthenticateChallengeError
+} = require('../openid-client-wrapper');
 
 const OIDC_CLIENT_SECRET_KEY = 'oidc:client-secret';
 
 const SERVER_ERROR = { status: 500, error: 'An error occurred when logging in.' };
 const USER_UNAUTHORIZED = { status: 401, error: 'You are not enabled for log in using SSO.'};
 
-const networkCallRetry = async (call, retryCount = 3) => {
+/**
+ * Retries the function call for the unknown errors.
+ *
+ * @param {function } call
+ * @param {int} retryCount
+ * @returns Function call result.
+ */
+const authServerCallRetry = async (call, retryCount = 3) => {
   try {
     return await call();
   } catch (err) {
-    if (retryCount === 1) {
+    if (
+      err instanceof TypeError ||
+      err instanceof ClientError ||
+      err instanceof ResponseBodyError ||
+      err instanceof AuthorizationResponseError ||
+      err instanceof WWWAuthenticateChallengeError ||
+      retryCount === 1
+    ) {
       throw err;
     }
+
     logger.debug(`Retrying ${call.name}.`);
     await setTimeout(10);
-    return await networkCallRetry(call, --retryCount);
+    return await authServerCallRetry(call, --retryCount);
   }
 };
 
@@ -53,7 +74,7 @@ const oidcServerSConfig = async () => {
 
   const execute = allow_insecure_requests ? [client.allowInsecureRequests] : [];
   const discoveryUrl = new URL(discovery_url);
-  const idServerConfig = await networkCallRetry(
+  const idServerConfig = await authServerCallRetry(
     () => client.discovery(discoveryUrl, client_id, clientSecret, null, { execute })
   );
 
@@ -94,9 +115,9 @@ const getAuthorizationUrl = async (redirectUrl) => {
   }
 };
 
-/** 
+/**
  * Get id token from code grant returned from the oidc provider.
- * 
+ *
  * @param {string} currentUrl Current url that contains authorization code grant.
  * @returns {object} Token id and user details.
  */
@@ -105,7 +126,7 @@ const getIdToken = async (currentUrl) => {
   try {
     const serverConfig = await oidcServerSConfig();
 
-    const tokens = await networkCallRetry(
+    const tokens = await authServerCallRetry(
       () => client.authorizationCodeGrant(serverConfig, currentUrl, { idTokenExpected: true })
     );
 

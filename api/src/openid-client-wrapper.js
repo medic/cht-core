@@ -6,6 +6,10 @@ const {
   buildAuthorizationUrl,
   authorizationCodeGrant,
   allowInsecureRequests,
+  ClientError,
+  ResponseBodyError,
+  AuthorizationResponseError,
+  WWWAuthenticateChallengeError
 } = require('openid-client');
 
 module.exports = {
@@ -15,4 +19,8 @@ module.exports = {
   buildAuthorizationUrl,
   authorizationCodeGrant,
   allowInsecureRequests,
+  ClientError,
+  ResponseBodyError,
+  AuthorizationResponseError,
+  WWWAuthenticateChallengeError
 };

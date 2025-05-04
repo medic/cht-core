@@ -128,6 +128,18 @@ describe('SSO login', () => {
         chai.expect(fn.calledThrice).to.be.true;
       }
     });
+
+    it('should not retry call to oidc provider if error is known', async () => {
+      sinon.stub(settingsService, 'get').returns(settings);
+      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
+      const fn = sinon.stub(client, 'discovery').throws(client.ClientError);
+      try {
+        await service.__get__('oidcServerSConfig')();
+        chai.expect.fail('Error');
+      } catch (err) {
+        chai.expect(fn.calledOnce).to.be.true;
+      }
+    });
   });
 
   describe('getAuthorizationUrl', () => {
