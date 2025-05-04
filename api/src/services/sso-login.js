@@ -35,7 +35,7 @@ const authServerCallRetry = async (call, retryCount = 3) => {
   } catch (err) {
     if (
       err instanceof TypeError ||
-      err instanceof ClientError ||
+      (err instanceof ClientError && err.code !== 'OAUTH_TIMEOUT') ||
       err instanceof ResponseBodyError ||
       err instanceof AuthorizationResponseError ||
       err instanceof WWWAuthenticateChallengeError ||

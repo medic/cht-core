@@ -129,6 +129,19 @@ describe('SSO login', () => {
       }
     });
 
+    it('should retry call to oidc provider for timeouts', async () => {
+      sinon.stub(settingsService, 'get').returns(settings);
+      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
+      const clientError = new client.ClientError('operation timed out', { cause: new Error(), code: 'OAUTH_TIMEOUT'});
+      const fn = sinon.stub(client, 'discovery').throws(clientError);
+      try {
+        await service.__get__('oidcServerSConfig')();
+        chai.expect.fail('Error');
+      } catch (err) {
+        chai.expect(fn.calledThrice).to.be.true;
+      }
+    });
+
     it('should not retry call to oidc provider if error is known', async () => {
       sinon.stub(settingsService, 'get').returns(settings);
       sinon.stub(secureSettings, 'getCredentials').resolves('secret');
