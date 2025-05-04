@@ -194,8 +194,12 @@ const getCookie = async (username) => {
 
   try {
     const userDoc = await users.getUserDoc(username);
-    salt = userDoc.salt;
 
+    if (!userDoc.oidc) {
+      throw new Error(`SSO login is not enabled for user with username ${username}.`);
+    }
+
+    salt = userDoc.salt;
     if (!salt) {
       throw new Error(`The user doc for ${username} does not have salt set.`);
     }

@@ -216,7 +216,7 @@ describe('SSO login', () => {
   describe('get cookie', () => {
     it('should generate a cookie header value', async () => {
       const username = 'odin';
-      const user = { id: 'user123', username: 'user123', salt: 'salt' };
+      const user = { id: 'user123', username: 'user123', salt: 'salt', oidc: true };
       sinon.stub(users, 'getUserDoc').returns(user);
       sinon.stub(request, 'get').returns('value');
       service.__set__('makeCookie', sinon.fake.returns('cookie'));
@@ -227,6 +227,18 @@ describe('SSO login', () => {
 
     it('should throw an error if user is not found', async () => {
       sinon.stub(users, 'getUserDoc').throws(`Failed to find user with name [odin] in the [test] database.`);
+
+      try {
+        await service.getCookie('odin');
+        chai.expect.fail('Expected test to fail.');
+      } catch (err) {
+        chai.expect(err).to.be.equal(service.__get__('USER_UNAUTHORIZED'));
+      }
+    });
+
+    it('should throw an error if SSO is not enabled for a user', async () => {
+      const user = { id: 'user123', username: 'user123', salt: 'salt'};
+      sinon.stub(users, 'getUserDoc').returns(user);
 
       try {
         await service.getCookie('odin');
@@ -250,7 +262,7 @@ describe('SSO login', () => {
 
     it('should throw and error if secret or auth timeout is not set', async () => {
       service.__set__('oidcServerSConfig', ASConfig);
-      const user = { id: 'user123', username: 'user123', salt: 'salt' };
+      const user = { id: 'user123', username: 'user123', salt: 'salt', oidc: true };
       sinon.stub(users, 'getUserDoc').returns(user);
       sinon.stub(request, 'get').throws(new Error('error'));
       try {
