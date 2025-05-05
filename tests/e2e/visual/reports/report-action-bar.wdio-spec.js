@@ -159,6 +159,5 @@ describe('Reports - More Options Menu & Floating Action Button', () => {
       await browser.pause(1000); 
       await generateScreenshot('report', 'fab-expanded');
     }
-
   });
 });
