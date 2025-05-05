@@ -65,7 +65,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_facility_visit_reminder id="pregnancy_facility_visit_reminder" prefix="J1!pregnancy_facility_visit_reminder!" delimiter="#" version="2019-11-04 14:15:20">
+        <pregnancy_facility_visit_reminder id="pregnancy_facility_visit_reminder" prefix="J1!pregnancy_facility_visit_reminder!" delimiter="#" version="2025-05-01 22:28:42">
           <inputs>
             <meta>
               <location>
@@ -135,7 +135,7 @@
       <bind nodeset="/pregnancy_facility_visit_reminder/inputs/source" type="string"/>
       <bind nodeset="/pregnancy_facility_visit_reminder/inputs/source_id" type="string"/>
       <bind nodeset="/pregnancy_facility_visit_reminder/inputs/source_visit_date" type="string"/>
-      <bind nodeset="/pregnancy_facility_visit_reminder/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/pregnancy_facility_visit_reminder/inputs/contact/_id" type="string"/>
       <bind nodeset="/pregnancy_facility_visit_reminder/inputs/contact/name" type="string"/>
       <bind nodeset="/pregnancy_facility_visit_reminder/inputs/contact/short_name" type="string"/>
       <bind nodeset="/pregnancy_facility_visit_reminder/inputs/contact/patient_id" type="string"/>
@@ -171,7 +171,7 @@
   <h:body class="pages">
     <group appearance="field-list" ref="/pregnancy_facility_visit_reminder/inputs">
       <group ref="/pregnancy_facility_visit_reminder/inputs/contact">
-        <input appearance="db-object" ref="/pregnancy_facility_visit_reminder/inputs/contact/_id">
+        <input appearance="select-contact type-person" ref="/pregnancy_facility_visit_reminder/inputs/contact/_id">
           <label ref="jr:itext('/pregnancy_facility_visit_reminder/inputs/contact/_id:label')"/>
         </input>
         <group ref="/pregnancy_facility_visit_reminder/inputs/contact/parent">
