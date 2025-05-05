@@ -135,7 +135,6 @@ describe('Reports - More Options Menu & Floating Action Button', () => {
   });
 
   it('should click FAB button and capture screenshots', async () => {
-
     await resizeWindowForScreenshots();
     const mobile = await isMobile();
 
