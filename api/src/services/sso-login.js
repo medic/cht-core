@@ -51,7 +51,7 @@ const authServerCallRetry = async (call, retryCount = 3) => {
 };
 
 /**
- * Establishes connection to oidc server config to get server metadata.
+ * Establishes connection to oidc server to get server metadata.
  * 
  * @returns {object} OIDC server config.
  */
