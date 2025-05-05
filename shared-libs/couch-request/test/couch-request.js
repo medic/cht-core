@@ -735,22 +735,11 @@ describe('couch-request', () => {
   });
 
   it('should automatically add user-agent header to requests', async () => {
-    const getUserAgent = couchRequest.__get__('getUserAgent');
-    
-    // Temporarily restore the NODE_ENV to allow user-agent header for this test only
-    const origNodeEnv = process.env.NODE_ENV;
-    delete process.env.NODE_ENV;
-    
-    const userAgent = await getUserAgent();
-    expect(userAgent).to.equal('Community Health Toolkit/4.18.0 (test-platform,test-arch)');
-    
     await couchRequest.get({ url: 'http://test.com:5984/test-user-agent' });
     
     const requestOptions = global.fetch.args[0][1];
     expect(requestOptions.headers['user-agent']).to.equal('Community Health Toolkit/4.18.0 (test-platform,test-arch)');
     
-    // Restore NODE_ENV
-    process.env.NODE_ENV = origNodeEnv;
   });
 
   it('should not override user-agent header if already specified', async () => {
