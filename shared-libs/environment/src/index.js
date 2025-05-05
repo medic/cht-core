@@ -82,7 +82,7 @@ const getDeployInfo = async () => {
     const ddoc = await request.get({
       url: `${couchUrl}/_design/${module.exports.ddoc}`,
       headers: {
-        'user-agent': 'Community Health Toolkit/4.18.0 (test-platform,test-arch)',
+        'user-agent': 'Community Health Toolkit',
       }
     });
     deployInfoCache = {
