@@ -7,16 +7,98 @@ const personFactory = require('@factories/cht/contacts/person');
 const placeFactory = require('@factories/cht/contacts/place');
 const { generateScreenshot, resizeWindowForScreenshots, isMobile } = require('@utils/screenshots');
 
-describe('Visual: Reports - More Options Menu & Floating Action Button', () => {
+describe('Reports - More Options Menu & Floating Action Button', () => {
   const places = placeFactory.generateHierarchy();
-  const clinic = places.get('clinic');
-  const contact = personFactory.build({
-    parent: { _id: clinic._id, parent: clinic.parent }
-  });
-
+  const contact = personFactory.build();
+  const REPORTED_DATE = Date.now() - (13 * 60 * 60 * 1000);
   const reports = [
-    reportFactory.report().build({ form: 'P', content_type: 'xml', fields: { foo: 'bar' } }, { submitter: contact }),
-    reportFactory.report().build({ form: 'V', content_type: 'xml', fields: { baz: 'qux' } }, { submitter: contact }),
+    reportFactory
+      .report()
+      .build({
+        fields: {
+          patient_name: 'Jadena'
+        },
+        form: 'Health Facility ANC reminder',
+        content_type: 'xml',
+        contact: {
+          _id: contact._id,
+        },
+        reported_date: REPORTED_DATE,
+        from: 'Unknown sender',
+      }),
+    reportFactory
+      .report()
+      .build({
+        fields: {
+          patient_name: 'Zoe'
+        },
+        form: 'Health Facility ANC reminder',
+        content_type: 'xml',
+        contact: {
+          _id: contact._id,
+        },
+        reported_date: REPORTED_DATE,
+        from: 'Unknown sender',
+      }),
+    reportFactory
+      .report()
+      .build({
+        fields: {
+          patient_name: 'Shaila'
+        },
+        form: 'Postnatal danger sign follow-up',
+        content_type: 'xml',
+        contact: {
+
+          _id: contact._id,
+        },
+        reported_date: REPORTED_DATE,
+        from: 'Unknown sender',
+      }),
+    reportFactory
+      .report()
+      .build({
+        fields: {
+          patient_name: 'Kelly'
+        },
+        form: 'Postnatal danger sign follow-up',
+        content_type: 'xml',
+        contact: {
+
+          _id: contact._id,
+        },
+        reported_date: REPORTED_DATE,
+        from: 'Unknown sender',
+      }),
+    reportFactory
+      .report()
+      .build({
+        fields: {
+          patient_name: 'Lena'
+        },
+        form: 'Health Facility ANC reminder',
+        content_type: 'xml',
+        contact: {
+
+          _id: contact._id,
+        },
+        reported_date: REPORTED_DATE,
+        from: 'Unknown sender',
+      }),
+    reportFactory
+      .report()
+      .build({
+        fields: {
+          patient_name: 'Lena'
+        },
+        form: 'Postnatal danger sign follow-up',
+        content_type: 'xml',
+        contact: {
+          _id: contact._id,
+        },
+        reported_date: REPORTED_DATE,
+        from: 'Unknown sender',
+      }),
   ];
 
   let savedUuids = [];
@@ -52,47 +134,32 @@ describe('Visual: Reports - More Options Menu & Floating Action Button', () => {
     }
   });
 
-  // it('should click FAB button and capture screenshots', async () => {
-  //   await resizeWindowForScreenshots();
-  //   await commonElements.goToReports();
-  //   await commonElements.waitForLoaders();
-    
-  //   // Initial state screenshot
-  //   await generateScreenshot('fab-button', 'before-fab-click');
-    
-  //   // Get FAB button and click
-  //   const fabButton = await $('.fast-action-fab-button');
-  //   await fabButton.waitForDisplayed();
-  //   await fabButton.click();
-  //   await browser.pause(1000); // Wait for animation
-    
-  //   // Take screenshot after FAB is opened
-  //   await generateScreenshot('fab-button', 'after-fab-click');
-    
-  //   // If you want to test specific actions in the FAB menu
-  //   const fabActions = await $$('.fab-action-item');
-  //   if (fabActions.length > 0) {
-  //     // Optionally click first action
-  //     await fabActions[0].click();
-  //     await browser.pause(1000);
-  //     await generateScreenshot('fab-button', 'after-action-click');
-  //   }
-  // });
+  it('should click FAB button and capture screenshots', async () => {
 
-  it('should test FAB button responsiveness', async () => {
-    // Test FAB on mobile viewport
-    await browser.setWindowSize(375, 667); // iPhone SE viewport
+    await resizeWindowForScreenshots();
+    const mobile = await isMobile();
+
     await commonElements.goToReports();
     await commonElements.waitForLoaders();
-    
-    const fabButton = await $('.fast-action-fab-button');
-    await fabButton.waitForDisplayed();
-    await generateScreenshot('fab-button', 'mobile-fab-button');
-    
-    // Click and capture expanded state
-    await fabButton.click();
-    await browser.pause(1000);
-    await generateScreenshot('fab-button', 'mobile-fab-expanded');
+
+    if (mobile) {
+
+      const fabButton = await $('.fast-action-fab-button');
+      await fabButton.waitForDisplayed();
+      await generateScreenshot('report', 'fab-button');
+
+      await fabButton.click();
+      await browser.pause(1000);
+      await generateScreenshot('report', 'fab-expanded');
+    } else {
+      const flatButton = await $('.fast-action-flat-button');
+      await flatButton.waitForDisplayed();
+      await generateScreenshot('report', 'fab-button');
+      await flatButton.click();
+      await browser.pause(1000); 
+      await generateScreenshot('report', 'fab-expanded');
+    }
+
   });
 
 });
