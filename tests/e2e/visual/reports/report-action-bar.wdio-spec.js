@@ -142,7 +142,6 @@ describe('Reports - More Options Menu & Floating Action Button', () => {
     await commonElements.waitForLoaders();
 
     if (mobile) {
-
       const fabButton = await $('.fast-action-fab-button');
       await fabButton.waitForDisplayed();
       await generateScreenshot('report', 'fab-button');
