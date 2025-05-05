@@ -19,8 +19,6 @@ module.exports = async () => {
     const date = doc.value.date;
     const browser = doc.value.device.userAgent && getBrowser(doc.value.device.userAgent);
     const { apk, android, cht, settings } = doc.value.device.versions;
-    const storageFree = doc.value.device.storage?.free || 0;
-    const storageTotal = doc.value.device.storage?.total || 0;
     return {
       user,
       deviceId,
@@ -33,8 +31,8 @@ module.exports = async () => {
       android,
       cht,
       settings,
-      storageFree,
-      storageTotal,
+      storageFree: doc.value.device.storage && doc.value.device.storage.free,
+      storageTotal: doc.value.device.storage && doc.value.device.storage.total
     };
   });
 };
