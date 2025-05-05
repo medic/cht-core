@@ -161,5 +161,4 @@ describe('Reports - More Options Menu & Floating Action Button', () => {
     }
 
   });
-
 });
