@@ -131,11 +131,11 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
   if [ "$DEFAULT_ULIMIT" = true ]; then
     DEFAULT_ULIMIT=$(ulimit)
     echo "WARNING: Starting CouchDb using system default ulimit of $DEFAULT_ULIMIT"
-    su -c "exec" "$@" couchdb
+    su -c "exec $*" couchdb
   else
     # shellcheck disable=SC2145 # needs additional investigation about intention before I'm confident in changing
     set +e
-    su -c "ulimit -n 100000 && exec" "$@" couchdb
+    su -c "ulimit -n 100000 && exec $*" couchdb
     EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
         echo "CouchDb failed to start. If the reported error is 'ulimit: error setting limit (Operation not permitted)', set the DEFAULT_ULIMIT environment variable to true and restart the service."
