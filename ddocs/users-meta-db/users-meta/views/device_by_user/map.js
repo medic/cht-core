@@ -28,8 +28,10 @@ function(doc) {
           settings: doc.metadata.versions && doc.metadata.versions.settings,
         },
         storage: {
-          free: doc.device && doc.device.deviceInfo && doc.device.deviceInfo.storage && doc.device.deviceInfo.storage.free,
-          total: doc.device && doc.device.deviceInfo && doc.device.deviceInfo.storage && doc.device.deviceInfo.storage.total
+          free: doc.device && doc.device.deviceInfo && doc.device.deviceInfo.storage && 
+          doc.device.deviceInfo.storage.free,
+          total: doc.device && doc.device.deviceInfo && doc.device.deviceInfo.storage && 
+          doc.device.deviceInfo.storage.total
         }
       },
     });
