@@ -116,7 +116,16 @@ describe('environment', () => {
           timestamp: '2023-01-02'
         });
         expect(request.get.callCount).to.equal(1);
-        expect(request.get.args).to.deep.equal([[{url: 'http://admin:pass@localhost:5984/medicdb/_design/medic'}]]);
+        expect(request.get.args).to.deep.equal([
+          [
+            {
+              url: 'http://admin:pass@localhost:5984/medicdb/_design/medic',
+              headers: {
+                'user-agent': 'Community Health Toolkit'
+              }
+            }
+          ]
+        ]);        
       });
 
       it('should use cache on subsequent calls', async () => {

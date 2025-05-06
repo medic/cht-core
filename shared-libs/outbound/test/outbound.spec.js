@@ -280,9 +280,6 @@ describe('outbound shared library', () => {
                 url: 'http://test/foo',
                 body: { some: 'data' },
                 timeout: 10000,
-                headers: {
-                  'user-agent': 'CHT/4.18.0 (linux,x64)'
-                }
               }
             ]
           ]);
@@ -320,9 +317,6 @@ describe('outbound shared library', () => {
                 url: 'http://test/foo',
                 body: { some: 'data' },
                 timeout: 10000,
-                headers: {
-                  'user-agent': 'CHT/unknown (linux,x64)'
-                },
                 auth: {
                   username: 'admin',
                   password: 'pass'
@@ -365,7 +359,6 @@ describe('outbound shared library', () => {
                 body: { some: 'data' },
                 timeout: 10000,
                 headers: {
-                  'user-agent': 'CHT/unknown (linux,x64)',
                   'authorization': 'Bearer credentials'
                 }
               }
@@ -423,9 +416,6 @@ describe('outbound shared library', () => {
                 url: 'http://test/foo',
                 body: { some: 'data' },
                 timeout: 10000,
-                headers: {
-                  'user-agent': 'CHT/unknown (linux,x64)'
-                },
                 qs: {
                   token: 'j9NAhVDdVWkgo1xnbxA9V3Pmp'
                 }
