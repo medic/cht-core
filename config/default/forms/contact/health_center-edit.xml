@@ -328,7 +328,7 @@
       <bind nodeset="/data/health_center/type" type="string" readonly="true()"/>
       <bind nodeset="/data/health_center/contact/name" type="string"/>
       <bind nodeset="/data/health_center/contact/contact_name" type="string" calculate="../name"/>
-      <bind nodeset="/data/health_center/contact/_id" type="db:person"/>
+      <bind nodeset="/data/health_center/contact/_id" type="string"/>
       <bind nodeset="/data/health_center/is_name_generated" type="select1" required="true()" relevant="not( /data/health_center/contact/_id ) or selected( . , 'true') or boolean( /data/health_center/contact/_id )" calculate="if(  /data/health_center/generated_name  = ../name, 'true', 'false')" readonly="boolean( /data/health_center/contact/_id )"/>
       <bind nodeset="/data/health_center/generated_name" type="string" calculate=" /data/init/generated_name_translation "/>
       <bind nodeset="/data/health_center/name" type="string" required="true()" relevant="boolean( /data/health_center/contact/_id ) or not( /data/health_center/contact/_id ) or not(selected( /data/health_center/is_name_generated , 'true')) or not(selected( /data/health_center/is_name_generated , 'yes'))" calculate="if( ( selected( /data/health_center/is_name_generated , 'true') or selected( /data/health_center/is_name_generated , 'yes') ),  /data/health_center/generated_name , .)"/>
@@ -359,7 +359,7 @@
     <group appearance="field-list" ref="/data/health_center">
       <group ref="/data/health_center/contact">
         <input appearance="hidden" ref="/data/health_center/contact/name"/>
-        <input appearance="db-object" ref="/data/health_center/contact/_id">
+        <input appearance="select-contact type-person" ref="/data/health_center/contact/_id">
           <label ref="jr:itext('/data/health_center/contact/_id:label')"/>
           <hint ref="jr:itext('/data/health_center/contact/_id:hint')"/>
         </input>

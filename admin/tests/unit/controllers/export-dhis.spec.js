@@ -16,7 +16,8 @@ describe('dhis2 export controller', () => {
 
   beforeEach(() => {
     module('adminApp');
-    sinon.useFakeTimers(NOW);
+    sinon.useFakeTimers({ now: NOW });
+
     Settings = sinon.stub().resolves({ dhis_data_sets: dhisDataSets });
     Export = sinon.stub().resolves();
     query = sinon.stub().resolves({ rows: [

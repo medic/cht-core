@@ -156,7 +156,7 @@ describe('TasksComponent', () => {
     const now = moment('2020-10-20');
     const futureDate = now.clone().add(3, 'days');
     const pastDate = now.clone().subtract(3, 'days');
-    clock = sinon.useFakeTimers(now.valueOf());
+    clock = sinon.useFakeTimers({ now: now.valueOf(), toFake: ['Date']});
     const taskDocs = [
       { _id: '1', emission: { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD') }, owner: 'a' },
       { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }, owner: 'b' },
