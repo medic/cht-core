@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    cht.service: nouveau
+  name: cht-couchdb-nouveau
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cht.service: nouveau
+  template:
+    metadata:
+      labels:
+        cht.service: nouveau
+    spec:
+      containers:
+      - name: cht-couchdb-nouveau
+        image: {{ $.Values.upstream_servers.docker_registry }}/cht-couchdb-nouveau:{{ $.Values.cht_image_tag }}
+        ports:
+        - containerPort: 5984
+        volumeMounts:
+        - mountPath: /data/nouveau
+          name: couchdb-nouveau-claim0
+          subPath: data
+      restartPolicy: Always
+      volumes:
+      - name: couchdb-nouveau-claim0
+        persistentVolumeClaim:
+          claimName: couchdb-nouveau-claim0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    cht.service: nouveau
+  name: nouveau
+spec:
+  ports:
+    - name: nouveau-service
+      port: 5987
+      protocol: TCP
+  selector:
+    cht.service: nouveau
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: couchdb-pv-{{ $.Values.namespace }}-nouveau
+spec:
+  capacity:
+    storage: 100Mi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-path
+  hostPath:
+    path: /data/nouveau
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    cht.service: nouveau-claim0
+  name: couchdb-nouveau-claim0
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+  storageClassName: local-path
+  volumeName: couchdb-pv-{{ $.Values.namespace }}-nouveau
+---
