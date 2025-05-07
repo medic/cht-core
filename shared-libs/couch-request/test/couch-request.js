@@ -37,8 +37,7 @@ describe('couch-request', () => {
 
     audit = require('@medic/audit');
     sinon.stub(audit, 'fetchCallback');
-    const environmentMock = { getVersion: sinon.stub().resolves('4.18.0') };
-    sinon.stub(require('@medic/environment'), 'getVersion').callsFake(environmentMock.getVersion);
+    sinon.stub(require('@medic/server-info'), 'getVersion').resolves('4.18.0');
 
     sinon.stub(require('os'), 'platform').returns('test-platform');
     sinon.stub(require('os'), 'arch').returns('test-arch');
@@ -126,6 +125,7 @@ describe('couch-request', () => {
           accept: 'application/json',
           'content-type': 'application/json',
           authorization: `Basic ${btoa('admin:password')}`,
+          'user-agent': 'Community Health Toolkit/4.18.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/test',
@@ -749,7 +749,8 @@ describe('couch-request', () => {
         headers: {
           accept: 'application/json',
           'content-type': 'application/json',
-          'header-name': 'req_uuid'
+          'header-name': 'req_uuid',
+          'user-agent': 'Community Health Toolkit/4.18.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/test',
