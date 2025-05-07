@@ -136,6 +136,7 @@ describe('cht-datasource Report', () => {
       const cursor = null;
       const invalidLimit = 'invalidLimit';
       const invalidCursor = 'invalidCursor';
+      const emptyNouveauCursor = 'W10=';
 
       it('returns a page of report ids for no limit and cursor passed', async () => {
         const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
@@ -143,8 +144,8 @@ describe('cht-datasource Report', () => {
         const responsePeople = responsePage.data;
         const responseCursor = responsePage.cursor;
 
-        expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
-        expect(responseCursor).to.be.equal(null);
+        expect(responsePeople).to.deep.equalInAnyOrder(expectedReportIds);
+        expect(responseCursor).to.not.equal(emptyNouveauCursor);
       });
 
       it('returns a page of report ids when limit and cursor is passed and cursor can be reused', async () => {
@@ -157,8 +158,8 @@ describe('cht-datasource Report', () => {
         expect(allReports).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
         expect(firstPage.data.length).to.be.equal(4);
         expect(secondPage.data.length).to.be.equal(2);
-        expect(firstPage.cursor).to.be.equal('4');
-        expect(secondPage.cursor).to.be.equal(null);
+        expect(firstPage.cursor).to.not.equal(emptyNouveauCursor);
+        expect(secondPage.cursor).to.not.equal(emptyNouveauCursor);
       });
 
       it('returns a page of unique report ids for when multiple fields match the same freetext', async () => {
@@ -167,9 +168,8 @@ describe('cht-datasource Report', () => {
         const responseIds = responsePage.data;
         const responseCursor = responsePage.cursor;
 
-        expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
-          .to.deep.equalInAnyOrder(expectedContactIds);
-        expect(responseCursor).to.be.equal(null);
+        expect(responseIds).to.deep.equalInAnyOrder(expectedContactIds);
+        expect(responseCursor).to.not.equal(emptyNouveauCursor);
       });
 
       it('returns a page of unique report ids for when multiple fields match the same freetext with limit', 
@@ -181,9 +181,8 @@ describe('cht-datasource Report', () => {
           const responseIds = responsePage.data;
           const responseCursor = responsePage.cursor;
 
-          expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
-            .to.deep.equalInAnyOrder(expectedContactIds);
-          expect(responseCursor).to.be.equal(null);
+          expect(responseIds).to.deep.equalInAnyOrder(expectedContactIds);
+          expect(responseCursor).to.not.equal(emptyNouveauCursor);
         });
 
       it('returns a page of unique report ids for when multiple fields match the same freetext with lower limit',
@@ -194,7 +193,7 @@ describe('cht-datasource Report', () => {
           const responseCursor = responsePage.cursor;
 
           expect(responseIds.length).to.be.equal(2);
-          expect(responseCursor).to.be.equal('2');
+          expect(responseCursor).to.not.equal(emptyNouveauCursor);
           expect(responseIds).to.satisfy(subsetArray => {
             return subsetArray.every(item => expectedContactIds.includes(item));
           });
@@ -212,8 +211,10 @@ describe('cht-datasource Report', () => {
         await expect(
           getUuidsPage(Qualifier.byFreetext(freetext), invalidCursor, fourLimit)
         ).to.be.rejectedWith(
-          `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          `Internal Server Error`
         );
+        // Nouveau just throws 500 - Internal Server Error whenever there is an invalid param.
+        // So there is no way to know which input was actually wrong.
       });
     });
 

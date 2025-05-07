@@ -1,6 +1,7 @@
 import { Doc } from '../../libs/doc';
 import { AbstractDataContext, hasField, isRecord } from '../../libs/core';
 import { DataContext } from '../../libs/data-context';
+import { ddocExists } from './doc';
 
 /**
  * {@link PouchDB.Database}s to be used as the local data source.
@@ -19,7 +20,7 @@ export class LocalDataContext extends AbstractDataContext {
   /** @internal */
   constructor(
     readonly medicDb: PouchDB.Database<Doc>,
-    readonly settings: SettingsService
+    readonly settings: SettingsService,
   ) {
     super();
   }
@@ -51,8 +52,16 @@ export const isLocalDataContext = (context: DataContext): context is LocalDataCo
  * @returns the local data context
  * @throws Error if the provided settings or source databases are invalid
  */
-export const getLocalDataContext = (settings: SettingsService, sourceDatabases: SourceDatabases): DataContext => {
+export const getLocalDataContext = (
+  settings: SettingsService,
+  sourceDatabases: SourceDatabases,
+): DataContext => {
   assertSettingsService(settings);
   assertSourceDatabases(sourceDatabases);
   return new LocalDataContext(sourceDatabases.medic, settings);
+};
+
+/** @internal */
+export const isOffline = async (db: PouchDB.Database<Doc>): Promise<boolean> => {
+  return ddocExists(db, '_design/medic-offline-freetext');
 };

@@ -20,7 +20,7 @@ export class SearchFactoryService {
 
   async get(dbService: DbService, datasourceService: CHTDatasourceService): Promise<Function> {
     if (!this.searchFn) {
-      const dataContext = await datasourceService.get();
+      const dataContext = await datasourceService.getDataContext();
       this.searchFn = Search(dbService.get(), dataContext) as Function;
     }
 

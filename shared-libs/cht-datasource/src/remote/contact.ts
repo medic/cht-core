@@ -25,25 +25,24 @@ export namespace v1 {
   });
 
   /** @internal */
-  export const getUuidsPage =
-    (remoteContext: RemoteDataContext) => (
-      qualifier: ContactTypeQualifier | FreetextQualifier,
-      cursor: Nullable<string>,
-      limit: number
-    ): Promise<Page<string>> => {
-      const freetextParams: Record<string, string> = isFreetextType(qualifier)
-        ? { freetext: qualifier.freetext }
-        : {};
-      const typeParams: Record<string, string> = isContactType(qualifier)
-        ? { type: qualifier.contactType }
-        : {};
+  export const getUuidsPage = (remoteContext: RemoteDataContext) => (
+    qualifier: ContactTypeQualifier | FreetextQualifier,
+    cursor: Nullable<string>,
+    limit: number
+  ): Promise<Page<string>> => {
+    const freetextParams: Record<string, string> = isFreetextType(qualifier)
+      ? { freetext: qualifier.freetext }
+      : {};
+    const typeParams: Record<string, string> = isContactType(qualifier)
+      ? { type: qualifier.contactType }
+      : {};
 
-      const queryParams = {
-        limit: limit.toString(),
-        ...(cursor ? { cursor } : {}),
-        ...typeParams,
-        ...freetextParams,
-      };
-      return getContactUuids(remoteContext)(queryParams);
+    const queryParams = {
+      limit: limit.toString(),
+      ...(cursor ? { cursor } : {}),
+      ...typeParams,
+      ...freetextParams,
     };
+    return getContactUuids(remoteContext)(queryParams);
+  };
 }
