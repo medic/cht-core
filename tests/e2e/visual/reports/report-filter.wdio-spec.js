@@ -135,5 +135,9 @@ describe('Report Filter functionality test', () => {
 
     await generateScreenshot('report', 'filter-sidebar');
 
+    await reportsPage.filterByStatus('Not reviewed');
+    await browser.pause(1000);
+    await generateScreenshot('report', 'status-filter-applied');
+
   });
 });
