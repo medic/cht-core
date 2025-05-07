@@ -452,17 +452,16 @@ describe('Export Data Service', () => {
 
     actual.should.deep.equal([
       {
-        username: 'user1',
-        device_id: 'device-id-123',
+        user: 'user1',
+        deviceId: 'device-id-123',
         date: '2023-05-01',
-        user_agent: 'ExampleAgent/1.0',
-        cht_version: '4.0.0',
-        settings_version: '4-abc123',
-        user_storage_usage: {
-          total_docs: 50,
-          total_attachments: 10,
-          total_size_bytes: 20480
-        }
+        cht: '4.0.0',
+        settings: '4-abc123',
+        browser: { name: undefined, version: undefined },
+        apk: undefined,
+        android: undefined,
+        storageFree: undefined,
+        storageTotal: undefined
       }
     ]);
   });
