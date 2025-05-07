@@ -1701,4 +1701,5 @@ module.exports = {
   runSentinelTasks,
   runCommand,
   deletePurgeDbs,
+  saveLogs,
 };
