@@ -31,10 +31,12 @@ exports.config = Object.assign(wdioBaseConfig.config, {
     desktopTests: [
       'contacts/contact-user-management.wdio-spec.js',
       'contacts/contact-user-hierarchy-creation.wdio-spec.js',
+      'targets/targets-overview.wdio-spec.js',
     ],
     mobileTests: [
       'contacts/contact-user-management.wdio-spec.js',
       'contacts/list-view-login-visual.wdio-spec.js',
+      'targets/targets-overview.wdio-spec.js',
     ]
   },
   capabilities: process.argv.includes('--suite=mobileTests')
