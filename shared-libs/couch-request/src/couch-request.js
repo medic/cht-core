@@ -1,5 +1,4 @@
 const environment = require('@medic/environment');
-const serverInfo = require('@medic/server-info');
 const audit = require('@medic/audit');
 const path = require('path');
 const os = require('os');
@@ -29,6 +28,7 @@ const addServername = isTrue(process.env.ADD_SERVERNAME_TO_HTTP_AGENT);
 //
 
 const getUserAgent = async () => {
+  const serverInfo = require('@medic/server-info');
   const chtVersion = await serverInfo.getVersion();
   const platform = os.platform();
   const arch = os.arch();
