@@ -302,8 +302,8 @@ app.get(routePrefix + 'login/token/:token?', login.tokenGet);
 app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
 app.get(routePrefix + 'password-reset', login.getPasswordReset);
 app.postJson(routePrefix + 'password-reset', login.resetPassword);
-app.get(routePrefix + 'login/oidc', login.oidcAuthorize);
-app.get(routePrefix + 'login/oidc/get_token', login.oidcLogin);
+app.get(routePrefix + 'login/oidc/authorize', login.oidcAuthorize);
+app.get(routePrefix + 'login/oidc', login.oidcLogin);
 app.get(routePrefix + 'privacy-policy', privacyPolicyController.get);
 
 // authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB

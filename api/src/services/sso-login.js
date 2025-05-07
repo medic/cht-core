@@ -8,24 +8,16 @@ const { users } = require('@medic/user-management')(config, db, dataContext);
 const logger = require('@medic/logger');
 const secureSettings = require('@medic/settings');
 
-const client = require('../openid-client-wrapper');
+const client = require('./openid-client');
 const settingsService = require('./settings');
-const {
-  ClientError,
-  ResponseBodyError,
-  AuthorizationResponseError,
-  WWWAuthenticateChallengeError
-} = require('../openid-client-wrapper');
+const translations = require('../translations');
 
 const OIDC_CLIENT_SECRET_KEY = 'oidc:client-secret';
-
-const SERVER_ERROR = { status: 500, error: 'An error occurred when logging in.' };
-const USER_UNAUTHORIZED = { status: 401, error: 'You are not enabled for log in using SSO.'};
 
 /**
  * Retries the function call for the unknown errors.
  *
- * @param {function } call
+ * @param {function} call
  * @param {int} retryCount
  * @returns Function call result.
  */
@@ -33,18 +25,11 @@ const authServerCallRetry = async (call, retryCount = 3) => {
   try {
     return await call();
   } catch (err) {
-    if (
-      err instanceof TypeError ||
-      (err instanceof ClientError && err.code !== 'OAUTH_TIMEOUT') ||
-      err instanceof ResponseBodyError ||
-      err instanceof AuthorizationResponseError ||
-      err instanceof WWWAuthenticateChallengeError ||
-      retryCount === 1
-    ) {
+    if (retryCount === 1 || err.status && err.status < 500) {
       throw err;
     }
 
-    logger.debug(`Retrying ${call.name}.`);
+    logger.debug(`Retrying OIDC request: ${call.name}.`);
     await setTimeout(10);
     return await authServerCallRetry(call, --retryCount);
   }
@@ -63,7 +48,7 @@ const oidcServerSConfig = async () => {
 
   const { allow_insecure_requests, client_id, discovery_url } = settings.oidc_provider;
   
-  if (!discovery_url?.length || !client_id?.length) {
+  if (!discovery_url || !client_id) {
     throw new Error(`The discovery_url and client_id must be provided in the oidc_provider config.`);
   }
 
@@ -74,23 +59,27 @@ const oidcServerSConfig = async () => {
 
   const execute = allow_insecure_requests ? [client.allowInsecureRequests] : [];
   const discoveryUrl = new URL(discovery_url);
-  const idServerConfig = await authServerCallRetry(
-    () => client.discovery(discoveryUrl, client_id, clientSecret, null, { execute })
-  );
+  const discovery = () => client.discovery(discoveryUrl, client_id, clientSecret, null, { execute });
+  const idServerConfig = await authServerCallRetry(discovery);
 
   const {
     issuer,
     authorization_endpoint,
     token_endpoint,
+    grant_types_supported,
+    response_types_supported,
+    claims_supported,
+    scopes_supported,
   } = idServerConfig.serverMetadata();
-
-  const connectionMetadata = `
-  issuer: ${issuer}
-  authorization_endpoint: ${authorization_endpoint}
-  token_endpoint: ${token_endpoint}
-  `;
-
-  logger.debug(`Authorization server config auth config loaded successfully. ${connectionMetadata}`);
+  logger.debug(`Authorization server config loaded: ${JSON.stringify({
+    issuer,
+    authorization_endpoint,
+    token_endpoint,
+    grant_types_supported,
+    response_types_supported,
+    claims_supported,
+    scopes_supported,
+  })}`);
   return idServerConfig;
 };
 
@@ -106,13 +95,19 @@ const getAuthorizationUrl = async (redirectUrl) => {
     scope: 'openid email'
   };
 
-  try {
-    const serverConfig = await oidcServerSConfig();
-    return client.buildAuthorizationUrl(serverConfig, params);
-  } catch (err) {
-    logger.error('Error getting authorization url: %o', err);
-    throw SERVER_ERROR;
+  const serverConfig = await oidcServerSConfig();
+  return client.buildAuthorizationUrl(serverConfig, params);
+};
+
+const getLocale = async (localeClaim) => {
+  const currentLocaleCds = await translations
+    .getEnabledLocales()
+    .then(docs => docs.map(({ code }) => code));
+  if (localeClaim && currentLocaleCds.includes(localeClaim)) {
+    return localeClaim;
   }
+  logger.debug(`Invalid local for user [${localeClaim}]. Using default locale.`);
+  return currentLocaleCds[0];
 };
 
 /**
@@ -122,29 +117,19 @@ const getAuthorizationUrl = async (redirectUrl) => {
  * @returns {object} Token id and user details.
  */
 const getIdToken = async (currentUrl) => {
+  const serverConfig = await oidcServerSConfig();
+  const authorizationCodeGrant = () => client.authorizationCodeGrant(
+    serverConfig,
+    currentUrl,
+    { idTokenExpected: true }
+  );
+  const tokens = await authServerCallRetry(authorizationCodeGrant);
+  const { preferred_username, locale } = tokens.claims();
 
-  try {
-    const serverConfig = await oidcServerSConfig();
-
-    const tokens = await authServerCallRetry(
-      () => client.authorizationCodeGrant(serverConfig, currentUrl, { idTokenExpected: true })
-    );
-
-    const { id_token } = tokens;
-    const { name, preferred_username, email } = tokens.claims();
-
-    return {
-      id_token,
-      user: {
-        name,
-        username: preferred_username,
-        email
-      }
-    };
-  } catch (err) {
-    logger.error('Error getting id token: %o', err);
-    throw SERVER_ERROR;
-  }
+  return {
+    preferred_username,
+    locale: await getLocale(locale),
+  };
 };
 
 /**
@@ -159,26 +144,49 @@ const getIdToken = async (currentUrl) => {
 const makeCookie = (username, salt, secret, authTimeout) => {
   // an adaptation of https://medium.com/@eiri/couchdb-cookie-authentication-6dd0af6817da
   const expiry = Math.floor(Date.now() / 1000) + authTimeout;
-  const msg = `${username}:${expiry.toString(16)
-    .toUpperCase()}`;
+  const msg = `${username}:${expiry.toString(16).toUpperCase()}`;
   const key = `${secret}${salt}`;
   const hmac = createHmac('sha1', key)
     .update(msg)
     .digest();
   const control = new Uint8Array(hmac);
-  let cookie = Buffer.concat([
+  const cookie = Buffer.concat([
     Buffer.from(msg),
     Buffer.from(':'),
     Buffer.from(control)
   ]).toString('base64');
 
-  while (cookie.endsWith('=')) {
-    cookie = cookie.slice(0, -1);
-  }
-
+  // Make sure format matches Couch's encoding
   return cookie
+    .replace(/=+$/, '')
     .replaceAll('/', '_')
     .replaceAll('+', '-');
+};
+
+const unauthorizedError = (message) => {
+  const error = new Error(message);
+  error.status = 401;
+  return error;
+};
+
+const getUserSalt = async (username) => {
+  const { oidc, salt } = await users
+    .getUserDoc(username)
+    .catch(err => {
+      if (err.status === 404) {
+        throw unauthorizedError(`CHT user not found for OIDC User ${username}.`);
+      }
+      throw err;
+    });
+
+  if (!oidc) {
+    throw unauthorizedError(`SSO login is not enabled for user with username ${username}.`);
+  }
+  if (!salt) {
+    throw unauthorizedError(`The user doc for ${username} does not have a password salt.`);
+  }
+
+  return salt;
 };
 
 /**
@@ -188,36 +196,10 @@ const makeCookie = (username, salt, secret, authTimeout) => {
  * @returns {string} Session cookie.
  */
 const getCookie = async (username) => {
-  let secret;
-  let authTimeout;
-  let salt;
-
-  try {
-    const userDoc = await users.getUserDoc(username);
-
-    if (!userDoc.oidc) {
-      throw new Error(`SSO login is not enabled for user with username ${username}.`);
-    }
-
-    salt = userDoc.salt;
-    if (!salt) {
-      throw new Error(`The user doc for ${username} does not have salt set.`);
-    }
-  } catch (err) {
-    logger.error('Error getting user doc: %o', err);
-    throw USER_UNAUTHORIZED;
-  }
-
-  try {
-    secret = await secureSettings.getCouchConfig('couch_httpd_auth/secret');
-    authTimeout = await secureSettings.getCouchConfig('couch_httpd_auth/timeout');
-  } catch (err) {
-    logger.error('Error getting CouchDB secret and auth timeout: %o', err);
-    throw SERVER_ERROR;
-  }
-
-  const cookie = makeCookie(username, salt, secret, authTimeout);
-
+  const salt = await getUserSalt(username);
+  const secret = await secureSettings.getCouchConfig('couch_httpd_auth/secret');
+  const authTimeout = await secureSettings.getCouchConfig('couch_httpd_auth/timeout');
+  const cookie = makeCookie(username, salt, secret, Number(authTimeout));
   return `AuthSession=${cookie}`;
 };
 

@@ -9,7 +9,7 @@ const secureSettings = require('@medic/settings');
 const settingsService = require('../../../src/services/settings');
 const request = require('@medic/couch-request');
 
-const client = require('../../../src/openid-client-wrapper.js');
+const client = require('../../../src/services/openid-client.js');
 let service;
 
 describe('SSO login', () => {
