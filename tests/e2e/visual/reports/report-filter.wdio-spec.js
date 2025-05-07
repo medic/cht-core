@@ -120,9 +120,6 @@ describe('Report Filter functionality test', () => {
     await utils.revertDb([], true);
   });
 
-  after(async () => {
-    await utils.revertDb([], true);
-  });
 
   it('should test sidebar filter functionality and capture screenshots', async () => {
     await resizeWindowForScreenshots();
