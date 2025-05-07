@@ -26,7 +26,10 @@ import { reduce as _reduce } from 'lodash-es';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
-import { Nullable, Person } from '@medic/cht-datasource';
+import { Nullable, Person, Contact } from '@medic/cht-datasource';
+import { DeduplicateService, DuplicateCheck } from '@mm-services/deduplicate.service';
+import { ContactsService } from '@mm-services/contacts.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 /**
  * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
@@ -40,15 +43,15 @@ import { Nullable, Person } from '@medic/cht-datasource';
 export class FormService {
   constructor(
     private store: Store,
-    private contactSaveService:ContactSaveService,
+    private contactSaveService: ContactSaveService,
     private contactSummaryService: ContactSummaryService,
-    private contactTypesService:ContactTypesService,
+    private contactTypesService: ContactTypesService,
     private dbService: DbService,
     private fileReaderService: FileReaderService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
     private submitFormBySmsService: SubmitFormBySmsService,
     private userContactService: UserContactService,
-    private userSettingsService:UserSettingsService,
+    private userSettingsService: UserSettingsService,
     private xmlFormsService: XmlFormsService,
     private zScoreService: ZScoreService,
     private trainingCardsService: TrainingCardsService,
@@ -59,6 +62,9 @@ export class FormService {
     private enketoService: EnketoService,
     private targetAggregatesService: TargetAggregatesService,
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
+    private readonly deduplicateService: DeduplicateService,
+    private readonly contactsService: ContactsService,
+    private readonly performanceService: PerformanceService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -135,11 +141,7 @@ export class FormService {
     return this.targetAggregatesService.getTargetDocs(contact, this.userFacilityIds, this.userContactId);
   }
 
-  private getContactSummary(doc, instanceData) {
-    const contact = instanceData?.contact;
-    if (!doc.hasContactSummary || !contact) {
-      return Promise.resolve();
-    }
+  loadContactSummary(contact) {
     return Promise
       .all([
         this.getContactReports(contact),
@@ -147,6 +149,14 @@ export class FormService {
         this.getTargetDocs(contact),
       ])
       .then(([reports, lineage, targetDocs]) => this.contactSummaryService.get(contact, reports, lineage, targetDocs));
+  }
+
+  private getContactSummary(doc, instanceData) {
+    const contact = instanceData?.contact;
+    if (!doc.hasContactSummary || !contact) {
+      return Promise.resolve();
+    }
+    return this.loadContactSummary(contact);
   }
 
   private canAccessForm(formContext: WebappEnketoFormContext) {
@@ -166,7 +176,7 @@ export class FormService {
 
     try {
       this.unload(this.enketoService.getCurrentForm());
-      const [ doc, userSettings ] = await Promise.all([
+      const [doc, userSettings] = await Promise.all([
         this.transformXml(formDoc),
         this.userSettingsService.getWithLanguage()
       ]);
@@ -216,7 +226,7 @@ export class FormService {
       });
   }
 
-  private async getUserContact(requiresContact:boolean) {
+  private async getUserContact(requiresContact: boolean) {
     const contact = await this.userContactService.get();
     if (requiresContact && !contact) {
       const err: any = new Error('Your user does not have an associated contact, or does not have access to the ' +
@@ -327,7 +337,42 @@ export class FormService {
     }, null);
   }
 
-  async saveContact(form, docId, type, xmlVersion) {
+  private async checkForDuplicates(
+    doc: Contact.v1.Contact,
+    contactType: string,
+    duplicatesAcknowledged: boolean,
+    duplicateCheck?: DuplicateCheck
+  ): Promise<Array<Contact.v1.Contact>> {
+    if (duplicatesAcknowledged) {
+      return [];
+    }
+
+    const perfTracking = this.performanceService.track();
+
+    try {
+      const siblings = await this.contactsService.getSiblings(doc);
+      return this.deduplicateService.getDuplicates(doc, contactType, siblings, duplicateCheck);
+    } finally {
+      perfTracking?.stop({
+        name: ['enketo', 'contacts', contactType, 'duplicate_check'].join(':')
+      });
+    }
+  }
+
+  async saveContact(
+    contactInfo: {
+      docId: string | undefined;
+      type: string;
+    },
+    formInfo: {
+      form: any;
+      xmlVersion: string | undefined;
+      duplicateCheck?: DuplicateCheck
+    },
+    duplicatesAcknowledged: boolean,
+  ) {
+    const { docId, type } = contactInfo;
+    const { form, xmlVersion, duplicateCheck } = formInfo;
     const typeFields = this.contactTypesService.isHardcodedType(type)
       ? { type }
       : { type: 'contact', contact_type: type };
@@ -336,6 +381,17 @@ export class FormService {
     const preparedDocs = await this.applyTransitions(docs);
 
     const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
+
+    const duplicates = await this.checkForDuplicates(
+      primaryDoc ?? preparedDocs.preparedDocs[0],
+      type,
+      duplicatesAcknowledged,
+      duplicateCheck
+    );
+    if (duplicates?.length) {
+      throw new DuplicatesFoundError('Duplicates found', duplicates);
+    }
+
     this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
     const bulkDocsResult = await this.dbService.get().bulkDocs(preparedDocs.preparedDocs);
     const failureMessage = this.generateFailureMessage(bulkDocsResult);
@@ -349,6 +405,15 @@ export class FormService {
 
   unload(form) {
     this.enketoService.unload(form);
+  }
+}
+export class DuplicatesFoundError extends Error {
+  duplicates: Contact.v1.Contact[];
+  constructor(message: string, duplicates: Contact.v1.Contact[]) {
+    super(message);
+    this.message = message;
+    this.duplicates = duplicates;
+    this.name = 'DuplicatesFoundError';
   }
 }
 

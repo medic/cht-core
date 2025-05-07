@@ -1,11 +1,13 @@
 const environment = require('@medic/environment');
 const audit = require('@medic/audit');
 const path = require('path');
+const os = require('os');
 let asyncLocalStorage;
 let requestIdHeader;
 
 const JSON_HEADER_VALUE = 'application/json';
 const CONTENT_TYPE = 'content-type';
+const CHT_AGENT = 'Community Health Toolkit';
 
 const isString = value => typeof value === 'string' || value instanceof String;
 const isTrue = value => isString(value) ? value.toLowerCase() === 'true' : value === true;
@@ -24,6 +26,13 @@ const addServername = isTrue(process.env.ADD_SERVERNAME_TO_HTTP_AGENT);
 //  (https://nodejs.org/api/tls.html): "Server name for the SNI (Server Name Indication) TLS extension  It is the
 //  name of the host being connected to, and must be a host name, and not an IP address.".
 //
+
+const getUserAgent = async () => {
+  const chtVersion = await environment.getVersion();
+  const platform = os.platform();
+  const arch = os.arch();
+  return `${CHT_AGENT}/${chtVersion} (${platform},${arch})`;
+};
 
 const setRequestUri = (options) => {
   let uri = options.uri || options.url;
@@ -127,12 +136,17 @@ const lowercaseHeaders = headers => Object.assign(
   ...Object.keys(headers).map(key => ({ [key.toLowerCase()]: headers[key] }))
 );
 
-const setRequestOptions = (options) => {
+const setRequestOptions = async (options) => {
   options.headers = lowercaseHeaders(options.headers || {});
 
   const requestId = asyncLocalStorage?.getRequestId();
   if (requestId) {
     options.headers[requestIdHeader] = requestId;
+  }
+
+  // Set user-agent header if not already set
+  if (!options.headers['user-agent']) {
+    options.headers['user-agent'] = await getUserAgent();
   }
 
   setRequestUri(options);
@@ -161,8 +175,30 @@ const getResponseBody = async (response, sendJson) => {
   return content;
 };
 
+const sanitizeErrorResponse = (body) => {
+  if (!body) {
+    return 'No response body';
+  }
+  
+  if (typeof body === 'string') {
+    return body.replace(/(?:password|auth|user|pass)[:=].*?(?:[&\s]|$)/gi, '');
+  }
+  
+  if (typeof body === 'object') {
+    const sanitized = { ...body };
+
+    ['password', 'auth', 'authorization', 'key', 'secret', 'token', 'username', 'user', 'pass'].forEach(field => {
+      if (field in sanitized) {
+        delete sanitized[field]; 
+      }
+    });
+    return sanitized;
+  }
+  
+  return body;
+};
 const request = async (options = {}) => {
-  setRequestOptions(options);
+  await setRequestOptions(options);
 
   const response = await global.fetch(options.uri, options);
   const responseObj = {
@@ -185,8 +221,15 @@ const request = async (options = {}) => {
     return responseObj.body;
   }
 
-  const err = new Error(response.error || `${response.status} - ${JSON.stringify(responseObj.body)}`);
-  Object.assign(err, responseObj);
+  const sanitizedBody = sanitizeErrorResponse(responseObj.body);
+  const err = new Error(`${response.status} - ${JSON.stringify(sanitizedBody)}`);
+  
+  err.status = response.status;
+  err.statusCode = response.status;
+  err.body = sanitizedBody;
+  err.headers = response.headers;
+  err.ok = response.ok;
+  
   throw err;
 };
 

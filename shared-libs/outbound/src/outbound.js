@@ -16,16 +16,13 @@ const urlJoin = require('url-join');
 const request = require('@medic/couch-request');
 const vm = require('vm');
 const logger = require('@medic/logger');
-const os = require('os');
 
-const serverInfo = require('@medic/server-info');
 const secureSettings = require('@medic/settings');
 
 const OUTBOUND_REQ_TIMEOUT = 10 * 1000;
 
 class OutboundError extends Error {}
 
-const CHT_AGENT = 'CHT';
 
 const fetchPassword = async key => {
   const password = await secureSettings.getCredentials(key);
@@ -95,12 +92,6 @@ const mapDocumentToPayload = (doc, config, key) => {
   return toReturn;
 };
 
-const getUserAgent = async () => {
-  const chtVersion = await serverInfo.getVersion();
-  const platform = os.platform();
-  const arch = os.arch();
-  return `${CHT_AGENT}/${chtVersion} (${platform},${arch})`;
-};
 
 const handleBasicAuth = async (authConf, sendOptions) => {
   const password = await fetchPassword(authConf.password_key);
@@ -111,6 +102,7 @@ const handleBasicAuth = async (authConf, sendOptions) => {
 };
 
 const handleHeaderAuth = async (authConf, sendOptions) => {
+  sendOptions.headers = sendOptions.headers || {};
   if (authConf.name && authConf.name.toLowerCase() === 'authorization') {
     const value = await fetchPassword(authConf.value_key);
     sendOptions.headers.authorization = value;
@@ -183,9 +175,6 @@ const sendPayload = async (payload, config) => {
     url: urlJoin(config.destination.base_url, config.destination.path),
     body: payload,
     timeout: OUTBOUND_REQ_TIMEOUT,
-    headers: {
-      'user-agent': await getUserAgent()
-    }
   };
 
   await handleAuth(config, sendOptions);
