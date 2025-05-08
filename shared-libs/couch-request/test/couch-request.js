@@ -124,7 +124,6 @@ describe('couch-request', () => {
           accept: 'application/json',
           'content-type': 'application/json',
           authorization: `Basic ${btoa('admin:password')}`,
-          'user-agent': 'Community Health Toolkit/4.18.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/test',
@@ -752,7 +751,6 @@ describe('couch-request', () => {
           accept: 'application/json',
           'content-type': 'application/json',
           'header-name': 'req_uuid',
-          'user-agent': 'Community Health Toolkit/4.18.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/test',
@@ -792,7 +790,7 @@ describe('couch-request', () => {
   });
 
   it('should automatically add user-agent header to requests', async () => {
-    await couchRequest.get({ url: 'http://test.com:5984/test-user-agent' });
+    await couchRequest.get({ url: 'http://textit.com/api/broadcasts.json' });
 
     const requestOptions = global.fetch.args[0][1];
     expect(requestOptions.headers['user-agent']).to.equal('Community Health Toolkit/4.18.0 (test-platform,test-arch)');

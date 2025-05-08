@@ -12,8 +12,8 @@ const getVersionFromDdoc = (ddoc) => {
          'unknown';
 };
 
-const getDeployInfo = async () => {
-  if (deployInfoCache) {
+const getDeployInfo = async (refresh = false) => {
+  if (deployInfoCache && !refresh) {
     return deployInfoCache;
   }
 

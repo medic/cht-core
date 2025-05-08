@@ -71,6 +71,32 @@ describe('server-info', () => {
 
         await expect(serverInfo.getDeployInfo()).to.eventually.be.rejectedWith('Failed to fetch');
       });
+
+      it('should clear cache when requested', async () => {
+        const ddoc = {
+          _id: '_design/medic',
+          build_info: { version: '4.1.0' }
+        };
+        sinon.stub(request, 'get').resolves(ddoc);
+        serverInfo = rewire('../src/index');
+
+        const result1 = await serverInfo.getDeployInfo();
+        const result2 = await serverInfo.getDeployInfo();
+
+        expect(result1).to.deep.equal(result2);
+        expect(result1.version).to.equal(ddoc.build_info.version);
+        expect(request.get.callCount).to.equal(1);
+
+        ddoc.build_info.version = '4.2.0';
+        request.get.resolves(ddoc);
+
+        expect((await serverInfo.getDeployInfo()).version).to.equal('4.1.0');
+        expect(request.get.callCount).to.equal(1);
+        expect((await serverInfo.getDeployInfo(true)).version).to.equal('4.2.0');
+        expect(request.get.callCount).to.equal(2);
+        expect((await serverInfo.getDeployInfo()).version).to.equal('4.2.0');
+        expect(request.get.callCount).to.equal(2);
+      });
     });
 
     describe('getVersion', () => {
