@@ -223,7 +223,7 @@ const setUserCtxCookie = (res, userCtx) => {
   cookie.setUserCtx(res, JSON.stringify(content));
 };
 
-const setCookies = async (req, res, sessionRes) => {
+const setCookies = async (userDoc, req, res, sessionRes) => {
   const sessionCookie = getSessionCookie(sessionRes);
   if (!sessionCookie) {
     throw { status: 401, error: 'Not logged in' };
@@ -235,8 +235,7 @@ const setCookies = async (req, res, sessionRes) => {
       await users.createAdmin(userCtx);
     }
 
-    const user = await users.getUserDoc(userCtx.name);
-    if (!skipPasswordChange(user)) {
+    if (!skipPasswordChange(userDoc)) {
       return redirectToPasswordReset(req, res, userCtx);
     }
     return redirectToApp({ req, res, sessionCookie, userCtx });
@@ -325,7 +324,8 @@ const loginByToken = (req, res) => {
         req.body = { user, password, locale: req.body.locale };
 
         return createSessionRetry(req)
-          .then(sessionRes => setCookies(req, res, sessionRes))
+          .then(sessionRes => Promise.all([users.getUserDoc(user), sessionRes]))
+          .then(([userDoc, sessionRes]) => setCookies(userDoc, req, res, sessionRes))
           .then(redirectUrl => {
             return tokenLogin.deactivateTokenLogin(userId).then(() => res.status(302).send(redirectUrl));
           });
@@ -374,8 +374,8 @@ const validateSession = async (req) => {
 };
 
 const sendLoginErrorResponse = (e, res) => {
-  if (e.status === 401) {
-    return res.status(401).json({ error: e.error });
+  if (e.status === 401 || e.status === 400) {
+    return res.status(e.status).json({ error: e.error });
   }
   logger.error('Error logging in: %o', e);
   return res.status(500).json({ error: 'Unexpected error logging in' });
@@ -383,27 +383,24 @@ const sendLoginErrorResponse = (e, res) => {
 
 const login = async (req, res) => {
   try {
-    await validateNotSsoUser(req);
     const sessionRes = await validateSession(req);
-    const redirectUrl = await setCookies(req, res, sessionRes);
+
+    const userDoc = await users.getUserDoc(req.body.user);
+
+    await validateNotSsoUser(userDoc);
+    const redirectUrl = await setCookies(userDoc, req, res, sessionRes);
     res.status(302).send(redirectUrl);
   } catch (e) {
     return sendLoginErrorResponse(e, res);
   }
 };
 
-const validateNotSsoUser = async (req) => {
-  if (req?.body?.user){
-    
-    try {
-      const userDoc = await users.getUserDoc(req.body.user);
-      if (userDoc?.oidc === true){
-        throw { status: 401, error: 'Password Login Not Permitted For SSO Users' };
-      }
-    } catch (error) {
-      if (error.status === 401){
-        throw error;
-      }
+const validateNotSsoUser = async (userDoc, source = 'login') => {
+  if (userDoc.oidc === true && config.get('oidc_provider')?.client_id){
+    if (source === 'login'){
+      throw { status: 401, error: 'Password Login Not Permitted For SSO Users' };
+    } else if (source === 'passwordReset'){
+      throw { status: 400, error: 'Password Reset Not Permitted For SSO Users' };
     }
   }
 };
@@ -533,11 +530,12 @@ module.exports = {
       }
 
       const userDoc = await users.getUserDoc(username);
+      await validateNotSsoUser(userDoc, 'passwordReset');
       await updatePassword(userDoc, password, req);
 
       req.body = { user: username, password, locale };
       const sessionRes = await createSessionRetry(req);
-      const redirectUrl = await setCookies(req, res, sessionRes);
+      const redirectUrl = await setCookies(userDoc, req, res, sessionRes);
       return res.status(302).send(redirectUrl);
     } catch (err) {
       logger.error('Error updating password: %o', err);

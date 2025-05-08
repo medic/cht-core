@@ -180,6 +180,7 @@ describe('login', () => {
         },
         roles: ['district_admin'], 
       };
+      
       await utils.request({ path: '/api/v2/users', method: 'POST', body: newUser });
 
       const response = await loginWithData({ user: user.username, password: 'random' });
