@@ -530,8 +530,8 @@ module.exports = {
       await updatePassword(userDoc, password, req);
 
       req.body = { user: username, password, locale };
-      const sessionRes = await createSessionRetry(req);
-      const redirectUrl = await setCookies(userDoc, req, res, sessionRes);
+      const [updatedUserDoc, sessionRes] = await Promise.all([users.getUserDoc(username), createSessionRetry(req)]);
+      const redirectUrl = await setCookies(updatedUserDoc, req, res, sessionRes);
       return res.status(302).send(redirectUrl);
     } catch (err) {
       logger.error('Error updating password: %o', err);

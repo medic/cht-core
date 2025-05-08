@@ -650,6 +650,7 @@ describe('login controller', () => {
       sinon.stub(auth, 'getUserCtx').rejects({ code: 401 });
       sinon.stub(tokenLogin, 'isTokenLoginEnabled').returns(true);
       sinon.stub(tokenLogin, 'getUserByToken').resolves('userId');
+      sinon.stub(users, 'getUserDoc').resolves();
       sinon.stub(tokenLogin, 'resetPassword').resolves({ user: 'user_name', password: 'secret' });
       sinon.stub(tokenLogin, 'deactivateTokenLogin');
       sinon.stub(res, 'status').returns(res);
