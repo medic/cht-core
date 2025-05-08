@@ -165,31 +165,18 @@ describe('login', () => {
         .then(() => loginWithData({ user: user.username, password }))
         .then(response => expectRedirectToPasswordReset(response));
     });
-    
 
     it('should fail if sso user', async () => {
       await setupOidcLoginSettings('clientId');
+      await utils.request({ path: '/api/v2/users', method: 'POST', body: user });
+      // Manually update user to be OIDC so we also know the password
+      const userDoc = await getUser(user);
+      await utils.usersDb.put({ ...userDoc, oidc: true });
 
-      const newUser = {
-        username: user.username,
-        oidc: true,
-        place: {
-          type: 'health_center',
-          name: 'Online place',
-          parent: 'PARENT_PLACE'
-        },
-        contact: {
-          name: 'OnlineUser'
-        },
-        roles: ['district_admin'], 
-      };
-      
-      await utils.request({ path: '/api/v2/users', method: 'POST', body: newUser });
+      const response = await loginWithData({ user: user.username, password });
 
-      const response = await loginWithData({ user: user.username, password: 'random' });
       expect(response.status).to.equal(401);
       expect(response.body.error).to.equal('Password Login Not Permitted For SSO Users');
-      
     });
   });
 

@@ -371,7 +371,7 @@ const validateSession = async (req) => {
 
 const sendLoginErrorResponse = (e, res) => {
   if (e.status === 401 || e.status === 400) {
-    return res.status(e.status).json({ error: e.error });
+    return res.status(e.status).json({ error: e.error || e.message });
   }
   logger.error('Error logging in: %o', e);
   return res.status(500).json({ error: 'Unexpected error logging in' });
@@ -380,10 +380,12 @@ const sendLoginErrorResponse = (e, res) => {
 const login = async (req, res) => {
   try {
     const sessionRes = await validateSession(req);
-
     const userDoc = await users.getUserDoc(req.body.user);
-
-    await validateNotSsoUser(userDoc);
+    if (isOidcUser(userDoc)) {
+      const error = new Error('Password Login Not Permitted For SSO Users');
+      error.status = 401;
+      throw error;
+    }
     const redirectUrl = await setCookies(userDoc, req, res, sessionRes);
     res.status(302).send(redirectUrl);
   } catch (e) {
@@ -391,15 +393,7 @@ const login = async (req, res) => {
   }
 };
 
-const validateNotSsoUser = async (userDoc, source = 'login') => {
-  if (userDoc.oidc === true && config.get('oidc_provider')?.client_id){
-    if (source === 'login'){
-      throw { status: 401, error: 'Password Login Not Permitted For SSO Users' };
-    } else if (source === 'passwordReset'){
-      throw { status: 400, error: 'Password Reset Not Permitted For SSO Users' };
-    }
-  }
-};
+const isOidcUser = (userDoc) => userDoc.oidc === true && config.get('oidc_provider')?.client_id;
 
 const updatePassword = (user, newPassword, req) => {
   const updateData = {
@@ -526,7 +520,11 @@ module.exports = {
       }
 
       const userDoc = await users.getUserDoc(username);
-      await validateNotSsoUser(userDoc, 'passwordReset');
+      if (isOidcUser(userDoc)) {
+        const error = new Error('Password Reset Not Permitted For SSO Users');
+        error.status = 400;
+        throw error;
+      }
       await updatePassword(userDoc, password, req);
 
       req.body = { user: username, password, locale };
