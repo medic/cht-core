@@ -236,23 +236,20 @@ const setUserCtxCookie = (res, userCtx) => {
 };
 
 const isOidcUser = (userDoc) => userDoc?.oidc === true && config.get('oidc_provider')?.client_id;
-const validateNotOidcUser = userDoc => {
-  if (isOidcUser(userDoc)) {
-    throw unauthorizedError('Password Login Not Permitted For SSO Users');
-  }
-};
 
 const setCookies = async (req, res, sessionCookie) => {
   const options = { headers: { Cookie: sessionCookie } };
   const userCtx = await getUserCtxRetry(options);
   if (roles.isDbAdmin(userCtx)) {
     await users.createAdmin(userCtx);
-  } else {
-    const userDoc = await users.getUserDoc(userCtx.name);
-    validateNotOidcUser(userDoc);
-    if (!skipPasswordChange(userDoc)) {
-      return redirectToPasswordReset(req, res, userCtx);
-    }
+  }
+
+  const userDoc = await users.getUserDoc(userCtx.name);
+  if (isOidcUser(userDoc)) {
+    throw unauthorizedError('Password Login Not Permitted For SSO Users');
+  }
+  if (!skipPasswordChange(userDoc)) {
+    return redirectToPasswordReset(req, res, userCtx);
   }
 
   return redirectToApp({ req, res, sessionCookie, userCtx });
