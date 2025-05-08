@@ -795,7 +795,7 @@ describe('couch-request', () => {
 
     const requestOptions = global.fetch.args[0][1];
     expect(requestOptions.headers['user-agent']).to.equal('Community Health Toolkit/4.18.0 (test-platform,test-arch)');
-
+    expect(requestOptions.headers.authorization).to.equal(undefined);
   });
 
   it('should not override user-agent header if already specified', async () => {

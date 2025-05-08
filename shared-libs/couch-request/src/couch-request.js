@@ -27,6 +27,11 @@ const addServername = isTrue(process.env.ADD_SERVERNAME_TO_HTTP_AGENT);
 //  name of the host being connected to, and must be a host name, and not an IP address.".
 //
 
+const isInternalRequest = (options) => {
+  const url = new URL(options.uri);
+  return url.hostname === environment.host;
+};
+
 const getUserAgent = async () => {
   const serverInfo = require('@medic/server-info');
   const chtVersion = await serverInfo.getVersion();
@@ -145,11 +150,6 @@ const setRequestOptions = async (options) => {
     options.headers[requestIdHeader] = requestId;
   }
 
-  // Set user-agent header if not already set
-  if (!options.headers['user-agent']) {
-    options.headers['user-agent'] = await getUserAgent();
-  }
-
   setRequestUri(options);
   setRequestAuth(options);
   setTimeout(options);
@@ -157,6 +157,10 @@ const setRequestOptions = async (options) => {
   setRequestContentType(options, sendJson);
   if (addServername) {
     options.servername = environment.host;
+  }
+
+  if (!isInternalRequest(options) && !options.headers['user-agent']) {
+    options.headers['user-agent'] = await getUserAgent();
   }
 };
 
