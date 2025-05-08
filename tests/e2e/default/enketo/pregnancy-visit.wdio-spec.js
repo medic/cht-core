@@ -86,7 +86,7 @@ describe('Pregnancy Visit', () => {
 
     const targetsAfterAddingVisits = await analyticsPage.getTargets();
     expect(targetsAfterAddingVisits).to.have.deep.members([
-      {title: 'Deaths', goal: '1', count: '0', countNumberColor: TARGET_MET_COLOR},
+      {title: 'Deaths', goal: '0', count: '0', countNumberColor: TARGET_MET_COLOR},
       {title: 'New pregnancies', goal: '20', count: '1', countNumberColor: TARGET_UNMET_COLOR},
       {title: 'Live births', count: '0', countNumberColor: TARGET_MET_COLOR},
       {title: 'Active pregnancies', count: '1', countNumberColor: TARGET_MET_COLOR},
