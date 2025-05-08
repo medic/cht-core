@@ -10,32 +10,17 @@ const NO_SELECTED_TASK_SELECTOR = '.empty-selection';
 
 const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"`);
 const getTasks = async () => {
+  let tasks;
   await browser.waitUntil(async () => {
     const tasksList = await $(TASK_LIST_SELECTOR);
-    return await tasksList.isDisplayed();
+    tasks = await $$(`${TASK_LIST_SELECTOR} li.content-row`);
+    return await tasksList.isDisplayed() && tasks.length > 0;
   }, {
     timeout: 10000,
-    timeoutMsg: 'Expected tasks list to be displayed'
+    timeoutMsg: 'Expected tasks list to be displayed with at least one task'
   });
 
-  await browser.waitUntil(async () => {
-    const tasks = await $$(`${TASK_LIST_SELECTOR} li.content-row`);
-    if (!tasks.length) {
-      return false;
-    }
-    for (const task of tasks) {
-      if (!(await task.isDisplayed())) {
-        return false;
-      }
-    }
-    return true;
-  }, {
-    timeout: 10000,
-    interval: 500,
-    timeoutMsg: 'Expected task elements to be present and displayed'
-  });
-
-  return $$(`${TASK_LIST_SELECTOR} li.content-row`);
+  return tasks;
 };
 
 const getTaskInfo = async (taskElement) => {
