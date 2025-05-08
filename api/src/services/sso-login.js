@@ -1,13 +1,11 @@
 const { createHmac } = require('crypto');
 const {setTimeout} = require('node:timers/promises');
-
 const config = require('../config');
 const db = require('../db');
 const dataContext = require('./data-context');
 const { users } = require('@medic/user-management')(config, db, dataContext);
 const logger = require('@medic/logger');
 const secureSettings = require('@medic/settings');
-
 const client = require('./openid-client');
 const settingsService = require('./settings');
 const translations = require('../translations');
@@ -25,7 +23,7 @@ const authServerCallRetry = async (call, retryCount = 3) => {
   try {
     return await call();
   } catch (err) {
-    if (retryCount === 1 || err.status && err.status < 500) {
+    if (retryCount === 1 || !Number.isNaN(err.status) && err.status < 500) {
       throw err;
     }
 
@@ -43,13 +41,13 @@ const authServerCallRetry = async (call, retryCount = 3) => {
 const oidcServerSConfig = async () => {
   const settings = await settingsService.get();
   if (!settings.oidc_provider) {
-    throw new Error(`oidc_provider config is missing in settings.`);
+    throw new Error('oidc_provider config is missing in settings.');
   }
 
   const { allow_insecure_requests, client_id, discovery_url } = settings.oidc_provider;
   
   if (!discovery_url || !client_id) {
-    throw new Error(`The discovery_url and client_id must be provided in the oidc_provider config.`);
+    throw new Error('The discovery_url and client_id must be provided in the oidc_provider config.');
   }
 
   const clientSecret = await secureSettings.getCredentials(OIDC_CLIENT_SECRET_KEY);

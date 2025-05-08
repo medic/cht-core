@@ -548,9 +548,9 @@ module.exports = {
     }
     const currentUrl =  new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
     try {
-      const auth = await sso.getIdToken(currentUrl);
-      const sessionCookie = await sso.getCookie(auth.preferred_username);
-      req.body = { locale: auth.locale };
+      const { preferred_username, locale } = await sso.getIdToken(currentUrl);
+      const sessionCookie = await sso.getCookie(preferred_username);
+      req.body = { locale };
       const redirectUrl = await setCookies(req, res, sessionCookie);
       res.status(302).redirect(redirectUrl);
     } catch (e) {

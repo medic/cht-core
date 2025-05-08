@@ -20,12 +20,12 @@ const { tokenLogin, roles, users } = require('@medic/user-management')(config, d
 const template = require('../../../src/services/template');
 const serverUtils = require('../../../src/server-utils');
 const sso = require('../../../src/services/sso-login');
+const logger = require('@medic/logger');
 
 let controller;
 
 let req;
 let res;
-let redirect;
 
 const DEFAULT_BRANDING = {
   logo: 'xyz',
@@ -33,24 +33,30 @@ const DEFAULT_BRANDING = {
   icon: 'icon.png',
 };
 
+const DEFAULT_COOKIE_OPTIONS = {
+  sameSite: 'lax',
+  secure: false,
+  maxAge: 31536000000
+};
+
 describe('login controller', () => {
 
   beforeEach(() => {
     template.clear();
     controller = rewire('../../../src/controllers/login');
-    redirect = sinon.fake();
 
     req = {
       query: {},
       body: {},
       hostname: 'xx.app.medicmobile.org',
       protocol: 'http',
-      headers: {cookie: ''},
-      get: () => 'xx.app.medicmobile.org'
+      headers: { cookie: '' },
+      get: sinon.stub().withArgs('host').returns('xx.app.medicmobile.org')
     };
     res = {
+      redirect: () => {},
       send: () => {},
-      status: () => ({ redirect }),
+      status: () => {},
       json: () => {},
       cookie: () => {},
       clearCookie: () => {},
@@ -730,10 +736,10 @@ describe('login controller', () => {
       chai.expect(res.cookie.args[0][2]).to.deep.equal({ sameSite: 'lax', secure: false, httpOnly: true });
       chai.expect(res.cookie.args[1][0]).to.equal('userCtx');
       chai.expect(res.cookie.args[1][1]).to.equal(JSON.stringify({ name: 'shazza', roles: [ 'project-stuff' ] }));
-      chai.expect(res.cookie.args[1][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
+      chai.expect(res.cookie.args[1][2]).to.deep.equal(DEFAULT_COOKIE_OPTIONS);
       chai.expect(res.cookie.args[2][0]).to.equal('locale');
       chai.expect(res.cookie.args[2][1]).to.equal('fr');
-      chai.expect(res.cookie.args[2][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
+      chai.expect(res.cookie.args[2][2]).to.deep.equal(DEFAULT_COOKIE_OPTIONS);
     });
 
     it('returns errors from auth after 10 retries', () => {
@@ -813,10 +819,10 @@ describe('login controller', () => {
         chai.expect(cookie.args[0][2]).to.deep.equal({ sameSite: 'lax', secure: false, httpOnly: true });
         chai.expect(cookie.args[1][0]).to.equal('userCtx');
         chai.expect(cookie.args[1][1]).to.equal(JSON.stringify(userCtx));
-        chai.expect(cookie.args[1][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
+        chai.expect(cookie.args[1][2]).to.deep.equal(DEFAULT_COOKIE_OPTIONS);
         chai.expect(cookie.args[2][0]).to.equal('locale');
         chai.expect(cookie.args[2][1]).to.equal('es');
-        chai.expect(cookie.args[2][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
+        chai.expect(cookie.args[2][2]).to.deep.equal(DEFAULT_COOKIE_OPTIONS);
         chai.expect(clearCookie.callCount).to.equal(1);
         chai.expect(clearCookie.args[0][0]).to.equal('login');
       });
@@ -853,10 +859,10 @@ describe('login controller', () => {
         chai.expect(cookie.callCount).to.equal(2);
         chai.expect(cookie.args[0][0]).to.equal('userCtx');
         chai.expect(cookie.args[0][1]).to.equal(JSON.stringify(userCtx));
-        chai.expect(cookie.args[0][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
+        chai.expect(cookie.args[0][2]).to.deep.equal(DEFAULT_COOKIE_OPTIONS);
         chai.expect(cookie.args[1][0]).to.equal('locale');
         chai.expect(cookie.args[1][1]).to.equal('es');
-        chai.expect(cookie.args[1][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
+        chai.expect(cookie.args[1][2]).to.deep.equal(DEFAULT_COOKIE_OPTIONS);
       });
     });
 
@@ -1017,7 +1023,7 @@ describe('login controller', () => {
         chai.expect(cookie.callCount).to.equal(1);
         chai.expect(cookie.args[0][0]).to.equal('userCtx');
         chai.expect(cookie.args[0][1]).to.equal(JSON.stringify(userCtx));
-        chai.expect(cookie.args[0][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
+        chai.expect(cookie.args[0][2]).to.deep.equal(DEFAULT_COOKIE_OPTIONS);
         chai.expect(res.type.args[0][0]).to.equal('application/json');
         chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(send.callCount).to.equal(1);
@@ -1089,40 +1095,162 @@ describe('login controller', () => {
   });
 
   describe('oidcLogin', async () => {
-    it('should get token and redirect to homepage', async () => {
-      sinon.stub(sso, 'getIdToken').returns({ id_token: 'token', user: { username: 'lil' }});
-      const getCookie = sinon.stub(sso, 'getCookie').returns('AuthSession=cookie');
-      const setCookies = sinon.fake.returns('/');
-      controller.__set__('setCookies', setCookies);
-      await controller.oidcLogin(req, res);
-      chai.expect(redirect.calledWith('/')).to.be.true;
-      chai.expect(getCookie.calledWith('lil')).to.be.true;
-      chai.expect(setCookies.calledWith(req, res, null, 'AuthSession=cookie')).to.be.true;
+    beforeEach(() => {
+      req.originalUrl = '/medic/login/oidc/get_token';
+      sinon.stub(sso, 'getIdToken');
+      sinon.stub(sso, 'getCookie');
+      sinon.stub(auth, 'getUserCtx');
+      sinon.stub(users, 'getUserDoc');
+      sinon.stub(res, 'cookie');
+      sinon.stub(logger, 'error');
+      sinon.stub(res, 'redirect');
+      sinon.stub(res, 'status').returns(res);
     });
 
-    it('should return login error response', async () => {
-      sinon.stub(sso, 'getIdToken').throws('Error');
-      sinon.stub(environment, 'db').returns('medic');
+    it('gets id token and redirects to homepage with session cookie', async () => {
+      const idToken = { preferred_username: 'lil', locale: 'en' };
+      sso.getIdToken.resolves(idToken);
+      const sessionCookie = 'my-session-cookie';
+      sso.getCookie.resolves(`AuthSession=${sessionCookie}`);
+      const userContext = { name: 'lil' };
+      auth.getUserCtx.resolves(userContext);
+      users.getUserDoc.resolves({ _id: 'org.couchdb.user:lil' });
+
       await controller.oidcLogin(req, res);
-      chai.expect(redirect.calledWith(`/medic/login?sso_error=ssoerror`)).to.be.true;
+
+      chai.expect(rateLimit.isLimited.calledOnceWithExactly(req)).to.be.true;
+      chai.expect(serverUtils.rateLimited.notCalled).to.be.true;
+      chai.expect(sso.getIdToken.calledOnceWithExactly(
+        new URL('http://xx.app.medicmobile.org/medic/login/oidc/get_token')
+      )).to.be.true;
+      chai.expect(sso.getCookie.calledOnceWithExactly(idToken.preferred_username)).to.be.true;
+      chai.expect(auth.getUserCtx.calledOnceWithExactly({
+        headers: { Cookie: `AuthSession=${sessionCookie}` }
+      })).to.be.true;
+      chai.expect(users.getUserDoc.calledOnceWithExactly(idToken.preferred_username)).to.be.true;
+      chai.expect(res.cookie.args).to.deep.equal([
+        ['AuthSession', sessionCookie, { httpOnly: true, sameSite: 'lax', secure: false }],
+        ['userCtx', JSON.stringify(userContext), DEFAULT_COOKIE_OPTIONS],
+        ['locale', idToken.locale, DEFAULT_COOKIE_OPTIONS]
+      ]);
+      chai.expect(logger.error.notCalled).to.be.true;
+      chai.expect(res.status.calledOnceWithExactly(302)).to.be.true;
+      chai.expect(res.redirect.calledOnceWithExactly('/')).to.be.true;
+    });
+
+    it('redirects to login page with sso user error when failing to find valid CHT user', async () => {
+      const idToken = { preferred_username: 'lil', locale: 'en' };
+      sso.getIdToken.resolves(idToken);
+      const userNotFoundError = new Error('User not found');
+      userNotFoundError.status = 401;
+      sso.getCookie.rejects(userNotFoundError);
+
+      await controller.oidcLogin(req, res);
+
+      chai.expect(rateLimit.isLimited.calledOnceWithExactly(req)).to.be.true;
+      chai.expect(serverUtils.rateLimited.notCalled).to.be.true;
+      chai.expect(sso.getIdToken.calledOnceWithExactly(
+        new URL('http://xx.app.medicmobile.org/medic/login/oidc/get_token')
+      )).to.be.true;
+      chai.expect(sso.getCookie.calledOnceWithExactly(idToken.preferred_username)).to.be.true;
+      chai.expect(auth.getUserCtx.notCalled).to.be.true;
+      chai.expect(users.getUserDoc.notCalled).to.be.true;
+      chai.expect(res.cookie.notCalled).to.be.true;
+      chai.expect(logger.error.calledOnceWithExactly('Error logging in via SSO: %o', userNotFoundError)).to.be.true;
+      chai.expect(res.status.calledOnceWithExactly(302)).to.be.true;
+      chai.expect(res.redirect.calledOnceWithExactly('/medic/login?sso_error=ssouserinvalid')).to.be.true;
+    });
+
+    it('redirects to login page with login error when unexpected error occurs', async () => {
+      const invalidTokenError = new Error('Invalid token');
+      sso.getIdToken.rejects(invalidTokenError);
+
+      await controller.oidcLogin(req, res);
+
+      chai.expect(rateLimit.isLimited.calledOnceWithExactly(req)).to.be.true;
+      chai.expect(serverUtils.rateLimited.notCalled).to.be.true;
+      chai.expect(sso.getIdToken.calledOnceWithExactly(
+        new URL('http://xx.app.medicmobile.org/medic/login/oidc/get_token')
+      )).to.be.true;
+      chai.expect(sso.getCookie.notCalled).to.be.true;
+      chai.expect(auth.getUserCtx.notCalled).to.be.true;
+      chai.expect(users.getUserDoc.notCalled).to.be.true;
+      chai.expect(res.cookie.notCalled).to.be.true;
+      chai.expect(logger.error.calledOnceWithExactly('Error logging in via SSO: %o', invalidTokenError)).to.be.true;
+      chai.expect(res.status.calledOnceWithExactly(302)).to.be.true;
+      chai.expect(res.redirect.calledOnceWithExactly('/medic/login?sso_error=loginerror')).to.be.true;
+    });
+
+    it('does nothing when rate limited', async () => {
+      rateLimit.isLimited.returns(true);
+
+      await controller.oidcLogin(req, res);
+
+      chai.expect(rateLimit.isLimited.calledOnceWithExactly(req)).to.be.true;
+      chai.expect(serverUtils.rateLimited.calledOnceWithExactly(req, res)).to.be.true;
+      chai.expect(sso.getIdToken.notCalled).to.be.true;
+      chai.expect(sso.getCookie.notCalled).to.be.true;
+      chai.expect(auth.getUserCtx.notCalled).to.be.true;
+      chai.expect(users.getUserDoc.notCalled).to.be.true;
+      chai.expect(res.cookie.notCalled).to.be.true;
+      chai.expect(logger.error.notCalled).to.be.true;
+      chai.expect(res.status.notCalled).to.be.true;
+      chai.expect(res.redirect.notCalled).to.be.true;
+      chai.expect(logger.error.notCalled).to.be.true;
     });
   });
 
   describe('oidcAuthorize', async() => {
-    it('should redirect to oidc provider', async () => {
-      const getAuthorizationUrl = sinon.stub(sso, 'getAuthorizationUrl').returns(new URL('https://oidc.server'));
-      sinon.stub(environment, 'db').returns('medic');
-      await controller.oidcAuthorize(req, res);
-      chai.expect(redirect.calledWith('https://oidc.server/')).to.be.true;
-      chai.expect(getAuthorizationUrl.calledWith('http://xx.app.medicmobile.org/medic/login/oidc/get_token')).to.be.true;
+    beforeEach(() => {
+      sinon.stub(sso, 'getAuthorizationUrl');
+      sinon.stub(logger, 'error');
+      sinon.stub(res, 'send');
+      sinon.stub(res, 'status').returns(res);
     });
 
-    it('should return login error response', async () => {
-      const e = new Error('Error');
-      sinon.stub(sso, 'getAuthorizationUrl').throws(e);
-      sinon.stub(environment, 'db').returns('medic');
+    it('redirects to oidc provider', async () => {
+      const oidcUrl = 'https://oidc.server/';
+      sso.getAuthorizationUrl.returns(new URL(oidcUrl));
+
       await controller.oidcAuthorize(req, res);
-      chai.expect(redirect.calledWith(`/medic/login?sso_error=ssoerror`)).to.be.true;
+
+      chai.expect(rateLimit.isLimited.calledOnceWithExactly(req)).to.be.true;
+      chai.expect(serverUtils.rateLimited.notCalled).to.be.true;
+      chai.expect(sso.getAuthorizationUrl.calledWith('http://xx.app.medicmobile.org/medic/login/oidc')).to.be.true;
+      chai.expect(res.status.calledOnceWithExactly(302)).to.be.true;
+      chai.expect(res.send.calledWith(oidcUrl)).to.be.true;
+      chai.expect(logger.error.notCalled).to.be.true;
+    });
+
+    it('returns login error when failing to get authorization URL', async () => {
+      const e = new Error('Error');
+      sso.getAuthorizationUrl.throws(e);
+      sinon.stub(serverUtils, 'error');
+
+      await controller.oidcAuthorize(req, res);
+
+      chai.expect(rateLimit.isLimited.calledOnceWithExactly(req)).to.be.true;
+      chai.expect(serverUtils.rateLimited.notCalled).to.be.true;
+      chai.expect(sso.getAuthorizationUrl.calledWith('http://xx.app.medicmobile.org/medic/login/oidc')).to.be.true;
+      chai.expect(res.status.notCalled).to.be.true;
+      chai.expect(res.send.notCalled).to.be.true;
+      chai.expect(logger.error.calledOnceWithExactly(
+        'Error getting authorization redirect url for SSO: %o', e
+      )).to.be.true;
+      chai.expect(serverUtils.error.calledOnceWithExactly(e, req, res)).to.be.true;
+    });
+
+    it('does nothing when rate limited', async () => {
+      rateLimit.isLimited.returns(true);
+
+      await controller.oidcAuthorize(req, res);
+
+      chai.expect(rateLimit.isLimited.calledOnceWithExactly(req)).to.be.true;
+      chai.expect(serverUtils.rateLimited.calledOnceWithExactly(req, res)).to.be.true;
+      chai.expect(sso.getAuthorizationUrl.notCalled).to.be.true;
+      chai.expect(res.status.notCalled).to.be.true;
+      chai.expect(res.send.notCalled).to.be.true;
+      chai.expect(logger.error.notCalled).to.be.true;
     });
   });
 });
