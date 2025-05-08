@@ -1096,7 +1096,7 @@ describe('login controller', () => {
 
   describe('oidcLogin', async () => {
     beforeEach(() => {
-      req.originalUrl = '/medic/login/oidc/get_token';
+      req.originalUrl = `/${environment.db}/login/oidc/get_token`;
       sinon.stub(sso, 'getIdToken');
       sinon.stub(sso, 'getCookie');
       sinon.stub(auth, 'getUserCtx');
@@ -1121,7 +1121,7 @@ describe('login controller', () => {
       chai.expect(rateLimit.isLimited.calledOnceWithExactly(req)).to.be.true;
       chai.expect(serverUtils.rateLimited.notCalled).to.be.true;
       chai.expect(sso.getIdToken.calledOnceWithExactly(
-        new URL('http://xx.app.medicmobile.org/medic/login/oidc/get_token')
+        new URL(`http://xx.app.medicmobile.org/${environment.db}/login/oidc/get_token`)
       )).to.be.true;
       chai.expect(sso.getCookie.calledOnceWithExactly(idToken.preferred_username)).to.be.true;
       chai.expect(auth.getUserCtx.calledOnceWithExactly({
@@ -1150,7 +1150,7 @@ describe('login controller', () => {
       chai.expect(rateLimit.isLimited.calledOnceWithExactly(req)).to.be.true;
       chai.expect(serverUtils.rateLimited.notCalled).to.be.true;
       chai.expect(sso.getIdToken.calledOnceWithExactly(
-        new URL('http://xx.app.medicmobile.org/medic/login/oidc/get_token')
+        new URL(`http://xx.app.medicmobile.org/${environment.db}/login/oidc/get_token`)
       )).to.be.true;
       chai.expect(sso.getCookie.calledOnceWithExactly(idToken.preferred_username)).to.be.true;
       chai.expect(auth.getUserCtx.notCalled).to.be.true;
@@ -1158,7 +1158,7 @@ describe('login controller', () => {
       chai.expect(res.cookie.notCalled).to.be.true;
       chai.expect(logger.error.calledOnceWithExactly('Error logging in via SSO: %o', userNotFoundError)).to.be.true;
       chai.expect(res.status.calledOnceWithExactly(302)).to.be.true;
-      chai.expect(res.redirect.calledOnceWithExactly('/medic/login?sso_error=ssouserinvalid')).to.be.true;
+      chai.expect(res.redirect.calledOnceWithExactly(`/${environment.db}/login?sso_error=ssouserinvalid`)).to.be.true;
     });
 
     it('redirects to login page with login error when unexpected error occurs', async () => {
@@ -1170,7 +1170,7 @@ describe('login controller', () => {
       chai.expect(rateLimit.isLimited.calledOnceWithExactly(req)).to.be.true;
       chai.expect(serverUtils.rateLimited.notCalled).to.be.true;
       chai.expect(sso.getIdToken.calledOnceWithExactly(
-        new URL('http://xx.app.medicmobile.org/medic/login/oidc/get_token')
+        new URL(`http://xx.app.medicmobile.org/${environment.db}/login/oidc/get_token`)
       )).to.be.true;
       chai.expect(sso.getCookie.notCalled).to.be.true;
       chai.expect(auth.getUserCtx.notCalled).to.be.true;
@@ -1178,7 +1178,7 @@ describe('login controller', () => {
       chai.expect(res.cookie.notCalled).to.be.true;
       chai.expect(logger.error.calledOnceWithExactly('Error logging in via SSO: %o', invalidTokenError)).to.be.true;
       chai.expect(res.status.calledOnceWithExactly(302)).to.be.true;
-      chai.expect(res.redirect.calledOnceWithExactly('/medic/login?sso_error=loginerror')).to.be.true;
+      chai.expect(res.redirect.calledOnceWithExactly(`/${environment.db}/login?sso_error=loginerror`)).to.be.true;
     });
 
     it('does nothing when rate limited', async () => {
@@ -1216,7 +1216,7 @@ describe('login controller', () => {
 
       chai.expect(rateLimit.isLimited.calledOnceWithExactly(req)).to.be.true;
       chai.expect(serverUtils.rateLimited.notCalled).to.be.true;
-      chai.expect(sso.getAuthorizationUrl.calledWith('http://xx.app.medicmobile.org/medic/login/oidc')).to.be.true;
+      chai.expect(sso.getAuthorizationUrl.calledWith(`http://xx.app.medicmobile.org/${environment.db}/login/oidc`)).to.be.true;
       chai.expect(res.status.calledOnceWithExactly(302)).to.be.true;
       chai.expect(res.send.calledWith(oidcUrl)).to.be.true;
       chai.expect(logger.error.notCalled).to.be.true;
@@ -1231,7 +1231,7 @@ describe('login controller', () => {
 
       chai.expect(rateLimit.isLimited.calledOnceWithExactly(req)).to.be.true;
       chai.expect(serverUtils.rateLimited.notCalled).to.be.true;
-      chai.expect(sso.getAuthorizationUrl.calledWith('http://xx.app.medicmobile.org/medic/login/oidc')).to.be.true;
+      chai.expect(sso.getAuthorizationUrl.calledWith(`http://xx.app.medicmobile.org/${environment.db}/login/oidc`)).to.be.true;
       chai.expect(res.status.notCalled).to.be.true;
       chai.expect(res.send.notCalled).to.be.true;
       chai.expect(logger.error.calledOnceWithExactly(
