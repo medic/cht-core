@@ -16,11 +16,6 @@ describe('Extension lib xpath function', () => {
     await commonPage.reloadSession();
   });
 
-  after(async () => {
-    await utils.deleteDocs(['form:extension-lib-average-calculator']);
-    await utils.revertDb([/^form:/], true);
-  });
-
   it('calculate average', async () => {
     await loginPage.cookieLogin();
     await commonPage.goToReports();

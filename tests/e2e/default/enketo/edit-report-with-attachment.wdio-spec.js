@@ -20,11 +20,6 @@ describe('Edit report with attachment', () => {
     await commonPage.hideSnackbar();
   });
 
-  after(async () => {
-    await utils.deleteDocs(['form:one-text-form']);
-    await utils.revertDb([/^form:/], true);
-  });
-
   it('should remove attachment when saving', async () => {
     editReportWithAttachmentDoc._id = uuid();
     await utils.saveDoc(editReportWithAttachmentDoc);

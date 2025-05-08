@@ -14,11 +14,6 @@ describe('Submit Photo Upload form', () => {
     await commonPage.hideSnackbar();
   });
 
-  after(async () => {
-    await utils.deleteDocs(['form:photo-upload']);
-    await utils.revertDb([/^form:/], true);
-  });
-
   beforeEach(async () => {
     await commonPage.goToReports();
     await commonPage.openFastActionReport('photo-upload', false);

@@ -13,11 +13,6 @@ describe('Family form', () => {
     await cookieLogin();
   });
 
-  after(async () => {
-    await utils.deleteDocs(['form:add-family-multiple-repeats']);
-    await utils.revertDb([/^form:/], true);
-  });
-
   it('Submit Add Family form', async () => {
     await commonPage.goToReports();
     await commonPage.openFastActionReport('add-family-multiple-repeats', false);

@@ -37,12 +37,6 @@ describe('Contact summary', () => {
     await cookieLogin();
   });
 
-  after(async () => {
-    await utils.deleteDocs(['form:contact-summary-reports']);
-    await utils.revertDb([/^form:/], true);
-    await utils.revertSettings(true);
-  });
-
   it('should load all reports', async () => {
     await commonPage.goToPeople(patient._id);
     await commonPage.openFastActionReport('contact-summary-reports', true);

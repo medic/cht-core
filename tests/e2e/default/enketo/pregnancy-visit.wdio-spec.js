@@ -42,11 +42,6 @@ describe('Pregnancy Visit', () => {
     }
   });
 
-  after(async () => {
-    await utils.deleteUsers([offlineUser]);
-    await utils.revertDb([/^form:/], true);
-  });
-
   it('should submit a pregnancy visit and validate that the report was created successfully.', async () => {
     // Create a pregnancy
     await commonPage.goToPeople(pregnantWoman._id);

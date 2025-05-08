@@ -47,11 +47,6 @@ describe('Pregnancy registration', () => {
     }
   });
 
-  after(async () => {
-    await utils.deleteUsers([offlineUser]);
-    await utils.revertDb([/^form:/], true);
-  });
-
   it('should submit a new pregnancy, ' +
     'validate that the pregnancy card was displayed with the correct information, ' +
     'validate that all tasks related with the high risk pregnancy were created, ' +
