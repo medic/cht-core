@@ -37,6 +37,10 @@ describe('Contact summary', () => {
     await cookieLogin();
   });
 
+  after(async () => {
+    await utils.revertSettings(true);
+  });
+
   it('should load all reports', async () => {
     await commonPage.goToPeople(patient._id);
     await commonPage.openFastActionReport('contact-summary-reports', true);
