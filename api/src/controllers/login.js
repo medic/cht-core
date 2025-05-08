@@ -195,8 +195,18 @@ const render = (page, req, extras = {}) => {
     });
 };
 
+const unauthorizedError = (message) => {
+  const error = new Error(message);
+  error.status = 401;
+  return error;
+};
+
 const getSessionCookie = res => {
-  return res.headers.getSetCookie().find(cookie => cookie.indexOf('AuthSession') === 0);
+  const sessionCookie = res.headers.getSetCookie().find(cookie => cookie.indexOf('AuthSession') === 0);
+  if (!sessionCookie) {
+    throw unauthorizedError('Not logged in');
+  }
+  return sessionCookie;
 };
 
 const createSession = req => {
@@ -223,26 +233,25 @@ const setUserCtxCookie = (res, userCtx) => {
   cookie.setUserCtx(res, JSON.stringify(content));
 };
 
-const setCookies = async (userDoc, req, res, sessionRes) => {
-  const sessionCookie = getSessionCookie(sessionRes);
-  if (!sessionCookie) {
-    throw { status: 401, error: 'Not logged in' };
-  }
-  const options = { headers: { Cookie: sessionCookie } };
-  try {
-    const userCtx = await getUserCtxRetry(options);
-    if (roles.isDbAdmin(userCtx)) {
-      await users.createAdmin(userCtx);
-    }
+const isOidcUser = (userDoc) => userDoc?.oidc === true && config.get('oidc_provider')?.client_id;
 
+const setCookies = async (req, res, sessionRes) => {
+  const sessionCookie = getSessionCookie(sessionRes);
+  const options = { headers: { Cookie: sessionCookie } };
+  const userCtx = await getUserCtxRetry(options);
+  if (roles.isDbAdmin(userCtx)) {
+    await users.createAdmin(userCtx);
+  } else {
+    const userDoc = await users.getUserDoc(userCtx.name);
     if (!skipPasswordChange(userDoc)) {
       return redirectToPasswordReset(req, res, userCtx);
     }
-    return redirectToApp({ req, res, sessionCookie, userCtx });
-  } catch (err) {
-    logger.error(`Error getting authCtx %o`, err);
-    throw { status: 401, error: 'Error getting authCtx' };
+    if (isOidcUser(userDoc)) {
+      throw unauthorizedError('Password Login Not Permitted For SSO Users');
+    }
   }
+
+  return redirectToApp({ req, res, sessionCookie, userCtx });
 };
 
 const redirectToApp = async ({ req, res, sessionCookie, userCtx }) => {
@@ -278,7 +287,9 @@ const getUserCtxRetry = async (options, retry = 10) => {
       await new Promise(r => setTimeout(r, 10));
       return getUserCtxRetry(options, --retry);
     }
-    throw err;
+
+    logger.error(`Error getting authCtx %o`, err);
+    throw unauthorizedError('Error getting authCtx');
   }
 };
 
@@ -322,8 +333,8 @@ const loginByToken = async (req, res) => {
     const { user, password } = await tokenLogin.resetPassword(userId);
     req.body = { user, password, locale: req.body.locale };
 
-    const [userDoc, sessionRes] = await Promise.all([users.getUserDoc(user), createSessionRetry(req)]);
-    const redirectUrl = await setCookies(userDoc, req, res, sessionRes);
+    const sessionRes = await createSessionRetry(req);
+    const redirectUrl = await setCookies(req, res, sessionRes);
 
     await tokenLogin.deactivateTokenLogin(userId);
     return res.status(302).send(redirectUrl);
@@ -380,20 +391,12 @@ const sendLoginErrorResponse = (e, res) => {
 const login = async (req, res) => {
   try {
     const sessionRes = await validateSession(req);
-    const userDoc = await users.getUserDoc(req.body.user);
-    if (isOidcUser(userDoc)) {
-      const error = new Error('Password Login Not Permitted For SSO Users');
-      error.status = 401;
-      throw error;
-    }
-    const redirectUrl = await setCookies(userDoc, req, res, sessionRes);
+    const redirectUrl = await setCookies(req, res, sessionRes);
     res.status(302).send(redirectUrl);
   } catch (e) {
     return sendLoginErrorResponse(e, res);
   }
 };
-
-const isOidcUser = (userDoc) => userDoc.oidc === true && config.get('oidc_provider')?.client_id;
 
 const updatePassword = (user, newPassword, req) => {
   const updateData = {
@@ -528,8 +531,8 @@ module.exports = {
       await updatePassword(userDoc, password, req);
 
       req.body = { user: username, password, locale };
-      const [updatedUserDoc, sessionRes] = await Promise.all([users.getUserDoc(username), createSessionRetry(req)]);
-      const redirectUrl = await setCookies(updatedUserDoc, req, res, sessionRes);
+      const sessionRes = await createSessionRetry(req);
+      const redirectUrl = await setCookies(req, res, sessionRes);
       return res.status(302).send(redirectUrl);
     } catch (err) {
       logger.error('Error updating password: %o', err);
