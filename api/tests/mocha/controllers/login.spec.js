@@ -426,6 +426,28 @@ describe('login controller', () => {
         ]);
       });
     });
+
+    it('should return 400 if is SSO User', () => {
+      req.body = {
+        username: 'user1',
+        currentPassword: 'current',
+        password: 'weak',
+        locale: 'en'
+      };
+
+      const status = sinon.stub(res, 'status').returns(res);
+      const json = sinon.stub(res, 'json').returns(res);
+
+      return controller.resetPassword(req, res).then(() => {
+        chai.expect(status.callCount).to.equal(1);
+        chai.expect(status.args[0][0]).to.equal(400);
+        chai.expect(json.callCount).to.equal(1);
+        chai.expect(json.args[0][0]).to.deep.equal({
+          error: 'password-short',
+          params: { minimum: 8 }
+        });
+      });
+    });
   });
 
   describe('get login/token', () => {
@@ -637,6 +659,7 @@ describe('login controller', () => {
       sinon.stub(auth, 'getUserCtx').rejects({ code: 401 });
       sinon.stub(tokenLogin, 'isTokenLoginEnabled').returns(true);
       sinon.stub(tokenLogin, 'getUserByToken').resolves('userId');
+      sinon.stub(users, 'getUserDoc').resolves();
       sinon.stub(tokenLogin, 'resetPassword').resolves({ user: 'user_name', password: 'secret' });
       sinon.stub(tokenLogin, 'deactivateTokenLogin');
       sinon.stub(res, 'status').returns(res);
@@ -664,7 +687,9 @@ describe('login controller', () => {
       const post = sinon.stub(request, 'post').rejects('boom');
       const status = sinon.stub(res, 'status').returns(res);
       const json = sinon.stub(res, 'json').returns(res);
+      const getUserDoc = sinon.stub(users, 'getUserDoc').resolves({});
       return controller.post(req, res).then(() => {
+        chai.expect(getUserDoc.callCount).to.equal(0);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(500);
@@ -713,7 +738,7 @@ describe('login controller', () => {
       sinon.stub(res, 'status').returns(res);
       sinon.stub(res, 'send').returns(res);
       sinon.stub(res, 'cookie');
-      sinon.stub(users, 'getUserDoc').resolves();
+      sinon.stub(users, 'getUserDoc').resolves({});
       sinon.stub(auth, 'getUserCtx').rejects({ code: 401 });
       auth.getUserCtx.onCall(9).resolves({ name: 'shazza', roles: [ 'project-stuff' ] });
 
@@ -876,7 +901,7 @@ describe('login controller', () => {
       sinon.stub(res, 'send');
       sinon.stub(res, 'status').returns(res);
       const cookie = sinon.stub(res, 'cookie').returns(res);
-      sinon.stub(users, 'getUserDoc').resolves();
+      sinon.stub(users, 'getUserDoc').resolves({});
       sinon.stub(auth, 'getUserCtx').resolves({ name: 'shazza', roles: [ 'project-stuff' ] });
       sinon.stub(auth, 'hasAllPermissions').returns(false);
       sinon.stub(auth, 'getUserSettings').resolves({ });
@@ -902,7 +927,7 @@ describe('login controller', () => {
       sinon.stub(res, 'send');
       sinon.stub(res, 'status').returns(res);
       const cookie = sinon.stub(res, 'cookie').returns(res);
-      sinon.stub(users, 'getUserDoc').resolves();
+      sinon.stub(users, 'getUserDoc').resolves({});
       sinon.stub(auth, 'getUserCtx').resolves({ name: 'shazza', roles: [ 'project-stuff' ] });
       sinon.stub(auth, 'hasAllPermissions').returns(false);
       sinon.stub(auth, 'getUserSettings').resolves({ language: 'fr' });
@@ -931,7 +956,7 @@ describe('login controller', () => {
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
       const hasAllPermissions = sinon.stub(auth, 'hasAllPermissions').returns(true);
-      sinon.stub(users, 'getUserDoc').resolves();
+      sinon.stub(users, 'getUserDoc').resolves({});
       sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
       return controller.post(req, res).then(() => {
         chai.expect(post.callCount).to.equal(1);
@@ -958,7 +983,7 @@ describe('login controller', () => {
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
       roles.isOnlineOnly.returns(true);
       sinon.stub(auth, 'hasAllPermissions').returns(true);
-      sinon.stub(users, 'getUserDoc').resolves();
+      sinon.stub(users, 'getUserDoc').resolves({});
       sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
       return controller.post(req, res).then(() => {
         chai.expect(post.callCount).to.equal(1);
@@ -988,7 +1013,7 @@ describe('login controller', () => {
       sinon.stub(res, 'status').returns(res);
       sinon.stub(users, 'createAdmin').resolves();
       const userCtx = { name: 'shazza', roles: [ '_admin' ] };
-      sinon.stub(users, 'getUserDoc').resolves();
+      sinon.stub(users, 'getUserDoc').resolves({});
       sinon.stub(auth, 'getUserCtx').resolves(userCtx);
       roles.isOnlineOnly.returns(true);
       sinon.stub(roles, 'isDbAdmin').returns(true);
@@ -1006,6 +1031,41 @@ describe('login controller', () => {
         chai.expect(res.status.callCount).to.equal(1);
         chai.expect(res.status.args[0][0]).to.equal(302);
         chai.expect(res.send.args[0][0]).to.equal('/admin/');
+      });
+    });
+
+    it('returns 401 when SSO user attempts password login and SSO is enabled', () => {
+
+      req.body = { user: 'shazza', password: 'p4ss' };
+      const postResponse = {
+        status: 200,
+        headers: new Headers({ 'set-cookie': [ 'AuthSession=abc;' ] })
+      };
+      sinon.stub(request, 'post').resolves(postResponse);
+      sinon.stub(res, 'send');
+      sinon.stub(res, 'status').returns(res);
+      sinon.stub(res, 'json').returns(res);
+      sinon.stub(users, 'createAdmin').resolves();
+      const userCtx = { name: 'shazza', roles: [ '_admin' ] };
+      sinon.stub(users, 'getUserDoc').resolves({ oidc: true });
+      sinon.stub(auth, 'getUserCtx').resolves(userCtx);
+      roles.isOnlineOnly.returns(true);
+      sinon.stub(roles, 'isDbAdmin').returns(false);
+      sinon.stub(auth, 'hasAllPermissions').returns(true);
+      sinon.stub(auth, 'getUserSettings');
+      sinon.stub(config, 'get').withArgs('oidc_provider').returns({ client_id: 'clientId'});
+      return controller.post(req, res).then(() => {
+        chai.expect(request.post.callCount).to.equal(1);
+        chai.expect(auth.getUserCtx.callCount).to.equal(1);
+        chai.expect(auth.getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
+        chai.expect(roles.isDbAdmin.callCount).to.equal(1);
+        chai.expect(roles.isDbAdmin.args[0]).to.deep.equal([userCtx]);
+        chai.expect(users.createAdmin.notCalled).to.be.true;
+        chai.expect(auth.getUserSettings.callCount).to.equal(0);
+        chai.expect(res.status.callCount).to.equal(1);
+        chai.expect(res.status.args[0][0]).to.equal(401);
+        chai.expect(res.json.callCount).to.equal(1);
+        chai.expect(res.json.args[0][0]).to.deep.equal({ error: 'Password Login Not Permitted For SSO Users' });
       });
     });
   });
@@ -1114,7 +1174,6 @@ describe('login controller', () => {
       sso.getCookie.resolves(`AuthSession=${sessionCookie}`);
       const userContext = { name: 'lil' };
       auth.getUserCtx.resolves(userContext);
-      users.getUserDoc.resolves({ _id: 'org.couchdb.user:lil' });
 
       await controller.oidcLogin(req, res);
 
@@ -1127,7 +1186,6 @@ describe('login controller', () => {
       chai.expect(auth.getUserCtx.calledOnceWithExactly({
         headers: { Cookie: `AuthSession=${sessionCookie}` }
       })).to.be.true;
-      chai.expect(users.getUserDoc.calledOnceWithExactly(idToken.preferred_username)).to.be.true;
       chai.expect(res.cookie.args).to.deep.equal([
         ['AuthSession', sessionCookie, { httpOnly: true, sameSite: 'lax', secure: false }],
         ['userCtx', JSON.stringify(userContext), DEFAULT_COOKIE_OPTIONS],
