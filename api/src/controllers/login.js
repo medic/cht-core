@@ -235,25 +235,20 @@ const setUserCtxCookie = (res, userCtx) => {
   cookie.setUserCtx(res, JSON.stringify(content));
 };
 
-const setCookies = async (req, res, sessionCookie) => {
-  if (!sessionCookie) {
-    throw { status: 401, error: 'Not logged in' };
-  }
 const isOidcUser = (userDoc) => userDoc?.oidc === true && config.get('oidc_provider')?.client_id;
 
-const setCookies = async (req, res, sessionRes) => {
-  const sessionCookie = getSessionCookie(sessionRes);
+const setCookies = async (req, res, sessionCookie) => {
   const options = { headers: { Cookie: sessionCookie } };
   const userCtx = await getUserCtxRetry(options);
   if (roles.isDbAdmin(userCtx)) {
     await users.createAdmin(userCtx);
   } else {
     const userDoc = await users.getUserDoc(userCtx.name);
-    if (!skipPasswordChange(userDoc)) {
-      return redirectToPasswordReset(req, res, userCtx);
-    }
     if (isOidcUser(userDoc)) {
       throw unauthorizedError('Password Login Not Permitted For SSO Users');
+    }
+    if (!skipPasswordChange(userDoc)) {
+      return redirectToPasswordReset(req, res, userCtx);
     }
   }
 
@@ -571,7 +566,10 @@ module.exports = {
       const { preferred_username, locale } = await sso.getIdToken(currentUrl);
       const sessionCookie = await sso.getCookie(preferred_username);
       req.body = { locale };
-      const redirectUrl = await setCookies(req, res, sessionCookie);
+
+      const options = { headers: { Cookie: sessionCookie } };
+      const userCtx = await getUserCtxRetry(options);
+      const redirectUrl = await redirectToApp({ req, res, sessionCookie, userCtx });
       res.status(302).redirect(redirectUrl);
     } catch (e) {
       logger.error('Error logging in via SSO: %o', e);

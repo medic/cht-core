@@ -1174,7 +1174,6 @@ describe('login controller', () => {
       sso.getCookie.resolves(`AuthSession=${sessionCookie}`);
       const userContext = { name: 'lil' };
       auth.getUserCtx.resolves(userContext);
-      users.getUserDoc.resolves({ _id: 'org.couchdb.user:lil' });
 
       await controller.oidcLogin(req, res);
 
@@ -1187,7 +1186,6 @@ describe('login controller', () => {
       chai.expect(auth.getUserCtx.calledOnceWithExactly({
         headers: { Cookie: `AuthSession=${sessionCookie}` }
       })).to.be.true;
-      chai.expect(users.getUserDoc.calledOnceWithExactly(idToken.preferred_username)).to.be.true;
       chai.expect(res.cookie.args).to.deep.equal([
         ['AuthSession', sessionCookie, { httpOnly: true, sameSite: 'lax', secure: false }],
         ['userCtx', JSON.stringify(userContext), DEFAULT_COOKIE_OPTIONS],
