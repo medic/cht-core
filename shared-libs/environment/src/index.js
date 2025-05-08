@@ -1,5 +1,4 @@
 const logger = require('@medic/logger');
-const request = require('@medic/couch-request');
 const semver = require('semver');
 
 const { COUCH_URL, BUILDS_URL, PROXY_CHANGE_ORIGIN = false } = process.env;
@@ -78,8 +77,13 @@ const getDeployInfo = async () => {
   }
 
   try {
+    // Lazy load couch-request only when needed
+    const request = require('@medic/couch-request');
     const ddoc = await request.get({
       url: `${couchUrl}/_design/${module.exports.ddoc}`,
+      headers: {
+        'user-agent': 'Community Health Toolkit',
+      }
     });
     deployInfoCache = {
       ...ddoc.build_info,

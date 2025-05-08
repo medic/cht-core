@@ -123,7 +123,7 @@ describe('CheckDateService', () => {
 
   describe('re-checking on every try until one response from the server is received', () => {
     it('should keep re-checking, record telemetry and never check again when clock is off', async () => {
-      clock = sinon.useFakeTimers(1606230000000);
+      clock = sinon.useFakeTimers({now: 1606230000000});
 
       const check1 = service.check(true);
       const res1 = httpMock.expectOne(matchInfoEndpoint);
@@ -177,7 +177,7 @@ describe('CheckDateService', () => {
     });
 
     it('should keep re-checking, not record telemetry and never check again when clock is on', async () => {
-      clock = sinon.useFakeTimers(1606230000000);
+      clock = sinon.useFakeTimers({now: 1606230000000});
 
       const check1 = service.check(true);
       const res1 = httpMock.expectOne(matchInfoEndpoint);
