@@ -151,7 +151,7 @@ const getVisibleLoaders = async () => {
     for (let i = 0; i < loaders.length; i++) {
       // Use a more specific selector to get a fresh reference to each loader
       // This avoids the index out of bounds issue
-      const loaderSelector = `.loader:nth-child(${i + 1})`;
+      const loaderSelector = `.loader:nth-of-type(${i + 1})`;
       const loader = await $(loaderSelector);
       if (await loader.isExisting() && await loader.isDisplayed({ withinViewport: true })) {
         visible.push(loader);
