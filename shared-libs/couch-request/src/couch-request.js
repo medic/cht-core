@@ -159,6 +159,7 @@ const setRequestOptions = async (options) => {
     options.servername = environment.host;
   }
 
+  // only add user agent for external requests to avoid circular calls
   if (!isInternalRequest(options) && !options.headers['user-agent']) {
     options.headers['user-agent'] = await getUserAgent();
   }
