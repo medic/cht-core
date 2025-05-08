@@ -23,6 +23,13 @@ describe('Pregnancy registration', () => {
     date_of_birth: moment().subtract(25, 'years').format('YYYY-MM-DD'),
     parent: { _id: healthCenter._id, parent: healthCenter.parent }
   });
+  const DOCS_TO_KEEP = [
+    ...Array.from(places.values()).map(doc => doc._id),
+    pregnantWoman._id,
+    'fixture:user:user1',
+    'org.couchdb.user:user1',
+    [/^form:/],
+  ];
 
   before(async () => {
     await utils.saveDocs([...places.values(), pregnantWoman]);
@@ -31,20 +38,8 @@ describe('Pregnancy registration', () => {
   });
 
   afterEach(async () => {
-    await commonPage.goToReports();
-    const reports = await reportsPage.reportsListDetails();
-    for (const report of reports) {
-      console.log('Report length: ', reports.length);
-      if (report.heading === pregnantWoman.name && report.form === 'Pregnancy registration') {
-        await utils.deleteDocs([report.dataId]);
-      }
-    }
-    await commonPage.sync();
-
-    await commonPage.goToBase();
-    if (await modalPage.isDisplayed()) {
-      await modalPage.submit();
-    }
+    await utils.revertDb(DOCS_TO_KEEP, true);
+    await commonPage.sync({ reload: true });
   });
 
   it('should submit a new pregnancy, ' +
