@@ -7,15 +7,11 @@ const { generateKeyPairSync } = require('crypto');
 const { hostURL } = require('@utils');
 const { BASE_URL, DB_NAME } = require('@constants');
 
-const appTokenUrl = `${BASE_URL}/${DB_NAME}/login/oidc/get_token`;
+const appTokenUrl = `${BASE_URL}/${DB_NAME}/login/oidc`;
 
 const authenticatedRedirectUrl = `${appTokenUrl}?code=dummy`;
 
-const getOidcBaseUrl = () => {
-  const address = `${hostURL(3000)}`;
-  console.log('address: ', address);
-  return address;
-};
+const getOidcBaseUrl = () => hostURL(server.address().port);
 
 const getJWT_KEYS = (secret = 'secret') => generateKeyPairSync(
   'rsa',
@@ -54,8 +50,10 @@ const generateIdToken =  (issuer, secret = 'secret') => {
 };
 
 const mockApp = express();
+let server;
 
 mockApp.use(bodyParser.json());
+mockApp.use(bodyParser.urlencoded({ extended: true }));
 
 mockApp.get('/.well-known/openid-configuration', (req, res) => {
   const oidcBaseUrl = getOidcBaseUrl();
@@ -109,6 +107,16 @@ mockApp.get('/connect/authorize', (req, res) => {
 
 mockApp.post('/connect/token', (req, res) => {
   const oidcBaseUrl = getOidcBaseUrl();
+  const { code } = req.body;
+  if (!code || code === 'invalid') {
+    return res
+      .status(400)
+      .json({
+        error: 'invalid_grant',
+        error_description: 'Code not valid'
+      });
+  }
+
   res.json({
     access_token: 'SlAV32hkKG',
     token_type: 'Bearer',
@@ -118,21 +126,22 @@ mockApp.post('/connect/token', (req, res) => {
   });
 });
 
-const startOidcServer = (callback) => {
-  const server = mockApp.listen(3000, () => {
-    callback();
-  });
+const startOidcServer = () => {
+  if (!server) {
+    server = mockApp.listen();
+  }
   return server;
 };
 
-const stopOidcServer = (server) => {
-  server && server.close();
+const stopOidcServer = () => {
+  server.close();
+  server = null;
 };
 
 module.exports = {
-  oidcBaseUrl: getOidcBaseUrl(),
+  getOidcBaseUrl,
+  getDiscoveryUrl: () => `${getOidcBaseUrl()}.well-known/openid-configuration`,
   appTokenUrl,
-  authenticatedRedirectUrl,
   startOidcServer,
   stopOidcServer
 };

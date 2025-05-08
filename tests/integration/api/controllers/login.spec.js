@@ -2,7 +2,7 @@ const chai = require('chai');
 chai.use(require('chai-shallow-deep-equal'));
 const utils = require('@utils');
 const mockIdProvider = require('../../../utils/mock-oidc-provider');
-const path = require('path');
+const { DB_NAME } = require('@constants');
 
 let user;
 const password = 'passwordSUP3RS3CR37!';
@@ -277,7 +277,7 @@ describe('login', () => {
         .then(userDoc => {
           // grab the token and mark as SSO user
           const token = userDoc.token_login.token;
-          userDoc.oidc = 'some-provider';
+          userDoc.oidc = true;
           return utils.usersDb
             .put(userDoc)
             .then(() => token);
@@ -295,35 +295,34 @@ describe('login', () => {
   });
 
   describe('SSO login', () => {
-    const authorizeSso = () => {
+    const oidcAuthorize = () => {
       const opts = {
-        path: `/medic/login/oidc`,
+        path: `/medic/login/oidc/authorize`,
         method: 'GET',
-        json: false,
-        resolveWithFullResponse: true,
         noAuth: true,
-        redirect: 'manual',
-        headers: { 'X-Forwarded-For': randomIp() },
-      };
-      return utils.request(opts);
-    };
-
-    const idTokenLogin = () => {
-      const opts = {
-        path: `/medic/login/oidc/get_token?code=random`,
-        method: 'GET',
         json: false,
         resolveWithFullResponse: true,
         redirect: 'manual',
-        headers: { 'X-Forwarded-For': randomIp() },
       };
       return utils.request(opts);
     };
 
-    const setupOidcSettings = (oidcBaseUrl) => {
+    const oidcLogin = (code = 'random') => {
+      const opts = {
+        path: `/medic/login/oidc?code=${code}`,
+        method: 'GET',
+        noAuth: true,
+        json: false,
+        resolveWithFullResponse: true,
+        redirect: 'manual',
+      };
+      return utils.request(opts);
+    };
+
+    const setupOidcSettings = () => {
       const settings = {
         oidc_provider: {
-          discovery_url: path.join(oidcBaseUrl, '.well-known/openid-configuration'),
+          discovery_url: mockIdProvider.getDiscoveryUrl(),
           client_id: 'cht',
           allow_insecure_requests: true
         }
@@ -332,104 +331,106 @@ describe('login', () => {
       return utils.updateSettings(settings, { ignoreReload: true });
     };
 
-    const setClientSecret = () => {
-      return utils.saveCredentials('oidc:client-secret', 'client-secret');
-    };
+    const setClientSecret = () => utils.saveCredentials('oidc:client-secret', 'client-secret');
 
-    const createUser = (user) => {
-      delete user.password;
-      user.oidc = true;
-
-      const createOpts = {
-        path: '/api/v1/users',
-        method: 'POST',
-        body: user
-      };
-      return utils.request(createOpts);
-    };
-
-    const expectLoginToFailWithServerError = (response) => {
+    const expectRedirectToLoginWithError = (ssoError, response) => {
+      chai.expect(response.status).to.equal(302);
       chai.expect(response.headers.getSetCookie()).to.deep.equal([]);
+      chai.expect(response.body).to.equal(`Found. Redirecting to /${DB_NAME}/login?sso_error=${ssoError}`);
+    };
+
+    const expectServerError = (response) => {
       chai.expect(response.status).to.equal(500);
-      chai.expect(response.body.error).to.equal('Unexpected error logging in');
+      chai.expect(response.headers.getSetCookie()).to.deep.equal([]);
+      chai.expect(response.body).to.equal('Server error');
     };
 
-    let server;
+    before(async () => {
+      await mockIdProvider.startOidcServer();
+    });
 
-    const startMockApp = () => {
-      return new Promise(resolve => {
-        server = mockIdProvider.startOidcServer(resolve);
+    afterEach(async () => {
+      await utils.revertSettings(true);
+    });
+
+    after(() => mockIdProvider.stopOidcServer());
+
+    [
+      ['login/oidc', oidcLogin, response => expectRedirectToLoginWithError('loginerror', response)],
+      ['login/oidc/authorize', oidcAuthorize, expectServerError]
+    ].forEach(([endpoint, oidcFn, assertFn]) => {
+      it(`should fail ${endpoint} when OIDC not configured`, async () => {
+        const response  = await oidcFn();
+        assertFn(response);
       });
-    };
 
-    const stopMockApp = () => {
-      mockIdProvider.stopOidcServer(server);
-    };
+      it(`should fail ${endpoint} when OIDC client secret is not set`, async () => {
+        await setupOidcSettings();
+        const response =  await oidcFn();
+        assertFn(response);
+      });
 
-    beforeEach(() => startMockApp());
-
-    afterEach(() => {
-      stopMockApp();
-      utils.deleteUsers([user]);
+      it(`should fail ${endpoint} when invalid discovery url is provided`, async () => {
+        await utils.updateSettings(
+          {
+            discovery_url: 'http://random-xveersd/.well-known/openid-configuration',
+            client_id: 'cht'
+          },
+          { ignoreReload: true }
+        );
+        const response = await oidcFn();
+        assertFn(response);
+      });
     });
 
-    it('should fail with server error if oidc provider settings missing', () => {
-      return idTokenLogin()
-        .then(response => expectLoginToFailWithServerError(response));
+    it('should redirect back to login when user does not exist in CHT', async () => {
+      await setupOidcSettings();
+      await setClientSecret();
+      const response = await oidcLogin();
+
+      expectRedirectToLoginWithError('ssouserinvalid', response);
     });
 
-    it('should fail with server error if discovery url is not provided', () => {
-      return utils.updateSettings({}, { ignoreReload: true })
-        .then(() => idTokenLogin())
-        .then(response => expectLoginToFailWithServerError(response));
+    it('should redirect to oidc provide authorize endpoint', async () => {
+      await setupOidcSettings();
+      await setClientSecret();
+      const response  = await oidcAuthorize();
+
+      chai.expect(response).to.include({ status: 302 });
+      const appUrl = `${mockIdProvider.appTokenUrl}&scope=openid+email&client_id=cht&response_type=code`;
+      const redirectLocation = `${mockIdProvider.getOidcBaseUrl()}connect/authorize?redirect_uri=${appUrl}`;
+      chai.expect(decodeURIComponent(response.body)).to.equal(redirectLocation);
     });
 
-    it('should fail with server error if OIDC client secret is not set', () => {
-      return setupOidcSettings(mockIdProvider.oidcBaseUrl)
-        .then(() => idTokenLogin())
-        .then(response => expectLoginToFailWithServerError(response));
+    ['', 'invalid'].forEach(code => {
+      it(`should redirect back to login when authentication code is [${code}]`, async () => {
+        await setupOidcSettings();
+        await setClientSecret();
+        await utils.createUsers([{
+          ...user,
+          password: undefined,
+          oidc: true,
+        }]);
+        const response = await oidcLogin(code);
+
+        expectRedirectToLoginWithError('loginerror', response);
+      });
     });
 
-    it('should fail with server error if the wrong discovery url is provided', () => {
-      return utils.updateSettings(
-        {
-          discovery_url: 'http://random-xveersd/.well-known/openid-configuration',
-          client_id: 'cht'
-        },
-        {
-          ignoreReload: true
-        }
-      )
-        .then(() => idTokenLogin())
-        .then(response => expectLoginToFailWithServerError(response));
-    });
-
-    it('should fail log in if user does not exist in CHT', () => {
-      return setupOidcSettings(mockIdProvider.oidcBaseUrl)
-        .then(() => setClientSecret())
-        .then(() => idTokenLogin())
-        .then(response => expectLoginToFail(response));
-    });
-
-    it('should redirect to oidc provide authorize endpoint', () => {
-      return setupOidcSettings(mockIdProvider.oidcBaseUrl)
-        .then(() => setClientSecret())
-        .then(() => createUser(user))
-        .then(() => authorizeSso())
-        .then(response => {
-          chai.expect(response).to.include({ status: 302 });
-          const appUrl = `${mockIdProvider.appTokenUrl}&scope=openid&client_id=cht&response_type=code`;
-          const redirectLocation = `${mockIdProvider.oidcBaseUrl}connect/authorize?redirect_uri=${appUrl}`;
-          chai.expect(decodeURIComponent(response.body)).to.equal(redirectLocation);
-        });
-    });
-
-    it('should log in successfully', () => {
-      return setupOidcSettings(mockIdProvider.oidcBaseUrl)
-        .then(() => setClientSecret())
-        .then(() => createUser(user))
-        .then(() => idTokenLogin())
-        .then(response => expectLoginToWork(response));
+    it('should log in successfully', async () => {
+      await setupOidcSettings();
+      await setClientSecret();
+      await utils.createUsers([{
+        ...user,
+        password: undefined,
+        oidc: true,
+      }]);
+      const response = await oidcLogin();
+      chai.expect(response).to.include({ status: 302 });
+      chai.expect(response.headers.getSetCookie()).to.be.an('array');
+      chai.expect(response.headers.getSetCookie().find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
+      chai.expect(response.headers.getSetCookie().find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
+      chai.expect(response.body).to.equal('Found. Redirecting to /');
     });
   });
 });

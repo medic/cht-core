@@ -33,7 +33,6 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   @Input() disabled;
   @Input() isStartDate;
   @Input() fieldId;
-  // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() search: EventEmitter<any> = new EventEmitter();
   @Output() onError: EventEmitter<any> = new EventEmitter();
 

@@ -1,5 +1,4 @@
-const rewire = require('rewire');
-const chai = require('chai');
+const { expect } = require('chai');
 const sinon = require('sinon');
 const db = require('../../../src/db');
 const config = require('../../../src/config');
@@ -7,270 +6,425 @@ const dataContext = require('../../../src/services/data-context');
 const { users } = require('@medic/user-management')(config, db, dataContext);
 const secureSettings = require('@medic/settings');
 const settingsService = require('../../../src/services/settings');
-const request = require('@medic/couch-request');
+const translations = require('../../../src/translations');
+const logger = require('@medic/logger');
+const client = require('../../../src/services/openid-client.js');
+const service = require('../../../src/services/sso-login');
 
-const client = require('../../../src/openid-client-wrapper.js');
-let service;
+const CLIENT_SECRET = 'secret';
+const SERVER_METADATA = {
+  issuer: 'http://oidc-provider.com',
+  authorization_endpoint: 'http://oidc-provider.com/authorize',
+  token_endpoint: 'http://oidc-provider.com/token',
+  grant_types_supported: ['authorization_code'],
+  response_types_supported: ['code'],
+  claims_supported: ['sub', 'name', 'email'],
+  scopes_supported: ['openid', 'profile', 'email'],
+};
+const SETTINGS =  {
+  oidc_provider: {
+    discovery_url: 'http://discovery.url',
+    client_id: 'client_id'
+  }
+};
 
 describe('SSO login', () => {
-  let clock;
-  const settings =  {
-    oidc_provider: {
-      discovery_url: 'http://discovery.url',
-      client_id: 'client_id'
-    }
-  };
+  const expectedDiscoveryParams = [
+    new URL(SETTINGS.oidc_provider.discovery_url),
+    SETTINGS.oidc_provider.client_id,
+    CLIENT_SECRET,
+    null,
+    { execute: [] }
+  ];
 
-  const ASConfig = {
-    serverMetadata: () => ({
-      supportsPKCE: () => true,
-    }),
-    clientMetadata: () => ({client_id: 'id'})
-  };
-
-  const id_token = 'token123';
-  const name = 'ari';
-  const preferred_username = 'ari';
-  const email = 'ari@test';
-
-  const claims = () => {
-    return { name, preferred_username, email };
-  };
+  let idServerConfig;
 
   beforeEach(async () => {
-    clock = sinon.useFakeTimers(1743782507000); // 'Fri Apr 04 2025 19:01:47 GMT+0300 (East Africa Time)'
-    service = rewire('../../../src/services/sso-login');
+    idServerConfig = {
+      serverMetadata: sinon.stub().returns(SERVER_METADATA),
+    };
+    sinon.stub(logger, 'debug');
+    sinon.stub(settingsService, 'get');
+    sinon.stub(secureSettings, 'getCredentials');
+    sinon.stub(client, 'discovery');
   });
 
-  afterEach(() => {
-    clock.restore();
-    sinon.restore();
-  });
+  afterEach(() => sinon.restore());
 
-  describe('oidcServerSConfig', () => {
-    it('should return authorization server config object', async () => {
-      sinon.stub(settingsService, 'get').returns(settings);
-      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
-      sinon.stub(client, 'discovery').resolves(ASConfig);
-      const config = await service.__get__('oidcServerSConfig')();
-      chai.expect(client.discovery.calledWith(
-        new URL(settings.oidc_provider.discovery_url),
-        settings.oidc_provider.client_id,
-        'secret'
-      )).to.be.true;
-      chai.expect(config).to.be.deep.equal(ASConfig);
-    });
-
-    it('should throw an error if oidc_provider config is not set', async () => {
-      sinon.stub(settingsService, 'get').returns({});
-      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
-      try {
-        await service.__get__('oidcServerSConfig')();
-        chai.expect.fail('Expected error to be thrown');
-      } catch (err) {
-        chai.expect(err.message).to.equal('oidc_provider config is missing in settings.');
-      }
-    });
-
-    it('should throw an error if oidc_provider.discovery_url config is not set', async () => {
-      sinon.stub(settingsService, 'get').returns({
-        oidc_provider: {
-          client_id: 'client_id'
-        }
-      });
-      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
-      try {
-        await service.__get__('oidcServerSConfig')();
-        chai.expect.fail('Expected error to be thrown');
-      } catch (err) {
-        chai.expect(err.message).to.equal(
-          'The discovery_url and client_id must be provided in the oidc_provider config.'
-        );
-      }
-    });
-
-    it('should throw an error if oidc_provider.client_id config is not set', async () => {
-      sinon.stub(settingsService, 'get').returns({
-        oidc_provider: {
-          discovery_url: 'http://discovery.url'
-        }
-      });
-      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
-      try {
-        await service.__get__('oidcServerSConfig')();
-        chai.expect.fail('Expected error to be thrown');
-      } catch (err) {
-        chai.expect(err.message).to.equal(
-          'The discovery_url and client_id must be provided in the oidc_provider config.'
-        );
-      }
-    });
-
-    it('should throw an error if no secret is found', async () => {
-      sinon.stub(settingsService, 'get').returns(settings);
-      sinon.stub(secureSettings, 'getCredentials').resolves(null);
-      try {
-        await service.__get__('oidcServerSConfig')();
-        chai.expect.fail('Expected error to be thrown');
-      } catch (err) {
-        chai.expect(err.message).to.equal('No OIDC client secret \'oidc:client-secret\' configured.');
-      }
-    });
-
-    it('should retry call to oidc provider 3 times', async () => {
-      sinon.stub(settingsService, 'get').returns(settings);
-      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
-      const fn = sinon.stub(client, 'discovery').throws('Error');
-      try {
-        await service.__get__('oidcServerSConfig')();
-        chai.expect.fail('Error');
-      } catch (err) {
-        chai.expect(fn.calledThrice).to.be.true;
-      }
-    });
-
-    it('should retry call to oidc provider for timeouts', async () => {
-      sinon.stub(settingsService, 'get').returns(settings);
-      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
-      const clientError = new client.ClientError('operation timed out', { cause: new Error(), code: 'OAUTH_TIMEOUT'});
-      const fn = sinon.stub(client, 'discovery').throws(clientError);
-      try {
-        await service.__get__('oidcServerSConfig')();
-        chai.expect.fail('Error');
-      } catch (err) {
-        chai.expect(fn.calledThrice).to.be.true;
-      }
-    });
-
-    it('should not retry call to oidc provider if error is known', async () => {
-      sinon.stub(settingsService, 'get').returns(settings);
-      sinon.stub(secureSettings, 'getCredentials').resolves('secret');
-      const fn = sinon.stub(client, 'discovery').throws(client.ClientError);
-      try {
-        await service.__get__('oidcServerSConfig')();
-        chai.expect.fail('Error');
-      } catch (err) {
-        chai.expect(fn.calledOnce).to.be.true;
-      }
-    });
-  });
+  const expectOidcServerConfigRetrieved = () => {
+    expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+    expect(secureSettings.getCredentials.calledOnceWithExactly('oidc:client-secret')).to.be.true;
+    expect(client.discovery.calledOnceWithExactly(...expectedDiscoveryParams)).to.be.true;
+    expect(idServerConfig.serverMetadata.calledOnceWithExactly()).to.be.true;
+  };
 
   describe('getAuthorizationUrl', () => {
-    it('should return the authorization URL', async () => {
-      sinon.stub(client, 'buildAuthorizationUrl').returns('https://fake-url.com');
-      service.__set__('oidcServerSConfig', () => ASConfig);
-      const url = await service.getAuthorizationUrl('http://localhost/medic/oidc/get_token');
-      chai.expect(url).to.equal('https://fake-url.com');
+    const AUTH_URL = 'https://fake-url.com';
+    const REDIRECT_URL = 'http://localhost/medic/oidc';
+
+    beforeEach(() => sinon.stub(client, 'buildAuthorizationUrl').returns(AUTH_URL));
+
+    it('throws error when oidc_provider is not configured', async () => {
+      settingsService.get.resolves({});
+
+      await expect(service.getAuthorizationUrl(REDIRECT_URL)).to.be.rejectedWith(
+        'oidc_provider config is missing in settings.'
+      );
+
+      expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+      expect(secureSettings.getCredentials.notCalled).to.be.true;
+      expect(client.discovery.notCalled).to.be.true;
+      expect(idServerConfig.serverMetadata.notCalled).to.be.true;
+      expect(logger.debug.notCalled).to.be.true;
+      expect(client.buildAuthorizationUrl.notCalled).to.be.true;
     });
 
-    it('should throw and error if oidc provider is unavailable', async () => {
-      service.__set__('oidcServerSConfig', sinon.fake.throws('Error'));
-      try {
-        await service.getAuthorizationUrl('http://localhost/medic/oidc/get_token');
-        chai.expect.fail('Error');
-      } catch (err) {
-        chai.expect(err).to.be.equal(service.__get__('SERVER_ERROR'));
-      }
-    });
-  });
+    [
+      ['discovery_url', { client_id: SETTINGS.oidc_provider.client_id }],
+      ['client_id', { discovery_url: SETTINGS.oidc_provider.discovery_url }]
+    ].forEach(([missingProp, oidc_provider]) => {
+      it(`throws error when ${missingProp} is not provided in oidc_provider settings`, async () => {
+        settingsService.get.resolves({ oidc_provider });
 
-  describe('getToken', async () => {
-    it('should return a token', async () => {
-      service.__set__('oidcServerSConfig', () => ASConfig);
-      sinon.stub(client, 'authorizationCodeGrant').resolves({ id_token, claims });
-      const token = await service.getIdToken('http://current_url/');
-      chai.expect(token).to.deep.equal({
-        id_token,
-        user: {
-          name,
-          username: preferred_username,
-          email
-        }
+        await expect(service.getAuthorizationUrl(REDIRECT_URL)).to.be.rejectedWith(
+          `The discovery_url and client_id must be provided in the oidc_provider config.`
+        );
+
+        expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+        expect(secureSettings.getCredentials.notCalled).to.be.true;
+        expect(client.discovery.notCalled).to.be.true;
+        expect(idServerConfig.serverMetadata.notCalled).to.be.true;
+        expect(logger.debug.notCalled).to.be.true;
+        expect(client.buildAuthorizationUrl.notCalled).to.be.true;
       });
     });
 
-    it('should throw and error if oidc provider is unavailable', async () => {
-      service.__set__('oidcServerSConfig', sinon.fake.throws('Error'));
+    it('throws error when OIDC client secret is not configured', async () => {
+      settingsService.get.resolves(SETTINGS);
+      secureSettings.getCredentials.resolves('');
 
-      try {
-        await service.getIdToken('http://current_url/');
-        chai.expect.fail('Error');
-      } catch (err) {
-        chai.expect(err).to.be.equal(service.__get__('SERVER_ERROR'));
-      }
+      await expect(service.getAuthorizationUrl(REDIRECT_URL)).to.be.rejectedWith(
+        `No OIDC client secret 'oidc:client-secret' configured.`
+      );
+
+      expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+      expect(secureSettings.getCredentials.calledOnceWithExactly('oidc:client-secret')).to.be.true;
+      expect(client.discovery.notCalled).to.be.true;
+      expect(idServerConfig.serverMetadata.notCalled).to.be.true;
+      expect(logger.debug.notCalled).to.be.true;
+      expect(client.buildAuthorizationUrl.notCalled).to.be.true;
+    });
+
+    it('returns the authorization URL', async () => {
+      settingsService.get.resolves(SETTINGS);
+      secureSettings.getCredentials.resolves(CLIENT_SECRET);
+      client.discovery.resolves(idServerConfig);
+
+      const url = await service.getAuthorizationUrl(REDIRECT_URL);
+
+      expect(url).to.equal(AUTH_URL);
+      expectOidcServerConfigRetrieved();
+      expect(logger.debug.calledOnceWithExactly(
+        `Authorization server config loaded: ${JSON.stringify(SERVER_METADATA)}`
+      )).to.be.true;
+      expect(client.buildAuthorizationUrl.calledOnceWithExactly(
+        idServerConfig,
+        {
+          redirect_uri: REDIRECT_URL,
+          scope: 'openid email'
+        }
+      )).to.be.true;
+    });
+
+    it('returns the authorization URL when allow_insecure_requests is configured', async () => {
+      settingsService.get.resolves({ oidc_provider: {
+        ...SETTINGS.oidc_provider,
+        allow_insecure_requests: true
+      } });
+      secureSettings.getCredentials.resolves(CLIENT_SECRET);
+      client.discovery.resolves(idServerConfig);
+
+      const url = await service.getAuthorizationUrl(REDIRECT_URL);
+
+      expect(url).to.equal(AUTH_URL);
+      expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+      expect(secureSettings.getCredentials.calledOnceWithExactly('oidc:client-secret')).to.be.true;
+      expect(client.discovery.calledOnceWithExactly(
+        new URL(SETTINGS.oidc_provider.discovery_url),
+        SETTINGS.oidc_provider.client_id,
+        CLIENT_SECRET,
+        null,
+        { execute: [client.allowInsecureRequests] }
+      )).to.be.true;
+      expect(idServerConfig.serverMetadata.calledOnceWithExactly()).to.be.true;
+      expect(logger.debug.calledOnceWithExactly(
+        `Authorization server config loaded: ${JSON.stringify(SERVER_METADATA)}`
+      )).to.be.true;
+      expect(client.buildAuthorizationUrl.calledOnceWithExactly(
+        idServerConfig,
+        {
+          redirect_uri: REDIRECT_URL,
+          scope: 'openid email'
+        }
+      )).to.be.true;
+    });
+
+    it('returns the authorization URL after retrying request three times', async () => {
+      settingsService.get.resolves(SETTINGS);
+      secureSettings.getCredentials.resolves(CLIENT_SECRET);
+      client.discovery.onFirstCall().rejects(new Error());
+      client.discovery.onSecondCall().rejects(new Error());
+      client.discovery.onThirdCall().resolves(idServerConfig);
+
+      const url = await service.getAuthorizationUrl(REDIRECT_URL);
+
+      expect(url).to.equal(AUTH_URL);
+      expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+      expect(secureSettings.getCredentials.calledOnceWithExactly('oidc:client-secret')).to.be.true;
+      expect(client.discovery.args).to.deep.equal([
+        expectedDiscoveryParams, expectedDiscoveryParams, expectedDiscoveryParams
+      ]);
+      expect(idServerConfig.serverMetadata.calledOnceWithExactly()).to.be.true;
+      expect(logger.debug.args).to.deep.equal([
+        ['Retrying OIDC request: discovery.'],
+        ['Retrying OIDC request: discovery.'],
+        [`Authorization server config loaded: ${JSON.stringify(SERVER_METADATA)}`]
+      ]);
+      expect(client.buildAuthorizationUrl.calledOnceWithExactly(
+        idServerConfig,
+        {
+          redirect_uri: REDIRECT_URL,
+          scope: 'openid email'
+        }
+      )).to.be.true;
+    });
+
+    it('throws error after request fails three times', async () => {
+      settingsService.get.resolves(SETTINGS);
+      secureSettings.getCredentials.resolves(CLIENT_SECRET);
+      const expectedError = new Error('Could not complete request');
+      client.discovery.rejects(expectedError);
+
+      await expect(service.getAuthorizationUrl(REDIRECT_URL)).to.be.rejectedWith(expectedError);
+
+      expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+      expect(secureSettings.getCredentials.calledOnceWithExactly('oidc:client-secret')).to.be.true;
+      expect(client.discovery.args).to.deep.equal([
+        expectedDiscoveryParams, expectedDiscoveryParams, expectedDiscoveryParams
+      ]);
+      expect(idServerConfig.serverMetadata.notCalled).to.be.true;
+      expect(logger.debug.args).to.deep.equal([
+        ['Retrying OIDC request: discovery.'],
+        ['Retrying OIDC request: discovery.']
+      ]);
+      expect(client.buildAuthorizationUrl.notCalled).to.be.true;
+    });
+
+    it('throws error after request fails with 40x status code', async () => {
+      settingsService.get.resolves(SETTINGS);
+      secureSettings.getCredentials.resolves(CLIENT_SECRET);
+      const expectedError = new Error('Could not complete request');
+      expectedError.status = 400;
+      client.discovery.rejects(expectedError);
+
+      await expect(service.getAuthorizationUrl(REDIRECT_URL)).to.be.rejectedWith(expectedError);
+
+      expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+      expect(secureSettings.getCredentials.calledOnceWithExactly('oidc:client-secret')).to.be.true;
+      expect(client.discovery.calledOnceWithExactly(...expectedDiscoveryParams)).to.be.true;
+      expect(idServerConfig.serverMetadata.notCalled).to.be.true;
+      expect(logger.debug.notCalled).to.be.true;
+      expect(client.buildAuthorizationUrl.notCalled).to.be.true;
     });
   });
 
-  describe('make cookie', () => {
-    it('should generate a valid cookie', () => {
-      const username = 'odin';
-      const salt = '19cba3729c50c92d894edeea0fb9c1c4';
-      const secret = 'c0673d7e-0310-44bc-a919-9e6330904f80';
-      const authTimeout = 30;
+  describe('getIdToken', async () => {
+    const REDIRECT_URL = 'http://localhost/medic/oidc?code=123';
+    let expectedAuthCodeGrantParams;
+    let claims;
 
-      const cookie = service.__get__('makeCookie')(username, salt, secret, authTimeout);
-      chai.expect(cookie).to.be.equal('b2Rpbjo2N0YwMDI4OTrzYR70nsFmwmMSkvPju5RW1OCbew');
+    beforeEach(() => {
+      settingsService.get.resolves(SETTINGS);
+      secureSettings.getCredentials.resolves(CLIENT_SECRET);
+      client.discovery.resolves(idServerConfig);
+      claims = sinon.stub();
+      sinon.stub(client, 'authorizationCodeGrant');
+      sinon.stub(translations, 'getEnabledLocales').resolves([{ code: 'en' }, { code: 'es' }]);
+      expectedAuthCodeGrantParams = [
+        idServerConfig,
+        REDIRECT_URL,
+        { idTokenExpected: true }
+      ];
+    });
+
+    it('returns the id token data', async () => {
+      const expectedClaims = {
+        preferred_username: 'test',
+        locale: 'en',
+      };
+      claims.returns(expectedClaims);
+      client.authorizationCodeGrant.resolves({ claims });
+
+      const idTokenClaims = await service.getIdToken(REDIRECT_URL);
+
+      expect(idTokenClaims).to.deep.equal(expectedClaims);
+      expectOidcServerConfigRetrieved();
+      expect(logger.debug.calledOnceWithExactly(
+        `Authorization server config loaded: ${JSON.stringify(SERVER_METADATA)}`
+      )).to.be.true;
+      expect(client.authorizationCodeGrant.calledOnceWithExactly(...expectedAuthCodeGrantParams)).to.be.true;
+      expect(translations.getEnabledLocales.calledOnceWithExactly()).to.be.true;
+    });
+
+    [undefined, 'sw'].forEach((locale) => {
+      it('returns the id token data with the default locale', async () => {
+        const expectedClaims = {
+          preferred_username: 'test',
+          locale,
+        };
+        claims.returns(expectedClaims);
+        client.authorizationCodeGrant.resolves({ claims });
+
+        const idTokenClaims = await service.getIdToken(REDIRECT_URL);
+
+        expect(idTokenClaims).to.deep.equal({ preferred_username: 'test', locale: 'en' });
+        expectOidcServerConfigRetrieved();
+        expect(logger.debug.args).to.deep.equal([
+          [`Authorization server config loaded: ${JSON.stringify(SERVER_METADATA)}`],
+          [`Invalid local for user [${locale}]. Using default locale.`]
+        ]);
+        expect(client.authorizationCodeGrant.calledOnceWithExactly(...expectedAuthCodeGrantParams)).to.be.true;
+        expect(translations.getEnabledLocales.calledOnceWithExactly()).to.be.true;
+      });
+    });
+
+    it('returns the id token data after retrying three times', async () => {
+      const expectedClaims = {
+        preferred_username: 'test',
+        locale: 'en',
+      };
+      claims.returns(expectedClaims);
+      client.authorizationCodeGrant.onFirstCall().rejects(new Error());
+      client.authorizationCodeGrant.onSecondCall().rejects(new Error());
+      client.authorizationCodeGrant.onThirdCall().resolves({ claims });
+
+      const idTokenClaims = await service.getIdToken(REDIRECT_URL);
+
+      expect(idTokenClaims).to.deep.equal(expectedClaims);
+      expectOidcServerConfigRetrieved();
+      expect(logger.debug.args).to.deep.equal([
+        [`Authorization server config loaded: ${JSON.stringify(SERVER_METADATA)}`],
+        ['Retrying OIDC request: authorizationCodeGrant.'],
+        ['Retrying OIDC request: authorizationCodeGrant.'],
+      ]);
+      expect(client.authorizationCodeGrant.args).to.deep.equal([
+        expectedAuthCodeGrantParams, expectedAuthCodeGrantParams, expectedAuthCodeGrantParams
+      ]);
+      expect(translations.getEnabledLocales.calledOnceWithExactly()).to.be.true;
+    });
+
+    it('throws error after request fails three times', async () => {
+      const expectedClaims = {
+        preferred_username: 'test',
+        locale: 'en',
+      };
+      claims.returns(expectedClaims);
+      const expectedError = new Error('Could not complete request');
+      client.authorizationCodeGrant.rejects(expectedError);
+
+      await expect(service.getIdToken(REDIRECT_URL)).to.be.rejectedWith(expectedError);
+
+      expectOidcServerConfigRetrieved();
+      expect(logger.debug.args).to.deep.equal([
+        [`Authorization server config loaded: ${JSON.stringify(SERVER_METADATA)}`],
+        ['Retrying OIDC request: authorizationCodeGrant.'],
+        ['Retrying OIDC request: authorizationCodeGrant.'],
+      ]);
+      expect(client.authorizationCodeGrant.args).to.deep.equal([
+        expectedAuthCodeGrantParams, expectedAuthCodeGrantParams, expectedAuthCodeGrantParams
+      ]);
+      expect(translations.getEnabledLocales.notCalled).to.be.true;
     });
   });
 
-  describe('get cookie', () => {
+  describe('getCookie', () => {
+    const username = 'odin';
+    let clock;
+
+    beforeEach(() => {
+      clock = sinon.useFakeTimers(1743782507000); // 'Fri Apr 04 2025 19:01:47 GMT+0300 (East Africa Time)'
+      sinon.stub(users, 'getUserDoc');
+      sinon.stub(secureSettings, 'getCouchConfig');
+    });
+
+    afterEach(() => {
+      clock.restore();
+    });
+
     it('should generate a cookie header value', async () => {
-      const username = 'odin';
-      const user = { id: 'user123', username: 'user123', salt: 'salt', oidc: true };
-      sinon.stub(users, 'getUserDoc').returns(user);
-      sinon.stub(request, 'get').returns('value');
-      service.__set__('makeCookie', sinon.fake.returns('cookie'));
+      const user = { id: 'user123', username, salt: 'salt', oidc: true };
+      users.getUserDoc.resolves(user);
+      const couchSecret = 'couch-secret';
+      const couchAuthTimeout = '12345';
+      secureSettings.getCouchConfig.withArgs('couch_httpd_auth/secret').resolves(couchSecret);
+      secureSettings.getCouchConfig.withArgs('couch_httpd_auth/timeout').resolves(couchAuthTimeout);
 
       const cookie = await service.getCookie(username);
-      chai.expect(cookie).to.be.equal(`AuthSession=cookie`);
+
+      expect(cookie).to.be.equal(`AuthSession=b2Rpbjo2N0YwMzJBNDpcE8TPUoK-7JE6nPPaVTaF5hAe-Q`);
+      expect(users.getUserDoc.calledOnceWithExactly(username)).to.be.true;
+      expect(secureSettings.getCouchConfig.args).to.deep.equal(
+        [['couch_httpd_auth/secret'], ['couch_httpd_auth/timeout']]
+      );
     });
 
-    it('should throw an error if user is not found', async () => {
-      sinon.stub(users, 'getUserDoc').throws(`Failed to find user with name [odin] in the [test] database.`);
+    it('throws error if user is not found', async () => {
+      const error = new Error('Doc Not found');
+      error.status = 404;
+      users.getUserDoc.rejects(error);
 
-      try {
-        await service.getCookie('odin');
-        chai.expect.fail('Expected test to fail.');
-      } catch (err) {
-        chai.expect(err).to.be.equal(service.__get__('USER_UNAUTHORIZED'));
-      }
+      await expect(service.getCookie(username))
+        .to.be.rejectedWith(`CHT user not found for OIDC User ${username}.`)
+        .to.eventually.have.property('status', 401);
+
+      expect(users.getUserDoc.calledOnceWithExactly(username)).to.be.true;
+      expect(secureSettings.getCouchConfig.notCalled).to.be.true;
     });
 
-    it('should throw an error if SSO is not enabled for a user', async () => {
-      const user = { id: 'user123', username: 'user123', salt: 'salt'};
-      sinon.stub(users, 'getUserDoc').returns(user);
+    it('throws error if problem retrieving user', async () => {
+      const error = new Error('DB Timeout');
+      error.status = 500;
+      users.getUserDoc.rejects(error);
 
-      try {
-        await service.getCookie('odin');
-        chai.expect.fail('Expected test to fail.');
-      } catch (err) {
-        chai.expect(err).to.be.equal(service.__get__('USER_UNAUTHORIZED'));
-      }
+      await expect(service.getCookie(username))
+        .to.be.rejectedWith(error);
+
+      expect(users.getUserDoc.calledOnceWithExactly(username)).to.be.true;
+      expect(secureSettings.getCouchConfig.notCalled).to.be.true;
     });
 
-    it('should throw an error if user salt is missing', async () => {
-      const user = { id: 'user123', username: 'user123'};
-      sinon.stub(users, 'getUserDoc').returns(user);
+    it('throws error if SSO is not enabled for a user', async () => {
+      const user = { id: 'user123', username, salt: 'salt' };
+      users.getUserDoc.resolves(user);
 
-      try {
-        await service.getCookie('odin');
-        chai.expect.fail('Expected test to fail.');
-      } catch (err) {
-        chai.expect(err).to.be.equal(service.__get__('USER_UNAUTHORIZED'));
-      }
+      await expect(service.getCookie(username))
+        .to.be.rejectedWith(`SSO login is not enabled for user with username ${username}.`)
+        .to.eventually.have.property('status', 401);
+
+      expect(users.getUserDoc.calledOnceWithExactly(username)).to.be.true;
+      expect(secureSettings.getCouchConfig.notCalled).to.be.true;
     });
 
-    it('should throw and error if secret or auth timeout is not set', async () => {
-      service.__set__('oidcServerSConfig', ASConfig);
-      const user = { id: 'user123', username: 'user123', salt: 'salt', oidc: true };
-      sinon.stub(users, 'getUserDoc').returns(user);
-      sinon.stub(request, 'get').throws(new Error('error'));
-      try {
-        await service.getCookie('odin');
-        chai.expect.fail('Error');
-      } catch (err) {
-        chai.expect(err).to.be.equal(service.__get__('SERVER_ERROR'));
-      }
+    it('throws error if user salt is missing', async () => {
+      const user = { id: 'user123', username, oidc: true };
+      users.getUserDoc.resolves(user);
+
+      await expect(service.getCookie(username))
+        .to.be.rejectedWith(`The user doc for ${username} does not have a password salt.`)
+        .to.eventually.have.property('status', 401);
+
+      expect(users.getUserDoc.calledOnceWithExactly(username)).to.be.true;
+      expect(secureSettings.getCouchConfig.notCalled).to.be.true;
     });
   });
 });

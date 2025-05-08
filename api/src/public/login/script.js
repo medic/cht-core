@@ -47,6 +47,26 @@ const submit = function(e) {
   });
 };
 
+const requestSSOLogin = function(e){
+  e.preventDefault();
+  if (document.getElementById('form')?.className === 'loading') {
+    // debounce double clicks
+    return;
+  }
+  setState('loading');
+  const url = '/medic/login/oidc/authorize';
+  request('GET', url, null, (xmlhttp) => {
+    if (xmlhttp.status === 302) {
+      // success - redirect to app
+      window.location = xmlhttp.response;
+    } else {
+      // unknown error
+      setState('loginerror');
+      console.error('Error logging in', xmlhttp.response);
+    }
+  });
+};
+
 const requestTokenLogin = (retry = 20) => {
   const url = document.getElementById('tokenLogin')?.action;
   const payload = JSON.stringify({ locale: selectedLocale });
@@ -129,14 +149,10 @@ const getSsoError = function() {
   const urlParams = new URLSearchParams(window.location.search);
   const sso_error = urlParams.get('sso_error');
 
-  if (!sso_error || ['ssoinvalid', 'ssoerror'].indexOf(sso_error) === -1) {
+  if (!sso_error || ['ssouserinvalid', 'loginerror'].indexOf(sso_error) === -1) {
     return;
   }
   return sso_error;
-};
-
-const getSSOLoginUrl = function(){
-  window.location.href = '/medic/login/oidc';
 };
 
 const checkSession = function() {
@@ -229,9 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   const ssoLoginButton = document.getElementById('login-sso');
-  ssoLoginButton.addEventListener('click', function(){
-    getSSOLoginUrl();
-  });
+  ssoLoginButton.addEventListener('click', requestSSOLogin, false);
 
   checkUnsupportedBrowser();
 });
