@@ -5,7 +5,6 @@ import { combineLatest, Subscription } from 'rxjs';
 import { Selectors } from '@mm-selectors/index';
 import { SettingsService } from '@mm-services/settings.service';
 import { HeaderTab, HeaderTabsService } from '@mm-services/header-tabs.service';
-import { GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-services/modal.service';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
@@ -19,6 +18,8 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { HeaderLogoPipe, ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
+import { StorageInfo, StorageStatus } from '@mm-reducers/global';
+import { StorageInfoService } from '@mm-services/storage-info.service';
 
 export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
 
@@ -41,7 +42,7 @@ export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
   ]
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  private subscription: Subscription = new Subscription();
+  private readonly subscriptions: Subscription = new Subscription();
 
   @Input() adminUrl;
   @Input() canLogOut;
@@ -51,8 +52,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   currentTab;
   unreadCount = {};
   permittedTabs: HeaderTab[] = [];
-
-  private globalActions;
+  
+  private storageInfo: undefined | StorageInfo;
 
   constructor(
     private store: Store,
@@ -60,17 +61,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private headerTabsService: HeaderTabsService,
     private modalService: ModalService,
     private dbSyncService: DBSyncService,
-  ) {
-    this.globalActions = new GlobalActions(store);
-  }
+    private readonly storageInfoService: StorageInfoService,
+  ) {}
 
   ngOnInit(): void {
     this.subscribeToStore();
     this.getHeaderTabs();
+    this.storageInfoService.init();
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    this.subscriptions.unsubscribe();
+    this.storageInfoService.stop();
   }
 
   private subscribeToStore() {
@@ -79,18 +81,21 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getCurrentTab),
       this.store.select(Selectors.getShowPrivacyPolicy),
       this.store.select(Selectors.getUnreadCount),
+      this.store.select(Selectors.getStorageInfo),
     ).subscribe(([
       replicationStatus,
       currentTab,
       showPrivacyPolicy,
-      unreadCount
+      unreadCount,
+      storageInfo,
     ]) => {
       this.replicationStatus = replicationStatus;
       this.currentTab = currentTab;
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.unreadCount = unreadCount;
+      this.storageInfo = storageInfo;
     });
-    this.subscription.add(subscription);
+    this.subscriptions.add(subscription);
   }
 
   private getHeaderTabs() {
@@ -112,5 +117,30 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   replicate() {
     this.dbSyncService.sync(true);
+  }
+
+  get storagePressureClass(): string {
+    const val = this.storageInfo?.storageUsagePercentage ?? 0;
+    if (val < 50) {
+      return 'progress-bar-green';
+    } else if (val < 75) {
+      return 'progress-bar-yellow';
+    }
+    return 'progress-bar-red';
+  }
+
+  get availableStorageSpace(): string {
+    switch (this.storageInfo?.status) {
+    case StorageStatus.NORMAL:
+      return `${StorageInfoService.bytesToGB(this.storageInfo?.availableBytes)} GB`;
+    case StorageStatus.STARTUP:
+      return 'Calculating...';
+    default:
+      return 'Error calculating available space';
+    }
+  }
+
+  get storageUsagePercentage(): number {
+    return this.storageInfo?.storageUsagePercentage ?? 0;
   }
 }

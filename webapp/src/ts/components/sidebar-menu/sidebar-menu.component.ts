@@ -13,11 +13,13 @@ import { ModalService } from '@mm-services/modal.service';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
-import { NgFor, NgIf } from '@angular/common';
+import { NgFor, NgIf, NgClass } from '@angular/common';
 import { AuthDirective } from '@mm-directives/auth.directive';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
+import { StorageInfo, StorageStatus } from '@mm-reducers/global';
+import { StorageInfoService } from '@mm-services/storage-info.service';
 
 @Component({
   selector: 'mm-sidebar-menu',
@@ -32,6 +34,7 @@ import { RelativeDatePipe } from '@mm-pipes/date.pipe';
     AuthDirective,
     MatIcon,
     NgIf,
+    NgClass,
     TranslatePipe,
     RelativeDatePipe,
   ],
@@ -45,6 +48,7 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
   moduleOptions: MenuOption[] = [];
   secondaryOptions: MenuOption[] = [];
   adminAppPath: string = '';
+  private storageInfo: undefined|StorageInfo;
 
   constructor(
     private store: Store,
@@ -52,6 +56,7 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
     private dbSyncService: DBSyncService,
     private modalService: ModalService,
     private router: Router,
+    private readonly storageInfoService: StorageInfoService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -62,10 +67,12 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
     this.setSecondaryOptions();
     this.subscribeToStore();
     this.subscribeToRouter();
+    this.storageInfoService.init();
   }
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
+    this.storageInfoService.stop();
   }
 
   close() {
@@ -105,6 +112,11 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
       .select(Selectors.getShowPrivacyPolicy)
       .subscribe(showPrivacyPolicy => this.setSecondaryOptions(showPrivacyPolicy));
     this.subscriptions.add(subscribePrivacyPolicy);
+
+    const subscribeStorageInfo = this.store
+      .select(Selectors.getStorageInfo)
+      .subscribe(storageInfo => this.storageInfo = storageInfo);
+    this.subscriptions.add(subscribeStorageInfo);
   }
 
   private openFeedback() {
@@ -179,6 +191,31 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
         click: () => this.openFeedback()
       },
     ];
+  }
+
+  get storagePressureClass(): string {
+    const val = this.storageInfo?.storageUsagePercentage ?? 0;
+    if (val < 50) {
+      return 'progress-bar-green';
+    } else if (val < 75) {
+      return 'progress-bar-yellow';
+    }
+    return 'progress-bar-red';
+  }
+
+  get availableStorageSpace(): string {
+    switch (this.storageInfo?.status) {
+    case StorageStatus.NORMAL:
+      return `${StorageInfoService.bytesToGB(this.storageInfo?.availableBytes)} GB`;
+    case StorageStatus.STARTUP:
+      return 'Calculating...';
+    default:
+      return 'Error calculating available space';
+    }
+  }
+
+  get storageUsagePercentage(): number {
+    return this.storageInfo?.storageUsagePercentage ?? 0;
   }
 }
 

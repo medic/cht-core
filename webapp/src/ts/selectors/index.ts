@@ -40,6 +40,7 @@ export const Selectors = {
   getTrainingCard: createSelector(getGlobalState, (globalState) => globalState.trainingCard),
   getLanguage: createSelector(getGlobalState, (globalState) => globalState.language),
   getDirection: createSelector(getGlobalState, (globalState) => globalState.language?.rtl ? 'rtl' : 'ltr'),
+  getStorageInfo: createSelector(getGlobalState, (globalState) => globalState.storageInfo),
 
   // enketo
   getEnketoStatus: createSelector(getGlobalState, (globalState) => globalState.enketoStatus),
