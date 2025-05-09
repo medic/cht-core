@@ -1,5 +1,6 @@
 const config = require('./libs/config');
 const passwords = require('./libs/passwords');
+const { OIDC_ROLE } = require('./roles');
 
 const isSsoLoginEnabled = () => !!config.get('oidc_provider');
 
@@ -16,6 +17,12 @@ const validateSsoLogin = (data) => {
 
   data.password = passwords.generate();
   data.password_change_required = false;
+  if (!data.roles) {
+    data.roles = [];
+  }
+  if (!data.roles.includes(OIDC_ROLE)) {
+    data.roles.push(OIDC_ROLE);
+  }
 };
 
 const validateSsoLoginUpdate = (data, updatedUser) => {

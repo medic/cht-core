@@ -4218,7 +4218,7 @@ describe('Users service', () => {
         username: 'x',
         contact: userContact._id,
         roles: ['test-role'],
-        oidc: true,
+        oidc_username: 'test',
       };
       validateSsoLogin = sinon
         .stub(ssoLogin, 'validateSsoLogin');
@@ -4275,7 +4275,7 @@ describe('Users service', () => {
           type: 'user',
           password: GENERATED_PASSWORD,
           password_change_required: false,
-          oidc: true,
+          oidc_username: 'test',
         })).to.be.true;
         chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
         chai.expect(service.__get__('validateNewUsername').calledOnceWithExactly(ssoUserData.username)).to.be.true;
@@ -4335,7 +4335,7 @@ describe('Users service', () => {
           type: 'user',
           password: GENERATED_PASSWORD,
           password_change_required: false,
-          oidc: true,
+          oidc_username: 'test',
         })).to.be.true;
         chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
         chai.expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(expectedUser.facility_id[0]))).to.be.true;
@@ -4419,7 +4419,7 @@ describe('Users service', () => {
           type: 'user',
           password: GENERATED_PASSWORD,
           password_change_required: false,
-          oidc: true,
+          oidc_username: 'test',
         })).to.be.true;
         chai.expect(db.medicLogs.get.args).to.deep.equal([[undefined], [undefined], [undefined], [undefined]]);
         chai.expect(validateSsoLogin.args).to.deep.equal([
@@ -4495,21 +4495,21 @@ describe('Users service', () => {
             type: 'user',
             password: GENERATED_PASSWORD,
             password_change_required: false,
-            oidc: true,
+            oidc_username: 'test',
           }],
           [{
             ...expectedUser1,
             type: 'user',
             password: GENERATED_PASSWORD,
             password_change_required: false,
-            oidc: true,
+            oidc_username: 'test',
           }],
           [{
             ...expectedUser2,
             type: 'user',
             password: GENERATED_PASSWORD,
             password_change_required: false,
-            oidc: true,
+            oidc_username: 'test',
           }],
         ]);
         chai.expect(db.medicLogs.get.args).to.deep.equal([[undefined], [undefined], [undefined], [undefined]]);
@@ -4573,7 +4573,7 @@ describe('Users service', () => {
           password: 'existingPassword',
         };
         db.users.get.resolves({ ...existingUser });
-        const updates = { oidc: true };
+        const updates = { oidc_username: 'test' };
 
         await chai.expect(service.updateUser(ssoUserData.username, { ...updates }, true))
           .to.be.eventually.rejectedWith(Error)
@@ -4617,7 +4617,7 @@ describe('Users service', () => {
         db.users.get.resolves({ ...existingUser });
         db.users.put.resolves({ id: existingUserData._id });
         db.medic.put.resolves({ id: existingUserData._id });
-        const updates = { oidc: true };
+        const updates = { oidc_username: 'test' };
 
         const response = await service.updateUser(ssoUserData.username, { ...updates }, true);
 
@@ -4641,13 +4641,13 @@ describe('Users service', () => {
       });
 
       it('returns error when changing oidc without full access', async () => {
-        const updates = { oidc: true };
+        const updates = { oidc_username: 'test' };
 
         await chai.expect(service.updateUser(ssoUserData.username, { ...updates }, false))
           .to.be.eventually.rejectedWith(Error)
           .and.to.deep.include({
             status: 401,
-            message: 'You do not have permission to modify: oidc',
+            message: 'You do not have permission to modify: oidc_username',
           });
 
         chai.expect(validateSsoLoginUpdate.notCalled).to.be.true;

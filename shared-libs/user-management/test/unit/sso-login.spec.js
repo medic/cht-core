@@ -65,7 +65,8 @@ describe('SSO Login service', () => {
       expect(data).to.deep.equal({
         oidc_username: 'test',
         password_change_required: false,
-        password: GENERATED_PASSWORD
+        password: GENERATED_PASSWORD,
+        roles: ['mm-oidc']
       });
       expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
       expect(generatePassword.calledOnceWithExactly()).to.be.true;
@@ -128,7 +129,10 @@ describe('SSO Login service', () => {
     });
 
     it('should not return error message when oidc user is valid', () => {
-      const data = { oidc_username: 'test' };
+      const data = {
+        oidc_username: 'test',
+        roles: ['existing-role']
+      };
       config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' } });
 
       const result = service.validateSsoLoginUpdate(data, data);
@@ -137,10 +141,47 @@ describe('SSO Login service', () => {
       expect(data).to.deep.equal({
         oidc_username: 'test',
         password_change_required: false,
-        password: GENERATED_PASSWORD
+        password: GENERATED_PASSWORD,
+        roles: ['existing-role', 'mm-oidc']
       });
       expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
       expect(generatePassword.calledOnceWithExactly()).to.be.true;
+    });
+
+    it('should not add oidc role when it already exists', () => {
+      const data = {
+        oidc_username: 'test',
+        roles: ['existing-role', 'mm-oidc']
+      };
+      config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' } });
+
+      const result = service.validateSsoLoginUpdate(data, data);
+
+      expect(result).to.equal(undefined);
+      expect(data).to.deep.equal({
+        oidc_username: 'test',
+        password_change_required: false,
+        password: GENERATED_PASSWORD,
+        roles: ['existing-role', 'mm-oidc']
+      });
+      expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
+      expect(generatePassword.calledOnceWithExactly()).to.be.true;
+    });
+  });
+
+  describe('isSsoLoginEnabled', () => {
+    it('should return true when oidc_provider is set', () => {
+      config.get.returns({ });
+      const result = service.isSsoLoginEnabled();
+      expect(result).to.be.true;
+      expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
+    });
+
+    it('should return false when oidc_provider is not set', () => {
+      config.get.returns(undefined);
+      const result = service.isSsoLoginEnabled();
+      expect(result).to.be.false;
+      expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
     });
   });
 });
