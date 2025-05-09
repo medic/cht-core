@@ -1,38 +1,32 @@
 import { Injectable } from '@angular/core';
-import { Observable, interval, switchMap, shareReplay, from } from 'rxjs';
+import { Store } from '@ngrx/store';
 
-export enum StorageStatus {
-  STARTUP,
-  NORMAL,
-  ERROR
-}
-export interface StorageInfo {
-  status: StorageStatus,
-  availableBytes: number;
-  storageUsagePercentage: number;
-}
+import { GlobalActions } from '@mm-actions/global';
+import { StorageInfo, StorageStatus } from '@mm-reducers/global';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StorageInfoService {
-  private readonly storageInfoInternal$: Observable<StorageInfo>;
+  private globalActions: GlobalActions;
+  private timeout;
 
-  constructor() {
-    this.storageInfoInternal$ = new Observable<StorageInfo>(subscriber => {
-      this.fetchStorageInfo().then(info => subscriber.next(info));
-
-      const polling = interval(30000)
-        .pipe(switchMap(() => from(this.fetchStorageInfo())))
-        .subscribe(subscriber);
-
-      return () => polling.unsubscribe();
-    }).pipe(shareReplay(1));
+  constructor(private readonly store: Store) {
+    this.globalActions = new GlobalActions(this.store);
   }
 
-  get storageInfo$(): Observable<StorageInfo> {
-    return this.storageInfoInternal$;
-  }
+  init = () => this.pollStorageInfo();
+
+  private pollStorageInfo = async (): Promise<void> => {
+    try {
+      const info = await this.fetchStorageInfo();
+      this.globalActions.updateStorageInfo(info);
+    } catch (err) {
+      console.error('Error updating storage info', err);
+    } finally {
+      this.timeout = setTimeout(this.pollStorageInfo, 30000);
+    }
+  };
 
   private async fetchStorageInfo(): Promise<StorageInfo> {
     try {
@@ -55,6 +49,8 @@ export class StorageInfoService {
       };
     }
   }
+
+  stop = () => this.timeout && clearTimeout(this.timeout);
 
   static bytesToGB(bytes: number): string {
     return (bytes / 1024 / 1024 / 1024).toFixed(2);

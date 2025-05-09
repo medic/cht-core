@@ -5,7 +5,6 @@ import { combineLatest, Subscription } from 'rxjs';
 import { Selectors } from '@mm-selectors/index';
 import { SettingsService } from '@mm-services/settings.service';
 import { HeaderTab, HeaderTabsService } from '@mm-services/header-tabs.service';
-import { GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-services/modal.service';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
@@ -19,7 +18,8 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { HeaderLogoPipe, ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
-import { StorageInfoService, StorageStatus } from '@mm-services/storage-info.service';
+import { StorageInfo, StorageStatus } from '@mm-reducers/global';
+import { StorageInfoService } from '@mm-services/storage-info.service';
 
 export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
 
@@ -52,12 +52,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   currentTab;
   unreadCount = {};
   permittedTabs: HeaderTab[] = [];
-
-  status: StorageStatus = StorageStatus.STARTUP;
-  private availableSpace: number = 0;
-  storageUsagePercentage: number = 0;
-
-  private globalActions;
+  
+  private storageInfo: undefined | StorageInfo;
 
   constructor(
     private store: Store,
@@ -66,28 +62,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
     private dbSyncService: DBSyncService,
     private readonly storageInfoService: StorageInfoService,
-  ) {
-    this.globalActions = new GlobalActions(store);
-  }
+  ) {}
 
   ngOnInit(): void {
     this.subscribeToStore();
     this.getHeaderTabs();
-    this.subscribeToStorageInfo();
+    this.storageInfoService.init();
   }
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
-  }
-
-  private subscribeToStorageInfo() {
-    this.subscriptions.add(
-      this.storageInfoService.storageInfo$.subscribe(info => {
-        this.status = info.status;
-        this.availableSpace = info.availableBytes ?? 0;
-        this.storageUsagePercentage = info.storageUsagePercentage ?? 0;
-      })
-    );
+    this.storageInfoService.stop();
   }
 
   private subscribeToStore() {
@@ -96,16 +81,19 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getCurrentTab),
       this.store.select(Selectors.getShowPrivacyPolicy),
       this.store.select(Selectors.getUnreadCount),
+      this.store.select(Selectors.getStorageInfo),
     ).subscribe(([
       replicationStatus,
       currentTab,
       showPrivacyPolicy,
-      unreadCount
+      unreadCount,
+      storageInfo,
     ]) => {
       this.replicationStatus = replicationStatus;
       this.currentTab = currentTab;
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.unreadCount = unreadCount;
+      this.storageInfo = storageInfo;
     });
     this.subscriptions.add(subscription);
   }
@@ -132,22 +120,27 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   get storagePressureClass(): string {
-    if (this.storageUsagePercentage < 50) {
+    const val = this.storageInfo?.storageUsagePercentage ?? 0;
+    if (val < 50) {
       return 'progress-bar-green';
-    } else if (this.storageUsagePercentage < 75) {
+    } else if (val < 75) {
       return 'progress-bar-yellow';
     }
     return 'progress-bar-red';
   }
 
   get availableStorageSpace(): string {
-    switch (this.status) {
+    switch (this.storageInfo?.status) {
     case StorageStatus.NORMAL:
-      return `${StorageInfoService.bytesToGB(this.availableSpace)} GB`;
+      return `${StorageInfoService.bytesToGB(this.storageInfo?.availableBytes)} GB`;
     case StorageStatus.STARTUP:
       return 'Calculating...';
     default:
       return 'Error calculating available space';
     }
+  }
+
+  get storageUsagePercentage(): number {
+    return this.storageInfo?.storageUsagePercentage ?? 0;
   }
 }
