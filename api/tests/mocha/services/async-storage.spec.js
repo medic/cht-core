@@ -8,7 +8,7 @@ describe('async-storage', () => {
   let service;
 
   beforeEach(() => {
-    sinon.stub(request, 'initialize');
+    sinon.stub(request, 'setStore');
   });
 
   afterEach(() => {
@@ -17,7 +17,7 @@ describe('async-storage', () => {
 
   it('should initialize async storage and initialize couch-request', async () => {
     service = rewire('../../../src/services/async-storage');
-    expect(request.initialize.args).to.deep.equal([[
+    expect(request.setStore.args).to.deep.equal([[
       service,
       serverUtils.REQUEST_ID_HEADER
     ]]);

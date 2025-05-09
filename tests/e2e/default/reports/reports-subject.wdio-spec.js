@@ -13,7 +13,6 @@ describe('Reports Subject', () => {
   const districtHospital = places.get('district_hospital');
   const healthCenter = places.get('health_center');
   const clinic = places.get('clinic');
-
   const user = userFactory.build({ place: clinic._id });
 
   const person = personFactory.build({
@@ -58,16 +57,6 @@ describe('Reports Subject', () => {
     expect(openReportInfo.senderPhone).to.equal(senderPhone);
   };
 
-  /*const baseReport = (reportId, form, userPhone, fields) => {
-    return {
-      _id: reportId,
-      form: form,
-      type: 'data_record',
-      from: userPhone,
-      fields: fields,
-    };
-  };*/
-
   const createSmsReport = async (report, message, errors = [], ) => {
     //const report = baseReport(reportId, form, userPhone, fields);
     report.sms_message = {
@@ -90,7 +79,13 @@ describe('Reports Subject', () => {
 
   after(async () => await utils.revertSettings(true));
 
-  afterEach(async () => await utils.deleteAllDocs([/^form:/].concat(...places.values()).concat(person._id)));
+  afterEach(async () => {
+    await utils.deleteAllDocs([
+      ...places.values().map(place => place._id),
+      person._id,
+      user.contact._id,
+    ]);
+  });
 
   it('should create a report using patient_id', async () => {
     const report = {

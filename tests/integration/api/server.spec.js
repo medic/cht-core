@@ -82,7 +82,7 @@ describe('server', () => {
       };
 
       return requestWrapper(options).then(({res, body}) => {
-        expect(res.headers.get('content-type')).to.equal('application/json');
+        expect(res.headers.get('content-type')).to.equal('application/json; charset=utf-8');
         expect(res.headers.get('content-encoding')).to.equal('gzip');
         expect(_.omit(body[0], 'rev')).to.eql({ id: 'sample_doc', ok: true });
         expect(_.omit(body[1], 'rev')).to.eql({ id: 'sample_doc2', ok: true });

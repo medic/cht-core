@@ -2,12 +2,14 @@ const chai = require('chai').use(require('chai-as-promised'));
 const expect = chai.expect;
 const sinon = require('sinon');
 const rewire = require('rewire');
+
 chai.config.truncateThreshold = 0;
 
 describe('couch-request', () => {
   let couchRequest;
   let uri;
   let response;
+  let audit;
 
   const buildResponse = ({ status=200, body, headers=new Headers(), json=true } = {}) => {
     if (json) {
@@ -33,9 +35,10 @@ describe('couch-request', () => {
     uri = `http://admin:password@test.com:5984/medic/_all_docs`;
     sinon.stub(global, 'fetch').resolves(buildResponse({ body: 'yes' }));
 
-    const environmentMock = { getVersion: sinon.stub().resolves('4.18.0') };
-    sinon.stub(require('@medic/environment'), 'getVersion').callsFake(environmentMock.getVersion);
-    
+    audit = require('@medic/audit');
+    sinon.stub(audit, 'fetchCallback');
+    sinon.stub(require('@medic/server-info'), 'getVersion').resolves('4.18.0');
+
     sinon.stub(require('os'), 'platform').returns('test-platform');
     sinon.stub(require('os'), 'arch').returns('test-arch');
 
@@ -112,6 +115,26 @@ describe('couch-request', () => {
         uri: 'http://test.com:5984/medic/test',
       }
     ]);
+
+    expect(audit.fetchCallback.args).to.deep.equal([[
+      'http://test.com:5984/medic/test',
+      {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          authorization: `Basic ${btoa('admin:password')}`,
+        },
+        servername: 'test.com',
+        uri: 'http://test.com:5984/medic/test',
+      },
+      {
+        ...response,
+        streamed: true,
+        body: 'yes'
+      },
+      undefined,
+    ]]);
   });
 
   it('should use url', async () => {
@@ -155,6 +178,28 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/doc/attachment',
+      }
+    ]);
+  });
+
+  it('should add user-agent header to external requests', async () => {
+    const opts = {
+      url: 'http://www.textit.com/api/v2/broadcasts.json',
+    };
+
+    await couchRequest.post(opts);
+
+    expect(global.fetch.args[0]).to.deep.equal([
+      'http://www.textit.com/api/v2/broadcasts.json',
+      {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          'user-agent': 'Community Health Toolkit/4.18.0 (test-platform,test-arch)',
+        },
+        servername: 'test.com',
+        uri: 'http://www.textit.com/api/v2/broadcasts.json',
       }
     ]);
   });
@@ -614,6 +659,7 @@ describe('couch-request', () => {
       body: 'this is text',
       status: 201,
       headers: new Headers({ foo: 'bar', bar: 'baz' }),
+      streamed: true,
     }));
 
     const opts = {
@@ -628,6 +674,7 @@ describe('couch-request', () => {
       status: 201,
       ok: true,
       headers: new Headers({ foo: 'bar', bar: 'baz', 'content-type': 'application/json' }),
+      streamed: true,
     });
   });
 
@@ -672,8 +719,11 @@ describe('couch-request', () => {
 
 
   it('should not add request id header when client request is not set', async () => {
-    const asyncLocalStorage = { getRequestId: sinon.stub().returns(false) };
-    couchRequest.initialize(asyncLocalStorage, 'header-name');
+    const asyncLocalStorage = {
+      getRequestId: sinon.stub().returns(false),
+      getRequest: sinon.stub().returns({ }),
+    };
+    couchRequest.setStore(asyncLocalStorage, 'header-name');
 
     const response = await couchRequest.get({ uri: 'http://test.com:5984/test' });
 
@@ -693,11 +743,14 @@ describe('couch-request', () => {
   });
 
   it('should set request id header when set', async () => {
-    const asyncLocalStorage = { getRequestId: sinon.stub().returns('req_uuid') };
-    couchRequest.initialize(asyncLocalStorage, 'header-name');
+    const asyncLocalStorage = {
+      getRequestId: sinon.stub().returns('req_uuid'),
+      getRequest: sinon.stub().returns({ requestId: 'req_uuid', user: 'test' }),
+    };
+    couchRequest.setStore(asyncLocalStorage, 'header-name');
 
-    const response = await couchRequest.get({ uri: 'http://test.com:5984/test' });
-    chai.expect(response).to.equal('yes');
+    const resp = await couchRequest.get({ uri: 'http://test.com:5984/test' });
+    chai.expect(resp).to.equal('yes');
     chai.expect(global.fetch.args).to.deep.equal([[
       'http://test.com:5984/test',
       {
@@ -711,11 +764,34 @@ describe('couch-request', () => {
         uri: 'http://test.com:5984/test',
       }
     ]]);
+
+    expect(audit.fetchCallback.args).to.deep.equal([[
+      'http://test.com:5984/test',
+      {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          'header-name': 'req_uuid',
+        },
+        servername: 'test.com',
+        uri: 'http://test.com:5984/test',
+      },
+      {
+        ...response,
+        streamed: true,
+        body: 'yes'
+      },
+      { requestId: 'req_uuid', user: 'test' },
+    ]]);
   });
 
   it('should add request id header when headers are already set', async () => {
-    const asyncLocalStorage = { getRequestId: sinon.stub().returns('req_uuid') };
-    couchRequest.initialize(asyncLocalStorage, 'header-name');
+    const asyncLocalStorage = {
+      getRequestId: sinon.stub().returns('req_uuid'),
+      getRequest: sinon.stub().returns({ requestId: 'req_uuid', user: 'test' }),
+    };
+    couchRequest.setStore(asyncLocalStorage, 'header-name');
 
     const response = await couchRequest.get({ uri: 'http://test.com:5984/b', headers: { 'authorization': 'Basic 123' } });
     chai.expect(response).to.equal('yes');
@@ -744,20 +820,20 @@ describe('couch-request', () => {
   });
 
   it('should not override user-agent header if already specified', async () => {
-    await couchRequest.get({ 
+    await couchRequest.get({
       url: 'http://test.com:5984/test-user-agent',
       headers: {
         'user-agent': 'CustomAgent/1.0'
       }
     });
-    
+
     const requestOptions = global.fetch.args[0][1];
     expect(requestOptions.headers['user-agent']).to.equal('CustomAgent/1.0');
   });
 
   describe('sanitizeErrorResponse function', () => {
     let sanitizeErrorResponse;
-    
+
     beforeEach(() => {
       sanitizeErrorResponse = couchRequest.__get__('sanitizeErrorResponse');
     });
@@ -770,7 +846,7 @@ describe('couch-request', () => {
     it('should sanitize sensitive fields from string body', () => {
       const stringWithCredentials = 'http://user:pass@example.com?password=secret&auth=token&pass=mysecret';
       const sanitized = sanitizeErrorResponse(stringWithCredentials);
-      
+
       // Check that sensitive fields are removed
       expect(sanitized).to.not.include('password=secret');
       expect(sanitized).to.not.include('auth=token');
@@ -792,9 +868,9 @@ describe('couch-request', () => {
         pass: 'password123',
         otherData: 'should remain'
       };
-      
+
       const sanitized = sanitizeErrorResponse(objectWithCredentials);
-      
+
       // Check that sensitive fields are completely removed (not just masked)
       expect(sanitized).to.not.have.property('password');
       expect(sanitized).to.not.have.property('auth');
@@ -805,7 +881,7 @@ describe('couch-request', () => {
       expect(sanitized).to.not.have.property('username');
       expect(sanitized).to.not.have.property('user');
       expect(sanitized).to.not.have.property('pass');
-      
+
       // But other fields should remain
       expect(sanitized).to.have.property('otherData', 'should remain');
       expect(sanitized).to.have.property('url', 'http://example.com');
@@ -820,8 +896,8 @@ describe('couch-request', () => {
 
   it('should sanitize sensitive data in error objects', async () => {
     global.fetch.resolves(buildResponse({
-      body: { 
-        error: 'auth_error', 
+      body: {
+        error: 'auth_error',
         reason: 'Invalid credentials',
         username: 'admin',
         password: 'secret',
@@ -836,12 +912,12 @@ describe('couch-request', () => {
         expect(error.message).to.not.include('secret');
         expect(error.message).to.not.include('12345');
         expect(error.message).to.not.include('admin');
-        
+
         // Verify error body has sensitive fields removed
         expect(error.body).to.not.have.property('password');
         expect(error.body).to.not.have.property('auth');
         expect(error.body).to.not.have.property('username');
-        
+
         // But other fields should remain
         expect(error.body).to.have.property('error', 'auth_error');
         expect(error.body).to.have.property('reason', 'Invalid credentials');
@@ -861,7 +937,7 @@ describe('couch-request', () => {
         expect(error.message).to.not.include('supersecret');
         expect(error.message).to.not.include('admin');
         expect(error.message).to.not.include('123456');
-        
+
         // Basic error structure should still be preserved
         expect(error.status).to.equal(500);
       });

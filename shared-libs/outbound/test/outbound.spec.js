@@ -2,7 +2,7 @@ const assert = require('chai').assert;
 const sinon = require('sinon');
 const rewire = require('rewire');
 const secureSettings = require('@medic/settings');
-const environment = require('@medic/environment');
+const serverInfo = require('@medic/server-info');
 const request = require('@medic/couch-request');
 let outbound;
 
@@ -268,7 +268,7 @@ describe('outbound shared library', () => {
         }
       };
 
-      sinon.stub(environment, 'getVersion').resolves('4.18.0');
+      sinon.stub(serverInfo, 'getVersion').resolves('4.18.0');
       sinon.stub(request, 'post').resolves();
 
       return outbound.__get__('sendPayload')(payload, conf)

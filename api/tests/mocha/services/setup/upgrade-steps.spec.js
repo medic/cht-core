@@ -6,7 +6,7 @@ const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
 const upgradeUtils = require('../../../../src/services/setup/utils');
 const viewIndexerProgress = require('../../../../src/services/setup/view-indexer-progress');
 const viewIndexer = require('../../../../src/services/setup/view-indexer');
-const environment = require('@medic/environment');
+const serverInfo = require('@medic/server-info');
 
 let upgradeSteps;
 
@@ -29,7 +29,7 @@ describe('Upgrade steps', () => {
       sinon.stub(upgradeUtils, 'deleteStagedDdocs');
       sinon.stub(upgradeLogService, 'setFinalized');
       sinon.stub(upgradeUtils, 'cleanup');
-      sinon.stub(environment, 'getDeployInfo');
+      sinon.stub(serverInfo, 'getDeployInfo');
 
       await upgradeSteps.finalize();
 
@@ -39,7 +39,7 @@ describe('Upgrade steps', () => {
       expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(1);
       expect(upgradeLogService.setFinalized.callCount).to.equal(1);
       expect(upgradeUtils.cleanup.callCount).to.equal(1);
-      expect(environment.getDeployInfo.calledOnceWithExactly(true)).to.be.true;
+      expect(serverInfo.getDeployInfo.calledOnceWithExactly(true)).to.be.true;
     });
 
     it('should throw an error if unstage fails', async () => {
