@@ -8,7 +8,7 @@ import { StorageInfo, StorageStatus } from '@mm-reducers/global';
   providedIn: 'root'
 })
 export class StorageInfoService {
-  private globalActions: GlobalActions;
+  private readonly globalActions: GlobalActions;
   private timeout;
 
   constructor(private readonly store: Store) {
@@ -17,7 +17,7 @@ export class StorageInfoService {
 
   init = () => this.pollStorageInfo();
 
-  private pollStorageInfo = async (): Promise<void> => {
+  private readonly pollStorageInfo = async (): Promise<void> => {
     try {
       const info = await this.fetchStorageInfo();
       this.globalActions.updateStorageInfo(info);

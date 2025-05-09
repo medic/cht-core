@@ -198,9 +198,7 @@ const _globalReducer = createReducer(
     return { ...state, language };
   }),
   on(Actions.updateStorageInfo, (state, { payload: { storageInfo } }) => {
-    return Object.assign({}, state, {
-      storageInfo: Object.assign({}, state.storageInfo, storageInfo)
-    });
+    return {...state, storageInfo: { ...state.storageInfo, ...storageInfo } };
   }),
 );
 
