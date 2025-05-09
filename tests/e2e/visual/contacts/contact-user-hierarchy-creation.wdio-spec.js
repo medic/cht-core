@@ -1,4 +1,3 @@
-
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
@@ -100,7 +99,7 @@ describe('Creating and editing contacts and users', () => {
     await generateScreenshot('new-chw-user', 'app-settings');
     await commonPage.openAppManagement();
     await usersAdminPage.goToAdminUser();
-    await (await usersAdminPage.addUserButton()).waitForDisplayed();
+    await usersAdminPage.addUserButton().waitForDisplayed();
     await generateScreenshot('new-chw-user', 'add-user');
     await usersAdminPage.openAddUserDialog();
     await usersAdminPage.inputAddUserFields(
