@@ -8,15 +8,15 @@ describe('audit log', () => {
     password: constants.PASSWORD
   };
 
-  it('should mask password on login', async () => {
+  it('should not log bodies', async () => {
     const collectAuditLogs = await utils.collectHaproxyLogs(/POST,\/_session/);
     await loginPage.login(auth);
     const auditLogs = (await collectAuditLogs()).filter(log => log.length);
     expect(auditLogs.length).to.equal(1);
-    expect(auditLogs[0]).to.contain(`{"name":"${constants.USERNAME}","password":"***"}`);
+    expect(auditLogs[0]).to.not.contain(`password`);
   });
 
-  it('should mask password on replication request', async () => {
+  it('should not log bodies on replication request', async () => {
     const collectAuditLogs = await utils.collectHaproxyLogs(/POST,\/_session/);
     const requestOptions = {
       path: '/_session',
@@ -28,27 +28,6 @@ describe('audit log', () => {
     await utils.request(requestOptions);
     const auditLogs = (await collectAuditLogs()).filter(log => log.length);
     expect(auditLogs.length).to.equal(1);
-    expect(auditLogs[0]).to.contain('name=admin&password=***');
+    expect(auditLogs[0]).to.not.contain('password');
   });
-
-  it('should mask password basic auth header', async () => {
-    const collectAuditLogs = await utils.collectHaproxyLogs(/POST,\/_replicator/);
-    const body = {
-      user_ctx: { name: 'medic', roles: [ '_admin', '_reader', '_writer' ]},
-      source: { url: 'https://localhost/source', headers: { Authorization: 'Basic bWVkaWM6cGFzc3dvcmQ=' } },
-      target: { url: 'https://localhost/target', headers: { Authorization: 'Basic bWVkaWM6cGFzc3dvcmQ=' } },
-      create_target: false,
-      continuous: false
-    };
-    const requestOptions = {
-      path: '/_replicator',
-      method: 'POST',
-      body
-    };
-    await utils.request(requestOptions);
-    const auditLogs = (await collectAuditLogs()).filter(log => log.length);
-    expect(auditLogs.length).to.equal(1);
-    expect(auditLogs[0]).to.contain('{"Authorization":"Basic ***"}');
-  });
-
 });
