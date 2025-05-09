@@ -173,7 +173,7 @@ describe('login', () => {
       await utils.request({ path: '/api/v2/users', method: 'POST', body: user });
       // Manually update user to be OIDC so we also know the password
       const userDoc = await getUser(user);
-      await utils.usersDb.put({ ...userDoc, oidc: true });
+      await utils.usersDb.put({ ...userDoc, oidc_username: 'true' });
 
       const response = await loginWithData({ user: user.username, password });
 
@@ -295,7 +295,7 @@ describe('login', () => {
         .then(userDoc => {
           // grab the token and mark as SSO user
           const token = userDoc.token_login.token;
-          userDoc.oidc = true;
+          userDoc.oidc_username = 'true';
           return utils.usersDb
             .put(userDoc)
             .then(() => token);
@@ -427,7 +427,7 @@ describe('login', () => {
         await utils.createUsers([{
           ...user,
           password: undefined,
-          oidc: true,
+          oidc_username: 'true',
         }]);
         const response = await oidcLogin(code);
 
@@ -441,7 +441,7 @@ describe('login', () => {
       await utils.createUsers([{
         ...user,
         password: undefined,
-        oidc: true,
+        oidc_username: mockIdProvider.EMAIL,
       }]);
       const response = await oidcLogin();
       chai.expect(response).to.include({ status: 302 });

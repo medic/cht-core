@@ -8,7 +8,9 @@ const privacyPolicy = require('../services/privacy-policy');
 const logger = require('@medic/logger');
 const db = require('../db');
 const dataContext = require('../services/data-context');
-const { tokenLogin, roles, users, validatePassword } = require('@medic/user-management')(config, db, dataContext);
+const {
+  tokenLogin, ssoLogin, roles, users, validatePassword
+} = require('@medic/user-management')(config, db, dataContext);
 const localeUtils = require('locale');
 const cookie = require('../services/cookie');
 const brandingService = require('../services/branding');
@@ -16,7 +18,6 @@ const translations = require('../translations');
 const template = require('../services/template');
 const rateLimitService = require('../services/rate-limit');
 const serverUtils = require('../server-utils');
-const appSettings = require('../services/settings');
 const sso = require('../services/sso-login');
 
 const PASSWORD_RESET_URL = '/medic/password-reset';
@@ -235,7 +236,7 @@ const setUserCtxCookie = (res, userCtx) => {
   cookie.setUserCtx(res, JSON.stringify(content));
 };
 
-const isOidcUser = (userDoc) => userDoc?.oidc === true && config.get('oidc_provider')?.client_id;
+const isOidcUser = (userDoc) => userDoc?.oidc_username && ssoLogin.isSsoLoginEnabled();
 
 const setCookies = async (req, res, sessionCookie) => {
   const options = { headers: { Cookie: sessionCookie } };
@@ -347,10 +348,9 @@ const loginByToken = async (req, res) => {
   }
 };
 
-const renderLogin = async (req) => {
-  const hasOidcProvider = await appSettings.hasOidcProvider();
-  return render('login', req, { hasOidcProvider });
-};
+const renderLogin = async (req) => render('login', req, {
+  hasOidcProvider: ssoLogin.isSsoLoginEnabled()
+});
 
 const renderPasswordReset = (req) => {
   return render('passwordReset', req);
@@ -537,7 +537,7 @@ module.exports = {
     } catch (err) {
       logger.error('Error updating password: %o', err);
       const status = err.status || 500;
-      res.status(status).json({ error: err.error || 'Error updating password' });
+      res.status(status).json({ error: err.error || err.message || 'Error updating password' });
     }
   },
   tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),
@@ -563,8 +563,8 @@ module.exports = {
     }
     const currentUrl =  new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
     try {
-      const { preferred_username, locale } = await sso.getIdToken(currentUrl);
-      const sessionCookie = await sso.getCookie(preferred_username);
+      const { username, locale } = await sso.getIdToken(currentUrl);
+      const sessionCookie = await sso.getCookie(username);
       req.body = { locale };
 
       const options = { headers: { Cookie: sessionCookie } };

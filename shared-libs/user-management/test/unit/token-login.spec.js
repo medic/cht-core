@@ -3,6 +3,7 @@ const sinon = require('sinon');
 
 const config = require('../../src/libs/config');
 const db = require('../../src/libs/db');
+const ssoLogin = require('../../src/sso-login');
 const service = require('../../src/token-login');
 
 const oneDayInMS = 24 * 60 * 60 * 1000;
@@ -274,11 +275,11 @@ describe('TokenLogin service', () => {
     });
 
     it('should throw when user is oidc', () => {
-      config.get.returns({ oidc_provider: { client_id: 'testProvider' } });
+      sinon.stub(ssoLogin, 'isSsoLoginEnabled').returns(true);
       const future = new Date().getTime() + 1000;
       db.medic.get.resolves({ user: 'org.couchdb.user:user' });
       db.users.get.resolves({
-        oidc: true,
+        oidc_username: 'true',
         token_login: {
           active: true,
           token: 'the_token',
@@ -295,6 +296,7 @@ describe('TokenLogin service', () => {
           chai.expect(db.medic.get.args[0]).to.deep.equal([`token:login:the_token`]);
           chai.expect(db.users.get.callCount).to.equal(1);
           chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:user']);
+          chai.expect(ssoLogin.isSsoLoginEnabled.calledOnceWithExactly()).to.be.true;
         });
     });
 

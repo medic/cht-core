@@ -6,6 +6,11 @@ const config = require('./libs/config');
  * replicate or not, without requiring access to server settings.
  */
 const ONLINE_ROLE = 'mm-online';
+/**
+ * Indicates the user should authenticate via OIDC.
+ * Users with this role are not allowed to edit their profile/password.
+ */
+const OIDC_ROLE = 'mm-oidc';
 const DB_ADMIN_ROLE = '_admin';
 
 const hasRole = (userCtx, role) => {
@@ -47,7 +52,7 @@ module.exports = {
   },
   isDbAdmin,
   ONLINE_ROLE,
-
+  OIDC_ROLE,
   hasAllPermissions: (roles, permissions) => {
     if (module.exports.isDbAdmin({ roles })) {
       return true;
