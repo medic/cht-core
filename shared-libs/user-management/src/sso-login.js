@@ -1,28 +1,17 @@
 const config = require('./libs/config');
 const passwords = require('./libs/passwords');
 
-const hasBothOidcAndTokenOrPasswordLogin = data => data.oidc && (data.password || data.token_login);
-
-const isSsoLoginEnabled = settings => !!settings?.oidc_provider?.client_id;
+const isSsoLoginEnabled = () => !!config.get('oidc_provider');
 
 const validateSsoLogin = (data) => {
-  if (!data.oidc){
+  if (!data.oidc_username){
     return;
   }
-  
-  if (hasBothOidcAndTokenOrPasswordLogin(data)){
-    return {
-      msg: 'Either OIDC Login only or Token/Password Login is allowed'
-    }; 
+  if (data.password || data.token_login){
+    return { msg: 'Cannot set password or token_login with oidc_username.' };
   }
-
-  const settings = config.get();
-
-  if (!isSsoLoginEnabled(settings)){
-    return {
-      msg: 'OIDC Login is not enabled'
-    }; 
-
+  if (!isSsoLoginEnabled()){
+    return { msg: 'Cannot set oidc_username when OIDC Login is not enabled.' };
   }
 
   data.password = passwords.generate();
@@ -30,18 +19,19 @@ const validateSsoLogin = (data) => {
 };
 
 const validateSsoLoginUpdate = (data, updatedUser) => {
-  if (!data.oidc && !data.password && !data.token_login) {
+  if (!data.oidc_username && !data.password && !data.token_login) {
     return;
   }
   // token_login is set on updateUser later, so check data here
-  if (updatedUser.oidc && data.token_login) {
-    return { msg: 'Either OIDC Login only or Token/Password Login is allowed' };
+  if (updatedUser.oidc_username && data.token_login) {
+    return { msg: 'Cannot set token_login with oidc_username.' };
   }
 
   return validateSsoLogin(updatedUser);
 };
 
 module.exports = {
+  isSsoLoginEnabled,
   validateSsoLogin,
   validateSsoLoginUpdate
 };
