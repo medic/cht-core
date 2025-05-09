@@ -18,9 +18,12 @@ module.exports = (sourceConfig, sourceDb, sourceDataContext) => {
     bulkUploadLog,
     roles,
     tokenLogin,
+    ssoLogin: {
+      isSsoLoginEnabled: ssoLogin.isSsoLoginEnabled,
+      getUserByOidcUsername: ssoLogin.getUserByOidcUsername,
+    },
     users,
     validatePassword: users.validatePassword,
-    isSsoLoginEnabled: ssoLogin.isSsoLoginEnabled
   };
 };
 

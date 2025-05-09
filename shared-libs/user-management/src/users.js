@@ -895,7 +895,7 @@ const createMultiFacilityUser = async (data, appUrl) => {
   if (tokenLoginError) {
     throw error400(tokenLoginError.msg, tokenLoginError.key);
   }
-  const ssoLoginError = ssoLogin.validateSsoLogin(data);
+  const ssoLoginError = await ssoLogin.validateSsoLogin(data);
   if (ssoLoginError) {
     throw error400(ssoLoginError.msg);
   }
@@ -1023,7 +1023,7 @@ module.exports = {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
 
-    const ssoLoginError = ssoLogin.validateSsoLogin(data);
+    const ssoLoginError = await ssoLogin.validateSsoLogin(data);
     if (ssoLoginError) {
       return Promise.reject(error400(ssoLoginError.msg));
     }
@@ -1103,7 +1103,7 @@ module.exports = {
           throw new Error(tokenLoginError.msg);
         }
 
-        const ssoLoginError = ssoLogin.validateSsoLogin(user);
+        const ssoLoginError = await ssoLogin.validateSsoLogin(user);
         if (ssoLoginError) {
           throw error400(ssoLoginError.msg);
         }
@@ -1181,7 +1181,7 @@ module.exports = {
     if (tokenLoginError) {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
-    const ssoLoginError = ssoLogin.validateSsoLoginUpdate(data, user, userSettings);
+    const ssoLoginError = await ssoLogin.validateSsoLoginUpdate(data, user, userSettings);
     if (ssoLoginError) {
       return Promise.reject(error400(ssoLoginError.msg));
     }

@@ -4237,7 +4237,7 @@ describe('Users service', () => {
 
       it('returns error if oidc validation fails', async () => {
         const message = 'OIDC Login is not enabled';
-        validateSsoLogin.returns({ msg: message });
+        validateSsoLogin.resolves({ msg: message });
 
         await chai.expect(service.createMultiFacilityUser(ssoUserData))
           .to.be.eventually.rejectedWith(Error)
@@ -4254,6 +4254,7 @@ describe('Users service', () => {
       it('succeeds if oidc validation passes', async () => {
         validateSsoLogin.callsFake(user => {
           user.password = GENERATED_PASSWORD;
+          return Promise.resolve();
         });
         sinon.stub(places, 'placesExist').resolves();
 
@@ -4295,7 +4296,7 @@ describe('Users service', () => {
 
       it('returns error if oidc validation fails', async () => {
         const message = 'OIDC Login is not enabled';
-        validateSsoLogin.returns({ msg: message });
+        validateSsoLogin.resolves({ msg: message });
 
         await chai.expect(service.createUser(ssoUserData))
           .to.be.eventually.rejectedWith(Error)
@@ -4312,6 +4313,7 @@ describe('Users service', () => {
       it('succeeds if oidc validation passes', async () => {
         validateSsoLogin.callsFake(user => {
           user.password = GENERATED_PASSWORD;
+          return Promise.resolve();
         });
         getPlace.resolves(userContact.parent);
         sinon.stub(places, 'getPlace').resolves(userContact.parent);
@@ -4369,7 +4371,7 @@ describe('Users service', () => {
 
       it('returns error if oidc validation fails', async () => {
         const error = 'OIDC Login is not enabled';
-        validateSsoLogin.returns({ msg: error });
+        validateSsoLogin.resolves({ msg: error });
 
         const response = await service.createUsers([ssoUserData]);
 
@@ -4386,11 +4388,12 @@ describe('Users service', () => {
       it('returns error if oidc validation fails for some users', async () => {
         const error0 = 'OIDC Login is not enabled';
         const error1 = 'a different error';
-        validateSsoLogin.onFirstCall().returns({ msg: error0 });
+        validateSsoLogin.onFirstCall().resolves({ msg: error0 });
         validateSsoLogin.onSecondCall().callsFake(user => {
           user.password = GENERATED_PASSWORD;
+          return Promise.resolve();
         });
-        validateSsoLogin.onThirdCall().returns({ msg: error1 });
+        validateSsoLogin.onThirdCall().resolves({ msg: error1 });
         getPlace.resolves(userContact.parent);
         sinon.stub(places, 'getPlace').resolves(userContact.parent);
         sinon.stub(people, 'getOrCreatePerson').resolves(userContact);
@@ -4442,6 +4445,7 @@ describe('Users service', () => {
       it('succeeds if oidc validation passes', async () => {
         validateSsoLogin.callsFake(user => {
           user.password = GENERATED_PASSWORD;
+          return Promise.resolve();
         });
         getPlace.resolves(userContact.parent);
         sinon.stub(places, 'getPlace').resolves(userContact.parent);
@@ -4554,7 +4558,7 @@ describe('Users service', () => {
 
       it('returns error if oidc validation fails', async () => {
         const message = 'OIDC Login is not enabled';
-        validateSsoLoginUpdate.returns({ msg: message });
+        validateSsoLoginUpdate.resolves({ msg: message });
         const existingUserData = {
           facility_id: [ssoUserData.place],
           contact_id: ssoUserData.contact,
@@ -4597,6 +4601,7 @@ describe('Users service', () => {
       it('succeeds when oidc validation passes and called with full access', async () => {
         validateSsoLoginUpdate.callsFake((_, user) => {
           user.password = GENERATED_PASSWORD;
+          return Promise.resolve();
         });
         const existingUserData = {
           facility_id: [ssoUserData.place],

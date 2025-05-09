@@ -1,4 +1,5 @@
 const config = require('./libs/config');
+const db = require('./libs/db');
 const passwords = require('./libs/passwords');
 const { OIDC_ROLE } = require('./roles');
 
@@ -19,7 +20,31 @@ const removeOidcRole = (user) => {
   user.roles = user.roles.filter(role => role !== OIDC_ROLE);
 };
 
-const validateSsoLogin = (data) => {
+const getUserByOidcUsername = async (oidcUsername) => {
+  const { rows } = await db.users.query(
+    'users/users_by_field',
+    { include_docs: true, limit: 1, key: ['oidc_username', oidcUsername] }
+  );
+  if (rows.length === 0) {
+    throw new Error(`User with oidc_username [${oidcUsername}] not found.`);
+  }
+  if (rows.length > 1) {
+    throw new Error(`Multiple users with oidc_username [${oidcUsername}] found.`);
+  }
+  return rows[0].doc;
+};
+
+const getUserIdWithDuplicateOidcUsername = async (oidcUsername, userDocId) => {
+  const { rows } = await db.users.query(
+    'users/users_by_field',
+    { include_docs: false, limit: 2, key: ['oidc_username', oidcUsername] }
+  );
+  return rows
+    .map(({ id }) => id)
+    .filter(id => id !== userDocId)[0];
+};
+
+const validateSsoLogin = async (data) => {
   if (!data.oidc_username){
     removeOidcRole(data);
     return;
@@ -31,12 +56,17 @@ const validateSsoLogin = (data) => {
     return { msg: 'Cannot set oidc_username when OIDC Login is not enabled.' };
   }
 
+  const duplicateUserId = await getUserIdWithDuplicateOidcUsername(data.oidc_username, data._id);
+  if (duplicateUserId) {
+    return { msg: `The oidc_username [${data.oidc_username}] already exists for user [${duplicateUserId}].` };
+  }
+
   data.password = passwords.generate();
   data.password_change_required = false;
   setOidcRole(data);
 };
 
-const validateSsoLoginUpdate = (data, updatedUser, updatedUserSettings) => {
+const validateSsoLoginUpdate = async (data, updatedUser, updatedUserSettings) => {
   const authFieldUpdated = !!['oidc_username', 'password', 'token_login'].find(key => Object.keys(data).includes(key));
   if (!authFieldUpdated) {
     return;
@@ -46,7 +76,7 @@ const validateSsoLoginUpdate = (data, updatedUser, updatedUserSettings) => {
     return { msg: 'Cannot set token_login with oidc_username.' };
   }
 
-  const invalid = validateSsoLogin(updatedUser);
+  const invalid = await validateSsoLogin(updatedUser);
   if (invalid) {
     return invalid;
   }
@@ -57,6 +87,7 @@ const validateSsoLoginUpdate = (data, updatedUser, updatedUserSettings) => {
 
 module.exports = {
   isSsoLoginEnabled,
+  getUserByOidcUsername,
   validateSsoLogin,
   validateSsoLoginUpdate
 };
