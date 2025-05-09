@@ -3,7 +3,7 @@ const {setTimeout} = require('node:timers/promises');
 const config = require('../config');
 const db = require('../db');
 const dataContext = require('./data-context');
-const { users } = require('@medic/user-management')(config, db, dataContext);
+const { ssoLogin } = require('@medic/user-management')(config, db, dataContext);
 const logger = require('@medic/logger');
 const secureSettings = require('@medic/settings');
 const client = require('./openid-client');
@@ -122,10 +122,13 @@ const getIdToken = async (currentUrl) => {
     { idTokenExpected: true }
   );
   const tokens = await authServerCallRetry(authorizationCodeGrant);
-  const { preferred_username, locale } = tokens.claims();
+  const { email, locale } = tokens.claims();
+  if (!email) {
+    throw new Error('Email claim is missing in the id token.');
+  }
 
   return {
-    preferred_username,
+    username: email,
     locale: await getLocale(locale),
   };
 };
@@ -167,37 +170,27 @@ const unauthorizedError = (message) => {
   return error;
 };
 
-const getUserSalt = async (username) => {
-  const { oidc, salt } = await users
-    .getUserDoc(username)
-    .catch(err => {
-      if (err.status === 404) {
-        throw unauthorizedError(`CHT user not found for OIDC User ${username}.`);
-      }
-      throw err;
-    });
-
-  if (!oidc) {
-    throw unauthorizedError(`SSO login is not enabled for user with username ${username}.`);
-  }
-  if (!salt) {
-    throw unauthorizedError(`The user doc for ${username} does not have a password salt.`);
-  }
-
-  return salt;
-};
-
 /**
  * Gets a session cookie. 
  * 
- * @param {string} username Username.
+ * @param {string} oidcUsername Username.
  * @returns {string} Session cookie.
  */
-const getCookie = async (username) => {
-  const salt = await getUserSalt(username);
+const getCookie = async (oidcUsername) => {
+  const [userDoc, ...duplicates] = await ssoLogin.getUsersByOidcUsername(oidcUsername);
+  if (!userDoc) {
+    throw unauthorizedError(`CHT user not found for oidc_username [${oidcUsername}].`);
+  }
+  if (duplicates.length) {
+    throw new Error(`Multiple CHT users found for oidc_username [${oidcUsername}].`);
+  }
+  if (!userDoc.salt) {
+    throw unauthorizedError(`The user doc for ${userDoc.name} does not have a password salt.`);
+  }
+
   const secret = await secureSettings.getCouchConfig('couch_httpd_auth/secret');
   const authTimeout = await secureSettings.getCouchConfig('couch_httpd_auth/timeout');
-  const cookie = makeCookie(username, salt, secret, Number(authTimeout));
+  const cookie = makeCookie(userDoc.name, userDoc.salt, secret, Number(authTimeout));
   return `AuthSession=${cookie}`;
 };
 

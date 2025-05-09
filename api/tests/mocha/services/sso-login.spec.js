@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const db = require('../../../src/db');
 const config = require('../../../src/config');
 const dataContext = require('../../../src/services/data-context');
-const { users } = require('@medic/user-management')(config, db, dataContext);
+const { ssoLogin } = require('@medic/user-management')(config, db, dataContext);
 const secureSettings = require('@medic/settings');
 const settingsService = require('../../../src/services/settings');
 const translations = require('../../../src/translations');
@@ -257,17 +257,46 @@ describe('SSO login', () => {
       ];
     });
 
+    [
+      undefined,
+      null,
+      ''
+    ].forEach((email) => {
+      it('throws error if email claim not returned', async () => {
+        const expectedClaims = {
+          preferred_username: 'test',
+          locale: 'en',
+          email
+        };
+        claims.returns(expectedClaims);
+        client.authorizationCodeGrant.resolves({ claims });
+
+        await expect(service.getIdToken(REDIRECT_URL)).to.be.rejectedWith('Email claim is missing in the id token.');
+
+        expectOidcServerConfigRetrieved();
+        expect(logger.debug.calledOnceWithExactly(
+          `Authorization server config loaded: ${JSON.stringify(SERVER_METADATA)}`
+        )).to.be.true;
+        expect(client.authorizationCodeGrant.calledOnceWithExactly(...expectedAuthCodeGrantParams)).to.be.true;
+        expect(translations.getEnabledLocales.notCalled).to.be.true;
+      });
+    });
+
     it('returns the id token data', async () => {
       const expectedClaims = {
         preferred_username: 'test',
         locale: 'en',
+        email: 'test@email.com'
       };
       claims.returns(expectedClaims);
       client.authorizationCodeGrant.resolves({ claims });
 
       const idTokenClaims = await service.getIdToken(REDIRECT_URL);
 
-      expect(idTokenClaims).to.deep.equal(expectedClaims);
+      expect(idTokenClaims).to.deep.equal({
+        locale: 'en',
+        username: 'test@email.com'
+      });
       expectOidcServerConfigRetrieved();
       expect(logger.debug.calledOnceWithExactly(
         `Authorization server config loaded: ${JSON.stringify(SERVER_METADATA)}`
@@ -281,13 +310,14 @@ describe('SSO login', () => {
         const expectedClaims = {
           preferred_username: 'test',
           locale,
+          email: 'test@email.com'
         };
         claims.returns(expectedClaims);
         client.authorizationCodeGrant.resolves({ claims });
 
         const idTokenClaims = await service.getIdToken(REDIRECT_URL);
 
-        expect(idTokenClaims).to.deep.equal({ preferred_username: 'test', locale: 'en' });
+        expect(idTokenClaims).to.deep.equal({ username: 'test@email.com', locale: 'en' });
         expectOidcServerConfigRetrieved();
         expect(logger.debug.args).to.deep.equal([
           [`Authorization server config loaded: ${JSON.stringify(SERVER_METADATA)}`],
@@ -302,6 +332,7 @@ describe('SSO login', () => {
       const expectedClaims = {
         preferred_username: 'test',
         locale: 'en',
+        email: 'test@email.com'
       };
       claims.returns(expectedClaims);
       client.authorizationCodeGrant.onFirstCall().rejects(new Error());
@@ -310,7 +341,10 @@ describe('SSO login', () => {
 
       const idTokenClaims = await service.getIdToken(REDIRECT_URL);
 
-      expect(idTokenClaims).to.deep.equal(expectedClaims);
+      expect(idTokenClaims).to.deep.equal({
+        locale: 'en',
+        username: 'test@email.com'
+      });
       expectOidcServerConfigRetrieved();
       expect(logger.debug.args).to.deep.equal([
         [`Authorization server config loaded: ${JSON.stringify(SERVER_METADATA)}`],
@@ -327,6 +361,7 @@ describe('SSO login', () => {
       const expectedClaims = {
         preferred_username: 'test',
         locale: 'en',
+        email: 'test@email.com'
       };
       claims.returns(expectedClaims);
       const expectedError = new Error('Could not complete request');
@@ -348,12 +383,12 @@ describe('SSO login', () => {
   });
 
   describe('getCookie', () => {
-    const username = 'odin';
+    const username = 'odin@email.com';
     let clock;
 
     beforeEach(() => {
       clock = sinon.useFakeTimers(1743782507000); // 'Fri Apr 04 2025 19:01:47 GMT+0300 (East Africa Time)'
-      sinon.stub(users, 'getUserDoc');
+      sinon.stub(ssoLogin, 'getUsersByOidcUsername');
       sinon.stub(secureSettings, 'getCouchConfig');
     });
 
@@ -362,8 +397,8 @@ describe('SSO login', () => {
     });
 
     it('should generate a cookie header value', async () => {
-      const user = { id: 'user123', username, salt: 'salt', oidc: true };
-      users.getUserDoc.resolves(user);
+      const user = { name: 'odin', salt: 'salt', oidc_username: username };
+      ssoLogin.getUsersByOidcUsername.resolves([user]);
       const couchSecret = 'couch-secret';
       const couchAuthTimeout = '12345';
       secureSettings.getCouchConfig.withArgs('couch_httpd_auth/secret').resolves(couchSecret);
@@ -372,58 +407,55 @@ describe('SSO login', () => {
       const cookie = await service.getCookie(username);
 
       expect(cookie).to.be.equal(`AuthSession=b2Rpbjo2N0YwMzJBNDpcE8TPUoK-7JE6nPPaVTaF5hAe-Q`);
-      expect(users.getUserDoc.calledOnceWithExactly(username)).to.be.true;
+      expect(ssoLogin.getUsersByOidcUsername.calledOnceWithExactly(username)).to.be.true;
       expect(secureSettings.getCouchConfig.args).to.deep.equal(
         [['couch_httpd_auth/secret'], ['couch_httpd_auth/timeout']]
       );
     });
 
     it('throws error if user is not found', async () => {
-      const error = new Error('Doc Not found');
-      error.status = 404;
-      users.getUserDoc.rejects(error);
+      ssoLogin.getUsersByOidcUsername.resolves([]);
 
       await expect(service.getCookie(username))
-        .to.be.rejectedWith(`CHT user not found for OIDC User ${username}.`)
+        .to.be.rejectedWith(`CHT user not found for oidc_username [${username}].`)
         .to.eventually.have.property('status', 401);
 
-      expect(users.getUserDoc.calledOnceWithExactly(username)).to.be.true;
+      expect(ssoLogin.getUsersByOidcUsername.calledOnceWithExactly(username)).to.be.true;
       expect(secureSettings.getCouchConfig.notCalled).to.be.true;
     });
 
     it('throws error if problem retrieving user', async () => {
       const error = new Error('DB Timeout');
       error.status = 500;
-      users.getUserDoc.rejects(error);
+      ssoLogin.getUsersByOidcUsername.rejects(error);
 
       await expect(service.getCookie(username))
         .to.be.rejectedWith(error);
 
-      expect(users.getUserDoc.calledOnceWithExactly(username)).to.be.true;
+      expect(ssoLogin.getUsersByOidcUsername.calledOnceWithExactly(username)).to.be.true;
       expect(secureSettings.getCouchConfig.notCalled).to.be.true;
     });
 
-    it('throws error if SSO is not enabled for a user', async () => {
-      const user = { id: 'user123', username, salt: 'salt' };
-      users.getUserDoc.resolves(user);
+    it('throws error if multiple users are found for oidc_username', async () => {
+      const user = { name: 'odin', salt: 'salt', oidc_username: username };
+      ssoLogin.getUsersByOidcUsername.resolves([user, user]);
 
       await expect(service.getCookie(username))
-        .to.be.rejectedWith(`SSO login is not enabled for user with username ${username}.`)
-        .to.eventually.have.property('status', 401);
+        .to.be.rejectedWith(`Multiple CHT users found for oidc_username [${username}].`);
 
-      expect(users.getUserDoc.calledOnceWithExactly(username)).to.be.true;
+      expect(ssoLogin.getUsersByOidcUsername.calledOnceWithExactly(username)).to.be.true;
       expect(secureSettings.getCouchConfig.notCalled).to.be.true;
     });
 
     it('throws error if user salt is missing', async () => {
-      const user = { id: 'user123', username, oidc: true };
-      users.getUserDoc.resolves(user);
+      const user = { name: 'odin', oidc_username: username };
+      ssoLogin.getUsersByOidcUsername.resolves([user]);
 
       await expect(service.getCookie(username))
-        .to.be.rejectedWith(`The user doc for ${username} does not have a password salt.`)
+        .to.be.rejectedWith(`The user doc for ${user.name} does not have a password salt.`)
         .to.eventually.have.property('status', 401);
 
-      expect(users.getUserDoc.calledOnceWithExactly(username)).to.be.true;
+      expect(ssoLogin.getUsersByOidcUsername.calledOnceWithExactly(username)).to.be.true;
       expect(secureSettings.getCouchConfig.notCalled).to.be.true;
     });
   });

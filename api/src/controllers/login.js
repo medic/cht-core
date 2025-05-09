@@ -563,8 +563,8 @@ module.exports = {
     }
     const currentUrl =  new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
     try {
-      const { preferred_username, locale } = await sso.getIdToken(currentUrl);
-      const sessionCookie = await sso.getCookie(preferred_username);
+      const { username, locale } = await sso.getIdToken(currentUrl);
+      const sessionCookie = await sso.getCookie(username);
       req.body = { locale };
 
       const options = { headers: { Cookie: sessionCookie } };

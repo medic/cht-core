@@ -1168,7 +1168,7 @@ describe('login controller', () => {
     });
 
     it('gets id token and redirects to homepage with session cookie', async () => {
-      const idToken = { preferred_username: 'lil', locale: 'en' };
+      const idToken = { username: 'lil', locale: 'en' };
       sso.getIdToken.resolves(idToken);
       const sessionCookie = 'my-session-cookie';
       sso.getCookie.resolves(`AuthSession=${sessionCookie}`);
@@ -1182,7 +1182,7 @@ describe('login controller', () => {
       chai.expect(sso.getIdToken.calledOnceWithExactly(
         new URL(`http://xx.app.medicmobile.org/${environment.db}/login/oidc/get_token`)
       )).to.be.true;
-      chai.expect(sso.getCookie.calledOnceWithExactly(idToken.preferred_username)).to.be.true;
+      chai.expect(sso.getCookie.calledOnceWithExactly(idToken.username)).to.be.true;
       chai.expect(auth.getUserCtx.calledOnceWithExactly({
         headers: { Cookie: `AuthSession=${sessionCookie}` }
       })).to.be.true;
@@ -1197,7 +1197,7 @@ describe('login controller', () => {
     });
 
     it('redirects to login page with sso user error when failing to find valid CHT user', async () => {
-      const idToken = { preferred_username: 'lil', locale: 'en' };
+      const idToken = { username: 'lil', locale: 'en' };
       sso.getIdToken.resolves(idToken);
       const userNotFoundError = new Error('User not found');
       userNotFoundError.status = 401;
@@ -1210,7 +1210,7 @@ describe('login controller', () => {
       chai.expect(sso.getIdToken.calledOnceWithExactly(
         new URL(`http://xx.app.medicmobile.org/${environment.db}/login/oidc/get_token`)
       )).to.be.true;
-      chai.expect(sso.getCookie.calledOnceWithExactly(idToken.preferred_username)).to.be.true;
+      chai.expect(sso.getCookie.calledOnceWithExactly(idToken.username)).to.be.true;
       chai.expect(auth.getUserCtx.notCalled).to.be.true;
       chai.expect(users.getUserDoc.notCalled).to.be.true;
       chai.expect(res.cookie.notCalled).to.be.true;

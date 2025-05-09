@@ -20,27 +20,14 @@ const removeOidcRole = (user) => {
   user.roles = user.roles.filter(role => role !== OIDC_ROLE);
 };
 
-const getUserByOidcUsername = async (oidcUsername) => {
-  const { rows } = await db.users.query(
-    'users/users_by_field',
-    { include_docs: true, limit: 1, key: ['oidc_username', oidcUsername] }
-  );
-  if (rows.length === 0) {
-    throw new Error(`User with oidc_username [${oidcUsername}] not found.`);
-  }
-  if (rows.length > 1) {
-    throw new Error(`Multiple users with oidc_username [${oidcUsername}] found.`);
-  }
-  return rows[0].doc;
-};
+const getUsersByOidcUsername = async (oidcUsername) => db.users
+  .query('users/users_by_field', { include_docs: true, key: ['oidc_username', oidcUsername] })
+  .then(({ rows }) => rows.map(({ doc }) => doc));
 
 const getUserIdWithDuplicateOidcUsername = async (oidcUsername, userDocId) => {
-  const { rows } = await db.users.query(
-    'users/users_by_field',
-    { include_docs: false, limit: 2, key: ['oidc_username', oidcUsername] }
-  );
-  return rows
-    .map(({ id }) => id)
+  const duplicates = await getUsersByOidcUsername(oidcUsername);
+  return duplicates
+    .map(({ _id }) => _id)
     .filter(id => id !== userDocId)[0];
 };
 
@@ -87,7 +74,7 @@ const validateSsoLoginUpdate = async (data, updatedUser, updatedUserSettings) =>
 
 module.exports = {
   isSsoLoginEnabled,
-  getUserByOidcUsername,
+  getUsersByOidcUsername,
   validateSsoLogin,
   validateSsoLoginUpdate
 };

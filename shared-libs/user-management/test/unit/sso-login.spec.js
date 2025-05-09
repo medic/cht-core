@@ -63,7 +63,7 @@ describe('SSO Login service', () => {
     it('should return error message when duplicate oidc user exists', async () => {
       const data = { oidc_username: 'test' };
       config.get.returns({ 'client_id': 'testClientId' });
-      db.users.query.resolves({ rows: [{ id: 'duplicate-user' }] });
+      db.users.query.resolves({ rows: [{ doc: { _id: 'duplicate-user' } }] });
 
       const result = await service.validateSsoLogin(data);
 
@@ -74,7 +74,7 @@ describe('SSO Login service', () => {
       expect(generatePassword.notCalled).to.be.true;
       expect(db.users.query.calledOnceWithExactly(
         'users/users_by_field',
-        { include_docs: false, limit: 2, key: ['oidc_username', 'test'] }
+        { include_docs: true, key: ['oidc_username', 'test'] }
       )).to.be.true;
     });
 
@@ -96,7 +96,7 @@ describe('SSO Login service', () => {
       expect(generatePassword.calledOnceWithExactly()).to.be.true;
       expect(db.users.query.calledOnceWithExactly(
         'users/users_by_field',
-        { include_docs: false, limit: 2, key: ['oidc_username', 'test'] }
+        { include_docs: true, key: ['oidc_username', 'test'] }
       )).to.be.true;
     });
 
@@ -181,7 +181,10 @@ describe('SSO Login service', () => {
         roles: ['existing-role']
       };
       config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' } });
-      db.users.query.resolves({ rows: [{ id: 'org.couchdb.user:test' }, { id: 'duplicate-user' }] });
+      db.users.query.resolves({ rows: [
+        { doc: { _id: 'org.couchdb.user:test' } },
+        { doc: { _id: 'duplicate-user' } }
+      ] });
 
       const result = await service.validateSsoLoginUpdate(data, user, userSettings);
 
@@ -202,7 +205,7 @@ describe('SSO Login service', () => {
       expect(generatePassword.notCalled).to.be.true;
       expect(db.users.query.calledOnceWithExactly(
         'users/users_by_field',
-        { include_docs: false, limit: 2, key: ['oidc_username', 'test'] }
+        { include_docs: true, key: ['oidc_username', 'test'] }
       )).to.be.true;
     });
 
@@ -218,7 +221,7 @@ describe('SSO Login service', () => {
         roles: ['existing-role']
       };
       config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' } });
-      db.users.query.resolves({ rows: [{ id: 'org.couchdb.user:test' }] });
+      db.users.query.resolves({ rows: [{ doc: { _id: 'org.couchdb.user:test' } }] });
 
       const result = await service.validateSsoLoginUpdate(data, user, userSettings);
 
@@ -239,7 +242,7 @@ describe('SSO Login service', () => {
       expect(generatePassword.calledOnceWithExactly()).to.be.true;
       expect(db.users.query.calledOnceWithExactly(
         'users/users_by_field',
-        { include_docs: false, limit: 2, key: ['oidc_username', 'test'] }
+        { include_docs: true, key: ['oidc_username', 'test'] }
       )).to.be.true;
     });
 
@@ -273,7 +276,7 @@ describe('SSO Login service', () => {
       expect(generatePassword.calledOnceWithExactly()).to.be.true;
       expect(db.users.query.calledOnceWithExactly(
         'users/users_by_field',
-        { include_docs: false, limit: 2, key: ['oidc_username', 'test'] }
+        { include_docs: true, key: ['oidc_username', 'test'] }
       )).to.be.true;
     });
 
@@ -322,18 +325,18 @@ describe('SSO Login service', () => {
     });
   });
 
-  describe('getUserByOidcUsername', () => {
+  describe('getUsersByOidcUsername', () => {
     it('should return user document when oidc_username exists', async () => {
       const oidcUsername = 'test';
       const userDoc = { _id: 'userId', oidc_username: oidcUsername };
       db.users.query.resolves({ rows: [{ doc: userDoc }] });
 
-      const result = await service.getUserByOidcUsername(oidcUsername);
+      const result = await service.getUsersByOidcUsername(oidcUsername);
 
-      expect(result).to.deep.equal(userDoc);
+      expect(result).to.deep.equal([userDoc]);
       expect(db.users.query.calledOnceWithExactly(
         'users/users_by_field',
-        { include_docs: true, limit: 1, key: ['oidc_username', oidcUsername] }
+        { include_docs: true, key: ['oidc_username', oidcUsername] }
       )).to.be.true;
     });
 
@@ -341,25 +344,27 @@ describe('SSO Login service', () => {
       const oidcUsername = 'test';
       db.users.query.resolves({ rows: [] });
 
-      await expect(service.getUserByOidcUsername(oidcUsername))
-        .to.be.rejectedWith(`User with oidc_username [${oidcUsername}] not found.`);
+      const result = await service.getUsersByOidcUsername(oidcUsername);
 
+      expect(result).to.be.empty;
       expect(db.users.query.calledOnceWithExactly(
         'users/users_by_field',
-        { include_docs: true, limit: 1, key: ['oidc_username', oidcUsername] }
+        { include_docs: true, key: ['oidc_username', oidcUsername] }
       )).to.be.true;
     });
 
     it('should throw error when multiple users with oidc_username exist', async () => {
       const oidcUsername = 'test';
-      db.users.query.resolves({ rows: [{}, {}] });
+      const userDoc0 = { _id: 'userId0', oidc_username: oidcUsername };
+      const userDoc1 = { _id: 'userId1', oidc_username: oidcUsername };
+      db.users.query.resolves({ rows: [{ doc: userDoc0 }, { doc: userDoc1 }] });
 
-      await expect(service.getUserByOidcUsername(oidcUsername))
-        .to.be.rejectedWith(`Multiple users with oidc_username [${oidcUsername}] found.`);
+      const result = await service.getUsersByOidcUsername(oidcUsername);
 
+      expect(result).to.deep.equal([userDoc0, userDoc1]);
       expect(db.users.query.calledOnceWithExactly(
         'users/users_by_field',
-        { include_docs: true, limit: 1, key: ['oidc_username', oidcUsername] }
+        { include_docs: true, key: ['oidc_username', oidcUsername] }
       )).to.be.true;
     });
   });
