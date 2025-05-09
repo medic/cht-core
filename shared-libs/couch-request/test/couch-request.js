@@ -204,6 +204,28 @@ describe('couch-request', () => {
     ]);
   });
 
+  it('should add user-agent header to external requests', async () => {
+    const opts = {
+      url: 'http://www.textit.com/api/v2/broadcasts.json',
+    };
+
+    await couchRequest.post(opts);
+
+    expect(global.fetch.args[0]).to.deep.equal([
+      'http://www.textit.com/api/v2/broadcasts.json',
+      {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          'user-agent': 'Community Health Toolkit/4.18.0 (test-platform,test-arch)',
+        },
+        servername: 'test.com',
+        uri: 'http://www.textit.com/api/v2/broadcasts.json',
+      }
+    ]);
+  });
+
   it('should add query string', async () => {
     const opts = {
       uri: 'http://admin:pass@test.com:5984/medic',
@@ -789,9 +811,9 @@ describe('couch-request', () => {
     ]]);
   });
 
-  it('should automatically add user-agent header to requests', async () => {
-    await couchRequest.get({ url: 'http://textit.com/api/broadcasts.json' });
-
+  it('should automatically add user-agent header to external requests', async () => {
+    await couchRequest.get({ url: 'https://rapidpro.com/test-user-agent' });
+    
     const requestOptions = global.fetch.args[0][1];
     expect(requestOptions.headers['user-agent']).to.equal('Community Health Toolkit/4.18.0 (test-platform,test-arch)');
     expect(requestOptions.headers.authorization).to.equal(undefined);
