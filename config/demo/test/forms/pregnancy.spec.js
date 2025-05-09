@@ -6,11 +6,10 @@ const harness = new TestRunner();
 describe('Pregnancy form tests', () => {
   before(() => harness.start());
   after(() => harness.stop());
-  beforeEach(
-    async () => {
-      await harness.clear();
-      await harness.setNow(new Date('2000-01-01'));//UTC 00:00
-    });
+  beforeEach(async () => {
+    await harness.clear();
+    await harness.setNow(new Date('2000-01-01'));//UTC 00:00
+  });
   afterEach(() => expect(harness.consoleErrors).to.be.empty);
 
   it('pregnancy with pregnancy and danger signs followup dates', async () => {
