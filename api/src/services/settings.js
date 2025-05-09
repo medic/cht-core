@@ -49,6 +49,11 @@ const getDeprecatedTransitions = () => {
     }));
 };
 
+const hasOidcProvider = async () => {
+  const settings = await module.exports.get();
+  return !!settings?.oidc_provider;
+};
+
 module.exports = {
   get: () => {
     return getDoc()
@@ -116,4 +121,5 @@ module.exports = {
   },
   getDeprecatedTransitions: getDeprecatedTransitions,
   SETTINGS_DOC_ID: SETTINGS_DOC_ID,
+  hasOidcProvider,
 };

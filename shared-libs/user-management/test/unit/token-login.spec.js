@@ -273,6 +273,31 @@ describe('TokenLogin service', () => {
         });
     });
 
+    it('should throw when user is oidc', () => {
+      config.get.returns({ oidc_provider: { client_id: 'testProvider' } });
+      const future = new Date().getTime() + 1000;
+      db.medic.get.resolves({ user: 'org.couchdb.user:user' });
+      db.users.get.resolves({
+        oidc: true,
+        token_login: {
+          active: true,
+          token: 'the_token',
+          expiration_date: future
+        },
+      });
+      return service
+        .getUserByToken('the_token')
+        .then(() => chai.assert.fail('Should have thrown'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Token login not allowed for SSO users');
+          chai.expect(err.status).to.equal(401);
+          chai.expect(db.medic.get.callCount).to.equal(1);
+          chai.expect(db.medic.get.args[0]).to.deep.equal([`token:login:the_token`]);
+          chai.expect(db.users.get.callCount).to.equal(1);
+          chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:user']);
+        });
+    });
+
     it('should return the row id when match is not expired', () => {
       const future = new Date().getTime() + 1000;
       db.medic.get.resolves({ user: 'org.couchdb.user:user_id' });
