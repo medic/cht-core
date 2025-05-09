@@ -14,21 +14,9 @@ const initialState = {
   },
 };
 
-const orderByDueDateAndPriority = (t1, t2) => {
+const orderByDueDate = (t1, t2) => {
   const lhs = t1?.dueDate;
   const rhs = t2?.dueDate;
-
-  const lhsPriority = t1?.priority;
-  const rhsPriority = t2?.priority;
-
-  if ((lhsPriority && !rhsPriority) || lhsPriority > rhsPriority) {
-    return -1;
-  }
-
-  if ((!lhsPriority && rhsPriority) || lhsPriority < rhsPriority) {
-    return 1;
-  }
-
   if (!lhs && !rhs) {
     return 0;
   }
@@ -49,7 +37,7 @@ const _tasksReducer = createReducer(
   on(Actions.setTasksList, (state, { payload: { tasks } }) => {
     return {
       ...state,
-      tasksList: [...tasks].sort(orderByDueDateAndPriority),
+      tasksList: [...tasks].sort(orderByDueDate),
     };
   }),
 

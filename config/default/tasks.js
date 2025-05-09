@@ -280,15 +280,6 @@ module.exports = [
       const endTime = addDays(dueDate, event.end).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'], startTime, endTime);
     },
-    priority: function(contact, report, event, dueDate) {
-      console.warn(contact);
-      console.warn(event);
-      console.warn(dueDate);
-      return {
-        level: 10,
-        label: 'High',
-      };
-    },
     actions: [
       {
         type: 'report',
@@ -326,15 +317,6 @@ module.exports = [
       //reported_date + 1 so that source ds_follow_up does not resolve itself
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'], startTime, endTime);
-    },
-    priority: function(contact, report, event, dueDate) {
-      console.warn(contact);
-      console.warn(event);
-      console.warn(dueDate);
-      return {
-        level: 10,
-        label: 'High',
-      };
     },
     actions: [
       {
