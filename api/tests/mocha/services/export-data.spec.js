@@ -423,7 +423,7 @@ describe('Export Data Service', () => {
       ]);
     });
   });
-  it('includes user_storage_usage field', async () => {
+  it('handles undefined storage fields correctly', async () => {
     const rows = [
       {
         key: ['user1', 'device-id-123'],
@@ -436,11 +436,6 @@ describe('Export Data Service', () => {
               cht: '4.0.0',
               settings: '4-abc123'
             }
-          },
-          user_storage_usage: {
-            total_docs: 50,
-            total_attachments: 10,
-            total_size_bytes: 20480
           }
         }
       }
