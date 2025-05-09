@@ -69,6 +69,7 @@ angular
     };
 
     const allowTokenLogin = settings => settings.token_login && settings.token_login.enabled;
+    const allowSSOLogin = settings => settings.oidc_provider && settings.oidc_provider.client_id;
 
     /**
      * Ensures that facility_id is an array for backward compatibility.
@@ -95,6 +96,7 @@ angular
           $scope.permissions = settings.permissions;
           $scope.roles = settings.roles;
           $scope.allowTokenLogin = allowTokenLogin(settings);
+          $scope.allowSSOLogin = allowSSOLogin(settings);
           if (!$scope.model) {
             return $q.resolve({});
           }
@@ -115,7 +117,7 @@ angular
               expired: tokenLoginData.expiration_date <= new Date().getTime(),
             };
 
-          return $q.resolve({
+          const m = {
             id: $scope.model._id,
             username: $scope.model.name,
             fullname: $scope.model.fullname,
@@ -133,7 +135,9 @@ angular
             passwordFieldType: $scope.model.passwordFieldType,
             showPasswordIcon: $scope.model.showPasswordIcon,
             hidePasswordIcon: $scope.model.hidePasswordIcon,
-          });
+            oidc: $scope.model.oidc
+          };
+          return $q.resolve(m);
         });
     };
 
@@ -199,10 +203,6 @@ angular
           return false;
         }
 
-        // remove assigned password
-        $scope.editUserModel.password = '';
-        $scope.editUserModel.passwordConfirm = '';
-
         return true;
       });
     };
@@ -210,12 +210,17 @@ angular
     const validatePasswordForEditUser = () => {
       const newUser = !$scope.editUserModel.id;
       const tokenLogin = $scope.editUserModel.token_login;
-      if (tokenLogin) {
-        // when enabling token_login, password is not required
+      const ssoLogin = $scope.editUserModel.oidc;
+      if (tokenLogin || ssoLogin) {
+        // when enabling token_login or sso_login, password is not required
+
+        // if user had populated before enabling token/sso, remove assigned password
+        $scope.editUserModel.password = '';
+        $scope.editUserModel.passwordConfirm = '';
         return true;
       }
 
-      if (newUser || tokenLogin === false) {
+      if (newUser || tokenLogin === false || ssoLogin === false) {
         // for new users or when disabling token_login for users who have it enabled
         return validatePasswordFields();
       }
@@ -434,6 +439,11 @@ angular
         .then(existingModel => {
           const updates = {};
           getUpdatedKeys(model, existingModel).forEach(key => {
+            if (key === 'oidc' && model[key] === undefined) {
+              updates[key] = false;
+              return;
+            }
+
             updates[key] = model[key];
           });
 
@@ -593,4 +603,3 @@ angular
 
     };
   });
-
