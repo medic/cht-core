@@ -4,8 +4,24 @@ const { OIDC_ROLE } = require('./roles');
 
 const isSsoLoginEnabled = () => !!config.get('oidc_provider');
 
+const setOidcRole = (user) => {
+  if (!user.roles) {
+    user.roles = [];
+  }
+  if (!user.roles.includes(OIDC_ROLE)) {
+    user.roles.push(OIDC_ROLE);
+  }
+};
+const removeOidcRole = (user) => {
+  if (!user.roles) {
+    return;
+  }
+  user.roles = user.roles.filter(role => role !== OIDC_ROLE);
+};
+
 const validateSsoLogin = (data) => {
   if (!data.oidc_username){
+    removeOidcRole(data);
     return;
   }
   if (data.password || data.token_login){
@@ -17,16 +33,12 @@ const validateSsoLogin = (data) => {
 
   data.password = passwords.generate();
   data.password_change_required = false;
-  if (!data.roles) {
-    data.roles = [];
-  }
-  if (!data.roles.includes(OIDC_ROLE)) {
-    data.roles.push(OIDC_ROLE);
-  }
+  setOidcRole(data);
 };
 
-const validateSsoLoginUpdate = (data, updatedUser) => {
-  if (!data.oidc_username && !data.password && !data.token_login) {
+const validateSsoLoginUpdate = (data, updatedUser, updatedUserSettings) => {
+  const authFieldUpdated = !!['oidc_username', 'password', 'token_login'].find(key => Object.keys(data).includes(key));
+  if (!authFieldUpdated) {
     return;
   }
   // token_login is set on updateUser later, so check data here
@@ -34,7 +46,13 @@ const validateSsoLoginUpdate = (data, updatedUser) => {
     return { msg: 'Cannot set token_login with oidc_username.' };
   }
 
-  return validateSsoLogin(updatedUser);
+  const invalid = validateSsoLogin(updatedUser);
+  if (invalid) {
+    return invalid;
+  }
+  if (updatedUser.roles) {
+    updatedUserSettings.roles = [...updatedUser.roles];
+  }
 };
 
 module.exports = {

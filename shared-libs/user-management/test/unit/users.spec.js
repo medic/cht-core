@@ -4585,7 +4585,8 @@ describe('Users service', () => {
         };
         chai.expect(validateSsoLoginUpdate.calledOnceWithExactly(
           { ...updates, contact_id: undefined, facility_id: undefined },
-          updatedUser
+          updatedUser,
+          existingUserSettings
         )).to.be.true;
         chai.expect(db.medic.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
         chai.expect(db.users.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
@@ -4632,7 +4633,8 @@ describe('Users service', () => {
         };
         chai.expect(validateSsoLoginUpdate.calledOnceWithExactly(
           { ...updates, contact_id: undefined, facility_id: undefined },
-          updatedUser
+          updatedUser,
+          existingUserSettings
         )).to.be.true;
         chai.expect(db.medic.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
         chai.expect(db.users.get.calledOnceWithExactly(existingUserData._id)).to.be.true;

@@ -1181,7 +1181,7 @@ module.exports = {
     if (tokenLoginError) {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
-    const ssoLoginError = ssoLogin.validateSsoLoginUpdate(data, user);
+    const ssoLoginError = ssoLogin.validateSsoLoginUpdate(data, user, userSettings);
     if (ssoLoginError) {
       return Promise.reject(error400(ssoLoginError.msg));
     }
