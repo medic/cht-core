@@ -31,6 +31,8 @@ module.exports = async () => {
       android,
       cht,
       settings,
+      storageFree: doc.value.device?.storage?.free,
+      storageTotal: doc.value.device?.storage?.total
     };
   });
 };
