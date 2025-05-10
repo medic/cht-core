@@ -7,19 +7,12 @@ const { resizeWindowForScreenshots, generateScreenshot, isMobile } = require('@u
 const { reports, contact } = require('./data/generateReportData');
 
 describe('Bulk delete reports functionality test', () => {
-  const docs = [contact, ...reports];
-  const savedUuids = [];
-  const reportUuids = [];
+  let savedUuids = [];
 
   before(async () => {
-    const results = await utils.saveDocs(docs);
-    results.forEach(result => {
-      savedUuids.push(result.id);
-      // Store only report IDs separately
-      if (result.id !== contact._id) {
-        reportUuids.push(result.id);
-      }
-    });
+    await utils.saveDocs([contact]);
+    const savedReports = await utils.saveDocs(reports);
+    savedUuids = [...savedReports.map(report => report.id)];
     await loginPage.cookieLogin();
     await browser.pause(3000);
   });
@@ -39,7 +32,7 @@ describe('Bulk delete reports functionality test', () => {
     await generateScreenshot('bulk-delete', 'initial-reports-list');
   
     // Select 3 reports by their IDs
-    const selectedIds = reportUuids.slice(0, 3);
+    const selectedIds = savedUuids.slice(0, 3);
   
     const isMobileDevice = await isMobile();
 

@@ -7,18 +7,9 @@ const { reports, contact } = require('./data/generateReportData');
 
 describe('Report Filter functionality test', () => {
   const docs = [contact, ...reports];
-  const savedUuids = [];
-  const reportUuids = [];
 
   before(async () => {
-    const results = await utils.saveDocs(docs);
-    results.forEach(result => {
-      savedUuids.push(result.id);
-      // Store only report IDs separately
-      if (result.id !== contact._id) {
-        reportUuids.push(result.id);
-      }
-    });
+    await utils.saveDocs(docs);
     await loginPage.cookieLogin();
     await browser.pause(3000);
   });
