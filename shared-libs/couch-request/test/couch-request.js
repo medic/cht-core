@@ -33,6 +33,12 @@ describe('couch-request', () => {
     uri = `http://admin:password@test.com:5984/medic/_all_docs`;
     sinon.stub(global, 'fetch').resolves(buildResponse({ body: 'yes' }));
 
+    const environmentMock = { getVersion: sinon.stub().resolves('4.18.0') };
+    sinon.stub(require('@medic/environment'), 'getVersion').callsFake(environmentMock.getVersion);
+    
+    sinon.stub(require('os'), 'platform').returns('test-platform');
+    sinon.stub(require('os'), 'arch').returns('test-arch');
+
     couchRequest = rewire('../src/couch-request');
   });
 
@@ -153,6 +159,28 @@ describe('couch-request', () => {
     ]);
   });
 
+  it('should add user-agent header to external requests', async () => {
+    const opts = {
+      url: 'http://www.textit.com/api/v2/broadcasts.json',
+    };
+
+    await couchRequest.post(opts);
+
+    expect(global.fetch.args[0]).to.deep.equal([
+      'http://www.textit.com/api/v2/broadcasts.json',
+      {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          'user-agent': 'Community Health Toolkit/4.18.0 (test-platform,test-arch)',
+        },
+        servername: 'test.com',
+        uri: 'http://www.textit.com/api/v2/broadcasts.json',
+      }
+    ]);
+  });
+
   it('should add query string', async () => {
     const opts = {
       uri: 'http://admin:pass@test.com:5984/medic',
@@ -258,6 +286,7 @@ describe('couch-request', () => {
           accept: 'application/json',
           'content-type': 'application/json',
           authorization: 'Bearer something',
+          'user-agent': 'Community Health Toolkit/4.18.0 (test-platform,test-arch)',
         },
         servername: 'test.com',
         uri: 'http://marvel.net:5984/a',
@@ -676,7 +705,7 @@ describe('couch-request', () => {
         headers: {
           accept: 'application/json',
           'content-type': 'application/json',
-          'header-name': 'req_uuid'
+          'header-name': 'req_uuid',
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/test',
@@ -704,6 +733,26 @@ describe('couch-request', () => {
         uri: 'http://test.com:5984/b',
       }
     ]]);
+  });
+
+  it('should automatically add user-agent header to external requests', async () => {
+    await couchRequest.get({ url: 'https://rapidpro.com/test-user-agent' });
+    
+    const requestOptions = global.fetch.args[0][1];
+    expect(requestOptions.headers['user-agent']).to.equal('Community Health Toolkit/4.18.0 (test-platform,test-arch)');
+    expect(requestOptions.headers.authorization).to.equal(undefined);
+  });
+
+  it('should not override user-agent header if already specified', async () => {
+    await couchRequest.get({ 
+      url: 'http://test.com:5984/test-user-agent',
+      headers: {
+        'user-agent': 'CustomAgent/1.0'
+      }
+    });
+    
+    const requestOptions = global.fetch.args[0][1];
+    expect(requestOptions.headers['user-agent']).to.equal('CustomAgent/1.0');
   });
 
   describe('sanitizeErrorResponse function', () => {
