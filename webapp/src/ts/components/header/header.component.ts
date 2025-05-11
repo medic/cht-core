@@ -1,25 +1,26 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { Store } from '@ngrx/store';
-import { combineLatest, Subscription } from 'rxjs';
+import { BaseMenuComponent } from '@mm-components/base-menu/base-menu.component';
+import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 
+import { Store } from '@ngrx/store';
 import { Selectors } from '@mm-selectors/index';
-import { SettingsService } from '@mm-services/settings.service';
-import { HeaderTab, HeaderTabsService } from '@mm-services/header-tabs.service';
-import { ModalService } from '@mm-services/modal.service';
-import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
-import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 import { DBSyncService } from '@mm-services/db-sync.service';
+import { ModalService } from '@mm-services/modal.service';
+import { StorageInfoService } from '@mm-services/storage-info.service';
+import { SettingsService } from '@mm-services/settings.service';
+
+
 import { RouterLink } from '@angular/router';
-import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { AuthDirective } from '@mm-directives/auth.directive';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { NgIf, NgClass, NgFor } from '@angular/common';
 import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile-detection.component';
+
 import { TranslatePipe } from '@ngx-translate/core';
-import { HeaderLogoPipe, ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
-import { StorageInfo, StorageStatus } from '@mm-reducers/global';
-import { StorageInfoService } from '@mm-services/storage-info.service';
+import { HeaderLogoPipe, ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
+
+import { HeaderTab, HeaderTabsService } from '@mm-services/header-tabs.service';
 
 export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
 
@@ -28,8 +29,8 @@ export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
   templateUrl: './header.component.html',
   imports: [
     RouterLink,
-    BsDropdownModule,
     AuthDirective,
+    BsDropdownModule,
     NgIf,
     NgClass,
     NgFor,
@@ -41,61 +42,51 @@ export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
     LocalizeNumberPipe
   ]
 })
-export class HeaderComponent implements OnInit, OnDestroy {
-  private readonly subscriptions: Subscription = new Subscription();
 
+export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDestroy {
   @Input() adminUrl;
   @Input() canLogOut;
 
   showPrivacyPolicy = false;
-  replicationStatus;
+  // replicationStatus;
   currentTab;
   unreadCount = {};
   permittedTabs: HeaderTab[] = [];
-  
-  private storageInfo: undefined | StorageInfo;
 
   constructor(
-    private store: Store,
+    protected readonly store: Store,
+    protected readonly dbSyncService: DBSyncService,
+    protected readonly modalService: ModalService,
+    protected readonly storageInfoService: StorageInfoService,
     private settingsService: SettingsService,
     private headerTabsService: HeaderTabsService,
-    private modalService: ModalService,
-    private dbSyncService: DBSyncService,
-    private readonly storageInfoService: StorageInfoService,
-  ) {}
+  ) {
+    super(store, dbSyncService, modalService, storageInfoService);
+  }
 
   ngOnInit(): void {
-    this.subscribeToStore();
+    super.ngOnInit();
+    this.additionalSubscriptions();
     this.getHeaderTabs();
-    this.storageInfoService.init();
   }
 
   ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-    this.storageInfoService.stop();
+    super.ngOnDestroy();
   }
 
-  private subscribeToStore() {
-    const subscription = combineLatest(
-      this.store.select(Selectors.getReplicationStatus),
-      this.store.select(Selectors.getCurrentTab),
-      this.store.select(Selectors.getShowPrivacyPolicy),
-      this.store.select(Selectors.getUnreadCount),
-      this.store.select(Selectors.getStorageInfo),
-    ).subscribe(([
-      replicationStatus,
-      currentTab,
-      showPrivacyPolicy,
-      unreadCount,
-      storageInfo,
-    ]) => {
-      this.replicationStatus = replicationStatus;
-      this.currentTab = currentTab;
-      this.showPrivacyPolicy = showPrivacyPolicy;
-      this.unreadCount = unreadCount;
-      this.storageInfo = storageInfo;
-    });
-    this.subscriptions.add(subscription);
+  private additionalSubscriptions(){
+    const currentTab = this.store.select(Selectors.getCurrentTab)
+      .subscribe(tab => this.currentTab = tab);
+    this.subscriptions.add(currentTab);
+
+    const showPrivacyPolicy = this.store.select(Selectors.getShowPrivacyPolicy)
+      .subscribe(show => this.showPrivacyPolicy = show);
+    this.subscriptions.add(showPrivacyPolicy);
+
+
+    const unreadCount = this.store.select(Selectors.getUnreadCount)
+      .subscribe(count => this.unreadCount = count);
+    this.subscriptions.add(unreadCount);
   }
 
   private getHeaderTabs() {
@@ -105,42 +96,5 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .then(permittedTabs => {
         this.permittedTabs = permittedTabs;
       });
-  }
-
-  openFeedback() {
-    this.modalService.show(FeedbackComponent);
-  }
-
-  logout() {
-    this.modalService.show(LogoutConfirmComponent);
-  }
-
-  replicate() {
-    this.dbSyncService.sync(true);
-  }
-
-  get storagePressureClass(): string {
-    const val = this.storageInfo?.storageUsagePercentage ?? 0;
-    if (val < 50) {
-      return 'progress-bar-green';
-    } else if (val < 75) {
-      return 'progress-bar-yellow';
-    }
-    return 'progress-bar-red';
-  }
-
-  get availableStorageSpace(): string {
-    switch (this.storageInfo?.status) {
-    case StorageStatus.NORMAL:
-      return `${StorageInfoService.bytesToGB(this.storageInfo?.availableBytes)} GB`;
-    case StorageStatus.STARTUP:
-      return 'Calculating...';
-    default:
-      return 'Error calculating available space';
-    }
-  }
-
-  get storageUsagePercentage(): number {
-    return this.storageInfo?.storageUsagePercentage ?? 0;
   }
 }
