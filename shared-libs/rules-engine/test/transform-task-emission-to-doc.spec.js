@@ -13,7 +13,7 @@ let clock;
 
 describe('transform-task-emission-to-doc', () => {
   before(() => {
-    clock = sinon.useFakeTimers(NOW.valueOf());
+    clock = sinon.useFakeTimers({ now: NOW.valueOf(), toFake: ['Date']});
   });
   after(() => {
     sinon.restore();
