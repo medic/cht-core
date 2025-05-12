@@ -11,12 +11,11 @@ const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const { generateScreenshot } = require('@utils/screenshots');
 
 describe('Targets overview', () => {
-  // Generate test data (people, pregnancies, deliveries) using functions 
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const offlineUser = userFactory.build({ username: 'offline-user-nav', roles: [ 'chw' ], place: healthCenter._id });
-  const numberOfPatients = 17; // Define  patients 
-  const patients = Array.from({ length: numberOfPatients }, () => personFactory.build({ 
+  const numberOfPatients = 17; 
+  const patients =Array.from({ length: numberOfPatients }, () => personFactory.build({ 
     parent: { _id: healthCenter._id, parent: healthCenter.parent } 
   }));
   const reports = [
@@ -68,20 +67,16 @@ describe('Targets overview', () => {
   ];
 
   before(async () => {
-    await utils.saveDocs([ ...places.values() ]);
-    await utils.saveDocs(reports);
-    await utils.saveDocs(patients);
+    await utils.saveDocs([ ...places.values(), ...reports, ...patients]);
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
   });
 
   it('should go to Targets and take the screenshots', async () => {
-    // Go to Targets
     await commonPage.waitForPageLoaded();
     await commonPage.goToAnalytics();
     await commonPage.waitForPageLoaded();
     await browser.pause(2000);
-    // Take the screenshots
     await generateScreenshot('targets', 'overview');
   });
 });
