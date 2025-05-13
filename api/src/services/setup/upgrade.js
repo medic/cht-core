@@ -78,7 +78,10 @@ const upgradeInProgress = () => {
   return upgradeLog.get();
 };
 
+const canUpgrade = () => upgradeSteps.canUpgrade();
+
 module.exports = {
+  canUpgrade,
   upgrade,
   complete,
   abort,
