@@ -1,5 +1,4 @@
 const utils = require('@utils');
-
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const pregnancyVisitFactory = require('@factories/cht/reports/pregnancy-visit');
