@@ -25,7 +25,13 @@ describe('User Test Cases ->', () => {
   before(async () => {
     const settings = await utils.getSettings();
     const permissions = { ...settings.permissions, can_have_multiple_places: [OFFLINE_USER_ROLE] };
-    await utils.updateSettings({ permissions }, { ignoreReload: true });
+    await utils.updateSettings({
+      permissions,
+      oidc_provider: {
+        discovery_url: 'https://discovery_url.com',
+        client_id: 'cht'
+      }
+    }, { ignoreReload: true });
     await utils.saveDocs([...places.values(), person, districtHospital2]);
     await loginPage.cookieLogin();
   });
@@ -105,6 +111,18 @@ describe('User Test Cases ->', () => {
 
       await usersAdminPage.saveUser();
       expect(await usersAdminPage.getAllUsernames()).to.include.members([USERNAME_2]);
+    });
+
+    it('should add sso user', async () => {
+      await usersAdminPage.inputSsoUserFields(
+        USERNAME,
+        'Jack',
+        ONLINE_USER_ROLE,
+        districtHospital.name,
+        person.name,
+      );
+      await usersAdminPage.saveUser();
+      expect(await usersAdminPage.getAllUsernames()).to.include.members([USERNAME]);
     });
   });
 
