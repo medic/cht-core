@@ -1,0 +1,12 @@
+{
+  "name": "couchdb-tests",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "test": "mocha couch-cluster.spec.js "
+  },
+  "dependencies": {
+    "chai": "^4.3.8",
+    "mocha": "^11.1.0"
+  }
+}
