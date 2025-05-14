@@ -4,8 +4,8 @@ services:
       context: ..
       target: cht-couchdb
     environment:
-      - "COUCHDB_USER=${COUCHDB_USER:-admin-test}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD?}"
+      - "COUCHDB_USER=${COUCHDB_USER}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-7CF0C1FA-5940-4381-A4EB-E6F6874BAE83}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-CC686127-22F5-4E80-8DF2-BB3C80A086B8}"
       - "SVC_NAME=couchdb1"
@@ -23,8 +23,8 @@ services:
       context: ..
       target: cht-couchdb
     environment:
-      - "COUCHDB_USER=${COUCHDB_USER:-admin-test}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD?}"
+      - "COUCHDB_USER=${COUCHDB_USER}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-7CF0C1FA-5940-4381-A4EB-E6F6874BAE83}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-CC686127-22F5-4E80-8DF2-BB3C80A086B8}"
       - "SVC_NAME=couchdb2"
@@ -42,8 +42,8 @@ services:
       context: ..
       target: cht-couchdb
     environment:
-      - "COUCHDB_USER=${COUCHDB_USER:-admin-test}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD?}"
+      - "COUCHDB_USER=${COUCHDB_USER}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-7CF0C1FA-5940-4381-A4EB-E6F6874BAE83}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-CC686127-22F5-4E80-8DF2-BB3C80A086B8}"
       - "SVC_NAME=couchdb3"
@@ -69,8 +69,8 @@ services:
       - ../../:/app
     working_dir: /app/couchdb/tests
     environment:
-      - "COUCHDB_USER=${COUCHDB_USER:-medic-test-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD?}"
+      - "COUCHDB_USER=${COUCHDB_USER}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
     command: >
       sh -c "npm install --no-save && npm test"
     networks:

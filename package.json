@@ -41,7 +41,7 @@
     "lint-shell": "shellcheck $(./scripts/ci/list-shellscripts.sh)",
     "lint-translations": "node scripts/ci/lint-translations.js",
     "test": "npm run lint && npm run unit && npm run integration-api",
-    "unit-couchdb": "cd couchdb/tests && COUCHDB_PASSWORD=pass docker compose down -v --remove-orphans && UNIT_TEST_ENV=1 COUCHDB_PASSWORD=pass COUCHDB_USER=medic-test-admin docker compose up --build mocha-test && docker compose down",
+    "unit-couchdb": "cd couchdb/tests && docker compose down -v --remove-orphans && UNIT_TEST_ENV=1  docker compose up --build mocha-test && docker compose down",
     "unit": "node scripts/build/cli npmCiModules && npm run unit-webapp && npm run unit-admin && npm run unit-shared-lib && npm run unit-api && npm run unit-sentinel && npm run unit-couchdb",
     "unit-admin": "node ./scripts/ci/run-karma.js",
     "unit-api": "UNIT_TEST_ENV=1 nyc --nycrcPath='api/nyc.config.js' mocha 'api/tests/mocha/**/*.js'",
