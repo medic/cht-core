@@ -23,7 +23,7 @@ import { LineagePipe } from '@mm-pipes/message.pipe';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
-import { TasksSidebarFilterComponent } from '@mm-modules/tasks/tasks-sidebar-filter.component';
+import { SidebarFilterComponent } from '@mm-modules/util/sidebar-filter.component';
 import _ from 'lodash';
 import { DeduplicateService } from '@mm-services/deduplicate.service';
 
@@ -42,11 +42,11 @@ import { DeduplicateService } from '@mm-services/deduplicate.service';
     ResourceIconPipe,
     TaskDueDatePipe,
     SearchBarComponent,
-    TasksSidebarFilterComponent
+    SidebarFilterComponent
   ],
 })
 export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild(TasksSidebarFilterComponent) reportsSidebarFilter?: TasksSidebarFilterComponent;
+  @ViewChild(SidebarFilterComponent) reportsSidebarFilter?: SidebarFilterComponent;
   constructor(
     private readonly store: Store,
     private readonly changesService: ChangesService,

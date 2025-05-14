@@ -97,11 +97,12 @@
         <router-outlet></router-outlet>
       </div>
 
-      <mm-reports-sidebar-filter
+      <mm-sidebar-filter
         class="col-sm-3 sidebar-filter-wrapper"
         (search)="search()"
-        [disabled]="selectMode && selectedReports?.length">
-      </mm-reports-sidebar-filter>
+        [disabled]="selectMode && selectedReports?.length"
+        type="reports">
+      </mm-sidebar-filter>
     </div>
   </div>
 </div>

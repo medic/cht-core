@@ -57,11 +57,13 @@
         <router-outlet></router-outlet>
       </div>
 
-      <mm-tasks-sidebar-filter
+      <mm-sidebar-filter
         class="col-sm-3 sidebar-filter-wrapper"
         (search)="search()"
-        [disabled]="false">
-      </mm-tasks-sidebar-filter>
+        [disabled]="false"
+        type="tasks"
+        [includeFilters]="{ status: false }">
+      </mm-sidebar-filter>
     </div>
   </div>
 </div>

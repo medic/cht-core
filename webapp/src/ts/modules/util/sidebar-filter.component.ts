@@ -5,6 +5,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
+import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { NgClass, NgTemplateOutlet, NgIf } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
@@ -16,11 +17,13 @@ import {
 } from '@angular/material/expansion';
 import { TranslatePipe } from '@ngx-translate/core';
 
-type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateFilterComponent;
+type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateFilterComponent | StatusFilterComponent;
+
+type ActiveFilters = { formType: boolean, place: boolean, date: boolean, status: boolean };
 
 @Component({
-  selector: 'mm-tasks-sidebar-filter',
-  templateUrl: './tasks-sidebar-filter.component.html',
+  selector: 'mm-sidebar-filter',
+  templateUrl: './sidebar-filter.component.html',
   imports: [
     NgClass,
     MatIcon,
@@ -33,17 +36,21 @@ type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateF
     FacilityFilterComponent,
     DateFilterComponent,
     NgIf,
+    StatusFilterComponent,
     TranslatePipe
   ]
 })
-export class TasksSidebarFilterComponent implements AfterViewInit, OnDestroy {
+export class SidebarFilterComponent implements AfterViewInit, OnDestroy {
   @Output() search: EventEmitter<any> = new EventEmitter();
   @Input() disabled;
+  @Input({ required: true }) type;
+  @Input() includeFilters: ActiveFilters | {} = {};
 
   @ViewChild(FormTypeFilterComponent) formTypeFilter!: FormTypeFilterComponent;
   @ViewChild(FacilityFilterComponent) facilityFilter!: FacilityFilterComponent;
   @ViewChild('fromDate') fromDateFilter!: DateFilterComponent;
   @ViewChild('toDate') toDateFilter!: DateFilterComponent;
+  @ViewChild(StatusFilterComponent) statusFilter!: StatusFilterComponent;
 
   private globalActions;
   private filters: FilterComponent[] = [];
@@ -52,6 +59,13 @@ export class TasksSidebarFilterComponent implements AfterViewInit, OnDestroy {
   filterCount:any = { };
   dateFilterError = '';
 
+  readonly _defaultFilters = {
+    formType: true,
+    place: true,
+    date: true,
+    status: true
+  };
+
   constructor(
     private store: Store,
     private telemetryService: TelemetryService,
@@ -59,12 +73,17 @@ export class TasksSidebarFilterComponent implements AfterViewInit, OnDestroy {
     this.globalActions = new GlobalActions(this.store);
   }
 
+  get activeFilters () {
+    const activeFilters : ActiveFilters = {...this._defaultFilters, ...this.includeFilters };
+    return activeFilters;
+  }
+
   ngAfterViewInit() {
     this.filters = [
-      this.formTypeFilter,
-      this.facilityFilter,
-      this.fromDateFilter,
-      this.toDateFilter,
+      ...(this.activeFilters.formType ? [this.formTypeFilter] : []),
+      ...(this.activeFilters.place ? [this.facilityFilter] : []),
+      ...(this.activeFilters.date ? [this.fromDateFilter, this.toDateFilter] : []),
+      ...(this.activeFilters.status ? [this.statusFilter] : [])
     ];
   }
 
@@ -110,8 +129,8 @@ export class TasksSidebarFilterComponent implements AfterViewInit, OnDestroy {
     this.globalActions.setSidebarFilter({ isOpen: this.isOpen });
 
     if (this.isOpen) {
-      // Counting every time the user opens the sidebar filter in tasks tab.
-      this.telemetryService.record('sidebar_filter:tasks:open');
+      // Counting every time the user opens the sidebar filter in relevant tab.
+      this.telemetryService.record(`sidebar_filter:${this.type}:open`);
     }
   }
 

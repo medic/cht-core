@@ -14,7 +14,7 @@ import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
+import { SidebarFilterComponent } from '@mm-modules/util/sidebar-filter.component';
 import { AuthService } from '@mm-services/auth.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
@@ -57,7 +57,7 @@ const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
     ReportVerifyInvalidIconComponent,
     FastActionButtonComponent,
     RouterOutlet,
-    ReportsSidebarFilterComponent,
+    SidebarFilterComponent,
     TranslatePipe,
     LineagePipe,
     ResourceIconPipe,
@@ -65,7 +65,7 @@ const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
   ]
 })
 export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild(ReportsSidebarFilterComponent) reportsSidebarFilter?: ReportsSidebarFilterComponent;
+  @ViewChild(SidebarFilterComponent) reportsSidebarFilter?: SidebarFilterComponent;
 
   private globalActions: GlobalActions;
   private reportsActions: ReportsActions;

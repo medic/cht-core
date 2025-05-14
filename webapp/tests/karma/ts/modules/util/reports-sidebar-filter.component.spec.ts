@@ -16,13 +16,13 @@ import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { SessionService } from '@mm-services/session.service';
-import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
+import { SidebarFilterComponent } from '@mm-modules/util/sidebar-filter.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 
 describe('Reports Sidebar Filter Component', () => {
-  let component: ReportsSidebarFilterComponent;
-  let fixture: ComponentFixture<ReportsSidebarFilterComponent>;
+  let component: SidebarFilterComponent;
+  let fixture: ComponentFixture<SidebarFilterComponent>;
   let telemetryService;
   let placeHierarchyService;
   let sessionService;
@@ -52,7 +52,7 @@ describe('Reports Sidebar Filter Component', () => {
           BrowserAnimationsModule,
           BsDropdownModule,
           MatIconModule,
-          ReportsSidebarFilterComponent,
+          SidebarFilterComponent,
           DateFilterComponent,
           FacilityFilterComponent,
           FormTypeFilterComponent,
@@ -68,7 +68,7 @@ describe('Reports Sidebar Filter Component', () => {
       })
       .compileComponents()
       .then(() => {
-        fixture = TestBed.createComponent(ReportsSidebarFilterComponent);
+        fixture = TestBed.createComponent(SidebarFilterComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
       });
