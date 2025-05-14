@@ -19,5 +19,4 @@ jobs:
             couchdb/
       - name: Test CouchDB
         run: |
-          cd couchdb/tests
-          make test
+          npm run unit-couchdb
