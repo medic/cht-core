@@ -2230,15 +2230,14 @@ describe('Users API', () => {
         };
         expect(userDoc).excluding(skippedUserFields).to.deep.equal({
           ...expectedUserData,
-          roles: [...expectedUserData.roles, 'mm-oidc'],
           type: 'user',
           oidc_username: body.oidc_username,
           password_change_required: false,
         });
         expect(userSettingsDoc).excluding(skippedUserFields).to.deep.equal({
           ...expectedUserData,
-          roles: [...expectedUserData.roles, 'mm-oidc'],
           type: 'user-settings',
+          oidc: true,
         });
       });
 
@@ -2265,15 +2264,14 @@ describe('Users API', () => {
           };
           expect(userDoc).excluding(skippedUserFields).to.deep.equal({
             ...expectedUserData,
-            roles: [...expectedUserData.roles, 'mm-oidc'],
             type: 'user',
             oidc_username: body.oidc_username,
             password_change_required: false,
           });
           expect(userSettingsDoc).excluding(skippedUserFields).to.deep.equal({
             ...expectedUserData,
-            roles: [...expectedUserData.roles, 'mm-oidc'],
             type: 'user-settings',
+            oidc: true,
           });
         });
       });
@@ -2282,17 +2280,17 @@ describe('Users API', () => {
         [
           'user to be an OIDC user',
           { password, password_change_required: false, roles: ['chw'] },
-          { oidc_username: uuid(), roles: ['chw', 'mm-oidc'] }
+          { oidc_username: uuid(), roles: ['chw'] }
         ],
         [
           'OIDC user to be a normal user',
-          { oidc_username: uuid(), roles: ['chw', 'mm-oidc'] },
+          { oidc_username: uuid(), roles: ['chw'] },
           { oidc_username: null, password, password_change_required: false, roles: ['chw'] }
         ],
         [
           'OIDC user to have a different oidc_username',
-          { oidc_username: uuid(), roles: ['chw', 'mm-oidc'] },
-          { oidc_username: uuid(), roles: ['chw', 'mm-oidc'] }
+          { oidc_username: uuid(), roles: ['chw'] },
+          { oidc_username: uuid(), roles: ['chw'] }
         ]
       ].forEach(([test, originalUserData, updatedUserData]) => {
         it(`should update an existing ${test}`, async () => {
@@ -2324,6 +2322,7 @@ describe('Users API', () => {
           expect(userSettingsDoc).excluding(skippedUserFields).to.deep.equal({
             ...expectedUserData,
             type: 'user-settings',
+            ...(originalUserData.oidc_username ? { oidc: true } : {})
           });
 
           const updatedResult = await utils.request({
@@ -2342,8 +2341,8 @@ describe('Users API', () => {
           });
           expect(updatedUserSettings).excluding(skippedUserFields).to.deep.equal({
             ...expectedUserData,
-            roles: updatedUserData.roles,
             type: 'user-settings',
+            oidc: !!updatedUserData.oidc_username
           });
         });
       });

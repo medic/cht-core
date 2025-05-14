@@ -89,8 +89,7 @@ describe('SSO Login service', () => {
       expect(data).to.deep.equal({
         oidc_username: 'test',
         password_change_required: false,
-        password: GENERATED_PASSWORD,
-        roles: ['mm-oidc']
+        password: GENERATED_PASSWORD
       });
       expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
       expect(generatePassword.calledOnceWithExactly()).to.be.true;
@@ -173,12 +172,7 @@ describe('SSO Login service', () => {
       const data = { oidc_username: 'test' };
       const user = {
         _id: 'org.couchdb.user:test',
-        oidc_username: 'test',
-        roles: ['existing-role']
-      };
-      const userSettings = {
-        type: 'user-settings',
-        roles: ['existing-role']
+        oidc_username: 'test'
       };
       config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' } });
       db.users.query.resolves({ rows: [
@@ -186,7 +180,7 @@ describe('SSO Login service', () => {
         { doc: { _id: 'duplicate-user' } }
       ] });
 
-      const result = await service.validateSsoLoginUpdate(data, user, userSettings);
+      const result = await service.validateSsoLoginUpdate(data, user);
 
       expect(result).to.deep.equal({
         msg: 'The oidc_username [test] already exists for user [duplicate-user].'
@@ -194,12 +188,7 @@ describe('SSO Login service', () => {
       expect(data).to.deep.equal({ oidc_username: 'test' });
       expect(user).to.deep.equal({
         _id: 'org.couchdb.user:test',
-        oidc_username: 'test',
-        roles: ['existing-role']
-      });
-      expect(userSettings).to.deep.equal({
-        type: 'user-settings',
-        roles: ['existing-role']
+        oidc_username: 'test'
       });
       expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
       expect(generatePassword.notCalled).to.be.true;
@@ -214,16 +203,11 @@ describe('SSO Login service', () => {
       const user = {
         _id: 'org.couchdb.user:test',
         oidc_username: 'test',
-        roles: ['existing-role']
-      };
-      const userSettings = {
-        type: 'user-settings',
-        roles: ['existing-role']
       };
       config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' } });
       db.users.query.resolves({ rows: [{ doc: { _id: 'org.couchdb.user:test' } }] });
 
-      const result = await service.validateSsoLoginUpdate(data, user, userSettings);
+      const result = await service.validateSsoLoginUpdate(data, user);
 
       expect(result).to.equal(undefined);
       expect(data).to.deep.equal({ oidc_username: 'test' });
@@ -232,11 +216,6 @@ describe('SSO Login service', () => {
         oidc_username: 'test',
         password_change_required: false,
         password: GENERATED_PASSWORD,
-        roles: ['existing-role', 'mm-oidc']
-      });
-      expect(userSettings).to.deep.equal({
-        type: 'user-settings',
-        roles: ['existing-role', 'mm-oidc']
       });
       expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
       expect(generatePassword.calledOnceWithExactly()).to.be.true;
@@ -244,68 +223,6 @@ describe('SSO Login service', () => {
         'users/users_by_field',
         { include_docs: true, key: ['oidc_username', 'test'] }
       )).to.be.true;
-    });
-
-    it('should not add oidc role when it already exists', async () => {
-      const data = { oidc_username: 'test' };
-      const user = {
-        oidc_username: 'test',
-        roles: ['existing-role', 'mm-oidc']
-      };
-      const userSettings = {
-        type: 'user-settings',
-      };
-      config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' } });
-      db.users.query.resolves({ rows: [] });
-
-      const result = await service.validateSsoLoginUpdate(data, user, userSettings);
-
-      expect(result).to.equal(undefined);
-      expect(data).to.deep.equal({ oidc_username: 'test' });
-      expect(user).to.deep.equal({
-        oidc_username: 'test',
-        password_change_required: false,
-        password: GENERATED_PASSWORD,
-        roles: ['existing-role', 'mm-oidc']
-      });
-      expect(userSettings).to.deep.equal({
-        type: 'user-settings',
-        roles: ['existing-role', 'mm-oidc']
-      });
-      expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
-      expect(generatePassword.calledOnceWithExactly()).to.be.true;
-      expect(db.users.query.calledOnceWithExactly(
-        'users/users_by_field',
-        { include_docs: true, key: ['oidc_username', 'test'] }
-      )).to.be.true;
-    });
-
-    it('should remove oidc role when a user is updated to not be oidc', async () => {
-      const data = { oidc_username: null };
-      const user = {
-        oidc_username: null,
-        roles: ['existing-role', 'mm-oidc']
-      };
-      const userSettings = {
-        type: 'user-settings',
-        roles: ['existing-role', 'mm-oidc']
-      };
-
-      const result = await service.validateSsoLoginUpdate(data, user, userSettings);
-
-      expect(result).to.equal(undefined);
-      expect(data).to.deep.equal({ oidc_username: null });
-      expect(user).to.deep.equal({
-        oidc_username: null,
-        roles: ['existing-role']
-      });
-      expect(userSettings).to.deep.equal({
-        type: 'user-settings',
-        roles: ['existing-role']
-      });
-      expect(config.get.notCalled).to.be.true;
-      expect(generatePassword.notCalled).to.be.true;
-      expect(db.users.query.notCalled).to.be.true;
     });
   });
 

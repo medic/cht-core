@@ -1,24 +1,8 @@
 const config = require('./libs/config');
 const db = require('./libs/db');
 const passwords = require('./libs/passwords');
-const { OIDC_ROLE } = require('./roles');
 
 const isSsoLoginEnabled = () => !!config.get('oidc_provider');
-
-const setOidcRole = (user) => {
-  if (!user.roles) {
-    user.roles = [];
-  }
-  if (!user.roles.includes(OIDC_ROLE)) {
-    user.roles.push(OIDC_ROLE);
-  }
-};
-const removeOidcRole = (user) => {
-  if (!user.roles) {
-    return;
-  }
-  user.roles = user.roles.filter(role => role !== OIDC_ROLE);
-};
 
 const getUsersByOidcUsername = async (oidcUsername) => db.users
   .query('users/users_by_field', { include_docs: true, key: ['oidc_username', oidcUsername] })
@@ -33,7 +17,6 @@ const getUserIdWithDuplicateOidcUsername = async (oidcUsername, userDocId) => {
 
 const validateSsoLogin = async (data) => {
   if (!data.oidc_username){
-    removeOidcRole(data);
     return;
   }
   if (data.password || data.token_login){
@@ -50,10 +33,9 @@ const validateSsoLogin = async (data) => {
 
   data.password = passwords.generate();
   data.password_change_required = false;
-  setOidcRole(data);
 };
 
-const validateSsoLoginUpdate = async (data, updatedUser, updatedUserSettings) => {
+const validateSsoLoginUpdate = async (data, updatedUser) => {
   const authFieldUpdated = !!['oidc_username', 'password', 'token_login'].find(key => Object.keys(data).includes(key));
   if (!authFieldUpdated) {
     return;
@@ -63,13 +45,7 @@ const validateSsoLoginUpdate = async (data, updatedUser, updatedUserSettings) =>
     return { msg: 'Cannot set token_login with oidc_username.' };
   }
 
-  const invalid = await validateSsoLogin(updatedUser);
-  if (invalid) {
-    return invalid;
-  }
-  if (updatedUser.roles) {
-    updatedUserSettings.roles = [...updatedUser.roles];
-  }
+  return validateSsoLogin(updatedUser);
 };
 
 module.exports = {

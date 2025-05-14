@@ -4269,6 +4269,7 @@ describe('Users service', () => {
         };
         chai.expect(db.medic.put.calledOnceWithExactly({
           ...expectedUser,
+          oidc: true,
           type: 'user-settings',
         })).to.be.true;
         chai.expect(db.users.put.calledOnceWithExactly({
@@ -4331,6 +4332,7 @@ describe('Users service', () => {
         chai.expect(db.medic.put.calledOnceWithExactly({
           ...expectedUser,
           type: 'user-settings',
+          oidc: true,
         })).to.be.true;
         chai.expect(db.users.put.calledOnceWithExactly({
           ...expectedUser,
@@ -4416,7 +4418,11 @@ describe('Users service', () => {
           },
           { error: error1 }
         ]);
-        chai.expect(db.medic.put.calledOnceWithExactly({ ...expectedUser1, type: 'user-settings' })).to.be.true;
+        chai.expect(db.medic.put.calledOnceWithExactly({
+          ...expectedUser1,
+          type: 'user-settings',
+          oidc: true,
+        })).to.be.true;
         chai.expect(db.users.put.calledOnceWithExactly({
           ...expectedUser1,
           type: 'user',
@@ -4489,9 +4495,9 @@ describe('Users service', () => {
         ]);
 
         chai.expect(db.medic.put.args).to.deep.equal([
-          [{ ...expectedUser, type: 'user-settings' }],
-          [{ ...expectedUser1, type: 'user-settings' }],
-          [{ ...expectedUser2, type: 'user-settings' }],
+          [{ ...expectedUser, type: 'user-settings', oidc: true, }],
+          [{ ...expectedUser1, type: 'user-settings', oidc: true, }],
+          [{ ...expectedUser2, type: 'user-settings', oidc: true, }],
         ]);
         chai.expect(db.users.put.args).to.deep.equal([
           [{
@@ -4589,8 +4595,7 @@ describe('Users service', () => {
         };
         chai.expect(validateSsoLoginUpdate.calledOnceWithExactly(
           { ...updates, contact_id: undefined, facility_id: undefined },
-          updatedUser,
-          existingUserSettings
+          updatedUser
         )).to.be.true;
         chai.expect(db.medic.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
         chai.expect(db.users.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
@@ -4638,12 +4643,58 @@ describe('Users service', () => {
         };
         chai.expect(validateSsoLoginUpdate.calledOnceWithExactly(
           { ...updates, contact_id: undefined, facility_id: undefined },
-          updatedUser,
-          existingUserSettings
+          updatedUser
         )).to.be.true;
         chai.expect(db.medic.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
         chai.expect(db.users.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
-        chai.expect(db.medic.put.calledOnceWithExactly(existingUserSettings)).to.be.true;
+        chai.expect(db.medic.put.calledOnceWithExactly({ ...existingUserSettings, oidc: true })).to.be.true;
+        chai.expect(db.users.put.calledOnceWithExactly(updatedUser)).to.be.true;
+      });
+
+      it('succeeds when disabling oidc for a user', async () => {
+        validateSsoLoginUpdate.resolves();
+        const existingUserData = {
+          facility_id: [ssoUserData.place],
+          contact_id: ssoUserData.contact,
+          roles: ssoUserData.roles,
+          _id: `org.couchdb.user:${ssoUserData.username}`,
+          name: ssoUserData.username,
+        };
+        const existingUserSettings = {
+          ...existingUserData,
+          type: 'user-settings',
+          oidc: true,
+        };
+        db.medic.get.resolves({ ...existingUserSettings });
+        const existingUser = {
+          ...existingUserData,
+          type: 'user',
+          password: 'existingPassword',
+          oidc_username: 'test@test.com'
+        };
+        db.users.get.resolves({ ...existingUser });
+        db.users.put.resolves({ id: existingUserData._id });
+        db.medic.put.resolves({ id: existingUserData._id });
+        const updates = { oidc_username: null, password: GENERATED_PASSWORD };
+
+        const response = await service.updateUser(ssoUserData.username, { ...updates }, true);
+
+        chai.expect(response).to.deep.equal({
+          user: { id: existingUser._id, rev: undefined },
+          'user-settings': { id: existingUser._id, rev: undefined },
+        });
+        const updatedUser = {
+          ...existingUser,
+          ...updates,
+          password_change_required: false
+        };
+        chai.expect(validateSsoLoginUpdate.calledOnceWithExactly(
+          { ...updates, contact_id: undefined, facility_id: undefined },
+          updatedUser
+        )).to.be.true;
+        chai.expect(db.medic.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
+        chai.expect(db.users.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
+        chai.expect(db.medic.put.calledOnceWithExactly({ ...existingUserSettings, oidc: false })).to.be.true;
         chai.expect(db.users.put.calledOnceWithExactly(updatedUser)).to.be.true;
       });
 

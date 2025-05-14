@@ -455,6 +455,10 @@ const getSettingsUpdates = (username, data) => {
     }
   });
 
+  if (Object.keys(data).includes('oidc_username')) {
+    settings.oidc = !!data.oidc_username;
+  }
+
   getCommonFieldsUpdates(settings, data);
 
   return settings;
@@ -1181,7 +1185,7 @@ module.exports = {
     if (tokenLoginError) {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
-    const ssoLoginError = await ssoLogin.validateSsoLoginUpdate(data, user, userSettings);
+    const ssoLoginError = await ssoLogin.validateSsoLoginUpdate(data, user);
     if (ssoLoginError) {
       return Promise.reject(error400(ssoLoginError.msg));
     }
