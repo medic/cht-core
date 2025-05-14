@@ -62,7 +62,7 @@ services:
       timeout: 3s
       retries: 12
 
-  mocha-test:
+  couch-test:
     image: node:22-alpine
     depends_on:
       couchdb1:

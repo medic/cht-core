@@ -24,7 +24,6 @@ FROM alpine:3 AS test_couchdb_build
 RUN apk --no-cache add bash bats curl jq openssl
 COPY tests /app/tests
 COPY set-up-cluster.sh /app/set-up-cluster.sh
-CMD [ "/app/tests/tests.sh" ]
 
 
 # Final
