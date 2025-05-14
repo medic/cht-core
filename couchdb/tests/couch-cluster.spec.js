@@ -5,7 +5,7 @@ const { expect } = chai;
 describe('CouchDB Cluster Unit Tests', () => {
   const COUCHDB_USER = process.env.COUCHDB_USER;
   const COUCHDB_PASSWORD = process.env.COUCHDB_PASSWORD;
-  const COUCH_SERVERS = ['couchdb1', 'couchdb2', 'couchdb3'];
+  const COUCH_SERVERS = ['couchdb1.local', 'couchdb2.local', 'couchdb3.local'];
   const TEST_DB_NAME = 'tests';
 
   const requestOnNode = async (serverIndex, path, options = {}) => {
@@ -81,19 +81,19 @@ describe('CouchDB Cluster Unit Tests', () => {
     }
   });
 
-  it('couchdb1 node is available', async function () {
+  it('couchdb1.local node is available', async function () {
     this.timeout(5000);
     const response = await requestOnNode(0, '/_up');
     expect(response.body).to.have.property('status', 'ok');
   });
 
-  it('couchdb2 node is available', async function () {
+  it('couchdb2.local node is available', async function () {
     this.timeout(5000);
     const response = await requestOnNode(1, '/_up');
     expect(response.body).to.have.property('status', 'ok');
   });
 
-  it('couchdb3 node is available', async function () {
+  it('couchdb3.local node is available', async function () {
     this.timeout(5000);
     const response = await requestOnNode(2, '/_up');
     expect(response.body).to.have.property('status', 'ok');
@@ -124,14 +124,14 @@ describe('CouchDB Cluster Unit Tests', () => {
     const membership = response.body;
     
     expect(membership.all_nodes).to.include.members([
-      'couchdb@couchdb1',
-      'couchdb@couchdb2',
-      'couchdb@couchdb3'
+      'couchdb@couchdb1.local',
+      'couchdb@couchdb2.local',
+      'couchdb@couchdb3.local'
     ]);
     expect(membership.cluster_nodes).to.include.members([
-      'couchdb@couchdb1',
-      'couchdb@couchdb2',
-      'couchdb@couchdb3'
+      'couchdb@couchdb1.local',
+      'couchdb@couchdb2.local',
+      'couchdb@couchdb3.local'
     ]);
   });
 });
