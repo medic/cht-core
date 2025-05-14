@@ -212,7 +212,7 @@ describe('auditing', () => {
       expect(audit.audit).to.be.undefined;
     });
 
-    it('should only store 20 history entries', async () => {
+    it('should only store 10 history entries', async () => {
       const docId = 'migration-log';
       const MAX_HISTORY_LIMIT = 10;
       const doc = await utils.db.get(docId);
