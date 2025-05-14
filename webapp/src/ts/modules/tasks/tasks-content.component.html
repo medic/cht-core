@@ -1,20 +1,19 @@
-<div class="content-pane right-pane">
-
-  <div class="col-sm-8 item-content empty-selection" *ngIf="loadingContent || loadingForm">
+<ng-container>
+  <div class="empty-selection" *ngIf="loadingContent || loadingForm">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" *ngIf="!selectedTask && !loadingContent">
+  <div class="empty-selection" *ngIf="!selectedTask && !loadingContent">
     <div>{{'No task selected' | translate}}</div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" *ngIf="!loadingContent && !loadingForm && contentError">
+  <div class="empty-selection" *ngIf="!loadingContent && !loadingForm && contentError">
     <div>{{ errorTranslationKey | translate}}</div>
   </div>
 
-  <div class="col-sm-8 item-content" *ngIf="selectedTask && !form && !loadingContent && !loadingForm && !contentError">
+  <div class="task-content" *ngIf="selectedTask && !form && !loadingContent && !loadingForm && !contentError">
     <div class="body">
       <div>
         <ul>
@@ -47,9 +46,9 @@
     </div>
   </div>
 
-  <div class="col-sm-8 item-content" [hidden]="!selectedTask || !form || loadingForm || loadingContent || contentError">
+  <div [hidden]="!selectedTask || !form || loadingForm || loadingContent || contentError">
     <div class="body">
       <mm-enketo formId="task-report" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()"></mm-enketo>
     </div>
   </div>
-</div>
+<ng-container>

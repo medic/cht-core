@@ -1,46 +1,67 @@
-<mm-tool-bar title="Tasks"></mm-tool-bar>
+<mm-tool-bar title="Tasks">
+  <mm-search-bar
+    (toggleFilter)="toggleFilter()"
+    (search)="search()"
+    [disabled]="tasksDisabled || loading || !hasTasks || errorStack"
+    [showFilter]="true">
+  </mm-search-bar>
+</mm-tool-bar>
 
 <div class="inner">
   <div class="inbox page">
 
-    <div id="tasks-list" class="col-sm-4 inbox-items left-pane">
-      <ul *ngIf="!errorStack && hasTasks">
-        <li *ngFor="let task of tasksList; trackBy: listTrackBy"
-          [attr.data-record-id]="task._id"
-          [class.selected]="task.selected"
-          [class.overdue]="task.overdue"
-          class="content-row">
-          <a [routerLink]="['/', 'tasks', task._id]" [state]="{ tab: 'tasks', id: task._id }">
-            <div *ngIf="task.icon" class="icon" [innerHTML]="task.icon | resourceIcon"></div>
-            <div class="content">
-              <div class="heading">
-                <h4>
-                  <span>{{task.contact?.name || ''}}</span>
-                </h4>
-                <div class="date">
-                  <span [innerHTML]="task.date | taskDueDate"></span>
+    <div id="tasks-list" 
+      class="inbox-items left-pane"
+      [ngClass]="{ 'col-sm-3': isSidebarFilterOpen, 'col-sm-4': !isSidebarFilterOpen }">
+      <div class="items-container">
+        <ul *ngIf="!errorStack && hasTasks">
+          <li *ngFor="let task of tasksList; trackBy: listTrackBy"
+            [attr.data-record-id]="task._id"
+            [class.selected]="task.selected"
+            [class.overdue]="task.overdue"
+            class="content-row">
+            <a [routerLink]="['/', 'tasks', task._id]" [state]="{ tab: 'tasks', id: task._id }">
+              <div *ngIf="task.icon" class="icon" [innerHTML]="task.icon | resourceIcon"></div>
+              <div class="content">
+                <div class="heading">
+                  <h4>
+                    <span>{{task.contact?.name || ''}}</span>
+                  </h4>
+                  <div class="date">
+                    <span [innerHTML]="task.date | taskDueDate"></span>
+                  </div>
                 </div>
+
+                <div *ngIf="task.title" class="summary">
+                  <p>{{task.title}}</p>
+                </div>
+
+                <div *ngIf="task.priorityLabel" class="warning">{{task.priorityLabel}}</div>
+                <div *ngIf="task.lineage?.length" class="detail" [innerHTML]="task.lineage | lineage"></div>
               </div>
+            </a>
+          </li>
+        </ul>
 
-              <div *ngIf="task.title" class="summary">
-                <p>{{task.title}}</p>
-              </div>
+        <error-log *ngIf="!!errorStack" [errorStack]="errorStack" [errorFor]="'tasks'" [reload]="refreshTaskList"></error-log>
 
-              <div *ngIf="task.priorityLabel" class="warning">{{task.priorityLabel}}</div>
-              <div *ngIf="task.lineage?.length" class="detail" [innerHTML]="task.lineage | lineage"></div>
-            </div>
-          </a>
-        </li>
-      </ul>
-
-      <error-log *ngIf="!!errorStack" [errorStack]="errorStack" [errorFor]="'tasks'" [reload]="refreshTaskList"></error-log>
-
-      <p class="loading-status" *ngIf="!errorStack && !loading && !hasTasks && !tasksDisabled">{{'No tasks found' | translate}}</p>
-      <p class="loading-status" *ngIf="!errorStack && !loading && hasTasks && !tasksDisabled">{{'task.list.complete' | translate}}</p>
-      <p class="loading-status" *ngIf="tasksDisabled">{{'tasks.disabled' | translate}}</p>
-      <div class="loader" *ngIf="loading && !tasksDisabled && !errorStack"></div>
+        <p class="loading-status" *ngIf="!errorStack && !loading && !hasTasks && !tasksDisabled">{{'No tasks found' | translate}}</p>
+        <p class="loading-status" *ngIf="!errorStack && !loading && hasTasks && !tasksDisabled">{{'task.list.complete' | translate}}</p>
+        <p class="loading-status" *ngIf="tasksDisabled">{{'tasks.disabled' | translate}}</p>
+        <div class="loader" *ngIf="loading && !tasksDisabled && !errorStack"></div>
+      </div>
     </div>
 
-    <router-outlet></router-outlet>
+    <div class="content-pane right-pane">
+      <div class="item-content" [ngClass]="{ 'col-sm-6': isSidebarFilterOpen, 'col-sm-8': !isSidebarFilterOpen }">
+        <router-outlet></router-outlet>
+      </div>
+
+      <mm-tasks-sidebar-filter
+        class="col-sm-3 sidebar-filter-wrapper"
+        (search)="search()"
+        [disabled]="false">
+      </mm-tasks-sidebar-filter>
+    </div>
   </div>
 </div>

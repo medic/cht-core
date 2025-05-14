@@ -1,0 +1,110 @@
+<section class="sidebar-filter">
+  <div class="sidebar-backdrop" [ngClass]="{ hidden: !isOpen }" (click)="toggleSidebarFilter()"></div>
+
+  <div class="sidebar-main" [ngClass]="{ hidden: !isOpen }">
+    <div class="sidebar-header">
+      <p class="sidebar-title">{{ 'tasks.sidebar.filter.title' | translate }}</p>
+      <a class="sidebar-reset" [class.disabled]="disabled" (click)="resetFilters()">{{ 'tasks.sidebar.filter.reset' | translate }}</a>
+      <a class="sidebar-close" (click)="toggleSidebarFilter()">
+        <mat-icon svgIcon="icon-close"></mat-icon>
+      </a>
+    </div>
+
+    <div class="sidebar-body">
+      <mat-accordion multi>
+        <!-- 1. Form Type -->
+        <mat-expansion-panel id="form-filter-accordion">
+          <mat-expansion-panel-header>
+            <ng-container
+              [ngTemplateOutlet]="headerTemplate"
+              [ngTemplateOutletContext]="{
+                numSelected: filterCount.formFilter,
+                label: 'tasks.sidebar.filter.form_type',
+                filters: [ 'formFilter' ]
+              }">
+            </ng-container>
+          </mat-expansion-panel-header>
+          <mat-panel-description>
+            <mm-form-type-filter
+              class="filter"
+              fieldId="formFilter"
+              (search)="applyFilters()"
+              [disabled]="disabled">
+            </mm-form-type-filter>
+          </mat-panel-description>
+        </mat-expansion-panel>
+
+        <!-- 2. Place -->
+        <mat-expansion-panel  id="place-filter-accordion">
+          <mat-expansion-panel-header>
+            <ng-container
+              [ngTemplateOutlet]="headerTemplate"
+              [ngTemplateOutletContext]="{
+                numSelected: filterCount.placeFilter,
+                label: 'tasks.sidebar.filter.place',
+                filters: [ 'placeFilter' ]
+              }">
+            </ng-container>
+          </mat-expansion-panel-header>
+          <mat-panel-description>
+            <mm-facility-filter
+              class="filter"
+              fieldId="placeFilter"
+              (search)="applyFilters()"
+              [disabled]="disabled">
+            </mm-facility-filter>
+          </mat-panel-description>
+        </mat-expansion-panel>
+
+        <!-- 3. Date -->
+        <mat-expansion-panel  id="date-filter-accordion" [class.filter-error]="dateFilterError">
+          <mat-expansion-panel-header>
+            <ng-container
+              [ngTemplateOutlet]="headerTemplate"
+              [ngTemplateOutletContext]="{
+                numSelected: (filterCount.fromDateFilter || 0) + (filterCount.toDateFilter || 0),
+                label: 'tasks.sidebar.filter.date',
+                filters: [ 'fromDateFilter', 'toDateFilter' ]
+              }">
+            </ng-container>
+          </mat-expansion-panel-header>
+          <mat-panel-description>
+            <label>{{ 'tasks.sidebar.filter.from_date' | translate }}</label>
+            <mm-date-filter
+              #fromDate
+              class="filter"
+              fieldId="fromDateFilter"
+              (search)="applyFilters()"
+              (onError)="showDateFilterError($event)"
+              [disabled]="disabled"
+              [isStartDate]="true">
+            </mm-date-filter>
+
+            <label>{{ 'tasks.sidebar.filter.to_date' | translate }}</label>
+            <mm-date-filter
+              #toDate
+              class="filter"
+              fieldId="toDateFilter"
+              (search)="applyFilters()"
+              (onError)="showDateFilterError($event)"
+              [disabled]="disabled">
+            </mm-date-filter>
+            <p class="filter-error-message" *ngIf="dateFilterError">{{ dateFilterError | translate }}</p>
+          </mat-panel-description>
+        </mat-expansion-panel>
+      </mat-accordion>
+    </div>
+
+    <div class="sidebar-footer">
+      <button type="button" class="btn btn-primary" (click)="toggleSidebarFilter()">{{ 'tasks.sidebar.filter.submit' | translate }}</button>
+    </div>
+  </div>
+</section>
+
+<ng-template #headerTemplate let-numSelected="numSelected" let-label="label" let-filters="filters">
+  <p class="title">{{ label | translate }}</p>
+  <div class="chip" *ngIf="numSelected" [class.disabled]="disabled">
+    <span>{{ numSelected | translate }}</span>
+    <span class="fa fa-times" (click)="clearFilters(filters); $event.stopPropagation();"></span>
+  </div>
+</ng-template>
