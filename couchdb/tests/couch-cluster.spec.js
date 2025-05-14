@@ -106,7 +106,7 @@ describe('CouchDB Cluster Unit Tests', () => {
 
     // Insert doc on node 2
     await requestOnNode(1, `/${TEST_DB_NAME}/${id}`, {
-      method: 'POST',
+      method: 'PUT',
       body: { Name: 'Test Cluster' }
     });
 
