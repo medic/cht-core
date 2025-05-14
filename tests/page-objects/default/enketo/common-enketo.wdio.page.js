@@ -30,7 +30,6 @@ const isElementDisplayed = async (type, text) => {
 };
 
 const selectRadioButton = async (question, value) => {
-  await (await radioButtonElement(question, value)).waitForClickable();
   await (await radioButtonElement(question, value)).click();
 };
 
@@ -40,7 +39,6 @@ const selectCheckBox = async (question, value) => {
     .$(`legend*=${question}`)
     .nextElement()
     .$(`label*=${value}`);
-  await checkbox.waitForClickable();
   await checkbox.click();
 };
 
@@ -76,7 +74,7 @@ const addFileInputValue = async (question, value, { repeatIndex = 0 } = {}) => {
 const validateSummaryReport = async (textArray) => {
   const element = await getCurrentPageSection();
   for (const text of textArray) {
-    expect(await (await element.$(`span*=${text}`)).isDisplayed()).to.be.true;
+    expect(await element.$(`span*=${text}`).isDisplayed()).to.be.true;
   }
 };
 

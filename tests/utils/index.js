@@ -1134,7 +1134,7 @@ const enableLanguages = async (languageCodes) => {
       });
     }
   }
-  await updateSettings({ languages }, { ignoreReload: true });
+  await updateSettings({ languages });
 };
 
 const getSettings = () => getDoc('settings').then(settings => settings.settings);

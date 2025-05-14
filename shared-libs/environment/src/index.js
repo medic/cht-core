@@ -1,5 +1,4 @@
 const logger = require('@medic/logger');
-const request = require('@medic/couch-request');
 const semver = require('semver');
 
 const { COUCH_URL, BUILDS_URL, PROXY_CHANGE_ORIGIN = false } = process.env;
@@ -72,15 +71,15 @@ const getVersionFromDdoc = (ddoc) => {
     'unknown';
 };
 
-const getDeployInfo = async () => {
-  if (deployInfoCache) {
+const getDeployInfo = async (refresh = false) => {
+  if (deployInfoCache && !refresh) {
     return deployInfoCache;
   }
 
   try {
-    const ddoc = await request.get({
-      url: `${couchUrl}/_design/${module.exports.ddoc}`,
-    });
+    // Lazy load couch-request only when needed
+    const request = require('@medic/couch-request');
+    const ddoc = await request.get({ url: `${couchUrl}/_design/${module.exports.ddoc}` });
     deployInfoCache = {
       ...ddoc.build_info,
       ...ddoc.deploy_info,

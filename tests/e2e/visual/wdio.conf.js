@@ -32,11 +32,17 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       'contacts/contact-user-management.wdio-spec.js',
       'contacts/contact-user-hierarchy-creation.wdio-spec.js',
       'reports/bulk-delete.wdio-spec.js',
+      'reports/report-filter.wdio-spec.js',
+      'reports/report-action-bar.wdio-spec.js',
+      'targets/targets-overview.wdio-spec.js',
     ],
     mobileTests: [
       'contacts/contact-user-management.wdio-spec.js',
       'contacts/list-view-login-visual.wdio-spec.js',
       'reports/bulk-delete.wdio-spec.js',
+      'reports/report-filter.wdio-spec.js',
+      'reports/report-action-bar.wdio-spec.js',
+      'targets/targets-overview.wdio-spec.js',
     ]
   },
   capabilities: process.argv.includes('--suite=mobileTests')
