@@ -2,15 +2,15 @@ const config = require('./libs/config');
 const passwords = require('./libs/passwords');
 const db = require('./libs/db');
 
-const isSSOLoginGloballyEnabled = () => {
+const isSsoLoginGloballyEnabled = () => {
   return isSsoLoginEnabled();
 };
 
-const shouldEnableSSOLogin = (data) => {
-  return isSSOLoginGloballyEnabled() && data.oidc === true;
+const shouldEnableSsoLogin = (data) => {
+  return isSsoLoginGloballyEnabled() && data.oidc === true;
 };
 
-const validateSSOLoginEdit = async (data, updatedUser) => {
+const validateSsoLoginEdit = async (data, updatedUser) => {
   const user = await db.users.get(updatedUser._id);
   const wasUsingSSO = user.oidc;
 
@@ -32,19 +32,19 @@ const validateSSOLoginEdit = async (data, updatedUser) => {
     };
   }
 
-  if (shouldEnableSSOLogin(data)) {
+  if (shouldEnableSsoLogin(data)) {
     updatedUser.password = passwords.generate();
     updatedUser.password_change_required = false;
   }
 };
 
-const validateSSOLogin = (data, newUser = true, user = {}) => {
+const validateSsoLogin = (data, newUser = true, user = {}) => {
   return newUser
-    ? validateSSOLoginCreate(data)
-    : validateSSOLoginEdit(data, user);
+    ? validateSsoLoginCreate(data)
+    : validateSsoLoginEdit(data, user);
 };
 
-const enableSSOLogin = (response) => {
+const enableSsoLogin = (response) => {
   return Promise
     .all([
       db.users.get(response.user.id),
@@ -70,7 +70,7 @@ const enableSSOLogin = (response) => {
  * @param {Object} response - the response of previous actions
  * @returns {Promise<{Object}>} - updated response to be sent to the client
  */
-const disableSSOLogin = (response) => {
+const disableSsoLogin = (response) => {
   return Promise
     .all([
       db.users.get(response.user.id),
@@ -95,17 +95,17 @@ const disableSSOLogin = (response) => {
  * @param {Object} response - the response of previous actions
  * @returns {Promise<{Object}>} - updated response to be sent to the client
  */
-const manageSSOLogin = (data, response) => {
+const manageSsoLogin = (data, response) => {
   if (data.oidc === false) {
-    return disableSSOLogin(response);
+    return disableSsoLogin(response);
   }
 
-  if (!shouldEnableSSOLogin(data)) {
+  if (!shouldEnableSsoLogin(data)) {
     return Promise.resolve(response);
   }
 
   if (data.oidc === true) {
-    return enableSSOLogin(response);
+    return enableSsoLogin(response);
   }
 };
 
@@ -116,7 +116,7 @@ const isSsoLoginEnabled = () => {
   return !!settings?.oidc_provider?.client_id;
 };
 
-const validateSSOLoginCreate = (data) => {
+const validateSsoLoginCreate = (data) => {
   if (!data.oidc){
     return;
   }
@@ -139,18 +139,21 @@ const validateSSOLoginCreate = (data) => {
 };
 
 const validateSsoLoginUpdate = (data, updatedUser) => {
+  if (!data.oidc && !data.password && !data.token_login) {
+    return;
+  }
   // token_login is set on updateUser later, so check data here
-  if (updatedUser.oidc && data.token_login) {
+  if (updatedUser.oidc && (data.token_login || data.password)) {
     return { msg: 'Either OIDC Login only or Token/Password Login is allowed' };
   }
 
-  return validateSSOLoginEdit(data, updatedUser);
+  return validateSsoLoginEdit(data, updatedUser);
 };
 
 
 module.exports = {
-  shouldEnableSSOLogin,
-  validateSSOLogin,
-  manageSSOLogin,
+  shouldEnableSsoLogin,
+  validateSsoLogin,
+  manageSsoLogin,
   validateSsoLoginUpdate
 };

@@ -528,7 +528,7 @@ const getDataRoles = (data) => data.roles || (data.type && getRoles(data.type));
 const missingFields = data => {
   const required = ['username'];
 
-  if (!ssoLogin.shouldEnableSSOLogin(data)) {
+  if (!ssoLogin.shouldEnableSsoLogin(data)) {
     if (tokenLogin.shouldEnableTokenLogin(data)) {
       required.push('phone');
     } else {
@@ -720,7 +720,7 @@ const createUserEntities = async (data, appUrl) => {
   await createUser(data, response);
   await createUserSettings(data, response);
   await tokenLogin.manageTokenLogin(data, appUrl, response);
-  await ssoLogin.manageSSOLogin(data, response);
+  await ssoLogin.manageSsoLogin(data, response);
   return response;
 };
 
@@ -899,7 +899,7 @@ const createMultiFacilityUser = async (data, appUrl) => {
     throw error400(tokenLoginError.msg, tokenLoginError.key);
   }
 
-  const ssoLoginError = ssoLogin.validateSSOLogin(data, true);
+  const ssoLoginError = ssoLogin.validateSsoLogin(data, true);
   if (ssoLoginError) {
     throw error400(ssoLoginError.msg, ssoLoginError.key);
   }
@@ -917,7 +917,7 @@ const createMultiFacilityUser = async (data, appUrl) => {
   await createUser(data, response);
   await createUserSettings(data, response);
   await tokenLogin.manageTokenLogin(data, appUrl, response);
-  await ssoLogin.manageSSOLogin(data, response);
+  await ssoLogin.manageSsoLogin(data, response);
   return response;
 };
 
@@ -1188,7 +1188,7 @@ module.exports = {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
 
-    const ssoLoginError = await ssoLogin.validateSSOLogin(data, false, user);
+    const ssoLoginError = await ssoLogin.validateSsoLogin(data, false, user);
     if (ssoLoginError) {
       return Promise.reject(error400(ssoLoginError.msg, ssoLoginError.key));
     }
@@ -1202,7 +1202,7 @@ module.exports = {
     };
 
     await tokenLogin.manageTokenLogin(data, appUrl, response);
-    await ssoLogin.manageSSOLogin(data, response);
+    await ssoLogin.manageSsoLogin(data, response);
 
     return response;
   },
