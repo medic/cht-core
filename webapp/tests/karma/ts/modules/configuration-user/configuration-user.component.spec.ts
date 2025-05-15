@@ -34,9 +34,7 @@ describe('Configuration User Component', () => {
           { provide: UserSettingsService, useValue: userSettingsService },
         ]
       })
-      .compileComponents()
-      .then(() => {
-      });
+      .compileComponents();
   });
 
   const createComponent = () => {
