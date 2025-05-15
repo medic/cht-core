@@ -19,9 +19,11 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateFilterComponent | StatusFilterComponent;
 
+type ActiveFilters = { formType: boolean, place: boolean, date: boolean, status: boolean };
+
 @Component({
-  selector: 'mm-reports-sidebar-filter',
-  templateUrl: './reports-sidebar-filter.component.html',
+  selector: 'mm-sidebar-filter',
+  templateUrl: './sidebar-filter.component.html',
   imports: [
     NgClass,
     MatIcon,
@@ -38,9 +40,11 @@ type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateF
     TranslatePipe
   ]
 })
-export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
+export class SidebarFilterComponent implements AfterViewInit, OnDestroy {
   @Output() search: EventEmitter<any> = new EventEmitter();
   @Input() disabled;
+  @Input({ required: true }) type;
+  @Input() includeFilters: ActiveFilters | {} = {};
 
   @ViewChild(FormTypeFilterComponent) formTypeFilter!: FormTypeFilterComponent;
   @ViewChild(FacilityFilterComponent) facilityFilter!: FacilityFilterComponent;
@@ -55,20 +59,31 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   filterCount:any = { };
   dateFilterError = '';
 
+  readonly _defaultFilters = {
+    formType: true,
+    place: true,
+    date: true,
+    status: true
+  };
+
   constructor(
     private store: Store,
     private telemetryService: TelemetryService,
   ) {
-    this.globalActions = new GlobalActions(store);
+    this.globalActions = new GlobalActions(this.store);
+  }
+
+  get activeFilters () {
+    const activeFilters : ActiveFilters = {...this._defaultFilters, ...this.includeFilters };
+    return activeFilters;
   }
 
   ngAfterViewInit() {
     this.filters = [
-      this.formTypeFilter,
-      this.facilityFilter,
-      this.fromDateFilter,
-      this.toDateFilter,
-      this.statusFilter,
+      ...(this.activeFilters.formType ? [this.formTypeFilter] : []),
+      ...(this.activeFilters.place ? [this.facilityFilter] : []),
+      ...(this.activeFilters.date ? [this.fromDateFilter, this.toDateFilter] : []),
+      ...(this.activeFilters.status ? [this.statusFilter] : [])
     ];
   }
 
@@ -114,8 +129,8 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
     this.globalActions.setSidebarFilter({ isOpen: this.isOpen });
 
     if (this.isOpen) {
-      // Counting every time the user opens the sidebar filter in reports tab.
-      this.telemetryService.record('sidebar_filter:reports:open');
+      // Counting every time the user opens the sidebar filter in relevant tab.
+      this.telemetryService.record(`sidebar_filter:${this.type}:open`);
     }
   }
 

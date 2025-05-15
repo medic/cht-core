@@ -1,52 +1,54 @@
-<div class="empty-selection" *ngIf="loadingContent || loadingForm">
-  <div>
-    <div class="loader"></div>
-  </div>
-</div>
-
-<div class="empty-selection" *ngIf="!selectedTask && !loadingContent">
-  <div>{{'No task selected' | translate}}</div>
-</div>
-
-<div class="empty-selection" *ngIf="!loadingContent && !loadingForm && contentError">
-  <div>{{ errorTranslationKey | translate}}</div>
-</div>
-
-<div id="tasks-content" class=".task-wrap" *ngIf="selectedTask && !form && !loadingContent && !loadingForm && !contentError">
-  <div class="body">
+<ng-container>
+  <div class="empty-selection" *ngIf="loadingContent || loadingForm">
     <div>
-      <ul>
-        <li>
-          <h2>{{selectedTask.title | translateFrom:selectedTask}}</h2>
-        </li>
-        <li>
-          <label>{{'task.date' | translate}}</label>
-          <p [innerHTML]="selectedTask.date | simpleDate"></p>
-        </li>
-        <li *ngIf="selectedTask.priority">
-          <label>{{'task.priority' |  translate}}</label>
-          <p [ngClass]="{'high-priority': selectedTask.priority === 'high', 'medium-priority': selectedTask.priority === 'medium'}">
-            <span class="priority">
-              <i class="fa fa-exclamation-triangle high-priority-icon"></i>
-              <i class="fa fa-info-circle medium-priority-icon"></i>
-            </span>
-            {{selectedTask.priorityLabel | translateFrom:selectedTask}}
-          </p>
-        </li>
-        <li *ngFor="let field of selectedTask.fields">
-          <label>{{field.label | translateFrom:selectedTask}}</label>
-          <p>{{field.value | translateFrom:selectedTask}}</p>
-        </li>
-        <li class="actions" *ngIf="selectedTask.actions.length">
-          <a class="btn btn-primary" *ngFor="let action of selectedTask.actions" (click)="performAction(action)">{{action.label | translateFrom:selectedTask}}</a>
-        </li>
-      </ul>
+      <div class="loader"></div>
     </div>
   </div>
-</div>
 
-<div [hidden]="!selectedTask || !form || loadingForm || loadingContent || contentError">
-  <div class="body">
-    <mm-enketo formId="task-report" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()"></mm-enketo>
+  <div class="empty-selection" *ngIf="!selectedTask && !loadingContent">
+    <div>{{'No task selected' | translate}}</div>
   </div>
-</div>
+
+  <div class="empty-selection" *ngIf="!loadingContent && !loadingForm && contentError">
+    <div>{{ errorTranslationKey | translate}}</div>
+  </div>
+
+  <div class="task-content" *ngIf="selectedTask && !form && !loadingContent && !loadingForm && !contentError">
+    <div class="body">
+      <div>
+        <ul>
+          <li>
+            <h2>{{selectedTask.title | translateFrom:selectedTask}}</h2>
+          </li>
+          <li>
+            <label>{{'task.date' | translate}}</label>
+            <p [innerHTML]="selectedTask.date | simpleDate"></p>
+          </li>
+          <li *ngIf="selectedTask.priority">
+            <label>{{'task.priority' |  translate}}</label>
+            <p [ngClass]="{'high-priority': selectedTask.priority === 'high', 'medium-priority': selectedTask.priority === 'medium'}">
+              <span class="priority">
+                <i class="fa fa-exclamation-triangle high-priority-icon"></i>
+                <i class="fa fa-info-circle medium-priority-icon"></i>
+              </span>
+              {{selectedTask.priorityLabel | translateFrom:selectedTask}}
+            </p>
+          </li>
+          <li *ngFor="let field of selectedTask.fields">
+            <label>{{field.label | translateFrom:selectedTask}}</label>
+            <p>{{field.value | translateFrom:selectedTask}}</p>
+          </li>
+          <li class="actions" *ngIf="selectedTask.actions.length">
+            <a class="btn btn-primary" *ngFor="let action of selectedTask.actions" (click)="performAction(action)">{{action.label | translateFrom:selectedTask}}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div [hidden]="!selectedTask || !form || loadingForm || loadingContent || contentError">
+    <div class="body">
+      <mm-enketo formId="task-report" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()"></mm-enketo>
+    </div>
+  </div>
+<ng-container>

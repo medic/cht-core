@@ -400,7 +400,7 @@ export class RulesEngineService implements OnDestroy {
     this.cancelDebounce(this.FRESHNESS_KEY);
     await this.waitForDebounce(this.CHANGE_WATCHER_KEY);
     const taskDocs = await this.rulesEngineCore
-      .fetchTasksFor()
+      .fetchTasksFor() // We should be able to pass contactIds in here - look at the rules-engine node module
       .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
       .on('running', () => {
         trackPerformanceRunning = this.performanceService.track();
