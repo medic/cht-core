@@ -528,10 +528,12 @@ const getDataRoles = (data) => data.roles || (data.type && getRoles(data.type));
 const missingFields = data => {
   const required = ['username'];
 
-  if (tokenLogin.shouldEnableTokenLogin(data)) {
-    required.push('phone');
-  } else if (!data.oidc) {
-    required.push('password');
+  if (!ssoLogin.shouldEnableSSOLogin(data)) {
+    if (tokenLogin.shouldEnableTokenLogin(data)) {
+      required.push('phone');
+    } else {
+      required.push('password');
+    }
   }
 
   const userRoles = getDataRoles(data);
@@ -718,6 +720,7 @@ const createUserEntities = async (data, appUrl) => {
   await createUser(data, response);
   await createUserSettings(data, response);
   await tokenLogin.manageTokenLogin(data, appUrl, response);
+  await ssoLogin.manageSSOLogin(data, response);
   return response;
 };
 
@@ -895,10 +898,12 @@ const createMultiFacilityUser = async (data, appUrl) => {
   if (tokenLoginError) {
     throw error400(tokenLoginError.msg, tokenLoginError.key);
   }
-  const ssoLoginError = ssoLogin.validateSsoLogin(data);
+
+  const ssoLoginError = ssoLogin.validateSSOLogin(data, true);
   if (ssoLoginError) {
-    throw error400(ssoLoginError.msg);
+    throw error400(ssoLoginError.msg, ssoLoginError.key);
   }
+
   const passwordError = validatePassword(data.password);
   if (passwordError) {
     throw passwordError;
@@ -912,6 +917,7 @@ const createMultiFacilityUser = async (data, appUrl) => {
   await createUser(data, response);
   await createUserSettings(data, response);
   await tokenLogin.manageTokenLogin(data, appUrl, response);
+  await ssoLogin.manageSSOLogin(data, response);
   return response;
 };
 
@@ -931,7 +937,7 @@ const validateUpgradeAttemptFields = (data) => {
   }
 };
 
-const validateUpgradeAtetmptPassword = (data) => {
+const validateUpgradeAttemptPassword = (data) => {
   if (data.password) {
     const passwordError = validatePassword(data.password);
     if (passwordError) {
@@ -952,7 +958,7 @@ const validateUpdateAttempt = (data, fullAccess) => {
   }
 
   validateUpgradeAttemptFields(data);
-  validateUpgradeAtetmptPassword(data);
+  validateUpgradeAttemptPassword(data);
 };
 
 const checkPayloadFacilityCount = (data) => {
@@ -1023,7 +1029,7 @@ module.exports = {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
 
-    const ssoLoginError = ssoLogin.validateSsoLogin(data);
+    const ssoLoginError = ssoLogin.validateSsoLogin(data, true);
     if (ssoLoginError) {
       return Promise.reject(error400(ssoLoginError.msg));
     }
@@ -1103,7 +1109,7 @@ module.exports = {
           throw new Error(tokenLoginError.msg);
         }
 
-        const ssoLoginError = ssoLogin.validateSsoLogin(user);
+        const ssoLoginError = ssoLogin.validateSsoLogin(user, true);
         if (ssoLoginError) {
           throw error400(ssoLoginError.msg);
         }
@@ -1181,9 +1187,10 @@ module.exports = {
     if (tokenLoginError) {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
-    const ssoLoginError = ssoLogin.validateSsoLoginUpdate(data, user);
+
+    const ssoLoginError = await ssoLogin.validateSSOLogin(data, false, user);
     if (ssoLoginError) {
-      return Promise.reject(error400(ssoLoginError.msg));
+      return Promise.reject(error400(ssoLoginError.msg, ssoLoginError.key));
     }
 
     await validateUserFacility(data, user);
@@ -1194,7 +1201,10 @@ module.exports = {
       'user-settings': await saveUserSettingsUpdates(userSettings),
     };
 
-    return tokenLogin.manageTokenLogin(data, appUrl, response);
+    await tokenLogin.manageTokenLogin(data, appUrl, response);
+    await ssoLogin.manageSSOLogin(data, response);
+
+    return response;
   },
 
   /**

@@ -52,7 +52,7 @@ describe('EditUserCtrl controller', () => {
       facility_id: ['abc'],
       contact_id: 'xyz',
       roles: [ 'district-manager', 'supervisor' ],
-      language: 'zz',
+      language: 'zz'
     };
     translate = sinon.stub();
     Translate = { fieldIsRequired: sinon.stub() };
@@ -178,6 +178,7 @@ describe('EditUserCtrl controller', () => {
           passwordFieldType: 'password',
           showPasswordIcon: '/login/images/show-password.svg',
           hidePasswordIcon: '/login/images/hide-password.svg',
+          oidc: undefined
         });
       });
     });
@@ -862,6 +863,193 @@ describe('EditUserCtrl controller', () => {
         .then(() => {
           chai.expect(UpdateUser.callCount).to.equal(0);
           chai.expect(scope.errors.password).to.equal('password required');
+        });
+    });
+
+    it('should not require password when oidc is enabled for new sso-enabled users', () => {
+      mockGetReplicationLimit();
+      return mockCreateNewUser()
+        .setupPromise
+        .then(() => {
+          scope.editUserModel.username = 'newuser';
+          scope.editUserModel.roles = [ 'data-entry' ];
+          scope.editUserModel.oidc = true;
+
+          return scope.editUser();
+        })
+        .then(() => {
+          chai.expect(CreateUser.createSingleUser.calledOnceWithExactly({
+            username: 'newuser',
+            roles: ['data-entry'],
+            oidc: true,
+            place: undefined
+          })).to.be.true;
+        });
+    });
+
+    it('should clear password fields when oidc is enabled for new sso-enabled users', () => {
+      mockGetReplicationLimit();
+      return mockCreateNewUser()
+        .setupPromise
+        .then(() => {
+          scope.editUserModel.username = 'newuser';
+          scope.editUserModel.roles = [ 'data-entry' ];
+          scope.editUserModel.oidc = true;
+          scope.editUserModel.password = 'pass123';
+
+          return scope.editUser();
+        })
+        .then(() => {
+          chai.expect(CreateUser.createSingleUser.calledOnceWithExactly({
+            username: 'newuser',
+            roles: ['data-entry'],
+            oidc: true,
+            place: undefined
+          })).to.be.true;
+        });
+    });
+
+    it('should disable sso login', () => {
+      mockGetReplicationLimit();
+      userToEdit.oidc = true;
+      return mockEditAUser(userToEdit)
+        .setupPromise
+        .then(() => {
+          scope.editUserModel.oidc = undefined;
+          scope.editUserModel.roles = [ 'data-entry' ];
+          scope.editUserModel.password = 'Password123.';
+          scope.editUserModel.passwordConfirm = 'Password123.';
+
+          return scope.editUser();
+        })
+        .then(() => {
+          chai.expect(UpdateUser.calledOnceWithExactly(
+            userToEdit.name,
+            {
+              roles: ['data-entry'],
+              oidc: false,
+              password: 'Password123.',
+              contact: undefined,
+              place: undefined
+            }
+          )).to.be.true;
+        });
+    });
+
+    it('should require password when disabling sso login', () => {
+      Translate.fieldIsRequired.withArgs('Password').resolves('password required');
+
+      userToEdit.oidc = true;
+      return mockEditAUser(userToEdit)
+        .setupPromise
+        .then(() => {
+          scope.editUserModel.oidc = false;
+          scope.editUserModel.roles = [ 'data-entry' ];
+
+          return scope.editUser();
+        })
+        .then(() => {
+          chai.expect(UpdateUser.callCount).to.equal(0);
+          chai.expect(scope.errors.password).to.equal('password required');
+        });
+    });
+
+    it('should not require password when disabling sso login to token login', () => {
+      mockGetReplicationLimit();
+      userToEdit.oidc = true;
+      return mockEditAUser(userToEdit)
+        .setupPromise
+        .then(() => {
+          scope.editUserModel.oidc = false;
+          scope.editUserModel.token_login = true;
+          scope.editUserModel.phone = '+40755696969';
+          scope.editUserModel.roles = [ 'data-entry' ];
+
+          return scope.editUser();
+        })
+        .then(() => {
+          chai.expect(UpdateUser.calledOnceWithExactly(
+            userToEdit.name,
+            {
+              roles: ['data-entry'],
+              oidc: false,
+              phone: '+40755696969',
+              token_login: true,
+              contact: undefined,
+              place: undefined
+            }
+          )).to.be.true;
+        });
+    });
+
+    it('should not require password when disabling token login to sso login', () => {
+      mockGetReplicationLimit();
+      userToEdit.token_login = true;
+      return mockEditAUser(userToEdit)
+        .setupPromise
+        .then(() => {
+          scope.editUserModel.oidc = true;
+          scope.editUserModel.token_login = false;
+          scope.editUserModel.phone = '+40755696969';
+          scope.editUserModel.roles = [ 'data-entry' ];
+
+          return scope.editUser();
+        })
+        .then(() => {
+          chai.expect(UpdateUser.calledOnceWithExactly(
+            userToEdit.name,
+            {
+              roles: ['data-entry'],
+              oidc: true,
+              phone: '+40755696969',
+              token_login: false,
+              contact: undefined,
+              place: undefined
+            }
+          )).to.be.true;
+        });
+    });
+
+    it('should not update sso user when nothing has changed', () => {
+      mockContact(userToEdit.contact_id);
+      mockFacility(userToEdit.facility_id);
+      mockContactGet(userToEdit.contact_id);
+      mockGetReplicationLimit();
+
+      userToEdit.oidc = true;
+      return mockEditAUser(userToEdit)
+        .setupPromise
+        .then(() => {
+          scope.editUserModel.oidc = true;
+          return scope.editUser();
+        })
+        .then(() => {
+          chai.expect(UpdateUser.called).to.equal(false);
+        });
+    });
+
+    it('should not overwrite sso oidc property when editing and making no changes', () => {
+      mockGetReplicationLimit();
+
+      userToEdit.oidc = true;
+      return mockEditAUser(userToEdit)
+        .setupPromise
+        .then(() => {
+          scope.editUserModel.phone = '+40755696969';
+          scope.editUserModel.roles = [ 'data-entry' ];
+
+          return scope.editUser();
+        })
+        .then(() => {
+          chai.expect(UpdateUser.calledOnceWithExactly(
+            userToEdit.name,
+            {
+              roles: ['data-entry'],
+              phone: '+40755696969',
+              contact: undefined,
+              place: undefined
+            }
+          )).to.be.true;
         });
     });
   });
