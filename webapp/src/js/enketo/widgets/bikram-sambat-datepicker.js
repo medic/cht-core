@@ -47,12 +47,16 @@ const setupDateInputs = ($parent) => {
   const $realDateInput = $parent.children('input[type=date]');
   const initialVal = $realDateInput.val();
   
+  // Prepare the DOM
   $realDateInput.addClass('ignore no-validate');
   $parent.children('.widget.date').remove();
   $realDateInput.hide();
   $parent.append(TEMPLATE);
+  
+  // Initialize bikram_sambat_bs listeners
   bikram_sambat_bs.initListeners($parent, $realDateInput);
 
+  // Set initial date if present
   if (initialVal) {
     bikram_sambat_bs.setDate_greg_text(
       $parent.children('.bikram-sambat-input-group'),
@@ -61,6 +65,7 @@ const setupDateInputs = ($parent) => {
     );
   }
 
+  // Set up the datepicker UI and handlers
   setupDatePicker($parent, $realDateInput);
 };
 
@@ -73,75 +78,46 @@ const setupDatePicker = ($parent, $realDateInput) => {
   const $group = $parent.find('.bikram-sambat-input-group');
   const $calendarButton = $group.find('.calendar-btn');
 
+  // Synchronize any existing values in the fields
   syncInputValues($group);
   
-  // Remove any existing datepicker inputs to prevent duplicates
-  $group.find('.nepali-datepicker-input').remove();
+  // Set up the nepali date picker
+  setupNepaliDatePicker($group, $calendarButton, $realDateInput);
   
-  const $hiddenDateInput = $('<input type="text" class="nepali-datepicker-input">');
-  $calendarButton.after($hiddenDateInput);
-
-  try {
-    if (typeof $.fn.nepaliDatePicker === 'function') {
-      initializeDatePicker($group, $hiddenDateInput, $calendarButton, $realDateInput);
-    } else {
-      handlePickerUnavailable($calendarButton, 'Nepali Date Picker library not available. Please enter date manually.');
-    }
-  } catch (e) {
-    console.error('Error initializing date picker:', e);
-    handlePickerUnavailable($calendarButton, 'Error initializing date picker. Please enter date manually.');
-    // Disable the calendar functionality but keep manual entry working
-    disableCalendarFunctionality($group, $realDateInput);
-  }
+  // Set up manual input handlers
+  setupManualInputHandlers($group, $realDateInput);
 };
 
 /**
- * Initialize date picker functionality
+ * Set up the Nepali date picker
  * @param {jQuery} $group - Input group
- * @param {jQuery} $hiddenDateInput - Hidden date input
  * @param {jQuery} $calendarButton - Calendar button
  * @param {jQuery} $realDateInput - Actual date input
  */
-const initializeDatePicker = ($group, $hiddenDateInput, $calendarButton, $realDateInput) => {
-  setTimeout(() => {
+const setupNepaliDatePicker = ($group, $calendarButton, $realDateInput) => {
+  // Remove any existing datepicker inputs
+  $group.find('.nepali-datepicker-input').remove();
+  
+  // Create hidden input for datepicker
+  const $hiddenDateInput = $('<input type="text" class="nepali-datepicker-input">');
+  $calendarButton.after($hiddenDateInput);
+
+  // Initialize the datepicker if available
+  if (typeof $.fn.nepaliDatePicker === 'function') {
     try {
-      // Initialize picker
+      // Initialize the date picker with our configuration
       initializeNepaliDatePicker($hiddenDateInput);
       
-      // Set up button click handler
-      setupCalendarButtonHandler($hiddenDateInput, $calendarButton);
-      
-      // Set up date selection handlers
-      setupDateSelectionHandlers($hiddenDateInput, $group, $realDateInput);
-      
-      // Set up dropdown click handlers
-      setupDropdownHandlers($group, $realDateInput);
-      
-      // Set up input change handlers
-      $group.find('input[name=day], input[name=year]').on('change keyup', function() {
-        updateGregorianDate($group, $realDateInput);
-      });
+      // Set up all necessary event handlers
+      setupDatePickerHandlers($hiddenDateInput, $calendarButton, $group, $realDateInput);
     } catch (e) {
       console.error('Error initializing date picker:', e);
-      handlePickerUnavailable($calendarButton, 'Error initializing date picker. Please enter date manually.');
-      // Disable the calendar functionality but keep manual entry working
-      disableCalendarFunctionality($group, $realDateInput);
+      handlePickerUnavailable($calendarButton, $group, $realDateInput);
     }
-  }, 100);
-};
-
-/**
- * Disable calendar functionality but keep manual entry working
- * @param {jQuery} $group - Input group
- * @param {jQuery} $realDateInput - Actual date input
- */
-const disableCalendarFunctionality = ($group, $realDateInput) => {
-  $group.find('.calendar-btn').prop('disabled', true).css('opacity', '0.5');
-  
-  // Ensure manual entry still updates the date
-  $group.find('input[name=day], input[name=year]').on('change keyup', function() {
-    updateGregorianDate($group, $realDateInput);
-  });
+  } else {
+    // Handle case when picker library is not available
+    handlePickerUnavailable($calendarButton, $group, $realDateInput);
+  }
 };
 
 /**
@@ -149,14 +125,14 @@ const disableCalendarFunctionality = ($group, $realDateInput) => {
  * @param {jQuery} $hiddenDateInput - Hidden date input
  */
 const initializeNepaliDatePicker = ($hiddenDateInput) => {
-  // Make sure to destroy any existing date picker instance first
+  // Clean up any existing instances
   try {
     $hiddenDateInput.nepaliDatePicker('hide');
   } catch (e) {
-    // Ignore errors, just trying to clean up any existing instances
+    // Ignore cleanup errors
   }
   
-  // Initialize the date picker
+  // Initialize with our configuration
   $hiddenDateInput.nepaliDatePicker({
     ndpYear: true,
     ndpMonth: true,
@@ -169,8 +145,58 @@ const initializeNepaliDatePicker = ($hiddenDateInput) => {
 };
 
 /**
+ * Set up all datepicker-related event handlers
+ * @param {jQuery} $hiddenDateInput - Hidden date input
+ * @param {jQuery} $calendarButton - Calendar button
+ * @param {jQuery} $group - Input group
+ * @param {jQuery} $realDateInput - Actual date input
+ */
+const setupDatePickerHandlers = ($hiddenDateInput, $calendarButton, $group, $realDateInput) => {
+  // Set up calendar button click handler
+  setupCalendarButtonHandler($hiddenDateInput, $calendarButton);
+  
+  // Set up date selection handlers
+  setupDateSelectionHandlers($hiddenDateInput, $group, $realDateInput);
+  
+  // Set up month dropdown click handlers
+  setupDropdownHandlers($group, $realDateInput);
+};
+
+/**
+ * Set up manual input handlers (day, month, year fields)
+ * @param {jQuery} $group - Input group
+ * @param {jQuery} $realDateInput - Actual date input
+ */
+const setupManualInputHandlers = ($group, $realDateInput) => {
+  // Handle day and year input changes
+  $group.find('input[name=day], input[name=year]').on('change keyup', function() {
+    updateGregorianDate($group, $realDateInput);
+  });
+};
+
+/**
+ * Handle case when picker is unavailable
+ * @param {jQuery} $calendarButton - Calendar button
+ * @param {jQuery} $group - Input group
+ * @param {jQuery} $realDateInput - Actual date input
+ */
+const handlePickerUnavailable = ($calendarButton, $group, $realDateInput) => {
+  // Disable the calendar button
+  $calendarButton.prop('disabled', true).css('opacity', '0.5');
+  
+  $calendarButton.on('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.error('Nepali Date Picker library not available. Please enter date manually.');
+  });
+  
+  // Ensure manual entry still works
+  setupManualInputHandlers($group, $realDateInput);
+};
+
+/**
  * Handle onChange event for date picker
- * Extracted to avoid deep nesting
+ * @param {Event} event - Change event
  */
 const onDatePickerChange = function() {
   const $input = $(this);
@@ -180,35 +206,23 @@ const onDatePickerChange = function() {
 };
 
 /**
- * Handle case when picker is unavailable
- * @param {jQuery} $calendarButton - Calendar button
- * @param {string} errorMessage - Error message
- */
-const handlePickerUnavailable = ($calendarButton, errorMessage) => {
-  $calendarButton.on('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    console.error(errorMessage);
-  });
-};
-
-/**
  * Set up calendar button click handler
  * @param {jQuery} $hiddenDateInput - Hidden date input
  * @param {jQuery} $calendarButton - Calendar button
  */
 const setupCalendarButtonHandler = ($hiddenDateInput, $calendarButton) => {
-  // Remove any existing click handlers to prevent multiple calendars from opening
+  // Remove any existing click handlers
   $calendarButton.off('click');
   
   $calendarButton.on('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
     
-    // Remove any existing date pickers first
+    // Clean up any existing pickers
     $('.nepali-date-picker').remove();
     $('.nepali-date-picker-overlay').remove();
     
+    // Position and prepare the hidden input
     $hiddenDateInput.css({
       'position': 'fixed',
       'left': '-9999px',
@@ -218,8 +232,10 @@ const setupCalendarButtonHandler = ($hiddenDateInput, $calendarButton) => {
       'visibility': 'visible'
     }).focus();
     
+    // Clear any existing value
     $hiddenDateInput.val('');
     
+    // Show the date picker
     showDatePicker($hiddenDateInput);
   });
 };
@@ -229,35 +245,39 @@ const setupCalendarButtonHandler = ($hiddenDateInput, $calendarButton) => {
  * @param {jQuery} $hiddenDateInput - Hidden date input
  */
 const showDatePicker = ($hiddenDateInput) => {
+  // Create overlay if not exists
   if (!$('.nepali-date-picker-overlay').length) {
     $('<div class="nepali-date-picker-overlay"></div>').appendTo('body');
   }
   
+  // Show the picker
   try {
     $hiddenDateInput.nepaliDatePicker('show');
     
-    // Schedule UI updates without deep nesting
-    setTimeout(setupPickerUI, 100, $hiddenDateInput);
+    // Set up the UI after a small delay
+    setTimeout(() => setupPickerUI($hiddenDateInput), 100);
   } catch (err) {
     console.error('Error showing date picker:', err);
-    handleDatePickerError($hiddenDateInput);
+    $('.nepali-date-picker-overlay').remove();
   }
 };
 
 /**
  * Setup the picker UI
- * Extracted to avoid deep nesting
  * @param {jQuery} $hiddenDateInput - The hidden date input
  */
 const setupPickerUI = ($hiddenDateInput) => {
+  // Activate overlay
   $('.nepali-date-picker-overlay').addClass('active');
   
+  // Check if picker exists
   if (!$('.nepali-date-picker').length) {
     $('.nepali-date-picker-overlay').removeClass('active');
     $hiddenDateInput.val('');
     return;
   }
   
+  // Position and style the picker
   $('.nepali-date-picker').css({
     'position': 'fixed',
     'top': '50%',
@@ -270,7 +290,31 @@ const setupPickerUI = ($hiddenDateInput) => {
     'pointer-events': 'auto'
   });
   
- if (!$('.nepali-date-picker .close-btn').length) {
+  // Add close button if needed
+  addCloseButton($hiddenDateInput);
+  
+  // Add click handler for overlay
+  $('.nepali-date-picker-overlay').off('click').on('click', function() {
+    hideDatePicker($hiddenDateInput);
+  });
+  
+  // Add ESC key handler
+  $(document).off('keydown.nepaliDatePicker').on('keydown.nepaliDatePicker', function(e) {
+    if (e.keyCode === 27) { // Escape key
+      hideDatePicker($hiddenDateInput);
+    }
+  });
+};
+
+/**
+ * Add a close button to the date picker
+ * @param {jQuery} $hiddenDateInput - Hidden date input
+ */
+const addCloseButton = ($hiddenDateInput) => {
+  if ($('.nepali-date-picker .close-btn').length) {
+    return;
+  }
+  
   const $closeButton = $('<button type="button" class="close-btn" title="Close">&times;</button>');
   $closeButton.css({
     'position': 'absolute',
@@ -289,21 +333,8 @@ const setupPickerUI = ($hiddenDateInput) => {
     hideDatePicker($hiddenDateInput);
   });
 
-  // Make sure the container allows absolutely-positioned children
+  // Add button to picker
   $('.nepali-date-picker').css('position', 'relative').append($closeButton);
-}
-
-  // Add click handler for overlay
-  $('.nepali-date-picker-overlay').off('click').on('click', function() {
-    hideDatePicker($hiddenDateInput);
-  });
-  
-  // Add ESC key handler
-  $(document).off('keydown.nepaliDatePicker').on('keydown.nepaliDatePicker', function(e) {
-    if (e.keyCode === 27) { // Escape key
-      hideDatePicker($hiddenDateInput);
-    }
-  });
 };
 
 /**
@@ -314,17 +345,17 @@ const hideDatePicker = ($hiddenDateInput) => {
   try {
     $hiddenDateInput.nepaliDatePicker('hide');
   } catch (e) {
-    console.warn('Error hiding date picker:', e);
+    // Non-critical error
   }
   
-  // Remove the overlay and clean up
+  // Clean up UI elements
   $('.nepali-date-picker-overlay').removeClass('active').remove();
   $('.nepali-date-picker').remove();
   
-  // Remove all event handlers
+  // Remove event handlers
   $(document).off('keydown.nepaliDatePicker');
   
-  // Clear the hidden input value
+  // Clear hidden input value
   setTimeout(() => {
     $hiddenDateInput.val('');
   }, 50);
@@ -362,76 +393,116 @@ const handleDatePickerError = ($hiddenDateInput) => {
  * @param {jQuery} $realDateInput - Actual date input
  */
 const setupDateSelectionHandlers = ($hiddenDateInput, $group, $realDateInput) => {
+  // Handle date selection
   $hiddenDateInput.on('dateSelect', function() {
-    // Create a separate function to avoid deep nesting
-    handleDateSelect($hiddenDateInput);
+    setTimeout(() => hideDatePicker($hiddenDateInput), 100);
   });
 
+  // Handle date change
   $hiddenDateInput.on('dateChange', function() {
-    handleDateChange($(this), $group, $realDateInput);
+    const selectedDate = $(this).val();
+    if (selectedDate) {
+      updateFieldsFromDateString(selectedDate, $group, $realDateInput);
+    }
   });
-};
-
-/**
- * Handle date selection
- * Extracted to avoid deep nesting
- * @param {jQuery} $hiddenDateInput - The hidden date input 
- */
-const handleDateSelect = ($hiddenDateInput) => {
-  setTimeout(cleanupAfterDateSelect, 100, $hiddenDateInput);
-};
-
-/**
- * Clean up after date select
- * @param {jQuery} $hiddenDateInput - The hidden date input
- */
-const cleanupAfterDateSelect = ($hiddenDateInput) => {
-  // Use our improved hideDatePicker function
-  hideDatePicker($hiddenDateInput);
-};
-
-/**
- * Handle date change
- * @param {jQuery} $input - Changed input
- * @param {jQuery} $group - Input group
- * @param {jQuery} $realDateInput - Actual date input
- */
-const handleDateChange = ($input, $group, $realDateInput) => {
-  const selectedDate = $input.val();
-  if (!selectedDate) {
-    return;
-  }
-
-  try {
-    updateFieldsFromDateString(selectedDate, $group, $realDateInput);
-  } catch (e) {
-    console.warn('Error updating fields from date string:', e);
-    // We continue without updating since this is non-critical
-  }
 };
 
 /**
  * Update fields from date string
- * Extracted to reduce cognitive complexity
  * @param {string} selectedDate - The selected date string
  * @param {jQuery} $group - Input group
  * @param {jQuery} $realDateInput - Actual date input
  */
 const updateFieldsFromDateString = (selectedDate, $group, $realDateInput) => {
-  const dateComponents = parseDateString(selectedDate);
-  if (!dateComponents) {
-    return;
+  try {
+    const dateComponents = parseDateString(selectedDate);
+    if (!dateComponents) {
+      return;
+    }
+    
+    const { year, month, day } = dateComponents;
+    
+    const monthName = getMonthNameFromNumber(month);
+    if (!monthName) {
+      return;
+    }
+    
+    // Update UI fields
+    updateDateFields($group, day, year, monthName);
+    
+    // Update the hidden date input
+    updateGregorianDate($group, $realDateInput);
+  } catch (e) {
+    console.warn('Error updating fields from date string:', e);
+  }
+};
+
+/**
+ * Helper function to update the gregorian date input based on the BS inputs
+ * @param {jQuery} $group - The input group
+ * @param {jQuery} $realDateInput - The actual date input element
+ */
+const updateGregorianDate = ($group, $realDateInput) => {
+  try {
+    // Extract and validate inputs
+    const dateComponents = extractAndValidateInputs($group);
+    if (!dateComponents) {
+      return;
+    }
+    
+    // Convert to gregorian date
+    const gregDate = convertBsToGregorianDate(dateComponents);
+    if (gregDate) {
+      // Update the input and trigger events
+      updateRealDateInput($realDateInput, gregDate);
+    }
+  } catch (e) {
+    console.error('Error calculating Gregorian date:', e.message);
+  }
+};
+
+/**
+ * Extract and validate input values from the form
+ * @param {jQuery} $group - The input group
+ * @returns {object|null} Validated date components or null if invalid
+ */
+const extractAndValidateInputs = ($group) => {
+  // Get input values
+  const day = $group.find('input[name=day]').val();
+  const monthName = $group.find('input[name=month]').val();
+  const year = $group.find('input[name=year]').val();
+  
+  // Check if all values exist
+  if (!day || !monthName || !year) {
+    return null;
   }
   
-  const { year, month, day } = dateComponents;
+  // Convert values if needed
+  const dayArabic = convertNepaliDigitsToArabic(day);
+  const yearArabic = convertNepaliDigitsToArabic(year);
+  const monthNum = getMonthNumberFromName(monthName);
   
-  const monthName = getMonthNameFromNumber(month);
-  if (!monthName) {
-    return;
+  if (!monthNum) {
+    return null;
   }
   
-  updateDateFields($group, day, year, monthName);
-  updateGregorianDate($group, $realDateInput);
+  // Parse as numbers
+  const dayNum = parseInt(dayArabic, 10);
+  const monthNumber = parseInt(monthNum, 10);
+  const yearNum = parseInt(yearArabic, 10);
+  
+  // Validate values
+  if (isNaN(dayNum) || isNaN(monthNumber) || isNaN(yearNum)) {
+    return null;
+  }
+  
+  // Validate day value based on month
+  const maxDaysInMonth = getMaxDaysInMonth(yearNum, monthNumber);
+  if (dayNum < 1 || dayNum > maxDaysInMonth) {
+    return null;
+  }
+  
+  return { dayNum, monthNumber, yearNum };
 };
 
 /**
@@ -476,27 +547,122 @@ const parseDateString = (dateString) => {
     return null;
   }
   
-  let year;
-  let month;
-  let day;
-  
   // Handle different date formats
   if (dateString.includes('-')) {
-    [year, month, day] = dateString.split('-');
+    const [year, month, day] = dateString.split('-');
     return { year, month, day };
   } 
   
   if (dateString.includes('/')) {
-    [year, month, day] = dateString.split('/');
+    const [year, month, day] = dateString.split('/');
     return { year, month, day };
   } 
   
   // Handle Nepali formatted date
   if (dateString.includes(',') || /[\u0900-\u097F]/.test(dateString)) {
-    return parseFormattedNepaliDate(dateString);
+    // Extract month name
+    const monthName = extractMonthFromFormattedDate(dateString);
+    if (!monthName) {
+      return null;
+    }
+    
+    // Extract month number
+    const month = getMonthNumberFromName(monthName).toString();
+    if (!month) {
+      return null;
+    }
+    
+    // Extract day and year
+    const day = extractDayFromDateString(dateString, monthName);
+    const year = extractYearFromDateString(dateString);
+    
+    // Return null if we couldn't extract all components
+    if (!day || !year) {
+      return null;
+    }
+    
+    return { year, month, day };
   }
   
   return null;
+};
+
+/**
+ * Extract month name from a formatted Nepali date string
+ * @param {string} dateString - The date string to extract from
+ * @returns {string|null} Month name or null if not found
+ */
+const extractMonthFromFormattedDate = (dateString) => {
+  if (!dateString) {
+    return null;
+  }
+  
+  // Standard month names array
+  const monthNames = [
+    'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ',
+    'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत'
+  ];
+  
+  // Try comma-separated format
+  const commaMatch = dateString.match(/,\s*([^\s\d,]+)\s+/);
+  if (commaMatch && commaMatch[1]) {
+    return commaMatch[1].trim();
+  }
+  
+  // Try start-of-string format
+  const startMatch = dateString.match(/^([^\s\d,]+)\s+/);
+  if (startMatch && startMatch[1]) {
+    return startMatch[1].trim();
+  }
+  
+  // Try direct match against known month names
+  for (const monthName of monthNames) {
+    if (dateString.includes(monthName)) {
+      return monthName;
+    }
+  }
+  
+  // Special case for फाल्गुन (Falgun)
+  if (dateString.includes('फाल्गु') || dateString.includes('फाल्गुन')) {
+    return 'फाल्गुन';
+  }
+  
+  return null;
+};
+
+/**
+ * Extract day from date string
+ * @param {string} dateString - Date string
+ * @param {string} monthName - Month name
+ * @returns {string|null} Day value or null
+ */
+const extractDayFromDateString = (dateString, monthName) => {
+  if (!monthName || !dateString) {
+    return null;
+  }
+  
+  const monthIndex = dateString.indexOf(monthName);
+  if (monthIndex === -1) {
+    return null;
+  }
+  
+  // Limit the search area
+  const startIndex = monthIndex + monthName.length;
+  const searchArea = dateString.substr(startIndex, 100);
+  
+  // Use safer regex pattern
+  const dayMatch = searchArea.match(/\s{1,5}([०-९0-9]{1,2})(?!\d)/);
+  return dayMatch && dayMatch[1] ? dayMatch[1] : null;
+};
+
+/**
+ * Extract year from date string
+ * @param {string} dateString - Date string
+ * @returns {string|null} Year value or null
+ */
+const extractYearFromDateString = (dateString) => {
+  const yearMatch = dateString.match(/[०-९\d]{4}/);
+  return yearMatch ? yearMatch[0] : null;
 };
 
 /**
@@ -509,15 +675,28 @@ const setupDropdownHandlers = ($group, $realDateInput) => {
     e.preventDefault();
     e.stopPropagation();
     
+    // Update month display and value
     const monthName = $(this).text();
-    const $monthInput = $group.find('input[name=month]');
-    const $monthButton = $group.find('.month-dropdown button');
-    $monthInput.val(monthName);
-    $monthButton.text(monthName);
+    updateMonthSelection($group, monthName);
+    
+    // Close dropdown
     $group.find('.month-dropdown').removeClass('open');
     
+    // Handle the selection
     handleMonthSelection($group, $realDateInput);
   });
+};
+
+/**
+ * Update month selection in UI
+ * @param {jQuery} $group - Input group
+ * @param {string} monthName - Month name
+ */
+const updateMonthSelection = ($group, monthName) => {
+  const $monthInput = $group.find('input[name=month]');
+  const $monthButton = $group.find('.month-dropdown button');
+  $monthInput.val(monthName);
+  $monthButton.text(monthName);
 };
 
 /**
@@ -530,30 +709,24 @@ const handleMonthSelection = ($group, $realDateInput) => {
   const year = $group.find('input[name=year]').val();
   const monthName = $group.find('input[name=month]').val();
   
-  // Debug logging for the फाल्गुन (Falgun) month
-  if (monthName.includes('फाल्गु') || monthName === 'फाल्गुन') {
-    console.debug('Falgun month selected:', {
-      monthName,
-      monthNumber: getMonthNumberFromName(monthName)
-    });
-  }
-  
+  // Reset focus
   $('body').focus();
   
+  // Stop if we don't have all required values
   if (!day || !year) {
     return;
   }
   
+  // Validate and adjust day value if needed
   validateAndAdjustDay($group, day, year, monthName);
   
-  setTimeout(function() {
-    const gregDate = calculateGregorianDate($group);
-    if (gregDate) {
-      $realDateInput[0].value = gregDate;
-    }
+  // Update the gregorian date
+  setTimeout(() => {
+    updateGregorianDate($group, $realDateInput);
   }, 50);
   
-  setTimeout(function() {
+  // Clear any validation errors
+  setTimeout(() => {
     clearValidationErrors($group);
   }, 100);
 };
@@ -566,6 +739,7 @@ const handleMonthSelection = ($group, $realDateInput) => {
  * @param {string} monthName - Month name
  */
 const validateAndAdjustDay = ($group, day, year, monthName) => {
+  // Parse values
   const dayNum = parseInt(convertNepaliDigitsToArabic(day), 10);
   if (isNaN(dayNum)) {
     return;
@@ -581,10 +755,12 @@ const validateAndAdjustDay = ($group, day, year, monthName) => {
     return;
   }
   
+  // Check if day exceeds maximum for the month
   const monthNumber = parseInt(monthNum, 10);
   const maxDaysInMonth = getMaxDaysInMonth(yearNum, monthNumber);
   
   if (dayNum > maxDaysInMonth) {
+    // Adjust the day value
     let newDayValue = maxDaysInMonth.toString();
     newDayValue = convertToNepaliDigitsIfNeeded(newDayValue, day);
     $group.find('input[name=day]').val(newDayValue);
@@ -617,10 +793,12 @@ const getMaxDaysInMonth = (yearNum, monthNumber) => {
  * @returns {string} Converted value
  */
 const convertToNepaliDigitsIfNeeded = (value, originalValue) => {
+  // Check if original value used Nepali digits
   if (!/[०-९]/.test(originalValue)) {
     return value;
   }
   
+  // Convert to Nepali digits
   const arabicToNepaliMap = {
     '0': '०', '1': '१', '2': '२', '3': '३', '4': '४',
     '5': '५', '6': '६', '7': '७', '8': '८', '9': '९'
@@ -638,333 +816,6 @@ const clearValidationErrors = ($group) => {
   $group.find('button').css('border-color', '#ccc');
   $parent.removeClass('has-error');
   $parent.closest('.question').removeClass('has-error');
-};
-
-/**
- * Helper function to update the gregorian date input based on the BS inputs
- * @param {jQuery} $group - The input group
- * @param {jQuery} $realDateInput - The actual date input element
- */
-const updateGregorianDate = ($group, $realDateInput) => {
-  try {
-    const dateComponents = extractAndValidateInputs($group);
-    if (!dateComponents) {
-      return;
-    }
-    
-    const gregDate = convertBsToGregorianDate(dateComponents);
-    if (gregDate) {
-      updateRealDateInput($realDateInput, gregDate);
-    }
-  } catch (e) {
-    console.error('Error calculating Gregorian date:', e.message);
-    return null;
-  }
-};
-
-/**
- * Extract and validate input values from the form
- * @param {jQuery} $group - The input group
- * @returns {object|null} Validated date components or null if invalid
- */
-const extractAndValidateInputs = ($group) => {
-  const day = $group.find('input[name=day]').val();
-  const monthName = $group.find('input[name=month]').val();
-  const year = $group.find('input[name=year]').val();
-  
-  if (!day || !monthName || !year) {
-    return null;
-  }
-  
-  const dayArabic = convertNepaliDigitsToArabic(day);
-  const yearArabic = convertNepaliDigitsToArabic(year);
-  
-  const monthNum = getMonthNumberFromName(monthName);
-  if (!monthNum) {
-    return null;
-  }
-  
-  const dayNum = parseInt(dayArabic, 10);
-  const monthNumber = parseInt(monthNum, 10);
-  const yearNum = parseInt(yearArabic, 10);
-  
-  if (isNaN(dayNum) || isNaN(monthNumber) || isNaN(yearNum)) {
-    return null;
-  }
-  
-  // Validate day value based on month
-  const maxDaysInMonth = getMaxDaysInMonth(yearNum, monthNumber);
-  if (dayNum < 1 || dayNum > maxDaysInMonth) {
-    return null;
-  }
-  
-  return { dayNum, monthNumber, yearNum };
-};
-
-/**
- * Convert BS date to Gregorian date using available methods
- * @param {object} components - Date components
- * @returns {string|null} Gregorian date string or null
- */
-const convertBsToGregorianDate = ({ dayNum, monthNumber, yearNum }) => {
-  // Try different conversion methods based on what's available
-  return tryMethod1(dayNum, monthNumber, yearNum) ||
-         tryMethod2(yearNum, monthNumber, dayNum) ||
-         tryMethod3(yearNum, monthNumber, dayNum) ||
-         tryMethod4(yearNum, monthNumber, dayNum);
-};
-
-/**
- * Method 1: Use bikram_sambat_bs's getDate_greg_text function
- * @param {number} dayNum - Day number
- * @param {number} monthNumber - Month number
- * @param {number} yearNum - Year number
- * @returns {string|null} Gregorian date or null
- */
-const tryMethod1 = (dayNum, monthNumber, yearNum) => {
-  // Check if required function exists
-  if (typeof bikram_sambat_bs.getDate_greg_text !== 'function') {
-    console.warn('bikram_sambat_bs.getDate_greg_text method is not available');
-    return null;
-  }
-  
-  // Validate input parameters
-  if (!validateDateParams(dayNum, monthNumber, yearNum)) {
-    console.warn('Invalid BS date parameters:', { day: dayNum, month: monthNumber, year: yearNum });
-    return null;
-  }
-  
-  try {
-    // Create a mock jQuery-like object to use with the conversion function
-    const mockJQueryObject = createMockJQueryObject(dayNum, monthNumber, yearNum);
-    
-    // Perform the conversion
-    const result = bikram_sambat_bs.getDate_greg_text(mockJQueryObject);
-    
-    // Validate the result
-    if (!result || typeof result !== 'string' || result.trim().length === 0) {
-      console.warn('Empty or invalid result from getDate_greg_text');
-      return null;
-    }
-    
-    return result;
-  } catch (e) {
-    console.error('Error in getDate_greg_text conversion:', e.message);
-    return null;
-  }
-};
-
-/**
- * Validate date parameters for BS date conversion
- * @param {number|string} day - Day value
- * @param {number|string} month - Month value
- * @param {number|string} year - Year value
- * @returns {boolean} True if parameters are valid
- */
-const validateDateParams = (day, month, year) => {
-  // Check if all parameters exist
-  if (day === undefined || month === undefined || year === undefined) {
-    return false;
-  }
-  
-  // Convert to numbers if they're strings
-  const d = typeof day === 'string' ? parseInt(day, 10) : day;
-  const m = typeof month === 'string' ? parseInt(month, 10) : month;
-  const y = typeof year === 'string' ? parseInt(year, 10) : year;
-  
-  // Validate numeric values and range in one condition
-  return !(isNaN(d) || isNaN(m) || isNaN(y) || 
-         m < 1 || m > 12 || d < 1 || d > 32 || y < 1000 || y > 9999);
-};
-
-/**
- * Create a mock jQuery-like object for use with bikram_sambat_bs functions
- * @param {number} day - Day value
- * @param {number} month - Month value
- * @param {number} year - Year value
- * @returns {Object} Mock jQuery object
- */
-const createMockJQueryObject = (day, month, year) => {
-  return {
-    find: (selector) => {
-      // Return an object with val() that returns appropriate values based on selector
-      return {
-        val: () => {
-          switch (selector) {
-          case '[name=day]': return day;
-          case '[name=month]': return month;
-          case '[name=year]': return year;
-          default: return '';
-          }
-        }
-      };
-    }
-  };
-};
-
-/**
- * Method 2: Try the underlaying bs.toGreg_text function
- * @param {number} yearNum - Year number
- * @param {number} monthNumber - Month number
- * @param {number} dayNum - Day number
- * @returns {string|null} Gregorian date or null
- */
-const tryMethod2 = (yearNum, monthNumber, dayNum) => {
-  // Check if the bikram_sambat_bs library and necessary method exist
-  if (!bikram_sambat_bs.bs || typeof bikram_sambat_bs.bs.toGreg_text !== 'function') {
-    console.warn('bikram_sambat_bs.bs.toGreg_text method is not available');
-    return null;
-  }
-  
-  // Validate parameters before performing conversion
-  if (!yearNum || !monthNumber || !dayNum || 
-      yearNum < 1000 || yearNum > 9999 || 
-      monthNumber < 1 || monthNumber > 12 || 
-      dayNum < 1 || dayNum > 32) {
-    console.warn('Invalid or out of bounds parameters for BS to Gregorian conversion');
-    return null;
-  }
-  
-  try {
-    // Call the conversion method and handle empty results
-    const result = bikram_sambat_bs.bs.toGreg_text(yearNum, monthNumber, dayNum);
-    return result && result.trim() !== '' ? result : null;
-  } catch (e) {
-    console.error('Error converting BS to Gregorian date:', e.message);
-    return null;
-  }
-};
-
-/**
- * Try to convert using bs.toGreg_text method
- * @param {number} yearNum - Year number
- * @param {number} monthNumber - Month number
- * @param {number} dayNum - Day number
- * @returns {string|null} Gregorian date or null
- */
-const tryBsToGregText = (yearNum, monthNumber, dayNum) => {
-  // Reuse the existing tryMethod2 implementation to avoid duplication
-  return tryMethod2(yearNum, monthNumber, dayNum);
-};
-
-/**
- * Method 3: Try custom converter function
- * @param {number} yearNum - Year number
- * @param {number} monthNumber - Month number
- * @param {number} dayNum - Day number
- * @returns {string|null} Gregorian date or null
- */
-const tryMethod3 = (yearNum, monthNumber, dayNum) => {
-  // Check if the method is available
-  if (typeof bikram_sambat_bs.convertBsToAd !== 'function') {
-    console.warn('bikram_sambat_bs.convertBsToAd method is not available');
-    return null;
-  }
-  
-  // Ensure we have valid numbers
-  if (!yearNum || !monthNumber || !dayNum || 
-      isNaN(parseInt(yearNum)) || 
-      isNaN(parseInt(monthNumber)) || 
-      isNaN(parseInt(dayNum))) {
-    console.warn('Invalid parameters for BS to AD conversion');
-    return null;
-  }
-  
-  try {
-    // Format the date components
-    const formattedDay = dayNum.toString().padStart(2, '0');
-    const formattedMonth = monthNumber.toString().padStart(2, '0');
-    const bsDate = `${yearNum}-${formattedMonth}-${formattedDay}`;
-    
-    // Perform conversion
-    const result = bikram_sambat_bs.convertBsToAd(bsDate);
-    
-    // Validate result
-    if (result && typeof result === 'string' && result.length > 0) {
-      return result;
-    }
-    return null;
-  } catch (e) {
-    console.error('Error in convertBsToAd:', e.message);
-    return null;
-  }
-};
-
-/**
- * Method 4: Final fallback to bs2ad
- * @param {number} yearNum - Year number
- * @param {number} monthNumber - Month number
- * @param {number} dayNum - Day number
- * @returns {string|null} Gregorian date or null
- */
-const tryMethod4 = (yearNum, monthNumber, dayNum) => {
-  // Check method availability
-  if (typeof bikram_sambat_bs.bs2ad !== 'function') {
-    console.warn('bikram_sambat_bs.bs2ad method is not available');
-    return null;
-  }
-  
-  // Validate parameters
-  if (!yearNum || !monthNumber || !dayNum) {
-    console.warn('Missing parameters for BS to AD conversion');
-    return null;
-  }
-  
-  // Verify numeric values
-  const yNum = parseInt(yearNum, 10);
-  const mNum = parseInt(monthNumber, 10);
-  const dNum = parseInt(dayNum, 10);
-  
-  if (isNaN(yNum) || isNaN(mNum) || isNaN(dNum) || 
-      mNum < 1 || mNum > 12 || dNum < 1 || dNum > 32) {
-    console.warn('Invalid date values for BS to AD conversion');
-    return null;
-  }
-  
-  try {
-    // Format date string
-    const formattedDay = dNum.toString().padStart(2, '0');
-    const formattedMonth = mNum.toString().padStart(2, '0');
-    const bsDate = `${yNum}-${formattedMonth}-${formattedDay}`;
-    
-    // Perform conversion
-    const result = bikram_sambat_bs.bs2ad(bsDate);
-    return result || null;
-  } catch (e) {
-    console.error('Error in bs2ad conversion:', e.message);
-    // Attempt a simpler fallback conversion if available
-    return trySimpleFallbackConversion(yNum, mNum, dNum);
-  }
-};
-
-/**
- * Try a simple fallback conversion when other methods fail
- * @param {number} year - Year number
- * @param {number} month - Month number
- * @param {number} day - Day number
- * @returns {string|null} Gregorian date or null
- */
-const trySimpleFallbackConversion = (year, month, day) => {
-  // Simple fallback using a fixed offset approximation for recent years
-  // This is not accurate for all dates but provides a reasonable fallback
-  try {
-    if (year >= 2000 && year <= 2090) {
-      // Approximation: BS year is roughly 56/57 years ahead of AD
-      const approxAdYear = year - 57;
-      const approxDate = new Date(approxAdYear, month - 1, day);
-      
-      // Format as YYYY-MM-DD
-      const adYear = approxDate.getFullYear();
-      const adMonth = (approxDate.getMonth() + 1).toString().padStart(2, '0');
-      const adDay = approxDate.getDate().toString().padStart(2, '0');
-      
-      return `${adYear}-${adMonth}-${adDay}`;
-    }
-    return null;
-  } catch (fallbackError) {
-    console.error('Fallback conversion also failed:', fallbackError.message);
-    return null;
-  }
 };
 
 /**
@@ -993,14 +844,14 @@ const getMonthNumberFromName = (name) => {
     return '';
   }
   
-  // Normalize the input by removing any invisible characters
-  const normalizedName = name.trim();
-  
   // Standard month names array
   const months = [
     'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ',
     'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत'
   ];
+  
+  // Normalize the input
+  const normalizedName = name.trim();
   
   // First try exact match
   const index = months.indexOf(normalizedName);
@@ -1008,8 +859,14 @@ const getMonthNumberFromName = (name) => {
     return index + 1;
   }
   
+  // Special case for फाल्गुन (Falgun) - month #11
+  if (normalizedName.includes('फाल्गु') || 
+      normalizedName.includes('फाल्गुन') || 
+      normalizedName.startsWith('फा') && normalizedName.length > 2) {
+    return 11;
+  }
+  
   // If exact match fails, try character-by-character comparison
-  // This helps with potential encoding issues or invisible characters
   for (let i = 0; i < months.length; i++) {
     const monthName = months[i];
     
@@ -1018,9 +875,9 @@ const getMonthNumberFromName = (name) => {
       continue;
     }
     
-    // Compare character by character
+    // Compare character by character for first few characters
     let match = true;
-    const minLength = Math.min(monthName.length, normalizedName.length);
+    const minLength = Math.min(monthName.length, normalizedName.length, 3);
     
     for (let j = 0; j < minLength; j++) {
       if (monthName[j] !== normalizedName[j]) {
@@ -1032,13 +889,6 @@ const getMonthNumberFromName = (name) => {
     if (match) {
       return i + 1;
     }
-  }
-  
-  // Special case for फाल्गुन (Falgun) - month #11
-  if (normalizedName.includes('फाल्गु') || 
-      normalizedName.includes('फाल्गुन') || 
-      normalizedName.startsWith('फा') && normalizedName.length > 2) {
-    return 11;
   }
   
   return '';
@@ -1061,82 +911,6 @@ const convertNepaliDigitsToArabic = (nepaliDigits) => {
   
   const digits = nepaliDigits.toString().split('');
   return digits.map(char => nepaliToArabicMap[char] !== undefined ? nepaliToArabicMap[char] : char).join('');
-};
-
-/**
- * Extract month name from a formatted Nepali date string
- * @param {string} dateString - The date string to extract from
- * @returns {string|null} Month name or null if not found
- */
-const extractMonthFromFormattedDate = (dateString) => {
-  if (!dateString) {
-    return null;
-  }
- 
-  // Try comma-separated format
-  const commaFormat = extractMonthFromCommaFormat(dateString);
-  if (commaFormat) {
-    return commaFormat;
-  }
-  
-  // Try start-of-string format
-  const startFormat = extractMonthFromStartFormat(dateString);
-  if (startFormat) {
-    return startFormat;
-  }
-
-  // Try direct match against known month names
-  return findMonthNameInString(dateString);
-};
-
-/**
- * Extract month from comma-separated format
- * @param {string} dateString - Date string
- * @returns {string|null} Month name or null
- */
-const extractMonthFromCommaFormat = (dateString) => {
-  const monthMatch = dateString.match(/,\s*([^\s\d,]+)\s+/);
-  return monthMatch && monthMatch[1] ? monthMatch[1].trim() : null;
-};
-
-/**
- * Extract month from start-of-string format
- * @param {string} dateString - Date string
- * @returns {string|null} Month name or null
- */
-const extractMonthFromStartFormat = (dateString) => {
-  const monthMatch = dateString.match(/^([^\s\d,]+)\s+/);
-  return monthMatch && monthMatch[1] ? monthMatch[1].trim() : null;
-};
-
-/**
- * Find month name directly in string
- * @param {string} dateString - Date string
- * @returns {string|null} Month name or null
- */
-const findMonthNameInString = (dateString) => {
-  if (!dateString) {
-    return null;
-  }
-  
-  const monthNames = [
-    'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ',
-    'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत'
-  ];
-  
-  // First try exact includes
-  for (const monthName of monthNames) {
-    if (dateString.includes(monthName)) {
-      return monthName;
-    }
-  }
-  
-  // Special case for फाल्गुन (Falgun) - it might have encoding issues
-  if (dateString.includes('फाल्गु') || dateString.includes('फाल्गुन')) {
-    return 'फाल्गुन';
-  }
-  
-  return null;
 };
 
 /**
@@ -1174,13 +948,11 @@ const updateMonthDisplay = ($group, monthValue) => {
     // If monthValue is a number, convert to name
     const monthNum = parseInt(convertNepaliDigitsToArabic(monthValue), 10);
     if (monthNum >= 1 && monthNum <= 12) {
-      const monthNames = [
-        'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ',
-        'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत'
-      ];
-      const monthName = monthNames[monthNum - 1];
-      $group.find('input[name=month]').val(monthName);
-      $group.find('.month-dropdown button').text(monthName);
+      const monthName = getMonthNameFromNumber(monthNum.toString());
+      if (monthName) {
+        $group.find('input[name=month]').val(monthName);
+        $group.find('.month-dropdown button').text(monthName);
+      }
     }
   }
 };
@@ -1452,75 +1224,3 @@ const TEMPLATE = `
     </button>
   </div>
 `;
-
-/**
- * Parse a complete Nepali date string
- * @param {string} dateString - The date string to parse
- * @returns {object|null} Parsed date object or null if invalid
- */
-const parseFormattedNepaliDate = (dateString) => {
-  if (!dateString) {
-    return null;
-  }
-  
-  const result = { day: null, month: null, year: null };
-  
-  // Extract month, then get number
-  const monthName = extractMonthFromFormattedDate(dateString);
-  if (monthName) {
-    result.month = getMonthNumberFromName(monthName).toString();
-  }
-  
-  // Extract day
-  result.day = extractDayFromDateString(dateString, monthName);
-  
-  // Extract year
-  result.year = extractYearFromDateString(dateString);
-  
-  // Return null if we couldn't extract the necessary components
-  if (!result.day || !result.month || !result.year) {
-    return null;
-  }
-  
-  return result;
-};
-
-/**
- * Extract day from date string
- * @param {string} dateString - Date string
- * @param {string} monthName - Month name (optional)
- * @returns {string|null} Day value or null
- */
-const extractDayFromDateString = (dateString, monthName) => {
-  if (!monthName || !dateString) {
-    return null;
-  }
-  
-  // Prevent potential ReDoS by setting a maximum length to search
-  const maxSearchLength = 100;
-  const monthIndex = dateString.indexOf(monthName);
-  
-  if (monthIndex === -1) {
-    return null;
-  }
-  
-  // Limit the search area to avoid excessive backtracking
-  const startIndex = monthIndex + monthName.length;
-  const searchArea = dateString.substr(startIndex, maxSearchLength);
-  
-  // Use a safer regex pattern that avoids catastrophic backtracking
-  // Using a non-greedy quantifier and limiting the whitespace pattern
-  const dayMatch = searchArea.match(/\s{1,5}([०-९0-9]{1,2})(?!\d)/);
-  
-  return dayMatch && dayMatch[1] ? dayMatch[1] : null;
-};
-
-/**
- * Extract year from date string
- * @param {string} dateString - Date string
- * @returns {string|null} Year value or null
- */
-const extractYearFromDateString = (dateString) => {
-  const yearMatch = dateString.match(/[०-९\d]{4}/);
-  return yearMatch ? yearMatch[0] : null;
-};
