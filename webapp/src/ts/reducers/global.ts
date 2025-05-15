@@ -4,6 +4,17 @@ import { Data } from '@angular/router';
 import { Actions } from '@mm-actions/global';
 import { VersionNumber } from '@mm-services/browser-detector.service';
 
+export enum StorageStatus {
+  STARTUP,
+  NORMAL,
+  ERROR
+}
+export interface StorageInfo {
+  status: StorageStatus,
+  availableBytes: number;
+  storageUsagePercentage: number;
+}
+
 const initialState: GlobalState = {
   androidAppVersion: null,
   navigation: {
@@ -43,6 +54,11 @@ const initialState: GlobalState = {
   userFacilityIds: [],
   userContactId: null,
   language: null,
+  storageInfo: {
+    status: StorageStatus.STARTUP,
+    availableBytes: 0,
+    storageUsagePercentage: 0
+  }
 };
 
 const setShowContent = (state, showContent) => {
@@ -181,6 +197,9 @@ const _globalReducer = createReducer(
   on(Actions.setLanguage, (state, { payload: { language } }) => {
     return { ...state, language };
   }),
+  on(Actions.updateStorageInfo, (state, { payload: { storageInfo } }) => {
+    return {...state, storageInfo: { ...state.storageInfo, ...storageInfo } };
+  }),
 );
 
 export const globalReducer = (state, action) => {
@@ -216,6 +235,7 @@ export interface GlobalState {
   userFacilityIds: null | string[];
   userContactId: null | string;
   language: null | Record<string, any>;
+  storageInfo: StorageInfo;
 }
 
 interface SidebarMenuState {

@@ -2,7 +2,7 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 
 import { Actions } from '@mm-actions/global';
-import { globalReducer } from '@mm-reducers/global';
+import { globalReducer, StorageInfo, StorageStatus } from '@mm-reducers/global';
 
 describe('Global Reducer', () => {
   let state;
@@ -344,5 +344,26 @@ describe('Global Reducer', () => {
 
     state = globalReducer(state, Actions.setUserContactId('other'));
     expect(state).to.deep.equal({ userContactId: 'other' });
+  });
+
+  it('should add storage info', () => {
+    const storageInfo: StorageInfo = { status: StorageStatus.STARTUP, availableBytes: 0, storageUsagePercentage: 0 };
+    const action = Actions.updateStorageInfo(storageInfo);
+    state = globalReducer(state, action);
+
+    expect(state).to.deep.equal({
+      storageInfo: { status: StorageStatus.STARTUP, availableBytes: 0, storageUsagePercentage: 0 },
+    });
+  });
+
+  it('should merge storage info', () => {
+    const storageInfo = { status: StorageStatus.NORMAL, availableBytes: 50, storageUsagePercentage: 50 };
+    state = { storageInfo: { status: StorageStatus.STARTUP, availableBytes: 0, storageUsagePercentage: 0 } };
+    const action = Actions.updateStorageInfo(storageInfo);
+    state = globalReducer(state, action);
+
+    expect(state).to.deep.equal({
+      storageInfo: { status: StorageStatus.NORMAL, availableBytes: 50, storageUsagePercentage: 50 },
+    });
   });
 });
