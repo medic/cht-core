@@ -53,32 +53,21 @@ describe('CouchDB Cluster Unit Tests', () => {
   before(async function () {
     this.timeout(60000);
   
-    console.log('Setting up test database...');
     // Create test DB
-    try {
-      await requestOnNode(0, `/${TEST_DB_NAME}`, { method: 'PUT' });
-      console.log(`Created test database '${TEST_DB_NAME}'`);
-    } catch (err) {
-      if (err.status === 412) {
-        console.log(`Test database '${TEST_DB_NAME}' already exists`);
-      } else {
-        throw err;
-      }
-    }
+   
+    await requestOnNode(0, `/${TEST_DB_NAME}`, { method: 'PUT' });
+    
   });
 
   after(async function () {
     this.timeout(30000);
-    console.log('Cleaning up test database...');
-    try {
-      // Clean up test DB
-      await requestOnNode(0, `/${TEST_DB_NAME}`, {
-        method: 'DELETE',
-        allowError: true
-      });
-    } catch (err) {
-      console.log('Error cleaning up database:', err.message);
-    }
+    
+    // Clean up test DB
+    await requestOnNode(0, `/${TEST_DB_NAME}`, {
+      method: 'DELETE',
+      allowError: true
+    });
+    
   });
 
   it('couchdb1.local node is available', async function () {
@@ -102,7 +91,6 @@ describe('CouchDB Cluster Unit Tests', () => {
   it('data inserted on one server can be retrieved from a peer', async function () {
     this.timeout(15000);
     const id = Math.random().toString(36).substring(2, 34);
-    console.log(`Testing document replication with id: ${id}`);
 
     // Insert doc on node 2
     await requestOnNode(1, `/${TEST_DB_NAME}/${id}`, {
