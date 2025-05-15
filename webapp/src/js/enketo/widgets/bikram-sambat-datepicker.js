@@ -274,8 +274,8 @@ const setupPickerUI = ($hiddenDateInput) => {
   const $closeButton = $('<button type="button" class="close-btn" title="Close">&times;</button>');
   $closeButton.css({
     'position': 'absolute',
-    'top': '-8px',   // move upward
-    'right': '-7px', // move rightward
+    'top': '-8px',    
+    'right': '-7px',  
     'background': 'transparent',
     'border': 'none',
     'font-size': '20px',
@@ -529,6 +529,14 @@ const handleMonthSelection = ($group, $realDateInput) => {
   const day = $group.find('input[name=day]').val();
   const year = $group.find('input[name=year]').val();
   const monthName = $group.find('input[name=month]').val();
+  
+  // Debug logging for the फाल्गुन (Falgun) month
+  if (monthName.includes('फाल्गु') || monthName === 'फाल्गुन') {
+    console.debug('Falgun month selected:', {
+      monthName,
+      monthNumber: getMonthNumberFromName(monthName)
+    });
+  }
   
   $('body').focus();
   
@@ -981,12 +989,59 @@ module.exports = Bikramsambatdatepicker;
  * @returns {number|string} Month number (1-12) or empty string if not found
  */
 const getMonthNumberFromName = (name) => {
+  if (!name) {
+    return '';
+  }
+  
+  // Normalize the input by removing any invisible characters
+  const normalizedName = name.trim();
+  
+  // Standard month names array
   const months = [
     'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ',
     'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत'
   ];
-  const index = months.indexOf(name);
-  return index !== -1 ? index + 1 : '';
+  
+  // First try exact match
+  const index = months.indexOf(normalizedName);
+  if (index !== -1) {
+    return index + 1;
+  }
+  
+  // If exact match fails, try character-by-character comparison
+  // This helps with potential encoding issues or invisible characters
+  for (let i = 0; i < months.length; i++) {
+    const monthName = months[i];
+    
+    // Skip if lengths are very different
+    if (Math.abs(monthName.length - normalizedName.length) > 2) {
+      continue;
+    }
+    
+    // Compare character by character
+    let match = true;
+    const minLength = Math.min(monthName.length, normalizedName.length);
+    
+    for (let j = 0; j < minLength; j++) {
+      if (monthName[j] !== normalizedName[j]) {
+        match = false;
+        break;
+      }
+    }
+    
+    if (match) {
+      return i + 1;
+    }
+  }
+  
+  // Special case for फाल्गुन (Falgun) - month #11
+  if (normalizedName.includes('फाल्गु') || 
+      normalizedName.includes('फाल्गुन') || 
+      normalizedName.startsWith('फा') && normalizedName.length > 2) {
+    return 11;
+  }
+  
+  return '';
 };
 
 /**
@@ -1060,15 +1115,25 @@ const extractMonthFromStartFormat = (dateString) => {
  * @returns {string|null} Month name or null
  */
 const findMonthNameInString = (dateString) => {
+  if (!dateString) {
+    return null;
+  }
+  
   const monthNames = [
     'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ',
     'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत'
   ];
   
+  // First try exact includes
   for (const monthName of monthNames) {
     if (dateString.includes(monthName)) {
       return monthName;
     }
+  }
+  
+  // Special case for फाल्गुन (Falgun) - it might have encoding issues
+  if (dateString.includes('फाल्गु') || dateString.includes('फाल्गुन')) {
+    return 'फाल्गुन';
   }
   
   return null;
