@@ -451,7 +451,7 @@ const updateGregorianDate = ($group, $realDateInput) => {
     }
     
     // Convert to gregorian date
-    const gregDate = convertBsToGregorianDate(dateComponents);
+    const gregDate = convertToGregorianDate(dateComponents);
     if (gregDate) {
       // Update the input and trigger events
       updateRealDateInput($realDateInput, gregDate);
@@ -958,236 +958,67 @@ const updateMonthDisplay = ($group, monthValue) => {
 };
 
 /**
- * Calculate Gregorian date from Bikram Sambat date components
- * @param {jQuery} $group - The input group containing date fields
- * @returns {string|null} Gregorian date or null if conversion failed
- */
-const calculateGregorianDate = ($group) => {
-  try {
-    const dateComponents = getDateComponents($group);
-    if (!dateComponents) {
-      return null;
-    }
-    
-    return convertToGregorianDate(dateComponents);
-  } catch (e) {
-    console.error('Error calculating Gregorian date:', e.message);
-    return null;
-  }
-};
-
-/**
- * Extract and validate date components from input group
- * @param {jQuery} $group - The input group
- * @returns {object|null} Object with validated date components or null if invalid
- */
-const getDateComponents = ($group) => {
-  const day = $group.find('input[name=day]').val();
-  const monthName = $group.find('input[name=month]').val();
-  const year = $group.find('input[name=year]').val();
-  
-  if (!day || !monthName || !year) {
-    return null;
-  }
-  
-  // Convert Nepali digits to Arabic numerals if needed
-  const dayArabic = convertNepaliDigitsToArabic(day);
-  const yearArabic = convertNepaliDigitsToArabic(year);
-  
-  // Get month number from name
-  const monthNum = getMonthNumberFromName(monthName);
-  if (!monthNum) {
-    return null;
-  }
-  
-  // Make sure values are valid
-  const dayNum = parseInt(dayArabic, 10);
-  const monthNumber = parseInt(monthNum, 10);
-  const yearNum = parseInt(yearArabic, 10);
-  
-  if (isNaN(dayNum) || isNaN(monthNumber) || isNaN(yearNum)) {
-    return null;
-  }
-  
-  return { dayNum, monthNumber, yearNum };
-};
-
-/**
  * Convert Bikram Sambat date to Gregorian using available methods
  * @param {object} components - Object with date components
  * @returns {string|null} Gregorian date or null if conversion failed
  */
 const convertToGregorianDate = ({ dayNum, monthNumber, yearNum }) => {
   // Try method 1: getDate_greg_text
-  const gregDate1 = tryGetDateGregText(dayNum, monthNumber, yearNum);
-  if (gregDate1) {
-    return gregDate1;
-  }
-  
-  // Try method 2: bs.toGreg_text
-  const gregDate2 = tryBsToGregText(yearNum, monthNumber, dayNum);
-  if (gregDate2) {
-    return gregDate2;
-  }
-  
-  // Try method 3: convertBsToAd
-  const gregDate3 = tryConvertBsToAd(yearNum, monthNumber, dayNum);
-  if (gregDate3) {
-    return gregDate3;
-  }
-  
-  return null;
-};
-
-/**
- * Try to convert using getDate_greg_text method
- * @param {number} dayNum - Day number
- * @param {number} monthNumber - Month number
- * @param {number} yearNum - Year number
- * @returns {string|null} Gregorian date or null
- */
-const tryGetDateGregText = (dayNum, monthNumber, yearNum) => {
-  // Check availability of the conversion function
-  if (typeof bikram_sambat_bs.getDate_greg_text !== 'function') {
-    console.warn('bikram_sambat_bs.getDate_greg_text method is not available');
-    return null;
-  }
-
-  // Validate input parameters before proceeding
-  if (!dayNum || !monthNumber || !yearNum || 
-      isNaN(parseInt(dayNum)) || 
-      isNaN(parseInt(monthNumber)) || 
-      isNaN(parseInt(yearNum))) {
-    console.warn('Invalid date components for conversion:', dayNum, monthNumber, yearNum);
-    return null;
-  }
-  
-  try {
-    // Create a mock object with find method that simulates DOM element behavior
-    const mockElement = {
-      find: function(selector) {
-        const inputValueMap = {
-          '[name=year]': yearNum,
-          '[name=month]': monthNumber,
-          '[name=day]': dayNum
-        };
-        
-        return {
-          val: function() {
-            return inputValueMap[selector] || '';
-          }
-        };
+  if (typeof bikram_sambat_bs.getDate_greg_text === 'function') {
+    try {
+      // Create a mock object with find method that simulates DOM element behavior
+      const mockElement = {
+        find: function(selector) {
+          const inputValueMap = {
+            '[name=year]': yearNum,
+            '[name=month]': monthNumber,
+            '[name=day]': dayNum
+          };
+          
+          return {
+            val: function() {
+              return inputValueMap[selector] || '';
+            }
+          };
+        }
+      };
+      
+      // Perform the conversion using the mock element
+      const result = bikram_sambat_bs.getDate_greg_text(mockElement);
+      if (result) {
+        return result;
       }
-    };
-    
-    // Perform the conversion using the mock element
-    const result = bikram_sambat_bs.getDate_greg_text(mockElement);
-    return result || null;
-  } catch (e) {
-    console.error('Error in Bikram Sambat to Gregorian conversion:', e.message);
-    return null;
-  }
-};
-
-/**
- * Try to convert using convertBsToAd method
- * @param {number} yearNum - Year number
- * @param {number} monthNumber - Month number
- * @param {number} dayNum - Day number
- * @returns {string|null} Gregorian date or null
- */
-const tryConvertBsToAd = (yearNum, monthNumber, dayNum) => {
-  if (!isConversionMethodAvailable()) {
-    return null;
+    } catch (e) {
+      console.error('Error in Bikram Sambat to Gregorian conversion (method 1):', e.message);
+    }
   }
   
-  if (!isValidDateComponents(yearNum, monthNumber, dayNum)) {
-    console.warn('Invalid date components for BS to AD conversion:', {yearNum, monthNumber, dayNum});
-    return null;
+  // Try method 2: convertBsToAd if available
+  if (typeof bikram_sambat_bs.convertBsToAd === 'function') {
+    try {
+      const formattedDay = dayNum.toString().padStart(2, '0');
+      const formattedMonth = monthNumber.toString().padStart(2, '0');
+      const bsDate = `${yearNum}-${formattedMonth}-${formattedDay}`;
+      
+      const result = bikram_sambat_bs.convertBsToAd(bsDate);
+      if (result && /^\d{4}-\d{2}-\d{2}$/.test(result)) {
+        return result;
+      }
+    } catch (e) {
+      console.error('Error in Bikram Sambat to Gregorian conversion (method 2):', e.message);
+    }
   }
   
+  // Fallback method for simple conversions - approximate only
   try {
-    return performBsToAdConversion(yearNum, monthNumber, dayNum);
+    // Simple offset-based conversion (very approximate)
+    const bsDate = new Date(yearNum - 57, monthNumber - 1, dayNum);
+    const year = bsDate.getFullYear();
+    const month = (bsDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = bsDate.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
   } catch (e) {
-    console.error('Error in Bikram Sambat to AD conversion:', e.message);
-    // Try fallback conversion as a recovery strategy
-    return trySimpleFallbackConversion(yearNum, monthNumber, dayNum);
-  }
-};
-
-/**
- * Check if the convertBsToAd method is available
- * @returns {boolean} True if available
- */
-const isConversionMethodAvailable = () => {
-  if (typeof bikram_sambat_bs.convertBsToAd !== 'function') {
-    console.warn('bikram_sambat_bs.convertBsToAd method is not available');
-    return false;
-  }
-  return true;
-};
-
-/**
- * Perform the actual BS to AD conversion
- * @param {number} yearNum - Year number
- * @param {number} monthNumber - Month number
- * @param {number} dayNum - Day number
- * @returns {string|null} Converted date or null
- */
-const performBsToAdConversion = (yearNum, monthNumber, dayNum) => {
-  const bsDate = formatBsDateString(yearNum, monthNumber, dayNum);
-  if (!bsDate) {
-    console.warn('Failed to format BS date string for conversion');
-    return null;
-  }
-  
-  // Use the conversion function with proper error handling in the caller
-  const result = bikram_sambat_bs.convertBsToAd(bsDate);
-  
-  // Validate the result using a regex check for valid date format YYYY-MM-DD
-  if (!result || !/^\d{4}-\d{2}-\d{2}$/.test(result)) {
-    console.warn('Conversion result is not in expected format:', result);
-    return null;
-  }
-  
-  return result;
-};
-
-/**
- * Check if date components are valid
- * @param {number} yearNum - Year number
- * @param {number} monthNumber - Month number
- * @param {number} dayNum - Day number
- * @returns {boolean} True if valid
- */
-const isValidDateComponents = (yearNum, monthNumber, dayNum) => {
-  return yearNum && monthNumber && dayNum && 
-         !isNaN(yearNum) && !isNaN(monthNumber) && !isNaN(dayNum) &&
-         monthNumber >= 1 && monthNumber <= 12 && 
-         dayNum >= 1 && dayNum <= 32;
-};
-
-/**
- * Format BS date string
- * @param {number} yearNum - Year number
- * @param {number} monthNumber - Month number
- * @param {number} dayNum - Day number
- * @returns {string|null} Formatted date string or null
- */
-const formatBsDateString = (yearNum, monthNumber, dayNum) => {
-  // Validate inputs first
-  if (!yearNum || !monthNumber || !dayNum || 
-      isNaN(yearNum) || isNaN(monthNumber) || isNaN(dayNum)) {
-    console.warn('Invalid input for BS date string formatting:', {yearNum, monthNumber, dayNum});
-    return null;
-  }
-  
-  try {
-    const formattedDay = dayNum.toString().padStart(2, '0');
-    const formattedMonth = monthNumber.toString().padStart(2, '0');
-    return `${yearNum}-${formattedMonth}-${formattedDay}`;
-  } catch (e) {
-    console.error('Error formatting BS date string:', e.message);
+    console.error('Error in fallback conversion method:', e.message);
     return null;
   }
 };
@@ -1224,3 +1055,4 @@ const TEMPLATE = `
     </button>
   </div>
 `;
+  
