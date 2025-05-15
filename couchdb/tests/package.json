@@ -3,10 +3,11 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "test": "mocha couch-cluster.spec.js "
+    "test": "mocha couch-cluster.spec.js --no-config"
   },
   "dependencies": {
     "chai": "^4.3.8",
+    "chai-exclude": "^3.1.0",
     "mocha": "^11.1.0"
   }
 }
