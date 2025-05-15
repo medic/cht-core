@@ -6,10 +6,8 @@ export COUCHDB_USER
 
 .phony: test
 test:
-	docker compose up --build --wait
-	docker compose run --rm sut
+	docker compose up --build couch-test
 	docker compose down
-
 .phony: clean
 clean:
 	docker compose down --rmi local || :
