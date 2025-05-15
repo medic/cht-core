@@ -74,6 +74,10 @@ const setupDatePicker = ($parent, $realDateInput) => {
   const $calendarButton = $group.find('.calendar-btn');
 
   syncInputValues($group);
+  
+  // Remove any existing datepicker inputs to prevent duplicates
+  $group.find('.nepali-datepicker-input').remove();
+  
   const $hiddenDateInput = $('<input type="text" class="nepali-datepicker-input">');
   $calendarButton.after($hiddenDateInput);
 
@@ -145,6 +149,14 @@ const disableCalendarFunctionality = ($group, $realDateInput) => {
  * @param {jQuery} $hiddenDateInput - Hidden date input
  */
 const initializeNepaliDatePicker = ($hiddenDateInput) => {
+  // Make sure to destroy any existing date picker instance first
+  try {
+    $hiddenDateInput.nepaliDatePicker('hide');
+  } catch (e) {
+    // Ignore errors, just trying to clean up any existing instances
+  }
+  
+  // Initialize the date picker
   $hiddenDateInput.nepaliDatePicker({
     ndpYear: true,
     ndpMonth: true,
@@ -186,9 +198,16 @@ const handlePickerUnavailable = ($calendarButton, errorMessage) => {
  * @param {jQuery} $calendarButton - Calendar button
  */
 const setupCalendarButtonHandler = ($hiddenDateInput, $calendarButton) => {
+  // Remove any existing click handlers to prevent multiple calendars from opening
+  $calendarButton.off('click');
+  
   $calendarButton.on('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
+    
+    // Remove any existing date pickers first
+    $('.nepali-date-picker').remove();
+    $('.nepali-date-picker-overlay').remove();
     
     $hiddenDateInput.css({
       'position': 'fixed',
@@ -251,17 +270,38 @@ const setupPickerUI = ($hiddenDateInput) => {
     'pointer-events': 'auto'
   });
   
-  // Add click handler for overlay
-  $('.nepali-date-picker-overlay').on('click', function() {
+ if (!$('.nepali-date-picker .close-btn').length) {
+  const $closeButton = $('<button type="button" class="close-btn" title="Close">&times;</button>');
+  $closeButton.css({
+    'position': 'absolute',
+    'top': '-8px',   // move upward
+    'right': '-7px', // move rightward
+    'background': 'transparent',
+    'border': 'none',
+    'font-size': '20px',
+    'cursor': 'pointer',
+    'z-index': '10000'
+  });
+
+  $closeButton.on('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
     hideDatePicker($hiddenDateInput);
-    $(this).off('click');
+  });
+
+  // Make sure the container allows absolutely-positioned children
+  $('.nepali-date-picker').css('position', 'relative').append($closeButton);
+}
+
+  // Add click handler for overlay
+  $('.nepali-date-picker-overlay').off('click').on('click', function() {
+    hideDatePicker($hiddenDateInput);
   });
   
   // Add ESC key handler
-  $(document).on('keydown.nepaliDatePicker', function(e) {
+  $(document).off('keydown.nepaliDatePicker').on('keydown.nepaliDatePicker', function(e) {
     if (e.keyCode === 27) { // Escape key
       hideDatePicker($hiddenDateInput);
-      $(document).off('keydown.nepaliDatePicker');
     }
   });
 };
@@ -271,9 +311,20 @@ const setupPickerUI = ($hiddenDateInput) => {
  * @param {jQuery} $hiddenDateInput - Hidden date input
  */
 const hideDatePicker = ($hiddenDateInput) => {
-  $hiddenDateInput.nepaliDatePicker('hide');
-  $('.nepali-date-picker-overlay').removeClass('active');
+  try {
+    $hiddenDateInput.nepaliDatePicker('hide');
+  } catch (e) {
+    console.warn('Error hiding date picker:', e);
+  }
   
+  // Remove the overlay and clean up
+  $('.nepali-date-picker-overlay').removeClass('active').remove();
+  $('.nepali-date-picker').remove();
+  
+  // Remove all event handlers
+  $(document).off('keydown.nepaliDatePicker');
+  
+  // Clear the hidden input value
   setTimeout(() => {
     $hiddenDateInput.val('');
   }, 50);
@@ -335,15 +386,8 @@ const handleDateSelect = ($hiddenDateInput) => {
  * @param {jQuery} $hiddenDateInput - The hidden date input
  */
 const cleanupAfterDateSelect = ($hiddenDateInput) => {
-  $('.nepali-date-picker-overlay').removeClass('active');
-  $(document).off('keydown.nepaliDatePicker');
-  
-  try {
-    $hiddenDateInput.nepaliDatePicker('hide');
-  } catch (e) {
-    console.warn('Error hiding date picker:', e);
-    // Non-critical error, we can continue without hiding
-  }
+  // Use our improved hideDatePicker function
+  hideDatePicker($hiddenDateInput);
 };
 
 /**
