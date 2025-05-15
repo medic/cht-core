@@ -6,6 +6,7 @@ export COUCHDB_USER
 
 .phony: test
 test:
+	docker compose down -v --remove-orphans
 	docker compose up --build couch-test
 	docker compose down
 .phony: clean
