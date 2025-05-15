@@ -4269,7 +4269,7 @@ describe('Users service', () => {
         };
         chai.expect(db.medic.put.calledOnceWithExactly({
           ...expectedUser,
-          oidc: true,
+          oidc_login: true,
           type: 'user-settings',
         })).to.be.true;
         chai.expect(db.users.put.calledOnceWithExactly({
@@ -4332,7 +4332,7 @@ describe('Users service', () => {
         chai.expect(db.medic.put.calledOnceWithExactly({
           ...expectedUser,
           type: 'user-settings',
-          oidc: true,
+          oidc_login: true,
         })).to.be.true;
         chai.expect(db.users.put.calledOnceWithExactly({
           ...expectedUser,
@@ -4421,7 +4421,7 @@ describe('Users service', () => {
         chai.expect(db.medic.put.calledOnceWithExactly({
           ...expectedUser1,
           type: 'user-settings',
-          oidc: true,
+          oidc_login: true,
         })).to.be.true;
         chai.expect(db.users.put.calledOnceWithExactly({
           ...expectedUser1,
@@ -4495,9 +4495,9 @@ describe('Users service', () => {
         ]);
 
         chai.expect(db.medic.put.args).to.deep.equal([
-          [{ ...expectedUser, type: 'user-settings', oidc: true, }],
-          [{ ...expectedUser1, type: 'user-settings', oidc: true, }],
-          [{ ...expectedUser2, type: 'user-settings', oidc: true, }],
+          [{ ...expectedUser, type: 'user-settings', oidc_login: true, }],
+          [{ ...expectedUser1, type: 'user-settings', oidc_login: true, }],
+          [{ ...expectedUser2, type: 'user-settings', oidc_login: true, }],
         ]);
         chai.expect(db.users.put.args).to.deep.equal([
           [{
@@ -4647,7 +4647,7 @@ describe('Users service', () => {
         )).to.be.true;
         chai.expect(db.medic.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
         chai.expect(db.users.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
-        chai.expect(db.medic.put.calledOnceWithExactly({ ...existingUserSettings, oidc: true })).to.be.true;
+        chai.expect(db.medic.put.calledOnceWithExactly({ ...existingUserSettings, oidc_login: true })).to.be.true;
         chai.expect(db.users.put.calledOnceWithExactly(updatedUser)).to.be.true;
       });
 
@@ -4663,7 +4663,7 @@ describe('Users service', () => {
         const existingUserSettings = {
           ...existingUserData,
           type: 'user-settings',
-          oidc: true,
+          oidc_login: true,
         };
         db.medic.get.resolves({ ...existingUserSettings });
         const existingUser = {
@@ -4694,7 +4694,7 @@ describe('Users service', () => {
         )).to.be.true;
         chai.expect(db.medic.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
         chai.expect(db.users.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
-        chai.expect(db.medic.put.calledOnceWithExactly({ ...existingUserSettings, oidc: false })).to.be.true;
+        chai.expect(db.medic.put.calledOnceWithExactly({ ...existingUserSettings, oidc_login: false })).to.be.true;
         chai.expect(db.users.put.calledOnceWithExactly(updatedUser)).to.be.true;
       });
 

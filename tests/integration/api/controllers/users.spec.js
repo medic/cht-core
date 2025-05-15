@@ -2237,7 +2237,7 @@ describe('Users API', () => {
         expect(userSettingsDoc).excluding(skippedUserFields).to.deep.equal({
           ...expectedUserData,
           type: 'user-settings',
-          oidc: true,
+          oidc_login: true,
         });
       });
 
@@ -2271,7 +2271,7 @@ describe('Users API', () => {
           expect(userSettingsDoc).excluding(skippedUserFields).to.deep.equal({
             ...expectedUserData,
             type: 'user-settings',
-            oidc: true,
+            oidc_login: true,
           });
         });
       });
@@ -2322,7 +2322,7 @@ describe('Users API', () => {
           expect(userSettingsDoc).excluding(skippedUserFields).to.deep.equal({
             ...expectedUserData,
             type: 'user-settings',
-            ...(originalUserData.oidc_username ? { oidc: true } : {})
+            ...(originalUserData.oidc_username ? { oidc_login: true } : {})
           });
 
           const updatedResult = await utils.request({
@@ -2342,7 +2342,7 @@ describe('Users API', () => {
           expect(updatedUserSettings).excluding(skippedUserFields).to.deep.equal({
             ...expectedUserData,
             type: 'user-settings',
-            oidc: !!updatedUserData.oidc_username
+            oidc_login: !!updatedUserData.oidc_username
           });
         });
       });

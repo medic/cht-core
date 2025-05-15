@@ -456,7 +456,7 @@ const getSettingsUpdates = (username, data) => {
   });
 
   if (Object.keys(data).includes('oidc_username')) {
-    settings.oidc = !!data.oidc_username;
+    settings.oidc_login = !!data.oidc_username;
   }
 
   getCommonFieldsUpdates(settings, data);
