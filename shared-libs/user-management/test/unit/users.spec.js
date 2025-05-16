@@ -2788,7 +2788,6 @@ describe('Users service', () => {
       db.users.get.resolves({});
       db.medic.put.resolves();
       db.users.put.returns(Promise.reject('shiva was here'));
-      db.users.query.resolves({ rows: [] });
       return service.updateUser('georgi', {type: 'x'}, true).catch(err => {
         chai.expect(err).to.equal('shiva was here');
       });
@@ -2799,7 +2798,6 @@ describe('Users service', () => {
       db.users.get.resolves({});
       db.medic.put.returns(Promise.reject('shiva strikes again'));
       db.users.put.resolves({});
-      db.users.query.resolves({ rows: [] });
       return service.updateUser('georgi', {type: 'x'}, true).catch(err => {
         chai.expect(err).to.equal('shiva strikes again');
       });
@@ -2813,7 +2811,6 @@ describe('Users service', () => {
       db.users.get.resolves({});
       db.medic.put.resolves({});
       db.users.put.resolves({});
-      db.users.query.resolves({ rows: [] });
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.users.put.callCount).to.equal(1);
@@ -2828,7 +2825,6 @@ describe('Users service', () => {
       db.users.get.resolves({});
       db.medic.put.resolves({});
       db.users.put.resolves({});
-      db.users.query.resolves({ rows: [] });
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.users.put.callCount).to.equal(1);
@@ -2844,7 +2840,6 @@ describe('Users service', () => {
       sinon.stub(places, 'placesExist').resolves();
       db.medic.put.resolves({});
       db.users.put.resolves({});
-      db.users.query.resolves({ rows: [] });
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.users.put.callCount).to.equal(1);
@@ -2867,7 +2862,6 @@ describe('Users service', () => {
       sinon.stub(roles, 'hasAllPermissions').returns(true);
       db.medic.put.resolves({});
       db.users.put.resolves({});
-      db.users.query.resolves({ rows: [] });
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.args).to.deep.equal([[{
           _id: 'org.couchdb.user:paul',
@@ -2895,7 +2889,6 @@ describe('Users service', () => {
       db.users.get.resolves({});
       db.medic.put.resolves({});
       db.users.put.resolves({});
-      db.users.query.resolves({ rows: [] });
       sinon.stub(roles, 'isOffline').withArgs(['rebel']).returns(false);
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
@@ -2913,7 +2906,6 @@ describe('Users service', () => {
       db.users.get.resolves({});
       db.medic.put.resolves({});
       db.users.put.resolves({});
-      db.users.query.resolves({ rows: [] });
       sinon.stub(roles, 'isOffline').withArgs(['rebel']).returns(true);
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
@@ -2932,7 +2924,6 @@ describe('Users service', () => {
       sinon.stub(places, 'getPlace').resolves();
       db.medic.put.resolves({});
       db.users.put.resolves({});
-      db.users.query.resolves({ rows: [] });
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.users.put.callCount).to.equal(1);
@@ -4252,7 +4243,7 @@ describe('Users service', () => {
           .to.be.eventually.rejectedWith(Error)
           .and.to.deep.include({ code: 400, message });
 
-        chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData, true)).to.be.true;
+        chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
         chai.expect(db.medic.put.notCalled).to.be.true;
         chai.expect(db.users.put.notCalled).to.be.true;
         chai.expect(service.__get__('validateNewUsername').notCalled).to.be.true;
@@ -4261,24 +4252,13 @@ describe('Users service', () => {
       });
 
       it('succeeds if oidc validation passes', async () => {
-
         validateSsoLogin.callsFake(user => {
           user.password = GENERATED_PASSWORD;
           return Promise.resolve();
         });
-
-        sinon.stub(tokenLogin, 'manageTokenLogin');
-        sinon.stub(ssoLogin, 'manageSsoLogin');
-
         sinon.stub(places, 'placesExist').resolves();
 
-        config.get
-          .withArgs('oidc_provider').returns({ client_id: 'cht' });
-
         await service.createMultiFacilityUser(ssoUserData);
-
-        config.get
-          .withArgs('oidc_provider').returns(undefined);
 
         const expectedUser = {
           facility_id: ssoUserData.place,
@@ -4287,20 +4267,19 @@ describe('Users service', () => {
           _id: `org.couchdb.user:${ssoUserData.username}`,
           name: ssoUserData.username,
         };
-
-        chai.expect(db.medic.put.calledOnceWith({
+        chai.expect(db.medic.put.calledOnceWithExactly({
           ...expectedUser,
           oidc_login: true,
           type: 'user-settings',
         })).to.be.true;
-        chai.expect(db.users.put.calledOnceWith({
+        chai.expect(db.users.put.calledOnceWithExactly({
           ...expectedUser,
           type: 'user',
           password: GENERATED_PASSWORD,
           password_change_required: false,
           oidc_username: 'test',
         })).to.be.true;
-        chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData, true)).to.be.true;
+        chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
         chai.expect(service.__get__('validateNewUsername').calledOnceWithExactly(ssoUserData.username)).to.be.true;
         chai.expect(places.placesExist.calledOnceWithExactly(ssoUserData.place)).to.be.true;
         chai.expect(people.isAPerson.args).to.deep.equal([[userContact], [userContact], [userContact]]);
@@ -4324,7 +4303,7 @@ describe('Users service', () => {
           .to.be.eventually.rejectedWith(Error)
           .and.to.deep.include({ code: 400, message });
 
-        chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData, true)).to.be.true;
+        chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
         chai.expect(db.medic.put.notCalled).to.be.true;
         chai.expect(db.users.put.notCalled).to.be.true;
         chai.expect(service.__get__('validateNewUsername').notCalled).to.be.true;
@@ -4348,29 +4327,21 @@ describe('Users service', () => {
           name: ssoUserData.username,
         };
 
-        sinon.stub(tokenLogin, 'manageTokenLogin');
-        sinon.stub(ssoLogin, 'manageSsoLogin');
-        config.get
-          .withArgs('oidc_provider').returns({ client_id: 'cht' });
-
         await service.createUser(ssoUserData);
 
-        config.get
-          .withArgs('oidc_provider').returns(undefined);
-
-        chai.expect(db.medic.put.calledOnceWith({
+        chai.expect(db.medic.put.calledOnceWithExactly({
           ...expectedUser,
           type: 'user-settings',
           oidc_login: true,
         })).to.be.true;
-        chai.expect(db.users.put.calledOnceWith({
+        chai.expect(db.users.put.calledOnceWithExactly({
           ...expectedUser,
           type: 'user',
           password: GENERATED_PASSWORD,
           password_change_required: false,
           oidc_username: 'test',
         })).to.be.true;
-        chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData, true)).to.be.true;
+        chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
         chai.expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(expectedUser.facility_id[0]))).to.be.true;
         chai.expect(places.getPlace.calledOnceWithExactly(expectedUser.facility_id[0])).to.be.true;
         chai.expect(people.getOrCreatePerson.calledOnceWithExactly(expectedUser.contact_id)).to.be.true;
@@ -4407,7 +4378,7 @@ describe('Users service', () => {
         const response = await service.createUsers([ssoUserData]);
 
         chai.expect(response).to.deep.equal([{ error }]);
-        chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData, true)).to.be.true;
+        chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
         chai.expect(db.medicLogs.get.args).to.deep.equal([[undefined], [undefined]]);
         chai.expect(db.medic.put.notCalled).to.be.true;
         chai.expect(db.users.put.notCalled).to.be.true;
@@ -4436,15 +4407,7 @@ describe('Users service', () => {
           name: ssoUserData1.username,
         };
 
-        sinon.stub(tokenLogin, 'manageTokenLogin');
-        sinon.stub(ssoLogin, 'manageSsoLogin');
-        config.get
-          .withArgs('oidc_provider').returns({ client_id: 'cht' });
-
         const response = await service.createUsers([ssoUserData, ssoUserData1, ssoUserData2]);
-
-        config.get
-          .withArgs('oidc_provider').returns(undefined);
 
         chai.expect(response).to.deep.equal([
           { error: error0 },
@@ -4469,9 +4432,9 @@ describe('Users service', () => {
         })).to.be.true;
         chai.expect(db.medicLogs.get.args).to.deep.equal([[undefined], [undefined], [undefined], [undefined]]);
         chai.expect(validateSsoLogin.args).to.deep.equal([
-          [ssoUserData, true],
-          [ssoUserData1, true],
-          [ssoUserData2, true],
+          [ssoUserData],
+          [ssoUserData1],
+          [ssoUserData2],
         ]);
         const [placeId] = expectedUser1.facility_id;
         chai.expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(placeId))).to.be.true;
@@ -4511,16 +4474,7 @@ describe('Users service', () => {
           _id: `org.couchdb.user:${ssoUserData2.username}`,
         };
 
-        sinon.stub(tokenLogin, 'manageTokenLogin');
-        sinon.stub(ssoLogin, 'manageSsoLogin');
-        config.get
-          .withArgs('oidc_provider').returns({ client_id: 'cht' });
-
         const response = await service.createUsers([ssoUserData, ssoUserData1, ssoUserData2]);
-
-        config.get
-          .withArgs('oidc_provider').returns(undefined);
-
 
         chai.expect(response).to.deep.equal([
           {
@@ -4570,9 +4524,9 @@ describe('Users service', () => {
         ]);
         chai.expect(db.medicLogs.get.args).to.deep.equal([[undefined], [undefined], [undefined], [undefined]]);
         chai.expect(validateSsoLogin.args).to.deep.equal([
-          [ssoUserData, true],
-          [ssoUserData1, true],
-          [ssoUserData2, true],
+          [ssoUserData],
+          [ssoUserData1],
+          [ssoUserData2],
         ]);
         const [placeId] = expectedUser.facility_id;
         const placeQualifier = Qualifier.byUuid(placeId);
@@ -4602,9 +4556,15 @@ describe('Users service', () => {
     });
 
     describe('updateUser', () => {
+      let validateSsoLoginUpdate;
+
+      beforeEach(() => {
+        validateSsoLoginUpdate = sinon.stub(ssoLogin, 'validateSsoLoginUpdate');
+      });
+
       it('returns error if oidc validation fails', async () => {
         const message = 'OIDC Login is not enabled';
-        validateSsoLogin.returns({ msg: message });
+        validateSsoLoginUpdate.resolves({ msg: message });
         const existingUserData = {
           facility_id: [ssoUserData.place],
           contact_id: ssoUserData.contact,
@@ -4633,9 +4593,8 @@ describe('Users service', () => {
           ...existingUser,
           ...updates,
         };
-        chai.expect(validateSsoLogin.calledOnceWith(
+        chai.expect(validateSsoLoginUpdate.calledOnceWithExactly(
           { ...updates, contact_id: undefined, facility_id: undefined },
-          false,
           updatedUser
         )).to.be.true;
         chai.expect(db.medic.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
@@ -4645,7 +4604,7 @@ describe('Users service', () => {
       });
 
       it('succeeds when oidc validation passes and called with full access', async () => {
-        validateSsoLogin.callsFake((_, user) => {
+        validateSsoLoginUpdate.callsFake((_, user) => {
           user.password = GENERATED_PASSWORD;
           return Promise.resolve();
         });
@@ -4679,11 +4638,11 @@ describe('Users service', () => {
         });
         const updatedUser = {
           ...existingUser,
-          ...updates
+          ...updates,
+          password: GENERATED_PASSWORD,
         };
-        chai.expect(validateSsoLogin.calledOnceWith(
+        chai.expect(validateSsoLoginUpdate.calledOnceWithExactly(
           { ...updates, contact_id: undefined, facility_id: undefined },
-          false,
           updatedUser
         )).to.be.true;
         chai.expect(db.medic.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
@@ -4693,7 +4652,7 @@ describe('Users service', () => {
       });
 
       it('succeeds when disabling oidc for a user', async () => {
-        validateSsoLogin.resolves();
+        validateSsoLoginUpdate.resolves();
         const existingUserData = {
           facility_id: [ssoUserData.place],
           contact_id: ssoUserData.contact,
@@ -4729,9 +4688,8 @@ describe('Users service', () => {
           ...updates,
           password_change_required: false
         };
-        chai.expect(validateSsoLogin.calledOnceWithExactly(
+        chai.expect(validateSsoLoginUpdate.calledOnceWithExactly(
           { ...updates, contact_id: undefined, facility_id: undefined },
-          false,
           updatedUser
         )).to.be.true;
         chai.expect(db.medic.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
@@ -4750,7 +4708,7 @@ describe('Users service', () => {
             message: 'You do not have permission to modify: oidc_username',
           });
 
-        chai.expect(validateSsoLogin.notCalled).to.be.true;
+        chai.expect(validateSsoLoginUpdate.notCalled).to.be.true;
       });
     });
   }); 
