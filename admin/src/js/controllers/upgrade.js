@@ -20,6 +20,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     $scope.loading = true;
     $scope.versions = {};
     $scope.upgraded = $state.params.upgraded;
+    $scope.canUpgrade = false;
 
     const UPGRADE_URL = '/api/v2/upgrade';
     const POLL_URL = '/setup/poll';
@@ -64,6 +65,15 @@ angular.module('controllers').controller('UpgradeCtrl',
       containerWaitPeriodTimeout = $timeout(() => {
         logError(err, 'instance.upgrade.error.get_upgrade');
       }, UPGRADE_CONTAINER_WAIT_PERIOD);
+    };
+
+    const getCanUpgrade = () => {
+      return $http
+        .get(`${UPGRADE_URL}/can-upgrade`)
+        .then(response => $scope.canUpgrade = response.data.ok)
+        .catch(err => {
+          $log.error('Error when checking if upgrades are possible', err);
+        });
     };
 
     const getCurrentUpgrade = () => {
@@ -156,6 +166,7 @@ angular.module('controllers').controller('UpgradeCtrl',
       .all([
         getExistingDeployment(),
         getCurrentUpgrade(),
+        getCanUpgrade(),
       ])
       .then(() => {
         if (!$scope.currentDeploy) {

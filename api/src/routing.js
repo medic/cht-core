@@ -411,6 +411,7 @@ app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
 
 app.get('/api/v2/upgrade', upgrade.upgradeInProgress);
 app.post('/api/v2/upgrade', jsonParser, upgrade.upgrade);
+app.get('/api/v2/upgrade/can-upgrade', upgrade.canUpgrade);
 app.post('/api/v2/upgrade/stage', jsonParser, upgrade.stage);
 app.post('/api/v2/upgrade/complete', jsonParser, upgrade.complete);
 app.delete('/api/v2/upgrade', jsonParser, upgrade.abort);
