@@ -4218,7 +4218,7 @@ describe('Users service', () => {
         username: 'x',
         contact: userContact._id,
         roles: ['test-role'],
-        oidc: true,
+        oidc_username: 'test',
       };
       validateSsoLogin = sinon
         .stub(ssoLogin, 'validateSsoLogin');
@@ -4237,7 +4237,7 @@ describe('Users service', () => {
 
       it('returns error if oidc validation fails', async () => {
         const message = 'OIDC Login is not enabled';
-        validateSsoLogin.returns({ msg: message });
+        validateSsoLogin.resolves({ msg: message });
 
         await chai.expect(service.createMultiFacilityUser(ssoUserData))
           .to.be.eventually.rejectedWith(Error)
@@ -4254,6 +4254,7 @@ describe('Users service', () => {
       it('succeeds if oidc validation passes', async () => {
         validateSsoLogin.callsFake(user => {
           user.password = GENERATED_PASSWORD;
+          return Promise.resolve();
         });
         sinon.stub(places, 'placesExist').resolves();
 
@@ -4268,6 +4269,7 @@ describe('Users service', () => {
         };
         chai.expect(db.medic.put.calledOnceWithExactly({
           ...expectedUser,
+          oidc_login: true,
           type: 'user-settings',
         })).to.be.true;
         chai.expect(db.users.put.calledOnceWithExactly({
@@ -4275,7 +4277,7 @@ describe('Users service', () => {
           type: 'user',
           password: GENERATED_PASSWORD,
           password_change_required: false,
-          oidc: true,
+          oidc_username: 'test',
         })).to.be.true;
         chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
         chai.expect(service.__get__('validateNewUsername').calledOnceWithExactly(ssoUserData.username)).to.be.true;
@@ -4295,7 +4297,7 @@ describe('Users service', () => {
 
       it('returns error if oidc validation fails', async () => {
         const message = 'OIDC Login is not enabled';
-        validateSsoLogin.returns({ msg: message });
+        validateSsoLogin.resolves({ msg: message });
 
         await chai.expect(service.createUser(ssoUserData))
           .to.be.eventually.rejectedWith(Error)
@@ -4312,6 +4314,7 @@ describe('Users service', () => {
       it('succeeds if oidc validation passes', async () => {
         validateSsoLogin.callsFake(user => {
           user.password = GENERATED_PASSWORD;
+          return Promise.resolve();
         });
         getPlace.resolves(userContact.parent);
         sinon.stub(places, 'getPlace').resolves(userContact.parent);
@@ -4329,13 +4332,14 @@ describe('Users service', () => {
         chai.expect(db.medic.put.calledOnceWithExactly({
           ...expectedUser,
           type: 'user-settings',
+          oidc_login: true,
         })).to.be.true;
         chai.expect(db.users.put.calledOnceWithExactly({
           ...expectedUser,
           type: 'user',
           password: GENERATED_PASSWORD,
           password_change_required: false,
-          oidc: true,
+          oidc_username: 'test',
         })).to.be.true;
         chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
         chai.expect(getPlace.calledOnceWithExactly(Qualifier.byUuid(expectedUser.facility_id[0]))).to.be.true;
@@ -4369,7 +4373,7 @@ describe('Users service', () => {
 
       it('returns error if oidc validation fails', async () => {
         const error = 'OIDC Login is not enabled';
-        validateSsoLogin.returns({ msg: error });
+        validateSsoLogin.resolves({ msg: error });
 
         const response = await service.createUsers([ssoUserData]);
 
@@ -4386,11 +4390,12 @@ describe('Users service', () => {
       it('returns error if oidc validation fails for some users', async () => {
         const error0 = 'OIDC Login is not enabled';
         const error1 = 'a different error';
-        validateSsoLogin.onFirstCall().returns({ msg: error0 });
+        validateSsoLogin.onFirstCall().resolves({ msg: error0 });
         validateSsoLogin.onSecondCall().callsFake(user => {
           user.password = GENERATED_PASSWORD;
+          return Promise.resolve();
         });
-        validateSsoLogin.onThirdCall().returns({ msg: error1 });
+        validateSsoLogin.onThirdCall().resolves({ msg: error1 });
         getPlace.resolves(userContact.parent);
         sinon.stub(places, 'getPlace').resolves(userContact.parent);
         sinon.stub(people, 'getOrCreatePerson').resolves(userContact);
@@ -4413,13 +4418,17 @@ describe('Users service', () => {
           },
           { error: error1 }
         ]);
-        chai.expect(db.medic.put.calledOnceWithExactly({ ...expectedUser1, type: 'user-settings' })).to.be.true;
+        chai.expect(db.medic.put.calledOnceWithExactly({
+          ...expectedUser1,
+          type: 'user-settings',
+          oidc_login: true,
+        })).to.be.true;
         chai.expect(db.users.put.calledOnceWithExactly({
           ...expectedUser1,
           type: 'user',
           password: GENERATED_PASSWORD,
           password_change_required: false,
-          oidc: true,
+          oidc_username: 'test',
         })).to.be.true;
         chai.expect(db.medicLogs.get.args).to.deep.equal([[undefined], [undefined], [undefined], [undefined]]);
         chai.expect(validateSsoLogin.args).to.deep.equal([
@@ -4442,6 +4451,7 @@ describe('Users service', () => {
       it('succeeds if oidc validation passes', async () => {
         validateSsoLogin.callsFake(user => {
           user.password = GENERATED_PASSWORD;
+          return Promise.resolve();
         });
         getPlace.resolves(userContact.parent);
         sinon.stub(places, 'getPlace').resolves(userContact.parent);
@@ -4485,9 +4495,9 @@ describe('Users service', () => {
         ]);
 
         chai.expect(db.medic.put.args).to.deep.equal([
-          [{ ...expectedUser, type: 'user-settings' }],
-          [{ ...expectedUser1, type: 'user-settings' }],
-          [{ ...expectedUser2, type: 'user-settings' }],
+          [{ ...expectedUser, type: 'user-settings', oidc_login: true, }],
+          [{ ...expectedUser1, type: 'user-settings', oidc_login: true, }],
+          [{ ...expectedUser2, type: 'user-settings', oidc_login: true, }],
         ]);
         chai.expect(db.users.put.args).to.deep.equal([
           [{
@@ -4495,21 +4505,21 @@ describe('Users service', () => {
             type: 'user',
             password: GENERATED_PASSWORD,
             password_change_required: false,
-            oidc: true,
+            oidc_username: 'test',
           }],
           [{
             ...expectedUser1,
             type: 'user',
             password: GENERATED_PASSWORD,
             password_change_required: false,
-            oidc: true,
+            oidc_username: 'test',
           }],
           [{
             ...expectedUser2,
             type: 'user',
             password: GENERATED_PASSWORD,
             password_change_required: false,
-            oidc: true,
+            oidc_username: 'test',
           }],
         ]);
         chai.expect(db.medicLogs.get.args).to.deep.equal([[undefined], [undefined], [undefined], [undefined]]);
@@ -4554,7 +4564,7 @@ describe('Users service', () => {
 
       it('returns error if oidc validation fails', async () => {
         const message = 'OIDC Login is not enabled';
-        validateSsoLoginUpdate.returns({ msg: message });
+        validateSsoLoginUpdate.resolves({ msg: message });
         const existingUserData = {
           facility_id: [ssoUserData.place],
           contact_id: ssoUserData.contact,
@@ -4573,7 +4583,7 @@ describe('Users service', () => {
           password: 'existingPassword',
         };
         db.users.get.resolves({ ...existingUser });
-        const updates = { oidc: true };
+        const updates = { oidc_username: 'test' };
 
         await chai.expect(service.updateUser(ssoUserData.username, { ...updates }, true))
           .to.be.eventually.rejectedWith(Error)
@@ -4596,6 +4606,7 @@ describe('Users service', () => {
       it('succeeds when oidc validation passes and called with full access', async () => {
         validateSsoLoginUpdate.callsFake((_, user) => {
           user.password = GENERATED_PASSWORD;
+          return Promise.resolve();
         });
         const existingUserData = {
           facility_id: [ssoUserData.place],
@@ -4617,7 +4628,7 @@ describe('Users service', () => {
         db.users.get.resolves({ ...existingUser });
         db.users.put.resolves({ id: existingUserData._id });
         db.medic.put.resolves({ id: existingUserData._id });
-        const updates = { oidc: true };
+        const updates = { oidc_username: 'test' };
 
         const response = await service.updateUser(ssoUserData.username, { ...updates }, true);
 
@@ -4636,18 +4647,65 @@ describe('Users service', () => {
         )).to.be.true;
         chai.expect(db.medic.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
         chai.expect(db.users.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
-        chai.expect(db.medic.put.calledOnceWithExactly(existingUserSettings)).to.be.true;
+        chai.expect(db.medic.put.calledOnceWithExactly({ ...existingUserSettings, oidc_login: true })).to.be.true;
+        chai.expect(db.users.put.calledOnceWithExactly(updatedUser)).to.be.true;
+      });
+
+      it('succeeds when disabling oidc for a user', async () => {
+        validateSsoLoginUpdate.resolves();
+        const existingUserData = {
+          facility_id: [ssoUserData.place],
+          contact_id: ssoUserData.contact,
+          roles: ssoUserData.roles,
+          _id: `org.couchdb.user:${ssoUserData.username}`,
+          name: ssoUserData.username,
+        };
+        const existingUserSettings = {
+          ...existingUserData,
+          type: 'user-settings',
+          oidc_login: true,
+        };
+        db.medic.get.resolves({ ...existingUserSettings });
+        const existingUser = {
+          ...existingUserData,
+          type: 'user',
+          password: 'existingPassword',
+          oidc_username: 'test@test.com'
+        };
+        db.users.get.resolves({ ...existingUser });
+        db.users.put.resolves({ id: existingUserData._id });
+        db.medic.put.resolves({ id: existingUserData._id });
+        const updates = { oidc_username: null, password: GENERATED_PASSWORD };
+
+        const response = await service.updateUser(ssoUserData.username, { ...updates }, true);
+
+        chai.expect(response).to.deep.equal({
+          user: { id: existingUser._id, rev: undefined },
+          'user-settings': { id: existingUser._id, rev: undefined },
+        });
+        const updatedUser = {
+          ...existingUser,
+          ...updates,
+          password_change_required: false
+        };
+        chai.expect(validateSsoLoginUpdate.calledOnceWithExactly(
+          { ...updates, contact_id: undefined, facility_id: undefined },
+          updatedUser
+        )).to.be.true;
+        chai.expect(db.medic.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
+        chai.expect(db.users.get.calledOnceWithExactly(existingUserData._id)).to.be.true;
+        chai.expect(db.medic.put.calledOnceWithExactly({ ...existingUserSettings, oidc_login: false })).to.be.true;
         chai.expect(db.users.put.calledOnceWithExactly(updatedUser)).to.be.true;
       });
 
       it('returns error when changing oidc without full access', async () => {
-        const updates = { oidc: true };
+        const updates = { oidc_username: 'test' };
 
         await chai.expect(service.updateUser(ssoUserData.username, { ...updates }, false))
           .to.be.eventually.rejectedWith(Error)
           .and.to.deep.include({
             status: 401,
-            message: 'You do not have permission to modify: oidc',
+            message: 'You do not have permission to modify: oidc_username',
           });
 
         chai.expect(validateSsoLoginUpdate.notCalled).to.be.true;

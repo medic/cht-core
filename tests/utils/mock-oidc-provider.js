@@ -7,13 +7,14 @@ const { generateKeyPairSync } = require('crypto');
 const { hostURL } = require('@utils');
 const { BASE_URL, DB_NAME } = require('@constants');
 
+const SECRET = 'secret';
+const EMAIL = 'test@email.com';
 const appTokenUrl = `${BASE_URL}/${DB_NAME}/login/oidc`;
-
 const authenticatedRedirectUrl = `${appTokenUrl}?code=dummy`;
 
 const getOidcBaseUrl = () => hostURL(server.address().port);
 
-const getJWT_KEYS = (secret = 'secret') => generateKeyPairSync(
+const getJWT_KEYS = () => generateKeyPairSync(
   'rsa',
   {
     modulusLength: 4096,
@@ -25,12 +26,12 @@ const getJWT_KEYS = (secret = 'secret') => generateKeyPairSync(
       type: 'pkcs8',
       format: 'pem',
       cipher: 'aes-256-cbc',
-      passphrase: secret
+      passphrase: SECRET
     }
   }
 );
 
-const generateIdToken =  (issuer, secret = 'secret') => {
+const generateIdToken =  (issuer) => {
   const payload = {
     issuer,
     algorithm: 'RS256',
@@ -42,9 +43,10 @@ const generateIdToken =  (issuer, secret = 'secret') => {
       preferred_username: 'testuser',
       sub: '12345',
       name: 'John Doe',
-      aud: 'cht'
+      aud: 'cht',
+      email: EMAIL,
     },
-    { key: privateKey.replace(/\\n/gm, '\n'), passphrase: secret },
+    { key: privateKey.replace(/\\n/gm, '\n'), passphrase: SECRET },
     payload
   );
 };
@@ -139,6 +141,7 @@ const stopOidcServer = () => {
 };
 
 module.exports = {
+  EMAIL,
   getOidcBaseUrl,
   getDiscoveryUrl: () => `${getOidcBaseUrl()}.well-known/openid-configuration`,
   appTokenUrl,

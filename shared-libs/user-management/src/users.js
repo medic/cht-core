@@ -51,7 +51,7 @@ const USER_EDITABLE_FIELDS = RESTRICTED_USER_EDITABLE_FIELDS.concat([
   'contact',
   'type',
   'roles',
-  'oidc',
+  'oidc_username',
 ]);
 
 const RESTRICTED_SETTINGS_EDITABLE_FIELDS = [
@@ -455,6 +455,10 @@ const getSettingsUpdates = (username, data) => {
     }
   });
 
+  if (Object.keys(data).includes('oidc_username')) {
+    settings.oidc_login = !!data.oidc_username;
+  }
+
   getCommonFieldsUpdates(settings, data);
 
   return settings;
@@ -530,7 +534,7 @@ const missingFields = data => {
 
   if (tokenLogin.shouldEnableTokenLogin(data)) {
     required.push('phone');
-  } else if (!data.oidc) {
+  } else if (!data.oidc_username) {
     required.push('password');
   }
 
@@ -694,7 +698,7 @@ const validateUserContact = (data, user) => {
  * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
  * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this
  *   user.
- * @param {string=} data.oidc_provider Client ID for the OIDC Client. Can be set but not together 
+ * @param {string=} data.oidc_username unique OIDC identifier for user. Can be set but not together
  * with @param token_login|@param password
  * @param {string=} data.fullname Full name
  * @param {string=} data.email Email address
@@ -895,7 +899,7 @@ const createMultiFacilityUser = async (data, appUrl) => {
   if (tokenLoginError) {
     throw error400(tokenLoginError.msg, tokenLoginError.key);
   }
-  const ssoLoginError = ssoLogin.validateSsoLogin(data);
+  const ssoLoginError = await ssoLogin.validateSsoLogin(data);
   if (ssoLoginError) {
     throw error400(ssoLoginError.msg);
   }
@@ -998,7 +1002,7 @@ module.exports = {
    * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
    * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for
    *   this user.
-   * @param {string=} data.oidc_provider Client ID for the OIDC Client. Can be set but not together 
+   * @param {string=} data.oidc_username unique OIDC identifier for user. Can be set but not together
    * with @param token_login|@param password
    * @param {string=} data.fullname Full name
    * @param {string=} data.email Email address
@@ -1023,7 +1027,7 @@ module.exports = {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
 
-    const ssoLoginError = ssoLogin.validateSsoLogin(data);
+    const ssoLoginError = await ssoLogin.validateSsoLogin(data);
     if (ssoLoginError) {
       return Promise.reject(error400(ssoLoginError.msg));
     }
@@ -1053,7 +1057,7 @@ module.exports = {
    * @param {string=} users[].phone Valid phone number. Required if token_login is enabled for the user.
    * @param {Boolean=} users[].token_login A boolean representing whether or not the Login by SMS should be enabled for
    *   this user.
-   * @param {string=} users[].oidc_provider Client ID for the OIDC Client. Can be set but not together 
+   * @param {string=} users[].oidc_username unique OIDC identifier for user. Can be set but not together
    * with @param token_login|@param password
    * @param {string=} users[].fullname Full name
    * @param {string=} users[].email Email address
@@ -1103,7 +1107,7 @@ module.exports = {
           throw new Error(tokenLoginError.msg);
         }
 
-        const ssoLoginError = ssoLogin.validateSsoLogin(user);
+        const ssoLoginError = await ssoLogin.validateSsoLogin(user);
         if (ssoLoginError) {
           throw error400(ssoLoginError.msg);
         }
@@ -1181,7 +1185,7 @@ module.exports = {
     if (tokenLoginError) {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
-    const ssoLoginError = ssoLogin.validateSsoLoginUpdate(data, user);
+    const ssoLoginError = await ssoLogin.validateSsoLoginUpdate(data, user);
     if (ssoLoginError) {
       return Promise.reject(error400(ssoLoginError.msg));
     }
