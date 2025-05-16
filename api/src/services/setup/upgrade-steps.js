@@ -3,7 +3,7 @@ const viewIndexerProgress = require('./view-indexer-progress');
 const upgradeLogService = require('./upgrade-log');
 const viewIndexer = require('./view-indexer');
 const logger = require('@medic/logger');
-const environment = require('@medic/environment');
+const serverInfo = require('@medic/server-info');
 const startupLog = require('./startup-log');
 
 /**
@@ -21,7 +21,7 @@ const finalize = async () => {
   await upgradeUtils.deleteStagedDdocs();
   await upgradeLogService.setFinalized();
   await upgradeUtils.cleanup();
-  await environment.getDeployInfo(true);
+  await serverInfo.getDeployInfo(true);
 };
 
 /**

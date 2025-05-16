@@ -26,9 +26,7 @@ const invalidRequest = req => {
 };
 
 const interceptResponse = (requestDocs, req, res, response) => {
-  response = JSON.parse(response);
-  const formattedResults = bulkDocs.formatResults(requestDocs, req.body.docs, response);
-  res.json(formattedResults);
+  return bulkDocs.formatResults(requestDocs, req.body.docs, response);
 };
 
 module.exports = {

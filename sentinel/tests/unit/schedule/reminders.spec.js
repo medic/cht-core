@@ -299,6 +299,20 @@ describe('reminders', () => {
         });
     });
 
+    it('matches reminder with moment if in last hour', () => {
+      clock.tick(oneDay);
+      const ts = moment().subtract(30, 'minutes');
+
+      reminders.__set__('getReminderWindowStart', sinon.stub().resolves(moment().subtract(1, 'hour')));
+
+      return matchReminder({ text_expression: `at ${ts.format('HH:mm')} on ${ts.format('ddd')}`})
+        // will generate cron job matching the current hour
+        .then(matches => {
+          assert(matches);
+          assert.equal(matches.valueOf(), ts.valueOf());
+        });
+    });
+
     it('does not match reminder if in next minute', () => {
       clock.tick(oneDay);
       const past = moment().subtract(1, 'hour');
