@@ -109,6 +109,7 @@ require('./services/file-reader');
 require('./services/get-data-records');
 require('./services/get-subject-summaries');
 require('./services/get-summaries');
+require('./services/get-user');
 require('./services/header-tabs');
 require('./services/hydrate-contact-names');
 require('./services/json-parse');

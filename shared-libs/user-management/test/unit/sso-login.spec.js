@@ -68,7 +68,8 @@ describe('SSO Login service', () => {
       const result = await service.validateSsoLogin(data);
 
       expect(result).to.deep.equal({
-        msg: 'The oidc_username [test] already exists for user [duplicate-user].'
+        msg: 'The oidc_username [test] already exists for user [duplicate-user].',
+        key: 'user.sso.username.duplicate',
       });
       expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
       expect(generatePassword.notCalled).to.be.true;
@@ -183,7 +184,8 @@ describe('SSO Login service', () => {
       const result = await service.validateSsoLoginUpdate(data, user);
 
       expect(result).to.deep.equal({
-        msg: 'The oidc_username [test] already exists for user [duplicate-user].'
+        msg: 'The oidc_username [test] already exists for user [duplicate-user].',
+        key: 'user.sso.username.duplicate',
       });
       expect(data).to.deep.equal({ oidc_username: 'test' });
       expect(user).to.deep.equal({
@@ -216,6 +218,39 @@ describe('SSO Login service', () => {
         oidc_username: 'test',
         password_change_required: false,
         password: GENERATED_PASSWORD,
+      });
+      expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
+      expect(generatePassword.calledOnceWithExactly()).to.be.true;
+      expect(db.users.query.calledOnceWithExactly(
+        'users/users_by_field',
+        { include_docs: true, key: ['oidc_username', 'test'] }
+      )).to.be.true;
+    });
+
+    it('should allow disabling token_login at the same time oidc_login is enabled', async () => {
+      const data = { oidc_username: 'test', token_login: false };
+      const user = {
+        _id: 'org.couchdb.user:test',
+        oidc_username: 'test',
+        token_login: {
+          active: true
+        },
+      };
+      config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' } });
+      db.users.query.resolves({ rows: [{ doc: { _id: 'org.couchdb.user:test' } }] });
+
+      const result = await service.validateSsoLoginUpdate(data, user);
+
+      expect(result).to.equal(undefined);
+      expect(data).to.deep.equal({ oidc_username: 'test', token_login: false });
+      expect(user).to.deep.equal({
+        _id: 'org.couchdb.user:test',
+        oidc_username: 'test',
+        password_change_required: false,
+        password: GENERATED_PASSWORD,
+        token_login: {
+          active: true
+        },
       });
       expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
       expect(generatePassword.calledOnceWithExactly()).to.be.true;

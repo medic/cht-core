@@ -30,6 +30,7 @@ angular
     ContactTypes,
     CreateUser,
     DB,
+    GetUser,
     Select2Search,
     Settings,
     Translate,
@@ -69,7 +70,7 @@ angular
     };
 
     const allowTokenLogin = settings => settings.token_login && settings.token_login.enabled;
-    const allowSSOLogin = settings => settings.oidc_provider && settings.oidc_provider.client_id;
+    const allowSSOLogin = settings => settings.oidc_provider;
 
     /**
      * Ensures that facility_id is an array for backward compatibility.
@@ -87,12 +88,22 @@ angular
       return $scope.model.facility_id;
     };
 
+    const populateModelOidcUsername = function () {
+      if (!$scope.model._id || !$scope.model.oidc_login || $scope.model.oidc_username) {
+        return $q.resolve();
+      }
+
+      return GetUser
+        .getByUsername($scope.model.name)
+        .then(({ oidc_username }) => $scope.model.oidc_username = oidc_username);
+    };
+
     const determineEditUserModel = function() {
       // Edit a user that's not the current user.
       // $scope.model is the user object passed in by controller creating the Modal.
       // If $scope.model === {}, we're creating a new user.
-      return Settings()
-        .then(settings => {
+      return $q.all([Settings(), populateModelOidcUsername()])
+        .then(([settings]) => {
           $scope.permissions = settings.permissions;
           $scope.roles = settings.roles;
           $scope.allowTokenLogin = allowTokenLogin(settings);
@@ -102,11 +113,10 @@ angular
           }
 
           // Start with the password masked.
-          $scope.model.passwordFieldType  = 'password';
+          $scope.model.passwordFieldType = 'password';
 
           $scope.model.showPasswordIcon = SHOW_PASSWORD_ICON;
           $scope.model.hidePasswordIcon = HIDE_PASSWORD_ICON;
-
           const facilityId = getFacilityId();
           const tokenLoginData = $scope.model.token_login;
           const tokenLoginEnabled = tokenLoginData &&
@@ -135,7 +145,7 @@ angular
             passwordFieldType: $scope.model.passwordFieldType,
             showPasswordIcon: $scope.model.showPasswordIcon,
             hidePasswordIcon: $scope.model.hidePasswordIcon,
-            oidc: $scope.model.oidc
+            oidc_username: $scope.model.oidc_username,
           };
           return $q.resolve(m);
         });
@@ -203,6 +213,10 @@ angular
           return false;
         }
 
+        if (!$scope.allowSSOLogin && $scope.editUserModel.oidc_username) {
+          // Automatically disable OIDC when SSO login is not enabled
+          $scope.editUserModel.oidc_username = '';
+        }
         return true;
       });
     };
@@ -210,17 +224,16 @@ angular
     const validatePasswordForEditUser = () => {
       const newUser = !$scope.editUserModel.id;
       const tokenLogin = $scope.editUserModel.token_login;
-      const ssoLogin = $scope.editUserModel.oidc;
-      if (tokenLogin || ssoLogin) {
+      const oidcUsername = $scope.editUserModel.oidc_username;
+      if (tokenLogin || (oidcUsername && $scope.allowSSOLogin)) {
         // when enabling token_login or sso_login, password is not required
-
         // if user had populated before enabling token/sso, remove assigned password
         $scope.editUserModel.password = '';
         $scope.editUserModel.passwordConfirm = '';
         return true;
       }
 
-      if (newUser || tokenLogin === false || ssoLogin === false) {
+      if (newUser || tokenLogin === false || oidcUsername === '') {
         // for new users or when disabling token_login for users who have it enabled
         return validatePasswordFields();
       }
@@ -230,6 +243,11 @@ angular
         $scope.editUserModel.password ||
         $scope.editUserModel.passwordConfirm
       ) {
+        if (!$scope.allowSSOLogin && oidcUsername) {
+          // Automatically disable OIDC when SSO login is not enabled
+          $scope.editUserModel.oidc_username = '';
+        }
+
         return validatePasswordFields();
       }
       return true;
@@ -439,11 +457,6 @@ angular
         .then(existingModel => {
           const updates = {};
           getUpdatedKeys(model, existingModel).forEach(key => {
-            if (key === 'oidc' && model[key] === undefined) {
-              updates[key] = false;
-              return;
-            }
-
             updates[key] = model[key];
           });
 

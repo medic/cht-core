@@ -365,7 +365,8 @@ const mapUser = (user, setting, facilities) => {
     roles: user.roles,
     contact: getDoc(user.contact_id, facilities),
     external_id: setting.external_id,
-    known: user.known
+    known: user.known,
+    oidc_username: user.oidc_username,
   };
 };
 
@@ -901,7 +902,7 @@ const createMultiFacilityUser = async (data, appUrl) => {
   }
   const ssoLoginError = await ssoLogin.validateSsoLogin(data);
   if (ssoLoginError) {
-    throw error400(ssoLoginError.msg);
+    throw error400(ssoLoginError.msg, ssoLoginError.key);
   }
   const passwordError = validatePassword(data.password);
   if (passwordError) {
@@ -1029,7 +1030,7 @@ module.exports = {
 
     const ssoLoginError = await ssoLogin.validateSsoLogin(data);
     if (ssoLoginError) {
-      return Promise.reject(error400(ssoLoginError.msg));
+      return Promise.reject(error400(ssoLoginError.msg, ssoLoginError.key));
     }
 
     const passwordError = validatePassword(data.password);
@@ -1109,7 +1110,7 @@ module.exports = {
 
         const ssoLoginError = await ssoLogin.validateSsoLogin(user);
         if (ssoLoginError) {
-          throw error400(ssoLoginError.msg);
+          throw error400(ssoLoginError.msg, ssoLoginError.key);
         }
 
         const passwordError = validatePassword(user.password);
@@ -1187,7 +1188,7 @@ module.exports = {
     }
     const ssoLoginError = await ssoLogin.validateSsoLoginUpdate(data, user);
     if (ssoLoginError) {
-      return Promise.reject(error400(ssoLoginError.msg));
+      return Promise.reject(error400(ssoLoginError.msg, ssoLoginError.key));
     }
 
     await validateUserFacility(data, user);

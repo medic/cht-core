@@ -19,16 +19,19 @@ const validateSsoLogin = async (data) => {
   if (!data.oidc_username){
     return;
   }
-  if (data.password || data.token_login){
+  if (data.password || data.token_login === true) {
     return { msg: 'Cannot set password or token_login with oidc_username.' };
   }
-  if (!isSsoLoginEnabled()){
+  if (!isSsoLoginEnabled()) {
     return { msg: 'Cannot set oidc_username when OIDC Login is not enabled.' };
   }
 
   const duplicateUserId = await getUserIdWithDuplicateOidcUsername(data.oidc_username, data._id);
   if (duplicateUserId) {
-    return { msg: `The oidc_username [${data.oidc_username}] already exists for user [${duplicateUserId}].` };
+    return {
+      msg: `The oidc_username [${data.oidc_username}] already exists for user [${duplicateUserId}].`,
+      key: 'user.sso.username.duplicate',
+    };
   }
 
   data.password = passwords.generate();
@@ -41,7 +44,7 @@ const validateSsoLoginUpdate = async (data, updatedUser) => {
     return;
   }
   // token_login is set on updateUser later, so check data here
-  if (updatedUser.oidc_username && data.token_login) {
+  if (updatedUser.oidc_username && (data.token_login || updatedUser.token_login && data.token_login !== false)) {
     return { msg: 'Cannot set token_login with oidc_username.' };
   }
 
