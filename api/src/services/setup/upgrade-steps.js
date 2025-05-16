@@ -131,12 +131,7 @@ const complete = async (buildInfo) => {
   return response;
 };
 
-const canUpgrade = async () => {
-  return upgradeUtils.isDockerUpgradeServiceRunning();
-};
-
 module.exports = {
-  canUpgrade,
   prep,
   stage,
   indexStagedViews,

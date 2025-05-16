@@ -352,11 +352,10 @@ const isDockerUpgradeServiceRunning = async () => {
     const response = await request.get({ url: UPGRADE_SERVICE_URL });
     return !!response.body.ok;
   } catch (err) {
-    logger.error('Error occured when connecting to upgrade service: %o', err);
+    logger.error('Error occurred when connecting to upgrade service: %o', err);
     return false;
   }
 };
-
 
 const upgradeResponseSuccess = (payload, response) => {
   if (!response) {

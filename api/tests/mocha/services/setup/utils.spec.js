@@ -1048,4 +1048,39 @@ describe('Setup utils', () => {
       expect(utils.__get__('upgradeResponseSuccess')(payload, response)).to.equal(true);
     });
   });
+
+  describe('isDockerUpgradeServiceRunning', () => {
+    it('should return true when docker upgrade service is running', async () => {
+      sinon.stub(request, 'get').resolves({ ok: true, status: 200, body: { ok: true } });
+
+      expect(await utils.isDockerUpgradeServiceRunning()).to.equal(true);
+      expect(request.get.callCount).to.equal(1);
+      expect(request.get.args[0]).to.deep.equal([{ url: 'http://localhost:5008' }]);
+    });
+
+    it('should return false when another upgrade service is running', async () => {
+      sinon.stub(request, 'get').resolves({ ok: true, status: 200, body: { message: 'ok' } });
+
+      expect(await utils.isDockerUpgradeServiceRunning()).to.equal(false);
+      expect(request.get.callCount).to.equal(1);
+      expect(request.get.args[0]).to.deep.equal([{ url: 'http://localhost:5008' }]);
+    });
+
+    it('should return false when connection to service does not work', async () => {
+      sinon.stub(request, 'get').rejects(new Error('boom'));
+
+      expect(await utils.isDockerUpgradeServiceRunning()).to.equal(false);
+    });
+
+    it('should use URL from environment', async () => {
+      process.env.UPGRADE_SERVICE_URL = 'http://someurl';
+      utils = rewire('../../../../src/services/setup/utils');
+
+      sinon.stub(request, 'get').resolves({ ok: true, status: 200, body: { ok: true } });
+
+      expect(await utils.isDockerUpgradeServiceRunning()).to.equal(true);
+      expect(request.get.callCount).to.equal(1);
+      expect(request.get.args[0]).to.deep.equal([{ url: 'http://someurl' }]);
+    });
+  });
 });
