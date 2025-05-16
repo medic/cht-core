@@ -3,13 +3,11 @@ const { expect } = require('chai');
 const waitForService = async (url, maxAttempts = 10, delay = 100) => {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
-      const response = await fetch(url, { 
-        method: 'GET',
-        timeout: 5000
-      });
+      const response = await fetch(url)
       if (response.ok) {
         return true;
       }
+      await new Promise(resolve => setTimeout(resolve, delay));
     } catch (error) {
       // Wait and try again
       await new Promise(resolve => setTimeout(resolve, delay));
@@ -21,11 +19,6 @@ const waitForService = async (url, maxAttempts = 10, delay = 100) => {
 describe('HAProxy with mock CouchDB', function() {
   this.timeout(3000);
   
-  before(async () => {
-  });
-  
-  after(() => {
-  });
   
   it('should respond before timeout', async () => {
     await waitForService('http://127.0.0.1:15984');

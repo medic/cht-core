@@ -7,6 +7,7 @@ describe('CouchDB Cluster Unit Tests', () => {
   const COUCHDB_PASSWORD = process.env.COUCHDB_PASSWORD;
   const COUCH_SERVERS = ['couchdb1.local', 'couchdb2.local', 'couchdb3.local'];
   const TEST_DB_NAME = 'tests';
+  let dbCreated = false;
 
   const requestOnNode = async (serverIndex, path, options = {}) => {
     const server = COUCH_SERVERS[serverIndex];
@@ -28,7 +29,12 @@ describe('CouchDB Cluster Unit Tests', () => {
     
     try {
       const response = await fetch(url, fetchOptions);
-      const body = await response.json().catch(() => ({}));
+      let body;
+      try {
+        body = await response.json();
+      } catch (jsonError) {
+        throw new Error(`Failed to parse JSON response: ${jsonError.message}`);
+      }
       
       if (!response.ok && !options.allowError) {
         const error = new Error(`Request failed with status ${response.status}`);
@@ -50,46 +56,43 @@ describe('CouchDB Cluster Unit Tests', () => {
     }
   };
 
-  before(async function () {
-    this.timeout(60000);
-  
-    // Create test DB
-   
-    await requestOnNode(0, `/${TEST_DB_NAME}`, { method: 'PUT' });
-    
-  });
-
   after(async function () {
-    this.timeout(30000);
     
-    // Clean up test DB
-    await requestOnNode(0, `/${TEST_DB_NAME}`, {
-      method: 'DELETE',
-      allowError: true
-    });
+    if (dbCreated) {
+      await requestOnNode(0, `/${TEST_DB_NAME}`, {
+        method: 'DELETE',
+        allowError: true
+      });
+    }
     
   });
 
   it('couchdb1.local node is available', async function () {
-    this.timeout(5000);
+    this.timeout(2000);
     const response = await requestOnNode(0, '/_up');
     expect(response.body).to.have.property('status', 'ok');
   });
 
   it('couchdb2.local node is available', async function () {
-    this.timeout(5000);
+    this.timeout(2000);
     const response = await requestOnNode(1, '/_up');
     expect(response.body).to.have.property('status', 'ok');
   });
 
   it('couchdb3.local node is available', async function () {
-    this.timeout(5000);
+    this.timeout(2000);
     const response = await requestOnNode(2, '/_up');
     expect(response.body).to.have.property('status', 'ok');
   });
 
+  it('should create the test database', async function () {
+    const res = await requestOnNode(0, `/${TEST_DB_NAME}`, { method: 'PUT'});
+
+    expect([201, 202, 412]).to.include(res.status);
+    dbCreated = true;
+  });
+
   it('data inserted on one server can be retrieved from a peer', async function () {
-    this.timeout(15000);
     const id = Math.random().toString(36).substring(2, 34);
 
     // Insert doc on node 2
@@ -98,8 +101,6 @@ describe('CouchDB Cluster Unit Tests', () => {
       body: { Name: 'Test Cluster' }
     });
 
-    // Allow time for replication
-    await new Promise(resolve => setTimeout(resolve, 10000));
 
     // Retrieve from node 3
     const response = await requestOnNode(2, `/${TEST_DB_NAME}/${id}`);
@@ -107,7 +108,7 @@ describe('CouchDB Cluster Unit Tests', () => {
   });
   
   it('cluster membership shows all nodes', async function () {
-    this.timeout(10000);
+    this.timeout(2000);
     const response = await requestOnNode(0, '/_membership');
     const membership = response.body;
     

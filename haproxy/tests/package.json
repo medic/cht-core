@@ -3,10 +3,10 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "test:errors": "mocha --timeout 10000 errors_generate.spec.js",
-    "test:integration": "mocha --timeout 30000 with_mock.spec.js"
+    "test:errors": "mocha --timeout 10000 errors-generate.spec.js",
+    "test:integration": "mocha --timeout 30000 with-mock.spec.js"
   },
-  "dependencies": {
+  "devDependencies": {
     "chai": "^4.3.7",
     "chai-exclude": "^2.1.1",
     "fs-extra": "^11.1.1",
