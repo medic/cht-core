@@ -12,10 +12,14 @@ import { combineLatest, Subscription } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'mm-filter-slider-icon',
-  templateUrl: './filter-slider-icon.component.html'
+  templateUrl: './filter-slider-icon.component.html',
+  imports: [
+    TranslatePipe,
+  ],
 })
 export class FilterSliderIconComponent implements AfterContentInit, AfterViewInit, OnDestroy {
   @Input() disabled;

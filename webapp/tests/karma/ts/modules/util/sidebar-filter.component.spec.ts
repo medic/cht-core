@@ -20,7 +20,7 @@ import { SidebarFilterComponent } from '@mm-modules/util/sidebar-filter.componen
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 
-describe('Reports Sidebar Filter Component', () => {
+describe('Sidebar Filter Component', () => {
   let component: SidebarFilterComponent;
   let fixture: ComponentFixture<SidebarFilterComponent>;
   let telemetryService;

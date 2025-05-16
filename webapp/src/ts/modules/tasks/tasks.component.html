@@ -1,7 +1,7 @@
 <mm-tool-bar title="Tasks">
   <mm-search-bar
     (toggleFilter)="toggleFilter()"
-    (search)="search()"
+    (search)="filter()"
     [disabled]="tasksDisabled || loading || !hasTasks || errorStack"
     [showFilter]="true">
   </mm-search-bar>
@@ -59,7 +59,7 @@
 
       <mm-sidebar-filter
         class="col-sm-3 sidebar-filter-wrapper"
-        (search)="search()"
+        (search)="filter()"
         [disabled]="false"
         type="tasks"
         [includeFilters]="{ status: false }">

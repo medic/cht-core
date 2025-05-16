@@ -19,6 +19,15 @@ import { Selectors } from '@mm-selectors/index';
 import { NavigationService } from '@mm-services/navigation.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { UserContactService } from '@mm-services/user-contact.service';
+import { DeduplicateService } from '@mm-services/deduplicate.service';
+import { SidebarFilterComponent } from '@mm-modules/util/sidebar-filter.component';
+import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
+import { TelemetryService } from '@mm-services/telemetry.service';
+import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { SessionService } from '@mm-services/session.service';
+import { DatePipe } from '@angular/common';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('TasksComponent', () => {
   let getComponent;
@@ -31,6 +40,10 @@ describe('TasksComponent', () => {
   let clock;
   let store;
   let lineageModelGeneratorService;
+  let deduplicateService;
+  let telemetryService;
+  let sessionService;
+  let datePipe;
 
   let component: TasksComponent;
   let fixture: ComponentFixture<TasksComponent>;
@@ -42,6 +55,7 @@ describe('TasksComponent', () => {
       fetchTaskDocsForAllContacts: sinon.stub().resolves([]),
       contactsMarkedAsDirty: sinon.stub(),
     };
+    (<any>$.fn).daterangepicker = sinon.stub().returns({ on: sinon.stub() });
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     contactTypesService = {
@@ -52,6 +66,14 @@ describe('TasksComponent', () => {
       getUserLineageToRemove: sinon.stub(),
     };
 
+    deduplicateService = { getDuplicates: sinon.stub() };
+    telemetryService = sinon.stub();
+    sessionService = {
+      isAdmin: sinon.stub().returns(false),
+      isOnlineOnly: sinon.stub().returns(false)
+    };
+    datePipe = { transform: sinon.stub() };
+
     TestBed.configureTestingModule({
       imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
@@ -60,6 +82,9 @@ describe('TasksComponent', () => {
         TasksComponent,
         NavigationComponent,
         ToolBarComponent,
+        SidebarFilterComponent,
+        SearchBarComponent,
+        BrowserAnimationsModule
       ],
       providers: [
         provideMockStore(),
@@ -70,6 +95,14 @@ describe('TasksComponent', () => {
         { provide: NavigationService, useValue: {} },
         { provide: UserContactService, useValue: userContactService },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
+        { provide: DeduplicateService, useValue: deduplicateService },
+        { provide: TelemetryService, useValue: telemetryService },
+        // Needed because of ngx-translate provider's constructor.
+        { provide: SettingsService, useValue: {} },
+        // Needed because of facility filter
+        { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } },
+        { provide: SessionService, useValue: sessionService },
+        { provide: DatePipe, useValue: datePipe },
       ],
     });
 
