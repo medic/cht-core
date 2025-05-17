@@ -485,7 +485,8 @@ mm-analytics-filters {
 .reports .inbox-items,
 .contacts .inbox-items,
 .messages .inbox-items,
-.trainings .inbox-items {
+.trainings .inbox-items,
+.tasks .inbox-items {
   overflow-y: hidden;
   overflow-x: hidden;
   height: 100%;
@@ -1126,6 +1127,49 @@ mm-search-bar {
     }
 
     &.disabled .search-bar-left-icon .fa {
+      color: @inactive-color;
+    }
+  }
+}
+
+mm-filter-slider-icon {
+  padding: 8px 0;
+  position: relative;
+  display: block;
+
+  .mm-filter-slider-container {
+    display: flex;
+    justify-content: flex-start;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.8);
+
+    *, *:active, *:focus {
+      outline: none !important;
+      box-shadow: none;
+    }
+
+    .open-filter {
+      background-color: transparent;
+      margin: 0 3px;
+      font-size: @font-large;
+      position: relative;
+      border-radius: 0 px;
+
+      &:active {
+        box-shadow: none;
+      }
+
+      .filter-counter {
+        color: @chip-text-color;
+        font-size: @font-extra-extra-small;
+        background: @chip-background-color;
+        border-radius: 50%;
+        padding: 1px 5px;
+        vertical-align: middle;
+      }
+    }
+
+    &.disabled {
       color: @inactive-color;
     }
   }
