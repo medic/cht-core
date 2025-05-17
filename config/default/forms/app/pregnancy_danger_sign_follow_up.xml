@@ -301,17 +301,17 @@
       <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/refer_patient_note_1" readonly="true()" type="string" relevant="../danger_sign_present = 'yes'"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/refer_patient_note_2" readonly="true()" type="string" relevant="../danger_sign_present = 'yes'"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/danger_signs_question_note" readonly="true()" type="string" relevant="../danger_sign_present = 'yes'"/>
-      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/vaginal_bleeding" type="select1" relevant="../danger_sign_present = 'yes'" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/fits" type="select1" relevant="../danger_sign_present = 'yes'" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/severe_abdominal_pain" type="select1" relevant="../danger_sign_present = 'yes'" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/severe_headache" type="select1" relevant="../danger_sign_present = 'yes'" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/very_pale" type="select1" relevant="../danger_sign_present = 'yes'" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/fever" type="select1" relevant="../danger_sign_present = 'yes'" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/reduced_or_no_fetal_movements" type="select1" relevant="../danger_sign_present = 'yes'" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/breaking_water" type="select1" relevant="../danger_sign_present = 'yes'" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/easily_tired" type="select1" relevant="../danger_sign_present = 'yes'" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/face_hand_swelling" type="select1" relevant="../danger_sign_present = 'yes'" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/breathlessness" type="select1" relevant="../danger_sign_present = 'yes'" required="true()"/>
+      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/vaginal_bleeding" type="select1" required="true()" relevant="../danger_sign_present = 'yes'"/>
+      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/fits" type="select1" required="true()" relevant="../danger_sign_present = 'yes'"/>
+      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/severe_abdominal_pain" type="select1" required="true()" relevant="../danger_sign_present = 'yes'"/>
+      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/severe_headache" type="select1" required="true()" relevant="../danger_sign_present = 'yes'"/>
+      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/very_pale" type="select1" required="true()" relevant="../danger_sign_present = 'yes'"/>
+      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/fever" type="select1" required="true()" relevant="../danger_sign_present = 'yes'"/>
+      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/reduced_or_no_fetal_movements" type="select1" required="true()" relevant="../danger_sign_present = 'yes'"/>
+      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/breaking_water" type="select1" required="true()" relevant="../danger_sign_present = 'yes'"/>
+      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/easily_tired" type="select1" required="true()" relevant="../danger_sign_present = 'yes'"/>
+      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/face_hand_swelling" type="select1" required="true()" relevant="../danger_sign_present = 'yes'"/>
+      <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/breathlessness" type="select1" required="true()" relevant="../danger_sign_present = 'yes'"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/r_danger_sign_present" type="string" calculate="if((selected(../vaginal_bleeding, 'yes')
 or selected(../fits, 'yes')
 or selected(../severe_abdominal_pain, 'yes')
