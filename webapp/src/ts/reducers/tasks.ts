@@ -15,7 +15,7 @@ const initialState = {
 };
 
 /**
- * Ultimate task prioritization algorithm that combines:
+ * Task prioritization algorithm that combines:
  * 1. Overdue status (most urgent)
  * 2. Due today status (high urgency)
  * 3. Priority (importance)
@@ -30,11 +30,9 @@ const initialState = {
  * 5. Tasks without due dates appear last
  */
 const orderByDueDateAndPriority = (t1, t2) => {
-  // Priority handling (default to 0 if missing)
   const p1 = t1?.priority ?? 0;
   const p2 = t2?.priority ?? 0;
   
-  // Current time and start of today (for accurate date comparison)
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   
@@ -53,9 +51,7 @@ const orderByDueDateAndPriority = (t1, t2) => {
   const isDueToday2 = daysUntilDue2 === 0;
   const hasNoDueDate1 = d1 === Infinity;
   const hasNoDueDate2 = d2 === Infinity;
-  
-  // -- Primary Sorting Rules --
-  
+    
   // 1. Overdue tasks come first (most urgent)
   if (isOverdue1 && !isOverdue2) return -1;
   if (isOverdue2 && !isOverdue1) return 1;

@@ -49,9 +49,9 @@ function checkTaskResolvedForHomeVisit(contact, report, event, dueDate) {
 }
 
 function getPriorityCategory(score) {
-  if (score >= 0 && score <= 3){ return 'Low';}
-  else if (score >= 4 && score <= 6){ return 'Medium';}
-  else if (score >= 7 && score <= 10){ return 'High';}
+  if (score < 6){ return 'Low priority';}
+  else if (score >= 6 && score <= 8){ return 'Medium priority';}
+  else if (score > 8){ return 'High priority';}
   return '';
 }
 
@@ -103,10 +103,12 @@ module.exports = [
       return !recentLMP && addDays(report.reported_date, MAX_DAYS_IN_PREGNANCY + 7) >= today;
     },
     resolvedIf: checkTaskResolvedForHomeVisit,
-    priority: function(contact, report, event, dueDate) {
-      console.warn(contact);
-      console.warn(event);
-      console.warn(dueDate);
+    priority: function(contact, report) {
+      console.warn('CONTACT', contact.contact.date_of_birth);
+      const taskTypeScore = getField(report, 't_pregnancy_home_visit');
+      console.warn('taskTypeScore', taskTypeScore);
+      const individualScore = getField(report, 't_pregnancy_home_visit');
+      console.warn('individualScore', individualScore);
       const score = 8;
       return {
         level: score,
@@ -144,10 +146,12 @@ module.exports = [
       return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_facility_visit_reminder'], startTime, endTime);
 
     },
-    priority: function(contact, report, event, dueDate) {
-      console.warn(contact);
-      console.warn(event);
-      console.warn(dueDate);
+    priority: function(contact, report) {
+      console.warn('CONTACT', contact.contact.date_of_birth);
+      const taskTypeScore = getField(report, 't_pregnancy_follow_up_date');
+      console.warn('taskTypeScore', taskTypeScore);
+      const individualScore = getField(report, 't_pregnancy_follow_up_date');
+      console.warn('individualScore', individualScore);
       const score = 6;
       return {
         level: score,
@@ -190,10 +194,12 @@ module.exports = [
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_danger_sign_follow_up'], startTime, endTime);
     },
-    priority: function(contact, report, event, dueDate) {
-      console.warn(contact);
-      console.warn(event);
-      console.warn(dueDate);
+    priority: function (contact, report) {
+      console.warn('CONTACT', contact.contact.date_of_birth);
+      const taskTypeScore = getField(report, 't_danger_signs_referral_follow_up');
+      console.warn('taskTypeScore', taskTypeScore);
+      const individualScore = getField(report, 't_danger_signs_referral_follow_up');
+      console.warn('individualScore', individualScore);
       const score = 10;
       return {
         level: score,
@@ -273,10 +279,12 @@ module.exports = [
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_mother'], startTime, endTime);
     },
-    priority: function(contact, report, event, dueDate) {
-      console.warn(contact);
-      console.warn(event);
-      console.warn(dueDate);
+    priority: function(contact, report) {
+      console.warn('CONTACT', contact);
+      const taskTypeScore = getField(report, 't_danger_signs_referral_follow_up');
+      console.warn('taskTypeScore', taskTypeScore);
+      const individualScore = getField(report, 't_danger_signs_referral_follow_up');
+      console.warn('individualScore', individualScore);
       const score = 3;
       return {
         level: score,
@@ -325,10 +333,12 @@ module.exports = [
       const endTime = addDays(dueDate, event.end).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'], startTime, endTime);
     },
-    priority: function(contact, report, event, dueDate) {
-      console.warn(contact);
-      console.warn(event);
-      console.warn(dueDate);
+    priority: function(contact, report) {
+      console.warn('CONTACT', contact);
+      const taskTypeScore = getField(report, 't_danger_signs_referral_follow_up');
+      console.warn('taskTypeScore', taskTypeScore);
+      const individualScore = getField(report, 't_danger_signs_referral_follow_up');
+      console.warn('individualScore', individualScore);
       const score = 10;
       return {
         level: score,
@@ -373,10 +383,12 @@ module.exports = [
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'], startTime, endTime);
     },
-    priority: function(contact, report, event, dueDate) {
-      console.warn(contact);
-      console.warn(event);
-      console.warn(dueDate);
+    priority: function(contact, report) {
+      console.warn('CONTACT', contact);
+      const taskTypeScore = getField(report, 't_danger_signs_referral_follow_up');
+      console.warn('taskTypeScore', taskTypeScore);
+      const individualScore = getField(report, 't_danger_signs_referral_follow_up');
+      console.warn('individualScore', individualScore);
       const score = 10;
       return {
         level: score,
