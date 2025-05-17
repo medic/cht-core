@@ -263,15 +263,15 @@
       <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/visit_confirm" type="select1" required="true()"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/danger_sign_present" type="select1" required="true()"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/danger_signs_question_note" readonly="true()" type="string" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/infected_umbilical_cord" type="select1" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'" required="true()"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/convulsion" type="select1" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'" required="true()"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/difficulty_feeding" type="select1" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'" required="true()"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/vomit" type="select1" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'" required="true()"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/drowsy" type="select1" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'" required="true()"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/stiff" type="select1" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'" required="true()"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/yellow_skin" type="select1" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'" required="true()"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/fever" type="select1" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'" required="true()"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/blue_skin" type="select1" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'" required="true()"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/infected_umbilical_cord" type="select1" required="true()" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/convulsion" type="select1" required="true()" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/difficulty_feeding" type="select1" required="true()" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/vomit" type="select1" required="true()" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/drowsy" type="select1" required="true()" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/stiff" type="select1" required="true()" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/yellow_skin" type="select1" required="true()" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/fever" type="select1" required="true()" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/blue_skin" type="select1" required="true()" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/r_danger_sign_present" type="string" calculate="if(selected(../infected_umbilical_cord, 'yes') or
 selected(../convulsion, 'yes') or
 selected(../difficulty_feeding, 'yes') or

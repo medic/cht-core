@@ -14,34 +14,59 @@ const initialState = {
   },
 };
 
+// const orderByDueDateAndPriority = (t1, t2) => {
+//   const lhs = t1?.dueDate;
+//   const rhs = t2?.dueDate;
+
+//   console.log('t1', t1);
+//   console.log('t2', t2);
+
+
+//   const lhsPriority = t1?.priority;
+//   const rhsPriority = t2?.priority;
+
+//   if ((lhsPriority && !rhsPriority) || lhsPriority > rhsPriority) {
+//     return -1;
+//   }
+
+//   if ((!lhsPriority && rhsPriority) || lhsPriority < rhsPriority) {
+//     return 1;
+//   }
+
+//   if (!lhs && !rhs) {
+//     return 0;
+//   }
+//   if (!lhs) {
+//     return 1;
+//   }
+//   if (!rhs) {
+//     return -1;
+//   }
+
+//   return lhs < rhs ? -1 : 1;
+// };
+
 const orderByDueDateAndPriority = (t1, t2) => {
-  const lhs = t1?.dueDate;
-  const rhs = t2?.dueDate;
+  const lhsScore = t1?.priority ?? 0;
+  const rhsScore = t2?.priority ?? 0;
 
-  const lhsPriority = t1?.priority;
-  const rhsPriority = t2?.priority;
-
-  if ((lhsPriority && !rhsPriority) || lhsPriority > rhsPriority) {
-    return -1;
+  if (lhsScore !== rhsScore) {
+    return rhsScore - lhsScore; 
   }
 
-  if ((!lhsPriority && rhsPriority) || lhsPriority < rhsPriority) {
-    return 1;
-  }
+  const lhsDue = t1?.dueDate;
+  const rhsDue = t2?.dueDate;
 
-  if (!lhs && !rhs) {
-    return 0;
-  }
-  if (!lhs) {
-    return 1;
-  }
-  if (!rhs) {
-    return -1;
-  }
+  console.log('t1', t1);
+  console.log('t2', t2);
+  console.log('lhsDue', lhsDue);
+  console.log('rhsDue', rhsDue);
 
-  return lhs < rhs ? -1 : 1;
+  if (!lhsDue && !rhsDue) return 0;
+  if (!lhsDue) return 1;
+  if (!rhsDue) return -1;
+  return lhsDue < rhsDue ? -1 : 1;
 };
-
 const _tasksReducer = createReducer(
   initialState,
   on(GlobalActions.clearSelected, (state) => ({ ...state, selected: null })),
