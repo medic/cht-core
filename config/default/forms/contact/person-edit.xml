@@ -1008,7 +1008,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/inputs/user/name" type="string"/>
       <bind nodeset="/data/init/person_name" type="string" calculate="../../person/name"/>
       <bind nodeset="/data/init/person_place_name" type="string" calculate="../name"/>
-      <bind nodeset="/data/init/person_parent" type="string" calculate=" /data/person/parent " readonly="true()"/>
+      <bind nodeset="/data/init/person_parent" type="string" readonly="true()" calculate=" /data/person/parent "/>
       <bind nodeset="/data/init/type" type="string"/>
       <bind nodeset="/data/init/name" type="string"/>
       <bind nodeset="/data/init/note_place" readonly="true()" type="string"/>

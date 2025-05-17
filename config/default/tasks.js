@@ -129,6 +129,17 @@ module.exports = [
       return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_facility_visit_reminder'], startTime, endTime);
 
     },
+    priority: function(contact, report, event, dueDate) {
+      console.warn('priority contact', contact);
+      console.warn('priority event', event);
+      console.warn('priority dueDate', dueDate);
+      console.warn('priority report', report);
+
+      return {
+        level: 10,
+        label: 'High Priority',
+      };
+    },
     actions: [{
       type: 'report',
       form: 'pregnancy_facility_visit_reminder',
@@ -164,7 +175,18 @@ module.exports = [
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_danger_sign_follow_up'], startTime, endTime);
+    },    
+    priority: function(contact, report, event, dueDate) {
+      console.warn('priority contact', contact);
+      console.warn('priority event', event);
+      console.warn('priority dueDate', dueDate);
+      console.warn('priority report', report);
+      return {
+        level: 10,
+        label: 'High',
+      };
     },
+
     actions: [
       {
         type: 'report',
