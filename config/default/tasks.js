@@ -142,13 +142,6 @@ module.exports = [
       return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_facility_visit_reminder'], startTime, endTime);
 
     },
-    priority: function () {
-      return {
-        level: 8,
-        label: 'Very Important',
-        score: 800
-      };
-    },
     actions: [{
       type: 'report',
       form: 'pregnancy_facility_visit_reminder',
@@ -157,6 +150,13 @@ module.exports = [
         content.source_visit_date = getField(report, 't_pregnancy_follow_up_date');
       }
     }],
+    priority: function () {
+      return {
+        level: 10,
+        label: 'Very Important Stuff Should Be Done',
+        score: 1000
+      };
+    },
     events: [{
       id: 'pregnancy-facility-visit-reminder',
       start: 3,
@@ -319,13 +319,11 @@ module.exports = [
       const endTime = addDays(dueDate, event.end).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'], startTime, endTime);
     },
-    priority: function (contact, report, event, dueDate) {
-      console.warn(contact);
-      console.warn(event);
-      console.warn(dueDate);
+    priority: function () {
       return {
         level: 10,
-        label: 'High', score: 1000
+        label: 'High',
+        score: 1000,
       };
     },
     actions: [
@@ -366,10 +364,7 @@ module.exports = [
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'], startTime, endTime);
     },
-    priority: function (contact, report, event, dueDate) {
-      console.warn(contact);
-      console.warn(event);
-      console.warn(dueDate);
+    priority: function () {
       return {
         level: 10,
         label: 'High', 
