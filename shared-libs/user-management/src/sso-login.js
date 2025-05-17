@@ -2,46 +2,47 @@ const config = require('./libs/config');
 const passwords = require('./libs/passwords');
 const db = require('./libs/db');
 
-const isSsoLoginGloballyEnabled = () => {
-  return isSsoLoginEnabled();
-};
-
 const shouldEnableSsoLogin = (data) => {
-  return isSsoLoginGloballyEnabled() && data.oidc === true;
-};
-
-const validateSsoLoginEdit = async (data, updatedUser) => {
-  const user = await db.users.get(updatedUser._id);
-  const wasUsingSSO = user.oidc;
-
-  if (wasUsingSSO && 'oidc' in data && data.oidc === undefined) {
-    return {
-      msg: 'Explicitly disable sso login.',
-      key: 'sso.user.disable.undefined',
-    };
-  }
-
-  const disablingSSO = data.oidc === false;
-
-  const passwordOrTokenLogin = data.password || data.token_login;
-
-  if (disablingSSO && wasUsingSSO && !passwordOrTokenLogin) {
-    return {
-      msg: 'Password is required when disabling sso login.',
-      key: 'sso.user.disable.password',
-    };
-  }
-
-  if (shouldEnableSsoLogin(data)) {
-    updatedUser.password = passwords.generate();
-    updatedUser.password_change_required = false;
-  }
+  return isSsoLoginEnabled() && data.oidc === true;
 };
 
 const validateSsoLogin = (data, newUser = true, user = {}) => {
-  return newUser
-    ? validateSsoLoginCreate(data)
-    : validateSsoLoginEdit(data, user);
+  if (newUser && !data.oidc) {
+    return;
+  }
+
+  if (!newUser && !data.oidc && !data.password && !data.token_login) {
+    return;
+  }
+
+  if (hasBothOidcAndTokenOrPasswordLogin(data)){
+    return {
+      msg: 'Either OIDC Login only or Token/Password Login is allowed'
+    };
+  }
+
+  if (data.oidc && !isSsoLoginEnabled()) {
+    return { msg: 'OIDC Login is not enabled' };
+  }
+
+  if (!newUser) {
+    const wasUsingSSO = user.oidc;
+
+    if (wasUsingSSO && 'oidc' in data && data.oidc === undefined) {
+      return { msg: 'Explicitly disable sso login.' };
+    }
+
+    const disablingSSO = data.oidc === false;
+
+    const passwordOrTokenLogin = data.password || data.token_login;
+
+    if (disablingSSO && wasUsingSSO && !passwordOrTokenLogin) {
+      return { msg: 'Password is required when disabling sso login.' };
+    }
+  }
+
+  data.password = passwords.generate();
+  data.password_change_required = false;
 };
 
 const enableSsoLogin = (response) => {
@@ -54,8 +55,6 @@ const enableSsoLogin = (response) => {
       user.oidc = true;
 
       userSettings.oidc = true;
-
-      response.oidc = true;
 
       return Promise.all([ db.users.put(user), db.medic.put(userSettings) ]);
     })
@@ -112,48 +111,12 @@ const manageSsoLogin = (data, response) => {
 const hasBothOidcAndTokenOrPasswordLogin = data => data.oidc && (data.password || data.token_login);
 
 const isSsoLoginEnabled = () => {
-  const settings = config.get();
-  return !!settings?.oidc_provider?.client_id;
+  const settings = config.get('oidc_provider');
+  return !!settings;
 };
-
-const validateSsoLoginCreate = (data) => {
-  if (!data.oidc){
-    return;
-  }
-  
-  if (hasBothOidcAndTokenOrPasswordLogin(data)){
-    return {
-      msg: 'Either OIDC Login only or Token/Password Login is allowed'
-    }; 
-  }
-
-  if (!isSsoLoginEnabled()){
-    return {
-      msg: 'OIDC Login is not enabled'
-    }; 
-
-  }
-
-  data.password = passwords.generate();
-  data.password_change_required = false;
-};
-
-const validateSsoLoginUpdate = (data, updatedUser) => {
-  if (!data.oidc && !data.password && !data.token_login) {
-    return;
-  }
-  // token_login is set on updateUser later, so check data here
-  if (updatedUser.oidc && (data.token_login || data.password)) {
-    return { msg: 'Either OIDC Login only or Token/Password Login is allowed' };
-  }
-
-  return validateSsoLoginEdit(data, updatedUser);
-};
-
 
 module.exports = {
   shouldEnableSsoLogin,
   validateSsoLogin,
-  manageSsoLogin,
-  validateSsoLoginUpdate
+  manageSsoLogin
 };

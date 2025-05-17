@@ -45,20 +45,20 @@ describe('SSO Login service', () => {
 
     it('should return error message when oidc_provider is not in app settings', () => {
       const data = { oidc: true };
-      config.get.returns({ });
+      config.get.withArgs('oidc_provider').returns(undefined);
     
       const result = service.validateSsoLogin(data);
 
       expect(result).to.deep.equal({
         msg: 'OIDC Login is not enabled'
       });
-      expect(config.get.calledOnceWithExactly()).to.be.true;
+      expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
       expect(generatePassword.notCalled).to.be.true;
     });
 
     it('should not return error message when oidc user is valid', () => {
       const data = { oidc: true };
-      config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' } });
+      config.get.withArgs('oidc_provider').returns({ 'client_id': 'testClientId' });
 
       const result = service.validateSsoLogin(data);
 
@@ -68,7 +68,7 @@ describe('SSO Login service', () => {
         password_change_required: false,
         password: GENERATED_PASSWORD
       });
-      expect(config.get.calledOnceWithExactly()).to.be.true;
+      expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
       expect(generatePassword.calledOnceWithExactly()).to.be.true;
     });
 
@@ -87,14 +87,13 @@ describe('SSO Login service', () => {
 
     [
       { password: 'testPassword', oidc: true, token_login: true },
-      { oidc: true },
-      { password: 'testPassword' },
-      { token_login: true }
+      { password: 'testPassword', oidc: true },
+      { token_login: true, oidc: true }
     ].forEach((data) => {
       it('should return error message data modified to be invalid', () => {
-        const user = { password: 'testPassword', oidc: true };
+        const user = { oidc: true }; // user from db should not have password.
 
-        const result = service.validateSsoLoginUpdate(data, user);
+        const result = service.validateSsoLogin(data, false, user);
 
         expect(result).to.deep.equal({
           msg: 'Either OIDC Login only or Token/Password Login is allowed'
@@ -105,9 +104,9 @@ describe('SSO Login service', () => {
     });
 
     it('should not return when auth fields not modified on invalid user', () => {
-      const user = { password: 'testPassword', oidc: true };
+      const user = { oidc: true };
 
-      const result = service.validateSsoLoginUpdate({ contact: 'z' }, user);
+      const result = service.validateSsoLogin({ contact: 'z' }, false, user);
 
       expect(result).to.equal(undefined);
       expect(config.get.notCalled).to.be.true;
@@ -116,9 +115,9 @@ describe('SSO Login service', () => {
 
     it('should not return error message when oidc user is valid', () => {
       const data = { oidc: true };
-      config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' } });
+      config.get.withArgs('oidc_provider').returns({ 'client_id': 'testClientId' });
 
-      const result = service.validateSsoLoginUpdate(data, data);
+      const result = service.validateSsoLogin(data, false, data);
 
       expect(result).to.equal(undefined);
       expect(data).to.deep.equal({
@@ -126,7 +125,7 @@ describe('SSO Login service', () => {
         password_change_required: false,
         password: GENERATED_PASSWORD
       });
-      expect(config.get.calledOnceWithExactly()).to.be.true;
+      expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
       expect(generatePassword.calledOnceWithExactly()).to.be.true;
     });
   });

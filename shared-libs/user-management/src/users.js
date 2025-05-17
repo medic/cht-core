@@ -249,6 +249,7 @@ const createContact = async (data, response) => {
 const createUserSettings = (data, response) => {
   const settings = getSettingsUpdates(data.username, data);
   settings._id = createID(data.username);
+
   return db.medic.put(settings).then(body => {
     response['user-settings'] = {
       id: body.id,
@@ -528,12 +529,10 @@ const getDataRoles = (data) => data.roles || (data.type && getRoles(data.type));
 const missingFields = data => {
   const required = ['username'];
 
-  if (!ssoLogin.shouldEnableSsoLogin(data)) {
-    if (tokenLogin.shouldEnableTokenLogin(data)) {
-      required.push('phone');
-    } else {
-      required.push('password');
-    }
+  if (tokenLogin.shouldEnableTokenLogin(data)) {
+    required.push('phone');
+  } else if (!data.oidc) {
+    required.push('password');
   }
 
   const userRoles = getDataRoles(data);
