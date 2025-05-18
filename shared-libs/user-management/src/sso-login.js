@@ -6,12 +6,28 @@ const shouldEnableSsoLogin = (data) => {
   return isSsoLoginEnabled() && data.oidc === true;
 };
 
+
+/**
+ * Validates that updates to SSO user are valid:-
+ * - validate that oidc property is set for a new user
+ * - if none of oidc, password or token_login properties are being updated, ignore validations
+ * - validate that oidc, password or token_login are not set at the same time
+ * - validate that oidc can only be activated if oidc login is enabled in settings
+ * - validate that if disabling oidc, and not to token_login, password is required
+ * - reset password if enabling oidc or disabling oidc to token_login
+ * @param {object} data Update object.
+ * @param {boolean} newUser If context is new user or not.
+ * @param {object} user User object that is being updated, but already updated with update objecct (data) values.
+ * @returns validation error if validation fails, else returns undefined.
+ */
 const validateSsoLogin = (data, newUser = true, user = {}) => {
+  const editUser = !newUser;
+
   if (newUser && !data.oidc) {
     return;
   }
 
-  if (!newUser && !data.oidc && !data.password && !data.token_login) {
+  if (!editUser && !data.oidc && !data.password && !data.token_login) {
     return;
   }
 
@@ -25,24 +41,16 @@ const validateSsoLogin = (data, newUser = true, user = {}) => {
     return { msg: 'OIDC Login is not enabled' };
   }
 
-  if (!newUser) {
-    const wasUsingSSO = user.oidc;
-
-    if (wasUsingSSO && 'oidc' in data && data.oidc === undefined) {
-      return { msg: 'Explicitly disable sso login.' };
-    }
-
-    const disablingSSO = data.oidc === false;
-
-    const passwordOrTokenLogin = data.password || data.token_login;
-
-    if (disablingSSO && wasUsingSSO && !passwordOrTokenLogin) {
-      return { msg: 'Password is required when disabling sso login.' };
-    }
+  const disablingSSO = user.oidc && !data.oidc;
+  const passwordOrTokenLogin = data.password || data.token_login;
+  if (!editUser && disablingSSO && !passwordOrTokenLogin) {
+    return { msg: 'Password is required when disabling sso login.' };
   }
 
-  data.password = passwords.generate();
-  data.password_change_required = false;
+  if (newUser || (editUser && data.token_login)) {
+    data.password = passwords.generate();
+    data.password_change_required = false;
+  }
 };
 
 const enableSsoLogin = (response) => {
