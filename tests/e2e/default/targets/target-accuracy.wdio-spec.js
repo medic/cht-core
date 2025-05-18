@@ -81,7 +81,7 @@ describe('Target accuracy', () => {
 
   it('should save target document when targets change', async () => {
     await commonPage.goToPeople();
-    await contactsPage.addPerson({ name: 'Jody' }, false);
+    await contactsPage.addPerson({ name: 'Jody' }, { waitForSentinel: false });
     await commonPage.waitForPageLoaded();
 
     await commonPage.sync();

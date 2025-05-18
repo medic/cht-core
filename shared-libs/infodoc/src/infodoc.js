@@ -34,7 +34,7 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
   const splitInfoDocRows = results => {
     return results.reduce((acc, row) => {
       if (!row.doc) {
-        acc.missing.push({_id: row.key});
+        acc.missing.push({ _id: row.key });
       } else if (!row.doc.transitions) {
         // No transitions may mean that API created this infodoc on write but sentinel hasn't seen
         // it yet. It's possible that there is a legacy infodoc with transition information.
@@ -45,7 +45,7 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
 
       return acc;
 
-    }, {valid: [], missing: [], missingTransitions: []});
+    }, { valid: [], missing: [], missingTransitions: [] });
   };
 
   const infoDocIds = changes.map(change => getInfoDocId(change.id));
@@ -155,8 +155,8 @@ const saveTransitions = change => {
   return saveProperty(change.id, change.info, 'transitions', {});
 };
 
-const saveCompletedTasks = (id, infodoc) => {
-  return saveProperty(id, infodoc, 'completed_tasks', {});
+const saveCompletedTasks = (id, infodoc, completedTasks = []) => {
+  return saveProperty(id, infodoc, 'completed_tasks', completedTasks);
 };
 
 const saveProperty = async (id, infodoc, property, defaultValue = {}) => {
@@ -203,7 +203,7 @@ const bulkUpdate = infoDocs => {
       // for now (just via a db.sentinel.put)
       return findInfoDocs(db.sentinel, conflictingInfoDocs.map(d => d._id))
         .then(freshInfoDocs => {
-          freshInfoDocs.forEach(({doc: freshInfoDoc}, idx) => {
+          freshInfoDocs.forEach(({ doc: freshInfoDoc }, idx) => {
             conflictingInfoDocs[idx]._rev = freshInfoDoc._rev;
             conflictingInfoDocs[idx].initial_replication_date = freshInfoDoc.initial_replication_date;
             conflictingInfoDocs[idx].latest_replication_date = freshInfoDoc.latest_replication_date;

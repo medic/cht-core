@@ -8,7 +8,9 @@ const privacyPolicy = require('../services/privacy-policy');
 const logger = require('@medic/logger');
 const db = require('../db');
 const dataContext = require('../services/data-context');
-const { tokenLogin, roles, users, validatePassword } = require('@medic/user-management')(config, db, dataContext);
+const {
+  tokenLogin, ssoLogin, roles, users, validatePassword
+} = require('@medic/user-management')(config, db, dataContext);
 const localeUtils = require('locale');
 const cookie = require('../services/cookie');
 const brandingService = require('../services/branding');
@@ -16,7 +18,6 @@ const translations = require('../translations');
 const template = require('../services/template');
 const rateLimitService = require('../services/rate-limit');
 const serverUtils = require('../server-utils');
-const appSettings = require('../services/settings');
 const sso = require('../services/sso-login');
 
 const PASSWORD_RESET_URL = '/medic/password-reset';
@@ -197,8 +198,18 @@ const render = (page, req, extras = {}) => {
     });
 };
 
+const unauthorizedError = (message) => {
+  const error = new Error(message);
+  error.status = 401;
+  return error;
+};
+
 const getSessionCookie = res => {
-  return res.headers.getSetCookie().find(cookie => cookie.indexOf('AuthSession') === 0);
+  const sessionCookie = res.headers.getSetCookie().find(cookie => cookie.indexOf('AuthSession') === 0);
+  if (!sessionCookie) {
+    throw unauthorizedError('Not logged in');
+  }
+  return sessionCookie;
 };
 
 const createSession = req => {
@@ -225,26 +236,24 @@ const setUserCtxCookie = (res, userCtx) => {
   cookie.setUserCtx(res, JSON.stringify(content));
 };
 
-const setCookies = async (req, res, sessionCookie) => {
-  if (!sessionCookie) {
-    throw { status: 401, error: 'Not logged in' };
-  }
-  const options = { headers: { Cookie: sessionCookie } };
-  try {
-    const userCtx = await getUserCtxRetry(options);
-    if (roles.isDbAdmin(userCtx)) {
-      await users.createAdmin(userCtx);
-    }
+const isOidcUser = (userDoc) => userDoc?.oidc_username && ssoLogin.isSsoLoginEnabled();
 
-    const user = await users.getUserDoc(userCtx.name);
-    if (!skipPasswordChange(user)) {
-      return redirectToPasswordReset(req, res, userCtx);
-    }
-    return redirectToApp({ req, res, sessionCookie, userCtx });
-  } catch (err) {
-    logger.error(`Error getting authCtx %o`, err);
-    throw { status: 401, error: 'Error getting authCtx' };
+const setCookies = async (req, res, sessionCookie) => {
+  const options = { headers: { Cookie: sessionCookie } };
+  const userCtx = await getUserCtxRetry(options);
+  if (roles.isDbAdmin(userCtx)) {
+    await users.createAdmin(userCtx);
   }
+
+  const userDoc = await users.getUserDoc(userCtx.name);
+  if (isOidcUser(userDoc)) {
+    throw unauthorizedError('Password Login Not Permitted For SSO Users');
+  }
+  if (!skipPasswordChange(userDoc)) {
+    return redirectToPasswordReset(req, res, userCtx);
+  }
+
+  return redirectToApp({ req, res, sessionCookie, userCtx });
 };
 
 const redirectToApp = async ({ req, res, sessionCookie, userCtx }) => {
@@ -280,7 +289,9 @@ const getUserCtxRetry = async (options, retry = 10) => {
       await new Promise(r => setTimeout(r, 10));
       return getUserCtxRetry(options, --retry);
     }
-    throw err;
+
+    logger.error(`Error getting authCtx %o`, err);
+    throw unauthorizedError('Error getting authCtx');
   }
 };
 
@@ -320,7 +331,7 @@ const loginByToken = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ error: 'invalid'});
     }
-    
+
     const { user, password } = await tokenLogin.resetPassword(userId);
     req.body = { user, password, locale: req.body.locale };
 
@@ -337,10 +348,9 @@ const loginByToken = async (req, res) => {
   }
 };
 
-const renderLogin = async (req) => {
-  const hasOidcProvider = await appSettings.hasOidcProvider();
-  return render('login', req, { hasOidcProvider });
-};
+const renderLogin = async (req) => render('login', req, {
+  hasOidcProvider: ssoLogin.isSsoLoginEnabled()
+});
 
 const renderPasswordReset = (req) => {
   return render('passwordReset', req);
@@ -372,8 +382,8 @@ const validateSession = async (req) => {
 };
 
 const sendLoginErrorResponse = (e, res) => {
-  if (e.status === 401) {
-    return res.status(401).json({ error: e.error });
+  if (e.status === 401 || e.status === 400) {
+    return res.status(e.status).json({ error: e.error || e.message });
   }
   logger.error('Error logging in: %o', e);
   return res.status(500).json({ error: 'Unexpected error logging in' });
@@ -513,6 +523,11 @@ module.exports = {
       }
 
       const userDoc = await users.getUserDoc(username);
+      if (isOidcUser(userDoc)) {
+        const error = new Error('Password Reset Not Permitted For SSO Users');
+        error.status = 400;
+        throw error;
+      }
       await updatePassword(userDoc, password, req);
 
       req.body = { user: username, password, locale };
@@ -522,7 +537,7 @@ module.exports = {
     } catch (err) {
       logger.error('Error updating password: %o', err);
       const status = err.status || 500;
-      res.status(status).json({ error: err.error || 'Error updating password' });
+      res.status(status).json({ error: err.error || err.message || 'Error updating password' });
     }
   },
   tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),
@@ -548,10 +563,13 @@ module.exports = {
     }
     const currentUrl =  new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
     try {
-      const { preferred_username, locale } = await sso.getIdToken(currentUrl);
-      const sessionCookie = await sso.getCookie(preferred_username);
+      const { username, locale } = await sso.getIdToken(currentUrl);
+      const sessionCookie = await sso.getCookie(username);
       req.body = { locale };
-      const redirectUrl = await setCookies(req, res, sessionCookie);
+
+      const options = { headers: { Cookie: sessionCookie } };
+      const userCtx = await getUserCtxRetry(options);
+      const redirectUrl = await redirectToApp({ req, res, sessionCookie, userCtx });
       res.status(302).redirect(redirectUrl);
     } catch (e) {
       logger.error('Error logging in via SSO: %o', e);

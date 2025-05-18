@@ -1003,7 +1003,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
       <bind nodeset="/data/inputs/user/name" type="string"/>
       <bind nodeset="/data/init/create_new_person" type="select1" required="true()"/>
-      <bind nodeset="/data/init/select_person" type="db:person" relevant="selected( /data/init/create_new_person ,'old_person')" required="true()"/>
+      <bind nodeset="/data/init/select_person" type="string" relevant="selected( /data/init/create_new_person ,'old_person')" required="true()"/>
       <bind nodeset="/data/init/name" type="string"/>
       <bind nodeset="/data/init/contact_name" type="string" calculate="coalesce(../../contact/name, ../name)"/>
       <bind nodeset="/data/init/custom_place_name_label_translator" type="select1" calculate="&quot;name&quot;" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/district_hospital/is_name_generated , 'false')"/>
@@ -1080,7 +1080,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
           <value>none</value>
         </item>
       </select1>
-      <input appearance="db-object" ref="/data/init/select_person">
+      <input appearance="select-contact type-person" ref="/data/init/select_person">
         <label ref="jr:itext('/data/init/select_person:label')"/>
       </input>
       <input appearance="hidden" ref="/data/init/name"/>

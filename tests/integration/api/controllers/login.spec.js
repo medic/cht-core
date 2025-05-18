@@ -83,6 +83,11 @@ const setupTokenLoginSettings = (configureAppUrl = false, configureOidc = false)
     .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }));
 };
 
+const setupOidcLoginSettings = async (clientId) => {
+  const settings = { oidc_provider: { client_id: clientId } };
+  return await utils.updateSettings(settings, { ignoreReload: true });
+};
+
 describe('login', () => {
   before(() => utils.saveDoc(parentPlace));
   after(() => utils.revertDb([], true));
@@ -161,6 +166,19 @@ describe('login', () => {
         .request(opts)
         .then(() => loginWithData({ user: user.username, password }))
         .then(response => expectRedirectToPasswordReset(response));
+    });
+
+    it('should fail if sso user', async () => {
+      await setupOidcLoginSettings('clientId');
+      await utils.request({ path: '/api/v2/users', method: 'POST', body: user });
+      // Manually update user to be OIDC so we also know the password
+      const userDoc = await getUser(user);
+      await utils.usersDb.put({ ...userDoc, oidc_username: 'true' });
+
+      const response = await loginWithData({ user: user.username, password });
+
+      expect(response.status).to.equal(401);
+      expect(response.body.error).to.equal('Password Login Not Permitted For SSO Users');
     });
   });
 
@@ -277,7 +295,7 @@ describe('login', () => {
         .then(userDoc => {
           // grab the token and mark as SSO user
           const token = userDoc.token_login.token;
-          userDoc.oidc = true;
+          userDoc.oidc_username = 'true';
           return utils.usersDb
             .put(userDoc)
             .then(() => token);
@@ -409,7 +427,7 @@ describe('login', () => {
         await utils.createUsers([{
           ...user,
           password: undefined,
-          oidc: true,
+          oidc_username: 'true',
         }]);
         const response = await oidcLogin(code);
 
@@ -423,7 +441,7 @@ describe('login', () => {
       await utils.createUsers([{
         ...user,
         password: undefined,
-        oidc: true,
+        oidc_username: mockIdProvider.EMAIL,
       }]);
       const response = await oidcLogin();
       chai.expect(response).to.include({ status: 302 });

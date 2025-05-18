@@ -12,6 +12,10 @@ const waitForValidationErrorsToDisappear = () => browser.waitUntil(async () => !
 const waitForValidationErrors = () => browser.waitUntil(async () => (await validationErrors()).length);
 const fieldByName = (formId, name) => $(`#report-form [name="/${formId}/${name}"]`);
 const select2Selection = (label) => $(`label*=${label}`).$('.select2-selection');
+const duplicateContacts = () => $$('#duplicate_contacts mat-expansion-panel');
+const waitForDuplicateContacts = () => browser.waitUntil(async () => (await duplicateContacts()).length);
+const acknowledgeCheckBox = () => $('#duplicate_contacts .acknowledge_label');
+const openDuplicateButton = () => $('#duplicate_contacts button.btn-primary');
 
 const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
   if (waitForLoad) {
@@ -102,6 +106,41 @@ const getDBObjectWidgetValues = async (field) => {
   return contacts;
 };
 
+const getDuplicateContactHeadings = async () => {
+  await waitForDuplicateContacts();
+  const duplicates = await duplicateContacts();
+  return duplicates.map(async (duplicate) => {
+    const name = await (await duplicate.$('mat-panel-title')).getText();
+    const createdOn = await (await duplicate.$('mat-panel-description')).getText();
+    return {
+      name: name.split('\n')[1].trim(),
+      createdOn: createdOn.split('\n')[1].trim()
+    };
+  });
+};
+
+const getDuplicateContactSummaryField = async (index, fieldName) => {
+  const duplicateContact = (await duplicateContacts())[index];
+  const contactSummary = await duplicateContact.$('#contact_summary');
+  await duplicateContact.waitForClickable();
+  await duplicateContact.click();
+  await contactSummary.waitForDisplayed();
+  const field = await contactSummary.$(`.cell.${fieldName}`);
+  return (await field.$('p:not(.summary_label)')).getText();
+};
+
+const checkAcknowledgeDuplicatesBox = async () => {
+  const checkBox = await acknowledgeCheckBox();
+  await checkBox.waitForClickable();
+  await checkBox.click();
+};
+
+const openDuplicateContact = async () => {
+  const openButton = await openDuplicateButton();
+  await openButton.waitForClickable();
+  await openButton.click();
+};
+
 module.exports = {
   getFormTitle,
   getErrorMessage,
@@ -118,4 +157,8 @@ module.exports = {
   currentFormView,
   formTitle,
   getDBObjectWidgetValues,
+  getDuplicateContactHeadings,
+  getDuplicateContactSummaryField,
+  checkAcknowledgeDuplicatesBox,
+  openDuplicateContact,
 };

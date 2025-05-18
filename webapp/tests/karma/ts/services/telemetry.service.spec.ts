@@ -129,7 +129,7 @@ describe('TelemetryService', () => {
     });
 
     service = TestBed.inject(TelemetryService);
-    clock = sinon.useFakeTimers(NOW);
+    clock = sinon.useFakeTimers({now: NOW});
   });
 
   afterEach(() => {
