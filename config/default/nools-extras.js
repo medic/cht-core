@@ -287,6 +287,70 @@ function isPregnancyTaskMuted(contact) {
     getField(latestVisit, 'pregnancy_ended.clear_option') === 'clear_all';
 }
 
+
+/**
+ * Calculates the dynamic priority score for a Community Health Worker (CHW) task
+ * @param {string} taskType - The type of task from the predefined list
+ * @param {Array<string>} riskFactors - Array of risk factors present for the individual
+ * @returns {number} - The calculated priority score (higher = more urgent)
+ */
+function calculatePriorityScore(taskType, riskFactors = []) {
+  // Task type weights
+  const taskWeights = {
+    'Emergency Follow-up: Pregnancy': 10,
+    'Emergency Follow-up: Postpartum': 10,
+    'Emergency Follow-up: Child <1 month': 10,
+    'Emergency Follow-up: Child <1 year': 9,
+    'Follow-up: Red MUAC': 9,
+    'Follow-up: 2 Consecutive Yellow MUAC Readings': 8,
+    'Follow-up: Pregnancy Outcome after EDD': 8,
+    'Routine PNC Visit (within 48 hours, day 3-7)': 8,
+    'Routine Newborn Visit (within 48 hours, 3-7 days and 3-9 days)': 7,
+    'Follow-up on Missed Vaccination AND vaccination defaulters': 7,
+    'Routine ANC Visit (based on gestational age)': 8,
+    'Follow-up on Pregnancy Danger Signs (not emergency)': 5,
+    'Routine Visit for Child Under 6 months': 6,
+    'Routine visit for Children under three years': 6,
+    'Chronic Disease Monitoring': 5,
+    'Mental Health Referral Follow-up': 5,
+    'Follow-up on TB Treatment Adherence': 5,
+    'Routine Visit for Elderly/Chronic Conditions': 5,
+    'Community Monthly Meeting': 4,
+    'Update Missing Information': 3,
+    'Routine Household Visit': 2,
+    'Meeting with CHW Supervisor and peers': 4,
+    'Conduct Health Campaign': 0, 
+    'Follow-up on Non-Emergency Referral': 4
+  };
+
+  // Risk factor weights
+  const riskWeights = {
+    'Known chronic condition and medication defaulter': 2,
+    'Known immunization defaulter': 2,
+    'Previously referred (any reason)': 1,
+    'Known previous danger signs in pregnancy or delivery': 3,
+    'Known condition - LBW baby, complication during delivery': 3,
+    'Pregnant and <20 years': 2,
+    'Pregnant and >35 years': 2,
+    'Multiparous (>4 children)': 1,
+    'Child with disability or chronic illness': 2,
+    'Malnutrition history (2 yellow or red MUAC)': 2
+  };
+
+  // Get base task weight
+  let score = taskWeights[taskType] || 0;
+
+  // Add risk factor weights
+  riskFactors.forEach(factor => {
+    if (riskWeights[factor]) {
+      score += riskWeights[factor];
+    }
+  });
+
+  // Ensure score doesn't exceed maximum (10)
+  return Math.min(score, 10);
+}
+
 module.exports = {
   today,
   MS_IN_DAY,
@@ -312,5 +376,6 @@ module.exports = {
   isActivePregnancy,
   getRecentANCVisitWithEvent,
   isPregnancyTaskMuted,
-  getField
+  getField,
+  calculatePriorityScore
 };

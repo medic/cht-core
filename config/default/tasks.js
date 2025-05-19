@@ -55,6 +55,21 @@ function getPriorityCategory(score) {
   return '';
 }
 
+function calculateAge(birthDate) {
+  const today = new Date();
+  const birth = new Date(birthDate);
+  
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  
+  return age;
+}
+
+
 module.exports = [
 
   //ANC Home Visit: 12, 20, 26, 30, 34, 36, 38, 40 weeks (Known LMP)
@@ -104,12 +119,11 @@ module.exports = [
     },
     resolvedIf: checkTaskResolvedForHomeVisit,
     priority: function(contact, report) {
-      console.warn('CONTACT', contact.contact.date_of_birth);
-      const taskTypeScore = getField(report, 't_pregnancy_home_visit');
-      console.warn('taskTypeScore', taskTypeScore);
-      const individualScore = getField(report, 't_pregnancy_home_visit');
-      console.warn('individualScore', individualScore);
-      const score = 8;
+      console.warn('REPORT', report);
+      const taskTypeScore = 8;
+      const age = calculateAge(contact.contact.date_of_birth);
+      const individualScore = (age > 35 || age < 2) ? 2 : 0;
+      const score = taskTypeScore + individualScore;
       return {
         level: score,
         label: getPriorityCategory(score),
@@ -147,11 +161,8 @@ module.exports = [
 
     },
     priority: function(contact, report) {
-      console.warn('CONTACT', contact.contact.date_of_birth);
-      const taskTypeScore = getField(report, 't_pregnancy_follow_up_date');
-      console.warn('taskTypeScore', taskTypeScore);
-      const individualScore = getField(report, 't_pregnancy_follow_up_date');
-      console.warn('individualScore', individualScore);
+      console.warn('CONTACT', contact);
+      console.warn('REPORT', report);
       const score = 6;
       return {
         level: score,
@@ -195,11 +206,8 @@ module.exports = [
       return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_danger_sign_follow_up'], startTime, endTime);
     },
     priority: function (contact, report) {
-      console.warn('CONTACT', contact.contact.date_of_birth);
-      const taskTypeScore = getField(report, 't_danger_signs_referral_follow_up');
-      console.warn('taskTypeScore', taskTypeScore);
-      const individualScore = getField(report, 't_danger_signs_referral_follow_up');
-      console.warn('individualScore', individualScore);
+      console.warn('CONTACT', contact);
+      console.warn('REPORT', report);
       const score = 10;
       return {
         level: score,
@@ -281,10 +289,7 @@ module.exports = [
     },
     priority: function(contact, report) {
       console.warn('CONTACT', contact);
-      const taskTypeScore = getField(report, 't_danger_signs_referral_follow_up');
-      console.warn('taskTypeScore', taskTypeScore);
-      const individualScore = getField(report, 't_danger_signs_referral_follow_up');
-      console.warn('individualScore', individualScore);
+      console.warn('REPORT', report);
       const score = 3;
       return {
         level: score,
@@ -335,10 +340,7 @@ module.exports = [
     },
     priority: function(contact, report) {
       console.warn('CONTACT', contact);
-      const taskTypeScore = getField(report, 't_danger_signs_referral_follow_up');
-      console.warn('taskTypeScore', taskTypeScore);
-      const individualScore = getField(report, 't_danger_signs_referral_follow_up');
-      console.warn('individualScore', individualScore);
+      console.warn('REPORT', report);
       const score = 10;
       return {
         level: score,
@@ -385,10 +387,7 @@ module.exports = [
     },
     priority: function(contact, report) {
       console.warn('CONTACT', contact);
-      const taskTypeScore = getField(report, 't_danger_signs_referral_follow_up');
-      console.warn('taskTypeScore', taskTypeScore);
-      const individualScore = getField(report, 't_danger_signs_referral_follow_up');
-      console.warn('individualScore', individualScore);
+      console.warn('REPORT', report);
       const score = 10;
       return {
         level: score,
