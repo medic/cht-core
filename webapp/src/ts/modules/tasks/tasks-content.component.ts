@@ -304,7 +304,9 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     }
 
     if (action.type === 'contact') {
-      if (action.content?.parent_id) {
+      if (action.content?._id){
+        this.router.navigate(['/contacts', action.content._id, 'edit']);
+      } else if (action.content?.parent_id) {
         this.router.navigate(['/contacts', action.content.parent_id, 'add', action.content.type || '']);
       } else {
         this.router.navigate(['/contacts', 'add', action.content?.type || '']);
