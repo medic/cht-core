@@ -69,6 +69,8 @@ export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
   private trackLoadPerformance;
   private trackRefreshPerformance;
 
+  private subjects;
+
   tasksList;
   selectedTask;
   errorStack;
@@ -140,13 +142,17 @@ export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
-    // TODO: this should be triggered on every search/filter query as well as initial search
+    this.hasTasks = false;
+    this.loading = true;
     this.trackLoadPerformance = this.performanceService.track();
     this.tasksActions.setSelectedTask(null);
     this.subscribeToStore();
     this.subscribeToChanges();
     this.subscribeToRulesEngine();
-    this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
+    this.debouncedReload = _debounce(async () => {
+      await this.refreshTasks();
+      this.filter();
+    }, 1000, { maxWait: 10 * 1000 });
     this.userLineageLevel = this.userContactService.getUserLineageToRemove();
     this.refreshTasks();
   }
@@ -181,8 +187,6 @@ export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private async refreshTasks() {
-    this.hasTasks = false;
-    this.loading = true;
     try {
       if (this.tasksLoaded) {
         this.trackRefreshPerformance = this.performanceService.track();
@@ -190,61 +194,19 @@ export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
       const isEnabled = await this.rulesEngineService.isEnabled();
       this.tasksDisabled = !isEnabled;
       
-      // Filter specifics
-      const fromDate = this.filters?.date?.from;
-      const toDate = this.filters?.date?.to;
-      const forms = this.filters?.forms?.selected?.map(({id}) => id.toString().split(':')[1]) ?? [];
-      const facilities = this.filters?.facilities?.selected ?? [];
-      const searchTerm = this.filters?.search ?? '';
-      const current = {...this.BASE_CONTACT, name: searchTerm};
-      
-      const taskDocs = isEnabled ? (await this.rulesEngineService.fetchTaskDocsForAllContacts()).filter((e) => {
-        // TODO: should we consider the start/end days when considering date filtering?
-        const dueDate = e?.emission?.dueDate;
-        if (dueDate && (new Date(dueDate) < fromDate) || (new Date(dueDate) > toDate)){
-          console.log('Due date is not within range');
-          return;
-        }
-
-        // TODO: test with more actions
-        const actions = e?.emission?.actions;
-        if (forms.length > 0 && actions && actions.length > 0 && !forms.includes(actions[0].form)){
-          return;
-        }
-        
-        const existing = [{
-          ...this.BASE_CONTACT, 
-          _id: e.emission?.forId, 
-          name: e.emission?.contact?.name
-        }];
-        if (searchTerm && this.deduplicate.getDuplicates(current, '', existing).length === 0){
-          return;
-        }
-        
-        return true;
-      }) : [];
+      const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
       this.hasTasks = taskDocs.length > 0;
 
       const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
-      const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
-      if (subjects?.size) {
+      this.subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
+      if (this.subjects?.size) {
         const userLineageLevel = await this.userLineageLevel;
         hydratedTasks.forEach(task => {
-          task.lineage = this.getTaskLineage(subjects, task, userLineageLevel);
+          task.lineage = this.getTaskLineage(this.subjects, task, userLineageLevel);
         });
       }
 
-      this.tasksActions.setTasksList(facilities.length > 0 ? hydratedTasks.filter((e) => {
-        const lineage = subjects.get(e?.forId) ?? [];
-        let contains = false;
-        for (const fId of facilities){
-          if (lineage.filter((e) => e._id === fId).length > 0){
-            contains = true;
-            break;
-          }
-        }
-        return contains;
-      }): hydratedTasks);
+      this.tasksActions.setTasksList(hydratedTasks);
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
@@ -293,10 +255,65 @@ export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.extractLineageService.removeUserFacility(lineage, userLineageLevel);
   }
 
-  search = async () => {
+  filter = async () => {
     this.trackLoadPerformance = this.performanceService.track();
-    await this.refreshTasks();
+    
+    const fromDate = this.filters?.date?.from;
+    const toDate = this.filters?.date?.to;
+    const forms = this.filters?.forms?.selected?.map(({id}) => id.toString().split(':')[1]) ?? [];
+    const facilities = this.filters?.facilities?.selected ?? [];
+    const searchTerm = this.filters?.search ?? '';
+    const current = {...this.BASE_CONTACT, name: searchTerm};
+
+    this.tasksList = this.tasksList.filter((e) => {
+      console.log(e);
+
+      const dueDate = e?.date;
+      console.log(e);
+      if (dueDate && (dueDate < fromDate) || (dueDate > toDate)){
+        console.log('Due date is not within range');
+        return;
+      }
+
+      // TODO: test with more actions
+      const actions = e?.actions;
+      if (forms.length > 0 && actions && actions.length > 0 && !forms.includes(actions[0].form)){
+        return;
+      }
+      
+      const existing = [{
+        ...this.BASE_CONTACT, 
+        _id: e.emission?.forId, 
+        name: e.emission?.contact?.name
+      }];
+      if (searchTerm && this.deduplicate.getDuplicates(current, '', existing).length === 0){
+        return;
+      }
+
+      if (facilities.length > 0 && !this.isPartOfFilteredFacility(facilities, e)) {
+        return false;
+      }
+      
+      return true;
+    });
+
+    this.trackLoadPerformance?.stop({
+      name: ['tasks', 'filter'].join(':'),
+      recordApdex: true,
+    });
   };
+
+  private isPartOfFilteredFacility (facilities, task){
+    const lineage = this.subjects.get(task?.forId) ?? [];
+    let contains = false;
+    for (const fId of facilities){
+      if (lineage.filter((e) => e._id === fId).length > 0){
+        contains = true;
+        break;
+      }
+    }
+    return contains;
+  }
 
   toggleFilter() {
     this.reportsSidebarFilter?.toggleSidebarFilter();
