@@ -6,14 +6,13 @@ const shouldEnableSsoLogin = (data) => {
   return isSsoLoginEnabled() && data.oidc === true;
 };
 
-
 /**
  * Validates that updates to SSO user are valid:-
- * - validate that oidc property is set for a new user
- * - if none of oidc, password or token_login properties are being updated, ignore validations
- * - validate that oidc, password or token_login are not set at the same time
- * - validate that oidc can only be activated if oidc login is enabled in settings
- * - validate that if disabling oidc, and not to token_login, password is required
+ * - validates that oidc_username is set for a new user
+ * - ignore validations if none of oidc_username, password or token_login properties are being updated
+ * - validate that oidc_username, password or token_login are not set at the same time
+ * - validate that oidc_username can only be set if oidc login is enabled in settings
+ * - validate that if disabling oidc login requires password if not disabling to token_login
  * - reset password if enabling oidc or disabling oidc to token_login
  * @param {object} data Update object.
  * @param {boolean} newUser If context is new user or not.
@@ -27,16 +26,39 @@ const validateSsoLogin = async (data, newUser = true, user = {}) => {
     return;
   }
 
-  if (!editUser && !data.oidc && !data.password && !data.token_login) {
+  if (editUser && !data.oidc_username && !data.password && !data.token_login) {
     return;
   }
 
-  if (data.password || data.token_login){
+  const passwordOrTokenLogin = data.password || data.token_login;
+
+  if (!data.oidc_username) {
+    const disablingSSO = !!user.oidc_username;
+    if (!disablingSSO) {
+      return;
+    }
+
+    if (!passwordOrTokenLogin) {
+      return { msg: 'Password is required when disabling sso login.' };
+    }
+
+    if (data.token_login && data.password){
+      return { msg: 'Cannot set password when setting token_login.' };
+    }
+
+    if (data.token_login) {
+      data.password = passwords.generate();
+      data.password_change_required = false;
+    }
+
+    return;
+  }
+
+  if (passwordOrTokenLogin){
     return { msg: 'Cannot set password or token_login with oidc_username.' };
   }
 
-
-  if (data.oidc && !isSsoLoginEnabled()){
+  if (!isSsoLoginEnabled()){
     return { msg: 'Cannot set oidc_username when OIDC Login is not enabled.' };
   }
 
@@ -45,13 +67,7 @@ const validateSsoLogin = async (data, newUser = true, user = {}) => {
     return { msg: `The oidc_username [${data.oidc_username}] already exists for user [${duplicateUserId}].` };
   }
 
-  const disablingSSO = user.oidc_username && !data.oidc_username;
-  const passwordOrTokenLogin = data.password || data.token_login;
-  if (!editUser && disablingSSO && !passwordOrTokenLogin) {
-    return { msg: 'Password is required when disabling sso login.' };
-  }
-
-  if (newUser || (editUser && data.token_login)) {
+  if (newUser) {
     data.password = passwords.generate();
     data.password_change_required = false;
   }

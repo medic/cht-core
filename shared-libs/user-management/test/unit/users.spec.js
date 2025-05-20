@@ -2788,6 +2788,7 @@ describe('Users service', () => {
       db.users.get.resolves({});
       db.medic.put.resolves();
       db.users.put.returns(Promise.reject('shiva was here'));
+      db.users.query.resolves({ rows: [] });
       return service.updateUser('georgi', {type: 'x'}, true).catch(err => {
         chai.expect(err).to.equal('shiva was here');
       });
@@ -2798,6 +2799,7 @@ describe('Users service', () => {
       db.users.get.resolves({});
       db.medic.put.returns(Promise.reject('shiva strikes again'));
       db.users.put.resolves({});
+      db.users.query.resolves({ rows: [] });
       return service.updateUser('georgi', {type: 'x'}, true).catch(err => {
         chai.expect(err).to.equal('shiva strikes again');
       });
@@ -2811,6 +2813,7 @@ describe('Users service', () => {
       db.users.get.resolves({});
       db.medic.put.resolves({});
       db.users.put.resolves({});
+      db.users.query.resolves({ rows: [] });
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.users.put.callCount).to.equal(1);
@@ -2825,6 +2828,7 @@ describe('Users service', () => {
       db.users.get.resolves({});
       db.medic.put.resolves({});
       db.users.put.resolves({});
+      db.users.query.resolves({ rows: [] });
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.users.put.callCount).to.equal(1);
@@ -2840,6 +2844,7 @@ describe('Users service', () => {
       sinon.stub(places, 'placesExist').resolves();
       db.medic.put.resolves({});
       db.users.put.resolves({});
+      db.users.query.resolves({ rows: [] });
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.users.put.callCount).to.equal(1);
@@ -2862,6 +2867,7 @@ describe('Users service', () => {
       sinon.stub(roles, 'hasAllPermissions').returns(true);
       db.medic.put.resolves({});
       db.users.put.resolves({});
+      db.users.query.resolves({ rows: [] });
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.args).to.deep.equal([[{
           _id: 'org.couchdb.user:paul',
@@ -2889,6 +2895,7 @@ describe('Users service', () => {
       db.users.get.resolves({});
       db.medic.put.resolves({});
       db.users.put.resolves({});
+      db.users.query.resolves({ rows: [] });
       sinon.stub(roles, 'isOffline').withArgs(['rebel']).returns(false);
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
@@ -2906,6 +2913,7 @@ describe('Users service', () => {
       db.users.get.resolves({});
       db.medic.put.resolves({});
       db.users.put.resolves({});
+      db.users.query.resolves({ rows: [] });
       sinon.stub(roles, 'isOffline').withArgs(['rebel']).returns(true);
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
@@ -2924,6 +2932,7 @@ describe('Users service', () => {
       sinon.stub(places, 'getPlace').resolves();
       db.medic.put.resolves({});
       db.users.put.resolves({});
+      db.users.query.resolves({ rows: [] });
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.users.put.callCount).to.equal(1);

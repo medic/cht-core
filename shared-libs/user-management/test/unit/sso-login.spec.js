@@ -21,7 +21,7 @@ describe('SSO Login service', () => {
     sinon.restore();
   });
 
-  describe('validateSsoLogin', () => {
+  describe('validateSsoLogin: new oidc user', () => {
     it('should return error message when oidc_username and password are present', async () => {
       const data = { password: 'testPassword', oidc_username: 'test' };
       const result = await service.validateSsoLogin(data);
@@ -52,7 +52,6 @@ describe('SSO Login service', () => {
       expect(result).to.deep.equal({
         msg: 'Cannot set oidc_username when OIDC Login is not enabled.'
       });
-      expect(config.get.notCalled).to.be.true;
       expect(generatePassword.notCalled).to.be.true;
       expect(db.users.query.notCalled).to.be.true;
     });
@@ -92,14 +91,14 @@ describe('SSO Login service', () => {
     });
 
     it('should generate a password for a new oidc user', async () => {
-      const data = { password: 'testPassword' };
-    
+      const data = { oidc_username: 'test' };
+      config.get.withArgs('oidc_provider').returns({ 'client_id': 'testClientId' });
+      db.users.query.resolves({ rows: [] });
       await service.validateSsoLogin(data);
 
-      service.validateSsoLogin(data);
       expect(generatePassword.calledOnceWithExactly()).to.be.true;
       expect(data).to.deep.equal({
-        oidc: true,
+        oidc_username: 'test',
         password_change_required: false,
         password: GENERATED_PASSWORD
       });
@@ -107,76 +106,57 @@ describe('SSO Login service', () => {
 
     it('should return undefined when oidc_username is not provided', async () => {
       const data = { password: 'testPassword' };
-      const result = service.validateSsoLogin(data);
+      const result = await service.validateSsoLogin(data);
       expect(result).to.equal(undefined);
       expect(generatePassword.notCalled).to.be.true;
       expect(db.users.query.notCalled).to.be.true;
     });
   });
 
-  describe('validateSsoLoginUpdate', () => {
+  describe('validateSsoLogin: oidc user update', () => {
     [
-      { password: 'testPassword', oidc_username: 'test', token_login: true },
-      { token_login: true }
-    ].forEach((data) => {
-      it('should return error message when token login modified to be invalid', async () => {
-        const user = { password: 'testPassword', oidc_username: 'test' };
-        const userSettings = { type: 'user-settings' };
+      {
+        data: { password: 'testPassword', oidc_username: 'test', token_login: true },
+        errorMessage: 'Cannot set password or token_login with oidc_username.'
+      },
+      {
+        data: { password: 'testPassword', token_login: true }, // invalid oidc disablement
+        errorMessage: 'Cannot set password when setting token_login.'
+      }
+    ].forEach(({ data, errorMessage }) => {
+      it('should return error messsage when both password and token_login are provided', async () => {
+        const user = { oidc_username: 'test' };
 
-        const result = await service.validateSsoLoginUpdate(data, user, userSettings);
+        const result = await service.validateSsoLogin(data, false, user);
 
-        expect(result).to.deep.equal({
-          msg: 'Cannot set token_login with oidc_username.'
-        });
+        expect(result).to.deep.equal({ msg: errorMessage  });
         expect(config.get.notCalled).to.be.true;
         expect(generatePassword.notCalled).to.be.true;
         expect(db.users.query.notCalled).to.be.true;
       });
     });
 
-    [
-      { oidc_username: 'test' },
-      { password: 'testPassword' },
-    ].forEach((data) => {
-      it('should return error message when password modified to be invalid', async () => {
-        const user = { password: 'testPassword', oidc_username: 'test' };
-        const userSettings = { type: 'user-settings' };
-
-        const result = await service.validateSsoLoginUpdate(data, user, userSettings);
-
-        expect(result).to.deep.equal({
-          msg: 'Cannot set password or token_login with oidc_username.'
-        });
-        expect(config.get.notCalled).to.be.true;
-        expect(generatePassword.notCalled).to.be.true;
-        expect(db.users.query.notCalled).to.be.true;
-        expect(user).to.deep.equal({ password: 'testPassword', oidc_username: 'test' });
-        expect(userSettings).to.deep.equal({ type: 'user-settings' });
-      });
-    });
-
-    it('should not return when auth fields not modified on invalid user', async () => {
+    it('should not return error when auth fields are not', async () => {
       const user = { password: 'testPassword', oidc_username: 'test' };
-      const userSettings = { type: 'user-settings' };
 
-      const result = await service.validateSsoLoginUpdate({ contact: 'z' }, user, userSettings);
+      const result = await service.validateSsoLogin({ contact: 'z' }, false, user);
 
       expect(result).to.equal(undefined);
     });
 
-    it('should not return error message when oidc user update is valid', () => {
-      const user = { oidc: true };
+    it('should not return error message when oidc user update is valid', async () => {
+      const user = { oidc_username: 'test' };
       const data = { facility_id: 'z' };
       config.get.withArgs('oidc_provider').returns({ 'client_id': 'testClientId' });
-      const result = service.validateSsoLogin(data, false, user);
+      const result = await service.validateSsoLogin(data, false, user);
       expect(result).to.equal(undefined);
     });
 
-    it('should not reset password for an oidc user update', () => {
-      const user = { oidc: true };
+    it('should not reset password for an oidc user update', async () => {
+      const user = { oidc_username: true };
       const data = { facility_id: 'z' };
       config.get.withArgs('oidc_provider').returns({ 'client_id': 'testClientId' });
-      service.validateSsoLogin(data, false, user);
+      await service.validateSsoLogin(data, false, user);
       expect(data).to.deep.equal({
         facility_id: 'z'
       });
@@ -184,17 +164,39 @@ describe('SSO Login service', () => {
       expect(db.users.query.notCalled).to.be.true;
     });
 
-    it('should reset password if disabling oidc login to token_login', () => {
-      const user = { oidc: true };
-      const data = { token_login: true, oidc: false };
-      config.get.withArgs('oidc_provider').returns({ 'client_id': 'testClientId' });
-      service.validateSsoLogin(data, false, user);
-      expect(generatePassword.calledOnceWithExactly()).to.be.true;
-      expect(data).to.deep.equal({
-        oidc: false,
-        token_login: true,
-        password_change_required: false,
-        password: GENERATED_PASSWORD,
+    [
+      {
+        data: { token_login: true },
+        expectedUpdate: { token_login: true, password_change_required: false, password: GENERATED_PASSWORD }
+      },
+      {
+        data: { password: 'password123' },
+        expectedUpdate: { password: 'password123' }
+      }
+    ].forEach(({ data, expectedUpdate }) => {
+      it('should not return error when disabling oidc login', async () => {
+        config.get.withArgs('oidc_provider').returns({ 'client_id': 'testClientId' });
+        const result = await service.validateSsoLogin(data, false, { oidc_username: 'test' });
+        expect(result).to.be.undefined;
+        expect(data).to.deep.equal(expectedUpdate);
+      });
+    });
+
+    [
+      {
+        data: { token_login: true },
+        expectedUpdate: { token_login: true, password_change_required: false, password: GENERATED_PASSWORD }
+      },
+      {
+        data: { password: 'password123' },
+        expectedUpdate: { password: 'password123' }
+      }
+    ].forEach(({ data, expectedUpdate }) => {
+      it('should not require oidc login to be enabled in settings to disable oidc login user', async () => {
+        config.get.withArgs('oidc_provider').returns(undefined);
+        const result = await service.validateSsoLogin(data, false, { oidc_username: 'test' });
+        expect(result).to.be.undefined;
+        expect(data).to.deep.equal(expectedUpdate);
       });
     });
 
@@ -210,10 +212,10 @@ describe('SSO Login service', () => {
         { doc: { _id: 'duplicate-user' } }
       ] });
 
-      const result = await service.validateSsoLoginUpdate(data, user);
+      const result = await service.validateSsoLogin(data, false, user);
 
       expect(result).to.deep.equal({
-        msg: 'The oidc_username [test] already exists for user [duplicate-user].'
+        msg: 'The oidc_username [test] already exists for user [org.couchdb.user:test].'
       });
       expect(data).to.deep.equal({ oidc_username: 'test' });
       expect(user).to.deep.equal({
@@ -229,7 +231,7 @@ describe('SSO Login service', () => {
     });
 
     it('should not return error message when oidc user is valid', async () => {
-      const data = { oidc_username: 'test' };
+      const data = { oidc_username: 'test', _id: 'org.couchdb.user:test' };
       const user = {
         _id: 'org.couchdb.user:test',
         oidc_username: 'test',
@@ -237,18 +239,10 @@ describe('SSO Login service', () => {
       config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' } });
       db.users.query.resolves({ rows: [{ doc: { _id: 'org.couchdb.user:test' } }] });
 
-      const result = await service.validateSsoLoginUpdate(data, user);
+      const result = await service.validateSsoLogin(data, false, user);
 
       expect(result).to.equal(undefined);
-      expect(data).to.deep.equal({ oidc_username: 'test' });
-      expect(user).to.deep.equal({
-        _id: 'org.couchdb.user:test',
-        oidc_username: 'test',
-        password_change_required: false,
-        password: GENERATED_PASSWORD,
-      });
-      expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
-      expect(generatePassword.calledOnceWithExactly()).to.be.true;
+      expect(data).to.deep.equal(data);
       expect(db.users.query.calledOnceWithExactly(
         'users/users_by_field',
         { include_docs: true, key: ['oidc_username', 'test'] }
