@@ -226,7 +226,6 @@ describe('server', () => {
       await utils.startCouchDb();
 
       await utils.listenForApi();
-      await utils.delayPromise(1000);
     });
   });
 
