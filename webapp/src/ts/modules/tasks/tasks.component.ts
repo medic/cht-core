@@ -24,7 +24,6 @@ import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { SidebarFilterComponent } from '@mm-modules/util/sidebar-filter.component';
-import _ from 'lodash';
 import { DeduplicateService } from '@mm-services/deduplicate.service';
 
 @Component({
@@ -81,7 +80,7 @@ export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isSidebarFilterOpen = false;
   filters: any = {};
-  readonly BASE_CONTACT = {type: '', _rev: '', _id: ''};
+  readonly BASE_CONTACT = { type: '', _rev: '', _id: '' };
 
   private tasksLoaded;
   private debouncedReload;
@@ -193,7 +192,7 @@ export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       const isEnabled = await this.rulesEngineService.isEnabled();
       this.tasksDisabled = !isEnabled;
-      
+
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
       this.hasTasks = taskDocs.length > 0;
 
@@ -242,7 +241,7 @@ export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getLineagesFromTaskDocs(taskDocs) {
-    const ids = [ ...new Set(taskDocs.map(task => task.owner)) ];
+    const ids = [...new Set(taskDocs.map(task => task.owner))];
     return this.lineageModelGeneratorService
       .reportSubjects(ids)
       .then(subjects => new Map(subjects.map(subject => [subject._id, subject.lineage])));
@@ -257,45 +256,14 @@ export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
 
   filter = async () => {
     this.trackLoadPerformance = this.performanceService.track();
-    
-    const fromDate = this.filters?.date?.from;
-    const toDate = this.filters?.date?.to;
-    const forms = this.filters?.forms?.selected?.map(({id}) => id.toString().split(':')[1]) ?? [];
-    const facilities = this.filters?.facilities?.selected ?? [];
+
     const searchTerm = this.filters?.search ?? '';
-    const current = {...this.BASE_CONTACT, name: searchTerm};
+    const current = { ...this.BASE_CONTACT, name: searchTerm };
 
-    this.tasksList = this.tasksList.filter((e) => {
-      console.log(e);
-
-      const dueDate = e?.date;
-      console.log(e);
-      if (dueDate && (dueDate < fromDate) || (dueDate > toDate)){
-        console.log('Due date is not within range');
-        return;
-      }
-
-      // TODO: test with more actions
-      const actions = e?.actions;
-      if (forms.length > 0 && actions && actions.length > 0 && !forms.includes(actions[0].form)){
-        return;
-      }
-      
-      const existing = [{
-        ...this.BASE_CONTACT, 
-        _id: e.emission?.forId, 
-        name: e.emission?.contact?.name
-      }];
-      if (searchTerm && this.deduplicate.getDuplicates(current, '', existing).length === 0){
-        return;
-      }
-
-      if (facilities.length > 0 && !this.isPartOfFilteredFacility(facilities, e)) {
-        return false;
-      }
-      
-      return true;
-    });
+    this.tasksList = this.tasksList.filter((task) => this.isInDateRange(task?.date) &&
+      this.hasFormInAction(task?.actions) &&
+      this.containsSearchTerm(searchTerm, current, task.forId, task.contact?.name) &&
+      this.hasFacilities(task?.forId));
 
     this.trackLoadPerformance?.stop({
       name: ['tasks', 'filter'].join(':'),
@@ -303,16 +271,30 @@ export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   };
 
-  private isPartOfFilteredFacility (facilities, task){
-    const lineage = this.subjects.get(task?.forId) ?? [];
-    let contains = false;
-    for (const fId of facilities){
-      if (lineage.filter((e) => e._id === fId).length > 0){
-        contains = true;
-        break;
-      }
+  private isInDateRange(dueDate) {
+    const fromDate = this.filters?.date?.from;
+    const toDate = this.filters?.date?.to;
+    return !!dueDate && (!fromDate || dueDate >= fromDate) && (!toDate || dueDate <= toDate);
+  }
+
+  private hasFormInAction(actions) {
+    // When the action type is "contact", we don't receive a "form" to filter by.
+    const formSet = new Set(this.filters?.forms?.selected?.map(({ id }) => id.toString().split(':')[1]) ?? []);
+    return formSet.size ? actions?.length && actions.some(a => formSet.has(a.form)) : true;
+  }
+
+  private containsSearchTerm(searchTerm, current, _id, name) {
+    const existing = [{ ...this.BASE_CONTACT, _id, name }];
+    return searchTerm === '' || this.deduplicate.getDuplicates(current, '', existing).length !== 0;
+  }
+
+  private hasFacilities(taskId) {
+    const facilitiesSet = new Set(this.filters?.facilities?.selected ?? []);
+    if (facilitiesSet.size === 0) {
+      return true;
     }
-    return contains;
+    const lineage = this.subjects.get(taskId) ?? [];
+    return lineage.some(entry => facilitiesSet.has(entry._id));
   }
 
   toggleFilter() {
