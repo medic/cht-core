@@ -52,135 +52,68 @@ const orderByDueDateAndPriority1 = (t1, t2) => {
  * 5. Tasks without due dates (lowest priority)
  * 
  * Sorting rules (in order):
- * 1. Overdue tasks appear first (most urgent)
- * 2. Tasks due today appear next
- * 3. Then sort by priority (high to low)
- * 4. For equal priority, sort by due date (earlier first)
- * 5. Tasks without due dates appear last
- */
-const orderByDueDateAndPriority2 = (t1, t2) => {
-
-  const p1 = t1?.priority ?? 0;
-  const p2 = t2?.priority ?? 0;
-  
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  
-  // Due date handling (Infinity for missing dates)
-  const d1 = t1?.dueDate ? new Date(t1.dueDate).getTime() : Infinity;
-  const d2 = t2?.dueDate ? new Date(t2.dueDate).getTime() : Infinity;
-  
-  // Calculate days until due (negative = overdue)
-  const daysUntilDue1 = Math.floor((d1 - startOfToday) / (1000 * 60 * 60 * 24));
-  const daysUntilDue2 = Math.floor((d2 - startOfToday) / (1000 * 60 * 60 * 24));
-  
-  // Status flags
-  const isOverdue1 = daysUntilDue1 < 0;
-  const isOverdue2 = daysUntilDue2 < 0;
-  const isDueToday1 = daysUntilDue1 === 0;
-  const isDueToday2 = daysUntilDue2 === 0;
-  const hasNoDueDate1 = d1 === Infinity;
-  const hasNoDueDate2 = d2 === Infinity;
-    
-  // 1. Overdue tasks come first (most urgent)
-  if (isOverdue1 && !isOverdue2) return -1;
-  if (isOverdue2 && !isOverdue1) return 1;
-  if (isOverdue1 && isOverdue2) {
-    // If both overdue, more overdue comes first
-    return daysUntilDue1 - daysUntilDue2;
-  }
-  
-  // 2. Tasks due today come next
-  if (isDueToday1 && !isDueToday2) return -1;
-  if (isDueToday2 && !isDueToday1) return 1;
-  
-  // 3. Then sort by priority (higher first)
-  if (p1 !== p2) return p2 - p1;
-  
-  // 4. For equal priority, sort by due date (earlier first)
-  if (d1 !== d2) return d1 - d2;
-  
-  // 5. Tasks without due dates come last
-  if (hasNoDueDate1 && !hasNoDueDate2) return 1;
-  if (hasNoDueDate2 && !hasNoDueDate1) return -1;
-  
-  // 6. All else being equal, maintain original order
-  return 0;
-};
-
-/**
- * Task prioritization algorithm that combines:
- * 1. Overdue status (most urgent)
- * 2. Due today status (high urgency)
- * 3. Priority (importance)
- * 4. Due date (soonest first)
- * 5. Tasks without due dates (lowest priority)
- * 
- * Sorting rules (in order):
  * 1. Overdue tasks appear first (most urgent), sorted by priority (higher first)
  * 2. Tasks due today appear next, sorted by priority (higher first)
  * 3. Then sort other dates too by date and priority (high to low)
  * 4. For equal priority, sort by due date (earlier first)
  * 5. Tasks without due dates appear last
  */
-
 const orderByDueDateAndPriority = (t1, t2) => {
-  // Normalize priority to a number
-  const getPriority = (t) =>
-    t?.priority === 'high' ? 10 :
-    t?.priority === 'medium' ? 6 :
-    typeof t?.priority === 'string' ? 0 :
-    t?.priority ?? 0;
-
-  const p1 = getPriority(t1);
-  const p2 = getPriority(t2);
-
-  // Normalize due dates
-  const d1 = t1?.dueDate ? new Date(t1.dueDate).getTime() : Infinity;
-  const d2 = t2?.dueDate ? new Date(t2.dueDate).getTime() : Infinity;
+  const getPriorityScore = (t) => {
+    if (t?.priority === 'high') {
+      return 10;
+    } else if (t?.priority === 'medium') {
+      return 6;
+    } else if (typeof t?.priority === 'string') {
+      return 0;
+    } else {
+      return t?.priority ?? 0;
+    }
+  };
 
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  
+  const getDateScore = (t) => {
+    if (!t?.dueDate) return Infinity;
+    const date = new Date(t.dueDate).getTime();
+    return Math.floor((date - startOfToday) / (1000 * 60 * 60 * 24));
+  };
 
-  const daysUntilDue1 = Math.floor((d1 - startOfToday) / (1000 * 60 * 60 * 24));
-  const daysUntilDue2 = Math.floor((d2 - startOfToday) / (1000 * 60 * 60 * 24));
+  const p1 = getPriorityScore(t1);
+  const p2 = getPriorityScore(t2);
+  const days1 = getDateScore(t1);
+  const days2 = getDateScore(t2);
 
-  const isOverdue1 = daysUntilDue1 < 0;
-  const isOverdue2 = daysUntilDue2 < 0;
-  const isDueToday1 = daysUntilDue1 === 0;
-  const isDueToday2 = daysUntilDue2 === 0;
-  const hasNoDueDate1 = d1 === Infinity;
-  const hasNoDueDate2 = d2 === Infinity;
+  const getTaskStatus = (days) => {
+    if (days === Infinity) return 3; //No date
+    if (days < 0) return 0; // Over due
+    if (days === 0) return 1; //Due today
+    return 2; //Future
+  };
 
-  // 1. Overdue tasks first, sorted by priority (higher first), then by due date (earlier first)
-  if (isOverdue1 && !isOverdue2) return -1;
-  if (isOverdue2 && !isOverdue1) return 1;
-  if (isOverdue1 && isOverdue2) {
-    if (p1 !== p2) return p2 - p1;
-    return d1 - d2;
+  const status1 = getTaskStatus(days1);
+  const status2 = getTaskStatus(days2);
+
+  // Compare by status (Over due first)
+  if (status1 !== status2) {
+    return status1 - status2;
   }
 
-  // 2. Tasks due today next, sorted by priority (higher first)
-  if (isDueToday1 && !isDueToday2) return -1;
-  if (isDueToday2 && !isDueToday1) return 1;
-  if (isDueToday1 && isDueToday2) {
-    if (p1 !== p2) return p2 - p1;
-    return d1 - d2;
+  // Compare by priority (higher first)
+  if (p1 !== p2) {
+    return p2 - p1;
   }
 
-  // 3. Other tasks: sort by due date (earlier first), then by priority (higher first)
-  if (!hasNoDueDate1 && !hasNoDueDate2) {
-    if (d1 !== d2) return d1 - d2;
-    if (p1 !== p2) return p2 - p1;
+  // Compare by due date (earlier first)
+  if (days1 !== days2) {
+    return days1 - days2;
   }
 
-  // 4. Tasks without due dates come last
-  if (hasNoDueDate1 && !hasNoDueDate2) return 1;
-  if (hasNoDueDate2 && !hasNoDueDate1) return -1;
-
-  // 5. All else being equal, maintain original order
+  // Otherwise maintain original order
   return 0;
 };
+
 
 
 
@@ -228,9 +161,9 @@ const _tasksReducer = createReducer(
   on(Actions.setTaskGroup, (state, { payload: { taskGroup } }) => ({
     ...state,
     taskGroup: {
-      lastSubmittedTask: taskGroup.lastSubmittedTask || state.taskGroup.lastSubmittedTask,
-      contact: taskGroup.contact || state.taskGroup.contact,
-      loadingContact: taskGroup.loadingContact || state.taskGroup.loadingContact,
+      lastSubmittedTask: taskGroup.lastSubmittedTask ?? state.taskGroup.lastSubmittedTask,
+      contact: taskGroup.contact ?? state.taskGroup.contact,
+      loadingContact: taskGroup.loadingContact ?? state.taskGroup.loadingContact,
     },
   })),
 
