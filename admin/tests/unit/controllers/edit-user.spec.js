@@ -18,6 +18,7 @@ describe('EditUserCtrl controller', () => {
   let userToEdit;
   let user;
   let http;
+  let timeout;
 
   beforeEach(() => {
     module('adminApp');
@@ -84,7 +85,8 @@ describe('EditUserCtrl controller', () => {
       $provide.value('$http', http);
     });
 
-    inject((translate, $rootScope, $controller) => {
+    inject((translate, $rootScope, $controller, $timeout) => {
+      timeout = $timeout;
       const createController = model => {
         scope = $rootScope.$new();
         scope.model = model;
@@ -159,6 +161,11 @@ describe('EditUserCtrl controller', () => {
   const mockContactGet = facilityId => {
     dbGet.resolves({ parent: { _id: facilityId } });
   };
+  const editUser = async () => {
+    await scope.editUser();
+    // Allow time for async validations to complete
+    await timeout.flush(2000);
+  };
 
   describe('initialisation', () => {
     it('edits the given user', () => {
@@ -178,7 +185,7 @@ describe('EditUserCtrl controller', () => {
           passwordFieldType: 'password',
           showPasswordIcon: '/login/images/show-password.svg',
           hidePasswordIcon: '/login/images/hide-password.svg',
-          oidc: undefined
+          oidc_username: undefined
         });
       });
     });
@@ -216,7 +223,7 @@ describe('EditUserCtrl controller', () => {
 
           scope.editUserModel.password = '1QrAs$$3%%kkkk445234234234';
           scope.editUserModel.passwordConfirm = scope.editUserModel.password;
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(scope.errors.username).to.equal('User Name field must be filled');
@@ -229,7 +236,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.username = 'newuser';
           scope.editUserModel.roles = [ 'data-entry' ];
           Translate.fieldIsRequired.withArgs('Password').resolves('Password field is a required field');
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(scope.errors.password).to.equal('Password field is a required field');
@@ -243,7 +250,7 @@ describe('EditUserCtrl controller', () => {
           translate.resolves('something');
           Translate.fieldIsRequired = key => Promise.resolve(key);
           chai.expect(scope.editUserModel).not.to.have.property('password');
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(scope.errors).not.to.have.property('password');
@@ -259,7 +266,7 @@ describe('EditUserCtrl controller', () => {
           translate.withArgs('Passwords must match').resolves('wrong');
           const password = '1QrAs$$3%%kkkk445234234234';
           scope.editUserModel.password = password;
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(scope.errors.password).to.equal('wrong');
@@ -277,7 +284,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.password = '';
           scope.editUserModel.passwordConfirm = '';
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.called).to.equal(false);
@@ -293,7 +300,7 @@ describe('EditUserCtrl controller', () => {
         .setupPromise
         .then(() => {
           scope.editUserModel.roles = [ 'supervisor', 'district-manager' ]; // reversed order from userToEdit
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.called).to.equal(false);
@@ -309,7 +316,7 @@ describe('EditUserCtrl controller', () => {
           mockContact(userToEdit.contact_id);
           Translate.fieldIsRequired.withArgs('Facility').resolves('Facility field is a required field');
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(scope.errors.place).to.equal('Facility field is a required field');
@@ -324,7 +331,7 @@ describe('EditUserCtrl controller', () => {
           mockFacility(userToEdit.facility_id);
           mockContact(null);
           Translate.fieldIsRequired.withArgs('associated.contact').resolves('An associated contact is required');
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(scope.errors.contact).to.equal('An associated contact is required');
@@ -341,7 +348,7 @@ describe('EditUserCtrl controller', () => {
           Translate.fieldIsRequired.withArgs('associated.contact').resolves('An associated contact is required');
           Translate.fieldIsRequired.withArgs('Facility').resolves('Facility field is required');
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(scope.errors.place).to.equal('Facility field is required');
@@ -357,7 +364,7 @@ describe('EditUserCtrl controller', () => {
           mockFacility(null);
           mockContact(null);
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(scope.errors).not.to.have.property('facility_id');
@@ -375,7 +382,7 @@ describe('EditUserCtrl controller', () => {
           mockContactGet('some-other-id');
           translate.withArgs('configuration.user.place.contact').resolves('outside');
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(scope.errors.contact).to.equal('outside');
@@ -391,7 +398,7 @@ describe('EditUserCtrl controller', () => {
           translate.withArgs('permission.description.can_have_multiple_places.not_allowed')
             .resolves('The person with selected role cannot have multiple places');
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(scope.errors.multiFacility).to.equal(
@@ -421,7 +428,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.passwordConfirm = 'medic.1234';
           scope.editUserModel.roles = [ 'supervisor' ];
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.called).to.equal(true);
@@ -475,7 +482,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.passwordConfirm = 'medic.1234';
           scope.editUserModel.roles = ['community-health-assistant'];
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.called).to.equal(true);
@@ -516,7 +523,7 @@ describe('EditUserCtrl controller', () => {
         .setupPromise
         .then(() => {
           scope.editUserModel.roles = [ 'zesty', 'aardvark', 'supervisor' ];
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.called).to.equal(true);
@@ -536,7 +543,7 @@ describe('EditUserCtrl controller', () => {
 
           Translate.fieldIsRequired.withArgs('Facility').resolves('Facility field is a required field');
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(scope.errors.place).to.equal('Facility field is a required field');
@@ -559,7 +566,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.passwordConfirm = 'medic.1234';
           scope.editUserModel.roles = [ 'national-manager' ];
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.called).to.equal(true);
@@ -598,7 +605,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.roles = [ 'supervisor' ];
           translate.resolves('translation result');
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.callCount).to.equal(0);
@@ -644,7 +651,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.passwordConfirm = 'medic.1234';
           scope.editUserModel.roles = [ 'supervisor' ];
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.callCount).to.equal(0);
@@ -660,7 +667,7 @@ describe('EditUserCtrl controller', () => {
             { total_docs: 10200, limit: 10000 },
           ]);
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.callCount).to.equal(1);
@@ -699,7 +706,7 @@ describe('EditUserCtrl controller', () => {
 
           translate.withArgs('configuration.enable.token.login.phone').resolves('phone required');
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(scope.errors.phone).to.equal('phone required');
@@ -729,7 +736,7 @@ describe('EditUserCtrl controller', () => {
 
           translate.withArgs('configuration.enable.token.login.phone').resolves('phone required');
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(scope.errors.phone).to.equal('phone required');
@@ -759,7 +766,7 @@ describe('EditUserCtrl controller', () => {
 
           translate.withArgs('configuration.enable.token.login.phone').resolves('phone required');
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(scope.errors.phone).to.equal('phone required');
@@ -789,7 +796,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.token_login = true;
           scope.editUserModel.phone = '+40755696969';
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(CreateUser.createSingleUser.callCount).to.equal(1);
@@ -824,7 +831,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.phone = '+40755696969';
           scope.editUserModel.roles = [ 'data-entry' ];
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.callCount).to.equal(1);
@@ -858,7 +865,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.phone = '';
           scope.editUserModel.roles = [ 'data-entry' ];
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.callCount).to.equal(0);
@@ -868,20 +875,21 @@ describe('EditUserCtrl controller', () => {
 
     it('should not require password when oidc is enabled for new sso-enabled users', () => {
       mockGetReplicationLimit();
+      Settings.resolves({ oidc_provider: true });
       return mockCreateNewUser()
         .setupPromise
         .then(() => {
           scope.editUserModel.username = 'newuser';
           scope.editUserModel.roles = [ 'data-entry' ];
-          scope.editUserModel.oidc = true;
+          scope.editUserModel.oidc_username = 'true';
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(CreateUser.createSingleUser.calledOnceWithExactly({
             username: 'newuser',
             roles: ['data-entry'],
-            oidc: true,
+            oidc_username: 'true',
             place: undefined
           })).to.be.true;
         });
@@ -889,21 +897,22 @@ describe('EditUserCtrl controller', () => {
 
     it('should clear password fields when oidc is enabled for new sso-enabled users', () => {
       mockGetReplicationLimit();
+      Settings.resolves({ oidc_provider: true });
       return mockCreateNewUser()
         .setupPromise
         .then(() => {
           scope.editUserModel.username = 'newuser';
           scope.editUserModel.roles = [ 'data-entry' ];
-          scope.editUserModel.oidc = true;
+          scope.editUserModel.oidc_username = 'true';
           scope.editUserModel.password = 'pass123';
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(CreateUser.createSingleUser.calledOnceWithExactly({
             username: 'newuser',
             roles: ['data-entry'],
-            oidc: true,
+            oidc_username: 'true',
             place: undefined
           })).to.be.true;
         });
@@ -911,23 +920,26 @@ describe('EditUserCtrl controller', () => {
 
     it('should disable sso login', () => {
       mockGetReplicationLimit();
-      userToEdit.oidc = true;
+      userToEdit.oidc_login = true;
+      http.get
+        .withArgs(`/api/v2/users/${userToEdit.name}`)
+        .resolves({ data: { oidc_username: 'true' } });
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
-          scope.editUserModel.oidc = undefined;
+          scope.editUserModel.oidc_username = '';
           scope.editUserModel.roles = [ 'data-entry' ];
           scope.editUserModel.password = 'Password123.';
           scope.editUserModel.passwordConfirm = 'Password123.';
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.calledOnceWithExactly(
             userToEdit.name,
             {
               roles: ['data-entry'],
-              oidc: false,
+              oidc_username: '',
               password: 'Password123.',
               contact: undefined,
               place: undefined
@@ -939,14 +951,17 @@ describe('EditUserCtrl controller', () => {
     it('should require password when disabling sso login', () => {
       Translate.fieldIsRequired.withArgs('Password').resolves('password required');
 
-      userToEdit.oidc = true;
+      userToEdit.oidc_login = true;
+      http.get
+        .withArgs(`/api/v2/users/${userToEdit.name}`)
+        .resolves({ data: { oidc_username: 'true' } });
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
-          scope.editUserModel.oidc = false;
+          scope.editUserModel.oidc_username = '';
           scope.editUserModel.roles = [ 'data-entry' ];
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.callCount).to.equal(0);
@@ -956,23 +971,26 @@ describe('EditUserCtrl controller', () => {
 
     it('should not require password when disabling sso login to token login', () => {
       mockGetReplicationLimit();
-      userToEdit.oidc = true;
+      userToEdit.oidc_login = true;
+      http.get
+        .withArgs(`/api/v2/users/${userToEdit.name}`)
+        .resolves({ data: { oidc_username: 'true' } });
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
-          scope.editUserModel.oidc = false;
+          scope.editUserModel.oidc_username = '';
           scope.editUserModel.token_login = true;
           scope.editUserModel.phone = '+40755696969';
           scope.editUserModel.roles = [ 'data-entry' ];
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.calledOnceWithExactly(
             userToEdit.name,
             {
               roles: ['data-entry'],
-              oidc: false,
+              oidc_username: '',
               phone: '+40755696969',
               token_login: true,
               contact: undefined,
@@ -984,23 +1002,24 @@ describe('EditUserCtrl controller', () => {
 
     it('should not require password when disabling token login to sso login', () => {
       mockGetReplicationLimit();
+      Settings.resolves({ oidc_provider: true });
       userToEdit.token_login = true;
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
-          scope.editUserModel.oidc = true;
+          scope.editUserModel.oidc_username = 'true';
           scope.editUserModel.token_login = false;
           scope.editUserModel.phone = '+40755696969';
           scope.editUserModel.roles = [ 'data-entry' ];
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.calledOnceWithExactly(
             userToEdit.name,
             {
               roles: ['data-entry'],
-              oidc: true,
+              oidc_username: 'true',
               phone: '+40755696969',
               token_login: false,
               contact: undefined,
@@ -1016,12 +1035,15 @@ describe('EditUserCtrl controller', () => {
       mockContactGet(userToEdit.contact_id);
       mockGetReplicationLimit();
 
-      userToEdit.oidc = true;
+      userToEdit.oidc_login = true;
+      http.get
+        .withArgs(`/api/v2/users/${userToEdit.name}`)
+        .resolves({ data: { oidc_username: 'true' } });
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
-          scope.editUserModel.oidc = true;
-          return scope.editUser();
+          scope.editUserModel.oidc_username = 'true';
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.called).to.equal(false);
@@ -1031,14 +1053,17 @@ describe('EditUserCtrl controller', () => {
     it('should not overwrite sso oidc property when editing and making no changes', () => {
       mockGetReplicationLimit();
 
-      userToEdit.oidc = true;
+      userToEdit.oidc_login = true;
+      http.get
+        .withArgs(`/api/v2/users/${userToEdit.name}`)
+        .resolves({ data: { oidc_username: 'true' } });
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
           scope.editUserModel.phone = '+40755696969';
           scope.editUserModel.roles = [ 'data-entry' ];
 
-          return scope.editUser();
+          return editUser();
         })
         .then(() => {
           chai.expect(UpdateUser.calledOnceWithExactly(

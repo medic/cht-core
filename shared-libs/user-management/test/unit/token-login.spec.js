@@ -144,6 +144,18 @@ describe('TokenLogin service', () => {
           chai.expect(data).to.deep.equal({ token_login: false });
         });
 
+        it('should do nothing when oidc_username is present', () => {
+          const user = { _id: 'user', name: 'user', token_login: true };
+          const settings = { _id: 'user', name: 'user', contact_id: 'bbb', token_login: true };
+          const data = { token_login: false, oidc_username: 'superSecret' };
+          const result = service.validateTokenLogin(data, false, user, settings);
+          chai.expect(result).to.deep.equal(undefined);
+          // no changes to provided data
+          chai.expect(user).to.deep.equal({ _id: 'user', name: 'user', token_login: true });
+          chai.expect(settings).to.deep.equal({ _id: 'user', name: 'user', contact_id: 'bbb', token_login: true });
+          chai.expect(data).to.deep.equal({ token_login: false, oidc_username: 'superSecret' });
+        });
+
         it('should do nothing when password is present', () => {
           const user = { _id: 'user', name: 'user', token_login: true };
           const settings = { _id: 'user', name: 'user', contact_id: 'bbb', token_login: true };

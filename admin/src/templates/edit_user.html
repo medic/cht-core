@@ -76,18 +76,18 @@
     </div>
 
     <div class="form-group" ng-if="allowSSOLogin && (editUserModel.tokenLoginEnabled && editUserModel.token_login === false || !editUserModel.tokenLoginEnabled && !editUserModel.token_login)">
-      <input type="checkbox" id="sso-login" ng-true-value="true" ng-false-value="" ng-model="editUserModel.oidc">
-      <label for="ssoLogin" translate class="form-check-label">configuration.enable.sso.login</label>
-      <div class="help-block" translate>configuration.enable.sso.login.help</div>
+      <label for="sso-login" translate>user.sso.username</label>
+      <input id="sso-login" type="text" class="form-control" ng-model="editUserModel.oidc_username" />
+      <span class="help-block" translate>user.sso.username.help</span>
     </div>
 
-    <div class="form-group" ng-if="allowTokenLogin && !editUserModel.tokenLoginEnabled && !editUserModel.oidc">
+    <div class="form-group" ng-if="allowTokenLogin && !editUserModel.tokenLoginEnabled && !(allowSSOLogin && editUserModel.oidc_username)">
       <input type="checkbox" id="tokenLogin" ng-true-value="true" ng-false-value="" ng-model="editUserModel.token_login">
       <label for="tokenLogin" translate class="form-check-label">configuration.enable.token.login</label>
       <div class="help-block" translate>configuration.enable.token.login.help</div>
     </div>
 
-    <div class="form-group" ng-if="allowTokenLogin && editUserModel.tokenLoginEnabled && !editUserModel.oidc">
+    <div class="form-group" ng-if="allowTokenLogin && editUserModel.tokenLoginEnabled && !(allowSSOLogin && editUserModel.oidc_username)">
       <p>
         <label class="form-check-label">
           <span ng-if="editUserModel.tokenLoginEnabled.active && !editUserModel.tokenLoginEnabled.expired" translate translate-values="{ date: '{{editUserModel.tokenLoginEnabled.expirationDate}}' }">configuration.enable.token.login.enabled.active</span>
@@ -112,7 +112,7 @@
 
     <div 
         class="form-group" 
-        ng-class="{ 'has-error': errors.password, 'required': !editUserModel.id, 'hidden': (allowTokenLogin && (editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled))) || editUserModel.oidc }">
+        ng-class="{ 'has-error': errors.password, 'required': !editUserModel.id, 'hidden': (allowTokenLogin && (editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled))) || (allowSSOLogin && editUserModel.oidc_username) }">
         <label for="edit-password" translate>Password</label>
       <div class="text-muted" ng-if="!skipPasswordChange" translate>update.password.help</div>
         <div class="password-input-group">
@@ -130,7 +130,7 @@
         <span class="help-block">{{errors.password}}</span>
       </div>
 
-      <div class="form-group" ng-class="{ 'required': !editUserModel.id, 'hidden': (allowTokenLogin && (editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled))) || editUserModel.oidc }">
+      <div class="form-group" ng-class="{ 'required': !editUserModel.id, 'hidden': (allowTokenLogin && (editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled))) || (allowSSOLogin && editUserModel.oidc_username) }">
         <label for="edit-password-confirm" translate>Confirm Password</label>
         <input 
           id="edit-password-confirm" 
