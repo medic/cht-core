@@ -55,23 +55,7 @@ function getPriorityCategory(score) {
   return '';
 }
 
-function calculateAge(birthDate) {
-  const today = new Date();
-  const birth = new Date(birthDate);
-  
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
-  
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--;
-  }
-  
-  return age;
-}
-
-
 module.exports = [
-
   //ANC Home Visit: 12, 20, 26, 30, 34, 36, 38, 40 weeks (Known LMP)
   {
     name: 'anc.pregnancy_home_visit.known_lmp',
@@ -119,10 +103,10 @@ module.exports = [
     },
     resolvedIf: checkTaskResolvedForHomeVisit,
     priority: function(contact, report) {
+      console.warn('CONTACT', contact);
       console.warn('REPORT', report);
       const taskTypeScore = 8;
-      const age = calculateAge(contact.contact.date_of_birth);
-      const individualScore = (age > 35 || age < 2) ? 2 : 0;
+      const individualScore = 2;
       const score = taskTypeScore + individualScore;
       return {
         level: score,
@@ -161,12 +145,11 @@ module.exports = [
 
     },
     priority: function(contact, report) {
-      console.warn('CONTACT MARY', contact);
-      console.warn('REPORT MARY', report);
-      const score = 6;
+      console.warn('CONTACT', contact);
+      console.warn('REPORT', report);
       return {
-        level: 'high',
-        label: getPriorityCategory(score),
+        level: 'medium',
+        label: '',
       };
     },
     actions: [{

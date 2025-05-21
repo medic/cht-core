@@ -15,7 +15,7 @@ const initialState = {
 };
 
 
-const orderByDueDateAndPriority7 = (t1, t2) => {
+const orderByDueDateAndPriority1 = (t1, t2) => {
   const lhs = t1?.dueDate;
   const rhs = t2?.dueDate;
 
@@ -58,9 +58,7 @@ const orderByDueDateAndPriority7 = (t1, t2) => {
  * 4. For equal priority, sort by due date (earlier first)
  * 5. Tasks without due dates appear last
  */
-const orderByDueDateAndPriority3 = (t1, t2) => {
-    console.log('DATE 1', t1?.dueDate)
-    console.log('DATE 2', t2?.dueDate)
+const orderByDueDateAndPriority2 = (t1, t2) => {
 
   const p1 = t1?.priority ?? 0;
   const p2 = t2?.priority ?? 0;
