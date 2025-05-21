@@ -270,7 +270,7 @@
         </translation>
       </itext>
       <instance>
-        <data id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" delimiter="#" version="2022-08-19 14-44">
+        <data id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" delimiter="#" version="2025-05-01 22-47">
           <inputs>
             <meta>
               <location>
@@ -329,9 +329,9 @@
       <bind nodeset="/data/health_center/contact/name" type="string"/>
       <bind nodeset="/data/health_center/contact/contact_name" type="string" calculate="../name"/>
       <bind nodeset="/data/health_center/contact/_id" type="string"/>
-      <bind nodeset="/data/health_center/is_name_generated" type="select1" required="true()" relevant="not( /data/health_center/contact/_id ) or selected( . , 'true') or boolean( /data/health_center/contact/_id )" calculate="if(  /data/health_center/generated_name  = ../name, 'true', 'false')" readonly="boolean( /data/health_center/contact/_id )"/>
+      <bind nodeset="/data/health_center/is_name_generated" type="select1" relevant="not( /data/health_center/contact/_id ) or selected( . , 'true') or boolean( /data/health_center/contact/_id )" required="true()" calculate="if(  /data/health_center/generated_name  = ../name, 'true', 'false')" readonly="boolean( /data/health_center/contact/_id )"/>
       <bind nodeset="/data/health_center/generated_name" type="string" calculate=" /data/init/generated_name_translation "/>
-      <bind nodeset="/data/health_center/name" type="string" required="true()" relevant="boolean( /data/health_center/contact/_id ) or not( /data/health_center/contact/_id ) or not(selected( /data/health_center/is_name_generated , 'true')) or not(selected( /data/health_center/is_name_generated , 'yes'))" calculate="if( ( selected( /data/health_center/is_name_generated , 'true') or selected( /data/health_center/is_name_generated , 'yes') ),  /data/health_center/generated_name , .)"/>
+      <bind nodeset="/data/health_center/name" type="string" relevant="boolean( /data/health_center/contact/_id ) or not( /data/health_center/contact/_id ) or not(selected( /data/health_center/is_name_generated , 'true')) or not(selected( /data/health_center/is_name_generated , 'yes'))" required="true()" calculate="if( ( selected( /data/health_center/is_name_generated , 'true') or selected( /data/health_center/is_name_generated , 'yes') ),  /data/health_center/generated_name , .)"/>
       <bind nodeset="/data/health_center/external_id" type="string"/>
       <bind nodeset="/data/health_center/notes" type="string"/>
       <bind nodeset="/data/health_center/geolocation" type="string" calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))"/>

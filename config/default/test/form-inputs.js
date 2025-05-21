@@ -180,21 +180,21 @@ module.exports = {
       ['no'],
       []
     ],
-
     danger: [
-      ['method_lmp'],
-      ['1999-11-01'],
-      [],
-      ['0'],
-      ['yes', '2000-01-20'],
-      ['no', 'no'],
-      ['none', 'no'],
-      ['yes', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'],
-      ['no'],
-      ['no'],
-      [],
-      ['no'],
-      []
+      ['method_lmp'],                     // Index 0: Method
+      ['1999-11-01'],                     // Index 1: LMP date
+      [],                                 // Index 2: 
+      ['0'],                              // Index 3: ANC visits
+      ['yes'],                            // Index 4: Follow-up required (single field)
+      ['2000-01-20'],                     // Index 5: Follow-up date (separate field)
+      ['no', 'no'],                       // Index 6: 
+      ['none', 'no'],                     // Index 7: 
+      ['yes', ...Array(10).fill('no')],   // Index 8: Danger signs
+      ['no'],                             // Index 9:
+      ['no'],                             // Index 10:
+      [],                                 // Index 11:
+      ['no'],                             // Index 12:
+      []                                  // Index 13:
     ],
     lmpUnknown: [
       ['method_none'],

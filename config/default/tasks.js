@@ -101,7 +101,6 @@ module.exports = [
       //We only want to show until 42 weeks + 7 days
       return !recentLMP && addDays(report.reported_date, MAX_DAYS_IN_PREGNANCY + 7) >= today;
     },
-
     resolvedIf: checkTaskResolvedForHomeVisit,
     priority: function(contact, report) {
       console.warn('CONTACT', contact);
@@ -189,6 +188,15 @@ module.exports = [
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_danger_sign_follow_up'], startTime, endTime);
     },
+    priority: function (contact, report) {
+      console.warn('CONTACT', contact);
+      console.warn('REPORT', report);
+      const score = 10;
+      return {
+        level: score,
+        label: getPriorityCategory(score),
+      };
+    },
     actions: [
       {
         type: 'report',
@@ -261,6 +269,15 @@ module.exports = [
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);//+1 so that source ds_follow_up does not resolve itself;
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_mother'], startTime, endTime);
+    },
+    priority: function(contact, report) {
+      console.warn('CONTACT', contact);
+      console.warn('REPORT', report);
+      const score = 3;
+      return {
+        level: score,
+        label: getPriorityCategory(score),
+      };
     },
     actions: [
       {
@@ -381,4 +398,3 @@ module.exports = [
     ]
   }
 ];
-
