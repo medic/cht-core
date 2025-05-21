@@ -161,11 +161,11 @@ module.exports = [
 
     },
     priority: function(contact, report) {
-      console.warn('CONTACT', contact);
-      console.warn('REPORT', report);
+      console.warn('CONTACT MARY', contact);
+      console.warn('REPORT MARY', report);
       const score = 6;
       return {
-        level: score,
+        level: 'high',
         label: getPriorityCategory(score),
       };
     },

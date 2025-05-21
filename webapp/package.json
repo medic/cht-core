@@ -15,6 +15,7 @@
   "scripts": {
     "postinstall": "patch-package && ng cache clean",
     "unit:mocha": "UNIT_TEST_ENV=1 mocha 'tests/mocha/**/*.spec.js'",
+    "unit:karma": "UNIT_TEST_ENV=1 mocha 'tests/mocha/**/*.spec.js'",
     "unit:mocha:tz": "TZ=Canada/Pacific npm run unit:mocha && TZ=Africa/Monrovia npm run unit:mocha && TZ=Pacific/Auckland npm run unit:mocha",
     "unit:cht-form": "ng test cht-form",
     "unit": "UNIT_TEST_ENV=1 ng test webapp",
