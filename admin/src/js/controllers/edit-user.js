@@ -30,7 +30,6 @@ angular
     ContactTypes,
     CreateUser,
     DB,
-    GetUser,
     Select2Search,
     Settings,
     Translate,
@@ -88,22 +87,27 @@ angular
       return $scope.model.facility_id;
     };
 
-    const populateModelOidcUsername = function () {
-      if (!$scope.model._id || !$scope.model.oidc_login || $scope.model.oidc_username) {
-        return $q.resolve();
+    const getOidcUsername = function () {
+      if (
+        !$scope.model
+        || !$scope.model._id
+        || !$scope.model.name
+        || !$scope.model.oidc_login
+      ) {
+        return Promise.resolve(undefined);
       }
 
-      return GetUser
-        .getByUsername($scope.model.name)
-        .then(({ oidc_username }) => $scope.model.oidc_username = oidc_username);
+      return $http
+        .get(`/api/v2/users/${$scope.model.name}`)
+        .then(({ data: { oidc_username } }) => oidc_username);
     };
 
     const determineEditUserModel = function() {
       // Edit a user that's not the current user.
       // $scope.model is the user object passed in by controller creating the Modal.
       // If $scope.model === {}, we're creating a new user.
-      return $q.all([Settings(), populateModelOidcUsername()])
-        .then(([settings]) => {
+      return $q.all([Settings(), getOidcUsername()])
+        .then(([settings, oidcUsername]) => {
           $scope.permissions = settings.permissions;
           $scope.roles = settings.roles;
           $scope.allowTokenLogin = allowTokenLogin(settings);
@@ -117,6 +121,7 @@ angular
 
           $scope.model.showPasswordIcon = SHOW_PASSWORD_ICON;
           $scope.model.hidePasswordIcon = HIDE_PASSWORD_ICON;
+          $scope.model.oidc_username = oidcUsername;
           const facilityId = getFacilityId();
           const tokenLoginData = $scope.model.token_login;
           const tokenLoginEnabled = tokenLoginData &&
