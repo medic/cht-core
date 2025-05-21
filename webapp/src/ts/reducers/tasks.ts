@@ -14,35 +14,6 @@ const initialState = {
   },
 };
 
-
-const orderByDueDateAndPriority1 = (t1, t2) => {
-  const lhs = t1?.dueDate;
-  const rhs = t2?.dueDate;
-
-  const lhsPriority = t1?.priority;
-  const rhsPriority = t2?.priority;
-
-  if ((lhsPriority && !rhsPriority) || lhsPriority > rhsPriority) {
-    return -1;
-  }
-
-  if ((!lhsPriority && rhsPriority) || lhsPriority < rhsPriority) {
-    return 1;
-  }
-
-  if (!lhs && !rhs) {
-    return 0;
-  }
-  if (!lhs) {
-    return 1;
-  }
-  if (!rhs) {
-    return -1;
-  }
-
-  return lhs < rhs ? -1 : 1;
-};
-
 /**
  * Task prioritization algorithm that combines:
  * 1. Overdue status (most urgent)
