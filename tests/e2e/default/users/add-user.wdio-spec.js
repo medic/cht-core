@@ -54,40 +54,40 @@ describe('User Test Cases ->', () => {
     after(async () => await utils.deleteUsers([{ username: USERNAME }]));
 
     it('should add user with valid password', async () => {
-      await usersAdminPage.inputAddUserFields(
-        USERNAME,
-        'Jack',
-        ONLINE_USER_ROLE,
-        districtHospital.name,
-        person.name,
-        PASSWORD
-      );
+      await usersAdminPage.inputAddUserFields({
+        username: USERNAME,
+        fullname: 'Jack',
+        role: ONLINE_USER_ROLE,
+        places: districtHospital.name,
+        contact: person.name,
+        password: PASSWORD
+      });
       await usersAdminPage.saveUser();
       expect(await usersAdminPage.getAllUsernames()).to.include.members([USERNAME]);
     });
 
     it('should add user with multiple places with permission', async () => {
-      await usersAdminPage.inputAddUserFields(
-        'new_jack',
-        'Jack',
-        OFFLINE_USER_ROLE,
-        [districtHospital.name, districtHospital2.name],
-        person.name,
-        PASSWORD
-      );
+      await usersAdminPage.inputAddUserFields({
+        username: 'new_jack',
+        fullname: 'Jack',
+        role: OFFLINE_USER_ROLE,
+        places: [districtHospital.name, districtHospital2.name    ],
+        contact: person.name,
+        password: PASSWORD
+      });
       await usersAdminPage.saveUser();
       expect(await usersAdminPage.getAllUsernames()).to.include.members([USERNAME]);
     });
 
     it('should hide and reveal password value, and add user with a revealed password', async () => {
-      await usersAdminPage.inputAddUserFields(
-        USERNAME_2,
-        'Jack',
-        ONLINE_USER_ROLE,
-        districtHospital.name,
-        person.name,
-        PASSWORD
-      );
+      await usersAdminPage.inputAddUserFields({
+        username: USERNAME_2,
+        fullname: 'Jack',
+        role: ONLINE_USER_ROLE,
+        places: districtHospital.name,
+        contact: person.name,
+        password: PASSWORD
+      });
 
       let revealedPassword = await usersAdminPage.togglePassword();
       expect(revealedPassword.type).to.equal('text');
@@ -114,15 +114,23 @@ describe('User Test Cases ->', () => {
     });
 
     it('should add sso user', async () => {
-      await usersAdminPage.inputSsoUserFields(
-        USERNAME,
-        'Jack',
-        ONLINE_USER_ROLE,
-        districtHospital.name,
-        person.name,
-      );
+      const oidcUsername = `${USERNAME}@email.com`;
+      await usersAdminPage.inputAddUserFields({
+        username: USERNAME,
+        fullname: 'Jack',
+        role: ONLINE_USER_ROLE,
+        places: districtHospital.name,
+        contact: person.name,
+        oidcUsername
+      });
       await usersAdminPage.saveUser();
       expect(await usersAdminPage.getAllUsernames()).to.include.members([USERNAME]);
+      const userId = `org.couchdb.user:${USERNAME}`;
+      const userDoc = await utils.usersDb.get(userId);
+      expect(userDoc.oidc_username).to.equal(oidcUsername);
+      expect(userDoc.salt).to.exist;
+      const userSettingsDoc = await utils.db.get(userId);
+      expect(userSettingsDoc.oidc_login).to.be.true;
     });
   });
 
@@ -136,15 +144,15 @@ describe('User Test Cases ->', () => {
       { passwordValue: '', errorMessage: 'required' }
     ].forEach(async (args) => {
       it(`TestCase for ${args.errorMessage}`, async () => {
-        await usersAdminPage.inputAddUserFields(
-          USERNAME,
-          'Jack',
-          ONLINE_USER_ROLE,
-          districtHospital.name,
-          person.name,
-          args.passwordValue,
-          args.otherPassword
-        );
+        await usersAdminPage.inputAddUserFields({
+          username: USERNAME,
+          fullname: 'Jack',
+          role: ONLINE_USER_ROLE,
+          places: districtHospital.name,
+          contact: person.name,
+          password: args.passwordValue,
+          confirmPassword: args.otherPassword
+        });
         await usersAdminPage.saveUser(false);
         const text = await usersAdminPage.getPasswordErrorText();
         expect(text).to.contain(args.errorMessage);
@@ -152,30 +160,40 @@ describe('User Test Cases ->', () => {
     });
 
     it('should require username', async () => {
-      await usersAdminPage.inputAddUserFields(
-        '', 'Jack', ONLINE_USER_ROLE, districtHospital.name, person.name, PASSWORD
-      );
+      await usersAdminPage.inputAddUserFields({
+        username: '',
+        fullname: 'Jack',
+        role: ONLINE_USER_ROLE,
+        places: districtHospital.name,
+        contact: person.name,
+        password: PASSWORD
+      });
       await usersAdminPage.saveUser(false);
       const text = await usersAdminPage.getUsernameErrorText();
       expect(text).to.contain('required');
     });
 
     it('should require place and contact for restricted user', async () => {
-      await usersAdminPage.inputAddUserFields(USERNAME, 'Jack', OFFLINE_USER_ROLE, null, null, PASSWORD);
+      await usersAdminPage.inputAddUserFields({
+        username: USERNAME,
+        fullname: 'Jack',
+        role: OFFLINE_USER_ROLE,
+        password: PASSWORD
+      });
       await usersAdminPage.saveUser(false);
       expect(await usersAdminPage.getPlaceErrorText()).to.contain('required');
       expect(await usersAdminPage.getContactErrorText()).to.contain('required');
     });
 
     it('should require user to have permission for multiple places', async () => {
-      await usersAdminPage.inputAddUserFields(
-        USERNAME,
-        'Jack',
-        ONLINE_USER_ROLE,
-        [districtHospital.name, districtHospital2.name],
-        person.name,
-        PASSWORD
-      );
+      await usersAdminPage.inputAddUserFields({
+        username: USERNAME,
+        fullname: 'Jack',
+        role: ONLINE_USER_ROLE,
+        places: [districtHospital.name, districtHospital2.name],
+        contact: person.name,
+        password: PASSWORD
+      });
       await usersAdminPage.saveUser(false);
       expect(await usersAdminPage.getPlaceErrorText()).to.contain(
         'The selected roles do not have permission to be assigned multiple places.'

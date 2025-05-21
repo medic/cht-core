@@ -26,11 +26,7 @@ const successfullyUploadedUsers = () => $('p.text-success');
 const previouslyUploadedUsers = () => $('p.text-muted');
 const failedUploadedUsers = () => $('p.text-danger');
 const backToUserListButton = () => $('a#back-to-app-btn');
-const ssoCheckbox = () => $('#sso-login');
-
-const toggleSso = async () => {
-  await (await ssoCheckbox()).click();
-};
+const ssoLogin = () => $('#sso-login');
 
 const goToAdminUser = async () => {
   await commonElements.goToUrl('/admin/#/users');
@@ -55,33 +51,9 @@ const scrollToBottomOfModal = async () => {
   });
 };
 
-const selectPlaces = async (places) => {
-  if (!_.isEmpty(places)) {
-    if (Array.isArray(places)) {
-      for (const name of places) {
-        await selectPlace([name]);
-      }
-    } else {
-      await selectPlace([places]);
-    }
-  }
-};
-
-const inputSsoUserFields = async (username, fullname, role, places, contact) => {
-  await (await userName()).setValue(username);
-  await (await userFullName()).setValue(fullname);
-  await (await $(`#role-select input[value="${role}"]`)).click();
-
-  await selectPlaces(places);
-
-  if (!_.isEmpty(contact)) {
-    await selectContact(contact);
-  }
-
-  await toggleSso();
-};
-
-const inputAddUserFields = async (username, fullname, role, places, contact, password, confirmPassword = password) => {
+const inputAddUserFields = async ({
+  username, fullname, role, places, contact, password, confirmPassword = password, oidcUsername
+}) => {
   await (await userName()).setValue(username);
   await (await userFullName()).setValue(fullname);
   await (await $(`#role-select input[value="${role}"]`)).click();
@@ -104,8 +76,13 @@ const inputAddUserFields = async (username, fullname, role, places, contact, pas
     await selectContact(contact);
   }
 
-  await (await userPassword()).setValue(password);
-  await (await userConfirmPassword()).setValue(confirmPassword);
+  if (password !== undefined) {
+    await (await userPassword()).setValue(password);
+    await (await userConfirmPassword()).setValue(confirmPassword);
+  }
+  if (oidcUsername !== undefined) {
+    await (await ssoLogin()).setValue(oidcUsername);
+  }
 };
 
 const inputUploadUsersFields = async (filePath) => {
@@ -283,7 +260,5 @@ module.exports = {
   backToUserList,
   closeAddUserDialog,
   scrollToRole,
-  addUserButton,
-  toggleSso,
-  inputSsoUserFields
+  addUserButton
 };

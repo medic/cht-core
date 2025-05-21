@@ -50,14 +50,14 @@ describe('User Test Cases -> Creating Users ->', () => {
   after(async () => await utils.deleteUsers([{ username: username }]));
 
   it('should add user with multiple places with permission', async () => {
-    await usersAdminPage.inputAddUserFields(
+    await usersAdminPage.inputAddUserFields({
       username,
-      'Jack',
-      offlineUserRole,
-      [districtHospital.name, districtHospital2.name],
-      person.name,
+      fullname: 'Jack',
+      role: offlineUserRole,
+      places: [districtHospital.name, districtHospital2.name],
+      contact: person.name,
       password
-    );
+    });
     await usersAdminPage.saveUser();
 
     await commonPage.reloadSession();

@@ -248,11 +248,6 @@ angular
         $scope.editUserModel.password ||
         $scope.editUserModel.passwordConfirm
       ) {
-        if (!$scope.allowSSOLogin && oidcUsername) {
-          // Automatically disable OIDC when SSO login is not enabled
-          $scope.editUserModel.oidc_username = '';
-        }
-
         return validatePasswordFields();
       }
       return true;
@@ -290,6 +285,10 @@ angular
     };
 
     const validatePasswordFields = () => {
+      if (!$scope.allowSSOLogin && $scope.editUserModel.oidc_username) {
+        // Automatically disable OIDC when SSO login is not enabled
+        $scope.editUserModel.oidc_username = '';
+      }
       return (
         validateRequired('password', 'Password') &&
         (!$scope.editUserModel.currentPassword ||
