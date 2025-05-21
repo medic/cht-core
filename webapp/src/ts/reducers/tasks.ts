@@ -85,29 +85,14 @@ const orderByDueDateAndPriority = (t1, t2) => {
   const days1 = getDateScore(t1);
   const days2 = getDateScore(t2);
 
-  const getTaskStatus = (days) => {
-    if (days === Infinity) return 3; //No date
-    if (days < 0) return 0; // Over due
-    if (days === 0) return 1; //Due today
-    return 2; //Future
-  };
-
-  const status1 = getTaskStatus(days1);
-  const status2 = getTaskStatus(days2);
-
-  // Compare by status (Over due first)
-  if (status1 !== status2) {
-    return status1 - status2;
+  // Compare by due date (earlier first)
+  if (days1 !== days2) {
+    return days1 - days2;
   }
 
   // Compare by priority (higher first)
   if (p1 !== p2) {
     return p2 - p1;
-  }
-
-  // Compare by due date (earlier first)
-  if (days1 !== days2) {
-    return days1 - days2;
   }
 
   // Otherwise maintain original order
