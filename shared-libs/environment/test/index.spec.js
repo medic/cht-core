@@ -116,7 +116,13 @@ describe('environment', () => {
           timestamp: '2023-01-02'
         });
         expect(request.get.callCount).to.equal(1);
-        expect(request.get.args).to.deep.equal([[{url: 'http://admin:pass@localhost:5984/medicdb/_design/medic'}]]);
+        expect(request.get.args).to.deep.equal([
+          [
+            {
+              url: 'http://admin:pass@localhost:5984/medicdb/_design/medic',
+            }
+          ]
+        ]);        
       });
 
       it('should use cache on subsequent calls', async () => {
@@ -133,6 +139,32 @@ describe('environment', () => {
 
         expect(result1).to.deep.equal(result2);
         expect(request.get.callCount).to.equal(1);
+      });
+
+      it('should clear cache when requested', async () => {
+        const ddoc = {
+          _id: '_design/medic',
+          build_info: { version: '4.1.0' }
+        };
+        sinon.stub(request, 'get').resolves(ddoc);
+        const env = rewire('../src/index');
+
+        const result1 = await env.getDeployInfo();
+        const result2 = await env.getDeployInfo();
+
+        expect(result1).to.deep.equal(result2);
+        expect(result1.version).to.equal(ddoc.build_info.version);
+        expect(request.get.callCount).to.equal(1);
+
+        ddoc.build_info.version = '4.2.0';
+        request.get.resolves(ddoc);
+
+        expect((await env.getDeployInfo()).version).to.equal('4.1.0');
+        expect(request.get.callCount).to.equal(1);
+        expect((await env.getDeployInfo(true)).version).to.equal('4.2.0');
+        expect(request.get.callCount).to.equal(2);
+        expect((await env.getDeployInfo()).version).to.equal('4.2.0');
+        expect(request.get.callCount).to.equal(2);
       });
 
       it('should throw error if request fails', async () => {

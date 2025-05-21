@@ -168,7 +168,7 @@ describe('Create user when adding contact', () => {
     await utils.toggleSentinelTransitions();
     await cookieLogin();
     await commonPage.goToPeople(district._id);
-    await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' }, false);
+    await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' }, { waitForSentinel: false });
     await contactsPage.editPerson(CONTACT_NAME, { name: 'Edit 1' });
     await contactsPage.editPerson('Edit 1', { name: 'Edit 2' });
 

@@ -9,20 +9,32 @@ const FORM_TITLE_SELECTOR = `${TASK_FORM_SELECTOR} h3#form-title`;
 const NO_SELECTED_TASK_SELECTOR = '.empty-selection';
 
 const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"`);
-const getTasks = () => $$(`${TASK_LIST_SELECTOR} li.content-row`);
+const getTasks = async () => {
+  let tasks;
+  await browser.waitUntil(async () => {
+    const tasksList = await $(TASK_LIST_SELECTOR);
+    tasks = await $$(`${TASK_LIST_SELECTOR} li.content-row`);
+    return await tasksList.isDisplayed() && tasks.length > 0;
+  }, {
+    timeout: 10000,
+    timeoutMsg: 'Expected tasks list to be displayed with at least one task'
+  });
+
+  return tasks;
+};
 
 const getTaskInfo = async (taskElement) => {
   await taskElement.scrollIntoView();
-  const contactName = await (await taskElement.$('h4 span')).getText();
-  const formTitle = await (await taskElement.$('.summary p')).getText();
+  const contactName = await taskElement.$('h4 span').getText();
+  const formTitle = await taskElement.$('.summary p').getText();
   let lineage = '';
-  if (await (await taskElement.$('.detail')).isExisting()){
-    lineage = await (await taskElement.$('.detail')).getText();
+  if (await taskElement.$('.detail').isExisting()){
+    lineage = await taskElement.$('.detail').getText();
   }
 
   let dueDateText = '';
-  if (await (await taskElement.$('.date .relative-date-content')).isExisting()) {
-    dueDateText = await (await taskElement.$('.date .relative-date-content')).getText();
+  if (await taskElement.$('.date .relative-date-content').isExisting()) {
+    dueDateText = await taskElement.$('.date .relative-date-content').getText();
   }
 
   const classAttr = await taskElement.getAttribute('class');
@@ -52,9 +64,9 @@ const getTaskByContactAndForm = async (name, title) => {
 };
 
 const waitForTaskContentLoaded = async (name) => {
-  await (await $(FORM_TITLE_SELECTOR)).waitForDisplayed();
+  await $(FORM_TITLE_SELECTOR).waitForDisplayed();
   await browser.waitUntil(async () => {
-    const formTitle = await (await $(`${FORM_TITLE_SELECTOR}`)).getText();
+    const formTitle = await $(`${FORM_TITLE_SELECTOR}`).getText();
     return formTitle === name;
   }, { timeout: 2000 });
 };
@@ -65,9 +77,9 @@ const getOpenTaskElement = async () => {
 };
 
 const waitForTasksGroupLoaded = async () => {
-  await (await $(TASKS_GROUP_SELECTOR)).waitForDisplayed();
+  await $(TASKS_GROUP_SELECTOR).waitForDisplayed();
   await browser.waitUntil(async () => {
-    const pageTitle = await (await $(`${TASKS_GROUP_SELECTOR} .action-header h3`)).getText();
+    const pageTitle = await $(`${TASKS_GROUP_SELECTOR} .action-header h3`).getText();
     return pageTitle === 'Other household tasks';
   }, { timeout: 2000 });
 };
@@ -88,7 +100,7 @@ const compileTasks = async (tasksFileName, sync) => {
 };
 
 const isTaskElementDisplayed = async (type, text) => {
-  return await (await $(TASK_LIST_SELECTOR)).$(`${type}*=${text}`).isDisplayed();
+  return await $(TASK_LIST_SELECTOR).$(`${type}*=${text}`).isDisplayed();
 };
 
 module.exports = {
