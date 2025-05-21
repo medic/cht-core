@@ -81,7 +81,6 @@ const matchReminder = (reminder) => {
       // schedule.prev doesn't have a setting to be inclusive or exclusive to the given time frame limits
       // if `getReminderWindowStart` returns the moment when the reminder ran last, we check that `previous` is after
       // this moment, so we don't run the same reminder twice
-      console.warn(moment(previous)); // eslint-disable-line no-console
       return (previous instanceof Date && start.isBefore(previous)) ? moment(previous) : false;
     });
 };
@@ -289,7 +288,6 @@ const runReminder = (reminder = {}) => {
       return;
     }
     logger.debug('Running reminder %o', reminder);
-    console.warn(scheduledDate, 'scheduledDate runReminder'); // eslint-disable-line no-console
     const start = performance.now();
     return sendReminders(reminder, scheduledDate).then(() => createReminderLog(reminder, scheduledDate, start));
   });
@@ -299,7 +297,6 @@ module.exports = {
   // called from schedule/index.js every 5 minutes, for now
   execute: () => {
     const reminders = config.get('reminders') || [];
-    console.warn(reminders); // eslint-disable-line no-console
     return reminders
       .filter(reminder => {
         if (isConfigValid(reminder)) {
