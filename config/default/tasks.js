@@ -48,8 +48,14 @@ function checkTaskResolvedForHomeVisit(contact, report, event, dueDate) {
   return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_home_visit'], startTime, endTime);
 }
 
-module.exports = [
+function getPriorityCategory(score) {
+  if (score < 6){ return 'Low priority';}
+  else if (score >= 6 && score <= 8){ return 'Medium priority';}
+  else if (score > 8){ return 'High priority';}
+  return '';
+}
 
+module.exports = [
   //ANC Home Visit: 12, 20, 26, 30, 34, 36, 38, 40 weeks (Known LMP)
   {
     name: 'anc.pregnancy_home_visit.known_lmp',
@@ -97,7 +103,17 @@ module.exports = [
     },
 
     resolvedIf: checkTaskResolvedForHomeVisit,
-
+    priority: function(contact, report) {
+      console.warn('CONTACT', contact);
+      console.warn('REPORT', report);
+      const taskTypeScore = 8;
+      const individualScore = 2;
+      const score = taskTypeScore + individualScore;
+      return {
+        level: score,
+        label: getPriorityCategory(score),
+      };
+    },
     actions: [
       {
         type: 'report',
@@ -128,6 +144,14 @@ module.exports = [
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_facility_visit_reminder'], startTime, endTime);
 
+    },
+    priority: function(contact, report) {
+      console.warn('CONTACT', contact);
+      console.warn('REPORT', report);
+      return {
+        level: 'medium',
+        label: '',
+      };
     },
     actions: [{
       type: 'report',
