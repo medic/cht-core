@@ -321,13 +321,13 @@ module.exports = [
       const endTime = addDays(dueDate, event.end).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'], startTime, endTime);
     },
-    priority: function(contact, report) {
-      console.warn('CONTACT', contact);
-      console.warn('REPORT', report);
-      const score = 10;
+    priority: function(contact, report, event, dueDate) {
+      console.warn(contact);
+      console.warn(event);
+      console.warn(dueDate);
       return {
-        level: score,
-        label: getPriorityCategory(score),
+        level: 10,
+        label: 'High',
       };
     },
     actions: [
@@ -368,13 +368,13 @@ module.exports = [
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'], startTime, endTime);
     },
-    priority: function(contact, report) {
-      console.warn('CONTACT', contact);
-      console.warn('REPORT', report);
-      const score = 10;
+    priority: function(contact, report, event, dueDate) {
+      console.warn(contact);
+      console.warn(event);
+      console.warn(dueDate);
       return {
-        level: score,
-        label: getPriorityCategory(score),
+        level: 10,
+        label: 'High',
       };
     },
     actions: [
