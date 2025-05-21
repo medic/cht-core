@@ -7,9 +7,5 @@
     "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
   },
   "author": "",
-  "license": "Apache-2.0",
-  "dependencies": {
-    "@medic/couch-request": "file:../couch-request",
-    "@medic/environment": "file:../environment"
-  }
+  "license": "Apache-2.0"
 }
