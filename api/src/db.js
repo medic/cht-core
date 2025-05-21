@@ -51,6 +51,7 @@ if (UNIT_TEST_ENV) {
     'wipeCacheDb',
     'addRoleAsAdmin',
     'addRoleAsMember',
+    'nouveauCleanup'
   ];
 
   const notStubbed = (first, second) => {
@@ -148,6 +149,11 @@ if (UNIT_TEST_ENV) {
         return tasks;
       });
   };
+
+  module.exports.nouveauCleanup = () => request.post({
+    url: `${environment.couchUrl}/_nouveau_cleanup`,
+    json: true,
+  });
 
   const saveDocs = async (db, docs) => {
     try {

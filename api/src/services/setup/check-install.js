@@ -5,7 +5,6 @@ const ddocsService = require('./ddocs');
 const { DATABASES } = require('./databases');
 const startupLog = require('./startup-log');
 
-
 const checkInstallForDb = async (database) => {
   const check = {};
   const allDdocs = await ddocsService.getDdocs(database);
@@ -13,7 +12,6 @@ const checkInstallForDb = async (database) => {
 
   const liveDdocs = allDdocs.filter(ddoc => !ddocsService.isStaged(ddoc._id));
   const stagedDdocs = allDdocs.filter(ddoc => ddocsService.isStaged(ddoc._id));
-
 
   const liveDdocsCheck = ddocsService.compareDdocs(bundledDdocs, liveDdocs);
   check.missing = liveDdocsCheck.missing;
