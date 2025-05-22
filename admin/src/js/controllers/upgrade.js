@@ -48,6 +48,7 @@ angular.module('controllers').controller('UpgradeCtrl',
             if (expectedVersion === deployInfo.build) {
               return reloadPage();
             }
+            $log.error('expected version', expectedVersion, 'does not match current version', deployInfo.build);
             logError('instance.upgrade.error.deploy', 'instance.upgrade.error.deploy');
           }
           $scope.currentDeploy = deployInfo;
