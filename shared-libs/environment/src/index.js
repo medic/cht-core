@@ -71,20 +71,15 @@ const getVersionFromDdoc = (ddoc) => {
     'unknown';
 };
 
-const getDeployInfo = async () => {
-  if (deployInfoCache) {
+const getDeployInfo = async (refresh = false) => {
+  if (deployInfoCache && !refresh) {
     return deployInfoCache;
   }
 
   try {
     // Lazy load couch-request only when needed
     const request = require('@medic/couch-request');
-    const ddoc = await request.get({
-      url: `${couchUrl}/_design/${module.exports.ddoc}`,
-      headers: {
-        'user-agent': 'Community Health Toolkit',
-      }
-    });
+    const ddoc = await request.get({ url: `${couchUrl}/_design/${module.exports.ddoc}` });
     deployInfoCache = {
       ...ddoc.build_info,
       ...ddoc.deploy_info,

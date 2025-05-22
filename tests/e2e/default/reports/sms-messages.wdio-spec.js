@@ -60,7 +60,7 @@ describe('Reports tab messages', () => {
 
     await reportsPage.openSelectedReport(firstReport);
     await commonElements.waitForPageLoaded();
-    expect(await (await reportsPage.rightPanelSelectors.reportTasks()).isDisplayed()).to.be.true;
+    expect(await reportsPage.rightPanelSelectors.reportTasks().isDisplayed()).to.be.true;
 
     const scheduledTask = await reportsPage.getTaskDetails(1, 1);
     expect(scheduledTask.message).to.contain('Thank you Mary Smith for registering the_patient. ' +

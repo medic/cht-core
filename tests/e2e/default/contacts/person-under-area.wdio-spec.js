@@ -48,9 +48,9 @@ describe('Create Person Under Area, ', () => {
     await commonPage.reloadSession();
     await loginPage.setPasswordValue(password);
     await loginPage.setUsernameValue(username);
-    await (await loginPage.loginButton()).click();
+    await loginPage.loginButton().click();
     await loginPage.passwordReset(password, NEW_PASSWORD, NEW_PASSWORD);
-    await (await loginPage.updatePasswordButton()).click();
+    await loginPage.updatePasswordButton().click();
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToPeople();

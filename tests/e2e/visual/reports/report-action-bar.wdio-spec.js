@@ -2,105 +2,12 @@ const utils = require('@utils');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
-const reportFactory = require('@factories/cht/reports/generic-report');
-const personFactory = require('@factories/cht/contacts/person');
 const placeFactory = require('@factories/cht/contacts/place');
 const { generateScreenshot, resizeWindowForScreenshots, isMobile } = require('@utils/screenshots');
+const { reports, contact } = require('./data/generateReportData');
 
 describe('Reports - More Options Menu & Floating Action Button', () => {
   const places = placeFactory.generateHierarchy();
-  const contact = personFactory.build();
-  const REPORTED_DATE = Date.now() - (13 * 60 * 60 * 1000);
-  const reports = [
-    reportFactory
-      .report()
-      .build({
-        fields: {
-          patient_name: 'Jadena'
-        },
-        form: 'Health Facility ANC reminder',
-        content_type: 'xml',
-        contact: {
-          _id: contact._id,
-        },
-        reported_date: REPORTED_DATE,
-        from: 'Unknown sender',
-      }),
-    reportFactory
-      .report()
-      .build({
-        fields: {
-          patient_name: 'Zoe'
-        },
-        form: 'Health Facility ANC reminder',
-        content_type: 'xml',
-        contact: {
-          _id: contact._id,
-        },
-        reported_date: REPORTED_DATE,
-        from: 'Unknown sender',
-      }),
-    reportFactory
-      .report()
-      .build({
-        fields: {
-          patient_name: 'Shaila'
-        },
-        form: 'Postnatal danger sign follow-up',
-        content_type: 'xml',
-        contact: {
-
-          _id: contact._id,
-        },
-        reported_date: REPORTED_DATE,
-        from: 'Unknown sender',
-      }),
-    reportFactory
-      .report()
-      .build({
-        fields: {
-          patient_name: 'Kelly'
-        },
-        form: 'Postnatal danger sign follow-up',
-        content_type: 'xml',
-        contact: {
-
-          _id: contact._id,
-        },
-        reported_date: REPORTED_DATE,
-        from: 'Unknown sender',
-      }),
-    reportFactory
-      .report()
-      .build({
-        fields: {
-          patient_name: 'Lena'
-        },
-        form: 'Health Facility ANC reminder',
-        content_type: 'xml',
-        contact: {
-
-          _id: contact._id,
-        },
-        reported_date: REPORTED_DATE,
-        from: 'Unknown sender',
-      }),
-    reportFactory
-      .report()
-      .build({
-        fields: {
-          patient_name: 'Lena'
-        },
-        form: 'Postnatal danger sign follow-up',
-        content_type: 'xml',
-        contact: {
-          _id: contact._id,
-        },
-        reported_date: REPORTED_DATE,
-        from: 'Unknown sender',
-      }),
-  ];
-
   let savedUuids = [];
 
   before(async () => {

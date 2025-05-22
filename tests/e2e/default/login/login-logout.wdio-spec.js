@@ -72,13 +72,13 @@ describe('Login page functionality tests', () => {
 
     it('should log in using username and password fields', async () => {
       await loginPage.login(auth);
-      await (await commonPage.tabsSelector.analyticsTab()).waitForDisplayed();
-      await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
+      await commonPage.tabsSelector.analyticsTab().waitForDisplayed();
+      await commonPage.tabsSelector.messagesTab().waitForDisplayed();
     });
 
     it('should set correct cookies', async () => {
       await loginPage.login(auth);
-      await (await commonPage.tabsSelector.analyticsTab()).waitForDisplayed();
+      await commonPage.tabsSelector.analyticsTab().waitForDisplayed();
 
       const cookies = await browser.getCookies();
       expect(cookies.length).to.equal(3);
@@ -117,12 +117,12 @@ describe('Login page functionality tests', () => {
     it('should display the "session expired" modal and redirect to login page', async () => {
       // Login and ensure it's redirected to webapp
       await loginPage.login(auth);
-      await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
+      await commonPage.tabsSelector.messagesTab().waitForDisplayed();
       // Delete cookies and trigger a request to the server
       await browser.deleteCookies('AuthSession');
       await commonPage.goToReports();
 
-      const description = await (await modalPage.body()).getText();
+      const description = await modalPage.body().getText();
       expect(description).to.equal('Your session has expired and you have been logged out. Please login to continue.');
       await modalPage.submit();
       expect((await browser.getUrl()).includes('/medic/login')).to.be.true;
@@ -164,7 +164,7 @@ describe('Login page functionality tests', () => {
       expect(revealedPassword.value).to.equal('pass-456');
 
       await loginPage.login(auth);
-      await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
+      await commonPage.tabsSelector.messagesTab().waitForDisplayed();
     });
   });
 
@@ -193,9 +193,9 @@ describe('Login page functionality tests', () => {
       await browser.url('/');
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
-      await (await loginPage.loginButton()).click();
+      await loginPage.loginButton().click();
       await loginPage.passwordReset('', '', '');
-      await (await loginPage.updatePasswordButton()).click();
+      await loginPage.updatePasswordButton().click();
       expect(await loginPage.getPasswordResetErrorMessage('fields-required')).to.equal(MISSING_ALL_FIELDS);
     });
 
@@ -203,9 +203,9 @@ describe('Login page functionality tests', () => {
       await browser.url('/');
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
-      await (await loginPage.loginButton()).click();
+      await loginPage.loginButton().click();
       await loginPage.passwordReset(user.password, user.password, '');
-      await (await loginPage.updatePasswordButton()).click();
+      await loginPage.updatePasswordButton().click();
       expect(await loginPage.getPasswordResetErrorMessage('fields-required')).to.equal(MISSING_PASSWORD_CONFIRM);
     });
 
@@ -213,9 +213,9 @@ describe('Login page functionality tests', () => {
       await browser.url('/');
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
-      await (await loginPage.loginButton()).click();
+      await loginPage.loginButton().click();
       await loginPage.passwordReset(user.password, '12345678', '12345678');
-      await (await loginPage.updatePasswordButton()).click();
+      await loginPage.updatePasswordButton().click();
       expect(await loginPage.getPasswordResetErrorMessage('password-weak')).to.equal(PASSWORD_WEAK);
     });
 
@@ -223,9 +223,9 @@ describe('Login page functionality tests', () => {
       await browser.url('/');
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
-      await (await loginPage.loginButton()).click();
+      await loginPage.loginButton().click();
       await loginPage.passwordReset('12', user.password, user.password);
-      await (await loginPage.updatePasswordButton()).click();
+      await loginPage.updatePasswordButton().click();
       expect(await loginPage.getPasswordResetErrorMessage('current-password-incorrect')).to.equal(
         CURRENT_PASSWORD_INCORRECT
       );
@@ -235,9 +235,9 @@ describe('Login page functionality tests', () => {
       await browser.url('/');
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
-      await (await loginPage.loginButton()).click();
+      await loginPage.loginButton().click();
       await loginPage.passwordReset(user.password, user.password, user.password);
-      await (await loginPage.updatePasswordButton()).click();
+      await loginPage.updatePasswordButton().click();
       expect(await loginPage.getPasswordResetErrorMessage('password-same')).to.equal(PASSWORD_SAME);
     });
 
@@ -245,9 +245,9 @@ describe('Login page functionality tests', () => {
       await browser.url('/');
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
-      await (await loginPage.loginButton()).click();
+      await loginPage.loginButton().click();
       await loginPage.passwordReset(user.password, NEW_PASSWORD, 'pass');
-      await (await loginPage.updatePasswordButton()).click();
+      await loginPage.updatePasswordButton().click();
       expect(await loginPage.getPasswordResetErrorMessage('password-mismatch')).to.equal(PASSWORD_MISMATCH);
     });
 
@@ -255,11 +255,11 @@ describe('Login page functionality tests', () => {
       await browser.url('/');
       await loginPage.setPasswordValue(user.password);
       await loginPage.setUsernameValue(user.username);
-      await (await loginPage.loginButton()).click();
+      await loginPage.loginButton().click();
       await loginPage.passwordReset(user.password, NEW_PASSWORD, NEW_PASSWORD);
-      await (await loginPage.updatePasswordButton()).click();
+      await loginPage.updatePasswordButton().click();
       await commonPage.waitForPageLoaded();
-      await (await commonPage.tabsSelector.messagesTab()).waitForDisplayed();
+      await commonPage.tabsSelector.messagesTab().waitForDisplayed();
     });
   });
 });
