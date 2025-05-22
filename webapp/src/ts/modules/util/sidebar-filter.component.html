@@ -1,5 +1,10 @@
 <section class="sidebar-filter">
-  <div class="sidebar-backdrop" [ngClass]="{ hidden: !isOpen }" (click)="toggleSidebarFilter()"></div>
+  <div 
+    class="sidebar-backdrop" 
+    [ngClass]="{ hidden: !isOpen }" 
+    (click)="toggleSidebarFilter()" 
+    (keydown)="($event.key === 'Enter' || $event.key === ' ') && toggleSidebarFilter()"
+  ></div>
 
   <div class="sidebar-main" [ngClass]="{ hidden: !isOpen }">
     <div class="sidebar-header">
@@ -69,7 +74,7 @@
             </ng-container>
           </mat-expansion-panel-header>
           <mat-panel-description>
-            <label>{{ 'sidebar.filter.from_date' | translate }}</label>
+            <label [for]="'fromDateFilter-' + type">{{ 'sidebar.filter.from_date' | translate }}</label>
             <mm-date-filter
               #fromDate
               class="filter"
@@ -80,7 +85,7 @@
               [isStartDate]="true">
             </mm-date-filter>
 
-            <label>{{ 'sidebar.filter.to_date' | translate }}</label>
+            <label [for]="'toDateFilter-' + type">{{ 'sidebar.filter.to_date' | translate }}</label>
             <mm-date-filter
               #toDate
               class="filter"
@@ -127,6 +132,10 @@
   <p class="title">{{ label | translate }}</p>
   <div class="chip" *ngIf="numSelected" [class.disabled]="disabled">
     <span>{{ numSelected | translate }}</span>
-    <span class="fa fa-times" (click)="clearFilters(filters); $event.stopPropagation();"></span>
+    <span 
+      class="fa fa-times" 
+      (click)="clearFilters(filters); $event.stopPropagation();"
+      (keydown)="($event.key === 'Enter' || $event.key === ' ') && clearFilters(filters); $event.stopPropagation();"
+    ></span>
   </div>
 </ng-template>

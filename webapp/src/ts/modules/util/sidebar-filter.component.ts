@@ -52,7 +52,7 @@ export class SidebarFilterComponent implements AfterViewInit, OnDestroy {
   @ViewChild('toDate') toDateFilter!: DateFilterComponent;
   @ViewChild(StatusFilterComponent) statusFilter!: StatusFilterComponent;
 
-  private globalActions;
+  private readonly globalActions;
   private filters: FilterComponent[] = [];
   isResettingFilters = false;
   isOpen = false;
@@ -67,8 +67,8 @@ export class SidebarFilterComponent implements AfterViewInit, OnDestroy {
   };
 
   constructor(
-    private store: Store,
-    private telemetryService: TelemetryService,
+    private readonly store: Store,
+    private readonly telemetryService: TelemetryService,
   ) {
     this.globalActions = new GlobalActions(this.store);
   }
@@ -106,7 +106,7 @@ export class SidebarFilterComponent implements AfterViewInit, OnDestroy {
   countSelected() {
     this.filterCount.total = 0;
     this.filters.forEach(filter => {
-      const count = filter.countSelected() || 0;
+      const count = !filter.countSelected() ? 0 : filter.countSelected();
       this.filterCount.total += count;
       this.filterCount[filter.fieldId] = count;
     });
@@ -135,7 +135,7 @@ export class SidebarFilterComponent implements AfterViewInit, OnDestroy {
   }
 
   showDateFilterError(error) {
-    this.dateFilterError = error || '';
+    this.dateFilterError = !error ? '' : error;
   }
 
   setDefaultFacilityFilter(filters) {

@@ -4,7 +4,6 @@ import {
   Input,
   OnDestroy,
   AfterContentInit,
-  AfterViewInit,
   Output,
 } from '@angular/core';
 import { Store } from '@ngrx/store';
@@ -21,7 +20,7 @@ import { TranslatePipe } from '@ngx-translate/core';
     TranslatePipe,
   ],
 })
-export class FilterSliderIconComponent implements AfterContentInit, AfterViewInit, OnDestroy {
+export class FilterSliderIconComponent implements AfterContentInit, OnDestroy {
   @Input() disabled;
   @Input() showFilter;
   @Input() lastVisitedDateExtras;
@@ -33,15 +32,12 @@ export class FilterSliderIconComponent implements AfterContentInit, AfterViewIni
   openSearch = false;
 
   constructor(
-    private store: Store,
-    private responsiveService: ResponsiveService,
+    private readonly store: Store,
+    private readonly responsiveService: ResponsiveService,
   ) { }
 
   ngAfterContentInit() {
     this.subscribeToStore();
-  }
-
-  ngAfterViewInit() {
   }
 
   private subscribeToStore() {
@@ -49,7 +45,7 @@ export class FilterSliderIconComponent implements AfterContentInit, AfterViewIni
       this.store.select(Selectors.getSidebarFilter),
       this.store.select(Selectors.getFilters),
     ).subscribe(([sidebarFilter, filters]) => {
-      this.activeFilters = sidebarFilter?.filterCount?.total || 0;
+      this.activeFilters = sidebarFilter?.filterCount?.total ?? 0;
       this.filters = filters;
 
       if (!this.openSearch && this.filters?.search) {
