@@ -3,7 +3,7 @@ test: setup test_scripts test_with_docker_compose
 
 .PHONY: setup
 setup:
-	npm install
+	npm install --no-save
 
 .PHONY: test_scripts
 test_scripts:
