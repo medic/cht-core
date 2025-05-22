@@ -5,13 +5,14 @@ const { expect } = chai;
 describe('CouchDB Cluster Unit Tests', () => {
   const COUCHDB_USER = process.env.COUCHDB_USER;
   const COUCHDB_PASSWORD = process.env.COUCHDB_PASSWORD;
-  const COUCH_SERVERS = ['couchdb1.local', 'couchdb2.local', 'couchdb3.local'];
+  const COUCH_PORTS = ['15984', '25984', '35984'];
   const TEST_DB_NAME = 'tests';
+
   let dbCreated = false;
 
   const requestOnNode = async (serverIndex, path, options = {}) => {
-    const server = COUCH_SERVERS[serverIndex];
-    const url = `http://${server}:5984${path}`;
+    const port = COUCH_PORTS[serverIndex];
+    const url = `http://localhost:${port}${path}`;
     
     const fetchOptions = {
       method: options.method || 'GET',

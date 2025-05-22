@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "test": "mocha couch-cluster.spec.js --no-config"
+    "test": "npx mocha couch-cluster.spec.js --no-config"
   },
   "dependencies": {
     "chai": "^4.3.8",
