@@ -57,16 +57,6 @@ describe('CouchDB Cluster Unit Tests', () => {
     }
   };
 
-  after(async function () {
-    
-    if (dbCreated) {
-      await requestOnNode(0, `/${TEST_DB_NAME}`, {
-        method: 'DELETE',
-        allowError: true
-      });
-    }
-    
-  });
 
   it('couchdb1.local node is available', async function () {
     this.timeout(2000);
@@ -89,7 +79,7 @@ describe('CouchDB Cluster Unit Tests', () => {
   it('should create the test database', async function () {
     const res = await requestOnNode(0, `/${TEST_DB_NAME}`, { method: 'PUT'});
 
-    expect([201, 202, 412]).to.include(res.status);
+    expect([201, 202]).to.include(res.status);
     dbCreated = true;
   });
 

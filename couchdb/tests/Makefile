@@ -20,7 +20,6 @@ test:
 	docker compose down -v --remove-orphans
 	docker compose up -d couchdb1 couchdb2 couchdb3
 	$(MAKE) wait-for-couchdb
-	npm install --no-save
 	npm test
 	docker compose down
 

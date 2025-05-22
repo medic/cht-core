@@ -1,9 +1,5 @@
 .PHONY: test
-test: setup test_scripts test_with_docker_compose
-
-.PHONY: setup
-setup:
-	npm install --no-save
+test: test_scripts test_with_docker_compose
 
 .PHONY: test_scripts
 test_scripts:
@@ -18,4 +14,3 @@ test_with_docker_compose:
 .PHONY: clean
 clean:
 	docker compose down --rmi local || :
-	rm -rf js/node_modules
