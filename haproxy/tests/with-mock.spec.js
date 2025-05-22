@@ -3,7 +3,7 @@ const { expect } = require('chai');
 const waitForService = async (url, maxAttempts = 10, delay = 100) => {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
-      const response = await fetch(url)
+      const response = await fetch(url);
       if (response.ok) {
         return true;
       }

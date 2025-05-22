@@ -8,7 +8,6 @@ describe('CouchDB Cluster Unit Tests', () => {
   const COUCH_PORTS = ['15984', '25984', '35984'];
   const TEST_DB_NAME = 'tests';
 
-  let dbCreated = false;
 
   const requestOnNode = async (serverIndex, path, options = {}) => {
     const port = COUCH_PORTS[serverIndex];
@@ -80,7 +79,6 @@ describe('CouchDB Cluster Unit Tests', () => {
     const res = await requestOnNode(0, `/${TEST_DB_NAME}`, { method: 'PUT'});
 
     expect([201, 202]).to.include(res.status);
-    dbCreated = true;
   });
 
   it('data inserted on one server can be retrieved from a peer', async function () {

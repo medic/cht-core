@@ -26,3 +26,4 @@ test:
 .PHONY: clean
 clean:
     docker compose down --rmi local || :
+	
