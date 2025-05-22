@@ -114,9 +114,10 @@ describe('User Test Cases ->', () => {
     });
 
     it('should add sso user', async () => {
+      const chtUsername = `${USERNAME}_sso`;
       const oidcUsername = `${USERNAME}@email.com`;
       await usersAdminPage.inputAddUserFields({
-        username: USERNAME,
+        username: chtUsername,
         fullname: 'Jack',
         role: ONLINE_USER_ROLE,
         places: districtHospital.name,
@@ -124,8 +125,8 @@ describe('User Test Cases ->', () => {
         oidcUsername
       });
       await usersAdminPage.saveUser();
-      expect(await usersAdminPage.getAllUsernames()).to.include.members([USERNAME]);
-      const userId = `org.couchdb.user:${USERNAME}`;
+      expect(await usersAdminPage.getAllUsernames()).to.include.members([chtUsername]);
+      const userId = `org.couchdb.user:${chtUsername}`;
       const userDoc = await utils.usersDb.get(userId);
       expect(userDoc.oidc_username).to.equal(oidcUsername);
       expect(userDoc.salt).to.exist;
