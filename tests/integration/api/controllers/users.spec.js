@@ -2166,6 +2166,8 @@ describe('Users API', () => {
 
       before(async () => {
         await utils.updateSettings({
+          token_login: { translation_key: 'login_sms', enabled: true },
+          app_url: utils.getOrigin(),
           oidc_provider: { client_id: 'keycloak' },
           permissions: { can_have_multiple_places: ['chw'] }
         }, { ignoreReload: true });
@@ -2176,17 +2178,31 @@ describe('Users API', () => {
         await utils.revertSettings(true);
       });
 
+      it('returns the oidc_username of a user', async () => {
+        const user = await utils.request({
+          path: `/api/v2/users/${existingUser.username}`,
+        });
+
+        expect(user).excluding(['contact', 'place', 'rev']).to.deep.equal({
+          id: `org.couchdb.user:${existingUser.username}`,
+          username: existingUser.username,
+          roles: existingUser.roles,
+          oidc_username: existingUser.oidc_username,
+        });
+      });
+
       [
         ['password', { password }],
         ['token_login', { token_login: true }]
       ].forEach(([test, userData]) => {
-        it(`should fail to create/update a user when ${test} is also provided`, async () => {
+        it(`should fail to create a user when ${test} is also provided`, async () => {
           const body = {
             username: uuid(),
             oidc_username: uuid(),
             place: places[0]._id,
             contact: contact._id,
             roles: ['chw'],
+            phone: '+40755969696',
             ...userData
           };
 
@@ -2196,15 +2212,16 @@ describe('Users API', () => {
         });
       });
 
-      it(`should fail to create/update a user when oidc_username is a duplicate`, async () => {
+      it(`should fail to create a user when oidc_username is a duplicate`, async () => {
         const body = {
           ...existingUser,
           username: uuid(),
         };
 
         await expect(utils.request({ path: `/api/v3/users`, method: 'POST', body })).to.be.rejectedWith(
-          `400 - {"code":400,"error":"The oidc_username [${body.oidc_username}] `
-          + `already exists for user [org.couchdb.user:${existingUser.username}]."}`
+          `400 - {"code":400,"error":{"message":"The oidc_username [${body.oidc_username}] `
+          +`already exists for user [${getUserId(existingUser.username)}].",`
+          + '"translationKey":"user.sso.username.duplicate"}}'
         );
       });
 
@@ -2353,6 +2370,7 @@ describe('Users API', () => {
           place: places[0]._id,
           contact: contact._id,
           roles: ['chw'],
+          phone: '+40755969696',
           password
         };
 
@@ -2374,12 +2392,68 @@ describe('Users API', () => {
         });
       });
 
+      describe('when updating an existing token_login user', () => {
+        const userData = {
+          username: uuid(),
+          place: places[0]._id,
+          contact: contact._id,
+          roles: ['chw'],
+          phone: '+40755969696',
+          token_login: true
+        };
+
+        before(() => utils.request({ path: '/api/v3/users', method: 'POST', body: userData }));
+
+        it('should fail when setting OIDC', async () => {
+          await expect(utils.request({
+            path: `/api/v3/users/${userData.username}`,
+            method: 'POST',
+            body: { oidc_username: uuid() }
+          })).to.be.rejectedWith(
+            `400 - {"code":400,"error":"Cannot set token_login with oidc_username."}`
+          );
+        });
+
+        it('should allow setting OIDC when disabling token_login', async () => {
+          const expectedUserData = {
+            _id: getUserId(userData.username),
+            name: userData.username,
+            roles: userData.roles,
+            facility_id: [userData.place],
+            contact_id: userData.contact,
+          };
+          const oidc_username = uuid();
+
+          const updatedResult = await utils.request({
+            path: `/api/v3/users/${userData.username}`,
+            method: 'POST',
+            body: { oidc_username, token_login: false }
+          });
+          const updatedUserDoc = await utils.usersDb.get(updatedResult.user.id);
+          const updatedUserSettings = await utils.getDoc(updatedResult['user-settings'].id);
+
+          expect(updatedUserDoc).excluding(skippedUserFields).to.deep.equal({
+            ...expectedUserData,
+            oidc_username,
+            type: 'user',
+            password_change_required: false,
+          });
+          expect(updatedUserSettings).excluding(skippedUserFields).to.deep.equal({
+            ...expectedUserData,
+            type: 'user-settings',
+            phone: userData.phone,
+            oidc_login: true
+          });
+        });
+      });
+
       describe('should fail to update an existing OIDC user', () => {
         const userData = {
           username: uuid(),
           place: places[0]._id,
           contact: contact._id,
           roles: ['chw'],
+          phone: '+40755969696',
           oidc_username: uuid()
         };
 
@@ -2407,8 +2481,9 @@ describe('Users API', () => {
             method: 'POST',
             body
           })).to.be.rejectedWith(
-            `400 - {"code":400,"error":"The oidc_username [${body.oidc_username}] `
-            + `already exists for user [org.couchdb.user:${existingUser.username}]."}`
+            `400 - {"code":400,"error":{"message":"The oidc_username [${body.oidc_username}] `
+            +`already exists for user [${getUserId(existingUser.username)}].",`
+            + `"translationKey":"user.sso.username.duplicate"}}`
           );
         });
       });

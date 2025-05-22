@@ -103,14 +103,14 @@ describe('Creating and editing contacts and users', () => {
     await (await usersAdminPage.addUserButton()).waitForDisplayed();
     await generateScreenshot('new-chw-user', 'add-user');
     await usersAdminPage.openAddUserDialog();
-    await usersAdminPage.inputAddUserFields(
-      'Janet',
-      '',
-      'chw',
-      `Jane Doe's Area`,
-      'John Doe',
-      'Secret_1'
-    );
+    await usersAdminPage.inputAddUserFields({
+      username: 'Janet',
+      fullname: '',
+      role: 'chw',
+      places: `Jane Doe's Area`,
+      contact: 'John Doe',
+      password: 'Secret_1'
+    });
     await usersAdminPage.scrollToRole();
     await generateScreenshot('new-chw-user', 'fill-user-details');
   });

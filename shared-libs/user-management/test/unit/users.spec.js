@@ -574,7 +574,8 @@ describe('Users service', () => {
         facility_id: facilityA._id,
         roles: ['a', 'b'],
         contact_id: contactMilan._id,
-        known: 'true'
+        known: 'true',
+        oidc_username: 'user@email.com'
       };
       db.users.get.resolves(userDoc);
       db.medic.get.resolves({
@@ -603,7 +604,8 @@ describe('Users service', () => {
         roles: ['a', 'b'],
         contact: contactMilan,
         external_id: 'CHP020',
-        known: 'true'
+        known: 'true',
+        oidc_username: 'user@email.com'
       });
       chai.expect(db.users.get.calledOnce).to.be.true;
       chai.expect(db.users.get.args[0]).to.deep.equal([userId]);
@@ -639,7 +641,8 @@ describe('Users service', () => {
         roles: undefined,
         contact: undefined,
         external_id: undefined,
-        known: undefined
+        known: undefined,
+        oidc_username: undefined
       });
       chai.expect(db.users.get.calledOnce).to.be.true;
       chai.expect(db.users.get.args[0]).to.deep.equal([userId]);
@@ -4237,11 +4240,15 @@ describe('Users service', () => {
 
       it('returns error if oidc validation fails', async () => {
         const message = 'OIDC Login is not enabled';
-        validateSsoLogin.resolves({ msg: message });
+        const translationKey = 'error.key';
+        validateSsoLogin.resolves({ msg: message, key: translationKey });
 
         await chai.expect(service.createMultiFacilityUser(ssoUserData))
           .to.be.eventually.rejectedWith(Error)
-          .and.to.deep.include({ code: 400, message });
+          .and.to.deep.include({
+            code: 400,
+            message: { message, translationKey, translationParams: undefined }
+          });
 
         chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
         chai.expect(db.medic.put.notCalled).to.be.true;
@@ -4297,11 +4304,15 @@ describe('Users service', () => {
 
       it('returns error if oidc validation fails', async () => {
         const message = 'OIDC Login is not enabled';
-        validateSsoLogin.resolves({ msg: message });
+        const translationKey = 'error.key';
+        validateSsoLogin.resolves({ msg: message, key: translationKey });
 
         await chai.expect(service.createUser(ssoUserData))
           .to.be.eventually.rejectedWith(Error)
-          .and.to.deep.include({ code: 400, message });
+          .and.to.deep.include({
+            code: 400,
+            message: { message, translationKey, translationParams: undefined }
+          });
 
         chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
         chai.expect(db.medic.put.notCalled).to.be.true;
@@ -4372,12 +4383,13 @@ describe('Users service', () => {
       });
 
       it('returns error if oidc validation fails', async () => {
-        const error = 'OIDC Login is not enabled';
-        validateSsoLogin.resolves({ msg: error });
+        const message = 'OIDC Login is not enabled';
+        const translationKey = 'error.key';
+        validateSsoLogin.resolves({ msg: message, key: translationKey });
 
         const response = await service.createUsers([ssoUserData]);
 
-        chai.expect(response).to.deep.equal([{ error }]);
+        chai.expect(response).to.deep.equal([{ error: { message, translationKey, translationParams: undefined } }]);
         chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
         chai.expect(db.medicLogs.get.args).to.deep.equal([[undefined], [undefined]]);
         chai.expect(db.medic.put.notCalled).to.be.true;
@@ -4564,7 +4576,8 @@ describe('Users service', () => {
 
       it('returns error if oidc validation fails', async () => {
         const message = 'OIDC Login is not enabled';
-        validateSsoLoginUpdate.resolves({ msg: message });
+        const translationKey = 'error.key';
+        validateSsoLoginUpdate.resolves({ msg: message, key: translationKey });
         const existingUserData = {
           facility_id: [ssoUserData.place],
           contact_id: ssoUserData.contact,
@@ -4587,7 +4600,10 @@ describe('Users service', () => {
 
         await chai.expect(service.updateUser(ssoUserData.username, { ...updates }, true))
           .to.be.eventually.rejectedWith(Error)
-          .and.to.deep.include({ code: 400, message });
+          .and.to.deep.include({
+            code: 400,
+            message: { message, translationKey, translationParams: undefined }
+          });
 
         const updatedUser = {
           ...existingUser,
