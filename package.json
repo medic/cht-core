@@ -197,6 +197,7 @@
     "mustache": "^4.2.0",
     "nepali-calendar": "^1.0.0",
     "nepali-date-picker": "^2.0.2",
+    "nepali-datetime": "^1.4.1",
     "node-fetch": "^2.6.9",
     "node-html-parser": "^7.0.1",
     "nools": "^0.4.4",
