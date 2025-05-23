@@ -63,7 +63,7 @@ describe('SidebarMenuComponent', () => {
   afterEach(() => sinon.restore());
 
   it('should unsubscribe from observables on component destroy', () => {
-    const unsubscribeSpy = sinon.spy(component.subscriptions, 'unsubscribe');
+    const unsubscribeSpy = sinon.spy((component as any).subscriptions, 'unsubscribe');
 
     component.ngOnDestroy();
 
