@@ -8,7 +8,7 @@ const secureSettings = require('@medic/settings');
 const settingsService = require('../../../src/services/settings');
 const translations = require('../../../src/translations');
 const logger = require('@medic/logger');
-const client = require('../../../src/services/openid-client.js');
+const client = require('../../../src/services/openid-client');
 const service = require('../../../src/services/sso-login');
 
 const CLIENT_SECRET = 'secret';

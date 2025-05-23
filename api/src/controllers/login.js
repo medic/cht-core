@@ -595,8 +595,4 @@ module.exports = {
       return serverUtils.error(e, req, res);
     }
   },
-  validateSession,
-  setCookies,
-  redirectToApp,
-  sendLoginErrorResponse
 };
