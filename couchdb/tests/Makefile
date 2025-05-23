@@ -14,7 +14,12 @@ wait-for-couchdb:
 			sleep 2; \
 		done; \
 	done
-	@echo "All CouchDB containers are ready"
+	@echo "Waiting for cluster setup..."
+	@until [ "$$(curl -s -f -u "$(COUCHDB_USER):$(COUCHDB_PASSWORD)" http://localhost:15984/_membership | jq -r '.cluster_nodes | length')" -eq "3" ]; do \
+		echo "Waiting for cluster formation..."; \
+		sleep 2; \
+	done
+	@echo "All CouchDB containers and cluster are ready"
 
 test: 
 	docker compose down -v --remove-orphans
