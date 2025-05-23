@@ -1,0 +1,9 @@
+{
+  "name": "haproxy-tests",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "test:errors": "mocha --timeout 10000 errors-generate.spec.js",
+    "test:integration": "mocha --timeout 30000 with-mock.spec.js"
+  }
+}
