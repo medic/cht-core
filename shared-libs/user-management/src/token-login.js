@@ -194,8 +194,7 @@ const generateTokenLoginDoc = (user, userSettings, token, appUrl) => {
       tasks: [],
     };
 
-    appUrl = (config.get('app_url') || appUrl).replace(/\/+$/, '');
-    const url = `${appUrl}/medic/login/token/${token}`;
+    const url = `${appUrl.replace(/\/+$/, '')}/medic/login/token/${token}`;
 
     const messagesLib = config.getTransitionsLib().messages;
     const tokenLoginConfig = config.get('token_login');

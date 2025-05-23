@@ -1620,8 +1620,7 @@ describe('Users service', () => {
     it('returns error if one of the users has a missing phone number and should login by SMS', async () => {
       const tokenLoginConfig = { translation_key: 'sms', enabled: true };
       config.get
-        .withArgs('token_login').returns(tokenLoginConfig)
-        .withArgs('app_url').returns('url');
+        .withArgs('token_login').returns(tokenLoginConfig);
       sinon.stub(roles, 'isOffline').returns(false);
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
@@ -1650,9 +1649,7 @@ describe('Users service', () => {
 
     it('returns error if one of the users has an invalid phone number and should login by SMS', async () => {
       const tokenLoginConfig = { translation_key: 'sms', enabled: true };
-      config.get
-        .withArgs('token_login').returns(tokenLoginConfig)
-        .withArgs('app_url').returns('url');
+      config.get.withArgs('token_login').returns(tokenLoginConfig);
       sinon.stub(roles, 'isOffline').returns(false);
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
@@ -1684,9 +1681,7 @@ describe('Users service', () => {
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
       const tokenLoginConfig = { message: 'sms', enabled: true };
-      config.get
-        .withArgs('token_login').returns(tokenLoginConfig)
-        .withArgs('app_url').returns('');
+      config.get.withArgs('token_login').returns(tokenLoginConfig);
 
       sinon.stub(roles, 'isOffline').returns(false);
       sinon.stub(roles, 'hasAllPermissions').returns(false);
@@ -1907,9 +1902,7 @@ describe('Users service', () => {
 
       it('returns responses with errors if token login fails to be enabled', async () => {
         const tokenLoginConfig = { translation_key: 'sms', enabled: true };
-        config.get
-          .withArgs('token_login').returns(tokenLoginConfig)
-          .withArgs('app_url').returns('url');
+        config.get.withArgs('token_login').returns(tokenLoginConfig);
         sinon.stub(roles, 'isOffline').returns(false);
 
         const userData = {
@@ -3470,9 +3463,7 @@ describe('Users service', () => {
       };
 
       const tokenLoginConfig = { translation_key: 'sms', enabled: true };
-      config.get
-        .withArgs('token_login').returns(tokenLoginConfig)
-        .withArgs('app_url').returns('url');
+      config.get.withArgs('token_login').returns(tokenLoginConfig);
       sinon.stub(roles, 'isOffline').returns(false);
 
       return service.createUser(user)
@@ -3494,9 +3485,7 @@ describe('Users service', () => {
       };
 
       const tokenLoginConfig = { translation_key: 'sms', enabled: true };
-      config.get
-        .withArgs('token_login').returns(tokenLoginConfig)
-        .withArgs('app_url').returns('url');
+      config.get.withArgs('token_login').returns(tokenLoginConfig);
       sinon.stub(roles, 'isOffline').returns(false);
 
       return service.createUser(user)
@@ -3511,9 +3500,7 @@ describe('Users service', () => {
 
     it('should normalize phone number and change password (if provided)', () => {
       const tokenLoginConfig = { message: 'sms', enabled: true };
-      config.get
-        .withArgs('token_login').returns(tokenLoginConfig)
-        .withArgs('app_url').returns('');
+      config.get.withArgs('token_login').returns(tokenLoginConfig);
 
       sinon.stub(roles, 'isOffline').returns(false);
       sinon.stub(roles, 'hasAllPermissions').returns(false);
@@ -3640,9 +3627,7 @@ describe('Users service', () => {
       const updates = { token_login: true };
 
       const tokenLoginConfig = { translation_key: 'sms', enabled: true};
-      config.get
-        .withArgs('token_login').returns(tokenLoginConfig)
-        .withArgs('app_url').returns('url');
+      config.get.withArgs('token_login').returns(tokenLoginConfig);
       sinon.stub(roles, 'isOffline').returns(false);
 
       db.medic.get.resolves({
@@ -3669,9 +3654,7 @@ describe('Users service', () => {
     it('should require a valid phone number', () => {
       const updates = { token_login: true, phone: '456' };
       const tokenLoginConfig = { translation_key: 'sms', enabled: true };
-      config.get
-        .withArgs('token_login').returns(tokenLoginConfig)
-        .withArgs('app_url').returns('url');
+      config.get.withArgs('token_login').returns(tokenLoginConfig);
       sinon.stub(roles, 'isOffline').returns(false);
 
       db.medic.get.resolves({
@@ -3698,9 +3681,7 @@ describe('Users service', () => {
 
     it('should normalize phone number and change password', () => {
       const tokenLoginConfig = { message: 'the sms', enabled: true };
-      config.get
-        .withArgs('token_login').returns(tokenLoginConfig)
-        .withArgs('app_url').returns('http://host');
+      config.get.withArgs('token_login').returns(tokenLoginConfig);
       sinon.stub(roles, 'isOffline').returns(false);
 
       const updates = { token_login: true, phone: '+40 755 89-89-89' };
@@ -3738,7 +3719,7 @@ describe('Users service', () => {
       db.medic.allDocs.resolves({ rows: [{ error: 'not_found' }] });
       clock.tick(5000);
 
-      return service.updateUser('sally', updates, true, 'https://realhost').then(response => {
+      return service.updateUser('sally', updates, true, 'http://host').then(response => {
         chai.expect(response).to.deep.equal({
           user: { id: 'org.couchdb.user:sally', rev: undefined },
           'user-settings': { id: 'org.couchdb.user:sally', rev: undefined },
@@ -3818,9 +3799,7 @@ describe('Users service', () => {
 
     it('should require password when removing token_login', () => {
       const tokenLoginConfig = { message: 'the sms', enabled: true };
-      config.get
-        .withArgs('token_login').returns(tokenLoginConfig)
-        .withArgs('app_url').returns('http://host');
+      config.get.withArgs('token_login').returns(tokenLoginConfig);
       sinon.stub(roles, 'isOffline').returns(false);
 
       const updates = { token_login: false };
@@ -3849,9 +3828,7 @@ describe('Users service', () => {
 
     it('should not require password when not changing token_login', () => {
       const tokenLoginConfig = { message: 'the sms', enabled: true };
-      config.get
-        .withArgs('token_login').returns(tokenLoginConfig)
-        .withArgs('app_url').returns('http://host');
+      config.get.withArgs('token_login').returns(tokenLoginConfig);
       sinon.stub(roles, 'isOffline').returns(false);
 
       const updates = { token_login: false };

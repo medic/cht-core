@@ -718,9 +718,7 @@ describe('TokenLogin service', () => {
       });
 
       it('should generate password, token, create sms and update user docs', () => {
-        config.get
-          .withArgs('token_login').returns({ message: 'the sms', enabled: true })
-          .withArgs('app_url').returns('http://host');
+        config.get.withArgs('token_login').returns({ message: 'the sms', enabled: true });
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
 
         db.medic.get.withArgs('userID').resolves({
@@ -742,7 +740,7 @@ describe('TokenLogin service', () => {
 
         clock.tick(2000);
 
-        return service.manageTokenLogin({ token_login: true }, '', response).then(actual => {
+        return service.manageTokenLogin({ token_login: true }, 'http://host', response).then(actual => {
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0][0]).to.deep.include({
             _id: 'userID',
@@ -804,9 +802,7 @@ describe('TokenLogin service', () => {
       });
 
       it('should clear previous token_login sms', () => {
-        config.get
-          .withArgs('token_login').returns({ message: 'the sms', enabled: true })
-          .withArgs('app_url').returns('http://host');
+        config.get.withArgs('token_login').returns({ message: 'the sms', enabled: true });
         const response = { user: { id: 'my_user' }, 'user-settings': { id: 'my_user' } };
 
         db.medic.get.withArgs('my_user').resolves({
@@ -850,7 +846,7 @@ describe('TokenLogin service', () => {
 
         clock.tick(2000);
 
-        return service.manageTokenLogin({ token_login: true }, '', response).then(actual => {
+        return service.manageTokenLogin({ token_login: true }, 'http://host', response).then(actual => {
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0][0]).to.deep.include({
             _id: 'my_user',
@@ -945,9 +941,7 @@ describe('TokenLogin service', () => {
       });
 
       it('should only clear pending tasks in previous token_login sms', () => {
-        config.get
-          .withArgs('token_login').returns({ message: 'the sms', enabled: true })
-          .withArgs('app_url').returns('http://host');
+        config.get.withArgs('token_login').returns({ message: 'the sms', enabled: true });
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
 
         db.medic.get.withArgs('userID').resolves({
@@ -992,7 +986,7 @@ describe('TokenLogin service', () => {
 
         clock.tick(5000);
 
-        return service.manageTokenLogin({ token_login: true }, '', response).then(actual => {
+        return service.manageTokenLogin({ token_login: true }, 'http://host', response).then(actual => {
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0][0].token_login).to.deep.include({
             active: true,
@@ -1065,9 +1059,7 @@ describe('TokenLogin service', () => {
       });
 
       it('should try to generate a unique token', () => {
-        config.get
-          .withArgs('token_login').returns({ message: 'the sms', enabled: true })
-          .withArgs('app_url').returns('http://host');
+        config.get.withArgs('token_login').returns({ message: 'the sms', enabled: true });
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
 
         db.medic.get.withArgs('userID').resolves({
@@ -1089,7 +1081,7 @@ describe('TokenLogin service', () => {
 
         clock.tick(2000);
 
-        return service.manageTokenLogin({ token_login: true }, '', response).then(actual => {
+        return service.manageTokenLogin({ token_login: true }, 'http://host', response).then(actual => {
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0][0]).to.deep.include({
             _id: 'userID',
@@ -1127,9 +1119,7 @@ describe('TokenLogin service', () => {
       });
 
       it('should throw an error when not able to generate a unique token', () => {
-        config.get
-          .withArgs('token_login').returns({ message: 'the sms', enabled: true })
-          .withArgs('app_url').returns('http://host');
+        config.get.withArgs('token_login').returns({ message: 'the sms', enabled: true });
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
 
         db.medic.get.withArgs('userID').resolves({
@@ -1149,7 +1139,7 @@ describe('TokenLogin service', () => {
         clock.tick(2000);
 
         return service
-          .manageTokenLogin({ token_login: true }, '', response)
+          .manageTokenLogin({ token_login: true }, 'http://host', response)
           .then(() => chai.assert.fail('Should have thrown'))
           .catch(err => {
             chai.expect(err.message).to.equal('Failed to generate unique token');

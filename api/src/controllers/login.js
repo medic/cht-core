@@ -404,7 +404,7 @@ const updatePassword = (user, newPassword, req) => {
     password: newPassword,
     password_change_required: false,
   };
-  const appUrl = `${req.protocol}://${req.get('host')}`;
+  const appUrl = serverUtils.getAppUrl(req);
   return users.updateUser(user.name, updateData, true, appUrl);
 };
 
@@ -561,7 +561,7 @@ module.exports = {
     if (limited) {
       return serverUtils.rateLimited(req, res);
     }
-    const currentUrl =  new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
+    const currentUrl =  new URL(`${serverUtils.getAppUrl(req)}${req.originalUrl}`);
     try {
       const { username, locale } = await sso.getIdToken(currentUrl);
       const sessionCookie = await sso.getCookie(username);
@@ -586,7 +586,7 @@ module.exports = {
       return serverUtils.rateLimited(req, res);
     }
 
-    const redirectUrl = new URL(`${req.protocol}://${req.get('host')}/${environment.db}/login/oidc`);
+    const redirectUrl = new URL(`${serverUtils.getAppUrl(req)}/${environment.db}/login/oidc`);
     try {
       const authUrl = await sso.getAuthorizationUrl(redirectUrl.toString());
       res.status(302).send(authUrl.href);
