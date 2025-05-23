@@ -1,4 +1,6 @@
 const { expect } = require('chai');
+const util = require('node:util');
+const exec = util.promisify(require('node:child_process').exec);
 
 const waitForService = async (url, maxAttempts = 10, delay = 100) => {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -38,11 +40,16 @@ describe('HAProxy with mock CouchDB', function() {
   });
   
   it('should return json on connection drop', async () => {
+    // Using curl instead of fetch due to known issues with fetch handling connection drops
+    // See: https://github.com/nodejs/undici/issues/3492
+    const { stdout } = await exec('curl -s -w "%{http_code}" http://127.0.0.1:15984/error/drop');
     
-    const response = await fetch('http://127.0.0.1:15984/error/drop');
-    expect(response.status).to.equal(502);
-      
-    const data = await response.json();
+    const responseBody = stdout.slice(0, -3);
+    const statusCode = stdout.slice(-3);
+    
+    expect(statusCode).to.equal('502');
+    
+    const data = JSON.parse(responseBody);
     expect(data.error).to.equal('502 Bad Gateway');
     
   });
