@@ -27,10 +27,17 @@ interface DebounceActive {
     active?: boolean;
     debounceRef?: any;
     performance?: any;
-    params?:any;
-    promise?:Promise<any>;
-    resolve?:any;
+    params?: any;
+    promise?: Promise<any>;
+    resolve?: any;
   };
+}
+
+interface TaskDoc {
+  _id: string;
+  emission?: any;
+  owner: string
+  state: string;
 }
 
 @Injectable({
@@ -39,7 +46,7 @@ interface DebounceActive {
 export class RulesEngineCoreFactoryService {
   constructor(
     private dbService: DbService
-  ) {}
+  ) { }
 
   get() {
     return RulesEngineCore(this.dbService.get());
@@ -63,23 +70,23 @@ export class RulesEngineService implements OnDestroy {
   private observable = new Subject();
 
   constructor(
-    private translateService:TranslateService,
-    private authService:AuthService,
-    private sessionService:SessionService,
-    private settingsService:SettingsService,
-    private telemetryService:TelemetryService,
-    private performanceService:PerformanceService,
-    private uhcSettingsService:UHCSettingsService,
-    private userContactService:UserContactService,
-    private userSettingsService:UserSettingsService,
-    private parseProvider:ParseProvider,
-    private changesService:ChangesService,
-    private contactTypesService:ContactTypesService,
-    private translateFromService:TranslateFromService,
-    private rulesEngineCoreFactoryService:RulesEngineCoreFactoryService,
-    private calendarIntervalService:CalendarIntervalService,
-    private ngZone:NgZone,
-    private chtDatasourceService:CHTDatasourceService
+    private translateService: TranslateService,
+    private authService: AuthService,
+    private sessionService: SessionService,
+    private settingsService: SettingsService,
+    private telemetryService: TelemetryService,
+    private performanceService: PerformanceService,
+    private uhcSettingsService: UHCSettingsService,
+    private userContactService: UserContactService,
+    private userSettingsService: UserSettingsService,
+    private parseProvider: ParseProvider,
+    private changesService: ChangesService,
+    private contactTypesService: ContactTypesService,
+    private translateFromService: TranslateFromService,
+    private rulesEngineCoreFactoryService: RulesEngineCoreFactoryService,
+    private calendarIntervalService: CalendarIntervalService,
+    private ngZone: NgZone,
+    private chtDatasourceService: CHTDatasourceService
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
@@ -142,7 +149,7 @@ export class RulesEngineService implements OnDestroy {
     this.debounceActive[this.FRESHNESS_KEY] = {
       active: true,
       performance: {
-        name: this.getTelemetryTrackName( 'background-refresh', 'cancel'),
+        name: this.getTelemetryTrackName('background-refresh', 'cancel'),
         track: this.performanceService.track()
       },
       debounceRef: rulesDebounceRef
@@ -169,7 +176,7 @@ export class RulesEngineService implements OnDestroy {
     debounceInfo.active = false;
   }
 
-  private waitForDebounce(entity):Promise<any> | undefined {
+  private waitForDebounce(entity): Promise<any> | undefined {
     if (this.debounceActive[entity]?.active && this.debounceActive[entity]?.promise) {
       return this.debounceActive[entity].promise;
     }
@@ -177,7 +184,7 @@ export class RulesEngineService implements OnDestroy {
     return Promise.resolve();
   }
 
-  private getRulesEngineContext(settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets, chtScriptApi){
+  private getRulesEngineContext(settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets, chtScriptApi) {
     return {
       settingsDoc,
       userContactDoc,
@@ -327,7 +334,7 @@ export class RulesEngineService implements OnDestroy {
     return this.rulesEngineCore.updateEmissionsFor(_uniq(contactsWithUpdatedTasks));
   }
 
-  private hydrateTaskDocs(taskDocs: { _id: string; emission?: any; owner: string }[] = []) {
+  private hydrateTaskDocs(taskDocs: Array<TaskDoc> = []) {
     taskDocs.forEach(taskDoc => {
       const { emission } = taskDoc;
       if (!emission) {
@@ -501,7 +508,7 @@ export class RulesEngineService implements OnDestroy {
     return this.observable.subscribe(callback);
   }
 
-  private getTelemetryTrackName(...params:string[]) {
+  private getTelemetryTrackName(...params: string[]) {
     return ['rules-engine', ...params].join(':');
   }
 

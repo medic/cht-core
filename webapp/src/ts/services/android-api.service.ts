@@ -5,6 +5,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
 import { NavigationService } from '@mm-services/navigation.service';
+import { AndroidNotificationTasksService } from '@mm-services/android-notification-tasks.service';
 
 /**
  * An API to provide integration with the medic-android app.
@@ -24,6 +25,7 @@ export class AndroidApiService {
     private sessionService:SessionService,
     private zone:NgZone,
     private navigationService:NavigationService,
+    private notificationTasks: AndroidNotificationTasksService,
   ) { }
 
   private runInZone(property:string, args:any[]=[]) {
@@ -168,6 +170,10 @@ export class AndroidApiService {
     this.sessionService.logout();
   }
 
+  nota() {
+    return this.notificationTasks.fetchTasks();
+  }
+
   /**
    * Handle the response from the MRDT app
    * @param response The stringified JSON response from the MRDT app.
@@ -222,5 +228,6 @@ export class AndroidApiService {
     smsStatusUpdate: (...args) => this.runInZone('smsStatusUpdate', args),
     locationPermissionRequestResolved: () => this.runInZone('locationPermissionRequestResolve'),
     resolveCHTExternalAppResponse: (...args) => this.runInZone('resolveCHTExternalAppResponse', args),
+    nota: () => this.runInZone('nota'),
   };
 }
