@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import * as moment from 'moment';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 
 export type notificationTaskType = {
@@ -22,7 +23,7 @@ export class AndroidNotificationTasksService {
         const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
         const tasks = taskDocs
           .filter(task => {
-            const today = new Date().toISOString().split('T')[0];
+            const today = moment().format('YYYY-MM-DD');
             return task.state === 'Ready' && task.emission.dueDate === today;
           })
           .map(task => ({
