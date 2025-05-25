@@ -25,7 +25,7 @@ export class AndroidApiService {
     private sessionService:SessionService,
     private zone:NgZone,
     private navigationService:NavigationService,
-    private notificationTasks: AndroidNotificationTasksService,
+    private notificationTasksService: AndroidNotificationTasksService,
   ) { }
 
   private runInZone(property:string, args:any[]=[]) {
@@ -170,8 +170,8 @@ export class AndroidApiService {
     this.sessionService.logout();
   }
 
-  nota() {
-    return this.notificationTasks.fetchTasks();
+  notificationTasks() {
+    return this.notificationTasksService.fetchTasks();
   }
 
   /**
@@ -228,6 +228,6 @@ export class AndroidApiService {
     smsStatusUpdate: (...args) => this.runInZone('smsStatusUpdate', args),
     locationPermissionRequestResolved: () => this.runInZone('locationPermissionRequestResolve'),
     resolveCHTExternalAppResponse: (...args) => this.runInZone('resolveCHTExternalAppResponse', args),
-    nota: () => this.runInZone('nota'),
+    notificationTasks: () => this.runInZone('notificationTasks'),
   };
 }

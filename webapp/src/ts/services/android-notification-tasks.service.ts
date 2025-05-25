@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import * as moment from 'moment';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
+import { TranslateService } from '@mm-services/translate.service';
 
 export type notificationTaskType = {
   _id: string,
   state: string,
   title: string,
-  contact: string,
+  contentText: string,
   dueDate: string,
 };
 
@@ -15,7 +16,10 @@ export type notificationTaskType = {
 })
 export class AndroidNotificationTasksService {
 
-  constructor(private readonly rulesEngineService: RulesEngineService) { };
+  constructor(
+    private readonly rulesEngineService: RulesEngineService,
+    private translateService:TranslateService,
+  ) { };
 
   async fetchTasks(): Promise<notificationTaskType[]> {
     try {
@@ -30,17 +34,21 @@ export class AndroidNotificationTasksService {
             _id: task._id,
             state: task.state,
             title: task.emission.title,
-            contact: task.emission.contact.name,
+            contentText: this.translateContentText(task.emission.title, task.emission.contact.name),
             dueDate: task.emission.dueDate,
           }));
         return tasks;
 
     } catch (exception) {
-      console.error('AndroidTaskNotification: Error getting tasks for all contacts', exception);
+      console.error('AndroidNotificationTasks: Error fetching tasks', exception);
       return [];
     }
   }
 
+  private translateContentText (task: string, contact: string): string {
+    const key = 'android.notification.tasks.contentText';
+    return this.translateService.instant(key, { task, contact });
+  }
 
   get() {
     return this.fetchTasks();
