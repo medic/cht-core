@@ -38,6 +38,7 @@ interface TaskDoc {
   emission?: any;
   owner: string
   state: string;
+  authoredOn: number;
 }
 
 @Injectable({

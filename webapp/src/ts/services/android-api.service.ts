@@ -170,8 +170,12 @@ export class AndroidApiService {
     this.sessionService.logout();
   }
 
+  /**
+   * Gets tasks to for notifcation
+   * returns {Promise} A promise that resolves to tasks[].
+   */
   notificationTasks() {
-    return this.notificationTasksService.fetchTasks();
+    return this.notificationTasksService.get();
   }
 
   /**
