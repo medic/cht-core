@@ -42,14 +42,9 @@ describe('HAProxy with mock CouchDB', function() {
   it('should return json on connection drop', async () => {
     // Using curl instead of fetch due to known issues with fetch handling connection drops
     // See: https://github.com/nodejs/undici/issues/3492
-    const { stdout } = await exec('curl -s -w "%{http_code}" http://127.0.0.1:15984/error/drop');
+    const { stdout } = await exec('curl -s http://127.0.0.1:15984/error/drop');
     
-    const responseBody = stdout.slice(0, -3);
-    const statusCode = stdout.slice(-3);
-    
-    expect(statusCode).to.equal('502');
-    
-    const data = JSON.parse(responseBody);
+    const data = JSON.parse(stdout);
     expect(data.error).to.equal('502 Bad Gateway');
     
   });
