@@ -9,9 +9,9 @@ const waitForService = async (url, maxAttempts = 10, delay = 100) => {
       if (response.ok) {
         return true;
       }
-      await new Promise(resolve => setTimeout(resolve, delay));
     } catch (error) {
-      // Wait and try again
+      
+    } finally {
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
