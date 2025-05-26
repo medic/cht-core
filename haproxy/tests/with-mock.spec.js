@@ -10,7 +10,7 @@ const waitForService = async (url, maxAttempts = 10, delay = 100) => {
         return true;
       }
     } catch (error) {
-      
+      // Intentionally ignore errors while waiting for service
     } finally {
       await new Promise(resolve => setTimeout(resolve, delay));
     }
