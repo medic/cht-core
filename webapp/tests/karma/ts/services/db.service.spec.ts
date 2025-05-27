@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { LocationService } from '@mm-services/location.service';
+import { before, method } from 'lodash-es';
 
 describe.only('Db Service', () => {
   let service:DbService;
@@ -234,11 +235,11 @@ describe.only('Db Service', () => {
   });
 
   describe('method wrapping', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       window.PouchDB = require('pouchdb-browser').default;
       // avoid the 2dbs being initialized at the startup
       // we're just using 1 set of stubs so the calls will be mirrored if requiring 2 dbs
-      sessionService.isOnlineOnly.returns(true);
+      sessionService.isOnlineOnly.returns(false);
       locationService.dbName = 'cht';
       sessionService.userCtx.returns({ name: 'mary' });
     });
@@ -310,42 +311,41 @@ describe.only('Db Service', () => {
 
     for (const method in methods) {
       if (methods[method]) {
-        it(`should stub ${method}`, fakeAsync(() => {
+        it(`should stub ${method}`, fakeAsync(async () => {
           getService();
           const db = service.get();
-          const pouchDb = new window.PouchDB('_pouch_');
-          sinon.stub(pouchDb, method);
 
-          // expect(PouchStub[method].callCount).to.equal(0);
-
-          methods[method].forEach(({ args }) => {
+          for (const args of methods[method]) {
             sinon.resetHistory();
-            db[method](...args);
-            // expect(PouchStub[method].callCount).to.equal(1);
-            // expect(PouchStub[method].args[0]).to.deep.equal(args);
+            await db[method](...args.args).catch();
             expect(runOutsideAngular.callCount).to.equal(1);
-          });
+          }
+
+          // methods[method].forEach(({ args }) => {
+          //   sinon.resetHistory();
+          //   db[method](...args);
+          //   expect(runOutsideAngular.callCount).to.equal(1);
+          // });
         }));
       }
     }
 
     it('should work with a resolving promise', fakeAsync(async () => {
-      sinon.stub(window.PouchDB.prototype, 'get').resolves({ the: 'thing' });
       getService();
       const db = service.get();
+      const pouchDb = new window.PouchDB('_pouch_');
+      await pouchDb.put({ _id: 'thing' });
 
       const result = await db.get('thing');
       expect(result).to.deep.equal({ the: 'thing' });
     }));
 
     it('should work with a rejecting promise', fakeAsync(async () => {
-      sinon.stub(window.PouchDB.prototype, 'get').rejects({ code: 404 });
-
       getService();
       const db = service.get();
 
       try {
-        await db.get('thing');
+        await db.get('thing2');
         assert.fail('should have failed');
       } catch (err) {
         expect(err).to.deep.equal({ code: 404 });
