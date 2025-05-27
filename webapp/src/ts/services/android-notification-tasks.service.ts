@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as moment from 'moment';
+import { orderBy } from 'lodash-es';
+
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { DBSyncService } from './db-sync.service';
@@ -17,7 +19,7 @@ export type notificationTaskType = {
   providedIn: 'root'
 })
 export class AndroidNotificationTasksService {
-  private readonly LAST_NOTIFICATION_TASK_TIMESTAMP = 'medic-task-notification-last-timestamp';
+  private readonly LAST_NOTIFICATION_TASK_TIMESTAMP = 'medic-last-task-notification-timestamp';
 
   constructor(
     private readonly rulesEngineService: RulesEngineService,
@@ -27,7 +29,7 @@ export class AndroidNotificationTasksService {
 
   private async fetchTasks(): Promise<notificationTaskType[]> {
     try {
-      let lastTaskTimestamp = this.getLastTaskTimestamp();
+      let lastTaskTimestamp = this.getLastNotificationTimestamp();
       const isEnabled = await this.rulesEngineService.isEnabled();
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
       const tasks = taskDocs
@@ -43,9 +45,11 @@ export class AndroidNotificationTasksService {
           contentText: this.translateContentText(task.emission.title, task.emission.contact.name),
           dueDate: task.emission.dueDate,
         }));
-      lastTaskTimestamp = tasks[0]?.authoredOn || this.getLastTaskTimestamp();
+
+      const sortedTasks = orderBy(tasks, ['authoredOn'], ['desc']);
+      lastTaskTimestamp = sortedTasks[0]?.authoredOn || this.getLastNotificationTimestamp();
       window.localStorage.setItem(this.LAST_NOTIFICATION_TASK_TIMESTAMP, String(lastTaskTimestamp));
-      return tasks;
+      return sortedTasks;
 
     } catch (exception) {
       console.error('AndroidNotificationTasks: Error fetching tasks', exception);
@@ -58,18 +62,25 @@ export class AndroidNotificationTasksService {
     return this.translateService.instant(key, { task, contact });
   }
 
-  private getLastTaskTimestamp(): number {
+  private getLastNotificationTimestamp(): number {
+    const lastNotifcationTimestamp = Number(window.localStorage.getItem(this.LAST_NOTIFICATION_TASK_TIMESTAMP));
+  
+    if (!this.isSameDay(lastNotifcationTimestamp)) {
+      console.log('New day detected, resetting last notification timestamp');
+      return 0;
+    }
     return Number(window.localStorage.getItem(this.LAST_NOTIFICATION_TASK_TIMESTAMP)) || 0;
   }
 
+  private isSameDay(timestamp: number): boolean {
+    const now = moment();
+    const momentDate = moment(timestamp);
+    return momentDate.isSame(now, 'day');
+  }
+
   get() {
-    return new Promise<notificationTaskType[]>((resolve) => {
-      this.dbSyncService.sync();
-      //wait for the sync to complete before fetching tasks
-      setTimeout(async () => {
-        const tasks = await this.fetchTasks();
-        resolve(tasks);
-      }, 1000 * 5);
+    return this.dbSyncService.sync().then(async () => {
+      return await this.fetchTasks();
     });
   }
 }
