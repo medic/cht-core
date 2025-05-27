@@ -310,7 +310,7 @@ describe('Db Service', () => {
 
     for (const method in methods) {
       if (methods[method]) {
-        it(`should stub ${method}`, fakeAsync(async () => {
+        it(`should wrap ${method}`, fakeAsync(async () => {
           getService();
           const db = service.get();
 
@@ -808,7 +808,6 @@ describe('Db Service', () => {
             .on('error', onError)
             .then(() => assert.fail('should have thrown'))
             .catch((err) => {
-              console.warn(err);
               expect(err.result).to.include({
                 ok: false,
                 docs_read: 0,
