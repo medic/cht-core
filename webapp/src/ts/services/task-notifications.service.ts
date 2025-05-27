@@ -37,10 +37,12 @@ export class TasksNotificationService {
       let lastNotificationTimestamp = this.getLastNotificationTimestamp();
       const isEnabled = await this.rulesEngineService.isEnabled();
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
+      
       let notifications = taskDocs
         .filter(task => {
           const today = moment().format('YYYY-MM-DD');
-          return task.authoredOn > lastNotificationTimestamp && task.state === 'Ready' && task.emission.dueDate === today;
+          return task.authoredOn > lastNotificationTimestamp
+            && task.state === 'Ready' && task.emission.dueDate === today;
         })
         .map(task => ({
           _id: task._id,
@@ -53,7 +55,7 @@ export class TasksNotificationService {
 
       notifications = orderBy(notifications, ['authoredOn'], ['desc']);
       notifications = notifications.slice(0, MAX_NOTIFICATIONS);
-      lastNotificationTimestamp = notifications[0]?.authoredOn || this.getLastNotificationTimestamp();
+      lastNotificationTimestamp = notifications[0]?.authoredOn || lastNotificationTimestamp;
       window.localStorage.setItem(this.LAST_NOTIFICATION_TASK_TIMESTAMP, String(lastNotificationTimestamp));
       return notifications;
 
@@ -69,18 +71,17 @@ export class TasksNotificationService {
   }
 
   private getLastNotificationTimestamp(): number {
-    const lastNotifcationTimestamp = Number(window.localStorage.getItem(this.LAST_NOTIFICATION_TASK_TIMESTAMP));
-  
-    if (!this.isSameDay(lastNotifcationTimestamp)) {
+    const lastNotificationTimestamp = Number(window.localStorage.getItem(this.LAST_NOTIFICATION_TASK_TIMESTAMP));
+    if (!this.isValidTimestamp(lastNotificationTimestamp)) {
       return 0;
     }
-    return Number(window.localStorage.getItem(this.LAST_NOTIFICATION_TASK_TIMESTAMP)) || 0;
+    return lastNotificationTimestamp || 0;
   }
 
-  private isSameDay(timestamp: number): boolean {
+  private isValidTimestamp(notifcationTimestamp: number): boolean {
     const now = moment();
-    const momentDate = moment(timestamp);
-    return momentDate.isSame(now, 'day');
+    const notificationDate = moment(notifcationTimestamp);
+    return now.isSameOrAfter(notificationDate, 'day');
   }
 
   get(): Promise<Notification[]> {
