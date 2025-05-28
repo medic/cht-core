@@ -85,8 +85,11 @@ export class TasksNotificationService {
   }
 
   get(): Promise<Notification[]> {
-    return this.dbSyncService.sync().then(async () => {
-      return await this.fetchNotifications();
+    return Promise.race([
+      this.dbSyncService.sync(),
+      new Promise(resolve => setTimeout(() => resolve([]), 5 * 1000))
+    ]).then(() => {
+      return this.fetchNotifications();
     });
   }
 }
