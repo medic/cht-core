@@ -50,7 +50,7 @@ describe('Contact List Page', () => {
     await searchPage.performSearch('Amanda Allen');
     await commonPage.waitForLoaders();
     await reportsPage.openFirstReport();
-    await reportsPage.rightPanelSelectors.patientName().waitForClickable();
+    await reportsPage.rightPanelSelectors.patientName().waitForDisplayed();
     await generateScreenshot('contact-page', 'reports-visible');
     await reportsPage.rightPanelSelectors.patientName().click();
     await contactPage.waitForContactLoaded();
@@ -75,7 +75,7 @@ describe('Contact List Page', () => {
     await searchPage.performSearch('Amanda Allen');
     await commonPage.waitForLoaders();
     await reportsPage.openFirstReport();
-    await (reportsPage.rightPanelSelectors.patientName()).waitForClickable();
+    await (reportsPage.rightPanelSelectors.patientName()).waitForDisplayed();
     await generateScreenshot('contact-page', 'report-view-no-contacts');
     await reportsPage.rightPanelSelectors.patientName().click();
     await generateScreenshot('contact-page', 'report-no-contact-loaded');
@@ -102,7 +102,7 @@ describe('Contact List Page', () => {
     await searchPage.performSearch('Amanda Allen');
     await commonPage.waitForLoaders();
     await reportsPage.openFirstReport();
-    await (reportsPage.rightPanelSelectors.patientName()).waitForClickable();
+    await (reportsPage.rightPanelSelectors.patientName()).waitForDisplayed();
     await generateScreenshot('contact-page', 'report-view-with-contacts');
     await reportsPage.rightPanelSelectors.patientName().click();
     await contactPage.waitForContactLoaded();
@@ -127,7 +127,7 @@ describe('Contact List Page', () => {
     await searchPage.performSearch('Amanda Allen');
     await commonPage.waitForLoaders();
     await reportsPage.openFirstReport();
-    await (reportsPage.rightPanelSelectors.patientName()).waitForClickable();
+    await (reportsPage.rightPanelSelectors.patientName()).waitForDisplayed();
     await generateScreenshot('contact-page', 'report-view-no-contacts-no-perms');
     await reportsPage.rightPanelSelectors.patientName().click();
     await generateScreenshot('contact-page', 'report-no-contact-loaded-no-perms');

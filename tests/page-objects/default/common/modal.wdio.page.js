@@ -8,36 +8,34 @@ const submitButton = () => $(`${MODAL_CONTAINER} ${MODAL_FOOTER} button[test-id=
 const cancelButton = () => $(`${MODAL_CONTAINER} ${MODAL_FOOTER} button[test-id="cancel"]`);
 
 const getModalDetails = async () => {
-  await (await header()).waitForDisplayed();
-  await (await body()).waitForDisplayed();
+  await header().waitForDisplayed();
+  await body().waitForDisplayed();
   return {
-    header: await (await header()).getText(),
-    body: await (await body()).getText(),
+    header: await header().getText(),
+    body: await body().getText(),
   };
 };
 
 const checkModalHasClosed = async () => {
-  return await (await modal()).waitForDisplayed({ timeout: 5000, reverse: true });
+  return await modal().waitForDisplayed({ timeout: 5000, reverse: true });
 };
 
-const submit = async (timeout) => {
-  await (await submitButton()).waitForClickable({ timeout });
-  await (await submitButton()).click();
+const submit = async () => {
+  await submitButton().click();
   await checkModalHasClosed();
 };
 
-const cancel = async (timeout) => {
-  await (await cancelButton()).waitForClickable({ timeout });
-  await (await cancelButton()).click();
+const cancel = async () => {
+  await cancelButton().click();
   await checkModalHasClosed();
 };
 
 const checkModalIsOpen = async () => {
-  return await (await modal()).waitForDisplayed({ timeout: 5000 });
+  return await modal().waitForDisplayed({ timeout: 5000 });
 };
 
 const isDisplayed = async () => {
-  return await (await modal()).isDisplayedInViewport();
+  return await modal().isDisplayed();
 };
 
 
