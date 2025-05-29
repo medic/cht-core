@@ -25,7 +25,7 @@ export class AndroidApiService {
     private sessionService:SessionService,
     private zone:NgZone,
     private navigationService:NavigationService,
-    private tasksNotificationService: TasksNotificationService,
+    private readonly tasksNotificationService: TasksNotificationService,
   ) { }
 
   private runInZone(property:string, args:any[]=[]) {

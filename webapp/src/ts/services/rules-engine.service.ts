@@ -185,7 +185,8 @@ export class RulesEngineService implements OnDestroy {
     return Promise.resolve();
   }
 
-  private getRulesEngineContext(settingsDoc, userContactDoc, userSettingsDoc, enableTasks, enableTargets, chtScriptApi) {
+  private getRulesEngineContext(settingsDoc, userContactDoc, userSettingsDoc, 
+    enableTasks, enableTargets, chtScriptApi) {
     return {
       settingsDoc,
       userContactDoc,

@@ -18,7 +18,7 @@ export interface Notification {
   title: string,
   contentText: string,
   dueDate: string,
-};
+}
 
 @Injectable({
   providedIn: 'root'
@@ -28,9 +28,9 @@ export class TasksNotificationService {
 
   constructor(
     private readonly rulesEngineService: RulesEngineService,
-    private translateService: TranslateService,
+    private readonly translateService: TranslateService,
     private readonly dbSyncService: DBSyncService
-  ) { };
+  ) { }
 
   private async fetchNotifications(): Promise<Notification[]> {
     try {
@@ -55,7 +55,7 @@ export class TasksNotificationService {
 
       notifications = orderBy(notifications, ['authoredOn'], ['desc']);
       notifications = notifications.slice(0, MAX_NOTIFICATIONS);
-      lastNotificationTimestamp = notifications[0]?.authoredOn || lastNotificationTimestamp;
+      lastNotificationTimestamp = notifications[0]?.authoredOn ?? lastNotificationTimestamp;
       window.localStorage.setItem(this.LAST_NOTIFICATION_TASK_TIMESTAMP, String(lastNotificationTimestamp));
       return notifications;
 
