@@ -320,17 +320,19 @@ jobs:
         restore-keys: |
           chrome90-${{ runner.os }}-
           chrome90-
+      if: ${{ matrix.chrome-version == '90' }}
     - name: Install Chrome 90
-      if: steps.cache-chrome.outputs.cache-hit != 'true'
+      if: ${{ matrix.chrome-version == '90' && steps.cache-chrome.outputs.cache-hit != 'true' }}
       run: |
         mkdir -p /tmp/chrome90
         wget -O "/tmp/chrome90/google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
         sudo dpkg -i "/tmp/chrome90/google-chrome-stable_current_amd64.deb"
     - name: Install Chrome 90 from Cache
-      if: steps.cache-chrome.outputs.cache-hit == 'true'
+      if: ${{ matrix.chrome-version == '90' && steps.cache-chrome.outputs.cache-hit == 'true' }}
       run: |
         sudo dpkg -i "/tmp/chrome90/google-chrome-stable_current_amd64.deb"
     - name: Install chromedriver for Chrome 90
+      if: ${{ matrix.chrome-version == '90' }}
       run: npm install chromedriver@^90.0.1
     - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
       run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
