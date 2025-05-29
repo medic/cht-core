@@ -21,8 +21,8 @@ describe('Submit Enketo form', () => {
     await commonEnketoPage.setInputValue('Person name', 'Jones');
     await genericForm.submitForm();
 
-    await (await reportsPage.firstReportDetailField()).waitForDisplayed();
-    expect(await (await reportsPage.firstReportDetailField()).getText()).to.equal('Jones');
+    await reportsPage.firstReportDetailField().waitForDisplayed();
+    expect(await reportsPage.firstReportDetailField().getText()).to.equal('Jones');
   });
 
   // If this test fails, it means something has gone wrong with the custom logic in openrosa2html5form.xsl
@@ -38,10 +38,10 @@ describe('Submit Enketo form', () => {
     const originalReportsText = await reportsPage.getAllReportsText();
     await commonPage.openFastActionReport('assessment', false);
     // Do not set any values before cancelling
-    await (await genericForm.cancelButton()).click();
+    await genericForm.cancelButton().click();
 
     await commonPage.waitForPageLoaded();
-    await (await reportsPage.rightPanelSelectors.noReportSelectedLabel()).waitForDisplayed();
+    await reportsPage.rightPanelSelectors.noReportSelectedLabel().waitForDisplayed();
     // No new report added
     expect(await reportsPage.getAllReportsText()).to.deep.equal(originalReportsText);
   });
@@ -51,11 +51,11 @@ describe('Submit Enketo form', () => {
     const originalReportsText = await reportsPage.getAllReportsText();
     await commonPage.openFastActionReport('assessment', false);
     await commonEnketoPage.setInputValue('Person name', 'Jones');
-    await (await genericForm.cancelButton()).click();
+    await genericForm.cancelButton().click();
 
     await modalPage.submit();
     await commonPage.waitForPageLoaded();
-    await (await reportsPage.rightPanelSelectors.noReportSelectedLabel()).waitForDisplayed();
+    await reportsPage.rightPanelSelectors.noReportSelectedLabel().waitForDisplayed();
     // No new report added
     expect(await reportsPage.getAllReportsText()).to.deep.equal(originalReportsText);
   });

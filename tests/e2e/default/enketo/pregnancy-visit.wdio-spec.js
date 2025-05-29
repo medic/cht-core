@@ -19,11 +19,23 @@ describe('Pregnancy Visit', () => {
     date_of_birth: moment().subtract(25, 'years').format('YYYY-MM-DD'),
     parent: { _id: healthCenter._id, parent: healthCenter.parent }
   });
+  const DOCS_TO_KEEP = [
+    ...Array.from(places.values()).map(doc => doc._id),
+    pregnantWoman._id,
+    'fixture:user:user1',
+    'org.couchdb.user:user1',
+    [/^form:/],
+  ];
 
   before(async () => {
     await utils.saveDocs([...places.values(), pregnantWoman]);
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
+  });
+
+  afterEach(async () => {
+    await utils.revertDb(DOCS_TO_KEEP, true);
+    await commonPage.sync({ reload: true });
   });
 
   it('should submit a pregnancy visit and validate that the report was created successfully.', async () => {
@@ -46,7 +58,8 @@ describe('Pregnancy Visit', () => {
     await commonPage.goToAnalytics();
     await analyticsPage.goToTargets();
 
-    expect(await analyticsPage.getTargets()).to.have.deep.members([
+    const targets = await analyticsPage.getTargets();
+    expect(targets).to.have.deep.members([
       {title: 'Deaths', goal: '0', count: '0', countNumberColor: TARGET_MET_COLOR},
       {title: 'New pregnancies', goal: '20', count: '1', countNumberColor: TARGET_UNMET_COLOR},
       {title: 'Live births', count: '0', countNumberColor: TARGET_MET_COLOR},
@@ -66,10 +79,13 @@ describe('Pregnancy Visit', () => {
     await commonPage.openFastActionReport('pregnancy_home_visit');
     await pregnancyVisitForm.submitDefaultPregnancyVisit();
 
+    await browser.pause(500);
+
     await commonPage.goToAnalytics();
     await analyticsPage.goToTargets();
 
-    expect(await analyticsPage.getTargets()).to.have.deep.members([
+    const targetsAfterAddingVisits = await analyticsPage.getTargets();
+    expect(targetsAfterAddingVisits).to.have.deep.members([
       {title: 'Deaths', goal: '0', count: '0', countNumberColor: TARGET_MET_COLOR},
       {title: 'New pregnancies', goal: '20', count: '1', countNumberColor: TARGET_UNMET_COLOR},
       {title: 'Live births', count: '0', countNumberColor: TARGET_MET_COLOR},

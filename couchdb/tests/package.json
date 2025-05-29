@@ -1,0 +1,8 @@
+{
+  "name": "couchdb-tests",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "test": "npx mocha couch-cluster.spec.js --no-config"
+  }
+}

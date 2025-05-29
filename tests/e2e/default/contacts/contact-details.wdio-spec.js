@@ -28,7 +28,7 @@ describe('Contact details page.', () => {
         // contact loaded only waits for contact summary (which requires reports)
         // tasks are loaded afterwards and there is no visual indication of them being loaded, or still loading
         return browser.waitUntil(async () => {
-          return await (await contactPage.tasksCardSelectors.rhsTaskListElement()).isDisplayed();
+          return await contactPage.tasksCardSelectors.rhsTaskListElement().isDisplayed();
         });
       }
 
@@ -98,11 +98,11 @@ describe('Contact details page.', () => {
 
     it('should show reports and tasks when permissions are enabled', async () => {
       await commonElements.goToPeople(patient._id, true);
-      expect(await (await contactPage.contactCardSelectors.contactCardName()).getText()).to.equal(patient.name);
+      expect(await contactPage.contactCardSelectors.contactCardName().getText()).to.equal(patient.name);
       await waitForContactLoaded(true);
 
-      expect(await (await contactPage.reportsCardSelectors.rhsReportListElement()).isDisplayed()).to.equal(true);
-      expect(await (await contactPage.tasksCardSelectors.rhsTaskListElement()).isDisplayed()).to.equal(true);
+      expect(await contactPage.reportsCardSelectors.rhsReportListElement().isDisplayed()).to.equal(true);
+      expect(await contactPage.tasksCardSelectors.rhsTaskListElement().isDisplayed()).to.equal(true);
 
       expect((await contactPage.getAllRHSReportsNames()).length).to.equal(41);
       expect((await contactPage.getAllRHSTaskNames()).length).to.deep.equal(DOCS_DISPLAY_LIMIT);
@@ -125,8 +125,8 @@ describe('Contact details page.', () => {
       await commonElements.sync({ expectReload: true, reload: true });
       await waitForContactLoaded(true);
 
-      expect(await (await contactPage.reportsCardSelectors.rhsReportListElement()).isDisplayed()).to.equal(false);
-      expect(await (await contactPage.tasksCardSelectors.rhsTaskListElement()).isDisplayed()).to.equal(true);
+      expect(await contactPage.reportsCardSelectors.rhsReportListElement().isDisplayed()).to.equal(false);
+      expect(await contactPage.tasksCardSelectors.rhsTaskListElement().isDisplayed()).to.equal(true);
       expect((await contactPage.getAllRHSTaskNames()).length).to.deep.equal(DOCS_DISPLAY_LIMIT);
     });
 
@@ -135,8 +135,8 @@ describe('Contact details page.', () => {
       await commonElements.sync({ reload: true, expectReload: true });
       await waitForContactLoaded(false);
 
-      expect(await (await contactPage.reportsCardSelectors.rhsReportListElement()).isDisplayed()).to.equal(true);
-      expect(await (await contactPage.tasksCardSelectors.rhsTaskListElement()).isDisplayed()).to.equal(false);
+      expect(await contactPage.reportsCardSelectors.rhsReportListElement().isDisplayed()).to.equal(true);
+      expect(await contactPage.tasksCardSelectors.rhsTaskListElement().isDisplayed()).to.equal(false);
       expect((await contactPage.getAllRHSReportsNames()).length).to.equal(41);
     });
   });
@@ -167,15 +167,15 @@ describe('Contact details page.', () => {
 
     it('should show error log for bad config', async () => {
       await loginPage.cookieLogin();
-      await (await commonPage.goToPeople(patient._id));
+      await commonPage.goToPeople(patient._id);
 
       const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
 
       expect(username).to.equal(constants.USERNAME);
       expect(url).to.equal(constants.API_HOST);
       expect(errorMessage).to.equal('Error fetching people');
-      expect(await (await errorStack.isDisplayed())).to.be.true;
-      expect(await (await errorStack.getText())).to
+      expect(await errorStack.isDisplayed()).to.be.true;
+      expect(await errorStack.getText()).to
         .include('Error: Configuration error');
     });
   });

@@ -1,5 +1,5 @@
 require('../../../../../../tests/aliases');
-const assert = require('chai').assert;
+const expect = require('chai').expect;
 const sinon = require('sinon');
 const { glob } = require('glob');
 const path = require('path');
@@ -15,10 +15,9 @@ describe('Test utils', () => {
   });
 
   describe('deleteAllDocs', () => {
-    it('Deletes all docs and infodocs except some core ones', () => {
-      const request = sinon.stub(utils, 'requestOnTestDb');
+    it('Deletes all docs and infodocs except some core ones', async () => {
       sinon.stub(sentinelUtils, 'skipToSeq');
-      request.onFirstCall().resolves({rows: [
+      sinon.stub(utils.db, 'allDocs').resolves({rows: [
         {id: '_design/cats', doc: {_id: '_design/cats'}},
         {id: 'service-worker-meta', doc: {_id: 'service-worker-meta'}},
         {id: 'migration-log', doc: {_id: 'migration-log'}},
@@ -31,113 +30,95 @@ describe('Test utils', () => {
         {id: '004', doc: {type: 'info'}},
         {id: 'ME', doc: {_id: 'ME', _rev: 1}}
       ]});
-      request.onSecondCall().resolves();
+      sinon.stub(utils.db, 'bulkDocs').resolves();
 
-      const sentinelAllDocs = sinon.stub(utils.sentinelDb, 'allDocs');
-      sentinelAllDocs.resolves({
-        rows: [{
-          id: 'me-info',
-          value: {
-            rev: '1-abc'
-          }
-        }]
+      sinon.stub(utils.sentinelDb, 'allDocs').resolves({
+        rows: [
+          { id: 'me-info', value: { rev: '1-abc' } },
+          { id: 'reminder:formx:123', value: { rev: '1-abc' } },
+        ]
       });
-      const sentinelBulkDocs = sinon.stub(utils.sentinelDb, 'bulkDocs');
-      sentinelBulkDocs.resolves();
-
-      return utils.deleteAllDocs()
-        .then(() => {
-          const deleteOptions = request.args[1][0];
-          assert.equal(deleteOptions.path, '/_bulk_docs');
-          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, _rev: 1}]});
-          assert.deepEqual(sentinelBulkDocs.args[0][0], [{_id: 'me-info', _rev: '1-abc', _deleted: true}]);
-        });
+      sinon.stub(utils.sentinelDb, 'bulkDocs').resolves();
+      
+      await utils.deleteAllDocs();
+      
+      expect(utils.db.bulkDocs.calledOnce).to.equal(true);
+      expect(utils.db.bulkDocs.args[0][0]).to.deep.equal([{ _id: 'ME', _deleted: true, _rev: 1 }]);
+      expect(utils.sentinelDb.bulkDocs.calledOnce).to.equal(true);
+      expect(utils.sentinelDb.bulkDocs.args[0][0]).to.deep.equal([
+        { _id: 'me-info', _rev: '1-abc', _deleted: true },
+        { _id: 'reminder:formx:123', _rev: '1-abc', _deleted: true },
+      ]);
     });
-    it('Supports extra strings as exceptions', () => {
-      const request = sinon.stub(utils, 'requestOnTestDb');
+    
+    it('Supports extra strings as exceptions', async () => {
       sinon.stub(sentinelUtils, 'skipToSeq');
-      request.onFirstCall().resolves({rows: [
+      sinon.stub(utils.db, 'allDocs').resolves({rows: [
         {id: 'ME', doc: {_id: 'ME', _rev: 1}},
         {id: 'YOU', doc: {_id: 'YOU'}}
       ]});
-      request.onSecondCall().resolves();
+      sinon.stub(utils.db, 'bulkDocs').resolves();
 
-      const sentinelAllDocs = sinon.stub(utils.sentinelDb, 'allDocs');
-      sentinelAllDocs.resolves({
-        rows: [{
-          id: 'ME-info',
-          value: {
-            rev: '1-abc'
-          }
-        }]
+      sinon.stub(utils.sentinelDb, 'allDocs').resolves({
+        rows: [
+          { id: 'ME-info', value: { rev: '1-abc' } },
+          { id: 'YOU-info', value: { rev: '1-abc' } }
+        ]
       });
-      const sentinelBulkDocs = sinon.stub(utils.sentinelDb, 'bulkDocs');
-      sentinelBulkDocs.resolves();
+      sinon.stub(utils.sentinelDb, 'bulkDocs').resolves();
 
-      return utils.deleteAllDocs(['YOU'])
-        .then(() => {
-          const deleteOptions = request.args[1][0];
-          assert.deepEqual(sentinelBulkDocs.args[0][0], [{_id: 'ME-info', _rev: '1-abc', _deleted: true}]);
-          assert.equal(deleteOptions.path, '/_bulk_docs');
-          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, _rev: 1}]});
-        });
+      await utils.deleteAllDocs(['YOU']);
+      
+      expect(utils.db.bulkDocs.calledOnce).to.equal(true);
+      expect(utils.db.bulkDocs.args[0][0]).to.deep.equal([{_id: 'ME', _deleted: true, _rev: 1}]);
+      expect(utils.sentinelDb.bulkDocs.calledOnce).to.equal(true);
+      expect(utils.sentinelDb.bulkDocs.args[0][0]).to.deep.equal([ {_id: 'ME-info', _rev: '1-abc', _deleted: true} ]);
     });
-    it('Supports extra regex as exceptions', () => {
-      const request = sinon.stub(utils, 'requestOnTestDb');
+    
+    it('Supports extra regex as exceptions', async () => {
       sinon.stub(sentinelUtils, 'skipToSeq');
-      request.onFirstCall().resolves({rows: [
+      sinon.stub(utils.db, 'allDocs').resolves({rows: [
         {id: 'ME', doc: {_id: 'ME', _rev: 1}},
         {id: 'YOU', doc: {_id: 'YOU'}}
       ]});
-      request.onSecondCall().resolves();
+      sinon.stub(utils.db, 'bulkDocs').resolves();
 
-      const sentinelAllDocs = sinon.stub(utils.sentinelDb, 'allDocs');
-      sentinelAllDocs.resolves({
-        rows: [{
-          id: 'ME-info',
-          value: {
-            rev: '1-abc'
-          }
-        }]
+      sinon.stub(utils.sentinelDb, 'allDocs').resolves({
+        rows: [
+          { id: 'ME-info', value: { rev: '1-abc' } },
+          { id: 'YOU-info', value: { rev: '1-abc' } }
+        ]
       });
-      const sentinelBulkDocs = sinon.stub(utils.sentinelDb, 'bulkDocs');
-      sentinelBulkDocs.resolves();
+      sinon.stub(utils.sentinelDb, 'bulkDocs').resolves();
 
-      return utils.deleteAllDocs([/^YOU$/])
-        .then(() => {
-          const deleteOptions = request.args[1][0];
-          assert.equal(deleteOptions.path, '/_bulk_docs');
-          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, _rev: 1}]});
-        });
+      await utils.deleteAllDocs([/^YOU$/]);
+      expect(utils.db.bulkDocs.args[0][0]).to.deep.equal([{_id: 'ME', _deleted: true, _rev: 1}]);
+      expect(utils.sentinelDb.bulkDocs.args[0][0]).to.deep.equal([ {_id: 'ME-info', _rev: '1-abc', _deleted: true} ]);
     });
-    it('Supports extra functions as exceptions', () => {
-      const request = sinon.stub(utils, 'requestOnTestDb');
+    
+    it('Supports extra functions as exceptions', async () => {
       sinon.stub(sentinelUtils, 'skipToSeq');
-      request.onFirstCall().resolves({rows: [
-        {id: 'ME', doc: {_id: 'ME', _rev: 1}},
-        {id: 'YOU', doc: {_id: 'YOU'}}
-      ]});
-      request.onSecondCall().resolves();
-
-      const sentinelAllDocs = sinon.stub(utils.sentinelDb, 'allDocs');
-      sentinelAllDocs.resolves({
-        rows: [{
-          id: 'ME-info',
-          value: {
-            rev: '1-abc'
-          }
-        }]
+      sinon.stub(utils.db, 'allDocs').resolves({rows: 
+          [ 
+            {id: 'ME', doc: {_id: 'ME', _rev: 1}}, 
+            {id: 'YOU', doc: {_id: 'YOU'}} 
+          ]
       });
-      const sentinelBulkDocs = sinon.stub(utils.sentinelDb, 'bulkDocs');
-      sentinelBulkDocs.resolves();
+      sinon.stub(utils.db, 'bulkDocs').resolves();
+
+      sinon.stub(utils.sentinelDb, 'allDocs').resolves({
+        rows: [
+          { id: 'ME-info', value: { rev: '1-abc' } },
+          { id: 'YOU-info', value: { rev: '1-abc' } }
+        ]
+      });
+      sinon.stub(utils.sentinelDb, 'bulkDocs').resolves();
 
 
-      return utils.deleteAllDocs([doc => doc._id === 'YOU'])
-        .then(() => {
-          const deleteOptions = request.args[1][0];
-          assert.equal(deleteOptions.path, '/_bulk_docs');
-          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, _rev: 1}]});
-        });
+      await utils.deleteAllDocs([doc => doc._id === 'YOU']);
+
+      expect(utils.db.bulkDocs.args[0][0]).to.deep.equal([{_id: 'ME', _deleted: true, _rev: 1}]);
+      expect(utils.sentinelDb.bulkDocs.args[0][0]).to.deep.equal([ {_id: 'ME-info', _rev: '1-abc', _deleted: true} ]);
     });
   });
 
@@ -154,6 +135,6 @@ describe('Test utils', () => {
     }
 
     const allSpecs = await glob(path.join(pathToDefaultTesting, '/**/*.wdio-spec.js'));
-    assert.sameMembers(allSpecs, suiteSpecs.flat());
+    expect(allSpecs).to.have.same.members(suiteSpecs.flat());
   });
 });

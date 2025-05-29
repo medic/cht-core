@@ -75,7 +75,7 @@ const selectHealthCenter = async name => {
   const search = await $('.select2-search__field');
   await search.click();
   await search.setValue(name);
-  await (await $('.name')).click();
+  await $('.name').click();
 };
 
 const fillPatientName = async name => {
@@ -85,7 +85,7 @@ const fillPatientName = async name => {
 
 module.exports = {
   uploadForms,
-  selectHealthCenter,  
+  selectHealthCenter,
   fillPatientName,
 };
 

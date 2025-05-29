@@ -81,12 +81,12 @@ describe('Contact and User Management', () => {
       await commonPage.goToPeople();
       expect(await commonPage.isPeopleListPresent()).to.be.true;
       await contactPage.selectLHSRowByText('Beatrice Bass');
-      await (await contactPage.pregnancyCardSelectors.pregnancyCard()).scrollIntoView();
+      await contactPage.pregnancyCardSelectors.pregnancyCard().scrollIntoView();
       await generateScreenshot('people', 'condition-card-active-pregnancy');
       await commonPage.goToBase();
       await commonPage.goToPeople();
       await contactPage.selectLHSRowByText('John Bass');
-      await (await contactPage.inmunizationCardSelectors.inmunizationCard()).scrollIntoView();
+      await contactPage.inmunizationCardSelectors.inmunizationCard().scrollIntoView();
       await generateScreenshot('people', 'condition-card-inmunization');
     });
 

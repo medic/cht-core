@@ -79,7 +79,7 @@ describe('sms-gateway api', () => {
       await reportsPage.goToReportById(savedDoc);
 
       // tasks
-      const sentTask = await (await reportsPage.rightPanelSelectors.sentTask()).getText();
+      const sentTask = await reportsPage.rightPanelSelectors.sentTask().getText();
       const deliveredTask = (await reportsPage.getTaskDetails(1, 1)).state;
       const scheduledTask = (await reportsPage.getTaskDetails(1, 2)).state;
       const failedTask = (await reportsPage.getTaskDetails(2, 1)).state;
@@ -123,7 +123,7 @@ describe('sms-gateway api', () => {
       await reportsPage.goToReportById(savedDoc);
 
       // tasks
-      const forwardedMessage = await (await reportsPage.rightPanelSelectors.sentTask()).getText();
+      const forwardedMessage = await reportsPage.rightPanelSelectors.sentTask().getText();
       expect(forwardedMessage).to.equal('forwarded to gateway');
       // scheduled tasks
       // State for messageId2 is still forwarded-to-gateway

@@ -81,7 +81,7 @@ describe('Bulk Docs controller', () => {
           docs: ['filteredDocs'],
           new_edits: 'something'
         };
-        controller._interceptResponse(['requestDocs'], testReq, testRes, JSON.stringify(['results']));
+        const newResponse = controller._interceptResponse(['requestDocs'], testReq, testRes, ['results']);
         service.formatResults.callCount.should.equal(1);
         service.formatResults.args[0].should.deep.equal([
           ['requestDocs'],
@@ -89,8 +89,8 @@ describe('Bulk Docs controller', () => {
           ['results']
         ]);
 
-        testRes.json.callCount.should.equal(1);
-        testRes.json.args[0].should.deep.equal([['formatted', 'results']]);
+        newResponse.should.deep.equal(['formatted', 'results']);
+        testRes.json.callCount.should.equal(0);
       });
     });
 

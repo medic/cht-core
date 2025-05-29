@@ -1,5 +1,4 @@
 const logger = require('@medic/logger');
-const semver = require('semver');
 
 const { COUCH_URL, BUILDS_URL, PROXY_CHANGE_ORIGIN = false } = process.env;
 const DEFAULT_BUILDS_URL = 'https://staging.dev.medicmobile.org/_couch/builds_4';
@@ -23,6 +22,7 @@ if (!COUCH_URL) {
 let couchUrl;
 let serverUrl;
 let serverUrlNoAuth;
+let service;
 
 try {
   // strip trailing slash from to prevent bugs in path matching
@@ -62,50 +62,6 @@ try {
   process.exit(1);
 }
 
-let deployInfoCache;
-
-const getVersionFromDdoc = (ddoc) => {
-  return semver.valid(ddoc.build_info?.version) ||
-    semver.valid(ddoc.deploy_info?.build) ||
-    ddoc.version ||
-    'unknown';
-};
-
-const getDeployInfo = async () => {
-  if (deployInfoCache) {
-    return deployInfoCache;
-  }
-
-  try {
-    // Lazy load couch-request only when needed
-    const request = require('@medic/couch-request');
-    const ddoc = await request.get({
-      url: `${couchUrl}/_design/${module.exports.ddoc}`,
-      headers: {
-        'user-agent': 'Community Health Toolkit',
-      }
-    });
-    deployInfoCache = {
-      ...ddoc.build_info,
-      ...ddoc.deploy_info,
-      version: getVersionFromDdoc(ddoc)
-    };
-    return deployInfoCache;
-  } catch (err) {
-    logger.error('Error getting deploy info: %o', err);
-    throw err;
-  }
-};
-
-const getVersion = async () => {
-  try {
-    const deployInfo = await getDeployInfo();
-    return deployInfo.version;
-  } catch (err) {
-    return 'unknown';
-  }
-};
-
 module.exports.isTesting = module.exports.db === 'medic-test';
-module.exports.getDeployInfo = getDeployInfo;
-module.exports.getVersion = getVersion;
+module.exports.setService = (s) => service = s;
+module.exports.getService = () => service;

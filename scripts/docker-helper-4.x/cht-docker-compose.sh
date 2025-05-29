@@ -73,7 +73,7 @@ create_compose_files() {
   curl -s -o "$homeDir/upgrade-service.yml" \
     https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
   curl -s -o "$homeDir/compose/cht-core.yml" "${stagingUrlBase}"/docker-compose/cht-core.yml
-  curl -s -o "$homeDir/compose/couchdb.yml" "${stagingUrlBase}"/docker-compose/cht-couchdb.yml
+  curl -s -o "$homeDir/compose/cht-couchdb.yml" "${stagingUrlBase}"/docker-compose/cht-couchdb.yml
 
   echo -e "${green} done${noColor} "
 }
@@ -193,7 +193,7 @@ service_has_image_downloaded(){
   if [ "$service" == "cht-upgrade-service" ]; then
     compose_path="${homeDir}/upgrade-service.yml"
   elif [ "$service" == "couchdb" ]; then
-    compose_path="${homeDir}/compose/couchdb.yml"
+    compose_path="${homeDir}/compose/cht-couchdb.yml"
   else
     compose_path="${homeDir}/compose/cht-core.yml"
   fi

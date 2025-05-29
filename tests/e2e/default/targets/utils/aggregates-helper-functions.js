@@ -93,22 +93,22 @@ const getLastMonth = () => {
 
 const assertTitle = async (itemTitle, targetTitle) => {
   expect(itemTitle).to.equal(targetTitle);
-  expect(await (await targetAggregatesPage.targetDetail.title(targetTitle)).isDisplayed()).to.be.true;
+  expect(await targetAggregatesPage.targetDetail.title(targetTitle).isDisplayed()).to.be.true;
 };
 
 const assertCounter = async (itemCounter, targetCounter) => {
   expect(itemCounter).to.equal(targetCounter);
-  expect(await (await targetAggregatesPage.targetDetail.counter()).getText()).to.equal(targetCounter);
+  expect(await targetAggregatesPage.targetDetail.counter().getText()).to.equal(targetCounter);
 };
 
 const assertPlace = async (itemPlace, place) => {
   expect(itemPlace).to.be.true;
-  expect(await (await targetAggregatesPage.targetDetail.place(place)).isDisplayed()).to.be.true;
+  expect(await targetAggregatesPage.targetDetail.place(place).isDisplayed()).to.be.true;
 };
 
 const assertPeriod = async (itemPeriod, period) => {
   expect(itemPeriod).to.be.true;
-  expect(await (await targetAggregatesPage.targetDetail.period(period)).isDisplayed()).to.be.true;
+  expect(await targetAggregatesPage.targetDetail.period(period).isDisplayed()).to.be.true;
 };
 
 const assertData = async (context, targetValuesByContact, expectedTargets, asserts) => {
@@ -179,7 +179,7 @@ const validateCardFields = async (values) => {
   const conditionCard = $$('.meta .card')[1].$('.row');
   await conditionCard.waitForDisplayed();
   for (const value of values) {
-    expect(await (await conditionCard.$(`p=${value}`)).isDisplayed()).to.be.true;
+    expect(await conditionCard.$(`p=${value}`).isDisplayed()).to.be.true;
   }
 };
 

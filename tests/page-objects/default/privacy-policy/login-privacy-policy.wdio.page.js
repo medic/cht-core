@@ -14,7 +14,7 @@ const scrollToBottom = async () => {
 };
 
 const goBackToLoginPage = async (backButton) => {
-  await (backButton).click();
+  await backButton.click();
 };
 
 module.exports = {

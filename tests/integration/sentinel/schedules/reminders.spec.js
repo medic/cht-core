@@ -127,19 +127,6 @@ const start = moment().utc();
 // and expect the same results
 const momentToTextExpression = date => `at ${date.format('HH:mm')} on ${date.format('ddd')}`;
 
-const remindersConfig = [
-  {
-    form: 'FORM1',
-    text_expression: momentToTextExpression(start.clone().subtract(1, 'hour')),
-    message: '{{name}} should do something'
-  },
-  {
-    form: 'FORM2',
-    text_expression: momentToTextExpression(start.clone().subtract(5, 'minute')),
-    mute_after_form_for: '2 days',
-    message: 'something do should {{name}}'
-  },
-];
 const forms = {
   FORM1: {
     meta: { code: 'FORM1' },
@@ -165,6 +152,17 @@ const getReminderLogs = (expectedLogs) => {
 
     return new Promise(resolve => setTimeout(resolve, 200)).then(() => getReminderLogs(expectedLogs));
   });
+};
+
+const runReminders = async (expectedLogs) => {
+  const waitForLogs = await utils.waitForSentinelLogs(true, /Task reminders completed/);
+  await utils.runSentinelTasks();
+  await waitForLogs.promise;
+  const logs = await getReminderLogs(expectedLogs);
+
+  const settings = await utils.getSettings();
+  console.warn(settings.reminders);
+  return logs;
 };
 
 const getReminderDocs = () => {
@@ -201,13 +199,32 @@ const assertReminder = ({ form, reminder, place, message }) => {
 };
 
 describe('reminders', () => {
-  before(() => {
-    return utils
+  let remindersConfig;
+
+  before(async () => {
+    remindersConfig = [
+      {
+        form: 'FORM1',
+        text_expression: momentToTextExpression(start.clone().subtract(1, 'hour')),
+        message: '{{name}} should do something'
+      },
+      {
+        form: 'FORM2',
+        text_expression: momentToTextExpression(start.clone().subtract(5, 'minute')),
+        mute_after_form_for: '2 days',
+        message: 'something do should {{name}}'
+      },
+    ];
+    console.log(JSON.stringify(remindersConfig, null, 2));
+
+    await utils
       .updateSettings(
         { transitions, forms, 'contact_types': contactTypes, reminders: remindersConfig },
         { ignoreReload: 'sentinel' }
-      )
-      .then(() => utils.saveDocs(contacts));
+      );
+    await utils.saveDocs(contacts);
+    const settings = await utils.getSettings();
+    expect(settings.reminders).to.deep.equal(remindersConfig);
   });
 
   after(() => utils.revertDb([], true));
@@ -217,9 +234,7 @@ describe('reminders', () => {
     let reminder2Date;
     let reminder2Date2;
     let reminder2Date3;
-    return utils
-      .runSentinelTasks()
-      .then(() => getReminderLogs(2))
+    return runReminders(2)
       .then(({ rows: reminderLogs }) => {
         chai.expect(reminderLogs[0].id.startsWith('reminderlog:FORM1:')).to.be.true;
         chai.expect(reminderLogs[0].doc.reminder).to.deep.equal(remindersConfig[0]);
@@ -277,8 +292,7 @@ describe('reminders', () => {
           { ignoreReload: true }
         );
       })
-      .then(() => utils.runSentinelTasks())
-      .then(() => getReminderLogs(3))
+      .then(() => runReminders(3))
       .then(({ rows: reminderLogs }) => {
         // Only the 2nd reminder ran. Because reminders are executed in a series, we know that 1st reminder was skipped
         // once we get a log for the 2nd reminder. It's just a hack because we have no way of knowing that the
@@ -380,8 +394,7 @@ describe('reminders', () => {
           { ignoreReload: true }
         );
       })
-      .then(() => utils.runSentinelTasks())
-      .then(() => getReminderLogs(4))
+      .then(() => runReminders(4))
       .then(({ rows: reminderLogs }) => {
         chai.expect(reminderLogs).to.have.lengthOf(4);
         reminderLogs.forEach(log => chai.expect(log.doc._rev.startsWith('1-')).to.be.true);

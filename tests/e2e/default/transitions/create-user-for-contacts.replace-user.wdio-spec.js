@@ -221,7 +221,7 @@ describe('Create user for contacts', () => {
         } catch {
           // sync can get triggered automatically
         }
-        await (await loginPage.loginButton()).waitForDisplayed();
+        await loginPage.loginButton().waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();
         const { transitions } = await sentinelUtils.getInfoDoc(originalContactId);
@@ -254,9 +254,9 @@ describe('Create user for contacts', () => {
         await browser.url('/');
         await loginPage.setUsernameValue(ORIGINAL_USER.username);
         await loginPage.setPasswordValue(DISABLED_USER_PASSWORD);
-        await (await loginPage.loginButton()).click();
+        await loginPage.loginButton().click();
         await loginPage.passwordReset(DISABLED_USER_PASSWORD, NEW_PASSWORD, NEW_PASSWORD);
-        await (await loginPage.updatePasswordButton()).click();
+        await loginPage.updatePasswordButton().click();
         await commonPage.waitForPageLoaded();
         await commonPage.sync();
         await sentinelUtils.waitForSentinel();
@@ -278,7 +278,7 @@ describe('Create user for contacts', () => {
         await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID, false);
 
         // Logout triggered immediately
-        await (await loginPage.loginButton()).waitForDisplayed();
+        await loginPage.loginButton().waitForDisplayed();
 
         await loginPage.cookieLogin();
         await commonPage.goToReports();
@@ -332,7 +332,7 @@ describe('Create user for contacts', () => {
         await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID);
 
         // Logout triggered immediately
-        await (await loginPage.loginButton()).waitForDisplayed();
+        await loginPage.loginButton().waitForDisplayed();
 
         await loginPage.cookieLogin();
         await commonPage.goToReports();
@@ -438,7 +438,7 @@ describe('Create user for contacts', () => {
         } catch {
           // sync can get triggered automatically
         }
-        await (await loginPage.loginButton()).waitForDisplayed();
+        await loginPage.loginButton().waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();
         const { transitions } = await sentinelUtils.getInfoDoc(originalContactId);
@@ -492,7 +492,7 @@ describe('Create user for contacts', () => {
         await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID, false);
 
         // Logout triggered immediately
-        await (await loginPage.loginButton()).waitForDisplayed();
+        await loginPage.loginButton().waitForDisplayed();
 
         await loginPage.cookieLogin();
         await commonPage.goToReports();
@@ -595,7 +595,7 @@ describe('Create user for contacts', () => {
         await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID);
 
         // Logout triggered immediately
-        await (await loginPage.loginButton()).waitForDisplayed();
+        await loginPage.loginButton().waitForDisplayed();
 
         await loginPage.cookieLogin();
         await commonPage.goToReports();
@@ -739,7 +739,7 @@ describe('Create user for contacts', () => {
         } catch {
           // sync can get triggered automatically
         }
-        await (await loginPage.loginButton()).waitForDisplayed();
+        await loginPage.loginButton().waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();
         const { transitions } = await sentinelUtils.getInfoDoc(originalContactId);

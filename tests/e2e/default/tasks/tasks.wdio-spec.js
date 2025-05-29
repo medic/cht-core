@@ -71,7 +71,7 @@ describe('Tasks', () => {
 
   it('should remove task from list when CHW completes a task successfully', async () => {
     await tasksPage.compileTasks('tasks-breadcrumbs-config.js', true);
-    
+
     await commonPage.goToTasks();
     let list = await tasksPage.getTasks();
     expect(list).to.have.length(3);
@@ -87,7 +87,7 @@ describe('Tasks', () => {
 
   it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
     await tasksPage.compileTasks('tasks-breadcrumbs-config.js', false);
-    
+
     await commonPage.goToTasks();
     let list = await tasksPage.getTasks();
     expect(list).to.have.length(2);
@@ -141,8 +141,8 @@ describe('Tasks', () => {
     expect(username).to.equal(chw.username);
     expect(url).to.equal('localhost');
     expect(errorMessage).to.equal('Error fetching tasks');
-    expect(await (await errorStack.isDisplayed())).to.be.true;
-    expect(await (await errorStack.getText())).to
+    expect(await errorStack.isDisplayed()).to.be.true;
+    expect(await errorStack.getText()).to
       .include('TypeError: Cannot read properties of undefined (reading \'name\')');
 
     const feedbackDocs = await chtDbUtils.getFeedbackDocs();

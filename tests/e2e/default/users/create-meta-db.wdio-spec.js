@@ -30,9 +30,9 @@ describe('Create user meta db : ', () => {
     await browser.url('/');
     await loginPage.setPasswordValue(PASSWORD);
     await loginPage.setUsernameValue(USERNAME);
-    await (await loginPage.loginButton()).click();
+    await loginPage.loginButton().click();
     await loginPage.passwordReset(PASSWORD, NEW_PASSWORD, NEW_PASSWORD);
-    await (await loginPage.updatePasswordButton()).click();
+    await loginPage.updatePasswordButton().click();
     await commonPage.waitForPageLoaded();
     await commonPage.goToReports();
 

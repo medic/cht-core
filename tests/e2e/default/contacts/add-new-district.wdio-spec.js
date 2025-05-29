@@ -74,7 +74,7 @@ describe('Add new district tests : ', () => {
     await contactPage.editPlace('Tudor\'s district', 'At Tudor\'s', 'district_hospital');
     await commonPage.waitForPageLoaded();
 
-    expect(await (await contactPage.contactCardSelectors.contactCardName()).getText()).to.equal('At Tudor\'s');
+    expect(await contactPage.contactCardSelectors.contactCardName().getText()).to.equal('At Tudor\'s');
 
     const updatedDistrict = await utils.getDoc(district._id);
     expect(updatedDistrict.contact_type).to.equal('not a district_hospital'); // editing didn't overwrite

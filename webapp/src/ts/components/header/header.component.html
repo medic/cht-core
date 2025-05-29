@@ -53,6 +53,24 @@
             </a>
           </li>
 
+          <li mmAuth [mmAuthOnline]="false">
+            <a role="menuitem" class="storage-info">
+              <i class="fa fa-fw fa-hdd-o"></i>
+              <strong>{{'Storage Info' | translate}}</strong>
+              <div class="progress-bar-container">
+                <div
+                  id="storage-pressure-progress-bar"
+                  class="progress-bar"
+                  [ngClass]="storagePressureClass"
+                  [style.width.%]="storageUsagePercentage"
+                  [title]="'Used: ' + storageUsagePercentage.toFixed(2) + '%'"
+                  aria-label="'Used storage: ' + storageUsagePercentage.toFixed(2) + '%'">
+                </div>
+              </div>
+              <span>Available space: {{availableStorageSpace}}</span>
+            </a>
+          </li>
+
           <li role="presentation disabled" *ngIf="!replicationStatus.disabled" [ngClass]="{ 'disabled': replicationStatus.current?.disableSyncButton }">
             <a role="menuitem" tabindex="-1" (click)="!replicationStatus.current?.disableSyncButton && replicate()">
               <i class="fa fa-fw fa-refresh"></i>

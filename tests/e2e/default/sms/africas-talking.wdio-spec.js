@@ -107,7 +107,7 @@ describe('Africas Talking api', () => {
       expect(automaticReply.message).to.include(testReport.tasks[0].messages[0].message);
       expect(automaticReply.recipient).to.include(testReport.tasks[0].messages[0].to);
 
-      expect(await (await reportsPage.rightPanelSelectors.reportTasks()).isDisplayed()).to.be.true;
+      expect(await reportsPage.rightPanelSelectors.reportTasks().isDisplayed()).to.be.true;
 
       const deliveredTask = await reportsPage.getTaskDetails(1, 1);
       expect(deliveredTask.message).to.contain(testReport.scheduled_tasks[0].messages[0].message);

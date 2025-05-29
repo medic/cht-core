@@ -10,9 +10,8 @@ const openEditSettings = async () => {
 };
 
 const selectLanguage = async (code) => {
-  await (await languageDropDown()).waitForDisplayed();
-  await browser.waitUntil(async () => (await (await languageDropDown()).getValue()).length);
-  await (await languageDropDown()).selectByAttribute('value', code);
+  await languageDropDown().waitForDisplayed();
+  await languageDropDown().selectByAttribute('value', code);
   await modalPage.submit();
 };
 

@@ -1,4 +1,5 @@
 const environment = require('@medic/environment');
+const audit = require('@medic/audit');
 const path = require('path');
 const os = require('os');
 let asyncLocalStorage;
@@ -26,8 +27,14 @@ const addServername = isTrue(process.env.ADD_SERVERNAME_TO_HTTP_AGENT);
 //  name of the host being connected to, and must be a host name, and not an IP address.".
 //
 
+const isInternalRequest = (options) => {
+  const url = new URL(options.uri);
+  return url.hostname === environment.host;
+};
+
 const getUserAgent = async () => {
-  const chtVersion = await environment.getVersion();
+  const serverInfo = require('@medic/server-info');
+  const chtVersion = await serverInfo.getVersion();
   const platform = os.platform();
   const arch = os.arch();
   return `${CHT_AGENT}/${chtVersion} (${platform},${arch})`;
@@ -143,11 +150,6 @@ const setRequestOptions = async (options) => {
     options.headers[requestIdHeader] = requestId;
   }
 
-  // Set user-agent header if not already set
-  if (!options.headers['user-agent']) {
-    options.headers['user-agent'] = await getUserAgent();
-  }
-
   setRequestUri(options);
   setRequestAuth(options);
   setTimeout(options);
@@ -155,6 +157,11 @@ const setRequestOptions = async (options) => {
   setRequestContentType(options, sendJson);
   if (addServername) {
     options.servername = environment.host;
+  }
+
+  // only add user agent for external requests to avoid circular calls
+  if (!isInternalRequest(options) && !options.headers['user-agent']) {
+    options.headers['user-agent'] = await getUserAgent();
   }
 };
 
@@ -205,8 +212,12 @@ const request = async (options = {}) => {
     body: await getResponseBody(response, options.headers[CONTENT_TYPE] === JSON_HEADER_VALUE),
     status: response.status,
     ok: response.ok,
-    headers: response.headers
+    headers: response.headers,
+    streamed: true,
   };
+
+  const requestMetadata = asyncLocalStorage?.getRequest();
+  void audit.fetchCallback(options.uri, options, responseObj, requestMetadata);
 
   if (options.simple === false) {
     return responseObj;
@@ -264,7 +275,7 @@ const request = async (options = {}) => {
  */
 
 module.exports = {
-  initialize: (store, header) => {
+  setStore: (store, header) => {
     asyncLocalStorage = store;
     requestIdHeader = header.toLowerCase();
   },

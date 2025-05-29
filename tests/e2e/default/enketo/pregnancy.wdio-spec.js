@@ -22,11 +22,23 @@ describe('Pregnancy registration', () => {
     date_of_birth: moment().subtract(25, 'years').format('YYYY-MM-DD'),
     parent: { _id: healthCenter._id, parent: healthCenter.parent }
   });
+  const DOCS_TO_KEEP = [
+    ...Array.from(places.values()).map(doc => doc._id),
+    pregnantWoman._id,
+    'fixture:user:user1',
+    'org.couchdb.user:user1',
+    [/^form:/],
+  ];
 
   before(async () => {
     await utils.saveDocs([...places.values(), pregnantWoman]);
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
+  });
+
+  afterEach(async () => {
+    await utils.revertDb(DOCS_TO_KEEP, true);
+    await commonPage.sync({ reload: true });
   });
 
   it('should submit a new pregnancy, ' +
@@ -70,7 +82,7 @@ describe('Pregnancy registration', () => {
     await commonEnketoPage.validateSummaryReport(summaryTexts);
     await genericForm.submitForm();
 
-    expect(await (await contactPage.pregnancyCardSelectors.pregnancyCard()).isDisplayed()).to.be.true;
+    expect(await contactPage.pregnancyCardSelectors.pregnancyCard().isDisplayed()).to.be.true;
 
     // Validate pregnancy card and its information
     const pregnancyCardInfo = await contactPage.getPregnancyCardInfo();

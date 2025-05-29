@@ -7,7 +7,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const { editReportWithAttachmentDoc } = require('@page-objects/default/enketo/custom-doc.wdio.page');
 
-describe('Edit report with attachment', () => {  
+describe('Edit report with attachment', () => {
 
   before(async () => {
     const formDoc = commonPage.createFormDoc(`${__dirname}/forms/one-text-form`);

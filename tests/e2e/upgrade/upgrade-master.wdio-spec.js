@@ -17,7 +17,7 @@ describe('Performing an upgrade from current branch to master', () => {
     expect(await upgradePage.getBuild()).to.include('alpha');
     await commonPage.goToAboutPage();
     await commonPage.waitForPageLoaded();
-    await (await aboutPage.aboutCard()).waitForDisplayed();
+    await aboutPage.aboutCard().waitForDisplayed();
     expect(await aboutPage.getVersion()).to.include('master');
   });
 });

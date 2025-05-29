@@ -285,11 +285,13 @@ const output = ({ warnings, types }, commits) => {
 ---
 title: "${MILESTONE_NAME} release notes"
 linkTitle: "${MILESTONE_NAME}"
-weight:
-description: >
+sidebar:
+  exclude: true
+description: 
   Released "${currentDate}"
-relevantLinks: >
-toc_hide: true
+aliases:
+  -    /core/releases/${MILESTONE_NAME}
+  -    /releases/${MILESTONE_NAME}
 ---
 
 ## Known issues
