@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { cloneDeep } from 'lodash-es';
 
 import { Selectors } from '@mm-selectors/index';
-import { GlobalState } from '@mm-reducers/global';
+import { GlobalState, StorageStatus } from '@mm-reducers/global';
 
 const globalState: GlobalState = {
   processingReportVerification: true,
@@ -41,6 +41,11 @@ const globalState: GlobalState = {
   lastChangedDoc: { _id: '1234' },
   facilities: [ { _id: '1234' }, { _id: '1234' } ],
   language: { code: 'en', rtl: false },
+  storageInfo: {
+    status: StorageStatus.STARTUP,
+    availableBytes: 0,
+    storageUsagePercentage: 0
+  }
 };
 
 const state = {
@@ -257,6 +262,12 @@ describe('Selectors', () => {
     it('should null check enketo state', () => {
       // @ts-ignore
       expect(Selectors.getEnketoError.projector({})).to.equal(undefined);
+    });
+
+    it('should getStorageInfo', () => {
+      expect(Selectors.getStorageInfo.projector(state.global)).to.deep.equal(
+        clonedState.global.storageInfo
+      );
     });
   });
 
