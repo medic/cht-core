@@ -41,6 +41,7 @@ export const Actions = {
   setTrainingCard: createSingleValueAction('SET_TRAINING_CARD', 'trainingCard'),
   clearTrainingCards: createAction('CLEAR_TRAINING_CARDS'),
   setLanguage: createSingleValueAction('SET_LANGUAGE', 'language'),
+  updateStorageInfo: createSingleValueAction('UPDATE_STORAGE_INFO', 'storageInfo'),
 };
 
 export class GlobalActions {
@@ -249,4 +250,7 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setLanguage(language));
   }
 
+  updateStorageInfo(storageInfo) {
+    return this.store.dispatch(Actions.updateStorageInfo(storageInfo));
+  }
 }

@@ -1,23 +1,24 @@
 import { Component, OnDestroy, OnInit, ViewChild, Input } from '@angular/core';
+import { BaseMenuComponent } from '@mm-components/base-menu/base-menu.component';
 import { MatSidenav, MatSidenavContainer, MatSidenavContent } from '@angular/material/sidenav';
-import { NavigationStart, Router, RouterLink } from '@angular/router';
-import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
-
-import { Selectors } from '@mm-selectors/index';
-import { GlobalActions } from '@mm-actions/global';
-import { LocationService } from '@mm-services/location.service';
-import { DBSyncService } from '@mm-services/db-sync.service';
-import { ModalService } from '@mm-services/modal.service';
-import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
-import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
-import { NgFor, NgIf } from '@angular/common';
+import { NgFor, NgIf, NgClass } from '@angular/common';
+import { RouterLink, NavigationStart, Router } from '@angular/router';
 import { AuthDirective } from '@mm-directives/auth.directive';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
+
+import { GlobalActions } from '@mm-actions/global';
+
+import { Store } from '@ngrx/store';
+import { LocationService } from '@mm-services/location.service';
+import { DBSyncService } from '@mm-services/db-sync.service';
+import { ModalService } from '@mm-services/modal.service';
+import { StorageInfoService } from '@mm-services/storage-info.service';
+
+import { filter } from 'rxjs/operators';
+import { Selectors } from '@mm-selectors/index';
 
 @Component({
   selector: 'mm-sidebar-menu',
@@ -32,55 +33,54 @@ import { RelativeDatePipe } from '@mm-pipes/date.pipe';
     AuthDirective,
     MatIcon,
     NgIf,
+    NgClass,
     TranslatePipe,
     RelativeDatePipe,
   ],
 })
-export class SidebarMenuComponent implements OnInit, OnDestroy {
+export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, OnDestroy {
   @Input() canLogOut: boolean = false;
   @ViewChild('sidebar') sidebar!: MatSidenav;
   private globalActions: GlobalActions;
-  subscriptions: Subscription = new Subscription();
   replicationStatus;
   moduleOptions: MenuOption[] = [];
   secondaryOptions: MenuOption[] = [];
   adminAppPath: string = '';
 
   constructor(
-    private store: Store,
-    private locationService: LocationService,
-    private dbSyncService: DBSyncService,
-    private modalService: ModalService,
+    protected store: Store,
+    protected locationService: LocationService,
+    protected dbSyncService: DBSyncService,
+    protected modalService: ModalService,
     private router: Router,
+    protected readonly storageInfoService: StorageInfoService,
   ) {
+    super(store, dbSyncService, modalService, storageInfoService);
     this.globalActions = new GlobalActions(store);
   }
 
   ngOnInit() {
+    super.ngOnInit();
     this.adminAppPath = this.locationService.adminPath;
     this.setModuleOptions();
     this.setSecondaryOptions();
-    this.subscribeToStore();
+    this.additionalSubscriptions();
     this.subscribeToRouter();
   }
 
   ngOnDestroy() {
-    this.subscriptions.unsubscribe();
+    super.ngOnDestroy();
   }
 
   close() {
     return this.globalActions.closeSidebarMenu();
   }
 
-  replicate() {
+  replicate(): void {
     if (this.replicationStatus?.current?.disableSyncButton) {
       return;
     }
-    return this.dbSyncService.sync(true);
-  }
-
-  logout() {
-    this.modalService.show(LogoutConfirmComponent);
+    super.replicate();
   }
 
   private subscribeToRouter() {
@@ -90,12 +90,7 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
     this.subscriptions.add(routerSubscription);
   }
 
-  private subscribeToStore() {
-    const subscribeReplicationStatus = this.store
-      .select(Selectors.getReplicationStatus)
-      .subscribe(replicationStatus => this.replicationStatus = replicationStatus);
-    this.subscriptions.add(subscribeReplicationStatus);
-
+  private additionalSubscriptions() {
     const subscribeSidebarMenu = this.store
       .select(Selectors.getSidebarMenu)
       .subscribe(sidebarMenu => this.sidebar?.toggle(sidebarMenu?.isOpen));
@@ -105,10 +100,6 @@ export class SidebarMenuComponent implements OnInit, OnDestroy {
       .select(Selectors.getShowPrivacyPolicy)
       .subscribe(showPrivacyPolicy => this.setSecondaryOptions(showPrivacyPolicy));
     this.subscriptions.add(subscribePrivacyPolicy);
-  }
-
-  private openFeedback() {
-    this.modalService.show(FeedbackComponent);
   }
 
   private setModuleOptions() {
