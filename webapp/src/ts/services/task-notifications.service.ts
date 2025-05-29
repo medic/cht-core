@@ -84,7 +84,7 @@ export class TasksNotificationService {
     return now.isSameOrAfter(notificationDate, 'day');
   }
 
-  get(): Promise<Notification[]> {
+  async get(): Promise<Notification[]> {
     return Promise.race([
       this.dbSyncService.sync(),
       new Promise(resolve => setTimeout(() => resolve([]), 5 * 1000))
