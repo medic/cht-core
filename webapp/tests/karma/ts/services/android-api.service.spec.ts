@@ -2,7 +2,6 @@ import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { NgZone } from '@angular/core';
-import { of } from 'rxjs';
 
 import { AndroidApiService } from '@mm-services/android-api.service';
 import { SessionService } from '@mm-services/session.service';
@@ -11,7 +10,8 @@ import { MRDTService } from '@mm-services/mrdt.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { HttpClient } from '@angular/common/http';
+import { RulesEngineService } from '@mm-services/rules-engine.service';
+import { DBSyncService } from '@mm-services/db-sync.service';
 
 describe('AndroidApi service', () => {
 
@@ -23,7 +23,8 @@ describe('AndroidApi service', () => {
   let navigationService;
   let androidAppLauncherService;
   let translateService;
-  let http;
+  let rulesEngine;
+  let dbSyncService;
 
   beforeEach(() => {
     sessionService = {
@@ -50,14 +51,14 @@ describe('AndroidApi service', () => {
       resolveAndroidAppResponse: sinon.stub()
     };
 
+    consoleErrorMock = sinon.stub(console, 'error');
+
     translateService = {
       get: sinon.stub().resolvesArg(0),
       instant: sinon.stub().returnsArg(0),
     };
-
-    http = { get: sinon.stub().returns(of([])) };
-
-    consoleErrorMock = sinon.stub(console, 'error');
+    rulesEngine = { monitorExternalChanges: sinon.stub() };
+    dbSyncService = { sync: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -67,7 +68,8 @@ describe('AndroidApi service', () => {
         { provide: NavigationService, useValue: navigationService },
         { provide: AndroidAppLauncherService, useValue: androidAppLauncherService },
         { provide: TranslateService, useValue: translateService },
-        { provide: HttpClient, useValue: http },
+        { provide: RulesEngineService, useValue: rulesEngine },
+        { provide: DBSyncService, useValue: dbSyncService },
       ],
     });
 
