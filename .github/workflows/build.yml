@@ -311,12 +311,24 @@ jobs:
       run: |
         mkdir -p allure-results/history
         cp -r build-history-data/cht-core/allure/${{ env.JOB_NAME }}/allure-report/history allure-results | true
+    - name: Cache Chrome 90 Installer
+      id: cache-chrome
+      uses: actions/cache@v4
+      with:
+        path: /tmp/chrome90
+        key: chrome90-${{ runner.os }}-90.0.4430.72
     - name: Install Chrome 90
-      if: ${{matrix.chrome-version=='90'}}
+      if: steps.cache-chrome.outputs.cache-hit != 'true'
       run: |
-        wget -O "google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
-        sudo dpkg -i "google-chrome-stable_current_amd64.deb"
-        npm install chromedriver@^90.0.1
+        mkdir -p /tmp/chrome90
+        wget -O "/tmp/chrome90/google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
+        sudo dpkg -i "/tmp/chrome90/google-chrome-stable_current_amd64.deb"
+    - name: Install Chrome 90 from Cache
+      if: steps.cache-chrome.outputs.cache-hit == 'true'
+      run: |
+        sudo dpkg -i "/tmp/chrome90/google-chrome-stable_current_amd64.deb"
+    - name: Install chromedriver for Chrome 90
+      run: npm install chromedriver@^90.0.1
     - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
       run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
 
