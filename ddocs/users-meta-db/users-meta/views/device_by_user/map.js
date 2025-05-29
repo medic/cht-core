@@ -27,12 +27,16 @@ function(doc) {
           cht: doc.metadata.versions && doc.metadata.versions.app,
           settings: doc.metadata.versions && doc.metadata.versions.settings,
         },
-        storage: {
-          free: doc.device && doc.device.deviceInfo && doc.device.deviceInfo.storage && 
+        // START --- Added storage information --- START
+        storageFree: doc.device &&
+          doc.device.deviceInfo &&
+          doc.device.deviceInfo.storage &&
           doc.device.deviceInfo.storage.free,
-          total: doc.device && doc.device.deviceInfo && doc.device.deviceInfo.storage && 
-          doc.device.deviceInfo.storage.total
-        }
+        storageTotal: doc.device &&
+          doc.device.deviceInfo &&
+          doc.device.deviceInfo.storage &&
+          doc.device.deviceInfo.storage.total,
+        // END --- Added storage information --- END
       },
     });
   }

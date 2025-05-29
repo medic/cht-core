@@ -321,7 +321,7 @@ describe('Export Data Service', () => {
       actual.should.deep.equal([]);
     });
 
-    it('works', async () => {
+   it('works', async () => {
       const rows = [
         {
           key: ['admin-central-2', 'd26e2875-53af-4e9b-b695-c82faf0db5d8'],
@@ -329,11 +329,10 @@ describe('Export Data Service', () => {
             date: '2022-11-21',
             id: 'telemetry-2022-11-21-admin-central-2-d26e2875-53af-4e9b-b695-c82faf0db5d8',
             device: {
-              userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
-           'AppleWebKit/537.36 (KHTML, like Gecko) ' +
-           'Chrome/107.0.0.0 Safari/537.36',
+              userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
               versions: { cht: 'unknown', settings: '4-83c8561a13479b245b295e97401f2f55' },
-              storage: { free: 16713310208, total: 26544680960 } 
+              storageFree: 1073741824,
+              storageTotal: 8589934592,
             },
           },
         },
@@ -350,7 +349,8 @@ describe('Export Data Service', () => {
                 cht: 'unknown',
                 settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba',
               },
-              storage: { free: 16713310208, total: 26544680960 } 
+              storageFree: 2147483648,
+              storageTotal: 17179869184,
             },
           },
         },
@@ -367,7 +367,6 @@ describe('Export Data Service', () => {
                 cht: undefined,
                 settings: undefined,
               },
-              storage: { free: 16713310208, total: 26544680960 } 
             },
           },
         },
@@ -387,8 +386,8 @@ describe('Export Data Service', () => {
           android: undefined,
           cht: 'unknown',
           settings: '4-83c8561a13479b245b295e97401f2f55',
-          storageFree: 16713310208,
-          storageTotal: 26544680960
+          storageFree: 1073741824,
+          storageTotal: 8589934592,
         },
         {
           user: 'chw1',
@@ -402,8 +401,8 @@ describe('Export Data Service', () => {
           android: '10',
           cht: 'unknown',
           settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba',
-          storageFree: 16713310208,
-          storageTotal: 26544680960
+          storageFree: 2147483648,
+          storageTotal: 17179869184,
         },
         {
           android: undefined,
@@ -417,8 +416,8 @@ describe('Export Data Service', () => {
           deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c802',
           settings: undefined,
           user: 'min-data',
-          storageFree: 16713310208,
-          storageTotal: 26544680960
+          storageFree: undefined,
+          storageTotal: undefined,
         }
       ]);
     });
