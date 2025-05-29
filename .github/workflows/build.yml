@@ -317,6 +317,9 @@ jobs:
       with:
         path: /tmp/chrome90
         key: chrome90-${{ runner.os }}-90.0.4430.72
+        restore-keys: |
+          chrome90-${{ runner.os }}-
+          chrome90-
     - name: Install Chrome 90
       if: steps.cache-chrome.outputs.cache-hit != 'true'
       run: |
