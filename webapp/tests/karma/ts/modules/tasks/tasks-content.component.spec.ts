@@ -486,6 +486,19 @@ describe('TasksContentComponent', () => {
       expect(tasksForContactService.getLeafPlaceAncestor.callCount).to.equal(0);
     });
 
+    it('should work with action of type "contact" and content with "_id"', async () => {
+      await compileComponent([]);
+      sinon.resetHistory();
+
+      const action = { type: 'contact', content: { _id: '123' } };
+      await component.performAction(action);
+
+      expect(xmlFormsService.get.callCount).to.equal(0);
+      expect(formService.render.callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/contacts', '123', 'edit']]);
+    });
+
     it('should render form when action type is report', async () => {
       const form = { _id: 'myform', title: 'My Form' };
       const action = { type: 'report', form: 'myform', content: { contact: { _id: 'my_contact' } } };
