@@ -19,6 +19,12 @@ module.exports = async () => {
     const date = doc.value.date;
     const browser = doc.value.device.userAgent && getBrowser(doc.value.device.userAgent);
     const { apk, android, cht, settings } = doc.value.device.versions;
+    
+    // START --- Added storage information extraction --- START
+    const storageFree = doc.value.device && doc.value.device.storageFree;
+    const storageTotal = doc.value.device && doc.value.device.storageTotal;
+    // END --- Added storage information extraction --- END
+
     return {
       user,
       deviceId,
@@ -31,6 +37,10 @@ module.exports = async () => {
       android,
       cht,
       settings,
+      // START --- Added storage information to response --- START
+      storageFree: storageFree !== undefined ? storageFree : undefined,
+      storageTotal: storageTotal !== undefined ? storageTotal : undefined,
+      // END --- Added storage information to response --- END
     };
   });
 };

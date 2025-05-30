@@ -403,16 +403,18 @@ describe('Export Data V2.0', () => {
       apk,
       android,
       cht,
-      settings
+      settings,
+      storageFree,
+      storageTotal
     }) => {
       const [year, month, day] = date.split('-');
       const getUserAgent = () => {
-        if (!browser.name) {
+        if (!browser || !browser.name) {
           return undefined;
         }
-        const platform = browser.name === 'Firefox'
-          ? `Gecko/20100101 Firefox/${browser.version}`
-          : `AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${browser.version} Safari/537.36`;
+        const platform = browser.name === 'Firefox' ?
+          `Gecko/20100101 Firefox/${browser.version}` :
+          `AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${browser.version} Safari/537.36`;
         return `Mozilla/5.0 (X11; Linux x86_64) ${platform}`;
       };
       return {
@@ -437,6 +439,10 @@ describe('Export Data V2.0', () => {
             },
             software: {
               androidVersion: android
+            },
+            storage: { 
+              free: storageFree, 
+              total: storageTotal 
             }
           }
         }
@@ -461,12 +467,12 @@ describe('Export Data V2.0', () => {
       { _id: uuid(), type: 'feedback', form: 'a-form', fields: {} },
       { _id: uuid(), type: 'telemetry' },
       {
-        _id: `telemetry-2012-11-00-harambe-microsoft_kin`,
+        _id: `telemetry-2012-11-00-harambe-microsoft_kin_incomplete`,
         type: 'telemetry',
         metadata: {
           year: 2011,
           month: 11,
-          day: undefined,
+          day: undefined, 
           user: 'harambe',
         },
       },
@@ -477,24 +483,26 @@ describe('Export Data V2.0', () => {
         path: '/medic-test-users-meta/_all_docs',
         method: 'GET'
       });
-      const docs = getResults.rows
+      const docsToDelete = getResults.rows
         .filter(row => !row.id.startsWith('_design'))
         .map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
-      const postResults = await utils.request({
-        path: '/medic-test-users-meta/_bulk_docs',
-        method: 'POST',
-        body: { docs }
-      });
-      if (postResults.find(r => !r.ok)) {
-        throw Error(JSON.stringify(postResults, null, 2));
+      if (docsToDelete.length > 0) { 
+        const postResults = await utils.request({
+          path: '/medic-test-users-meta/_bulk_docs',
+          method: 'POST',
+          body: { docs: docsToDelete }
+        });
+        if (postResults.find(r => !r.ok && r.error !== 'not_found')) {
+          throw Error(JSON.stringify(postResults, null, 2));
+        }
       }
     };
 
-    const saveUsersMetaDocs = async (docs) => {
+    const saveUsersMetaDocs = async (docsToSave) => {
       const results = await utils.request({
         path: '/medic-test-users-meta/_bulk_docs',
         method: 'POST',
-        body: { docs }
+        body: { docs: docsToSave }
       });
       if (results.find(r => !r.ok)) {
         throw Error(JSON.stringify(results, null, 2));
@@ -511,76 +519,145 @@ describe('Export Data V2.0', () => {
     });
 
     it('Returns device data for all users', async () => {
-      const expectedData = [
+      const maxDeviceId = uuid(); 
+      const minDeviceId = uuid();
+      const settingsForMax = uuid();
+
+      const telemetryDocsToCreate = [
         {
           user: 'max_data',
-          deviceId: uuid(),
+          deviceId: maxDeviceId,
           date: '2011-11-11',
-          browser: {
-            name: 'Firefox',
-            version: '47.0',
-          },
+          browser: { name: 'Firefox', version: '47.0' },
           apk: 'v1.0.1',
           android: '5.1',
           cht: `4.6.0`,
-          settings: uuid()
+          settings: settingsForMax,
+          storageFree: 536870912,
+          storageTotal: 2147483648,
         },
         {
           user: 'min_data',
-          deviceId: uuid(),
+          deviceId: minDeviceId,
           date: '2011-11-11',
-          browser: {}
+          browser: {},
+          storageFree: undefined, 
+          storageTotal: undefined,
         }
       ];
-      await saveUsersMetaDocs([...otherDocs, ...expectedData.map(createTelemetryDoc)]);
+      
+      const expectedApiOutput = [
+        {
+          user: 'max_data',
+          deviceId: maxDeviceId,
+          date: '2011-11-11',
+          browser: { name: 'Firefox', version: '47.0' },
+          apk: 'v1.0.1',
+          android: '5.1',
+          cht: `4.6.0`,
+          settings: settingsForMax,
+          storageFree: 536870912,
+          storageTotal: 2147483648,
+        },
+        {
+          user: 'min_data',
+          deviceId: minDeviceId,
+          date: '2011-11-11',
+          browser: { name: undefined, version: undefined }, // Explicitly check for undefined
+          apk: undefined,
+          android: undefined,
+          cht: undefined,
+          settings: undefined,
+          storageFree: undefined,
+          storageTotal: undefined,
+        }
+      ];
+
+      await saveUsersMetaDocs([...otherDocs, ...telemetryDocsToCreate.map(createTelemetryDoc)]);
 
       const result = await utils.request({ path: '/api/v2/export/user-devices' });
 
-      expect(result).to.deep.equal(expectedData);
+      const sortFn = (a, b) => (a.user + a.deviceId).localeCompare(b.user + b.deviceId);
+      result.sort(sortFn);
+      expectedApiOutput.sort(sortFn);
+      
+      expect(result).to.deep.equal(expectedApiOutput);
     });
 
     it('Only returns latest data for each user device', async () => {
-      const userData0 = {
-        user: 'chw1',
-        deviceId: 'my_device',
-        date: '1969-12-12',
-        browser: {
-          name: 'Firefox',
-          version: '47.0',
+      const deviceIdForLatestTest = 'my_device_for_latest_test';
+      const anotherDeviceId = 'different_device_for_latest_test';
+
+      const telemetryDocsToCreate = [
+        {
+          user: 'chw1',
+          deviceId: deviceIdForLatestTest,
+          date: '1969-12-12',
+          browser: { name: 'Firefox', version: '47.0' },
+          storageFree: 100000,
+          storageTotal: 200000,
+          apk: 'v0.1', android: '1.0', cht: '1.0.0', settings: uuid()
         },
-      };
-      const userData1 = {
-        user: 'chw1',
-        deviceId: 'my_device',
-        date: '2011-11-10',
-        browser: {
-          name: 'Firefox',
-          version: '48.0',
+        {
+          user: 'chw1',
+          deviceId: deviceIdForLatestTest,
+          date: '2011-11-10',
+          browser: { name: 'Firefox', version: '48.0' },
+          storageFree: 300000,
+          storageTotal: 400000,
+          apk: 'v0.2', android: '2.0', cht: '2.0.0', settings: uuid()
         },
-      };
-      const userDataLatest = {
-        user: 'chw1',
-        deviceId: 'my_device',
-        date: '2011-11-11',
-        browser: {
-          name: 'Chrome',
-          version: '121.0.6167.184',
+        {
+          user: 'chw1',
+          deviceId: deviceIdForLatestTest,
+          date: '2011-11-11', 
+          browser: { name: 'Chrome', version: '121.0.6167.184' },
+          storageFree: 500000000, 
+          storageTotal: 1000000000, 
+          apk: 'v1.0', android: '10.0', cht: '4.0.0', settings: uuid()
         },
-      };
-      const userDataDifferentDevice = {
-        user: 'chw1',
-        deviceId: 'different_device',
-        date: '2012-12-12',
-        browser: {
-          name: 'Firefox',
-          version: '122.0.1',
+        {
+          user: 'chw1',
+          deviceId: anotherDeviceId, 
+          date: '2012-12-12',
+          browser: { name: 'Firefox', version: '122.0.1' },
+          storageFree: 600000000,
+          storageTotal: 1200000000,
+          apk: 'v2.0', android: '11.0', cht: '5.0.0', settings: uuid()
+        }
+      ];
+      
+      const expectedApiOutput = [
+
+        {
+          user: 'chw1',
+          deviceId: anotherDeviceId,
+          date: '2012-12-12',
+          browser: { name: 'Firefox', version: '122.0.1' },
+          storageFree: 600000000,
+          storageTotal: 1200000000,
+          apk: 'v2.0', android: '11.0', cht: '5.0.0', settings: telemetryDocsToCreate[3].settings
         },
-      };
-      await saveUsersMetaDocs([userData0, userData1, userDataLatest, userDataDifferentDevice].map(createTelemetryDoc));
+        {
+          user: 'chw1',
+          deviceId: deviceIdForLatestTest,
+          date: '2011-11-11',
+          browser: { name: 'Chrome', version: '121.0.6167.184' },
+          storageFree: 500000000,
+          storageTotal: 1000000000,
+          apk: 'v1.0', android: '10.0', cht: '4.0.0', settings: telemetryDocsToCreate[2].settings
+        }
+      ];
+
+      await saveUsersMetaDocs(telemetryDocsToCreate.map(createTelemetryDoc));
 
       const result = await utils.request({ path: '/api/v2/export/user-devices' });
+      
+      const sortFn = (a, b) => (a.user + a.deviceId).localeCompare(b.user + b.deviceId);
+      result.sort(sortFn);
+      expectedApiOutput.sort(sortFn);
 
-      expect(result).to.deep.equal([userDataDifferentDevice, userDataLatest]);
+      expect(result).to.deep.equal(expectedApiOutput);
     });
   });
 
