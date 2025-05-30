@@ -29,6 +29,9 @@ const getPasswordResetErrorMessage = async (errorMsg) => {
 };
 
 const ssoLogin = async () => {
+  if (utils.isMinimumChromeVersion) {
+    await browser.url('/');
+  }
   const button = await $('#login-sso');
   await button.click();
   await commonPage.waitForPageLoaded();
