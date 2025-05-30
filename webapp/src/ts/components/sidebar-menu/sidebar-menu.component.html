@@ -22,6 +22,27 @@
           <mat-icon fontIcon="fa-cog"></mat-icon>
           <span>{{ 'admin.app.name' | translate }}</span>
         </a>
+
+        <a class="nav-item column storage-info"
+          mmAuth 
+          [mmAuthOnline]="false" 
+          [class.disabled]="true">
+          <mat-icon fontIcon="fa-hdd-o" class="progress-bar-icon"></mat-icon>
+          <div id="content">
+            <strong>{{'Storage Info' | translate}}</strong>
+            <div class="progress-bar-container">
+              <div
+                id="storage-pressure-progress-bar"
+                class="progress-bar"
+                [ngClass]="storagePressureClass"
+                [style.width.%]="storageUsagePercentage"
+                [title]="'Used: ' + storageUsagePercentage.toFixed(2) + '%'"
+                aria-label="'Used storage: ' + storageUsagePercentage.toFixed(2) + '%'">
+              </div>
+            </div>
+            <span>Available space: {{availableStorageSpace}}</span>
+          </div>
+        </a>
       </div>
 
       <div class="nav-section">

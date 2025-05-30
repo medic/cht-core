@@ -50,6 +50,7 @@ import { FormService } from '@mm-services/form.service';
 import { OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
+import { StorageInfoService } from '@mm-services/storage-info.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -91,6 +92,7 @@ describe('AppComponent', () => {
   let userSettingsService;
   let formService;
   let updateServiceWorkerService;
+  let storageInfoService;
   // End Services
 
   let globalActions;
@@ -159,6 +161,8 @@ describe('AppComponent', () => {
     };
     translateLocaleService = { reloadLang: sinon.stub() };
     transitionsService = { init: sinon.stub() };
+    
+    storageInfoService = { init: sinon.stub(), stop: sinon.stub() };
 
     router = { navigate: sinon.stub(), events: of(ActivationEnd) };
 
@@ -234,6 +238,7 @@ describe('AppComponent', () => {
           { provide: TrainingCardsService, useValue: trainingCardsService },
           { provide: UserSettingsService, useValue: userSettingsService },
           { provide: FormService, useValue: formService },
+          { provide: StorageInfoService, useValue: storageInfoService },
           { provide: Router, useValue: router },
         ]
       })
@@ -288,6 +293,8 @@ describe('AppComponent', () => {
     expect(globalActions.setUserFacilityIds.calledOnceWith(['facility'])).to.equal(true);
     expect(globalActions.setUserContactId.calledOnceWith('contact')).to.equal(true);
     expect(updateServiceWorkerService.update.callCount).to.equal(1);
+    // init storage info service
+    expect(storageInfoService.init.callCount).to.equal(1);
   });
 
   it('should show reload popup when service worker is updated', async () => {

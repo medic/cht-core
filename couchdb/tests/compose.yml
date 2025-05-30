@@ -1,50 +1,59 @@
 services:
-  couchdb.1:
+  couchdb1:
     build:
       context: ..
       target: cht-couchdb
     environment:
-      - "COUCHDB_USER=${COUCHDB_USER:-admin-test}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD?}"
+      - "COUCHDB_USER=${COUCHDB_USER}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-7CF0C1FA-5940-4381-A4EB-E6F6874BAE83}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-CC686127-22F5-4E80-8DF2-BB3C80A086B8}"
-      - "SVC_NAME=couchdb.1"
-      - "CLUSTER_PEER_IPS=couchdb.2,couchdb.3"
+      - "SVC_NAME=couchdb1.local" 
+      - "CLUSTER_PEER_IPS=couchdb2.local,couchdb3.local"
+    ports:
+      - "15984:5984"
+    networks:
+      couch-test-network:
+        aliases:
+          - couchdb1.local
 
-  couchdb.2:
+
+  couchdb2:
     build:
       context: ..
       target: cht-couchdb
     environment:
-      - "COUCHDB_USER=${COUCHDB_USER:-admin-test}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD?}"
+      - "COUCHDB_USER=${COUCHDB_USER}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-7CF0C1FA-5940-4381-A4EB-E6F6874BAE83}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-CC686127-22F5-4E80-8DF2-BB3C80A086B8}"
-      - "SVC_NAME=couchdb.2"
-      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+      - "SVC_NAME=couchdb2.local"
+      - "COUCHDB_SYNC_ADMINS_NODE=couchdb1.local" 
+    ports:
+      - "25984:5984"
+    networks:
+      couch-test-network:
+        aliases:
+          - couchdb2.local 
 
-  couchdb.3:
+  couchdb3:
     build:
       context: ..
       target: cht-couchdb
     environment:
-      - "COUCHDB_USER=${COUCHDB_USER:-admin-test}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD?}"
+      - "COUCHDB_USER=${COUCHDB_USER}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-7CF0C1FA-5940-4381-A4EB-E6F6874BAE83}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-CC686127-22F5-4E80-8DF2-BB3C80A086B8}"
-      - "SVC_NAME=couchdb.3"
-      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+      - "SVC_NAME=couchdb3.local"  
+      - "COUCHDB_SYNC_ADMINS_NODE=couchdb1.local" 
+    ports:
+      - "35984:5984"
+    networks:
+      couch-test-network:
+        aliases:
+          - couchdb3.local 
 
-  sut:
-    depends_on:
-      - couchdb.1
-      - couchdb.2
-      - couchdb.3
-    build:
-      context: ..
-      target: test_couchdb_build
-    environment:
-      - "TEST_MODE=CLUSTERED"
-      - "COUCHDB_USER=${COUCHDB_USER:-admin-test}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD?}"
-      - "SVC_NAME=couchdb.1"
+networks:
+  couch-test-network:
+    driver: bridge
