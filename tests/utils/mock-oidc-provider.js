@@ -136,6 +136,10 @@ const startOidcServer = () => {
 };
 
 const stopOidcServer = () => {
+  if (!server){
+    return;
+  }
+
   server.close();
   server = null;
 };

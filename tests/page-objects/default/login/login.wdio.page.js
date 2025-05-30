@@ -28,6 +28,13 @@ const getPasswordResetErrorMessage = async (errorMsg) => {
   return await passwordResetMessageField(errorMsg).getText();
 };
 
+const ssoLogin = async () => {
+  const button = await $('#login-sso');
+  await button.click();
+  await commonPage.waitForPageLoaded();
+  await commonPage.hideSnackbar();
+};
+
 const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
   if (utils.isMinimumChromeVersion) {
     await browser.url('/');
@@ -194,5 +201,6 @@ module.exports = {
   updatePasswordButton,
   getPasswordResetErrorMessage,
   privacyPolicyPageLink,
-  goToPrivacyPolicyPage
+  goToPrivacyPolicyPage,
+  ssoLogin
 };
