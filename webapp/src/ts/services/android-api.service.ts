@@ -171,8 +171,8 @@ export class AndroidApiService {
   }
 
   /**
-   * Gets tasks to for notifcation
-   * returns {Promise} A promise that resolves to tasks[].
+   * Gets notifcations for tasks
+   * returns {Promise} A promise that resolves to Notification[].
    */
   taskNotifications() {
     return this.tasksNotificationService.get();
