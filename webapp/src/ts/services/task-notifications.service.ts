@@ -34,13 +34,13 @@ export class TasksNotificationService {
 
   private async fetchNotifications(): Promise<Notification[]> {
     try {
+      const today = moment().format('YYYY-MM-DD');
       let lastNotificationTimestamp = this.getLastNotificationTimestamp();
       const isEnabled = await this.rulesEngineService.isEnabled();
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
       
       let notifications = taskDocs
         .filter(task => {
-          const today = moment().format('YYYY-MM-DD');
           return task.authoredOn > lastNotificationTimestamp
             && task.state === 'Ready' && task.emission.dueDate === today;
         })
@@ -89,6 +89,9 @@ export class TasksNotificationService {
       this.dbSyncService.sync(),
       new Promise(resolve => setTimeout(() => resolve([]), 5 * 1000))
     ]).then(() => {
+      return this.fetchNotifications();
+    }).catch((error) => {
+      console.error('get(): error syncing db', error);
       return this.fetchNotifications();
     });
   }

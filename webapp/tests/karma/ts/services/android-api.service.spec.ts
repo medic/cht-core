@@ -57,7 +57,7 @@ describe('AndroidApi service', () => {
       get: sinon.stub().resolvesArg(0),
       instant: sinon.stub().returnsArg(0),
     };
-    rulesEngine = { monitorExternalChanges: sinon.stub() };
+    rulesEngine = { };
     dbSyncService = { sync: sinon.stub() };
 
     TestBed.configureTestingModule({
