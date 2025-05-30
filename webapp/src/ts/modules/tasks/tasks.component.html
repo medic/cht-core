@@ -9,6 +9,7 @@
           [attr.data-record-id]="task._id"
           [class.selected]="task.selected"
           [class.overdue]="task.overdue"
+          [class.high-priority]="task.priority >= 8"
           class="content-row">
           <a [routerLink]="['/', 'tasks', task._id]" [state]="{ tab: 'tasks', id: task._id }">
             <div *ngIf="task.icon" class="icon" [innerHTML]="task.icon | resourceIcon"></div>
@@ -24,10 +25,9 @@
 
               <div *ngIf="task.title" class="summary">
                 <p>{{task.title}}</p>
-              </div>
-
-              <div *ngIf="task.priorityLabel" class="warning">{{task.priorityLabel}}</div>
+              </div> 
               <div *ngIf="task.lineage?.length" class="detail" [innerHTML]="task.lineage | lineage"></div>
+              <div *ngIf="task.priorityLabel" class="warning">{{task.priorityLabel}}</div>
             </div>
           </a>
         </li>

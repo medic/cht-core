@@ -48,8 +48,14 @@ function checkTaskResolvedForHomeVisit(contact, report, event, dueDate) {
   return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_home_visit'], startTime, endTime);
 }
 
-module.exports = [
+function getPriorityCategory(score) {
+  if (score < 6){ return 'Low priority';}
+  else if (score >= 6 && score <= 8){ return 'Medium priority';}
+  else if (score > 8){ return 'High priority';}
+  return '';
+}
 
+module.exports = [
   //ANC Home Visit: 12, 20, 26, 30, 34, 36, 38, 40 weeks (Known LMP)
   {
     name: 'anc.pregnancy_home_visit.known_lmp',
@@ -95,9 +101,18 @@ module.exports = [
       //We only want to show until 42 weeks + 7 days
       return !recentLMP && addDays(report.reported_date, MAX_DAYS_IN_PREGNANCY + 7) >= today;
     },
-
     resolvedIf: checkTaskResolvedForHomeVisit,
-
+    priority: function(contact, report) {
+      console.warn('CONTACT', contact);
+      console.warn('REPORT', report);
+      const taskTypeScore = 8;
+      const individualScore = 2;
+      const score = taskTypeScore + individualScore;
+      return {
+        level: score,
+        label: getPriorityCategory(score),
+      };
+    },
     actions: [
       {
         type: 'report',
@@ -128,6 +143,14 @@ module.exports = [
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_facility_visit_reminder'], startTime, endTime);
 
+    },
+    priority: function(contact, report) {
+      console.warn('CONTACT', contact);
+      console.warn('REPORT', report);
+      return {
+        level: 'medium',
+        label: '',
+      };
     },
     actions: [{
       type: 'report',
@@ -164,6 +187,15 @@ module.exports = [
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_danger_sign_follow_up'], startTime, endTime);
+    },
+    priority: function (contact, report) {
+      console.warn('CONTACT', contact);
+      console.warn('REPORT', report);
+      const score = 10;
+      return {
+        level: score,
+        label: getPriorityCategory(score),
+      };
     },
     actions: [
       {
@@ -237,6 +269,15 @@ module.exports = [
       const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);//+1 so that source ds_follow_up does not resolve itself;
       const endTime = addDays(dueDate, event.end + 1).getTime();
       return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_mother'], startTime, endTime);
+    },
+    priority: function(contact, report) {
+      console.warn('CONTACT', contact);
+      console.warn('REPORT', report);
+      const score = 3;
+      return {
+        level: score,
+        label: getPriorityCategory(score),
+      };
     },
     actions: [
       {
@@ -357,4 +398,3 @@ module.exports = [
     ]
   }
 ];
-
