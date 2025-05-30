@@ -1,3 +1,4 @@
+// @ts-nocheck
 const extras = require('./nools-extras');
 
 const {
@@ -14,7 +15,7 @@ const {
   addDays,
   getRecentANCVisitWithEvent,
   isPregnancyTaskMuted,
-  getField
+  getField,
 } = extras;
 
 const generateEventForHomeVisit = (week, start, end) => ({
@@ -23,36 +24,52 @@ const generateEventForHomeVisit = (week, start, end) => ({
   end,
   dueDate: function (event, contact, report) {
     const recentLMPDate = getMostRecentLMPDateForPregnancy(contact, report);
-    if (recentLMPDate) { return addDays(recentLMPDate, week * 7); }
+    if (recentLMPDate) {
+      return addDays(recentLMPDate, week * 7);
+    }
     return addDays(report.reported_date, week * 7);
-  }
+  },
 });
 
 function checkTaskResolvedForHomeVisit(contact, report, event, dueDate) {
   //delivery form submitted
-  if (report.reported_date < getNewestDeliveryTimestamp(contact)) { return true; }
+  if (report.reported_date < getNewestDeliveryTimestamp(contact)) {
+    return true;
+  }
 
   //old pregnancy report
-  if (report.reported_date < getNewestPregnancyTimestamp(contact)) { return true; }
+  if (report.reported_date < getNewestPregnancyTimestamp(contact)) {
+    return true;
+  }
 
   //miscarriage or abortion
-  if (getRecentANCVisitWithEvent(contact, report, 'abortion') || getRecentANCVisitWithEvent(contact, report, 'miscarriage')) { return true; }
+  if (
+    getRecentANCVisitWithEvent(contact, report, 'abortion') ||
+    getRecentANCVisitWithEvent(contact, report, 'miscarriage')
+  ) {
+    return true;
+  }
 
   //Due date older than reported day
-  if (dueDate <= getTimeForMidnight(report.reported_date)) { return true; }
+  if (dueDate <= getTimeForMidnight(report.reported_date)) {
+    return true;
+  }
 
   //Tasks cleared
-  if (isPregnancyTaskMuted(contact)) { return true; }
-  const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
+  if (isPregnancyTaskMuted(contact)) {
+    return true;
+  }
+  const startTime = Math.max(
+    addDays(dueDate, -event.start).getTime(),
+    report.reported_date
+  );
   const endTime = addDays(dueDate, event.end + 1).getTime();
-  return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_home_visit'], startTime, endTime);
-}
-
-function getPriorityCategory(score) {
-  if (score < 6){ return 'Low priority';}
-  else if (score >= 6 && score <= 8){ return 'Medium priority';}
-  else if (score > 8){ return 'High priority';}
-  return '';
+  return isFormArraySubmittedInWindow(
+    contact.reports,
+    ['pregnancy_home_visit'],
+    startTime,
+    endTime
+  );
 }
 
 module.exports = [
@@ -74,8 +91,8 @@ module.exports = [
       {
         type: 'report',
         form: 'pregnancy_home_visit',
-        label: 'Pregnancy home visit'
-      }
+        label: 'Pregnancy home visit',
+      },
     ],
     events: [
       generateEventForHomeVisit(12, 7, 14),
@@ -85,8 +102,8 @@ module.exports = [
       generateEventForHomeVisit(34, 6, 7),
       generateEventForHomeVisit(36, 6, 7),
       generateEventForHomeVisit(38, 6, 7),
-      generateEventForHomeVisit(40, 6, 7)
-    ]
+      generateEventForHomeVisit(40, 6, 7),
+    ],
   },
 
   //ANC Home Visit: show every 2 weeks (Unknown LMP)
@@ -96,32 +113,29 @@ module.exports = [
     title: 'task.anc.pregnancy_home_visit.title',
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
-    appliesIf: function (contact, report) {// If LMP date is unknown
+    appliesIf: function (contact, report) {
+      // If LMP date is unknown
       const recentLMP = getMostRecentLMPDateForPregnancy(contact, report);
       //We only want to show until 42 weeks + 7 days
-      return !recentLMP && addDays(report.reported_date, MAX_DAYS_IN_PREGNANCY + 7) >= today;
+      return (
+        !recentLMP &&
+        addDays(report.reported_date, MAX_DAYS_IN_PREGNANCY + 7) >= today
+      );
     },
+
     resolvedIf: checkTaskResolvedForHomeVisit,
-    priority: function(contact, report) {
-      console.warn('CONTACT', contact);
-      console.warn('REPORT', report);
-      const taskTypeScore = 8;
-      const individualScore = 2;
-      const score = taskTypeScore + individualScore;
-      return {
-        level: score,
-        label: getPriorityCategory(score),
-      };
-    },
+
     actions: [
       {
         type: 'report',
         form: 'pregnancy_home_visit',
-        label: 'Pregnancy home visit'
-      }
+        label: 'Pregnancy home visit',
+      },
     ],
     //every two weeks from reported date until 42nd week, show before due date: 6 days, show after due date: 7 days
-    events: [...Array(21).keys()].map(i => generateEventForHomeVisit((i + 1) * 2, 6, 7))
+    events: [...Array(21).keys()].map((i) =>
+      generateEventForHomeVisit((i + 1) * 2, 6, 7)
+    ),
   },
 
   //ANC - Health Facility Visit Reminder
@@ -137,39 +151,48 @@ module.exports = [
     },
 
     resolvedIf: function (contact, report, event, dueDate) {
-      //(refused or migrated) and cleared tasks 
-      if (isPregnancyTaskMuted(contact)) { return true; }
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
+      //(refused or migrated) and cleared tasks
+      if (isPregnancyTaskMuted(contact)) {
+        return true;
+      }
+      const startTime = Math.max(
+        addDays(dueDate, -event.start).getTime(),
+        report.reported_date
+      );
       const endTime = addDays(dueDate, event.end + 1).getTime();
-      return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_facility_visit_reminder'], startTime, endTime);
-
+      return isFormArraySubmittedInWindow(
+        contact.reports,
+        ['pregnancy_facility_visit_reminder'],
+        startTime,
+        endTime
+      );
     },
-    priority: function(contact, report) {
-      console.warn('CONTACT', contact);
-      console.warn('REPORT', report);
-      return {
-        level: 'medium',
-        label: '',
-      };
-    },
-    actions: [{
-      type: 'report',
-      form: 'pregnancy_facility_visit_reminder',
-      label: 'Pregnancy facility visit reminder',
-      modifyContent: function (content, contact, report) {
-        content.source_visit_date = getField(report, 't_pregnancy_follow_up_date');
-      }
-    }],
-    events: [{
-      id: 'pregnancy-facility-visit-reminder',
-      start: 3,
-      end: 7,
-      dueDate: function (event, contact, report) {
-        //next visit date
-        return getDateISOLocal(getField(report, 't_pregnancy_follow_up_date'));
-      }
-    }
-    ]
+    actions: [
+      {
+        type: 'report',
+        form: 'pregnancy_facility_visit_reminder',
+        label: 'Pregnancy facility visit reminder',
+        modifyContent: function (content, contact, report) {
+          content.source_visit_date = getField(
+            report,
+            't_pregnancy_follow_up_date'
+          );
+        },
+      },
+    ],
+    events: [
+      {
+        id: 'pregnancy-facility-visit-reminder',
+        start: 3,
+        end: 7,
+        dueDate: function (event, contact, report) {
+          //next visit date
+          return getDateISOLocal(
+            getField(report, 't_pregnancy_follow_up_date')
+          );
+        },
+      },
+    ],
   },
 
   {
@@ -177,31 +200,40 @@ module.exports = [
     icon: 'icon-pregnancy-danger',
     title: 'task.anc.pregnancy_danger_sign_followup.title',
     appliesTo: 'reports',
-    appliesToType: ['pregnancy', 'pregnancy_home_visit', 'pregnancy_danger_sign', 'pregnancy_danger_sign_follow_up'],
+    appliesToType: [
+      'pregnancy',
+      'pregnancy_home_visit',
+      'pregnancy_danger_sign',
+      'pregnancy_danger_sign_follow_up',
+    ],
     appliesIf: function (contact, report) {
-      return getField(report, 't_danger_signs_referral_follow_up') === 'yes' && isAlive(contact);
+      return (
+        getField(report, 't_danger_signs_referral_follow_up') === 'yes' &&
+        isAlive(contact)
+      );
     },
     resolvedIf: function (contact, report, event, dueDate) {
-      //(refused or migrated) and cleared tasks 
-      if (isPregnancyTaskMuted(contact)) { return true; }
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);
+      //(refused or migrated) and cleared tasks
+      if (isPregnancyTaskMuted(contact)) {
+        return true;
+      }
+      const startTime = Math.max(
+        addDays(dueDate, -event.start).getTime(),
+        report.reported_date + 1
+      );
       const endTime = addDays(dueDate, event.end + 1).getTime();
-      return isFormArraySubmittedInWindow(contact.reports, ['pregnancy_danger_sign_follow_up'], startTime, endTime);
-    },
-    priority: function (contact, report) {
-      console.warn('CONTACT', contact);
-      console.warn('REPORT', report);
-      const score = 10;
-      return {
-        level: score,
-        label: getPriorityCategory(score),
-      };
+      return isFormArraySubmittedInWindow(
+        contact.reports,
+        ['pregnancy_danger_sign_follow_up'],
+        startTime,
+        endTime
+      );
     },
     actions: [
       {
         type: 'report',
-        form: 'pregnancy_danger_sign_follow_up'
-      }
+        form: 'pregnancy_danger_sign_follow_up',
+      },
     ],
     events: [
       {
@@ -209,10 +241,12 @@ module.exports = [
         start: 3,
         end: 7,
         dueDate: function (event, contact, report) {
-          return getDateISOLocal(getField(report, 't_danger_signs_referral_follow_up_date'));
-        }
-      }
-    ]
+          return getDateISOLocal(
+            getField(report, 't_danger_signs_referral_follow_up_date')
+          );
+        },
+      },
+    ],
   },
 
   {
@@ -228,19 +262,34 @@ module.exports = [
     },
     resolvedIf: function (contact, report, event, dueDate) {
       //miscarriage or abortion
-      if (getRecentANCVisitWithEvent(contact, report, 'abortion') || getRecentANCVisitWithEvent(contact, report, 'miscarriage')) { return true; }
+      if (
+        getRecentANCVisitWithEvent(contact, report, 'abortion') ||
+        getRecentANCVisitWithEvent(contact, report, 'miscarriage')
+      ) {
+        return true;
+      }
 
-      //(refused or migrated) and cleared tasks 
-      if (isPregnancyTaskMuted(contact)) { return true; }
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date);
+      //(refused or migrated) and cleared tasks
+      if (isPregnancyTaskMuted(contact)) {
+        return true;
+      }
+      const startTime = Math.max(
+        addDays(dueDate, -event.start).getTime(),
+        report.reported_date
+      );
       const endTime = addDays(dueDate, event.end + 1).getTime();
-      return isFormArraySubmittedInWindow(contact.reports, ['delivery'], startTime, endTime);
+      return isFormArraySubmittedInWindow(
+        contact.reports,
+        ['delivery'],
+        startTime,
+        endTime
+      );
     },
     actions: [
       {
         type: 'report',
-        form: 'delivery'
-      }
+        form: 'delivery',
+      },
     ],
     events: [
       {
@@ -248,10 +297,13 @@ module.exports = [
         start: 4 * 7,
         end: 6 * 7,
         dueDate: function (event, contact, report) {
-          return addDays(getMostRecentLMPDateForPregnancy(contact, report), MAX_DAYS_IN_PREGNANCY); //LMP + 42 weeks
-        }
-      }
-    ]
+          return addDays(
+            getMostRecentLMPDateForPregnancy(contact, report),
+            MAX_DAYS_IN_PREGNANCY
+          ); //LMP + 42 weeks
+        },
+      },
+    ],
   },
 
   {
@@ -261,23 +313,27 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['delivery', 'pnc_danger_sign_follow_up_mother'],
     appliesIf: function (contact, report) {
-      return getField(report, 't_danger_signs_referral_follow_up') === 'yes' && isAlive(contact);
+      return (
+        getField(report, 't_danger_signs_referral_follow_up') === 'yes' &&
+        isAlive(contact)
+      );
     },
     resolvedIf: function (contact, report, event, dueDate) {
-      //(refused or migrated) and cleared tasks 
-      if (isPregnancyTaskMuted(contact)) { return true; }
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);//+1 so that source ds_follow_up does not resolve itself;
+      //(refused or migrated) and cleared tasks
+      if (isPregnancyTaskMuted(contact)) {
+        return true;
+      }
+      const startTime = Math.max(
+        addDays(dueDate, -event.start).getTime(),
+        report.reported_date + 1
+      ); //+1 so that source ds_follow_up does not resolve itself;
       const endTime = addDays(dueDate, event.end + 1).getTime();
-      return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_mother'], startTime, endTime);
-    },
-    priority: function(contact, report) {
-      console.warn('CONTACT', contact);
-      console.warn('REPORT', report);
-      const score = 3;
-      return {
-        level: score,
-        label: getPriorityCategory(score),
-      };
+      return isFormArraySubmittedInWindow(
+        contact.reports,
+        ['pnc_danger_sign_follow_up_mother'],
+        startTime,
+        endTime
+      );
     },
     actions: [
       {
@@ -286,12 +342,11 @@ module.exports = [
         modifyContent: function (content, contact, report) {
           if (isDeliveryForm(report)) {
             content.delivery_uuid = report._id;
-          }
-          else {
+          } else {
             content.delivery_uuid = getField(report, 'inputs.delivery_uuid');
           }
-        }
-      }
+        },
+      },
     ],
     events: [
       {
@@ -299,10 +354,12 @@ module.exports = [
         start: 3,
         end: 7,
         dueDate: function (event, contact, report) {
-          return getDateISOLocal(getField(report, 't_danger_signs_referral_follow_up_date'));
-        }
-      }
-    ]
+          return getDateISOLocal(
+            getField(report, 't_danger_signs_referral_follow_up_date')
+          );
+        },
+      },
+    ],
   },
 
   {
@@ -312,16 +369,26 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: function (contact) {
-      return contact.contact &&
+      return (
+        contact.contact &&
         contact.contact.t_danger_signs_referral_follow_up === 'yes' &&
-        isAlive(contact);
+        isAlive(contact)
+      );
     },
     resolvedIf: function (contact, report, event, dueDate) {
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), contact.contact.reported_date);
+      const startTime = Math.max(
+        addDays(dueDate, -event.start).getTime(),
+        contact.contact.reported_date
+      );
       const endTime = addDays(dueDate, event.end).getTime();
-      return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'], startTime, endTime);
+      return isFormArraySubmittedInWindow(
+        contact.reports,
+        ['pnc_danger_sign_follow_up_baby'],
+        startTime,
+        endTime
+      );
     },
-    priority: function(contact, report, event, dueDate) {
+    priority: function (contact, report, event, dueDate) {
       console.warn(contact);
       console.warn(event);
       console.warn(dueDate);
@@ -336,8 +403,8 @@ module.exports = [
         form: 'pnc_danger_sign_follow_up_baby',
         modifyContent: function (content, contact) {
           content.delivery_uuid = contact.contact.created_by_doc;
-        }
-      }
+        },
+      },
     ],
     events: [
       {
@@ -345,10 +412,12 @@ module.exports = [
         start: 3,
         end: 7,
         dueDate: function (event, contact) {
-          return getDateISOLocal(contact.contact.t_danger_signs_referral_follow_up_date);
-        }
-      }
-    ]
+          return getDateISOLocal(
+            contact.contact.t_danger_signs_referral_follow_up_date
+          );
+        },
+      },
+    ],
   },
 
   {
@@ -358,17 +427,30 @@ module.exports = [
     appliesTo: 'reports',
     appliesToType: ['pnc_danger_sign_follow_up_baby'],
     appliesIf: function (contact, report) {
-      return getField(report, 't_danger_signs_referral_follow_up') === 'yes' && isAlive(contact);
+      return (
+        getField(report, 't_danger_signs_referral_follow_up') === 'yes' &&
+        isAlive(contact)
+      );
     },
     resolvedIf: function (contact, report, event, dueDate) {
-      //(refused or migrated) and cleared tasks 
-      if (isPregnancyTaskMuted(contact)) { return true; }
-      const startTime = Math.max(addDays(dueDate, -event.start).getTime(), report.reported_date + 1);
+      //(refused or migrated) and cleared tasks
+      if (isPregnancyTaskMuted(contact)) {
+        return true;
+      }
+      const startTime = Math.max(
+        addDays(dueDate, -event.start).getTime(),
+        report.reported_date + 1
+      );
       //reported_date + 1 so that source ds_follow_up does not resolve itself
       const endTime = addDays(dueDate, event.end + 1).getTime();
-      return isFormArraySubmittedInWindow(contact.reports, ['pnc_danger_sign_follow_up_baby'], startTime, endTime);
+      return isFormArraySubmittedInWindow(
+        contact.reports,
+        ['pnc_danger_sign_follow_up_baby'],
+        startTime,
+        endTime
+      );
     },
-    priority: function(contact, report, event, dueDate) {
+    priority: function (contact, report, event, dueDate) {
       console.warn(contact);
       console.warn(event);
       console.warn(dueDate);
@@ -383,8 +465,8 @@ module.exports = [
         form: 'pnc_danger_sign_follow_up_baby',
         modifyContent: function (content, contact, report) {
           content.delivery_uuid = getField(report, 'inputs.delivery_uuid');
-        }
-      }
+        },
+      },
     ],
     events: [
       {
@@ -392,9 +474,11 @@ module.exports = [
         start: 3,
         end: 7,
         dueDate: function (event, contact, report) {
-          return getDateISOLocal(getField(report, 't_danger_signs_referral_follow_up_date'));
-        }
-      }
-    ]
-  }
+          return getDateISOLocal(
+            getField(report, 't_danger_signs_referral_follow_up_date')
+          );
+        },
+      },
+    ],
+  },
 ];

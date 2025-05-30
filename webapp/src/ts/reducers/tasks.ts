@@ -27,7 +27,7 @@ const orderByDueDateAndPriority = (t1, t2) => {
     if (typeof dueDate === 'number') {
       return dueDate;
     }
-    if (moment(dueDate).isValid()) {
+    if (dueDate && moment(dueDate).isValid()) {
       return moment(dueDate).valueOf();
     }
     return NaN;

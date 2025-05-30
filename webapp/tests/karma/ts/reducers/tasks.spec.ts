@@ -221,7 +221,7 @@ describe('Tasks reducer', () => {
     it('should sort provided tasks by due date', () => {
       const tasks = [
         { _id: 'task1', dueDate: false, state: 'Ready', field: 1 },
-        { _id: 'task2', dueDate: null, state: 'Ready', field: 2 },
+        { _id: 'task2', dueDate: undefined, state: 'Ready', field: 2 },
         { _id: 'task3', dueDate: 0, state: 'Ready', field: 3 },
         { _id: 'task4', dueDate: 500, state: 'Ready', field: 4 },
         { _id: 'task5', dueDate: 500, state: 'Ready', field: 5 },
@@ -249,7 +249,7 @@ describe('Tasks reducer', () => {
           { _id: 'task5', dueDate: 500, state: 'Ready', field: 5 },
           { _id: 'task8', dueDate: 899, state: 'Ready', field: 8 },
           { _id: 'task1', dueDate: false, state: 'Ready', field: 1 },
-          { _id: 'task2', dueDate: null, state: 'Ready', field: 2 },
+          { _id: 'task2', dueDate: undefined, state: 'Ready', field: 2 },
         ],
       });
     });
@@ -327,9 +327,16 @@ describe('Tasks reducer', () => {
           field: 10,
         },
         {
-          _id: 'task11',
+          _id: 'task14',
           dueDate: '2025-05-17',
           priority: 2,
+          state: 'Ready',
+          field: 14,
+        },
+        {
+          _id: 'task11',
+          dueDate: undefined,
+          priority: undefined,
           state: 'Ready',
           field: 11,
         },
@@ -388,11 +395,11 @@ describe('Tasks reducer', () => {
             field: 8,
           },
           {
-            _id: 'task11',
+            _id: 'task14',
             dueDate: '2025-05-17',
             priority: 2,
             state: 'Ready',
-            field: 11,
+            field: 14,
           },
           {
             _id: 'task4',
@@ -449,6 +456,13 @@ describe('Tasks reducer', () => {
             priority: 'high',
             state: 'Ready',
             field: 6,
+          },
+          {
+            _id: 'task11',
+            dueDate: undefined,
+            priority: undefined,
+            state: 'Ready',
+            field: 11,
           },
         ],
       });
