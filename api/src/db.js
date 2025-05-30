@@ -4,7 +4,6 @@ const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
 
 PouchDB.plugin(require('pouchdb-adapter-http'));
-PouchDB.plugin(require('pouchdb-session-authentication'));
 PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 const asyncLocalStorage = require('./services/async-storage');

@@ -20,7 +20,6 @@ window.$ = window.jQuery = require('jquery');
 
 import { enableProdMode, importProvidersFrom } from '@angular/core';
 import '@angular/compiler';
-import pouchdbDebug from 'pouchdb-debug';
 import * as $ from 'jquery';
 
 import { environment } from '@mm-environments/environment';
@@ -89,7 +88,6 @@ class MissingTranslationHandlerLog implements MissingTranslationHandler {
   handle = (params: MissingTranslationHandlerParams) => params.key;
 }
 
-window.PouchDB.plugin(pouchdbDebug);
 bootstrapper(POUCHDB_OPTIONS)
   .then(() => {
     window.startupTimes.bootstrapped = performance.now();
