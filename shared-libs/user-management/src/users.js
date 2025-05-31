@@ -699,7 +699,7 @@ const validateUserContact = (data, user) => {
  * @param {string} appUrl request protocol://hostname
  */
 /* eslint-enable max-len */
-const createUserEntities = async (data, appUrl) => {
+const createUserEntities = async (data) => {
   // Preserve the place's primary contact, if data.place already exists in the DB.
   // => if we're creating the place alongside the user, set the contact as the place's primary contact
   const preservePrimaryContact = !(_.isObject(data.place) && !data.place._rev);
@@ -713,7 +713,7 @@ const createUserEntities = async (data, appUrl) => {
   hydratePayload(data);
   await createUser(data, response);
   await createUserSettings(data, response);
-  await tokenLogin.manageTokenLogin(data, appUrl, response);
+  await tokenLogin.manageTokenLogin(data, response);
   return response;
 };
 
@@ -876,7 +876,7 @@ const getUserSettings = async({ name }) => {
   return hydrateUserSettings(medicUser);
 };
 
-const createMultiFacilityUser = async (data, appUrl) => {
+const createMultiFacilityUser = async (data) => {
   const missing = missingFields(data);
   if (missing.length > 0) {
     return Promise.reject(error400(
@@ -903,7 +903,7 @@ const createMultiFacilityUser = async (data, appUrl) => {
 
   await createUser(data, response);
   await createUserSettings(data, response);
-  await tokenLogin.manageTokenLogin(data, appUrl, response);
+  await tokenLogin.manageTokenLogin(data, response);
   return response;
 };
 
@@ -1145,7 +1145,7 @@ module.exports = {
    *                                     security-related things?
    * @param      {String}    appUrl      request protocol://hostname
    */
-  updateUser: async (username, data, fullAccess, appUrl) => {
+  updateUser: async (username, data, fullAccess) => {
     await validateUpdateAttempt(data, fullAccess);
     hydratePayload(data);
 
@@ -1167,7 +1167,7 @@ module.exports = {
       'user-settings': await saveUserSettingsUpdates(userSettings),
     };
 
-    return tokenLogin.manageTokenLogin(data, appUrl, response);
+    return tokenLogin.manageTokenLogin(data, response);
   },
 
   /**

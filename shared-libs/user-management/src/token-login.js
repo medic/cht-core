@@ -52,7 +52,7 @@ const generateToken = () => {
  * @param {Object} response - the response of previous actions
  * @returns {Promise<{Object}>} - updated response to be sent to the client
  */
-const enableTokenLogin = (appUrl, response) => {
+const enableTokenLogin = (response) => {
   return Promise
     .all([
       db.users.get(response.user.id),
@@ -60,7 +60,7 @@ const enableTokenLogin = (appUrl, response) => {
       generateToken()
     ])
     .then(([ user, userSettings, token ]) => {
-      return generateTokenLoginDoc(user, userSettings, token, appUrl)
+      return generateTokenLoginDoc(user, userSettings, token)
         .then(() => {
           user.token_login = {
             active: true,
@@ -121,7 +121,7 @@ const disableTokenLogin = (response) => {
  * @param {Object} response - the response of previous actions
  * @returns {Promise<{Object}>} - updated response to be sent to the client
  */
-const manageTokenLogin = (data, appUrl, response) => {
+const manageTokenLogin = (data, response) => {
   if (shouldDisableTokenLogin(data)) {
     return disableTokenLogin(response);
   }
@@ -130,7 +130,7 @@ const manageTokenLogin = (data, appUrl, response) => {
     return Promise.resolve(response);
   }
 
-  return enableTokenLogin(appUrl, response);
+  return enableTokenLogin(response);
 };
 
 const getTokenLoginDocId = token => `token:login:${token}`;
@@ -183,8 +183,12 @@ const clearOldTokenLoginDoc = ({ token_login: { token }={} }={}) => {
  * @param {String} appUrl - the base URL of the application
  * @returns {Promise<Object>} - returns the result of saving the new token_login_sms document
  */
-const generateTokenLoginDoc = (user, userSettings, token, appUrl) => {
+const generateTokenLoginDoc = (user, userSettings, token) => {
   return clearOldTokenLoginDoc(user).then(() => {
+    const appUrl = config.get('app_url');
+    if (!appUrl){
+      throw new Error('app_url configuration is required for token login');
+    }
     const doc = {
       _id: getTokenLoginDocId(token),
       type: 'token_login',
@@ -193,8 +197,8 @@ const generateTokenLoginDoc = (user, userSettings, token, appUrl) => {
       tasks: [],
     };
 
-    appUrl = (config.get('app_url') || appUrl).replace(/\/+$/, '');
-    const url = `${appUrl}/medic/login/token/${token}`;
+    const baseUrl = appUrl.replace(/\/+$/, '');
+    const url = `${baseUrl}/medic/login/token/${token}`;
 
     const messagesLib = config.getTransitionsLib().messages;
     const tokenLoginConfig = config.get('token_login');
