@@ -1682,7 +1682,7 @@ describe('Users service', () => {
       const tokenLoginConfig = { message: 'sms', enabled: true };
       config.get
         .withArgs('token_login').returns(tokenLoginConfig)
-        .withArgs('app_url').returns('');
+        .withArgs('app_url').returns('http://realhost');
 
       sinon.stub(roles, 'isOffline').returns(false);
       sinon.stub(roles, 'hasAllPermissions').returns(false);
@@ -3507,7 +3507,7 @@ describe('Users service', () => {
       const tokenLoginConfig = { message: 'sms', enabled: true };
       config.get
         .withArgs('token_login').returns(tokenLoginConfig)
-        .withArgs('app_url').returns('');
+        .withArgs('app_url').returns('http://realhost');
 
       sinon.stub(roles, 'isOffline').returns(false);
       sinon.stub(roles, 'hasAllPermissions').returns(false);
