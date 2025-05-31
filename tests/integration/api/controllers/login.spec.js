@@ -68,11 +68,8 @@ const getUser = (user) => {
   return utils.request(opts);
 };
 
-const setupTokenLoginSettings = (configureAppUrl = false) => {
+const setupTokenLoginSettings = () => {
   const settings = { token_login: { translation_key: 'login_sms', enabled: true } };
-  if (configureAppUrl) {
-    settings.app_url = utils.getOrigin();
-  }
   return utils
     .updateSettings(settings, { ignoreReload: true })
     .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }));

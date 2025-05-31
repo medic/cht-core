@@ -186,7 +186,7 @@ module.exports = {
   create: (req, res) => {
     return auth
       .check(req, ['can_edit', 'can_create_users'])
-      .then(() => users.createUsers(req.body, getAppUrl(req)))
+      .then(() => users.createUsers(req.body))
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },
@@ -200,7 +200,7 @@ module.exports = {
       const requesterContext = await auth.getUserCtx(req);
 
       const username = req.params.username;
-      const result = await users.updateUser(username, req.body, !!fullPermission, getAppUrl(req));
+      const result = await users.updateUser(username, req.body, !!fullPermission);
 
       const body = Object.keys(req.body).join(',');
       logger.info(
@@ -273,7 +273,6 @@ module.exports = {
 
         const response = await users.createUsers(
           usersToCreate,
-          getAppUrl(req),
           ignoredUsers,
           logId
         );
