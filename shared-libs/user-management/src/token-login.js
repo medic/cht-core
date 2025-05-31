@@ -48,7 +48,6 @@ const generateToken = () => {
  * - if the user already had token-login enabled, the previous sms document's tasks are cleared
  * - updates the user document to contain information about the active `token-login` context for the user
  * - updates the user-settings document to contain some information to be displayed in the admin page
- * @param {String} appUrl - the base URL of the application
  * @param {Object} response - the response of previous actions
  * @returns {Promise<{Object}>} - updated response to be sent to the client
  */
@@ -117,7 +116,6 @@ const disableTokenLogin = (response) => {
  * Enables or disables token-login for a user
  * When enabling, if `token-login` configuration is missing or invalid, no changes are made.
  * @param {Object} data - the request body
- * @param {String} appUrl - the base URL of the application
  * @param {Object} response - the response of previous actions
  * @returns {Promise<{Object}>} - updated response to be sent to the client
  */
