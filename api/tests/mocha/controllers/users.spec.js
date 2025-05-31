@@ -924,7 +924,6 @@ describe('Users Controller', () => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'err' }, req, res]);
         chai.expect(users.createUser.callCount).to.equal(1);
-        chai.expect(users.createUser.args[0]).to.deep.equal([req.body, 'http://thehost.com']);
         chai.expect(res.json.callCount).to.equal(0);
 
       });
@@ -938,7 +937,7 @@ describe('Users Controller', () => {
       return controller.create(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(0);
         chai.expect(users.createUser.callCount).to.equal(1);
-        chai.expect(users.createUser.args[0]).to.deep.equal([req.body, 'https://host.com']);
+        chai.expect(users.createUser.args[0]).to.deep.equal([req.body]);
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0]).to.deep.equal([{ user: { id: 'aaa' } }]);
       });
@@ -987,7 +986,7 @@ describe('Users Controller', () => {
       return controller.update(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(0);
         chai.expect(users.updateUser.callCount).to.equal(1);
-        chai.expect(users.updateUser.args[0]).to.deep.equal(['alpha', { field: 'update' }, false, 'http://myhost.net']);
+        chai.expect(users.updateUser.args[0]).to.deep.equal(['alpha', { field: 'update' }, false]);
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0]).to.deep.equal([{ response: true }]);
       });
@@ -1005,7 +1004,7 @@ describe('Users Controller', () => {
       return controller.update(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(0);
         chai.expect(users.updateUser.callCount).to.equal(1);
-        chai.expect(users.updateUser.args[0]).to.deep.equal(['beta', { field: 'update' }, true, 'https://myhost.io']);
+        chai.expect(users.updateUser.args[0]).to.deep.equal(['beta', { field: 'update' }, true]);
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0]).to.deep.equal([{ updated: true }]);
       });

@@ -398,8 +398,7 @@ describe('login controller', () => {
             password: 'newPass123',
             password_change_required: false
           },
-          true,
-          `${req.protocol}://${req.hostname}`
+          true
         ]);
       });
     });
