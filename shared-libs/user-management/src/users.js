@@ -696,7 +696,6 @@ const validateUserContact = (data, user) => {
  * @param {string=} data.email Email address
  * @param {Boolean=} data.known Boolean to define if the user has logged in before.
  * @param {string=} data.type Deprecated. Used to infer user's roles
- * @param {string} appUrl request protocol://hostname
  */
 /* eslint-enable max-len */
 const createUserEntities = async (data) => {
@@ -994,11 +993,10 @@ module.exports = {
    * @param {string=} data.email Email address
    * @param {Boolean=} data.known Boolean to define if the user has logged in before.
    * @param {string=} data.type Deprecated. Used to infer user's roles
-   * @param {string} appUrl request protocol://hostname
    * @api public
    */
   /* eslint-enable max-len */
-  createUser: async (data, appUrl) => {
+  createUser: async (data) => {
     const missing = missingFields(data);
     if (missing.length > 0) {
       return Promise.reject(error400(
@@ -1017,7 +1015,7 @@ module.exports = {
       return Promise.reject(passwordError);
     }
 
-    return await createUserEntities(data, appUrl);
+    return await createUserEntities(data);
   },
 
   /* eslint-disable max-len */
@@ -1041,12 +1039,11 @@ module.exports = {
    * @param {string=} users[].email Email address
    * @param {Boolean=} users[].known Boolean to define if the user has logged in before.
    * @param {string=} users[].type Deprecated. Used to infer user's roles
-   * @param {string} appUrl request protocol://hostname
    */
   /* eslint-enable max-len */
-  async createUsers(users, appUrl, ignoredUsers, logId) {
+  async createUsers(users, ignoredUsers, logId) {
     if (!Array.isArray(users)) {
-      return module.exports.createUser(users, appUrl);
+      return module.exports.createUser(users);
     }
 
     const progress = {
@@ -1090,7 +1087,7 @@ module.exports = {
           throw passwordError;
         }
 
-        response = await createUserEntities(user, appUrl);
+        response = await createUserEntities(user);
         progress.saving.successful++;
         logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.IMPORTED));
       } catch (error) {
@@ -1143,7 +1140,6 @@ module.exports = {
    * @param      {Object}    data        Changes to make
    * @param      {Boolean}   fullAccess  Are we allowed to update
    *                                     security-related things?
-   * @param      {String}    appUrl      request protocol://hostname
    */
   updateUser: async (username, data, fullAccess) => {
     await validateUpdateAttempt(data, fullAccess);
