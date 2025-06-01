@@ -8,6 +8,8 @@ import { TranslateService } from '@mm-services/translate.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { DBSyncService } from '@mm-services/db-sync.service';
 
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
 describe('TasksNotificationService', () => {
   let service;
   let consoleErrorMock;
@@ -33,7 +35,7 @@ describe('TasksNotificationService', () => {
       },
       {
         _id: 'task2',
-        authoredOn: moment().add(1, 'minutes').valueOf(),
+        authoredOn: moment().add(100, 'milliseconds').valueOf(),
         state: 'Ready',
         emission: {
           title: 'Task 2',
@@ -97,12 +99,12 @@ describe('TasksNotificationService', () => {
     expect(secondCallNotifications).to.be.an('array').that.has.lengthOf(0);
   });
 
-  it('should return latest notification', async () => {
+  it('should return notification if new task is generated', async () => {
     const notifications = await service.fetchNotifications();
     expect(notifications).to.be.an('array').that.has.lengthOf(2);
     const newTask = {
       _id: 'task3',
-      authoredOn: moment().add(2, 'minutes').valueOf(),
+      authoredOn: moment().add(120, 'milliseconds').valueOf(),
       state: 'Ready',
       emission: {
         title: 'Task 3',
@@ -114,6 +116,29 @@ describe('TasksNotificationService', () => {
     const updatedNotifications = await service.fetchNotifications();
     expect(updatedNotifications).to.be.an('array').that.has.lengthOf(1);
     expect(updatedNotifications[0]._id).to.equal(newTask._id);
+  });
+
+  it('should return task notification due today on a new day', async () => {
+    const taskDueTomorrow = {
+      _id: 'task_tomorrow',
+      authoredOn: moment().subtract(1, 'day').valueOf(),
+      state: 'Ready',
+      emission: {
+        title: 'Task 3',
+        contact: { name: 'Future Owl', _id: 'contact_future' },
+        dueDate: moment().add(1, 'day').format('YYYY-MM-DD')
+      }
+    };
+    rulesEngine.fetchTaskDocsForAllContacts.resolves([...tasks, taskDueTomorrow]);
+    const clock = sinon.useFakeTimers(moment().valueOf());
+    const notifications = await service.fetchNotifications();
+    expect(notifications).to.be.an('array').that.has.lengthOf(2);
+
+    clock.tick(DAY_IN_MS);
+
+    const updatedNotifications = await service.fetchNotifications();
+    expect(updatedNotifications).to.be.an('array').that.has.lengthOf(1);
+    clock.restore();
   });
 
   it('should return empty array if rules engine is disabled', async () => {

@@ -11,6 +11,9 @@ import { DBSyncService } from '@mm-services/db-sync.service';
 ** 24 for android >= 10
 */
 const MAX_NOTIFICATIONS = 24;
+const TODAY_TIMESTAMP = 'cht-today-timestamp';
+const LATEST_NOTIFICATION_TIMESTAMP = 'cht-latest-notification-timestamp';
+
 export interface Notification {
   _id: string,
   authoredOn: number,
@@ -24,7 +27,6 @@ export interface Notification {
   providedIn: 'root'
 })
 export class TasksNotificationService {
-  private readonly LAST_NOTIFICATION_TASK_TIMESTAMP = 'medic-last-task-notification-timestamp';
 
   constructor(
     private readonly rulesEngineService: RulesEngineService,
@@ -35,14 +37,14 @@ export class TasksNotificationService {
   private async fetchNotifications(): Promise<Notification[]> {
     try {
       const today = moment().format('YYYY-MM-DD');
-      let lastNotificationTimestamp = this.getLastNotificationTimestamp();
+      let latestNotificationTimestamp = this.getLatestNotificationTimestamp();
       const isEnabled = await this.rulesEngineService.isEnabled();
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
       
       let notifications = taskDocs
         .filter(task => {
-          return task.authoredOn > lastNotificationTimestamp
-            && task.state === 'Ready' && task.emission.dueDate === today;
+          return task.state === 'Ready' && task.emission.dueDate === today && 
+            task.authoredOn > latestNotificationTimestamp;
         })
         .map(task => ({
           _id: task._id,
@@ -55,8 +57,8 @@ export class TasksNotificationService {
 
       notifications = orderBy(notifications, ['authoredOn'], ['desc']);
       notifications = notifications.slice(0, MAX_NOTIFICATIONS);
-      lastNotificationTimestamp = notifications[0]?.authoredOn ?? lastNotificationTimestamp;
-      window.localStorage.setItem(this.LAST_NOTIFICATION_TASK_TIMESTAMP, String(lastNotificationTimestamp));
+      latestNotificationTimestamp = notifications[0]?.authoredOn ?? latestNotificationTimestamp;
+      window.localStorage.setItem(LATEST_NOTIFICATION_TIMESTAMP, String(latestNotificationTimestamp));
       return notifications;
 
     } catch (exception) {
@@ -65,23 +67,26 @@ export class TasksNotificationService {
     }
   }
 
+  private getLatestNotificationTimestamp(): number {
+    if (this.isNewDay()) {
+      return 0;
+    }
+    return Number(window.localStorage.getItem(LATEST_NOTIFICATION_TIMESTAMP));
+  }
+
+  private isNewDay(): boolean {
+    const now = moment();
+    const timestampToday = Number(window.localStorage.getItem(TODAY_TIMESTAMP));
+    if (!now.isSame(timestampToday, 'day')) {
+      window.localStorage.setItem(TODAY_TIMESTAMP, String(moment().startOf('day').valueOf()));
+      return true;
+    }
+    return false;
+  }
+
   private translateContentText(task: string, contact: string): string {
     const key = 'android.notification.tasks.contentText';
     return this.translateService.instant(key, { task, contact });
-  }
-
-  private getLastNotificationTimestamp(): number {
-    const lastNotificationTimestamp = Number(window.localStorage.getItem(this.LAST_NOTIFICATION_TASK_TIMESTAMP));
-    if (!this.isValidTimestamp(lastNotificationTimestamp)) {
-      return 0;
-    }
-    return lastNotificationTimestamp || 0;
-  }
-
-  private isValidTimestamp(notifcationTimestamp: number): boolean {
-    const now = moment();
-    const notificationDate = moment(notifcationTimestamp);
-    return now.isSameOrAfter(notificationDate, 'day');
   }
 
   async get(): Promise<Notification[]> {
@@ -91,7 +96,7 @@ export class TasksNotificationService {
     ]).then(() => {
       return this.fetchNotifications();
     }).catch((error) => {
-      console.error('get(): error syncing db', error);
+      console.error('get(): notifications error syncing db', error);
       return this.fetchNotifications();
     });
   }
