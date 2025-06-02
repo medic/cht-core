@@ -86,7 +86,7 @@ describe('Tasks', () => {
   });
 
   it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
-    await tasksPage.compileTasks('tasks-breadcrumbs-config.js', false);
+    await tasksPage.compileTasks('tasks-breadcrumbs-config.js', true);
 
     await commonPage.goToTasks();
     let list = await tasksPage.getTasks();
