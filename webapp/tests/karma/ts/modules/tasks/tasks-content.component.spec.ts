@@ -486,11 +486,11 @@ describe('TasksContentComponent', () => {
       expect(tasksForContactService.getLeafPlaceAncestor.callCount).to.equal(0);
     });
 
-    it('should work with action of type "contact" and content with "_id"', async () => {
+    it('should work with action of type "contact" and content with "id"', async () => {
       await compileComponent([]);
       sinon.resetHistory();
 
-      const action = { type: 'contact', content: { _id: '123' } };
+      const action = { type: 'contact', content: { id: '123' } };
       await component.performAction(action);
 
       expect(xmlFormsService.get.callCount).to.equal(0);
