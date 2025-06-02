@@ -18,7 +18,7 @@ spec:
       - name: cht-couchdb-nouveau
         image: {{ $.Values.upstream_servers.docker_registry }}/cht-couchdb-nouveau:{{ $.Values.cht_image_tag }}
         ports:
-        - containerPort: 5984
+        - containerPort: 5987
         volumeMounts:
         - mountPath: /data/nouveau
           name: couchdb-nouveau-claim0
