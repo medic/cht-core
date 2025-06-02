@@ -63,6 +63,21 @@ services:
     networks:
       cht-net:
 
+  healthcheck:
+      image: {{{ repo }}}/cht-haproxy-healthcheck:{{ tag }}
+      restart: always
+      environment:
+        - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-{{ couchdb_servers }}}"
+        - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+        - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      logging:
+        driver: "local"
+        options:
+          max-size: "${LOG_MAX_SIZE:-50m}"
+          max-file: "${LOG_MAX_FILES:-20}"
+      networks:
+        - cht-net
+
 volumes:
   cht-credentials:
 
