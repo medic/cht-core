@@ -70,7 +70,7 @@ const getUser = (user) => {
 
 const setupTokenLoginSettings = (configureAppUrl = false) => {
   const settings = { token_login: { translation_key: 'login_sms', enabled: true } };
-    if (configureAppUrl) {
+  if (configureAppUrl) {
     settings.app_url = utils.getOrigin();
   }
   return utils
