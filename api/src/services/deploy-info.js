@@ -1,4 +1,4 @@
-const environment = require('@medic/environment');
+const serverInfo = require('@medic/server-info');
 const fs = require('fs');
 const path = require('path');
 const resources = require('../resources');
@@ -6,7 +6,7 @@ const resources = require('../resources');
 const webappPath = resources.webappPath;
 const DEPLOY_INFO_OUTPUT_PATH = path.join(webappPath, 'deploy-info.json');
 
-const getDeployInfo = () => environment.getDeployInfo();
+const getDeployInfo = () => serverInfo.getDeployInfo();
 
 const store = async () => {
   const deployInfo = await getDeployInfo();

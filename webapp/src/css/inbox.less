@@ -1398,6 +1398,41 @@ mm-sidebar-menu .mat-sidenav-container {
   }
 }
 
+.storage-info {
+  pointer-events: none;
+
+  .progress-bar-icon {
+    align-self: center;
+  }
+
+  .progress-bar-container {
+    width: 100%;
+    height: 16px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 3px;
+    position: relative;
+  }
+  
+  .progress-bar {
+    height: 100%;
+    transition: background-color 0.3s ease, width 0.5s ease;
+  }
+
+  .progress-bar-green {
+    background-color: #4caf50;
+  }
+  
+  .progress-bar-yellow {
+    background-color: #ffc107;
+  }
+  
+  .progress-bar-red {
+    background-color: #f44336;
+  }
+}
+
 @media (max-width: @content-width) {
   mm-search-bar {
     padding: 4px 8px;
