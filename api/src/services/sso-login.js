@@ -139,13 +139,12 @@ const getIdToken = async (currentUrl) => {
  * @param {string} username Username.
  * @param {string} salt CouchDB user salt value.
  * @param {string} secret  CouchDB secret value.
- * @param {number} authTimeout Cooke timeout.
  * @returns {string} Cookie string.
  */
-const makeCookie = (username, salt, secret, authTimeout) => {
+const makeCookie = (username, salt, secret) => {
   // an adaptation of https://medium.com/@eiri/couchdb-cookie-authentication-6dd0af6817da
-  const expiry = Math.floor(Date.now() / 1000) + authTimeout;
-  const msg = `${username}:${expiry.toString(16).toUpperCase()}`;
+  const currentEpochDate = Math.floor(Date.now() / 1000);
+  const msg = `${username}:${currentEpochDate.toString(16).toUpperCase()}`;
   const key = `${secret}${salt}`;
   const hmac = createHmac('sha1', key)
     .update(msg)
@@ -189,8 +188,7 @@ const getCookie = async (oidcUsername) => {
   }
 
   const secret = await secureSettings.getCouchConfig('couch_httpd_auth/secret');
-  const authTimeout = await secureSettings.getCouchConfig('couch_httpd_auth/timeout');
-  const cookie = makeCookie(userDoc.name, userDoc.salt, secret, Number(authTimeout));
+  const cookie = makeCookie(userDoc.name, userDoc.salt, secret);
   return `AuthSession=${cookie}`;
 };
 

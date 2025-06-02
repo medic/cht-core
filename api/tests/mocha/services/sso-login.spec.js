@@ -400,17 +400,27 @@ describe('SSO login', () => {
       const user = { name: 'odin', salt: 'salt', oidc_username: username };
       ssoLogin.getUsersByOidcUsername.resolves([user]);
       const couchSecret = 'couch-secret';
-      const couchAuthTimeout = '12345';
       secureSettings.getCouchConfig.withArgs('couch_httpd_auth/secret').resolves(couchSecret);
-      secureSettings.getCouchConfig.withArgs('couch_httpd_auth/timeout').resolves(couchAuthTimeout);
 
       const cookie = await service.getCookie(username);
 
-      expect(cookie).to.be.equal(`AuthSession=b2Rpbjo2N0YwMzJBNDpcE8TPUoK-7JE6nPPaVTaF5hAe-Q`);
+      /*
+      NOTE: if the following assertion fails, it may be useful to use this code to inspect the actual value being
+      generated for the cookie.
+
+      const cookieText = Buffer
+        .from(cookie.replace('AuthSession=', ''), 'base64')
+        .toString('utf-8');
+      console.log(`Cookie Text: ${cookieText}`);
+
+      const [, expiryHex] = cookieText.split(':');
+      const expiry = parseInt(expiryHex, 16);
+      const date = new Date(expiry * 1000);
+      console.log(`Date: ${date.toUTCString()}`);
+       */
+      expect(cookie).to.be.equal(`AuthSession=b2Rpbjo2N0YwMDI2QjoBNabc2RjMMFHEk7L4iZ7diUlDEA`);
       expect(ssoLogin.getUsersByOidcUsername.calledOnceWithExactly(username)).to.be.true;
-      expect(secureSettings.getCouchConfig.args).to.deep.equal(
-        [['couch_httpd_auth/secret'], ['couch_httpd_auth/timeout']]
-      );
+      expect(secureSettings.getCouchConfig.calledOnceWithExactly('couch_httpd_auth/secret')).to.be.true;
     });
 
     it('throws error if user is not found', async () => {
