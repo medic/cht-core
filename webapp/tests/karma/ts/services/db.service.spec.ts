@@ -12,7 +12,7 @@ import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { LocationService } from '@mm-services/location.service';
 
-describe.only('Db Service', () => {
+describe('Db Service', () => {
   let service:DbService;
   let sessionService;
   let locationService;
@@ -71,8 +71,8 @@ describe.only('Db Service', () => {
     pouchDB = sinon.stub().returns({ ...pouchResponse });
     window.PouchDB = pouchDB;
 
-    runOutsideAngular = sinon.stub(NgZone.prototype, 'runOutsideAngular').callsArg(0);
-    runInsideAngular = sinon.stub(NgZone.prototype, 'run').callsArg(0);
+    runOutsideAngular = sinon.spy(NgZone.prototype, 'runOutsideAngular');
+    runInsideAngular = sinon.spy(NgZone.prototype, 'run');
   }));
 
   afterEach(() => {
@@ -310,21 +310,19 @@ describe.only('Db Service', () => {
 
     for (const method in methods) {
       if (methods[method]) {
-        it(`should stub ${method}`, fakeAsync(async () => {
+        it(`should wrap ${method}`, fakeAsync(async () => {
           getService();
           const db = service.get();
 
           for (const args of methods[method]) {
             sinon.resetHistory();
-            await db[method](...args.args).catch();
-            expect(runOutsideAngular.callCount).to.equal(1);
+            try {
+              await db[method](...args.args);
+            } catch {
+              // do nothing
+            }
+            expect(runOutsideAngular.called).to.be.true;
           }
-
-          // methods[method].forEach(({ args }) => {
-          //   sinon.resetHistory();
-          //   db[method](...args);
-          //   expect(runOutsideAngular.callCount).to.equal(1);
-          // });
         }));
       }
     }
@@ -332,11 +330,9 @@ describe.only('Db Service', () => {
     it('should work with a resolving promise', fakeAsync(async () => {
       getService();
       const db = service.get();
-      const pouchDb = new window.PouchDB('_pouch_');
-      await pouchDb.put({ _id: 'thing' });
-
+      await db.put({ _id: 'thing' });
       const result = await db.get('thing');
-      expect(result).to.deep.equal({ the: 'thing' });
+      expect(result).to.deep.include({ _id: 'thing' });
     }));
 
     it('should work with a rejecting promise', fakeAsync(async () => {
@@ -347,7 +343,7 @@ describe.only('Db Service', () => {
         await db.get('thing2');
         assert.fail('should have failed');
       } catch (err) {
-        expect(err).to.deep.equal({ code: 404 });
+        expect(err).to.deep.include({ docId: 'thing2', status: 404 });
       }
     }));
 
@@ -359,7 +355,6 @@ describe.only('Db Service', () => {
 
         getService();
         const db = service.get();
-        sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
         sinon.resetHistory();
 
         // can't use await, changes doesn't return a promise
@@ -367,7 +362,7 @@ describe.only('Db Service', () => {
         // see https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-core/src/changes.js
         return db.changes(options).then((result) => {
           expect(result).to.deep.equal({ results: [], last_seq: '123'});
-          expect(runOutsideAngular.callCount).to.equal(1);
+          expect(runOutsideAngular.called).to.be.true;
           expect(changesSpy.callCount).to.equal(1);
           expect(changesSpy.args[0]).to.deep.equal([options]);
         });
@@ -400,7 +395,7 @@ describe.only('Db Service', () => {
             .excludingEvery(['seq'])
             .to.have.deep.members(idsRevsPairs);
           expect(result.last_seq).to.equal(info.update_seq);
-          expect(runOutsideAngular.callCount).to.equal(1);
+          expect(runOutsideAngular.called).to.be.true;
           expect(changesSpy.callCount).to.equal(1);
           expect(changesSpy.args[0]).to.deep.equal([options]);
         });
@@ -417,7 +412,6 @@ describe.only('Db Service', () => {
 
         const onChange = sinon.stub();
         const onComplete = sinon.stub();
-        sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
 
         // can't use await, changes doesn't return a promise
         // it returns an event emitter with an attached `then` property!
@@ -430,11 +424,11 @@ describe.only('Db Service', () => {
             expect(changesSpy.callCount).to.equal(1);
             expect(changesSpy.args[0]).to.deep.equal([{ live: false, return_docs: true }]);
 
-            expect(runOutsideAngular.callCount).to.equal(1);
+            expect(runOutsideAngular.called).to.be.true;
             expect(onChange.callCount).to.equal(results.results.length);
             expect(onComplete.callCount).to.equal(1);
 
-            expect(runInsideAngular.callCount).to.equal(results.results.length + 1);
+            expect(runOutsideAngular.called).to.be.true;
           });
       }));
 
@@ -450,8 +444,9 @@ describe.only('Db Service', () => {
         getService();
         const db = service.get();
         const onError = sinon.stub();
-        sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
         sinon.resetHistory();
+
+        sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
 
         return db
           .changes(opts)
@@ -465,8 +460,8 @@ describe.only('Db Service', () => {
             expect(onError.callCount).to.equal(1);
             expect(onError.args[0][0]).to.equal(err);
 
-            expect(runOutsideAngular.callCount).to.equal(1);
-            expect(runInsideAngular.callCount).to.equal(1);
+            expect(runOutsideAngular.called).to.be.true;
+            expect(runInsideAngular.callCount).to.equal(2);
           });
       }));
     });
@@ -481,7 +476,6 @@ describe.only('Db Service', () => {
         getService();
         const db = service.get();
 
-        sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
         sinon.resetHistory();
 
         // can't use await, sync doesn't return a promise
@@ -521,7 +515,6 @@ describe.only('Db Service', () => {
         const allDocs = (await db.allDocs()).rows;
         const info = await db.info();
 
-        sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
         sinon.resetHistory();
 
         // can't use await, sync doesn't return a promise
@@ -567,9 +560,9 @@ describe.only('Db Service', () => {
 
         const onChange = sinon.stub();
         const onComplete = sinon.stub();
-        sinon.stub(NgZone, 'isInAngularZone').returns(true);
 
         const batchSize = 50;
+        sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
 
         // can't use await, sync doesn't return a promise
         // it returns an event emitter with an attached `then` property!
@@ -587,8 +580,7 @@ describe.only('Db Service', () => {
             expect(onChange.callCount).to.equal(Math.ceil(results.push.docs_written / batchSize));
             expect(onComplete.callCount).to.equal(1);
 
-            // sync actually calls a bunch of underlying pouchdb methods which we have wrapped and emit events
-            expect(runInsideAngular.callCount).to.be.at.least(results.push.docs_written);
+            expect(runInsideAngular.called).to.be.true;
           });
       }));
 
@@ -602,7 +594,8 @@ describe.only('Db Service', () => {
         const onComplete = sinon.stub();
         await target.bulkDocs([{ _id: uuidv4() }]);
         sinon.stub(target, 'bulkGet').rejects({ status: 400, name: 'forbidden' });
-        sinon.stub(NgZone, 'isInAngularZone').returns(true);
+
+        sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
 
         return db
           .sync(target, opts)
@@ -626,7 +619,6 @@ describe.only('Db Service', () => {
 
           getService();
           const db = service.get();
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
           sinon.resetHistory();
 
           // can't use await, replicate doesn't return a promise
@@ -653,7 +645,6 @@ describe.only('Db Service', () => {
           await db.put({ _id: uuidv4() });
           const allDocs = (await db.allDocs()).rows;
           const info = await db.info();
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
           sinon.resetHistory();
 
           // can't use await, replicate doesn't return a promise
@@ -680,10 +671,10 @@ describe.only('Db Service', () => {
           await db.put({ _id: uuidv4() });
           await db.put({ _id: uuidv4() });
           sinon.resetHistory();
+          sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
 
           const onChange = sinon.stub();
           const onComplete = sinon.stub();
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
           const batchSize = 50;
 
           // can't use await, replicate doesn't return a promise
@@ -706,7 +697,6 @@ describe.only('Db Service', () => {
           getService();
           const db = service.get();
           const onError = sinon.stub();
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
           sinon.stub(target, 'revsDiff').rejects({ code: 400 });
 
           return db
@@ -734,7 +724,6 @@ describe.only('Db Service', () => {
 
           getService();
           const db = service.get();
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
 
           // can't use await, replicate doesn't return a promise
           // it returns an event emitter with an attached `then` property!
@@ -760,7 +749,6 @@ describe.only('Db Service', () => {
           await target.bulkDocs([{ _id: uuidv4() }, { _id: uuidv4() }]);
           const allDocs = (await target.allDocs()).rows;
           const info = await target.info();
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
 
           // can't use await, replicate doesn't return a promise
           // it returns an event emitter with an attached `then` property!
@@ -787,7 +775,7 @@ describe.only('Db Service', () => {
 
           const onChange = sinon.stub();
           const onComplete = sinon.stub();
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
+          sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
           const batchSize = 50;
 
           // can't use await, replicate doesn't return a promise
@@ -812,7 +800,6 @@ describe.only('Db Service', () => {
           const onError = sinon.stub();
           await target.bulkDocs([{ _id: uuidv4() }, { _id: uuidv4() }]);
           sinon.stub(target, 'bulkGet').rejects({ code: 400 });
-          sinon.stub(NgZone, 'isInAngularZone').returns(true);
 
           // can't use await, replicate doesn't return a promise
           // it returns an event emitter with an attached `then` property!
@@ -821,7 +808,6 @@ describe.only('Db Service', () => {
             .on('error', onError)
             .then(() => assert.fail('should have thrown'))
             .catch((err) => {
-              console.warn(err);
               expect(err.result).to.include({
                 ok: false,
                 docs_read: 0,

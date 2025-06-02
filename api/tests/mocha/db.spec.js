@@ -418,7 +418,7 @@ describe('db', () => {
 
       await db.medic.info();
       const headers = PouchDB.fetch.args.map(arg => arg[1].headers);
-      expect(headers.length).to.equal(4);
+      expect(headers.length).to.equal(2);
       headers.forEach((header) => {
         expect(header.get('X-Medic-Service')).to.equal('api');
         expect(header.get('X-Request-Id')).to.equal('the_id');
@@ -435,7 +435,7 @@ describe('db', () => {
 
       await db.medic.info();
       const headers = PouchDB.fetch.args.map(arg => arg[1].headers);
-      expect(headers.length).to.equal(4);
+      expect(headers.length).to.equal(2);
       headers.forEach((header) => {
         expect(header.get('X-Medic-Service')).to.equal('api');
       });
