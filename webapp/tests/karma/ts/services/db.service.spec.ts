@@ -11,7 +11,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { LocationService } from '@mm-services/location.service';
-import { before, method } from 'lodash-es';
 
 describe.only('Db Service', () => {
   let service:DbService;
