@@ -18,7 +18,7 @@ describe('Add new district tests : ', () => {
   it('should add new district with a new person', async () => {
     await commonPage.goToPeople();
     const district = 'TestDistrict';
-    await contactPage.addPlace({ placeName: 'TestDistrict', contactName: 'Tester' }, false);
+    await contactPage.addPlace({ placeName: 'TestDistrict', contactName: 'Tester' }, { rightSideAction: false });
 
     await sentinelUtils.waitForSentinel();
     await commonPage.waitForPageLoaded();
@@ -74,7 +74,7 @@ describe('Add new district tests : ', () => {
     await contactPage.editPlace('Tudor\'s district', 'At Tudor\'s', 'district_hospital');
     await commonPage.waitForPageLoaded();
 
-    expect(await (await contactPage.contactCardSelectors.contactCardName()).getText()).to.equal('At Tudor\'s');
+    expect(await contactPage.contactCardSelectors.contactCardName().getText()).to.equal('At Tudor\'s');
 
     const updatedDistrict = await utils.getDoc(district._id);
     expect(updatedDistrict.contact_type).to.equal('not a district_hospital'); // editing didn't overwrite

@@ -65,30 +65,25 @@ const userSettingsSelectors = {
 const getJsonErrorText = async () => await $('pre').getText();
 
 const isHamburgerMenuOpen = async () => {
-  return await (await $('mat-sidenav-container.mat-drawer-container-has-open .mat-drawer-opened')).isDisplayed();
+  return await hamburgerMenuSelectors.closeSideBarMenu().isDisplayed();
 };
 
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
-    await closeReloadModal();
-    await (await hamburgerMenuSelectors.hamburgerMenu()).waitForClickable();
-    await (await hamburgerMenuSelectors.hamburgerMenu()).click();
+    await hamburgerMenuSelectors.hamburgerMenu().click();
   }
-  await browser.waitUntil(isHamburgerMenuOpen);
+  await hamburgerMenuSelectors.closeSideBarMenu().waitForDisplayed();
 };
 
 const closeHamburgerMenu = async () => {
   if (await isHamburgerMenuOpen()) {
-    await (await hamburgerMenuSelectors.closeSideBarMenu()).waitForClickable();
-    await (await hamburgerMenuSelectors.closeSideBarMenu()).click();
+    await hamburgerMenuSelectors.closeSideBarMenu().click();
   }
-
-  await (await hamburgerMenuSelectors.sideBarMenuTitle()).waitForDisplayed({ reverse: true });
+  await hamburgerMenuSelectors.sideBarMenuTitle().waitForDisplayed({ reverse: true });
 };
 
 const openMoreOptionsMenu = async () => {
-  await (await kebabMenuSelectors.moreOptionsMenu()).waitForClickable();
-  await (await kebabMenuSelectors.moreOptionsMenu()).click();
+  await kebabMenuSelectors.moreOptionsMenu().click();
 };
 
 const performMenuAction = async (actionSelector, isOptionsMenuOpen = false) => {
@@ -96,7 +91,6 @@ const performMenuAction = async (actionSelector, isOptionsMenuOpen = false) => {
     await openMoreOptionsMenu();
   }
   const actionElement = await actionSelector();
-  await actionElement.waitForClickable();
   await actionElement.click();
 };
 
@@ -118,7 +112,7 @@ const accessReviewOption = async () => {
 
 const toggleMenuAndCaptureScreenshot = async (menuOption, reverse, pageName, screenshotName) => {
   await openHamburgerMenu();
-  await hamburguerMenuItemByOption(menuOption).waitForClickable({ reverse });
+  await hamburguerMenuItemByOption(menuOption).waitForDisplayed({ reverse });
   await generateScreenshot(pageName, screenshotName);
   if (reverse) {
     await closeHamburgerMenu();
@@ -146,9 +140,22 @@ const hideSnackbar = () => {
 
 const getVisibleLoaders = async () => {
   const visible = [];
-  for (const loader of await $$('.container-fluid .loader')) {
-    if (await loader.isDisplayedInViewport()) {
-      visible.push(loader);
+
+  // Get all loaders in the page
+  const loaders = await $$('.loader').getElements();
+  if (loaders.length) {
+    // Add a small pause to let the DOM stabilize
+    await browser.pause(100);
+    // Instead of iterating through the loaders array, query for each loader individually
+    // This avoids issues with stale references
+    for (let i = 0; i < loaders.length; i++) {
+      // Use a more specific selector to get a fresh reference to each loader
+      // This avoids the index out of bounds issue
+      const loaderSelector = `.loader:nth-of-type(${i + 1})`;
+      const loader = await $(loaderSelector);
+      if (await loader.isExisting() && await loader.isDisplayed({ withinViewport: true })) {
+        visible.push(loader);
+      }
     }
   }
 
@@ -169,7 +176,7 @@ const waitForLoaders = async () => {
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
-  await (await hamburgerMenuSelectors.hamburgerMenu()).waitForDisplayed({ timeout });
+  await hamburgerMenuSelectors.hamburgerMenu().waitForDisplayed({ timeout });
 };
 
 const waitForPageLoaded = async () => {
@@ -186,9 +193,8 @@ const waitForPageLoaded = async () => {
 const clickFastActionById = async (id) => {
   // Wait for the Angular Material's animation to complete.
   await browser.pause(ELEMENT_DISPLAY_PAUSE);
-  await (await fabSelectors.fastActionListContainer()).waitForDisplayed();
-  await (await fabSelectors.fastActionById(id)).waitForClickable();
-  await (await fabSelectors.fastActionById(id)).click();
+  await fabSelectors.fastActionListContainer().waitForDisplayed();
+  await fabSelectors.fastActionById(id).click();
 };
 
 /**
@@ -206,8 +212,7 @@ const findVisibleFAB = async () => {
 const clickFastActionFAB = async ({ actionId, waitForList }) => {
   await closeHamburgerMenu();
   const fab = await findVisibleFAB();
-  await fab.waitForClickable();
-  waitForList = waitForList === undefined ? await (await fabSelectors.multipleActions()).isExisting() : waitForList;
+  waitForList = waitForList === undefined ? await fabSelectors.multipleActions().isExisting() : waitForList;
   await fab.click();
   if (waitForList) {
     await clickFastActionById(actionId);
@@ -217,21 +222,20 @@ const clickFastActionFAB = async ({ actionId, waitForList }) => {
 const getFastActionItemsLabels = async () => {
   await closeHamburgerMenu();
   const fab = await findVisibleFAB();
-  await fab.waitForClickable();
   await fab.click();
 
   await browser.pause(ELEMENT_DISPLAY_PAUSE);
-  await (await fabSelectors.fastActionListContainer()).waitForDisplayed();
+  await fabSelectors.fastActionListContainer().waitForDisplayed();
 
   const items = await fabSelectors.fastActionItems();
   return await items.map(item => item.getText());
 };
 
 const clickFastActionFlat = async ({ actionId, waitForList }) => {
-  await (await fabSelectors.fastActionFlat()).waitForDisplayed();
-  await (await fabSelectors.fastActionFlat()).waitForClickable();
-  waitForList = waitForList === undefined ? await (await fabSelectors.multipleActions()).isExisting() : waitForList;
-  await (await fabSelectors.fastActionFlat()).click();
+  await fabSelectors.fastActionFlat().waitForDisplayed();
+
+  waitForList = waitForList === undefined ? await fabSelectors.multipleActions().isExisting() : waitForList;
+  await fabSelectors.fastActionFlat().click();
   if (waitForList) {
     await clickFastActionById(actionId);
   }
@@ -245,32 +249,30 @@ const openFastActionReport = async (formId, rightSideAction = true) => {
     await clickFastActionFlat({ actionId: formId });
   }
   await waitForPageLoaded();
-  await (await $('#form-title')).waitForDisplayed();
+  await $('#form-title').waitForDisplayed();
 };
 
 const getFastActionFABTextById = async (actionId) => {
   await clickFastActionFAB({ actionId, waitForList: false });
-  await (await fabSelectors.fastActionListContainer()).waitForDisplayed();
-  return await (await fabSelectors.fastActionById(actionId)).getText();
+  await fabSelectors.fastActionListContainer().waitForDisplayed();
+  return await fabSelectors.fastActionById(actionId).getText();
 };
 
 const getFastActionFlatText = async () => {
   await waitForSnackbarToClose();
-  await (await fabSelectors.fastActionFlat()).waitForDisplayed();
-  return await (await fabSelectors.fastActionFlat()).getText();
+  await fabSelectors.fastActionFlat().waitForDisplayed();
+  return await fabSelectors.fastActionFlat().getText();
 };
 
 const closeFastActionList = async () => {
-  await (await fabSelectors.fastActionListContainer()).waitForDisplayed();
-  await (await fabSelectors.fastActionListCloseButton()).waitForClickable();
-  await (await fabSelectors.fastActionListCloseButton()).click();
+  await fabSelectors.fastActionListCloseButton().click();
 };
 
 const isReportActionDisplayed = async () => {
   return await browser.waitUntil(async () => {
-    const exists = await (await fabSelectors.reportsFastActionFAB()).isExisting();
+    const exists = await fabSelectors.reportsFastActionFAB().isExisting();
     if (exists) {
-      await (await fabSelectors.reportsFastActionFAB()).waitForDisplayed();
+      await fabSelectors.reportsFastActionFAB().waitForDisplayed();
     }
 
     return exists;
@@ -278,7 +280,7 @@ const isReportActionDisplayed = async () => {
 };
 
 const isElementPresent = async (selector) => {
-  return await (await $(selector)).isExisting();
+  return await $(selector).isExisting();
 };
 
 const isMessagesListPresent = () => isElementPresent('#message-list');
@@ -295,13 +297,12 @@ const isTargetMenuItemPresent = () => isElementPresent('=Target');
 
 const isTargetAggregatesMenuItemPresent = () => isElementPresent('=Target aggregates');
 
-const isMoreOptionsMenuPresent = async () => await (await kebabMenuSelectors.moreOptionsMenu()).isDisplayed();
+const isMoreOptionsMenuPresent = async () => await kebabMenuSelectors.moreOptionsMenu().isDisplayed();
 
 const navigateToLogoutModal = async () => {
   await openHamburgerMenu();
-  await (await hamburgerMenuSelectors.logoutButton()).waitForClickable();
-  await (await hamburgerMenuSelectors.logoutButton()).click();
-  await (await modalPage.body()).waitForDisplayed();
+  await hamburgerMenuSelectors.logoutButton().click();
+  await modalPage.body().waitForDisplayed();
 };
 
 const logout = async () => {
@@ -343,12 +344,12 @@ const goToAboutPage = async () => {
 
 const goToMessages = async () => {
   await goToUrl(`/#/messages`);
-  await (await tabsSelector.messagesTab()).waitForDisplayed();
+  await tabsSelector.messagesTab().waitForDisplayed();
 };
 
 const goToTasks = async () => {
   await goToUrl(`/#/tasks`);
-  await (await tabsSelector.taskTab()).waitForDisplayed();
+  await tabsSelector.taskTab().waitForDisplayed();
   await waitForPageLoaded();
 };
 
@@ -366,7 +367,7 @@ const goToPeople = async (contactId = '', shouldLoad = true) => {
 
 const goToAnalytics = async () => {
   await goToUrl(`/#/analytics`);
-  await (await tabsSelector.analyticsTab()).waitForDisplayed();
+  await analyticsTab().waitForDisplayed();
   await waitForPageLoaded();
 };
 
@@ -390,26 +391,31 @@ const closeReloadModal = async (shouldUpdate, timeout) => {
 
 const syncAndNotWaitForSuccess = async () => {
   await openHamburgerMenu();
-  await (await hamburgerMenuSelectors.syncButton()).click();
+  await syncButton().click();
 };
+
 const syncAndWaitForSuccess = async (expectReload, timeout = RELOAD_SYNC_TIMEOUT, retry = 10) => {
   if (retry < 0) {
     throw new Error('Failed to sync after 10 retries');
   }
   try {
     await openHamburgerMenu();
-    if (!await (await hamburgerMenuSelectors.syncInProgress()).isDisplayedInViewport()) {
-      await (await hamburgerMenuSelectors.syncButton()).click();
+    if (!await hamburgerMenuSelectors.syncInProgress().isDisplayed({ withinViewport: true })) {
+      await hamburgerMenuSelectors.syncButton().click();
     }
 
-    await (await hamburgerMenuSelectors.syncInProgress()).waitForDisplayed({ timeout, reverse: true });
+    await hamburgerMenuSelectors.syncInProgress().waitForDisplayed({ timeout, reverse: true });
     await browser.waitUntil(async () => {
-      return (await (await hamburgerMenuSelectors.syncSuccess()).isDisplayedInViewport()) ||
+      return (await hamburgerMenuSelectors.syncSuccess().isDisplayed()) ||
              (await modalPage.isDisplayed());
     }, { timeout });
+
+    if (await modalPage.isDisplayed()) {
+      await closeReloadModal(true, RELOAD_SYNC_TIMEOUT);
+    }
     await openHamburgerMenu();
 
-    if (!await (await hamburgerMenuSelectors.syncSuccess()).isDisplayedInViewport()) {
+    if (!await hamburgerMenuSelectors.syncSuccess().isDisplayed({ withinViewport: true })) {
       throw new Error('Failed to sync');
     }
   } catch (err) {
@@ -450,8 +456,7 @@ const sync = async ({
 };
 
 const openReportBugAndFetchProperties = async () => {
-  await (await hamburgerMenuSelectors.feedbackMenuOption()).waitForClickable();
-  await (await hamburgerMenuSelectors.feedbackMenuOption()).click();
+  await hamburgerMenuSelectors.feedbackMenuOption().click();
   return await modalPage.getModalDetails();
 };
 
@@ -464,36 +469,33 @@ const closeReportBug = async () => {
 };
 
 const openAboutMenu = async () => {
-  await (await hamburgerMenuSelectors.aboutButton()).waitForClickable();
-  await (await hamburgerMenuSelectors.aboutButton()).click();
-  await (await $('.about.page .mat-primary')).waitForDisplayed();
+  await hamburgerMenuSelectors.aboutButton().click();
+  await $('.about.page .mat-primary').waitForDisplayed();
 };
 
 const openUserSettings = async () => {
-  await (await hamburgerMenuSelectors.userSettingsButton()).waitForClickable();
-  await (await hamburgerMenuSelectors.userSettingsButton()).click();
+  const userSettingsButton = await hamburgerMenuSelectors.userSettingsButton;
+  await userSettingsButton().click();
 };
 
 const openUserSettingsAndFetchProperties = async () => {
   await openUserSettings();
-  await (await userSettingsSelectors.editProfileButton()).waitForDisplayed();
+  await userSettingsSelectors.editProfileButton().waitForDisplayed();
 };
 
 const openTrainingMaterials = async () => {
-  await (await hamburgerMenuSelectors.trainingMaterialsButton()).waitForClickable();
-  await (await hamburgerMenuSelectors.trainingMaterialsButton()).click();
+  await hamburgerMenuSelectors.trainingMaterialsButton().click();
   await waitForPageLoaded();
 };
 
 const openEditProfile = async () => {
-  await (await userSettingsSelectors.editProfileButton()).waitForClickable();
-  await (await userSettingsSelectors.editProfileButton()).click();
+  await userSettingsSelectors.editProfileButton().click();
+  await modalPage.checkModalIsOpen();
 };
 
 const openAppManagement = async () => {
-  await (await hamburgerMenuSelectors.appManagementButton()).waitForClickable();
-  await (await hamburgerMenuSelectors.appManagementButton()).click();
-  await (await $('.navbar-brand')).waitForDisplayed();
+  await hamburgerMenuSelectors.appManagementButton().click();
+  await $('.navbar-brand').waitForDisplayed();
 };
 
 const getTextForElements = async (elements) => {
@@ -506,12 +508,12 @@ const getAllButtonLabelsNames = async () => {
 };
 
 const isMenuOptionEnabled = async (action) => {
-  const parent = await (await kebabMenuSelectors[action]()).parentElement().parentElement();
+  const parent = await kebabMenuSelectors[action]().parentElement().parentElement();
   return await parent.getAttribute('aria-disabled') === 'false';
 };
 
 const isMenuOptionVisible = async (action) => {
-  return await (await kebabMenuSelectors[action]()).isDisplayed();
+  return await kebabMenuSelectors[action]().isDisplayed();
 };
 
 const loadNextInfiniteScrollPage = async () => {
@@ -522,11 +524,11 @@ const loadNextInfiniteScrollPage = async () => {
 };
 
 const getErrorLog = async () => {
-  await (await $('error-log')).waitForDisplayed();
+  await $('error-log').waitForDisplayed();
 
-  const errorMessage = await (await $('.error-details span')).getText();
-  const userDetails = await (await $$('.error-details dl dd'));
-  const errorStack = await (await $('pre code'));
+  const errorMessage = await $('.error-details span').getText();
+  const userDetails = await $$('.error-details dl dd');
+  const errorStack = await $('pre code');
 
   const username = await userDetails[0].getText();
   const url = await userDetails[1].getText();

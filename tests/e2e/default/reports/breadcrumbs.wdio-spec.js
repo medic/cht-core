@@ -105,7 +105,7 @@ describe('Reports tab breadcrumbs', () => {
     await loginPage.login(onlineUser);
     await commonElements.waitForPageLoaded();
     await commonElements.goToReports();
-    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
+    await reportsPage.leftPanelSelectors.firstReport().waitForDisplayed();
     await commonElements.waitForPageLoaded();
 
     const reportLineages = await reportsPage.reportsListDetails();
@@ -118,7 +118,7 @@ describe('Reports tab breadcrumbs', () => {
     await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
     await commonElements.waitForPageLoaded();
     await commonElements.goToReports();
-    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
+    await reportsPage.leftPanelSelectors.firstReport().waitForDisplayed();
     await commonElements.waitForPageLoaded();
 
     const reportLineages = await reportsPage.reportsListDetails();
@@ -131,7 +131,7 @@ describe('Reports tab breadcrumbs', () => {
     await loginPage.login(offlineUser);
     await commonElements.waitForPageLoaded();
     await commonElements.goToReports();
-    await (await reportsPage.leftPanelSelectors.firstReport()).waitForDisplayed();
+    await reportsPage.leftPanelSelectors.firstReport().waitForDisplayed();
     await commonElements.waitForPageLoaded();
 
     const reportLineages = await reportsPage.reportsListDetails();
