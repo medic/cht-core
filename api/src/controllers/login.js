@@ -453,6 +453,15 @@ const passwordResetValidation = async (username, currentPassword, password) => {
   return { isValid: true };
 };
 
+const getAppUrl = () => {
+  const appUrl = config.get('app_url');
+  if (!appUrl) {
+    throw new Error('The app_url value is not configured.');
+  }
+
+  return appUrl.replace(/\/+$/, '');
+};
+
 module.exports = {
   renderLogin,
   renderPasswordReset,
@@ -560,7 +569,7 @@ module.exports = {
     if (limited) {
       return serverUtils.rateLimited(req, res);
     }
-    const currentUrl =  new URL(`${serverUtils.getAppUrl(req)}${req.originalUrl}`);
+    const currentUrl =  new URL(`${getAppUrl(req)}${req.originalUrl}`);
     try {
       const { username, locale } = await sso.getIdToken(currentUrl);
       const sessionCookie = await sso.getCookie(username);
@@ -585,7 +594,7 @@ module.exports = {
       return serverUtils.rateLimited(req, res);
     }
 
-    const redirectUrl = new URL(`${serverUtils.getAppUrl(req)}/${environment.db}/login/oidc`);
+    const redirectUrl = new URL(`${getAppUrl(req)}/${environment.db}/login/oidc`);
     try {
       const authUrl = await sso.getAuthorizationUrl(redirectUrl.toString());
       res.status(302).send(authUrl.href);

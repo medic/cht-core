@@ -36,27 +36,6 @@ describe('Server utils', () => {
     sinon.restore();
   });
 
-  describe('getAppUrl', () => {
-    beforeEach(() => sinon.stub(config, 'get'));
-
-    it('returns the URL data from the request when app_url is not set', () => {
-      req.protocol = 'https';
-      req.get.returns('example.com');
-      chai.expect(serverUtils.getAppUrl(req)).to.equal('https://example.com');
-      chai.expect(config.get.calledOnceWithExactly('app_url')).to.be.true;
-      chai.expect(req.get.calledOnceWithExactly('host')).to.be.true;
-    });
-
-    it('returns the app_url value', () => {
-      req.protocol = 'http';
-      req.hostname = 'example.com';
-      config.get.returns('https://cht-instance.org/');
-      chai.expect(serverUtils.getAppUrl(req)).to.equal('https://cht-instance.org');
-      chai.expect(config.get.calledOnceWithExactly('app_url')).to.be.true;
-      chai.expect(req.get.notCalled).to.be.true;
-    });
-  });
-
   describe('error', () => {
 
     it('calls serverError when given string', () => {

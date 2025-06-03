@@ -1151,6 +1151,7 @@ describe('login controller', () => {
   describe('oidcLogin', async () => {
     beforeEach(() => {
       req.originalUrl = `/${environment.db}/login/oidc/get_token`;
+      sinon.stub(config, 'get').returns('http://xx.app.medicmobile.org/');
       sinon.stub(sso, 'getIdToken');
       sinon.stub(sso, 'getCookie');
       sinon.stub(auth, 'getUserCtx');
@@ -1188,6 +1189,7 @@ describe('login controller', () => {
       chai.expect(logger.error.notCalled).to.be.true;
       chai.expect(res.status.calledOnceWithExactly(302)).to.be.true;
       chai.expect(res.redirect.calledOnceWithExactly('/')).to.be.true;
+      chai.expect(config.get.calledOnceWithExactly('app_url')).to.be.true;
     });
 
     it('redirects to login page with sso user error when failing to find valid CHT user', async () => {
@@ -1211,6 +1213,7 @@ describe('login controller', () => {
       chai.expect(logger.error.calledOnceWithExactly('Error logging in via SSO: %o', userNotFoundError)).to.be.true;
       chai.expect(res.status.calledOnceWithExactly(302)).to.be.true;
       chai.expect(res.redirect.calledOnceWithExactly(`/${environment.db}/login?sso_error=ssouserinvalid`)).to.be.true;
+      chai.expect(config.get.calledOnceWithExactly('app_url')).to.be.true;
     });
 
     it('redirects to login page with login error when unexpected error occurs', async () => {
@@ -1231,6 +1234,7 @@ describe('login controller', () => {
       chai.expect(logger.error.calledOnceWithExactly('Error logging in via SSO: %o', invalidTokenError)).to.be.true;
       chai.expect(res.status.calledOnceWithExactly(302)).to.be.true;
       chai.expect(res.redirect.calledOnceWithExactly(`/${environment.db}/login?sso_error=loginerror`)).to.be.true;
+      chai.expect(config.get.calledOnceWithExactly('app_url')).to.be.true;
     });
 
     it('does nothing when rate limited', async () => {
@@ -1249,11 +1253,13 @@ describe('login controller', () => {
       chai.expect(res.status.notCalled).to.be.true;
       chai.expect(res.redirect.notCalled).to.be.true;
       chai.expect(logger.error.notCalled).to.be.true;
+      chai.expect(config.get.notCalled).to.be.true;
     });
   });
 
   describe('oidcAuthorize', async() => {
     beforeEach(() => {
+      sinon.stub(config, 'get').returns('http://xx.app.medicmobile.org');
       sinon.stub(sso, 'getAuthorizationUrl');
       sinon.stub(logger, 'error');
       sinon.stub(res, 'send');
@@ -1272,6 +1278,7 @@ describe('login controller', () => {
       chai.expect(res.status.calledOnceWithExactly(302)).to.be.true;
       chai.expect(res.send.calledWith(oidcUrl)).to.be.true;
       chai.expect(logger.error.notCalled).to.be.true;
+      chai.expect(config.get.calledOnceWithExactly('app_url')).to.be.true;
     });
 
     it('returns login error when failing to get authorization URL', async () => {
@@ -1290,6 +1297,7 @@ describe('login controller', () => {
         'Error getting authorization redirect url for SSO: %o', e
       )).to.be.true;
       chai.expect(serverUtils.error.calledOnceWithExactly(e, req, res)).to.be.true;
+      chai.expect(config.get.calledOnceWithExactly('app_url')).to.be.true;
     });
 
     it('does nothing when rate limited', async () => {
@@ -1303,6 +1311,7 @@ describe('login controller', () => {
       chai.expect(res.status.notCalled).to.be.true;
       chai.expect(res.send.notCalled).to.be.true;
       chai.expect(logger.error.notCalled).to.be.true;
+      chai.expect(config.get.notCalled).to.be.true;
     });
   });
 });
