@@ -364,10 +364,10 @@ describe('Export Data Service', () => {
                 cht: 'unknown',
                 settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba',
               },
-                storage: {
-                  free: 16713310208,
-                  total: 26544680960
-            }
+              storage: {
+                free: 16713310208,
+                total: 26544680960
+              }
             },
           },
         },
