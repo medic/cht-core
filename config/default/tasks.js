@@ -133,8 +133,7 @@ module.exports = [
       },
     ],
     //every two weeks from reported date until 42nd week, show before due date: 6 days, show after due date: 7 days
-    events: [...Array(21).keys()].map((i) =>
-      generateEventForHomeVisit((i + 1) * 2, 6, 7)
+    events: [...Array(21).keys()].map(i => generateEventForHomeVisit((i + 1) * 2, 6, 7)
     ),
   },
 
