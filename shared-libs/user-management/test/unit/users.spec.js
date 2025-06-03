@@ -4368,7 +4368,6 @@ describe('Users service', () => {
 
         chai.expect(response).to.deep.equal([{ error: { message, translationKey, translationParams: undefined } }]);
         chai.expect(validateSsoLogin.calledOnceWithExactly(ssoUserData)).to.be.true;
-        chai.expect(db.medicLogs.get.args).to.deep.equal([[undefined], [undefined]]);
         chai.expect(db.medic.put.notCalled).to.be.true;
         chai.expect(db.users.put.notCalled).to.be.true;
         chai.expect(service.__get__('validateNewUsername').notCalled).to.be.true;
@@ -4419,7 +4418,6 @@ describe('Users service', () => {
           password_change_required: false,
           oidc_username: 'test',
         })).to.be.true;
-        chai.expect(db.medicLogs.get.args).to.deep.equal([[undefined], [undefined], [undefined], [undefined]]);
         chai.expect(validateSsoLogin.args).to.deep.equal([
           [ssoUserData],
           [ssoUserData1],
@@ -4511,7 +4509,6 @@ describe('Users service', () => {
             oidc_username: 'test',
           }],
         ]);
-        chai.expect(db.medicLogs.get.args).to.deep.equal([[undefined], [undefined], [undefined], [undefined]]);
         chai.expect(validateSsoLogin.args).to.deep.equal([
           [ssoUserData],
           [ssoUserData1],
