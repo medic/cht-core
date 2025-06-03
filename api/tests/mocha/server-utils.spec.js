@@ -1,7 +1,6 @@
 const sinon = require('sinon');
 const chai = require('chai');
 const environment = require('@medic/environment');
-const config = require('../../src/config');
 const serverUtils = require('../../src/server-utils');
 const cookie = require('../../src/services/cookie');
 const {InvalidArgumentError} = require('@medic/cht-datasource');

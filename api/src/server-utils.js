@@ -7,7 +7,6 @@ const MEDIC_BASIC_AUTH = 'Basic realm="Medic Web Services"';
 const REQUEST_ID_HEADER = 'X-Request-Id';
 const cookie = require('./services/cookie');
 const {InvalidArgumentError} = require('@medic/cht-datasource');
-const config = require('./config');
 
 const wantsJSON = req => req.accepts(['text', 'json']) === 'json';
 
