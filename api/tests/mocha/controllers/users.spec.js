@@ -918,21 +918,20 @@ describe('Users Controller', () => {
     it('should respond with error when creating fails', () => {
       sinon.stub(auth, 'check').resolves();
       sinon.stub(users, 'createUser').rejects({ some: 'err' });
-      req = { protocol: 'http', hostname: 'thehost.com', body: { name: 'user' } };
+      req = { body: { name: 'user' } };
       res = { json: sinon.stub() };
       return controller.create(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'err' }, req, res]);
         chai.expect(users.createUser.callCount).to.equal(1);
         chai.expect(res.json.callCount).to.equal(0);
-
       });
     });
 
     it('should create the user and respond', () => {
       sinon.stub(auth, 'check').resolves();
       sinon.stub(users, 'createUser').resolves({ user: { id: 'aaa' } });
-      req = { protocol: 'https', hostname: 'host.com', body: { name: 'user' } };
+      req = { body: { name: 'user' } };
       res = { json: sinon.stub() };
       return controller.create(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(0);
@@ -979,7 +978,7 @@ describe('Users Controller', () => {
       sinon.stub(auth, 'getUserCtx').resolves({ name: 'alpha' });
       sinon.stub(auth, 'basicAuthCredentials').returns({ username: 'alpha' });
       sinon.stub(auth, 'validateBasicAuth').resolves();
-      req = { params: { username: 'alpha' }, protocol: 'http', hostname: 'myhost.net', body: { field: 'update' } };
+      req = { params: { username: 'alpha' }, body: { field: 'update' } };
       res = { json: sinon.stub() };
       sinon.stub(users, 'updateUser').resolves({ response: true });
 
@@ -997,7 +996,7 @@ describe('Users Controller', () => {
       sinon.stub(auth, 'getUserCtx').resolves({ name: 'alpha' });
       sinon.stub(auth, 'basicAuthCredentials').returns({ username: 'alpha' });
       sinon.stub(auth, 'validateBasicAuth').resolves();
-      req = { params: { username: 'beta' }, protocol: 'https', hostname: 'myhost.io', body: { field: 'update' } };
+      req = { params: { username: 'beta' }, body: { field: 'update' } };
       res = { json: sinon.stub() };
       sinon.stub(users, 'updateUser').resolves({ updated: true });
 

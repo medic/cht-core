@@ -8,7 +8,9 @@ const privacyPolicy = require('../services/privacy-policy');
 const logger = require('@medic/logger');
 const db = require('../db');
 const dataContext = require('../services/data-context');
-const { tokenLogin, roles, users, validatePassword } = require('@medic/user-management')(config, db, dataContext);
+const {
+  tokenLogin, ssoLogin, roles, users, validatePassword
+} = require('@medic/user-management')(config, db, dataContext);
 const localeUtils = require('locale');
 const cookie = require('../services/cookie');
 const brandingService = require('../services/branding');
@@ -16,6 +18,7 @@ const translations = require('../translations');
 const template = require('../services/template');
 const rateLimitService = require('../services/rate-limit');
 const serverUtils = require('../server-utils');
+const sso = require('../services/sso-login');
 
 const PASSWORD_RESET_URL = '/medic/password-reset';
 
@@ -38,6 +41,8 @@ const templates = {
       'login.hide_password',
       'login.incorrect',
       'login.show_password',
+      'login.sso',
+      'login.sso.user_invalid',
       'login.unsupported_browser',
       'login.unsupported_browser.outdated_cht_android',
       'login.unsupported_browser.outdated_webview_apk',
@@ -176,7 +181,7 @@ const render = (page, req, extras = {}) => {
       getTemplate(page),
       getEnabledLocales(),
       brandingService.get(),
-      privacyPolicy.exists()
+      privacyPolicy.exists(),
     ])
     .then(([ template, locales, branding, hasPrivacyPolicy ]) => {
       const options = Object.assign(
@@ -193,8 +198,18 @@ const render = (page, req, extras = {}) => {
     });
 };
 
+const unauthorizedError = (message) => {
+  const error = new Error(message);
+  error.status = 401;
+  return error;
+};
+
 const getSessionCookie = res => {
-  return res.headers.getSetCookie().find(cookie => cookie.indexOf('AuthSession') === 0);
+  const sessionCookie = res.headers.getSetCookie().find(cookie => cookie.indexOf('AuthSession') === 0);
+  if (!sessionCookie) {
+    throw unauthorizedError('Not logged in');
+  }
+  return sessionCookie;
 };
 
 const createSession = req => {
@@ -221,27 +236,24 @@ const setUserCtxCookie = (res, userCtx) => {
   cookie.setUserCtx(res, JSON.stringify(content));
 };
 
-const setCookies = async (req, res, sessionRes) => {
-  const sessionCookie = getSessionCookie(sessionRes);
-  if (!sessionCookie) {
-    throw { status: 401, error: 'Not logged in' };
-  }
-  const options = { headers: { Cookie: sessionCookie } };
-  try {
-    const userCtx = await getUserCtxRetry(options);
-    if (roles.isDbAdmin(userCtx)) {
-      await users.createAdmin(userCtx);
-    }
+const isOidcUser = (userDoc) => userDoc?.oidc_username && ssoLogin.isSsoLoginEnabled();
 
-    const user = await users.getUserDoc(userCtx.name);
-    if (!skipPasswordChange(user)) {
-      return redirectToPasswordReset(req, res, userCtx);
-    }
-    return redirectToApp({ req, res, sessionCookie, userCtx });
-  } catch (err) {
-    logger.error(`Error getting authCtx %o`, err);
-    throw { status: 401, error: 'Error getting authCtx' };
+const setCookies = async (req, res, sessionCookie) => {
+  const options = { headers: { Cookie: sessionCookie } };
+  const userCtx = await getUserCtxRetry(options);
+  if (roles.isDbAdmin(userCtx)) {
+    await users.createAdmin(userCtx);
   }
+
+  const userDoc = await users.getUserDoc(userCtx.name);
+  if (isOidcUser(userDoc)) {
+    throw unauthorizedError('Password Login Not Permitted For SSO Users');
+  }
+  if (!skipPasswordChange(userDoc)) {
+    return redirectToPasswordReset(req, res, userCtx);
+  }
+
+  return redirectToApp({ req, res, sessionCookie, userCtx });
 };
 
 const redirectToApp = async ({ req, res, sessionCookie, userCtx }) => {
@@ -277,20 +289,22 @@ const getUserCtxRetry = async (options, retry = 10) => {
       await new Promise(r => setTimeout(r, 10));
       return getUserCtxRetry(options, --retry);
     }
-    throw err;
+
+    logger.error(`Error getting authCtx %o`, err);
+    throw unauthorizedError('Error getting authCtx');
   }
 };
 
-const createSessionRetry = (req, retry=10) => {
+const createSessionCookieRetry = (req, retry=10) => {
   return createSession(req).then(sessionRes => {
     if (sessionRes.status === 200) {
-      return sessionRes;
+      return getSessionCookie(sessionRes);
     }
 
     if (retry > 0) {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          createSessionRetry(req, retry - 1).then(resolve).catch(reject);
+          createSessionCookieRetry(req, retry - 1).then(resolve).catch(reject);
         }, 10);
       });
     }
@@ -303,7 +317,7 @@ const createSessionRetry = (req, retry=10) => {
  * Generates a session cookie for a user identified by supplied token and hash request params.
  * The user's password is reset in the process.
  */
-const loginByToken = (req, res) => {
+const loginByToken = async (req, res) => {
   if (!tokenLogin.isTokenLoginEnabled()) {
     return res.status(400).json({ error: 'disabled', reason: 'Token login disabled' });
   }
@@ -312,34 +326,31 @@ const loginByToken = (req, res) => {
     return res.status(400).json({ error: 'missing', reason: 'Missing required param' });
   }
 
-  return tokenLogin
-    .getUserByToken(req.params.token)
-    .then(userId => {
-      if (!userId) {
-        throw { status: 401, error: 'invalid' };
-      }
+  try {
+    const userId = await tokenLogin.getUserByToken(req.params.token);
+    if (!userId) {
+      return res.status(401).json({ error: 'invalid'});
+    }
 
-      return tokenLogin.resetPassword(userId).then(({ user, password }) => {
-        req.body = { user, password, locale: req.body.locale };
+    const { user, password } = await tokenLogin.resetPassword(userId);
+    req.body = { user, password, locale: req.body.locale };
 
-        return createSessionRetry(req)
-          .then(sessionRes => setCookies(req, res, sessionRes))
-          .then(redirectUrl => {
-            return tokenLogin.deactivateTokenLogin(userId).then(() => res.status(302).send(redirectUrl));
-          });
-      });
-    })
-    .catch((err = {}) => {
-      logger.error('Error while logging in with token', err);
-      const status = err.status || err.code || 400;
-      const message = err.error || err.message || 'Unexpected error logging in';
-      res.status(status).json({ error: message });
-    });
+    const sessionCookie = await createSessionCookieRetry(req);
+    const redirectUrl = await setCookies(req, res, sessionCookie);
+
+    await tokenLogin.deactivateTokenLogin(userId);
+    return res.status(302).send(redirectUrl);
+  } catch (err) {
+    logger.error('Error while logging in with token', err);
+    const status = err.status || err.code || 400;
+    const message = err.error || err.message || 'Unexpected error logging in';
+    res.status(status).json({ error: message });
+  }
 };
 
-const renderLogin = (req) => {
-  return render('login', req);
-};
+const renderLogin = async (req) => render('login', req, {
+  hasOidcProvider: ssoLogin.isSsoLoginEnabled()
+});
 
 const renderPasswordReset = (req) => {
   return render('passwordReset', req);
@@ -367,12 +378,12 @@ const validateSession = async (req) => {
     error.error = 'Not logged in';
     throw error;
   }
-  return sessionRes;
+  return getSessionCookie(sessionRes);
 };
 
 const sendLoginErrorResponse = (e, res) => {
-  if (e.status === 401) {
-    return res.status(401).json({ error: e.error });
+  if (e.status === 401 || e.status === 400) {
+    return res.status(e.status).json({ error: e.error || e.message });
   }
   logger.error('Error logging in: %o', e);
   return res.status(500).json({ error: 'Unexpected error logging in' });
@@ -380,8 +391,8 @@ const sendLoginErrorResponse = (e, res) => {
 
 const login = async (req, res) => {
   try {
-    const sessionRes = await validateSession(req);
-    const redirectUrl = await setCookies(req, res, sessionRes);
+    const sessionCookie = await validateSession(req);
+    const redirectUrl = await setCookies(req, res, sessionCookie);
     res.status(302).send(redirectUrl);
   } catch (e) {
     return sendLoginErrorResponse(e, res);
@@ -441,7 +452,6 @@ const passwordResetValidation = async (username, currentPassword, password) => {
 
   return { isValid: true };
 };
-
 
 module.exports = {
   renderLogin,
@@ -512,16 +522,21 @@ module.exports = {
       }
 
       const userDoc = await users.getUserDoc(username);
+      if (isOidcUser(userDoc)) {
+        const error = new Error('Password Reset Not Permitted For SSO Users');
+        error.status = 400;
+        throw error;
+      }
       await updatePassword(userDoc, password);
 
       req.body = { user: username, password, locale };
-      const sessionRes = await createSessionRetry(req);
-      const redirectUrl = await setCookies(req, res, sessionRes);
+      const sessionCookie = await createSessionCookieRetry(req);
+      const redirectUrl = await setCookies(req, res, sessionCookie);
       return res.status(302).send(redirectUrl);
     } catch (err) {
       logger.error('Error updating password: %o', err);
       const status = err.status || 500;
-      res.status(status).json({ error: err.error || 'Error updating password' });
+      res.status(status).json({ error: err.error || err.message || 'Error updating password' });
     }
   },
   tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),
@@ -538,6 +553,45 @@ module.exports = {
         return loginByToken(req, res);
       }
       next(e);
+    }
+  },
+  oidcLogin: async (req, res) => {
+    const limited = await rateLimitService.isLimited(req);
+    if (limited) {
+      return serverUtils.rateLimited(req, res);
+    }
+    const currentUrl =  new URL(`${serverUtils.getAppUrl(req)}${req.originalUrl}`);
+    try {
+      const { username, locale } = await sso.getIdToken(currentUrl);
+      const sessionCookie = await sso.getCookie(username);
+      req.body = { locale };
+
+      const options = { headers: { Cookie: sessionCookie } };
+      const userCtx = await getUserCtxRetry(options);
+      const redirectUrl = await redirectToApp({ req, res, sessionCookie, userCtx });
+      res.status(302).redirect(redirectUrl);
+    } catch (e) {
+      logger.error('Error logging in via SSO: %o', e);
+      const redirectUrl = url.format({
+        pathname: path.join('/', environment.db, 'login'),
+        query: { sso_error: e.status === 401 ? 'ssouserinvalid' : 'loginerror' }
+      });
+      res.status(302).redirect(redirectUrl);
+    }
+  },
+  oidcAuthorize: async (req, res) => {
+    const limited = await rateLimitService.isLimited(req);
+    if (limited) {
+      return serverUtils.rateLimited(req, res);
+    }
+
+    const redirectUrl = new URL(`${serverUtils.getAppUrl(req)}/${environment.db}/login/oidc`);
+    try {
+      const authUrl = await sso.getAuthorizationUrl(redirectUrl.toString());
+      res.status(302).send(authUrl.href);
+    } catch (e) {
+      logger.error('Error getting authorization redirect url for SSO: %o', e);
+      return serverUtils.error(e, req, res);
     }
   },
 };

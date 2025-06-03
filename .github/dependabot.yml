@@ -30,7 +30,6 @@ updates:
       - dependency-name: "chai-exclude" # ESM Modules https://github.com/medic/cht-core/issues/9770
       - dependency-name: "node-fetch" # ESM Modules https://github.com/medic/cht-core/issues/9770
       - dependency-name: "url-join" # ESM Modules https://github.com/medic/cht-core/issues/9770
-      - dependency-name: "pouchdb-*" # https://github.com/medic/cht-core/issues/9534
 
   - package-ecosystem: "npm"
     directory: "/admin"

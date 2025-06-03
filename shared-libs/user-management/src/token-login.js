@@ -1,6 +1,7 @@
 const db = require('./libs/db');
 const config = require('./libs/config');
 const passwords = require('./libs/passwords');
+const ssoLogin = require('./sso-login');
 const taskUtils = require('@medic/task-utils');
 const phoneNumber = require('@medic/phone-number');
 const TOKEN_EXPIRE_TIME = 24 * 60 * 60 * 1000; // 24 hours
@@ -230,7 +231,7 @@ const validateTokenLoginCreate = (data) => {
 };
 
 const validateTokenLoginEdit = (data, user, userSettings) => {
-  if (shouldDisableTokenLogin(data) && user.token_login && !data.password) {
+  if (shouldDisableTokenLogin(data) && user.token_login && !(data.password || data.oidc_username)) {
     // when disabling token login for a user that had it enabled, setting a password is required
     return {
       msg: 'Password is required when disabling token login.',
@@ -283,6 +284,12 @@ const getUserByToken = (token) => {
 
       if (user.token_login.expiration_date <= new Date().getTime()) {
         throw expired;
+      }
+
+      if (user.oidc_username && ssoLogin.isSsoLoginEnabled()) {
+        const err = new Error('Token login not allowed for SSO users');
+        err.status = 401;
+        throw err;
       }
 
       return user._id;

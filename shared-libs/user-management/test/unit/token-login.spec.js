@@ -3,6 +3,7 @@ const sinon = require('sinon');
 
 const config = require('../../src/libs/config');
 const db = require('../../src/libs/db');
+const ssoLogin = require('../../src/sso-login');
 const service = require('../../src/token-login');
 
 const oneDayInMS = 24 * 60 * 60 * 1000;
@@ -143,6 +144,18 @@ describe('TokenLogin service', () => {
           chai.expect(data).to.deep.equal({ token_login: false });
         });
 
+        it('should do nothing when oidc_username is present', () => {
+          const user = { _id: 'user', name: 'user', token_login: true };
+          const settings = { _id: 'user', name: 'user', contact_id: 'bbb', token_login: true };
+          const data = { token_login: false, oidc_username: 'superSecret' };
+          const result = service.validateTokenLogin(data, false, user, settings);
+          chai.expect(result).to.deep.equal(undefined);
+          // no changes to provided data
+          chai.expect(user).to.deep.equal({ _id: 'user', name: 'user', token_login: true });
+          chai.expect(settings).to.deep.equal({ _id: 'user', name: 'user', contact_id: 'bbb', token_login: true });
+          chai.expect(data).to.deep.equal({ token_login: false, oidc_username: 'superSecret' });
+        });
+
         it('should do nothing when password is present', () => {
           const user = { _id: 'user', name: 'user', token_login: true };
           const settings = { _id: 'user', name: 'user', contact_id: 'bbb', token_login: true };
@@ -270,6 +283,32 @@ describe('TokenLogin service', () => {
           chai.expect(db.medic.get.args[0]).to.deep.equal([`token:login:the_token`]);
           chai.expect(db.users.get.callCount).to.equal(1);
           chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:user']);
+        });
+    });
+
+    it('should throw when user is oidc', () => {
+      sinon.stub(ssoLogin, 'isSsoLoginEnabled').returns(true);
+      const future = new Date().getTime() + 1000;
+      db.medic.get.resolves({ user: 'org.couchdb.user:user' });
+      db.users.get.resolves({
+        oidc_username: 'true',
+        token_login: {
+          active: true,
+          token: 'the_token',
+          expiration_date: future
+        },
+      });
+      return service
+        .getUserByToken('the_token')
+        .then(() => chai.assert.fail('Should have thrown'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Token login not allowed for SSO users');
+          chai.expect(err.status).to.equal(401);
+          chai.expect(db.medic.get.callCount).to.equal(1);
+          chai.expect(db.medic.get.args[0]).to.deep.equal([`token:login:the_token`]);
+          chai.expect(db.users.get.callCount).to.equal(1);
+          chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:user']);
+          chai.expect(ssoLogin.isSsoLoginEnabled.calledOnceWithExactly()).to.be.true;
         });
     });
 
@@ -680,9 +719,7 @@ describe('TokenLogin service', () => {
       });
 
       it('should generate password, token, create sms and update user docs', () => {
-        config.get
-          .withArgs('token_login').returns({ message: 'the sms', enabled: true })
-          .withArgs('app_url').returns('http://host');
+        config.get.withArgs('token_login').returns({ message: 'the sms', enabled: true });
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
 
         db.medic.get.withArgs('userID').resolves({
@@ -766,9 +803,7 @@ describe('TokenLogin service', () => {
       });
 
       it('should clear previous token_login sms', () => {
-        config.get
-          .withArgs('token_login').returns({ message: 'the sms', enabled: true })
-          .withArgs('app_url').returns('http://host');
+        config.get.withArgs('token_login').returns({ message: 'the sms', enabled: true });
         const response = { user: { id: 'my_user' }, 'user-settings': { id: 'my_user' } };
 
         db.medic.get.withArgs('my_user').resolves({
@@ -907,9 +942,7 @@ describe('TokenLogin service', () => {
       });
 
       it('should only clear pending tasks in previous token_login sms', () => {
-        config.get
-          .withArgs('token_login').returns({ message: 'the sms', enabled: true })
-          .withArgs('app_url').returns('http://host');
+        config.get.withArgs('token_login').returns({ message: 'the sms', enabled: true });
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
 
         db.medic.get.withArgs('userID').resolves({
@@ -1027,9 +1060,7 @@ describe('TokenLogin service', () => {
       });
 
       it('should try to generate a unique token', () => {
-        config.get
-          .withArgs('token_login').returns({ message: 'the sms', enabled: true })
-          .withArgs('app_url').returns('http://host');
+        config.get.withArgs('token_login').returns({ message: 'the sms', enabled: true });
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
 
         db.medic.get.withArgs('userID').resolves({
@@ -1089,9 +1120,7 @@ describe('TokenLogin service', () => {
       });
 
       it('should throw an error when not able to generate a unique token', () => {
-        config.get
-          .withArgs('token_login').returns({ message: 'the sms', enabled: true })
-          .withArgs('app_url').returns('http://host');
+        config.get.withArgs('token_login').returns({ message: 'the sms', enabled: true });
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
 
         db.medic.get.withArgs('userID').resolves({

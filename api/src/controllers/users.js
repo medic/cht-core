@@ -107,10 +107,6 @@ const getAllowedDocsCounts = async (userCtx) => {
   };
 };
 
-// this might not be correct.
-// In express4, req.host strips off the port number: https://expressjs.com/en/guide/migrating-5.html#req.host
-const getAppUrl = (req) => `${req.protocol}://${req.hostname}`;
-
 const getUserList = async (req) => {
   await auth.check(req, 'can_view_users');
   const filters = {
@@ -287,7 +283,7 @@ module.exports = {
       try {
         await auth.check(req, ['can_edit', 'can_create_users']);
 
-        const response = await users.createMultiFacilityUser(req.body, getAppUrl(req));
+        const response = await users.createMultiFacilityUser(req.body);
         res.json(response);
       } catch (error) {
         serverUtils.error(error, req, res);
