@@ -107,10 +107,6 @@ const getAllowedDocsCounts = async (userCtx) => {
   };
 };
 
-// this might not be correct.
-// In express4, req.host strips off the port number: https://expressjs.com/en/guide/migrating-5.html#req.host
-const getAppUrl = (req) => `${req.protocol}://${req.hostname}`;
-
 const getUserList = async (req) => {
   await auth.check(req, 'can_view_users');
   const filters = {
@@ -186,7 +182,7 @@ module.exports = {
   create: (req, res) => {
     return auth
       .check(req, ['can_edit', 'can_create_users'])
-      .then(() => users.createUsers(req.body, getAppUrl(req)))
+      .then(() => users.createUsers(req.body, serverUtils.getAppUrl(req)))
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },
@@ -200,7 +196,7 @@ module.exports = {
       const requesterContext = await auth.getUserCtx(req);
 
       const username = req.params.username;
-      const result = await users.updateUser(username, req.body, !!fullPermission, getAppUrl(req));
+      const result = await users.updateUser(username, req.body, !!fullPermission, serverUtils.getAppUrl(req));
 
       const body = Object.keys(req.body).join(',');
       logger.info(
@@ -273,7 +269,7 @@ module.exports = {
 
         const response = await users.createUsers(
           usersToCreate,
-          getAppUrl(req),
+          serverUtils.getAppUrl(req),
           ignoredUsers,
           logId
         );
@@ -288,7 +284,7 @@ module.exports = {
       try {
         await auth.check(req, ['can_edit', 'can_create_users']);
 
-        const response = await users.createMultiFacilityUser(req.body, getAppUrl(req));
+        const response = await users.createMultiFacilityUser(req.body, serverUtils.getAppUrl(req));
         res.json(response);
       } catch (error) {
         serverUtils.error(error, req, res);

@@ -8,6 +8,7 @@ const couchSettings = require('@medic/settings');
 const getRoles = require('./libs/types-and-roles');
 const roles = require('./roles');
 const tokenLogin = require('./token-login');
+const ssoLogin = require('./sso-login');
 const config = require('./libs/config');
 const moment = require('moment');
 const bulkUploadLog = require('./bulk-upload-log');
@@ -50,6 +51,7 @@ const USER_EDITABLE_FIELDS = RESTRICTED_USER_EDITABLE_FIELDS.concat([
   'contact',
   'type',
   'roles',
+  'oidc_username',
 ]);
 
 const RESTRICTED_SETTINGS_EDITABLE_FIELDS = [
@@ -363,7 +365,8 @@ const mapUser = (user, setting, facilities) => {
     roles: user.roles,
     contact: getDoc(user.contact_id, facilities),
     external_id: setting.external_id,
-    known: user.known
+    known: user.known,
+    oidc_username: user.oidc_username,
   };
 };
 
@@ -453,6 +456,10 @@ const getSettingsUpdates = (username, data) => {
     }
   });
 
+  if (Object.keys(data).includes('oidc_username')) {
+    settings.oidc_login = !!data.oidc_username;
+  }
+
   getCommonFieldsUpdates(settings, data);
 
   return settings;
@@ -528,7 +535,7 @@ const missingFields = data => {
 
   if (tokenLogin.shouldEnableTokenLogin(data)) {
     required.push('phone');
-  } else {
+  } else if (!data.oidc_username) {
     required.push('password');
   }
 
@@ -692,6 +699,8 @@ const validateUserContact = (data, user) => {
  * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
  * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this
  *   user.
+ * @param {string=} data.oidc_username unique OIDC identifier for user. Can be set but not together
+ * with @param token_login|@param password
  * @param {string=} data.fullname Full name
  * @param {string=} data.email Email address
  * @param {Boolean=} data.known Boolean to define if the user has logged in before.
@@ -891,6 +900,10 @@ const createMultiFacilityUser = async (data, appUrl) => {
   if (tokenLoginError) {
     throw error400(tokenLoginError.msg, tokenLoginError.key);
   }
+  const ssoLoginError = await ssoLogin.validateSsoLogin(data);
+  if (ssoLoginError) {
+    throw error400(ssoLoginError.msg, ssoLoginError.key);
+  }
   const passwordError = validatePassword(data.password);
   if (passwordError) {
     throw passwordError;
@@ -990,6 +1003,8 @@ module.exports = {
    * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
    * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for
    *   this user.
+   * @param {string=} data.oidc_username unique OIDC identifier for user. Can be set but not together
+   * with @param token_login|@param password
    * @param {string=} data.fullname Full name
    * @param {string=} data.email Email address
    * @param {Boolean=} data.known Boolean to define if the user has logged in before.
@@ -1012,6 +1027,12 @@ module.exports = {
     if (tokenLoginError) {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
     }
+
+    const ssoLoginError = await ssoLogin.validateSsoLogin(data);
+    if (ssoLoginError) {
+      return Promise.reject(error400(ssoLoginError.msg, ssoLoginError.key));
+    }
+
     const passwordError = validatePassword(data.password);
     if (passwordError) {
       return Promise.reject(passwordError);
@@ -1037,6 +1058,8 @@ module.exports = {
    * @param {string=} users[].phone Valid phone number. Required if token_login is enabled for the user.
    * @param {Boolean=} users[].token_login A boolean representing whether or not the Login by SMS should be enabled for
    *   this user.
+   * @param {string=} users[].oidc_username unique OIDC identifier for user. Can be set but not together
+   * with @param token_login|@param password
    * @param {string=} users[].fullname Full name
    * @param {string=} users[].email Email address
    * @param {Boolean=} users[].known Boolean to define if the user has logged in before.
@@ -1083,6 +1106,11 @@ module.exports = {
         const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
         if (tokenLoginError) {
           throw new Error(tokenLoginError.msg);
+        }
+
+        const ssoLoginError = await ssoLogin.validateSsoLogin(user);
+        if (ssoLoginError) {
+          throw error400(ssoLoginError.msg, ssoLoginError.key);
         }
 
         const passwordError = validatePassword(user.password);
@@ -1157,6 +1185,10 @@ module.exports = {
     const tokenLoginError = tokenLogin.validateTokenLogin(data, false, user, userSettings);
     if (tokenLoginError) {
       return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
+    }
+    const ssoLoginError = await ssoLogin.validateSsoLoginUpdate(data, user);
+    if (ssoLoginError) {
+      return Promise.reject(error400(ssoLoginError.msg, ssoLoginError.key));
     }
 
     await validateUserFacility(data, user);

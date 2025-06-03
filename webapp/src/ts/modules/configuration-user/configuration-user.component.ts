@@ -24,11 +24,14 @@ export class ConfigurationUserComponent implements OnInit {
     private userSettingsService: UserSettingsService,
   ) { }
 
-  async ngOnInit() {
+  ngOnInit() {
     this.loading = true;
-    const user:any = await this.userSettingsService.get();
-    this.canUpdatePassword = !user.token_login && !this.sessionService.isAdmin();
-    this.loading = false;
+    this.userSettingsService
+      .get()
+      .then(user => {
+        this.canUpdatePassword = !user.token_login && !user.oidc_login && !this.sessionService.isAdmin();
+        this.loading = false;
+      });
   }
 
   updatePassword() {

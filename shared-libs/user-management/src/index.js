@@ -6,7 +6,12 @@ const bulkUploadLog = require('./bulk-upload-log');
 const roles = require('./roles');
 const tokenLogin = require('./token-login');
 const users = require('./users');
+const { isSsoLoginEnabled, getUsersByOidcUsername } = require('./sso-login');
 
+const ssoLogin = {
+  isSsoLoginEnabled,
+  getUsersByOidcUsername,
+};
 module.exports = (sourceConfig, sourceDb, sourceDataContext) => {
   config.init(sourceConfig);
   db.init(sourceDb);
@@ -17,8 +22,9 @@ module.exports = (sourceConfig, sourceDb, sourceDataContext) => {
     bulkUploadLog,
     roles,
     tokenLogin,
+    ssoLogin,
     users,
-    validatePassword: users.validatePassword
+    validatePassword: users.validatePassword,
   };
 };
 
