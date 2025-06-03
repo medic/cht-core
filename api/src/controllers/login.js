@@ -569,8 +569,8 @@ module.exports = {
     if (limited) {
       return serverUtils.rateLimited(req, res);
     }
-    const currentUrl =  new URL(`${getAppUrl(req)}${req.originalUrl}`);
     try {
+      const currentUrl =  new URL(`${getAppUrl(req)}${req.originalUrl}`);
       const { username, locale } = await sso.getIdToken(currentUrl);
       const sessionCookie = await sso.getCookie(username);
       req.body = { locale };
@@ -594,8 +594,8 @@ module.exports = {
       return serverUtils.rateLimited(req, res);
     }
 
-    const redirectUrl = new URL(`${getAppUrl(req)}/${environment.db}/login/oidc`);
     try {
+      const redirectUrl = new URL(`${getAppUrl(req)}/${environment.db}/login/oidc`);
       const authUrl = await sso.getAuthorizationUrl(redirectUrl.toString());
       res.status(302).send(authUrl.href);
     } catch (e) {

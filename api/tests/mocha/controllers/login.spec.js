@@ -1217,21 +1217,20 @@ describe('login controller', () => {
     });
 
     it('redirects to login page with login error when unexpected error occurs', async () => {
-      const invalidTokenError = new Error('Invalid token');
-      sso.getIdToken.rejects(invalidTokenError);
+      config.get.returns('');
 
       await controller.oidcLogin(req, res);
 
       chai.expect(rateLimit.isLimited.calledOnceWithExactly(req)).to.be.true;
       chai.expect(serverUtils.rateLimited.notCalled).to.be.true;
-      chai.expect(sso.getIdToken.calledOnceWithExactly(
-        new URL(`http://xx.app.medicmobile.org/${environment.db}/login/oidc/get_token`)
-      )).to.be.true;
+      chai.expect(sso.getIdToken.notCalled).to.be.true;
       chai.expect(sso.getCookie.notCalled).to.be.true;
       chai.expect(auth.getUserCtx.notCalled).to.be.true;
       chai.expect(users.getUserDoc.notCalled).to.be.true;
       chai.expect(res.cookie.notCalled).to.be.true;
-      chai.expect(logger.error.calledOnceWithExactly('Error logging in via SSO: %o', invalidTokenError)).to.be.true;
+      chai.expect(logger.error.calledOnce).to.be.true;
+      chai.expect(logger.error.args[0][0]).to.equal('Error logging in via SSO: %o');
+      chai.expect(logger.error.args[0][1].message).to.equal('The app_url value is not configured.');
       chai.expect(res.status.calledOnceWithExactly(302)).to.be.true;
       chai.expect(res.redirect.calledOnceWithExactly(`/${environment.db}/login?sso_error=loginerror`)).to.be.true;
       chai.expect(config.get.calledOnceWithExactly('app_url')).to.be.true;
@@ -1282,21 +1281,23 @@ describe('login controller', () => {
     });
 
     it('returns login error when failing to get authorization URL', async () => {
-      const e = new Error('Error');
-      sso.getAuthorizationUrl.throws(e);
+      config.get.returns('');
       sinon.stub(serverUtils, 'error');
 
       await controller.oidcAuthorize(req, res);
 
       chai.expect(rateLimit.isLimited.calledOnceWithExactly(req)).to.be.true;
       chai.expect(serverUtils.rateLimited.notCalled).to.be.true;
-      chai.expect(sso.getAuthorizationUrl.calledWith(`http://xx.app.medicmobile.org/${environment.db}/login/oidc`)).to.be.true;
+      chai.expect(sso.getAuthorizationUrl.notCalled).to.be.true;
       chai.expect(res.status.notCalled).to.be.true;
       chai.expect(res.send.notCalled).to.be.true;
-      chai.expect(logger.error.calledOnceWithExactly(
-        'Error getting authorization redirect url for SSO: %o', e
-      )).to.be.true;
-      chai.expect(serverUtils.error.calledOnceWithExactly(e, req, res)).to.be.true;
+      chai.expect(logger.error.calledOnce).to.be.true;
+      chai.expect(logger.error.args[0][0]).to.equal('Error getting authorization redirect url for SSO: %o');
+      chai.expect(logger.error.args[0][1].message).to.equal('The app_url value is not configured.');
+      chai.expect(serverUtils.error.calledOnce).to.be.true;
+      chai.expect(serverUtils.error.args[0][0].message).to.equal('The app_url value is not configured.');
+      chai.expect(serverUtils.error.args[0][1]).to.equal(req);
+      chai.expect(serverUtils.error.args[0][2]).to.equal(res);
       chai.expect(config.get.calledOnceWithExactly('app_url')).to.be.true;
     });
 
