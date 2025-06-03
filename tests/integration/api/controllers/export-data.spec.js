@@ -418,42 +418,42 @@ describe('Export Data V2.0', () => {
         return `Mozilla/5.0 (X11; Linux x86_64) ${platform}`;
       };
 
-       const deviceInfo = {
-      app: {
-        version: apk
-      },
-      software: {
-        androidVersion: android
-      }
-    };
-
-    if (typeof storageFree !== 'undefined' || typeof storageTotal !== 'undefined') {
-      deviceInfo.storage = {
-        free: storageFree,
-        total: storageTotal
-      };
-    }
-
-    return {
-      _id: `telemetry-${date}-${user}-${deviceId}`,
-      type: 'telemetry',
-      metadata: {
-        year,
-        month,
-        day,
-        user,
-        deviceId,
-        versions: {
-          app: cht,
-          settings
+      const deviceInfo = {
+        app: {
+          version: apk
+        },
+        software: {
+          androidVersion: android
         }
-      },
-      device: {
-        userAgent: getUserAgent(),
-        deviceInfo: deviceInfo
+      };
+
+      if (typeof storageFree !== 'undefined' || typeof storageTotal !== 'undefined') {
+        deviceInfo.storage = {
+          free: storageFree,
+          total: storageTotal
+        };
       }
+
+      return {
+        _id: `telemetry-${date}-${user}-${deviceId}`,
+        type: 'telemetry',
+        metadata: {
+          year,
+          month,
+          day,
+          user,
+          deviceId,
+          versions: {
+            app: cht,
+            settings
+          }
+        },
+        device: {
+          userAgent: getUserAgent(),
+          deviceInfo: deviceInfo
+        }
+      };
     };
-  };
 
     const otherDocs = [
       {
@@ -545,7 +545,7 @@ describe('Export Data V2.0', () => {
           date: '2011-11-11',
           browser: {
             name: undefined,
-          version: undefined
+            version: undefined
           },
           apk: undefined,
           android: undefined,
