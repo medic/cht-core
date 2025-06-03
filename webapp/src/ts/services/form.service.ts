@@ -146,6 +146,15 @@ export class FormService {
     return this.targetAggregatesService.getTargetDocs(contact, this.userFacilityIds, this.userContactId);
   }
 
+  async loadContactSummary(contact) {
+    const [reports, lineage, targetDocs] = await Promise.all([
+      this.getContactReports(contact),
+      this.getLineage(contact),
+      this.getTargetDocs(contact),
+    ]);
+    return await this.contactSummaryService.get(contact, reports, lineage, targetDocs);
+  }
+
   private async getContactSummary(formDoc, instanceData):Promise<ContactSummary|undefined> {
     const instanceId = 'contact-summary';
     const contact = instanceData?.contact;
@@ -153,15 +162,9 @@ export class FormService {
       return;
     }
 
-    const [reports, lineage, targetDocs] = await Promise.all([
-      this.getContactReports(contact),
-      this.getLineage(contact),
-      this.getTargetDocs(contact),
-    ]);
-
     return {
       id: instanceId,
-      context: await this.contactSummaryService.getContext(contact, reports, lineage, targetDocs)
+      context: (await this.loadContactSummary(contact))?.context,
     };
   }
 
@@ -173,26 +176,8 @@ export class FormService {
 
     return {
       id: instanceId,
-      context: await this.userContactSummaryService.getContext(),
+      context: (await this.userContactSummaryService.get())?.context,
     };
-  }
-
-  loadContactSummary(contact) {
-    return Promise
-      .all([
-        this.getContactReports(contact),
-        this.getLineage(contact),
-        this.getTargetDocs(contact),
-      ])
-      .then(([reports, lineage, targetDocs]) => this.contactSummaryService.get(contact, reports, lineage, targetDocs));
-  }
-
-  private getContactSummary(doc, instanceData) {
-    const contact = instanceData?.contact;
-    if (!doc.hasContactSummary || !contact) {
-      return Promise.resolve();
-    }
-    return this.loadContactSummary(contact);
   }
 
   private canAccessForm(formContext: WebappEnketoFormContext) {

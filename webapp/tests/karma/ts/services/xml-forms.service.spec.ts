@@ -85,7 +85,7 @@ describe('XmlForms service', () => {
         { provide: XmlFormsContextUtilsService, useValue: contextUtils },
         { provide: ContactTypesService, useValue: { get: getContactType, getTypeId } },
         { provide: UserContactService, useValue: { get: UserContact } },
-        { provide: UserContactSummaryService, useValue: { getContext: userContactSummary }},
+        { provide: UserContactSummaryService, useValue: { get: userContactSummary }},
         ParseProvider,
         { provide: PipesService, useValue: pipesService },
         { provide: FileReaderService, useValue: { utf8: fileReaderService } },
@@ -543,6 +543,45 @@ describe('XmlForms service', () => {
         expect(actual.length).to.equal(1);
         expect(actual[0]).to.deep.equal(given[0].doc);
       });
+    });
+
+    it('filter with custom function using user contact summary', async () => {
+      const given = [
+        {
+          id: 'form-0',
+          doc: {
+            _id: 'form-0',
+            internalId: 'visit',
+            context: {
+              expression: 'userSummary.isAlive === true'
+            },
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-1',
+          doc: {
+            _id: 'form-1',
+            internalId: 'stock-report',
+            context: {
+              expression: 'userSummary.isAlive === false'
+            },
+            _attachments: { xml: { something: true } },
+          },
+        }
+      ];
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      userContactSummary.resolves({ context: { isAlive: true } });
+      const service = getService();
+      getContactType.resolves({ person: true });
+
+      const result1 = await service.list({ doc: { sex: 'female', type: 'person' } });
+      expect(result1).to.deep.equal([given[0].doc]);
+
+      userContactSummary.resolves({ context: { isAlive: false } });
+      const result2 = await service.list({ doc: { sex: 'female', type: 'person' } });
+      expect(result2).to.deep.equal([given[1].doc]);
     });
 
     it('broken custom functions log clean errors and count as filtered', () => {

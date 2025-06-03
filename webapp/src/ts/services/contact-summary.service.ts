@@ -108,9 +108,4 @@ export class ContactSummaryService {
       throw new Error('Configuration error');
     }
   }
-
-  async getContext(contact, reports, lineage, targetDocs) {
-    const summary = await this.get(contact, reports, lineage, targetDocs);
-    return summary?.context;
-  }
 }

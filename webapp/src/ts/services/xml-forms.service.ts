@@ -112,7 +112,7 @@ export class XmlFormsService {
 
   private async _filterAll(forms, options) {
     const user = await this.userContactService.get();
-    const userContactSummary = await this.userContactSummaryService.getContext();
+    const userContactSummary = (await this.userContactSummaryService.get())?.context;
 
     // clone the forms list so we don't affect future filtering
     forms = forms.slice();

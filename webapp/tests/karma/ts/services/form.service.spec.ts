@@ -172,7 +172,7 @@ describe('Form service', () => {
     extractLineageService = { extract: ExtractLineageService.prototype.extract };
     targetAggregatesService = { getTargetDocs: sinon.stub() };
     contactViewModelGeneratorService = { loadReports: sinon.stub() };
-    userContactSummaryService = { getContext: sinon.stub() };
+    userContactSummaryService = { get: sinon.stub() };
 
     const getSiblings = sinon.stub();
     getDuplicates = sinon.stub();
@@ -190,7 +190,7 @@ describe('Form service', () => {
             get: () => ({ getAttachment: dbGetAttachment, get: dbGet, bulkDocs: dbBulkDocs })
           }
         },
-        { provide: ContactSummaryService, useValue: { getContext: ContactSummary } },
+        { provide: ContactSummaryService, useValue: { get: ContactSummary } },
         { provide: Form2smsService, useValue: { transform: Form2Sms } },
         { provide: SearchService, useValue: { search: Search } },
         { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) } },
@@ -285,8 +285,8 @@ describe('Form service', () => {
       UserContact.resolves({ contact_id: '123-user-contact' });
       xmlFormsService.canAccessForm.resolves(true);
 
-      ContactSummary.resolves({ pregnant: false });
-      userContactSummaryService.getContext.resolves({ chw: true });
+      ContactSummary.resolves({ context: { pregnant: false } });
+      userContactSummaryService.get.resolves({ context: { chw: true } });
       Search.resolves([{ _id: 'some_report' }]);
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'some_parent' }] });
       const instanceData = { contact: { _id: '123-patient-contact' } };
@@ -305,7 +305,7 @@ describe('Form service', () => {
         expect.fail('Should throw error');
       } catch (error) {
         expect(UserContact.calledOnce).to.be.true;
-        expect(userContactSummaryService.getContext.calledOnce).to.equal(true);
+        expect(userContactSummaryService.get.calledOnce).to.equal(true);
         expect(xmlFormsService.canAccessForm.calledOnce).to.be.true;
         expect(xmlFormsService.canAccessForm.args[0]).to.deep.equal([
           {
@@ -403,9 +403,8 @@ describe('Form service', () => {
           name: 'sharon'
         }
       };
-      ContactSummary.resolves({ pregnant: true });
-      userContactSummaryService.getContext.resolves({ chw: true });
-
+      ContactSummary.resolves({ context: { pregnant: true } });
+      userContactSummaryService.get.resolves({ context: { chw: true } });
       contactViewModelGeneratorService.loadReports.resolves([{ _id: 'somereport' }]);
       targetAggregatesService.getTargetDocs.resolves([{ _id: 't1' }, { _id: 't2' }]);
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'someparent' }] });
@@ -467,11 +466,13 @@ describe('Form service', () => {
         }
       };
       ContactSummary.resolves({
-        pregnant: true,
-        previousChildren: [{ dob: 2016 }, { dob: 2013 }, { dob: 2010 }],
-        notes: `always <uses> reserved "characters" & 'words'`
+        context: {
+          pregnant: true,
+          previousChildren: [{ dob: 2016 }, { dob: 2013 }, { dob: 2010 }],
+          notes: `always <uses> reserved "characters" & 'words'`
+        }
       });
-      userContactSummaryService.getContext.resolves({ chw: true, forms: false });
+      userContactSummaryService.get.resolves({ context: { chw: true, forms: false } });
       LineageModelGenerator.contact.resolves({ lineage: [] });
       const formContext = new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
       return service.render(formContext).then(() => {
@@ -522,7 +523,7 @@ describe('Form service', () => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].external).to.deep.equal([]);
         expect(ContactSummary.callCount).to.equal(0);
-        expect(userContactSummaryService.getContext.callCount).to.equal(0);
+        expect(userContactSummaryService.get.callCount).to.equal(0);
         expect(LineageModelGenerator.contact.callCount).to.equal(0);
       });
     });
@@ -550,7 +551,7 @@ describe('Form service', () => {
           patient_id: '44509'
         }
       };
-      ContactSummary.resolves({ pregnant: true });
+      ContactSummary.resolves({ context: { pregnant: true } });
       Search.resolves([{ _id: 'somereport' }]);
       const formContext = new WebappEnketoFormContext('div', 'report',  mockEnketoDoc('myform'), instanceData);
       return service.render(formContext).then(() => {
@@ -639,8 +640,8 @@ describe('Form service', () => {
         .onSecondCall().resolves(VISIT_MODEL);
       UserContact.resolves({ contact_id: '123-user-contact' });
       xmlFormsService.canAccessForm.resolves(false);
-      ContactSummary.resolves({ pregnant: false });
-      userContactSummaryService.getContext.resolves({ chw: true });
+      ContactSummary.resolves({ context: { pregnant: false } });
+      userContactSummaryService.get.resolves({ context: { chw: true } });
 
       try {
         await service.render(new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform')));
@@ -1358,7 +1359,7 @@ describe('Form service', () => {
               get: () => ({ getAttachment: dbGetAttachment, get: dbGet, bulkDocs: dbBulkDocs })
             }
           },
-          { provide: ContactSummaryService, useValue: { getContext: ContactSummary } },
+          { provide: ContactSummaryService, useValue: { get: ContactSummary } },
           { provide: Form2smsService, useValue: { transform: Form2Sms } },
           { provide: SearchService, useValue: { search: Search } },
           { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) } },

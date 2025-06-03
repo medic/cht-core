@@ -47,11 +47,6 @@ export class UserContactSummaryService {
     });
   }
 
-  async getContext() {
-    const summary = await this.get();
-    return summary?.context;
-  }
-
   private async loadSummary() {
     const userSettings = await this.userSettingsService.get();
     if (!userSettings?.contact_id) {
