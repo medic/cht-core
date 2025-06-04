@@ -963,6 +963,58 @@ const checkPayloadFacilityCount = (data) => {
   return Array.isArray(data.place) && data.place.length > 1;
 };
 
+const filterIgnoredUsers = (users, logData, progress, ignoredUsers = []) => users.filter(user => {
+  if (!ignoredUsers[user.username]) {
+    return true;
+  }
+
+  progress.saving.ignored++;
+  const log = createRecordBulkLog(
+    user,
+    BULK_UPLOAD_STATUSES.SKIPPED,
+    null,
+    ignoredUsers[user.username].ignoreMessage
+  );
+  logData.push(log);
+  return false;
+});
+
+const createSingleUser = async (user, logData, progress) => {
+  let response;
+  try {
+    const missing = missingFields(user);
+    if (missing.length > 0) {
+      throw new Error('Missing required fields: ' + missing.join(', '));
+    }
+    hydratePayload(user);
+
+    const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
+    if (tokenLoginError) {
+      throw new Error(tokenLoginError.msg);
+    }
+
+    const ssoLoginError = await ssoLogin.validateSsoLogin(user);
+    if (ssoLoginError) {
+      throw error400(ssoLoginError.msg, ssoLoginError.key);
+    }
+
+    const passwordError = validatePassword(user.password);
+    if (passwordError) {
+      throw passwordError;
+    }
+
+    response = await createUserEntities(user);
+    progress.saving.successful++;
+    logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.IMPORTED));
+  } catch (error) {
+    response = { error: error.message };
+    progress.saving.failed++;
+    logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.ERROR, error));
+  }
+
+  return response;
+};
+
 /*
    * Everything not exported directly is private.  Underscore prefix is only used
    * to export functions needed for testing.
@@ -1077,58 +1129,13 @@ module.exports = {
     await bulkUploadLog.updateLog(logId, progress);
 
     const responses = [];
-    for (let userIdx = 0; userIdx < users.length; userIdx++) {
-      const user = users[userIdx];
-      let response;
 
-      if (ignoredUsers && ignoredUsers[user.username]) {
-        progress.saving.ignored++;
-        const log = createRecordBulkLog(
-          user,
-          BULK_UPLOAD_STATUSES.SKIPPED,
-          null,
-          ignoredUsers[user.username].ignoreMessage
-        );
-        logData.push(log);
-        continue;
-      }
-
-      try {
-        const missing = missingFields(user);
-        if (missing.length > 0) {
-          throw new Error('Missing required fields: ' + missing.join(', '));
-        }
-        hydratePayload(user);
-
-        const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
-        if (tokenLoginError) {
-          throw new Error(tokenLoginError.msg);
-        }
-
-        const ssoLoginError = await ssoLogin.validateSsoLogin(user);
-        if (ssoLoginError) {
-          throw error400(ssoLoginError.msg, ssoLoginError.key);
-        }
-
-        const passwordError = validatePassword(user.password);
-        if (passwordError) {
-          throw passwordError;
-        }
-
-        response = await createUserEntities(user);
-        progress.saving.successful++;
-        logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.IMPORTED));
-      } catch (error) {
-        response = { error: error.message };
-        progress.saving.failed++;
-        logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.ERROR, error));
-      }
-
-      if (userIdx % 10) {
+    const filteredUsers = filterIgnoredUsers(users, logData, progress, ignoredUsers);
+    for (const [index, user] of filteredUsers.entries()) {
+      responses.push(await createSingleUser(user, logData, progress));
+      if (index % 10) {
         await bulkUploadLog.updateLog(logId, progress, logData);
       }
-
-      responses.push(response);
     }
 
     progress.status = BULK_UPLOAD_PROGRESS_STATUSES.FINISHED;
