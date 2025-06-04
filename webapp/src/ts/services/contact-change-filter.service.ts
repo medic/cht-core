@@ -80,8 +80,8 @@ export class ContactChangeFilterService {
   }
 
   isRelevantChange(change, contact) {
-    return this.matchContact(change, contact) ||
-      this.isRelevantContact(change, contact) ||
+    return this.matchContact(change, contact) ??
+      this.isRelevantContact(change, contact) ??
       this.isRelevantReport(change, contact);
   }
 }

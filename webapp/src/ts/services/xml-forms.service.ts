@@ -177,6 +177,25 @@ export class XmlFormsService {
     return this.authService.has(form.context.permission);
   }
 
+  private allFormTypes(options) {
+    return  options.contactForms === undefined
+      && options.trainingCards === undefined
+      && options.collectForms === undefined
+      && options.reportForms === undefined;
+  }
+
+  private isFormMatchingFilter(form, options) {
+    const isContactForm = form._id.indexOf(CONTACT_FORM_ID_PREFIX) === 0;
+    const isTrainingCard = form._id.indexOf(TRAINING_FORM_ID_PREFIX) === 0;
+    const isCollectForm = !!form.context?.collect;
+    const isReportForm = !isContactForm && !isTrainingCard && !isCollectForm;
+
+    return (options.reportForms && isReportForm)
+      || (options.collectForms && isCollectForm)
+      || (options.contactForms && isContactForm)
+      || (options.trainingCards && isTrainingCard);
+  }
+
   /**
    * Filters forms based on criteria defined in the options parameter.
    *
@@ -206,20 +225,11 @@ export class XmlFormsService {
    * @param userContactSummary {Object} : Compiled contact summary for the user context document
    */
   private filter(form, options, user, userContactSummary) {
-    const isContactForm = form._id.indexOf(CONTACT_FORM_ID_PREFIX) === 0;
-    const isTrainingCard = form._id.indexOf(TRAINING_FORM_ID_PREFIX) === 0;
-    const isCollectForm = !!form.context?.collect;
-    const isReportForm = !isContactForm && !isTrainingCard && !isCollectForm;
 
-    const allFormTypes = options.contactForms === undefined
-      && options.trainingCards === undefined
-      && options.collectForms === undefined
-      && options.reportForms === undefined;
 
-    const isFormMatchingFilter = (options.reportForms && isReportForm)
-      || (options.collectForms && isCollectForm)
-      || (options.contactForms && isContactForm)
-      || (options.trainingCards && isTrainingCard);
+    const allFormTypes = this.allFormTypes(options);
+
+    const isFormMatchingFilter = this.isFormMatchingFilter(form, options);
 
     if (!allFormTypes && !isFormMatchingFilter) {
       return false;
