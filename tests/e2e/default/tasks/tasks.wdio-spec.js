@@ -87,6 +87,7 @@ describe('Tasks', () => {
 
   it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
     await tasksPage.compileTasks('tasks-breadcrumbs-config.js', true);
+    await browser.pause(500);
 
     await commonPage.goToTasks();
     let list = await tasksPage.getTasks();
@@ -134,10 +135,9 @@ describe('Tasks', () => {
 
   it('Should show error message for bad config', async () => {
     await tasksPage.compileTasks('tasks-error-config.js', true);
+
     await commonPage.goToTasks();
-
     const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
-
     expect(username).to.equal(chw.username);
     expect(url).to.equal('localhost');
     expect(errorMessage).to.equal('Error fetching tasks');
