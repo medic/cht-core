@@ -29,7 +29,11 @@
         <p class="error offline" translate="online.action.message"></p>
         <p class="error incorrect" translate="login.incorrect"></p>
         <p class="error unknown" translate="login.error"></p>
+        <p class="error sso_user_invalid" translate="login.sso.user_invalid"></p>
         <button id="login" class="btn" translate="login"></button>
+        <% if(hasOidcProvider) { %>
+        <button id="login-sso" class="btn" translate="login.sso"></button>
+        <% } %>
         <div class="loader"></div>
       </form>
       <div id="locale" class="wrapper">

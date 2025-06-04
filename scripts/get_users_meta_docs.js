@@ -7,7 +7,6 @@ const path = require('path');
 const minimist = require('minimist');
 
 PouchDB.plugin(require('pouchdb-adapter-http'));
-PouchDB.plugin(require('pouchdb-session-authentication'));
 
 const argv = minimist(process.argv.slice(2), {
   alias: {

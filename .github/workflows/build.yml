@@ -16,7 +16,7 @@ env:
   TAG: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
   BRANCH: ${{ github.head_ref || github.ref_name }}
   BUILD_NUMBER: ${{ github.run_id }}
-  NODE_VERSION: '22.11'
+  NODE_VERSION: '22.15'
 
 jobs:
 
