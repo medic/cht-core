@@ -50,22 +50,22 @@ describe('User Test Cases -> Creating Users ->', () => {
   after(async () => await utils.deleteUsers([{ username: username }]));
 
   it('should add user with multiple places with permission', async () => {
-    await usersAdminPage.inputAddUserFields(
+    await usersAdminPage.inputAddUserFields({
       username,
-      'Jack',
-      offlineUserRole,
-      [districtHospital.name, districtHospital2.name],
-      person.name,
+      fullname: 'Jack',
+      role: offlineUserRole,
+      places: [districtHospital.name, districtHospital2.name],
+      contact: person.name,
       password
-    );
+    });
     await usersAdminPage.saveUser();
 
     await commonPage.reloadSession();
     await loginPage.setUsernameValue(username);
     await loginPage.setPasswordValue(password);
-    await (await loginPage.loginButton()).click();
+    await loginPage.loginButton().click();
     await loginPage.passwordReset(password, NEW_PASSWORD, NEW_PASSWORD);
-    await (await loginPage.updatePasswordButton()).click();
+    await loginPage.updatePasswordButton().click();
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToPeople();

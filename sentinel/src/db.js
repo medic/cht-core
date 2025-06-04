@@ -1,6 +1,7 @@
 const logger = require('@medic/logger');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
+const audit = require('@medic/audit');
 
 const { UNIT_TEST_ENV } = process.env;
 
@@ -53,9 +54,11 @@ if (UNIT_TEST_ENV) {
   module.exports.medicDbName = stubMe('medicDbName');
   module.exports.queryMedic = stubMe('queryMedic');
 } else {
+  const service = 'sentinel';
+  environment.setService(service);
+
   const PouchDB = require('pouchdb-core');
   PouchDB.plugin(require('pouchdb-adapter-http'));
-  PouchDB.plugin(require('pouchdb-session-authentication'));
   PouchDB.plugin(require('pouchdb-mapreduce'));
   PouchDB.plugin(require('pouchdb-replication'));
 
@@ -63,16 +66,16 @@ if (UNIT_TEST_ENV) {
 
   const fetchFn = (url, opts) => {
     // Adding audit flags (haproxy) Service and user that made the request initially.
-    opts.headers.set('X-Medic-Service', 'sentinel');
-    opts.headers.set('X-Medic-User', 'sentinel');
-    return PouchDB.fetch(url, opts);
+    opts.headers.set('X-Medic-Service', service);
+    opts.headers.set('X-Medic-User', service);
+    return PouchDB.fetch(url, opts).then(response => {
+      void audit.fetchCallback(url, opts, response);
+      return response;
+    });
   };
 
   module.exports.medic = new PouchDB(couchUrl, { fetch: fetchFn });
-  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, {
-    fetch: fetchFn,
-  });
-
+  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch: fetchFn});
   module.exports.allDbs = () => request.get({ url: `${environment.serverUrl}/_all_dbs`, json: true });
   module.exports.get = db => new PouchDB(`${environment.serverUrl}/${db}`);
   module.exports.close = db => {
@@ -87,7 +90,6 @@ if (UNIT_TEST_ENV) {
     }
   };
   module.exports.users = new PouchDB(`${environment.serverUrl}/_users`, { fetch: fetchFn });
-  module.exports.users = new PouchDB(`${environment.serverUrl}/_users`);
   module.exports.queryMedic = (viewPath, queryParams, body) => {
     const [ddoc, view] = viewPath.split('/');
     const url = ddoc === 'allDocs' ? `${couchUrl}/_all_docs` : `${couchUrl}/_design/${ddoc}/_view/${view}`;
