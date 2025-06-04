@@ -1,22 +1,26 @@
-import * as moment from 'moment';
 import { Injectable } from '@angular/core';
+import {
+  toBik as toBikramSambat,
+  toBik_text as toBikramSambatText,
+  toDev as toDevanagariDate,
+} from 'bikram-sambat';
+import * as moment from 'moment';
 import { RelativeTimeKey } from 'moment';
-import { toBik_text as toBikramSambatText, toBik as toBikramSambat, toDev as toDevanagariDate } from 'bikram-sambat';
 
+import { FormatNumberService } from '@mm-services/format-number.service';
+import { LanguageService } from '@mm-services/language.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { LanguageService } from '@mm-services/language.service';
-import { FormatNumberService } from '@mm-services/format-number.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FormatDateService {
   constructor(
-    private translateService:TranslateService,
-    private settingsService:SettingsService,
-    private languageService:LanguageService,
-    private formatNumberService:FormatNumberService,
+    private translateService: TranslateService,
+    private settingsService: SettingsService,
+    private languageService: LanguageService,
+    private formatNumberService: FormatNumberService
   ) {
     this.initConfig();
   }
@@ -34,8 +38,8 @@ export class FormatDateService {
       ageBreaks: [
         { unit: 'years', key: { singular: 'y', plural: 'yy' }, min: 1 },
         { unit: 'months', key: { singular: 'M', plural: 'MM' }, min: 1 },
-        { unit: 'days', key: { singular: 'd', plural: 'dd' }, min: 0 }
-      ]
+        { unit: 'days', key: { singular: 'd', plural: 'dd' }, min: 0 },
+      ],
     };
   }
 
@@ -43,7 +47,7 @@ export class FormatDateService {
     this.initConfig();
     return this.settingsService
       .get()
-      .then((res:any) => {
+      .then((res: any) => {
         this.config.date = res.date_format;
         this.config.datetime = res.reported_date_format;
         if (typeof res.task_day_limit !== 'undefined') {
@@ -65,7 +69,11 @@ export class FormatDateService {
 
     if (key === 'dayMonth') {
       const bikDate = toBikramSambat(momentDate);
-      const devanagariDate = toDevanagariDate(bikDate.year, bikDate.month, bikDate.day);
+      const devanagariDate = toDevanagariDate(
+        bikDate.year,
+        bikDate.month,
+        bikDate.day
+      );
       return `${devanagariDate.day} ${devanagariDate.month}`;
     }
 
@@ -109,7 +117,9 @@ export class FormatDateService {
 
     if (diff <= 0) {
       if (this.config.taskDaysOverdue) {
-        return this.translateService.instant('task.overdue.days', { DAYS: Math.abs(diff) });
+        return this.translateService.instant('task.overdue.days', {
+          DAYS: Math.abs(diff),
+        });
       }
 
       return this.translateService.instant('task.overdue');
@@ -140,7 +150,14 @@ export class FormatDateService {
     // postformatting is not applied to relativeTime.
     // https://github.com/moment/moment/issues/5935
     const localizedQuantity = this.formatNumberService.localize(quantity);
-    const output = moment.localeData().relativeTime(localizedQuantity, true, <RelativeTimeKey>key, diff.quantity > 0);
+    const output = moment
+      .localeData()
+      .relativeTime(
+        localizedQuantity,
+        true,
+        <RelativeTimeKey>key,
+        diff.quantity > 0
+      );
     if (options.suffix) {
       return moment.localeData().pastFuture(diff.quantity, output);
     }
@@ -159,7 +176,7 @@ export class FormatDateService {
     return this.format(date, 'dayMonth');
   }
 
-  relative(date, options:any = {}) {
+  relative(date, options: any = {}) {
     if (options.task) {
       return this.getTaskDueDate(date);
     }
@@ -169,7 +186,7 @@ export class FormatDateService {
     return moment(date).fromNow(false);
   }
 
-  age(date, options:any = {}) {
+  age(date, options: any = {}) {
     return this.relativeDate(date, options);
   }
 
