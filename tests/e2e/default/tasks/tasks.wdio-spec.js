@@ -48,16 +48,6 @@ describe('Tasks', () => {
     reported_date: new Date().getTime(),
   });
 
-  const DOCS_TO_KEEP = [
-    ...Array.from(places.values()).map(doc => doc._id),
-    chwContact._id,
-    patient._id,
-    patient2._id,
-    'fixture:user:user1',
-    'org.couchdb.user:user1',
-    [/^form:/],
-  ];
-
   before(async () => {
     await utils.saveDocs([
       ...places.values(), healthCenter2, chwContact, patient, patient2,
@@ -76,8 +66,7 @@ describe('Tasks', () => {
 
   afterEach(async () => {
     await commonPage.logout();
-    await utils.revertDb(DOCS_TO_KEEP, true);
-    await utils.revertSettings(false);
+    await utils.revertSettings(true);
   });
 
   it('should remove task from list when CHW completes a task successfully', async () => {
@@ -101,7 +90,7 @@ describe('Tasks', () => {
 
     await commonPage.goToTasks();
     let list = await tasksPage.getTasks();
-    expect(list).to.have.length(3);
+    expect(list).to.have.length(2);
     let task = await tasksPage.getTaskByContactAndForm('Megan Spice', 'person_create');
     await task.click();
     await tasksPage.waitForTaskContentLoaded('Home Visit');
@@ -111,7 +100,7 @@ describe('Tasks', () => {
     await commonPage.sync({ expectReload: true });
     task = await tasksPage.getTaskByContactAndForm('Megan Spice', 'person_create_follow_up');
     list = await tasksPage.getTasks();
-    expect(list).to.have.length(4);
+    expect(list).to.have.length(3);
   });
 
   it('should load multiple pages of tasks on infinite scrolling', async () => {
