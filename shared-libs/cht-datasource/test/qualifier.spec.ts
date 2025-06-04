@@ -4,7 +4,9 @@ import {
   byUuid,
   isContactTypeQualifier,
   isFreetextQualifier,
-  isUuidQualifier
+  isUuidQualifier,
+  byContactQualifier,
+  isContactQualifier
 } from '../src/qualifier';
 import { expect } from 'chai';
 
@@ -107,6 +109,83 @@ describe('qualifier', () => {
       it(`evaluates ${JSON.stringify(freetext)}`, () => {
         expect(isFreetextQualifier(freetext)).to.equal(expected);
       });
+    });
+  });
+  
+  describe('byContactQualifier', () => {
+    it('builds a qualifier for creation and update of a contact with the required fields.', () => {
+      expect(byContactQualifier({
+        name: 'A', type: 'person'
+      })).to.deep.equal({
+        name: 'A', type: 'person'
+      });
+    });
+  
+    it('builds a qualifier for creation and update of a contact with the optional reported_date field.', () => {
+      expect(byContactQualifier({
+        name: 'A', type: 'person', reported_date: '2025-06-03T12:45:30Z'
+      })).to.deep.equal({
+        name: 'A', type: 'person', reported_date: '2025-06-03T12:45:30Z'
+      });
+    });
+  
+    it('throws error for invalid reported_date field.', () => {
+      expect(() => byContactQualifier({
+        name: 'A', type: 'person', reported_date: '2025-06'
+      // eslint-disable-next-line max-len
+      })).to.throw(`Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`);
+    });
+  
+    it('throws error for missing required fields.', () => {
+      [
+        {
+          name: 'A'
+        },
+        {
+          type: 'person', reported_date: '2025-06-03T12:45:30Z'
+        }
+      ].forEach((quantifier) => expect(() => byContactQualifier(quantifier))
+        .to.throw(`Missing required fields [${JSON.stringify(quantifier)}].`));
+      
+    });
+  });
+  
+  describe('isContactQualifier', () => {
+    it('returns false for missing required fields.', () => {
+      [
+        {
+          name: 'A'
+        },
+        {
+          type: 'person', reported_date: '2025-06-03T12:45:30Z'
+        }
+      ].forEach((quantifier) => expect(isContactQualifier(quantifier)).to.be.false);
+    });
+  
+    it('returns false for invalid reported_date format', () => {
+      [
+        {
+          name: 'A', type: 'person', reported_date: '10-05-2024'
+        },
+        {
+          name: 'A', type: 'person', reported_date: '2025'
+        }
+      ].forEach((quantifier) => expect(isContactQualifier(quantifier)).to.be.false);
+    });
+  
+    it('returns true for valid contact qualifiers', () => {
+      [
+        {
+          name: 'A', type: 'person', reported_date: 1748029550
+        },
+        {
+          name: 'B', type: 'person', reported_date: '2025-06-03T12:45:30Z'
+        },
+        {
+          name: 'B', type: 'person', reported_date: '2025-06-03T12:45:30.222Z', id: 'id-1',
+          _rev: 'revision-3'
+        }
+      ].forEach((quantifier) => expect(isContactQualifier(quantifier)).to.be.true);
     });
   });
 });
