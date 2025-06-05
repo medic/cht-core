@@ -16,7 +16,6 @@ const buildVersions = require('../../scripts/build/versions');
 const PouchDB = require('pouchdb-core');
 const chtDbUtils = require('@utils/cht-db');
 PouchDB.plugin(require('pouchdb-adapter-http'));
-PouchDB.plugin(require('pouchdb-session-authentication'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
 process.env.COUCHDB_USER = constants.USERNAME;
@@ -58,6 +57,7 @@ const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
 const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
+const auditDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-audit`, { auth });
 const existingFeedbackDocIds = [];
 const MINIMUM_BROWSER_VERSION = '90';
 const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
@@ -411,6 +411,65 @@ const deleteDocs = ids => {
   });
 };
 
+const PROTECTED_DOCS = [
+  'service-worker-meta',
+  constants.USER_CONTACT_ID,
+  'migration-log',
+  'resources',
+  'branding',
+  'partners',
+  'settings',
+  /^form:/,
+  /^_design/
+];
+
+const createDocumentFilters = (excludeList) => {
+  const filters = {
+    functions: [],
+    strings: [],
+    patterns: []
+  };
+
+  filters.functions.push(doc => PERMANENT_TYPES.includes(doc.type));
+
+  [...PROTECTED_DOCS, ...(Array.isArray(excludeList) ? excludeList : [])]
+    .forEach(item => {
+      if (typeof item === 'function') {
+        filters.functions.push(item);
+      } else if (item instanceof RegExp) {
+        filters.patterns.push(item);
+      } else {
+        filters.strings.push(item);
+      }
+    });
+
+  return filters;
+};
+
+const shouldDocumentBeKept = (doc, filters) => {
+  return filters.functions.some(fn => fn(doc)) ||
+         filters.strings.includes(doc._id) ||
+         filters.patterns.some(pattern => doc._id.match(pattern));
+};
+
+const deleteSentinelDocs = async (docsToKeep) => {
+  const allDocs = await sentinelDb.allDocs({ include_docs: true });
+  const sentinelDocsToDelete = allDocs.rows
+    .filter(row => row.value)
+    .filter(({ id }) => !docsToKeep.includes(id.replace(/-info$/, '')) && !id.startsWith('_design'))
+    .map(({ id, value }) => ({
+      _id: id,
+      _rev: value.rev,
+      _deleted: true
+    }));
+
+  const response = await sentinelDb.bulkDocs(sentinelDocsToDelete);
+  if (DEBUG) {
+    console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
+  }
+  await require('@utils/sentinel').skipToSeq();
+};
+
 /**
  * Deletes all docs in the database, except some core docs (read the code) and
  * any docs that you specify.
@@ -423,94 +482,32 @@ const deleteDocs = ids => {
  *                                wish to keep the document
  * @return     {Promise}  completion promise
  */
-const deleteAllDocs = (except) => { //NOSONAR
-  except = Array.isArray(except) ? except : [];
-  // Generate a list of functions to filter documents over
-  const ignorables = except.concat(
-    doc => PERMANENT_TYPES.includes(doc.type),
-    'service-worker-meta',
-    constants.USER_CONTACT_ID,
-    'migration-log',
-    'resources',
-    'branding',
-    'partners',
-    'settings',
-    /^form:/,
-    /^_design/
-  );
-  const ignoreFns = [];
-  const ignoreStrings = [];
-  const ignoreRegex = [];
-  ignorables.forEach(i => {
-    if (typeof i === 'function') {
-      ignoreFns.push(i);
-    } else if (typeof i === 'object') {
-      ignoreRegex.push(i);
-    } else {
-      ignoreStrings.push(i);
-    }
-  });
+const deleteAllDocs = async (except = []) => {
+  const filters = createDocumentFilters(except);
+  const { rows } = await db.allDocs({ include_docs: true });
 
-  ignoreFns.push(doc => ignoreStrings.includes(doc._id));
-  ignoreFns.push(doc => ignoreRegex.find(r => doc._id.match(r)));
+  const docsToDelete = rows
+    .filter(({ doc }) => doc && !shouldDocumentBeKept(doc, filters))
+    .map(({ doc }) => ({
+      _id: doc._id,
+      _rev: doc._rev,
+      _deleted: true
+    }));
+  const docsToKeep = rows
+    .filter(({ doc }) => doc && shouldDocumentBeKept(doc, filters))
+    .map(({ doc }) => doc._id);
 
-  // Accessing function using module.exports because it's stub in webapp/tests/mocha/unit/testingtests/e2e/utils.spec.js
-  return module.exports
-    .requestOnTestDb({
-      path: '/_all_docs?include_docs=true',
-      method: 'GET',
-    })
-    .then(({ rows }) => {
-      return rows
-        .filter(({ doc }) => doc && !ignoreFns.find(fn => fn(doc)))
-        .map(({ doc }) => {
-          return {
-            _id: doc._id,
-            _rev: doc._rev,
-            _deleted: true,
-          };
-        });
-    })
-    .then(toDelete => {
-      const ids = toDelete.map(doc => doc._id);
-      if (DEBUG) {
-        console.log(`Deleting docs and infodocs: ${ids}`);
-      }
-      const infoIds = ids.map(id => `${id}-info`);
-      return Promise.all([
-        module.exports
-          .requestOnTestDb({
-            path: '/_bulk_docs',
-            method: 'POST',
-            body: { docs: toDelete },
-          })
-          .then(response => {
-            if (DEBUG) {
-              console.log(`Deleted docs: ${JSON.stringify(response)}`);
-            }
-          }),
-        module.exports.sentinelDb
-          .allDocs({ keys: infoIds })
-          .then(results => {
-            const deletes = results.rows
-              .filter(row => row.value) // Not already deleted
-              .map(({ id, value }) => ({
-                _id: id,
-                _rev: value.rev,
-                _deleted: true
-              }));
-            // Accessing property using module.exports because
-            // it's stub in webapp/tests/mocha/unit/testingtests/e2e/utils.spec.js
-            return module.exports.sentinelDb.bulkDocs(deletes);
-          }).then(response => {
-            if (DEBUG) {
-              console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
-            }
-          })
-      ]);
-    })
-    .then(() => require('@utils/sentinel').skipToSeq());
+  if (DEBUG) {
+    console.log(`Deleting docs and infodocs: ${docsToDelete.map(doc => doc._id)}`);
+  }
+
+  const response = await db.bulkDocs(docsToDelete);
+  if (DEBUG) {
+    console.log(`Deleted docs: ${JSON.stringify(response)}`);
+  }
+  await deleteSentinelDocs(docsToKeep);
 };
+
 
 // Update both ddocs, to avoid instability in tests.
 // Note that API will be copying changes to medic over to medic-client, so change
@@ -1134,7 +1131,7 @@ const enableLanguages = async (languageCodes) => {
       });
     }
   }
-  await updateSettings({ languages }, { ignoreReload: true });
+  await updateSettings({ languages });
 };
 
 const getSettings = () => getDoc('settings').then(settings => settings.settings);
@@ -1625,6 +1622,7 @@ module.exports = {
   sentinelDb,
   logsDb,
   usersDb,
+  auditDb,
 
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,
@@ -1702,4 +1700,5 @@ module.exports = {
   runSentinelTasks,
   runCommand,
   deletePurgeDbs,
+  saveLogs,
 };

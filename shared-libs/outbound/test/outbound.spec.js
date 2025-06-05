@@ -2,7 +2,7 @@ const assert = require('chai').assert;
 const sinon = require('sinon');
 const rewire = require('rewire');
 const secureSettings = require('@medic/settings');
-const environment = require('@medic/environment');
+const serverInfo = require('@medic/server-info');
 const request = require('@medic/couch-request');
 let outbound;
 
@@ -268,7 +268,7 @@ describe('outbound shared library', () => {
         }
       };
 
-      sinon.stub(environment, 'getVersion').resolves('4.18.0');
+      sinon.stub(serverInfo, 'getVersion').resolves('4.18.0');
       sinon.stub(request, 'post').resolves();
 
       return outbound.__get__('sendPayload')(payload, conf)
@@ -280,9 +280,6 @@ describe('outbound shared library', () => {
                 url: 'http://test/foo',
                 body: { some: 'data' },
                 timeout: 10000,
-                headers: {
-                  'user-agent': 'CHT/4.18.0 (linux,x64)'
-                }
               }
             ]
           ]);
@@ -320,9 +317,6 @@ describe('outbound shared library', () => {
                 url: 'http://test/foo',
                 body: { some: 'data' },
                 timeout: 10000,
-                headers: {
-                  'user-agent': 'CHT/unknown (linux,x64)'
-                },
                 auth: {
                   username: 'admin',
                   password: 'pass'
@@ -365,7 +359,6 @@ describe('outbound shared library', () => {
                 body: { some: 'data' },
                 timeout: 10000,
                 headers: {
-                  'user-agent': 'CHT/unknown (linux,x64)',
                   'authorization': 'Bearer credentials'
                 }
               }
@@ -423,9 +416,6 @@ describe('outbound shared library', () => {
                 url: 'http://test/foo',
                 body: { some: 'data' },
                 timeout: 10000,
-                headers: {
-                  'user-agent': 'CHT/unknown (linux,x64)'
-                },
                 qs: {
                   token: 'j9NAhVDdVWkgo1xnbxA9V3Pmp'
                 }

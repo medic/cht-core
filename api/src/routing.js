@@ -13,6 +13,7 @@ const auth = require('./auth');
 const prometheusMiddleware = require('prometheus-api-metrics');
 const rateLimiterMiddleware = require('./middleware/rate-limiter');
 const logger = require('@medic/logger');
+const audit = require('@medic/audit');
 const isClientHuman = require('./is-client-human');
 
 const port = typeof environment.port !== 'undefined' && environment.port !== null ? `:${environment.port}` : '';
@@ -302,6 +303,8 @@ app.get(routePrefix + 'login/token/:token?', login.tokenGet);
 app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
 app.get(routePrefix + 'password-reset', login.getPasswordReset);
 app.postJson(routePrefix + 'password-reset', login.resetPassword);
+app.get(routePrefix + 'login/oidc/authorize', login.oidcAuthorize);
+app.get(routePrefix + 'login/oidc', login.oidcLogin);
 app.get(routePrefix + 'privacy-policy', privacyPolicyController.get);
 
 // authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB
@@ -849,12 +852,12 @@ const canEdit = (req, res) => {
     .check(req, 'can_edit')
     .then(userCtx => {
       if (!userCtx || !userCtx.name) {
-        serverUtils.serverError('not-authorized', req, res);
+        serverUtils.serverError({ code: 401, message: 'not-authorized' }, req, res);
         return;
       }
       proxyForAuth.web(req, res);
     })
-    .catch(() => serverUtils.serverError('not-authorized', req, res));
+    .catch((err) => serverUtils.error(err, req, res));
 };
 
 const editPath = routePrefix + '*';
@@ -895,14 +898,18 @@ proxyForAuth.on('proxyRes', (proxyRes, req, res) => {
   }
 
   copyProxyHeaders(proxyRes, res);
+  let body = Buffer.from('');
+  proxyRes.on('data', data => (body = Buffer.concat([body, data])));
 
-  if (res.interceptResponse) {
-    let body = Buffer.from('');
-    proxyRes.on('data', data => (body = Buffer.concat([body, data])));
-    proxyRes.on('end', () => res.interceptResponse(req, res, body.toString()));
-  } else {
-    proxyRes.pipe(res);
-  }
+  proxyRes.on('end', () => {
+    body = JSON.parse(body.toString());
+    if (res.interceptResponse) {
+      body = res.interceptResponse(req, res, body);
+    }
+    res.json(body);
+
+    audit.expressCallback(req, body, asyncLocalStorage.getRequest());
+  });
 });
 
 proxyForAuth.on('proxyRes', infodoc.update);

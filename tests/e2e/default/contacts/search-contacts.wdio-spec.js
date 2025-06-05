@@ -98,9 +98,7 @@ describe('Contact Search', () => {
     it('search should clear RHS selected contact', async () => {
       await contactPage.selectLHSRowByText(potuHealthCenter.name, false);
       await contactPage.waitForContactLoaded();
-      expect(
-        await (await contactPage.contactCardSelectors.contactCardName()).getText()
-      ).to.equal(potuHealthCenter.name);
+      expect(await contactPage.contactCardSelectors.contactCardName().getText()).to.equal(potuHealthCenter.name);
 
       await searchPage.performSearch('sittu');
       await contactPage.waitForContactUnloaded();

@@ -9,7 +9,26 @@
   </div>
   <div class="col-sm-8 item-content material" [hidden]="loadingContent || contentError">
     <div class="card">
-      <mm-enketo formId="contact-form" [editing]="enketoContact?.docId" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()"></mm-enketo>
+      <mm-enketo formId="contact-form" [editing]="enketoContact?.docId" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()">
+        <div duplicate-contacts id="duplicate_contacts" *ngIf="duplicates.length" [ngClass]="{'invalid-value': enketoError}" class="question">
+          <p [ngClass]="{'invalid-value-msg': enketoError}" class="results_header active">{{ duplicateMessage }}</p>
+          <mat-accordion multi>
+            <ng-container *ngFor="let duplicate of duplicates" >
+              <mm-duplicate-contacts [duplicate]="duplicate"></mm-duplicate-contacts>
+            </ng-container>
+          </mat-accordion>
+          <div>
+            <label for="check" class="acknowledge_label">
+              <input
+                id="check"
+                type="checkbox"
+                [checked]="duplicatesAcknowledged"
+                (change)="toggleDuplicatesAcknowledged()"/>
+              {{'duplicate_check.contact.acknowledge' | translate }}
+            </label>
+          </div>
+        </div>
+      </mm-enketo>
     </div>
   </div>
 </div>

@@ -18,15 +18,6 @@ VOLUME /opt/couchdb/data
 EXPOSE 5984 4369 9100
 CMD ["/opt/couchdb/bin/couchdb"]
 
-
-# Test build
-FROM alpine:3 AS test_couchdb_build
-RUN apk --no-cache add bash bats curl jq openssl
-COPY tests /app/tests
-COPY set-up-cluster.sh /app/set-up-cluster.sh
-CMD [ "/app/tests/tests.sh" ]
-
-
 # Final
 FROM base_couchdb_build AS cht-couchdb
 LABEL Authors="MEDIC SRE TEAM<devops@medic.org>"

@@ -157,7 +157,7 @@ describe('Search service', () => {
 
   describe('dateLastVisited', () => {
     beforeEach(() => {
-      clock = sinon.useFakeTimers(moment('2018-08-20 18:18:18').valueOf());
+      clock = sinon.useFakeTimers({now: moment('2018-08-20 18:18:18').valueOf()});
     });
 
     afterEach(() => {

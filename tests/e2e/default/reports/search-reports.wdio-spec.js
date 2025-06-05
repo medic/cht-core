@@ -77,13 +77,13 @@ describe('Reports Search', () => {
       await commonPage.waitForLoaders();
       expect((await reportsPage.reportsListDetails()).length).to.equal(filteredReports.length);
       for (const report of filteredReports) {
-        expect(await (await reportsPage.leftPanelSelectors.reportByUUID(report._id)).isDisplayed()).to.be.true;
+        expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
       }
 
       await searchPage.clearSearch();
       expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);
       for (const report of allReports) {
-        expect(await (await reportsPage.leftPanelSelectors.reportByUUID(report._id)).isDisplayed()).to.be.true;
+        expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
       }
     });
 
@@ -98,8 +98,8 @@ describe('Reports Search', () => {
       await reportsPage.clickOnCaseId();
       await commonPage.waitForLoaders();
       expect((await reportsPage.reportsListDetails()).length).to.equal(2);
-      expect(await (await reportsPage.leftPanelSelectors.reportByUUID(sittuPregnancy._id)).isDisplayed()).to.be.true;
-      expect(await (await reportsPage.leftPanelSelectors.reportByUUID(potuPregnancy._id)).isDisplayed()).to.be.true;
+      expect(await reportsPage.leftPanelSelectors.reportByUUID(sittuPregnancy._id).isDisplayed()).to.be.true;
+      expect(await reportsPage.leftPanelSelectors.reportByUUID(potuPregnancy._id).isDisplayed()).to.be.true;
     });
 
     it('should be able to do an exact match search by a field and then return all data when clearing search',
@@ -112,16 +112,16 @@ describe('Reports Search', () => {
         await commonPage.waitForLoaders();
         expect((await reportsPage.reportsListDetails()).length).to.equal(filteredReports.length);
         for (const report of filteredReports) {
-          expect(await (await reportsPage.leftPanelSelectors.reportByUUID(report._id)).isDisplayed()).to.be.true;
+          expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
         }
 
         await searchPage.clearSearch();
         expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);
         for (const report of allReports) {
-          expect(await (await reportsPage.leftPanelSelectors.reportByUUID(report._id)).isDisplayed()).to.be.true;
+          expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
         }
       });
-    
+
     it('should have no results when searching by non-existent field value', async () => {
       const randomWord = 'lorem-ipsum';
       await commonPage.goToReports();
@@ -135,7 +135,7 @@ describe('Reports Search', () => {
       await searchPage.clearSearch();
       expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);
       for (const report of allReports) {
-        expect(await (await reportsPage.leftPanelSelectors.reportByUUID(report._id)).isDisplayed()).to.be.true;
+        expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
       }
     });
 
@@ -149,13 +149,13 @@ describe('Reports Search', () => {
       await commonPage.waitForLoaders();
       expect((await reportsPage.reportsListDetails()).length).to.equal(filteredReports.length);
       for (const report of filteredReports) {
-        expect(await (await reportsPage.leftPanelSelectors.reportByUUID(report._id)).isDisplayed()).to.be.true;
+        expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
       }
 
       await searchPage.clearSearch();
       expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);
       for (const report of allReports) {
-        expect(await (await reportsPage.leftPanelSelectors.reportByUUID(report._id)).isDisplayed()).to.be.true;
+        expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
       }
     });
   }));
