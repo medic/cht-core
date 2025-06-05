@@ -6,7 +6,9 @@ import {
   isFreetextQualifier,
   isUuidQualifier,
   byContactQualifier,
-  isContactQualifier
+  isContactQualifier,
+  byReportQualifier,
+  isReportQualifier
 } from '../src/qualifier';
 import { expect } from 'chai';
 
@@ -186,6 +188,77 @@ describe('qualifier', () => {
           _rev: 'revision-3'
         }
       ].forEach((quantifier) => expect(isContactQualifier(quantifier)).to.be.true);
+    });
+  });
+
+  describe('byReportQualifier', () => {
+    it('builds a qualifier for creation and update of a report with the required fields.', () => {
+      expect(byReportQualifier({
+        type: 'data_record', form: 'yes'
+      })).to.deep.equal({
+        type: 'data_record', form: 'yes'
+      });
+    });
+
+    it('builds a qualifier for creation and update of a report with the optional fields.', () => {
+      expect(byReportQualifier({
+        type: 'data_record', form: 'yes', _id: 'id-1', _rev: 'rev-3', reported_date: '2025-06-03T12:45:30.222Z'
+      })).to.deep.equal({
+        type: 'data_record', form: 'yes', _id: 'id-1', _rev: 'rev-3', reported_date: '2025-06-03T12:45:30.222Z'
+      });
+    });
+
+    it('throws error for invalid reported_date.', () => {
+      expect(() => byReportQualifier({
+        type: 'data_record', form: 'yes', reported_date: '2025'
+      // eslint-disable-next-line max-len
+      })).to.throw('Invalid reported_date. Expected format to be \'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.');
+    });
+
+    it('throws error if qualifier is not an object.', () => {
+      [
+        'hello world',
+        2124124,
+        false
+      ].forEach((qualifier) => expect(() => byReportQualifier(qualifier))
+        .to.throw('Invalid "data": expected an object.'));
+    });
+
+    it('throws error if type/form is not provided or empty.', () => {
+      [
+        {reported_date: 3432433},
+        {type: 'data_record', _id: 'id-1', _rev: 'rev-4'},
+        {form: 'yes', _id: 'id-1', _rev: 'rev-4'},
+        {type: '', form: 'yes'},
+        {type: 'data_record', form: ''}
+      ].forEach((qualifier) => {
+        expect(() => byReportQualifier(qualifier))
+          .to.throw(`Missing or empty required fields [${JSON.stringify(qualifier)}].`);
+      });
+    });
+  });
+
+  describe('isReportQualifier', () => {
+    it('returns false for missing or empty required fields', () => {
+      [
+        {reported_date: 3432433},
+        {type: 'data_record', _id: 'id-1', _rev: 'rev-4'},
+        {form: 'yes', _id: 'id-1', _rev: 'rev-4'},
+        {type: '', form: 'yes'},
+        {type: 'data_record', form: ''}
+      ].forEach((qualifier) => {
+        expect(isReportQualifier(qualifier)).to.be.false;
+      });
+    });
+
+    it('returns true for valid qualifiers that have required fields and correct date format', () => {
+      [
+        {type: 'data_record', _id: 'id-1', _rev: 'rev-4', form: 'yes', reported_date: 3432433},
+        {type: 'data_record', form: 'yes', _id: 'id-1', reported_date: '2025-06-03T12:45:30.222Z'},
+        {type: 'data_record', form: 'yes'}
+      ].forEach((qualifier) => {
+        expect(isReportQualifier(qualifier)).to.be.true;
+      });
     });
   });
 });

@@ -195,6 +195,70 @@ export const isContactQualifier = (qualifier: unknown): qualifier is ContactQual
   return false;
 };
 
+/** 
+ * A qualifier for a report
+ */
+type ReportQualifier = Readonly<{
+  type: string,
+  form: string,
+  reported_date?: string | number,
+  _id?: string,
+  _rev?: string
+}>;
+
+/**
+ * Builds a qualifier for creation and update of a report with
+ * the given fields.
+ * @param data object containing the fields for a report
+ * @returns the report qualifier
+ * @throws Error if data is not an object
+ * @throws Error if type is not provided or is empty
+ * @throws Error if form is not provided or is empty
+ * @throws Error if reported_date is not in a valid format.
+ * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+ */
+export const byReportQualifier = (data: unknown): ReportQualifier => {
+  if (!isRecord(data)) {
+    throw new InvalidArgumentError('Invalid "data": expected an object.');
+  }
+  const qualifier = {...data};
+  if ('reported_date' in qualifier && !isValidReportedDate(qualifier.reported_date)) {
+    throw new InvalidArgumentError(
+      // eslint-disable-next-line max-len
+      `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
+    );
+  }
+  if (!isReportQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(data)}].`);
+  }
+  return qualifier;
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link ReportQualifier} otherwise `false`.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given type is a {@link ReportQualifier}, otherwise `false`.
+ */
+export const isReportQualifier = (qualifier: unknown): qualifier is ReportQualifier => {
+  if (isRecord(qualifier) && 
+      hasFields(qualifier, [{name: 'type', type: 'string'}, {name: 'form', type: 'string'}])
+  ){
+    if (
+      typeof qualifier.type !== 'string' || qualifier.type.trim() === '' ||
+      typeof qualifier.form !== 'string' || qualifier.form.trim() === ''
+    ) {
+      return false;
+    }
+
+    if ('reported_date' in qualifier && !isValidReportedDate(qualifier.reported_date)){
+      return false;
+    }
+    return true;
+  }
+  return false;
+};
+
+
 /** @internal */
 const isValidReportedDate = (value: unknown): boolean => {
   if (typeof value === 'number') {
