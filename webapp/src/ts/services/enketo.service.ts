@@ -136,25 +136,25 @@ export class EnketoService {
 
   private convertContactSummaryToXML(contactSummaries:(ContactSummary|undefined)[]) {
     const convertSummary = (summary) => {
-      if (!summary) {
-        return;
-      }
-
       const xmlStr = pojo2xml({ context: summary });
       return new DOMParser().parseFromString(xmlStr, 'text/xml');
     };
 
     try {
       const summaries:ContactSummaryXml[] = [];
-      contactSummaries.forEach(contactSummary => {
+      for (const contactSummary of contactSummaries) {
+        if (!contactSummary) {
+          continue;
+        }
+
         const contactSummaryXml = convertSummary(contactSummary?.context);
-        if (contactSummary && contactSummaryXml) {
+        if (contactSummaryXml) {
           summaries.push({
             id: contactSummary.id,
             xml: contactSummaryXml
           });
         }
-      });
+      }
 
       return summaries;
     } catch (e) {

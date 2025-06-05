@@ -166,10 +166,3 @@ export class DbService {
     return this.cache[name];
   }
 }
-
-export type Doc = {
-  _id: string;
-  _rev?: string;
-  type?: string;
-
-}

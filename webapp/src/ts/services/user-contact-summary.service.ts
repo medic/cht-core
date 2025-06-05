@@ -9,6 +9,10 @@ import { ContactViewModelGeneratorService } from '@mm-services/contact-view-mode
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 
+/**
+ * Caches and retrieves the contact summary of the logged in user's contact.
+ * Cache is busted when any change that would affect the contact summary is received.
+ */
 @Injectable({
   providedIn: 'root'
 })
