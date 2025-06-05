@@ -9,6 +9,9 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
+import { TranslateService } from '@mm-services/translate.service';
+import { RulesEngineService } from '@mm-services/rules-engine.service';
+import { DBSyncService } from '@mm-services/db-sync.service';
 
 describe('AndroidApi service', () => {
 
@@ -19,6 +22,9 @@ describe('AndroidApi service', () => {
   let consoleErrorMock;
   let navigationService;
   let androidAppLauncherService;
+  let translateService;
+  let rulesEngine;
+  let dbSyncService;
 
   beforeEach(() => {
     sessionService = {
@@ -47,6 +53,13 @@ describe('AndroidApi service', () => {
 
     consoleErrorMock = sinon.stub(console, 'error');
 
+    translateService = {
+      get: sinon.stub().resolvesArg(0),
+      instant: sinon.stub().returnsArg(0),
+    };
+    rulesEngine = { };
+    dbSyncService = { sync: sinon.stub() };
+
     TestBed.configureTestingModule({
       providers: [
         { provide: SessionService, useValue: sessionService },
@@ -54,6 +67,9 @@ describe('AndroidApi service', () => {
         { provide: MRDTService, useValue: mrdtService },
         { provide: NavigationService, useValue: navigationService },
         { provide: AndroidAppLauncherService, useValue: androidAppLauncherService },
+        { provide: TranslateService, useValue: translateService },
+        { provide: RulesEngineService, useValue: rulesEngine },
+        { provide: DBSyncService, useValue: dbSyncService },
       ],
     });
 
