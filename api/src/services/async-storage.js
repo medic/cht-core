@@ -12,6 +12,13 @@ module.exports = {
     const localStorage = asyncLocalStorage.getStore();
     return localStorage?.clientRequest?.id;
   },
+  getRequest: () => {
+    const localStorage = asyncLocalStorage.getStore();
+    return {
+      user: localStorage?.clientRequest?.userCtx?.name,
+      requestId: localStorage?.clientRequest?.id,
+    };
+  }
 };
 
-request.initialize(module.exports, REQUEST_ID_HEADER);
+request.setStore(module.exports, REQUEST_ID_HEADER);

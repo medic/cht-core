@@ -25,7 +25,7 @@ describe('Death related targets tests', () => {
 
   it('death this month target test this month', async () => {
     //await harness.setNow('2000-04-30');//DOD: 2000-04-25
-    clock = sinon.useFakeTimers(moment('2000-04-30').toDate());
+    clock = sinon.useFakeTimers({now: moment('2000-04-30').toDate()});
     harness.subject = babyDeceasedAtAge1Day;
     const birthsThisMonth = await harness.getTargets({ type: 'deaths-this-month' });
     expect(birthsThisMonth).to.have.property('length', 1);
@@ -34,7 +34,7 @@ describe('Death related targets tests', () => {
 
   it('death this month target test next month', async () => {
     //await harness.setNow('2000-04-30');//DOD: 2000-04-25
-    clock = sinon.useFakeTimers(moment('2000-05-30').toDate());
+    clock = sinon.useFakeTimers({now: moment('2000-05-30').toDate()});
     harness.subject = babyDeceasedAtAge1Day;
     const birthsThisMonth = await harness.getTargets({ type: 'deaths-this-month' });
     expect(birthsThisMonth).to.have.property('length', 1);

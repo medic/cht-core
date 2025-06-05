@@ -35,15 +35,22 @@ describe('Create Person Under Area, ', () => {
   it('should create person under area should only see children', async () => {
     await usersAdminPage.goToAdminUser();
     await usersAdminPage.openAddUserDialog();
-    await usersAdminPage.inputAddUserFields(username, 'Jack', 'chw', healthCenter2.name, person2.name, password);
+    await usersAdminPage.inputAddUserFields({
+      username,
+      fullname: 'Jack',
+      role: 'chw',
+      places: healthCenter2.name,
+      contact: person2.name,
+      password
+    });
     await usersAdminPage.saveUser();
 
     await commonPage.reloadSession();
     await loginPage.setPasswordValue(password);
     await loginPage.setUsernameValue(username);
-    await (await loginPage.loginButton()).click();
+    await loginPage.loginButton().click();
     await loginPage.passwordReset(password, NEW_PASSWORD, NEW_PASSWORD);
-    await (await loginPage.updatePasswordButton()).click();
+    await loginPage.updatePasswordButton().click();
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToPeople();
