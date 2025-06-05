@@ -40,7 +40,6 @@ import {
 } from './libs/constants';
 
 export { Nullable, NonEmptyArray } from './libs/core';
-export { Doc } from './libs/doc';
 export { DataContext } from './libs/data-context';
 export { getLocalDataContext } from './local';
 export { getRemoteDataContext } from './remote';
