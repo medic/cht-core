@@ -1,4 +1,4 @@
-import { isString, hasField, isRecord, Nullable } from './libs/core';
+import { isString, hasField, isRecord, Nullable, hasFields } from './libs/core';
 import { InvalidArgumentError } from './libs/error';
 
 /**
@@ -139,4 +139,72 @@ export const and = <
     ...(qualifierC ?? {}),
     ...(qualifierD ?? {}),
   };
+};
+
+/** 
+ * A qualifier for a contact
+ */
+type ContactQualifier = Readonly<{
+  type: string,
+  name: string,
+  reported_date?: string | number,
+  _id?: string,
+  _rev?: string
+}>;
+
+/**
+ * Builds a qualifier for creation and update of a contact with
+ * the given fields.
+ * @param data object containing the fields for a contact
+ * @returns the contact qualifier
+ * @throws Error if data is not an object
+ * @throws Error if type is not provided or is empty
+ * @throws Error if name is not provided or is empty
+ * @throws Error if reported_date is not in a valid format. 
+ * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+ */
+export const byContactQualifier = (data: unknown): ContactQualifier => {
+  if (!isRecord(data)){
+    throw new InvalidArgumentError('Invalid "data": expected an object.');
+  }
+  const qualifier = {...data};
+  if ('reported_date' in qualifier && !isValidReportedDate(qualifier.reported_date)){
+    throw new InvalidArgumentError(
+      // eslint-disable-next-line max-len
+      `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
+    );
+  }
+  if (!isContactQualifier(qualifier)){
+    throw new InvalidArgumentError(`Missing required fields [${JSON.stringify(data)}].`);
+  }
+  return qualifier;
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link ContactQualifier} otherwise `false`.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given type is a {@link ContactQualifier}, otherwise `false`.
+ */
+export const isContactQualifier = (qualifier: unknown): qualifier is ContactQualifier => {
+  if (isRecord(qualifier) && hasFields(qualifier, [{name: 'type', type: 'string'}, {name: 'name', type: 'string'}])){
+    if ('reported_date' in qualifier && !isValidReportedDate(qualifier.reported_date)){
+      return false;
+    }
+    return true;
+  }
+  return false;
+};
+
+/** @internal */
+const isValidReportedDate = (value: unknown): boolean => {
+  if (typeof value === 'number') {
+    return Number.isFinite(value);
+  }
+
+  if (typeof value === 'string') {
+    const isoRegex = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z)$/;
+    return isoRegex.test(value);
+  }
+
+  return false;
 };
