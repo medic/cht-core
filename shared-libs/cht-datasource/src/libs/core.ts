@@ -87,16 +87,19 @@ export const isRecord = (value: unknown): value is Record<string, unknown> => {
 /** @internal */
 export const hasField = <T extends Record<string, unknown>>(
   value: T,
-  field: { name: keyof T, type: string }
+  field: { name: keyof T, type: string, ensure_truthy_value?: boolean},
 ): value is T & Record<typeof field.name, string> => {
   const valueField = value[field.name];
+  if (field.ensure_truthy_value) {
+    return typeof valueField === field.type && !!valueField;
+  }
   return typeof valueField === field.type;
 };
 
 /** @internal */
 export const hasFields = (
   value: Record<string, unknown>,
-  fields: NonEmptyArray<{ name: string, type: string }>
+  fields: NonEmptyArray<{ name: string, type: string, ensure_truthy_value?: boolean}>,
 ): boolean => fields.every(field => hasField(value, field));
 
 /** @internal */

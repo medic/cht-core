@@ -138,25 +138,31 @@ describe('qualifier', () => {
       })).to.throw(`Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`);
     });
   
-    it('throws error for missing required fields.', () => {
+    it('throws error for missing or empty required fields.', () => {
       [
         {
           name: 'A'
         },
         {
+          name: '', type: 'person'
+        },
+        {
           type: 'person', reported_date: '2025-06-03T12:45:30Z'
         }
       ].forEach((quantifier) => expect(() => byContactQualifier(quantifier))
-        .to.throw(`Missing required fields [${JSON.stringify(quantifier)}].`));
+        .to.throw(`Missing or empty required fields [${JSON.stringify(quantifier)}].`));
       
     });
   });
   
   describe('isContactQualifier', () => {
-    it('returns false for missing required fields.', () => {
+    it('returns false for missing or empty required fields.', () => {
       [
         {
           name: 'A'
+        },
+        {
+          name: 'A', type: ''
         },
         {
           type: 'person', reported_date: '2025-06-03T12:45:30Z'

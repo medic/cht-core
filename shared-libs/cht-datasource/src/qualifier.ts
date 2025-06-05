@@ -175,7 +175,7 @@ export const byContactQualifier = (data: unknown): ContactQualifier => {
     );
   }
   if (!isContactQualifier(qualifier)){
-    throw new InvalidArgumentError(`Missing required fields [${JSON.stringify(data)}].`);
+    throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(data)}].`);
   }
   return qualifier;
 };
@@ -186,7 +186,8 @@ export const byContactQualifier = (data: unknown): ContactQualifier => {
  * @returns `true` if the given type is a {@link ContactQualifier}, otherwise `false`.
  */
 export const isContactQualifier = (qualifier: unknown): qualifier is ContactQualifier => {
-  if (isRecord(qualifier) && hasFields(qualifier, [{name: 'type', type: 'string'}, {name: 'name', type: 'string'}])){
+  if (isRecord(qualifier) && hasFields(qualifier, [{name: 'type', type: 'string', ensure_truthy_value: true}, 
+    {name: 'name', type: 'string', ensure_truthy_value: true}])){
     if ('reported_date' in qualifier && !isValidReportedDate(qualifier.reported_date)){
       return false;
     }
@@ -241,15 +242,9 @@ export const byReportQualifier = (data: unknown): ReportQualifier => {
  */
 export const isReportQualifier = (qualifier: unknown): qualifier is ReportQualifier => {
   if (isRecord(qualifier) && 
-      hasFields(qualifier, [{name: 'type', type: 'string'}, {name: 'form', type: 'string'}])
+      hasFields(qualifier, [{name: 'type', type: 'string', ensure_truthy_value: true}, 
+        {name: 'form', type: 'string', ensure_truthy_value: true}])
   ){
-    if (
-      typeof qualifier.type !== 'string' || qualifier.type.trim() === '' ||
-      typeof qualifier.form !== 'string' || qualifier.form.trim() === ''
-    ) {
-      return false;
-    }
-
     if ('reported_date' in qualifier && !isValidReportedDate(qualifier.reported_date)){
       return false;
     }
