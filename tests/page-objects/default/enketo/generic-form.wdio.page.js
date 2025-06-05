@@ -85,10 +85,7 @@ const getFormTitle = async () => {
   return await formTitle().getText();
 };
 
-const getDBObjectWidgetValues = async (field) => {
-  const widget = $(`[data-contains-ref-target="${field}"] .selection`);
-  await widget.click();
-
+const getDBObjectWidgetValues = async () => {
   const dropdown = $('.select2-dropdown--below');
   await dropdown.waitForDisplayed();
   const firstElement = $('.select2-results__options > li');
