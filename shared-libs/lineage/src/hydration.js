@@ -1,6 +1,8 @@
 const _ = require('lodash/core');
 _.uniq = require('lodash/uniq');
 const utils = require('./utils');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
+
 
 const deepCopy = obj => JSON.parse(JSON.stringify(obj));
 
@@ -114,9 +116,9 @@ module.exports = function(Promise, DB, dataContext) {
       }
     });
 
-    const getContact = dataContext.Contact.v1.get;
+    const getContact = dataContext.bind(Contact.v1.get);
 
-    return Promise.all(contactsToFetch.map(id => getContact(id)))
+    return Promise.all(contactsToFetch.map(id => getContact(Qualifier.byUuid(id))))
       .then(fetchedContacts => lineageContacts.concat(fetchedContacts.filter(Boolean)));
     
   };
@@ -230,10 +232,9 @@ module.exports = function(Promise, DB, dataContext) {
   };
 
   const fetchLineageById = function(id) {
-    if (dataContext.Contact?.v1?.getWithLineage){
-      return dataContext.Contact.v1.getWithLineage(id)
-        .then(lineageArr => Array.isArray(lineageArr) ? lineageArr : []);
-    }
+    const getWithLineage = dataContext.bind(Contact.v1.getWithLineage);
+    return getWithLineage(Qualifier.byUuid(id))
+      .then(lineageArr => Array.isArray(lineageArr) ? lineageArr : []);
   };
 
   const fetchLineageByIds = function(ids) {
@@ -251,7 +252,8 @@ module.exports = function(Promise, DB, dataContext) {
   };
 
   const fetchDoc = function(id) {
-    return dataContext.Contact.v1.get(id)
+    const getContact = dataContext.bind(Contact.v1.get);
+    return getContact(Qualifier.byUuid(id))
       .catch(function(err){
         if (err.status === 404){
           err.statusCode = 404;
@@ -356,8 +358,8 @@ module.exports = function(Promise, DB, dataContext) {
       return Promise.resolve([]);
     }
 
-    const getContact = dataContext.Contact.v1.get;
-    return Promise.all(keys.amp(id => getContact(id)))
+    const getContact = dataContext.bind(Contact.v1.get);
+    return Promise.all(keys.map(id => getContact(Qualifier.byUuid(id))))
       .then(docs => docs.filter(Boolean));
   };
 

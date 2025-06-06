@@ -1,17 +1,36 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const lineageFactory = require('../src');
+const { Contact } = require('@medic/cht-datasource');
 
 describe('Lineage', function() {
   let lineage;
   let dataContext;
   let get;
   let getWithLineage;
+  let bind;
 
   beforeEach(function() {
     get = sinon.stub();
     getWithLineage = sinon.stub();
-    dataContext = { Contact: { v1: { get, getWithLineage } } };
+    bind = sinon.stub();
+    bind.callsFake(fn => {
+      if (fn === Contact.v1.get) {
+        return qualifier => {
+          return get(qualifier.uuid);
+        };
+      }
+      if (fn === Contact.v1.getWithLineage) {
+        return qualifier => {
+          return getWithLineage(qualifier.uuid);
+        };
+      }
+      return fn;
+    });
+    dataContext = { 
+      Contact: { v1: { get, getWithLineage } },
+      bind
+    };
     lineage = lineageFactory(Promise, {}, dataContext);
   });
 
@@ -25,6 +44,8 @@ describe('Lineage', function() {
       const id = 'banana';
 
       return lineage.fetchLineageById(id).then(() => {
+        chai.expect(bind.callCount).to.be.at.least(1);
+        chai.expect(bind.calledWith(Contact.v1.getWithLineage)).to.be.true;
         chai.expect(getWithLineage.callCount).to.equal(1);
         chai.expect(getWithLineage.getCall(0).args[0]).to.equal(id);
       });
@@ -40,6 +61,8 @@ describe('Lineage', function() {
       ];
 
       return lineage.fetchContacts(fakeLineage).then(() => {
+        chai.expect(bind.callCount).to.be.at.least(1);
+        chai.expect(bind.calledWith(Contact.v1.get)).to.be.true;
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.getCall(0).args[0]).to.deep.equal('def');
       });
