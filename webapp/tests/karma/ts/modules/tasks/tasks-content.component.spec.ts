@@ -472,6 +472,19 @@ describe('TasksContentComponent', () => {
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'add', 'c_type']]);
     });
 
+    it('should work with action of type "contact" and content with "edit_id"', async () => {
+      await compileComponent([]);
+      sinon.resetHistory();
+
+      const action = { type: 'contact', content: { edit_id: '123' } };
+      await component.performAction(action);
+
+      expect(xmlFormsService.get.callCount).to.equal(0);
+      expect(formService.render.callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/contacts', '123', 'edit']]);
+    });
+
     it('should work with action of type "contact" without parent or type', async () => {
       await compileComponent([]);
       sinon.resetHistory();
@@ -482,7 +495,7 @@ describe('TasksContentComponent', () => {
       expect(xmlFormsService.get.callCount).to.equal(0);
       expect(formService.render.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'add', '']]);
+      expect(router.navigate.args[0]).to.deep.equal([['/contacts', '']]);
       expect(tasksForContactService.getLeafPlaceAncestor.callCount).to.equal(0);
     });
 
