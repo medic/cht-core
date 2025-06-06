@@ -4,17 +4,15 @@ const lineageFactory = require('../src');
 
 describe('Lineage', function() {
   let lineage;
-  let allDocs;
+  let dataContext;
   let get;
-  let query;
-  let DB;
+  let getWithLineage;
 
   beforeEach(function() {
-    allDocs = sinon.stub();
     get = sinon.stub();
-    query = sinon.stub();
-    DB = { allDocs, get, query };
-    lineage = lineageFactory(Promise, DB);
+    getWithLineage = sinon.stub();
+    dataContext = { Contact: { v1: { get, getWithLineage } } };
+    lineage = lineageFactory(Promise, {}, dataContext);
   });
 
   afterEach(function() {
@@ -22,43 +20,40 @@ describe('Lineage', function() {
   });
 
   describe('fetchLineageById', function() {
-    it('queries db with correct parameters', function() {
-      query.resolves({ rows: [] });
+    it('calls getWithLineage with correct parameters', function() {
+      getWithLineage.resolves([]);
       const id = 'banana';
 
       return lineage.fetchLineageById(id).then(() => {
-        chai.expect(query.callCount).to.equal(1);
-        chai.expect(query.getCall(0).args[0]).to.equal('medic-client/docs_by_id_lineage');
-        chai.expect(query.getCall(0).args[1].startkey).to.deep.equal([ id ]);
-        chai.expect(query.getCall(0).args[1].endkey).to.deep.equal([ id, {} ]);
-        chai.expect(query.getCall(0).args[1].include_docs).to.deep.equal(true);
+        chai.expect(getWithLineage.callCount).to.equal(1);
+        chai.expect(getWithLineage.getCall(0).args[0]).to.equal(id);
       });
     });
   });
 
   describe('fetchContacts', function() {
     it('fetches contacts with correct parameters', function() {
-      allDocs.resolves({ rows: [] });
+      get.resolves({ _id: 'def' });
       const fakeLineage = [
         { _id: 'abc', contact: { _id: 'def' }, parent: { _id: 'ghi' } },
         { _id: 'ghi' }
       ];
 
       return lineage.fetchContacts(fakeLineage).then(() => {
-        chai.expect(allDocs.callCount).to.equal(1);
-        chai.expect(allDocs.getCall(0).args[0]).to.deep.equal({ keys: ['def'], include_docs: true });
+        chai.expect(get.callCount).to.equal(1);
+        chai.expect(get.getCall(0).args[0]).to.deep.equal('def');
       });
     });
 
     it('does not fetch contacts that it has already got via lineage', function() {
-      allDocs.resolves({ rows: [] });
+      get.resolves();
       const fakeLineage = [
         { _id: 'abc', contact: { _id: 'def' }, parent: { _id: 'def' } },
         { _id: 'def' }
       ];
 
       return lineage.fetchContacts(fakeLineage).then(() => {
-        chai.expect(allDocs.callCount).to.equal(0);
+        chai.expect(get.callCount).to.equal(0);
       });
     });
   });

@@ -46,7 +46,7 @@ const getContactIds = (contacts) => {
   return _.uniq(ids);
 };
 
-module.exports = function(Promise, DB) {
+module.exports = function(Promise, DB, dataContext) {
   const fillParentsInDocs = function(doc, lineage) {
     if (!doc || !lineage.length) {
       return doc;
@@ -114,10 +114,11 @@ module.exports = function(Promise, DB) {
       }
     });
 
-    return fetchDocs(contactsToFetch)
-      .then(function(fetchedContacts) {
-        return lineageContacts.concat(fetchedContacts);
-      });
+    const getContact = dataContext.Contact.v1.get;
+
+    return Promise.all(contactsToFetch.map(id => getContact(id)))
+      .then(fetchedContacts => lineageContacts.concat(fetchedContacts.filter(Boolean)));
+    
   };
 
   const mergeLineagesIntoDoc = function(lineage, contacts, patientLineage, placeLineage) {
@@ -229,17 +230,10 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchLineageById = function(id) {
-    const options = {
-      startkey: [id],
-      endkey: [id, {}],
-      include_docs: true
-    };
-    return DB.query('medic-client/docs_by_id_lineage', options)
-      .then(function(result) {
-        return result.rows.map(function(row) {
-          return row.doc;
-        });
-      });
+    if (dataContext.Contact?.v1?.getWithLineage){
+      return dataContext.Contact.v1.getWithLineage(id)
+        .then(lineageArr => Array.isArray(lineageArr) ? lineageArr : []);
+    }
   };
 
   const fetchLineageByIds = function(ids) {
@@ -257,9 +251,9 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchDoc = function(id) {
-    return DB.get(id)
-      .catch(function(err) {
-        if (err.status === 404) {
+    return dataContext.Contact.v1.get(id)
+      .catch(function(err){
+        if (err.status === 404){
           err.statusCode = 404;
         }
         throw err;
@@ -362,16 +356,9 @@ module.exports = function(Promise, DB) {
       return Promise.resolve([]);
     }
 
-    return DB.allDocs({ keys, include_docs: true })
-      .then(function(results) {
-        return results.rows
-          .map(function(row) {
-            return row.doc;
-          })
-          .filter(function(doc) {
-            return !!doc;
-          });
-      });
+    const getContact = dataContext.Contact.v1.get;
+    return Promise.all(keys.amp(id => getContact(id)))
+      .then(docs => docs.filter(Boolean));
   };
 
   const hydrateDocs = function(docs) {
