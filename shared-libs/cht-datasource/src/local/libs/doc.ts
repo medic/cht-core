@@ -175,3 +175,19 @@ export const fetchAndFilterUuids = (
     limit
   );
 };
+
+/** @internal */
+const createDoc = async(db: PouchDB.Database, data:Record<string, unknown>) : Promise<Doc> => {
+  const {id, ok} = await db.post(data);
+  if (!ok) {
+    throw new Error('Error creating document.');
+  }
+  const createdDoc = (db as PouchDB.Database<Doc>)
+    .get(id)
+    .then(doc => {
+      return doc;
+    }).catch(() => {
+      throw new Error('Failed to fetch created document.');
+    });
+  return createdDoc;
+};
