@@ -4,10 +4,9 @@ const lineageFactory = require('../src');
 
 describe('Lineage', function() {
   let lineage;
-  let allDocs;
+  let dataContext;
   let get;
-  let query;
-  let DB;
+  let getWithLineage;
 
   beforeEach(function() {
     get = sinon.stub();
