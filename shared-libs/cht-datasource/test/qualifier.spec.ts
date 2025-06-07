@@ -149,8 +149,8 @@ describe('qualifier', () => {
         {
           type: 'person', reported_date: '2025-06-03T12:45:30Z'
         }
-      ].forEach((quantifier) => expect(() => byContactQualifier(quantifier))
-        .to.throw(`Missing or empty required fields [${JSON.stringify(quantifier)}].`));
+      ].forEach((qualifier) => expect(() => byContactQualifier(qualifier))
+        .to.throw(`Missing or empty required fields [${JSON.stringify(qualifier)}].`));
       
     });
   });
@@ -167,7 +167,7 @@ describe('qualifier', () => {
         {
           type: 'person', reported_date: '2025-06-03T12:45:30Z'
         }
-      ].forEach((quantifier) => expect(isContactQualifier(quantifier)).to.be.false);
+      ].forEach((qualifier) => expect(isContactQualifier(qualifier)).to.be.false);
     });
   
     it('returns false for invalid reported_date format', () => {
@@ -178,7 +178,7 @@ describe('qualifier', () => {
         {
           name: 'A', type: 'person', reported_date: '2025'
         }
-      ].forEach((quantifier) => expect(isContactQualifier(quantifier)).to.be.false);
+      ].forEach((qualifier) => expect(isContactQualifier(qualifier)).to.be.false);
     });
   
     it('returns true for valid contact qualifiers', () => {
@@ -193,7 +193,7 @@ describe('qualifier', () => {
           name: 'B', type: 'person', reported_date: '2025-06-03T12:45:30.222Z', id: 'id-1',
           _rev: 'revision-3'
         }
-      ].forEach((quantifier) => expect(isContactQualifier(quantifier)).to.be.true);
+      ].forEach((qualifier) => expect(isContactQualifier(qualifier)).to.be.true);
     });
   });
 
