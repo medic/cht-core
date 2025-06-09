@@ -2,6 +2,7 @@ const _ = require('lodash/core');
 _.uniq = require('lodash/uniq');
 const utils = require('./utils');
 const { Contact, Qualifier } = require('@medic/cht-datasource');
+const dataContext = require('../../../api/src/services/data-context.js');
 
 
 const deepCopy = obj => JSON.parse(JSON.stringify(obj));
@@ -48,7 +49,7 @@ const getContactIds = (contacts) => {
   return _.uniq(ids);
 };
 
-module.exports = function(Promise, DB, dataContext) {
+module.exports = function(Promise, DB) {
   const fillParentsInDocs = function(doc, lineage) {
     if (!doc || !lineage.length) {
       return doc;
