@@ -1,8 +1,8 @@
 /**
  * @module lineage
  */
-module.exports = (Promise, DB, dataContext) => Object.assign(
+module.exports = (Promise, DB) => Object.assign(
   {},
-  require('./hydration')(Promise, DB, dataContext),
+  require('./hydration')(Promise, DB),
   require('./minify')
 );
