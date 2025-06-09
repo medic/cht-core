@@ -365,12 +365,14 @@ export class EnketoService {
         if ($id.length) {
           id = $id.text();
         }
-        id ??= uuid();
+        if (!id) {
+          id = uuid();
+        }
       }
       e._couchId = id;
     };
 
-    mapOrAssignId($record[0], doc._id ?? uuid());
+    mapOrAssignId($record[0], doc._id || uuid());
 
     const getId = (xpath) => {
       const xPathResult = recordDoc.evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null);
@@ -411,7 +413,9 @@ export class EnketoService {
       }
 
       // assign a unique id for xpath context, since the element can be inside a repeat
-      element.id ??= uuid();
+      if (!element.id) {
+        element.id = uuid();
+      }
       const uniqueElementSelector = `${element.nodeName}[@id="${element.id}"]`;
 
       const closestPath = `//${uniqueElementSelector}/ancestor-or-self::*/descendant-or-self::${relativePath}`;
