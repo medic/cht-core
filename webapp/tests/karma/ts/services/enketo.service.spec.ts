@@ -14,7 +14,7 @@ import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 import { WebappEnketoFormContext } from '@mm-services/form.service';
 
-describe.only('Enketo service', () => {
+describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
   const mockEnketoDoc = formInternalId => {
     return {
