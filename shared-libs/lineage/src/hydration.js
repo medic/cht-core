@@ -443,6 +443,8 @@ module.exports = function(Promise, DB, dataContext) {
       return Promise.resolve([]);
     }
 
+    const getWithLineage = dataContext.bind(Contact.v1.getWithLineage);
+
     if (docIds.length === 1) {
       return fetchHydratedDoc(docIds[0])
         .then(doc => [doc])
@@ -455,12 +457,15 @@ module.exports = function(Promise, DB, dataContext) {
         });
     }
 
-    return DB
-      .allDocs({ keys: docIds, include_docs: true })
-      .then(result => {
-        const docs = result.rows.map(row => row.doc).filter(doc => doc);
-        return hydrateDocs(docs);
-      });
+    return Promise.all(
+      docIds.map(id => getWithLineage(Qualifier.byUuid(id))
+        .catch(err => {
+          if (err.status === 404) {
+            return null;
+          }
+          throw err;
+        }))
+    ).then(docs => docs.filter(Boolean));
   };
 
   return {
