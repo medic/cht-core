@@ -136,6 +136,9 @@ export class EnketoService {
 
   private convertContactSummaryToXML(contactSummaries:(ContactSummary|undefined)[]) {
     const convertSummary = (summary) => {
+      if (!summary) {
+        return;
+      }
       const xmlStr = pojo2xml({ context: summary });
       return new DOMParser().parseFromString(xmlStr, 'text/xml');
     };
@@ -143,12 +146,8 @@ export class EnketoService {
     try {
       const summaries:ContactSummaryXml[] = [];
       for (const contactSummary of contactSummaries) {
-        if (!contactSummary) {
-          continue;
-        }
-
         const contactSummaryXml = convertSummary(contactSummary?.context);
-        if (contactSummaryXml) {
+        if (contactSummary && contactSummaryXml) {
           summaries.push({
             id: contactSummary.id,
             xml: contactSummaryXml
@@ -283,8 +282,7 @@ export class EnketoService {
 
   private addPopStateHandler(form, $wrapper) {
     $(window).on('popstate.enketo-pagemode', (event: any) => {
-      if (event.originalEvent &&
-        event.originalEvent.state &&
+      if (event.originalEvent?.state &&
         typeof event.originalEvent.state.enketo_page_number === 'number' &&
         $wrapper.find('.container').not(':empty')) {
 
@@ -367,14 +365,12 @@ export class EnketoService {
         if ($id.length) {
           id = $id.text();
         }
-        if (!id) {
-          id = uuid();
-        }
+        id ??= uuid();
       }
       e._couchId = id;
     };
 
-    mapOrAssignId($record[0], doc._id || uuid());
+    mapOrAssignId($record[0], doc._id ?? uuid());
 
     const getId = (xpath) => {
       const xPathResult = recordDoc.evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null);
@@ -415,9 +411,7 @@ export class EnketoService {
       }
 
       // assign a unique id for xpath context, since the element can be inside a repeat
-      if (!element.id) {
-        element.id = uuid();
-      }
+      element.id ??= uuid();
       const uniqueElementSelector = `${element.nodeName}[@id="${element.id}"]`;
 
       const closestPath = `//${uniqueElementSelector}/ancestor-or-self::*/descendant-or-self::${relativePath}`;
@@ -529,7 +523,7 @@ export class EnketoService {
       content_type: 'xml',
       reported_date: Date.now(),
       contact: this.extractLineageService.extract(contact),
-      from: contact && contact.phone
+      from: contact?.phone
     };
   }
 
