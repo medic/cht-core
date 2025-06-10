@@ -177,7 +177,7 @@ export const fetchAndFilterUuids = (
 };
 
 /** @internal */
-const createDoc = (db: PouchDB.Database) => async (data: Record<string, unknown>): Promise<Nullable<Doc>> => {
+export const createDoc = (db: PouchDB.Database) => async (data: Record<string, unknown>): Promise<Nullable<Doc>> => {
   const { id, ok } = await db.post(data);
   if (!ok) {
     throw new Error('Error creating document.');

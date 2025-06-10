@@ -8,6 +8,7 @@ import {
   getDocsByIds,
   queryDocsByKey,
   queryDocsByRange, queryDocUuidsByKey, queryDocUuidsByRange,
+  createDoc
 } from '../../../src/local/libs/doc';
 import * as LocalDoc from '../../../src/local/libs/doc';
 import { expect } from 'chai';
@@ -17,6 +18,7 @@ describe('local doc lib', () => {
   let dbGet: SinonStub;
   let dbAllDocs: SinonStub;
   let dbQuery: SinonStub;
+  let dbPost: SinonStub;
   let db: PouchDB.Database<Doc.Doc>;
   let isDoc: SinonStub;
   let error: SinonStub;
@@ -25,10 +27,12 @@ describe('local doc lib', () => {
     dbGet = sinon.stub();
     dbAllDocs = sinon.stub();
     dbQuery = sinon.stub();
+    dbPost = sinon.stub();
     db = {
       get: dbGet,
       allDocs: dbAllDocs,
-      query: dbQuery
+      query: dbQuery,
+      post: dbPost
     } as unknown as PouchDB.Database<Doc.Doc>;
     isDoc = sinon.stub(Doc, 'isDoc');
     error = sinon.stub(logger, 'error');
@@ -587,4 +591,39 @@ describe('local doc lib', () => {
       expect(() => fetchAndFilterUuids(getFunction, 3)).to.throw('API Error');
     });
   });
+
+
+  describe('createDoc', () => {
+    it('should create and retrieve the doc', async () => {
+      const createdDoc = {
+        type: 'contact',
+        contact_type: 'person',
+        name: 'Medic User',
+        reported_date: 12312312,
+        _rev: '1-rev',
+        _id: '1-id',
+        parent: {
+          _id: '2-id'
+        }
+      };
+
+      dbPost.resolves({ id: '1-id', ok: true });
+      isDoc.returns(true);
+      dbGet.resolves(createdDoc);
+
+      const doc = {
+        type: 'contact',
+        contact_type: 'person',
+        name: 'Medic User',
+        parent: {
+          _id: '2-id'
+        }
+      };
+      const result = await createDoc(db)(doc);
+
+      expect(result).to.equal(createdDoc);
+      expect(dbGet.calledOnceWithExactly(createdDoc._id)).to.be.true;
+    });
+  });
+
 });
