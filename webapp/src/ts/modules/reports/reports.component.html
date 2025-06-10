@@ -28,7 +28,8 @@
         <input type="checkbox"
           (click)="areAllReportsSelected() ? deselectAllReports() : selectAllReports()"
           [checked]="areAllReportsSelected()"
-          [indeterminate]="areSomeReportsSelected()">
+          [indeterminate]="areSomeReportsSelected()"
+          [disabled]="isSelectingAllReports || loading">
         <span class="select-all-label" (click)="areAllReportsSelected() ? deselectAllReports() : selectAllReports()">
           {{ (areAllReportsSelected() ? 'select.mode.deselect.all' : 'select.mode.select.all') | translate }}
         </span>
