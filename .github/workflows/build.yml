@@ -86,7 +86,7 @@ jobs:
   config-tests:
     needs: build
     name: ${{ matrix.cmd }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     
     strategy:
@@ -109,7 +109,7 @@ jobs:
 
   test-cht-form:
     needs: build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -129,7 +129,7 @@ jobs:
   tests-k3d:
     needs: build
     name: ${{ matrix.cmd }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
 
     strategy:
@@ -201,7 +201,7 @@ jobs:
   translations:
     needs: build
     name: Lint translations
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
     steps:
@@ -216,7 +216,7 @@ jobs:
   tests:
     needs: build
     name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     
     env:
@@ -390,7 +390,7 @@ jobs:
   publish:
     needs: [tests, config-tests, test-cht-form]
     name: Publish branch build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     
     if: ${{ github.event_name != 'pull_request' }}
@@ -441,7 +441,7 @@ jobs:
   publish-generated-docs:
     needs: [publish]
     name: Publish generated docs
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     if: ${{ github.event_name != 'pull_request' }}
     steps:
@@ -467,7 +467,7 @@ jobs:
   upgrade:
     needs: [publish]
     name: Upgrade from ${{ matrix.version }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
 
     if: ${{ github.event_name != 'pull_request' }}
