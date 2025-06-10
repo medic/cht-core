@@ -36,7 +36,7 @@ describe('Telemetry', () => {
     phone: '+9779841299392',
   });
   const user = userFactory.build({
-    username: Faker.internet.userName().toLowerCase().replace(/[^0-9a-zA-Z_]/g, ''),
+    username: Faker.internet.username().toLowerCase().replace(/[^0-9a-zA-Z_]/g, ''),
     password: 'Secret_1',
     place: healthCenter._id,
     contact: contact._id,
