@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
-import { TasksNotificationService } from '@mm-services/task-notifications.service';
 import sinon from 'sinon';
-import { expect, assert } from 'chai';
+import { expect } from 'chai';
 import moment from 'moment';
 
+import { TasksNotificationService } from '@mm-services/task-notifications.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
-import { DBSyncService } from '@mm-services/db-sync.service';
+import { FormatDateService } from '@mm-services/format-date.service';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
@@ -15,50 +15,64 @@ describe('TasksNotificationService', () => {
   let consoleErrorMock;
   let translateService;
   let rulesEngine;
-  let dbSyncService;
+  let formatDateService;
 
   let tasks;
+  const getTask = (id) => tasks.find((task) => task._id === id);
 
   beforeEach(() => {
     consoleErrorMock = sinon.stub(console, 'error');
-    localStorage.clear();
     tasks = [
       {
         _id: 'task1',
-        authoredOn: moment().valueOf(),
         state: 'Ready',
         emission: {
           title: 'Task 1',
           contact: { name: 'Owl Phil', _id: 'contact1' },
           dueDate: moment().format('YYYY-MM-DD')
-        }
+        },
+        stateHistory: [
+          {
+            state: 'Ready',
+            timestamp: moment().valueOf()
+          }
+        ],
+
       },
       {
         _id: 'task2',
-        authoredOn: moment().add(100, 'milliseconds').valueOf(),
         state: 'Ready',
         emission: {
           title: 'Task 2',
           contact: { name: 'Owl Phil2', _id: 'contact2' },
           dueDate: moment().format('YYYY-MM-DD')
-        }
+        },
+        stateHistory: [
+          {
+            state: 'Ready',
+            timestamp: moment().add(100, 'milliseconds').valueOf()
+          }
+        ],
       }
     ];
     rulesEngine = {
       fetchTaskDocsForAllContacts: sinon.stub().resolves(tasks),
       isEnabled: sinon.stub().resolves(true),
     };
-    dbSyncService = { sync: sinon.stub().resolves(true) };
 
     translateService = {
       instant: sinon.stub().returnsArg(0),
+    };
+
+    formatDateService = {
+      relative: sinon.stub().returnsArg(0),
     };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: TranslateService, useValue: translateService },
         { provide: RulesEngineService, useValue: rulesEngine },
-        { provide: DBSyncService, useValue: dbSyncService },
+        { provide: FormatDateService, useValue: formatDateService },
       ]
     });
     service = TestBed.inject(TasksNotificationService);
@@ -66,6 +80,7 @@ describe('TasksNotificationService', () => {
 
   afterEach(() => {
     sinon.restore();
+    localStorage.clear();
   });
 
   it('should be created', async () => {
@@ -79,16 +94,18 @@ describe('TasksNotificationService', () => {
     expect(notifications[1]._id).to.equal('task1');
     expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);
     expect(translateService.instant.callCount).to.equal(2);
-    expect(dbSyncService.sync.callCount).to.equal(0);
     expect(consoleErrorMock.callCount).to.equal(0);
 
     notifications.forEach((notification) => {
-      assert.property(notification, '_id');
-      assert.property(notification, 'authoredOn');
-      assert.property(notification, 'state');
-      assert.property(notification, 'title');
-      assert.property(notification, 'contentText');
-      assert.property(notification, 'dueDate');
+      const task = getTask(notification._id);
+      expect(notification).to.be.an('object');
+      expect(notification).to.eql({
+        _id: task._id,
+        readyAt: task.stateHistory[0].timestamp,
+        title: task.emission.title,
+        contentText: 'android.notification.tasks.contentText',
+        dueDate: task.emission.dueDate
+      });
     });
   });
 
@@ -104,13 +121,18 @@ describe('TasksNotificationService', () => {
     expect(notifications).to.be.an('array').that.has.lengthOf(2);
     const newTask = {
       _id: 'task3',
-      authoredOn: moment().add(120, 'milliseconds').valueOf(),
       state: 'Ready',
       emission: {
         title: 'Task 3',
         contact: { name: 'Owl Phil3', _id: 'contact3' },
         dueDate: moment().format('YYYY-MM-DD')
-      }
+      },
+      stateHistory: [
+        {
+          state: 'Ready',
+          timestamp: moment().add(120, 'milliseconds').valueOf(),
+        }
+      ]
     };
     rulesEngine.fetchTaskDocsForAllContacts.resolves([...tasks, newTask]);
     const updatedNotifications = await service.fetchNotifications();
@@ -121,14 +143,20 @@ describe('TasksNotificationService', () => {
   it('should return task notification due today on a new day', async () => {
     const taskDueTomorrow = {
       _id: 'task_tomorrow',
-      authoredOn: moment().subtract(1, 'day').valueOf(),
       state: 'Ready',
       emission: {
         title: 'Task 3',
         contact: { name: 'Future Owl', _id: 'contact_future' },
         dueDate: moment().add(1, 'day').format('YYYY-MM-DD')
-      }
+      },
+      stateHistory: [
+        {
+          state: 'Ready',
+          timestamp: moment().subtract(1, 'day').valueOf(),
+        }
+      ]
     };
+
     rulesEngine.fetchTaskDocsForAllContacts.resolves([...tasks, taskDueTomorrow]);
     const clock = sinon.useFakeTimers(moment().valueOf());
     const notifications = await service.fetchNotifications();
@@ -137,7 +165,7 @@ describe('TasksNotificationService', () => {
     clock.tick(DAY_IN_MS);
 
     const updatedNotifications = await service.fetchNotifications();
-    expect(updatedNotifications).to.be.an('array').that.has.lengthOf(1);
+    expect(updatedNotifications).to.be.an('array').that.has.lengthOf(3);
     clock.restore();
   });
 
@@ -147,57 +175,39 @@ describe('TasksNotificationService', () => {
     expect(notifications).to.be.an('array').that.is.empty;
     expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(0);
     expect(translateService.instant.callCount).to.equal(0);
-    expect(dbSyncService.sync.callCount).to.equal(0);
     expect(consoleErrorMock.callCount).to.equal(0);
   });
 
-  it('should fetch notifications with no tasks', async () => {
+  it('should fetch notifications with no tasks ready', async () => {
     rulesEngine.fetchTaskDocsForAllContacts.resolves([]);
     const notifications = await service.fetchNotifications();
     expect(notifications).to.be.an('array').that.is.empty;
     expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);
     expect(translateService.instant.callCount).to.equal(0);
-    expect(dbSyncService.sync.callCount).to.equal(0);
     expect(consoleErrorMock.callCount).to.equal(0);
   });
 
   it('should fetch notifications with no tasks due today', async () => {
     const pastTask = {
       _id: 'task_past',
-      authoredOn: moment().subtract(1, 'days').valueOf(),
       state: 'Ready',
       emission: {
         title: 'Past Task',
         contact: { name: 'Owl Phil', _id: 'contact3' },
         dueDate: moment().subtract(1, 'days').format('YYYY-MM-DD')
-      }
+      },
+      stateHistory: [
+        {
+          state: 'Ready',
+          timestamp: moment().subtract(1, 'days').valueOf(),
+        }
+      ]
     };
     rulesEngine.fetchTaskDocsForAllContacts.resolves([pastTask]);
     const notifications = await service.fetchNotifications();
-    expect(notifications).to.be.an('array').that.is.empty;
+    expect(notifications).to.be.an('array').that.has.lengthOf(1);
     expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);
-    expect(translateService.instant.callCount).to.equal(0);
-    expect(dbSyncService.sync.callCount).to.equal(0);
-    expect(consoleErrorMock.callCount).to.equal(0);
-  });
-
-  it('no notifications with tasks not in Ready state', async () => {
-    const incompleteTask = {
-      _id: 'task_draft',
-      authoredOn: moment().valueOf(),
-      state: 'Draft',
-      emission: {
-        title: 'Incomplete Task',
-        contact: { name: 'Owl Phil', _id: 'contact4' },
-        dueDate: moment().add(1, 'days').format('YYYY-MM-DD')
-      }
-    };
-    rulesEngine.fetchTaskDocsForAllContacts.resolves([incompleteTask]);
-    const notifications = await service.fetchNotifications();
-    expect(notifications).to.be.an('array').that.is.empty;
-    expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);
-    expect(translateService.instant.callCount).to.equal(0);
-    expect(dbSyncService.sync.callCount).to.equal(0);
+    expect(translateService.instant.callCount).to.equal(1);
     expect(consoleErrorMock.callCount).to.equal(0);
   });
 
@@ -213,24 +223,19 @@ describe('TasksNotificationService', () => {
     expect(notifications).to.be.an('array').that.has.lengthOf(2);
     expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);
     expect(translateService.instant.callCount).to.equal(2);
-    expect(dbSyncService.sync.callCount).to.equal(1);
     expect(consoleErrorMock.callCount).to.equal(0);
 
     notifications.forEach((notification) => {
-      assert.property(notification, '_id');
-      assert.property(notification, 'authoredOn');
-      assert.property(notification, 'state');
-      assert.property(notification, 'title');
-      assert.property(notification, 'contentText');
-      assert.property(notification, 'dueDate');
+      const task = getTask(notification._id);
+      expect(notification).to.be.an('object');
+      expect(notification).to.eql({
+        _id: task._id,
+        readyAt: task.stateHistory[0].timestamp,
+        title: task.emission.title,
+        contentText: 'android.notification.tasks.contentText',
+        dueDate: task.emission.dueDate
+      });
     });
-  });
-
-  it('should handle errors/failed DBsync', async () => {
-    dbSyncService.sync.rejects(new Error('DB sync error'));
-    const notifications = await service.get();
-    expect(notifications).to.be.an('array').that.has.lengthOf(2);
-    expect(consoleErrorMock.callCount).to.equal(1);
   });
 
 });

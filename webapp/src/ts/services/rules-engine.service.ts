@@ -36,9 +36,8 @@ interface DebounceActive {
 interface TaskDoc {
   _id: string;
   emission?: any;
-  owner: string
-  state: string;
-  authoredOn: number;
+  owner: string;
+  stateHistory: [];
 }
 
 @Injectable({

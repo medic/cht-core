@@ -1,23 +1,22 @@
 import { Injectable } from '@angular/core';
 import * as moment from 'moment';
-import { orderBy } from 'lodash-es';
+import { orderBy, get, find } from 'lodash-es';
 
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { DBSyncService } from '@mm-services/db-sync.service';
+import { FormatDateService } from '@mm-services/format-date.service';
 
 /* 
 ** avoid overloading app with too many notifications especially at once
 ** 24 for android >= 10
 */
 const MAX_NOTIFICATIONS = 24;
-const TODAY_TIMESTAMP = 'cht-today-timestamp';
+const TASK_NOTIFICATION_STATE_TIMESTAMP = 'cht-task-notification-state-timestamp';
 const LATEST_NOTIFICATION_TIMESTAMP = 'cht-latest-notification-timestamp';
 
 export interface Notification {
   _id: string,
-  authoredOn: number,
-  state: string,
+  readyAt: number,
   title: string,
   contentText: string,
   dueDate: string,
@@ -31,33 +30,36 @@ export class TasksNotificationService {
   constructor(
     private readonly rulesEngineService: RulesEngineService,
     private readonly translateService: TranslateService,
-    private readonly dbSyncService: DBSyncService
+    private readonly formatDateService: FormatDateService
   ) { }
 
   private async fetchNotifications(): Promise<Notification[]> {
     try {
+      const isEnabled = await this.rulesEngineService.isEnabled();
+      if (!isEnabled) {
+        return [];
+      }
       const today = moment().format('YYYY-MM-DD');
       let latestNotificationTimestamp = this.getLatestNotificationTimestamp();
-      const isEnabled = await this.rulesEngineService.isEnabled();
-      const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
-      
+      const taskDocs = await this.rulesEngineService.fetchTaskDocsForAllContacts();
       let notifications = taskDocs
-        .filter(task => {
-          return task.state === 'Ready' && task.emission.dueDate === today && 
-            task.authoredOn > latestNotificationTimestamp;
-        })
         .map(task => ({
           _id: task._id,
-          authoredOn: task.authoredOn,
-          state: task.state,
+          readyAt: get(find(task.stateHistory, { state: 'Ready' }), 'timestamp') || 0,
           title: task.emission.title,
-          contentText: this.translateContentText(task.emission.title, task.emission.contact.name),
+          contentText: this.translateContentText(
+            task.emission.title,
+            task.emission.contact.name,
+            task.emission.dueDate
+          ),
           dueDate: task.emission.dueDate,
-        }));
+        }))
+        .filter(notification => notification.dueDate <= today &&
+          notification.readyAt > latestNotificationTimestamp);
 
-      notifications = orderBy(notifications, ['authoredOn'], ['desc']);
+      notifications = orderBy(notifications, ['readyAt'], ['desc']);
       notifications = notifications.slice(0, MAX_NOTIFICATIONS);
-      latestNotificationTimestamp = notifications[0]?.authoredOn ?? latestNotificationTimestamp;
+      latestNotificationTimestamp = notifications[0]?.readyAt ?? latestNotificationTimestamp;
       window.localStorage.setItem(LATEST_NOTIFICATION_TIMESTAMP, String(latestNotificationTimestamp));
       return notifications;
 
@@ -69,35 +71,24 @@ export class TasksNotificationService {
 
   private getLatestNotificationTimestamp(): number {
     if (this.isNewDay()) {
+      window.localStorage.setItem(TASK_NOTIFICATION_STATE_TIMESTAMP, String(moment().startOf('day').valueOf()));
       return 0;
     }
     return Number(window.localStorage.getItem(LATEST_NOTIFICATION_TIMESTAMP));
   }
 
   private isNewDay(): boolean {
-    const now = moment();
-    const timestampToday = Number(window.localStorage.getItem(TODAY_TIMESTAMP));
-    if (!now.isSame(timestampToday, 'day')) {
-      window.localStorage.setItem(TODAY_TIMESTAMP, String(moment().startOf('day').valueOf()));
-      return true;
-    }
-    return false;
+    const timestampToday = Number(window.localStorage.getItem(TASK_NOTIFICATION_STATE_TIMESTAMP));
+    return !moment().isSame(timestampToday, 'day');
   }
 
-  private translateContentText(task: string, contact: string): string {
+  private translateContentText(taskName: string, contact: string, dueDate: string): string {
     const key = 'android.notification.tasks.contentText';
-    return this.translateService.instant(key, { task, contact });
+    const due = this.formatDateService.relative(dueDate, { task: true });
+    return this.translateService.instant(key, { taskName, contact, due });
   }
 
   async get(): Promise<Notification[]> {
-    return Promise.race([
-      this.dbSyncService.sync(),
-      new Promise(resolve => setTimeout(() => resolve([]), 5 * 1000))
-    ]).then(() => {
-      return this.fetchNotifications();
-    }).catch((error) => {
-      console.error('get(): notifications error syncing db', error);
-      return this.fetchNotifications();
-    });
+    return await this.fetchNotifications();
   }
 }
