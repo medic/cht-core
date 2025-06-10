@@ -469,7 +469,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.areAllReportsSelected()) {
       return;
     }
-    this.isSelectingAllReports =true
+    this.isSelectingAllReports = true;
     try {
       if (this.isSidebarFilterOpen) {
         this.toggleFilter();
@@ -534,10 +534,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const isMaxReportsSelected = this.selectedReports?.length >= this.LIMIT_SELECT_ALL_REPORTS;
-    const check = isMaxReportsSelected || this.reportsList?.length === this.selectedReports?.length;
-    if(check){
-      this.isSelectingAllReports = false
-    }
-    return check;
+    const finishedSelecting = isMaxReportsSelected || this.reportsList?.length === this.selectedReports?.length;
+    this.isSelectingAllReports = !finishedSelecting;
+    return finishedSelecting;
   }
 }
