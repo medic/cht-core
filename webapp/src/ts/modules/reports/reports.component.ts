@@ -97,6 +97,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   userParentPlace;
   fastActionList?: FastAction[];
   userLineageLevel;
+  isSelectingAllReports=false;
 
   LIMIT_SELECT_ALL_REPORTS = 500;
 
@@ -465,64 +466,29 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async selectAllReports() {
-    const alreadyLoaded = this.reportsList?.length ?? 0;
-    const desiredLimit = this.LIMIT_SELECT_ALL_REPORTS;
-  
-    if (this.moreItems && alreadyLoaded < desiredLimit) {
-      await this.loadRemainingReports(alreadyLoaded, desiredLimit);
+    if (this.areAllReportsSelected()) {
+      return;
     }
-  
+    this.isSelectingAllReports =true
     try {
-      await this.finalizeReportSelection();
+      if (this.isSidebarFilterOpen) {
+        this.toggleFilter();
+      }
+
+      this.globalActions.setLoadingContent(true);
+
+      const reports = await this.searchService.search(
+        'reports',
+        this.filters,
+        { limit: this.LIMIT_SELECT_ALL_REPORTS, hydrateContactNames: true }
+      );
+      const preparedReports = await this.prepareReports(reports, true);
+      this.reportsActions.setSelectedReports(preparedReports);
+      this.globalActions.unsetComponents();
+
     } catch (error) {
       console.error('Error selecting all', error);
     }
-  }
-  
-  async loadRemainingReports(alreadyLoaded, desiredLimit) {
-    let allReports = [...this.reportsList];
-    let skip = alreadyLoaded;
-  
-    while (this.moreItems && allReports.length < desiredLimit) {
-      const batch = await this.fetchReportsBatch(skip);
-      allReports = allReports.concat(batch);
-      skip += PAGE_SIZE;
-      if (batch.length < PAGE_SIZE) break;
-    }
-  
-    this.reportsActions.updateReportsList(allReports);
-    this.moreItems = allReports.length >= skip;
-    this.hasReports = !!allReports.length;
-    this.loading = false;
-    this.appending = false;
-  }
-  
-  async fetchReportsBatch(skip) {
-    const reports = await this.searchService.search('reports', this.filters, {
-      limit: PAGE_SIZE,
-      skip,
-      hydrateContactNames: true
-    });
-  
-    const updated = await this.addReadStatusService.updateReports(reports);
-    return this.prepareReports(updated);
-  }
-  
-  async finalizeReportSelection() {
-    if (this.isSidebarFilterOpen) {
-      this.toggleFilter();
-    }
-  
-    this.globalActions.setLoadingContent(true);
-  
-    const reports = await this.searchService.search('reports', this.filters, {
-      limit: this.LIMIT_SELECT_ALL_REPORTS,
-      hydrateContactNames: true
-    });
-  
-    const prepared = await this.prepareReports(reports, true);
-    this.reportsActions.setSelectedReports(prepared);
-    this.globalActions.unsetComponents();
   }
 
   deselectAllReports() {
@@ -568,6 +534,10 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const isMaxReportsSelected = this.selectedReports?.length >= this.LIMIT_SELECT_ALL_REPORTS;
-    return isMaxReportsSelected || this.reportsList?.length === this.selectedReports?.length;
+    const check = isMaxReportsSelected || this.reportsList?.length === this.selectedReports?.length;
+    if(check){
+      this.isSelectingAllReports = false
+    }
+    return check;
   }
 }
