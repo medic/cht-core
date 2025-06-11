@@ -63,7 +63,7 @@ export class ContactSummaryService {
   }
 
   private applyFilters(summary) {
-    console.debug('contact summary eval result', summary);
+    console.debug('contact summary eval result', JSON.stringify(summary));
 
     summary = summary || {};
     summary.fields = (summary.fields && Array.isArray(summary.fields)) ? summary.fields : [];

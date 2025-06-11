@@ -13,6 +13,7 @@
     </data>
   </instance>
   <instance id="contact-summary" />
+  <instance id="user-contact-summary" />
   <itext>
     <translation lang="eng">
       <text id="patient_id:label">

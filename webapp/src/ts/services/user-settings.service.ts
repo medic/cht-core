@@ -101,15 +101,6 @@ export class UserSettingsService {
       .get()
       .put(doc);
   }
-
-  setAsKnown(): Promise<Object> {
-    return this.get()
-      .then((userSettings:any) => {
-        userSettings.known = true;
-        return this.put(userSettings);
-      });
-  }
-
 }
 
 export interface UserSettings {
