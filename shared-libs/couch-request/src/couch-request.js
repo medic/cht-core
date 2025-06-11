@@ -1,4 +1,5 @@
 const environment = require('@medic/environment');
+const audit = require('@medic/audit');
 const path = require('path');
 const os = require('os');
 let asyncLocalStorage;
@@ -32,7 +33,8 @@ const isInternalRequest = (options) => {
 };
 
 const getUserAgent = async () => {
-  const chtVersion = await environment.getVersion();
+  const serverInfo = require('@medic/server-info');
+  const chtVersion = await serverInfo.getVersion();
   const platform = os.platform();
   const arch = os.arch();
   return `${CHT_AGENT}/${chtVersion} (${platform},${arch})`;
@@ -210,8 +212,12 @@ const request = async (options = {}) => {
     body: await getResponseBody(response, options.headers[CONTENT_TYPE] === JSON_HEADER_VALUE),
     status: response.status,
     ok: response.ok,
-    headers: response.headers
+    headers: response.headers,
+    streamed: true,
   };
+
+  const requestMetadata = asyncLocalStorage?.getRequest();
+  void audit.fetchCallback(options.uri, options, responseObj, requestMetadata);
 
   if (options.simple === false) {
     return responseObj;
@@ -269,7 +275,7 @@ const request = async (options = {}) => {
  */
 
 module.exports = {
-  initialize: (store, header) => {
+  setStore: (store, header) => {
     asyncLocalStorage = store;
     requestIdHeader = header.toLowerCase();
   },

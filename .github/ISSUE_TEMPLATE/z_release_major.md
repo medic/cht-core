@@ -72,5 +72,6 @@ Following the CHT's support policy, versions {{versions}} are no longer supporte
 We’ve also implemented loads of other improvements and fixed a heap of bugs.
 
 ```
+- [ ] Go over the list of commits and individually notify contributing / interested community members about the release. 
 - [ ] Add one last update to the #development Slack channel and use the thread to lead an internal release retrospective covering what went well and areas to improve for next time.
 - [ ] Mark this issue "done" and close the Milestone.

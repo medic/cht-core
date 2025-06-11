@@ -8,7 +8,6 @@ const { expect } = require('chai');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
-PouchDB.plugin(require('pouchdb-session-authentication'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
 const byId = (a, b) => {
