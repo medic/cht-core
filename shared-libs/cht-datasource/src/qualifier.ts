@@ -1,4 +1,4 @@
-import { isString, hasField, isRecord, Nullable, hasFields } from './libs/core';
+import { isString, hasField, isRecord, Nullable, hasFields, NormalizedParent, isNormalizedParent } from './libs/core';
 import { InvalidArgumentError } from './libs/error';
 
 /**
@@ -266,4 +266,100 @@ const isValidReportedDate = (value: unknown): boolean => {
   }
 
   return false;
+};
+
+/** 
+ * A qualifier for a person
+ */
+type PersonQualifier = ContactQualifier & Readonly<{
+  parent: NormalizedParent;
+  date_of_birth?: Date;
+  phone?: string;
+  patient_id?: string;
+  sex?: string;
+  contact_type?: string
+}>
+
+/**
+ * Builds a qualifier for creation and update of a person with
+ * the given fields.
+ * @param data object containing the fields for a person
+ * @returns the person qualifier
+ * @throws Error if data is not an object
+ * @throws Error if type is not provided or is empty
+ * @throws Error if name is not provided or is empty
+ * @throws Error if parent is not provided or is empty
+ * @throws Error if parent is not in a valid de-hydrated format. 
+ * @throws Error if reported_date is not in a valid format. 
+ * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+ */
+export const byPersonQualifier = (data: unknown): PersonQualifier => {
+  if (!isRecord(data)) {
+    throw new InvalidArgumentError('Invalid "data": expected an object.');
+  }
+  const qualifier = { ...data };
+  if ('reported_date' in qualifier && !isValidReportedDate(qualifier.reported_date)) {
+    throw new InvalidArgumentError(
+      // eslint-disable-next-line max-len
+      `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
+    );
+  }
+  if (!isContactQualifier(qualifier) || !hasField(data, { name: 'parent', type: 'object' })) {
+    throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(data)}].`);
+  }
+  if (!isNormalizedParent(data.parent)) {
+    throw new InvalidArgumentError(`Missing required fields in the parent hierarchy [${JSON.stringify(data)}].`);
+  }
+
+  if (data.type === 'contact' && !hasField(data, { name: 'contact_type', type: 'string' })) {
+    throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(data)}].`);
+  } else if (!(data.type === 'person')) {
+    throw new InvalidArgumentError('Expected `type` to be `person`.');
+  }
+
+  // Ensure parent lineage doesn't have any additional properties other than `_id` and `parent`.
+  let parent = data.parent;
+  while (parent) {
+    if (Object.keys(parent).length > 2) {
+      // This means that the parent certainly has extra fields and is not minfied/de-hydrated as per
+      // our liking as `isNormalized` check ensures that it does have two keys `_id` and `parent`.
+      throw new InvalidArgumentError(`Additional fields found in the parent lineage [${JSON.stringify(data)}].`);
+    }
+    parent = data.parent;
+  }
+
+  return qualifier as PersonQualifier;
+};
+
+/** @internal */
+export const isPersonQualifier = (data: unknown): data is PersonQualifier => {
+  if (!isRecord(data)) {
+    return false;
+  }
+  if (!hasField(data, { name: 'parent', type: 'object' }) || !isNormalizedParent(data.parent)) {
+    return false;
+  }
+
+  // Ensure parent lineage doesn't have any additional properties other than `_id` and `parent`.
+  let parent = data.parent;
+  while (parent) {
+    if (Object.keys(parent).length > 2) {
+      // This means that the parent certainly has extra fields and is not minfied/de-hydrated as per
+      // our liking as `isNormalized` check ensures that it does have two keys `_id` and `parent`.
+      return false;
+    }
+    parent = data.parent;
+  }
+
+  if (!isContactQualifier(data)) {
+    return false;
+  }
+
+  if (data.type === 'contact' && !hasField(data, { name: 'contact_type', type: 'string' })) {
+    return false;
+  } else if (!(data.type === 'person')) {
+    return false;
+  }
+
+  return true;
 };
