@@ -592,37 +592,43 @@ describe('local doc lib', () => {
     });
   });
 
-
   describe('createDoc', () => {
-    it('should create and retrieve the doc', async () => {
-      const createdDoc = {
-        type: 'contact',
-        contact_type: 'person',
-        name: 'Medic User',
-        reported_date: 12312312,
-        _rev: '1-rev',
-        _id: '1-id',
-        parent: {
-          _id: '2-id'
-        }
-      };
+    const doc = {
+      type: 'contact',
+      contact_type: 'person',
+      name: 'Medic User',
+      parent: {
+        _id: '2-id'
+      }
+    };
 
+    const createdDoc = {
+      type: 'contact',
+      contact_type: 'person',
+      name: 'Medic User',
+      reported_date: 12312312,
+      _rev: '1-rev',
+      _id: '1-id',
+      parent: {
+        _id: '2-id'
+      }
+    };
+    
+    it('should create and retrieve the doc', async () => {
       dbPost.resolves({ id: '1-id', ok: true });
       isDoc.returns(true);
       dbGet.resolves(createdDoc);
 
-      const doc = {
-        type: 'contact',
-        contact_type: 'person',
-        name: 'Medic User',
-        parent: {
-          _id: '2-id'
-        }
-      };
       const result = await createDoc(db)(doc);
 
       expect(result).to.equal(createdDoc);
       expect(dbGet.calledOnceWithExactly(createdDoc._id)).to.be.true;
+    });
+
+    it('case when database returns false for ok', async () => {
+      dbPost.resolves({ id: '1-id', ok: false });
+      await expect(createDoc(db)(doc)).to.be.rejectedWith('Error creating document.');
+      expect(dbPost.calledOnceWithExactly(doc)).to.be.true;
     });
   });
 
