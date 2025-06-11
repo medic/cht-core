@@ -395,6 +395,7 @@ describe('RapidPro SMS Gateway', () => {
         expect(expectedBroadcastIds.includes(query.broadcast)).to.be.true;
         requestedBroadcastIds.push(query.broadcast);
         expect(headers.authorization).to.equal(`Token ${OUTGOING_KEY}`);
+        expect(headers['user-agent']).to.include('Community Health Toolkit/');
       });
 
       // we don't have complete control over which docs are requested in the provided timespan

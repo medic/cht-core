@@ -2,6 +2,7 @@ const assert = require('chai').assert;
 const sinon = require('sinon');
 const rewire = require('rewire');
 const secureSettings = require('@medic/settings');
+const serverInfo = require('@medic/server-info');
 const request = require('@medic/couch-request');
 let outbound;
 
@@ -255,7 +256,7 @@ describe('outbound shared library', () => {
   });
 
   describe('push', () => {
-    it('should push on minimal configuration', () => {
+    it('should push on minimal configuration with version in User-Agent', () => {
       const payload = {
         some: 'data'
       };
@@ -267,14 +268,21 @@ describe('outbound shared library', () => {
         }
       };
 
+      sinon.stub(serverInfo, 'getVersion').resolves('4.18.0');
       sinon.stub(request, 'post').resolves();
 
       return outbound.__get__('sendPayload')(payload, conf)
         .then(() => {
           assert.equal(request.post.callCount, 1);
-          assert.equal(request.post.args[0][0].url, 'http://test/foo');
-          assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
-          assert.equal(request.post.args[0][0].json, true);
+          assert.deepEqual(request.post.args, [
+            [
+              {
+                url: 'http://test/foo',
+                body: { some: 'data' },
+                timeout: 10000,
+              }
+            ]
+          ]);
         });
     });
 
@@ -301,15 +309,21 @@ describe('outbound shared library', () => {
       return outbound.__get__('sendPayload')(payload, conf)
         .then(() => {
           assert.equal(secureSettings.getCredentials.callCount, 1);
-          assert.equal(secureSettings.getCredentials.args[0][0], 'test-config');
+          assert.deepEqual(secureSettings.getCredentials.args, [['test-config']]);
           assert.equal(request.post.callCount, 1);
-          assert.equal(request.post.args[0][0].url, 'http://test/foo');
-          assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
-          assert.equal(request.post.args[0][0].json, true);
-          assert.deepEqual(request.post.args[0][0].auth, {
-            username: 'admin',
-            password: 'pass',
-          });
+          assert.deepEqual(request.post.args, [
+            [
+              {
+                url: 'http://test/foo',
+                body: { some: 'data' },
+                timeout: 10000,
+                auth: {
+                  username: 'admin',
+                  password: 'pass'
+                }
+              }
+            ]
+          ]);
         });
     });
 
@@ -336,14 +350,20 @@ describe('outbound shared library', () => {
       return outbound.__get__('sendPayload')(payload, conf)
         .then(() => {
           assert.equal(secureSettings.getCredentials.callCount, 1);
-          assert.equal(secureSettings.getCredentials.args[0][0], 'test-config');
+          assert.deepEqual(secureSettings.getCredentials.args, [['test-config']]);
           assert.equal(request.post.callCount, 1);
-          assert.equal(request.post.args[0][0].url, 'http://test/foo');
-          assert.deepEqual(request.post.args[0][0].body, {some: 'data'});
-          assert.equal(request.post.args[0][0].json, true);
-          assert.deepEqual(request.post.args[0][0].headers, {
-            Authorization: 'Bearer credentials'
-          });
+          assert.deepEqual(request.post.args, [
+            [
+              {
+                url: 'http://test/foo',
+                body: { some: 'data' },
+                timeout: 10000,
+                headers: {
+                  'authorization': 'Bearer credentials'
+                }
+              }
+            ]
+          ]);
         });
     });
 
@@ -380,15 +400,28 @@ describe('outbound shared library', () => {
       return outbound.__get__('sendPayload')(payload, conf)
         .then(() => {
           assert.equal(post.callCount, 2);
-
-          assert.equal(post.args[0][0].form.login, 'admin');
-          assert.equal(post.args[0][0].form.password, 'pass');
-          assert.equal(post.args[0][0].url, 'http://test/login');
-
-          assert.equal(post.args[1][0].url, 'http://test/foo');
-          assert.deepEqual(post.args[1][0].body, {some: 'data'});
-          assert.equal(post.args[1][0].json, true);
-          assert.equal(post.args[1][0].qs.token, 'j9NAhVDdVWkgo1xnbxA9V3Pmp');
+          assert.deepEqual(post.args, [
+            [
+              {
+                url: 'http://test/login',
+                form: {
+                  login: 'admin',
+                  password: 'pass'
+                },
+                timeout: 10000
+              }
+            ],
+            [
+              {
+                url: 'http://test/foo',
+                body: { some: 'data' },
+                timeout: 10000,
+                qs: {
+                  token: 'j9NAhVDdVWkgo1xnbxA9V3Pmp'
+                }
+              }
+            ]
+          ]);
         });
     });
 

@@ -19,13 +19,17 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
+import { EnketoFormContext, EnketoService, FormType } from '@mm-services/enketo.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
 import { reduce as _reduce } from 'lodash-es';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
+import { Nullable, Person, Contact } from '@medic/cht-datasource';
+import { DeduplicateService, DuplicateCheck } from '@mm-services/deduplicate.service';
+import { ContactsService } from '@mm-services/contacts.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 /**
  * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
@@ -39,15 +43,15 @@ import { ContactViewModelGeneratorService } from '@mm-services/contact-view-mode
 export class FormService {
   constructor(
     private store: Store,
-    private contactSaveService:ContactSaveService,
+    private contactSaveService: ContactSaveService,
     private contactSummaryService: ContactSummaryService,
-    private contactTypesService:ContactTypesService,
+    private contactTypesService: ContactTypesService,
     private dbService: DbService,
     private fileReaderService: FileReaderService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
     private submitFormBySmsService: SubmitFormBySmsService,
     private userContactService: UserContactService,
-    private userSettingsService:UserSettingsService,
+    private userSettingsService: UserSettingsService,
     private xmlFormsService: XmlFormsService,
     private zScoreService: ZScoreService,
     private trainingCardsService: TrainingCardsService,
@@ -58,6 +62,9 @@ export class FormService {
     private enketoService: EnketoService,
     private targetAggregatesService: TargetAggregatesService,
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
+    private readonly deduplicateService: DeduplicateService,
+    private readonly contactsService: ContactsService,
+    private readonly performanceService: PerformanceService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -134,11 +141,7 @@ export class FormService {
     return this.targetAggregatesService.getTargetDocs(contact, this.userFacilityIds, this.userContactId);
   }
 
-  private getContactSummary(doc, instanceData) {
-    const contact = instanceData?.contact;
-    if (!doc.hasContactSummary || !contact) {
-      return Promise.resolve();
-    }
+  loadContactSummary(contact) {
     return Promise
       .all([
         this.getContactReports(contact),
@@ -148,7 +151,15 @@ export class FormService {
       .then(([reports, lineage, targetDocs]) => this.contactSummaryService.get(contact, reports, lineage, targetDocs));
   }
 
-  private canAccessForm(formContext: EnketoFormContext) {
+  private getContactSummary(doc, instanceData) {
+    const contact = instanceData?.contact;
+    if (!doc.hasContactSummary || !contact) {
+      return Promise.resolve();
+    }
+    return this.loadContactSummary(contact);
+  }
+
+  private canAccessForm(formContext: WebappEnketoFormContext) {
     return this.xmlFormsService.canAccessForm(
       formContext.formDoc,
       formContext.userContact,
@@ -160,12 +171,12 @@ export class FormService {
     );
   }
 
-  private async renderForm(formContext: EnketoFormContext) {
+  private async renderForm(formContext: WebappEnketoFormContext) {
     const { formDoc, instanceData } = formContext;
 
     try {
       this.unload(this.enketoService.getCurrentForm());
-      const [ doc, userSettings ] = await Promise.all([
+      const [doc, userSettings] = await Promise.all([
         this.transformXml(formDoc),
         this.userSettingsService.getWithLanguage()
       ]);
@@ -189,11 +200,11 @@ export class FormService {
     this.userContactId = userContactId;
   }
 
-  render(formContext: EnketoFormContext) {
+  render(formContext: WebappEnketoFormContext) {
     return this.ngZone.runOutsideAngular(() => this._render(formContext));
   }
 
-  private async _render(formContext: EnketoFormContext) {
+  private async _render(formContext: WebappEnketoFormContext) {
     await this.inited;
     formContext.userContact = await this.getUserContact(formContext.requiresContact());
     return this.renderForm(formContext);
@@ -215,7 +226,7 @@ export class FormService {
       });
   }
 
-  private async getUserContact(requiresContact:boolean) {
+  private async getUserContact(requiresContact: boolean) {
     const contact = await this.userContactService.get();
     if (requiresContact && !contact) {
       const err: any = new Error('Your user does not have an associated contact, or does not have access to the ' +
@@ -326,7 +337,42 @@ export class FormService {
     }, null);
   }
 
-  async saveContact(form, docId, type, xmlVersion) {
+  private async checkForDuplicates(
+    doc: Contact.v1.Contact,
+    contactType: string,
+    duplicatesAcknowledged: boolean,
+    duplicateCheck?: DuplicateCheck
+  ): Promise<Array<Contact.v1.Contact>> {
+    if (duplicatesAcknowledged) {
+      return [];
+    }
+
+    const perfTracking = this.performanceService.track();
+
+    try {
+      const siblings = await this.contactsService.getSiblings(doc);
+      return this.deduplicateService.getDuplicates(doc, contactType, siblings, duplicateCheck);
+    } finally {
+      perfTracking?.stop({
+        name: ['enketo', 'contacts', contactType, 'duplicate_check'].join(':')
+      });
+    }
+  }
+
+  async saveContact(
+    contactInfo: {
+      docId: string | undefined;
+      type: string;
+    },
+    formInfo: {
+      form: any;
+      xmlVersion: string | undefined;
+      duplicateCheck?: DuplicateCheck
+    },
+    duplicatesAcknowledged: boolean,
+  ) {
+    const { docId, type } = contactInfo;
+    const { form, xmlVersion, duplicateCheck } = formInfo;
     const typeFields = this.contactTypesService.isHardcodedType(type)
       ? { type }
       : { type: 'contact', contact_type: type };
@@ -335,6 +381,17 @@ export class FormService {
     const preparedDocs = await this.applyTransitions(docs);
 
     const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
+
+    const duplicates = await this.checkForDuplicates(
+      primaryDoc ?? preparedDocs.preparedDocs[0],
+      type,
+      duplicatesAcknowledged,
+      duplicateCheck
+    );
+    if (duplicates?.length) {
+      throw new DuplicatesFoundError('Duplicates found', duplicates);
+    }
+
     this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
     const bulkDocsResult = await this.dbService.get().bulkDocs(preparedDocs.preparedDocs);
     const failureMessage = this.generateFailureMessage(bulkDocsResult);
@@ -350,4 +407,50 @@ export class FormService {
     this.enketoService.unload(form);
   }
 }
+export class DuplicatesFoundError extends Error {
+  duplicates: Contact.v1.Contact[];
+  constructor(message: string, duplicates: Contact.v1.Contact[]) {
+    super(message);
+    this.message = message;
+    this.duplicates = duplicates;
+    this.name = 'DuplicatesFoundError';
+  }
+}
 
+export class WebappEnketoFormContext implements EnketoFormContext {
+  readonly selector: string;
+  readonly formDoc: Record<string, any>;
+  readonly type: FormType;
+  readonly instanceData?: string | Record<string, any>;
+  editedListener?: () => void;
+  valuechangeListener?: () => void;
+  titleKey?: string;
+  isFormInModal?: boolean;
+  contactSummary?: Record<string, any>;
+
+  editing?: boolean;
+  userContact?: Nullable<Person.v1.Person>;
+
+  constructor(selector: string, type: FormType, formDoc: Record<string, any>, instanceData?) {
+    this.selector = selector;
+    this.type = type;
+    this.formDoc = formDoc;
+    this.instanceData = instanceData;
+  }
+
+  shouldEvaluateExpression() {
+    if (this.type === 'task') {
+      return false;
+    }
+
+    if (this.type === 'report' && this.editing) {
+      return false;
+    }
+    return true;
+  }
+
+  requiresContact() {
+    // Users can access contact forms even when they don't have a contact associated.
+    return this.type !== 'contact';
+  }
+}

@@ -918,7 +918,8 @@ describe('Users Controller', () => {
     it('should respond with error when creating fails', () => {
       sinon.stub(auth, 'check').resolves();
       sinon.stub(users, 'createUser').rejects({ some: 'err' });
-      req = { protocol: 'http', hostname: 'thehost.com', body: { name: 'user' } };
+      sinon.stub(serverUtils, 'getAppUrl').returns('http://thehost.com');
+      req = { body: { name: 'user' } };
       res = { json: sinon.stub() };
       return controller.create(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
@@ -926,14 +927,15 @@ describe('Users Controller', () => {
         chai.expect(users.createUser.callCount).to.equal(1);
         chai.expect(users.createUser.args[0]).to.deep.equal([req.body, 'http://thehost.com']);
         chai.expect(res.json.callCount).to.equal(0);
-
+        chai.expect(serverUtils.getAppUrl.calledOnceWithExactly(req)).to.be.true;
       });
     });
 
     it('should create the user and respond', () => {
       sinon.stub(auth, 'check').resolves();
       sinon.stub(users, 'createUser').resolves({ user: { id: 'aaa' } });
-      req = { protocol: 'https', hostname: 'host.com', body: { name: 'user' } };
+      sinon.stub(serverUtils, 'getAppUrl').returns('https://host.com');
+      req = { body: { name: 'user' } };
       res = { json: sinon.stub() };
       return controller.create(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(0);
@@ -941,6 +943,7 @@ describe('Users Controller', () => {
         chai.expect(users.createUser.args[0]).to.deep.equal([req.body, 'https://host.com']);
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0]).to.deep.equal([{ user: { id: 'aaa' } }]);
+        chai.expect(serverUtils.getAppUrl.calledOnceWithExactly(req)).to.be.true;
       });
     });
   });
@@ -980,7 +983,8 @@ describe('Users Controller', () => {
       sinon.stub(auth, 'getUserCtx').resolves({ name: 'alpha' });
       sinon.stub(auth, 'basicAuthCredentials').returns({ username: 'alpha' });
       sinon.stub(auth, 'validateBasicAuth').resolves();
-      req = { params: { username: 'alpha' }, protocol: 'http', hostname: 'myhost.net', body: { field: 'update' } };
+      sinon.stub(serverUtils, 'getAppUrl').returns('http://myhost.net');
+      req = { params: { username: 'alpha' }, body: { field: 'update' } };
       res = { json: sinon.stub() };
       sinon.stub(users, 'updateUser').resolves({ response: true });
 
@@ -990,6 +994,7 @@ describe('Users Controller', () => {
         chai.expect(users.updateUser.args[0]).to.deep.equal(['alpha', { field: 'update' }, false, 'http://myhost.net']);
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0]).to.deep.equal([{ response: true }]);
+        chai.expect(serverUtils.getAppUrl.calledOnceWithExactly(req)).to.be.true;
       });
     });
 
@@ -998,7 +1003,8 @@ describe('Users Controller', () => {
       sinon.stub(auth, 'getUserCtx').resolves({ name: 'alpha' });
       sinon.stub(auth, 'basicAuthCredentials').returns({ username: 'alpha' });
       sinon.stub(auth, 'validateBasicAuth').resolves();
-      req = { params: { username: 'beta' }, protocol: 'https', hostname: 'myhost.io', body: { field: 'update' } };
+      sinon.stub(serverUtils, 'getAppUrl').returns('https://myhost.io');
+      req = { params: { username: 'beta' }, body: { field: 'update' } };
       res = { json: sinon.stub() };
       sinon.stub(users, 'updateUser').resolves({ updated: true });
 
@@ -1008,6 +1014,7 @@ describe('Users Controller', () => {
         chai.expect(users.updateUser.args[0]).to.deep.equal(['beta', { field: 'update' }, true, 'https://myhost.io']);
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0]).to.deep.equal([{ updated: true }]);
+        chai.expect(serverUtils.getAppUrl.calledOnceWithExactly(req)).to.be.true;
       });
     });
   });

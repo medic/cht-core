@@ -1,6 +1,8 @@
 const chai = require('chai');
 chai.use(require('chai-shallow-deep-equal'));
 const utils = require('@utils');
+const mockIdProvider = require('../../../utils/mock-oidc-provider');
+const { DB_NAME } = require('@constants');
 
 let user;
 const password = 'passwordSUP3RS3CR37!';
@@ -68,14 +70,22 @@ const getUser = (user) => {
   return utils.request(opts);
 };
 
-const setupTokenLoginSettings = (configureAppUrl = false) => {
+const setupTokenLoginSettings = (configureAppUrl = false, configureOidc = false) => {
   const settings = { token_login: { translation_key: 'login_sms', enabled: true } };
   if (configureAppUrl) {
     settings.app_url = utils.getOrigin();
   }
+  if (configureOidc) {
+    settings.oidc_provider = { client_id: 'test-client-id' };
+  }
   return utils
     .updateSettings(settings, { ignoreReload: true })
     .then(() => utils.addTranslations('en', { login_sms: 'Instructions sms' }));
+};
+
+const setupOidcLoginSettings = async (clientId) => {
+  const settings = { oidc_provider: { client_id: clientId } };
+  return await utils.updateSettings(settings, { ignoreReload: true });
 };
 
 describe('login', () => {
@@ -156,6 +166,19 @@ describe('login', () => {
         .request(opts)
         .then(() => loginWithData({ user: user.username, password }))
         .then(response => expectRedirectToPasswordReset(response));
+    });
+
+    it('should fail if sso user', async () => {
+      await setupOidcLoginSettings('clientId');
+      await utils.request({ path: '/api/v2/users', method: 'POST', body: user });
+      // Manually update user to be OIDC so we also know the password
+      const userDoc = await getUser(user);
+      await utils.usersDb.put({ ...userDoc, oidc_username: 'true' });
+
+      const response = await loginWithData({ user: user.username, password });
+
+      expect(response.status).to.equal(401);
+      expect(response.body.error).to.equal('Password Login Not Permitted For SSO Users');
     });
   });
 
@@ -256,6 +279,176 @@ describe('login', () => {
         .then(response => expectLoginToWork(response))
         .then(() => loginWithTokenLink(tokenLogin.token))
         .then(response => expectLoginToFail(response)); // fails after being activated the 1st time
+    });
+
+    it('should reject token login for SSO users', () => {
+      user.phone = '+40755565656';
+      user.token_login = true;
+      const createOpts = {
+        path: '/api/v1/users',
+        method: 'POST',
+        body: user
+      };
+      return setupTokenLoginSettings(false, true)
+        .then(() => utils.request(createOpts))
+        .then(() => getUser(user))
+        .then(userDoc => {
+          // grab the token and mark as SSO user
+          const token = userDoc.token_login.token;
+          userDoc.oidc_username = 'true';
+          return utils.usersDb
+            .put(userDoc)
+            .then(() => token);
+        })
+        .then(token => loginWithTokenLink(token))
+        .then(response => {
+          chai.expect(response.headers.getSetCookie()).to.deep.equal([]);
+          // status 401 with SSO-specific message
+          chai.expect(response.status).to.equal(401);
+          chai.expect(response.body).to.deep.equal({
+            error: 'Token login not allowed for SSO users'
+          });
+        });
+    });
+  });
+
+  describe('SSO login', () => {
+    const oidcAuthorize = () => {
+      const opts = {
+        path: `/medic/login/oidc/authorize`,
+        method: 'GET',
+        noAuth: true,
+        json: false,
+        resolveWithFullResponse: true,
+        redirect: 'manual',
+      };
+      return utils.request(opts);
+    };
+
+    const oidcLogin = (code = 'random') => {
+      const opts = {
+        path: `/medic/login/oidc?code=${code}`,
+        method: 'GET',
+        noAuth: true,
+        json: false,
+        resolveWithFullResponse: true,
+        redirect: 'manual',
+      };
+      return utils.request(opts);
+    };
+
+    const setupOidcSettings = () => {
+      const settings = {
+        oidc_provider: {
+          discovery_url: mockIdProvider.getDiscoveryUrl(),
+          client_id: 'cht',
+          allow_insecure_requests: true
+        }
+      };
+
+      return utils.updateSettings(settings, { ignoreReload: true });
+    };
+
+    const setClientSecret = () => utils.saveCredentials('oidc:client-secret', 'client-secret');
+
+    const expectRedirectToLoginWithError = (ssoError, response) => {
+      chai.expect(response.status).to.equal(302);
+      chai.expect(response.headers.getSetCookie()).to.deep.equal([]);
+      chai.expect(response.body).to.equal(`Found. Redirecting to /${DB_NAME}/login?sso_error=${ssoError}`);
+    };
+
+    const expectServerError = (response) => {
+      chai.expect(response.status).to.equal(500);
+      chai.expect(response.headers.getSetCookie()).to.deep.equal([]);
+      chai.expect(response.body).to.equal('Server error');
+    };
+
+    before(async () => {
+      await mockIdProvider.startOidcServer();
+    });
+
+    afterEach(async () => {
+      await utils.revertSettings(true);
+    });
+
+    after(() => mockIdProvider.stopOidcServer());
+
+    [
+      ['login/oidc', oidcLogin, response => expectRedirectToLoginWithError('loginerror', response)],
+      ['login/oidc/authorize', oidcAuthorize, expectServerError]
+    ].forEach(([endpoint, oidcFn, assertFn]) => {
+      it(`should fail ${endpoint} when OIDC not configured`, async () => {
+        const response  = await oidcFn();
+        assertFn(response);
+      });
+
+      it(`should fail ${endpoint} when OIDC client secret is not set`, async () => {
+        await setupOidcSettings();
+        const response =  await oidcFn();
+        assertFn(response);
+      });
+
+      it(`should fail ${endpoint} when invalid discovery url is provided`, async () => {
+        await utils.updateSettings(
+          {
+            discovery_url: 'http://random-xveersd/.well-known/openid-configuration',
+            client_id: 'cht'
+          },
+          { ignoreReload: true }
+        );
+        const response = await oidcFn();
+        assertFn(response);
+      });
+    });
+
+    it('should redirect back to login when user does not exist in CHT', async () => {
+      await setupOidcSettings();
+      await setClientSecret();
+      const response = await oidcLogin();
+
+      expectRedirectToLoginWithError('ssouserinvalid', response);
+    });
+
+    it('should redirect to oidc provide authorize endpoint', async () => {
+      await setupOidcSettings();
+      await setClientSecret();
+      const response  = await oidcAuthorize();
+
+      chai.expect(response).to.include({ status: 302 });
+      const appUrl = `${mockIdProvider.appTokenUrl}&scope=openid+email&client_id=cht&response_type=code`;
+      const redirectLocation = `${mockIdProvider.getOidcBaseUrl()}connect/authorize?redirect_uri=${appUrl}`;
+      chai.expect(decodeURIComponent(response.body)).to.equal(redirectLocation);
+    });
+
+    ['', 'invalid'].forEach(code => {
+      it(`should redirect back to login when authentication code is [${code}]`, async () => {
+        await setupOidcSettings();
+        await setClientSecret();
+        await utils.createUsers([{
+          ...user,
+          password: undefined,
+          oidc_username: 'true',
+        }]);
+        const response = await oidcLogin(code);
+
+        expectRedirectToLoginWithError('loginerror', response);
+      });
+    });
+
+    it('should log in successfully', async () => {
+      await setupOidcSettings();
+      await setClientSecret();
+      await utils.createUsers([{
+        ...user,
+        password: undefined,
+        oidc_username: mockIdProvider.EMAIL,
+      }]);
+      const response = await oidcLogin();
+      chai.expect(response).to.include({ status: 302 });
+      chai.expect(response.headers.getSetCookie()).to.be.an('array');
+      chai.expect(response.headers.getSetCookie().find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
+      chai.expect(response.headers.getSetCookie().find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
+      chai.expect(response.body).to.equal('Found. Redirecting to /');
     });
   });
 });

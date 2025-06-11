@@ -1,0 +1,20 @@
+<mat-expansion-panel
+  (opened)="loadContactSummary()"
+  [hideToggle]="isLoading"
+  *ngIf="duplicate">
+  <mat-expansion-panel-header>
+    <mat-panel-title> <strong>{{ 'duplicate_check.contact.name'  | translate }} </strong> &nbsp;{{ duplicate.name }} </mat-panel-title>
+    <mat-panel-description> <strong>{{ 'duplicate_check.contact.created_on' | translate }} </strong> &nbsp;{{ duplicate.reported_date | simpleDate }} </mat-panel-description>
+  </mat-expansion-panel-header>
+  <div class="nested-section">
+    <div class="loader inline small" *ngIf="isLoading"></div>
+    <p *ngIf="error" class="loading-status"><strong>{{ error }}</strong></p>
+    <mm-contact-summary-content
+      [fields]="contactSummary?.fields"
+      [contactsLoadingSummary]="isLoading">
+    </mm-contact-summary-content>
+  </div>
+  <mat-action-row>
+    <button class="btn btn-primary" (click)="navigateToDuplicate()">{{ 'duplicate_check.contact.open' | translate }}</button>
+  </mat-action-row>
+</mat-expansion-panel>

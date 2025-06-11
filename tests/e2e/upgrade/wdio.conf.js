@@ -119,6 +119,7 @@ const startUpgradeService = async () => {
 };
 
 const tearDownServices = async () => {
+  await utils.saveLogs();
   const composeFilesParam = COMPOSE_FILES
     .map(composeFile => '-f ' + path.join(CHT_DOCKER_COMPOSE_FOLDER, `${composeFile}.yml`))
     .join(' ');

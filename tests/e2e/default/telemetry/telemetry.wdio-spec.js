@@ -12,6 +12,13 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const fs = require('fs');
+const {
+  destroyDbInBrowser,
+  getTelemetryFromBrowser,
+  getTelemetryFromUserMetaDb,
+  getTelemetryDbName
+} = require('@utils/telemetry');
+
 const { BRANCH, TAG } = process.env;
 
 describe('Telemetry', () => {
@@ -29,7 +36,7 @@ describe('Telemetry', () => {
     phone: '+9779841299392',
   });
   const user = userFactory.build({
-    username: Faker.internet.userName().toLowerCase().replace(/[^0-9a-zA-Z_]/g, ''),
+    username: Faker.internet.username().toLowerCase().replace(/[^0-9a-zA-Z_]/g, ''),
     password: 'Secret_1',
     place: healthCenter._id,
     contact: contact._id,
@@ -49,13 +56,8 @@ describe('Telemetry', () => {
   });
   let reportDocs;
 
-  const TELEMETRY_PREFIX = 'telemetry';
-  const formatDbName = (date) => {
-    const formattedDate = moment(date).format('YYYY-M-D');
-    return `${TELEMETRY_PREFIX}-${formattedDate}-${user.username}`;
-  };
   const today = new Date();
-  const todayDBName = formatDbName(today);
+  const todayDBName = getTelemetryDbName(user.username, today);
 
   before(async () => {
     const selectContactTelemetryForm = utils.deepFreeze({
@@ -88,7 +90,7 @@ describe('Telemetry', () => {
 
   it('should record telemetry', async () => {
     const yesterday = moment().subtract(1, 'day');
-    const yesterdayDBName = formatDbName(yesterday.toDate());
+    const yesterdayDBName = getTelemetryDbName(user.username, yesterday.toDate());
     const telemetryRecord = {
       key: 'a-telemetry-record',
       value: 3,
@@ -107,11 +109,9 @@ describe('Telemetry', () => {
 
     const clientDdoc = await utils.getDoc('_design/medic-client');
 
-    const options = { auth: { username: user.username, password: user.password }, userName: user.username };
-    const metaDocs = await utils.requestOnTestMetaDb({ ...options, path: '/_all_docs?include_docs=true' });
 
-    const telemetryEntry = metaDocs.rows.find(row => row.id.startsWith(TELEMETRY_PREFIX));
-    expect(telemetryEntry.doc).to.deep.nested.include({
+    const telemetryEntry = (await getTelemetryFromUserMetaDb(user.username, user.password))[0];
+    expect(telemetryEntry).to.deep.nested.include({
       'metadata.year': yesterday.year(),
       'metadata.month': yesterday.month() + 1,
       'metadata.day': yesterday.date(),
@@ -125,18 +125,8 @@ describe('Telemetry', () => {
 
   describe('search matches telemetry', () => {
     afterEach(async () => {
-      // eslint-disable-next-line no-undef
-      await browser.execute((dbName) => window.PouchDB(dbName).destroy(), todayDBName);
+      await destroyDbInBrowser(todayDBName);
     });
-
-    const getTelemetryEntryByKey = async (key) => {
-      const todayTelemetryDocs = await browser.execute(async (dbName) => {
-        // eslint-disable-next-line no-undef
-        const docs = await window.PouchDB(dbName).allDocs({ include_docs: true });
-        return docs.rows.filter(row => row.doc.key.startsWith('search_match'));
-      }, todayDBName);
-      return todayTelemetryDocs.filter(row => row.doc.key === key);
-    };
 
     it('should record telemetry for contact searches', async () => {
       await commonPage.goToPeople();
@@ -151,9 +141,18 @@ describe('Telemetry', () => {
         await searchPage.clearSearch();
       }
 
-      expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:name')).to.have.lengthOf(2);
-      expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:phone')).to.have.lengthOf(1);
-      expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:patient_id')).to.have.lengthOf(2);
+      expect(await getTelemetryFromBrowser(
+        todayDBName,
+        'search_match:contacts_by_freetext:name'
+      )).to.have.lengthOf(2);
+      expect(await getTelemetryFromBrowser(
+        todayDBName,
+        'search_match:contacts_by_freetext:phone'
+      )).to.have.lengthOf(1);
+      expect(await getTelemetryFromBrowser(
+        todayDBName,
+        'search_match:contacts_by_freetext:patient_id'
+      )).to.have.lengthOf(2);
     });
 
     it('should record telemetry for reports searches', async () => {
@@ -169,9 +168,18 @@ describe('Telemetry', () => {
         await searchPage.clearSearch();
       }
 
-      expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:fields.name')).to.have.lengthOf(2);
-      expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:from')).to.have.lengthOf(1);
-      expect(await getTelemetryEntryByKey('search_match:reports_by_freetext:fields.patient_id')).to.have.lengthOf(2);
+      expect(await getTelemetryFromBrowser(
+        todayDBName,
+        'search_match:reports_by_freetext:fields.name'
+      )).to.have.lengthOf(2);
+      expect(await getTelemetryFromBrowser(
+        todayDBName,
+        'search_match:reports_by_freetext:from'
+      )).to.have.lengthOf(1);
+      expect(await getTelemetryFromBrowser(
+        todayDBName,
+        'search_match:reports_by_freetext:fields.patient_id'
+      )).to.have.lengthOf(2);
     });
 
     it('should record telemetry for contact searches from the select2 component', async () => {
@@ -186,16 +194,28 @@ describe('Telemetry', () => {
         await genericForm.clearSelectedContact('Select the contact by type');
       }
 
-      expect(await getTelemetryEntryByKey('search_match:contacts_by_type_freetext:name')).to.have.lengthOf(2);
-      expect(await getTelemetryEntryByKey('search_match:contacts_by_type_freetext:phone')).to.have.lengthOf(2);
+      expect(await getTelemetryFromBrowser(
+        todayDBName,
+        'search_match:contacts_by_type_freetext:name'
+      )).to.have.lengthOf(2);
+      expect(await getTelemetryFromBrowser(
+        todayDBName,
+        'search_match:contacts_by_type_freetext:phone'
+      )).to.have.lengthOf(2);
 
       for (const searchTerm of searchTerms) {
         await genericForm.selectContact(patient.name, 'Select the contact without type', searchTerm);
         await genericForm.clearSelectedContact('Select the contact without type');
       }
 
-      expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:name')).to.have.lengthOf(2);
-      expect(await getTelemetryEntryByKey('search_match:contacts_by_freetext:phone')).to.have.lengthOf(2);
+      expect(await getTelemetryFromBrowser(
+        todayDBName,
+        'search_match:contacts_by_freetext:name'
+      )).to.have.lengthOf(2);
+      expect(await getTelemetryFromBrowser(
+        todayDBName,
+        'search_match:contacts_by_freetext:phone'
+      )).to.have.lengthOf(2);
     });
   });
 });

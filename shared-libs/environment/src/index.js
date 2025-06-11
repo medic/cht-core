@@ -19,12 +19,17 @@ if (!COUCH_URL) {
   logError();
 }
 
+let couchUrl;
+let serverUrl;
+let serverUrlNoAuth;
+let service;
+
 try {
   // strip trailing slash from to prevent bugs in path matching
-  const couchUrl = COUCH_URL.replace(/\/$/, '');
+  couchUrl = COUCH_URL.replace(/\/$/, '');
   const parsedUrl = new URL(couchUrl);
-  const serverUrl = new URL('/', parsedUrl);
-  const serverUrlNoAuth = new URL('/', parsedUrl);
+  serverUrl = new URL('/', parsedUrl);
+  serverUrlNoAuth = new URL('/', parsedUrl);
   serverUrlNoAuth.username = '';
   serverUrlNoAuth.password = '';
 
@@ -57,5 +62,6 @@ try {
   process.exit(1);
 }
 
-
 module.exports.isTesting = module.exports.db === 'medic-test';
+module.exports.setService = (s) => service = s;
+module.exports.getService = () => service;
