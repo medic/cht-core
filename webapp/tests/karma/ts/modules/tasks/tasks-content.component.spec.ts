@@ -489,13 +489,13 @@ describe('TasksContentComponent', () => {
       await compileComponent([]);
       sinon.resetHistory();
 
-      const action = { type: 'contact' };
+      const action = { type: 'contact', content: { contact: { _id: 'my_contact' } } };
       await component.performAction(action);
 
       expect(xmlFormsService.get.callCount).to.equal(0);
       expect(formService.render.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['/contacts', '']]);
+      expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'my_contact']]);
       expect(tasksForContactService.getLeafPlaceAncestor.callCount).to.equal(0);
     });
 
