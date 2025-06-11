@@ -86,7 +86,8 @@ jobs:
   config-tests:
     needs: build
     name: ${{ matrix.cmd }}
-    runs-on: ubuntu-latest
+    # these tests fail on newer os. https://github.com/medic/cht-conf-test-harness/issues/279
+    runs-on: ubuntu-22.04
     timeout-minutes: 60
     
     strategy:
