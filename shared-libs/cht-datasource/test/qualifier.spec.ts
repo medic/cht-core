@@ -8,7 +8,8 @@ import {
   byContactQualifier,
   isContactQualifier,
   byReportQualifier,
-  isReportQualifier
+  isReportQualifier,
+  byPersonQualifier
 } from '../src/qualifier';
 import { expect } from 'chai';
 
@@ -266,5 +267,100 @@ describe('qualifier', () => {
         expect(isReportQualifier(qualifier)).to.be.true;
       });
     });
+  });
+
+  describe('byPersonQualifier', () => {
+    it('throws an error on missing parent object', () => {
+      const data = {
+        name: 'Antony',
+        type: 'person',
+      };
+      expect(() => byPersonQualifier(data)).to.throw(`Missing or empty required fields [${JSON.stringify(data)}].`);
+    });
+
+    it('throws an error parent lineage missing `_id` or `parent` fields', () => {
+      const data = {
+        name: 'Antony',
+        type: 'person',
+        parent: {
+          _id: '1-id',
+          parent: {
+            parent: {
+              _id: '3-id'
+            }
+          }
+        }
+      };
+      expect(() => byPersonQualifier(data)).to
+        .throw(`Missing required fields in the parent hierarchy [${JSON.stringify(data)}].`);
+    });
+
+    it('throws an error on invalid contact types', () => {
+      [
+        {
+          name: 'Antony',
+          type: 'contact',
+          parent: {
+            _id: '1-id'
+          }
+        },
+        {
+          name: 'Antony',
+          type: 'astronaut',
+          parent: {
+            _id: '1-id'
+          }
+        }
+      ].forEach((qualifier) => {
+        expect(() => byPersonQualifier(qualifier)).to.throw(`Invalid type for contacts.`);
+      });
+    });
+
+    it('throws an error on bloated parent hierarchy', () => {
+      const data = {
+        name: 'Antony',
+        type: 'person',
+        parent: {
+          _id: '1-id',
+          parent: {
+            _id: '2-id',
+            parent: {
+              _id: '3-id',
+              name: 'Hydrated User',
+              type: 'person',
+              parent: {
+                _id: '4-id'
+              }
+            }
+          }
+        }
+      };
+      expect(() => byPersonQualifier(data)).to
+        .throw(`Additional fields found in the parent lineage [${JSON.stringify(data)}].`);
+    });
+
+    it('builds qualifier for valid objects', () => {
+      [
+        {
+          name: 'user-1',
+          type: 'person',
+          parent: {
+            _id: '1-id',
+            parent: {
+              _id: '2-id'
+            }
+          }
+        },
+        {
+          name: 'user-2',
+          type: 'contact',
+          contact_type: 'clinic_worker',
+          parent: {
+            _id: '1-id'
+          }
+        }
+      ].forEach((qualifier) => expect(byPersonQualifier(qualifier)).to.deep.equal(qualifier));
+    });
+
   });
 });
