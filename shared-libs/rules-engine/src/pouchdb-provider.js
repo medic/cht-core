@@ -150,11 +150,13 @@ const medicPouchProvider = db => {
       }
       
       const contactDocs = await Promise.all(
-        contactIds.map(id => getContact(Qualifier.byUuid(id))
-          .catch(err => {
-            console.error(`Error fetching contact ${id}:`, err);
-            return null;
-          }))
+        contactIds.map(id => 
+          getContact(Qualifier.byUuid(id))
+            .catch(err => {
+              console.error(`Error fetching contact ${id}:`, err);
+              return null;
+            })
+        )
       );
 
       const validContactDocs = contactDocs.filter(Boolean);
