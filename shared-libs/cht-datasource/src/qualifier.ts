@@ -320,15 +320,8 @@ export const byPersonQualifier = (data: unknown): PersonQualifier => {
     throw new InvalidArgumentError('Expected `type` to be `person`.');
   }
 
-  // Ensure parent lineage doesn't have any additional properties other than `_id` and `parent`.
-  let parent = qualifier.parent;
-  while (parent) {
-    if (Object.keys(parent).length > 2) {
-      // This means that the parent certainly has extra fields and is not minfied/de-hydrated as per
-      // our liking as `isNormalized` check ensures that it does have two keys `_id` and `parent`.
-      throw new InvalidArgumentError(`Additional fields found in the parent lineage [${JSON.stringify(qualifier)}].`);
-    }
-    parent = qualifier.parent;
+  if (hasBloatedLineage(qualifier)) {
+    throw new InvalidArgumentError(`Additional fields found in the parent lineage [${JSON.stringify(qualifier)}].`);
   }
 
   return qualifier as unknown as PersonQualifier;
@@ -344,6 +337,21 @@ export const isPersonQualifier = (data: unknown): data is PersonQualifier => {
     return false;
   }
 
+  if (hasBloatedLineage(data)) {
+    return false;
+  }
+
+  if (data.type === 'contact' && !hasField(data, { name: 'contact_type', type: 'string' })) {
+    return false;
+  } else if (!(data.type === 'person')) {
+    return false;
+  }
+
+  return true;
+};
+
+/** @internal */
+const hasBloatedLineage = ( data: Record<string, unknown> ): boolean => {
   // Ensure parent lineage doesn't have any additional properties other than `_id` and `parent`.
   let parent = data.parent;
   while (parent) {
@@ -354,12 +362,5 @@ export const isPersonQualifier = (data: unknown): data is PersonQualifier => {
     }
     parent = data.parent;
   }
-
-  if (data.type === 'contact' && !hasField(data, { name: 'contact_type', type: 'string' })) {
-    return false;
-  } else if (!(data.type === 'person')) {
-    return false;
-  }
-
   return true;
 };
