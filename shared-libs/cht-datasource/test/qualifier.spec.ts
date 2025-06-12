@@ -10,11 +10,23 @@ import {
   byReportQualifier,
   isReportQualifier,
   byPersonQualifier,
-  isPersonQualifier
+  isPersonQualifier,
 } from '../src/qualifier';
 import { expect } from 'chai';
+import sinon from 'sinon';
 
 describe('qualifier', () => {
+  let clock: sinon.SinonFakeTimers;
+  const CURRENT_ISO_TIMESTAMP = '2023-01-01T00:01:23.000Z';
+  before(() => {
+    const fakeNow = new Date(CURRENT_ISO_TIMESTAMP).getTime();
+    clock = sinon.useFakeTimers(fakeNow);
+  });
+
+  after(() => {
+    clock.restore();
+  });
+  
   describe('byUuid', () => {
     it('builds a qualifier that identifies an entity by its UUID', () => {
       expect(byUuid('uuid')).to.deep.equal({ uuid: 'uuid' });
@@ -121,7 +133,7 @@ describe('qualifier', () => {
       expect(byContactQualifier({
         name: 'A', type: 'person'
       })).to.deep.equal({
-        name: 'A', type: 'person'
+        name: 'A', type: 'person', reported_date: CURRENT_ISO_TIMESTAMP
       });
     });
   
@@ -204,7 +216,7 @@ describe('qualifier', () => {
       expect(byReportQualifier({
         type: 'data_record', form: 'yes'
       })).to.deep.equal({
-        type: 'data_record', form: 'yes'
+        type: 'data_record', form: 'yes', reported_date: CURRENT_ISO_TIMESTAMP
       });
     });
 
@@ -235,13 +247,16 @@ describe('qualifier', () => {
     it('throws error if type/form is not provided or empty.', () => {
       [
         {reported_date: 3432433},
-        {type: 'data_record', _id: 'id-1', _rev: 'rev-4'},
+        {type: 'data_record', _id: 'id-1', _rev: 'rev-4', reported_date: CURRENT_ISO_TIMESTAMP},
         {form: 'yes', _id: 'id-1', _rev: 'rev-4'},
         {type: '', form: 'yes'},
         {type: 'data_record', form: ''}
       ].forEach((qualifier) => {
+        const date_hydrated_qualifier = 'reported_date' in qualifier
+          ? qualifier : {...qualifier, reported_date: CURRENT_ISO_TIMESTAMP};
         expect(() => byReportQualifier(qualifier))
-          .to.throw(`Missing or empty required fields [${JSON.stringify(qualifier)}].`);
+          // eslint-disable-next-line max-len
+          .to.throw(`Missing or empty required fields [${JSON.stringify(date_hydrated_qualifier)}].`);
       });
     });
   });
@@ -276,7 +291,13 @@ describe('qualifier', () => {
         name: 'Antony',
         type: 'person',
       };
-      expect(() => byPersonQualifier(data)).to.throw(`Missing or empty required fields [${JSON.stringify(data)}].`);
+
+      const expected_data = {
+        ...data, reported_date: CURRENT_ISO_TIMESTAMP
+      };
+
+      expect(() => byPersonQualifier(data)).to
+        .throw(`Missing or empty required fields [${JSON.stringify(expected_data)}].`);
     });
 
     it('throws an error parent lineage missing `_id` or `parent` fields', () => {
@@ -292,8 +313,13 @@ describe('qualifier', () => {
           }
         }
       };
+
+      const expected_data = {
+        ...data, reported_date: CURRENT_ISO_TIMESTAMP
+      };
+
       expect(() => byPersonQualifier(data)).to
-        .throw(`Missing required fields in the parent hierarchy [${JSON.stringify(data)}].`);
+        .throw(`Missing required fields in the parent hierarchy [${JSON.stringify(expected_data)}].`);
     });
 
     it('throws an error on invalid contact types', () => {
@@ -321,6 +347,7 @@ describe('qualifier', () => {
       const data = {
         name: 'Antony',
         type: 'person',
+        reported_date: 9402942,
         parent: {
           _id: '1-id',
           parent: {
@@ -360,7 +387,8 @@ describe('qualifier', () => {
             _id: '1-id'
           }
         }
-      ].forEach((qualifier) => expect(byPersonQualifier(qualifier)).to.deep.equal(qualifier));
+      ].forEach((qualifier) => expect(byPersonQualifier(qualifier))
+        .to.deep.equal({...qualifier, reported_date: CURRENT_ISO_TIMESTAMP}));
     });
 
   });

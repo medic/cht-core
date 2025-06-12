@@ -173,7 +173,8 @@ export const byContactQualifierNonAssertive = (data: unknown) : Record<string, u
     throw new InvalidArgumentError('Invalid "data": expected an object.');
   }
   const qualifier = {...data};
-  if ('reported_date' in qualifier && !isValidReportedDate(qualifier.reported_date)){
+  insertReportedDateIfMissing(qualifier);
+  if (!isValidReportedDate(qualifier.reported_date)){
     throw new InvalidArgumentError(
       // eslint-disable-next-line max-len
       `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
@@ -183,6 +184,12 @@ export const byContactQualifierNonAssertive = (data: unknown) : Record<string, u
     throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(data)}].`);
   }
   return qualifier;
+};
+
+const insertReportedDateIfMissing = (qualifier: Record<string, unknown>) :void => {
+  if (!('reported_date' in qualifier)){
+    qualifier.reported_date = new Date().toISOString();
+  }
 };
 
 /**
@@ -230,8 +237,10 @@ export const byReportQualifier = (data: unknown): ReportQualifier => {
   if (!isRecord(data)) {
     throw new InvalidArgumentError('Invalid "data": expected an object.');
   }
+  insertReportedDateIfMissing(data);
+
   const qualifier = {...data};
-  if ('reported_date' in qualifier && !isValidReportedDate(qualifier.reported_date)) {
+  if (!isValidReportedDate(qualifier.reported_date)) {
     throw new InvalidArgumentError(
       // eslint-disable-next-line max-len
       `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
