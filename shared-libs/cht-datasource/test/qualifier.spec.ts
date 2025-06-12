@@ -9,7 +9,8 @@ import {
   isContactQualifier,
   byReportQualifier,
   isReportQualifier,
-  byPersonQualifier
+  byPersonQualifier,
+  isPersonQualifier
 } from '../src/qualifier';
 import { expect } from 'chai';
 
@@ -360,6 +361,99 @@ describe('qualifier', () => {
           }
         }
       ].forEach((qualifier) => expect(byPersonQualifier(qualifier)).to.deep.equal(qualifier));
+    });
+
+  });
+
+  describe('isPersonQualifier', () => {
+    it('returns false on missing parent object', () => {
+      const data = {
+        name: 'Antony',
+        type: 'person',
+      };
+      expect(isPersonQualifier(data)).to.be.false;
+    });
+
+    it('returns false when parent lineage is missing `_id` or `parent` required fields', () => {
+      const data = {
+        name: 'Antony',
+        type: 'person',
+        parent: {
+          _id: '1-id',
+          parent: {
+            parent: {
+              _id: '3-id'
+            }
+          }
+        }
+      };
+      expect(isPersonQualifier(data)).to.be.false;
+    });
+
+    it('returns false for invalid contact types', () => {
+      [
+        {
+          name: 'Antony',
+          type: 'contact',
+          parent: {
+            _id: '1-id'
+          }
+        },
+        {
+          name: 'Antony',
+          type: 'astronaut',
+          parent: {
+            _id: '1-id'
+          }
+        }
+      ].forEach((qualifier) => {
+        expect(isPersonQualifier(qualifier)).to.be.false;
+      });
+    });
+
+    it('returns false on finding bloated parent hierarchy', () => {
+      const data = {
+        name: 'Antony',
+        type: 'person',
+        parent: {
+          _id: '1-id',
+          parent: {
+            _id: '2-id',
+            parent: {
+              _id: '3-id',
+              name: 'Hydrated User',
+              type: 'person',
+              parent: {
+                _id: '4-id'
+              }
+            }
+          }
+        }
+      };
+      expect(isPersonQualifier(data)).to.be.false;
+    });
+
+    it('returns true for valid PersonQualifier objects', () => {
+      [
+        {
+          name: 'user-1',
+          type: 'person',
+          parent: {
+            _id: '1-id',
+            parent: {
+              _id: '2-id'
+            }
+          }
+        },
+        {
+          name: 'user-2',
+          type: 'contact',
+          contact_type: 'clinic_worker',
+          parent: {
+            _id: '1-id'
+          }
+        }
+      ].forEach((qualifier) => expect(isPersonQualifier(qualifier)).to.be.true);
     });
 
   });
