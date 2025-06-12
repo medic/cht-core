@@ -186,14 +186,17 @@ export const byContactQualifier = (data: unknown): ContactQualifier => {
  * @returns `true` if the given type is a {@link ContactQualifier}, otherwise `false`.
  */
 export const isContactQualifier = (qualifier: unknown): qualifier is ContactQualifier => {
-  if (isRecord(qualifier) && hasFields(qualifier, [{name: 'type', type: 'string', ensureTruthyValue: true}, 
-    {name: 'name', type: 'string', ensureTruthyValue: true}])){
-    if ('reported_date' in qualifier && !isValidReportedDate(qualifier.reported_date)){
-      return false;
-    }
-    return true;
-  }
-  return false;
+  return checkContactQualifierFields(qualifier);
+};
+
+/** @internal */
+const checkContactQualifierFields = (data: unknown): data is Record<string, unknown> => {
+  return isRecord(data) && 
+    hasFields(data, [
+      {name: 'type', type: 'string', ensureTruthyValue: true}, 
+      {name: 'name', type: 'string', ensureTruthyValue: true}
+    ]) &&
+    (!('reported_date' in data) || isValidReportedDate(data.reported_date));
 };
 
 /** 
