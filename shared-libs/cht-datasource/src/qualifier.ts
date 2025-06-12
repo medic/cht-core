@@ -164,6 +164,13 @@ type ContactQualifier = Readonly<{
  * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
  */
 export const byContactQualifier = (data: unknown): ContactQualifier => {
+  // This will throw errors if any.
+  byContactQualifierNonAssertive(data);
+  return data as ContactQualifier;
+};
+
+/** @internal*/
+export const byContactQualifierNonAssertive = (data: unknown) : Record<string, unknown> => {
   if (!isRecord(data)){
     throw new InvalidArgumentError('Invalid "data": expected an object.');
   }
@@ -174,7 +181,7 @@ export const byContactQualifier = (data: unknown): ContactQualifier => {
       `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
     );
   }
-  if (!isContactQualifier(qualifier)){
+  if (!checkContactQualifierFields(qualifier)){
     throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(data)}].`);
   }
   return qualifier;
@@ -297,48 +304,42 @@ type PersonQualifier = ContactQualifier & Readonly<{
  * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
  */
 export const byPersonQualifier = (data: unknown): PersonQualifier => {
-  if (!isRecord(data)) {
-    throw new InvalidArgumentError('Invalid "data": expected an object.');
-  }
-  const qualifier = { ...data };
-  if ('reported_date' in qualifier && !isValidReportedDate(qualifier.reported_date)) {
-    throw new InvalidArgumentError(
-      // eslint-disable-next-line max-len
-      `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
-    );
-  }
-  if (!isContactQualifier(qualifier) || !hasField(data, { name: 'parent', type: 'object' })) {
-    throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(data)}].`);
-  }
-  if (!isNormalizedParent(data.parent)) {
-    throw new InvalidArgumentError(`Missing required fields in the parent hierarchy [${JSON.stringify(data)}].`);
+  const qualifier = byContactQualifierNonAssertive(data);
+  
+  if (!hasField(qualifier, { name: 'parent', type: 'object' })) {
+    throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(qualifier)}].`);
   }
 
-  if (data.type === 'contact' && !hasField(data, { name: 'contact_type', type: 'string' })) {
-    throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(data)}].`);
-  } else if (!(data.type === 'person')) {
+  if (!isNormalizedParent(qualifier.parent)) {
+    throw new InvalidArgumentError(`Missing required fields in the parent hierarchy [${JSON.stringify(qualifier)}].`);
+  }
+
+  if (qualifier.type === 'contact' && !hasField(qualifier, { name: 'contact_type', type: 'string' })) {
+    throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(qualifier)}].`);
+  } else if (!(qualifier.type === 'person')) {
     throw new InvalidArgumentError('Expected `type` to be `person`.');
   }
 
   // Ensure parent lineage doesn't have any additional properties other than `_id` and `parent`.
-  let parent = data.parent;
+  let parent = qualifier.parent;
   while (parent) {
     if (Object.keys(parent).length > 2) {
       // This means that the parent certainly has extra fields and is not minfied/de-hydrated as per
       // our liking as `isNormalized` check ensures that it does have two keys `_id` and `parent`.
-      throw new InvalidArgumentError(`Additional fields found in the parent lineage [${JSON.stringify(data)}].`);
+      throw new InvalidArgumentError(`Additional fields found in the parent lineage [${JSON.stringify(qualifier)}].`);
     }
-    parent = data.parent;
+    parent = qualifier.parent;
   }
 
-  return qualifier as PersonQualifier;
+  return qualifier as unknown as PersonQualifier;
 };
 
 /** @internal */
 export const isPersonQualifier = (data: unknown): data is PersonQualifier => {
-  if (!isRecord(data)) {
+  if (!checkContactQualifierFields(data)) {
     return false;
   }
+
   if (!hasField(data, { name: 'parent', type: 'object' }) || !isNormalizedParent(data.parent)) {
     return false;
   }
@@ -352,10 +353,6 @@ export const isPersonQualifier = (data: unknown): data is PersonQualifier => {
       return false;
     }
     parent = data.parent;
-  }
-
-  if (!isContactQualifier(data)) {
-    return false;
   }
 
   if (data.type === 'contact' && !hasField(data, { name: 'contact_type', type: 'string' })) {
