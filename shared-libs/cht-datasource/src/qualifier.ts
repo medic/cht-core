@@ -314,10 +314,8 @@ export const byPersonQualifier = (data: unknown): PersonQualifier => {
     throw new InvalidArgumentError(`Missing required fields in the parent hierarchy [${JSON.stringify(qualifier)}].`);
   }
 
-  if (qualifier.type === 'contact' && !hasField(qualifier, { name: 'contact_type', type: 'string' })) {
-    throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(qualifier)}].`);
-  } else if (!(qualifier.type === 'person')) {
-    throw new InvalidArgumentError('Expected `type` to be `person`.');
+  if (!hasValidContactType(qualifier) && !hasValidLegacyContactType(qualifier, 'person')) {
+    throw new InvalidArgumentError('Invalid type for contacts.');
   }
 
   if (hasBloatedLineage(qualifier)) {
@@ -341,9 +339,7 @@ export const isPersonQualifier = (data: unknown): data is PersonQualifier => {
     return false;
   }
 
-  if (data.type === 'contact' && !hasField(data, { name: 'contact_type', type: 'string' })) {
-    return false;
-  } else if (!(data.type === 'person')) {
+  if (!hasValidContactType(data) && !hasValidLegacyContactType(data, 'person')) {
     return false;
   }
 
@@ -363,4 +359,17 @@ const hasBloatedLineage = ( data: Record<string, unknown> ): boolean => {
     parent = data.parent;
   }
   return true;
+};
+
+/** @internal */
+const hasValidContactType = ( data: Record<string, unknown> ): boolean => {
+  if (data.type === 'contact' && hasField(data, { name: 'contact_type', type: 'string' })) {
+    return true;
+  }
+  return false;
+};
+
+/** @internal */
+const hasValidLegacyContactType = ( data: Record<string, unknown>, type:string): boolean => {
+  return data.type === type;
 };
