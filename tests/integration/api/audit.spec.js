@@ -6,6 +6,7 @@ const docs = dataFactory.createHierarchy({ name: 'base', user: true, nbrClinics:
 const docIds = [...docs.places, ...docs.persons, ...docs.reports].map(d => d._id);
 
 const getAudit = async (docIds) => {
+  await utils.delayPromise(100); // delay for audit write
   docIds = Array.isArray(docIds) ? docIds : [docIds];
   const medicDocs = await utils.db.allDocs({ keys: docIds, include_docs: true });
   const auditDocs = await utils.auditDb.allDocs({ keys: docIds, include_docs: true });
