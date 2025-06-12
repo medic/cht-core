@@ -56,28 +56,10 @@ const medicPouchProvider = db => {
     },
 
     contactsBySubjectId: async (subjectIds) => {
-      const shortcodeResults = [];
-
-      const contactPromises = subjectIds.map(async id => {
-        try {
-          const contact = await getContact(Qualifier.byUuid(id));
-          if (contact) {
-            shortcodeResults.push({
-              doc: contact,
-              key: ['shortcode', id]
-            });
-          }
-        } catch (err) {
-          if (err.status !== 404) {
-            console.error(`Error fetching contact ${id}:`, err);
-          }
-        }
-      });
-
-      await Promise.all(contactPromises);
-      const shortcodeIds = shortcodeResults.map(result => result.doc._id);
-      const idsThatArentShortcodes = subjectIds.filter(id => !shortcodeResults.map(row => row.key[1]).includes(id));
-
+      const keys = subjectIds.map(key => ['shortcode', key]);
+      const results = await db.query('medic-client/contacts_by_reference', { keys, include_docs: true });
+      const shortcodeIds = results.rows.map(result => result.doc._id);
+      const idsThatArentShortcodes = subjectIds.filter(id => !results.rows.map(row => row.key[1]).includes(id));
       return [...shortcodeIds, ...idsThatArentShortcodes];
     },
 
