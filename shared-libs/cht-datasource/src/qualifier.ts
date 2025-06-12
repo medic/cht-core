@@ -164,9 +164,7 @@ type ContactQualifier = Readonly<{
  * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
  */
 export const byContactQualifier = (data: unknown): ContactQualifier => {
-  // This will throw errors if any.
-  byContactQualifierNonAssertive(data);
-  return data as ContactQualifier;
+  return byContactQualifierNonAssertive(data) as ContactQualifier;
 };
 
 /** @internal*/
@@ -339,11 +337,7 @@ export const isPersonQualifier = (data: unknown): data is PersonQualifier => {
     return false;
   }
 
-  if (!hasValidContactType(data) && !hasValidLegacyContactType(data, 'person')) {
-    return false;
-  }
-
-  return true;
+  return hasValidContactType(data) || hasValidLegacyContactType(data, 'person');
 };
 
 /** @internal */
@@ -363,10 +357,7 @@ const hasBloatedLineage = ( data: Record<string, unknown> ): boolean => {
 
 /** @internal */
 const hasValidContactType = ( data: Record<string, unknown> ): boolean => {
-  if (data.type === 'contact' && hasField(data, { name: 'contact_type', type: 'string' })) {
-    return true;
-  }
-  return false;
+  return data.type === 'contact' && hasField(data, { name: 'contact_type', type: 'string' });
 };
 
 /** @internal */
