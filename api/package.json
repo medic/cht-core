@@ -8,11 +8,11 @@
     "url": "git://github.com/medic/cht-core.git"
   },
   "engines": {
-    "node": ">=22.11.0",
+    "node": ">=22.15.0",
     "npm": ">=10.9.0"
   },
   "scripts": {
     "toc": "doctoc --github --maxlevel 2 README.md",
-    "run-watch": "TZ=UTC nodemon --inspect=0.0.0.0:9229 --ignore 'build/static' --ignore 'build/public' --watch ./ --watch '../shared-libs/**/src/**' server.js -- --allow-cors"
+    "run-watch": "TZ=UTC nodemon -e js,json,html,properties --inspect=0.0.0.0:9229 --ignore 'build/static' --ignore 'build/public' --watch ./ --watch '../shared-libs/**/src/**' server.js -- --allow-cors"
   }
 }

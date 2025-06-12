@@ -1,24 +1,26 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { Store } from '@ngrx/store';
-import { combineLatest, Subscription } from 'rxjs';
+import { BaseMenuComponent } from '@mm-components/base-menu/base-menu.component';
+import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 
+import { Store } from '@ngrx/store';
 import { Selectors } from '@mm-selectors/index';
-import { SettingsService } from '@mm-services/settings.service';
-import { HeaderTab, HeaderTabsService } from '@mm-services/header-tabs.service';
-import { GlobalActions } from '@mm-actions/global';
-import { ModalService } from '@mm-services/modal.service';
-import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
-import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 import { DBSyncService } from '@mm-services/db-sync.service';
+import { ModalService } from '@mm-services/modal.service';
+import { StorageInfoService } from '@mm-services/storage-info.service';
+import { SettingsService } from '@mm-services/settings.service';
+
+
 import { RouterLink } from '@angular/router';
-import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { AuthDirective } from '@mm-directives/auth.directive';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { NgIf, NgClass, NgFor } from '@angular/common';
 import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile-detection.component';
+
 import { TranslatePipe } from '@ngx-translate/core';
-import { HeaderLogoPipe, ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
+import { HeaderLogoPipe, ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
+
+import { HeaderTab, HeaderTabsService } from '@mm-services/header-tabs.service';
 
 export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
 
@@ -27,8 +29,8 @@ export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
   templateUrl: './header.component.html',
   imports: [
     RouterLink,
-    BsDropdownModule,
     AuthDirective,
+    BsDropdownModule,
     NgIf,
     NgClass,
     NgFor,
@@ -40,57 +42,51 @@ export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
     LocalizeNumberPipe
   ]
 })
-export class HeaderComponent implements OnInit, OnDestroy {
-  private subscription: Subscription = new Subscription();
 
+export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDestroy {
   @Input() adminUrl;
   @Input() canLogOut;
 
   showPrivacyPolicy = false;
-  replicationStatus;
+  // replicationStatus;
   currentTab;
   unreadCount = {};
   permittedTabs: HeaderTab[] = [];
 
-  private globalActions;
-
   constructor(
-    private store: Store,
+    protected readonly store: Store,
+    protected readonly dbSyncService: DBSyncService,
+    protected readonly modalService: ModalService,
+    protected readonly storageInfoService: StorageInfoService,
     private settingsService: SettingsService,
     private headerTabsService: HeaderTabsService,
-    private modalService: ModalService,
-    private dbSyncService: DBSyncService,
   ) {
-    this.globalActions = new GlobalActions(store);
+    super(store, dbSyncService, modalService, storageInfoService);
   }
 
   ngOnInit(): void {
-    this.subscribeToStore();
+    super.ngOnInit();
+    this.additionalSubscriptions();
     this.getHeaderTabs();
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    super.ngOnDestroy();
   }
 
-  private subscribeToStore() {
-    const subscription = combineLatest(
-      this.store.select(Selectors.getReplicationStatus),
-      this.store.select(Selectors.getCurrentTab),
-      this.store.select(Selectors.getShowPrivacyPolicy),
-      this.store.select(Selectors.getUnreadCount),
-    ).subscribe(([
-      replicationStatus,
-      currentTab,
-      showPrivacyPolicy,
-      unreadCount
-    ]) => {
-      this.replicationStatus = replicationStatus;
-      this.currentTab = currentTab;
-      this.showPrivacyPolicy = showPrivacyPolicy;
-      this.unreadCount = unreadCount;
-    });
-    this.subscription.add(subscription);
+  private additionalSubscriptions(){
+    const currentTab = this.store.select(Selectors.getCurrentTab)
+      .subscribe(tab => this.currentTab = tab);
+    this.subscriptions.add(currentTab);
+
+    const showPrivacyPolicy = this.store.select(Selectors.getShowPrivacyPolicy)
+      .subscribe(show => this.showPrivacyPolicy = show);
+    this.subscriptions.add(showPrivacyPolicy);
+
+
+    const unreadCount = this.store.select(Selectors.getUnreadCount)
+      .subscribe(count => this.unreadCount = count);
+    this.subscriptions.add(unreadCount);
   }
 
   private getHeaderTabs() {
@@ -100,17 +96,5 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .then(permittedTabs => {
         this.permittedTabs = permittedTabs;
       });
-  }
-
-  openFeedback() {
-    this.modalService.show(FeedbackComponent);
-  }
-
-  logout() {
-    this.modalService.show(LogoutConfirmComponent);
-  }
-
-  replicate() {
-    this.dbSyncService.sync(true);
   }
 }
