@@ -349,16 +349,16 @@ export const isPersonQualifier = (data: unknown): data is PersonQualifier => {
 /** @internal */
 const hasBloatedLineage = ( data: Record<string, unknown> ): boolean => {
   // Ensure parent lineage doesn't have any additional properties other than `_id` and `parent`.
-  let parent = data.parent;
+  let parent = data.parent as NormalizedParent | undefined;
   while (parent) {
     if (Object.keys(parent).length > 2) {
       // This means that the parent certainly has extra fields and is not minfied/de-hydrated as per
       // our liking as `isNormalized` check ensures that it does have two keys `_id` and `parent`.
-      return false;
+      return true;
     }
-    parent = data.parent;
+    parent = parent.parent;
   }
-  return true;
+  return false;
 };
 
 /** @internal */
