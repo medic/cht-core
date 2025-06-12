@@ -422,17 +422,12 @@ describe('Export Data V2.0', () => {
         app: {
           version: apk
         },
-        software: {
-          androidVersion: android
-        }
-      };
-
-      if (typeof storageFree !== 'undefined' || typeof storageTotal !== 'undefined') {
-        deviceInfo.storage = {
+        software: {androidVersion: android},
+        storage: {
           free: storageFree,
           total: storageTotal
-        };
-      }
+        }
+      };
 
       return {
         _id: `telemetry-${date}-${user}-${deviceId}`,
@@ -444,8 +439,7 @@ describe('Export Data V2.0', () => {
           user,
           deviceId,
           versions: {
-            app: cht,
-            settings
+            app: cht, settings
           }
         },
         device: {
@@ -543,10 +537,7 @@ describe('Export Data V2.0', () => {
           user: 'min_data',
           deviceId: uuid(),
           date: '2011-11-11',
-          browser: {
-            name: undefined,
-            version: undefined
-          },
+          browser: {},
           apk: undefined,
           android: undefined,
           cht: undefined,

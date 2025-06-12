@@ -1,4 +1,5 @@
 require('chai').should();
+chai.should();
 
 const db = require('../../../src/db');
 const logger = require('@medic/logger');
@@ -409,17 +410,14 @@ describe('Export Data Service', () => {
           storageTotal: 26544680960
         },
         {
-          android: undefined,
-          apk: undefined,
-          browser: {
-            name: undefined,
-            version: undefined
-          },
-          cht: undefined,
-          date: '2022-11-29',
-          deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c802',
-          settings: undefined,
           user: 'min-data',
+          deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c802',
+          date: '2022-11-29',
+          browser: {},
+          apk: undefined,
+          android: undefined,
+          cht: undefined,
+          settings: undefined,
           storageFree: undefined,
           storageTotal: undefined
         }
