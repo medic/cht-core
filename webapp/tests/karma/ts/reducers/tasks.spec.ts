@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
-import { Actions } from '@mm-actions/tasks';
 import { Actions as GlobalActions } from '@mm-actions/global';
+import { Actions } from '@mm-actions/tasks';
 import { tasksReducer } from '@mm-reducers/tasks';
 
 describe('Tasks reducer', () => {
@@ -242,6 +242,7 @@ describe('Tasks reducer', () => {
         },
         tasksList: [
           { _id: 'task9', dueDate: -100, state: 'Ready', field: 9 },
+          { _id: 'task3', dueDate: 0, state: 'Ready', field: 3 },
           { _id: 'task7', dueDate: 125, state: 'Ready', field: 7 },
           { _id: 'task6', dueDate: 250, state: 'Ready', field: 6 },
           { _id: 'task4', dueDate: 500, state: 'Ready', field: 4 },
@@ -249,8 +250,221 @@ describe('Tasks reducer', () => {
           { _id: 'task8', dueDate: 899, state: 'Ready', field: 8 },
           { _id: 'task1', dueDate: false, state: 'Ready', field: 1 },
           { _id: 'task2', dueDate: undefined, state: 'Ready', field: 2 },
-          { _id: 'task3', dueDate: 0, state: 'Ready', field: 3 },
-        ]
+        ],
+      });
+    });
+
+    it('should sort provided tasks by priority and due date', () => {
+      const tasks = [
+        {
+          _id: 'task1',
+          dueDate: '2025-05-30',
+          priority: 'invalid',
+          state: 'Ready',
+          field: 1,
+        },
+        {
+          _id: 'task2',
+          dueDate: '2025-05-30',
+          priority: 3,
+          state: 'Ready',
+          field: 2,
+        },
+        {
+          _id: 'task3',
+          dueDate: '2025-05-27',
+          priority: 1,
+          state: 'Ready',
+          field: 3,
+        },
+        {
+          _id: 'task4',
+          dueDate: '2025-05-27',
+          priority: 2,
+          state: 'Ready',
+          field: 4,
+        },
+        {
+          _id: 'task5',
+          dueDate: '2025-05-31',
+          priority: undefined,
+          state: 'Ready',
+          field: 5,
+        },
+        {
+          _id: 'task6',
+          dueDate: '2025-05-31',
+          priority: 'high',
+          state: 'Ready',
+          field: 6,
+        },
+        {
+          _id: 'task7',
+          dueDate: '2025-05-07',
+          priority: 1,
+          state: 'Ready',
+          field: 7,
+        },
+        {
+          _id: 'task8',
+          dueDate: '2025-05-07',
+          priority: 2,
+          state: 'Ready',
+          field: 8,
+        },
+        {
+          _id: 'task9',
+          dueDate: null,
+          priority: 3,
+          state: 'Ready',
+          field: 9,
+        },
+        {
+          _id: 'task10',
+          dueDate: false,
+          priority: 2,
+          state: 'Ready',
+          field: 10,
+        },
+        {
+          _id: 'task14',
+          dueDate: '2025-05-17',
+          priority: 2,
+          state: 'Ready',
+          field: 14,
+        },
+        {
+          _id: 'task11',
+          dueDate: undefined,
+          priority: undefined,
+          state: 'Ready',
+          field: 11,
+        },
+        {
+          _id: 'task12',
+          dueDate: '2025-05-17',
+          priority: 5,
+          state: 'Ready',
+          field: 12,
+        },
+        {
+          _id: 'task13',
+          dueDate: '2025-05-17',
+          priority: -1,
+          state: 'Ready',
+          field: 13,
+        },
+      ];
+
+      state = tasksReducer(state, Actions.setTasksList(tasks));
+      expect(state).to.deep.equal({
+        selected: null,
+        loaded: false,
+        taskGroup: {
+          lastSubmittedTask: null,
+          contact: null,
+          loadingContact: null,
+        },
+        tasksList: [
+          {
+            _id: 'task12',
+            dueDate: '2025-05-17',
+            priority: 5,
+            state: 'Ready',
+            field: 12,
+          },
+          {
+            _id: 'task2',
+            dueDate: '2025-05-30',
+            priority: 3,
+            state: 'Ready',
+            field: 2,
+          },
+          {
+            _id: 'task9',
+            dueDate: null,
+            priority: 3,
+            state: 'Ready',
+            field: 9,
+          },
+          {
+            _id: 'task8',
+            dueDate: '2025-05-07',
+            priority: 2,
+            state: 'Ready',
+            field: 8,
+          },
+          {
+            _id: 'task14',
+            dueDate: '2025-05-17',
+            priority: 2,
+            state: 'Ready',
+            field: 14,
+          },
+          {
+            _id: 'task4',
+            dueDate: '2025-05-27',
+            priority: 2,
+            state: 'Ready',
+            field: 4,
+          },
+          {
+            _id: 'task10',
+            dueDate: false,
+            priority: 2,
+            state: 'Ready',
+            field: 10,
+          },
+          {
+            _id: 'task7',
+            dueDate: '2025-05-07',
+            priority: 1,
+            state: 'Ready',
+            field: 7,
+          },
+          {
+            _id: 'task3',
+            dueDate: '2025-05-27',
+            priority: 1,
+            state: 'Ready',
+            field: 3,
+          },
+          {
+            _id: 'task13',
+            dueDate: '2025-05-17',
+            priority: -1,
+            state: 'Ready',
+            field: 13,
+          },
+          {
+            _id: 'task1',
+            dueDate: '2025-05-30',
+            priority: 'invalid',
+            state: 'Ready',
+            field: 1,
+          },
+          {
+            _id: 'task5',
+            dueDate: '2025-05-31',
+            priority: undefined,
+            state: 'Ready',
+            field: 5,
+          },
+          {
+            _id: 'task6',
+            dueDate: '2025-05-31',
+            priority: 'high',
+            state: 'Ready',
+            field: 6,
+          },
+          {
+            _id: 'task11',
+            dueDate: undefined,
+            priority: undefined,
+            state: 'Ready',
+            field: 11,
+          },
+        ],
       });
     });
   });
@@ -277,7 +491,7 @@ describe('Tasks reducer', () => {
         tasksList: [
           { _id: 'task1', dueDate: 22, state: 'Ready' },
           { _id: 'task2', dueDate: 33, state: 'Ready' },
-          { _id: 'task_id2', due: '33', field: 2 }
+          { _id: 'task_id2', due: '33', field: 2 },
         ],
         loaded: true,
         taskGroup: {
