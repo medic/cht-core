@@ -16,13 +16,13 @@ env:
   TAG: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
   BRANCH: ${{ github.head_ref || github.ref_name }}
   BUILD_NUMBER: ${{ github.run_id }}
-  NODE_VERSION: '22.11'
+  NODE_VERSION: '22.15'
 
 jobs:
 
   build:
     name: Compile the app
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
 
     steps:
@@ -86,6 +86,7 @@ jobs:
   config-tests:
     needs: build
     name: ${{ matrix.cmd }}
+    # these tests fail on newer os. https://github.com/medic/cht-conf-test-harness/issues/279
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     
@@ -109,7 +110,7 @@ jobs:
 
   test-cht-form:
     needs: build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -129,7 +130,7 @@ jobs:
   tests-k3d:
     needs: build
     name: ${{ matrix.cmd }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
 
     strategy:
@@ -201,7 +202,7 @@ jobs:
   translations:
     needs: build
     name: Lint translations
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
     steps:
@@ -216,7 +217,7 @@ jobs:
   tests:
     needs: build
     name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     
     env:
@@ -311,11 +312,25 @@ jobs:
       run: |
         mkdir -p allure-results/history
         cp -r build-history-data/cht-core/allure/${{ env.JOB_NAME }}/allure-report/history allure-results | true
-    - name: Install Chrome 90
-      if: ${{matrix.chrome-version=='90'}}
+    - name: Cache Chrome 90 Installer
+      if: ${{ matrix.chrome-version == '90' }}
+      id: cache-chrome
+      uses: actions/cache@v4
+      with:
+        path: /tmp/chrome90
+        key: chrome90-${{ runner.os }}-90.0.4430.72
+        restore-keys: |
+          chrome90-${{ runner.os }}-
+          chrome90-
+    - name: Download Chrome 90
+      if: ${{ matrix.chrome-version == '90' && steps.cache-chrome.outputs.cache-hit != 'true' }}
       run: |
-        wget -O "google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
-        sudo dpkg -i "google-chrome-stable_current_amd64.deb"
+        mkdir -p /tmp/chrome90
+        wget -O "/tmp/chrome90/google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
+    - name: Install Chrome 90
+      if: ${{ matrix.chrome-version == '90' }}
+      run: |
+        sudo dpkg -i "/tmp/chrome90/google-chrome-stable_current_amd64.deb"
         npm install chromedriver@^90.0.1
     - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
       run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
@@ -374,9 +389,9 @@ jobs:
       if: ${{ failure() }}
 
   publish:
-    needs: [tests, config-tests, test-cht-form, translations]
+    needs: [tests, config-tests, test-cht-form]
     name: Publish branch build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     
     if: ${{ github.event_name != 'pull_request' }}
@@ -427,7 +442,7 @@ jobs:
   publish-generated-docs:
     needs: [publish]
     name: Publish generated docs
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     if: ${{ github.event_name != 'pull_request' }}
     steps:
@@ -453,7 +468,7 @@ jobs:
   upgrade:
     needs: [publish]
     name: Upgrade from ${{ matrix.version }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
 
     if: ${{ github.event_name != 'pull_request' }}
