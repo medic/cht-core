@@ -1,0 +1,206 @@
+{{- if eq (toString .Values.couchdb.clusteredCouch_enabled) "false" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    cht.service: couchdb
+  name: cht-couchdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cht.service: couchdb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        cht.service: couchdb
+    spec:
+      securityContext:
+        runAsUser: 0  # Run as root
+        fsGroup: 0    # Set fsGroup to root
+      tolerations:
+        - key: {{ .Values.toleration.key }}
+          operator: {{ .Values.toleration.operator }}
+          value: {{ .Values.toleration.value | quote }}
+          effect: {{ .Values.toleration.effect }}
+      {{- if hasKey .Values "nodes" }}
+        {{- if hasKey .Values.nodes "single_node_deploy" }}
+      nodeSelector:
+        kubernetes.io/hostname: {{ .Values.nodes.single_node_deploy }}
+        {{- end }}
+      {{- end }}
+      containers:
+        - env:
+            - name: COUCHDB_LOG_LEVEL
+              value: info
+            - name: COUCHDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_PASSWORD
+            - name: COUCHDB_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_SECRET
+            - name: COUCHDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_USER
+            - name: COUCHDB_UUID
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_UUID
+            - name: SVC_NAME
+              value: couchdb.{{ .Values.namespace }}.svc.cluster.local
+          image: {{ .Values.upstream_servers.docker_registry }}/cht-couchdb:{{ .Values.cht_image_tag }}
+          {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
+          name: cht-couchdb
+          ports:
+            - containerPort: 5984
+          resources: {}
+          {{- if eq (toString .Values.cluster_type) "k3s-k3d" }}
+          volumeMounts:
+            - mountPath: /opt/couchdb/data
+              name: local-volume
+              {{- if ne .Values.couchdb_data.dataPathOnDiskForCouchDB "" }}
+              subPath: {{ .Values.couchdb_data.dataPathOnDiskForCouchDB }}
+              {{- end }}
+            - mountPath: /opt/couchdb/etc/local.d
+              name: local-volume
+              subPath: local.d
+          {{- else }}
+          volumeMounts:
+            - mountPath: /opt/couchdb/data
+              name: couchdb-claim0
+              {{- if ne .Values.couchdb_data.dataPathOnDiskForCouchDB "" }}
+              subPath: {{ .Values.couchdb_data.dataPathOnDiskForCouchDB }}
+              {{- end }}
+            - mountPath: /opt/couchdb/etc/local.d
+              name: couchdb-claim0
+              subPath: local.d
+          {{- end }}
+      restartPolicy: Always
+      {{- if eq (toString .Values.cluster_type) "k3s-k3d" }}
+      volumes:
+        - name: local-volume
+          hostPath:
+            path: {{ index .Values.local_storage "preExistingDiskPath-1" }}
+      {{- else }}
+      volumes:
+        - name: couchdb-claim0
+          persistentVolumeClaim:
+            claimName: couchdb-claim0
+      {{- end }}
+status: {}
+{{- end }}
+
+{{- if .Values.couchdb.clusteredCouch_enabled }}
+{{- range $i, $e := until (int .Values.clusteredCouch.noOfCouchDBNodes) }}
+{{ $nodeNumber := add $i 1 }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    cht.service: couchdb-{{ $nodeNumber }}
+  name: cht-couchdb-{{ $nodeNumber }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cht.service: couchdb-{{ $nodeNumber }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        cht.service: couchdb-{{ $nodeNumber }}
+    spec:
+      securityContext:
+        runAsUser: 0  # Run as root
+        fsGroup: 0    # Set fsGroup to root
+      tolerations:
+      - key: {{ $.Values.toleration.key }}
+        operator: {{ $.Values.toleration.operator }}
+        value: {{ $.Values.toleration.value | quote }}
+        effect: {{ $.Values.toleration.effect }}
+      {{- with index $.Values.nodes (printf "node-%d" $nodeNumber) }}
+        {{- if . }}
+      nodeSelector:
+        kubernetes.io/hostname: {{ . }}
+        {{- end }}
+      {{- end }}
+      containers:
+      - name: cht-couchdb-{{ $nodeNumber }}
+        image: {{ $.Values.upstream_servers.docker_registry }}/cht-couchdb:{{ $.Values.cht_image_tag }}
+        {{ if eq $.Values.cache_images false}}imagePullPolicy: Always{{ end }}
+        ports:
+        - containerPort: 5984
+        env:
+        {{- if ne $nodeNumber 1 }}
+        - name: COUCHDB_SYNC_ADMINS_NODE
+          valueFrom:
+            configMapKeyRef:
+              name: couchdb-servers-configmap
+              key: COUCHDB_SYNC_ADMINS_NODE
+        {{- end }}
+        - name: COUCHDB_LOG_LEVEL
+          value: info
+        - name: COUCHDB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cht-couchdb-credentials
+              key: COUCHDB_PASSWORD
+        - name: COUCHDB_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: cht-couchdb-credentials
+              key: COUCHDB_SECRET
+        - name: COUCHDB_USER
+          valueFrom:
+            secretKeyRef:
+              name: cht-couchdb-credentials
+              key: COUCHDB_USER
+        - name: COUCHDB_UUID
+          valueFrom:
+            secretKeyRef:
+              name: cht-couchdb-credentials
+              key: COUCHDB_UUID
+        - name: SVC_NAME
+          value: couchdb-{{ $nodeNumber }}.{{ $.Values.namespace }}.svc.cluster.local
+        - name: NODE_COUNT
+          value: {{ $.Values.clusteredCouch.noOfCouchDBNodes | quote }}
+        {{- if eq $nodeNumber 1 }}
+        - name: CLUSTER_PEER_IPS
+          valueFrom:
+            configMapKeyRef:
+              name: couchdb-servers-configmap
+              key: CLUSTER_PEER_IPS
+        {{- end }}
+        resources: {}
+        volumeMounts:
+        - mountPath: /opt/couchdb/data
+          name: couchdb-{{ $nodeNumber }}-claim0
+          {{- if $.Values.couchdb_data.dataPathOnDiskForCouchDB }}
+          subPath: {{ if contains "%d" $.Values.couchdb_data.dataPathOnDiskForCouchDB }}
+                    {{- printf $.Values.couchdb_data.dataPathOnDiskForCouchDB $nodeNumber }}
+                    {{- else }}
+                    {{- $.Values.couchdb_data.dataPathOnDiskForCouchDB }}
+                    {{- end }}
+          {{- end }}
+        - mountPath: /opt/couchdb/etc/local.d
+          name: couchdb-{{ $nodeNumber }}-claim0
+          subPath: local.d
+      restartPolicy: Always
+      volumes:
+      - name: couchdb-{{ $nodeNumber }}-claim0
+        persistentVolumeClaim:
+          claimName: couchdb-{{ $nodeNumber }}-claim0
+status: {}
+--- #Don't remove the separator. We need this to separate yamls generated by the range command.
+{{- end }}
+{{- end }}
