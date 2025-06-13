@@ -472,6 +472,27 @@ describe('TasksContentComponent', () => {
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'add', 'c_type']]);
     });
 
+    it('should work with action of type "contact" with parent without type', async () => {
+      await compileComponent([]);
+      sinon.resetHistory();
+
+      const action = { 
+        type: 'contact', 
+        content: { 
+          parent_id: 'district_hospital_uuid',
+          contact: { 
+            _id: 'my_contact' 
+          } 
+        } 
+      };
+      await component.performAction(action);
+
+      expect(xmlFormsService.get.callCount).to.equal(0);
+      expect(formService.render.callCount).to.equal(0);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'my_contact']]);
+    });
+
     it('should work with action of type "contact" and content with "edit_id"', async () => {
       await compileComponent([]);
       sinon.resetHistory();
