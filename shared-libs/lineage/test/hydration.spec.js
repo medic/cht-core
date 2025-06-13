@@ -1,20 +1,32 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const lineageFactory = require('../src');
+const { Contact } = require('@medic/cht-datasource');
+const dataContext = require('../../../api/src/services/data-context');
 
 describe('Lineage', function() {
   let lineage;
-  let allDocs;
-  let get;
-  let query;
-  let DB;
+  let getStub;
+  let getWithLineageStub;
 
   beforeEach(function() {
-    allDocs = sinon.stub();
-    get = sinon.stub();
-    query = sinon.stub();
-    DB = { allDocs, get, query };
-    lineage = lineageFactory(Promise, DB);
+    getStub = sinon.stub();
+    getWithLineageStub = sinon.stub();
+
+    sinon.stub(dataContext, 'bind').callsFake(fn => {
+      if (fn === Contact.v1.get) {
+        return (qualifier) => getStub(qualifier.uuid);
+      }
+      if (fn === Contact.v1.getWithLineage) {
+        return (qualifier) => getWithLineageStub(qualifier.uuid);
+      }
+      return sinon.stub().resolves();
+    });
+
+    const mockFactoryDataContext = {
+      bind: dataContext.bind
+    };
+    lineage = lineageFactory(Promise, {}, mockFactoryDataContext);
   });
 
   afterEach(function() {
@@ -22,43 +34,44 @@ describe('Lineage', function() {
   });
 
   describe('fetchLineageById', function() {
-    it('queries db with correct parameters', function() {
-      query.resolves({ rows: [] });
+    it('calls getWithLineage with correct parameters', function() {
+      getWithLineageStub.resolves([]);
       const id = 'banana';
 
       return lineage.fetchLineageById(id).then(() => {
-        chai.expect(query.callCount).to.equal(1);
-        chai.expect(query.getCall(0).args[0]).to.equal('medic-client/docs_by_id_lineage');
-        chai.expect(query.getCall(0).args[1].startkey).to.deep.equal([ id ]);
-        chai.expect(query.getCall(0).args[1].endkey).to.deep.equal([ id, {} ]);
-        chai.expect(query.getCall(0).args[1].include_docs).to.deep.equal(true);
+        chai.expect(dataContext.bind.callCount).to.be.at.least(1);
+        chai.expect(dataContext.bind.calledWith(Contact.v1.getWithLineage)).to.be.true;
+        chai.expect(getWithLineageStub.callCount).to.equal(1);
+        chai.expect(getWithLineageStub.getCall(0).args[0]).to.equal(id);
       });
     });
   });
 
   describe('fetchContacts', function() {
     it('fetches contacts with correct parameters', function() {
-      allDocs.resolves({ rows: [] });
+      getStub.resolves({ _id: 'def' }); 
       const fakeLineage = [
         { _id: 'abc', contact: { _id: 'def' }, parent: { _id: 'ghi' } },
         { _id: 'ghi' }
       ];
 
       return lineage.fetchContacts(fakeLineage).then(() => {
-        chai.expect(allDocs.callCount).to.equal(1);
-        chai.expect(allDocs.getCall(0).args[0]).to.deep.equal({ keys: ['def'], include_docs: true });
+        chai.expect(dataContext.bind.callCount).to.be.at.least(1);
+        chai.expect(dataContext.bind.calledWith(Contact.v1.get)).to.be.true;
+        chai.expect(getStub.callCount).to.equal(1);
+        chai.expect(getStub.getCall(0).args[0]).to.deep.equal('def');
       });
     });
 
     it('does not fetch contacts that it has already got via lineage', function() {
-      allDocs.resolves({ rows: [] });
+      getStub.resolves(); 
       const fakeLineage = [
         { _id: 'abc', contact: { _id: 'def' }, parent: { _id: 'def' } },
         { _id: 'def' }
       ];
 
       return lineage.fetchContacts(fakeLineage).then(() => {
-        chai.expect(allDocs.callCount).to.equal(0);
+        chai.expect(getStub.callCount).to.equal(0);
       });
     });
   });
