@@ -383,11 +383,23 @@ describe('qualifier', () => {
           parent: {
             _id: '1-id'
           }
+        },
+        {
+          name: 'user-3',
+          type: 'contact',
+          reported_date: 323232,
+          contact_type: 'clinic_worker',
+          parent: {
+            _id: '1-id'
+          }
         }
-      ].forEach((qualifier) => expect(byPersonQualifier(qualifier))
-        .to.deep.equal({...qualifier, reported_date: CURRENT_ISO_TIMESTAMP}));
-    });
+      ].forEach((qualifier) => {
+        const expected_qualifier = {reported_date: CURRENT_ISO_TIMESTAMP, ...qualifier};
+        expect(byPersonQualifier(qualifier))
+          .to.deep.equal({...expected_qualifier});
+      });
 
+    });
   });
 
   describe('isPersonQualifier', () => {
