@@ -1051,7 +1051,7 @@ describe('Setup utils', () => {
 
   describe('isDockerUpgradeServiceRunning', () => {
     it('should return true when docker upgrade service is running', async () => {
-      sinon.stub(request, 'get').resolves({ ok: true, status: 200, body: { ok: true } });
+      sinon.stub(request, 'get').resolves({ ok: true });
 
       expect(await utils.isDockerUpgradeServiceRunning()).to.equal(true);
       expect(request.get.callCount).to.equal(1);
@@ -1059,7 +1059,7 @@ describe('Setup utils', () => {
     });
 
     it('should return false when another upgrade service is running', async () => {
-      sinon.stub(request, 'get').resolves({ ok: true, status: 200, body: { message: 'ok' } });
+      sinon.stub(request, 'get').resolves({ message: 'ok' });
 
       expect(await utils.isDockerUpgradeServiceRunning()).to.equal(false);
       expect(request.get.callCount).to.equal(1);
@@ -1076,7 +1076,7 @@ describe('Setup utils', () => {
       process.env.UPGRADE_SERVICE_URL = 'http://someurl';
       utils = rewire('../../../../src/services/setup/utils');
 
-      sinon.stub(request, 'get').resolves({ ok: true, status: 200, body: { ok: true } });
+      sinon.stub(request, 'get').resolves({ ok: true });
 
       expect(await utils.isDockerUpgradeServiceRunning()).to.equal(true);
       expect(request.get.callCount).to.equal(1);
