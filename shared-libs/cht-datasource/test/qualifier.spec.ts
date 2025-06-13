@@ -8,11 +8,25 @@ import {
   byContactQualifier,
   isContactQualifier,
   byReportQualifier,
-  isReportQualifier
+  isReportQualifier,
+  byPersonQualifier,
+  isPersonQualifier,
 } from '../src/qualifier';
 import { expect } from 'chai';
+import sinon from 'sinon';
 
 describe('qualifier', () => {
+  let clock: sinon.SinonFakeTimers;
+  const CURRENT_ISO_TIMESTAMP = '2023-01-01T00:01:23.000Z';
+  before(() => {
+    const fakeNow = new Date(CURRENT_ISO_TIMESTAMP).getTime();
+    clock = sinon.useFakeTimers(fakeNow);
+  });
+
+  after(() => {
+    clock.restore();
+  });
+  
   describe('byUuid', () => {
     it('builds a qualifier that identifies an entity by its UUID', () => {
       expect(byUuid('uuid')).to.deep.equal({ uuid: 'uuid' });
@@ -119,7 +133,7 @@ describe('qualifier', () => {
       expect(byContactQualifier({
         name: 'A', type: 'person'
       })).to.deep.equal({
-        name: 'A', type: 'person'
+        name: 'A', type: 'person', reported_date: CURRENT_ISO_TIMESTAMP
       });
     });
   
@@ -202,7 +216,7 @@ describe('qualifier', () => {
       expect(byReportQualifier({
         type: 'data_record', form: 'yes'
       })).to.deep.equal({
-        type: 'data_record', form: 'yes'
+        type: 'data_record', form: 'yes', reported_date: CURRENT_ISO_TIMESTAMP
       });
     });
 
@@ -233,7 +247,7 @@ describe('qualifier', () => {
     it('throws error if type/form is not provided or empty.', () => {
       [
         {reported_date: 3432433},
-        {type: 'data_record', _id: 'id-1', _rev: 'rev-4'},
+        {type: 'data_record', _id: 'id-1', _rev: 'rev-4', reported_date: CURRENT_ISO_TIMESTAMP},
         {form: 'yes', _id: 'id-1', _rev: 'rev-4'},
         {type: '', form: 'yes'},
         {type: 'data_record', form: ''}
@@ -266,5 +280,218 @@ describe('qualifier', () => {
         expect(isReportQualifier(qualifier)).to.be.true;
       });
     });
+  });
+
+  describe('byPersonQualifier', () => {
+    it('throws an error on missing parent object', () => {
+      const data = {
+        name: 'Antony',
+        type: 'person',
+      };
+
+      const expected_data = {
+        ...data, reported_date: CURRENT_ISO_TIMESTAMP
+      };
+
+      expect(() => byPersonQualifier(data)).to
+        .throw(`Missing or empty required fields [${JSON.stringify(expected_data)}].`);
+    });
+
+    it('throws an error parent lineage missing `_id` or `parent` fields', () => {
+      const data = {
+        name: 'Antony',
+        type: 'person',
+        parent: {
+          _id: '1-id',
+          parent: {
+            parent: {
+              _id: '3-id'
+            }
+          }
+        }
+      };
+
+      const expected_data = {
+        ...data, reported_date: CURRENT_ISO_TIMESTAMP
+      };
+
+      expect(() => byPersonQualifier(data)).to
+        .throw(`Missing required fields in the parent hierarchy [${JSON.stringify(expected_data)}].`);
+    });
+
+    it('throws an error on invalid contact types', () => {
+      [
+        {
+          name: 'Antony',
+          type: 'contact',
+          parent: {
+            _id: '1-id'
+          }
+        },
+        {
+          name: 'Antony',
+          type: 'astronaut',
+          parent: {
+            _id: '1-id'
+          }
+        }
+      ].forEach((qualifier) => {
+        expect(() => byPersonQualifier(qualifier)).to.throw(`Invalid type for contacts.`);
+      });
+    });
+
+    it('throws an error on bloated parent hierarchy', () => {
+      const data = {
+        name: 'Antony',
+        type: 'person',
+        reported_date: 9402942,
+        parent: {
+          _id: '1-id',
+          parent: {
+            _id: '2-id',
+            parent: {
+              _id: '3-id',
+              name: 'Hydrated User',
+              type: 'person',
+              parent: {
+                _id: '4-id'
+              }
+            }
+          }
+        }
+      };
+      expect(() => byPersonQualifier(data)).to
+        .throw(`Additional fields found in the parent lineage [${JSON.stringify(data)}].`);
+    });
+
+    it('builds qualifier for valid objects', () => {
+      [
+        {
+          name: 'user-1',
+          type: 'person',
+          parent: {
+            _id: '1-id',
+            parent: {
+              _id: '2-id'
+            }
+          }
+        },
+        {
+          name: 'user-2',
+          type: 'contact',
+          contact_type: 'clinic_worker',
+          parent: {
+            _id: '1-id'
+          }
+        },
+        {
+          name: 'user-3',
+          type: 'contact',
+          reported_date: 323232,
+          contact_type: 'clinic_worker',
+          parent: {
+            _id: '1-id'
+          }
+        }
+      ].forEach((qualifier) => {
+        const expected_qualifier = {reported_date: CURRENT_ISO_TIMESTAMP, ...qualifier};
+        expect(byPersonQualifier(qualifier))
+          .to.deep.equal({...expected_qualifier});
+      });
+
+    });
+  });
+
+  describe('isPersonQualifier', () => {
+    it('returns false on missing parent object', () => {
+      const data = {
+        name: 'Antony',
+        type: 'person',
+      };
+      expect(isPersonQualifier(data)).to.be.false;
+    });
+
+    it('returns false when parent lineage is missing `_id` or `parent` required fields', () => {
+      const data = {
+        name: 'Antony',
+        type: 'person',
+        parent: {
+          _id: '1-id',
+          parent: {
+            parent: {
+              _id: '3-id'
+            }
+          }
+        }
+      };
+      expect(isPersonQualifier(data)).to.be.false;
+    });
+
+    it('returns false for invalid contact types', () => {
+      [
+        {
+          name: 'Antony',
+          type: 'contact',
+          parent: {
+            _id: '1-id'
+          }
+        },
+        {
+          name: 'Antony',
+          type: 'astronaut',
+          parent: {
+            _id: '1-id'
+          }
+        }
+      ].forEach((qualifier) => {
+        expect(isPersonQualifier(qualifier)).to.be.false;
+      });
+    });
+
+    it('returns false on finding bloated parent hierarchy', () => {
+      const data = {
+        name: 'Antony',
+        type: 'person',
+        parent: {
+          _id: '1-id',
+          parent: {
+            _id: '2-id',
+            parent: {
+              _id: '3-id',
+              name: 'Hydrated User',
+              type: 'person',
+              parent: {
+                _id: '4-id'
+              }
+            }
+          }
+        }
+      };
+      expect(isPersonQualifier(data)).to.be.false;
+    });
+
+    it('returns true for valid PersonQualifier objects', () => {
+      [
+        {
+          name: 'user-1',
+          type: 'person',
+          parent: {
+            _id: '1-id',
+            parent: {
+              _id: '2-id'
+            }
+          }
+        },
+        {
+          name: 'user-2',
+          type: 'contact',
+          contact_type: 'clinic_worker',
+          parent: {
+            _id: '1-id'
+          }
+        }
+      ].forEach((qualifier) => expect(isPersonQualifier(qualifier)).to.be.true);
+    });
+
   });
 });

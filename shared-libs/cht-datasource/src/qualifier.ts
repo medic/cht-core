@@ -1,4 +1,4 @@
-import { isString, hasField, isRecord, Nullable, hasFields } from './libs/core';
+import { isString, hasField, isRecord, Nullable, hasFields, NormalizedParent, isNormalizedParent } from './libs/core';
 import { InvalidArgumentError } from './libs/error';
 
 /**
@@ -164,20 +164,32 @@ type ContactQualifier = Readonly<{
  * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
  */
 export const byContactQualifier = (data: unknown): ContactQualifier => {
+  return byContactQualifierNonAssertive(data) as ContactQualifier;
+};
+
+/** @internal*/
+export const byContactQualifierNonAssertive = (data: unknown) : Record<string, unknown> => {
   if (!isRecord(data)){
     throw new InvalidArgumentError('Invalid "data": expected an object.');
   }
   const qualifier = {...data};
-  if ('reported_date' in qualifier && !isValidReportedDate(qualifier.reported_date)){
+  insertReportedDateIfMissing(qualifier);
+  if (!isValidReportedDate(qualifier.reported_date)){
     throw new InvalidArgumentError(
       // eslint-disable-next-line max-len
       `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
     );
   }
-  if (!isContactQualifier(qualifier)){
+  if (!checkContactQualifierFields(qualifier)){
     throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(data)}].`);
   }
   return qualifier;
+};
+
+const insertReportedDateIfMissing = (qualifier: Record<string, unknown>) :void => {
+  if (!('reported_date' in qualifier)){
+    qualifier.reported_date = new Date().toISOString();
+  }
 };
 
 /**
@@ -186,14 +198,17 @@ export const byContactQualifier = (data: unknown): ContactQualifier => {
  * @returns `true` if the given type is a {@link ContactQualifier}, otherwise `false`.
  */
 export const isContactQualifier = (qualifier: unknown): qualifier is ContactQualifier => {
-  if (isRecord(qualifier) && hasFields(qualifier, [{name: 'type', type: 'string', ensureTruthyValue: true}, 
-    {name: 'name', type: 'string', ensureTruthyValue: true}])){
-    if ('reported_date' in qualifier && !isValidReportedDate(qualifier.reported_date)){
-      return false;
-    }
-    return true;
-  }
-  return false;
+  return checkContactQualifierFields(qualifier);
+};
+
+/** @internal */
+const checkContactQualifierFields = (data: unknown): data is Record<string, unknown> => {
+  return isRecord(data) && 
+    hasFields(data, [
+      {name: 'type', type: 'string', ensureTruthyValue: true}, 
+      {name: 'name', type: 'string', ensureTruthyValue: true}
+    ]) &&
+    (!('reported_date' in data) || isValidReportedDate(data.reported_date));
 };
 
 /** 
@@ -222,8 +237,10 @@ export const byReportQualifier = (data: unknown): ReportQualifier => {
   if (!isRecord(data)) {
     throw new InvalidArgumentError('Invalid "data": expected an object.');
   }
+  
   const qualifier = {...data};
-  if ('reported_date' in qualifier && !isValidReportedDate(qualifier.reported_date)) {
+  insertReportedDateIfMissing(qualifier);
+  if (!isValidReportedDate(qualifier.reported_date)) {
     throw new InvalidArgumentError(
       // eslint-disable-next-line max-len
       `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
@@ -266,4 +283,93 @@ const isValidReportedDate = (value: unknown): boolean => {
   }
 
   return false;
+};
+
+/** 
+ * A qualifier for a person
+ */
+type PersonQualifier = ContactQualifier & Readonly<{
+  parent: NormalizedParent;
+  date_of_birth?: Date;
+  phone?: string;
+  patient_id?: string;
+  sex?: string;
+  contact_type?: string
+}>
+
+/**
+ * Builds a qualifier for creation and update of a person with
+ * the given fields.
+ * @param data object containing the fields for a person
+ * @returns the person qualifier
+ * @throws Error if data is not an object
+ * @throws Error if type is not provided or is empty
+ * @throws Error if name is not provided or is empty
+ * @throws Error if parent is not provided or is empty
+ * @throws Error if parent is not in a valid de-hydrated format. 
+ * @throws Error if reported_date is not in a valid format. 
+ * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+ */
+export const byPersonQualifier = (data: unknown): PersonQualifier => {
+  const qualifier = byContactQualifierNonAssertive(data);
+  
+  if (!hasField(qualifier, { name: 'parent', type: 'object' })) {
+    throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(qualifier)}].`);
+  }
+
+  if (!isNormalizedParent(qualifier.parent)) {
+    throw new InvalidArgumentError(`Missing required fields in the parent hierarchy [${JSON.stringify(qualifier)}].`);
+  }
+
+  if (!hasValidContactType(qualifier) && !hasValidLegacyContactType(qualifier, 'person')) {
+    throw new InvalidArgumentError('Invalid type for contacts.');
+  }
+
+  if (hasBloatedLineage(qualifier)) {
+    throw new InvalidArgumentError(`Additional fields found in the parent lineage [${JSON.stringify(qualifier)}].`);
+  }
+
+  return qualifier as unknown as PersonQualifier;
+};
+
+/** @internal */
+export const isPersonQualifier = (data: unknown): data is PersonQualifier => {
+  if (!checkContactQualifierFields(data)) {
+    return false;
+  }
+
+  if (!hasField(data, { name: 'parent', type: 'object' }) || !isNormalizedParent(data.parent)) {
+    return false;
+  }
+
+  if (hasBloatedLineage(data)) {
+    return false;
+  }
+
+  return hasValidContactType(data) || hasValidLegacyContactType(data, 'person');
+};
+
+/** @internal */
+const hasBloatedLineage = ( data: Record<string, unknown> ): boolean => {
+  // Ensure parent lineage doesn't have any additional properties other than `_id` and `parent`.
+  let parent = data.parent as NormalizedParent | undefined;
+  while (parent) {
+    if (Object.keys(parent).length > 2) {
+      // This means that the parent certainly has extra fields and is not minfied/de-hydrated as per
+      // our liking as `isNormalized` check ensures that it does have two keys `_id` and `parent`.
+      return true;
+    }
+    parent = parent.parent;
+  }
+  return false;
+};
+
+/** @internal */
+const hasValidContactType = ( data: Record<string, unknown> ): boolean => {
+  return data.type === 'contact' && hasField(data, { name: 'contact_type', type: 'string' });
+};
+
+/** @internal */
+const hasValidLegacyContactType = ( data: Record<string, unknown>, type:string): boolean => {
+  return data.type === type;
 };
