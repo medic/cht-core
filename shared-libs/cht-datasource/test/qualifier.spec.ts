@@ -252,11 +252,8 @@ describe('qualifier', () => {
         {type: '', form: 'yes'},
         {type: 'data_record', form: ''}
       ].forEach((qualifier) => {
-        const date_hydrated_qualifier = 'reported_date' in qualifier
-          ? qualifier : {...qualifier, reported_date: CURRENT_ISO_TIMESTAMP};
         expect(() => byReportQualifier(qualifier))
-          // eslint-disable-next-line max-len
-          .to.throw(`Missing or empty required fields [${JSON.stringify(date_hydrated_qualifier)}].`);
+          .to.throw(`Missing or empty required fields [${JSON.stringify(qualifier)}].`);
       });
     });
   });

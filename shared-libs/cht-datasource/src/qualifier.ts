@@ -237,9 +237,9 @@ export const byReportQualifier = (data: unknown): ReportQualifier => {
   if (!isRecord(data)) {
     throw new InvalidArgumentError('Invalid "data": expected an object.');
   }
-  insertReportedDateIfMissing(data);
-
+  
   const qualifier = {...data};
+  insertReportedDateIfMissing(qualifier);
   if (!isValidReportedDate(qualifier.reported_date)) {
     throw new InvalidArgumentError(
       // eslint-disable-next-line max-len
