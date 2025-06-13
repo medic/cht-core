@@ -71,7 +71,9 @@ angular.module('controllers').controller('UpgradeCtrl',
     const getCanUpgrade = () => {
       return $http
         .get(`${UPGRADE_URL}/can-upgrade`)
-        .then(response => $scope.canUpgrade = response.data.ok)
+        .then(response => {
+          $scope.canUpgrade = response.data.ok;
+        })
         .catch(err => {
           $log.error('Error when checking if upgrades are possible', err);
         });

@@ -31,9 +31,9 @@
       </li>
     </ul>
 
-    <div ng-show="upgradeDoc.state === 'indexed' && upgradeDoc.action === 'stage' && canUpgrade">
+    <div ng-show="upgradeDoc.state === 'indexed' && upgradeDoc.action === 'stage'">
       <p class="col-xs-10" translate>instance.stage.complete</p>
-      <button class="col-xs-1 btn btn-primary" ng-click="upgrade(upgradeDoc.to, 'complete')" translate>instance.upgrade.install</button>
+      <button class="col-xs-1 btn btn-primary" ng-show="canUpgrade" ng-click="upgrade(upgradeDoc.to, 'complete')" translate>instance.upgrade.install</button>
     </div>
     <div ng-show="upgradeDoc.state === 'interrupted'">
       <p class="alert alert-warning" translate>instance.upgrade.interrupted</p>
