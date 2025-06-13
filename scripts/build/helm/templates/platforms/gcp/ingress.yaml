@@ -1,0 +1,22 @@
+{{- if eq .Values.cluster_type "gke" }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: {{ .Values.ingress.gcp.staticIpName }}
+    networking.gke.io/managed-certificates: {{ .Values.ingress.gcp.managedCertificateName }}
+    kubernetes.io/ingress.class: gce
+spec:
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 5988
+{{- end }}
