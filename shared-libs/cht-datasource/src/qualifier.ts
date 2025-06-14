@@ -288,7 +288,7 @@ const isValidReportedDate = (value: unknown): boolean => {
 /** 
  * A qualifier for a person
  */
-type PersonQualifier = ContactQualifier & Readonly<{
+export type PersonQualifier = ContactQualifier & Readonly<{
   parent: NormalizedParent;
   date_of_birth?: Date;
   phone?: string;
