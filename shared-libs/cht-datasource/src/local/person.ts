@@ -1,9 +1,9 @@
 import { Doc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
-import { isNonEmptyArray, Nullable, Page } from '../libs/core';
-import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
+import { hasField, isNonEmptyArray, Nullable, Page } from '../libs/core';
+import { ContactTypeQualifier, PersonQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
-import { fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
+import { createDoc, fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
 import {
@@ -15,7 +15,9 @@ import { validateCursor } from './libs/core';
 
 /** @internal */
 export namespace v1 {
-  const isPerson = (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is Person.v1.Person => {
+  /** @internal */
+  // eslint-disable-next-line max-len
+  export const isPerson = (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is Person.v1.Person => {
     if (!doc) {
       if (uuid) {
         logger.warn(`No person found for identifier [${uuid}].`);
@@ -91,5 +93,23 @@ export namespace v1 {
         limit
       )(limit, skip) as Page<Person.v1.Person>;
     };
+  };
+
+  
+  /** @internal */
+  // eslint-disable-next-line max-len
+  export const createPerson = ({ medicDb, settings } : LocalDataContext) => async(qualifer: PersonQualifier) :Promise<Person.v1.Person> => {
+    if (hasField(qualifer, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
+      throw new InvalidArgumentError('Cannot pass `_rev` when creating a person.');
+    }
+    
+    // This check can only be done when we have the contact_types from LocalDataContext.
+    if (!contactTypeUtils.isPerson(settings.getAll(), qualifer)) {
+      throw new InvalidArgumentError('Invalid contact type.');
+    }
+      
+    const createPerson = createDoc(medicDb);
+    const person = await createPerson(qualifer);
+    return person as Person.v1.Person;
   };
 }
