@@ -4,6 +4,7 @@ const { expect } = require('chai');
 
 const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
 const upgradeSteps = require('../../../../src/services/setup/upgrade-steps');
+const upgradeUtils = require('../../../../src/services/setup/utils');
 const viewIndexerProgress = require('../../../../src/services/setup/view-indexer-progress');
 
 let upgrade;
@@ -225,6 +226,18 @@ describe('upgrade service', () => {
       await expect(upgrade.complete(buildInfo)).to.be.rejected.and.eventually.deep.equal({ status: 404 });
       expect(upgradeLogService.setErrored.callCount).to.equal(1);
       expect(upgradeSteps.finalize.callCount).to.equal(0);
+    });
+  });
+
+  describe('canUpgrade', () => {
+    it('should return true if docker upgrade service is running', async () => {
+      sinon.stub(upgradeUtils, 'isDockerUpgradeServiceRunning').resolves(true);
+      expect(await upgrade.canUpgrade()).to.equal(true);
+    });
+
+    it('should return false if docker upgrade service is running', async () => {
+      sinon.stub(upgradeUtils, 'isDockerUpgradeServiceRunning').resolves(false);
+      expect(await upgrade.canUpgrade()).to.equal(false);
     });
   });
 });
