@@ -359,6 +359,9 @@ const hasBloatedLineage = ( data: Record<string, unknown> ): boolean => {
       // our liking as `isNormalized` check ensures that it does have two keys `_id` and `parent`.
       return true;
     }
+    if (!parent.parent) {
+      return Object.keys(parent).length > 1;
+    }
     parent = parent.parent;
   }
   return false;
@@ -372,4 +375,74 @@ const hasValidContactType = ( data: Record<string, unknown> ): boolean => {
 /** @internal */
 const hasValidLegacyContactType = ( data: Record<string, unknown>, type:string): boolean => {
   return data.type === type;
+};
+
+/** 
+ * A qualifier for a place
+ */
+export type PlaceQualifier = ContactQualifier & Readonly<{
+  parent?: NormalizedParent;
+  contact?: NormalizedParent;
+  place_id?: string;
+}>
+
+/**
+ * Builds a qualifier for creation and update of a place with the given fields
+ * @param data object containing the fields for a person
+ * @returns the place qualifier
+ * @throws Error if data is not an object
+ * @throws Error if type is not provided or is empty
+ * @throws Error if name is not provided or is empty
+ * @throws Error if parent if present is not in a valid de-hydrated format. 
+ * @throws Error if contact if present is not in a valid de-hydrated format. 
+ * @throws Error if reported_date is not in a valid format. 
+ * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+ */
+export const byPlaceQualifier = (data:unknown): PlaceQualifier => {
+  const qualifier = byContactQualifierNonAssertive(data);
+  if ('parent' in qualifier) {
+    if (!isNormalizedParent(qualifier.parent)) {
+      throw new InvalidArgumentError(`Missing required fields in the parent hierarchy [${JSON.stringify(qualifier)}].`);
+    }
+    if (hasBloatedLineage(qualifier)) {
+      throw new InvalidArgumentError(`Additional fields found in the parent lineage [${JSON.stringify(qualifier)}].`);
+    }
+  }
+
+  if (hasField(qualifier, {name: 'contact', type: 'object'})) {
+    if (!isNormalizedParent(qualifier.contact)) {
+      // eslint-disable-next-line max-len
+      throw new InvalidArgumentError(`Missing required fields in the contact hierarchy [${JSON.stringify(qualifier)}].`);
+    }
+    if (hasBloatedLineage(qualifier.contact)){
+      throw new InvalidArgumentError(`Additional fields found in the contact lineage [${JSON.stringify(qualifier)}].`);
+    }
+  }
+
+  if (!hasValidContactType(qualifier) && !hasValidLegacyContactType(qualifier, 'place')) {
+    throw new InvalidArgumentError('Invalid type for contacts.');
+  }
+
+  return qualifier as PlaceQualifier;
+};
+
+/** @internal*/
+export const isPlaceQualifier = (data:unknown) : data is PlaceQualifier => {
+  if (!checkContactQualifierFields(data)) {
+    return false;
+  }
+
+  if (hasField(data, { name: 'parent', type: 'object' })) {
+    if (!isNormalizedParent(data.parent) || hasBloatedLineage(data)){
+      return false;
+    }
+  }
+
+  if (hasField(data, {name: 'contact', type: 'object'})) {
+    if (!isNormalizedParent(data.contact) || hasBloatedLineage(data.contact)){
+      return false;
+    }
+  }
+
+  return hasValidContactType(data) || hasValidLegacyContactType(data, 'place');
 };
