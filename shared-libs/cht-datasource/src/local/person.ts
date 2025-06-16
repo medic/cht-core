@@ -16,8 +16,12 @@ import { validateCursor } from './libs/core';
 /** @internal */
 export namespace v1 {
   /** @internal */
-  // eslint-disable-next-line max-len
-  export const isPerson = (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is Person.v1.Person => {
+  export const isPerson = (
+    settings: SettingsService
+  ) => (
+    doc: Nullable<Doc>,
+    uuid?: string
+  ): doc is Person.v1.Person => {
     if (!doc) {
       if (uuid) {
         logger.warn(`No person found for identifier [${uuid}].`);
