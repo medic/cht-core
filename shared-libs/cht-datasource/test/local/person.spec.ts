@@ -366,13 +366,8 @@ describe('local person', () => {
         dbPost.resolves({ id: qualifier_id, ok: true });
         dbGet.resolves({ reported_date: qualifier_reported_date, ...qualifier });
       
-        try {
-          const person = await Person.v1.createPerson(localContext)(qualifier);
-          expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
-        } catch (e) {
-          logger.info('Failed creating person for valid qualifier', e);
-          throw e;
-        }
+        const person = await Person.v1.createPerson(localContext)(qualifier);
+        expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
       });
 
       it('creates a Person doc for valid input having a legacy type without _id, reported_date', 
@@ -393,13 +388,8 @@ describe('local person', () => {
           const qualifier_reported_date = new Date().toISOString();
           dbPost.resolves({ id: '1-id', ok: true });
           dbGet.resolves({ reported_date: qualifier_reported_date, ...qualifier });
-          try {
-            const person = await Person.v1.createPerson(localContext)(qualifier);
-            expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
-          } catch (e) {
-            logger.info('Failed creating person for valid qualifier', e);
-            throw e;
-          }
+          const person = await Person.v1.createPerson(localContext)(qualifier);
+          expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
         });
 
       it('throws error if `_rev` is passed in', async () => {
