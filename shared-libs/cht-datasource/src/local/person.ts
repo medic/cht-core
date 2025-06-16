@@ -101,8 +101,12 @@ export namespace v1 {
 
   
   /** @internal */
-  // eslint-disable-next-line max-len
-  export const createPerson = ({ medicDb, settings } : LocalDataContext) => async(qualifer: PersonQualifier) :Promise<Person.v1.Person> => {
+  export const createPerson = ({
+    medicDb,
+    settings
+  } : LocalDataContext) => async (
+    qualifer: PersonQualifier
+  ) :Promise<Person.v1.Person> => {
     if (hasField(qualifer, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
       throw new InvalidArgumentError('Cannot pass `_rev` when creating a person.');
     }
