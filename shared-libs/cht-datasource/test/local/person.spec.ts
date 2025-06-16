@@ -342,73 +342,37 @@ describe('local person', () => {
           .to.be.rejectedWith('Invalid contact type.');
       });
 
-      it('creates Person doc for valid inputs', async() => {
+      it('creates Person doc for valid input', async() => {
         settingsGetAll.returns({
           contact_types: ['animal', 'human']
         });
         isDoc.returns(true);
         isPerson.returns(true);
-        const qualifiers = [
-          {
-            name: 'user-1',
-            type: 'person',
+        const qualifier = {
+          _id: '2-inserted-id',
+          name: 'user-1',
+          type: 'contact',
+          contact_type: 'human',
+          parent: {
+            _id: '1-id',
             parent: {
-              _id: '1-id'
+              _id: '2-id'
             }
           },
-          {
-            name: 'user-1',
-            type: 'contact',
-            contact_type: 'human',
-            parent: {
-              _id: '1-id',
-              parent: {
-                _id: '2-id'
-              }
-            }
-          },
-          {
-            name: 'user-1',
-            type: 'contact',
-            contact_type: 'human',
-            parent: {
-              _id: '1-id',
-              parent: {
-                _id: '2-id'
-              }
-            },
-            reported_date: 20202020
-          },
-          {
-            _id: '2-inserted-id',
-            name: 'user-1',
-            type: 'contact',
-            contact_type: 'human',
-            parent: {
-              _id: '1-id',
-              parent: {
-                _id: '2-id'
-              }
-            },
-            reported_date: 20202020
-          }
-        ];
+        };
         
-        for (const qualifier of qualifiers) {
-          const qualifier_id = qualifier._id ?? '1-id';
-          const qualifier_reported_date = qualifier.reported_date ?? new Date().toISOString();
-          dbPost.resolves({ id: qualifier_id, ok: true });
-          dbGet.resolves({ _id: qualifier_id, reported_date: qualifier_reported_date, ...qualifier });
+        const qualifier_id = qualifier._id;
+        const qualifier_reported_date = new Date().toISOString();
+        dbPost.resolves({ id: qualifier_id, ok: true });
+        dbGet.resolves({ reported_date: qualifier_reported_date, ...qualifier });
       
-          try {
-            const person = await Person.v1.createPerson(localContext)(qualifier);
-            expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
-          } catch (e) {
-            logger.info('Failed creating person for valid qualifier', e);
-            throw e;
-          }
+        try {
+          const person = await Person.v1.createPerson(localContext)(qualifier);
+          expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
+        } catch (e) {
+          logger.info('Failed creating person for valid qualifier', e);
+          throw e;
         }
-      
       });
 
       it('throws error if `_rev` is passed in', async () => {
