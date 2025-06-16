@@ -167,6 +167,12 @@ describe('qualifier', () => {
         .to.throw(`Missing or empty required fields [${JSON.stringify(qualifier)}].`));
       
     });
+
+    it('throws error for invalid data object type.', () => {
+      const qualifier = 'my contact qualifier';
+      expect(() => byContactQualifier(qualifier))
+        .to.throw('Invalid "data": expected an object.');
+    });
   });
   
   describe('isContactQualifier', () => {
@@ -279,6 +285,30 @@ describe('qualifier', () => {
       ].forEach((qualifier) => {
         expect(isReportQualifier(qualifier)).to.be.true;
       });
+    });
+
+    it('returns false for invalid reported_date format', () => {
+      const qualifier = {
+        type: 'data_record', 
+        _id: 'id-1', _rev: 'rev-4', 
+        form: 'yes',
+        reported_date: '2020-05-12'
+      };
+      expect(isReportQualifier(qualifier)).to.be.false;
+    });
+    
+    it('returns false for invalid reported_date type', () => {
+      const qualifier = {
+        type: 'data_record', 
+        _id: 'id-1', _rev: 'rev-4', 
+        form: 'yes',
+        reported_date: {
+          day: '12',
+          month: '2',
+          year: '2014'
+        }
+      };
+      expect(isReportQualifier(qualifier)).to.be.false;
     });
   });
 
@@ -403,6 +433,16 @@ describe('qualifier', () => {
   });
 
   describe('isPersonQualifier', () => {
+    it('returns false for missing required fields(type,name)', () => {
+      const data = {
+        name: 'user-1',
+        parent: {
+          _id: '2'
+        }
+      }; 
+      expect(isPersonQualifier(data)).to.be.false; 
+    });
+
     it('returns false on missing parent object', () => {
       const data = {
         name: 'Antony',

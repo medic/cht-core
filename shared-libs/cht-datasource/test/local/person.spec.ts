@@ -339,7 +339,7 @@ describe('local person', () => {
           }
         };
         await expect(Person.v1.createPerson(localContext)(personQualifier))
-          .to.be.rejectedWith('Invalid contact type.');
+          .to.be.rejectedWith('Invalid person type.');
       });
 
       it('creates Person doc for valid input containing normalized parent lineage with a provided _id', async() => {

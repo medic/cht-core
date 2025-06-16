@@ -113,7 +113,7 @@ export namespace v1 {
     
       // This check can only be done when we have the contact_types from LocalDataContext.
       if (!contactTypeUtils.isPerson(settings.getAll(), qualifier)) {
-        throw new InvalidArgumentError('Invalid contact type.');
+        throw new InvalidArgumentError('Invalid person type.');
       }
       
       return await createPersonDoc(qualifier) as Person.v1.Person;
