@@ -4,6 +4,7 @@ const config = require('../config');
 const db = require('../db');
 const dataContext = require('../services/data-context');
 const logger = require('@medic/logger');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
 const { people, places } = require('@medic/contacts')(config, db, dataContext);
 
 // WARNING : THIS MIGRATION IS POTENTIALLY DESTRUCTIVE IF IT MESSES UP HALFWAY, SO GET YOUR SYSTEM
@@ -56,6 +57,7 @@ const { people, places } = require('@medic/contacts')(config, db, dataContext);
 // parent doc, and saving that doc, so that it can be used as parent for the new person.
 // Then we reset the contact field on that parent doc, with `places.updatePlace`.
 const createPerson = function(id, callback) {
+  const getContact = dataContext.bind(Contact.v1.get);
   const checkContact = function(facility, callback) {
     if (!facility.contact || facility.contact._id) {
       // no contact to migrate or contact already migrated
@@ -140,35 +142,39 @@ const createPerson = function(id, callback) {
       });
   };
 
-  db.medic.get(id, function(err, facility) {
-    if (err) {
-      if (err.status === 404) {
+  getContact(Qualifier.byUuid(id))
+    .then(facility => {
+      if (!facility) {
+        return callback(new Error('facility ' + id + ' not found.'));
+      }
+
+      const oldContact = facility.contact;
+
+      async.waterfall(
+        [
+          async.apply(checkContact, facility),
+          async.apply(removeContact, facility),
+          async.apply(createPerson, facility._id, oldContact),
+          async.apply(
+            resetContact,
+            facility._id,
+            oldContact /* parentId passed from waterfall */
+          ),
+        ],
+        function(err) {
+          if (err && !err.skip) {
+            return callback(err);
+          }
+          return callback();
+        }
+      );
+    })
+    .catch(err => {
+      if (err.status === 404 || err.code === 404) {
         return callback(new Error('facility ' + id + ' not found.'));
       }
       return callback(err);
-    }
-
-    const oldContact = facility.contact;
-
-    async.waterfall(
-      [
-        async.apply(checkContact, facility),
-        async.apply(removeContact, facility),
-        async.apply(createPerson, facility._id, oldContact),
-        async.apply(
-          resetContact,
-          facility._id,
-          oldContact /* parentId passed from waterfall */
-        ),
-      ],
-      function(err) {
-        if (err && !err.skip) {
-          return callback(err);
-        }
-        return callback();
-      }
-    );
-  });
+    });
 };
 
 // For a given doc, update its parent to the latest version of the parent doc.
@@ -224,6 +230,7 @@ const createPerson = function(id, callback) {
 // }
 // Parent of the facility : unchanged.
 const updateParents = function(id, callback) {
+  const getContact = dataContext.bind(Contact.v1.get);
   const checkParent = function(facility, callback) {
     if (!facility.parent) {
       return callback({ skip: true });
@@ -274,55 +281,63 @@ const updateParents = function(id, callback) {
   };
 
   const resetParent = function(facilityId, parentId, callback) {
-    db.medic.get(parentId, function(err) {
-      if (err) {
-        if (err.status === 404) {
-          // Parent does not exist, so cannot be reset
+    getContact(Qualifier.byUuid(parentId))
+      .then(parent => {
+        if (!parent) {
+        // Parent does not exist, so cannot be reset
           return callback();
         }
-        return callback(err);
-      }
-      places
-        .updatePlace(facilityId, { parent: parentId })
-        .then(() => callback())
-        .catch(err => {
-          callback(
-            new Error(
-              'Failed to update parent on facility ' +
+        return places.updatePlace(facilityId, { parent: parentId })
+          .then(() => callback())
+          .catch(err => {
+            callback(
+              new Error(
+                'Failed to update parent on facility ' +
                 facilityId +
                 ' - ' +
                 JSON.stringify(err, null, 2)
-            )
-          );
-        });
-    });
+              )
+            );
+          });
+      })
+      .catch(err => {
+        if (err.status === 404 || err.code === 404) {
+        // Parent does not exist, so cannot be reset
+          return callback();
+        }
+        return callback(err);
+      });
   };
 
-  db.medic.get(id, function(err, facility) {
-    if (err) {
-      if (err.status === 404) {
+  getContact(Qualifier.byUuid(id))
+    .then(facility => {
+      if (!facility) {
+        return callback(new Error('facility ' + id + ' not found.'));
+      }
+
+      async.waterfall(
+        [
+          async.apply(checkParent, facility),
+          async.apply(removeParent, facility),
+          async.apply(
+            resetParent,
+            facility._id /* parentId passed from waterfall */
+          ),
+        ],
+        function(err) {
+          if (err && !err.skip) {
+            return callback(err);
+          }
+          return callback();
+        }
+      );
+    })
+    .catch(err => {
+      if (err.status === 404 || err.code === 404) {
         return callback(new Error('facility ' + id + ' not found.'));
       }
       return callback(err);
-    }
-
-    async.waterfall(
-      [
-        async.apply(checkParent, facility),
-        async.apply(removeParent, facility),
-        async.apply(
-          resetParent,
-          facility._id /* parentId passed from waterfall */
-        ),
-      ],
-      function(err) {
-        if (err && !err.skip) {
-          return callback(err);
-        }
-        return callback();
-      }
-    );
-  });
+    });
 };
 
 const migrateOneType = function(type, callback) {

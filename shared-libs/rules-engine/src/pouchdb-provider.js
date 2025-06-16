@@ -55,10 +55,8 @@ const medicPouchProvider = db => {
     contactsBySubjectId: async (subjectIds) => {
       const keys = subjectIds.map(key => ['shortcode', key]);
       const results = await db.query('medic-client/contacts_by_reference', { keys, include_docs: true });
-
       const shortcodeIds = results.rows.map(result => result.doc._id);
       const idsThatArentShortcodes = subjectIds.filter(id => !results.rows.map(row => row.key[1]).includes(id));
-
       return [...shortcodeIds, ...idsThatArentShortcodes];
     },
 
@@ -129,7 +127,7 @@ const medicPouchProvider = db => {
       if (!contactIds || contactIds.length === 0) {
         return {};
       }
-
+      
       const contactDocs = await docsOf(db.allDocs({ keys: contactIds, include_docs: true }));
       const subjectIds = contactDocs.reduce((agg, contactDoc) => {
         registrationUtils.getSubjectIds(contactDoc).forEach(subjectId => agg.add(subjectId));
