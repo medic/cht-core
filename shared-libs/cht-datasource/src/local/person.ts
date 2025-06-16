@@ -104,20 +104,21 @@ export namespace v1 {
   export const createPerson = ({
     medicDb,
     settings
-  } : LocalDataContext) => async (
-    qualifer: PersonQualifier
-  ) :Promise<Person.v1.Person> => {
-    if (hasField(qualifer, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
-      throw new InvalidArgumentError('Cannot pass `_rev` when creating a person.');
-    }
+  } : LocalDataContext) => {
+    const createPersonDoc = createDoc(medicDb);
+    return async (qualifer: PersonQualifier) :Promise<Person.v1.Person> => {
+      if (hasField(qualifer, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
+        throw new InvalidArgumentError('Cannot pass `_rev` when creating a person.');
+      }
     
-    // This check can only be done when we have the contact_types from LocalDataContext.
-    if (!contactTypeUtils.isPerson(settings.getAll(), qualifer)) {
-      throw new InvalidArgumentError('Invalid contact type.');
-    }
+      // This check can only be done when we have the contact_types from LocalDataContext.
+      if (!contactTypeUtils.isPerson(settings.getAll(), qualifer)) {
+        throw new InvalidArgumentError('Invalid contact type.');
+      }
       
-    const createPerson = createDoc(medicDb);
-    const person = await createPerson(qualifer);
-    return person as Person.v1.Person;
+      const person = await createPersonDoc(qualifer);
+      return person as Person.v1.Person;
+    };
   };
 }
+
