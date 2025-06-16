@@ -342,7 +342,7 @@ describe('local person', () => {
           .to.be.rejectedWith('Invalid contact type.');
       });
 
-      it('creates Person doc for valid input', async() => {
+      it('creates Person doc for valid input containing normalized parent lineage with a provided _id', async() => {
         settingsGetAll.returns({
           contact_types: ['animal', 'human']
         });
@@ -374,6 +374,33 @@ describe('local person', () => {
           throw e;
         }
       });
+
+      it('creates a Person doc for valid input having a legacy type without _id, reported_date', 
+        async () => {
+          isDoc.returns(true);
+          isPerson.returns(true);
+          const qualifier = {
+            name: 'user-1',
+            type: 'person',
+            parent: {
+              _id: '1-id',
+              parent: {
+                _id: '2-id'
+              }
+            },
+          };
+
+          const qualifier_reported_date = new Date().toISOString();
+          dbPost.resolves({ id: '1-id', ok: true });
+          dbGet.resolves({ reported_date: qualifier_reported_date, ...qualifier });
+          try {
+            const person = await Person.v1.createPerson(localContext)(qualifier);
+            expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
+          } catch (e) {
+            logger.info('Failed creating person for valid qualifier', e);
+            throw e;
+          }
+        });
 
       it('throws error if `_rev` is passed in', async () => {
         const qualifier = {
