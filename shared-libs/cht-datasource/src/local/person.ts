@@ -116,8 +116,7 @@ export namespace v1 {
         throw new InvalidArgumentError('Invalid contact type.');
       }
       
-      const person = await createPersonDoc(qualifer);
-      return person as Person.v1.Person;
+      return await createPersonDoc(qualifer) as Person.v1.Person;
     };
   };
 }
