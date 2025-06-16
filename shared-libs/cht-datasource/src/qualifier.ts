@@ -338,7 +338,8 @@ export const isPersonQualifier = (data: unknown): data is PersonQualifier => {
   if (!checkContactQualifierFields(data)) {
     return false;
   }
-
+  
+  // `parent` must be present for person, so cannot use `hasInvalidContactLineageForField` 
   if (!hasField(data, { name: 'parent', type: 'object' }) || !isNormalizedParent(data.parent)) {
     return false;
   }
@@ -437,6 +438,31 @@ const checkFieldLineageAndThrowError = (data: Record<string, unknown>, field?:st
   }
 };
 
+/** @internal*/
+const hasInvalidContactLineageForField = (data: Record<string, unknown>, field?:string) => {
+  let hierarchyRoot = data;
+  let normalized_parent = data.parent;
+  
+  if (field && hasField(data, {name: field, type: 'object'})) {
+    hierarchyRoot = data[field] as unknown as Record<string, unknown>;
+    normalized_parent = data[field];
+  }
+
+  // `parent` is optional, so this lineage is valid
+  if (!hasField(hierarchyRoot, {type: 'object', name: 'parent'})){
+    return false;
+  }
+  
+  if (!isNormalizedParent(normalized_parent)) {
+    // eslint-disable-next-line max-len
+    return true;
+  }
+  if (hasBloatedLineage(hierarchyRoot)) {
+    // eslint-disable-next-line max-len
+    return true;
+  }
+};
+
 
 /** @internal*/
 export const isPlaceQualifier = (data:unknown) : data is PlaceQualifier => {
@@ -444,16 +470,12 @@ export const isPlaceQualifier = (data:unknown) : data is PlaceQualifier => {
     return false;
   }
 
-  if (hasField(data, { name: 'parent', type: 'object' })) {
-    if (!isNormalizedParent(data.parent) || hasBloatedLineage(data)){
-      return false;
-    }
+  if (hasInvalidContactLineageForField(data)){
+    return false;
   }
 
-  if (hasField(data, {name: 'contact', type: 'object'})) {
-    if (!isNormalizedParent(data.contact) || hasBloatedLineage(data.contact)){
-      return false;
-    }
+  if (hasInvalidContactLineageForField(data, 'contact')){
+    return false;
   }
 
   return hasValidContactType(data) || hasValidLegacyContactType(data, 'place');
