@@ -8,8 +8,6 @@
 const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
 const uniqBy = require('lodash/uniqBy');
-const { Contact, Qualifier } = require('@medic/cht-datasource');
-const dataContext = require('../../../api/src/services/data-context.js');
 
 const RULES_STATE_DOCID = '_local/rulesStateStore';
 const MAX_QUERY_KEYS = 500;
@@ -24,7 +22,6 @@ const docsOf = (query) => {
 const rowsOf = (query) => query.then(result => uniqBy(result.rows, 'id'));
 
 const medicPouchProvider = db => {
-  const getContact = dataContext.bind(Contact.v1.get);
   const dbQuery = async (view, params) => {
     if (!params?.keys || params.keys.length < MAX_QUERY_KEYS) {
       return db.query(view, params);
@@ -131,16 +128,8 @@ const medicPouchProvider = db => {
         return {};
       }
       
-      const contactDocs = await Promise.all(
-        contactIds.map(id => getContact(Qualifier.byUuid(id))
-          .catch(err => {
-            console.error(`Error fetching contact ${id}:`, err);
-            return null;
-          }))
-      );
-
-      const validContactDocs = contactDocs.filter(Boolean);
-      const subjectIds = validContactDocs.reduce((agg, contactDoc) => {
+      const contactDocs = await docsOf(db.allDocs({ keys: contactIds, include_docs: true }));
+      const subjectIds = contactDocs.reduce((agg, contactDoc) => {
         registrationUtils.getSubjectIds(contactDoc).forEach(subjectId => agg.add(subjectId));
         return agg;
       }, new Set(contactIds));
@@ -159,7 +148,7 @@ const medicPouchProvider = db => {
 
       return {
         userSettingsId: userSettingsDoc?._id,
-        contactDocs: validContactDocs,
+        contactDocs,
         reportDocs: relevantReportDocs,
         taskDocs,
       };
