@@ -317,16 +317,17 @@ export const byPersonQualifier = (data: unknown): PersonQualifier => {
     throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(qualifier)}].`);
   }
 
+  // cannot use checkFieldLineageAndThrowError as parent is required in `person`
   if (!isNormalizedParent(qualifier.parent)) {
     throw new InvalidArgumentError(`Missing required fields in the parent hierarchy [${JSON.stringify(qualifier)}].`);
   }
 
-  if (!hasValidContactType(qualifier) && !hasValidLegacyContactType(qualifier, 'person')) {
-    throw new InvalidArgumentError('Invalid type for contacts.');
-  }
-
   if (hasBloatedLineage(qualifier)) {
     throw new InvalidArgumentError(`Additional fields found in the parent lineage [${JSON.stringify(qualifier)}].`);
+  }
+
+  if (!hasValidContactType(qualifier) && !hasValidLegacyContactType(qualifier, 'person')) {
+    throw new InvalidArgumentError('Invalid type for contacts.');
   }
 
   return qualifier as unknown as PersonQualifier;
@@ -402,24 +403,8 @@ export type PlaceQualifier = ContactQualifier & Readonly<{
  */
 export const byPlaceQualifier = (data:unknown): PlaceQualifier => {
   const qualifier = byContactQualifierNonAssertive(data);
-  if ('parent' in qualifier) {
-    if (!isNormalizedParent(qualifier.parent)) {
-      throw new InvalidArgumentError(`Missing required fields in the parent hierarchy [${JSON.stringify(qualifier)}].`);
-    }
-    if (hasBloatedLineage(qualifier)) {
-      throw new InvalidArgumentError(`Additional fields found in the parent lineage [${JSON.stringify(qualifier)}].`);
-    }
-  }
-
-  if (hasField(qualifier, {name: 'contact', type: 'object'})) {
-    if (!isNormalizedParent(qualifier.contact)) {
-      // eslint-disable-next-line max-len
-      throw new InvalidArgumentError(`Missing required fields in the contact hierarchy [${JSON.stringify(qualifier)}].`);
-    }
-    if (hasBloatedLineage(qualifier.contact)){
-      throw new InvalidArgumentError(`Additional fields found in the contact lineage [${JSON.stringify(qualifier)}].`);
-    }
-  }
+  checkFieldLineageAndThrowError(qualifier);
+  checkFieldLineageAndThrowError(qualifier, 'contact');
 
   if (!hasValidContactType(qualifier) && !hasValidLegacyContactType(qualifier, 'place')) {
     throw new InvalidArgumentError('Invalid type for contacts.');
@@ -427,6 +412,31 @@ export const byPlaceQualifier = (data:unknown): PlaceQualifier => {
 
   return qualifier as PlaceQualifier;
 };
+
+/** @internal*/
+const checkFieldLineageAndThrowError = (data: Record<string, unknown>, field?:string) => {
+  let hierarchyRoot = data;
+  let normalized_parent = data.parent;
+  
+  if (field && hasField(data, {name: field, type: 'object'})) {
+    hierarchyRoot = data[field] as unknown as Record<string, unknown>;
+    normalized_parent = data[field];
+  }
+
+  if (!hasField(hierarchyRoot, {type: 'object', name: 'parent'})){
+    return;
+  }
+  
+  if (!isNormalizedParent(normalized_parent)) {
+    // eslint-disable-next-line max-len
+    throw new InvalidArgumentError(`Missing required fields in the ${field??'parent'} hierarchy [${JSON.stringify(data)}].`);
+  }
+  if (hasBloatedLineage(hierarchyRoot)) {
+    // eslint-disable-next-line max-len
+    throw new InvalidArgumentError(`Additional fields found in the ${field??'parent'} lineage [${JSON.stringify(data)}].`);
+  }
+};
+
 
 /** @internal*/
 export const isPlaceQualifier = (data:unknown) : data is PlaceQualifier => {
