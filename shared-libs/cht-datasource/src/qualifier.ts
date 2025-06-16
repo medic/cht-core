@@ -359,6 +359,8 @@ const hasBloatedLineage = ( data: Record<string, unknown> ): boolean => {
       // our liking as `isNormalized` check ensures that it does have two keys `_id` and `parent`.
       return true;
     }
+    // This is meant to handle the check for the last parent in the
+    // hierarchy, which will just have an `_id`.
     if (!parent.parent) {
       return Object.keys(parent).length > 1;
     }
