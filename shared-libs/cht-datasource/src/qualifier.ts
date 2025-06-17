@@ -317,16 +317,17 @@ export const byPersonQualifier = (data: unknown): PersonQualifier => {
     throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(qualifier)}].`);
   }
 
+  // cannot use checkFieldLineageAndThrowError as parent is required in `person`
   if (!isNormalizedParent(qualifier.parent)) {
     throw new InvalidArgumentError(`Missing required fields in the parent hierarchy [${JSON.stringify(qualifier)}].`);
   }
 
-  if (!hasValidContactType(qualifier) && !hasValidLegacyContactType(qualifier, 'person')) {
-    throw new InvalidArgumentError('Invalid type for contacts.');
-  }
-
   if (hasBloatedLineage(qualifier)) {
     throw new InvalidArgumentError(`Additional fields found in the parent lineage [${JSON.stringify(qualifier)}].`);
+  }
+
+  if (!hasValidContactType(qualifier) && !hasValidLegacyContactType(qualifier, 'person')) {
+    throw new InvalidArgumentError('Invalid type for contacts.');
   }
 
   return qualifier as unknown as PersonQualifier;
@@ -337,7 +338,8 @@ export const isPersonQualifier = (data: unknown): data is PersonQualifier => {
   if (!checkContactQualifierFields(data)) {
     return false;
   }
-
+  
+  // `parent` must be present for person, so cannot use `hasInvalidContactLineageForField` 
   if (!hasField(data, { name: 'parent', type: 'object' }) || !isNormalizedParent(data.parent)) {
     return false;
   }
@@ -359,6 +361,11 @@ const hasBloatedLineage = ( data: Record<string, unknown> ): boolean => {
       // our liking as `isNormalized` check ensures that it does have two keys `_id` and `parent`.
       return true;
     }
+    // This is meant to handle the check for the last parent in the
+    // hierarchy, which will just have an `_id`.
+    if (!parent.parent) {
+      return Object.keys(parent).length > 1;
+    }
     parent = parent.parent;
   }
   return false;
@@ -372,4 +379,104 @@ const hasValidContactType = ( data: Record<string, unknown> ): boolean => {
 /** @internal */
 const hasValidLegacyContactType = ( data: Record<string, unknown>, type:string): boolean => {
   return data.type === type;
+};
+
+/** 
+ * A qualifier for a place
+ */
+export type PlaceQualifier = ContactQualifier & Readonly<{
+  parent?: NormalizedParent;
+  contact?: NormalizedParent;
+  place_id?: string;
+}>
+
+/**
+ * Builds a qualifier for creation and update of a place with the given fields
+ * @param data object containing the fields for a person
+ * @returns the place qualifier
+ * @throws Error if data is not an object
+ * @throws Error if type is not provided or is empty
+ * @throws Error if name is not provided or is empty
+ * @throws Error if parent if present is not in a valid de-hydrated format. 
+ * @throws Error if contact if present is not in a valid de-hydrated format. 
+ * @throws Error if reported_date is not in a valid format. 
+ * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+ */
+export const byPlaceQualifier = (data:unknown): PlaceQualifier => {
+  const qualifier = byContactQualifierNonAssertive(data);
+  checkFieldLineageAndThrowError(qualifier);
+  checkFieldLineageAndThrowError(qualifier, 'contact');
+
+  if (!hasValidContactType(qualifier) && !hasValidLegacyContactType(qualifier, 'place')) {
+    throw new InvalidArgumentError('Invalid type for contacts.');
+  }
+
+  return qualifier as PlaceQualifier;
+};
+
+/** @internal*/
+const checkFieldLineageAndThrowError = (data: Record<string, unknown>, field?:string) => {
+  let hierarchyRoot = data;
+  let normalized_parent = data.parent;
+  
+  if (field && hasField(data, {name: field, type: 'object'})) {
+    hierarchyRoot = data[field] as unknown as Record<string, unknown>;
+    normalized_parent = data[field];
+  }
+
+  if (!hasField(hierarchyRoot, {type: 'object', name: 'parent'})){
+    return;
+  }
+  
+  if (!isNormalizedParent(normalized_parent)) {
+    // eslint-disable-next-line max-len
+    throw new InvalidArgumentError(`Missing required fields in the ${field??'parent'} hierarchy [${JSON.stringify(data)}].`);
+  }
+  if (hasBloatedLineage(hierarchyRoot)) {
+    // eslint-disable-next-line max-len
+    throw new InvalidArgumentError(`Additional fields found in the ${field??'parent'} lineage [${JSON.stringify(data)}].`);
+  }
+};
+
+/** @internal*/
+const hasInvalidContactLineageForField = (data: Record<string, unknown>, field?:string) => {
+  let hierarchyRoot = data;
+  let normalized_parent = data.parent;
+  
+  if (field && hasField(data, {name: field, type: 'object'})) {
+    hierarchyRoot = data[field] as unknown as Record<string, unknown>;
+    normalized_parent = data[field];
+  }
+
+  // `parent` is optional, so this lineage is valid
+  if (!hasField(hierarchyRoot, {type: 'object', name: 'parent'})){
+    return false;
+  }
+  
+  if (!isNormalizedParent(normalized_parent)) {
+    // eslint-disable-next-line max-len
+    return true;
+  }
+  if (hasBloatedLineage(hierarchyRoot)) {
+    // eslint-disable-next-line max-len
+    return true;
+  }
+};
+
+
+/** @internal*/
+export const isPlaceQualifier = (data:unknown) : data is PlaceQualifier => {
+  if (!checkContactQualifierFields(data)) {
+    return false;
+  }
+
+  if (hasInvalidContactLineageForField(data)){
+    return false;
+  }
+
+  if (hasInvalidContactLineageForField(data, 'contact')){
+    return false;
+  }
+
+  return hasValidContactType(data) || hasValidLegacyContactType(data, 'place');
 };

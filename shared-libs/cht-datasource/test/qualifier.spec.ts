@@ -11,6 +11,8 @@ import {
   isReportQualifier,
   byPersonQualifier,
   isPersonQualifier,
+  byPlaceQualifier,
+  isPlaceQualifier,
 } from '../src/qualifier';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -533,5 +535,499 @@ describe('qualifier', () => {
       ].forEach((qualifier) => expect(isPersonQualifier(qualifier)).to.be.true);
     });
 
+  });
+
+  describe('byPlaceQualifier', () => {
+    it('throws error for invalid contact types', () => {
+      [
+        {
+          name: 'place-1',
+          type: 'hospital',
+          reported_date: 123123123
+        },
+        {
+          name: 'place-1',
+          type: 'contact',
+        }
+      ].forEach((qualifier) => expect(() => byPlaceQualifier(qualifier))
+        .to.throw('Invalid type for contacts.'));
+    });
+
+    it('throws error for bloated lineage on parent/contact', () => {
+      [
+        {
+          type: 'place',
+          name: 'place-1',
+          parent: {
+            _id: '1-id',
+            name: 'place-2',
+            parent: {
+              _id: '1-id',
+            }
+          }
+        }, 
+
+        {
+          type: 'place',
+          name: 'place-1',
+          reported_date: 23232323,
+          parent: {
+            _id: '2-id',
+            parent: {
+              _id: '4-id',
+              name: 'place-2',
+              parent: {
+                _id: '3-id',
+              }
+            }
+            
+          }
+        }
+      ].forEach((qualifier) => {
+        const expected_qualifier = qualifier.reported_date ?
+          qualifier : { ...qualifier, reported_date: CURRENT_ISO_TIMESTAMP };
+        expect(() => byPlaceQualifier(qualifier))
+          .to.throw(`Additional fields found in the parent lineage [${JSON.stringify(expected_qualifier)}].`);
+      });
+      
+
+      [
+        {
+          type: 'place',
+          name: 'place-1',
+          reported_date: 123123123,
+          contact: {
+            _id: '1-id',
+            parent: {
+              _id: '1-id',
+              name: 'place-2'
+            }
+          }
+        }, 
+  
+        {
+          type: 'place',
+          name: 'place-1',
+          contact: {
+            _id: '2-id',
+            parent: {
+              _id: '7-id',
+              name: 'place-2',
+              parent: {
+                _id: '3-id',
+              }
+            }
+              
+          }
+        }
+      ].forEach((qualifier) => {
+        const expected_qualifier = qualifier.reported_date ?
+          qualifier : { ...qualifier, reported_date: CURRENT_ISO_TIMESTAMP };
+        expect(() => byPlaceQualifier(qualifier))
+          .to.throw(`Additional fields found in the contact lineage [${JSON.stringify(expected_qualifier)}].`);
+      });
+    
+    });
+
+    it('throws error for missing required fields', () => {
+      [
+        {
+          name: 'place-1',
+          parent: {
+            _id: 'p1'
+          },
+          contact: {
+            _id: '2',
+            name: 'contact-1',
+            parent: {
+              _id: 'p3'
+            }
+          }
+        },
+        {
+          type: 'place',
+          contact: {
+            _id: '2',
+            name: 'contact-1',
+            parent: {
+              _id: 'p3'
+            }
+          }
+        }
+      ].forEach((qualifier) => {
+        expect(() => byPlaceQualifier(qualifier))
+          .to.throw(`Missing or empty required fields [${JSON.stringify(qualifier)}].`);
+      });
+    });
+
+    it('throws error invalid reported date formats', () => {
+      const qualifier = {
+        name: 'place-1',
+        type: 'place',
+        reported_date: '2025-10'
+      };
+      expect(() => byPlaceQualifier(qualifier))
+        // eslint-disable-next-line max-len
+        .to.throw(`Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`);
+    });
+
+    it('throws error on missing _id or parent properties in contact/parent hierarchy', () => {
+      [
+        {
+          name: 'place-1',
+          type: 'place',
+          parent: {
+            _id: '2-id',
+            parent: {
+              parent: {
+                _id: '3-id'
+              }
+            }
+          }
+        },
+        {
+          name: 'place-1',
+          type: 'place',
+          parent: {
+            _id: '2-id',
+            parent: {
+              name: 'place-353',
+              parent: {
+                _id: '3-id'
+              }
+            }
+          }
+        }
+      ].forEach((qualifier) => {
+        const expected_qualifier = { ...qualifier, reported_date: CURRENT_ISO_TIMESTAMP };
+        expect(() => byPlaceQualifier(qualifier))
+          .to.throw(`Missing required fields in the parent hierarchy [${JSON.stringify(expected_qualifier)}].`);
+
+      });
+
+      [
+        {
+          name: 'place-1',
+          type: 'place',
+          contact: {
+            _id: '1',
+            parent: {
+              _id: '2',
+              parent: {
+                parent: {
+                  _id: '1'
+                }
+              }
+            }
+          }
+        },
+        {
+          name: 'place-1',
+          type: 'place',
+          contact: {
+            parent: {
+              _id: '2',
+              parent: {
+                _id: '1'
+              }
+            }
+          }
+        }
+      ].forEach((qualifier) => {
+        const expected_qualifier = {...qualifier, reported_date: CURRENT_ISO_TIMESTAMP};
+        expect(() => byPlaceQualifier(qualifier))
+          .to.throw(`Missing required fields in the contact hierarchy [${JSON.stringify(expected_qualifier)}].`);
+      });
+    });
+
+    it('builds a qualifier to create and update place for valid data', () => {
+      [
+        {
+          name: 'place-1',
+          type: 'place'
+        }, {
+          name: 'place-1',
+          type: 'contact',
+          contact_type: 'hospital'
+        }, {
+          name: 'place-1',
+          type: 'place',
+          parent: {
+            _id: '2',
+            parent: {
+              _id: '3'
+            }
+          }
+        }, {
+          name: 'place-1',
+          type: 'place',
+          reported_date: 21231231, 
+          contact: {
+            _id: '2',
+            parent: {
+              _id: '3'
+            }
+          }
+        }, {
+          name: 'place-1',
+          type: 'place',
+          contact: {
+            _id: '2',
+            parent: {
+              _id: '3'
+            }
+          },
+          parent: {
+            _id: '4',
+            parent: {
+              _id: '5'
+            }
+          }
+        }
+      ].forEach((qualifier) => {
+        const expected_qualifier = {reported_date: CURRENT_ISO_TIMESTAMP, ...qualifier };
+        expect(byPlaceQualifier(qualifier)).to.deep.equal(expected_qualifier);
+      });
+    });
+  });
+
+  describe('isPlaceQualifier', () => {
+    it('return false for invalid contact types', () => {
+      [
+        {
+          name: 'place-1',
+          type: 'hospital',
+          reported_date: 123123123
+        },
+        {
+          name: 'place-1',
+          type: 'contact',
+        }
+      ].forEach((qualifier) => expect(isPlaceQualifier(qualifier)).to.be.false);
+    });
+
+    it('returns false for bloated lineage on parent/contact', () => {
+      [
+        {
+          type: 'place',
+          name: 'place-1',
+          parent: {
+            _id: '1-id',
+            name: 'place-2',
+            parent: {
+              _id: '1-id',
+            }
+          }
+        }, 
+
+        {
+          type: 'place',
+          name: 'place-1',
+          reported_date: 23232323,
+          parent: {
+            _id: '2-id',
+            parent: {
+              _id: '4-id',
+              name: 'place-2',
+              parent: {
+                _id: '3-id',
+              }
+            }
+            
+          }
+        }
+      ].forEach((qualifier) => {
+        expect(isPlaceQualifier(qualifier)).to.be.false;
+      });
+      
+
+      [
+        {
+          type: 'place',
+          name: 'place-1',
+          reported_date: 123123123,
+          contact: {
+            _id: '1-id',
+            parent: {
+              _id: '1-id',
+              name: 'place-2'
+            }
+          }
+        }, 
+  
+        {
+          type: 'place',
+          name: 'place-1',
+          contact: {
+            _id: '2-id',
+            parent: {
+              _id: '7-id',
+              name: 'place-2',
+              parent: {
+                _id: '3-id',
+              }
+            }
+              
+          }
+        }
+      ].forEach((qualifier) => {
+        expect(isPlaceQualifier(qualifier)).to.be.false;
+      });
+    
+    });
+
+    it('returns false for missing required fields', () => {
+      [
+        {
+          name: 'place-1',
+          parent: {
+            _id: 'p1'
+          },
+          contact: {
+            _id: '2',
+            name: 'contact-1',
+            parent: {
+              _id: 'p3'
+            }
+          }
+        },
+        {
+          type: 'place',
+          contact: {
+            _id: '2',
+            name: 'contact-1',
+            parent: {
+              _id: 'p3'
+            }
+          }
+        }
+      ].forEach((qualifier) => {
+        expect(isPlaceQualifier(qualifier)).to.be.false;
+      });
+    });
+
+    it('returns false invalid reported date formats', () => {
+      const qualifier = {
+        name: 'place-1',
+        type: 'place',
+        reported_date: '2025-10'
+      };
+      expect(isPlaceQualifier(qualifier)).to.be.false;
+    });
+
+    it('returns false on missing _id or parent properties in contact/parent hierarchy', () => {
+      [
+        {
+          name: 'place-1',
+          type: 'place',
+          parent: {
+            _id: '2-id',
+            parent: {
+              parent: {
+                _id: '3-id'
+              }
+            }
+          }
+        },
+        {
+          name: 'place-1',
+          type: 'place',
+          parent: {
+            _id: '2-id',
+            parent: {
+              name: 'place-353',
+              parent: {
+                _id: '3-id'
+              }
+            }
+          }
+        }
+      ].forEach((qualifier) => {
+        expect(isPlaceQualifier(qualifier))
+          .to.be.false;
+      });
+
+      [
+        {
+          name: 'place-1',
+          type: 'place',
+          contact: {
+            _id: '1',
+            parent: {
+              _id: '2',
+              parent: {
+                parent: {
+                  _id: '1'
+                }
+              }
+            }
+          }
+        },
+        {
+          name: 'place-1',
+          type: 'place',
+          contact: {
+            parent: {
+              _id: '2',
+              parent: {
+                _id: '1'
+              }
+            }
+          }
+        }
+      ].forEach((qualifier) => {
+        expect(isPlaceQualifier(qualifier))
+          .to.be.false;
+      });
+    });
+
+    it('returns true for valid data', () => {
+      [
+        {
+          name: 'place-1',
+          type: 'place'
+        }, {
+          name: 'place-1',
+          type: 'contact',
+          contact_type: 'hospital'
+        }, {
+          name: 'place-1',
+          type: 'place',
+          parent: {
+            _id: '2',
+            parent: {
+              _id: '3'
+            }
+          }
+        }, {
+          name: 'place-1',
+          type: 'place',
+          reported_date: 21231231, 
+          contact: {
+            _id: '2',
+            parent: {
+              _id: '3'
+            }
+          }
+        }, {
+          name: 'place-1',
+          type: 'place',
+          contact: {
+            _id: '2',
+            parent: {
+              _id: '3'
+            }
+          },
+          parent: {
+            _id: '4',
+            parent: {
+              _id: '5'
+            }
+          }
+        }
+      ].forEach((qualifier) => {
+        expect(isPlaceQualifier(qualifier)).to.be.true;
+      });
+    });
   });
 });
