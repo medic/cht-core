@@ -1,12 +1,13 @@
 import sinon, { SinonStub } from 'sinon';
 import contactTypeUtils from '@medic/contact-types-utils';
 import logger from '@medic/logger';
-import { Doc } from '../../src/libs/doc';
+import * as Doc from '../../src/libs/doc';
 import * as Person from '../../src/local/person';
 import * as LocalDoc from '../../src/local/libs/doc';
 import * as Lineage from '../../src/local/libs/lineage';
 import { expect } from 'chai';
 import { LocalDataContext } from '../../src/local/libs/data-context';
+import { PersonQualifier } from '../../src/qualifier';
 
 describe('local person', () => {
   let localContext: LocalDataContext;
@@ -14,16 +15,22 @@ describe('local person', () => {
   let warn: SinonStub;
   let debug: SinonStub;
   let isPerson: SinonStub;
+  let dbPost: SinonStub;
+  let dbGet: SinonStub;
+  let isDoc: SinonStub;
 
   beforeEach(() => {
+    dbPost = sinon.stub();
+    dbGet = sinon.stub();
     settingsGetAll = sinon.stub();
     localContext = {
-      medicDb: {} as PouchDB.Database<Doc>,
+      medicDb: { post: dbPost, get: dbGet } as unknown as PouchDB.Database<Doc.Doc>,
       settings: { getAll: settingsGetAll }
     } as unknown as LocalDataContext;
     warn = sinon.stub(logger, 'warn');
     debug = sinon.stub(logger, 'debug');
     isPerson = sinon.stub(contactTypeUtils, 'isPerson');
+    isDoc = sinon.stub(Doc, 'isDoc');
   });
 
   afterEach(() => sinon.restore());
@@ -313,6 +320,91 @@ describe('local person', () => {
         expect(fetchAndFilterOuter.firstCall.args[2]).to.be.equal(limit);
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
         expect(isPerson.notCalled).to.be.true;
+      });
+    });
+
+    describe('createPerson', () => {
+      it('throws error if qualifier contact_type is not a part of settings contact_types', async() => {
+        settingsGetAll.returns({
+          contact_types: ['animal', 'human']
+        });
+        isPerson.returns(false);
+
+        const personQualifier: PersonQualifier = {
+          type: 'contact',
+          name: 'user-1',
+          contact_type: 'robot',
+          parent: {
+            _id: '1-id'
+          }
+        };
+        await expect(Person.v1.createPerson(localContext)(personQualifier))
+          .to.be.rejectedWith('Invalid person type.');
+      });
+
+      it('creates Person doc for valid input containing normalized parent lineage with a provided _id', async() => {
+        settingsGetAll.returns({
+          contact_types: ['animal', 'human']
+        });
+        isDoc.returns(true);
+        isPerson.returns(true);
+        const qualifier = {
+          _id: '2-inserted-id',
+          name: 'user-1',
+          type: 'contact',
+          contact_type: 'human',
+          parent: {
+            _id: '1-id',
+            parent: {
+              _id: '2-id'
+            }
+          },
+        };
+        
+        const qualifier_id = qualifier._id;
+        const qualifier_reported_date = new Date().toISOString();
+        dbPost.resolves({ id: qualifier_id, ok: true });
+        dbGet.resolves({ reported_date: qualifier_reported_date, ...qualifier });
+      
+        const person = await Person.v1.createPerson(localContext)(qualifier);
+        expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
+      });
+
+      it('creates a Person doc for valid input having a legacy type without _id, reported_date', 
+        async () => {
+          isDoc.returns(true);
+          isPerson.returns(true);
+          const qualifier = {
+            name: 'user-1',
+            type: 'person',
+            parent: {
+              _id: '1-id',
+              parent: {
+                _id: '2-id'
+              }
+            },
+          };
+
+          const qualifier_reported_date = new Date().toISOString();
+          dbPost.resolves({ id: '1-id', ok: true });
+          dbGet.resolves({ reported_date: qualifier_reported_date, ...qualifier });
+          const person = await Person.v1.createPerson(localContext)(qualifier);
+          expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
+        });
+
+      it('throws error if `_rev` is passed in', async () => {
+        const qualifier = {
+          name: 'user-1',
+          type: 'person',
+          _rev: '1-rev',
+          parent: {
+            _id: '1-id'
+          }
+        };
+      
+        await expect(
+          Person.v1.createPerson(localContext)(qualifier as unknown as PersonQualifier)
+        ).to.be.rejectedWith('Cannot pass `_rev` when creating a person.');
       });
     });
   });
