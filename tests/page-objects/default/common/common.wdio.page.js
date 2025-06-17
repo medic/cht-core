@@ -70,6 +70,7 @@ const isHamburgerMenuOpen = async () => {
 
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
+    await closeFastActionList();
     await hamburgerMenuSelectors.hamburgerMenu().click();
   }
   await hamburgerMenuSelectors.closeSideBarMenu().waitForDisplayed();
@@ -231,7 +232,20 @@ const getFastActionItemsLabels = async () => {
   return await items.map(item => item.getText());
 };
 
+const getFastActionItemsLabelsFlat = async () => {
+  await closeHamburgerMenu();
+  const button = await fabSelectors.fastActionFlat();
+  await button.click();
+
+  await browser.pause(ELEMENT_DISPLAY_PAUSE);
+  await fabSelectors.fastActionListContainer().waitForDisplayed();
+
+  const items = await fabSelectors.fastActionItems();
+  return await items.map(item => item.getText());
+};
+
 const clickFastActionFlat = async ({ actionId, waitForList }) => {
+  await closeHamburgerMenu();
   await fabSelectors.fastActionFlat().waitForDisplayed();
 
   waitForList = waitForList === undefined ? await fabSelectors.multipleActions().isExisting() : waitForList;
@@ -243,6 +257,7 @@ const clickFastActionFlat = async ({ actionId, waitForList }) => {
 
 const openFastActionReport = async (formId, rightSideAction = true) => {
   await waitForPageLoaded();
+  await closeHamburgerMenu();
   if (rightSideAction) {
     await clickFastActionFAB({ actionId: formId });
   } else {
@@ -265,7 +280,9 @@ const getFastActionFlatText = async () => {
 };
 
 const closeFastActionList = async () => {
-  await fabSelectors.fastActionListCloseButton().click();
+  if (await fabSelectors.fastActionListContainer().isDisplayed()) {
+    await fabSelectors.fastActionListCloseButton().click();
+  }
 };
 
 const isReportActionDisplayed = async () => {
@@ -535,7 +552,7 @@ const getErrorLog = async () => {
   return { errorMessage, url, username, errorStack };
 };
 
-const createFormDoc = (path, formId) => {
+const createFormDoc = (path, formId, context = { person: true, place: true }) => {
   const id = formId || path.split('/').pop();
   const formXML = fs.readFileSync(`${path}.xml`, 'utf8');
   return {
@@ -543,10 +560,7 @@ const createFormDoc = (path, formId) => {
     internalId: id,
     title: id,
     type: 'form',
-    context: {
-      person: true,
-      place: true,
-    },
+    context: context,
     _attachments: {
       xml: {
         content_type: 'application/octet-stream',
@@ -577,6 +591,7 @@ module.exports = {
   waitForPageLoaded,
   clickFastActionFAB,
   getFastActionItemsLabels,
+  getFastActionItemsLabelsFlat,
   clickFastActionFlat,
   openFastActionReport,
   getFastActionFABTextById,
