@@ -1,14 +1,15 @@
-import { ContactTypeQualifier, UuidQualifier } from './qualifier';
+import { ContactTypeQualifier, PersonQualifier, UuidQualifier } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Contact from './contact';
 import * as Remote from './remote';
 import * as Local from './local';
 import * as Place from './place';
-import { LocalDataContext } from './local/libs/data-context';
+import { isLocalDataContext, LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import { InvalidArgumentError } from '../dist';
 
 /** */
 export namespace v1 {
@@ -115,5 +116,32 @@ export namespace v1 {
       return getPagedGenerator(getPage, personType);
     };
     return curriedGen;
+  };
+
+  /**
+   * Returns a function for creating a person from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a person.
+   * @throws Error if a data context is not provided
+   */
+  export const createPerson = (context:DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    
+    if (!isLocalDataContext(context)) {
+      throw new InvalidArgumentError('Require LocalDataContext');
+    }
+    const fn =  Local.Person.v1.createPerson(context);
+
+    /**
+     * Returns the created person.
+     * @param qualifier the qualifier to create the person
+     * @returns returns the created person.
+     * @throws Error if qualifier if of invalid type
+     */
+    const curriedFn =  async(qualifer: PersonQualifier):Promise<Person> => {
+      return await fn(qualifer);
+    };
+
+    return curriedFn;
   };
 }
