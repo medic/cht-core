@@ -1,0 +1,15 @@
+couchdb:
+  clusteredCouch_enabled: true
+clusteredCouch:
+  noOfCouchDBNodes: 3
+nodes:
+  # If using clustered couchdb, add the nodes here: node-1: name-of-first-node, node-2: name-of-second-node, etc.
+  # Add equal number of nodes as specified in clusteredCouch.noOfCouchDBNodes
+  node-1: "" # This is the name of the first node where couchdb will be deployed
+  node-2: "" # This is the name of the second node where couchdb will be deployed
+  node-3: "" # This is the name of the third node where couchdb will be deployed
+
+couchdb_data:
+  preExistingDataAvailable: "false" #If this is false, you don't have to fill in details in local_storage or remote.
+  dataPathOnDiskForCouchDB: "data" # This is the path where couchdb data will be stored. Leave it as data if you don't have pre-existing data.
+  partition: "0" # This is the partition number for the EBS volume. Leave it as 0 if you don't have a partitioned disk.

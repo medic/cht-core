@@ -1,0 +1,13 @@
+couchdb:
+  clusteredCouch_enabled: false
+
+nodes:
+  # For single couchdb node, use the following:
+  # Leave it commented out if you don't know what it means.
+  # Leave it commented out if you want to let kubernetes deploy this on any available node. (Recommended)
+  #single_node_deploy: "gamma-cht-node" # This is the name of the node where all components will be deployed - for non-clustered configuration.
+
+couchdb_data:
+  preExistingDataAvailable: "false" #If this is false, you don't have to fill in details in local_storage or remote.
+  dataPathOnDiskForCouchDB: "data" # This is the path where couchdb data will be stored. Leave it as data if you don't have pre-existing data.
+  partition: "0" # This is the partition number for the EBS volume. Leave it as 0 if you don't have a partitioned disk.

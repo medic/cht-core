@@ -1,0 +1,19 @@
+# K3S-K3D-specific configurations that extend the base.yaml
+
+# Override cluster type for k3s-k3d
+environment: "local"  # "local", "remote"
+cluster_type: "k3s-k3d"
+
+# Applicable only if using k3s
+k3s_use_vSphere_storage_class: "false" # "true" or "false"
+# vSphere specific configurations. If you set "true" for k3s_use_vSphere_storage_class, fill in the details below.
+vSphere:
+  datastoreName: "DatastoreName"  # Replace with your datastore name
+  diskPath: "path/to/disk"         # Replace with your disk path
+
+# If preExistingDataAvailable is true, fill in the details below.
+# For local_storage, fill in the details if you are using k3s-k3d cluster type.
+local_storage:  #If using k3s-k3d cluster type and you already have existing data.
+  preExistingDiskPath-1: "/var/lib/couchdb1" #If node1 has pre-existing data.
+  preExistingDiskPath-2: "/var/lib/couchdb2" #If node2 has pre-existing data.
+  preExistingDiskPath-3: "/var/lib/couchdb3" #If node3 has pre-existing data.

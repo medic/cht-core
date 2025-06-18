@@ -1,0 +1,32 @@
+# Base configuration shared across all environments
+project_name: "<your-project-name>"
+namespace: "<your-namespace>"
+chtversion: "{{cht_version}}"
+cht_image_tag: "{{cht_image_tag}}"
+
+# API Service configuration
+api:
+  service:
+    type: ClusterIP
+
+# If images are cached, the same image tag will never be pulled twice. For development, this means that it's not
+# possible to upgrade to a newer version of the same branch, as the old image will always be reused.
+# For development instances, set this value to false.
+# Image caching configuration
+cache_images: true
+
+# Upstream server configuration
+upstream_servers:
+  docker_registry: "public.ecr.aws/medic"
+  builds_url: "https://staging.dev.medicmobile.org/_couch/builds_4"
+
+upgrade_service:
+  tag: 0.32
+
+# CouchDB Settings
+couchdb:
+  password: "<password-value>"
+  secret: "<uuid>"  # Generate with uuidgen
+  user: "medic"
+  uuid: "<uuid>"    # Generate with uuidgen
+  couchdb_node_storage_size: 100Mi

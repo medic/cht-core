@@ -1,0 +1,23 @@
+# GCP-specific configurations that extend the base.yaml
+
+# Override cluster type for GCP
+environment: "remote"  # "local", "remote"
+cluster_type: "gke"
+
+# GCP-specific ingress configuration
+ingress:
+  gcp:
+    enabled: true
+    staticIpName: "cht-api-ip"
+    managedCertificateName: "cht-api-cert"
+
+# GCP-specific storage configuration
+couchdb:
+  storage_class: "standard-rwo"  # GCP standard persistent disk
+  persistent_disk:
+    size: "100Gi"  # Size for GCP persistent disk
+    type: "pd-standard"  # GCP persistent disk type
+    diskName: ""  # Name of pre-existing GCP persistent disk (required if preExistingDataAvailable is true)
+    diskName-1: ""  # Name of pre-existing GCP persistent disk for node 1 (clustered setup)
+    diskName-2: ""  # Name of pre-existing GCP persistent disk for node 2 (clustered setup)
+    diskName-3: ""  # Name of pre-existing GCP persistent disk for node 3 (clustered setup)
