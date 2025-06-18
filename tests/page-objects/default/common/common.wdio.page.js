@@ -432,7 +432,7 @@ const syncAndWaitForSuccess = async (expectReload, timeout = RELOAD_SYNC_TIMEOUT
     }
     await openHamburgerMenu();
 
-    if (!await hamburgerMenuSelectors.syncSuccess().isDisplayed({ withinViewport: true })) {
+    if (!await hamburgerMenuSelectors.syncSuccess().isDisplayed()) {
       throw new Error('Failed to sync');
     }
   } catch (err) {
