@@ -119,4 +119,30 @@ export namespace v1 {
     };
     return curriedGen;
   };
+
+  /**
+   * Returns a function for retrieving a report with lineage from the given data context.
+   * @param context the current data context
+   * @returns a function for retrieving a report with lineage
+   * @throws Error if a data context is not provided
+   */
+
+  export const getWithLineage = (context: DataContext): typeof curriedFnWithLineage => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Report.v1.getWithLineage, Remote.Report.v1.getWithLineage);
+
+    /**
+     * Returns a report with lineage for the given qualifier.
+     * @param qualifier identifier for the report to retrieve
+     * @returns the report with lineage or `null` if no report is found for the qualifier
+     * @throws Error if the qualifier is invalid
+     */
+    const curriedFnWithLineage = async (
+      qualifier: UuidQualifier
+    ): Promise<Nullable<ReportWithLineage>> => {
+      assertUuidQualifier(qualifier);
+      return await fn(qualifier);
+    };
+    return curriedFnWithLineage;
+  };
 }
