@@ -79,7 +79,7 @@ describe('entry point', () => {
     chai.expect(checks.checkCouchDbCluster.callCount).to.equal(1);
     chai.expect(checks.checkCouchDbSystemDbs.callCount).to.equal(1);
 
-    /* eslint-disable no-console */
+     
     chai.expect(console.error.callCount).to.equal(100);
     chai.expect(console.error.args[0][0].message).to.equal('db not found');
   });

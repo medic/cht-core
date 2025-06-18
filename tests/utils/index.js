@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 
 const _ = require('lodash');
 const constants = require('@constants');
@@ -334,7 +334,7 @@ const saveDocsRevs = async (docs) => {
 const saveDocIfNotExists = async doc => {
   try {
     await getDoc(doc._id);
-  } catch (_) {
+  } catch {
     await saveDoc(doc);
   }
 };

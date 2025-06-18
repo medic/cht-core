@@ -3945,9 +3945,9 @@ describe('Users service', () => {
 
     it('should parse csv, trim spaces and not split strings with commas inside', async () => {
       const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n' +
-                  // eslint-disable-next-line max-len
+                   
                   'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
-                  // eslint-disable-next-line max-len
+                   
                   'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
@@ -3973,13 +3973,13 @@ describe('Users service', () => {
     });
 
     it('should parse csv, trim spaces and not split strings with commas inside', async () => {
-      /* eslint-disable max-len */
+       
       const csv = 'password,username,type,place,token_login,contact.name,contact.phone,contact.address\n' +
                   ',mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,TRUE,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
                   'Secret9876,devi,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,truthy mistake,devi,265252,"12 King ST, Kent Town, 55555"\n' +
                   'Secret1144,jeff,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,,jeff,26599102,"27 King ST, Kent Town, 55555"\n' +
                   'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,FALSE,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
-      /* eslint-enable max-len */
+       
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
 
@@ -4033,7 +4033,7 @@ describe('Users service', () => {
 
     it('should ignore empty header columns', async () => {
       const csv = 'password,username,type,,contact.name,,contact.address\n' +
-                  // eslint-disable-next-line max-len
+                   
                   'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n';
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
@@ -4151,10 +4151,10 @@ describe('Users service', () => {
 
     it('should ignore excluded header columns', async () => {
       const csv = 'password,username,type,place,contact.meta:excluded,contact.name,contact.notes\n' +
-                  // eslint-disable-next-line max-len
+                   
                   'Secret1234,mary,person,498a394e-f98,excluded column,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
                   'Secret5678, peter ,person,498a394e-f99,excluded column,Peter,' +
-                  // eslint-disable-next-line max-len
+                   
                   '"ce fût une belle saison, le maïs sera prêt à partir de l’été c’est-à-dire dès demain, d’où l’invaitation"';
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});

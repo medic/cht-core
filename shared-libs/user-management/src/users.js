@@ -685,7 +685,7 @@ const validateUserContact = (data, user) => {
   }
 };
 
-/* eslint-disable max-len */
+ 
 /**
  * @param {Object} data
  * @param {string} data.username Identifier used for authentication
@@ -707,7 +707,7 @@ const validateUserContact = (data, user) => {
  * @param {string=} data.type Deprecated. Used to infer user's roles
  * @param {string} appUrl request protocol://hostname
  */
-/* eslint-enable max-len */
+ 
 const createUserEntities = async (data, appUrl) => {
   // Preserve the place's primary contact, if data.place already exists in the DB.
   // => if we're creating the place alongside the user, set the contact as the place's primary contact
@@ -986,7 +986,7 @@ module.exports = {
   },
   getUserDoc: (username) => getUserDoc(username, 'users'),
   getUserSettings,
-  /* eslint-disable max-len */
+   
   /**
    * Take the request data and create valid user, user-settings and contact
    * objects. Returns the response body in the callback.
@@ -1012,7 +1012,7 @@ module.exports = {
    * @param {string} appUrl request protocol://hostname
    * @api public
    */
-  /* eslint-enable max-len */
+   
   createUser: async (data, appUrl) => {
     const missing = missingFields(data);
     if (missing.length > 0) {
@@ -1041,7 +1041,7 @@ module.exports = {
     return await createUserEntities(data, appUrl);
   },
 
-  /* eslint-disable max-len */
+   
   /**
    * Take the request data and create valid users, user-settings and contacts
    * objects. Returns the response body in the callback.
@@ -1066,7 +1066,7 @@ module.exports = {
    * @param {string=} users[].type Deprecated. Used to infer user's roles
    * @param {string} appUrl request protocol://hostname
    */
-  /* eslint-enable max-len */
+   
   async createUsers(users, appUrl, ignoredUsers, logId) {
     if (!Array.isArray(users)) {
       return module.exports.createUser(users, appUrl);

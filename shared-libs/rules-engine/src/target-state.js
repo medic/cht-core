@@ -34,7 +34,7 @@
  * }
  */
 
-/* eslint-disable no-console */
+ 
 
 const moment = require('moment/moment');
 

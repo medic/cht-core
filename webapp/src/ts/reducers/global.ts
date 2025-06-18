@@ -1,5 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
 import { Data } from '@angular/router';
+import * as $ from 'jquery';
 
 import { Actions } from '@mm-actions/global';
 import { VersionNumber } from '@mm-services/browser-detector.service';

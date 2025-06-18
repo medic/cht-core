@@ -1,4 +1,3 @@
-import jQuery from 'jquery';
 import { expect } from 'chai';
 
 import * as Displaybase64image from '../../../../../src/js/enketo/widgets/display-base64-image';

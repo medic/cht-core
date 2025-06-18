@@ -2,6 +2,7 @@ import { AfterViewInit, Component, Inject } from '@angular/core';
 import * as phoneNumber from '@medic/phone-number';
 import { filter as _filter, map as _map, partial as _partial } from 'lodash-es';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import * as $ from 'jquery';
 
 import { FormatProvider } from '@mm-providers/format.provider';
 import { SettingsService } from '@mm-services/settings.service';

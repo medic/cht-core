@@ -365,7 +365,7 @@ describe('TelemetryService', () => {
       expect(windowMock.PouchDB.args[0]).to.deep.equal([ 'telemetry-2018-11-10-greg' ]);
 
       let postCalledAfterQuery = false;
-      telemetryDb.post.callsFake(async () => postCalledAfterQuery = telemetryDb.query.called);
+      telemetryDb.post.callsFake(() => postCalledAfterQuery = telemetryDb.query.called);
       clock.tick('24:00:00'); // 1 day later ...
       await service.record('test', 2);
 

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { sortBy as _sortBy } from 'lodash-es';
 import * as phoneNumber from '@medic/phone-number';
+import * as $ from 'jquery';
 
 import { FormatProvider } from '@mm-providers/format.provider';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';

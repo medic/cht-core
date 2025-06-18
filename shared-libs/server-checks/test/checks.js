@@ -9,7 +9,6 @@ describe('checks', () => {
 
   afterEach(() => sinon.restore());
 
-  // eslint-disable-next-line no-console
   const log = idx => console.log.getCall(idx).args.map(arg => arg.toString()).join(' ');
 
   describe('checkServerUrl', () => {

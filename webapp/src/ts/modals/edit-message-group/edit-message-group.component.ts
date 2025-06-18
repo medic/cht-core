@@ -1,6 +1,7 @@
 import { AfterViewChecked, AfterViewInit, Component, OnDestroy, OnInit, Inject } from '@angular/core';
 import * as moment from 'moment';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import * as $ from 'jquery';
 
 import { EditGroupService } from '@mm-services/edit-group.service';
 import { SettingsService } from '@mm-services/settings.service';

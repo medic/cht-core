@@ -234,7 +234,7 @@ describe('Db Service', () => {
   });
 
   describe('method wrapping', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
       window.PouchDB = require('pouchdb-browser').default;
       // avoid the 2dbs being initialized at the startup
       // we're just using 1 set of stubs so the calls will be mirrored if requiring 2 dbs
@@ -432,7 +432,7 @@ describe('Db Service', () => {
           });
       }));
 
-      it('should correctly bind catch', fakeAsync(async () => {
+      it('should correctly bind catch', fakeAsync(() => {
         const changesSpy = sinon.spy(window.PouchDB.prototype, 'changes');
         const opts = {
           live: false,
@@ -690,7 +690,7 @@ describe('Db Service', () => {
             });
         }));
 
-        it('should correctly bind catch', fakeAsync(async () => {
+        it('should correctly bind catch', fakeAsync(() => {
           const target = window.PouchDB(`db-${uuidv4()}`);
           const opts = { live: false, retry: false, };
 
@@ -718,7 +718,7 @@ describe('Db Service', () => {
       });
 
       describe('from', () => {
-        it('should call with correct params', fakeAsync(async () => {
+        it('should call with correct params', fakeAsync(() => {
           const options = { live: false, since: '123' };
           const target = window.PouchDB(`db-${uuidv4()}`);
 

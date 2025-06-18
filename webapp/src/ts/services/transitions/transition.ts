@@ -13,7 +13,7 @@ export abstract class Transition {
 }
 
 export interface Doc {
-  _id:string;
-  type:string;
-  [other:string]:unknown;
+  _id: string;
+  type: string;
+  [other:string]: unknown;
 }

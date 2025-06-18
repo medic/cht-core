@@ -29,7 +29,7 @@
       const parsedCtx = JSON.parse(unescape(decodeURI(userCtx)));
       parsedCtx.locale = locale;
       return parsedCtx;
-    } catch (e) {
+    } catch {
       return;
     }
   };

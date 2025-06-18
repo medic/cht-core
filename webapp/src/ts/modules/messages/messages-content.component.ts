@@ -10,6 +10,7 @@ import { ActivatedRoute } from '@angular/router';
 import { combineLatest, Subscription, take } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 import { minBy as _minBy } from 'lodash-es';
+import * as $ from 'jquery';
 
 import { GlobalActions } from '@mm-actions/global';
 import { MessagesActions } from '@mm-actions/messages';

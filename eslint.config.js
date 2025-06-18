@@ -1,121 +1,498 @@
-const { FlatCompat } = require("@eslint/eslintrc");
-const js = require("@eslint/js");
-const promise = require("eslint-plugin-promise");
-const node = require("eslint-plugin-n");
-const { defineConfig, globalIgnores } = require("eslint/config");
+const { FlatCompat } = require('@eslint/eslintrc');
+const js = require('@eslint/js');
+const promisePlugin = require('eslint-plugin-promise');
+const nodePlugin = require('eslint-plugin-n');
+const { defineConfig, globalIgnores } = require('eslint/config');
+const angularPlugin = require('eslint-plugin-angular');
+const globalsPlugin = require('globals');
+const compatPlugin = require('eslint-plugin-compat');
+const couchdbPlugin = require('eslint-plugin-couchdb');
+const noOnlyTests = require('eslint-plugin-no-only-tests');
+const jasminePlugin = require('eslint-plugin-jasmine');
+const asyncPlugin = require('eslint-plugin-async');
+const typescriptEslint = require('@typescript-eslint/eslint-plugin');
+const tsParser = require('@typescript-eslint/parser');
+const angularEslintEslintPlugin = require('@angular-eslint/eslint-plugin');
+const angularEslintEslintPluginTemplate = require('@angular-eslint/eslint-plugin-template');
+const templateParser = require('@angular-eslint/template-parser');
+const stylisticPlugin = require('@stylistic/eslint-plugin');
 
 const compat = new FlatCompat({
-    baseDirectory: __dirname,
-    recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all
+  baseDirectory: __dirname,
+  recommendedConfig: js.configs.recommended,
+  allConfig: js.configs.all
 });
 
-module.exports = defineConfig([globalIgnores([
-    "**/node_modules/**/*",
-    "**/node_modules_backup/**/*",
-    "**/pupil/**/*",
-    "allure-report/**/*",
-    "allure-report-bak/**/*",
-    "api/build/**/*",
-    "api/extracted-resources/**/*",
-    "api/src/enketo-transformer/**/*",
-    "api/src/public/login/lib-bowser.js",
-    "build/**/*",
-    "jsdocs/**/*",
-    "shared-libs/cht-datasource/dist/**/*",
-    "shared-libs/cht-datasource/docs/**/*",
-    "tests/scalability/report*/**/*",
-    "tests/scalability/jmeter/**/*",
-    "webapp/src/ts/providers/xpath-element-path.provider.ts",
-    "webapp/dist/**/*",
-]), {
-    extends: compat.extends("@medic"),
-
+module.exports = defineConfig([
+  globalIgnores([
+    '**/node_modules/**/*',
+    'allure-report/**/*',
+    'allure-report-bak/**/*',
+    'api/build/**/*',
+    'api/extracted-resources/**/*',
+    'api/src/enketo-transformer/**/*',
+    'api/src/public/login/lib-bowser.js',
+    'build/**/*',
+    'jsdocs/**/*',
+    'shared-libs/cht-datasource/dist/**/*',
+    'shared-libs/cht-datasource/docs/**/*',
+    'tests/scalability/report*/**/*',
+    'tests/scalability/jmeter/**/*',
+    'webapp/src/ts/providers/xpath-element-path.provider.ts',
+    'webapp/dist/**/*',
+    '.github/**/compiled/index.js'
+  ]),
+  {
+    files: ['**/*.{js,ts,jsx,tsx,cjs,cts,mjs,mts}'],
+    extends: compat.extends('eslint:recommended'),
     plugins: {
-        promise,
-        node,
+      node: nodePlugin,
+      '@stylistic': stylisticPlugin,
+    },
+    languageOptions: {
+      ecmaVersion: 2020,
+      sourceType: 'commonjs',
+      globals: {
+        ...globalsPlugin.node,
+        emit: true,
+      },
+    },
+    rules: {
+      'curly': 'error',
+      '@stylistic/eol-last': 'error',
+      'eqeqeq': 'error',
+      'guard-for-in': 'error',
+      '@stylistic/indent': ['error', 2],
+      '@stylistic/max-len': ['error', { code: 120, ignoreUrls: true, tabWidth: 2}],
+      'no-bitwise': 'error',
+      'no-buffer-constructor': 'error',
+      'no-caller': 'error',
+      'no-console': 'error',
+      'no-sequences': 'error',
+      'no-var': 'error',
+      'one-var': ['error', 'never'],
+      'one-var-declaration-per-line': ['error', 'always'],
+      'prefer-const': 'error',
+      'prefer-regex-literals': 'error',
+      '@stylistic/quotes': ['error', 'single', { allowTemplateLiterals: true }],
+      '@stylistic/semi': ['error', 'always'],
+      '@stylistic/array-bracket-newline': [ 'error', 'consistent' ],
+      'array-callback-return': [
+        'error', {
+          allowImplicit: true,
+        }
+      ],
+      '@stylistic/arrow-spacing': [
+        'error', {
+          before: true,
+          after: true,
+        }
+      ],
+      '@stylistic/brace-style': [ 'error', '1tbs' ],
+      '@stylistic/comma-spacing': [
+        'error', {
+          before: false,
+          after: true,
+        }
+      ],
+      '@stylistic/comma-style': [ 'error', 'last' ],
+      'default-param-last': 'error',
+      '@stylistic/dot-location': [ 'error', 'property' ],
+      'dot-notation': [
+        'error', {
+          allowKeywords: true,
+        }
+      ],
+      'func-call-spacing': [ 'error', 'never' ],
+      'func-style': [ 'error', 'expression' ],
+      '@stylistic/function-call-argument-newline': [ 'error', 'consistent' ],
+      '@stylistic/function-paren-newline': [ 'error', 'consistent' ],
+      'implicit-arrow-linebreak': [ 'error', 'beside' ],
+      '@stylistic/key-spacing': [
+        'error', {
+          beforeColon: false,
+          afterColon: true,
+        }
+      ],
+      '@stylistic/keyword-spacing': [
+        'error', {
+          before: true,
+          after: true,
+        }
+      ],
+      '@stylistic/linebreak-style': [ 'error', 'unix' ],
+      '@stylistic/lines-between-class-members': [
+        'error', 'always', {
+          exceptAfterSingleLine: true,
+        }
+      ],
+      '@stylistic/new-parens': 'error',
+      'no-alert': 'error',
+      'no-else-return': 'error',
+      'no-extra-bind': 'error',
+      'no-lone-blocks': 'error',
+      'no-nested-ternary': 'error',
+      'no-undef-init': 'error',
+      'no-useless-rename': 'error',
+      'no-whitespace-before-property': 'error',
+      'node/no-exports-assign': 'error',
+      'rest-spread-spacing': [ 'error', 'never' ],
+      '@stylistic/semi-spacing': [
+        'error', {
+          before: false,
+          after: true,
+        }
+      ],
+      'semi-style': [ 'error', 'last' ],
+      'template-curly-spacing': 'error',
+      'unicode-bom': [ 'error', 'never' ],
+    },
+  },
+  {
+    files: ['**/test/**', '**/tests/**'],
+    plugins: {
+      'no-only-tests': noOnlyTests,
+      promise: promisePlugin,
+      async: asyncPlugin,
     },
 
     languageOptions: {
-        ecmaVersion: 6,
-        sourceType: "script",
+      globals: {
+        ...globalsPlugin.node,
+        ...globalsPlugin.mocha,
+      }
     },
-    files: ["**/*.js", "**/*.ts"],
     rules: {
-        "array-bracket-newline": ["error", "consistent"],
-        "array-callback-return": ["error", {
-            allowImplicit: true,
-        }],
-        "arrow-spacing": ["error", {
-            before: true,
-            after: true,
-        }],
-        "brace-style": ["error", "1tbs"],
-        "comma-spacing": ["error", {
-            before: false,
-            after: true,
-        }],
-        "comma-style": ["error", "last"],
-        "default-param-last": "error",
-        "dot-location": ["error", "property"],
-        "dot-notation": ["error", {
-            allowKeywords: true,
-        }],
-        "func-call-spacing": ["error", "never"],
-        "func-style": ["error", "expression"],
-        "function-call-argument-newline": ["error", "consistent"],
-        "function-paren-newline": ["error", "consistent"],
-        "implicit-arrow-linebreak": ["error", "beside"],
-        "key-spacing": ["error", {
-            beforeColon: false,
-            afterColon: true,
-        }],
-        "keyword-spacing": ["error", {
-            before: true,
-            after: true,
-        }],
-        "linebreak-style": ["error", "unix"],
-        "lines-between-class-members": ["error", "always", {
-            exceptAfterSingleLine: true,
-        }],
-        "new-parens": "error",
-        "no-alert": "error",
-        "no-else-return": "error",
-        "no-extra-bind": "error",
-        "no-lone-blocks": "error",
-        "no-nested-ternary": "error",
-        "no-undef-init": "error",
-        "no-useless-rename": "error",
-        "no-whitespace-before-property": "error",
-        "node/no-exports-assign": "error",
-        "rest-spread-spacing": ["error", "never"],
-        "semi-spacing": ["error", {
-            before: false,
-            after: true,
-        }],
-        "semi-style": ["error", "last"],
-        "template-curly-spacing": "error",
-        "unicode-bom": ["error", "never"],
+      'async/missing-await-in-async-fn': 'error',
+      'no-only-tests/no-only-tests': 'error',
+      'promise/catch-or-return': 'error',
+      'no-global-assign': 'off',
+      'no-console': 'off',
     },
-}, {
-    files: ["**/test/**", "**/tests/**"],
+  },
+  {
+    files: ['config/**/**'],
+    languageOptions: {
+      globals: {
+        contact: true,
+        lineage: true,
+        reports: true,
+      }
+    },
     rules: {
-        "promise/catch-or-return": "error",
+      '@stylistic/brace-style': 'off',
+      '@stylistic/max-len': 'off',
+      '@stylistic/array-bracket-newline': 'off',
+      'func-style': 'off',
+      '@stylistic/function-call-argument-newline': 'off',
+      '@stylistic/function-paren-newline': 'off',
+      '@stylistic/key-spacing': 'off',
     },
-}, {
-    files: ["config/**/**"],
+  },
+  {
+    files: ['admin/**/*'],
+    plugins: {
+      compat: compatPlugin,
+      angular: angularPlugin,
+    },
+
+    languageOptions: {
+      globals: {
+        ...globalsPlugin.browser,
+        ...globalsPlugin.commonjs,
+        ...globalsPlugin.jquery,
+        angular: true,
+      },
+    },
+
     rules: {
-        "brace-style": "off",
-        "array-bracket-newline": "off",
-        "func-style": "off",
-        "function-call-argument-newline": "off",
-        "function-paren-newline": "off",
-        "key-spacing": "off",
+      'compat/compat': 'error',
+      'angular/window-service': 'error',
+      'angular/timeout-service': 'error',
+      'angular/module-getter': 'error',
+      'angular/module-setter': 'error',
+      'angular/no-private-call': 'error',
+      // 'angular/di-unused': 'error',
+      'angular/on-watch': 'error',
+      'angular/no-cookiestore': 'error',
+      // 'angular/no-directive-replace': 'error',
+      'angular/no-http-callback': 'error',
+      // 'angular/di-order': 'error',
+      // 'angular/di': 'error',
+      'angular/module-dependency-order': 'error',
+      'angular/one-dependency-per-line': 'error',
+      'angular/interval-service': 'error',
+      'angular/on-destroy': 'error',
     },
-}, {
-    files: ["ddocs/**/*.js"],
+  },
+  {
+    files: ['admin/src/js/main.js', 'admin/tests/**/*'],
+    plugins: {
+      angular: angularPlugin,
+    },
     rules: {
-        "function-paren-newline": "off",
-        "keyword-spacing": "off",
+      'angular/window-service': 'off',
+      'angular/timeout-service': 'off',
+      'angular/di-order': 'off',
+      'angular/interval-service': 'off',
     },
-}]);
+  },
+  {
+    files: ['admin/tests/**/*'],
+    plugins: {
+      jasmine: jasminePlugin,
+      angular: angularPlugin,
+    },
+
+    languageOptions: {
+      globals: {
+        ...globalsPlugin.jasmine,
+        ...globalsPlugin.jquery,
+        ...globalsPlugin.node,
+        ...globalsPlugin.chai,
+        sinon: true,
+        chai: true,
+        Q: true,
+        inject: true,
+        KarmaUtils: true,
+        moment: true,
+        _: true,
+      },
+      ecmaVersion: 2020,
+      sourceType: 'commonjs',
+    },
+
+    rules: {
+      'no-only-tests/no-only-tests': 'error',
+      'jasmine/no-focused-tests': 'error',
+    },
+  },
+  {
+    files: [ 'api/**/*', 'sentinel/**/*'], // add node recommended
+    extends: compat.extends('plugin:n/recommended-module'),
+    plugins: {
+      compat: compatPlugin,
+      n: nodePlugin,
+    },
+
+    languageOptions: {
+      globals: {
+        ...globalsPlugin.node,
+        emit: true,
+      },
+
+      ecmaVersion: 2020,
+      sourceType: 'commonjs',
+    },
+
+    rules: {
+      'n/no-process-exit': 'off',
+      'n/no-extraneous-require': 'off',
+    },
+  },
+  {
+    files: ['api/src/public/**/*.js'],
+    plugins: {
+      compat: compatPlugin,
+      n: nodePlugin,
+    },
+    languageOptions: {
+      globals: {
+        ...globalsPlugin.browser,
+      }
+    },
+    rules: {
+      'no-console': 'off',
+      'compat/compat': 'error',
+      'n/no-unsupported-features/node-builtins': 'off'
+    },
+  },
+  {
+    files: ['ddocs/**/*.js'],
+    plugins: {
+      couchdb: couchdbPlugin,
+    },
+
+    languageOptions: {
+      ecmaVersion: 5,
+      sourceType: 'script',
+    },
+
+    rules: {
+      semi: 'off',
+      indent: 'off',
+      'eol-last': 'off',
+      'no-var': 'off',
+      'function-paren-newline': 'off',
+      'keyword-spacing': 'off',
+      'func-names': 'off'
+    },
+  },
+  {
+    files: ['scripts/**/*.js'],
+    rules: {
+      'no-console': 'off',
+    }
+  },
+  {
+    files: ['tests/**/*'],
+    plugins: {
+      jasmine: jasminePlugin,
+      async: asyncPlugin,
+    },
+
+    languageOptions: {
+      globals: {
+        ...globalsPlugin.node,
+        ...globalsPlugin.chai,
+        chai: true,
+        browser: true,
+        $: true,
+        $$: true,
+        document: true,
+        caches: true,
+        navigator: true,
+      },
+    },
+
+    rules: {
+      'no-only-tests/no-only-tests': 'error',
+      'jasmine/no-focused-tests': 'error',
+      'no-console': 'off',
+      'space-before-function-paren': ['error', {
+        anonymous: 'ignore',
+        named: 'ignore',
+        asyncArrow: 'always',
+      }],
+    },
+  },
+  {
+    files: ['webapp/**/*'],
+    plugins: {
+      compat: compatPlugin,
+    },
+    languageOptions: {
+      globals: {
+        ...globalsPlugin.browser,
+      },
+
+      ecmaVersion: 2018,
+      sourceType: 'commonjs',
+    },
+    rules: {
+      'compat/compat': 'error',
+    },
+  },
+  {
+    files: ['webapp/src/js/**/*.js'],
+    rules: {
+      'no-console': 'off',
+    }
+  },
+  {
+    files: ['webapp/**/*.ts', 'webapp/**/*.tsx'],
+
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+      '@angular-eslint': angularEslintEslintPlugin,
+    },
+
+    languageOptions: {
+      parser: tsParser,
+      ecmaVersion: 5,
+      sourceType: 'script',
+
+      parserOptions: {
+        createDefaultProgram: true,
+      },
+    },
+
+    rules: {
+      '@angular-eslint/component-class-suffix': 'error',
+      '@angular-eslint/contextual-lifecycle': 'error',
+      '@angular-eslint/directive-class-suffix': 'error',
+      '@angular-eslint/no-conflicting-lifecycle': 'error',
+      '@angular-eslint/no-input-rename': 'error',
+      '@angular-eslint/no-inputs-metadata-property': 'error',
+      '@angular-eslint/no-output-native': 'error',
+      '@angular-eslint/no-output-rename': 'error',
+      '@angular-eslint/no-outputs-metadata-property': 'error',
+      '@angular-eslint/use-lifecycle-interface': 'warn',
+      '@angular-eslint/use-pipe-transform-interface': 'error',
+      'no-console': 'off',
+      'no-restricted-syntax': 'off',
+      'no-unused-vars': 'off',
+
+      '@typescript-eslint/no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+        destructuredArrayIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+      }],
+
+      '@typescript-eslint/ban-ts-comment': 'error',
+      'quote-props': ['error', 'as-needed'],
+    },
+  },
+  {
+    files: ['webapp/**/*.spec.ts'],
+
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+    },
+
+    languageOptions: {
+      parser: tsParser,
+      globals: {
+        ...globalsPlugin.mocha,
+        ...globalsPlugin.node,
+        ...globalsPlugin.jquery,
+      },
+    },
+
+    rules: {
+      '@typescript-eslint/ban-ts-comment': 'off',
+    },
+  },
+  {
+    files: ['webapp/**/*.component.html'],
+    extends: compat.extends('plugin:@angular-eslint/template/recommended'),
+
+    plugins: {
+      '@angular-eslint/template': angularEslintEslintPluginTemplate,
+    },
+
+    languageOptions: {
+      parser: templateParser,
+    },
+
+    rules: {
+      indent: 'off',
+      'max-len': 'off',
+    },
+  },
+  {
+    files: ['webapp/src/js/enketo/widgets/*.js'],
+    rules: {
+      'no-inner-declarations': 'off',
+    },
+  },
+  {
+    files: ['webapp/tests/**/*'],
+    languageOptions: {
+      globals: {
+        ...globalsPlugin.mocha,
+        ...globalsPlugin.browser,
+      },
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
+  {
+    files: ['scripts/deploy/**/*'],
+    languageOptions: {
+      sourceType: 'module',
+    }
+  }
+]);

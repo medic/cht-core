@@ -2,7 +2,7 @@
 
 const eurodigit = require('eurodigit');
 
-/* eslint-disable max-len */
+ 
 const TRANSLATIONS = {
   en: {
     FETCH_INFO: ({ count, total }) => `Fetching info (${count} of ${total} docs )…`,
@@ -16,6 +16,7 @@ const TRANSLATIONS = {
     ERROR_MESSAGE: 'Loading error, please check your connection.',
     TRY_AGAIN: 'Try again',
     POLL_REPLICATION: 'Polling replication data…',
+    // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => `Warning! You are about to download ${count} docs, which exceeds recommended limit of ${limit}. Do you wish to continue?`,
     CONTINUE: 'Continue',
     ABORT: 'Cancel',
@@ -35,10 +36,12 @@ const TRANSLATIONS = {
     ERROR_MESSAGE: 'Error al cargar, por favor comprueba la conexión',
     TRY_AGAIN: 'Volver a intentar',
     POLL_REPLICATION: 'Obteniendo datos de replicación…',
+    // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => `¡Advertencia! Va a descargar ${count} documentos, que excede el límite recomendado de ${limit}. ¿Desea continuar?`,
     CONTINUE: 'Continuar',
     ABORT: 'Cancelar',
     SESSION_EXPIRED_TITLE: 'La sesión ha expirado',
+    // eslint-disable-next-line @stylistic/max-len
     SESSION_EXPIRED_DESCRIPTION: 'Su sesión ha expirado y usted ha sido desconectado. Por favor inicie sesión para continuar.',
     LOGIN: 'Iniciar sesión',
   },
@@ -54,6 +57,7 @@ const TRANSLATIONS = {
     ERROR_MESSAGE: 'Kuna hitilafu katika kupakia, tafadhali hakikisha uko kwenye mtandao',
     TRY_AGAIN: 'Jaribu tena',
     POLL_REPLICATION: 'Kuandika data ya kujaza…',
+    // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => `Onyo! Uko karibu kupakua hati ${count}, ambazo zinazidi kikomo kilichopendekezwa cha ${limit}. Je! Unataka kuendelea?`,
     CONTINUE: 'Endelea',
     ABORT: 'Sitisha',
@@ -73,6 +77,7 @@ const TRANSLATIONS = {
     ERROR_MESSAGE: 'लोडिंग त्रुटि, कृपया आफ्नो ईन्टरनेट कनेक्सन जाँच गर्नुहोस्',
     TRY_AGAIN: 'पुन: प्रयास गर्नुहोस्',
     POLL_REPLICATION: 'रिप्लिकेसन डाटा चेक गर्दै…',
+    // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => eurodigit.to_non_euro.devanagari(`सावधान! तपाई ${count} डकुमेन्ट डाउनलोड गर्न जाँदै हुनुहुन्छ, जुन कि सुझावित ${limit} भन्दा बढी छ. के तपाई डाउनलोड गर्न चाहनु हुन्छ?`),
     CONTINUE: 'जारी राख्नुस',
     ABORT: 'बन्द गर्नुस',
@@ -92,10 +97,12 @@ const TRANSLATIONS = {
     ERROR_MESSAGE: 'Erreur de chargement, veuillez vérifier votre connexion',
     TRY_AGAIN: 'Réessayer',
     POLL_REPLICATION: 'Examen de la réplication des données…',
+    // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => `Attention ! Vous êtes sur le point de télécharger ${count} documents, ce qui dépasse la limite recommandée de ${limit}. Souhaitez-vous continuer ?`,
     CONTINUE: 'Continuer',
     ABORT: 'Annuler',
     SESSION_EXPIRED_TITLE: 'Session expirée',
+    // eslint-disable-next-line @stylistic/max-len
     SESSION_EXPIRED_DESCRIPTION: 'Votre session a expiré et vous avez été déconnecté. Veuillez vous connecter pour continuer.',
     LOGIN: 'Connexion',
   },
@@ -111,10 +118,12 @@ const TRANSLATIONS = {
     ERROR_MESSAGE: 'लोडिंग में त्रुटि, कृपया अपना कनेक्शन जांचें।',
     TRY_AGAIN: 'पुन: प्रयास करें',
     POLL_REPLICATION: ' प्रतिकृति डेटा चेक हो रहा है…',
+    // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => `चेतावनी! आप ${count} डॉक्स डाउनलोड करने वाले हैं, जो ${limit} की अनुशंसित सीमा से अधिक है। क्या आप  डाउनलोड जारी रखना चाहते हैं?`,
     CONTINUE: 'जारी रखें',
     ABORT: 'रद्द करें',
     SESSION_EXPIRED_TITLE: 'सेशुन समाप्त हो चुका है',
+    // eslint-disable-next-line @stylistic/max-len
     SESSION_EXPIRED_DESCRIPTION: 'आपका सेशन समाप्त हो गया है और आप लॉग आउट हो गए हैं। जारी रखने के लिए कृपया लॉगिन करें।',
     LOGIN: 'लॉग',
   },
@@ -130,10 +139,12 @@ const TRANSLATIONS = {
     ERROR_MESSAGE: 'Terjadi kendala dalam memuat, tolong cek koneksi internet Anda.',
     TRY_AGAIN: 'Coba lagi',
     POLL_REPLICATION: 'Menyalin data ke perangkat Anda…',
+    // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => `Peringatan! Anda akan mengunduh ${count} dokumen, yang melebihi rekomendasi batasan ${limit}. Apakah Anda ingin melanjutkan?`,
     CONTINUE: 'Lanjutkan',
     ABORT: 'Batal',
     SESSION_EXPIRED_TITLE: 'Sesi kadalursa',
+    // eslint-disable-next-line @stylistic/max-len
     SESSION_EXPIRED_DESCRIPTION: 'Sesi Anda telah berakhir dan Anda telah keluar. Silakan masuk kembali untuk melanjutkan.',
     LOGIN: 'Login',
   },
@@ -149,6 +160,7 @@ const TRANSLATIONS = {
     ERROR_MESSAGE: 'حدث خطأ أثناء التحميل، يرجى التحقق من اتصالك.',
     TRY_AGAIN: 'حاول ثانية',
     POLL_REPLICATION: 'استقصاء بيانات النسخ المتماثل...',
+    // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => `تحذير! أنت على وشك تنزيل مستندات ${count}، وهو ما يتجاوز الحد الموصى به وهو ${limit}. هل ترغب في الاستمرار؟`,
     CONTINUE: 'متابعة',
     ABORT: 'إلغاء',
@@ -157,7 +169,7 @@ const TRANSLATIONS = {
     LOGIN: 'تسجيل الدخول',
   },
 };
-/* eslint-enable max-len */
+ 
 
 let locale;
 let translationData = TRANSLATIONS;

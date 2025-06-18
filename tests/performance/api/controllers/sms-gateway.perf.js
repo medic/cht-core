@@ -1,5 +1,6 @@
 const testUtils = require('@utils');
 const gatewayApiUtils = require('@utils/gateway-api');
+const chai = require('chai');
 const api = gatewayApiUtils.api;
 const db = gatewayApiUtils.db;
 const setup = gatewayApiUtils.setup;
@@ -24,7 +25,7 @@ describe('/sms', function() {
             const maxMillis = 5000;
             if (end > start + maxMillis) {
               const seconds = (end - start) / 1000;
-              fail(`It took ${seconds}s to respond to the request. The endpoint should respond in ${maxMillis}ms.`);
+              expect.fail(`It took ${seconds}s to respond to the request. Endpoint should respond in ${maxMillis}ms.`);
             }
             expect(response).toEqual({ messages: [] });
           });
@@ -47,7 +48,8 @@ describe('/sms', function() {
                 const maxMillis = 5000;
                 if (end > start + maxMillis) {
                   const seconds = (end - start) / 1000;
-                  fail(`It took ${seconds}s to respond to the request. The endpoint should respond in ${maxMillis}ms.`);
+                  // eslint-disable-next-line @stylistic/max-len
+                  expect.fail(`It took ${seconds}s to respond to the request. Endpoint should respond in ${maxMillis}ms.`);
                 }
                 expect(response).toEqual({ messages: [] });
               })

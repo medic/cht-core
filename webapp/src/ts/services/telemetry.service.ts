@@ -373,4 +373,4 @@ export class TelemetryService {
 type TodayMoment = {
   today: Record<string, any>;
   formatted: string;
-}
+};

@@ -6,6 +6,7 @@ import { AfterViewInit, Component, HostListener, NgZone, OnInit } from '@angular
 import { Store } from '@ngrx/store';
 import { setTheme as setBootstrapTheme } from 'ngx-bootstrap/utils';
 import { combineLatest, take } from 'rxjs';
+import * as $ from 'jquery';
 
 import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
 import { Selectors } from '@mm-selectors/index';

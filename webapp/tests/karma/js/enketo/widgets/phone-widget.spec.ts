@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-redeclare
 import jQuery from 'jquery';
 import sinon from 'sinon';
 import { expect } from 'chai';

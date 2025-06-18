@@ -1,6 +1,7 @@
 import { provideMockActions } from '@ngrx/effects/testing';
 import { TestBed, waitForAsync, fakeAsync, flush } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
+// eslint-disable-next-line no-redeclare
 import { Observable, of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -162,7 +163,7 @@ describe('GlobalEffects', () => {
         expect(cancelCallback.callCount).to.equal(0);
       }));
 
-      it('when not saving, not edited and cancelCallback ', waitForAsync(async () => {
+      it('when not saving, not edited and cancelCallback ', waitForAsync(() => {
         store.overrideSelector(Selectors.getEnketoStatus, { form: true });
         store.overrideSelector(Selectors.getNavigation, { cancelCallback });
         actions$ = of(GlobalActionsList.navigationCancel(null));

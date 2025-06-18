@@ -1,6 +1,7 @@
 import { provideMockActions } from '@ngrx/effects/testing';
 import { fakeAsync, flush, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
+// eslint-disable-next-line no-redeclare
 import { concat, Observable, of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';

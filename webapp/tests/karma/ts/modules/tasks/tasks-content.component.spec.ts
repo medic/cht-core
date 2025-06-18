@@ -4,6 +4,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
 import sinon from 'sinon';
+// eslint-disable-next-line no-redeclare
 import { Observable } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 

@@ -3,6 +3,7 @@ import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { isEqual as _isEqual } from 'lodash-es';
+import * as $ from 'jquery';
 
 import { DbService } from '@mm-services/db.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
@@ -62,7 +63,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   cancelCallback;
   selectMode;
 
-  private geoHandle:any;
+  private geoHandle: any;
   private globalActions: GlobalActions;
   private reportsActions: ReportsActions;
   private trackRender;

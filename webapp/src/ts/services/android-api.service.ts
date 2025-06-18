@@ -1,4 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
+import * as $ from 'jquery';
 
 import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
 import { GeolocationService } from '@mm-services/geolocation.service';

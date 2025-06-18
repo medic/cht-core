@@ -31,11 +31,11 @@ const addDocs = async () => {
 };
 
 addDocs().then(() => {
-  console.log('Adding docs complete'); // eslint-disable-line no-console
+  console.log('Adding docs complete');  
   process.exit(0);
 })
   .catch(err => {
-    console.error('Adding docs failed', err); // eslint-disable-line no-console
+    console.error('Adding docs failed', err);  
     process.exit(1);
   });
 

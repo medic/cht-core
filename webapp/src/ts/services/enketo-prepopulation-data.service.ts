@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { isString as _isString } from 'lodash-es';
+import * as $ from 'jquery';
 
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 

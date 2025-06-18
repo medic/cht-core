@@ -1,7 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
-import type JQuery from 'jquery';
+import * as $ from 'jquery';
 import * as FileManager from '../../js/enketo/file-manager.js';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
