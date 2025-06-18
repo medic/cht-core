@@ -1,6 +1,7 @@
 import {
   DataObject,
   getPagedGenerator,
+  NormalizedParent,
   Nullable,
   Page
 } from './libs/core';
@@ -11,6 +12,7 @@ import { FreetextQualifier, UuidQualifier } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertFreetextQualifier, assertLimit, assertUuidQualifier } from './libs/parameter-validators';
+import * as Contact from './contact';
 
 /** */
 export namespace v1 {
@@ -21,6 +23,14 @@ export namespace v1 {
     readonly form: string;
     readonly reported_date: Date;
     readonly fields: DataObject;
+    readonly contact?: NormalizedParent
+  }
+
+  /**
+   * A report document with lineage information.
+   */
+  export interface ReportWithLineage extends Report {
+    readonly contact?: Contact.v1.ContactWithLineage | NormalizedParent;
   }
 
   /**
