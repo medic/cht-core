@@ -7,7 +7,8 @@ import {
   getResources,
   getRemoteDataContext,
   isRemoteDataContext,
-  RemoteDataContext
+  RemoteDataContext,
+  postResource
 } from '../../../src/remote/libs/data-context';
 import { DataContext, InvalidArgumentError } from '../../../src';
 
@@ -170,6 +171,70 @@ describe('remote context lib', () => {
         new Error(fetchResponse.statusText)
       ]);
       expect(fetchResponse.json.notCalled).to.be.true;
+    });
+  });
+
+  describe('postResource', () => {
+    it('throws InvalidArgumentError if the Bad Request - 400 status is returned', async () => {
+      const path = 'path';
+      const qualifier = {
+        name: 'user-1',
+        contact: {
+          _id: '1',
+          parent: {
+            _id: '2'
+          }
+        }
+      };
+      const errorMsg = `Missing or empty required fields [${JSON.stringify(qualifier)}].`;
+      fetchResponse.ok = false;
+      fetchResponse.status = 400;
+      fetchResponse.statusText = errorMsg;
+
+      fetchResponse.text.resolves(errorMsg);
+      const expectedError = new InvalidArgumentError(errorMsg);
+      await expect(postResource(context, path)(qualifier)).to.be.rejectedWith(errorMsg);
+
+      expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}`, 
+        {
+          method: 'POST', 
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(qualifier)})).to.be.true;
+      
+      expect(fetchResponse.text.called).to.be.true;
+      expect(fetchResponse.json.notCalled).to.be.true;
+      expect(loggerError.args[0]).to.deep.equal([
+        `Failed to post ${JSON.stringify(qualifier)} to ${context.url}/${path}.`,
+        expectedError
+      ]);
+    });
+
+    it('creates a resource for valid req body and path', async () => {
+      const path = 'path';
+      const qualifier = {
+        name: 'city-1',
+        type: 'place'
+      };
+
+      const expoected_response = {...qualifier, _id: '1', _rev: '1', _reported_date: 123123123 };
+      fetchResponse.ok = true;
+      fetchResponse.status = 200;
+      fetchResponse.json.resolves(expoected_response);
+
+      const response = await postResource(context, path)(qualifier);
+
+      expect(response).to.deep.equal(expoected_response);
+      expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}`,
+        {
+          method: 'POST', 
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(qualifier)})).to.be.true;
+
+      expect(fetchResponse.json.calledOnceWithExactly()).to.be.true;
     });
   });
 
