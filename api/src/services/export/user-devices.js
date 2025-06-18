@@ -18,19 +18,19 @@ module.exports = async () => {
     const [user, deviceId] = doc.key;
     const date = doc.value.date;
     const browser = doc.value.device.userAgent && getBrowser(doc.value.device.userAgent);
-    const { apk, android, cht, settings } = doc.value.device.versions;
+    const { apk, android, cht, settings } = doc.value.device.versions || {};
+    const storage = (doc.value.device && doc.value.device.storage) || {};
     return {
       user,
       deviceId,
       date,
-      browser: {
-        name: browser?.name || undefined,
-        version: browser?.version || undefined,
-      },
+      browser: browser && browser.name && browser.version ? { name: browser.name, version: browser.version } : {},
       apk,
       android,
       cht,
       settings,
+      storageFree: storage.free,
+      storageTotal: storage.total,
     };
   });
 };
