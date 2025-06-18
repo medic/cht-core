@@ -9,7 +9,7 @@ import { RemoteDataContext } from './remote/libs/data-context';
 import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
-import { InvalidArgumentError } from '../dist';
+import { InvalidArgumentError } from './libs/error';
 
 /** */
 export namespace v1 {
