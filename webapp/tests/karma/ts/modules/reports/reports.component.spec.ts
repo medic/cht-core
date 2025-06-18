@@ -24,7 +24,7 @@ import { SessionService } from '@mm-services/session.service';
 import { DbService } from '@mm-services/db.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { AuthService } from '@mm-services/auth.service';
-import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
+import { SidebarFilterComponent } from '@mm-modules/util/sidebar-filter.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserContactService } from '@mm-services/user-contact.service';
@@ -130,7 +130,7 @@ describe('Reports Component', () => {
           MatExpansionModule,
           MatIconModule,
           ReportsComponent,
-          ReportsSidebarFilterComponent,
+          SidebarFilterComponent,
           SearchBarComponent,
           ReportsContentComponent,
           ReportsMoreMenuComponent,
@@ -185,7 +185,7 @@ describe('Reports Component', () => {
     changesService.subscribe.resetHistory();
     searchService.search.resetHistory();
     authService.has.resetHistory();
-    const setDefaultFacilityFilterSpy = sinon.spy(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
+    const setDefaultFacilityFilterSpy = sinon.spy(SidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
 
     const spySubscriptionsAdd = sinon.spy(component.subscription, 'add');
 
@@ -282,7 +282,7 @@ describe('Reports Component', () => {
       authService.has.resetHistory();
       authService.has.withArgs('can_default_facility_filter').resolves(true);
       authService.online.returns(true);
-      const setDefaultFacilityFilter = sinon.stub(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
+      const setDefaultFacilityFilter = sinon.stub(SidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
 
       component.ngOnInit();
       await component.ngAfterViewInit();
@@ -304,7 +304,7 @@ describe('Reports Component', () => {
       authService.has.resetHistory();
       authService.has.withArgs('can_default_facility_filter').resolves(true);
       authService.online.returns(false);
-      const setDefaultFacilityFilter = sinon.stub(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
+      const setDefaultFacilityFilter = sinon.stub(SidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
 
       component.ngOnInit();
       await component.ngAfterViewInit();
@@ -326,7 +326,7 @@ describe('Reports Component', () => {
       sessionService.isAdmin.returns(true);
       authService.has.withArgs('can_default_facility_filter').resolves(true);
       authService.online.returns(true);
-      const setDefaultFacilityFilter = sinon.stub(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
+      const setDefaultFacilityFilter = sinon.stub(SidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
 
       component.ngOnInit();
       await component.ngAfterViewInit();
@@ -348,7 +348,7 @@ describe('Reports Component', () => {
       authService.has.resetHistory();
       authService.has.withArgs('can_default_facility_filter').resolves(true);
       authService.online.returns(true);
-      const setDefaultFacilityFilter = sinon.stub(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
+      const setDefaultFacilityFilter = sinon.stub(SidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
 
       component.ngOnInit();
       await component.ngAfterViewInit();
