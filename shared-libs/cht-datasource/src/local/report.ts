@@ -69,8 +69,8 @@ export namespace v1 {
         return {
           ...report,
           contact: isNonEmptyArray(lineageContacts)
-                      ? (await getLineage(lineageContacts, baseContact as Person.v1.Person))!
-                      : baseContact as  NormalizedParent
+            ? (await getLineage(lineageContacts, baseContact as Person.v1.Person))!
+            : baseContact as  NormalizedParent
         };
       }
 

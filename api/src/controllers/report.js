@@ -22,9 +22,9 @@ module.exports = {
       const { uuid } = req.params;
       
       let report;
-      if(req.query.with_lineage === 'true'){
+      if (req.query.with_lineage === 'true'){
         report = await getReportWithLineage()(Qualifier.byUuid(uuid));
-      }else{
+      } else {
         report = await getReport()(Qualifier.byUuid(uuid));
       }
 

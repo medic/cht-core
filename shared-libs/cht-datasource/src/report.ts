@@ -126,7 +126,6 @@ export namespace v1 {
    * @returns a function for retrieving a report with lineage
    * @throws Error if a data context is not provided
    */
-
   export const getWithLineage = (context: DataContext): typeof curriedFnWithLineage => {
     assertDataContext(context);
     const fn = adapt(context, Local.Report.v1.getWithLineage, Remote.Report.v1.getWithLineage);

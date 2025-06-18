@@ -34,5 +34,5 @@ export namespace v1 {
   ): Promise<Nullable<Report.v1.ReportWithLineage>> => {
     const queryParams = { with_lineage: 'true' };
     return getReport(remoteContext)(identifier.uuid, queryParams);
-  }
+  };
 }
