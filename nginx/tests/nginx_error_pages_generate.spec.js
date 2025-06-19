@@ -12,9 +12,6 @@ describe('generate.sh validation tests', () => {
   let tmpErrorsDir;
 
   beforeEach(async () => {
-    // Set timeout for setup
-    this.timeout(10000);
-
     // Create temporary directory
     tmpWorkDir = await fs.mkdtemp(path.join(os.tmpdir(), 'nginx-test-'));
 
@@ -55,8 +52,6 @@ describe('generate.sh validation tests', () => {
 
   describe('generate.sh execution', () => {
     it('should be possible to run', async () => {
-      this.timeout(15000);
-
       const generateScript = path.join(tmpErrorsDir, 'generate.sh');
 
       try {
@@ -74,8 +69,6 @@ describe('generate.sh validation tests', () => {
 
   describe('file generation validation', () => {
     it('should generate correct number of error files', async () => {
-      this.timeout(15000);
-
       const generateScript = path.join(tmpErrorsDir, 'generate.sh');
 
       // Run generate.sh
@@ -94,8 +87,6 @@ describe('generate.sh validation tests', () => {
     });
 
     it('should match file content for all error files', async () => {
-      this.timeout(15000);
-
       const generateScript = path.join(tmpErrorsDir, 'generate.sh');
 
       // Run generate.sh

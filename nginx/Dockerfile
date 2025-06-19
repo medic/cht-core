@@ -20,21 +20,15 @@ COPY nginx_error_pages/ /usr/share/nginx/nginx_error_pages/
 FROM node:22-alpine AS test_nginx
 
 RUN mkdir -p /tests/js /tests/nginx
-# Set the working directory inside the container
-WORKDIR /tests/js
-# Install bash as the generate.sh script requires it, even though it's run
-# indirectly via the JS test suite creating and executing it.
+
 RUN apk add --no-cache bash
 
 COPY nginx_error_pages /tests/nginx/nginx_error_pages
-# Copy package.json and package-lock.json first to leverage Docker's build cache.
-# This assumes these files are in your project's root directory.
+
+WORKDIR /tests/js
+COPY tests/*.spec.js ./
 COPY tests/package.json ./
-# Install Node.js dependencies (Mocha and Chai)
-RUN npm install
-# Copy the JavaScript test file.
-# This assumes 'test_generate.js' is in the root of your build context (e.g., next to the Dockerfile).
-COPY tests/nginx_error_pages_generate.spec.js ./
+RUN npm install --ignore-scripts
 # Set the default command for this stage to run the tests.
 # This can be overridden in docker-compose.yml.
 CMD ["npm", "test"]

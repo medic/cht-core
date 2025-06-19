@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "test": "echo \"running tests\" && npx mocha *.spec.js --no-config"
+    "test": "npx mocha *.spec.js --no-config"
   },
   "dependencies": {
     "chai": "^4.3.8",
