@@ -29,8 +29,8 @@
       const parsedCtx = JSON.parse(unescape(decodeURI(userCtx)));
       parsedCtx.locale = locale;
       return parsedCtx;
-    } catch {
-      return;
+    } catch (e) {
+      console.warn('Error parsing userCtx cookie', e);
     }
   };
 

@@ -33,7 +33,7 @@ if (targetDocs) {
   });
   cards.push(card);
 }
-return {
+module.exports = {
   fields: fields,
   cards: cards,
   context: context

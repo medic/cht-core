@@ -6,7 +6,7 @@ const { defineConfig, globalIgnores } = require('eslint/config');
 const angularPlugin = require('eslint-plugin-angular');
 const globalsPlugin = require('globals');
 const compatPlugin = require('eslint-plugin-compat');
-const couchdbPlugin = require('eslint-plugin-couchdb');
+const espree = require('espree');
 const noOnlyTests = require('eslint-plugin-no-only-tests');
 const jasminePlugin = require('eslint-plugin-jasmine');
 const asyncPlugin = require('eslint-plugin-async');
@@ -55,7 +55,7 @@ module.exports = defineConfig([
   ]),
   {
     files: ['**/*.{js,ts,jsx,tsx,cjs,cts,mjs,mts}'],
-    extends: compat.extends('eslint:recommended'),
+    extends: compat.extends('@medic'),
     plugins: {
       node: nodePlugin,
       '@stylistic': stylisticPlugin,
@@ -72,7 +72,9 @@ module.exports = defineConfig([
       'eqeqeq': 'error',
       'guard-for-in': 'error',
       '@stylistic/indent': ['error', 2],
+      'indent': 'off',
       '@stylistic/max-len': ['error', { code: 120, ignoreUrls: true, tabWidth: 2}],
+      'max-len': 'off',
       'no-bitwise': 'error',
       'no-buffer-constructor': 'error',
       'no-caller': 'error',
@@ -161,13 +163,24 @@ module.exports = defineConfig([
   {
     files: ['**/*.{ts,tsx,cts,mts}'],
     languageOptions: {
-      sourceType: 'commonjs',
+      sourceType: 'module',
+      parser: tsParser,
+    }
+  },
+  {
+    files: ['**/*.d.ts'],
+    languageOptions: {
+      sourceType: 'module',
+      parser: tsParser,
+    },
+    rules: {
+      'no-unused-vars': 'off'
     }
   },
   {
     files: ['**/*.{js,jsx,cjs,mjs,mts}'],
     languageOptions: {
-      sourceType: 'module',
+      sourceType: 'commonjs',
     }
   },
   {
@@ -333,23 +346,36 @@ module.exports = defineConfig([
   },
   {
     files: ['ddocs/**/*.js'],
-    plugins: {
-      couchdb: couchdbPlugin,
-    },
 
     languageOptions: {
       ecmaVersion: 5,
       sourceType: 'script',
+      parser: {
+        meta: {
+          name: 'custom CouchDb design document parser',
+        },
+        parse: (code, options) => {
+          return espree.parse('module.exports = ' + code, options);
+        },
+      },
+      globals: {
+        emit: true,
+        log: true,
+      }
     },
 
     rules: {
       semi: 'off',
-      indent: 'off',
+      '@stylistic/semi': 'off',
+      '@stylistic/indent': 'off',
+      '@stylistic/keyword-spacing': 'off',
+      '@stylistic/eol-last': 'off',
       'eol-last': 'off',
       'no-var': 'off',
       'function-paren-newline': 'off',
       'keyword-spacing': 'off',
-      'func-names': 'off'
+      'func-names': 'off',
+      'func-style': 'off'
     },
   },
   {

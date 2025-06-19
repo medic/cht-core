@@ -117,7 +117,8 @@ const replicate = async (remoteDb, localDb) => {
 const getReplicationLog = async (localDb) => {
   try {
     return await localDb.get(INITIAL_REPLICATION_LOG);
-  } catch {
+  } catch (err) {
+    console.warn('Error getting replication log: ', err);
     return null;
   }
 };
