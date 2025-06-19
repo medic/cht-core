@@ -388,6 +388,7 @@ export type PlaceQualifier = ContactQualifier & Readonly<{
   parent?: NormalizedParent;
   contact?: NormalizedParent;
   place_id?: string;
+  contact_type?: string;
 }>
 
 /**
