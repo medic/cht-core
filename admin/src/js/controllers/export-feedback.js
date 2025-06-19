@@ -25,7 +25,8 @@ angular
         // Pouchdb automated log; can be massive hence the limit
         str.message = formattedMessage(str.message);
         return JSON.stringify(str);
-      } catch {
+      } catch (e) {
+        $log.warn('Error when stringifying message', e);
         return str;
       }
     };
