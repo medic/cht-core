@@ -386,6 +386,7 @@ describe('TelemetryService', () => {
       expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-10-greg-[\w-]+$/);
       expect(telemetryDb.destroy.calledOnce).to.be.true;   // is from the previous day
 
+      console.warn(consoleErrorSpy.args);
       expect(consoleErrorSpy.notCalled).to.be.true;
     });
 
