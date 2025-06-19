@@ -11,6 +11,7 @@ const noOnlyTests = require('eslint-plugin-no-only-tests');
 const jasminePlugin = require('eslint-plugin-jasmine');
 const asyncPlugin = require('eslint-plugin-async');
 const typescriptEslint = require('@typescript-eslint/eslint-plugin');
+const jsdocPlugin = require('eslint-plugin-jsdoc');
 const tsParser = require('@typescript-eslint/parser');
 const angularEslintEslintPlugin = require('@angular-eslint/eslint-plugin');
 const angularEslintEslintPluginTemplate = require('@angular-eslint/eslint-plugin-template');
@@ -22,6 +23,16 @@ const compat = new FlatCompat({
   recommendedConfig: js.configs.recommended,
   allConfig: js.configs.all
 });
+
+const JS_DOC_REQUIRED_CONTEXTS = [
+  'FunctionDeclaration',
+  'FunctionExpression',
+  'VariableDeclaration',
+  'TSInterfaceDeclaration',
+  'TSTypeAliasDeclaration',
+  'TSEnumDeclaration',
+  'TSMethodSignature'
+];
 
 module.exports = defineConfig([
   globalIgnores([
@@ -51,10 +62,8 @@ module.exports = defineConfig([
     },
     languageOptions: {
       ecmaVersion: 2020,
-      sourceType: 'commonjs',
       globals: {
         ...globalsPlugin.node,
-        emit: true,
       },
     },
     rules: {
@@ -68,6 +77,7 @@ module.exports = defineConfig([
       'no-buffer-constructor': 'error',
       'no-caller': 'error',
       'no-console': 'error',
+      'no-redeclare': ['error', { builtinGlobals: false }],
       'no-sequences': 'error',
       'no-var': 'error',
       'one-var': ['error', 'never'],
@@ -149,6 +159,18 @@ module.exports = defineConfig([
     },
   },
   {
+    files: ['**/*.{ts,tsx,cts,mts}'],
+    languageOptions: {
+      sourceType: 'commonjs',
+    }
+  },
+  {
+    files: ['**/*.{js,jsx,cjs,mjs,mts}'],
+    languageOptions: {
+      sourceType: 'module',
+    }
+  },
+  {
     files: ['**/test/**', '**/tests/**'],
     plugins: {
       'no-only-tests': noOnlyTests,
@@ -160,6 +182,8 @@ module.exports = defineConfig([
       globals: {
         ...globalsPlugin.node,
         ...globalsPlugin.mocha,
+        ...globalsPlugin.chai,
+        ...globalsPlugin.jasmine,
       }
     },
     rules: {
@@ -353,6 +377,7 @@ module.exports = defineConfig([
         caches: true,
         navigator: true,
       },
+      sourceType: 'script',
     },
 
     rules: {
@@ -374,6 +399,7 @@ module.exports = defineConfig([
     languageOptions: {
       globals: {
         ...globalsPlugin.browser,
+        ...globalsPlugin.jquery,
       },
 
       ecmaVersion: 2018,
@@ -494,5 +520,104 @@ module.exports = defineConfig([
     languageOptions: {
       sourceType: 'module',
     }
+  },
+  {
+    files: ['shared-libs/cht-datasource/**/*.ts'],
+    extends: compat.extends(
+      'plugin:@typescript-eslint/strict-type-checked',
+      'plugin:@typescript-eslint/stylistic-type-checked',
+      'plugin:jsdoc/recommended-typescript-error',
+      'plugin:compat/recommended',
+    ),
+    languageOptions: {
+      parser: tsParser,
+
+      parserOptions: {
+        project: 'tsconfig.json',
+        tsconfigRootDir: 'shared-libs/cht-datasource/'
+      },
+    },
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+      jsdoc: jsdocPlugin,
+      compat: compatPlugin,
+    },
+    settings: {
+      jsdoc: {
+        contexts: [],
+      },
+
+      polyfills: ['Report'],
+    },
+
+    rules: {
+      ['@typescript-eslint/explicit-module-boundary-types']: ['error', {
+        allowedNames: ['getDatasource'],
+      }],
+
+      ['@typescript-eslint/no-confusing-void-expression']: ['error', {
+        ignoreArrowShorthand: true,
+      }],
+
+      ['@typescript-eslint/no-empty-interface']: ['error', {
+        allowSingleExtends: true,
+      }],
+
+      ['@typescript-eslint/no-namespace']: 'off',
+      ['@typescript-eslint/no-non-null-assertion']: 'off',
+
+      '@typescript-eslint/no-redundant-type-constituents': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/restrict-plus-operands': 'off',
+
+
+      ['jsdoc/require-jsdoc']: ['error', {
+        require: {
+          ArrowFunctionExpression: true,
+          ClassDeclaration: true,
+          ClassExpression: true,
+          FunctionDeclaration: true,
+          FunctionExpression: true,
+          MethodDefinition: true,
+        },
+
+        contexts: JS_DOC_REQUIRED_CONTEXTS,
+        publicOnly: true,
+      }],
+
+      ['jsdoc/require-param']: ['error', {
+        contexts: JS_DOC_REQUIRED_CONTEXTS,
+        exemptedBy: ['inheritdoc', 'private', 'internal'],
+      }],
+
+      ['jsdoc/require-returns']: ['error', {
+        contexts: JS_DOC_REQUIRED_CONTEXTS,
+        exemptedBy: ['inheritdoc', 'private', 'internal'],
+      }],
+
+      ['jsdoc/require-yields']: ['error', {
+        contexts: JS_DOC_REQUIRED_CONTEXTS,
+        exemptedBy: ['inheritdoc', 'private', 'internal'],
+      }],
+
+      ['jsdoc/check-tag-names']: ['error', {
+        definedTags: ['typeParam'],
+      }],
+    },
+  },
+  {
+    files: ['shared-libs/cht-datasource/**/*.spec.ts'],
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+    },
+    rules: {
+      ['@typescript-eslint/no-unused-expressions']: 'off',
+    },
   }
 ]);

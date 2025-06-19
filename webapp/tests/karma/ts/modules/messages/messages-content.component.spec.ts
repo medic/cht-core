@@ -7,7 +7,6 @@ import { By } from '@angular/platform-browser';
 import { provideMockStore } from '@ngrx/store/testing';
 import sinon from 'sinon';
 import { assert, expect } from 'chai';
-// eslint-disable-next-line no-redeclare
 import { Observable } from 'rxjs';
 
 import { MessagesContentComponent } from '@mm-modules/messages/messages-content.component';

@@ -1568,7 +1568,7 @@ describe('Users service', () => {
           { error: 'Missing required fields: password, type or roles' },
           { error: 'Missing required fields: password, type or roles' },
         ]);
-      } catch (error) {
+      } catch {
         chai.expect.fail('Should have not thrown');
       }
     });
@@ -1612,7 +1612,7 @@ describe('Users service', () => {
             }
           },
         ]);
-      } catch (error) {
+      } catch {
         chai.expect.fail('Should have not thrown');
       }
     });
@@ -1642,7 +1642,7 @@ describe('Users service', () => {
         ]);
 
         chai.expect(result[1]).to.deep.equal({ error: 'Missing required fields: phone' });
-      } catch (error) {
+      } catch {
         chai.expect.fail('Should have not thrown');
       }
     });
@@ -1672,7 +1672,7 @@ describe('Users service', () => {
         ]);
 
         chai.expect(result[1]).to.deep.equal({ error: 'A valid phone number is required for SMS login.' });
-      } catch (error) {
+      } catch {
         chai.expect.fail('Should have not thrown');
       }
     });
@@ -3945,9 +3945,9 @@ describe('Users service', () => {
 
     it('should parse csv, trim spaces and not split strings with commas inside', async () => {
       const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n' +
-                   
+                  // eslint-disable-next-line @stylistic/max-len
                   'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
-                   
+                  // eslint-disable-next-line @stylistic/max-len
                   'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
@@ -3975,9 +3975,13 @@ describe('Users service', () => {
     it('should parse csv, trim spaces and not split strings with commas inside', async () => {
        
       const csv = 'password,username,type,place,token_login,contact.name,contact.phone,contact.address\n' +
+                  // eslint-disable-next-line @stylistic/max-len
                   ',mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,TRUE,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
+                  // eslint-disable-next-line @stylistic/max-len
                   'Secret9876,devi,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,truthy mistake,devi,265252,"12 King ST, Kent Town, 55555"\n' +
+                  // eslint-disable-next-line @stylistic/max-len
                   'Secret1144,jeff,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,,jeff,26599102,"27 King ST, Kent Town, 55555"\n' +
+                  // eslint-disable-next-line @stylistic/max-len
                   'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,FALSE,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
        
       db.medicLogs.get.resolves({ progress: {} });
@@ -4033,7 +4037,7 @@ describe('Users service', () => {
 
     it('should ignore empty header columns', async () => {
       const csv = 'password,username,type,,contact.name,,contact.address\n' +
-                   
+                  // eslint-disable-next-line @stylistic/max-len
                   'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n';
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
@@ -4151,10 +4155,10 @@ describe('Users service', () => {
 
     it('should ignore excluded header columns', async () => {
       const csv = 'password,username,type,place,contact.meta:excluded,contact.name,contact.notes\n' +
-                   
+                  // eslint-disable-next-line @stylistic/max-len
                   'Secret1234,mary,person,498a394e-f98,excluded column,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
                   'Secret5678, peter ,person,498a394e-f99,excluded column,Peter,' +
-                   
+                  // eslint-disable-next-line @stylistic/max-len
                   '"ce fût une belle saison, le maïs sera prêt à partir de l’été c’est-à-dire dès demain, d’où l’invaitation"';
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});

@@ -1,5 +1,4 @@
 import { Injectable, NgZone } from '@angular/core';
-import * as $ from 'jquery';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { TranslateService } from '@mm-services/translate.service';

@@ -2,7 +2,6 @@ import { Injectable, NgZone } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { toBik_text } from 'bikram-sambat';
 import * as moment from 'moment';
-import * as $ from 'jquery';
 
 import * as enketoConstants from './../../js/enketo/constants';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';

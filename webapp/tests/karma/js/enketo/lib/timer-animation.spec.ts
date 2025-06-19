@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
+import $ from 'jquery';
 
 const TimerAnimation = require('../../../../../src/js/enketo/lib/timer-animation.js');
 

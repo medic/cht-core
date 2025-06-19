@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import * as $ from 'jquery';
 
 import {ChangesService} from '@mm-services/changes.service';
 import {DbService} from '@mm-services/db.service';

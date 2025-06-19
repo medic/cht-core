@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import * as $ from 'jquery';
 
 import { AjaxDownloadProvider } from '@mm-providers/ajax-download.provider';
 

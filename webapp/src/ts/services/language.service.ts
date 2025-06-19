@@ -2,7 +2,6 @@ import * as moment from 'moment';
 import { Injectable } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
 import { TranslateService as NgxTranslateService } from '@ngx-translate/core';
-import * as $ from 'jquery';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { FormatDateService } from '@mm-services/format-date.service';

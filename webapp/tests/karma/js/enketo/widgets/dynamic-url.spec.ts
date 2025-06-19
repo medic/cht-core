@@ -1,3 +1,4 @@
+import jQuery from 'jquery';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import * as DynamicUrlWidget from '../../../../../src/js/enketo/widgets/dynamic-url';

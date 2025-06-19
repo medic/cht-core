@@ -1,6 +1,5 @@
 const testUtils = require('@utils');
 const gatewayApiUtils = require('@utils/gateway-api');
-const chai = require('chai');
 const api = gatewayApiUtils.api;
 const db = gatewayApiUtils.db;
 const setup = gatewayApiUtils.setup;
