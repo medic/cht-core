@@ -1,9 +1,9 @@
 import { Doc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
-import { isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
-import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
+import { hasField, isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
+import { ContactTypeQualifier, PlaceQualifier, UuidQualifier } from '../qualifier';
 import * as Place from '../place';
-import { fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
+import { createDoc, fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
 import {
@@ -15,7 +15,8 @@ import { validateCursor } from './libs/core';
 
 /** @internal */
 export namespace v1 {
-  const isPlace = (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is Place.v1.Place => {
+  /** @internal*/
+  export const isPlace = (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is Place.v1.Place => {
     if (!doc) {
       if (uuid) {
         logger.warn(`No place found for identifier [${uuid}].`);
@@ -89,6 +90,25 @@ export namespace v1 {
         isPlace(settings),
         limit
       )(limit, skip) as Page<Place.v1.Place>;
+    };
+  };
+
+/** @internal*/
+  export const createPlace = ({medicDb, settings}: LocalDataContext) => {
+    const createPlace = createDoc(medicDb);
+    return async(
+      qualifier: PlaceQualifier
+    ):Promise<Place.v1.Place> => {
+      if (hasField(qualifier, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
+        throw new InvalidArgumentError('Cannot pass `_rev` when creating a place.');
+      }
+
+      // This check can only be done when we have the contact_types from LocalDataContext.
+      if (!contactTypeUtils.isPlace(settings.getAll(), qualifier)) {
+        throw new InvalidArgumentError('Invalid place type.');
+      }
+
+      return await createPlace(qualifier) as Place.v1.Place;
     };
   };
 }
