@@ -1,5 +1,5 @@
 # base build
-FROM nginx:1.25.1-alpine as base_nginx
+FROM nginx:1.25.1-alpine AS base_nginx
 RUN apk add --update --no-cache \
     curl \
     socat \
@@ -15,16 +15,23 @@ COPY mime.types /etc/nginx/mime.types
 COPY conf.d/ /etc/nginx/conf.d/
 COPY nginx_error_pages/ /usr/share/nginx/nginx_error_pages/
 
-# test build
-FROM alpine:3 AS test_nginx
-RUN apk --no-cache add bats curl openssl
-RUN mkdir -p /app/bash-shellmock
-RUN curl -LJO https://raw.githubusercontent.com/capitalone/bash_shell_mock/main/bin/shellmock
-RUN cp shellmock /app/bash-shellmock/shellmock
-RUN chmod +x /app/bash-shellmock/shellmock
-COPY tests /app/tests
-COPY ssl-install.sh /app/tests/ssl-install.sh
-RUN bats /app/tests/ssl-install.bats
+# Test environment build stage for running JavaScript tests
+# This stage is independent of the final Nginx image and focuses on testing
+FROM node:22-alpine AS test_nginx
+
+RUN mkdir -p /tests/js /tests/nginx
+
+RUN apk add --no-cache bash
+
+COPY nginx_error_pages /tests/nginx/nginx_error_pages
+
+WORKDIR /tests/js
+COPY tests/*.spec.js ./
+COPY tests/package.json ./
+RUN npm install --ignore-scripts
+# Set the default command for this stage to run the tests.
+# This can be overridden in docker-compose.yml.
+CMD ["npm", "test"]
 
 # Final
 FROM base_nginx AS cht-nginx

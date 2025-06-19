@@ -1,9 +1,8 @@
 .PHONY: test
 test:
-	bats nginx_error_pages_generate.bats
-
-	docker compose up --wait --build
-	bats with_mock.bats
+	docker compose up --build --wait --remove-orphans
+	sleep 3
+	docker compose logs nginx-tests
 	docker compose down
 
 .PHONY: clean
