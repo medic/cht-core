@@ -1,13 +1,12 @@
 const { expect } = require('chai');
-const sinon = require('sinon');
 const fs = require('fs').promises;
 const path = require('path');
-const { execSync, exec } = require('child_process');
+const { exec } = require('child_process');
 const { promisify } = require('util');
 const execAsync = promisify(exec);
 const os = require('os');
 
-describe('generate.sh validation tests', function() {
+describe('generate.sh validation tests', () => {
   let tmpWorkDir;
   let actualErrorsDir;
   let tmpErrorsDir;
@@ -42,7 +41,7 @@ describe('generate.sh validation tests', function() {
           await fs.chmod(destPath, '755');
         }
       } catch (error) {
-        console.warn(`Warning: Could not copy ${file}:`, error.message);
+        throw new Error('Error while setting execution mode');
       }
     }
   });
@@ -50,11 +49,7 @@ describe('generate.sh validation tests', function() {
   afterEach(async () => {
     // Cleanup temporary directory
     if (tmpWorkDir) {
-      try {
-        await fs.rm(tmpWorkDir, { recursive: true, force: true });
-      } catch (error) {
-        console.warn('Warning: Could not remove temp directory:', error.message);
-      }
+      await fs.rm(tmpWorkDir, { recursive: true, force: true });
     }
   });
 
@@ -65,7 +60,7 @@ describe('generate.sh validation tests', function() {
       const generateScript = path.join(tmpErrorsDir, 'generate.sh');
 
       try {
-        const { stdout, stderr } = await execAsync(generateScript, {
+        await execAsync(generateScript, {
           cwd: tmpErrorsDir
         });
 
@@ -77,7 +72,7 @@ describe('generate.sh validation tests', function() {
     });
   });
 
-  describe('file generation validation',() => {
+  describe('file generation validation', () => {
     it('should generate correct number of error files', async () => {
       this.timeout(15000);
 
@@ -105,8 +100,6 @@ describe('generate.sh validation tests', function() {
 
       // Run generate.sh
       await execAsync(generateScript, { cwd: tmpErrorsDir });
-
-      console.log(await execSync(`ls ${tmpErrorsDir}`).toString());
 
       // Get all error files from actual directory
       const actualFiles = await getErrorFiles(actualErrorsDir);
@@ -137,7 +130,6 @@ describe('generate.sh validation tests', function() {
 
         fileCount++;
       }
-      console.log(await execSync(`ls ${tmpErrorsDir}`).toString());
 
       expect(fileCount).to.be.at.least(2,
         'Should have validated at least 2 files');
@@ -148,11 +140,11 @@ describe('generate.sh validation tests', function() {
 /**
  * Helper function to get all .html and .json files from a directory
  */
-const getErrorFiles = async directory => {
+const getErrorFiles = async (directory) => {
   try {
     const files = await fs.readdir(directory);
-    return files.filter(file =>
-      file.endsWith('.html') || file.endsWith('.json')
+    return files.filter(
+      file => file.endsWith('.html') || file.endsWith('.json')
     ).map(file => path.join(directory, file));
   } catch (error) {
     // Directory might not exist or be accessible
