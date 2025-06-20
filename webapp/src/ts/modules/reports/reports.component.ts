@@ -97,6 +97,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   userParentPlace;
   fastActionList?: FastAction[];
   userLineageLevel;
+  isSelectingAllReports=false;
 
   LIMIT_SELECT_ALL_REPORTS = 500;
 
@@ -468,7 +469,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.areAllReportsSelected()) {
       return;
     }
-
+    this.isSelectingAllReports = true;
     try {
       if (this.isSidebarFilterOpen) {
         this.toggleFilter();
@@ -533,6 +534,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const isMaxReportsSelected = this.selectedReports?.length >= this.LIMIT_SELECT_ALL_REPORTS;
-    return isMaxReportsSelected || this.reportsList?.length === this.selectedReports?.length;
+    const finishedSelecting = isMaxReportsSelected || this.reportsList?.length === this.selectedReports?.length;
+    this.isSelectingAllReports = !finishedSelecting;
+    return finishedSelecting;
   }
 }
