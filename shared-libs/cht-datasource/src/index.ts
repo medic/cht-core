@@ -278,7 +278,7 @@ export const getDatasource = (ctx: DataContext) => {
         /**
          * Creates a person.
          * @param qualifer the object defining the person properties.
-         * @returns a person.
+         * @returns the created person.
          * @throws InvalidArgumentError if the type of qualifer is not valid for creating a person.
          */
         createPerson: (qualifier: unknown) => ctx.bind(Person.v1.createPerson)(Qualifier.byPersonQualifier(qualifier))
