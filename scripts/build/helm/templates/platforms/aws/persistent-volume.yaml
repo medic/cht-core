@@ -7,7 +7,7 @@ metadata:
   name: couchdb-pv-{{ .Values.namespace }}
 spec:
   capacity:
-    storage: {{ .Values.ebs.preExistingEBSVolumeSize }}
+    storage: {{ .Values.ebs.preExistingEBSVolumeSize | default "100Gi" }}  # Fallback for backward compatibility
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
@@ -17,7 +17,7 @@ spec:
     volumeHandle: {{ index .Values.ebs "preExistingEBSVolumeID-1" }}
     fsType: ext4
     volumeAttributes:
-      partition: "{{ .Values.couchdb_data.partition | default "0" }}"
+      partition: "{{ .Values.couchdb_data.partition | default "0" }}"  # Fallback for backward compatibility
 {{- else }}
 # Multi-node persistent volumes
 # If we're using clustered mode and the cluster is k3s-k3d or eks and pre-existing data is available, then we need to create PersistentVolume for each CouchDB node.
@@ -41,7 +41,7 @@ spec:
     volumeHandle: {{ index $.Values.ebs (printf "preExistingEBSVolumeID-%d" $nodeNumber) }}
     fsType: ext4
     volumeAttributes:
-      partition: "{{ $.Values.couchdb_data.partition | default "0" }}"
+      partition: "{{ $.Values.couchdb_data.partition | default "0" }}"  # Fallback for backward compatibility
   {{- else if eq $.Values.cluster_type "k3s-k3d" }}
   storageClassName: {{ if and ($.Values.k3s_use_vSphere_storage_class) (eq (toString $.Values.k3s_use_vSphere_storage_class) "true") }}vsphere-storage-class{{ else }}local-storage{{ end }}
   {{- if and ($.Values.k3s_use_vSphere_storage_class) (eq (toString $.Values.k3s_use_vSphere_storage_class) "true") }}

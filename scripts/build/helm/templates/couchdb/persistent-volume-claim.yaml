@@ -16,14 +16,14 @@ spec:
   volumeName: couchdb-pv-{{ .Values.namespace }}
   storageClassName: ""
     {{- else }}
-  storageClassName: ebs-gp2
+  storageClassName: {{ .Values.couchdb.storage_class | default "ebs-gp2" }}  # Fallback for backward compatibility
     {{- end }}
   {{- else if eq (toString .Values.cluster_type) "gke" }}
     {{- if eq (toString .Values.couchdb_data.preExistingDataAvailable) "true" }}
   volumeName: couchdb-pv-{{ .Values.namespace }}
   storageClassName: ""
     {{- else }}
-  storageClassName: standard-rwo
+  storageClassName: {{ .Values.couchdb.storage_class | default "standard-rwo" }}  # Fallback for backward compatibility
     {{- end }}
   {{- end }}
 status: {}
@@ -52,14 +52,14 @@ spec:
   volumeName: couchdb-pv-{{ $.Values.namespace }}-{{ $nodeNumber }}
   storageClassName: ""
     {{- else }}
-  storageClassName: ebs-gp2
+  storageClassName: {{ $.Values.couchdb.storage_class | default "ebs-gp2" }}  # Fallback for backward compatibility
     {{- end }}
   {{- else if eq (toString $.Values.cluster_type) "gke" }}
     {{- if eq (toString $.Values.couchdb_data.preExistingDataAvailable) "true" }}
   volumeName: couchdb-pv-{{ $.Values.namespace }}-{{ $nodeNumber }}
   storageClassName: ""
     {{- else }}
-  storageClassName: standard-rwo
+  storageClassName: {{ $.Values.couchdb.storage_class | default "standard-rwo" }}  # Fallback for backward compatibility
     {{- end }}
   {{- end }}
 status: {}
