@@ -133,7 +133,8 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => person = v1.person);
 
       it('contains expected keys', () => {
-        expect(person).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType']);
+        expect(person).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 
+          'getPageByType', 'createPerson']);
       });
 
       it('getByUuid', async () => {

@@ -14,12 +14,14 @@ describe('person', () => {
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
   let isContactTypeQualifier: SinonStub;
+  let isPersonQualifier: SinonStub;
 
   beforeEach(() => {
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isContactTypeQualifier = sinon.stub(Qualifier, 'isContactTypeQualifier');
+    isPersonQualifier = sinon.stub(Qualifier, 'isPersonQualifier');
   });
 
   afterEach(() => sinon.restore());
@@ -305,6 +307,37 @@ describe('person', () => {
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(personGetPage.notCalled).to.be.true;
         expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
+      });
+    });
+
+    describe('createPerson', () => {
+      it('throws error for invalid qualifier', async() => {
+        const qualifier = {
+          name: 'person-1',
+          parent: {
+            '_id': '1'
+          }
+        };
+        isPersonQualifier.returns(false);
+        await expect(Person.v1.createPerson(dataContext)(qualifier as Qualifier.PersonQualifier))
+          .to.be.rejectedWith(`Invalid person type [${JSON.stringify(qualifier)}]`);
+      });
+
+      it('returns person doc for valid qualifier', async() => {
+        const createPersonDoc = sinon.stub();
+        adapt.returns(createPersonDoc);
+        const qualifier = {
+          name: 'person-1',
+          type: 'person',
+          parent: {
+            '_id': '1'
+          }
+        };
+        isPersonQualifier.returns(true);
+        createPersonDoc.resolves(qualifier);
+        const result = await Person.v1.createPerson(dataContext)(qualifier);
+
+        expect(result).to.deep.equal(qualifier);
       });
     });
   });

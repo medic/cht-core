@@ -43,6 +43,19 @@ export namespace v1 {
       };
     };
 
+  const createPersonDoc =
+  <T>(
+      localFn: (c: LocalDataContext) => (qualifier: PersonQualifier) => Promise<T>,
+      remoteFn: (c: RemoteDataContext) => (qualifier: PersonQualifier) => Promise<T>
+    ) => (context: DataContext) => {
+      assertDataContext(context);
+      const fn = adapt(context, localFn, remoteFn);
+      return async (qualifier: PersonQualifier): Promise<T> => {
+        assertPersonQualifier(qualifier);
+        return fn(qualifier);
+      };
+    };
+
   /**
    * Returns a person for the given qualifier.
    * @param context the current data context
@@ -124,22 +137,5 @@ export namespace v1 {
    * @returns a function for creating a person.
    * @throws Error if a data context is not provided
    */
-  export const createPerson = (context:DataContext): typeof curriedFn => {
-    assertDataContext(context);
-    
-    const fn =  Local.Person.v1.createPerson(context as LocalDataContext);
-
-    /**
-     * Returns the created person.
-     * @param qualifier the qualifier to create the person
-     * @returns returns the created person.
-     * @throws Error if qualifier if of invalid type
-     */
-    const curriedFn =  async (qualifier: PersonQualifier): Promise<Person> => {
-      assertPersonQualifier(qualifier);
-      return await fn(qualifier);
-    };
-
-    return curriedFn;
-  };
+  export const createPerson = createPersonDoc(Local.Person.v1.createPerson, Remote.Person.v1.createPerson);
 }
