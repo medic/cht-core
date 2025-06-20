@@ -1,0 +1,22 @@
+# Example values file for new deployment with local k3s-k3d
+# Usage:
+#   helm install cht-test scripts/build/helm \
+#     -f scripts/build/helm/values/base.yaml \
+#     -f scripts/build/helm/values/deployment-single.yaml \
+#     -f scripts/build/helm/values/platform-k3s-k3d.yaml \
+#     -f scripts/build/helm/examples/new-local-single-k3s-k3d-development.yaml
+
+# Required values (no defaults in base files)
+project_name: "cht-local-test"
+namespace: "cht-test"
+chtversion: "4.20.0"
+cht_image_tag: "4.20.0"
+
+# CouchDB credentials (generate your own for production)
+couchdb:
+  password: "test-password-123"
+  secret: "test-secret-uuid-12345"  # Generate with: uuidgen
+  uuid: "test-uuid-12345"           # Generate with: uuidgen
+
+# Development-specific overrides
+cache_images: false  # Always pull latest images during development
