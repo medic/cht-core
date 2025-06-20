@@ -36,7 +36,7 @@ describe('rules-state-store', () => {
     expect(rulesStateStore.currentUserSettings()).to.deep.eq(undefined);
   });
 
-  it('throw if not initialized', async () => {
+  it('throw if not initialized', () => {
     expect(() => rulesStateStore.isDirty('a')).to.throw('before call to');
   });
 

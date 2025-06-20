@@ -3,7 +3,7 @@ const db = require('../../db');
 const safeStringify = obj => {
   try {
     return JSON.stringify(obj).replace(/,/g, '\\,');
-  } catch (e) {
+  } catch {
     return obj;
   }
 };

@@ -42,7 +42,7 @@ export class TranslationLoaderProvider implements TranslateLoader {
     const promise =  this.db
       .get()
       .get(translationsDocId)
-      .then((doc:{ generic:{}; custom:{}; rtl: boolean }) => {
+      .then((doc:{ generic: {}; custom: {}; rtl: boolean }) => {
         const values = Object.assign(doc.generic || {}, doc.custom || {});
         if (testing) {
           mapTesting(values);

@@ -81,6 +81,7 @@ describe.skip('Muting', () => {
 
   const getLastSubmittedReport = () => {
     return browser.executeAsync(() => {
+      // eslint-disable-next-line no-undef
       const callback = arguments[arguments.length - 1];
       const db = window.CHTCore.DB.get();
       return db
@@ -92,6 +93,7 @@ describe.skip('Muting', () => {
 
   const getLocalDoc = (uuid) => {
     return browser.executeAsync((uuid) => {
+      // eslint-disable-next-line no-undef
       const callback = arguments[arguments.length - 1];
       const db = window.CHTCore.DB.get();
       return db
@@ -106,7 +108,7 @@ describe.skip('Muting', () => {
     try {
       const onlineDoc = await utils.getDoc(localDoc._id, localDoc._rev);
       expect(onlineDoc).excludingEvery('_attachments').to.deep.equal(localDoc);
-    } catch (err) {
+    } catch {
       return utils.delayPromise(() => ensureSync(localDoc), 300);
     }
   };
@@ -229,6 +231,7 @@ describe.skip('Muting', () => {
     const unmuteContacts = () => {
       const ids = contacts.map(c => c._id);
       return browser.executeAsync((ids) => {
+        // eslint-disable-next-line no-undef
         const callback = arguments[arguments.length - 1];
         const db = window.CHTCore.DB.get();
         return db

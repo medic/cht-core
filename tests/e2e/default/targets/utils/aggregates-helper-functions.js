@@ -5,13 +5,20 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
 const targetAggregatesConfig = require('../config/target-aggregates');
+const chtConfUtils = require('@utils/cht-conf');
 
 const generateRandomNumber = (max) => Math.floor(Math.random() * max);
 
-const updateAggregateTargetsSettings = async (targetsConfig, user, contactSummary) => {
+const updateAggregateTargetsSettings = async (targetsConfig, user, contactSummaryFile) => {
   const settings = await utils.getSettings();
   settings.tasks.targets.items = targetsConfig;
   settings.permissions.can_aggregate_targets = user.roles;
+  let contactSummary;
+  if (contactSummaryFile) {
+    const configs = await chtConfUtils.compileNoolsConfig({ contactSummary: contactSummaryFile });
+    contactSummary = configs.contactSummary;
+  }
+
   await utils.updateSettings(
     { tasks: settings.tasks, permissions: settings.permissions, contact_summary: contactSummary },
     { ignoreReload: true }

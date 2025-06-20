@@ -64,7 +64,6 @@ const launchApp = ($widget) => {
 
       processOutputData($outputs[0], response);
     })
-    // eslint-disable-next-line no-console
     .catch(error => console.error('Android App Launcher widget :: An error occurred: ', error));
 };
 
@@ -242,13 +241,13 @@ const assignValueToInput = (input, inputName, value) => {
   }
 
   if (_isPlainObject(value)) {
-    // eslint-disable-next-line no-console
+     
     console.debug(`Android App Launcher Widget :: Cannot set value to "${inputName}" field, value is an object.`);
     return;
   }
 
   if (Array.isArray(value)) {
-    // eslint-disable-next-line no-console
+     
     console.debug(`Android App Launcher Widget :: Cannot set value to "${inputName}" field, value is an array.`);
     return;
   }
@@ -276,13 +275,13 @@ const getElementName = (element) => {
 
 const isValueListValid = ($fields) => {
   if (!$fields.length) {
-    // eslint-disable-next-line no-console
+     
     console.debug('Android App Launcher Widget :: "android-app-value-list" missing field.');
     return false;
   }
 
   if ($fields.length > 1) {
-    // eslint-disable-next-line no-console
+     
     console.debug('Android App Launcher Widget :: "android-app-value-list" can only have one field.');
     return false;
   }

@@ -31,21 +31,23 @@ export class UpdateServiceWorkerService {
           const installingWorker = registration.installing!;
           installingWorker.onstatechange = () => {
             switch (installingWorker.state) {
-            case 'activated':
-              console.debug('New service worker activated');
-              registration.onupdatefound = null;
-              onSuccess();
-              break;
-            case 'redundant':
-              console.warn(
-                'Service worker failed to install or marked as redundant. ' +
-                `Retrying install in ${this.retryFailedUpdateAfterSec}secs.`
-              );
-              this.existingUpdateLoop = setTimeout(() => this.update(onSuccess), this.retryFailedUpdateAfterSec * 1000);
-              registration.onupdatefound = null;
-              break;
-            default:
-              console.debug(`Service worker state changed to ${installingWorker.state}!`);
+              case 'activated':
+                console.debug('New service worker activated');
+                registration.onupdatefound = null;
+                onSuccess();
+                break;
+              case 'redundant':
+                console.warn(
+                  'Service worker failed to install or marked as redundant. ' +
+                  `Retrying install in ${this.retryFailedUpdateAfterSec}secs.`
+                );
+                this.existingUpdateLoop = setTimeout(
+                  () => this.update(onSuccess), this.retryFailedUpdateAfterSec * 1000
+                );
+                registration.onupdatefound = null;
+                break;
+              default:
+                console.debug(`Service worker state changed to ${installingWorker.state}!`);
             }
           };
         };

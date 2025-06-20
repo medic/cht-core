@@ -44,7 +44,7 @@ fileManager.getObjectUrl = (subject) => {
     .then(blob => URL.createObjectURL(blob))
     .catch(e => {
       if (e.status === 404) {
-        // eslint-disable-next-line no-console
+         
         console.error(`Could not find attachment [${attachmentName}] on doc [${currentDocId}].`);
         return null;
       }

@@ -35,8 +35,8 @@ export class ContactChangeFilterService {
 
   private wasChild(change, contact) {
     return contact.children?.some(
-      (childType:{ contacts:[] }) => childType.contacts.some(
-        (child:{ doc:{_id: string}}) => child.doc._id === change.doc._id
+      (childType:{ contacts: [] }) => childType.contacts.some(
+        (child:{ doc: {_id: string}}) => child.doc._id === change.doc._id
       )
     );
   }
@@ -47,7 +47,7 @@ export class ContactChangeFilterService {
 
   private matchChildReportSubject(change, contact) {
     return contact.children?.some(
-      (childType:{ contacts:[] }) => childType?.contacts?.some(
+      (childType:{ contacts: [] }) => childType?.contacts?.some(
         contact => this.matchReportSubject(change, contact)
       )
     );

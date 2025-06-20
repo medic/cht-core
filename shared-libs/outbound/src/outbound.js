@@ -249,7 +249,7 @@ const logSendError = (configName, recordId, error) => {
     let loggableBody;
     try {
       loggableBody = JSON.stringify(body);
-    } catch (e) {
+    } catch {
       if (body && body.length > 100) {
         loggableBody = `${body.substring(0, 100)}...`;
       } else {

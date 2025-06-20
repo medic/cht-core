@@ -44,7 +44,7 @@ export const assertFreetextQualifier: (qualifier: unknown) => asserts qualifier 
 
 /** @internal */
 export const assertContactTypeFreetextQualifier: (
-    qualifier: unknown
+  qualifier: unknown
 ) => asserts qualifier is ContactTypeQualifier | FreetextQualifier = (
   qualifier: unknown
 ) => {

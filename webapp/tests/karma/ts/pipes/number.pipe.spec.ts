@@ -14,7 +14,7 @@ describe('LocalizeNumber', () => {
 
   afterEach(() => sinon.restore());
 
-  it('should return result from localize', async () => {
+  it('should return result from localize', () => {
     formatNumberService.localize.returns('thing');
     expect(pipe.transform('some')).to.equal('thing');
     expect(formatNumberService.localize.callCount).to.equal(1);

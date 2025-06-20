@@ -128,11 +128,11 @@ export const and = <
   C = Nullable<object>,
   D = Nullable<object>
 >(
-    qualifierA: A,
-    qualifierB: B,
-    qualifierC?: C,
-    qualifierD?: D
-  ): A & B & Partial<C> & Partial<D> => {
+  qualifierA: A,
+  qualifierB: B,
+  qualifierC?: C,
+  qualifierD?: D
+): A & B & Partial<C> & Partial<D> => {
   return {
     ...qualifierA,
     ...qualifierB,

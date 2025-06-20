@@ -22,6 +22,7 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit {
 
   @Input() disabled;
   @Input() fieldId;
+  // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() search: EventEmitter<any> = new EventEmitter();
 
   constructor(private store: Store) {

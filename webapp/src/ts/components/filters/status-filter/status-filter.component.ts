@@ -14,6 +14,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 export class StatusFilterComponent {
   @Input() disabled;
   @Input() fieldId;
+  // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() search: EventEmitter<any> = new EventEmitter();
   private globalActions: GlobalActions;
   filter: Filter;

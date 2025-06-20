@@ -38,10 +38,10 @@ export class UpdatePasswordComponent {
     showPasswordIcon: string;
     hidePasswordIcon: string;
   } = {
-      passwordFieldType: 'password',
-      showPasswordIcon: SHOW_PASSWORD_ICON,
-      hidePasswordIcon: HIDE_PASSWORD_ICON,
-    };
+    passwordFieldType: 'password',
+    showPasswordIcon: SHOW_PASSWORD_ICON,
+    hidePasswordIcon: HIDE_PASSWORD_ICON,
+  };
 
   constructor(
     private store: Store,

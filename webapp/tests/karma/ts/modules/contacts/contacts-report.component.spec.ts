@@ -171,7 +171,7 @@ describe('contacts report component', () => {
       });
     }));
 
-    it('should unsubscribe and unload form on destroy', async () => {
+    it('should unsubscribe and unload form on destroy', () => {
       const spy = sinon.spy(component.subscription, 'unsubscribe');
       component.ngOnDestroy();
       expect(spy.callCount).to.equal(1);

@@ -28,7 +28,7 @@ const createUserDoc = userSettings => {
 
 const writeUserDocs = userDocs => db.users.bulkDocs(userDocs);
 
-const getUserDoc = async (id) => db.users.get(id);
+const getUserDoc = (id) => db.users.get(id);
 
 describe('add-contact-id-to-user migration', function() {
   afterEach(() => {

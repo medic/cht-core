@@ -15,7 +15,7 @@ describe('async-storage', () => {
     sinon.restore();
   });
 
-  it('should initialize async storage and initialize couch-request', async () => {
+  it('should initialize async storage and initialize couch-request',  () => {
     service = rewire('../../../src/services/async-storage');
     expect(request.setStore.args).to.deep.equal([[
       service,

@@ -127,7 +127,7 @@ describe(`Rules Engine Integration Tests`, () => {
       });
 
       if (!rulesAreDeclarative) {
-        it('behavior after initialization', async () => {
+        it('behavior after initialization', () => {
           expect(rulesEngine.isEnabled()).to.be.true;
           // the nools "flow" should remain in memory so we don't recompile the partner code
           expect(nools.getFlow('medic')).to.not.be.undefined;

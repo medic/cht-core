@@ -252,7 +252,7 @@ describe('transitions', () => {
       const load = sinon.stub(transitions, '_loadTransition');
       try {
         transitions.loadTransitions();
-      } catch (e) {
+      } catch {
         // not empty
       }
       assert.equal(load.callCount, loadTest.expectedCalls.load ? 1 : 0);

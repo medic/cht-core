@@ -1,4 +1,3 @@
-const fs = require('fs');
 const uuid = require('uuid').v4;
 const utils = require('@utils');
 const moment = require('moment');
@@ -199,8 +198,6 @@ describe('Target aggregates', () => {
           { id: 'a_target', type: 'count', title: { en: 'what a target!' }, aggregate: true },
           { id: 'b_target', type: 'percent', title: { en: 'the most target' }, aggregate: true },
         ];
-        const contactSummaryScript = fs
-          .readFileSync(`${__dirname}/config/contact-summary-target-aggregates.js`, 'utf8');
 
         const clarissa = contactDocs.find(doc => doc.name === NAMES_DH1[0]);
         const prometheus = contactDocs.find(doc => doc.name === NAMES_DH1[1]);
@@ -231,6 +228,7 @@ describe('Target aggregates', () => {
         ];
 
         await utils.saveDocs(targetDocs);
+        const contactSummaryScript = `${__dirname}/config/contact-summary-target-aggregates.js`;
         await helperFunctions.updateAggregateTargetsSettings(targetsConfig, onlineUser, contactSummaryScript);
 
         await commonPage.goToAnalytics();
@@ -291,8 +289,7 @@ describe('Target aggregates', () => {
           { id: 'a_target', type: 'count', title: { en: 'what a target!' }, aggregate: true },
           { id: 'b_target', type: 'percent', title: { en: 'the most target' }, aggregate: true },
         ];
-        const contactSummaryScript = fs
-          .readFileSync(`${__dirname}/config/contact-summary-target-aggregates.js`, 'utf8');
+        const contactSummaryScript =`${__dirname}/config/contact-summary-target-aggregates.js`;
 
         const clarissa = contactDocs.find(doc => doc.name === NAMES_DH1[0]);
         const prometheus = contactDocs.find(doc => doc.name === NAMES_DH1[1]);

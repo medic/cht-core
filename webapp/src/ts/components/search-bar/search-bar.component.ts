@@ -34,6 +34,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   @Input() lastVisitedDateExtras;
   @Output() sort: EventEmitter<any> = new EventEmitter();
   @Output() toggleFilter: EventEmitter<any> = new EventEmitter();
+  // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() search: EventEmitter<any> = new EventEmitter();
 
   private filters;

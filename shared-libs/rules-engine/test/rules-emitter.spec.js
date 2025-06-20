@@ -36,7 +36,7 @@ for (const rulesAreDeclarative of declarativeScenarios) {
         expect(actual).to.eq(false);
       });
 
-      it('throw on invalid rules', async () => {
+      it('throw on invalid rules',  () => {
         const settingsDoc = settingsWithRules(`if (blah) {`);
         expect(() => rulesEmitter.initialize(settingsDoc)).to.throw();
         expect(rulesEmitter.isEnabled()).to.be.false;
@@ -159,7 +159,7 @@ for (const rulesAreDeclarative of declarativeScenarios) {
     });
 
     // don't understand this test or how it applies
-    it('session is disposed when marshalDocsByContact throws', async () => {
+    it('session is disposed when marshalDocsByContact throws', () => {
       const rules = ' ';
       const settingsDoc = settingsWithRules(rules);
       rulesEmitter.initialize(settingsDoc);
