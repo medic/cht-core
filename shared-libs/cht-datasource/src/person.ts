@@ -138,7 +138,7 @@ export namespace v1 {
      * @returns returns the created person.
      * @throws Error if qualifier if of invalid type
      */
-    const curriedFn =  async(qualifer: PersonQualifier):Promise<Person> => {
+    const curriedFn =  async (qualifier: PersonQualifier): Promise<Person> => {
       return await fn(qualifer);
     };
 
