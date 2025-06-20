@@ -1,5 +1,5 @@
 apiVersion: v2
-name: cht-core
+name: cht-chart
 description: A Helm chart for Community Health Toolkit (CHT) v4
 home: https://github.com/medic/cht-core
 icon: https://avatars.githubusercontent.com/u/474424?s=200&v=4

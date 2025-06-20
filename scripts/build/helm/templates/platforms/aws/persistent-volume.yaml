@@ -30,7 +30,7 @@ metadata:
   name: couchdb-pv-{{ $.Values.namespace }}-{{ $nodeNumber }}
 spec:
   capacity:
-    storage: {{ $.Values.couchdb.couchdb_node_storage_size }}
+    storage: {{ $.Values.couchdb.couchdb_node_storage_size | default "100Mi"}}  # Fallback for backward compatibility
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
