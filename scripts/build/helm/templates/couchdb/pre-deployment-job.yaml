@@ -15,11 +15,13 @@ metadata:
 spec:
   template:
     spec:
+      {{- if $.Values.toleration }}
       tolerations:
-      - key: {{ $.Values.toleration.key }}
-        operator: {{ $.Values.toleration.operator }}
-        value: {{ $.Values.toleration.value | quote }}
-        effect: {{ $.Values.toleration.effect }}
+        - key: {{ $.Values.toleration.key }}
+          operator: {{ $.Values.toleration.operator }}
+          value: {{ $.Values.toleration.value | quote }}
+          effect: {{ $.Values.toleration.effect }}
+      {{- end }}
       nodeSelector:
         kubernetes.io/hostname: {{ index $.Values.nodes (printf "node-%d" $nodeNumber) }}
       restartPolicy: Never

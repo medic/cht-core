@@ -72,12 +72,14 @@ spec:
       securityContext:
         runAsUser: 0  # Run as root
         fsGroup: 0    # Set fsGroup to root
+      {{- if .Values.toleration }}
       tolerations:
         - key: {{ .Values.toleration.key }}
           operator: {{ .Values.toleration.operator }}
           value: {{ .Values.toleration.value | quote }}
           effect: {{ .Values.toleration.effect }}
-      {{- if hasKey .Values "nodes" }}
+      {{- end }}
+      {{- if and (hasKey .Values "nodes") (kindIs "map" .Values.nodes) }}
         {{- if hasKey .Values.nodes "single_node_deploy" }}
       nodeSelector:
         kubernetes.io/hostname: {{ .Values.nodes.single_node_deploy }}
@@ -118,12 +120,12 @@ spec:
           {{- if eq (toString .Values.cluster_type) "k3s-k3d" }}
           volumeMounts:
             - mountPath: /opt/couchdb/data
-              name: local-volume
+              name: couchdb-claim0
               {{- if ne .Values.couchdb_data.dataPathOnDiskForCouchDB "" }}
               subPath: {{ .Values.couchdb_data.dataPathOnDiskForCouchDB }}
               {{- end }}
             - mountPath: /opt/couchdb/etc/local.d
-              name: local-volume
+              name: couchdb-claim0
               subPath: local.d
           {{- else }}
           volumeMounts:
@@ -137,17 +139,10 @@ spec:
               subPath: local.d
           {{- end }}
       restartPolicy: Always
-      {{- if eq (toString .Values.cluster_type) "k3s-k3d" }}
-      volumes:
-        - name: local-volume
-          hostPath:
-            path: {{ index .Values.local_storage "preExistingDiskPath-1" }}
-      {{- else }}
       volumes:
         - name: couchdb-claim0
           persistentVolumeClaim:
             claimName: couchdb-claim0
-      {{- end }}
 status: {}
 {{- end }}
 
@@ -175,11 +170,13 @@ spec:
       securityContext:
         runAsUser: 0  # Run as root
         fsGroup: 0    # Set fsGroup to root
+      {{- if $.Values.toleration }}
       tolerations:
-      - key: {{ $.Values.toleration.key }}
-        operator: {{ $.Values.toleration.operator }}
-        value: {{ $.Values.toleration.value | quote }}
-        effect: {{ $.Values.toleration.effect }}
+        - key: {{ $.Values.toleration.key }}
+          operator: {{ $.Values.toleration.operator }}
+          value: {{ $.Values.toleration.value | quote }}
+          effect: {{ $.Values.toleration.effect }}
+      {{- end }}
       {{- with index $.Values.nodes (printf "node-%d" $nodeNumber) }}
         {{- if . }}
       nodeSelector:

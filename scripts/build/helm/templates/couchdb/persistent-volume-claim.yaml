@@ -1,4 +1,4 @@
-{{- if and (eq (toString .Values.couchdb.clusteredCouch_enabled) "false") (or (eq (toString .Values.cluster_type) "eks") (eq (toString .Values.cluster_type) "gke")) }}
+{{- if and (eq (toString .Values.couchdb.clusteredCouch_enabled) "false") (or (eq (toString .Values.cluster_type) "eks") (eq (toString .Values.cluster_type) "gke") (eq (toString .Values.cluster_type) "k3s-k3d")) }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -25,6 +25,9 @@ spec:
     {{- else }}
   storageClassName: {{ .Values.couchdb.storage_class | default "standard-rwo" }}  # Fallback for backward compatibility
     {{- end }}
+  {{- else if eq (toString .Values.cluster_type) "k3s-k3d" }}
+  storageClassName: local-path
+  volumeName: couchdb-pv-{{ .Values.namespace }}
   {{- end }}
 status: {}
 {{- end }}

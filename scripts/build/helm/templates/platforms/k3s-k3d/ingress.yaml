@@ -1,0 +1,16 @@
+{{- /* k3s-k3d Ingress for API using default ingress controller (Traefik) with optional host */ -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress
+spec:
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: api
+                port:
+                  number: 5988
