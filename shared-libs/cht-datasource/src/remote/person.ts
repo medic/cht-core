@@ -9,8 +9,9 @@ export namespace v1 {
 
   const getPeople = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/person');
 
-  // eslint-disable-next-line max-len
-  const createPersonPost = (remoteContext: RemoteDataContext) => postResource(remoteContext, 'api/v1/person');
+  const createPersonPost = (
+    remoteContext: RemoteDataContext
+  ) => postResource(remoteContext, 'api/v1/person');
  
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (
