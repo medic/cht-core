@@ -1,3 +1,16 @@
+{{- /* Validation for required GCP ingress values */ -}}
+{{- if eq .Values.cluster_type "gke" }}
+{{- if not .Values.ingress.host }}
+{{- fail "ingress.host is required for GKE. Please set it in your values file." }}
+{{- end }}
+{{- if not .Values.ingress.gcp.staticIpName }}
+{{- fail "ingress.gcp.staticIpName is required for GKE. Please set it in your values file." }}
+{{- end }}
+{{- if not .Values.ingress.gcp.managedCertificateName }}
+{{- fail "ingress.gcp.managedCertificateName is required for GKE. Please set it in your values file." }}
+{{- end }}
+{{- end }}
+
 {{- if eq .Values.cluster_type "gke" }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
