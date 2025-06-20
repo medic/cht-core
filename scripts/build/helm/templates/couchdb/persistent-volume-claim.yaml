@@ -10,7 +10,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.couchdb.couchdb_node_storage_size }}
+      storage: {{ .Values.couchdb.couchdb_node_storage_size | default "100Mi"}}  # Fallback for backward compatibility
   {{- if eq (toString .Values.cluster_type) "eks" }}
     {{- if eq (toString .Values.couchdb_data.preExistingDataAvailable) "true" }}
   volumeName: couchdb-pv-{{ .Values.namespace }}
@@ -43,7 +43,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ $.Values.couchdb.couchdb_node_storage_size }}
+      storage: {{ $.Values.couchdb.couchdb_node_storage_size | default "100Mi"}}  # Fallback for backward compatibility
   {{- if eq (toString $.Values.cluster_type) "k3s-k3d" }}
   storageClassName: {{ if and ($.Values.k3s_use_vSphere_storage_class) (eq (toString $.Values.k3s_use_vSphere_storage_class) "true") }}vsphere-storage-class{{ else }}local-storage{{ end }}
   volumeName: couchdb-pv-{{ $.Values.namespace }}-{{ $nodeNumber }}

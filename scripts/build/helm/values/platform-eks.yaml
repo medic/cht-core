@@ -1,37 +1,37 @@
 # eks-specific configurations that extend the base.yaml
 
 # Override cluster type for eks
-environment: "remote"  # "local", "remote"
-cluster_type: "eks"
+environment: "remote"  # DEFAULT: Good default for EKS
+cluster_type: "eks" # DEFAULT: Good default for this file
 
 # eks-specific ingress configuration
 ingress:
   annotations:
-    groupname: "dev-cht-alb"
-    tags: "Environment=dev,Team=QA"
-    certificate: "arn:aws:iam::720541322708:server-certificate/2024-wildcard-dev-medicmobile-org-chain"
+    groupname: "dev-cht-alb" # DEFAULT: Good default for EKS dev environment
+    tags: "Environment=dev,Team=QA" # DEFAULT: Good default for EKS dev environment
+    certificate: "arn:aws:iam::720541322708:server-certificate/2024-wildcard-dev-medicmobile-org-chain" # DEFAULT: Good default for EKS dev environment
   # Ensure the host is not already taken. Valid characters for a subdomain are:
   #   a-z, 0-9, and - (but not as first or last character).
-  host: "<subdomain>.dev.medicmobile.org"  # e.g. "mrjones.dev.medicmobile.org"
-  hosted_zone_id: "Z3304WUAJTCM7P"
-  load_balancer: "dualstack.k8s-devchtalb-3eb0781cbb-694321496.eu-west-2.elb.amazonaws.com"
+  host: "<subdomain>.dev.medicmobile.org"  # # REQUIRED: User must set this (e.g. "mrjones.dev.medicmobile.org")
+  hosted_zone_id: "Z3304WUAJTCM7P" # DEFAULT: Good default for EKS dev environment
+  load_balancer: "dualstack.k8s-devchtalb-3eb0781cbb-694321496.eu-west-2.elb.amazonaws.com" # DEFAULT: Good default for EKS dev environment
 
 # Pod scheduling configuration for EKS
 toleration:
-  key: "dev-couchdb-only"
-  operator: "Equal"
-  value: "true"
-  effect: "NoSchedule"
+  key: "dev-couchdb-only" # DEFAULT: Good default for EKS dev environment
+  operator: "Equal" # DEFAULT: Good default
+  value: "true" # DEFAULT: Good default
+  effect: "NoSchedule" # DEFAULT: Good default
 
 # Certificate configuration for EKS
-cert_source: "eks-medic" # "eks-medic" or "specify-file-path" or "my-ip-co"
-certificate_crt_file_path: "/path/to/certificate.crt" # Only required if cert_source is "specify-file-path"
-certificate_key_file_path: "/path/to/certificate.key" # Only required if cert_source is "specify-file-path"
+cert_source: "eks-medic" # # DEFAULT: Good default for EKS (posible values: "eks-medic" or "specify-file-path" or "my-ip-co")
+#certificate_crt_file_path: "/path/to/certificate.crt" # REQUIRED: User must set this (Only required if cert_source is "specify-file-path")
+#certificate_key_file_path: "/path/to/certificate.key" # REQUIRED: User must set this (Only required if cert_source is "specify-file-path")
 
 # If preExistingDataAvailable is true, fill in the details below.
 # For ebs storage when using eks cluster type, fill in the details below.
 ebs:
-  preExistingEBSVolumeID-1: "vol-0123456789abcdefg" # If you have already created the EBS volume, put the ID here.
-  preExistingEBSVolumeID-2: "vol-0123456789abcdefg" # If you have already created the EBS volume, put the ID here.
-  preExistingEBSVolumeID-3: "vol-0123456789abcdefg" # If you have already created the EBS volume, put the ID here.
-  preExistingEBSVolumeSize: "100Gi" # The size of the EBS volume.
+  preExistingEBSVolumeID-1: "vol-0123456789abcdefg" # DEFAULT: Placeholder for user to set. If you have already created the EBS volume, put the ID here.
+  preExistingEBSVolumeID-2: "vol-0123456789abcdefg" # DEFAULT: Placeholder for user to set.If you have already created the EBS volume, put the ID here.
+  preExistingEBSVolumeID-3: "vol-0123456789abcdefg" # DEFAULT: Placeholder for user to set. If you have already created the EBS volume, put the ID here.
+  preExistingEBSVolumeSize: "100Gi" # DEFAULT: Good default. The size of the EBS volume.

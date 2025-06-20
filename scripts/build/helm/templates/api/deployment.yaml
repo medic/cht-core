@@ -33,7 +33,7 @@ spec:
             - name: API_PORT
               value: '5988'
           image: {{ .Values.upstream_servers.docker_registry }}/cht-api:{{ .Values.cht_image_tag }}
-          {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
+          {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }} # Derived from cache_images
           name: cht-api
           ports:
             - containerPort: 5988
