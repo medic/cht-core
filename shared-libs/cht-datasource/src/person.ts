@@ -127,9 +127,6 @@ export namespace v1 {
   export const createPerson = (context:DataContext): typeof curriedFn => {
     assertDataContext(context);
     
-    if (!isLocalDataContext(context)) {
-      throw new InvalidArgumentError('Require LocalDataContext');
-    }
     const fn =  Local.Person.v1.createPerson(context);
 
     /**
