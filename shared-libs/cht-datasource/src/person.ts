@@ -4,12 +4,12 @@ import * as Contact from './contact';
 import * as Remote from './remote';
 import * as Local from './local';
 import * as Place from './place';
-import { isLocalDataContext, LocalDataContext } from './local/libs/data-context';
+import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
-import { InvalidArgumentError } from './libs/error';
+import { assertCursor, assertLimit, assertPersonQualifier, 
+  assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
 
 /** */
 export namespace v1 {
@@ -127,7 +127,7 @@ export namespace v1 {
   export const createPerson = (context:DataContext): typeof curriedFn => {
     assertDataContext(context);
     
-    const fn =  Local.Person.v1.createPerson(context);
+    const fn =  Local.Person.v1.createPerson(context as LocalDataContext);
 
     /**
      * Returns the created person.
@@ -136,7 +136,8 @@ export namespace v1 {
      * @throws Error if qualifier if of invalid type
      */
     const curriedFn =  async (qualifier: PersonQualifier): Promise<Person> => {
-      return await fn(qualifer);
+      assertPersonQualifier(qualifier);
+      return await fn(qualifier);
     };
 
     return curriedFn;
