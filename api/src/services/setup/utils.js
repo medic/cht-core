@@ -347,6 +347,16 @@ const makeUpgradeRequest = async (payload) => {
   return response;
 };
 
+const isDockerUpgradeServiceRunning = async () => {
+  try {
+    const response = await request.get({ url: UPGRADE_SERVICE_URL });
+    return !!response.ok;
+  } catch (err) {
+    logger.error('Error occurred when connecting to upgrade service: %o', err);
+    return false;
+  }
+};
+
 const upgradeResponseSuccess = (payload, response) => {
   if (!response) {
     return false;
@@ -377,4 +387,5 @@ module.exports = {
   getStagingDoc,
   getUpgradeServicePayload,
   makeUpgradeRequest,
+  isDockerUpgradeServiceRunning,
 };
