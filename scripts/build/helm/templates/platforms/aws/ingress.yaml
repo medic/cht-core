@@ -1,3 +1,13 @@
+{{- /* Validation for required ingress values */ -}}
+{{- if eq .Values.cluster_type "eks" }}
+{{- if not .Values.ingress.host }}
+{{- fail "ingress.host is required for EKS. Please set it in your values file." }}
+{{- end }}
+{{- if not .Values.ingress.hosted_zone_id }}
+{{- fail "ingress.hosted_zone_id is required for EKS. Please set it in your values file." }}
+{{- end }}
+{{- end }}
+
 {{- if eq .Values.cluster_type "eks" }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
