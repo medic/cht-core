@@ -114,8 +114,12 @@ const hasDoubleSlash = (path) => {
 
 const resolveUrl = (requested) => {
   try {
-    // todo change url.resolve
-    return url.URL('/', requested);
+    const resolvedUrl = new URL(requested, new URL('/', 'resolve://'));
+    if (resolvedUrl.protocol === 'resolve:') {
+      const { pathname, search, hash } = resolvedUrl;
+      return pathname + search + hash;
+    }
+    return resolvedUrl.toString();
   } catch {
     // invalid url
     return;
