@@ -33,16 +33,16 @@ spec:
                   name: cht-couchdb-credentials
                   key: COUCHDB_USER
             - name: HAPROXY_IP
-              value: 0.0.0.0
+              value: {{ .Values.haproxy.ip | default "0.0.0.0" }}
             - name: HAPROXY_PORT
-              value: "5984"
+              value: "{{ .Values.haproxy.port | default "5984" }}"
             - name: HEALTHCHECK_ADDR
               value: healthcheck.{{ .Values.namespace }}.svc.cluster.local
-          image: {{ .Values.upstream_servers.docker_registry }}/cht-haproxy:{{ .Values.cht_image_tag }}
+          image: {{ .Values.upstream_servers.docker_registry | default "public.ecr.aws/medic" }}/cht-haproxy:{{ .Values.cht_image_tag }}
           {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
           name: cht-haproxy
           ports:
-            - containerPort: 5984
+            - containerPort: {{ .Values.haproxy.port | default 5984 }}
           resources: {}
       hostname: haproxy
       restartPolicy: Always
