@@ -1,4 +1,4 @@
-# Example values file for new deployment with local k3s-k3d
+# Example values file for new local test deployment using k3s-k3d
 # Usage:
 #   helm install cht-test scripts/build/helm \
 #     -f scripts/build/helm/values/base.yaml \
