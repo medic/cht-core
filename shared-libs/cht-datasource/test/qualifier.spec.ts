@@ -166,7 +166,7 @@ describe('qualifier', () => {
           type: 'person', reported_date: '2025-06-03T12:45:30Z'
         }
       ].forEach((qualifier) => expect(() => byContactQualifier(qualifier))
-        .to.throw(`Missing or empty required fields [${JSON.stringify(qualifier)}].`));
+        .to.throw(`Missing or empty required fields (name, type) for [${JSON.stringify(qualifier)}].`));
       
     });
 
@@ -261,7 +261,7 @@ describe('qualifier', () => {
         {type: 'data_record', form: ''}
       ].forEach((qualifier) => {
         expect(() => byReportQualifier(qualifier))
-          .to.throw(`Missing or empty required fields [${JSON.stringify(qualifier)}].`);
+          .to.throw(`Missing or empty required fields (type, form) in [${JSON.stringify(qualifier)}].`);
       });
     });
   });
@@ -326,7 +326,7 @@ describe('qualifier', () => {
       };
 
       expect(() => byPersonQualifier(data)).to
-        .throw(`Missing or empty required fields [${JSON.stringify(expected_data)}].`);
+        .throw(`Missing or empty required field (parent) [${JSON.stringify(expected_data)}].`);
     });
 
     it('throws an error parent lineage missing `_id` or `parent` fields', () => {
@@ -348,7 +348,7 @@ describe('qualifier', () => {
       };
 
       expect(() => byPersonQualifier(data)).to
-        .throw(`Missing required fields in the parent hierarchy [${JSON.stringify(expected_data)}].`);
+        .throw(`Missing required fields (parent, _id) in the parent hierarchy [${JSON.stringify(expected_data)}].`);
     });
 
     it('throws an error on invalid contact types', () => {
@@ -656,7 +656,7 @@ describe('qualifier', () => {
         }
       ].forEach((qualifier) => {
         expect(() => byPlaceQualifier(qualifier))
-          .to.throw(`Missing or empty required fields [${JSON.stringify(qualifier)}].`);
+          .to.throw(`Missing or empty required fields (name, type) for [${JSON.stringify(qualifier)}].`);
       });
     });
 
@@ -701,7 +701,8 @@ describe('qualifier', () => {
       ].forEach((qualifier) => {
         const expected_qualifier = { ...qualifier, reported_date: CURRENT_ISO_TIMESTAMP };
         expect(() => byPlaceQualifier(qualifier))
-          .to.throw(`Missing required fields in the parent hierarchy [${JSON.stringify(expected_qualifier)}].`);
+          // eslint-disable-next-line max-len
+          .to.throw(`Missing required fields (parent, _id) in the parent hierarchy [${JSON.stringify(expected_qualifier)}].`);
 
       });
 
@@ -736,7 +737,8 @@ describe('qualifier', () => {
       ].forEach((qualifier) => {
         const expected_qualifier = {...qualifier, reported_date: CURRENT_ISO_TIMESTAMP};
         expect(() => byPlaceQualifier(qualifier))
-          .to.throw(`Missing required fields in the contact hierarchy [${JSON.stringify(expected_qualifier)}].`);
+          // eslint-disable-next-line max-len
+          .to.throw(`Missing required fields (parent, _id) in the contact hierarchy [${JSON.stringify(expected_qualifier)}].`);
       });
     });
 
