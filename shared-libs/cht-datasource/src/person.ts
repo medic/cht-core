@@ -1,4 +1,4 @@
-import { ContactTypeQualifier, UuidQualifier } from './qualifier';
+import { ContactTypeQualifier, PersonQualifier, UuidQualifier } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Contact from './contact';
 import * as Remote from './remote';
@@ -8,7 +8,8 @@ import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import { assertCursor, assertLimit, assertPersonQualifier, 
+  assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
 
 /** */
 export namespace v1 {
@@ -38,6 +39,19 @@ export namespace v1 {
       const fn = adapt(context, localFn, remoteFn);
       return async (qualifier: UuidQualifier): Promise<T> => {
         assertUuidQualifier(qualifier);
+        return fn(qualifier);
+      };
+    };
+
+  const createPersonDoc =
+  <T>(
+      localFn: (c: LocalDataContext) => (qualifier: PersonQualifier) => Promise<T>,
+      remoteFn: (c: RemoteDataContext) => (qualifier: PersonQualifier) => Promise<T>
+    ) => (context: DataContext) => {
+      assertDataContext(context);
+      const fn = adapt(context, localFn, remoteFn);
+      return async (qualifier: PersonQualifier): Promise<T> => {
+        assertPersonQualifier(qualifier);
         return fn(qualifier);
       };
     };
@@ -116,4 +130,12 @@ export namespace v1 {
     };
     return curriedGen;
   };
+
+  /**
+   * Returns a function for creating a person from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a person.
+   * @throws Error if a data context is not provided
+   */
+  export const createPerson = createPersonDoc(Local.Person.v1.createPerson, Remote.Person.v1.createPerson);
 }
