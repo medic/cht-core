@@ -207,5 +207,20 @@ describe('cht-datasource Person', () => {
         expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeople);
       });
     });
+
+    describe('createPerson', async () => {
+      const createPerson = Person.v1.createPerson(dataContext);
+      it('creates a person for a valid person qualifier', async () => {
+        const personQualifier = Qualifier.byPersonQualifier({
+          name: 'apoorva',
+          type: 'person',
+          parent: {
+            _id: '1-id'
+          }
+        });
+        const person = await createPerson(personQualifier);
+        expect(person).excluding([ '_rev', 'reported_date', '_id' ]).to.deep.equal(personQualifier);
+      });
+    });
   });
 });
