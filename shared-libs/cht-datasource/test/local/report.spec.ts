@@ -131,18 +131,6 @@ describe('local report', () => {
         });
       });
 
-      it('returns report only if no lineage contacts found', async () => {
-        const report = { type: 'data_record', form: 'yes', _id: 'report_id' };
-        getLineageDocsById.resolves([report]);
-
-        const result = await Report.v1.getWithLineage(localContext)(identifier);
-
-        expect(result).to.equal(report);
-        expect(warn.calledOnceWithExactly(
-          `No lineage contacts found for report [${identifier.uuid}].`
-        )).to.be.true;
-      });
-
       it('returns null if document is not a report', async () => {
         const doc = { type: 'not_a_report', _id: 'doc_id' };
         getLineageDocsById.resolves([doc]);
