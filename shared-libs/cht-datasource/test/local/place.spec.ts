@@ -1,7 +1,7 @@
 import sinon, { SinonStub } from 'sinon';
 import contactTypeUtils from '@medic/contact-types-utils';
 import logger from '@medic/logger';
-import * as Doc from '../../src/libs/doc';
+import {Doc} from '../../src/libs/doc';
 import * as Place from '../../src/local/place';
 import * as LocalDoc from '../../src/local/libs/doc';
 import { expect } from 'chai';
@@ -15,22 +15,20 @@ describe('local place', () => {
   let warn: SinonStub;
   let debug: SinonStub;
   let isPlace: SinonStub;
-  let dbPost: SinonStub;
-  let dbGet: SinonStub;
-  let isDoc: SinonStub;
+  let createDocOuter: SinonStub;
+  let createDocInner: SinonStub;
 
   beforeEach(() => {
-    dbPost = sinon.stub();
-    dbGet = sinon.stub();
     settingsGetAll = sinon.stub();
     localContext = {
-      medicDb: { post: dbPost, get: dbGet } as unknown as PouchDB.Database<Doc.Doc>,
+      medicDb: {} as PouchDB.Database<Doc>,
       settings: { getAll: settingsGetAll }
     } as unknown as LocalDataContext;
     warn = sinon.stub(logger, 'warn');
     debug = sinon.stub(logger, 'debug');
     isPlace = sinon.stub(contactTypeUtils, 'isPlace');
-    isDoc = sinon.stub(Doc, 'isDoc');
+    createDocOuter = sinon.stub(LocalDoc, 'createDoc');
+    createDocInner = sinon.stub();
   });
 
   afterEach(() => sinon.restore());
@@ -324,6 +322,9 @@ describe('local place', () => {
     });
 
     describe('createPlace', () => {
+      beforeEach(() => {
+        createDocOuter.returns(createDocInner);
+      });
       it('throws error if qualifier contact_type is not a part of settings contact_types', async() => {
         settingsGetAll.returns({
           contact_types: ['hospital', 'clinic']
@@ -340,6 +341,7 @@ describe('local place', () => {
         };
         await expect(Place.v1.createPlace(localContext)(placeQualifier))
           .to.be.rejectedWith('Invalid place type.');
+        expect(createDocInner.called).to.be.false;
       });
 
       it('throws error if qualifier contains the `_rev` property', async() => {
@@ -361,7 +363,6 @@ describe('local place', () => {
         settingsGetAll.returns({
           contact_types: ['hospital', 'clinic']
         });
-        isDoc.returns(true);
         isPlace.returns(true);
 
         const placeQualifier:PlaceQualifier = {
@@ -381,12 +382,12 @@ describe('local place', () => {
         const expected_doc = {
           ...placeQualifier, reported_date: expected_date, _id: expected_id, _rev: expected_rev  
         };
-        dbPost.resolves({ id: expected_id, ok: true });
-        dbGet.resolves(expected_doc);
+        createDocInner.resolves(expected_doc);
         const placeDoc = await Place.v1.createPlace(localContext)(placeQualifier);
 
         expect(placeDoc).to.deep.equal(expected_doc);
         expect(Place.v1.isPlace(localContext.settings)(placeDoc)).to.be.true;
+        expect(createDocInner.calledOnceWithExactly(placeQualifier)).to.be.true;
       });
     });
   });
