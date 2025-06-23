@@ -179,7 +179,7 @@ describe('cht-datasource Person', () => {
         await expect(
           getPage({...Qualifier.byContactType(personType)}, cursor, invalidLimit)
         ).to.be.rejectedWith(
-          `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`
+          {code: 400, error: `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`}
         );
       });
 
@@ -189,7 +189,7 @@ describe('cht-datasource Person', () => {
             ...Qualifier.byContactType(personType),
           }, invalidCursor, limit)
         ).to.be.rejectedWith(
-          `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          {code: 400, error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`}
         );
       });
     });
