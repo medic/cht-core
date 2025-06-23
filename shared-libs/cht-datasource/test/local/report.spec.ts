@@ -1,7 +1,7 @@
 import { LocalDataContext } from '../../src/local/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
-import * as Doc from '../../src/libs/doc';
 import logger from '@medic/logger';
+import { Doc } from '../../src/libs/doc';
 import * as LocalDoc from '../../src/local/libs/doc';
 import * as Report from '../../src/local/report';
 import { expect } from 'chai';
@@ -11,21 +11,17 @@ describe('local report', () => {
   let localContext: LocalDataContext;
   let settingsGetAll: SinonStub;
   let warn: SinonStub;
-  let dbPost: SinonStub;
-  let dbGet: SinonStub;
-  let isDoc: SinonStub;
-
+  let createDocOuter: SinonStub;
+  let createDocInner : SinonStub;
   beforeEach(() => {
-    dbPost = sinon.stub();
-    dbGet = sinon.stub();
-    isDoc = sinon.stub();
+    createDocInner = sinon.stub();
     settingsGetAll = sinon.stub();
     localContext = {
-      medicDb: { post: dbPost, get: dbGet } as unknown as PouchDB.Database<Doc.Doc>,
+      medicDb: {} as PouchDB.Database<Doc>,
       settings: {getAll: settingsGetAll}
     } as unknown as LocalDataContext;
     warn = sinon.stub(logger, 'warn');
-    isDoc = sinon.stub(Doc, 'isDoc');
+    createDocOuter = sinon.stub(LocalDoc, 'createDoc');
   });
 
   afterEach(() => sinon.restore());
@@ -438,14 +434,13 @@ describe('local report', () => {
         };
         const expected_reported_date = new Date().toISOString();
         const expected_report = {...qualifier, _id: '1-id', _rev: '1-rev', reported_date: expected_reported_date}; 
-        isDoc.returns(true);
-        dbPost.resolves({id: '1-id', ok: true});
-        dbGet.resolves(expected_report);
+        createDocOuter.returns(createDocInner);
+        createDocInner.resolves(expected_report);
       
         const report = await Report.v1.createReport(localContext)(qualifier);
         expect(report).to.deep.equal(expected_report);
-        expect(isDoc.calledOnceWithExactly(expected_report)).to.be.true;
-        expect(dbPost.calledOnce).to.be.true;
+        expect(createDocOuter.calledOnce).to.be.true;
+        expect(createDocInner.calledOnceWithExactly(qualifier)).to.be.true;
       });
 
       it('throws error when _rev is passed in report qualifier', async () => {
@@ -458,9 +453,8 @@ describe('local report', () => {
 
         await expect(Report.v1.createReport(localContext)(qualifier))
           .to.be.rejectedWith('Cannot pass `_rev` when creating a report.');
-        expect(isDoc.calledOnce).to.be.false;
-        expect(dbPost.calledOnce).to.be.false;
-        expect(dbGet.calledOnce).to.be.false;
+        expect(createDocInner.called).to.be.false;
+        expect(createDocOuter.called).to.be.true;
       });
     });
   });
