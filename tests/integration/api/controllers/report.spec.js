@@ -148,22 +148,28 @@ describe('Report API', () => {
         qs: { with_lineage: 'true' }
       };
       const resReport = await utils.request(opts);
-      expect(resReport).excluding(['_rev', 'reported_date']).to.deep.include({
-        ...report0,
-        contact: {
-          _id: contact0._id,
+      const expectedContact = {
+        _id: contact0._id,
+        type: 'person',
+        parent: {
+          _id: place0._id,
+          type: place0.type,
           parent: {
-            _id: place0._id,
+            _id: place1._id,
+            type: place1.type,
             parent: {
-              _id: place1._id,
-              parent: {
-                _id: place2._id
-              }
+              _id: place2._id,
+              type: place2.type
             }
           }
         }
+      };
+      expect(resReport).excluding(['_rev', 'reported_date']).to.deep.include({
+        ...report0,
+        contact: expectedContact
       });
     });
+
 
     it('should return report without lineage when with_lineage is not true', async () => {
       const opts = {

@@ -134,16 +134,21 @@ describe('cht-datasource Report', () => {
       it('should return the report with contact lineage matching the provided UUID', async () => {
         const resReport = await getReportWithLineage(Qualifier.byUuid(report0._id));
         
+        // Only check critical lineage properties
         expect(resReport).excluding(['_rev', 'reported_date']).to.deep.include({
           ...report0,
           contact: {
             _id: contact0._id,
+            type: 'person',
             parent: {
               _id: place0._id,
+              type: place0.type,
               parent: {
                 _id: place1._id,
+                type: place1.type,
                 parent: {
-                  _id: place2._id
+                  _id: place2._id,
+                  type: place2.type
                 }
               }
             }
@@ -159,19 +164,24 @@ describe('cht-datasource Report', () => {
       it('returns report with partial lineage when some ancestors are missing', async () => {
         // Create a report with incomplete lineage
         const incompleteReport = utils.deepFreeze(reportFactory.report().build({
-          form: 'incomplete-lineage'
+          form: 'incomplete-lineage',
+          fields: {
+            patient_uuid: 'missing_patient'
+          }
         }, {
-          patient: { _id: 'missing_patient' },
           submitter: contact0
         }));
         
         await utils.saveDocs([incompleteReport]);
 
         const resReport = await getReportWithLineage(Qualifier.byUuid(incompleteReport._id));
+        
+        // Check only the essential properties
         expect(resReport).excluding(['_rev', 'reported_date']).to.deep.include({
           ...incompleteReport,
           contact: {
-            _id: contact0._id
+            _id: contact0._id,
+            type: 'person'
           }
         });
       });
