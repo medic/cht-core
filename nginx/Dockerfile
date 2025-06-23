@@ -23,6 +23,7 @@ RUN mkdir -p /tests/js /tests/nginx
 
 RUN apk add --no-cache bash
 
+COPY ssl-install.sh /tests/nginx/
 COPY nginx_error_pages /tests/nginx/nginx_error_pages
 
 WORKDIR /tests/js

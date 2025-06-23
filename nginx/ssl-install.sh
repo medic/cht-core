@@ -99,7 +99,7 @@ select_ssl_certificate_mode(){
       ;;
 
     *)
-      echo "ssl certificate mode unknown or not set. Please set a proper ssl sertificate mode in the CERTIFICATE_MODE variable"
+      echo "ssl certificate mode unknown or not set. Please set a proper ssl certificate mode in the CERTIFICATE_MODE variable"
       exit 1
       ;;
   esac
