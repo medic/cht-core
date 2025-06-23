@@ -81,9 +81,10 @@ export class TasksNotificationService {
     return this.settingsService
       .get()
       .then((res) => {
-        if (res && typeof res.max_task_notifications === 'number' && res.max_task_notifications >= 0) {
+        if (typeof res?.max_task_notifications === 'number' && res.max_task_notifications >= 0) {
           return res.max_task_notifications;
         }
+        console.warn('Invalid or missing max_task_notifications setting, using default value');
         return DEFAULT_MAX_NOTIFICATIONS;
       })
       .catch((err) => {
