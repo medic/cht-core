@@ -214,7 +214,7 @@ const checkContactQualifierFields = (data: unknown): data is Record<string, unkn
 /** 
  * A qualifier for a report
  */
-type ReportQualifier = Readonly<{
+export type ReportQualifier = Readonly<{
   type: string,
   form: string,
   reported_date?: string | number,
