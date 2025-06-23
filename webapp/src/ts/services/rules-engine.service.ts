@@ -37,7 +37,7 @@ interface TaskDoc {
   _id: string;
   emission?: any;
   owner: string;
-  stateHistory: [];
+  stateHistory: Array<{ state: string, timestamp: number }>;
 }
 
 @Injectable({

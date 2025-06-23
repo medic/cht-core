@@ -1,18 +1,14 @@
 import { Injectable } from '@angular/core';
 import * as moment from 'moment';
-import { orderBy, get, find } from 'lodash-es';
 
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { FormatDateService } from '@mm-services/format-date.service';
+import { SettingsService } from '@mm-services/settings.service';
 
-/* 
-** avoid overloading app with too many notifications especially at once
-** 24 for android >= 10
-*/
-const MAX_NOTIFICATIONS = 24;
-const TASK_NOTIFICATION_STATE_TIMESTAMP = 'cht-task-notification-state-timestamp';
-const LATEST_NOTIFICATION_TIMESTAMP = 'cht-latest-notification-timestamp';
+const TASK_NOTIFICATION_DAY = 'cht-task-notification-day';
+const LATEST_NOTIFICATION_TIMESTAMP = 'cht-task-notification-timestamp';
+const DEFAULT_MAX_NOTIFICATIONS = 10;
 
 export interface Notification {
   _id: string,
@@ -30,7 +26,8 @@ export class TasksNotificationService {
   constructor(
     private readonly rulesEngineService: RulesEngineService,
     private readonly translateService: TranslateService,
-    private readonly formatDateService: FormatDateService
+    private readonly formatDateService: FormatDateService,
+    private readonly settingsService: SettingsService,
   ) { }
 
   private async fetchNotifications(): Promise<Notification[]> {
@@ -42,23 +39,29 @@ export class TasksNotificationService {
       const today = moment().format('YYYY-MM-DD');
       let latestNotificationTimestamp = this.getLatestNotificationTimestamp();
       const taskDocs = await this.rulesEngineService.fetchTaskDocsForAllContacts();
-      let notifications = taskDocs
-        .map(task => ({
-          _id: task._id,
-          readyAt: get(find(task.stateHistory, { state: 'Ready' }), 'timestamp') || 0,
-          title: task.emission.title,
-          contentText: this.translateContentText(
-            task.emission.title,
-            task.emission.contact.name,
-            task.emission.dueDate
-          ),
-          dueDate: task.emission.dueDate,
-        }))
-        .filter(notification => notification.dueDate <= today &&
-          notification.readyAt > latestNotificationTimestamp);
 
-      notifications = orderBy(notifications, ['readyAt'], ['desc']);
-      notifications = notifications.slice(0, MAX_NOTIFICATIONS);
+      let notifications: Notification[] = [];
+
+      taskDocs.forEach(task => {
+        const readyAt = this.getReadyStateTimestamp(task.stateHistory);
+        const dueDate = task.emission.dueDate;
+        if (dueDate <= today && readyAt > latestNotificationTimestamp) {
+          notifications.push({
+            _id: task._id,
+            readyAt,
+            title: task.emission.title,
+            contentText: this.translateContentText(
+              task.emission.title,
+              task.emission.contact.name,
+              task.emission.dueDate
+            ),
+            dueDate,
+          });
+        }
+      });
+
+      notifications = notifications.sort((a, b) => b.readyAt - a.readyAt);
+      notifications = notifications.slice(0, await this.getMaxNotificationSettings());
       latestNotificationTimestamp = notifications[0]?.readyAt ?? latestNotificationTimestamp;
       window.localStorage.setItem(LATEST_NOTIFICATION_TIMESTAMP, String(latestNotificationTimestamp));
       return notifications;
@@ -69,16 +72,36 @@ export class TasksNotificationService {
     }
   }
 
+  private getReadyStateTimestamp(stateHistory): number {
+    const readyState = stateHistory.find(state => state.state === 'Ready');
+    return readyState ? readyState.timestamp : 0;
+  }
+
+  private getMaxNotificationSettings(): Promise<number> {
+    return this.settingsService
+      .get()
+      .then((res) => {
+        if (res && typeof res.max_task_notifications === 'number' && res.max_task_notifications >= 0) {
+          return res.max_task_notifications;
+        }
+        return DEFAULT_MAX_NOTIFICATIONS;
+      })
+      .catch((err) => {
+        console.error('Error fetching notifications settings', err);
+        return DEFAULT_MAX_NOTIFICATIONS;
+      });
+  }
+
   private getLatestNotificationTimestamp(): number {
     if (this.isNewDay()) {
-      window.localStorage.setItem(TASK_NOTIFICATION_STATE_TIMESTAMP, String(moment().startOf('day').valueOf()));
+      window.localStorage.setItem(TASK_NOTIFICATION_DAY, String(moment().startOf('day').valueOf()));
       return 0;
     }
     return Number(window.localStorage.getItem(LATEST_NOTIFICATION_TIMESTAMP));
   }
 
   private isNewDay(): boolean {
-    const timestampToday = Number(window.localStorage.getItem(TASK_NOTIFICATION_STATE_TIMESTAMP));
+    const timestampToday = Number(window.localStorage.getItem(TASK_NOTIFICATION_DAY));
     return !moment().isSame(timestampToday, 'day');
   }
 

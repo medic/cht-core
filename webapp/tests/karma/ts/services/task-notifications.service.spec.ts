@@ -7,6 +7,7 @@ import { TasksNotificationService } from '@mm-services/task-notifications.servic
 import { TranslateService } from '@mm-services/translate.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { FormatDateService } from '@mm-services/format-date.service';
+import { SettingsService } from '@mm-services/settings.service';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
@@ -16,12 +17,15 @@ describe('TasksNotificationService', () => {
   let translateService;
   let rulesEngine;
   let formatDateService;
+  let settingsService;
 
   let tasks;
-  const getTask = (id) => tasks.find((task) => task._id === id);
+  let clock;
+  const getTask = (id: string) => tasks.find((task) => task._id === id);
 
   beforeEach(() => {
     consoleErrorMock = sinon.stub(console, 'error');
+    clock = sinon.useFakeTimers(moment().valueOf());
     tasks = [
       {
         _id: 'task1',
@@ -32,6 +36,10 @@ describe('TasksNotificationService', () => {
           dueDate: moment().format('YYYY-MM-DD')
         },
         stateHistory: [
+          {
+            state: 'Draft',
+            timestamp: moment().subtract(100, 'milliseconds').valueOf()
+          },
           {
             state: 'Ready',
             timestamp: moment().valueOf()
@@ -48,6 +56,10 @@ describe('TasksNotificationService', () => {
           dueDate: moment().format('YYYY-MM-DD')
         },
         stateHistory: [
+          {
+            state: 'Draft',
+            timestamp: moment().subtract(100, 'milliseconds').valueOf()
+          },
           {
             state: 'Ready',
             timestamp: moment().add(100, 'milliseconds').valueOf()
@@ -68,11 +80,17 @@ describe('TasksNotificationService', () => {
       relative: sinon.stub().returnsArg(0),
     };
 
+    settingsService = {
+      get: sinon.stub().resolves({}),
+    };
+
+
     TestBed.configureTestingModule({
       providers: [
         { provide: TranslateService, useValue: translateService },
         { provide: RulesEngineService, useValue: rulesEngine },
         { provide: FormatDateService, useValue: formatDateService },
+        { provide: SettingsService, useValue: settingsService },
       ]
     });
     service = TestBed.inject(TasksNotificationService);
@@ -80,11 +98,26 @@ describe('TasksNotificationService', () => {
 
   afterEach(() => {
     sinon.restore();
+    clock.restore();
     localStorage.clear();
   });
 
   it('should be created', async () => {
     expect(service).to.be.ok;
+  });
+
+  it('should initialize max notifications value from settings', async () => {
+    settingsService.get.resolves({ max_task_notifications: 20 });
+    const maxNotifications = await service.getMaxNotificationSettings();
+    expect(settingsService.get.callCount).to.equal(1);
+    expect(maxNotifications).to.equal(20);
+  });
+
+  it('should return default max notifications value if settings value is not valid', async () => {
+    settingsService.get.resolves({ max_task_notifications: '2o' });
+    const maxNotifications = await service.getMaxNotificationSettings();
+    expect(settingsService.get.callCount).to.equal(1);
+    expect(maxNotifications).to.equal(10);
   });
 
   it('should fetch notifications', async () => {
@@ -101,12 +134,19 @@ describe('TasksNotificationService', () => {
       expect(notification).to.be.an('object');
       expect(notification).to.eql({
         _id: task._id,
-        readyAt: task.stateHistory[0].timestamp,
+        readyAt: task.stateHistory[1].timestamp,
         title: task.emission.title,
         contentText: 'android.notification.tasks.contentText',
         dueDate: task.emission.dueDate
       });
     });
+  });
+
+  it('should return max number of notifications', async () => {
+    settingsService.get.resolves({ max_task_notifications: 1 });
+    const notifications = await service.fetchNotifications();
+    expect(notifications).to.be.an('array').that.has.lengthOf(1);
+    expect(notifications[0]._id).to.equal('task2');
   });
 
   it('should not return same notifications twice', async () => {
@@ -158,7 +198,6 @@ describe('TasksNotificationService', () => {
     };
 
     rulesEngine.fetchTaskDocsForAllContacts.resolves([...tasks, taskDueTomorrow]);
-    const clock = sinon.useFakeTimers(moment().valueOf());
     const notifications = await service.fetchNotifications();
     expect(notifications).to.be.an('array').that.has.lengthOf(2);
 
@@ -166,7 +205,6 @@ describe('TasksNotificationService', () => {
 
     const updatedNotifications = await service.fetchNotifications();
     expect(updatedNotifications).to.be.an('array').that.has.lengthOf(3);
-    clock.restore();
   });
 
   it('should return empty array if rules engine is disabled', async () => {
@@ -187,7 +225,7 @@ describe('TasksNotificationService', () => {
     expect(consoleErrorMock.callCount).to.equal(0);
   });
 
-  it('should fetch notifications with no tasks due today', async () => {
+  it('should fetch notifications for overdue tasks', async () => {
     const pastTask = {
       _id: 'task_past',
       state: 'Ready',
@@ -206,8 +244,34 @@ describe('TasksNotificationService', () => {
     rulesEngine.fetchTaskDocsForAllContacts.resolves([pastTask]);
     const notifications = await service.fetchNotifications();
     expect(notifications).to.be.an('array').that.has.lengthOf(1);
+    expect(notifications[0]._id).to.eql(pastTask._id);
     expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);
     expect(translateService.instant.callCount).to.equal(1);
+    expect(consoleErrorMock.callCount).to.equal(0);
+  });
+
+  it('should not fetch notifications for future tasks', async () => {
+    const futureTask = {
+      _id: 'task_future',
+      state: 'Ready',
+      emission: {
+        title: 'Future Task',
+        contact: { name: 'Owl Phil Future', _id: 'contact_future' },
+        dueDate: moment().add(1, 'days').format('YYYY-MM-DD')
+      },
+      stateHistory: [
+        {
+          state: 'Ready',
+          timestamp: moment().subtract(1, 'days').valueOf(),
+        }
+      ]
+    };
+    rulesEngine.fetchTaskDocsForAllContacts.resolves([futureTask]);
+    
+    const notifications = await service.fetchNotifications();
+    expect(notifications).to.be.an('array').that.has.lengthOf(0);
+    expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);
+    expect(translateService.instant.callCount).to.equal(0);
     expect(consoleErrorMock.callCount).to.equal(0);
   });
 
@@ -230,7 +294,7 @@ describe('TasksNotificationService', () => {
       expect(notification).to.be.an('object');
       expect(notification).to.eql({
         _id: task._id,
-        readyAt: task.stateHistory[0].timestamp,
+        readyAt: task.stateHistory[1].timestamp,
         title: task.emission.title,
         contentText: 'android.notification.tasks.contentText',
         dueDate: task.emission.dueDate

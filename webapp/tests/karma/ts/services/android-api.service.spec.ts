@@ -12,6 +12,7 @@ import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.ser
 import { TranslateService } from '@mm-services/translate.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { FormatDateService } from '@mm-services/format-date.service';
+import { SettingsService } from '@mm-services/settings.service';
 
 describe('AndroidApi service', () => {
 
@@ -23,8 +24,6 @@ describe('AndroidApi service', () => {
   let navigationService;
   let androidAppLauncherService;
   let translateService;
-  let rulesEngine;
-  let formatDateService;
 
   beforeEach(() => {
     sessionService = {
@@ -57,8 +56,6 @@ describe('AndroidApi service', () => {
       get: sinon.stub().resolvesArg(0),
       instant: sinon.stub().returnsArg(0),
     };
-    rulesEngine = { };
-    formatDateService = { };
 
     TestBed.configureTestingModule({
       providers: [
@@ -68,8 +65,9 @@ describe('AndroidApi service', () => {
         { provide: NavigationService, useValue: navigationService },
         { provide: AndroidAppLauncherService, useValue: androidAppLauncherService },
         { provide: TranslateService, useValue: translateService },
-        { provide: RulesEngineService, useValue: rulesEngine },
-        { provide: FormatDateService, useValue: formatDateService },
+        { provide: RulesEngineService, useValue: {} },
+        { provide: FormatDateService, useValue: {} },
+        { provide: SettingsService, useValue: {} },
       ],
     });
 
