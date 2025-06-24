@@ -179,7 +179,7 @@ describe('cht-datasource Person', () => {
         await expect(
           getPage({...Qualifier.byContactType(personType)}, cursor, invalidLimit)
         ).to.be.rejectedWith(
-          `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`
+          {code: 400, error: `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`}
         );
       });
 
@@ -189,7 +189,7 @@ describe('cht-datasource Person', () => {
             ...Qualifier.byContactType(personType),
           }, invalidCursor, limit)
         ).to.be.rejectedWith(
-          `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          {code: 400, error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`}
         );
       });
     });
@@ -205,6 +205,21 @@ describe('cht-datasource Person', () => {
         }
 
         expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeople);
+      });
+    });
+
+    describe('createPerson', async () => {
+      const createPerson = Person.v1.createPerson(dataContext);
+      it('creates a person for a valid person qualifier', async () => {
+        const personQualifier = Qualifier.byPersonQualifier({
+          name: 'apoorva',
+          type: 'person',
+          parent: {
+            _id: '1-id'
+          }
+        });
+        const person = await createPerson(personQualifier);
+        expect(person).excluding([ '_rev', 'reported_date', '_id' ]).to.deep.equal(personQualifier);
       });
     });
   });
