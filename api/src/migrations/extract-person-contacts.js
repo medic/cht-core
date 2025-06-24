@@ -5,6 +5,7 @@ const db = require('../db');
 const dataContext = require('../services/data-context');
 const logger = require('@medic/logger');
 const { people, places } = require('@medic/contacts')(config, db, dataContext);
+const { Contact, Qualifier } = require('@medic/cht-datasource');
 
 // WARNING : THIS MIGRATION IS POTENTIALLY DESTRUCTIVE IF IT MESSES UP HALFWAY, SO GET YOUR SYSTEM
 // OFFLINE BEFORE RUNNING IT!
@@ -274,28 +275,26 @@ const updateParents = function(id, callback) {
   };
 
   const resetParent = function(facilityId, parentId, callback) {
-    db.medic.get(parentId, function(err) {
-      if (err) {
+    dataContext
+      .bind(Contact.v1.get)(Qualifier.byUuid(parentId))
+      .then(() => {
+        return places.updatePlace(facilityId, { parent: parentId });
+      })
+      .then(() => callback())
+      .catch(err => {
         if (err.status === 404) {
-          // Parent does not exist, so cannot be reset
+        // Parent does not exist, so cannot be reset
           return callback();
         }
-        return callback(err);
-      }
-      places
-        .updatePlace(facilityId, { parent: parentId })
-        .then(() => callback())
-        .catch(err => {
-          callback(
-            new Error(
-              'Failed to update parent on facility ' +
-                facilityId +
-                ' - ' +
-                JSON.stringify(err, null, 2)
-            )
-          );
-        });
-    });
+        callback(
+          new Error(
+            'Failed to update parent on facility ' +
+            facilityId +
+            ' - ' +
+            JSON.stringify(err, null, 2)
+          )
+        );
+      });
   };
 
   db.medic.get(id, function(err, facility) {
@@ -325,25 +324,28 @@ const updateParents = function(id, callback) {
   });
 };
 
-const migrateOneType = function(type, callback) {
-  const migrate = function(row, callback) {
-    updateParents(row.id, function(err) {
-      if (err) {
-        return callback(err);
-      }
-      createPerson(row.id, callback);
-    });
-  };
-
-  db.medic.query('medic-client/contacts_by_type', { key: [type] }, function(
-    err,
-    result
-  ) {
-    if (err) {
-      return callback(err);
+const migrateOneType = async function(type, callback) {
+  try {
+    const generator = dataContext.bind(Contact.v1.getUuids)(dataContext)(Qualifier.byContactType(type));
+    for await (const id of generator) {
+      await new Promise((resolve, reject) => {
+        updateParents(id, function(err) {
+          if (err) {
+            return reject(err);
+          }
+          createPerson(id, function(err) {
+            if (err) {
+              return reject(err);
+            }
+            resolve();
+          });
+        });
+      });
     }
-    async.eachSeries(result.rows, migrate, callback);
-  });
+    callback();
+  } catch (err) {
+    callback(err);
+  }
 };
 
 module.exports = {

@@ -1,9 +1,12 @@
 const _ = require('lodash');
 const db = require('../db');
 const batch = require('../db-batch');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
+const dataContext = require('../services/data-context');
 
 const getClinic = id => {
-  return db.medic.get(id)
+  return dataContext
+    .bind(Contact.v1.get)(Qualifier.byUuid(id))
     .then(clinic => {
       const contact = clinic.contact;
       if (!contact) {
@@ -27,7 +30,9 @@ const getContact = (contactId, clinicId) => {
   if (!contactId) {
     return getClinic(clinicId);
   }
-  return db.medic.get(contactId).catch(err => {
+  return dataContext
+    .bind(Contact.v1.get)(Qualifier.byUuid(contactId))
+    .catch(err => {
     if (err.status === 404) {
       return getClinic(clinicId);
     }
