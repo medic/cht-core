@@ -176,12 +176,12 @@ export const byContactQualifierNonAssertive = (data: unknown) : Record<string, u
   insertReportedDateIfMissing(qualifier);
   if (!isValidReportedDate(qualifier.reported_date)){
     throw new InvalidArgumentError(
-      // eslint-disable-next-line max-len
-      `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
+      'Invalid reported_date. Expected format to be ' +
+        '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
     );
   }
   if (!checkContactQualifierFields(qualifier)){
-    throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(data)}].`);
+    throw new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON.stringify(data)}].`);
   }
   return qualifier;
 };
@@ -242,12 +242,12 @@ export const byReportQualifier = (data: unknown): ReportQualifier => {
   insertReportedDateIfMissing(qualifier);
   if (!isValidReportedDate(qualifier.reported_date)) {
     throw new InvalidArgumentError(
-      // eslint-disable-next-line max-len
-      `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
+      'Invalid reported_date. Expected format to be ' +
+        '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
     );
   }
   if (!isReportQualifier(qualifier)) {
-    throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(data)}].`);
+    throw new InvalidArgumentError(`Missing or empty required fields (type, form) in [${JSON.stringify(data)}].`);
   }
   return qualifier;
 };
@@ -314,12 +314,15 @@ export const byPersonQualifier = (data: unknown): PersonQualifier => {
   const qualifier = byContactQualifierNonAssertive(data);
   
   if (!hasField(qualifier, { name: 'parent', type: 'object' })) {
-    throw new InvalidArgumentError(`Missing or empty required fields [${JSON.stringify(qualifier)}].`);
+    throw new InvalidArgumentError(`Missing or empty required field (parent) [${JSON.stringify(qualifier)}].`);
   }
 
   // cannot use checkFieldLineageAndThrowError as parent is required in `person`
   if (!isNormalizedParent(qualifier.parent)) {
-    throw new InvalidArgumentError(`Missing required fields in the parent hierarchy [${JSON.stringify(qualifier)}].`);
+    throw new InvalidArgumentError(`Missing required fields (parent, _id) in the parent hierarchy [${JSON.stringify(
+      qualifier
+    )
+    }].`);
   }
 
   if (hasBloatedLineage(qualifier)) {
@@ -429,12 +432,16 @@ const checkFieldLineageAndThrowError = (data: Record<string, unknown>, field?:st
   }
   
   if (!isNormalizedParent(normalized_parent)) {
-    // eslint-disable-next-line max-len
-    throw new InvalidArgumentError(`Missing required fields in the ${field??'parent'} hierarchy [${JSON.stringify(data)}].`);
+    throw new InvalidArgumentError(
+      `Missing required fields (parent, _id) in the ${
+        field ?? 'parent'
+      } hierarchy [${JSON.stringify(data)}].`
+    );
   }
   if (hasBloatedLineage(hierarchyRoot)) {
-    // eslint-disable-next-line max-len
-    throw new InvalidArgumentError(`Additional fields found in the ${field??'parent'} lineage [${JSON.stringify(data)}].`);
+    throw new InvalidArgumentError(
+      `Additional fields found in the ${field ?? 'parent'} lineage [${JSON.stringify(data)}].`
+    );
   }
 };
 
@@ -454,11 +461,9 @@ const hasInvalidContactLineageForField = (data: Record<string, unknown>, field?:
   }
   
   if (!isNormalizedParent(normalized_parent)) {
-    // eslint-disable-next-line max-len
     return true;
   }
   if (hasBloatedLineage(hierarchyRoot)) {
-    // eslint-disable-next-line max-len
     return true;
   }
 };

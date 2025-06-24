@@ -2,9 +2,11 @@ import { InvalidArgumentError } from './error';
 import {
   ContactTypeQualifier,
   FreetextQualifier,
+  PersonQualifier,
   UuidQualifier,
   isContactTypeQualifier,
   isFreetextQualifier,
+  isPersonQualifier,
   isUuidQualifier,
 } from '../qualifier';
 import { Nullable } from './core';
@@ -15,6 +17,15 @@ export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is C
 ) => {
   if (!isContactTypeQualifier(qualifier)) {
     throw new InvalidArgumentError(`Invalid contact type [${JSON.stringify(qualifier)}].`);
+  }
+};
+
+/** @internal */
+export const assertPersonQualifier: (qualifier: unknown) => asserts qualifier is PersonQualifier = (
+  qualifier: unknown
+) => {
+  if (!isPersonQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid person type [${JSON.stringify(qualifier)}].`);
   }
 };
 
