@@ -1,17 +1,19 @@
 import { LocalDataContext } from './libs/data-context';
 import {
+  createDoc,
   fetchAndFilterUuids,
   getDocById,
   queryDocUuidsByKey,
   queryDocUuidsByRange
 } from './libs/doc';
-import { FreetextQualifier, UuidQualifier, isKeyedFreetextQualifier } from '../qualifier';
-import { Nullable, Page } from '../libs/core';
+import { FreetextQualifier, ReportQualifier, UuidQualifier, isKeyedFreetextQualifier } from '../qualifier';
+import { hasField, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
 import { normalizeFreetext, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
+import { InvalidArgumentError } from '../libs/error';
 
 /** @internal */
 export namespace v1 {
@@ -74,4 +76,20 @@ export namespace v1 {
       return await fetchAndFilterUuids(getDocsFn, limit)(limit, skip);
     };
   };
+
+  /** @internal*/
+  export const createReport = ({
+    medicDb
+  } : LocalDataContext) => {
+    const createReportDoc = createDoc(medicDb);
+    return async (qualifier: ReportQualifier) :Promise<Report.v1.Report> => {
+      if (hasField(qualifier, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
+        throw new InvalidArgumentError('Cannot pass `_rev` when creating a report.');
+      }
+        
+      return await createReportDoc(qualifier) as Report.v1.Report;
+    };
+  };
+
+  
 }
