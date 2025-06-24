@@ -150,8 +150,8 @@ describe('qualifier', () => {
     it('throws error for invalid reported_date field.', () => {
       expect(() => byContactQualifier({
         name: 'A', type: 'person', reported_date: '2025-06'
-      // eslint-disable-next-line max-len
-      })).to.throw(`Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`);
+      })).to.throw('Invalid reported_date. Expected format to be ' +
+        '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.');
     });
   
     it('throws error for missing or empty required fields.', () => {
@@ -238,10 +238,15 @@ describe('qualifier', () => {
 
     it('throws error for invalid reported_date.', () => {
       expect(() => byReportQualifier({
-        type: 'data_record', form: 'yes', reported_date: '2025'
-      // eslint-disable-next-line max-len
-      })).to.throw('Invalid reported_date. Expected format to be \'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.');
+        type: 'data_record',
+        form: 'yes',
+        reported_date: '2025',
+      })).to.throw(
+        'Invalid reported_date. Expected format to be \'YYYY-MM-DDTHH:mm:ssZ\', ' +
+          '\'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
+      );
     });
+    
 
     it('throws error if qualifier is not an object.', () => {
       [
@@ -667,8 +672,8 @@ describe('qualifier', () => {
         reported_date: '2025-10'
       };
       expect(() => byPlaceQualifier(qualifier))
-        // eslint-disable-next-line max-len
-        .to.throw(`Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`);
+        .to.throw('Invalid reported_date. Expected format to be ' +
+        '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.');
     });
 
     it('throws error on missing _id or parent properties in contact/parent hierarchy', () => {
@@ -700,10 +705,11 @@ describe('qualifier', () => {
         }
       ].forEach((qualifier) => {
         const expected_qualifier = { ...qualifier, reported_date: CURRENT_ISO_TIMESTAMP };
-        expect(() => byPlaceQualifier(qualifier))
-          // eslint-disable-next-line max-len
-          .to.throw(`Missing required fields (parent, _id) in the parent hierarchy [${JSON.stringify(expected_qualifier)}].`);
-
+        expect(() => byPlaceQualifier(qualifier)).to.throw(
+          `Missing required fields (parent, _id) in the parent hierarchy [${JSON.stringify(
+            expected_qualifier
+          )}].`
+        );
       });
 
       [
@@ -737,8 +743,11 @@ describe('qualifier', () => {
       ].forEach((qualifier) => {
         const expected_qualifier = {...qualifier, reported_date: CURRENT_ISO_TIMESTAMP};
         expect(() => byPlaceQualifier(qualifier))
-          // eslint-disable-next-line max-len
-          .to.throw(`Missing required fields (parent, _id) in the contact hierarchy [${JSON.stringify(expected_qualifier)}].`);
+          .to.throw(
+            `Missing required fields (parent, _id) in the contact hierarchy [${JSON.stringify(
+              expected_qualifier
+            )}].`
+          );
       });
     });
 
