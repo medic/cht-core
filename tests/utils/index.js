@@ -355,7 +355,7 @@ const saveMetaDocs = (user, docs) => {
     });
 };
 
-const getDoc = (id, rev, parameters = '') => {
+const getDoc = (id, rev = '', parameters = '') => {
   const params = {};
   if (rev) {
     params.rev = rev;

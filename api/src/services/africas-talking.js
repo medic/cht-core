@@ -74,14 +74,6 @@ const getUrl = sandbox => {
   return `https://api.${prefix}africastalking.com/version1/messaging`;
 };
 
-const parseResponseBody = body => {
-  try {
-    return JSON.parse(body);
-  } catch {
-    return;
-  }
-};
-
 const sendMessage = (credentials, message) => {
   const url = getUrl(credentials.username === 'sandbox');
   logger.debug(`Sending message to "${url}"`);
@@ -100,10 +92,9 @@ const sendMessage = (credentials, message) => {
         Accept: 'application/json'
       }
     })
-    .then(body => {
-      const result = parseResponseBody(body);
+    .then(result => {
       if (!result) {
-        logger.error(`Unable to JSON parse response: %o`, body);
+        logger.error(`Unable to JSON parse response: %o`, result);
         return; // retry later
       }
       const validResponse = getStatus(getRecipient(result));
