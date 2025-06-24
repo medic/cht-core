@@ -1,5 +1,6 @@
 const { FlatCompat } = require('@eslint/eslintrc');
 const js = require('@eslint/js');
+const { fixupPluginRules } = require('@eslint/compat');
 const promisePlugin = require('eslint-plugin-promise');
 const nodePlugin = require('eslint-plugin-n');
 const { defineConfig, globalIgnores } = require('eslint/config');
@@ -230,7 +231,7 @@ module.exports = defineConfig([
     files: ['admin/**/*'],
     plugins: {
       compat: compatPlugin,
-      angular: angularPlugin,
+      angular: fixupPluginRules(angularPlugin),
     },
 
     languageOptions: {
@@ -249,13 +250,13 @@ module.exports = defineConfig([
       'angular/module-getter': 'error',
       'angular/module-setter': 'error',
       'angular/no-private-call': 'error',
-      // 'angular/di-unused': 'error',
+      'angular/di-unused': 'error',
       'angular/on-watch': 'error',
       'angular/no-cookiestore': 'error',
-      // 'angular/no-directive-replace': 'error',
+      'angular/no-directive-replace': 'error',
       'angular/no-http-callback': 'error',
-      // 'angular/di-order': 'error',
-      // 'angular/di': 'error',
+      'angular/di-order': 'error',
+      'angular/di': 'error',
       'angular/module-dependency-order': 'error',
       'angular/one-dependency-per-line': 'error',
       'angular/interval-service': 'error',
@@ -265,7 +266,7 @@ module.exports = defineConfig([
   {
     files: ['admin/src/js/main.js', 'admin/tests/**/*'],
     plugins: {
-      angular: angularPlugin,
+      angular: fixupPluginRules(angularPlugin),
     },
     rules: {
       'angular/window-service': 'off',
@@ -278,7 +279,6 @@ module.exports = defineConfig([
     files: ['admin/tests/**/*'],
     plugins: {
       jasmine: jasminePlugin,
-      angular: angularPlugin,
     },
 
     languageOptions: {
