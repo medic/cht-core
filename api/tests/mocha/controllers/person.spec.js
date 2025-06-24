@@ -306,9 +306,7 @@ describe('Person Controller', () => {
         const qualifier = {
           
           name: 'test-user',
-          parent: {
-            _id: '1-id'
-          },
+          parent: 'p1',
           reported_date: 12312312
         };
         req = {
@@ -334,9 +332,7 @@ describe('Person Controller', () => {
           
           name: 'test-user',
           type: 'person',
-          parent: {
-            _id: '1-id'
-          },
+          parent: 'p1',
           reported_date: 12312312
         };
         req = {

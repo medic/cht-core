@@ -252,9 +252,7 @@ describe('Person API', () => {
       const personQualifier = {
         name: 'apoorva',
         type: 'person',
-        parent: {
-          _id: '1-id'
-        }
+        parent: 'p1'
       };
       const opts = {
         path: endpoint,

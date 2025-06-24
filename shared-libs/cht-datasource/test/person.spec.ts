@@ -314,9 +314,7 @@ describe('person', () => {
       it('throws error for invalid qualifier', async() => {
         const qualifier = {
           name: 'person-1',
-          parent: {
-            '_id': '1'
-          }
+          parent: 'p1'
         };
         isPersonQualifier.returns(false);
         await expect(Person.v1.createPerson(dataContext)(qualifier as Qualifier.PersonQualifier))
@@ -329,9 +327,7 @@ describe('person', () => {
         const qualifier = {
           name: 'person-1',
           type: 'person',
-          parent: {
-            '_id': '1'
-          }
+          parent: 'p1'
         };
         isPersonQualifier.returns(true);
         createPersonDoc.resolves(qualifier);

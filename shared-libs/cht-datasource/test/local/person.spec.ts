@@ -336,16 +336,14 @@ describe('local person', () => {
           type: 'contact',
           name: 'user-1',
           contact_type: 'robot',
-          parent: {
-            _id: '1-id'
-          }
+          parent: 'p1'
         };
         await expect(Person.v1.createPerson(localContext)(personQualifier))
           .to.be.rejectedWith('Invalid person type.');
         expect(createDocInner.called).to.be.false;
       });
 
-      it('creates Person doc for valid input containing normalized parent lineage with a provided _id', async() => {
+      it('creates Person doc for valid input containing parent', async() => {
         settingsGetAll.returns({
           contact_types: ['animal', 'human']
         });
@@ -355,12 +353,7 @@ describe('local person', () => {
           name: 'user-1',
           type: 'contact',
           contact_type: 'human',
-          parent: {
-            _id: '1-id',
-            parent: {
-              _id: '2-id'
-            }
-          },
+          parent: 'p1'
         };
         
         const qualifier_reported_date = new Date().toISOString();
@@ -376,12 +369,7 @@ describe('local person', () => {
           const qualifier = {
             name: 'user-1',
             type: 'person',
-            parent: {
-              _id: '1-id',
-              parent: {
-                _id: '2-id'
-              }
-            },
+            parent: 'p1'
           };
 
           const qualifier_reported_date = new Date().toISOString();

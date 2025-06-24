@@ -112,9 +112,7 @@ describe('remote person', () => {
         const personQualifier = {
           type: 'person',
           name: 'user-1',
-          parent: {
-            _id: '1'
-          }
+          parent: 'p1'
         };
         const expected_doc = {...personQualifier, _id: '2', _rev: '1'};
         postResourceInner.resolves(expected_doc);

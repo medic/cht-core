@@ -334,18 +334,11 @@ describe('qualifier', () => {
         .throw(`Missing or empty required field (parent) [${JSON.stringify(expected_data)}].`);
     });
 
-    it('throws an error parent lineage missing `_id` or `parent` fields', () => {
+    it('throws an error if parent is an empty string', () => {
       const data = {
         name: 'Antony',
         type: 'person',
-        parent: {
-          _id: '1-id',
-          parent: {
-            parent: {
-              _id: '3-id'
-            }
-          }
-        }
+        parent: ''
       };
 
       const expected_data = {
@@ -353,7 +346,7 @@ describe('qualifier', () => {
       };
 
       expect(() => byPersonQualifier(data)).to
-        .throw(`Missing required fields (parent, _id) in the parent hierarchy [${JSON.stringify(expected_data)}].`);
+        .throw(`Missing or empty required field (parent) [${JSON.stringify(expected_data)}].`);
     });
 
     it('throws an error on invalid contact types', () => {
@@ -361,44 +354,16 @@ describe('qualifier', () => {
         {
           name: 'Antony',
           type: 'contact',
-          parent: {
-            _id: '1-id'
-          }
+          parent: 'p-1'
         },
         {
           name: 'Antony',
           type: 'astronaut',
-          parent: {
-            _id: '1-id'
-          }
+          parent: 'p-1'
         }
       ].forEach((qualifier) => {
         expect(() => byPersonQualifier(qualifier)).to.throw(`Invalid type for contacts.`);
       });
-    });
-
-    it('throws an error on bloated parent hierarchy', () => {
-      const data = {
-        name: 'Antony',
-        type: 'person',
-        reported_date: 9402942,
-        parent: {
-          _id: '1-id',
-          parent: {
-            _id: '2-id',
-            parent: {
-              _id: '3-id',
-              name: 'Hydrated User',
-              type: 'person',
-              parent: {
-                _id: '4-id'
-              }
-            }
-          }
-        }
-      };
-      expect(() => byPersonQualifier(data)).to
-        .throw(`Additional fields found in the parent lineage [${JSON.stringify(data)}].`);
     });
 
     it('builds qualifier for valid objects', () => {
@@ -406,29 +371,20 @@ describe('qualifier', () => {
         {
           name: 'user-1',
           type: 'person',
-          parent: {
-            _id: '1-id',
-            parent: {
-              _id: '2-id'
-            }
-          }
+          parent: 'p-1'
         },
         {
           name: 'user-2',
           type: 'contact',
           contact_type: 'clinic_worker',
-          parent: {
-            _id: '1-id'
-          }
+          parent: 'p-1'
         },
         {
           name: 'user-3',
           type: 'contact',
           reported_date: 323232,
           contact_type: 'clinic_worker',
-          parent: {
-            _id: '1-id'
-          }
+          parent: 'p-1'
         }
       ].forEach((qualifier) => {
         const expected_qualifier = {reported_date: CURRENT_ISO_TIMESTAMP, ...qualifier};
@@ -443,9 +399,7 @@ describe('qualifier', () => {
     it('returns false for missing required fields(type,name)', () => {
       const data = {
         name: 'user-1',
-        parent: {
-          _id: '2'
-        }
+        parent: 'p-1'
       }; 
       expect(isPersonQualifier(data)).to.be.false; 
     });
@@ -458,63 +412,21 @@ describe('qualifier', () => {
       expect(isPersonQualifier(data)).to.be.false;
     });
 
-    it('returns false when parent lineage is missing `_id` or `parent` required fields', () => {
-      const data = {
-        name: 'Antony',
-        type: 'person',
-        parent: {
-          _id: '1-id',
-          parent: {
-            parent: {
-              _id: '3-id'
-            }
-          }
-        }
-      };
-      expect(isPersonQualifier(data)).to.be.false;
-    });
-
     it('returns false for invalid contact types', () => {
       [
         {
           name: 'Antony',
           type: 'contact',
-          parent: {
-            _id: '1-id'
-          }
+          parent: 'p-1'
         },
         {
           name: 'Antony',
           type: 'astronaut',
-          parent: {
-            _id: '1-id'
-          }
+          parent: 'p-1'
         }
       ].forEach((qualifier) => {
         expect(isPersonQualifier(qualifier)).to.be.false;
       });
-    });
-
-    it('returns false on finding bloated parent hierarchy', () => {
-      const data = {
-        name: 'Antony',
-        type: 'person',
-        parent: {
-          _id: '1-id',
-          parent: {
-            _id: '2-id',
-            parent: {
-              _id: '3-id',
-              name: 'Hydrated User',
-              type: 'person',
-              parent: {
-                _id: '4-id'
-              }
-            }
-          }
-        }
-      };
-      expect(isPersonQualifier(data)).to.be.false;
     });
 
     it('returns true for valid PersonQualifier objects', () => {
@@ -522,20 +434,13 @@ describe('qualifier', () => {
         {
           name: 'user-1',
           type: 'person',
-          parent: {
-            _id: '1-id',
-            parent: {
-              _id: '2-id'
-            }
-          }
+          parent: 'p-1'
         },
         {
           name: 'user-2',
           type: 'contact',
           contact_type: 'clinic_worker',
-          parent: {
-            _id: '1-id'
-          }
+          parent: 'p-1'
         }
       ].forEach((qualifier) => expect(isPersonQualifier(qualifier)).to.be.true);
     });
@@ -558,106 +463,40 @@ describe('qualifier', () => {
         .to.throw('Invalid type for contacts.'));
     });
 
-    it('throws error for bloated lineage on parent/contact', () => {
-      [
-        {
-          type: 'place',
-          name: 'place-1',
-          parent: {
-            _id: '1-id',
-            name: 'place-2',
-            parent: {
-              _id: '1-id',
-            }
-          }
-        }, 
-
-        {
-          type: 'place',
-          name: 'place-1',
-          reported_date: 23232323,
-          parent: {
-            _id: '2-id',
-            parent: {
-              _id: '4-id',
-              name: 'place-2',
-              parent: {
-                _id: '3-id',
-              }
-            }
-            
-          }
-        }
-      ].forEach((qualifier) => {
-        const expected_qualifier = qualifier.reported_date ?
-          qualifier : { ...qualifier, reported_date: CURRENT_ISO_TIMESTAMP };
-        expect(() => byPlaceQualifier(qualifier))
-          .to.throw(`Additional fields found in the parent lineage [${JSON.stringify(expected_qualifier)}].`);
-      });
+    it('throws error for empty parent', () => {
+      const qualifier = {
+        type: 'place',
+        name: 'place-1',
+        parent: ''
+      };
       
+      const expected_qualifier = { ...qualifier, reported_date: CURRENT_ISO_TIMESTAMP };
+      expect(() => byPlaceQualifier(qualifier))
+        .to.throw(`Missing or empty required field (parent) for [${JSON.stringify(expected_qualifier)}].`);
+    });
 
-      [
-        {
-          type: 'place',
-          name: 'place-1',
-          reported_date: 123123123,
-          contact: {
-            _id: '1-id',
-            parent: {
-              _id: '1-id',
-              name: 'place-2'
-            }
-          }
-        }, 
-  
-        {
-          type: 'place',
-          name: 'place-1',
-          contact: {
-            _id: '2-id',
-            parent: {
-              _id: '7-id',
-              name: 'place-2',
-              parent: {
-                _id: '3-id',
-              }
-            }
-              
-          }
-        }
-      ].forEach((qualifier) => {
-        const expected_qualifier = qualifier.reported_date ?
-          qualifier : { ...qualifier, reported_date: CURRENT_ISO_TIMESTAMP };
-        expect(() => byPlaceQualifier(qualifier))
-          .to.throw(`Additional fields found in the contact lineage [${JSON.stringify(expected_qualifier)}].`);
-      });
-    
+    it('throws error for empty contact', () => {
+      const qualifier = {
+        type: 'place',
+        name: 'place-1',
+        contact: ''
+      };
+      
+      const expected_qualifier = { ...qualifier, reported_date: CURRENT_ISO_TIMESTAMP };
+      expect(() => byPlaceQualifier(qualifier))
+        .to.throw(`Missing or empty required field (contact) for [${JSON.stringify(expected_qualifier)}].`);
     });
 
     it('throws error for missing required fields', () => {
       [
         {
           name: 'place-1',
-          parent: {
-            _id: 'p1'
-          },
-          contact: {
-            _id: '2',
-            name: 'contact-1',
-            parent: {
-              _id: 'p3'
-            }
-          }
+          parent: 'p1',
+          contact: 'c1'
         },
         {
           type: 'place',
-          contact: {
-            _id: '2',
-            name: 'contact-1',
-            parent: {
-              _id: 'p3'
-            }
-          }
+          contact: 'p1'
         }
       ].forEach((qualifier) => {
         expect(() => byPlaceQualifier(qualifier))
@@ -676,81 +515,6 @@ describe('qualifier', () => {
         '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.');
     });
 
-    it('throws error on missing _id or parent properties in contact/parent hierarchy', () => {
-      [
-        {
-          name: 'place-1',
-          type: 'place',
-          parent: {
-            _id: '2-id',
-            parent: {
-              parent: {
-                _id: '3-id'
-              }
-            }
-          }
-        },
-        {
-          name: 'place-1',
-          type: 'place',
-          parent: {
-            _id: '2-id',
-            parent: {
-              name: 'place-353',
-              parent: {
-                _id: '3-id'
-              }
-            }
-          }
-        }
-      ].forEach((qualifier) => {
-        const expected_qualifier = { ...qualifier, reported_date: CURRENT_ISO_TIMESTAMP };
-        expect(() => byPlaceQualifier(qualifier)).to.throw(
-          `Missing required fields (parent, _id) in the parent hierarchy [${JSON.stringify(
-            expected_qualifier
-          )}].`
-        );
-      });
-
-      [
-        {
-          name: 'place-1',
-          type: 'place',
-          contact: {
-            _id: '1',
-            parent: {
-              _id: '2',
-              parent: {
-                parent: {
-                  _id: '1'
-                }
-              }
-            }
-          }
-        },
-        {
-          name: 'place-1',
-          type: 'place',
-          contact: {
-            parent: {
-              _id: '2',
-              parent: {
-                _id: '1'
-              }
-            }
-          }
-        }
-      ].forEach((qualifier) => {
-        const expected_qualifier = {...qualifier, reported_date: CURRENT_ISO_TIMESTAMP};
-        expect(() => byPlaceQualifier(qualifier))
-          .to.throw(
-            `Missing required fields (parent, _id) in the contact hierarchy [${JSON.stringify(
-              expected_qualifier
-            )}].`
-          );
-      });
-    });
-
     it('builds a qualifier to create and update place for valid data', () => {
       [
         {
@@ -763,37 +527,17 @@ describe('qualifier', () => {
         }, {
           name: 'place-1',
           type: 'place',
-          parent: {
-            _id: '2',
-            parent: {
-              _id: '3'
-            }
-          }
+          parent: 'p1'
         }, {
           name: 'place-1',
           type: 'place',
           reported_date: 21231231, 
-          contact: {
-            _id: '2',
-            parent: {
-              _id: '3'
-            }
-          }
+          contact: 'c1'
         }, {
           name: 'place-1',
           type: 'place',
-          contact: {
-            _id: '2',
-            parent: {
-              _id: '3'
-            }
-          },
-          parent: {
-            _id: '4',
-            parent: {
-              _id: '5'
-            }
-          }
+          contact: 'c1',
+          parent: 'p1'
         }
       ].forEach((qualifier) => {
         const expected_qualifier = {reported_date: CURRENT_ISO_TIMESTAMP, ...qualifier };
@@ -817,100 +561,33 @@ describe('qualifier', () => {
       ].forEach((qualifier) => expect(isPlaceQualifier(qualifier)).to.be.false);
     });
 
-    it('returns false for bloated lineage on parent/contact', () => {
-      [
-        {
-          type: 'place',
-          name: 'place-1',
-          parent: {
-            _id: '1-id',
-            name: 'place-2',
-            parent: {
-              _id: '1-id',
-            }
-          }
-        }, 
-
-        {
-          type: 'place',
-          name: 'place-1',
-          reported_date: 23232323,
-          parent: {
-            _id: '2-id',
-            parent: {
-              _id: '4-id',
-              name: 'place-2',
-              parent: {
-                _id: '3-id',
-              }
-            }
-            
-          }
-        }
-      ].forEach((qualifier) => {
-        expect(isPlaceQualifier(qualifier)).to.be.false;
-      });
-      
-
-      [
-        {
-          type: 'place',
-          name: 'place-1',
-          reported_date: 123123123,
-          contact: {
-            _id: '1-id',
-            parent: {
-              _id: '1-id',
-              name: 'place-2'
-            }
-          }
-        }, 
-  
-        {
-          type: 'place',
-          name: 'place-1',
-          contact: {
-            _id: '2-id',
-            parent: {
-              _id: '7-id',
-              name: 'place-2',
-              parent: {
-                _id: '3-id',
-              }
-            }
-              
-          }
-        }
-      ].forEach((qualifier) => {
-        expect(isPlaceQualifier(qualifier)).to.be.false;
-      });
-    
-    });
-
     it('returns false for missing required fields', () => {
       [
         {
           name: 'place-1',
-          parent: {
-            _id: 'p1'
-          },
-          contact: {
-            _id: '2',
-            name: 'contact-1',
-            parent: {
-              _id: 'p3'
-            }
-          }
+          parent: 'p1',
+          contact: 'c1'
         },
         {
           type: 'place',
-          contact: {
-            _id: '2',
-            name: 'contact-1',
-            parent: {
-              _id: 'p3'
-            }
-          }
+          contact: 'c1'
+        }
+      ].forEach((qualifier) => {
+        expect(isPlaceQualifier(qualifier)).to.be.false;
+      });
+    });
+
+    it('returns false for empty parent/contact fields', () => {
+      [
+        {
+          name: 'place-1',
+          type: 'place',
+          contact: ''
+        },
+        {
+          name: 'place-1',
+          type: 'place',
+          parent: ''
         }
       ].forEach((qualifier) => {
         expect(isPlaceQualifier(qualifier)).to.be.false;
@@ -926,72 +603,6 @@ describe('qualifier', () => {
       expect(isPlaceQualifier(qualifier)).to.be.false;
     });
 
-    it('returns false on missing _id or parent properties in contact/parent hierarchy', () => {
-      [
-        {
-          name: 'place-1',
-          type: 'place',
-          parent: {
-            _id: '2-id',
-            parent: {
-              parent: {
-                _id: '3-id'
-              }
-            }
-          }
-        },
-        {
-          name: 'place-1',
-          type: 'place',
-          parent: {
-            _id: '2-id',
-            parent: {
-              name: 'place-353',
-              parent: {
-                _id: '3-id'
-              }
-            }
-          }
-        }
-      ].forEach((qualifier) => {
-        expect(isPlaceQualifier(qualifier))
-          .to.be.false;
-      });
-
-      [
-        {
-          name: 'place-1',
-          type: 'place',
-          contact: {
-            _id: '1',
-            parent: {
-              _id: '2',
-              parent: {
-                parent: {
-                  _id: '1'
-                }
-              }
-            }
-          }
-        },
-        {
-          name: 'place-1',
-          type: 'place',
-          contact: {
-            parent: {
-              _id: '2',
-              parent: {
-                _id: '1'
-              }
-            }
-          }
-        }
-      ].forEach((qualifier) => {
-        expect(isPlaceQualifier(qualifier))
-          .to.be.false;
-      });
-    });
-
     it('returns true for valid data', () => {
       [
         {
@@ -1004,37 +615,17 @@ describe('qualifier', () => {
         }, {
           name: 'place-1',
           type: 'place',
-          parent: {
-            _id: '2',
-            parent: {
-              _id: '3'
-            }
-          }
+          parent: 'p1'
         }, {
           name: 'place-1',
           type: 'place',
           reported_date: 21231231, 
-          contact: {
-            _id: '2',
-            parent: {
-              _id: '3'
-            }
-          }
+          contact: 'c1'
         }, {
           name: 'place-1',
           type: 'place',
-          contact: {
-            _id: '2',
-            parent: {
-              _id: '3'
-            }
-          },
-          parent: {
-            _id: '4',
-            parent: {
-              _id: '5'
-            }
-          }
+          contact: 'c1',
+          parent: 'p1'
         }
       ].forEach((qualifier) => {
         expect(isPlaceQualifier(qualifier)).to.be.true;

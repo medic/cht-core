@@ -214,9 +214,7 @@ describe('cht-datasource Person', () => {
         const personQualifier = Qualifier.byPersonQualifier({
           name: 'apoorva',
           type: 'person',
-          parent: {
-            _id: '1-id'
-          }
+          parent: 'p1'
         });
         const person = await createPerson(personQualifier);
         expect(person).excluding([ '_rev', 'reported_date', '_id' ]).to.deep.equal(personQualifier);
