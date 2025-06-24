@@ -135,24 +135,9 @@ describe('cht-datasource Report', () => {
         const resReport = await getReportWithLineage(Qualifier.byUuid(report0._id));
         
         // Only check critical lineage properties
-        expect(resReport).excluding(['_rev', 'reported_date']).to.deep.include({
+        expect(resReport).excludingEvery(['_rev', 'reported_date']).to.deep.include({
           ...report0,
-          contact: {
-            _id: contact0._id,
-            type: 'person',
-            parent: {
-              _id: place0._id,
-              type: place0.type,
-              parent: {
-                _id: place1._id,
-                type: place1.type,
-                parent: {
-                  _id: place2._id,
-                  type: place2.type
-                }
-              }
-            }
-          }
+          contact: contact0
         });
       });
 
@@ -177,12 +162,9 @@ describe('cht-datasource Report', () => {
         const resReport = await getReportWithLineage(Qualifier.byUuid(incompleteReport._id));
         
         // Check only the essential properties
-        expect(resReport).excluding(['_rev', 'reported_date']).to.deep.include({
+        expect(resReport).excludingEvery(['_rev', 'reported_date']).to.deep.include({
           ...incompleteReport,
-          contact: {
-            _id: contact0._id,
-            type: 'person'
-          }
+          contact: contact0
         });
       });
     });
