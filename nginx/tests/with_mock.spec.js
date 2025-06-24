@@ -113,26 +113,11 @@ describe('API Integration Tests', () => {
     });
 
     it('should work with HTTP 2', async () => {
-      try {
-        const response = await apiRequest(HTTPS_BASE_URL + '/doesnotexist', {
-          method: 'HEAD'
-        });
+      const response = await apiRequest(HTTPS_BASE_URL + '/doesnotexist', {
+        method: 'HEAD'
+      });
 
-        expect(response.status).to.equal(404);
-
-        // HTTP/2 support depends on the server and client capabilities
-        // The test mainly verifies that we get a 404 response
-        expect(response.status).to.be.oneOf([404]);
-
-      } catch (error) {
-        // HTTP/2 might not be supported in test environment
-        // This is acceptable for this test
-        if (error.code === 'ERR_HTTP2_UNSUPPORTED' || error.message.includes('HTTP/2')) {
-          this.skip('HTTP/2 not supported in test environment');
-        } else {
-          throw error;
-        }
-      }
+      expect(response.status).to.equal(404);
     });
   });
 

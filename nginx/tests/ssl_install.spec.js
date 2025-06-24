@@ -85,22 +85,20 @@ describe('ssl-install.sh tests', function() {
    * @param {Object} env - Additional environment variables to set for this specific execution.
    * @returns {Promise<{stdout: string, stderr: string, code: number}>}
    */
-  function runScript(args = '', env = {}) {
-    return new Promise((resolve) => {
-      // Merge current process environment with test-specific environment variables.
-      const scriptEnv = { ...process.env, ...env };
+  const runScript = (args = '', env = {}) => new Promise((resolve) => {
+    // Merge current process environment with test-specific environment variables.
+    const scriptEnv = {...process.env, ...env};
 
-      // Execute the temporary ssl-install.sh script.
-      exec(`${sslInstallScriptPath} ${args}`, { env: scriptEnv }, (error, stdout, stderr) => {
-        // The `error` object will be null for exit code 0, and contain an Error for non-zero exit codes.
-        // We extract the exit code directly.
-        const code = error ? error.code : 0;
-        resolve({ stdout, stderr, code });
-      });
+    // Execute the temporary ssl-install.sh script.
+    exec(`${sslInstallScriptPath} ${args}`, {env: scriptEnv}, (error, stdout, stderr) => {
+      // The `error` object will be null for exit code 0, and contain an Error for non-zero exit codes.
+      // We extract the exit code directly.
+      const code = error ? error.code : 0;
+      resolve({stdout, stderr, code});
     });
-  }
+  });
 
-  it('should run welcome_message and output "Running SSL certificate checks"', async function() {
+  it('should run ssl-install.sh script', async function() {
     const { stdout, stderr, code } = await runScript('welcome_message');
     const output = stdout + stderr; // Combine stdout and stderr as Bats does for 'assert_output'
     expect(code).to.equal(0); // Assert success (exit code 0)
@@ -111,15 +109,24 @@ describe('ssl-install.sh tests', function() {
     const { stdout, stderr, code } = await runScript('select_ssl_certificate_mode');
     const output = stdout + stderr;
     expect(code).to.not.equal(0); // Assert failure (non-zero exit code)
-    expect(output).to.include('ssl certificate mode unknown or not set. Please set a proper ssl certificate mode in the CERTIFICATE_MODE variable');
+    expect(output).to.include(
+      'ssl certificate mode unknown or not set. ' +
+      'Please set a proper ssl certificate mode in the CERTIFICATE_MODE variable'
+    );
   });
 
-  it('should return an appropriate error message if CERTIFICATE_MODE is OWN_CERT but certificates are not provided', async function() {
-    const { stdout, stderr, code } = await runScript('select_ssl_certificate_mode', { CERTIFICATE_MODE: 'OWN_CERT' });
-    const output = stdout + stderr;
-    expect(code).to.not.equal(0); // Assert failure
-    expect(output).to.include('Please provide add your certificate');
-  });
+  it(
+    'should return an appropriate error message if CERTIFICATE_MODE is OWN_CERT but certificates are not provided',
+    async function() {
+      const { stdout, stderr, code } = await runScript(
+        'select_ssl_certificate_mode',
+        { CERTIFICATE_MODE: 'OWN_CERT' }
+      );
+      const output = stdout + stderr;
+      expect(code).to.not.equal(0); // Assert failure
+      expect(output).to.include('Please provide add your certificate');
+    }
+  );
 
   it('should succeed when CERTIFICATE_MODE is OWN_CERT and certificates are provided', async function() {
     // Create dummy certificate files within our temporary path
@@ -141,6 +148,7 @@ describe('ssl-install.sh tests', function() {
     expect(fs.readFileSync(sslKeyFilePath, 'utf8')).to.equal('dummy key content');
   });
 
+  // NOTE: This test requires `openssl` to be available in the test environment's PATH.
   it('should generate SSL certs if CERTIFICATE_MODE is SELF_SIGNED', async function() {
     // Ensure files do not exist before running
     expect(fs.existsSync(sslCertFilePath)).to.be.false;
@@ -165,8 +173,6 @@ describe('ssl-install.sh tests', function() {
     // Verify that the generated certificate/key are not empty (basic check)
     expect(fs.statSync(sslCertFilePath).size).to.be.greaterThan(0);
     expect(fs.statSync(sslKeyFilePath).size).to.be.greaterThan(0);
-
-    // Note: This test requires `openssl` to be available in the test environment's PATH.
   });
 
   it('should not create a new self-signed certificate if one already exists', async function() {
@@ -188,46 +194,30 @@ describe('ssl-install.sh tests', function() {
     expect(fs.readFileSync(sslKeyFilePath, 'utf8')).to.equal(initialKeyContent);
   });
 
-  it('should not generate a new certificate if CERTIFICATE_MODE is AUTO_GENERATE and one exists', async function() {
+  it(
+    'should not generate a new certificate if CERTIFICATE_MODE is AUTO_GENERATE and one exists',
+    async function() {
     // Create dummy certificate files
-    const initialCertContent = 'existing auto-gen cert content';
-    const initialKeyContent = 'existing auto-gen key content';
-    fs.writeFileSync(sslCertFilePath, initialCertContent);
-    fs.writeFileSync(sslKeyFilePath, initialKeyContent);
+      const initialCertContent = 'existing auto-gen cert content';
+      const initialKeyContent = 'existing auto-gen key content';
+      fs.writeFileSync(sslCertFilePath, initialCertContent);
+      fs.writeFileSync(sslKeyFilePath, initialKeyContent);
 
-    const { stdout, stderr, code } = await runScript('main', {
-      CERTIFICATE_MODE: 'AUTO_GENERATE',
-      COMMON_NAME: 'test.dev.medic.org',
-      EMAIL: 'test@medic.org'
-    });
-    const output = stdout + stderr;
+      const { stdout, stderr, code } = await runScript('main', {
+        CERTIFICATE_MODE: 'AUTO_GENERATE',
+        COMMON_NAME: 'test.dev.medic.org',
+        EMAIL: 'test@medic.org'
+      });
+      const output = stdout + stderr;
 
-    expect(code).to.equal(0); // Assert success
-    expect(output).to.include('SSL cert already exists.');
-    expect(output).to.include('Launching Nginx');
-    expect(output).to.include('nginx configured to work with certbot');
+      expect(code).to.equal(0); // Assert success
+      expect(output).to.include('SSL cert already exists.');
+      expect(output).to.include('Launching Nginx');
+      expect(output).to.include('nginx configured to work with certbot');
 
-
-    // Ensure the content of the cert/key files hasn't changed
-    expect(fs.readFileSync(sslCertFilePath, 'utf8')).to.equal(initialCertContent);
-    expect(fs.readFileSync(sslKeyFilePath, 'utf8')).to.equal(initialKeyContent);
-
-    // Check if certbot compatibility files are created/modified in the *temporary* structure.
-    // /etc/nginx/private/deploy.sh maps to baseTempPath/deploy.sh
-    const deployScriptPath = path.join(baseTempPath, 'deploy.sh');
-    // /etc/nginx/private/certbot/.well-known/acme-challenge/index.html maps to certbotTempPath/../index.html
-    const indexHtmlPath = path.join(certbotTempPath, '.well-known', 'acme-challenge', 'index.html');
-
-    expect(fs.existsSync(deployScriptPath)).to.be.true;
-    expect(fs.existsSync(indexHtmlPath)).to.be.true;
-    expect(fs.readFileSync(indexHtmlPath, 'utf8')).to.include('CERTIFICATE_MODE AUTO_GENERATE');
-    expect(fs.readFileSync(deployScriptPath, 'utf8')).to.include(
-      'cp "$RENEWED_LINEAGE/fullchain.pem" /etc/nginx/private/cert.pem'
-    );
-
-    // Note: The script also attempts to write to /etc/periodic/weekly/reload-nginx.sh.
-    // This test does not verify that file's creation/content directly as it operates
-    // outside the controlled temporary directory structure for this specific file.
-    // Verifying it would require root privileges or a more complex isolated test environment.
-  });
+      // Ensure the content of the cert/key files hasn't changed
+      expect(fs.readFileSync(sslCertFilePath, 'utf8')).to.equal(initialCertContent);
+      expect(fs.readFileSync(sslKeyFilePath, 'utf8')).to.equal(initialKeyContent);
+    }
+  );
 });

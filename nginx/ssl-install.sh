@@ -59,7 +59,7 @@ generate_self_signed_cert(){
   if [ -f "$SSL_CERT_FILE_PATH" ] && [ -f "$SSL_KEY_FILE_PATH" ]; then
         echo "self signed SSL cert already exists." >&2
     else
-        create_self_signed_ssl_certificate \
+        create_self_signed_ssl_certificate
         echo "self signed certificate for $COMMON_NAME generated" >&2
     fi
 }

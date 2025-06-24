@@ -19,9 +19,9 @@ COPY nginx_error_pages/ /usr/share/nginx/nginx_error_pages/
 # This stage is independent of the final Nginx image and focuses on testing
 FROM node:22-alpine AS test_nginx
 
-RUN mkdir -p /tests/js /tests/nginx
+RUN mkdir -p /tests/js /tests/nginx /etc/nginx/private
 
-RUN apk add --no-cache bash
+RUN apk add --no-cache bash openssl
 
 COPY ssl-install.sh /tests/nginx/
 COPY nginx_error_pages /tests/nginx/nginx_error_pages
