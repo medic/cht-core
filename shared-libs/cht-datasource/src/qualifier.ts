@@ -181,7 +181,9 @@ export const byContactQualifierNonAssertive = (data: unknown) : Record<string, u
     );
   }
   if (!checkContactQualifierFields(qualifier)){
-    throw new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON.stringify(data)}].`);
+    throw new InvalidArgumentError(
+      `Missing or empty required fields (name, type) for [${JSON.stringify(data)}].`
+    );
   }
   return qualifier;
 };
@@ -294,7 +296,6 @@ export type PersonQualifier = ContactQualifier & Readonly<{
   phone?: string;
   patient_id?: string;
   sex?: string;
-  contact_type?: string
 }>
 
 /**
@@ -316,10 +317,6 @@ export const byPersonQualifier = (data: unknown): PersonQualifier => {
     throw new InvalidArgumentError(`Missing or empty required field (parent) [${JSON.stringify(qualifier)}].`);
   }
 
-  if (!hasValidContactType(qualifier) && !hasValidLegacyContactType(qualifier, 'person')) {
-    throw new InvalidArgumentError('Invalid type for contacts.');
-  }
-
   return qualifier as unknown as PersonQualifier;
 };
 
@@ -330,21 +327,7 @@ export const isPersonQualifier = (data: unknown): data is PersonQualifier => {
   }
   
   // `parent` must be present for person, so cannot use `hasInvalidContactLineageForField` 
-  if (!hasField(data, { name: 'parent', type: 'string', ensureTruthyValue: true })) {
-    return false;
-  }
-
-  return hasValidContactType(data) || hasValidLegacyContactType(data, 'person');
-};
-
-/** @internal */
-const hasValidContactType = ( data: Record<string, unknown> ): boolean => {
-  return data.type === 'contact' && hasField(data, { name: 'contact_type', type: 'string' });
-};
-
-/** @internal */
-const hasValidLegacyContactType = ( data: Record<string, unknown>, type:string): boolean => {
-  return data.type === type;
+  return hasField(data, { name: 'parent', type: 'string', ensureTruthyValue: true });
 };
 
 /** 
@@ -364,7 +347,7 @@ export type PlaceQualifier = ContactQualifier & Readonly<{
  * @throws Error if type is not provided or is empty
  * @throws Error if name is not provided or is empty
  * @throws Error if parent is not provided or is empty 
- * @throws Error if contact if present and empty. 
+ * @throws Error if contact is present and empty. 
  * @throws Error if reported_date is not in a valid format. 
  * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
  */
@@ -383,10 +366,6 @@ export const byPlaceQualifier = (data:unknown): PlaceQualifier => {
     );
   }
   
-  if (!hasValidContactType(qualifier) && !hasValidLegacyContactType(qualifier, 'place')) {
-    throw new InvalidArgumentError('Invalid type for contacts.');
-  }
-
   return qualifier as PlaceQualifier;
 };
 
@@ -400,11 +379,7 @@ export const isPlaceQualifier = (data:unknown) : data is PlaceQualifier => {
     return false;
   }
 
-  if (!isValidPlaceContact(data)){
-    return false;
-  }
-
-  return hasValidContactType(data) || hasValidLegacyContactType(data, 'place');
+  return isValidPlaceContact(data);
 };
 
 /** @internal*/

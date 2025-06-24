@@ -326,16 +326,15 @@ describe('local person', () => {
         createDocOuter.returns(createDocInner);
       });
 
-      it('throws error if qualifier contact_type is not a part of settings contact_types', async() => {
+      it('throws error if qualifier type is not a part of settings contact_types and also not `person`', async() => {
         settingsGetAll.returns({
-          contact_types: ['animal', 'human']
+          contact_types: [{id: 'animal'}, {id: 'human'}]
         });
         isPerson.returns(false);
 
         const personQualifier: PersonQualifier = {
-          type: 'contact',
+          type: 'robot',
           name: 'user-1',
-          contact_type: 'robot',
           parent: 'p1'
         };
         await expect(Person.v1.createPerson(localContext)(personQualifier))
@@ -345,22 +344,24 @@ describe('local person', () => {
 
       it('creates Person doc for valid input containing parent', async() => {
         settingsGetAll.returns({
-          contact_types: ['animal', 'human']
+          contact_types: [{id: 'animal'}, {id: 'human'}]
         });
         isPerson.returns(true);
         const qualifier = {
           _id: '2-inserted-id',
           name: 'user-1',
-          type: 'contact',
-          contact_type: 'human',
-          parent: 'p1'
+          type: 'animal',
+          parent: 'p1',
+          reported_date: new Date().toISOString()
         };
         
-        const qualifier_reported_date = new Date().toISOString();
-        createDocInner.resolves({ reported_date: qualifier_reported_date, ...qualifier });
+        const expected_qualifier = {...qualifier, 
+          type: 'contact', contact_type: 'animal' };
+        createDocInner.resolves(expected_qualifier);
+
         const person = await Person.v1.createPerson(localContext)(qualifier);
         expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
-        expect(createDocInner.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(createDocInner.calledOnceWithExactly(expected_qualifier)).to.be.true;
       });
 
       it('creates a Person doc for valid input having a legacy type without _id, reported_date', 
@@ -384,9 +385,7 @@ describe('local person', () => {
           name: 'user-1',
           type: 'person',
           _rev: '1-rev',
-          parent: {
-            _id: '1-id'
-          }
+          parent: 'p1'
         };
       
         await expect(

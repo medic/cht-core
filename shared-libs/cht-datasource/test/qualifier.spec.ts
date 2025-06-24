@@ -320,7 +320,7 @@ describe('qualifier', () => {
   });
 
   describe('byPersonQualifier', () => {
-    it('throws an error on missing parent object', () => {
+    it('throws an error on missing parent string', () => {
       const data = {
         name: 'Antony',
         type: 'person',
@@ -349,23 +349,6 @@ describe('qualifier', () => {
         .throw(`Missing or empty required field (parent) [${JSON.stringify(expected_data)}].`);
     });
 
-    it('throws an error on invalid contact types', () => {
-      [
-        {
-          name: 'Antony',
-          type: 'contact',
-          parent: 'p-1'
-        },
-        {
-          name: 'Antony',
-          type: 'astronaut',
-          parent: 'p-1'
-        }
-      ].forEach((qualifier) => {
-        expect(() => byPersonQualifier(qualifier)).to.throw(`Invalid type for contacts.`);
-      });
-    });
-
     it('builds qualifier for valid objects', () => {
       [
         {
@@ -375,15 +358,13 @@ describe('qualifier', () => {
         },
         {
           name: 'user-2',
-          type: 'contact',
-          contact_type: 'clinic_worker',
+          type: 'clinic_worker',
           parent: 'p-1'
         },
         {
           name: 'user-3',
-          type: 'contact',
           reported_date: 323232,
-          contact_type: 'clinic_worker',
+          type: 'clinic_worker',
           parent: 'p-1'
         }
       ].forEach((qualifier) => {
@@ -412,23 +393,6 @@ describe('qualifier', () => {
       expect(isPersonQualifier(data)).to.be.false;
     });
 
-    it('returns false for invalid contact types', () => {
-      [
-        {
-          name: 'Antony',
-          type: 'contact',
-          parent: 'p-1'
-        },
-        {
-          name: 'Antony',
-          type: 'astronaut',
-          parent: 'p-1'
-        }
-      ].forEach((qualifier) => {
-        expect(isPersonQualifier(qualifier)).to.be.false;
-      });
-    });
-
     it('returns true for valid PersonQualifier objects', () => {
       [
         {
@@ -438,8 +402,7 @@ describe('qualifier', () => {
         },
         {
           name: 'user-2',
-          type: 'contact',
-          contact_type: 'clinic_worker',
+          type: 'clinic_worker',
           parent: 'p-1'
         }
       ].forEach((qualifier) => expect(isPersonQualifier(qualifier)).to.be.true);
@@ -448,21 +411,6 @@ describe('qualifier', () => {
   });
 
   describe('byPlaceQualifier', () => {
-    it('throws error for invalid contact types', () => {
-      [
-        {
-          name: 'place-1',
-          type: 'hospital',
-          reported_date: 123123123
-        },
-        {
-          name: 'place-1',
-          type: 'contact',
-        }
-      ].forEach((qualifier) => expect(() => byPlaceQualifier(qualifier))
-        .to.throw('Invalid type for contacts.'));
-    });
-
     it('throws error for empty parent', () => {
       const qualifier = {
         type: 'place',
@@ -519,11 +467,7 @@ describe('qualifier', () => {
       [
         {
           name: 'place-1',
-          type: 'place'
-        }, {
-          name: 'place-1',
-          type: 'contact',
-          contact_type: 'hospital'
+          type: 'hospital'
         }, {
           name: 'place-1',
           type: 'place',
@@ -532,7 +476,6 @@ describe('qualifier', () => {
           name: 'place-1',
           type: 'place',
           reported_date: 21231231, 
-          contact: 'c1'
         }, {
           name: 'place-1',
           type: 'place',
@@ -547,20 +490,6 @@ describe('qualifier', () => {
   });
 
   describe('isPlaceQualifier', () => {
-    it('return false for invalid contact types', () => {
-      [
-        {
-          name: 'place-1',
-          type: 'hospital',
-          reported_date: 123123123
-        },
-        {
-          name: 'place-1',
-          type: 'contact',
-        }
-      ].forEach((qualifier) => expect(isPlaceQualifier(qualifier)).to.be.false);
-    });
-
     it('returns false for missing required fields', () => {
       [
         {
@@ -611,11 +540,9 @@ describe('qualifier', () => {
         }, {
           name: 'place-1',
           type: 'contact',
-          contact_type: 'hospital'
         }, {
           name: 'place-1',
           type: 'place',
-          parent: 'p1'
         }, {
           name: 'place-1',
           type: 'place',

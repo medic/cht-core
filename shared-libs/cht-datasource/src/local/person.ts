@@ -1,5 +1,5 @@
 import { Doc } from '../libs/doc';
-import contactTypeUtils from '@medic/contact-types-utils';
+import contactTypeUtils, { getContactTypes } from '@medic/contact-types-utils';
 import { hasField, isNonEmptyArray, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, PersonQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
@@ -112,10 +112,22 @@ export namespace v1 {
       }
     
       // This check can only be done when we have the contact_types from LocalDataContext.
-      if (!contactTypeUtils.isPerson(settings.getAll(), qualifier)) {
+      const allowedContactTypes = getContactTypes(settings.getAll());
+      const typeFoundInSettingsContactTypes = allowedContactTypes.find(type => type.id === qualifier.type);
+      const typeIsHardCodedPersonType = qualifier.type === 'person';
+      if (!typeFoundInSettingsContactTypes && !typeIsHardCodedPersonType) {
         throw new InvalidArgumentError('Invalid person type.');
       }
-      
+
+      // Append `contact_type` for newer versions.
+      if (typeFoundInSettingsContactTypes){
+        qualifier={
+          ...qualifier,
+          contact_type: qualifier.type,
+          type: 'contact'
+        } as unknown as PersonQualifier;
+      }
+
       return await createPersonDoc(qualifier) as Person.v1.Person;
     };
   };

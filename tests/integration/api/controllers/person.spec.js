@@ -263,7 +263,8 @@ describe('Person API', () => {
         body: personQualifier
       };
       const personDoc = await utils.request(opts);
-      expect(personDoc).excluding(['_rev', 'reported_date', '_id']).to.deep.equal(personQualifier);
+      expect(personDoc).excluding(['_rev', 'reported_date', '_id'])
+        .to.deep.equal({...personQualifier, type: 'contact', contact_type: 'person'});
     });
 
     it(`throws 400 error for invalid personQualifier, here with a missing 'parent'`, async () => {

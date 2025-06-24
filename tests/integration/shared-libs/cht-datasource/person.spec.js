@@ -217,7 +217,8 @@ describe('cht-datasource Person', () => {
           parent: 'p1'
         });
         const person = await createPerson(personQualifier);
-        expect(person).excluding([ '_rev', 'reported_date', '_id' ]).to.deep.equal(personQualifier);
+        expect(person).excluding([ '_rev', 'reported_date', '_id' ])
+          .to.deep.equal({...personQualifier, contact_type: 'person', type: 'contact'});
       });
     });
   });
