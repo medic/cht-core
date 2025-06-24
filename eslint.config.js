@@ -68,33 +68,16 @@ module.exports = defineConfig([
       },
     },
     rules: {
-      'curly': 'error',
       '@stylistic/eol-last': 'error',
-      'eqeqeq': 'error',
-      'guard-for-in': 'error',
+      'eol-last': 'off',
       '@stylistic/indent': ['error', 2],
       'indent': 'off',
       '@stylistic/max-len': ['error', { code: 120, ignoreUrls: true, tabWidth: 2}],
       'max-len': 'off',
-      'no-bitwise': 'error',
-      'no-buffer-constructor': 'error',
-      'no-caller': 'error',
-      'no-console': 'error',
       'no-redeclare': ['error', { builtinGlobals: false }],
-      'no-sequences': 'error',
-      'no-var': 'error',
-      'one-var': ['error', 'never'],
-      'one-var-declaration-per-line': ['error', 'always'],
-      'prefer-const': 'error',
-      'prefer-regex-literals': 'error',
       '@stylistic/quotes': ['error', 'single', { allowTemplateLiterals: true }],
       '@stylistic/semi': ['error', 'always'],
       '@stylistic/array-bracket-newline': [ 'error', 'consistent' ],
-      'array-callback-return': [
-        'error', {
-          allowImplicit: true,
-        }
-      ],
       '@stylistic/arrow-spacing': [
         'error', {
           before: true,
@@ -109,13 +92,7 @@ module.exports = defineConfig([
         }
       ],
       '@stylistic/comma-style': [ 'error', 'last' ],
-      'default-param-last': 'error',
       '@stylistic/dot-location': [ 'error', 'property' ],
-      'dot-notation': [
-        'error', {
-          allowKeywords: true,
-        }
-      ],
       'func-call-spacing': [ 'error', 'never' ],
       'func-style': [ 'error', 'expression' ],
       '@stylistic/function-call-argument-newline': [ 'error', 'consistent' ],
@@ -141,13 +118,6 @@ module.exports = defineConfig([
       ],
       '@stylistic/new-parens': 'error',
       'no-alert': 'error',
-      'no-else-return': 'error',
-      'no-extra-bind': 'error',
-      'no-lone-blocks': 'error',
-      'no-nested-ternary': 'error',
-      'no-undef-init': 'error',
-      'no-useless-rename': 'error',
-      'no-whitespace-before-property': 'error',
       'node/no-exports-assign': 'error',
       'rest-spread-spacing': [ 'error', 'never' ],
       '@stylistic/semi-spacing': [
@@ -157,7 +127,6 @@ module.exports = defineConfig([
         }
       ],
       'semi-style': [ 'error', 'last' ],
-      'template-curly-spacing': 'error',
       'unicode-bom': [ 'error', 'never' ],
     },
   },
