@@ -1,4 +1,4 @@
-import { isString, hasField, isRecord, Nullable, hasFields, NormalizedParent, isNormalizedParent } from './libs/core';
+import { isString, hasField, isRecord, Nullable, hasFields} from './libs/core';
 import { InvalidArgumentError } from './libs/error';
 
 /**
@@ -181,7 +181,9 @@ export const byContactQualifierNonAssertive = (data: unknown) : Record<string, u
     );
   }
   if (!checkContactQualifierFields(qualifier)){
-    throw new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON.stringify(data)}].`);
+    throw new InvalidArgumentError(
+      `Missing or empty required fields (name, type) for [${JSON.stringify(data)}].`
+    );
   }
   return qualifier;
 };
@@ -289,12 +291,11 @@ const isValidReportedDate = (value: unknown): boolean => {
  * A qualifier for a person
  */
 export type PersonQualifier = ContactQualifier & Readonly<{
-  parent: NormalizedParent;
+  parent: string;
   date_of_birth?: Date;
   phone?: string;
   patient_id?: string;
   sex?: string;
-  contact_type?: string
 }>
 
 /**
@@ -306,31 +307,14 @@ export type PersonQualifier = ContactQualifier & Readonly<{
  * @throws Error if type is not provided or is empty
  * @throws Error if name is not provided or is empty
  * @throws Error if parent is not provided or is empty
- * @throws Error if parent is not in a valid de-hydrated format. 
  * @throws Error if reported_date is not in a valid format. 
  * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
  */
 export const byPersonQualifier = (data: unknown): PersonQualifier => {
   const qualifier = byContactQualifierNonAssertive(data);
   
-  if (!hasField(qualifier, { name: 'parent', type: 'object' })) {
+  if (!hasField(qualifier, { name: 'parent', type: 'string', ensureTruthyValue: true })) {
     throw new InvalidArgumentError(`Missing or empty required field (parent) [${JSON.stringify(qualifier)}].`);
-  }
-
-  // cannot use checkFieldLineageAndThrowError as parent is required in `person`
-  if (!isNormalizedParent(qualifier.parent)) {
-    throw new InvalidArgumentError(`Missing required fields (parent, _id) in the parent hierarchy [${JSON.stringify(
-      qualifier
-    )
-    }].`);
-  }
-
-  if (hasBloatedLineage(qualifier)) {
-    throw new InvalidArgumentError(`Additional fields found in the parent lineage [${JSON.stringify(qualifier)}].`);
-  }
-
-  if (!hasValidContactType(qualifier) && !hasValidLegacyContactType(qualifier, 'person')) {
-    throw new InvalidArgumentError('Invalid type for contacts.');
   }
 
   return qualifier as unknown as PersonQualifier;
@@ -343,53 +327,15 @@ export const isPersonQualifier = (data: unknown): data is PersonQualifier => {
   }
   
   // `parent` must be present for person, so cannot use `hasInvalidContactLineageForField` 
-  if (!hasField(data, { name: 'parent', type: 'object' }) || !isNormalizedParent(data.parent)) {
-    return false;
-  }
-
-  if (hasBloatedLineage(data)) {
-    return false;
-  }
-
-  return hasValidContactType(data) || hasValidLegacyContactType(data, 'person');
-};
-
-/** @internal */
-const hasBloatedLineage = ( data: Record<string, unknown> ): boolean => {
-  // Ensure parent lineage doesn't have any additional properties other than `_id` and `parent`.
-  let parent = data.parent as NormalizedParent | undefined;
-  while (parent) {
-    if (Object.keys(parent).length > 2) {
-      // This means that the parent certainly has extra fields and is not minfied/de-hydrated as per
-      // our liking as `isNormalized` check ensures that it does have two keys `_id` and `parent`.
-      return true;
-    }
-    // This is meant to handle the check for the last parent in the
-    // hierarchy, which will just have an `_id`.
-    if (!parent.parent) {
-      return Object.keys(parent).length > 1;
-    }
-    parent = parent.parent;
-  }
-  return false;
-};
-
-/** @internal */
-const hasValidContactType = ( data: Record<string, unknown> ): boolean => {
-  return data.type === 'contact' && hasField(data, { name: 'contact_type', type: 'string' });
-};
-
-/** @internal */
-const hasValidLegacyContactType = ( data: Record<string, unknown>, type:string): boolean => {
-  return data.type === type;
+  return hasField(data, { name: 'parent', type: 'string', ensureTruthyValue: true });
 };
 
 /** 
  * A qualifier for a place
  */
 export type PlaceQualifier = ContactQualifier & Readonly<{
-  parent?: NormalizedParent;
-  contact?: NormalizedParent;
+  parent?: string;
+  contact?: string;
   place_id?: string;
 }>
 
@@ -400,74 +346,28 @@ export type PlaceQualifier = ContactQualifier & Readonly<{
  * @throws Error if data is not an object
  * @throws Error if type is not provided or is empty
  * @throws Error if name is not provided or is empty
- * @throws Error if parent if present is not in a valid de-hydrated format. 
- * @throws Error if contact if present is not in a valid de-hydrated format. 
+ * @throws Error if parent is not provided or is empty 
+ * @throws Error if contact is present and empty. 
  * @throws Error if reported_date is not in a valid format. 
  * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
  */
 export const byPlaceQualifier = (data:unknown): PlaceQualifier => {
   const qualifier = byContactQualifierNonAssertive(data);
-  checkFieldLineageAndThrowError(qualifier);
-  checkFieldLineageAndThrowError(qualifier, 'contact');
 
-  if (!hasValidContactType(qualifier) && !hasValidLegacyContactType(qualifier, 'place')) {
-    throw new InvalidArgumentError('Invalid type for contacts.');
+  if (!isValidPlaceContact(qualifier)) {
+    throw new InvalidArgumentError(
+      `Missing or empty required field (contact) for [${JSON.stringify(qualifier)}].`
+    );
   }
 
+  if (!isValidPlaceParent(qualifier)) {
+    throw new InvalidArgumentError(
+      `Missing or empty required field (parent) for [${JSON.stringify(qualifier)}].`
+    );
+  }
+  
   return qualifier as PlaceQualifier;
 };
-
-/** @internal*/
-const checkFieldLineageAndThrowError = (data: Record<string, unknown>, field?:string) => {
-  let hierarchyRoot = data;
-  let normalized_parent = data.parent;
-  
-  if (field && hasField(data, {name: field, type: 'object'})) {
-    hierarchyRoot = data[field] as unknown as Record<string, unknown>;
-    normalized_parent = data[field];
-  }
-
-  if (!hasField(hierarchyRoot, {type: 'object', name: 'parent'})){
-    return;
-  }
-  
-  if (!isNormalizedParent(normalized_parent)) {
-    throw new InvalidArgumentError(
-      `Missing required fields (parent, _id) in the ${
-        field ?? 'parent'
-      } hierarchy [${JSON.stringify(data)}].`
-    );
-  }
-  if (hasBloatedLineage(hierarchyRoot)) {
-    throw new InvalidArgumentError(
-      `Additional fields found in the ${field ?? 'parent'} lineage [${JSON.stringify(data)}].`
-    );
-  }
-};
-
-/** @internal*/
-const hasInvalidContactLineageForField = (data: Record<string, unknown>, field?:string) => {
-  let hierarchyRoot = data;
-  let normalized_parent = data.parent;
-  
-  if (field && hasField(data, {name: field, type: 'object'})) {
-    hierarchyRoot = data[field] as unknown as Record<string, unknown>;
-    normalized_parent = data[field];
-  }
-
-  // `parent` is optional, so this lineage is valid
-  if (!hasField(hierarchyRoot, {type: 'object', name: 'parent'})){
-    return false;
-  }
-  
-  if (!isNormalizedParent(normalized_parent)) {
-    return true;
-  }
-  if (hasBloatedLineage(hierarchyRoot)) {
-    return true;
-  }
-};
-
 
 /** @internal*/
 export const isPlaceQualifier = (data:unknown) : data is PlaceQualifier => {
@@ -475,13 +375,26 @@ export const isPlaceQualifier = (data:unknown) : data is PlaceQualifier => {
     return false;
   }
 
-  if (hasInvalidContactLineageForField(data)){
+  if (!isValidPlaceParent(data)){
     return false;
   }
 
-  if (hasInvalidContactLineageForField(data, 'contact')){
-    return false;
-  }
+  return isValidPlaceContact(data);
+};
 
-  return hasValidContactType(data) || hasValidLegacyContactType(data, 'place');
+/** @internal*/
+const isValidPlaceContact = (data:Record<string, unknown>) : boolean => {
+  if (!hasField(data, {name: 'contact', type: 'string'})) {
+    return true;
+  }
+  // If `contact` is present, it must be a non-empty string.  
+  return hasField(data, {name: 'contact', type: 'string', ensureTruthyValue: true});
+};
+
+const isValidPlaceParent = (data:Record<string, unknown>) : boolean => {
+  if (!hasField(data, {name: 'parent', type: 'string'})) {
+    return true;
+  }
+  // If `parent` is present, it must be a non-empty string.  
+  return hasField(data, {name: 'parent', type: 'string', ensureTruthyValue: true});
 };

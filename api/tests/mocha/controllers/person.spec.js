@@ -304,11 +304,8 @@ describe('Person Controller', () => {
 
       it('throws error for missing required fields', async() => {
         const qualifier = {
-          
           name: 'test-user',
-          parent: {
-            _id: '1-id'
-          },
+          parent: 'p1',
           reported_date: 12312312
         };
         req = {
@@ -331,12 +328,9 @@ describe('Person Controller', () => {
 
       it('creates a person doc for valid qualifier', async() => {
         const qualifier = {
-          
           name: 'test-user',
           type: 'person',
-          parent: {
-            _id: '1-id'
-          },
+          parent: 'p1',
           reported_date: 12312312
         };
         req = {
