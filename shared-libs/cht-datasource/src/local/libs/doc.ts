@@ -1,6 +1,7 @@
 import logger from '@medic/logger';
-import { Nullable, Page } from '../../libs/core';
+import { hasField, Nullable, Page } from '../../libs/core';
 import { Doc, isDoc } from '../../libs/doc';
+import { InvalidArgumentError } from '../../libs/error';
 
 /** @internal */
 export const getDocById = (db: PouchDB.Database<Doc>) => async (uuid: string): Promise<Nullable<Doc>> => db
@@ -181,6 +182,23 @@ export const createDoc = (db: PouchDB.Database) => async (data: Record<string, u
   const { id, ok } = await db.post(data);
   if (!ok) {
     throw new Error('Error creating document.');
+  }
+  return getDocById(db as PouchDB.Database<Doc>)(id);
+};
+
+/** @internal */
+export const updateDoc = (db: PouchDB.Database) => async (data: Record<string, unknown>): Promise<Nullable<Doc>> => {
+  if (!hasField(data, {name: '_id', type: 'string', ensureTruthyValue: true})) {
+    throw new InvalidArgumentError(`Missing or empty required field (_id) for [${JSON.stringify(data)}]`);
+  }
+  if (!hasField(data, {name: '_rev', type: 'string', ensureTruthyValue: true})) {
+    throw new InvalidArgumentError(`Missing or empty required field (_rev) for [${JSON.stringify(data)}]`);
+  }
+
+  const { id, ok } = await db.put(data);
+  
+  if (!ok) {
+    throw new Error('Error updating document.');
   }
   return getDocById(db as PouchDB.Database<Doc>)(id);
 };
