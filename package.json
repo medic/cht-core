@@ -133,6 +133,7 @@
     "eslint-plugin-compat": "^6.0.2",
     "eslint-plugin-jasmine": "^4.2.2",
     "eslint-plugin-jsdoc": "^48.11.0",
+    "eslint-plugin-json": "^4.0.1",
     "eslint-plugin-n": "^17.20.0",
     "eslint-plugin-no-only-tests": "^3.3.0",
     "eslint-plugin-promise": "^6.1.1",
