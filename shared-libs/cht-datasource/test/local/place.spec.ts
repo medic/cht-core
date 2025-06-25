@@ -322,22 +322,17 @@ describe('local place', () => {
     });
 
     describe('createPlace', () => {
-      beforeEach(() => {
-        createDocOuter.returns(createDocInner);
-      });
       it('throws error if qualifier contact_type is not a part of settings contact_types', async() => {
+        createDocOuter.returns(createDocInner);
         settingsGetAll.returns({
-          contact_types: ['hospital', 'clinic']
+          contact_types: [{id: 'hospital'}, {id: 'clinic'}]
         });
         isPlace.returns(false);
 
         const placeQualifier: PlaceQualifier = {
-          type: 'contact',
           name: 'user-1',
-          contact_type: 'school',
-          parent: {
-            _id: '1-id'
-          }
+          type: 'school',
+          parent: 'p1'
         };
         await expect(Place.v1.createPlace(localContext)(placeQualifier))
           .to.be.rejectedWith('Invalid place type.');
@@ -345,49 +340,45 @@ describe('local place', () => {
       });
 
       it('throws error if qualifier contains the `_rev` property', async() => {
+        createDocOuter.returns(createDocInner);
         isPlace.returns(true);
 
         const placeQualifier: PlaceQualifier = {
           type: 'place',
           name: 'user-1',
           _rev: '1234',
-          parent: {
-            _id: '1-id'
-          }
+          parent: 'p1'
         };
         await expect(Place.v1.createPlace(localContext)(placeQualifier))
           .to.be.rejectedWith('Cannot pass `_rev` when creating a place.');
       });
 
       it('creates a place on passing a valid PlaceQualifier', async() => {
+        createDocOuter.returns(createDocInner);
         settingsGetAll.returns({
-          contact_types: ['hospital', 'clinic']
+          contact_types: [{id: 'hospital'}, {id: 'clinic'}]
         });
         isPlace.returns(true);
 
         const placeQualifier:PlaceQualifier = {
           name: 'place-x',
-          type: 'contact',
-          contact_type: 'hospital',
-          contact: {
-            _id: '2',
-            parent: {
-              _id: '3'
-            }
-          }
+          type: 'hospital',
+          contact: 'c1'
         };
         const expected_date = new Date().toISOString();
         const expected_id = '1-id';
         const expected_rev = '1-rev';
         const expected_doc = {
-          ...placeQualifier, reported_date: expected_date, _id: expected_id, _rev: expected_rev  
+          ...placeQualifier, reported_date: expected_date, _id: expected_id, _rev: expected_rev, type: 'contact',
+          contact_type: 'hospital'  
         };
         createDocInner.resolves(expected_doc);
         const placeDoc = await Place.v1.createPlace(localContext)(placeQualifier);
 
         expect(placeDoc).to.deep.equal(expected_doc);
         expect(Place.v1.isPlace(localContext.settings)(placeDoc)).to.be.true;
-        expect(createDocInner.calledOnceWithExactly(placeQualifier)).to.be.true;
+        expect(createDocInner.calledOnceWithExactly({...placeQualifier, type: 'contact',
+          contact_type: 'hospital' })).to.be.true;
       });
     });
   });

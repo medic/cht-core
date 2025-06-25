@@ -95,7 +95,7 @@ export namespace v1 {
 
 /** @internal*/
   export const createPlace = ({medicDb, settings}: LocalDataContext) => {
-    const createPlace = createDoc(medicDb);
+    const createPlaceDoc = createDoc(medicDb);
     return async(
       qualifier: PlaceQualifier
     ):Promise<Place.v1.Place> => {
@@ -104,11 +104,23 @@ export namespace v1 {
       }
 
       // This check can only be done when we have the contact_types from LocalDataContext.
-      if (!contactTypeUtils.isPlace(settings.getAll(), qualifier)) {
+      const allowedContactTypes = contactTypeUtils.getContactTypes(settings.getAll());
+      const typeFoundInSettingsContactTypes = allowedContactTypes.find(type => type.id === qualifier.type);
+      const typeIsHardCodedPlaceType = qualifier.type === 'place';
+      if (!typeFoundInSettingsContactTypes && !typeIsHardCodedPlaceType) {
         throw new InvalidArgumentError('Invalid place type.');
       }
+      
+      // Append `contact_type` for newer versions.
+      if (typeFoundInSettingsContactTypes){
+        qualifier={
+          ...qualifier,
+          contact_type: qualifier.type,
+          type: 'contact'
+        } as unknown as PlaceQualifier;
+      }
 
-      return await createPlace(qualifier) as Place.v1.Place;
+      return await createPlaceDoc(qualifier) as Place.v1.Place;
     };
   };
 }
