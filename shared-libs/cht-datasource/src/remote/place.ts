@@ -1,13 +1,15 @@
 import { Nullable, Page } from '../libs/core';
-import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
+import { ContactTypeQualifier, PlaceQualifier, UuidQualifier } from '../qualifier';
 import * as Place from '../place';
-import { getResource, getResources, RemoteDataContext } from './libs/data-context';
+import { getResource, getResources, postResource, RemoteDataContext } from './libs/data-context';
 
 /** @internal */
 export namespace v1 {
   const getPlace = (remoteContext: RemoteDataContext) => getResource(remoteContext, 'api/v1/place');
 
   const getPlaces = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/place');
+
+  const createPlacePost = (remoteContext: RemoteDataContext) => postResource(remoteContext, 'api/v1/place');
 
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (
@@ -35,4 +37,10 @@ export namespace v1 {
     };
     return getPlaces(remoteContext)(queryParams);
   };
+
+  /** @internal */
+  export const createPlace = 
+  (remoteContext: RemoteDataContext) => (
+    qualifier:PlaceQualifier
+  ):Promise<Place.v1.Place> => createPlacePost(remoteContext)(qualifier);
 }

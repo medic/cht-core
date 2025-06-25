@@ -3,10 +3,12 @@ import {
   ContactTypeQualifier,
   FreetextQualifier,
   PersonQualifier,
+  PlaceQualifier,
   UuidQualifier,
   isContactTypeQualifier,
   isFreetextQualifier,
   isPersonQualifier,
+  isPlaceQualifier,
   isUuidQualifier,
 } from '../qualifier';
 import { Nullable } from './core';
@@ -26,6 +28,15 @@ export const assertPersonQualifier: (qualifier: unknown) => asserts qualifier is
 ) => {
   if (!isPersonQualifier(qualifier)) {
     throw new InvalidArgumentError(`Invalid person type [${JSON.stringify(qualifier)}].`);
+  }
+};
+
+/** @internal */
+export const assertPlaceQualifier: (qualifier: unknown) => asserts qualifier is PlaceQualifier = (
+  qualifier: unknown
+) => {
+  if (!isPlaceQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid place type [${JSON.stringify(qualifier)}].`);
   }
 };
 

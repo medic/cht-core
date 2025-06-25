@@ -55,7 +55,8 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => place = v1.place);
 
       it('contains expected keys', () => {
-        expect(place).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType']);
+        expect(place).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType', 
+          'createPlace']);
       });
 
       it('getByUuid', async () => {

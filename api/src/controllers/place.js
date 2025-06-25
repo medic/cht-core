@@ -11,6 +11,7 @@ const getPlace = ({ with_lineage }) => ctx.bind(
 );
 
 const getPageByType = () => ctx.bind(Place.v1.getPage);
+const createPlace = () => ctx.bind(Place.v1.createPlace);
 
 const checkUserPermissions = async (req) => {
   const userCtx = await auth.getUserCtx(req);
@@ -38,6 +39,13 @@ module.exports = {
       const docs = await getPageByType()( placeType, req.query.cursor, req.query.limit );
 
       return res.json(docs);
+    }),
+    createPlace: serverUtils.doOrError(async (req, res) => {
+      await checkUserPermissions(req);
+      
+      const placeQualifier = Qualifier.byPlaceQualifier(req.body);
+      const placeDoc = await createPlace()(placeQualifier);
+      return res.json(placeDoc);
     })
   }
 };
