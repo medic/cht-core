@@ -269,4 +269,48 @@ describe('Place API', () => {
         );
     });
   });
+
+  describe('POST /api/v1/place', () => {
+    it('creates place for valid qualifier', async () => {
+      const qualifier = {
+        type: 'place',
+        name: 'place-1',
+        contact: 'c1'
+      };
+
+      const opts = {
+        path: '/api/v1/place',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: qualifier
+      };
+      const placeDoc = await utils.request(opts);
+      expect(placeDoc).excluding(['reported_date', '_id', '_rev']).to.deep.equal(qualifier);
+    });
+
+    it('throws error for missing fields', async () => {
+      const qualifier = {
+        name: 'place-1',
+        contact: 'c1'
+      };
+
+      const opts = {
+        path: '/api/v1/place',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: qualifier
+      };
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(
+          `400 - ${JSON.stringify({
+            code: 400,
+            error: `Missing or empty required fields (name, type) for [${JSON.stringify(qualifier)}].`
+          })}`
+        );
+    });
+  });
 });
