@@ -10,12 +10,16 @@ describe('remote place', () => {
   let getResourceOuter: SinonStub;
   let getResourcesInner: SinonStub;
   let getResourcesOuter: SinonStub;
+  let postResourceOuter: SinonStub;
+  let postResourceInner: SinonStub;
 
   beforeEach(() => {
     getResourceInner = sinon.stub();
     getResourceOuter = sinon.stub(RemoteEnv, 'getResource').returns(getResourceInner);
     getResourcesInner = sinon.stub();
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
+    postResourceInner= sinon.stub();
+    postResourceOuter = sinon.stub(RemoteEnv, 'postResource').returns(postResourceInner);
   });
 
   afterEach(() => sinon.restore());
@@ -100,6 +104,22 @@ describe('remote place', () => {
         expect(result).to.deep.equal([]);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/place')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
+      });
+    });
+
+    describe('createPlace', () => {
+      it('creates a place for a valid qualifier', async () => {
+        const placeQualifier = {
+          type: 'place',
+          name: 'user-1',
+          parent: 'p1'
+        };
+        const expected_doc = {...placeQualifier, _id: '2', _rev: '1'};
+        postResourceInner.resolves(expected_doc);
+        const result = await Place.v1.createPlace(remoteContext)(placeQualifier);
+        expect(result).to.deep.equal(expected_doc);
+        expect(postResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/place')).to.be.true;
+        expect(postResourceInner.calledOnceWithExactly(placeQualifier)).to.be.true;
       });
     });
   });

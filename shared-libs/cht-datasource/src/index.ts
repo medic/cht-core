@@ -228,7 +228,15 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns a generator for fetching all places with the given type
          * @throws InvalidArgumentError if no type if provided or if the type is not for a place
          */
-        getByType: (placeType: string) => ctx.bind(Place.v1.getAll)(Qualifier.byContactType(placeType))
+        getByType: (placeType: string) => ctx.bind(Place.v1.getAll)(Qualifier.byContactType(placeType)),
+
+        /**
+         * Creates a place.
+         * @param qualifer the object defining the place properties.
+         * @returns the created place.
+         * @throws InvalidArgumentError if the type of qualifer is not valid for creating a place.
+         */
+        createPlace: (qualifier: unknown) => ctx.bind(Place.v1.createPlace)(Qualifier.byPlaceQualifier(qualifier))
       },
       person: {
         /**

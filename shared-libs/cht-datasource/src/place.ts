@@ -1,14 +1,15 @@
 import * as Contact from './contact';
 import * as Person from './person';
 import { LocalDataContext } from './local/libs/data-context';
-import { ContactTypeQualifier, UuidQualifier } from './qualifier';
+import { ContactTypeQualifier, PlaceQualifier, UuidQualifier } from './qualifier';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
 import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import { assertCursor, assertLimit, assertPlaceQualifier, 
+  assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
 
 /** */
 export namespace v1 {
@@ -38,6 +39,19 @@ export namespace v1 {
       const fn = adapt(context, localFn, remoteFn);
       return async (qualifier: UuidQualifier): Promise<T> => {
         assertUuidQualifier(qualifier);
+        return fn(qualifier);
+      };
+    };
+  
+  const createPlaceDoc =
+  <T>(
+      localFn: (c: LocalDataContext) => (qualifier: PlaceQualifier) => Promise<T>,
+      remoteFn: (c: RemoteDataContext) => (qualifier: PlaceQualifier) => Promise<T>,
+    ) => (context: DataContext) => {
+      assertDataContext(context);
+      const fn = adapt(context, localFn, remoteFn);
+      return async (qualifier: PlaceQualifier): Promise<T> => {
+        assertPlaceQualifier(qualifier);
         return fn(qualifier);
       };
     };
@@ -116,4 +130,12 @@ export namespace v1 {
     };
     return curriedGen;
   };
+  
+  /**
+   * Returns a function for creating a place from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a place.
+   * @throws Error if a data context is not provided
+   */
+  export const createPlace = createPlaceDoc(Local.Place.v1.createPlace, Remote.Place.v1.createPlace);
 }

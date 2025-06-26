@@ -224,5 +224,20 @@ describe('cht-datasource Place', () => {
         expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPlaces);
       });
     });
+
+    describe('createPlace', () => {
+      it('creates a place for a valid qualifier', async () => {
+        const placeQualifier = {
+          name: 'place-1',
+          type: 'place',
+          parent: 'p1',
+          contact: 'c1'
+        };
+
+        const placeDoc = await Place.v1.createPlace(dataContext)(placeQualifier);
+        expect(placeDoc).excluding([ '_rev', 'reported_date', '_id' ])
+          .to.deep.equal(placeQualifier);
+      });
+    });
   });
 });

@@ -292,5 +292,68 @@ describe('Place Controller', () => {
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
     });
+
+    describe('createPlace', () => {
+      let placeCreate;
+      beforeEach(() => {
+        placeCreate = sinon.stub();
+        dataContextBind.withArgs(Place.v1.createPlace)
+          .returns(placeCreate);
+      });
+
+      it('throws error for missing required fields', async() => {
+        const qualifier = {
+          name: 'place-1',
+          parent: 'p1',
+          reported_date: 12312312
+        };
+        req = {
+          body: {
+            ...qualifier
+          }
+        };
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+
+        const err = new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON.stringify(
+          qualifier
+        )}].`);
+        await controller.v1.createPlace(req, res);
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(placeCreate.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(InvalidArgumentError);
+        expect(serverUtilsError.firstCall.args[0].message).to.equal(err.message);
+        expect(dataContextBind.notCalled).to.be.true;
+      });
+
+      it('returns place doc for valid qualifier', async() => {
+        const qualifier = {
+          name: 'place-1',
+          parent: 'p1',
+          type: 'place',
+          reported_date: 12312312
+        };
+        req = {
+          body: {
+            ...qualifier
+          }
+        };
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        const expected_doc = {
+          ...qualifier,
+          _id: '1',
+          _rev: '1-rev'
+        };
+        placeCreate.resolves(expected_doc);
+
+        await controller.v1.createPlace(req, res);
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(placeCreate.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(dataContextBind.calledOnce).to.be.true;
+        expect(res.json.calledOnceWithExactly(expected_doc)).to.be.true;
+      });
+    });
   });
 });
