@@ -1,5 +1,5 @@
 {{- if and (eq $.Values.cluster_type "eks") (eq (toString $.Values.couchdb_data.preExistingDataAvailable) "true") }}
-{{- if eq (toString .Values.couchdb.clusteredCouch_enabled) "false" }}
+{{- if eq (toString .Values.couchdb.clusteredCouchEnabled) "false" }}
 # Single node persistent volume for EKS
 apiVersion: v1
 kind: PersistentVolume

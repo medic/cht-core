@@ -1,4 +1,4 @@
-{{- if not .Values.couchdb.clusteredCouch_enabled }}
+{{- if not .Values.couchdb.clusteredCouchEnabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -25,7 +25,7 @@ status:
   loadBalancer: {}
 {{- end }}
 
-{{- if .Values.couchdb.clusteredCouch_enabled }}
+{{- if .Values.couchdb.clusteredCouchEnabled }}
 {{- range $i, $e := until (int .Values.clusteredCouch.noOfCouchDBNodes) }}
 {{ $nodeNumber := add $i 1 }}
 apiVersion: v1

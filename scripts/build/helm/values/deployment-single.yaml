@@ -1,5 +1,5 @@
 couchdb:
-  clusteredCouch_enabled: false # DEFAULT: Good default for single node
+  clusteredCouchEnabled: false # DEFAULT: Good default for single node
 
 nodes:
   # For single couchdb node, use the following:

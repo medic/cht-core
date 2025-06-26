@@ -17,7 +17,7 @@ spec:
 ---
 {{- end }}
 
-{{- if and (eq (toString .Values.couchdb.clusteredCouch_enabled) "true") (eq (toString .Values.cluster_type) "k3s-k3d") }}
+{{- if and (eq (toString .Values.couchdb.clusteredCouchEnabled) "true") (eq (toString .Values.cluster_type) "k3s-k3d") }}
 {{- range $i, $e := until (int .Values.clusteredCouch.noOfCouchDBNodes) }}
 {{ $nodeNumber := add $i 1 }}
 apiVersion: v1

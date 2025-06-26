@@ -1,4 +1,4 @@
-{{- if and (eq (toString .Values.couchdb.clusteredCouch_enabled) "false") (or (eq (toString .Values.cluster_type) "eks") (eq (toString .Values.cluster_type) "gke") (eq (toString .Values.cluster_type) "k3s-k3d")) }}
+{{- if and (eq (toString .Values.couchdb.clusteredCouchEnabled) "false") (or (eq (toString .Values.cluster_type) "eks") (eq (toString .Values.cluster_type) "gke") (eq (toString .Values.cluster_type) "k3s-k3d")) }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -32,7 +32,7 @@ spec:
 status: {}
 {{- end }}
 
-{{- if eq (toString $.Values.couchdb.clusteredCouch_enabled) "true" }}
+{{- if eq (toString $.Values.couchdb.clusteredCouchEnabled) "true" }}
 {{- range $i, $e := until (int $.Values.clusteredCouch.noOfCouchDBNodes) }}
 {{ $nodeNumber := add $i 1 }}
 apiVersion: v1
