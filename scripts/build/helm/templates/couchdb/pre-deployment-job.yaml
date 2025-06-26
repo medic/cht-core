@@ -1,7 +1,7 @@
 # If there is no pre-existing data and clustered couchdb is enabled and the cluster type is k3s-k3d,
 # then create a job for each node to create the directory for couchdb data on the host machine.
 
-{{- if and $.Values.couchdb.clusteredCouch_enabled (eq $.Values.cluster_type "k3s-k3d") (not $.Values.couchdb_data.preExistingDataAvailable) }}
+{{- if and $.Values.couchdb.clusteredCouchEnabled (eq $.Values.cluster_type "k3s-k3d") (not $.Values.couchdb_data.preExistingDataAvailable) }}
 {{- range $i, $e := until (int $.Values.clusteredCouch.noOfCouchDBNodes) }}
 {{ $nodeNumber := add $i 1 }}
 apiVersion: batch/v1

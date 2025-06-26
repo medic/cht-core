@@ -4,7 +4,7 @@ metadata:
   name: couchdb-servers-configmap
 data:
   {{- $root := . -}}
-  {{- if $root.Values.couchdb.clusteredCouch_enabled }}
+  {{- if $root.Values.couchdb.clusteredCouchEnabled }}
   {{- $servers := list -}}
   {{- range $i, $e := until (int $root.Values.clusteredCouch.noOfCouchDBNodes) }}
   {{- $nodeNumber := add $i 1 }}

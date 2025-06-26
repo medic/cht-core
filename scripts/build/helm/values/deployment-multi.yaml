@@ -1,5 +1,5 @@
 couchdb:
-  clusteredCouch_enabled: true # DEFAULT: Good default for multi-node
+  clusteredCouchEnabled: true # DEFAULT: Good default for multi-node
 clusteredCouch:
   noOfCouchDBNodes: 3 # DEFAULT: Good default for production cluster
 nodes:

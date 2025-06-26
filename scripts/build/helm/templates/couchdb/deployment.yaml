@@ -19,15 +19,15 @@
 {{- fail "couchdb.uuid is required. Please set it in your values file." }}
 {{- end }}
 
-{{- if .Values.couchdb.clusteredCouch_enabled }}
+{{- if .Values.couchdb.clusteredCouchEnabled }}
 {{- if not (index .Values.nodes "node-1") }}
-{{- fail "node-1 is required when clusteredCouch_enabled is true. Please set it in your values file." }}
+{{- fail "node-1 is required when clusteredCouchEnabled is true. Please set it in your values file." }}
 {{- end }}
 {{- if not (index .Values.nodes "node-2") }}
-{{- fail "node-2 is required when clusteredCouch_enabled is true. Please set it in your values file." }}
+{{- fail "node-2 is required when clusteredCouchEnabled is true. Please set it in your values file." }}
 {{- end }}
 {{- if not (index .Values.nodes "node-3") }}
-{{- fail "node-3 is required when clusteredCouch_enabled is true. Please set it in your values file." }}
+{{- fail "node-3 is required when clusteredCouchEnabled is true. Please set it in your values file." }}
 {{- end }}
 {{- end }}
 
@@ -50,7 +50,7 @@
 {{- end }}
 {{- end }}
 
-{{- if eq (toString .Values.couchdb.clusteredCouch_enabled) "false" }}
+{{- if eq (toString .Values.couchdb.clusteredCouchEnabled) "false" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -146,7 +146,7 @@ spec:
 status: {}
 {{- end }}
 
-{{- if .Values.couchdb.clusteredCouch_enabled }}
+{{- if .Values.couchdb.clusteredCouchEnabled }}
 {{- range $i, $e := until (int .Values.clusteredCouch.noOfCouchDBNodes) }}
 {{ $nodeNumber := add $i 1 }}
 apiVersion: apps/v1
