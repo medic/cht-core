@@ -49,7 +49,6 @@ describe('ssl-install.sh tests with Docker containers', function() {
     // Convert env object to -e flags for docker compose exec
     const envFlags = Object.entries(env).map(([key, value]) => `-e ${key}="${value}"`).join(' ');
     // Ensure `bash` is used to execute the script in case it relies on bash-specific features
-    // eslint-disable-next-line max-len
     const fullCommand = `docker compose -f "${COMPOSE_FILE_PATH}" exec ${envFlags} ${CHT_NGINX_SERVICE_NAME} bash -c "${command}"`;
     console.log(`Executing in container: ${fullCommand}`);
 
@@ -127,7 +126,6 @@ EOF_DELIMITER`;
   // --- Test Cases ---
   it('should run ssl-install.sh script welcome message', async function() {
     // Execute the 'welcome_message' function of the script inside the container
-    // eslint-disable-next-line max-len
     const { stdout, stderr, code } = await runCommand(`docker compose -f ${COMPOSE_FILE_PATH} run --entrypoint "/docker-entrypoint.d/ssl-install.sh welcome_message" ${CHT_NGINX_SERVICE_NAME}`);
     const output = stdout + stderr;
 
@@ -138,7 +136,6 @@ EOF_DELIMITER`;
   it('should return an error message if CERTIFICATE_MODE environment variable is not set', async function() {
     // Execute 'select_ssl_certificate_mode' without setting CERTIFICATE_MODE env var
     const { stdout, stderr, code } = await runCommand(
-      // eslint-disable-next-line max-len
       `docker compose -f ${COMPOSE_FILE_PATH} run -e CERTIFICATE_MODE= --entrypoint "/docker-entrypoint.d/ssl-install.sh select_ssl_certificate_mode" ${CHT_NGINX_SERVICE_NAME}`
     );
     const output = stdout + stderr;
@@ -155,7 +152,6 @@ EOF_DELIMITER`;
     async function() {
       // Execute 'select_ssl_certificate_mode' with OWN_CERT mode, but no files pre-created
       const { stdout, stderr, code } = await runCommand(
-        // eslint-disable-next-line max-len
         `docker compose -f ${COMPOSE_FILE_PATH} run -e CERTIFICATE_MODE=OWN_CERT --entrypoint "/docker-entrypoint.d/ssl-install.sh select_ssl_certificate_mode" ${CHT_NGINX_SERVICE_NAME}`
       );
       const output = stdout + stderr;

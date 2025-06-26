@@ -6,5 +6,14 @@
     "es6": true,
     "node": true,
     "mocha": true
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.js", "**/*.spec.js"], // Or whatever pattern your test files follow
+      "rules": {
+        "max-len": "off",
+        "no-console": "off"
+      }
+    }
+  ]
 }
