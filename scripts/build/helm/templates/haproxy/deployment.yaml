@@ -38,7 +38,7 @@ spec:
               value: "{{ (default (dict "port" "5984") .Values.haproxy).port | default "5984" }}"
             - name: HEALTHCHECK_ADDR
               value: healthcheck.{{ .Values.namespace }}.svc.cluster.local
-          image: {{ .Values.upstream_servers.docker_registry | default "public.ecr.aws/medic" }}/cht-haproxy:{{ .Values.cht_image_tag }}
+          image: '{{ .Values.upstream_servers.docker_registry | default "public.ecr.aws/medic" }}/cht-haproxy:{{ .Values.cht_image_tag }}'
           {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
           name: cht-haproxy
           ports:
