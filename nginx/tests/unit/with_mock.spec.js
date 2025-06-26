@@ -12,13 +12,24 @@ const apiRequest = async (url, options = {}) => {
   return fetch(url, defaultOptions);
 };
 
-describe('API Integration Tests', () => {
-  const HTTP_BASE_URL = 'http://cht-nginx';
-  const HTTPS_BASE_URL = 'https://cht-nginx';
+describe('API Integration Tests', function () {
+  this.timeout(10000);
+  const HTTP_BASE_URL = 'http://localhost:1080';
+  const HTTPS_BASE_URL = 'https://localhost:1443';
+  let original_NODE_TLS_REJECT_UNAUTHORIZED;
+
+  before(function () {
+    original_NODE_TLS_REJECT_UNAUTHORIZED = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+  });
 
   beforeEach(function() {
     // Reset any sinon stubs/spies before each test
     sinon.restore();
+  });
+
+  after(function() {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = original_NODE_TLS_REJECT_UNAUTHORIZED;
   });
 
   describe('API Availability', () => {
@@ -61,7 +72,7 @@ describe('API Integration Tests', () => {
 
       expect(response.status).to.equal(301);
       expect(response.statusText).to.equal('Moved Permanently');
-      expect(response.headers.get('location')).to.include('https://cht-nginx/');
+      expect(response.headers.get('location')).to.include('https://localhost');
     });
 
     it('should not redirect HTTP acme-challenge requests', async () => {
@@ -109,7 +120,7 @@ describe('API Integration Tests', () => {
       expect(response.statusText).to.equal('Not Found');
 
       // Fetch API doesn't expose HTTP version directly, but we can verify the request worked
-      expect(response.url).to.include('https://cht-nginx');
+      expect(response.url).to.include('https://localhost');
     });
 
     it('should work with HTTP 2', async () => {

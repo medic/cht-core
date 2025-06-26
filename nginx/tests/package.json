@@ -3,11 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "test": "npx mocha *.spec.js --no-config"
-  },
-  "dependencies": {
-    "chai": "^4.3.8",
-    "mocha": "^11.1.0",
-    "sinon": "^18.0.1"
+    "test:unit": "npx mocha unit/*.spec.js --no-config",
+    "test:integration": "npx mocha integration/*.spec.js --no-config"
   }
 }

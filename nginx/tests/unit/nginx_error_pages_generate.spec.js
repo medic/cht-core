@@ -17,7 +17,7 @@ describe('generate.sh validation tests', () => {
 
     // Set up directories
     const currentDir = __dirname;
-    actualErrorsDir = path.join(currentDir, '..', 'nginx', 'nginx_error_pages');
+    actualErrorsDir = path.join(currentDir, '..', '..', 'nginx_error_pages');
     tmpErrorsDir = path.join(tmpWorkDir, 'nginx_error_pages');
 
     // Create temp errors directory
@@ -30,16 +30,7 @@ describe('generate.sh validation tests', () => {
       const srcPath = path.join(actualErrorsDir, file);
       const destPath = path.join(tmpErrorsDir, file);
 
-      try {
-        await fs.copyFile(srcPath, destPath);
-
-        // Make generate.sh executable
-        if (file === 'generate.sh') {
-          await fs.chmod(destPath, '755');
-        }
-      } catch (error) {
-        throw new Error('Error while setting execution mode');
-      }
+      await fs.copyFile(srcPath, destPath);
     }
   });
 
