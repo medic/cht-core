@@ -1681,7 +1681,9 @@ describe('Users service', () => {
       db.medicLogs.get.resolves({ progress: {} });
       db.medicLogs.put.resolves({});
       const tokenLoginConfig = { message: 'sms', enabled: true };
-      config.get.withArgs('token_login').returns(tokenLoginConfig);
+      config.get
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('http://realhost');
 
       sinon.stub(roles, 'isOffline').returns(false);
       sinon.stub(roles, 'hasAllPermissions').returns(false);
@@ -2399,7 +2401,7 @@ describe('Users service', () => {
         password_change_required: true
       }]]);
     });
-    
+
   });
 
   describe('setContactParent', () => {
@@ -3316,7 +3318,7 @@ describe('Users service', () => {
         password_change_required: false
       });
     });
-    
+
   });
 
   describe('validateNewUsername', () => {
@@ -3500,7 +3502,9 @@ describe('Users service', () => {
 
     it('should normalize phone number and change password (if provided)', () => {
       const tokenLoginConfig = { message: 'sms', enabled: true };
-      config.get.withArgs('token_login').returns(tokenLoginConfig);
+      config.get
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('http://realhost');
 
       sinon.stub(roles, 'isOffline').returns(false);
       sinon.stub(roles, 'hasAllPermissions').returns(false);
@@ -3681,7 +3685,9 @@ describe('Users service', () => {
 
     it('should normalize phone number and change password', () => {
       const tokenLoginConfig = { message: 'the sms', enabled: true };
-      config.get.withArgs('token_login').returns(tokenLoginConfig);
+      config.get
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('http://host');
       sinon.stub(roles, 'isOffline').returns(false);
 
       const updates = { token_login: true, phone: '+40 755 89-89-89' };
@@ -3719,7 +3725,7 @@ describe('Users service', () => {
       db.medic.allDocs.resolves({ rows: [{ error: 'not_found' }] });
       clock.tick(5000);
 
-      return service.updateUser('sally', updates, true, 'http://host').then(response => {
+      return service.updateUser('sally', updates, true).then(response => {
         chai.expect(response).to.deep.equal({
           user: { id: 'org.couchdb.user:sally', rev: undefined },
           'user-settings': { id: 'org.couchdb.user:sally', rev: undefined },
@@ -4701,6 +4707,6 @@ describe('Users service', () => {
         chai.expect(validateSsoLoginUpdate.notCalled).to.be.true;
       });
     });
-  }); 
+  });
 });
 
