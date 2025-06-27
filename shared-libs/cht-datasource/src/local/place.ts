@@ -1,7 +1,7 @@
 import { Doc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
 import { hasField, isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
-import { ContactTypeQualifier, PlaceQualifier, UuidQualifier } from '../qualifier';
+import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Place from '../place';
 import { createDoc, fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
@@ -12,6 +12,7 @@ import {
 } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
 import { validateCursor } from './libs/core';
+import { PlaceInput } from '../input';
 
 /** @internal */
 export namespace v1 {
@@ -97,30 +98,30 @@ export namespace v1 {
   export const createPlace = ({medicDb, settings}: LocalDataContext) => {
     const createPlaceDoc = createDoc(medicDb);
     return async(
-      qualifier: PlaceQualifier
+      input: PlaceInput
     ):Promise<Place.v1.Place> => {
-      if (hasField(qualifier, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
+      if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a place.');
       }
 
       // This check can only be done when we have the contact_types from LocalDataContext.
       const allowedContactTypes = contactTypeUtils.getContactTypes(settings.getAll());
-      const typeFoundInSettingsContactTypes = allowedContactTypes.find(type => type.id === qualifier.type);
-      const typeIsHardCodedPlaceType = qualifier.type === 'place';
+      const typeFoundInSettingsContactTypes = allowedContactTypes.find(type => type.id === input.type);
+      const typeIsHardCodedPlaceType = input.type === 'place';
       if (!typeFoundInSettingsContactTypes && !typeIsHardCodedPlaceType) {
         throw new InvalidArgumentError('Invalid place type.');
       }
       
       // Append `contact_type` for newer versions.
       if (typeFoundInSettingsContactTypes){
-        qualifier={
-          ...qualifier,
-          contact_type: qualifier.type,
+        input={
+          ...input,
+          contact_type: input.type,
           type: 'contact'
-        } as unknown as PlaceQualifier;
+        } as unknown as PlaceInput;
       }
 
-      return await createPlaceDoc(qualifier) as Place.v1.Place;
+      return await createPlaceDoc(input) as Place.v1.Place;
     };
   };
 }

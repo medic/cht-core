@@ -33,6 +33,7 @@ import * as Contact from './contact';
 import * as Person from './person';
 import * as Place from './place';
 import * as Qualifier from './qualifier';
+import * as Input from './input';
 import * as Report from './report';
 import {
   DEFAULT_DOCS_PAGE_LIMIT,
@@ -48,6 +49,7 @@ export * as Contact from './contact';
 export * as Person from './person';
 export * as Place from './place';
 export * as Qualifier from './qualifier';
+export * as Input from './input';
 export * as Report from './report';
 
 /**
@@ -236,7 +238,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created place.
          * @throws InvalidArgumentError if the type of qualifer is not valid for creating a place.
          */
-        createPlace: (qualifier: unknown) => ctx.bind(Place.v1.createPlace)(Qualifier.byPlaceQualifier(qualifier))
+        createPlace: (qualifier: unknown) => ctx.bind(Place.v1.createPlace)(Input.validatePlaceInput(qualifier))
       },
       person: {
         /**
@@ -289,7 +291,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created person.
          * @throws InvalidArgumentError if the type of qualifer is not valid for creating a person.
          */
-        createPerson: (qualifier: unknown) => ctx.bind(Person.v1.createPerson)(Qualifier.byPersonQualifier(qualifier))
+        createPerson: (qualifier: unknown) => ctx.bind(Person.v1.createPerson)(Input.validatePersonInput(qualifier))
       },
       report: {
         /**

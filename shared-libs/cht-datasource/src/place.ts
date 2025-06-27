@@ -1,15 +1,16 @@
 import * as Contact from './contact';
 import * as Person from './person';
 import { LocalDataContext } from './local/libs/data-context';
-import { ContactTypeQualifier, PlaceQualifier, UuidQualifier } from './qualifier';
+import { ContactTypeQualifier, UuidQualifier } from './qualifier';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
 import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertLimit, assertPlaceQualifier, 
+import { assertCursor, assertLimit, assertPlaceInput, 
   assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import { PlaceInput } from './input';
 
 /** */
 export namespace v1 {
@@ -45,14 +46,14 @@ export namespace v1 {
   
   const createPlaceDoc =
   <T>(
-      localFn: (c: LocalDataContext) => (qualifier: PlaceQualifier) => Promise<T>,
-      remoteFn: (c: RemoteDataContext) => (qualifier: PlaceQualifier) => Promise<T>,
+      localFn: (c: LocalDataContext) => (input: PlaceInput) => Promise<T>,
+      remoteFn: (c: RemoteDataContext) => (input: PlaceInput) => Promise<T>,
     ) => (context: DataContext) => {
       assertDataContext(context);
       const fn = adapt(context, localFn, remoteFn);
-      return async (qualifier: PlaceQualifier): Promise<T> => {
-        assertPlaceQualifier(qualifier);
-        return fn(qualifier);
+      return async (input: PlaceInput): Promise<T> => {
+        assertPlaceInput(input);
+        return fn(input);
       };
     };
 

@@ -108,18 +108,18 @@ describe('remote place', () => {
     });
 
     describe('createPlace', () => {
-      it('creates a place for a valid qualifier', async () => {
-        const placeQualifier = {
+      it('creates a place for a valid input', async () => {
+        const placeInput = {
           type: 'place',
           name: 'user-1',
           parent: 'p1'
         };
-        const expected_doc = {...placeQualifier, _id: '2', _rev: '1'};
+        const expected_doc = {...placeInput, _id: '2', _rev: '1'};
         postResourceInner.resolves(expected_doc);
-        const result = await Place.v1.createPlace(remoteContext)(placeQualifier);
+        const result = await Place.v1.createPlace(remoteContext)(placeInput);
         expect(result).to.deep.equal(expected_doc);
         expect(postResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/place')).to.be.true;
-        expect(postResourceInner.calledOnceWithExactly(placeQualifier)).to.be.true;
+        expect(postResourceInner.calledOnceWithExactly(placeInput)).to.be.true;
       });
     });
   });

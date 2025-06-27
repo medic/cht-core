@@ -1,4 +1,4 @@
-const { Place, Qualifier } = require('@medic/cht-datasource');
+const { Place, Qualifier, Input } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
@@ -43,8 +43,8 @@ module.exports = {
     createPlace: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req);
       
-      const placeQualifier = Qualifier.byPlaceQualifier(req.body);
-      const placeDoc = await createPlace()(placeQualifier);
+      const placeInput = Input.validatePlaceInput(req.body);
+      const placeDoc = await createPlace()(placeInput);
       return res.json(placeDoc);
     })
   }

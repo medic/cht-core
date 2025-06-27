@@ -7,7 +7,7 @@ import * as LocalDoc from '../../src/local/libs/doc';
 import { expect } from 'chai';
 import { LocalDataContext } from '../../src/local/libs/data-context';
 import * as Lineage from '../../src/local/libs/lineage';
-import { PlaceQualifier } from '../../src/qualifier';
+import { PlaceInput } from '../../src/input';
 
 describe('local place', () => {
   let localContext: LocalDataContext;
@@ -322,45 +322,45 @@ describe('local place', () => {
     });
 
     describe('createPlace', () => {
-      it('throws error if qualifier contact_type is not a part of settings contact_types', async() => {
+      it('throws error if input contact_type is not a part of settings contact_types', async() => {
         createDocOuter.returns(createDocInner);
         settingsGetAll.returns({
           contact_types: [{id: 'hospital'}, {id: 'clinic'}]
         });
         isPlace.returns(false);
 
-        const placeQualifier: PlaceQualifier = {
+        const placeInput: PlaceInput = {
           name: 'user-1',
           type: 'school',
           parent: 'p1'
         };
-        await expect(Place.v1.createPlace(localContext)(placeQualifier))
+        await expect(Place.v1.createPlace(localContext)(placeInput))
           .to.be.rejectedWith('Invalid place type.');
         expect(createDocInner.called).to.be.false;
       });
 
-      it('throws error if qualifier contains the `_rev` property', async() => {
+      it('throws error if input contains the `_rev` property', async() => {
         createDocOuter.returns(createDocInner);
         isPlace.returns(true);
 
-        const placeQualifier: PlaceQualifier = {
+        const placeInput: PlaceInput = {
           type: 'place',
           name: 'user-1',
           _rev: '1234',
           parent: 'p1'
         };
-        await expect(Place.v1.createPlace(localContext)(placeQualifier))
+        await expect(Place.v1.createPlace(localContext)(placeInput))
           .to.be.rejectedWith('Cannot pass `_rev` when creating a place.');
       });
 
-      it('creates a place on passing a valid PlaceQualifier', async() => {
+      it('creates a place on passing a valid PlaceInput', async() => {
         createDocOuter.returns(createDocInner);
         settingsGetAll.returns({
           contact_types: [{id: 'hospital'}, {id: 'clinic'}]
         });
         isPlace.returns(true);
 
-        const placeQualifier:PlaceQualifier = {
+        const placeInput:PlaceInput = {
           name: 'place-x',
           type: 'hospital',
           contact: 'c1'
@@ -369,15 +369,15 @@ describe('local place', () => {
         const expected_id = '1-id';
         const expected_rev = '1-rev';
         const expected_doc = {
-          ...placeQualifier, reported_date: expected_date, _id: expected_id, _rev: expected_rev, type: 'contact',
+          ...placeInput, reported_date: expected_date, _id: expected_id, _rev: expected_rev, type: 'contact',
           contact_type: 'hospital'  
         };
         createDocInner.resolves(expected_doc);
-        const placeDoc = await Place.v1.createPlace(localContext)(placeQualifier);
+        const placeDoc = await Place.v1.createPlace(localContext)(placeInput);
 
         expect(placeDoc).to.deep.equal(expected_doc);
         expect(Place.v1.isPlace(localContext.settings)(placeDoc)).to.be.true;
-        expect(createDocInner.calledOnceWithExactly({...placeQualifier, type: 'contact',
+        expect(createDocInner.calledOnceWithExactly({...placeInput, type: 'contact',
           contact_type: 'hospital' })).to.be.true;
       });
     });

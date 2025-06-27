@@ -226,17 +226,17 @@ describe('cht-datasource Place', () => {
     });
 
     describe('createPlace', () => {
-      it('creates a place for a valid qualifier', async () => {
-        const placeQualifier = {
+      it('creates a place for a valid input', async () => {
+        const placeInput = {
           name: 'place-1',
           type: 'place',
           parent: 'p1',
           contact: 'c1'
         };
 
-        const placeDoc = await Place.v1.createPlace(dataContext)(placeQualifier);
+        const placeDoc = await Place.v1.createPlace(dataContext)(placeInput);
         expect(placeDoc).excluding([ '_rev', 'reported_date', '_id' ])
-          .to.deep.equal(placeQualifier);
+          .to.deep.equal(placeInput);
       });
     });
   });

@@ -271,8 +271,8 @@ describe('Place API', () => {
   });
 
   describe('POST /api/v1/place', () => {
-    it('creates place for valid qualifier', async () => {
-      const qualifier = {
+    it('creates place for valid input', async () => {
+      const input = {
         type: 'place',
         name: 'place-1',
         contact: 'c1'
@@ -284,14 +284,14 @@ describe('Place API', () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: qualifier
+        body: input
       };
       const placeDoc = await utils.request(opts);
-      expect(placeDoc).excluding(['reported_date', '_id', '_rev']).to.deep.equal(qualifier);
+      expect(placeDoc).excluding(['reported_date', '_id', '_rev']).to.deep.equal(input);
     });
 
     it('throws error for missing fields', async () => {
-      const qualifier = {
+      const input = {
         name: 'place-1',
         contact: 'c1'
       };
@@ -302,13 +302,13 @@ describe('Place API', () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: qualifier
+        body: input
       };
       await expect(utils.request(opts))
         .to.be.rejectedWith(
           `400 - ${JSON.stringify({
             code: 400,
-            error: `Missing or empty required fields (name, type) for [${JSON.stringify(qualifier)}].`
+            error: `Missing or empty required fields (name, type) for [${JSON.stringify(input)}].`
           })}`
         );
     });

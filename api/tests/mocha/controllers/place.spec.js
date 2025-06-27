@@ -327,8 +327,8 @@ describe('Place Controller', () => {
         expect(dataContextBind.notCalled).to.be.true;
       });
 
-      it('returns place doc for valid qualifier', async() => {
-        const qualifier = {
+      it('returns place doc for valid input', async() => {
+        const input = {
           name: 'place-1',
           parent: 'p1',
           type: 'place',
@@ -336,13 +336,13 @@ describe('Place Controller', () => {
         };
         req = {
           body: {
-            ...qualifier
+            ...input
           }
         };
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
         const expected_doc = {
-          ...qualifier,
+          ...input,
           _id: '1',
           _rev: '1-rev'
         };
@@ -350,7 +350,7 @@ describe('Place Controller', () => {
 
         await controller.v1.createPlace(req, res);
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
-        expect(placeCreate.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(placeCreate.calledOnceWithExactly(input)).to.be.true;
         expect(dataContextBind.calledOnce).to.be.true;
         expect(res.json.calledOnceWithExactly(expected_doc)).to.be.true;
       });
