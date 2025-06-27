@@ -71,7 +71,7 @@ spec:
           volumeMounts:
             - mountPath: /opt/couchdb/data
               name: couchdb-claim0
-              {{- if ne .Values.couchdb_data.dataPathOnDiskForCouchDB "" }}
+              {{- if .Values.couchdb_data.dataPathOnDiskForCouchDB }}
               subPath: {{ .Values.couchdb_data.dataPathOnDiskForCouchDB }}
               {{- end }}
             - mountPath: /opt/couchdb/etc/local.d
@@ -81,7 +81,7 @@ spec:
           volumeMounts:
             - mountPath: /opt/couchdb/data
               name: couchdb-claim0
-              {{- if ne .Values.couchdb_data.dataPathOnDiskForCouchDB "" }}
+              {{- if .Values.couchdb_data.dataPathOnDiskForCouchDB }}
               subPath: {{ .Values.couchdb_data.dataPathOnDiskForCouchDB }}
               {{- end }}
             - mountPath: /opt/couchdb/etc/local.d
