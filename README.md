@@ -39,11 +39,12 @@ To setup a development environment to contribute to the Core Framework follow th
 First time contributor? Issues labeled [help wanted](https://github.com/medic/cht-core/labels/Help%20wanted) are a great place to start.
 
 Looking for other ways to help? You can also:
-* Improve documentation. Check out our style guide [here](https://docs.communityhealthtoolkit.org/contribute/docs/style-guide/)
-* Review or add a [translation](CONTRIBUTING.md#translations)
-* Find and mark duplicate issues
-* Try to reproduce issues and help with troubleshooting
-* Or share a new idea or question with us!
+
+- Improve documentation. Check out our style guide [here](https://docs.communityhealthtoolkit.org/contribute/docs/style-guide/)
+- Review or add a [translation](CONTRIBUTING.md#translations)
+- Find and mark duplicate issues
+- Try to reproduce issues and help with troubleshooting
+- Or share a new idea or question with us!
 
 The easiest ways to get in touch are by raising issues in the [medic Github repo](https://github.com/medic/cht-core/issues) or [joining our Community Forum](https://forum.communityhealthtoolkit.org).
 

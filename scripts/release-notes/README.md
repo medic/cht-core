@@ -27,6 +27,7 @@ node index.js [OPTIONS] REPO MILESTONE > tmp.md
 ```
 
 Options:
+
 - `--help` - Show the help message
 - `--skip-commit-validation` - Skip validation of commits
 
