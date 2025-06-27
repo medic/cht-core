@@ -1,4 +1,4 @@
-const { Place, Qualifier } = require('@medic/cht-datasource');
+const { Place, Qualifier, Input } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
@@ -11,6 +11,7 @@ const getPlace = ({ with_lineage }) => ctx.bind(
 );
 
 const getPageByType = () => ctx.bind(Place.v1.getPage);
+const createPlace = () => ctx.bind(Place.v1.createPlace);
 
 const checkUserPermissions = async (req) => {
   const userCtx = await auth.getUserCtx(req);
@@ -38,6 +39,13 @@ module.exports = {
       const docs = await getPageByType()( placeType, req.query.cursor, req.query.limit );
 
       return res.json(docs);
+    }),
+    createPlace: serverUtils.doOrError(async (req, res) => {
+      await checkUserPermissions(req);
+      
+      const placeInput = Input.validatePlaceInput(req.body);
+      const placeDoc = await createPlace()(placeInput);
+      return res.json(placeDoc);
     })
   }
 };

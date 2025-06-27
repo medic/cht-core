@@ -8,6 +8,7 @@ import {
   isUuidQualifier,
 } from '../qualifier';
 import { Nullable } from './core';
+import { isPersonInput, isPlaceInput, PersonInput, PlaceInput } from '../input';
 
 /** @internal */
 export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is ContactTypeQualifier = (
@@ -15,6 +16,24 @@ export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is C
 ) => {
   if (!isContactTypeQualifier(qualifier)) {
     throw new InvalidArgumentError(`Invalid contact type [${JSON.stringify(qualifier)}].`);
+  }
+};
+
+/** @internal */
+export const assertPersonInput: (input: unknown) => asserts input is PersonInput = (
+  input: unknown
+) => {
+  if (!isPersonInput(input)) {
+    throw new InvalidArgumentError(`Invalid person type [${JSON.stringify(input)}].`);
+  }
+};
+
+/** @internal */
+export const assertPlaceInput: (input: unknown) => asserts input is PlaceInput = (
+  input: unknown
+) => {
+  if (!isPlaceInput(input)) {
+    throw new InvalidArgumentError(`Invalid place type [${JSON.stringify(input)}].`);
   }
 };
 

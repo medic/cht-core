@@ -2,6 +2,7 @@ import * as Place from '../src/place';
 import * as Local from '../src/local';
 import * as Remote from '../src/remote';
 import * as Qualifier from '../src/qualifier';
+import * as Input from '../src/input';
 import * as Context from '../src/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
@@ -14,12 +15,14 @@ describe('place', () => {
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
   let isContactTypeQualifier: SinonStub;
+  let isPlaceInput: SinonStub;
 
   beforeEach(() => {
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isContactTypeQualifier = sinon.stub(Qualifier, 'isContactTypeQualifier');
+    isPlaceInput = sinon.stub(Input, 'isPlaceInput');
   });
 
   afterEach(() => sinon.restore());
@@ -307,6 +310,32 @@ describe('place', () => {
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(placeGetPage.notCalled).to.be.true;
         expect(isContactTypeQualifier.calledOnceWithExactly(placeTypeQualifier)).to.be.true;
+      });
+    });
+
+    describe('createPlace', () => {
+      it('throws error for invalid input, here with a missing type', async() => {
+        const input = {
+          name: 'person-1',
+          parent: 'p1'
+        };
+        isPlaceInput.returns(false);
+        await expect(Place.v1.createPlace(dataContext)(input as Input.PlaceInput))
+          .to.be.rejectedWith(`Invalid place type [${JSON.stringify(input)}].`);
+      });
+      
+      it('returns person doc for valid input', async() => {
+        const createPlaceDoc = sinon.stub();
+        adapt.returns(createPlaceDoc);
+        const input = {
+          name: 'place-1',
+          type: 'place',
+        };
+        isPlaceInput.returns(true);
+        createPlaceDoc.resolves(input);
+        const result = await Place.v1.createPlace(dataContext)(input);
+      
+        expect(result).to.deep.equal(input);
       });
     });
   });

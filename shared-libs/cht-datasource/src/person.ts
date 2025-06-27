@@ -8,7 +8,10 @@ import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import { assertCursor, assertLimit, 
+  assertPersonInput, 
+  assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import { PersonInput } from './input';
 
 /** */
 export namespace v1 {
@@ -39,6 +42,19 @@ export namespace v1 {
       return async (qualifier: UuidQualifier): Promise<T> => {
         assertUuidQualifier(qualifier);
         return fn(qualifier);
+      };
+    };
+
+  const createPersonDoc =
+  <T>(
+      localFn: (c: LocalDataContext) => (input: PersonInput) => Promise<T>,
+      remoteFn: (c: RemoteDataContext) => (input: PersonInput) => Promise<T>
+    ) => (context: DataContext) => {
+      assertDataContext(context);
+      const fn = adapt(context, localFn, remoteFn);
+      return async (input: PersonInput): Promise<T> => {
+        assertPersonInput(input);
+        return fn(input);
       };
     };
 
@@ -116,4 +132,12 @@ export namespace v1 {
     };
     return curriedGen;
   };
+
+  /**
+   * Returns a function for creating a person from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a person.
+   * @throws Error if a data context is not provided
+   */
+  export const createPerson = createPersonDoc(Local.Person.v1.createPerson, Remote.Person.v1.createPerson);
 }

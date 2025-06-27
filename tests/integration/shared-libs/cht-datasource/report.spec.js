@@ -204,7 +204,7 @@ describe('cht-datasource Report', () => {
         await expect(
           getUuidsPage(Qualifier.byFreetext(freetext), cursor, invalidLimit)
         ).to.be.rejectedWith(
-          `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`
+          {code: 400, error: `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`}
         );
       });
 
@@ -212,7 +212,8 @@ describe('cht-datasource Report', () => {
         await expect(
           getUuidsPage(Qualifier.byFreetext(freetext), invalidCursor, fourLimit)
         ).to.be.rejectedWith(
-          `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          {code: 400,
+            error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`}
         );
       });
     });

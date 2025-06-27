@@ -483,6 +483,7 @@ app.postJson('/api/v1/places/:id', function(req, res) {
 
 app.get('/api/v1/place', place.v1.getAll);
 app.get('/api/v1/place/:uuid', place.v1.get);
+app.postJson('/api/v1/place', place.v1.createPlace);
 
 app.postJson('/api/v1/people', function(req, res) {
   auth
@@ -498,6 +499,7 @@ app.postJson('/api/v1/people', function(req, res) {
 
 app.get('/api/v1/person', person.v1.getAll);
 app.get('/api/v1/person/:uuid', person.v1.get);
+app.postJson('/api/v1/person', person.v1.createPerson);
 
 app.get('/api/v1/contact/uuid', contact.v1.getUuids);
 app.get('/api/v1/contact/:uuid', contact.v1.get);

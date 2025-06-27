@@ -1,4 +1,4 @@
-const { Person, Qualifier } = require('@medic/cht-datasource');
+const { Person, Qualifier, Input } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
@@ -10,6 +10,7 @@ const getPerson = ({ with_lineage }) => ctx.bind(
     : Person.v1.get
 );
 const getPageByType = () => ctx.bind(Person.v1.getPage);
+const createPerson = () => ctx.bind(Person.v1.createPerson);
 
 const checkUserPermissions = async (req) => {
   const userCtx = await auth.getUserCtx(req);
@@ -38,5 +39,13 @@ module.exports = {
 
       return res.json(docs);
     }),
+    
+    createPerson: serverUtils.doOrError(async (req, res) => {
+      await checkUserPermissions(req);
+
+      const personInput = Input.validatePersonInput(req.body);
+      const personDoc = await createPerson()(personInput);
+      return res.json(personDoc);
+    })
   },
 };

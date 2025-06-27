@@ -7,8 +7,20 @@ import {
   isUuidQualifier
 } from '../src/qualifier';
 import { expect } from 'chai';
+import sinon from 'sinon';
 
 describe('qualifier', () => {
+  let clock: sinon.SinonFakeTimers;
+  const CURRENT_ISO_TIMESTAMP = '2023-01-01T00:01:23.000Z';
+  before(() => {
+    const fakeNow = new Date(CURRENT_ISO_TIMESTAMP).getTime();
+    clock = sinon.useFakeTimers(fakeNow);
+  });
+
+  after(() => {
+    clock.restore();
+  });
+  
   describe('byUuid', () => {
     it('builds a qualifier that identifies an entity by its UUID', () => {
       expect(byUuid('uuid')).to.deep.equal({ uuid: 'uuid' });
@@ -109,4 +121,5 @@ describe('qualifier', () => {
       });
     });
   });
+  
 });

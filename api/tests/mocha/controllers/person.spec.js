@@ -292,5 +292,65 @@ describe('Person Controller', () => {
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
     });
+
+    describe('createPerson', () => {
+      let createPerson;
+      beforeEach(() => {
+        createPerson = sinon.stub();
+        dataContextBind
+          .withArgs(Person.v1.createPerson)
+          .returns(createPerson);
+      });
+
+      it('throws error for missing required fields', async() => {
+        const input = {
+          name: 'test-user',
+          parent: 'p1',
+          reported_date: 12312312
+        };
+        req = {
+          body: {
+            ...input
+          }
+        };
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        // eslint-disable-next-line max-len
+        const err = new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}].`);
+        await controller.v1.createPerson(req, res);
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(createPerson.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(InvalidArgumentError);
+        expect(serverUtilsError.firstCall.args[0].message).to.equal(err.message);
+        expect(dataContextBind.notCalled).to.be.true;
+      });
+
+      it('creates a person doc for valid input', async() => {
+        const input = {
+          name: 'test-user',
+          type: 'person',
+          parent: 'p1',
+          reported_date: 12312312
+        };
+        req = {
+          body: {
+            ...input
+          }
+        };
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        const createdPersonDoc = {...input, _id: '123', rev: '1-rev'}; 
+        createPerson.resolves(createdPersonDoc);
+        // eslint-disable-next-line max-len
+        await controller.v1.createPerson(req, res);
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(createPerson.calledOnce).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+        expect(dataContextBind.calledOnce).to.be.true;
+        expect(createPerson.calledOnce).to.be.true;
+        expect(res.json.calledOnceWithExactly(createdPersonDoc)).to.be.true;
+      });
+    });
   });
 });

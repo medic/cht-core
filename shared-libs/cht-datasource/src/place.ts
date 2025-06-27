@@ -8,7 +8,9 @@ import * as Local from './local';
 import * as Remote from './remote';
 import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import { assertCursor, assertLimit, assertPlaceInput, 
+  assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import { PlaceInput } from './input';
 
 /** */
 export namespace v1 {
@@ -39,6 +41,19 @@ export namespace v1 {
       return async (qualifier: UuidQualifier): Promise<T> => {
         assertUuidQualifier(qualifier);
         return fn(qualifier);
+      };
+    };
+  
+  const createPlaceDoc =
+  <T>(
+      localFn: (c: LocalDataContext) => (input: PlaceInput) => Promise<T>,
+      remoteFn: (c: RemoteDataContext) => (input: PlaceInput) => Promise<T>,
+    ) => (context: DataContext) => {
+      assertDataContext(context);
+      const fn = adapt(context, localFn, remoteFn);
+      return async (input: PlaceInput): Promise<T> => {
+        assertPlaceInput(input);
+        return fn(input);
       };
     };
 
@@ -116,4 +131,12 @@ export namespace v1 {
     };
     return curriedGen;
   };
+  
+  /**
+   * Returns a function for creating a place from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a place.
+   * @throws Error if a data context is not provided
+   */
+  export const createPlace = createPlaceDoc(Local.Place.v1.createPlace, Remote.Place.v1.createPlace);
 }
