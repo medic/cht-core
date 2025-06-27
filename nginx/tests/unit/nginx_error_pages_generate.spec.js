@@ -45,16 +45,22 @@ describe('generate.sh validation tests', () => {
     it('should be possible to run', async () => {
       const generateScript = path.join(tmpErrorsDir, 'generate.sh');
 
-      try {
-        await execAsync(generateScript, {
-          cwd: tmpErrorsDir
-        });
+      await execAsync(generateScript, {
+        cwd: tmpErrorsDir
+      });
 
-        // If we get here, the script ran successfully
-        expect(true).to.be.true;
-      } catch (error) {
-        throw new Error(`generate.sh failed to run: ${error.message}`);
-      }
+      // If we get here, the script ran successfully
+      expect(true).to.be.true;
+    });
+
+    it('should fail if there are no error pages templates', async () => {
+      // manually delete it because it has been created in the beforeEach
+      await fs.rm(path.join(tmpErrorsDir, 'template.json'), { recursive: true, force: true });
+
+      const generateScript = path.join(tmpErrorsDir, 'generate.sh');
+      await expect(execAsync(generateScript, {
+        cwd: tmpErrorsDir
+      })).to.be.rejectedWith(/No such file or directory/i);
     });
   });
 
@@ -125,9 +131,9 @@ describe('generate.sh validation tests', () => {
 const getErrorFiles = async (directory) => {
   try {
     const files = await fs.readdir(directory);
-    return files.filter(
-      file => file.endsWith('.html') || file.endsWith('.json')
-    ).map(file => path.join(directory, file));
+    return files
+      .filter(file => file.endsWith('.html') || file.endsWith('.json'))
+      .map(file => path.join(directory, file));
   } catch (error) {
     // Directory might not exist or be accessible
     return [];

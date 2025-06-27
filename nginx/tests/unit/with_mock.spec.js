@@ -1,10 +1,11 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
+const { setTimeout: setTimeoutPromise } = require('node:timers/promises');
 
 // Create custom fetch wrapper with default options
 const apiRequest = async (url, options = {}) => {
   const defaultOptions = {
-    timeout: 5000,
+    signal: AbortSignal.timeout(5000),
     redirect: 'manual', // Don't follow redirects automatically
     ...options
   };
@@ -13,7 +14,7 @@ const apiRequest = async (url, options = {}) => {
 };
 
 describe('API Integration Tests', function () {
-  this.timeout(10000);
+  this.timeout(16000);
   const HTTP_BASE_URL = 'http://localhost:1080';
   const HTTPS_BASE_URL = 'https://localhost:1443';
   let original_NODE_TLS_REJECT_UNAUTHORIZED;
@@ -23,7 +24,7 @@ describe('API Integration Tests', function () {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
   });
 
-  beforeEach(function() {
+  afterEach(function() {
     // Reset any sinon stubs/spies before each test
     sinon.restore();
   });
@@ -53,11 +54,11 @@ describe('API Integration Tests', function () {
           attempt++;
 
           // Wait 100ms before next attempt
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await setTimeoutPromise(100);
         }
       }
 
-      throw new Error(`API did not respond within 15 seconds. Last error: ${lastError.message}`);
+      expect.fail(`API did not respond within 15 seconds. Last error: ${lastError.message}`);
     });
   });
 
@@ -177,11 +178,10 @@ describe('API Integration Tests', function () {
       expect(response.headers.get('content-type')).to.exist;
 
       const contentType = response.headers.get('content-type');
-      if (contentType.includes('text/html')) {
-        const htmlContent = await response.text();
-        expect(htmlContent).to.be.a('string');
-        expect(htmlContent).to.include('<!DOCTYPE html>');
-      }
+      expect(contentType).to.include('text/html');
+      const htmlContent = await response.text();
+      expect(htmlContent).to.be.a('string');
+      expect(htmlContent).to.include('<!DOCTYPE html>');
     });
 
     it('should have proper response headers for JSON content', async () => {

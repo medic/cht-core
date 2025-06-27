@@ -3,7 +3,12 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "test:unit": "npx mocha unit/*.spec.js --no-config",
-    "test:integration": "npx mocha integration/*.spec.js --no-config"
+    "docker-up": "docker compose up --build --wait --remove-orphans",
+    "docker-down": "docker compose down",
+    "test:generate": "mocha unit/nginx_error_pages_generate.spec.js",
+    "test:api": "npm run docker-up && mocha unit/with_mock.spec.js --no-config && npm run docker-down",
+    "test:unit": "npm run docker-up && mocha unit/*.spec.js && npm run docker-down",
+    "test:integration": "mocha integration/*.spec.js --no-config",
+    "test": "npm run docker-up && npm run test:unit && npm run docker-down && npm run test:integration"
   }
 }
