@@ -1,0 +1,25 @@
+# K3S-K3D-specific configurations that extend the base.yaml
+
+# Override cluster type for k3s-k3d
+environment: "local"  # DEFAULT: Good default for k3s-k3d
+cluster_type: "k3s-k3d" # DEFAULT: Good default for this file
+
+# Applicable only if using k3s
+k3s_use_vSphere_storage_class: "false"  # DEFAULT: Good default for local development
+# vSphere specific configurations. If you set "true" for k3s_use_vSphere_storage_class, fill in the details below.
+vSphere:
+  datastoreName: ""  # REQUIRED: User must set this if k3s_use_vSphere_storage_class is true. Replace with your datastore name
+  diskPath: ""       # REQUIRED: User must set this if k3s_use_vSphere_storage_class is true. Replace with your disk path
+
+# If preExistingDataAvailable is true, fill in the details below.
+# For local_storage, fill in the details if you are using k3s-k3d cluster type.
+# NOTE: For k3s-k3d deployments, the hostPath volumes use type: DirectoryOrCreate,
+# which automatically creates the directories if they don't exist, so manual creation
+# is not required for fresh deployments.
+local_storage:  # OPTIONAL: Only needed if using k3s-k3d and have pre-existing data
+  preExistingDiskPath-1: "/var/lib/couchdb1" # DEFAULT: Good default path. If node1 has pre-existing data.
+  preExistingDiskPath-2: "/var/lib/couchdb2" # DEFAULT: Good default path. If node2 has pre-existing data.
+  preExistingDiskPath-3: "/var/lib/couchdb3" # DEFAULT: Good default path. If node3 has pre-existing data.
+
+ingress:
+  host: "localhost" # DEFAULT: Good default for k3s-k3d local development
