@@ -1,0 +1,417 @@
+/* Bikram Sambat Date Picker Styles */
+
+/* Validation overrides and common styles */
+.or-appearance-bikram-sambat {
+  .form-control,
+  input,
+  select,
+  button,
+  .dropdown-toggle {
+    border-color: #ccc !important;
+    box-shadow: none !important;
+
+    &:focus {
+      border-color: #66afe9 !important;
+      box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6) !important;
+    }
+  }
+
+  .has-error {
+    .form-control, 
+    .form-control:focus,
+    input,
+    input:focus {
+      border-color: #ccc !important;
+      background-image: none !important;
+      box-shadow: none !important;
+    }
+  }
+
+  input[type=date].ignore {
+    border-color: #ccc !important;
+    background-image: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Input group styles */
+.bikram-sambat-input-group {
+  &,
+  input,
+  button,
+  .dropdown-toggle,
+  .form-control {
+    border-color: #ccc !important;
+    box-shadow: none !important;
+    background-color: #fff !important;
+  }
+}
+
+/* Error classes handling */
+.has-error,
+.invalid-date {
+  .bikram-sambat-input-group,
+  .bikram-sambat-input-group input,
+  .bikram-sambat-input-group button,
+  .bikram-sambat-input-group .dropdown-toggle,
+  .bikram-sambat-input-group .form-control {
+    border-color: #ccc !important;
+    box-shadow: none !important;
+    background-color: #fff !important;
+  }
+}
+
+/* Widget base styles */
+.bikram-sambat-widget {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 8px;
+  position: relative;
+  
+  input, .calendar-btn {
+    margin: 4px;
+  }
+  
+  .calendar-btn {
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    cursor: pointer;
+    height: 34px;
+    width: 40px;
+    
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
+  
+  .calendar-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    vertical-align: middle;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M17 3h-1V2a1 1 0 0 0-2 0v1H6V2a1 1 0 0 0-2 0v1H3a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 15H3V8h14v10zm0-12H3V5h14v1z'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+}
+
+/* Hidden date picker input */
+.nepali-datepicker-input {
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+  height: 1px;
+  width: 1px;
+  border: none;
+  z-index: 9999;
+  visibility: hidden;
+}
+
+/* Nepali date picker popup styles */
+.nepali-date-picker {
+  background: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 5px 15px -5px rgba(0,0,0,.506);
+  box-sizing: border-box;
+  color: #333;
+  display: block;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  padding: 8px;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 9999 !important;
+  user-select: none;
+  min-width: 250px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  
+  /* Table styles */
+  table {
+    background-color: transparent;
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 2px solid rgba(129,120,120,.17);
+    
+    thead {
+      background: #dedede;
+      
+      td {
+        color: #8b8686;
+        font-weight: 700;
+      }
+    }
+    
+    th {
+      color: #999;
+      font-weight: 700;
+      text-align: center;
+      cursor: default;
+      background: #f1f1f1;
+    }
+    
+    td {
+      border: 1px solid rgba(154,150,150,.46);
+      color: #666;
+      padding: 0;
+      width: 35px;
+      text-align: center;
+      font-size: 14px;
+    }
+    
+    tbody td {
+      cursor: pointer;
+      
+      &.current-month-date:hover {
+        background-color: #718fcd;
+        color: #fff;
+        font-weight: 700;
+      }
+      
+      &.current-month-date.disable,
+      &.other-month-date {
+        color: #ccc;
+        cursor: default;
+      }
+      
+      &.current-month-date.disable:hover {
+        background-color: inherit;
+        color: #ccc;
+        font-weight: 400;
+      }
+    }
+  }
+  
+  /* Icon styles */
+  .icon {
+    opacity: .5;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAeCAYAAADaW7vzAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoV2luZG93cykiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6Q0NBRjI1NjM0M0UwMTFFNDk4NkFGMzJFQkQzQjEwRUIiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6Q0NBRjI1NjQ0M0UwMTFFNDk4NkFGMzJFQkQzQjEwRUIiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpDQ0FGMjU2MTQzRTAxMUU0OTg2QUYzMkVCRDNCMTBFQiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpDQ0FGMjU2MjQzRTAxMUU0OTg2QUYzMkVCRDNCMTBFQiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PoNEP54AAAIOSURBVHja7Jq9TsMwEMcxrZD4WpBYeKUCe+kTMCACHZh4BFfHO/AAIHZGFhYkBBsSEqxsLCAgXKhbXYOTxh9pfJVP+qutnZ5s/5Lz2Y5I03QhWji2GIcgAokWgfCxNvcOCCGKqiSqhUp0laHOne05vdEyGMfkdxJDVjgwDlEQgYQBgx+ULJaWSXXS6r/ER5FBVR8VfGftTKcITNs+a1XpcFoExREIDF14AVIFxgQUS+h520cdud6wNkC0UBw6BCO/HoCYwBhD8QCkQ/x1mwDyD4plh4D6DDV0TAGyo4HcawLIBBSLDkHeH0Mg2yVP3l4TQMZQDDsEOl/MgHQqhMNuE0D+oBh0CIr8MAKyazBH9WyBuKxDWgbXfjNf32TZ1KWm/Ap1oSk/R53UtQ5xTh3LUlMmT8gt6g51Q9p+SobxgJQ/qmsfZhWywGFSl0yBjCLJCMgXail3b7+rumdVJ2YRss4cN+r6qAHDkPWjPjdJCF4n9RmAD/V9A/Wp4NQassDjwlB6XBiCxcJQWmZZb8THFilfy/lfrTvLghq2TqTHrRMTKNJ0sIhdo15RT+RpyWwFdY96UZ/LdQKBGjcXpcc1AlSFEfLmouD+1knuxBDUVrvOBmoOC/rEcN7OQxKVeJTCiAdUzUJhA2Oez9QTkp72OTVcxDcXY8iKNkxGAJXmJCOQwOa6dhyXsOa6XwEGAKdeb5ET3rQdAAAAAElFTkSuQmCC);
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+  
+  .prev-btn.icon {
+    background-position: 80px center;
+    float: left;
+    height: 30px;
+    width: 20px;
+  }
+  
+  .next-btn.icon {
+    background-position: 0 center;
+    float: right;
+    height: 30px;
+    width: 20px;
+  }
+  
+  .today-btn.icon {
+    background-position: 130px center;
+    display: block;
+    float: left;
+    height: 30px;
+    margin: 0 15px;
+    width: 20px;
+  }
+  
+  /* Month and year selection */
+  .current-month-txt,
+  .current-year-txt {
+    color: #545b54;
+    font-weight: 700;
+    padding-right: 20px;
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    line-height: 30px;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  
+  .current-month-txt {
+    text-align: right;
+    width: 80px;
+  }
+  
+  .calendar-controller i.icon-drop-down {
+    background-position: 12px -15px;
+    height: 30px;
+    position: absolute;
+    width: 20px;
+  }
+  
+  /* Dropdown styles */
+  .drop-down-content {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 3px 3px 0 rgba(0,0,0,.32);
+    display: none;
+    height: 99px;
+    padding: 5px;
+    position: absolute;
+    width: 100%;
+    z-index: 10000;
+    
+    .option-wrapper {
+      height: 100%;
+      overflow-x: hidden;
+      overflow-y: scroll;
+      padding: 0;
+      position: relative;
+    }
+    
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0 5px 0 0;
+    }
+    
+    li {
+      border-bottom: 1px solid rgba(159,153,153,.39);
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 20px;
+      text-align: right;
+      
+      &:hover {
+        background: #718fcd;
+      }
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      &.active {
+        background-color: #7bde77;
+        color: #fff;
+        font-weight: 700;
+      }
+    }
+  }
+  
+  .scrollbar-wrapper {
+    border-left: 1px solid rgba(204,204,204,.2);
+    height: 100%;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 15px;
+  }
+}
+
+/* Active date styling */
+.current-month-date.active {
+  background-color: #7bde77;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Scrollbar styling */
+.scrollbar {
+  background-color: #000;
+  border-radius: 2.5px;
+  display: block;
+  height: 100%;
+  opacity: .5;
+  position: absolute;
+  right: 6.5px;
+  width: 5px;
+}
+
+/* Calendar overlay backdrop */
+.nepali-date-picker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 9998;
+  display: none;
+  
+  &.active {
+    display: block;
+  }
+}
+
+/* Browser scrollbar styles */
+::-webkit-scrollbar {
+  width: 13px;
+  height: 13px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0,0,0,.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,.5);
+}
+
+/* Enketo integration styles */
+.or {
+  .nepali-date-widget {
+    margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+    
+    .widget-controls {
+      margin-top: 5px;
+    }
+  }
+  
+  .widget-calendar-btn {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+  }
+  
+  .btn-calendar {
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .nepali-datepicker-input {
+    padding-right: 30px;
+  }
+}
+
+/* Form validation override styles */
+.suppress-validation {
+  .form-control,
+  .form-control:focus,
+  input,
+  input:focus,
+  select,
+  select:focus,
+  .dropdown-toggle,
+  .dropdown-toggle:focus {
+    border-color: #ccc !important;
+    box-shadow: none !important;
+    background-color: #fff !important;
+    outline: none !important;
+  }
+}
+
+/* Error state override */
+.has-error.suppress-validation {
+  .form-control,
+  input,
+  select,
+  .dropdown-toggle {
+    border-color: #ccc !important;
+  }
+}
