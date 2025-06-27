@@ -407,7 +407,7 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => report = v1.report);
 
       it('contains expected keys', () => {
-        expect(report).to.have.all.keys(['getUuidsByFreetext', 'getUuidsPageByFreetext', 'getByUuid']);
+        expect(report).to.have.all.keys(['getUuidsByFreetext', 'getUuidsPageByFreetext', 'getByUuid', 'createReport']);
       });
 
       it('getByUuid', async () => {
