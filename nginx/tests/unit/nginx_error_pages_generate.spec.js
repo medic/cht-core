@@ -105,7 +105,7 @@ describe('generate.sh validation tests', () => {
         // Check if temp file exists
         try {
           await fs.access(tmpFilePath);
-        } catch (error) {
+        } catch {
           throw new Error(`Generated file ${filename} does not exist`);
         }
 
@@ -134,7 +134,7 @@ const getErrorFiles = async (directory) => {
     return files
       .filter(file => file.endsWith('.html') || file.endsWith('.json'))
       .map(file => path.join(directory, file));
-  } catch (error) {
+  } catch {
     // Directory might not exist or be accessible
     return [];
   }

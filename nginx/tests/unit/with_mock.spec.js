@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const { setTimeout: setTimeoutPromise } = require('node:timers/promises');
 
 // Create custom fetch wrapper with default options
-const apiRequest = async (url, options = {}) => {
+const apiRequest = (url, options = {}) => {
   const defaultOptions = {
     signal: AbortSignal.timeout(5000),
     redirect: 'manual', // Don't follow redirects automatically
