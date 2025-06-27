@@ -25,6 +25,7 @@ runInstance () {
     --security-group-ids sg-0fa20cd785acec256 \
     --key-name cht-scalability-ca \
     --iam-instance-profile Arn="$SCALABILITY_ARN"
+    # get output of user-data script from /var/log/cloud-init-output.log
 }
 
 getInstanceId () {
