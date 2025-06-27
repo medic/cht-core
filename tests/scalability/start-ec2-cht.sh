@@ -17,7 +17,7 @@ waitForBuildAvailable() {
 runInstance () {
   # --profile CA \ # for local runs
   aws ec2 run-instances \
-    --image-id ami-0a24ca1ef53e3d20f \
+    --image-id ami-0c0a551d0459e9d39 \
     --instance-type c5.2xlarge \
     --block-device-mappings file://block-device-mapping.json \
     --user-data file://"$1" \
