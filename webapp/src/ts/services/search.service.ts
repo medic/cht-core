@@ -36,7 +36,7 @@ export class SearchService {
     this.searchFactory = this.searchFactoryService.get(this.dbService);
   }
 
-  private _currentQuery:any = {};
+  private _currentQuery: any = {};
 
   // Silently cancel repeated queries.
   private debounce(type, filters, options) {

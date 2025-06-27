@@ -118,7 +118,7 @@ describe('Muting Transition', () => {
   });
 
   describe('filter', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
       const settings = {
         muting: {
           mute_forms: ['mute'],
@@ -128,7 +128,7 @@ describe('Muting Transition', () => {
 
       transition.init(settings);
     });
-    it('should return false when there are no relevant docs', async () => {
+    it('should return false when there are no relevant docs', () => {
       const editMutingReport = [ { _id: 'existent_report', _rev: '1', type: 'data_record', form: 'mute' }, ];
       expect(transition.filter(editMutingReport)).to.equal(false);
 
@@ -192,7 +192,7 @@ describe('Muting Transition', () => {
 
   describe('run', () => {
     let settings;
-    beforeEach(async () => {
+    beforeEach(() => {
       settings = {
         muting: {
           mute_forms: ['mute'],
