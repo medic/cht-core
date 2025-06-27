@@ -1,4 +1,4 @@
-const { Person, Qualifier } = require('@medic/cht-datasource');
+const { Person, Qualifier, Input } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
@@ -43,8 +43,8 @@ module.exports = {
     createPerson: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req);
 
-      const personQualifier = Qualifier.byPersonQualifier(req.body);
-      const personDoc = await createPerson()(personQualifier);
+      const personInput = Input.validatePersonInput(req.body);
+      const personDoc = await createPerson()(personInput);
       return res.json(personDoc);
     })
   },

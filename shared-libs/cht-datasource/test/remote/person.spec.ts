@@ -108,18 +108,18 @@ describe('remote person', () => {
     });
 
     describe('createPerson', () => {
-      it('creates a person for a valid qualifier', async () => {
-        const personQualifier = {
+      it('creates a person for a valid input', async () => {
+        const personInput = {
           type: 'person',
           name: 'user-1',
           parent: 'p1'
         };
-        const expected_doc = {...personQualifier, _id: '2', _rev: '1'};
+        const expected_doc = {...personInput, _id: '2', _rev: '1'};
         postResourceInner.resolves(expected_doc);
-        const result = await Person.v1.createPerson(remoteContext)(personQualifier);
+        const result = await Person.v1.createPerson(remoteContext)(personInput);
         expect(result).to.deep.equal(expected_doc);
         expect(postResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
-        expect(postResourceInner.calledOnceWithExactly(personQualifier)).to.be.true;
+        expect(postResourceInner.calledOnceWithExactly(personInput)).to.be.true;
       });
     });
   });

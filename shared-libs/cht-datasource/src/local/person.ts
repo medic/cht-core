@@ -1,7 +1,7 @@
 import { Doc } from '../libs/doc';
 import contactTypeUtils, { getContactTypes } from '@medic/contact-types-utils';
 import { hasField, isNonEmptyArray, Nullable, Page } from '../libs/core';
-import { ContactTypeQualifier, PersonQualifier, UuidQualifier } from '../qualifier';
+import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
 import { createDoc, fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
@@ -12,6 +12,7 @@ import {
 } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
 import { validateCursor } from './libs/core';
+import { PersonInput } from '../input';
 
 /** @internal */
 export namespace v1 {
@@ -106,29 +107,29 @@ export namespace v1 {
     settings
   } : LocalDataContext) => {
     const createPersonDoc = createDoc(medicDb);
-    return async (qualifier: PersonQualifier) :Promise<Person.v1.Person> => {
-      if (hasField(qualifier, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
+    return async (input: PersonInput) :Promise<Person.v1.Person> => {
+      if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a person.');
       }
     
       // This check can only be done when we have the contact_types from LocalDataContext.
       const allowedContactTypes = getContactTypes(settings.getAll());
-      const typeFoundInSettingsContactTypes = allowedContactTypes.find(type => type.id === qualifier.type);
-      const typeIsHardCodedPersonType = qualifier.type === 'person';
+      const typeFoundInSettingsContactTypes = allowedContactTypes.find(type => type.id === input.type);
+      const typeIsHardCodedPersonType = input.type === 'person';
       if (!typeFoundInSettingsContactTypes && !typeIsHardCodedPersonType) {
         throw new InvalidArgumentError('Invalid person type.');
       }
 
       // Append `contact_type` for newer versions.
       if (typeFoundInSettingsContactTypes){
-        qualifier={
-          ...qualifier,
-          contact_type: qualifier.type,
+        input={
+          ...input,
+          contact_type: input.type,
           type: 'contact'
-        } as unknown as PersonQualifier;
+        } as unknown as PersonInput;
       }
 
-      return await createPersonDoc(qualifier) as Person.v1.Person;
+      return await createPersonDoc(input) as Person.v1.Person;
     };
   };
 }

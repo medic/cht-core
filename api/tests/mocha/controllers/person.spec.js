@@ -303,20 +303,20 @@ describe('Person Controller', () => {
       });
 
       it('throws error for missing required fields', async() => {
-        const qualifier = {
+        const input = {
           name: 'test-user',
           parent: 'p1',
           reported_date: 12312312
         };
         req = {
           body: {
-            ...qualifier
+            ...input
           }
         };
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
         // eslint-disable-next-line max-len
-        const err = new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON.stringify(qualifier)}].`);
+        const err = new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}].`);
         await controller.v1.createPerson(req, res);
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
         expect(createPerson.notCalled).to.be.true;
@@ -326,8 +326,8 @@ describe('Person Controller', () => {
         expect(dataContextBind.notCalled).to.be.true;
       });
 
-      it('creates a person doc for valid qualifier', async() => {
-        const qualifier = {
+      it('creates a person doc for valid input', async() => {
+        const input = {
           name: 'test-user',
           type: 'person',
           parent: 'p1',
@@ -335,12 +335,12 @@ describe('Person Controller', () => {
         };
         req = {
           body: {
-            ...qualifier
+            ...input
           }
         };
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
-        const createdPersonDoc = {...qualifier, _id: '123', rev: '1-rev'}; 
+        const createdPersonDoc = {...input, _id: '123', rev: '1-rev'}; 
         createPerson.resolves(createdPersonDoc);
         // eslint-disable-next-line max-len
         await controller.v1.createPerson(req, res);

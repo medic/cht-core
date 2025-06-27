@@ -7,7 +7,7 @@ import * as LocalDoc from '../../src/local/libs/doc';
 import * as Lineage from '../../src/local/libs/lineage';
 import { expect } from 'chai';
 import { LocalDataContext } from '../../src/local/libs/data-context';
-import { PersonQualifier } from '../../src/qualifier';
+import { PersonInput } from '../../src/input';
 
 describe('local person', () => {
   let localContext: LocalDataContext;
@@ -326,18 +326,18 @@ describe('local person', () => {
         createDocOuter.returns(createDocInner);
       });
 
-      it('throws error if qualifier type is not a part of settings contact_types and also not `person`', async() => {
+      it('throws error if input type is not a part of settings contact_types and also not `person`', async() => {
         settingsGetAll.returns({
           contact_types: [{id: 'animal'}, {id: 'human'}]
         });
         isPerson.returns(false);
 
-        const personQualifier: PersonQualifier = {
+        const personInput: PersonInput = {
           type: 'robot',
           name: 'user-1',
           parent: 'p1'
         };
-        await expect(Person.v1.createPerson(localContext)(personQualifier))
+        await expect(Person.v1.createPerson(localContext)(personInput))
           .to.be.rejectedWith('Invalid person type.');
         expect(createDocInner.called).to.be.false;
       });
@@ -347,7 +347,7 @@ describe('local person', () => {
           contact_types: [{id: 'animal'}, {id: 'human'}]
         });
         isPerson.returns(true);
-        const qualifier = {
+        const input = {
           _id: '2-inserted-id',
           name: 'user-1',
           type: 'animal',
@@ -355,33 +355,33 @@ describe('local person', () => {
           reported_date: new Date().toISOString()
         };
         
-        const expected_qualifier = {...qualifier, 
+        const expected_input = {...input, 
           type: 'contact', contact_type: 'animal' };
-        createDocInner.resolves(expected_qualifier);
+        createDocInner.resolves(expected_input);
 
-        const person = await Person.v1.createPerson(localContext)(qualifier);
+        const person = await Person.v1.createPerson(localContext)(input);
         expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
-        expect(createDocInner.calledOnceWithExactly(expected_qualifier)).to.be.true;
+        expect(createDocInner.calledOnceWithExactly(expected_input)).to.be.true;
       });
 
       it('creates a Person doc for valid input having a legacy type without _id, reported_date', 
         async () => {
           isPerson.returns(true);
-          const qualifier = {
+          const input = {
             name: 'user-1',
             type: 'person',
             parent: 'p1'
           };
 
-          const qualifier_reported_date = new Date().toISOString();
-          createDocInner.resolves({ reported_date: qualifier_reported_date, ...qualifier });
-          const person = await Person.v1.createPerson(localContext)(qualifier);
+          const input_reported_date = new Date().toISOString();
+          createDocInner.resolves({ reported_date: input_reported_date, ...input });
+          const person = await Person.v1.createPerson(localContext)(input);
           expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
-          expect(createDocInner.calledOnceWithExactly(qualifier)).to.be.true;
+          expect(createDocInner.calledOnceWithExactly(input)).to.be.true;
         });
 
       it('throws error if `_rev` is passed in', async () => {
-        const qualifier = {
+        const input = {
           name: 'user-1',
           type: 'person',
           _rev: '1-rev',
@@ -389,7 +389,7 @@ describe('local person', () => {
         };
       
         await expect(
-          Person.v1.createPerson(localContext)(qualifier as unknown as PersonQualifier)
+          Person.v1.createPerson(localContext)(input as unknown as PersonInput)
         ).to.be.rejectedWith('Cannot pass `_rev` when creating a person.');
         expect(createDocInner.called).to.be.false;
       });

@@ -1,7 +1,8 @@
 import { Nullable, Page } from '../libs/core';
-import { ContactTypeQualifier, PersonQualifier, UuidQualifier } from '../qualifier';
+import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
 import { getResource, getResources, postResource, RemoteDataContext } from './libs/data-context';
+import { PersonInput } from '../input';
 
 /** @internal */
 export namespace v1 {
@@ -43,7 +44,7 @@ export namespace v1 {
   /** @internal */
   export const createPerson = 
   (remoteContext: RemoteDataContext) => (
-    qualifier:PersonQualifier
-  ):Promise<Person.v1.Person> => createPersonPost(remoteContext)(qualifier);
+    input:PersonInput
+  ):Promise<Person.v1.Person> => createPersonPost(remoteContext)(input);
   
 }

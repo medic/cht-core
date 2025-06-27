@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { getRemoteDataContext, Person, Qualifier } = require('@medic/cht-datasource');
+const { getRemoteDataContext, Person, Qualifier, Input } = require('@medic/cht-datasource');
 const { expect } = require('chai');
 const userFactory = require('@factories/cht/users/users');
 const {setAuth, removeAuth} = require('./auth');
@@ -210,15 +210,15 @@ describe('cht-datasource Person', () => {
 
     describe('createPerson', async () => {
       const createPerson = Person.v1.createPerson(dataContext);
-      it('creates a person for a valid person qualifier', async () => {
-        const personQualifier = Qualifier.byPersonQualifier({
+      it('creates a person for a valid person input', async () => {
+        const personInput = Input.validatePersonInput({
           name: 'apoorva',
           type: 'person',
           parent: 'p1'
         });
-        const person = await createPerson(personQualifier);
+        const person = await createPerson(personInput);
         expect(person).excluding([ '_rev', 'reported_date', '_id' ])
-          .to.deep.equal({...personQualifier, contact_type: 'person', type: 'contact'});
+          .to.deep.equal({...personInput, contact_type: 'person', type: 'contact'});
       });
     });
   });

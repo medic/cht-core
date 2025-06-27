@@ -248,8 +248,8 @@ describe('Person API', () => {
 
   describe('POST /api/v1/person', async () => {
     const endpoint = `/api/v1/person`;
-    it(`creates a person for valid personQualifier`, async () => {
-      const personQualifier = {
+    it(`creates a person for valid personInput`, async () => {
+      const personInput = {
         name: 'apoorva',
         type: 'person',
         parent: 'p1'
@@ -260,15 +260,15 @@ describe('Person API', () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: personQualifier
+        body: personInput
       };
       const personDoc = await utils.request(opts);
       expect(personDoc).excluding(['_rev', 'reported_date', '_id'])
-        .to.deep.equal({...personQualifier, type: 'contact', contact_type: 'person'});
+        .to.deep.equal({...personInput, type: 'contact', contact_type: 'person'});
     });
 
-    it(`throws 400 error for invalid personQualifier, here with a missing 'parent'`, async () => {
-      const personQualifier = {
+    it(`throws 400 error for invalid personInput, here with a missing 'parent'`, async () => {
+      const personInput = {
         name: 'apoorva',
         type: 'person',
         reported_date: 1122334455
@@ -279,11 +279,11 @@ describe('Person API', () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: personQualifier
+        body: personInput
       };
       const expectedError = `400 - ${JSON.stringify({
         code: 400,
-        error: `Missing or empty required field (parent) [${JSON.stringify(personQualifier)}].`
+        error: `Missing or empty required field (parent) [${JSON.stringify(personInput)}].`
       })}`;
       
       await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
