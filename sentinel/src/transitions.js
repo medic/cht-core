@@ -9,7 +9,7 @@ const loadTransitions = () => {
   try {
     transitionsLib.loadTransitions();
     feed.listen();
-  } catch (e) {
+  } catch {
     logger.error('Transitions are disabled until the above configuration errors are fixed.');
     feed.cancel();
   }

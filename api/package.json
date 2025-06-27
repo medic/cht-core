@@ -11,6 +11,7 @@
     "node": ">=22.15.0",
     "npm": ">=10.9.0"
   },
+  "type": "commonjs",
   "scripts": {
     "toc": "doctoc --github --maxlevel 2 README.md",
     "run-watch": "TZ=UTC nodemon -e js,json,html,properties --inspect=0.0.0.0:9229 --ignore 'build/static' --ignore 'build/public' --watch ./ --watch '../shared-libs/**/src/**' server.js -- --allow-cors"

@@ -22,7 +22,7 @@ describe('Reports More Menu Component', () => {
   let matBottomSheet;
   let matDialog;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     const mockedSelectors = [
       { selector: Selectors.getReportsList, value: [] },
       { selector: Selectors.getSelectedReportDoc, value: undefined },

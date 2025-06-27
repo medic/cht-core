@@ -387,10 +387,7 @@ module.exports = [
         endTime
       );
     },
-    priority: function (contact, report, event, dueDate) {
-      console.warn(contact);
-      console.warn(event);
-      console.warn(dueDate);
+    priority: function () {
       return {
         level: 10,
         label: 'High',
@@ -449,10 +446,7 @@ module.exports = [
         endTime
       );
     },
-    priority: function (contact, report, event, dueDate) {
-      console.warn(contact);
-      console.warn(event);
-      console.warn(dueDate);
+    priority: function () {
       return {
         level: 10,
         label: 'High',

@@ -39,6 +39,7 @@ type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateF
   ]
 })
 export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
+  // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() search: EventEmitter<any> = new EventEmitter();
   @Input() disabled;
 
@@ -52,7 +53,7 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   private filters: FilterComponent[] = [];
   isResettingFilters = false;
   isOpen = false;
-  filterCount:any = { };
+  filterCount: any = { };
   dateFilterError = '';
 
   constructor(
