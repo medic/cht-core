@@ -87,7 +87,7 @@ const getMilestoneBranch = async () => {
   );
   const branchExists = await queryRepo(
     `ref(qualifiedName: "refs/heads/${milestoneBranch}") {
-        target { oid }
+        target { oid}
       }`
   ).then(({ repository }) => repository.ref);
   if (branchExists) {
@@ -324,10 +324,6 @@ const formatCommits = (commits) => {
         });
       }
     }
-    console.log(
-      "Co-authors for commit:",
-      extractCoAuthorsFromMessage(commit.message || "")
-    );
   }
 
   // Format contributors into list
