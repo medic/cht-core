@@ -61,7 +61,7 @@ spec:
                   key: COUCHDB_UUID
             - name: SVC_NAME
               value: couchdb.{{ .Values.namespace }}.svc.cluster.local
-          image: {{ .Values.upstream_servers.docker_registry }}/cht-couchdb:{{ .Values.cht_image_tag }}
+          image: "{{ .Values.upstream_servers.docker_registry }}/cht-couchdb:{{ .Values.cht_image_tag }}"
           {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
           name: cht-couchdb
           ports:
