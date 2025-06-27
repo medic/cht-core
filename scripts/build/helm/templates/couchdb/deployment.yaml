@@ -1,6 +1,6 @@
 {{- include "cht-chart-4x.validations" . -}}
 
-{{- if eq (toString .Values.couchdb.clusteredCouchEnabled) "false" }}
+{{- if not .Values.couchdb.clusteredCouchEnabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
