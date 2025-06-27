@@ -36,7 +36,7 @@ for (const rulesAreDeclarative of declarativeScenarios) {
         expect(actual).to.eq(false);
       });
 
-      it('throw on invalid rules',  () => {
+      it('throw on invalid rules', () => {
         const settingsDoc = settingsWithRules(`if (blah) {`);
         expect(() => rulesEmitter.initialize(settingsDoc)).to.throw();
         expect(rulesEmitter.isEnabled()).to.be.false;

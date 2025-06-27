@@ -36,7 +36,6 @@ window.KarmaUtils = {
   setupMockStore: function(initialState, mocks = {}) {
     angular.module('adminApp').config(function($ngReduxProvider, RootReducer) {
       'ngInject';
-       
       $ngReduxProvider.createStoreWith(RootReducer, [], [], initialState);
     });
 

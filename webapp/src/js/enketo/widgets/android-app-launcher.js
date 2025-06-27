@@ -241,13 +241,11 @@ const assignValueToInput = (input, inputName, value) => {
   }
 
   if (_isPlainObject(value)) {
-     
     console.debug(`Android App Launcher Widget :: Cannot set value to "${inputName}" field, value is an object.`);
     return;
   }
 
   if (Array.isArray(value)) {
-     
     console.debug(`Android App Launcher Widget :: Cannot set value to "${inputName}" field, value is an array.`);
     return;
   }
@@ -275,13 +273,11 @@ const getElementName = (element) => {
 
 const isValueListValid = ($fields) => {
   if (!$fields.length) {
-     
     console.debug('Android App Launcher Widget :: "android-app-value-list" missing field.');
     return false;
   }
 
   if ($fields.length > 1) {
-     
     console.debug('Android App Launcher Widget :: "android-app-value-list" can only have one field.');
     return false;
   }

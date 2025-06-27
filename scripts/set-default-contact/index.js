@@ -1,4 +1,3 @@
- 
 console.log(`   Using COUCH_URL env var: ${process.env.COUCH_URL}\n`);
 
 const compileUrl = path => {

@@ -2,7 +2,6 @@
 
 const eurodigit = require('eurodigit');
 
- 
 const TRANSLATIONS = {
   en: {
     FETCH_INFO: ({ count, total }) => `Fetching info (${count} of ${total} docs )…`,
@@ -169,7 +168,6 @@ const TRANSLATIONS = {
     LOGIN: 'تسجيل الدخول',
   },
 };
- 
 
 let locale;
 let translationData = TRANSLATIONS;

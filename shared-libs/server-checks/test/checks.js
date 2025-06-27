@@ -98,7 +98,7 @@ describe('checks', () => {
       chai.expect(request.get.args[0][0]).to.deep.equal({ json: true, url: 'http://admin:pass@localhost:5984/_membership' });
     });
 
-    it('unfinished cluster',  () => {
+    it('unfinished cluster', () => {
       sinon.stub(request, 'get');
       request.get.onCall(0).resolves({ all_nodes: ['a', 'c'], cluster_nodes: ['a', 'c'] });
       request.get.onCall(1).resolves({ all_nodes: ['b'], cluster_nodes: ['b'] });

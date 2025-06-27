@@ -39,7 +39,7 @@ describe('SSO login', () => {
 
   let idServerConfig;
 
-  beforeEach( () => {
+  beforeEach(() => {
     idServerConfig = {
       serverMetadata: sinon.stub().returns(SERVER_METADATA),
     };

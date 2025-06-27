@@ -11,7 +11,6 @@ const moment = require('moment');
 // means there is no way to know it's run: it just so happens to run faster than sentinel takes to
 // process.
 //
- 
 const delayedInfoDocsOf = async (ids) => {
   await sentinelUtils.waitForSentinel(ids);
   return sentinelUtils.getInfoDocs(ids);

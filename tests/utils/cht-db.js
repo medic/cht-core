@@ -46,7 +46,6 @@ const addReadDocs = async () => {
 
 const feedbackDocsReadScript = async (done) => {
   // sometimes tests end when the user is _not_ on an angular page
-   
   if (!window.PouchDB) {
     return done(Promise.resolve([]));
   }
