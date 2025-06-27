@@ -49,7 +49,7 @@
     "unit-shared-lib": "UNIT_TEST_ENV=1 npm test --workspaces --if-present",
     "unit-webapp": "cd webapp && npm run unit:mocha:tz && npm run unit -- --watch=false && npm run unit:cht-form -- --watch=false",
     "unit-webapp-continuous": "cd webapp && npm run unit -- --watch=true",
-    "unit-nginx": "cd nginx/tests && make test",
+    "unit-nginx": "cd nginx/tests && npm run test",
     "unit-haproxy": "cd haproxy/tests && make test",
     "unit-haproxy-healthcheck": "cd haproxy-healthcheck && make test",
     "unit-cht-deploy": "cd scripts/deploy && npm test",
