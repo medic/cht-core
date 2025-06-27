@@ -1,4 +1,4 @@
-{{- if and (eq (toString .Values.couchdb.clusteredCouch_enabled) "false") (eq (toString .Values.cluster_type) "k3s-k3d") }}
+{{- if and (eq (toString .Values.couchdb.clusteredCouchEnabled) "false") (eq (toString .Values.cluster_type) "k3s-k3d") }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:

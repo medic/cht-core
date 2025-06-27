@@ -36,7 +36,7 @@ spec:
           {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
           name: cht-api
           ports:
-            - containerPort: '{{ .Values.api.port | default 5988 }}'
+            - containerPort: {{ .Values.api.port | default 5988 }}
           resources: {}
       restartPolicy: Always
 
