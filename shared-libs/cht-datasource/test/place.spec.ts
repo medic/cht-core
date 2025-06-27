@@ -313,7 +313,7 @@ describe('place', () => {
       });
     });
 
-    describe.only('createPlace', () => {
+    describe('createPlace', () => {
       it('throws error for invalid input, here with a missing type', async() => {
         const input = {
           name: 'person-1',
