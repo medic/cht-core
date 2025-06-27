@@ -36,7 +36,12 @@ spec:
         {{- end }}
       {{- end }}
       containers:
-        - env:
+        - name: cht-couchdb
+          image: "{{ .Values.upstream_servers.docker_registry }}/cht-couchdb:{{ .Values.cht_image_tag }}"
+          {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
+          ports:
+            - containerPort: 5984
+          env:
             - name: COUCHDB_LOG_LEVEL
               value: info
             - name: COUCHDB_PASSWORD
@@ -61,11 +66,6 @@ spec:
                   key: COUCHDB_UUID
             - name: SVC_NAME
               value: couchdb.{{ .Values.namespace }}.svc.cluster.local
-          image: "{{ .Values.upstream_servers.docker_registry }}/cht-couchdb:{{ .Values.cht_image_tag }}"
-          {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
-          name: cht-couchdb
-          ports:
-            - containerPort: 5984
           resources: {}
           {{- if eq (toString .Values.cluster_type) "k3s-k3d" }}
           volumeMounts:
@@ -135,10 +135,10 @@ spec:
       {{- end }}
       containers:
       - name: cht-couchdb-{{ $nodeNumber }}
-        image: {{ $.Values.upstream_servers.docker_registry }}/cht-couchdb:{{ $.Values.cht_image_tag }}
+        image: "{{ $.Values.upstream_servers.docker_registry }}/cht-couchdb:{{ $.Values.cht_image_tag }}"
         {{ if eq $.Values.cache_images false}}imagePullPolicy: Always{{ end }}
         ports:
-        - containerPort: 5984
+          - containerPort: 5984
         env:
         {{- if ne $nodeNumber 1 }}
         - name: COUCHDB_SYNC_ADMINS_NODE
