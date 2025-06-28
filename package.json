@@ -230,7 +230,7 @@
     "tmp-promise": "^3.0.3",
     "url": "^0.11.1",
     "url-join": "^4.0.1",
-    "uuid": "^10.0.0",
+    "uuid": "^11.1.0",
     "winston": "^3.17.0",
     "workbox-build": "^7.3.0",
     "xmlbuilder": "^15.1.1"
