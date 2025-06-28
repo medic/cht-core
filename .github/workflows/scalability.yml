@@ -16,6 +16,7 @@ env:
   SCALABILITY_ARN: ${{ secrets.SCALABILITY_ARN }}
   BRANCH: ${{ github.head_ref || github.ref_name }}
   BUILD_NUMBER: ${{ github.run_id }}
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build:
