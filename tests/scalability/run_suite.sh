@@ -21,7 +21,7 @@ apt-get install default-jre -y
 echo installing node
 curl -sL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
 sudo bash nodesource_setup.sh # install node 22
-apt-get install nodejs
+apt-get install nodejs bzip2
 
 cd cht-core
 npm install patch-package
