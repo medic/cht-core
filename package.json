@@ -221,7 +221,7 @@
     "pouchdb-generate-replication-id": "^9.0.0",
     "pouchdb-mapreduce": "^9.0.0",
     "pouchdb-replication": "^9.0.0",
-    "prometheus-api-metrics": "^3.2.2",
+    "prometheus-api-metrics": "^4.0.0",
     "properties": "^1.2.1",
     "rate-limiter-flexible": "^5.0.5",
     "sanitize-html": "^2.14.0",
