@@ -5,11 +5,11 @@ set -e
 shutdown -P +60
 
 mkdir -p /cht
-chmod 777 /cht;
+chmod 777 /cht
 cd cht
 
 echo Cloning cht-core to /cht-core
-git clone --single-branch --branch "$TAG" https://github.com/medic/cht-core.git;
+git clone --single-branch --branch "$TAG" https://github.com/medic/cht-core.git
 
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 
@@ -19,7 +19,9 @@ echo installing JAVA
 apt-get install default-jre -y
 
 echo installing node
-apt-get install nodejs npm -y
+curl -sL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
+sudo bash nodesource_setup.sh # install node 22
+apt-get install nodejs bzip2
 
 cd cht-core
 npm install patch-package
@@ -31,7 +33,7 @@ echo "npm install for jmeter suite"
 npm ci
 
 echo "jmeter install"
-wget https://dlcdn.apache.org/jmeter/binaries/apache-jmeter-5.6.tgz -O ./apache-jmeter.tgz
+wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz -O ./apache-jmeter.tgz
 mkdir -p ./jmeter
 tar -xf apache-jmeter.tgz -C ./jmeter --strip-components=1
 
@@ -53,4 +55,15 @@ unzip awscliv2.zip
 ./aws/install
 echo "Uploading logs and screenshots to ${S3_PATH}..."
 /usr/local/bin/aws s3 cp "$tmp_dir" "$S3_PATH" --recursive
+
+cd /cht
+remote_repo="https://${GITHUB_ACTOR}:${GH_TOKEN}@github.com/medic/scalability-results.git"
+git clone remote_repo
+mkdir -p results
+cp -r "$tmp_dir" results/"$DATA_PATH"
+git config http.sslVerify false
+git add -A
+git commit -m "scalability results for $TAG"
+git push "${remote_repo}" HEAD:"master"
+
 echo "FINISHED! "
