@@ -71,7 +71,9 @@ describe('UpgradeCtrl controller', () => {
   });
 
   it('should catch errors when api deploy_info requests fails', async () => {
-    http.get.rejects({ code: 500 });
+    http.get.withArgs('/api/deploy-info').rejects({ code: 500 });
+    http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc: undefined, indexers: [] } });
+    http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: false } });
 
     createController();
     await scope.setupPromise;
@@ -81,11 +83,14 @@ describe('UpgradeCtrl controller', () => {
     expect(http.get.args).to.deep.equal([
       ['/api/deploy-info'],
       ['/api/v2/upgrade'],
+      ['/api/v2/upgrade/can-upgrade'],
     ]);
   });
 
   it('should not load builds when current deployment is invalid', async () => {
-    http.get.resolves({ });
+    http.get.withArgs('/api/deploy-info').resolves({ });
+    http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc: undefined, indexers: [] } });
+    http.get.withArgs('/api/v2/upgrade/can-upgrade').rejects({ code: 500 });
 
     createController();
     await scope.setupPromise;
@@ -95,8 +100,62 @@ describe('UpgradeCtrl controller', () => {
     expect(http.get.args).to.deep.equal([
       ['/api/deploy-info'],
       ['/api/v2/upgrade'],
+      ['/api/v2/upgrade/can-upgrade'],
     ]);
     expect(scope.versions).to.deep.equal({});
+  });
+  
+  it('should catch errors when can-upgrade request fails', async () => {
+    http.get.withArgs('/api/deploy-info').resolves({ data: { deploy: 'info', version: '4.1.0', build: '4.1.0.113' } });
+    http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc: undefined, indexers: [] } });
+    http.get.withArgs('/api/v2/upgrade/can-upgrade').rejects({ code: 500 });
+
+    createController();
+    await scope.setupPromise;
+
+    expect(scope.loading).to.equal(false);
+    expect(buildsDb.query.callCount).to.equal(1);
+    expect(http.get.args).to.deep.equal([
+      ['/api/deploy-info'],
+      ['/api/v2/upgrade'],
+      ['/api/v2/upgrade/can-upgrade'],
+    ]);
+  }); 
+  
+  it('should set the canUpgrade scope property to true', async () => {
+    http.get.withArgs('/api/deploy-info').resolves({ data: { deploy: 'info', version: '4.1.0', build: '4.1.0.113' } });
+    http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc: undefined, indexers: [] } });
+    http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
+
+    createController();
+    await scope.setupPromise;
+
+    expect(scope.loading).to.equal(false);
+    expect(scope.canUpgrade).to.equal(true);
+    expect(buildsDb.query.callCount).to.equal(1);
+    expect(http.get.args).to.deep.equal([
+      ['/api/deploy-info'],
+      ['/api/v2/upgrade'],
+      ['/api/v2/upgrade/can-upgrade'],
+    ]);
+  });
+
+  it('should set the canUpgrade scope property to false', async () => {
+    http.get.withArgs('/api/deploy-info').resolves({ data: { deploy: 'info', version: '4.1.0', build: '4.1.0.113' } });
+    http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc: undefined, indexers: [] } });
+    http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: false } });
+
+    createController();
+    await scope.setupPromise;
+
+    expect(scope.loading).to.equal(false);
+    expect(scope.canUpgrade).to.equal(false);
+    expect(buildsDb.query.callCount).to.equal(1);
+    expect(http.get.args).to.deep.equal([
+      ['/api/deploy-info'],
+      ['/api/v2/upgrade'],
+      ['/api/v2/upgrade/can-upgrade'],
+    ]);
   });
 
   it('should load builds when deployment is valid', async () => {
@@ -105,6 +164,7 @@ describe('UpgradeCtrl controller', () => {
 
     http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
     http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc: undefined, indexers: [] } });
+    http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
     version.minimumNextRelease.returns({ major: 4, minor: 1, patch: 1, beta: 0 });
 
     buildsDb.query.onCall(0).resolves({
@@ -132,6 +192,8 @@ describe('UpgradeCtrl controller', () => {
     expect(pouchDb.callCount).to.equal(1);
     expect(pouchDb.args[0][0]).to.equal('https://staging.dev.medicmobile.org/_couch/builds_4');
     expect(scope.loading).to.equal(false);
+    expect(scope.canUpgrade).to.equal(true);
+
     expect(scope.versions).to.deep.equal({
       branches: [{ version: 'branch1' }, { version: 'branch2' }],
       betas: [{ version: 'beta1' }, { version: 'beta2' }],
@@ -175,6 +237,7 @@ describe('UpgradeCtrl controller', () => {
 
     http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
     http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc: undefined, indexers: [], buildsUrl: 'https://mybuildurl.com' } });
+    http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: false } });
     version.minimumNextRelease.returns({ major: 4, minor: 1, patch: 1, beta: 0 });
 
     buildsDb.query.onCall(0).resolves({
@@ -202,6 +265,7 @@ describe('UpgradeCtrl controller', () => {
     expect(pouchDb.callCount).to.equal(1);
     expect(pouchDb.args[0][0]).to.equal('https://mybuildurl.com');
     expect(scope.loading).to.equal(false);
+    expect(scope.canUpgrade).to.equal(false);
     expect(scope.versions).to.deep.equal({
       branches: [{ version: 'branch1' }, { version: 'branch2' }],
       betas: [{ version: 'beta1' }, { version: 'beta2' }],
@@ -245,6 +309,7 @@ describe('UpgradeCtrl controller', () => {
 
     http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
     http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc: undefined, indexers: [] } });
+    http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
     version.minimumNextRelease.returns({ major: 4, minor: 1, patch: 1, beta: 0 });
 
     buildsDb.query.onCall(0).resolves({
@@ -274,6 +339,7 @@ describe('UpgradeCtrl controller', () => {
     Object.freeze(upgradeDoc);
 
     http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
+    http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
     http.get.withArgs('/api/v2/upgrade')
       .onCall(0).resolves({ data: { upgradeDoc, indexers: [] } })
       .onCall(1).resolves({ data: { upgradeDoc, indexers: [1, 2, 3]} })
@@ -312,6 +378,7 @@ describe('UpgradeCtrl controller', () => {
     Object.freeze(upgradeDoc);
 
     http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
+    http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
     http.get.withArgs('/api/v2/upgrade')
       .onCall(0).resolves({ data: { upgradeDoc, indexers: [] } })
       .onCall(1).resolves({ data: { upgradeDoc, indexers: [1, 2, 3]} })
@@ -363,6 +430,7 @@ describe('UpgradeCtrl controller', () => {
     Object.freeze(deployInfo);
     Object.freeze(upgradeDoc);
 
+    http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
     http.get.withArgs('/api/deploy-info')
       .onCall(0).resolves({ data: deployInfo })
       .onCall(1).resolves({ data: { the: 'deplopy info', version: '4.2.0', build: '4.2.0..114' } });
@@ -431,6 +499,7 @@ describe('UpgradeCtrl controller', () => {
     Object.freeze(deployInfo);
     Object.freeze(upgradeDoc);
 
+    http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
     http.get.withArgs('/api/deploy-info')
       .onCall(0).resolves({ data: deployInfo })
       .onCall(1).resolves({ data: { the: 'deplopy info', version: '4.2.0' } });
@@ -472,6 +541,7 @@ describe('UpgradeCtrl controller', () => {
         .onCall(0).resolves({ data: { upgradeDoc: undefined  } })
         .onCall(1).resolves({ data: { upgradeDoc: { up: 'grade' }, indexers: [] } });
       http.post.withArgs('/api/v2/upgrade/stage').resolves();
+      http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
 
       createController();
       await scope.setupPromise;
@@ -513,6 +583,7 @@ describe('UpgradeCtrl controller', () => {
       http.get.withArgs('/api/deploy-info')
         .onCall(0).resolves({ data: deployInfo })
         .onCall(1).resolves({ data: deployInfoUpgraded });
+      http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
       const upgradeDoc = {
         from: {
           version: '4.1.0',
@@ -584,6 +655,7 @@ describe('UpgradeCtrl controller', () => {
         .onCall(1).resolves({ data: { upgradeDoc: { up: 'grade' }, indexers: [] } })
         .onCall(2).resolves({ data: { upgradeDoc: undefined, indexers: [] } });
       http.post.withArgs('/api/v2/upgrade').resolves();
+      http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
 
       createController();
       await scope.setupPromise;
@@ -636,7 +708,7 @@ describe('UpgradeCtrl controller', () => {
       const deployInfo = { the: 'deplopy info', version: '4.1.0' };
       http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
       http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc: undefined  } });
-
+      http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
       http.post.withArgs('/api/v2/upgrade/complete').rejects({ an: 'error', status: 500 });
 
       createController();
@@ -679,7 +751,7 @@ describe('UpgradeCtrl controller', () => {
       const deployInfo = { the: 'deplopy info', version: '4.1.0' };
       http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
       http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc: undefined  } });
-
+      http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
       http.post.withArgs('/api/v2/upgrade/stage').rejects({ an: 'error' });
 
       createController();
@@ -725,6 +797,7 @@ describe('UpgradeCtrl controller', () => {
       http.get.withArgs('/setup/poll').rejects({ error: 'whatever' });
       http.get.withArgs('/setup/poll').onCall(5).resolves();
       http.post.withArgs('/api/v2/upgrade/complete').rejects({ the: 'timeout error' });
+      http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
 
       createController();
       await scope.setupPromise;
@@ -778,6 +851,7 @@ describe('UpgradeCtrl controller', () => {
       const deployInfo = { the: 'deplopy info', version: '4.1.0' };
       http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
       http.get.withArgs('/api/v2/upgrade').onCall(0).resolves({ data: { upgradeDoc: undefined  } });
+      http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
 
       createController();
       await scope.setupPromise;
@@ -799,6 +873,7 @@ describe('UpgradeCtrl controller', () => {
         .onCall(0).resolves({ data: { upgradeDoc } })
         .onCall(1).resolves({ data: { upgradeDoc: undefined } });
       http.delete.resolves();
+      http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
 
       createController();
       await scope.setupPromise;
@@ -839,6 +914,7 @@ describe('UpgradeCtrl controller', () => {
         .onCall(0).resolves({ data: { upgradeDoc } })
         .onCall(1).resolves({ data: { upgradeDoc: undefined } });
       http.delete.rejects({ the: 'error' });
+      http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
 
       createController();
       await scope.setupPromise;
@@ -885,6 +961,7 @@ describe('UpgradeCtrl controller', () => {
       http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
       http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc, indexers: [] } });
       http.post.withArgs('/api/v2/upgrade/stage').resolves();
+      http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
 
       createController();
       await scope.setupPromise;
@@ -924,6 +1001,7 @@ describe('UpgradeCtrl controller', () => {
       http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
       http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc, indexers: [] } });
       http.post.withArgs('/api/v2/upgrade').resolves();
+      http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
 
       createController();
       await scope.setupPromise;
@@ -963,6 +1041,7 @@ describe('UpgradeCtrl controller', () => {
       const deployInfo = { the: 'deplopy info', version: '4.1.0' };
       http.get.withArgs('/api/deploy-info').resolves({ data: deployInfo });
       http.get.withArgs('/api/v2/upgrade').resolves({ data: { upgradeDoc: undefined  } });
+      http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
 
       createController();
       await scope.setupPromise;
@@ -984,7 +1063,7 @@ describe('UpgradeCtrl controller', () => {
       http.get.withArgs('/api/v2/upgrade')
         .onCall(0).resolves({ data: { upgradeDoc  } })
         .onCall(1).resolves({ data: { } });
-
+      http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });
       http.post.withArgs('/api/v2/upgrade').rejects({ an: 'error', status: 500 });
 
       createController();
