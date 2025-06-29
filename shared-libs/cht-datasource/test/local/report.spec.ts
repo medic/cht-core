@@ -3,10 +3,10 @@ import sinon, { SinonStub } from 'sinon';
 import { Doc } from '../../src/libs/doc';
 import logger from '@medic/logger';
 import * as LocalDoc from '../../src/local/libs/doc';
-import * as LocalLineage from '../../src/local/libs/lineage';  // Add this import
 import * as Report from '../../src/local/report';
 import { expect } from 'chai';
 import { END_OF_ALPHABET_MARKER } from '../../src/libs/constants';
+import lineage from '@medic/lineage';
 
 describe('local report', () => {
   let localContext: LocalDataContext;
@@ -103,50 +103,47 @@ describe('local report', () => {
 
     describe('getWithLineage', () => {
       const identifier = { uuid: 'uuid' } as const;
-      let getLineageDocsById: SinonStub;
-      let getContactLineage: SinonStub;
+      let lineageStub: sinon.SinonStub;
+      let fetchHydratedDocStub: sinon.SinonStub;
 
       beforeEach(() => {
-        getLineageDocsById = sinon.stub();
-        getContactLineage = sinon.stub();
-        sinon.stub(LocalLineage, 'getLineageDocsById').returns(getLineageDocsById);
-        sinon.stub(LocalLineage, 'getContactLineage').returns(getContactLineage);
+        fetchHydratedDocStub = sinon.stub();
+        lineageStub = sinon.stub().returns({ fetchHydratedDoc: fetchHydratedDocStub });
+        (sinon.stub(lineage) as sinon.SinonStub).returns(lineageStub);
       });
 
       it('returns a report with contact lineage when found', async () => {
-        const report = { type: 'data_record', form: 'yes', _id: 'report_id' };
-        const contact = { _id: 'contact_id', type: 'person' };
-        const lineageContacts = [{ _id: 'parent_id', type: 'clinic' }];
-        const normalizedLineage = { _id: 'parent_id', type: 'clinic', contact: contact };
-        
-        getLineageDocsById.resolves([report, contact, ...lineageContacts]);
-        getContactLineage.resolves(normalizedLineage);
-        settingsGetAll.returns({ contact_types: [{ id: 'person' }] });
+        const report = { type: 'data_record', form: 'yes', _id: 'report_id', contact: { _id: 'contact_id' } };
+        fetchHydratedDocStub.resolves(report);
 
         const result = await Report.v1.getWithLineage(localContext)(identifier);
 
-        expect(result).to.deep.equal({
-          ...report,
-          contact: normalizedLineage
-        });
+        expect(result).to.deep.equal(report);
+        expect(lineageStub.calledOnceWithExactly(Promise, localContext.medicDb)).to.be.true;
+        expect(fetchHydratedDocStub.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(warn.notCalled).to.be.true;
       });
 
       it('returns null if document is not a report', async () => {
         const doc = { type: 'not_a_report', _id: 'doc_id' };
-        getLineageDocsById.resolves([doc]);
+        fetchHydratedDocStub.resolves(doc);
 
         const result = await Report.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.be.null;
+        expect(lineageStub.calledOnceWithExactly(Promise, localContext.medicDb)).to.be.true;
+        expect(fetchHydratedDocStub.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(warn.calledOnceWithExactly(`Document [${doc._id}] is not a report.`)).to.be.true;
       });
 
       it('returns null if document is not found', async () => {
-        getLineageDocsById.resolves([null]);
+        fetchHydratedDocStub.resolves(null);
 
         const result = await Report.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.be.null;
+        expect(lineageStub.calledOnceWithExactly(Promise, localContext.medicDb)).to.be.true;
+        expect(fetchHydratedDocStub.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(warn.calledOnceWithExactly(
           `No report found for identifier [${identifier.uuid}].`
         )).to.be.true;
