@@ -277,23 +277,22 @@ const updateParents = function(id, callback) {
   const resetParent = function(facilityId, parentId, callback) {
     dataContext
       .bind(Contact.v1.get)(Qualifier.byUuid(parentId))
-      .then(() => {
-        return places.updatePlace(facilityId, { parent: parentId });
-      })
-      .then(() => callback())
-      .catch(err => {
-        if (err.status === 404) {
-        // Parent does not exist, so cannot be reset
+      .then(parent => {
+        if (!parent) {
           return callback();
         }
-        callback(
-          new Error(
-            'Failed to update parent on facility ' +
-            facilityId +
-            ' - ' +
-            JSON.stringify(err, null, 2)
-          )
-        );
+        return places.updatePlace(facilityId, { parent: parentId })
+          .then(() => callback())
+          .catch(err => {
+            callback(
+              new Error(
+                'Failed to update parent on facility ' +
+              facilityId +
+              ' - ' +
+              JSON.stringify(err, null, 2)
+              )
+            );
+          });
       });
   };
 

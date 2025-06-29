@@ -8,6 +8,9 @@ const getClinic = id => {
   return dataContext
     .bind(Contact.v1.get)(Qualifier.byUuid(id))
     .then(clinic => {
+      if (!clinic) {
+        return;
+      }
       const contact = clinic.contact;
       if (!contact) {
         return;
@@ -17,12 +20,6 @@ const getClinic = id => {
         contact.parent = clinic;
       }
       return contact;
-    })
-    .catch(err => {
-      if (err.status === 404) {
-        return;
-      }
-      throw err;
     });
 };
 
@@ -32,12 +29,12 @@ const getContact = (contactId, clinicId) => {
   }
   return dataContext
     .bind(Contact.v1.get)(Qualifier.byUuid(contactId))
-    .catch(err => {
-    if (err.status === 404) {
-      return getClinic(clinicId);
-    }
-    throw err;
-  });
+    .then(contact => {
+      if (!contact) {
+        return getClinic(clinicId);
+      }
+      return contact;
+    });
 };
 
 const getContactForOutgoingMessages = message => {
