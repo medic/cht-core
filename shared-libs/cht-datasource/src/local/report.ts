@@ -6,15 +6,13 @@ import {
   queryDocUuidsByRange
 } from './libs/doc';
 import { FreetextQualifier, UuidQualifier, isKeyedFreetextQualifier } from '../qualifier';
-import { Nullable, Page, isNonEmptyArray, NormalizedParent } from '../libs/core';
+import { Nullable, Page} from '../libs/core';
 import * as Report from '../report';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
 import { normalizeFreetext, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
-import { getContactLineage, getLineageDocsById } from '../local/libs/lineage';
-import contactTypeUtils from '@medic/contact-types-utils';
-import * as Person from '../person';
+import lineage from '@medic/lineage';
 
 
 /** @internal */
@@ -49,37 +47,24 @@ export namespace v1 {
   };
 
     /** @internal */
-  export const getWithLineage = ({ medicDb, settings }: LocalDataContext) => {
-    const getLineageDocs = getLineageDocsById(medicDb);
-    const getLineage = getContactLineage(medicDb);
+    export const getWithLineage = ({ medicDb }: LocalDataContext) => {
+      const { fetchHydratedDoc } = lineage(Promise, medicDb) as { 
+                                    fetchHydratedDoc: (
+                                      uuid: string, 
+                                      options?: { throwWhenMissingLineage?: boolean }, 
+                                      callback?: (err: Error | null, result?: Doc) => void
+                                    ) => Promise<Doc> 
+                                  };
+    
+      return async (identifier: UuidQualifier): Promise<Nullable<Report.v1.ReportWithLineage>> => {
+        const report = await fetchHydratedDoc(identifier.uuid);
+        if (!isReport(report, identifier.uuid)) {
+          return null;
+        }
 
-    return async (identifier: UuidQualifier): Promise<Nullable<Report.v1.ReportWithLineage>> => {
-      const [report, ...contacts] = await getLineageDocs(identifier.uuid);
-      if (!isReport(report, identifier.uuid)) {
-        return null;
-      }
-
-      if (!isNonEmptyArray(contacts)) {
-        logger.debug(`No lineage contacts found for report [${identifier.uuid}].`);
         return report;
-      }
-
-      const [baseContact, ...lineageContacts] = contacts;
-      if (baseContact && contactTypeUtils.isPerson(settings.getAll(), baseContact)) {
-        return {
-          ...report,
-          contact: isNonEmptyArray(lineageContacts)
-            ? (await getLineage(lineageContacts, baseContact as Person.v1.Person))!
-            : baseContact as  NormalizedParent
-        };
-      }
-
-      return {
-        ...report,
-        contact: (await getLineage(contacts))!
       };
     };
-  };
 
   /** @internal */
   export const getUuidsPage = ({ medicDb }: LocalDataContext) => {
