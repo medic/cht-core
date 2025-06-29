@@ -128,7 +128,7 @@ const checkNamespaceExists = (namespace) => {
   try {
     const result = child_process.execSync(`kubectl get namespace ${namespace}`).toString();
     return result.includes(namespace);
-  } catch (err) {
+  } catch  {
     return false;
   }
 };

@@ -38,7 +38,7 @@ describe('DuplicateContactsComponent', () => {
 
   afterEach(() => sinon.restore());
 
-  it('should navigate to the duplicate item', async () => {
+  it('should navigate to the duplicate item', () => {
     component.duplicate = {
       _id: 'some_id',
       _rev: '1',

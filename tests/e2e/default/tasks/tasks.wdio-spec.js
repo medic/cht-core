@@ -58,16 +58,7 @@ describe('Tasks', () => {
 
     const formsPath = path.join(__dirname, 'forms');
     await chtConfUtils.compileAndUploadAppForms(formsPath);
-  });
-
-  beforeEach(async () => {
     await loginPage.login(chw);
-    await commonPage.waitForPageLoaded();
-  });
-
-  afterEach(async () => {
-    await commonPage.logout();
-    await utils.revertSettings(true);
   });
 
   it('should remove task from list when CHW completes a task successfully', async () => {
@@ -88,7 +79,6 @@ describe('Tasks', () => {
 
   it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
     await tasksPage.compileTasks('tasks-breadcrumbs-config.js', true);
-    await browser.pause(500);
 
     await commonPage.goToTasks();
     let list = await tasksPage.getTasks();

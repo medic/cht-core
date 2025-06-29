@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Home Visit</h:title>
+    <model>
+      <instance>
+        <users_contact_summary delimiter="#" id="users_contact_summary" prefix="J1!users_contact_summary!" version="2017-11-24">
+          <inputs>
+            <source>user</source>
+            <source_id/>
+            <contact>
+              <_id/>
+            </contact>
+          </inputs>
+          <note/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </users_contact_summary>
+      </instance>
+      <instance id="contact-summary"/>
+      <instance id="user-contact-summary"/>
+      <bind nodeset="/users_contact_summary/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/users_contact_summary/inputs/source" type="string"/>
+      <bind nodeset="/users_contact_summary/inputs/source_id" type="string"/>
+      <bind nodeset="/users_contact_summary/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/users_contact_summary/note" type="string" calculate="instance('user-contact-summary')/context/note"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/users_contact_summary/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <input ref="/data/inputs">
+      <label>Form content</label>
+    </input>
+    <input ref="/users_contact_summary/note">
+      <label>user note</label>
+    </input>
+  </h:body>
+</h:html>

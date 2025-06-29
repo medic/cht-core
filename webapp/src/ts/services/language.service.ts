@@ -97,7 +97,7 @@ export class LanguageService {
   private readonly DEFAULT_LOCALE = 'en';
   private readonly NEPALI_LOCALE = 'ne';
 
-  private rtlLanguages:string[] = [];
+  private rtlLanguages: string[] = [];
 
   private async fetchLocale() {
     const settings = await this.settingsService.get();

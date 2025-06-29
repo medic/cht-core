@@ -41,10 +41,10 @@ initialReplication.__set__('window', () => {});
 
 initialReplication.replicate(remoteDb, localDb)
   .then(() => {
-    console.log('initial replication complete'); // eslint-disable-line no-console
+    console.log('initial replication complete');
     process.exit(0);
   })
   .catch(err => {
-    console.error('initial replication failed', err); // eslint-disable-line no-console
+    console.error('initial replication failed', err);
     process.exit(1);
   });

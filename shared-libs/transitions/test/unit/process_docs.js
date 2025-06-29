@@ -105,7 +105,11 @@ describe('processDocs', () => {
     // first doc is updated by at least one transition
     transitions.applyTransition
       .withArgs(sinon.match({ change: { id: '1' } }))
-      .callsFake(({ change }, cb) => (change.doc.contact = true && delete change.doc.patient) && cb(null, true));
+      .callsFake(({ change }, cb) => {
+        change.doc.contact = true;
+        delete change.doc.patient;
+        cb(null, true);
+      });
     // second doc is not touched by any transition
     transitions.applyTransition
       .withArgs(sinon.match({ change: { id: '2' } }))
@@ -113,7 +117,11 @@ describe('processDocs', () => {
     // third doc just has errors, and no successful transitions
     transitions.applyTransition
       .withArgs(sinon.match({ change: { id: '3' } }))
-      .callsFake(({ change }, cb) => (change.doc.errors = true && delete change.doc.patient) && cb(null, false));
+      .callsFake(({ change }, cb) => {
+        change.doc.errors = true;
+        delete change.doc.patient;
+        cb(null, false);
+      });
 
     transitions.loadTransitions();
     return transitions.processDocs(docs).then(results => {
@@ -174,10 +182,18 @@ describe('processDocs', () => {
     // first doc is updated by at least one transition
     transitions.applyTransition
       .withArgs(sinon.match({ change: ({ id: '1' }) }))
-      .callsFake(({ change }, cb) => (change.doc.contact = true && delete change.doc.patient) && cb(null, true));
+      .callsFake(({ change }, cb) => {
+        change.doc.contact = true;
+        delete change.doc.patient;
+        cb(null, true);
+      });
     transitions.applyTransition
       .withArgs(sinon.match({ change: { id: '2' } }))
-      .callsFake(({ change }, cb) => (change.doc.contact = true && delete change.doc.patient) && cb(null, true));
+      .callsFake(({ change }, cb) => {
+        change.doc.contact = true;
+        delete change.doc.patient;
+        cb(null, true);
+      });
     transitions.applyTransition
       .withArgs(sinon.match({ change: { id: '3' } }))
       .callsFake((params, cb) => cb());

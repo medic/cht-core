@@ -67,12 +67,12 @@ export abstract class BaseMenuComponent implements OnInit, OnDestroy {
 
   get availableStorageSpace(): string {
     switch (this.storageInfo?.status) {
-    case StorageStatus.NORMAL:
-      return `${StorageInfoService.bytesToGB(this.storageInfo?.availableBytes)} GB`;
-    case StorageStatus.STARTUP:
-      return 'Calculating...';
-    default:
-      return 'Error calculating available space';
+      case StorageStatus.NORMAL:
+        return `${StorageInfoService.bytesToGB(this.storageInfo?.availableBytes)} GB`;
+      case StorageStatus.STARTUP:
+        return 'Calculating...';
+      default:
+        return 'Error calculating available space';
     }
   }
 

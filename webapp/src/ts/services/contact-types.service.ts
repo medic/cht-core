@@ -124,5 +124,5 @@ export class ContactTypesService {
 }
 
 interface ContactType {
-  id:string;
+  id: string;
 }

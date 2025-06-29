@@ -238,7 +238,7 @@ describe('Facility Filter Component', () => {
     }));
   });
 
-  it('should apply filter correctly', async () => {
+  it('should apply filter correctly', () => {
     const facilities = [ '', '123' ];
     const spySearch = sinon.spy(component.search, 'emit');
     component.applyFilter(facilities);

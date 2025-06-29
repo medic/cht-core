@@ -28,7 +28,7 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
   @Output() quit = new EventEmitter<boolean>();
   @Output() save = new EventEmitter<void>();
   @Output() handleError = new EventEmitter<void>();
-  private geoHandle:any;
+  private geoHandle: any;
   private readonly globalActions: GlobalActions;
   private trackRender;
   private trackEditDuration;

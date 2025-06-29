@@ -1,5 +1,5 @@
 export class Filter {
-  applyCallback:Function;
+  applyCallback: Function;
   selected = new Set();
 
   constructor(applyCallback:Function) {

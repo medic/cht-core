@@ -570,7 +570,7 @@ describe('CalendarInterval', () => {
   });
 
   describe('isEqual', () => {
-    it('should return true when two intervals have same start and end date', async () => {
+    it('should return true when two intervals have same start and end date',  () => {
       chai.expect(service.isEqual({ start: 0, end: 0 }, { start: 0, end: 0 })).to.equal(true);
       chai.expect(service.isEqual({ start: 100, end: 200 }, { start: 100, end: 200 })).to.equal(true);
     });

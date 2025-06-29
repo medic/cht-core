@@ -26,6 +26,7 @@ angular
         str.message = formattedMessage(str.message);
         return JSON.stringify(str);
       } catch (e) {
+        $log.warn('Error when stringifying message', e);
         return str;
       }
     };

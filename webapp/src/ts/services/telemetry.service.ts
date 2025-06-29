@@ -225,8 +225,8 @@ export class TelemetryService {
     return this.windowRef.PouchDB(currentDB); // Avoid angular-pouch as digest isn't necessary here
   }
 
-  private storeIt(db, key, value) {
-    return db.post({
+  private async storeIt(db, key, value) {
+    return await db.post({
       key: key,
       value: value,
       date_recorded: Date.now(),
@@ -373,4 +373,4 @@ export class TelemetryService {
 type TodayMoment = {
   today: Record<string, any>;
   formatted: string;
-}
+};

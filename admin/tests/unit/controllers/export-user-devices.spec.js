@@ -16,7 +16,7 @@ describe('User devices export controller', () => {
     });
     inject(($controller, _$rootScope_) => {
       scope = _$rootScope_.$new();
-      getService = async () => {
+      getService = () => {
         const result = $controller('ExportUserDevicesCtrl', {
           $scope: scope,
         });

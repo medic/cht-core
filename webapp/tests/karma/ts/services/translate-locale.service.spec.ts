@@ -41,7 +41,7 @@ describe('TranslateLocaleService', () => {
   });
 
   describe('instant', () => {
-    it('should load a new locale', fakeAsync(async () => {
+    it('should load a new locale', fakeAsync(() => {
       translations = { item1: 'uncompiled1', item2: 'uncompiled2' };
       compiledTranslations = { item1: 'compiled1', item2: 'compiled2' };
 

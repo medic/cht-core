@@ -33,7 +33,7 @@ describe('PhonePipe', () => {
     expect(html.children('span').first().html()).to.equal(expectedFormatted);
   };
 
-  it('should return undefined when no phone', async () => {
+  it('should return undefined when no phone', () => {
     settings.get.resolves({});
     pipe = new PhonePipe(settings, sanitizer);
     expect(pipe.transform('')).to.equal(undefined);

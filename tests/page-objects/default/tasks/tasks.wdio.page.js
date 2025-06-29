@@ -96,7 +96,7 @@ const compileTasks = async (tasksFileName, sync) => {
   await chtConfUtils.initializeConfigDir();
   const tasksFilePath = path.join(__dirname, `../../../e2e/default/tasks/config/${tasksFileName}`);
   const settings = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
-  await utils.updateSettings(settings, { ignoreReload: 'api', sync });
+  await utils.updateSettings(settings, { ignoreReload: 'api', sync, refresh: sync, revert: true });
 };
 
 const isTaskElementDisplayed = async (type, text) => {

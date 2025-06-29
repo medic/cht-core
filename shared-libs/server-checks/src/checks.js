@@ -87,7 +87,7 @@ const checkCouchDbSystemDbs = async (couchUrl) => {
     for (const db of SYSTEM_DBS) {
       await request.get({ url: `${couchUrl}${db}`, json: true });
     }
-  } catch (err) {
+  } catch {
     throw new Error('System databases do not exist');
   }
 };

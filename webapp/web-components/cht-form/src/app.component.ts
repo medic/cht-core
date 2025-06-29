@@ -80,7 +80,7 @@ export class AppComponent {
   }
 
   @Input() set contactSummary(value: Record<string, any> | undefined) {
-    this.formContext.contactSummary = value ? { context: value } : undefined;
+    this.formContext.contactSummary = value ? { id: 'contact-summary', context: value } : undefined;
     this.queueRenderForm();
   }
 
@@ -280,7 +280,7 @@ export class AppComponent {
 class ChtFormEnketoFormContext implements EnketoFormContext {
   readonly editedListener = () => this.editing = true;
   readonly valuechangeListener = () => this.status.error = null;
-  contactSummary?: Record<string, any>;
+  contactSummary?: { id: string, context: Record<string, any> };
   readonly status = {
     saving: false,
     error: null as string | null

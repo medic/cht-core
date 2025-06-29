@@ -203,7 +203,7 @@ describe('Places API', () => {
         }
       };
       return utils.request(onlineRequestOptions)
-        .then(() => fail('Call should fail as contact type is not a person'))
+        .then(() => chai.expect.fail('Call should fail as contact type is not a person'))
         .catch(err => {
           chai.expect(err.body.error).to.equal('Wrong type, this is not a person.');
         });
@@ -218,7 +218,7 @@ describe('Places API', () => {
         contact: 'x'
       };
       return utils.request(onlineRequestOptions)
-        .then(() => fail('Call should fail as contact does not exist'))
+        .then(() => chai.expect.fail('Call should fail as contact does not exist'))
         .catch(err => {
           chai.expect(err.body.error).to.equal('Failed to find person.');
         });

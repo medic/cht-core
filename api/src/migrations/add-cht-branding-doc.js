@@ -55,7 +55,7 @@ const saveDoc = async (doc) => {
 const getBrandingDoc = async () => {
   try {
     return await db.medic.get(BRANDING_ID);
-  } catch (err) {
+  } catch {
     return {
       _id: BRANDING_ID
     };

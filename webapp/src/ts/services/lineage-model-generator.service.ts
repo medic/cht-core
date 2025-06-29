@@ -36,7 +36,7 @@ export class LineageModelGeneratorService {
       });
   }
 
-  contact(id, options?) {
+  contact(id:string, options?) {
     return this.ngZone.runOutsideAngular(() => this._contact(id, options));
   }
 
@@ -56,7 +56,7 @@ export class LineageModelGeneratorService {
         const result = {
           _id: id,
           lineage: docs,
-          doc: undefined
+          doc
         };
         if (merge) {
           result.doc = this.lineageLib.fillParentsInDocs(doc, docs);
@@ -69,9 +69,8 @@ export class LineageModelGeneratorService {
             }
             result.lineage[i].parent = deepCopy(result.lineage[i+1]);
           }
-        } else {
-          result.doc = doc;
         }
+
         return result;
       });
   }

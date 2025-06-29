@@ -46,14 +46,14 @@ const typeOf = str => {
 // casts" `value` to the appropriate javascript type.
 const formatAs = (type, value) => {
   switch (type) {
-  case 'integer':
-    return parseInt(value, 10);
-  case 'numeric':
-    return parseFloat(value);
-  case 'date':
-    return new Date(value).valueOf();
-  default:
-    return value;
+    case 'integer':
+      return parseInt(value, 10);
+    case 'numeric':
+      return parseFloat(value);
+    case 'date':
+      return new Date(value).valueOf();
+    default:
+      return value;
   }
 };
 

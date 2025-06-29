@@ -21,7 +21,7 @@ describe('Contacts More Menu Component', () => {
   let authService;
   let responsiveService;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     const mockedSelectors = [
       { selector: Selectors.getContactsList, value: [] },
       { selector: Selectors.getSelectedContactDoc, value: undefined },

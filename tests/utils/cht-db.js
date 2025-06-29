@@ -8,7 +8,10 @@ const clearFeedbackDocs = async () => {
   const feedbackDocs = await getFeedbackDocsByDb();
   const deletes = {};
   for (const [dbName, rows] of Object.entries(feedbackDocs)) {
-    deletes[dbName] = rows.map(row => (row.doc._deleted = true) && row.doc);
+    deletes[dbName] = rows.map(row => {
+      row.doc._deleted = true;
+      return row.doc;
+    });
   }
   return await browser.executeAsync(feedbackDocDeleteScript, deletes);
 };
@@ -43,7 +46,6 @@ const addReadDocs = async () => {
 
 const feedbackDocsReadScript = async (done) => {
   // sometimes tests end when the user is _not_ on an angular page
-  // eslint-disable-next-line no-undef
   if (!window.PouchDB) {
     return done(Promise.resolve([]));
   }

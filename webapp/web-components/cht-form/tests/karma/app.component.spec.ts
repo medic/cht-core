@@ -167,7 +167,7 @@ describe('AppComponent', () => {
       type: 'contact',
       formDoc: { _id: formId },
       instanceData: content,
-      contactSummary: { context: contactSummary }
+      contactSummary: { id: 'contact-summary', context: contactSummary }
     });
     expect(actualContext.editedListener).to.exist;
     expect(actualContext.valuechangeListener).to.exist;
@@ -368,7 +368,7 @@ describe('AppComponent', () => {
       type: 'contact',
       formDoc: { _id: formId },
       instanceData: content,
-      contactSummary: { context: contactSummary }
+      contactSummary: { id: 'contact-summary', context: contactSummary }
     });
     expect(actualContext.editedListener).to.exist;
     expect(actualContext.valuechangeListener).to.exist;
@@ -680,7 +680,7 @@ describe('AppComponent', () => {
     expect(enketoService.unload.called).to.be.false;
   }));
 
-  it('cancels form and unloads data', fakeAsync(async () => {
+  it('cancels form and unloads data', fakeAsync(() => {
     const expectedDocs = [
       { _id: 'doc1' },
       { _id: 'doc2' },

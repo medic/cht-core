@@ -91,7 +91,7 @@ describe('TrainingsComponent', () => {
     expect(globalActions.unsetSelected.calledOnce).to.be.true;
   });
 
-  it('should not get trainings when no forms', fakeAsync(async () => {
+  it('should not get trainings when no forms', fakeAsync(() => {
     store.overrideSelector(Selectors.getTrainingMaterials, []);
     store.refreshState();
     flush();
@@ -99,7 +99,7 @@ describe('TrainingsComponent', () => {
     expect(trainingCardsService.getNextTrainings.notCalled).to.be.true;
   }));
 
-  it('should load trainings when there are forms', fakeAsync(async () => {
+  it('should load trainings when there are forms', fakeAsync(() => {
     trainingCardsService.getNextTrainings.returns([ { code: 'form-1' } ]);
     store.overrideSelector(Selectors.getTrainingMaterials, [ { _id: 'form-1' }, { _id: 'form-2' } ]);
     store.refreshState();

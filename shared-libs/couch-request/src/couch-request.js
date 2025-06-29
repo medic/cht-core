@@ -65,7 +65,7 @@ const setRequestUri = (options) => {
 
   try {
     new URL(uri);
-  } catch (err) {
+  } catch {
     throw new Error('Invalid uri/url parameter. Please use a valid URL.');
   }
 
@@ -173,7 +173,7 @@ const getResponseBody = async (response, sendJson) => {
   if (sendJson && !contentType) {
     try {
       return JSON.parse(content);
-    } catch (e) {
+    } catch {
       return content;
     }
   }

@@ -35,7 +35,7 @@ describe('TasksComponent', () => {
   let component: TasksComponent;
   let fixture: ComponentFixture<TasksComponent>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     rulesEngineService = {
       isEnabled: sinon.stub().resolves(true),

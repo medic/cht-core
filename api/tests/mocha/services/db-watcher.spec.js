@@ -24,7 +24,7 @@ describe('db watcher', () => {
     sinon.restore();
   });
 
-  it('should watch and emit medic changes', async () => {
+  it('should watch and emit medic changes', () => {
     dbWatcher.__get__('listen')();
 
     expect(db.medic.changes.args).to.deep.equal([[{ live: true, since: 'now', return_docs: false }]]);
@@ -39,7 +39,7 @@ describe('db watcher', () => {
     expect(subscriptionCallback.args).to.deep.equal([[change]]);
   });
 
-  it('should watch and emit sentinel changes', async () => {
+  it('should watch and emit sentinel changes', () => {
     dbWatcher.__get__('listen')();
 
     expect(db.sentinel.changes.args).to.deep.equal([[{ live: true, since: 'now', return_docs: false }]]);
@@ -54,7 +54,7 @@ describe('db watcher', () => {
     expect(subscriptionCallback.args).to.deep.equal([[change]]);
   });
 
-  it('should watch and emit users changes', async () => {
+  it('should watch and emit users changes', () => {
     dbWatcher.__get__('listen')();
 
     expect(db.users.changes.args).to.deep.equal([[{ live: true, since: 'now', return_docs: false }]]);
