@@ -10,7 +10,11 @@ import * as Local from './local';
 import { FreetextQualifier, UuidQualifier } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertFreetextQualifier, assertLimit, assertUuidQualifier } from './libs/parameter-validators';
+import { assertCursor, assertFreetextQualifier, assertLimit,
+  assertReportInput, assertUuidQualifier } from './libs/parameter-validators';
+import { ReportInput } from './input';
+import { LocalDataContext } from './local/libs/data-context';
+import { RemoteDataContext } from './remote/libs/data-context';
 
 /** */
 export namespace v1 {
@@ -47,6 +51,19 @@ export namespace v1 {
     };
     return curriedFn;
   };
+
+  const createReportDoc =
+    <T>(
+      localFn: (c: LocalDataContext) => (input: ReportInput) => Promise<T>,
+      remoteFn: (c: RemoteDataContext) => (input: ReportInput) => Promise<T>
+    ) => (context: DataContext) => {
+      assertDataContext(context);
+      const fn = adapt(context, localFn, remoteFn);
+      return async (input: ReportInput): Promise<T> => {
+        assertReportInput(input);
+        return fn(input);
+      };
+    };
 
   /**
    * Returns a function for retrieving a paged array of report identifiers from the given data context.
@@ -109,4 +126,12 @@ export namespace v1 {
     };
     return curriedGen;
   };
+
+ /**
+  * Returns a function for creating a report from the given data context.
+  * @param context the current data context
+  * @returns a function for creating a report.
+  * @throws Error if a data context is not provided
+  */
+  export const createReport = createReportDoc(Local.Report.v1.createReport, Remote.Report.v1.createReport);
 }
