@@ -51,7 +51,7 @@ mv ./jmeter.log "$tmp_dir"/jmeter.log
 cd /cht
 git config user.name "github-actions[bot]"
 git config user.email "github-actions[bot]@users.noreply.github.com"
-remote_repo="https://x-access-token:${GH_TOKEN}@github.com/OWNER/REPO.git"
+remote_repo="https://x-access-token:${GH_TOKEN}@github.com/medic/scalability-results.git"
 git clone "$remote_repo"
 cd scalability-results
 git remote set-url origin "$remote_repo"
