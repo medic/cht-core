@@ -339,6 +339,54 @@ describe('local place', () => {
         expect(createDocInner.called).to.be.false;
       });
 
+      it('throws error if place is not at the top of the hierarchy and does not have a parent field', async() => {
+        createDocOuter.returns(createDocInner);
+        settingsGetAll.returns({
+          contact_types: [{id: 'hospital', parents: ['clinic']}, {id: 'clinic'}]
+        });
+
+        const placeInput: PlaceInput = {
+          name: 'place-1',
+          type: 'hospital',
+        };
+        await expect(Place.v1.createPlace(localContext)(placeInput))
+          .to.be.rejectedWith(`Missing or empty required field (parent) for [${JSON.stringify(placeInput)}].`);
+        expect(createDocInner.called).to.be.false;
+      });
+
+      it('throws error if place is not at the top of the hierarchy and does not have a\
+         parent field that is specified in its `parents` array', async() => {
+        createDocOuter.returns(createDocInner);
+        settingsGetAll.returns({
+          contact_types: [{id: 'hospital', parents: ['clinic', 'city']}, {id: 'clinic'}, {id: 'city'}]
+        });
+
+        const placeInput: PlaceInput = {
+          name: 'place-1',
+          type: 'hospital',
+          parent: 'town'
+        };
+        await expect(Place.v1.createPlace(localContext)(placeInput))
+          .to.be.rejectedWith(`Invalid parent for [${JSON.stringify(placeInput)}].`);
+        expect(createDocInner.called).to.be.false;
+      });
+
+      it('throws error if place at the top of the hierarchy and has a `parent` field', async() => {
+        createDocOuter.returns(createDocInner);
+        settingsGetAll.returns({
+          contact_types: [{id: 'hospital'}, {id: 'clinic'}, {id: 'city'}]
+        });
+
+        const placeInput: PlaceInput = {
+          name: 'place-1',
+          type: 'hospital',
+          parent: 'town'
+        };
+        await expect(Place.v1.createPlace(localContext)(placeInput))
+          .to.be.rejectedWith(`Unexpected parent for [${JSON.stringify(placeInput)}].`);
+        expect(createDocInner.called).to.be.false;
+      });
+
       it('throws error if input contains the `_rev` property', async() => {
         createDocOuter.returns(createDocInner);
         isPlace.returns(true);
