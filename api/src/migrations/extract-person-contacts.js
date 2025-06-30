@@ -141,13 +141,12 @@ const createPerson = function(id, callback) {
       });
   };
 
-  db.medic.get(id, function(err, facility) {
-    if (err) {
-      if (err.status === 404) {
+  dataContext
+    .bind(Contact.v1.get)(Qualifier.byUuid(id))
+    .then(facility => {
+      if (!facility) {
         return callback(new Error('facility ' + id + ' not found.'));
       }
-      return callback(err);
-    }
 
     const oldContact = facility.contact;
 
@@ -296,13 +295,12 @@ const updateParents = function(id, callback) {
       });
   };
 
-  db.medic.get(id, function(err, facility) {
-    if (err) {
-      if (err.status === 404) {
+  dataContext
+    .bind(Contact.v1.get)(Qualifier.byUuid(id))
+    .then(facility => {
+      if (!facility) {
         return callback(new Error('facility ' + id + ' not found.'));
       }
-      return callback(err);
-    }
 
     async.waterfall(
       [
@@ -325,7 +323,7 @@ const updateParents = function(id, callback) {
 
 const migrateOneType = async function(type, callback) {
   try {
-    const generator = dataContext.bind(Contact.v1.getUuids)(dataContext)(Qualifier.byContactType(type));
+    const generator = dataContext.bind(Contact.v1.getUuids)(Qualifier.byContactType(type));
     for await (const id of generator) {
       await new Promise((resolve, reject) => {
         updateParents(id, function(err) {
