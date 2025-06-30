@@ -137,10 +137,6 @@ describe('Report API', () => {
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
       });
     });
-  });
-
-  describe('GET /api/v1/report/:uuid with lineage', async () => {
-    const endpoint = '/api/v1/report';
 
     it('should return the report with lineage when with_lineage=true', async () => {
       const opts = {
@@ -153,7 +149,6 @@ describe('Report API', () => {
         contact: contact0
       });
     });
-
 
     it('should return report without lineage when with_lineage is not true', async () => {
       const opts = {
