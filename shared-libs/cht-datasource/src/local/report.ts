@@ -48,13 +48,13 @@ export namespace v1 {
 
     /** @internal */
     export const getWithLineage = ({ medicDb }: LocalDataContext) => {
-      const { fetchHydratedDoc } = lineage(Promise, medicDb) as { 
-                                    fetchHydratedDoc: (
-                                      uuid: string, 
-                                      options?: { throwWhenMissingLineage?: boolean }, 
-                                      callback?: (err: Error | null, result?: Doc) => void
-                                    ) => Promise<Doc> 
-                                  };
+      const { fetchHydratedDoc } = lineage(Promise, medicDb) as {
+        fetchHydratedDoc: (
+          uuid: string,
+          options?: { throwWhenMissingLineage?: boolean },
+          callback?: (err: Error | null, result?: Doc) => void
+        ) => Promise<Doc>
+      };
     
       return async (identifier: UuidQualifier): Promise<Nullable<Report.v1.ReportWithLineage>> => {
         const report = await fetchHydratedDoc(identifier.uuid);
