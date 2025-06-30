@@ -49,14 +49,17 @@ tmp_dir=$(mktemp -d -t -p ./ report-XXXXXXXXXX)
 mv ./jmeter.log "$tmp_dir"/jmeter.log
 
 cd /cht
-remote_repo="https://bot:${GH_TOKEN}@github.com/medic/scalability-results.git"
+git config user.name "github-actions[bot]"
+git config user.email "github-actions[bot]@users.noreply.github.com"
+remote_repo="https://x-access-token:${GH_TOKEN}@github.com/OWNER/REPO.git"
 git clone "$remote_repo"
 cd scalability-results
+git remote set-url origin "$remote_repo"
 mkdir -p results
 cp -r "/cht/cht-core/tests/scalability/$tmp_dir" results/"$DATA_PATH"
 git config http.sslVerify false
 git add -A
 git commit -m "scalability results for $TAG"
-git push "$remote_repo" HEAD:"main"
+git push origin main
 
 echo "FINISHED! "
