@@ -48,22 +48,23 @@ tmp_dir=$(mktemp -d -t -p ./ report-XXXXXXXXXX)
 ./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir="$tmp_dir" -Jnode_binary="$(which node)" -Jnumber_of_threads=10 -l "$tmp_dir"/cli_run.jtl -e -o "$tmp_dir"
 mv ./jmeter.log "$tmp_dir"/jmeter.log
 
-echo "Installing AWS CLI"
-apt-get install unzip -y
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-./aws/install
-echo "Uploading logs and screenshots to ${S3_PATH}..."
-/usr/local/bin/aws s3 cp "$tmp_dir" "$S3_PATH" --recursive
+#echo "Installing AWS CLI"
+#apt-get install unzip -y
+#curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+#unzip awscliv2.zip
+#./aws/install
+#echo "Uploading logs and screenshots to ${S3_PATH}..."
+#/usr/local/bin/aws s3 cp "$tmp_dir" "$S3_PATH" --recursive
 
 cd /cht
-remote_repo="https://${GITHUB_ACTOR}:${GH_TOKEN}@github.com/medic/scalability-results.git"
-git clone remote_repo
+remote_repo="https://bot:${GH_TOKEN}@github.com/medic/scalability-results.git"
+git clone "$remote_repo"
+cd scalability-results
 mkdir -p results
 cp -r "$tmp_dir" results/"$DATA_PATH"
 git config http.sslVerify false
 git add -A
 git commit -m "scalability results for $TAG"
-git push "${remote_repo}" HEAD:"master"
+git push "$remote_repo" HEAD:"main"
 
 echo "FINISHED! "
