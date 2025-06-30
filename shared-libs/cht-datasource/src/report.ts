@@ -30,10 +30,10 @@ export namespace v1 {
    * A report document with lineage information.
    */
   export interface ReportWithLineage extends Report {
-  readonly contact?: Contact.v1.ContactWithLineage | NormalizedParent;
-  readonly patient?: Contact.v1.ContactWithLineage | NormalizedParent;
-  readonly place?: Contact.v1.ContactWithLineage | NormalizedParent;
-}
+    readonly contact?: Contact.v1.ContactWithLineage | NormalizedParent;
+    readonly patient?: Contact.v1.ContactWithLineage | NormalizedParent;
+    readonly place?: Contact.v1.ContactWithLineage | NormalizedParent;
+  }
 
 
   /**
