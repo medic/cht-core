@@ -59,7 +59,7 @@ generate_self_signed_cert(){
   if [ -f "$SSL_CERT_FILE_PATH" ] && [ -f "$SSL_KEY_FILE_PATH" ]; then
         echo "self signed SSL cert already exists." >&2
     else
-        create_self_signed_ssl_certificate \
+        create_self_signed_ssl_certificate
         echo "self signed certificate for $COMMON_NAME generated" >&2
     fi
 }
@@ -99,7 +99,7 @@ select_ssl_certificate_mode(){
       ;;
 
     *)
-      echo "ssl certificate mode unknown or not set. Please set a proper ssl sertificate mode in the CERTIFICATE_MODE variable"
+      echo "ssl certificate mode unknown or not set. Please set a proper ssl certificate mode in the CERTIFICATE_MODE variable"
       exit 1
       ;;
   esac
