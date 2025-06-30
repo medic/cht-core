@@ -4,9 +4,8 @@ const serverUtils = require('../server-utils');
 const { Report, Qualifier } = require('@medic/cht-datasource');
 const { PermissionError } = require('../errors');
 
-const getReport = () => ctx.bind(Report.v1.get);
+const getReport = ({ with_lineage }) => ctx.bind( with_lineage === 'true' ? Report.v1.getWithLineage : Report.v1.get );
 const getReportIds = () => ctx.bind(Report.v1.getUuidsPage);
-const getReportWithLineage = () => ctx.bind(Report.v1.getWithLineage);
 
 const checkUserPermissions = async (req) => {
   const userCtx = await auth.getUserCtx(req);
@@ -20,13 +19,7 @@ module.exports = {
     get: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req);
       const { uuid } = req.params;
-      
-      let report;
-      if (req.query.with_lineage === 'true'){
-        report = await getReportWithLineage()(Qualifier.byUuid(uuid));
-      } else {
-        report = await getReport()(Qualifier.byUuid(uuid));
-      }
+      const report = await getReport(req.query)(Qualifier.byUuid(uuid));
 
       if (!report) {
         return serverUtils.error({ status: 404, message: 'Report not found' }, req, res);
