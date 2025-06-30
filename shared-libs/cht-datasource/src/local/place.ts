@@ -114,6 +114,7 @@ export namespace v1 {
       
       // Append `contact_type` for newer versions.
       if (typeFoundInSettingsContactTypes){
+        validateParentPresence(typeFoundInSettingsContactTypes, input);
         input={
           ...input,
           contact_type: input.type,
@@ -123,5 +124,36 @@ export namespace v1 {
 
       return await createPlaceDoc(input) as Place.v1.Place;
     };
+  };
+
+  /**
+   * Ensures that places that require a parent (i.e. not at the top of the hirerarchy) 
+   * have the parent field as one of the pre-configured `parents` in the `contact_types`
+   * for that place.
+   */
+  /** @internal*/
+  const validateParentPresence = (contactTypeObject: Record<string, unknown>
+    , input:Record<string, unknown> ):void => {
+    if (hasField(contactTypeObject, {name: 'parents', type: 'object'})) {
+      ensureHasValidParentField(input, contactTypeObject);
+    } else if (hasField(input, {name: 'parent', type: 'string', ensureTruthyValue: true})){
+      throw new InvalidArgumentError(
+        `Unexpected parent for [${JSON.stringify(input)}].`
+      );
+    }
+  };
+
+  const ensureHasValidParentField = 
+  (input:Record<string, unknown>, contactTypeObject: Record<string, unknown>):void => {
+    if (!hasField(input, {name: 'parent', type: 'string', ensureTruthyValue: true})){
+      throw new InvalidArgumentError(
+        `Missing or empty required field (parent) for [${JSON.stringify(input)}].`
+      );
+    } else if (!((contactTypeObject.parents as string[])
+      .find(parent => parent===input.parent))) {
+      throw new InvalidArgumentError(
+        `Invalid parent for [${JSON.stringify(input)}].`
+      );
+    }
   };
 }
