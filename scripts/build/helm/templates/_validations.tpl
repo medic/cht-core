@@ -23,6 +23,11 @@
 {{- fail "couchdb.uuid is required. Please set it in your values file." }}
 {{- end }}
 
+{{- /* Required storage values */ -}}
+{{- if not .Values.couchdb.couchdb_node_storage_size }}
+{{- fail "couchdb.couchdb_node_storage_size is required. Please set it in your values file." }}
+{{- end }}
+
 {{- /* CouchDB clustering validations */ -}}
 {{- if .Values.couchdb.clusteredCouchEnabled }}
 {{- if not (index .Values.nodes "node-1") }}
@@ -41,6 +46,30 @@
 {{- if eq (toString .Values.couchdb_data.preExistingDataAvailable) "true" }}
 {{- if not (index .Values.ebs "preExistingEBSVolumeID-1") }}
 {{- fail "preExistingEBSVolumeID-1 is required when preExistingDataAvailable is true on EKS. Please set it in your values file." }}
+{{- end }}
+{{- if not .Values.ebs.preExistingEBSVolumeSize }}
+{{- fail "ebs.preExistingEBSVolumeSize is required when preExistingDataAvailable is true on EKS. Please set it in your values file." }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- /* GKE-specific validations */ -}}
+{{- if eq .Values.cluster_type "gke" }}
+{{- if eq (toString .Values.couchdb_data.preExistingDataAvailable) "true" }}
+{{- if not .Values.couchdb.persistent_disk.size }}
+{{- fail "couchdb.persistent_disk.size is required when preExistingDataAvailable is true on GKE. Please set it in your values file." }}
+{{- end }}
+{{- if .Values.couchdb.clusteredCouchEnabled }}
+{{- range $i, $e := until (int .Values.clusteredCouch.noOfCouchDBNodes) }}
+{{- $nodeNumber := add $i 1 }}
+{{- if not (index $.Values.couchdb.persistent_disk (printf "diskName-%d" $nodeNumber)) }}
+{{- fail (printf "couchdb.persistent_disk.diskName-%d is required when clusteredCouchEnabled is true and preExistingDataAvailable is true on GKE. Please set it in your values file." $nodeNumber) }}
+{{- end }}
+{{- end }}
+{{- else }}
+{{- if not .Values.couchdb.persistent_disk.diskName }}
+{{- fail "couchdb.persistent_disk.diskName is required when preExistingDataAvailable is true on GKE. Please set it in your values file." }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

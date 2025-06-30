@@ -7,7 +7,7 @@ metadata:
   name: couchdb-pv-{{ .Values.namespace }}
 spec:
   capacity:
-    storage: {{ .Values.couchdb.persistent_disk.size | default "100Gi" }}  # Fallback for backward compatibility
+    storage: {{ .Values.couchdb.persistent_disk.size }}
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
@@ -26,7 +26,7 @@ metadata:
   name: couchdb-pv-{{ $.Values.namespace }}-{{ $nodeNumber }}
 spec:
   capacity:
-    storage: {{ $.Values.couchdb.couchdb_node_storage_size | default "100Mi"}}  # Fallback for backward compatibility
+    storage: {{ $.Values.couchdb.persistent_disk.size }}
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce

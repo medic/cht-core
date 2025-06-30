@@ -34,4 +34,4 @@ ebs:
   preExistingEBSVolumeID-1: "vol-0123456789abcdefg" # DEFAULT: Placeholder for user to set. If you have already created the EBS volume, put the ID here.
   preExistingEBSVolumeID-2: "vol-0123456789abcdefg" # DEFAULT: Placeholder for user to set.If you have already created the EBS volume, put the ID here.
   preExistingEBSVolumeID-3: "vol-0123456789abcdefg" # DEFAULT: Placeholder for user to set. If you have already created the EBS volume, put the ID here.
-  preExistingEBSVolumeSize: "100Gi" # DEFAULT: Good default. The size of the EBS volume.
+  preExistingEBSVolumeSize: "<storage-size>" # REQUIRED: User must set this when preExistingDataAvailable is true (e.g. "10Gi", "100Gi")

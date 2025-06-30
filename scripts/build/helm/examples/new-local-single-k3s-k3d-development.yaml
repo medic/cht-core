@@ -17,6 +17,7 @@ couchdb:
   password: "test-password-123"
   secret: "test-secret-uuid-12345"  # Generate with: uuidgen
   uuid: "test-uuid-12345"           # Generate with: uuidgen
+  couchdb_node_storage_size: "10Gi"  # REQUIRED: Set appropriate storage size for your deployment
 
 # Development-specific overrides
 cache_images: false  # Always pull latest images during development

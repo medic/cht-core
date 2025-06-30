@@ -29,4 +29,4 @@ couchdb:
   secret: "<uuid>"  # REQUIRED: User must set this (Generate with uuidgen)
   user: "medic" # DEFAULT: Good default
   uuid: "<uuid>"    # # REQUIRED: User must set this (Generate with uuidgen)
-  couchdb_node_storage_size: 100Mi # DEFAULT: Good default
+  couchdb_node_storage_size: "<storage-size>" # REQUIRED: User must set this (e.g. "10Gi", "100Gi")

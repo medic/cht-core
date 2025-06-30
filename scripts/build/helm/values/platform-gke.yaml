@@ -15,9 +15,9 @@ ingress:
 couchdb:
   storage_class: "standard-rwo"  # DEFAULT: Good default for GCP. GCP standard persistent disk
   persistent_disk:
-    size: "100Gi"  # DEFAULT: Good default size. Size for GCP persistent disk
+    size: "<storage-size>"  # REQUIRED: User must set this when preExistingDataAvailable is true (e.g. "10Gi", "100Gi")
     type: "pd-standard"  # # DEFAULT: Good default type. GCP persistent disk type
-    diskName: ""  # OPTIONAL: User can set if you have a pre-existing GCP persistent disk. Name of pre-existing GCP persistent disk (required if preExistingDataAvailable is true)
-    diskName-1: ""  # OPTIONAL: User can set if you have a pre-existing GCP persistent disk. Name of pre-existing GCP persistent disk for node 1 (clustered setup)
-    diskName-2: ""  # OPTIONAL: User can set if you have a pre-existing GCP persistent disk. Name of pre-existing GCP persistent disk for node 2 (clustered setup)
-    diskName-3: ""  # OPTIONAL: User can set if you have a pre-existing GCP persistent disk. Name of pre-existing GCP persistent disk for node 3 (clustered setup)
+    diskName: ""  # REQUIRED: User must set when preExistingDataAvailable is true and clusteredCouchEnabled is false. Name of pre-existing GCP persistent disk
+    diskName-1: ""  # REQUIRED: User must set when preExistingDataAvailable is true and clusteredCouchEnabled is true. Name of pre-existing GCP persistent disk for node 1
+    diskName-2: ""  # REQUIRED: User must set when preExistingDataAvailable is true and clusteredCouchEnabled is true. Name of pre-existing GCP persistent disk for node 2
+    diskName-3: ""  # REQUIRED: User must set when preExistingDataAvailable is true and clusteredCouchEnabled is true. Name of pre-existing GCP persistent disk for node 3

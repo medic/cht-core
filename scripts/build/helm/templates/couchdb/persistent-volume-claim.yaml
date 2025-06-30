@@ -10,7 +10,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.couchdb.couchdb_node_storage_size | default "100Mi"}}  # Fallback for backward compatibility
+      storage: {{ .Values.couchdb.couchdb_node_storage_size }}
   {{- if eq (toString .Values.cluster_type) "eks" }}
   {{- if .Values.couchdb_data.preExistingDataAvailable }}
   volumeName: couchdb-pv-{{ .Values.namespace }}
@@ -46,16 +46,16 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ $.Values.couchdb.couchdb_node_storage_size | default "100Mi"}}  # Fallback for backward compatibility
+      storage: {{ $.Values.couchdb.couchdb_node_storage_size }}
   {{- if eq (toString $.Values.cluster_type) "eks" }}
-  {{- if .Values.couchdb_data.preExistingDataAvailable }}
+  {{- if $.Values.couchdb_data.preExistingDataAvailable }}
   volumeName: couchdb-pv-{{ $.Values.namespace }}-{{ $nodeNumber }}
   storageClassName: ""
   {{- else }}
   storageClassName: {{ $.Values.couchdb.storage_class | default "ebs-gp2" }}  # Fallback for backward compatibility
   {{- end }}
   {{- else if eq (toString $.Values.cluster_type) "gke" }}
-  {{- if .Values.couchdb_data.preExistingDataAvailable }}
+  {{- if $.Values.couchdb_data.preExistingDataAvailable }}
   volumeName: couchdb-pv-{{ $.Values.namespace }}-{{ $nodeNumber }}
   storageClassName: ""
   {{- else }}
