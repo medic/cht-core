@@ -26,13 +26,6 @@ jobs:
       - name: Validate Helm Templates
         working-directory: scripts/build/helm
         run: |
-          echo "🔍 Running Helm template validation..."
+          echo "Running Helm template validation..."
           ./validate-templates.sh
 
-      - name: Upload validation results
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: helm-validation-results
-          path: scripts/build/helm/
-          retention-days: 7
