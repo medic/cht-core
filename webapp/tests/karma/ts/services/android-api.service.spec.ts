@@ -3,8 +3,8 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { NgZone } from '@angular/core';
 
-import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import { AndroidApiService } from '@mm-services/android-api.service';
 import { SessionService } from '@mm-services/session.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
