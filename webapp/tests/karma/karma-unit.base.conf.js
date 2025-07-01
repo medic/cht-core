@@ -41,5 +41,13 @@ module.exports = {
     subdir: '.',
     fixWebpackSourcePaths: true,
     skipFilesWithNoCoverage: true,
+    check: {
+      global: {
+        statements: 87,
+        lines: 87,
+        branches: 79,
+        functions: 85,
+      },
+    },
   }
 };

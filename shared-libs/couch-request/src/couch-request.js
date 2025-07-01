@@ -1,10 +1,13 @@
 const environment = require('@medic/environment');
+const audit = require('@medic/audit');
 const path = require('path');
+const os = require('os');
 let asyncLocalStorage;
 let requestIdHeader;
 
 const JSON_HEADER_VALUE = 'application/json';
 const CONTENT_TYPE = 'content-type';
+const CHT_AGENT = 'Community Health Toolkit';
 
 const isString = value => typeof value === 'string' || value instanceof String;
 const isTrue = value => isString(value) ? value.toLowerCase() === 'true' : value === true;
@@ -23,6 +26,19 @@ const addServername = isTrue(process.env.ADD_SERVERNAME_TO_HTTP_AGENT);
 //  (https://nodejs.org/api/tls.html): "Server name for the SNI (Server Name Indication) TLS extension  It is the
 //  name of the host being connected to, and must be a host name, and not an IP address.".
 //
+
+const isInternalRequest = (options) => {
+  const url = new URL(options.uri);
+  return url.hostname === environment.host;
+};
+
+const getUserAgent = async () => {
+  const serverInfo = require('@medic/server-info');
+  const chtVersion = await serverInfo.getVersion();
+  const platform = os.platform();
+  const arch = os.arch();
+  return `${CHT_AGENT}/${chtVersion} (${platform},${arch})`;
+};
 
 const setRequestUri = (options) => {
   let uri = options.uri || options.url;
@@ -126,7 +142,7 @@ const lowercaseHeaders = headers => Object.assign(
   ...Object.keys(headers).map(key => ({ [key.toLowerCase()]: headers[key] }))
 );
 
-const setRequestOptions = (options) => {
+const setRequestOptions = async (options) => {
   options.headers = lowercaseHeaders(options.headers || {});
 
   const requestId = asyncLocalStorage?.getRequestId();
@@ -141,6 +157,11 @@ const setRequestOptions = (options) => {
   setRequestContentType(options, sendJson);
   if (addServername) {
     options.servername = environment.host;
+  }
+
+  // only add user agent for external requests to avoid circular calls
+  if (!isInternalRequest(options) && !options.headers['user-agent']) {
+    options.headers['user-agent'] = await getUserAgent();
   }
 };
 
@@ -160,8 +181,30 @@ const getResponseBody = async (response, sendJson) => {
   return content;
 };
 
+const sanitizeErrorResponse = (body) => {
+  if (!body) {
+    return 'No response body';
+  }
+  
+  if (typeof body === 'string') {
+    return body.replace(/(?:password|auth|user|pass)[:=].*?(?:[&\s]|$)/gi, '');
+  }
+  
+  if (typeof body === 'object') {
+    const sanitized = { ...body };
+
+    ['password', 'auth', 'authorization', 'key', 'secret', 'token', 'username', 'user', 'pass'].forEach(field => {
+      if (field in sanitized) {
+        delete sanitized[field]; 
+      }
+    });
+    return sanitized;
+  }
+  
+  return body;
+};
 const request = async (options = {}) => {
-  setRequestOptions(options);
+  await setRequestOptions(options);
 
   const response = await global.fetch(options.uri, options);
   const responseObj = {
@@ -169,8 +212,12 @@ const request = async (options = {}) => {
     body: await getResponseBody(response, options.headers[CONTENT_TYPE] === JSON_HEADER_VALUE),
     status: response.status,
     ok: response.ok,
-    headers: response.headers
+    headers: response.headers,
+    streamed: true,
   };
+
+  const requestMetadata = asyncLocalStorage?.getRequest();
+  void audit.fetchCallback(options.uri, options, responseObj, requestMetadata);
 
   if (options.simple === false) {
     return responseObj;
@@ -180,8 +227,15 @@ const request = async (options = {}) => {
     return responseObj.body;
   }
 
-  const err = new Error(response.error || `${response.status} - ${JSON.stringify(responseObj.body)}`);
-  Object.assign(err, responseObj);
+  const sanitizedBody = sanitizeErrorResponse(responseObj.body);
+  const err = new Error(`${response.status} - ${JSON.stringify(sanitizedBody)}`);
+  
+  err.status = response.status;
+  err.statusCode = response.status;
+  err.body = sanitizedBody;
+  err.headers = response.headers;
+  err.ok = response.ok;
+  
   throw err;
 };
 
@@ -221,7 +275,7 @@ const request = async (options = {}) => {
  */
 
 module.exports = {
-  initialize: (store, header) => {
+  setStore: (store, header) => {
     asyncLocalStorage = store;
     requestIdHeader = header.toLowerCase();
   },

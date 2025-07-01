@@ -10,11 +10,16 @@ const userFactory = require('@factories/cht/users/users');
 describe('Contact Search', () => {
   const places = placeFactory.generateHierarchy();
   const districtHospitalId = places.get('district_hospital')._id;
+  // NOTE: this is a search word added to contacts for searching purposes
+  // the value was chosen such that it is a sub-string of the short_name which
+  // gives double output from the couchdb view
+  const searchWord = 'sittu';
 
   const sittuHealthCenter = placeFactory.place().build({
     name: 'Sittu Health Center',
     type: 'health_center',
-    parent: { _id: districtHospitalId, parent: { _id: '' } }
+    parent: { _id: districtHospitalId, parent: { _id: '' } },
+    short_name: searchWord
   });
 
   const potuHealthCenter = placeFactory.place().build({
@@ -25,7 +30,8 @@ describe('Contact Search', () => {
 
   const sittuPerson = personFactory.build({
     name: 'Sittu',
-    parent: { _id: sittuHealthCenter._id, parent: sittuHealthCenter.parent }
+    parent: { _id: sittuHealthCenter._id, parent: sittuHealthCenter.parent },
+    short_name: searchWord
   });
 
   const potuPerson = personFactory.build({
@@ -92,14 +98,62 @@ describe('Contact Search', () => {
     it('search should clear RHS selected contact', async () => {
       await contactPage.selectLHSRowByText(potuHealthCenter.name, false);
       await contactPage.waitForContactLoaded();
-      expect(
-        await (await contactPage.contactCardSelectors.contactCardName()).getText()
-      ).to.equal(potuHealthCenter.name);
+      expect(await contactPage.contactCardSelectors.contactCardName().getText()).to.equal(potuHealthCenter.name);
 
       await searchPage.performSearch('sittu');
       await contactPage.waitForContactUnloaded();
       const url = await browser.getUrl();
       expect(url.endsWith('/contacts')).to.equal(true);
+    });
+
+    it('should be able to do exact match searching by a field', async () => {
+      await contactPage.getAllLHSContactsNames();
+
+      await searchPage.performSearch('name:sittu');
+      expect(await contactPage.getAllLHSContactsNames()).to.have.members([
+        sittuPerson.name,
+      ]);
+
+      await searchPage.clearSearch();
+      expect(await contactPage.getAllLHSContactsNames()).to.have.members([
+        potuHealthCenter.name,
+        sittuHealthCenter.name,
+        places.get('district_hospital').name,
+        places.get('health_center').name,
+      ]);
+    });
+
+    it('should have no results when searching by non-existent field value', async () => {
+      const randomWord = 'lorem-ipsum';
+      await contactPage.getAllLHSContactsNames();
+
+      await searchPage.performSearch(randomWord);
+      expect(await contactPage.allContactsList()).to.have.members([]);
+      await searchPage.clearSearch();
+      expect(await contactPage.getAllLHSContactsNames()).to.have.members([
+        potuHealthCenter.name,
+        sittuHealthCenter.name,
+        places.get('district_hospital').name,
+        places.get('health_center').name,
+      ]);
+    });
+
+    it('should have unique results for when multiple fields match the same search text', async () => {
+      await contactPage.getAllLHSContactsNames();
+
+      await searchPage.performSearch(searchWord);
+      expect(await contactPage.getAllLHSContactsNames()).to.have.members([
+        sittuPerson.name,
+        sittuHealthCenter.name,
+      ]);
+
+      await searchPage.clearSearch();
+      expect(await contactPage.getAllLHSContactsNames()).to.have.members([
+        potuHealthCenter.name,
+        sittuHealthCenter.name,
+        places.get('district_hospital').name,
+        places.get('health_center').name,
+      ]);
     });
   }));
 });

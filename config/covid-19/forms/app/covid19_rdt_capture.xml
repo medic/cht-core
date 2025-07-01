@@ -87,7 +87,7 @@
         </translation>
       </itext>
       <instance>
-        <covid19_rdt_capture id="covid19_rdt_capture" prefix="J1!covid19_rdt_capture!" delimiter="#" version="2021-10-21_23-11">
+        <covid19_rdt_capture id="covid19_rdt_capture" prefix="J1!covid19_rdt_capture!" delimiter="#" version="2025-05-01 22-48">
           <inputs tag="hidden">
             <source>user</source>
             <contact>
@@ -198,7 +198,7 @@
       <instance id="contact-summary"/>
       <bind nodeset="/covid19_rdt_capture/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/covid19_rdt_capture/inputs/source" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/covid19_rdt_capture/inputs/contact/_id" type="string"/>
       <bind nodeset="/covid19_rdt_capture/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/covid19_rdt_capture/inputs/contact/first_name" type="string"/>
       <bind nodeset="/covid19_rdt_capture/inputs/contact/last_name" type="string"/>
@@ -280,7 +280,7 @@ concat( /covid19_rdt_capture/patient_age_in_years , ' years old')))"/>
   <h:body class="pages">
     <group ref="/covid19_rdt_capture/inputs">
       <group appearance="field-list" ref="/covid19_rdt_capture/inputs/contact">
-        <input appearance="db-object" ref="/covid19_rdt_capture/inputs/contact/_id">
+        <input appearance="select-contact type-person" ref="/covid19_rdt_capture/inputs/contact/_id">
           <label ref="jr:itext('/covid19_rdt_capture/inputs/contact/_id:label')"/>
         </input>
         <group ref="/covid19_rdt_capture/inputs/contact/parent">
