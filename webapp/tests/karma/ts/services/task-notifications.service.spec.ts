@@ -102,7 +102,7 @@ describe('TasksNotificationService', () => {
     localStorage.clear();
   });
 
-  it('should be created', async () => {
+  it('should be created', () => {
     expect(service).to.be.ok;
   });
 
