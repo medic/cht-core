@@ -10,7 +10,7 @@ run_validation() {
 
     echo "Testing: $test_name"
 
-    if helm template test . $values_files > /dev/null 2>&1; then
+    if eval "helm template test . $values_files" > /dev/null 2>&1; then
         echo "PASS: $test_name"
         return 0
     else
