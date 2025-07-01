@@ -118,10 +118,9 @@ seedData "$MEDIC_CONF_URL"
 waitForSentinel "$MEDIC_CONF_URL"
 
 sed -i '4s~^~'MEDIC_URL="$url"'\n~' run_suite.sh
-sed -i '4s~^~'S3_PATH=s3://medic-e2e/scalability/"$TAG"-"$GITHUB_RUN_ID"'\n~' run_suite.sh
 sed -i '4s~^~'TAG="$TAG"'\n~' run_suite.sh
 sed -i '4s~^~'DATA_PATH="$TAG-$GITHUB_RUN_ID"'\n~' run_suite.sh
-sed -i '4s~^~'GH_TOKEN="$GH_TOKEN"'\n~' run_suite.sh
+sed -i '4s~^~'GH_TOKEN="$SCALABILITY_RESULTS_TOKEN"'\n~' run_suite.sh
 
 echo Triggering EC2 Run Instance Command and getting Instance ID
 
