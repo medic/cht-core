@@ -128,6 +128,47 @@ describe('cht-datasource Report', () => {
       });
     });
 
+    describe('getWithLineage', async () => {
+      const getReportWithLineage = Report.v1.getWithLineage(dataContext);
+
+      it('should return the report with contact lineage matching the provided UUID', async () => {
+        const resReport = await getReportWithLineage(Qualifier.byUuid(report0._id));
+        
+        // Only check critical lineage properties
+        expect(resReport).excludingEvery(['_rev', 'reported_date']).to.deep.include({
+          ...report0,
+          contact: contact0
+        });
+      });
+
+      it('returns null when no report is found for the UUID', async () => {
+        const report = await getReportWithLineage(Qualifier.byUuid('invalid-uuid'));
+        expect(report).to.be.null;
+      });
+
+      it('returns report with partial lineage when some ancestors are missing', async () => {
+        // Create a report with incomplete lineage
+        const incompleteReport = utils.deepFreeze(reportFactory.report().build({
+          form: 'incomplete-lineage',
+          fields: {
+            patient_uuid: 'missing_patient'
+          }
+        }, {
+          submitter: contact0
+        }));
+        
+        await utils.saveDocs([incompleteReport]);
+
+        const resReport = await getReportWithLineage(Qualifier.byUuid(incompleteReport._id));
+        
+        // Check only the essential properties
+        expect(resReport).excludingEvery(['_rev', 'reported_date']).to.deep.include({
+          ...incompleteReport,
+          contact: contact0
+        });
+      });
+    });
+    
     describe('getUuidsPage', async () => {
       const getUuidsPage = Report.v1.getUuidsPage(dataContext);
       const freetext = 'report';
