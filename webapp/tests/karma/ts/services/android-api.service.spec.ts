@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { NgZone } from '@angular/core';
 
+import { HttpClient } from '@angular/common/http';
 import { AndroidApiService } from '@mm-services/android-api.service';
 import { SessionService } from '@mm-services/session.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
@@ -13,6 +14,8 @@ import { TranslateService } from '@mm-services/translate.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { SettingsService } from '@mm-services/settings.service';
+import { AuthService } from '@mm-services/auth.service';
+import { ChangesService } from '@mm-services/changes.service';
 
 describe('AndroidApi service', () => {
 
@@ -68,6 +71,9 @@ describe('AndroidApi service', () => {
         { provide: RulesEngineService, useValue: {} },
         { provide: FormatDateService, useValue: {} },
         { provide: SettingsService, useValue: {} },
+        { provider: AuthService, useValue: {} },
+        { provide: ChangesService, useValue: {} },
+        { provide: HttpClient, useValue: {} },
       ],
     });
 

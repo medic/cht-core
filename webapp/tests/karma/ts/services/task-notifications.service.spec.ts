@@ -3,11 +3,17 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import moment from 'moment';
 
+import { HttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
 import { TasksNotificationService } from '@mm-services/task-notifications.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { SettingsService } from '@mm-services/settings.service';
+import { AuthService } from '@mm-services/auth.service';
+import { DbService } from '@mm-services/db.service';
+import { ChangesService } from '@mm-services/changes.service';
+import { SessionService } from '@mm-services/session.service';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
@@ -18,6 +24,10 @@ describe('TasksNotificationService', () => {
   let rulesEngine;
   let formatDateService;
   let settingsService;
+  let authService;
+  let http;
+  let changesService;
+  let sessionService;
 
   let tasks;
   let clock;
@@ -84,6 +94,12 @@ describe('TasksNotificationService', () => {
       get: sinon.stub().resolves({}),
     };
 
+    authService = {
+      has: sinon.stub().resolves()
+    };
+    http = { get: sinon.stub().returns(of([])) };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
+    sessionService = { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -91,6 +107,11 @@ describe('TasksNotificationService', () => {
         { provide: RulesEngineService, useValue: rulesEngine },
         { provide: FormatDateService, useValue: formatDateService },
         { provide: SettingsService, useValue: settingsService },
+        { provider: AuthService, useValue: authService },
+        { provide: ChangesService, useValue: changesService },
+        { provide: DbService, useValue: { get: sinon.stub().resolves({}) } },
+        { provide: HttpClient, useValue: http },
+        { provide: SessionService, useValue: sessionService },
       ]
     });
     service = TestBed.inject(TasksNotificationService);
@@ -107,7 +128,11 @@ describe('TasksNotificationService', () => {
   });
 
   it('should initialize max notifications value from settings', async () => {
-    settingsService.get.resolves({ max_task_notifications: 20 });
+    settingsService.get.resolves({
+      tasks: {
+        max_task_notifications: 20
+      }
+    });
     const maxNotifications = await service.getMaxNotificationSettings();
     expect(settingsService.get.callCount).to.equal(1);
     expect(maxNotifications).to.equal(20);
@@ -143,7 +168,11 @@ describe('TasksNotificationService', () => {
   });
 
   it('should return max number of notifications', async () => {
-    settingsService.get.resolves({ max_task_notifications: 1 });
+    settingsService.get.resolves({
+      tasks: {
+        max_task_notifications: 1
+      }
+    });
     const notifications = await service.fetchNotifications();
     expect(notifications).to.be.an('array').that.has.lengthOf(1);
     expect(notifications[0]._id).to.equal('task2');
@@ -267,7 +296,7 @@ describe('TasksNotificationService', () => {
       ]
     };
     rulesEngine.fetchTaskDocsForAllContacts.resolves([futureTask]);
-    
+
     const notifications = await service.fetchNotifications();
     expect(notifications).to.be.an('array').that.has.lengthOf(0);
     expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);
@@ -282,7 +311,27 @@ describe('TasksNotificationService', () => {
     expect(consoleErrorMock.callCount).to.equal(1);
   });
 
+  it('should not get() notifications without necessary permissions', async () => {
+    sessionService.userCtx.returns({ roles: ['chw'] });
+    settingsService.get.resolves({
+      permissions: {
+        can_get_task_notifications: ['supervisor']
+      },
+    });
+    const notifications = await service.get();
+    expect(notifications).to.be.an('array').that.is.empty;
+    expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(0);
+    expect(translateService.instant.callCount).to.equal(0);
+    expect(consoleErrorMock.callCount).to.equal(0);
+  });
+
   it('should get() notifications', async () => {
+    sessionService.userCtx.returns({ roles: ['chw'] });
+    settingsService.get.resolves({
+      permissions: {
+        can_get_task_notifications: ['chw']
+      },
+    });
     const notifications = await service.get();
     expect(notifications).to.be.an('array').that.has.lengthOf(2);
     expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);

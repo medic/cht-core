@@ -5,6 +5,7 @@ import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { SettingsService } from '@mm-services/settings.service';
+import { AuthService } from '@mm-services/auth.service';
 
 const TASK_NOTIFICATION_DAY = 'cht-task-notification-day';
 const LATEST_NOTIFICATION_TIMESTAMP = 'cht-task-notification-timestamp';
@@ -28,6 +29,7 @@ export class TasksNotificationService {
     private readonly translateService: TranslateService,
     private readonly formatDateService: FormatDateService,
     private readonly settingsService: SettingsService,
+    private readonly authService: AuthService,
   ) { }
 
   private async fetchNotifications(): Promise<Notification[]> {
@@ -77,20 +79,13 @@ export class TasksNotificationService {
     return readyState ? readyState.timestamp : 0;
   }
 
-  private getMaxNotificationSettings(): Promise<number> {
-    return this.settingsService
-      .get()
-      .then((res) => {
-        if (typeof res?.max_task_notifications === 'number' && res.max_task_notifications >= 0) {
-          return res.max_task_notifications;
-        }
-        console.warn('Invalid or missing max_task_notifications setting, using default value');
-        return DEFAULT_MAX_NOTIFICATIONS;
-      })
-      .catch((err) => {
-        console.error('Error fetching notifications settings', err);
-        return DEFAULT_MAX_NOTIFICATIONS;
-      });
+  private async getMaxNotificationSettings(): Promise<number> {
+    const settings = await this.settingsService.get();
+    if (settings?.tasks?.max_task_notifications) {
+      return settings.tasks.max_task_notifications;
+    }
+    console.warn('Invalid or missing max_task_notifications setting, using default value');
+    return DEFAULT_MAX_NOTIFICATIONS;
   }
 
   private getLatestNotificationTimestamp(): number {
@@ -113,6 +108,10 @@ export class TasksNotificationService {
   }
 
   async get(): Promise<Notification[]> {
+    const canGetTaskNotifications = await this.authService.has('can_get_task_notifications');
+    if (!canGetTaskNotifications) {
+      return [];
+    }
     return await this.fetchNotifications();
   }
 }
