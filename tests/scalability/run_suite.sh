@@ -48,16 +48,17 @@ tmp_dir=$(mktemp -d -t -p ./ report-XXXXXXXXXX)
 ./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir="$tmp_dir" -Jnode_binary="$(which node)" -Jnumber_of_threads=10 -l "$tmp_dir"/cli_run.jtl -e -o "$tmp_dir"
 mv ./jmeter.log "$tmp_dir"/jmeter.log
 
-cd /cht
-git config user.name "github-actions[bot]"
-git config user.email "github-actions[bot]@users.noreply.github.com"
+
 remote_repo="https://x-access-token:${GH_TOKEN}@github.com/medic/scalability-results.git"
+cd /cht
 git clone "$remote_repo"
 cd scalability-results
+git config http.sslVerify false
+git config user.name "github-actions[bot]"
+git config user.email "github-actions[bot]@users.noreply.github.com"
 git remote set-url origin "$remote_repo"
 mkdir -p results
 cp -r "/cht/cht-core/tests/scalability/$tmp_dir" results/"$DATA_PATH"
-git config http.sslVerify false
 git add -A
 git commit -m "scalability results for $TAG"
 git push origin main
