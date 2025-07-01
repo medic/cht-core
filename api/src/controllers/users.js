@@ -51,7 +51,7 @@ const getRoles = req => {
   let roles;
   try {
     roles = JSON.parse(params.role);
-  } catch (err) {
+  } catch {
     // if json.parse fails, consider we just got one string role as param
     return [params.role];
   }
