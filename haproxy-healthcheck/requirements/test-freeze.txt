@@ -6,8 +6,8 @@ anyio==4.1.0
 attrs==23.1.0
 certifi==2024.7.4
 filelock==3.13.1
-h11==0.14.0
-httpcore==1.0.2
+h11==0.16.0
+httpcore==1.0.9
 httpx==0.25.2
 idna==3.6
 iniconfig==2.0.0
