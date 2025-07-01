@@ -57,7 +57,7 @@ describe('Report Controller Tests', () => {
         await controller.v1.get(req, res);
 
         expect(hasAllPermissions
-          .calledOnceWithExactly(userCtx, ['can_view_reports', 'can_create_records'])).to.be.true;
+          .calledOnceWithExactly(userCtx, ['can_view_reports'])).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.get)).to.be.true;
         expect(reportGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(res.json.calledOnceWithExactly(report)).to.be.true;
@@ -355,7 +355,7 @@ describe('Report Controller Tests', () => {
 
         await controller.v1.createReport(req, res);
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_reports'])).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_reports', 'can_create_records'])).to.be.true;
         expect(createReport.called).to.be.false;
         expect(serverUtilsError.calledOnce).to.be.true;
         expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(InvalidArgumentError);
