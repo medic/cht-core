@@ -1,7 +1,13 @@
 const reportFactory = require('@factories/cht/reports/generic-report');
 const utils = require('@utils');
 const userFactory = require('@factories/cht/users/users');
-const {getRemoteDataContext, Report, Qualifier, Input, InvalidArgumentError} = require('@medic/cht-datasource');
+const {
+  getRemoteDataContext,
+  Report,
+  Qualifier,
+  Input,
+  InvalidArgumentError
+} = require('@medic/cht-datasource');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const {expect} = require('chai');
