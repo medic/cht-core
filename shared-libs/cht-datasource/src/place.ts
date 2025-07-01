@@ -8,9 +8,9 @@ import * as Local from './local';
 import * as Remote from './remote';
 import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertLimit, assertPlaceInput, 
+import { assertCursor, assertLimit, 
   assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
-import { PlaceInput } from './input';
+import { PlaceInput, validatePlaceInput } from './input';
 
 /** */
 export namespace v1 {
@@ -51,9 +51,9 @@ export namespace v1 {
     ) => (context: DataContext) => {
       assertDataContext(context);
       const fn = adapt(context, localFn, remoteFn);
-      return async (input: PlaceInput): Promise<T> => {
-        assertPlaceInput(input);
-        return fn(input);
+      return async (input: unknown): Promise<T> => {
+        const placeInput = validatePlaceInput(input);
+        return fn(placeInput);
       };
     };
 

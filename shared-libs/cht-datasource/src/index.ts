@@ -33,7 +33,6 @@ import * as Contact from './contact';
 import * as Person from './person';
 import * as Place from './place';
 import * as Qualifier from './qualifier';
-import * as Input from './input';
 import * as Report from './report';
 import {
   DEFAULT_DOCS_PAGE_LIMIT,
@@ -238,7 +237,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created place.
          * @throws InvalidArgumentError if the type of input is not valid for creating a place.
          */
-        createPlace: (input: unknown) => ctx.bind(Place.v1.createPlace)(Input.validatePlaceInput(input))
+        createPlace: (input: unknown) => ctx.bind(Place.v1.createPlace)(input)
       },
       person: {
         /**
@@ -291,7 +290,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created person.
          * @throws InvalidArgumentError if the type of input is not valid for creating a person.
          */
-        createPerson: (input: unknown) => ctx.bind(Person.v1.createPerson)(Input.validatePersonInput(input))
+        createPerson: (input: unknown) => ctx.bind(Person.v1.createPerson)(input)
       },
       report: {
         /**
@@ -337,7 +336,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created report.
          * @throws InvalidArgumentError if the type of input is not valid for creating a report.
          */
-        createReport: (input : unknown) => ctx.bind(Report.v1.createReport)(Input.validateReportInput(input))
+        createReport: (input : unknown) => ctx.bind(Report.v1.createReport)(input)
       },
     },
   };

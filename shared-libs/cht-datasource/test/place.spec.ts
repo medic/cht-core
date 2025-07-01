@@ -321,7 +321,7 @@ describe('place', () => {
         };
         isPlaceInput.returns(false);
         await expect(Place.v1.createPlace(dataContext)(input as Input.PlaceInput))
-          .to.be.rejectedWith(`Invalid place type [${JSON.stringify(input)}].`);
+          .to.be.rejectedWith(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}].`);
       });
       
       it('returns person doc for valid input', async() => {

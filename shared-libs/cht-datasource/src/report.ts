@@ -14,10 +14,9 @@ import {
   assertCursor,
   assertFreetextQualifier,
   assertLimit,
-  assertReportInput,
   assertUuidQualifier
 } from './libs/parameter-validators';
-import { ReportInput } from './input';
+import { ReportInput, validateReportInput } from './input';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 
@@ -64,9 +63,9 @@ export namespace v1 {
     ) => (context: DataContext) => {
       assertDataContext(context);
       const fn = adapt(context, localFn, remoteFn);
-      return async (input: ReportInput): Promise<T> => {
-        assertReportInput(input);
-        return fn(input);
+      return async (input: unknown): Promise<T> => {
+        const reportInput = validateReportInput(input);
+        return fn(reportInput);
       };
     };
 

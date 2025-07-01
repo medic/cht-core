@@ -319,7 +319,7 @@ describe('person', () => {
         };
         isPersonInput.returns(false);
         await expect(Person.v1.createPerson(dataContext)(input as Input.PersonInput))
-          .to.be.rejectedWith(`Invalid person type [${JSON.stringify(input)}]`);
+          .to.be.rejectedWith(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}]`);
       });
 
       it('returns person doc for valid input', async() => {
