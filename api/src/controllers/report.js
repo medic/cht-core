@@ -8,9 +8,12 @@ const getReport = () => ctx.bind(Report.v1.get);
 const getReportIds = () => ctx.bind(Report.v1.getUuidsPage);
 const createReport = () => ctx.bind(Report.v1.createReport);
 
-const checkUserPermissions = async (req) => {
+const checkUserPermissions = async (req, permissions = []) => {
   const userCtx = await auth.getUserCtx(req);
-  if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, 'can_view_reports')) {
+  if (permissions.length === 0) {
+    permissions = ['can_view_reports'];
+  }
+  if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, permissions)) {
     throw new PermissionError('Insufficient privileges');
   }
 };
@@ -38,7 +41,7 @@ module.exports = {
       return res.json(docs);
     }),
     createReport: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req);
+      await checkUserPermissions(req, ['can_view_reports', 'can_create_records']);
 
       const input = Input.validateReportInput(req.body);
       const reportDoc = await createReport()(input);

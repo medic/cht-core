@@ -12,9 +12,12 @@ const getPerson = ({ with_lineage }) => ctx.bind(
 const getPageByType = () => ctx.bind(Person.v1.getPage);
 const createPerson = () => ctx.bind(Person.v1.createPerson);
 
-const checkUserPermissions = async (req) => {
+const checkUserPermissions = async (req, permissions = []) => {
   const userCtx = await auth.getUserCtx(req);
-  if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, 'can_view_contacts')) {
+  if (permissions.length === 0) {
+    permissions = ['can_view_contacts'];
+  }
+  if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, permissions)){
     throw new PermissionError('Insufficient privileges');
   }
 };
@@ -41,7 +44,7 @@ module.exports = {
     }),
     
     createPerson: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req);
+      await checkUserPermissions(req, ['can_view_contacts', 'can_create_records']);
 
       const personInput = Input.validatePersonInput(req.body);
       const personDoc = await createPerson()(personInput);
