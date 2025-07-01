@@ -148,27 +148,27 @@ const createPerson = function(id, callback) {
         return callback(new Error('facility ' + id + ' not found.'));
       }
 
-    const oldContact = facility.contact;
+      const oldContact = facility.contact;
 
-    async.waterfall(
-      [
-        async.apply(checkContact, facility),
-        async.apply(removeContact, facility),
-        async.apply(createPerson, facility._id, oldContact),
-        async.apply(
-          resetContact,
-          facility._id,
-          oldContact /* parentId passed from waterfall */
-        ),
-      ],
-      function(err) {
-        if (err && !err.skip) {
-          return callback(err);
+      async.waterfall(
+        [
+          async.apply(checkContact, facility),
+          async.apply(removeContact, facility),
+          async.apply(createPerson, facility._id, oldContact),
+          async.apply(
+            resetContact,
+            facility._id,
+            oldContact /* parentId passed from waterfall */
+          ),
+        ],
+        function(err) {
+          if (err && !err.skip) {
+            return callback(err);
+          }
+          return callback();
         }
-        return callback();
-      }
-    );
-  });
+      );
+    });
 };
 
 // For a given doc, update its parent to the latest version of the parent doc.
@@ -302,23 +302,23 @@ const updateParents = function(id, callback) {
         return callback(new Error('facility ' + id + ' not found.'));
       }
 
-    async.waterfall(
-      [
-        async.apply(checkParent, facility),
-        async.apply(removeParent, facility),
-        async.apply(
-          resetParent,
-          facility._id /* parentId passed from waterfall */
-        ),
-      ],
-      function(err) {
-        if (err && !err.skip) {
-          return callback(err);
+      async.waterfall(
+        [
+          async.apply(checkParent, facility),
+          async.apply(removeParent, facility),
+          async.apply(
+            resetParent,
+            facility._id /* parentId passed from waterfall */
+          ),
+        ],
+        function(err) {
+          if (err && !err.skip) {
+            return callback(err);
+          }
+          return callback();
         }
-        return callback();
-      }
-    );
-  });
+      );
+    });
 };
 
 const migrateOneType = async function(type, callback) {
