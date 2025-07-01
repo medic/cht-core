@@ -3,8 +3,6 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { NgZone } from '@angular/core';
 
-import { of } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
 import { AndroidApiService } from '@mm-services/android-api.service';
 import { SessionService } from '@mm-services/session.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
@@ -16,8 +14,6 @@ import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { AuthService } from '@mm-services/auth.service';
-import { ChangesService } from '@mm-services/changes.service';
-import { DbService } from '@mm-services/db.service';
 
 describe('AndroidApi service', () => {
 
@@ -29,7 +25,6 @@ describe('AndroidApi service', () => {
   let navigationService;
   let androidAppLauncherService;
   let translateService;
-  let http;
 
   beforeEach(() => {
     sessionService = {
@@ -62,7 +57,6 @@ describe('AndroidApi service', () => {
       get: sinon.stub().resolvesArg(0),
       instant: sinon.stub().returnsArg(0),
     };
-    http = { get: sinon.stub().returns(of([])) };
 
     TestBed.configureTestingModule({
       providers: [
@@ -75,10 +69,7 @@ describe('AndroidApi service', () => {
         { provide: RulesEngineService, useValue: {} },
         { provide: FormatDateService, useValue: {} },
         { provide: SettingsService, useValue: {} },
-        { provider: AuthService, useValue: {} },
-        { provide: ChangesService, useValue: {} },
-        { provide: DbService, useValue: { get: sinon.stub().resolves({}) } },
-        { provide: HttpClient, useValue: http },
+        { provide: AuthService, useValue: {} },
       ],
     });
 
