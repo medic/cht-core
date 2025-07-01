@@ -10,8 +10,13 @@ import * as Local from './local';
 import { FreetextQualifier, UuidQualifier } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertFreetextQualifier, assertLimit,
-  assertReportInput, assertUuidQualifier } from './libs/parameter-validators';
+import {
+  assertCursor,
+  assertFreetextQualifier,
+  assertLimit,
+  assertReportInput,
+  assertUuidQualifier
+} from './libs/parameter-validators';
 import { ReportInput } from './input';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
