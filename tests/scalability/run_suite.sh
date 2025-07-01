@@ -21,7 +21,7 @@ apt-get install default-jre -y
 echo installing node
 curl -sL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
 sudo bash nodesource_setup.sh # install node 22
-apt-get install nodejs bzip2
+apt-get install nodejs bzip2 # some npm dependency needs to be unzipped
 
 cd cht-core
 npm install patch-package
@@ -51,7 +51,6 @@ mv ./jmeter.log "$tmp_dir"/jmeter.log
 cd /cht
 
 remote_repo="https://x-access-token:${GH_TOKEN}@github.com/medic/scalability-results.git"
-echo "$remote_repo"
 git clone "$remote_repo"
 cd scalability-results
 git config http.sslVerify false
