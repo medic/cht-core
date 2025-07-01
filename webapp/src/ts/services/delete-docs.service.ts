@@ -7,6 +7,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { DbService } from '@mm-services/db.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { SessionService } from '@mm-services/session.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,8 +20,9 @@ export class DeleteDocsService {
     private dbService:DbService,
     private extractLineageService:ExtractLineageService,
     private sessionService:SessionService,
+    private chtDatasourceService: CHTDatasourceService
   ) {
-    this.utils = utilsFactory({ Promise, DB: this.dbService.get() });
+    this.utils = utilsFactory({ Promise, dataContext: this.chtDatasourceService.getDataContext() });
   }
 
   checkForDuplicates(docs) {
