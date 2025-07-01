@@ -321,8 +321,9 @@ const updateParents = function(id, callback) {
     });
 };
 
-const migrateOneType = async function(type, callback) {
-  try {
+const migrateOneType = function(type, callback) {
+  const processIds = async () => {
+    
     const generator = dataContext.bind(Contact.v1.getUuids)(Qualifier.byContactType(type));
     for await (const id of generator) {
       await new Promise((resolve, reject) => {
@@ -339,10 +340,12 @@ const migrateOneType = async function(type, callback) {
         });
       });
     }
-    callback();
-  } catch (err) {
-    callback(err);
-  }
+    
+  };
+
+  processIds()
+    .then(() => callback())
+    .catch(err => callback(err));
 };
 
 module.exports = {
