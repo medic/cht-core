@@ -51,6 +51,7 @@ mv ./jmeter.log "$tmp_dir"/jmeter.log
 cd /cht
 
 remote_repo="https://x-access-token:${GH_TOKEN}@github.com/medic/scalability-results.git"
+echo "$remote_repo"
 git clone "$remote_repo"
 cd scalability-results
 git config http.sslVerify false
