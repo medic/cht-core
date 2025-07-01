@@ -69,23 +69,20 @@ describe('TasksNotificationService', () => {
         ],
       }
     ];
+
     rulesEngine = {
       fetchTaskDocsForAllContacts: sinon.stub().resolves(tasks),
       isEnabled: sinon.stub().resolves(true),
     };
-
     translateService = {
       instant: sinon.stub().returnsArg(0),
     };
-
     formatDateService = {
       relative: sinon.stub().returnsArg(0),
     };
-
     settingsService = {
       get: sinon.stub().resolves({}),
     };
-
     authService = {
       has: sinon.stub().withArgs('can_get_task_notifications').resolves(true)
     };
