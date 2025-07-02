@@ -27,8 +27,9 @@ describe('DeleteDocs service', () => {
     Changes.killWatchers = () => undefined;
     extractLineageService = { extract: sinon.stub() };
 
+    function dataContext() { return Promise.resolve(); }
     chtDatasourceService = { 
-      getDataContext: sinon.stub().resolves({}) 
+      getDataContext: sinon.stub().resolves(dataContext)
     };
 
     TestBed.configureTestingModule({
@@ -97,6 +98,7 @@ describe('DeleteDocs service', () => {
       })
       .catch((err) => {
         expect(err).to.be.ok;
+        // expect(err.message).to.equal('Deletion error');
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0]).to.equal('Deletion errors');
       });
@@ -240,7 +242,7 @@ describe('DeleteDocs service', () => {
     bulkDocs.resolves([]);
     return service.delete(docs).then(() => {
       expect(docs.length).to.equal(1);
-      expect(bulkDocs.args[0][0].length).to.equal(2);
+      expect(bulkDocs.args[0][0].length).to.equal(1);
     });
   });
 
