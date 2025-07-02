@@ -5,11 +5,11 @@ set -e
 shutdown -P +60
 
 mkdir -p /cht
-chmod 777 /cht;
+chmod 777 /cht
 cd cht
 
 echo Cloning cht-core to /cht-core
-git clone --single-branch --branch "$TAG" https://github.com/medic/cht-core.git;
+git clone --single-branch --branch "$TAG" https://github.com/medic/cht-core.git
 
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 
@@ -19,7 +19,9 @@ echo installing JAVA
 apt-get install default-jre -y
 
 echo installing node
-apt-get install nodejs npm -y
+curl -sL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
+sudo bash nodesource_setup.sh # install node 22
+apt-get install nodejs bzip2 # some npm dependency needs to be unzipped
 
 cd cht-core
 npm install patch-package
@@ -31,7 +33,7 @@ echo "npm install for jmeter suite"
 npm ci
 
 echo "jmeter install"
-wget https://dlcdn.apache.org/jmeter/binaries/apache-jmeter-5.6.tgz -O ./apache-jmeter.tgz
+wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz -O ./apache-jmeter.tgz
 mkdir -p ./jmeter
 tar -xf apache-jmeter.tgz -C ./jmeter --strip-components=1
 
@@ -46,11 +48,19 @@ tmp_dir=$(mktemp -d -t -p ./ report-XXXXXXXXXX)
 ./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir="$tmp_dir" -Jnode_binary="$(which node)" -Jnumber_of_threads=10 -l "$tmp_dir"/cli_run.jtl -e -o "$tmp_dir"
 mv ./jmeter.log "$tmp_dir"/jmeter.log
 
-echo "Installing AWS CLI"
-apt-get install unzip -y
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-./aws/install
-echo "Uploading logs and screenshots to ${S3_PATH}..."
-/usr/local/bin/aws s3 cp "$tmp_dir" "$S3_PATH" --recursive
+cd /cht
+
+remote_repo="https://x-access-token:${GH_TOKEN}@github.com/medic/scalability-results.git"
+git clone "$remote_repo"
+cd scalability-results
+git config http.sslVerify false
+git config user.name "github-actions[bot]"
+git config user.email "github-actions[bot]@users.noreply.github.com"
+git remote set-url origin "$remote_repo"
+mkdir -p results
+rsync -rv --exclude='*/' "/cht/cht-core/tests/scalability/$tmp_dir/" results/"$DATA_PATH"
+git add -A
+git commit -m "scalability results for $TAG"
+git push origin main
+
 echo "FINISHED! "
