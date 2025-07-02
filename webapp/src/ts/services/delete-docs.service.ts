@@ -22,11 +22,19 @@ export class DeleteDocsService {
     private sessionService:SessionService,
     private chtDatasourceService: CHTDatasourceService
   ) {
-    this.utils = utilsFactory({ Promise, dataContext: this.chtDatasourceService.getDataContext() });
   }
 
-  checkForDuplicates(docs) {
-    const errors = this.utils.getDuplicateErrors(docs);
+  private async getUtils() {
+    if (!this.utils) {
+      const dataContext = await this.chtDatasourceService.getDataContext();
+      this.utils = utilsFactory({ Promise, dataContext });
+    }
+    return this.utils;
+  }
+
+  async checkForDuplicates(docs) {
+    const utils = await this.getUtils();
+    const errors = utils.getDuplicateErrors(docs);
     if (errors.length > 0) {
       console.error('Deletion errors', errors);
       throw new Error('Deletion error');
@@ -41,7 +49,8 @@ export class DeleteDocsService {
     });
   }
 
-  deleteAndUpdateDocs(docsToDelete, eventListeners) {
+  async deleteAndUpdateDocs(docsToDelete, eventListeners) {
+    const utils = await this.getUtils();
     if (this.sessionService.isOnlineOnly()) {
       const docIds = docsToDelete.map((doc) => {
         return { _id: doc._id };
@@ -52,8 +61,8 @@ export class DeleteDocsService {
     docsToDelete.forEach((doc) => {
       doc._deleted = true;
     });
-    this.checkForDuplicates(docsToDelete);
-    return this.utils
+    await this.checkForDuplicates(docsToDelete);
+    return utils
       .updateParentContacts(docsToDelete)
       .then((updatedParents) => {
         const allDocs = docsToDelete.concat(updatedParents.docs);
