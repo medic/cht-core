@@ -44,7 +44,7 @@ module.exports = {
       return res.json(docs);
     }),
     createPlace: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req, ['can_view_contacts', 'can_create_records']);
+      await checkUserPermissions(req, ['can_view_contacts', 'can_create_places']);
       
       const placeInput = Input.validatePlaceInput(req.body);
       const placeDoc = await createPlace()(placeInput);
