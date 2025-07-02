@@ -17,7 +17,7 @@ waitForBuildAvailable() {
 runInstance () {
   # --profile CA \ # for local runs
   aws ec2 run-instances \
-    --image-id ami-0a24ca1ef53e3d20f \
+    --image-id ami-0c0a551d0459e9d39 \
     --instance-type c5.2xlarge \
     --block-device-mappings file://block-device-mapping.json \
     --user-data file://"$1" \
@@ -25,6 +25,7 @@ runInstance () {
     --security-group-ids sg-0fa20cd785acec256 \
     --key-name cht-scalability-ca \
     --iam-instance-profile Arn="$SCALABILITY_ARN"
+    # get output of user-data script from /var/log/cloud-init-output.log
 }
 
 getInstanceId () {
@@ -117,8 +118,9 @@ seedData "$MEDIC_CONF_URL"
 waitForSentinel "$MEDIC_CONF_URL"
 
 sed -i '4s~^~'MEDIC_URL="$url"'\n~' run_suite.sh
-sed -i '4s~^~'S3_PATH=s3://medic-e2e/scalability/"$TAG"-"$GITHUB_RUN_ID"'\n~' run_suite.sh
 sed -i '4s~^~'TAG="$TAG"'\n~' run_suite.sh
+sed -i '4s~^~'DATA_PATH="$TAG-$GITHUB_RUN_ID"'\n~' run_suite.sh
+sed -i '4s~^~'GH_TOKEN="$SCALABILITY_RESULTS_TOKEN"'\n~' run_suite.sh
 
 echo Triggering EC2 Run Instance Command and getting Instance ID
 
