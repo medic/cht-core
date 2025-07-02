@@ -7,6 +7,7 @@ import { SessionService } from '@mm-services/session.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { DeleteDocsService } from '@mm-services/delete-docs.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 describe('DeleteDocs service', () => {
 
@@ -16,6 +17,7 @@ describe('DeleteDocs service', () => {
   let isOnlineOnly;
   let server;
   let extractLineageService;
+  let chtDatasourceService;
 
   beforeEach(() => {
     get = sinon.stub();
@@ -25,12 +27,17 @@ describe('DeleteDocs service', () => {
     Changes.killWatchers = () => undefined;
     extractLineageService = { extract: sinon.stub() };
 
+    chtDatasourceService = { 
+      getDataContext: sinon.stub().resolves({}) 
+    };
+
     TestBed.configureTestingModule({
       providers: [
         { provide: DbService, useValue: { get: () => ({ bulkDocs, get }) } },
         { provide: SessionService, useValue: { isOnlineOnly } },
         { provide: ChangesService, useValue: Changes },
         { provide: ExtractLineageService, useValue: extractLineageService },
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
       ]
     });
     service = TestBed.inject(DeleteDocsService);
