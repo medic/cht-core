@@ -27,7 +27,9 @@ describe('DeleteDocs service', () => {
     Changes.killWatchers = () => undefined;
     extractLineageService = { extract: sinon.stub() };
 
-    function dataContext() { return Promise.resolve(); }
+    const dataContext = function() {
+      return Promise.resolve();
+    };
     chtDatasourceService = { 
       getDataContext: sinon.stub().resolves(dataContext)
     };
