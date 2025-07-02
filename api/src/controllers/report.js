@@ -8,11 +8,8 @@ const getReport = () => ctx.bind(Report.v1.get);
 const getReportIds = () => ctx.bind(Report.v1.getUuidsPage);
 const createReport = () => ctx.bind(Report.v1.createReport);
 
-const checkUserPermissions = async (req, permissions = []) => {
+const checkUserPermissions = async (req, permissions = ['can_view_reports']) => {
   const userCtx = await auth.getUserCtx(req);
-  if (permissions.length === 0) {
-    permissions = ['can_view_reports'];
-  }
   if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, permissions)) {
     throw new PermissionError('Insufficient privileges');
   }

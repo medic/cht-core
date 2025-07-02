@@ -319,7 +319,7 @@ describe('Person Controller', () => {
         const err = new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}].`);
         await controller.v1.createPerson(req, res);
         expect(hasAllPermissions
-          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_records'])).to.be.true;
+          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_people'])).to.be.true;
         expect(createPerson.notCalled).to.be.true;
         expect(serverUtilsError.calledOnce).to.be.true;
         expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(InvalidArgumentError);
@@ -346,7 +346,7 @@ describe('Person Controller', () => {
         // eslint-disable-next-line max-len
         await controller.v1.createPerson(req, res);
         expect(hasAllPermissions
-          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_records'])).to.be.true;
+          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_people'])).to.be.true;
         expect(createPerson.calledOnce).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
         expect(dataContextBind.calledOnce).to.be.true;

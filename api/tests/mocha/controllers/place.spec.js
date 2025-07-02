@@ -320,7 +320,7 @@ describe('Place Controller', () => {
         )}].`);
         await controller.v1.createPlace(req, res);
         expect(hasAllPermissions
-          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_records'])).to.be.true;
+          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_places'])).to.be.true;
         expect(placeCreate.notCalled).to.be.true;
         expect(serverUtilsError.calledOnce).to.be.true;
         expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(InvalidArgumentError);
@@ -351,7 +351,7 @@ describe('Place Controller', () => {
 
         await controller.v1.createPlace(req, res);
         expect(hasAllPermissions
-          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_records'])).to.be.true;
+          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_places'])).to.be.true;
         expect(placeCreate.calledOnceWithExactly(input)).to.be.true;
         expect(dataContextBind.calledOnce).to.be.true;
         expect(res.json.calledOnceWithExactly(expected_doc)).to.be.true;

@@ -13,11 +13,8 @@ const getPlace = ({ with_lineage }) => ctx.bind(
 const getPageByType = () => ctx.bind(Place.v1.getPage);
 const createPlace = () => ctx.bind(Place.v1.createPlace);
 
-const checkUserPermissions = async (req, permissions = []) => {
+const checkUserPermissions = async (req, permissions = ['can_view_contacts']) => {
   const userCtx = await auth.getUserCtx(req);
-  if (permissions.length === 0) {
-    permissions = ['can_view_contacts'];
-  }
   if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, permissions)){
     throw new PermissionError('Insufficient privileges');
   }
