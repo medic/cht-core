@@ -44,7 +44,7 @@ module.exports = {
     }),
     
     createPerson: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req, ['can_view_contacts', 'can_create_records']);
+      await checkUserPermissions(req, ['can_view_contacts', 'can_create_people']);
 
       const personInput = Input.validatePersonInput(req.body);
       const personDoc = await createPerson()(personInput);
