@@ -88,7 +88,7 @@
     "@medic/translation-checker": "^1.1.0",
     "@octokit/core": "^5.2.0",
     "@octokit/plugin-paginate-graphql": "^4.0.1",
-    "@stylistic/eslint-plugin": "^4.4.1",
+    "@stylistic/eslint-plugin": "^5.1.0",
     "@tsconfig/node22": "^22.0.0",
     "@types/chai": "^4.3.6",
     "@types/chai-as-promised": "^7.1.6",
