@@ -100,6 +100,48 @@ export namespace v1 {
     return async(
       input: PlaceInput
     ):Promise<Place.v1.Place> => {
+
+      /**
+       * Ensures that places that require a parent (i.e. not at the top of the hirerarchy) 
+       * have the parent field as one of the pre-configured `parents` in the `contact_types`
+       * for that place.
+       */
+      /** @internal*/
+      const validateParentPresence = async(contactTypeObject: Record<string, unknown>
+        , input:Record<string, unknown> ):Promise<Doc | null> => {
+        if (hasField(contactTypeObject, {name: 'parents', type: 'object'})) {
+          return await ensureHasValidParentField(input, contactTypeObject);
+        } else if (hasField(input, {name: 'parent', type: 'string', ensureTruthyValue: true})){
+          throw new InvalidArgumentError(
+            `Unexpected parent for [${JSON.stringify(input)}].`
+          );
+        }
+        return null;
+      };
+
+      const ensureHasValidParentField = 
+        async(input:Record<string, unknown>, contactTypeObject: Record<string, unknown>):Promise<Doc> => {
+          if (!hasField(input, {name: 'parent', type: 'string', ensureTruthyValue: true})){
+            throw new InvalidArgumentError(
+              `Missing or empty required field (parent) for [${JSON.stringify(input)}].`
+            );
+          } else {
+            const parentWithLineage = await getDocById(medicDb)(input.parent);
+            if (parentWithLineage === null){
+              throw new InvalidArgumentError(
+                `Invalid parent for [${JSON.stringify(input)}].`
+              );
+            }
+            if (!((contactTypeObject.parents as string[])
+              .find(parent => parent===(parentWithLineage as PlaceInput).type))) {
+              throw new InvalidArgumentError(
+                `Invalid parent for [${JSON.stringify(input)}].`
+              );
+            }
+            return parentWithLineage;
+          }
+        };
+
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a place.');
       }
@@ -114,46 +156,36 @@ export namespace v1 {
       
       // Append `contact_type` for newer versions.
       if (typeFoundInSettingsContactTypes){
-        validateParentPresence(typeFoundInSettingsContactTypes, input);
         input={
           ...input,
           contact_type: input.type,
-          type: 'contact'
+          type: 'contact',
         } as unknown as PlaceInput;
+        
+        const parentWithLineage = await validateParentPresence(typeFoundInSettingsContactTypes, input);
+        if (parentWithLineage){
+          input = {...input, parent: {
+            _id: input.parent,
+            parent: parentWithLineage.parent
+          }} as unknown as PlaceInput;
+        }
+      } else {
+        if (input.parent){
+          const parentWithLineage = await getDocById(medicDb)(input.parent);
+          if (parentWithLineage === null){
+            throw new InvalidArgumentError(
+              `Invalid parent for [${JSON.stringify(input)}].`
+            );
+          }
+          input = {...input, parent: {
+            _id: input.parent, parent: parentWithLineage.parent 
+          } } as unknown as PlaceInput;
+        }
       }
 
       return await createPlaceDoc(input) as Place.v1.Place;
     };
   };
 
-  /**
-   * Ensures that places that require a parent (i.e. not at the top of the hirerarchy) 
-   * have the parent field as one of the pre-configured `parents` in the `contact_types`
-   * for that place.
-   */
-  /** @internal*/
-  const validateParentPresence = (contactTypeObject: Record<string, unknown>
-    , input:Record<string, unknown> ):void => {
-    if (hasField(contactTypeObject, {name: 'parents', type: 'object'})) {
-      ensureHasValidParentField(input, contactTypeObject);
-    } else if (hasField(input, {name: 'parent', type: 'string', ensureTruthyValue: true})){
-      throw new InvalidArgumentError(
-        `Unexpected parent for [${JSON.stringify(input)}].`
-      );
-    }
-  };
-
-  const ensureHasValidParentField = 
-  (input:Record<string, unknown>, contactTypeObject: Record<string, unknown>):void => {
-    if (!hasField(input, {name: 'parent', type: 'string', ensureTruthyValue: true})){
-      throw new InvalidArgumentError(
-        `Missing or empty required field (parent) for [${JSON.stringify(input)}].`
-      );
-    } else if (!((contactTypeObject.parents as string[])
-      .find(parent => parent===input.parent))) {
-      throw new InvalidArgumentError(
-        `Invalid parent for [${JSON.stringify(input)}].`
-      );
-    }
-  };
+  
 }
