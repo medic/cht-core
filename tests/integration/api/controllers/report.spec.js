@@ -325,4 +325,49 @@ describe('Report API', () => {
         );
     });
   });
+
+  describe('POST /api/v1/report/', () => {
+    it('creates a report doc for valid input', async () => {
+      const input = {
+        form: 'form-1',
+        type: 'report',
+        reported_date: 11221122
+      };
+      const opts = {
+        path: '/api/v1/report', 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: input,
+
+      };
+
+      const reportDoc = await utils.request(opts);
+      expect(reportDoc).excluding(['_rev', '_id'])
+        .to.deep.equal(input);
+    });
+
+    it('throws error for missing report fields', async () => {
+      const input = {
+        form: 'form-1',
+        reported_date: 11221122
+      };
+      const opts = {
+        path: '/api/v1/report', 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: input,
+
+      };
+
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(`400 - ${JSON.stringify({
+          code: 400,
+          error: `Missing or empty required fields (type, form) in [${JSON.stringify(input)}].`
+        })}`);
+    });
+  });
 });

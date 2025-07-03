@@ -33,7 +33,6 @@ import * as Contact from './contact';
 import * as Person from './person';
 import * as Place from './place';
 import * as Qualifier from './qualifier';
-import * as Input from './input';
 import * as Report from './report';
 import {
   DEFAULT_DOCS_PAGE_LIMIT,
@@ -234,11 +233,11 @@ export const getDatasource = (ctx: DataContext) => {
 
         /**
          * Creates a place.
-         * @param qualifer the object defining the place properties.
+         * @param input the object defining the place properties.
          * @returns the created place.
-         * @throws InvalidArgumentError if the type of qualifer is not valid for creating a place.
+         * @throws InvalidArgumentError if the type of input is not valid for creating a place.
          */
-        createPlace: (qualifier: unknown) => ctx.bind(Place.v1.createPlace)(Input.validatePlaceInput(qualifier))
+        createPlace: (input: unknown) => ctx.bind(Place.v1.createPlace)(input)
       },
       person: {
         /**
@@ -287,11 +286,11 @@ export const getDatasource = (ctx: DataContext) => {
         
         /**
          * Creates a person.
-         * @param qualifer the object defining the person properties.
+         * @param input the object defining the person properties.
          * @returns the created person.
-         * @throws InvalidArgumentError if the type of qualifer is not valid for creating a person.
+         * @throws InvalidArgumentError if the type of input is not valid for creating a person.
          */
-        createPerson: (qualifier: unknown) => ctx.bind(Person.v1.createPerson)(Input.validatePersonInput(qualifier))
+        createPerson: (input: unknown) => ctx.bind(Person.v1.createPerson)(input)
       },
       report: {
         /**
@@ -330,6 +329,14 @@ export const getDatasource = (ctx: DataContext) => {
         getUuidsByFreetext: (
           qualifier: string,
         ) => ctx.bind(Report.v1.getUuids)(Qualifier.byFreetext(qualifier)),
+        
+        /**
+         * Creates a report.
+         * @param input the object defining the person properties.
+         * @returns the created report.
+         * @throws InvalidArgumentError if the type of input is not valid for creating a report.
+         */
+        createReport: (input : unknown) => ctx.bind(Report.v1.createReport)(input)
       },
     },
   };

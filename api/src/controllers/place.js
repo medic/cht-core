@@ -13,9 +13,9 @@ const getPlace = ({ with_lineage }) => ctx.bind(
 const getPageByType = () => ctx.bind(Place.v1.getPage);
 const createPlace = () => ctx.bind(Place.v1.createPlace);
 
-const checkUserPermissions = async (req) => {
+const checkUserPermissions = async (req, permissions = ['can_view_contacts']) => {
   const userCtx = await auth.getUserCtx(req);
-  if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, 'can_view_contacts')) {
+  if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, permissions)){
     throw new PermissionError('Insufficient privileges');
   }
 };
@@ -41,7 +41,7 @@ module.exports = {
       return res.json(docs);
     }),
     createPlace: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req);
+      await checkUserPermissions(req, ['can_view_contacts', 'can_create_places']);
       
       const placeInput = Input.validatePlaceInput(req.body);
       const placeDoc = await createPlace()(placeInput);

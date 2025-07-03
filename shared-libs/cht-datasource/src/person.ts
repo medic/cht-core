@@ -9,9 +9,8 @@ import { RemoteDataContext } from './remote/libs/data-context';
 import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, 
-  assertPersonInput, 
   assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
-import { PersonInput } from './input';
+import { PersonInput, validatePersonInput } from './input';
 
 /** */
 export namespace v1 {
@@ -52,9 +51,9 @@ export namespace v1 {
     ) => (context: DataContext) => {
       assertDataContext(context);
       const fn = adapt(context, localFn, remoteFn);
-      return async (input: PersonInput): Promise<T> => {
-        assertPersonInput(input);
-        return fn(input);
+      return async (input: unknown): Promise<T> => {
+        const personInput = validatePersonInput(input);
+        return fn(personInput);
       };
     };
 
