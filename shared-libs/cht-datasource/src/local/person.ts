@@ -107,6 +107,42 @@ export namespace v1 {
     settings
   } : LocalDataContext) => {
     const createPersonDoc = createDoc(medicDb);
+
+    const ensureHasValidParentFieldAndReturnParentWithLineage =
+    async(input:Record<string, unknown>, contactTypeObject: Record<string, unknown>):Promise<Doc> => {
+      if (!hasField(input, {name: 'parent', type: 'string', ensureTruthyValue: true})){
+        throw new InvalidArgumentError(
+          `Missing or empty required field (parent) for [${JSON.stringify(input)}].`
+        );
+      } else {
+        const parentWithLineage = await getDocById(medicDb)(input.parent);
+        if (parentWithLineage === null){
+          throw new InvalidArgumentError(
+            `Invalid parent for [${JSON.stringify(input)}].`
+          );
+        }
+        if (!((contactTypeObject.parents as string[])
+          .find(parent => parent===(parentWithLineage as PersonInput).type))) {
+          throw new InvalidArgumentError(
+            `Invalid parent for [${JSON.stringify(input)}].`
+          );
+        }
+        return parentWithLineage;
+      }
+    };
+
+    const validatePersonParent = 
+    async(contactTypeObject: Record<string, unknown>
+      , input:Record<string, unknown> ):Promise<Doc | null> => {
+      if (!hasField(contactTypeObject, {name: 'parents', type: 'object'})) {
+        throw new InvalidArgumentError(
+          `Invalid type of person, cannot have parent for [${JSON.stringify(input)}].`
+        );
+      } else {
+        return await ensureHasValidParentFieldAndReturnParentWithLineage(input, contactTypeObject);
+      }
+    };
+
     return async (input: PersonInput) :Promise<Person.v1.Person> => {
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a person.');
@@ -127,6 +163,25 @@ export namespace v1 {
           contact_type: input.type,
           type: 'contact'
         } as unknown as PersonInput;
+        const parentWithLineage = await validatePersonParent(typeFoundInSettingsContactTypes, input);
+        if (parentWithLineage){
+          input = {...input, parent: {
+            _id: input.parent,
+            parent: parentWithLineage.parent
+          }} as unknown as PersonInput;
+        } else {
+          throw new InvalidArgumentError(`Invalid parent for [${JSON.stringify(input)}].`);
+        }
+      } else {
+        const parentWithLineage = await getDocById(medicDb)(input.parent);
+        if (parentWithLineage === null){
+          throw new InvalidArgumentError(
+            `Invalid parent for [${JSON.stringify(input)}].`
+          );
+        }
+        input = {...input, parent: {
+          _id: input.parent, parent: parentWithLineage.parent 
+        } } as unknown as PersonInput;
       }
 
       return await createPersonDoc(input) as Person.v1.Person;
