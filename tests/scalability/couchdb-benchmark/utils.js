@@ -32,6 +32,6 @@ const printResults = async (endpoint, results) => {
 module.exports = {
   printResults,
   cleanFile,
-  db: 'http://admin:pass@localhost:5984/medic'
+  db: process.env.COUCH_URL || 'http://localhost:5984/medic',
 };
-process.env.COUCH_URL = module.exports.db; // required by @medic/environment
+

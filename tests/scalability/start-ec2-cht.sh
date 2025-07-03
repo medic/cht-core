@@ -67,11 +67,11 @@ seedData () {
 }
 
 forwardSentinelSeq () {
-  last_seq=$(curl "$1/medic/_changes?limit=1&descending=true" -s -k | jq '.last_seq')
+  last_seq=$(curl -k -sf "$1/medic/_changes?limit=1&descending=true" | jq '.last_seq')
   # Update sentinel queue
-  sentinel_queue=$(curl -s -X GET "$1/medic-sentinel/_local/transitions-seq" | jq --arg seq "$last_seq" '.value=$seq')
+  sentinel_queue=$(curl -sf -k "$1/medic-sentinel/_local/transitions-seq" | jq --arg seq "$last_seq" '.value=$seq')
   # Put the updated sequence
-  curl -X PUT "$1/medic-sentinel/_local/transitions-seq" \
+  curl -k -sf -X PUT "$1/medic-sentinel/_local/transitions-seq" \
     -H "Content-Type: application/json" \
     --data "$sentinel_queue"
 
