@@ -133,7 +133,7 @@ export namespace v1 {
               );
             }
             if (!((contactTypeObject.parents as string[])
-              .find(parent => parent===(parentWithLineage as PlaceInput).type))) {
+              .find(parent => parent===(parentWithLineage as PlaceInput).contact_type))) {
               throw new InvalidArgumentError(
                 `Invalid parent for [${JSON.stringify(input)}].`
               );
