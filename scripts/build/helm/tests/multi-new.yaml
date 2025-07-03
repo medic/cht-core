@@ -1,0 +1,26 @@
+# Test values file for Multi Node with New Instance (Dynamic Provisioning)
+# Works for all platforms: GKE, EKS, K3s-K3d
+# Usage:
+#   helm template test scripts/build/helm \
+#     -f scripts/build/helm/values/base.yaml \
+#     -f scripts/build/helm/values/deployment-multi.yaml \
+#     -f scripts/build/helm/values/platform-{gke|eks|k3s-k3d}.yaml \
+#     -f scripts/build/helm/tests/multi-new.yaml
+
+project_name: "test"
+namespace: "test"
+cht_image_tag: "test"
+
+couchdb:
+  password: "test"
+  secret: "test"
+  uuid: "test"
+  couchdb_node_storage_size: 10Gi
+
+nodes:
+  node-1: node1
+  node-2: node2
+  node-3: node3
+
+ingress:
+  host: "test.example.com"
