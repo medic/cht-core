@@ -72,6 +72,7 @@ setupTestDataGenerator() {
 
 runCouchDbBenchmark() {
   cd "$CHT_BASE_DIR/cht-core/tests/scalability/couchdb-benchmark"
+  export COUCH_URL=$MEDIC_URL/not-medic
   node index.js
   cd ../
   cp benchmark_results.md "$tmp_dir/benchmark_results.md"
