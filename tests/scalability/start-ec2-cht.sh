@@ -66,21 +66,16 @@ seedData () {
       create-users
 }
 
-waitForSentinel () {
-  set +e
-  sleep_time=30
-  sentinel_queue_size="51"
+forwardSentinelSeq () {
+  last_seq=$(curl "$1/medic/_changes?limit=1&descending=true" -s -k | jq '.last_seq')
+  # Update sentinel queue
+  sentinel_queue=$(curl -s -X GET "$1/medic-sentinel/_local/transitions-seq" | jq --arg seq "$last_seq" '.value=$seq')
+  # Put the updated sequence
+  curl -X PUT "$1/medic-sentinel/_local/transitions-seq" \
+    -H "Content-Type: application/json" \
+    --data "$sentinel_queue"
 
-  until [ "$sentinel_queue_size" -lt "50" ]
-  do
-  proc_seq=$(curl "$1"/medic-sentinel/_local/transitions-seq -s -k | jq .value -r)
-  sentinel_queue_size=$(curl "$1"/medic/_changes?since="$proc_seq" -s -k | jq '.results | length')
-  echo Sentinel queue length is "$sentinel_queue_size"
-  echo Sleeping again for $sleep_time
-  sleep $sleep_time
-  done
-
-  set -e
+  sleep 30
   echo Sentinel has caught up.
 }
 
@@ -115,7 +110,7 @@ waitForInstanceUp "$url"
 
 MEDIC_CONF_URL='https://admin:medicScalability@'$PublicDnsName
 seedData "$MEDIC_CONF_URL"
-waitForSentinel "$MEDIC_CONF_URL"
+forwardSentinelSeq "$MEDIC_CONF_URL"
 
 sed -i '4s~^~'MEDIC_URL="$url"'\n~' run_suite.sh
 sed -i '4s~^~'TAG="$TAG"'\n~' run_suite.sh
