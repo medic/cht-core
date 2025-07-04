@@ -115,24 +115,25 @@ export namespace v1 {
         throw new InvalidArgumentError(
           `Missing or empty required field (parent) for [${JSON.stringify(input)}].`
         );
-      } else {
-        const parentWithLineage = await getDocById(medicDb)(input.parent);
-        if (parentWithLineage === null){
-          throw new InvalidArgumentError(
-            `Parent does not exist for [${JSON.stringify(input)}].`
-          );
-        }
-        // Check whether parent doc's contact_type matches with any of the allowed parents type.
-        const parentTypeMatchWithAllowedParents = (contactTypeObject.parents as string[])
-          .find(parent => parent===(parentWithLineage as PersonInput).contact_type);
-        
-        if (!(parentTypeMatchWithAllowedParents)) {
-          throw new InvalidArgumentError(
-            `Invalid parent type for [${JSON.stringify(input)}].`
-          );
-        }
-        return parentWithLineage;
+      } 
+
+      const parentWithLineage = await getDocById(medicDb)(input.parent);
+      if (parentWithLineage === null){
+        throw new InvalidArgumentError(
+          `Parent does not exist for [${JSON.stringify(input)}].`
+        );
       }
+      // Check whether parent doc's contact_type matches with any of the allowed parents type.
+      const parentTypeMatchWithAllowedParents = (contactTypeObject.parents as string[])
+        .find(parent => parent===(parentWithLineage as PersonInput).contact_type);
+        
+      if (!(parentTypeMatchWithAllowedParents)) {
+        throw new InvalidArgumentError(
+          `Invalid parent type for [${JSON.stringify(input)}].`
+        );
+      }
+      return parentWithLineage;
+      
     };
 
       const validatePersonParent = 
