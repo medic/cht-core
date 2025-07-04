@@ -229,7 +229,7 @@ describe('server', () => {
     });
   });
 
-  describe('Request ID propagated to audit layer', () => {
+  describe('Request ID propagated to haproxy', () => {
     const ID_REGEX = /[,|\s]([0-9a-f]{12})[,|\s]/;
 
     const getReqId = (logLine) => {
