@@ -1,4 +1,5 @@
 require('chai').should();
+chai.should();
 
 const db = require('../../../src/db');
 const logger = require('@medic/logger');
@@ -343,6 +344,10 @@ describe('Export Data Service', () => {
               // eslint-disable-next-line @stylistic/max-len
               userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
               versions: { cht: 'unknown', settings: '4-83c8561a13479b245b295e97401f2f55' },
+              storage: {
+                free: 26544680960,
+                total: 56544680960
+              }
             },
           },
         },
@@ -360,6 +365,10 @@ describe('Export Data Service', () => {
                 cht: 'unknown',
                 settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba',
               },
+              storage: {
+                free: 16713310208,
+                total: 26544680960
+              }
             },
           },
         },
@@ -394,7 +403,9 @@ describe('Export Data Service', () => {
           apk: undefined,
           android: undefined,
           cht: 'unknown',
-          settings: '4-83c8561a13479b245b295e97401f2f55'
+          settings: '4-83c8561a13479b245b295e97401f2f55',
+          storageFree: 26544680960,
+          storageTotal: 56544680960
         },
         {
           user: 'chw1',
@@ -407,20 +418,21 @@ describe('Export Data Service', () => {
           apk: 'v1.0.4-4',
           android: '10',
           cht: 'unknown',
-          settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba'
+          settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba',
+          storageFree: 16713310208,
+          storageTotal: 26544680960
         },
         {
-          android: undefined,
-          apk: undefined,
-          browser: {
-            name: undefined,
-            version: undefined
-          },
-          cht: undefined,
-          date: '2022-11-29',
+          user: 'min-data',
           deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c802',
+          date: '2022-11-29',
+          browser: {},
+          apk: undefined,
+          android: undefined,
+          cht: undefined,
           settings: undefined,
-          user: 'min-data'
+          storageFree: undefined,
+          storageTotal: undefined
         }
       ]);
     });
@@ -452,6 +464,10 @@ describe('Export Data Service', () => {
               cht: 'unknown',
               settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba',
             },
+            storage: {
+              free: 100,
+              total: 200
+            }
           },
         },
       },
@@ -471,7 +487,9 @@ describe('Export Data Service', () => {
         apk: undefined,
         android: undefined,
         cht: 'unknown',
-        settings: '4-83c8561a13479b245b295e97401f2f55'
+        settings: '4-83c8561a13479b245b295e97401f2f55',
+        storageFree: undefined,
+        storageTotal: undefined
       },
       {
         user: 'chw1',
@@ -484,7 +502,9 @@ describe('Export Data Service', () => {
         apk: 'v1.0.4-4',
         android: '10',
         cht: 'unknown',
-        settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba'
+        settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba',
+        storageFree: 100,
+        storageTotal: 200
       }
     ]);
     logger.error.callCount.should.equal(1);
