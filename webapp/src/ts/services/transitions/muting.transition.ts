@@ -7,6 +7,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { Transition, Doc } from '@mm-services/transitions/transition';
 import { ValidationService } from '@mm-services/validation.service';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,6 +20,7 @@ export class MutingTransition extends Transition {
     private contactTypesService:ContactTypesService,
     private validationService:ValidationService,
     private placeHierarchyService:PlaceHierarchyService,
+    private chtDatasourceService: CHTDatasourceService,
   ) {
     super();
   }
@@ -233,14 +235,17 @@ export class MutingTransition extends Transition {
     });
   }
 
-  private getDoc(docId, context) {
+  private async getDoc(docId, context) {
     const knownDoc = this.getKnownDoc(docId, context);
     if (knownDoc) {
       // if we've already loaded a doc, assume the copy we already have is the latest and up to date
       return Promise.resolve(knownDoc);
     }
 
-    return this.dbService.get().get(docId);
+    const datasource = await this.chtDatasourceService.get();
+    const doc = await datasource.v1.contact.getByUuid(docId);
+
+    return doc;
   }
 
   /**
