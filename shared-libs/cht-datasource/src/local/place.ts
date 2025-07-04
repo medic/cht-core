@@ -155,6 +155,7 @@ export namespace v1 {
           parentWithLineage = await getDocById(medicDb)(input.parent);
         } else if (input.contact_type === 'district_hospital') {
           // For legacy types, `district_hospital` is at the top of the hierarchy
+          // so no need to append parent.
           return;
         } else {
           throw new InvalidArgumentError(
@@ -172,6 +173,20 @@ export namespace v1 {
         } } as unknown as PlaceInput;
       };
 
+      const appendContactWithLineage = async() => {
+        if (!hasField(input, {name: 'contact', type: 'string', ensureTruthyValue: true})) {
+          return;
+        }
+        const contactWithLineage = await getDocById(medicDb)(input.contact!);
+        if (contactWithLineage === null){
+          throw new InvalidArgumentError(
+            `Contact does not exist for [${JSON.stringify(input)}].`
+          );
+        }
+        input = {
+          ...input, contact: contactWithLineage
+        } as unknown as PlaceInput;
+      };
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a place.');
       }
@@ -183,6 +198,8 @@ export namespace v1 {
       if (!typeFoundInSettingsContactTypes && !typeIsHardCodedPlaceType) {
         throw new InvalidArgumentError('Invalid place type.');
       }
+      
+      // Append `contact_type` for newer versions.
       if (typeFoundInSettingsContactTypes){
         input={
           ...input,
@@ -190,8 +207,9 @@ export namespace v1 {
           type: 'contact',
         } as unknown as PlaceInput;
       }
-      // Append `contact_type` for newer versions.
+      
       await appendParentWithLineage();
+      await appendContactWithLineage();
 
       return await createPlaceDoc(input) as Place.v1.Place;
     };
