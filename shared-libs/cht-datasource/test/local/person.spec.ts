@@ -406,6 +406,62 @@ describe('local person', () => {
           expect(createDocInner.calledOnceWithExactly({...input, parent: parentDocReturned })).to.be.true;
         });
 
+      it('throws error invalid parent id that is not present in the db', 
+        async () => {
+          isPerson.returns(true);
+          const input = {
+            name: 'user-1',
+            type: 'person',
+            parent: 'p1'
+          };
+          
+          const parentDocReturned = null;
+          getDocByIdInner.resolves(parentDocReturned);
+          await expect( Person.v1.createPerson(localContext)(input))
+            .to.be.rejectedWith(`Parent does not exist for [${JSON.stringify(input)}].`);
+        });
+
+      it('throws error if type of person cannot have a parent', 
+        async () => {
+          settingsGetAll.returns({
+            contact_types: [{id: 'person' }, {id: 'hospital', parents: ['district_hospital']}]
+          });
+
+          isPerson.returns(true);
+          const input = {
+            name: 'user-1',
+            type: 'person',
+            parent: 'p1'
+          };
+          const updatedInput = {...input, type: 'contact', contact_type: 'person'};
+          await expect( Person.v1.createPerson(localContext)(input))
+            .to.be.rejectedWith(`Invalid type of person, cannot have parent for [${JSON.stringify(updatedInput)}].`);
+          expect(getDocByIdInner.called).to.be.false;
+        });
+
+      it('throws error if type of returned parent doc is not present in allowed parent types', 
+        async () => {
+          settingsGetAll.returns({
+            contact_types: [{id: 'person', parents: ['hospital'] }, {id: 'hospital', parents: ['district_hospital']}]
+          });
+
+          isPerson.returns(true);
+          const input = {
+            name: 'user-1',
+            type: 'person',
+            parent: 'p1'
+          };
+          const returnedParentDoc = {
+            _id: 'p1',
+            contact_type: 'health_center',
+            type: 'contact'
+          };
+          getDocByIdInner.resolves(returnedParentDoc);
+          const updatedInput = {...input, type: 'contact', contact_type: 'person'};
+          await expect( Person.v1.createPerson(localContext)(input))
+            .to.be.rejectedWith(`Invalid parent type for [${JSON.stringify(updatedInput)}].`);
+        });
+
       it('throws error if `_rev` is passed in', async () => {
         const input = {
           name: 'user-1',
