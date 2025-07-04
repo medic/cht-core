@@ -20,6 +20,7 @@ import { DuplicateContactsComponent } from '@mm-components/duplicate-contacts/du
 import { DuplicateCheck } from '@mm-services/deduplicate.service';
 import { Contact } from '@medic/cht-datasource';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @Component({
   templateUrl: './contacts-edit.component.html',
@@ -36,6 +37,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly dbService: DbService,
     private readonly performanceService: PerformanceService,
     private readonly telemetryService: TelemetryService,
+    private readonly chtDatasourceService: CHTDatasourceService,
     private readonly translateService: TranslateService,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -266,9 +268,13 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    const parent = await this.dbService
-      .get()
-      .get(this.contact.parent);
+    const datasource = await this.chtDatasourceService.get();
+    const parent = await datasource.v1.contact.getByUuid(this.contact.parent);
+
+    if (!parent){
+      throw new Error(`Parent contact with UUID ${this.contact.parent} not found.`);
+    }
+  
 
     const parentType = this.contactTypesService.getTypeId(parent);
     if (!parentType) {

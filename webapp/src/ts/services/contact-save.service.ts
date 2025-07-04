@@ -5,6 +5,7 @@ import { defaults as _defaults, isObject as _isObject } from 'lodash-es';
 import { DbService } from '@mm-services/db.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,10 +14,10 @@ export class ContactSaveService {
   private readonly CONTACT_FIELD_NAMES = [ 'parent', 'contact' ];
 
   constructor(
-    private dbService:DbService,
     private enketoTranslationService:EnketoTranslationService,
     private extractLineageService:ExtractLineageService,
     private ngZone:NgZone,
+    private chtDatasourceService: CHTDatasourceService,
   ) {
   }
 
@@ -100,17 +101,17 @@ export class ContactSaveService {
     return preparedSibling;
   }
 
-  private getContact(doc, fieldName, contactId) {
-    return this.dbService
-      .get()
-      .get(contactId)
-      .then((dbFieldValue) => {
-        // In a correctly configured form one of these will be the
-        // parent. This must happen before we attempt to run
-        // ExtractLineage on any siblings or repeats, otherwise they
-        // will extract an incomplete lineage
-        doc[fieldName] = this.extractIfRequired(fieldName, dbFieldValue);
-      });
+  private async getContact(doc, fieldName, contactId) {
+    const datasource = await this.chtDatasourceService.get();
+    const dbFieldValue = await datasource.v1.contact.getByUuid(contactId);
+    if (!dbFieldValue) {
+      throw new Error(`Contact not found: ${contactId}`);
+    }
+    // In a correctly configured form one of these will be the
+    // parent. This must happen before we attempt to run
+    // ExtractLineage on any siblings or repeats, otherwise they
+    // will extract an incomplete lineage
+    doc[fieldName] = this.extractIfRequired(fieldName, dbFieldValue);
   }
 
   // Mutates the passed doc to attach prepared siblings, and returns all
@@ -148,7 +149,8 @@ export class ContactSaveService {
 
   async save(form, docId, typeFields, xmlVersion) {
     return this.ngZone.runOutsideAngular(async () => {
-      const original = docId ? await this.dbService.get().get(docId) : null;
+      const datasource = await this.chtDatasourceService.get();
+      const original = docId ? await datasource.v1.contact.getByUuid(docId) : null;
       const submitted = this.enketoTranslationService.contactRecordToJs(form.getDataStr({ irrelevant: false }));
       const docData = await this.prepareSubmittedDocsForSave(original, submitted, typeFields);
       if (xmlVersion) {
