@@ -188,7 +188,10 @@ export namespace v1 {
           );
         }
         input = {
-          ...input, contact: contactWithLineage
+          ...input, contact: {
+            _id: input.contact,
+            parent: contactWithLineage.parent
+          }
         } as unknown as PlaceInput;
       };
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
