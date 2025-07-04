@@ -112,9 +112,11 @@ export namespace v1 {
       const ensureHasValidParentFieldAndReturnParentWithLineage =
     async(input:Record<string, unknown>, contactTypeObject: Record<string, unknown>):Promise<Doc|null> => {
       const parentWithLineage = await getDocById(medicDb)(input.parent as string);
-      // Check whether parent doc's contact_type matches with any of the allowed parents type.
+      // Check whether parent doc's `contact_type` or `type`(if `contact_type` is absent) 
+      // matches with any of the allowed parents type.
+      const typeToMatch = (parentWithLineage as PersonInput).contact_type ?? (parentWithLineage as PersonInput).type;
       const parentTypeMatchWithAllowedParents = (contactTypeObject.parents as string[])
-        .find(parent => parent===(parentWithLineage as PersonInput).contact_type);
+        .find(parent => parent===typeToMatch);
         
       if (!(parentTypeMatchWithAllowedParents)) {
         throw new InvalidArgumentError(
@@ -175,7 +177,7 @@ export namespace v1 {
           contact_type: input.type,
           type: 'contact'
         } as unknown as PersonInput;
-      } 
+      }
       await appendParentWithLineage();
       return await createPersonDoc(input) as Person.v1.Person;
     };

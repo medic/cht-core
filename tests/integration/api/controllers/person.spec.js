@@ -272,6 +272,7 @@ describe('Person API', () => {
       const personInput = {
         name: 'apoorva',
         type: 'person',
+        reported_date: 12312312,
         parent: place0._id
       };
       const opts = {
@@ -287,8 +288,8 @@ describe('Person API', () => {
         error: `Invalid parent type for [${JSON.stringify({
           name: 'apoorva',
           type: 'contact',
-          parent: place1._id,
           reported_date: 12312312,
+          parent: place1._id,
           contact_type: 'person',
         })}].`,
       })}`;

@@ -134,9 +134,11 @@ export namespace v1 {
             );
           }
 
-          // Check whether parent doc's contact_type matches with any of the allowed parents type.
+          // Check whether parent doc's `contact_type` or `type`(if `contact_type` is absent) 
+          // matches with any of the allowed parents type.
+          const typeToMatch = (parentWithLineage as PlaceInput).contact_type ?? (parentWithLineage as PlaceInput).type;
           const parentTypeMatchWithAllowedParents = (contactTypeObject.parents as string[])
-            .find(parent => parent===(parentWithLineage as PlaceInput).contact_type);
+            .find(parent => parent===typeToMatch);
 
           if (!(parentTypeMatchWithAllowedParents)) {
             throw new InvalidArgumentError(

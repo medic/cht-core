@@ -402,6 +402,7 @@ describe('local person', () => {
           const input_reported_date = new Date().toISOString();
           createDocInner.resolves({ reported_date: input_reported_date, ...input });
           const person = await Person.v1.createPerson(localContext)(input);
+          expect(getDocByIdInner.calledOnce).to.be.true;
           expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
           expect(createDocInner.calledOnceWithExactly({...input, parent: parentDocReturned })).to.be.true;
         });
