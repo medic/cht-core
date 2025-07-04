@@ -112,6 +112,7 @@ export namespace v1 {
         if (hasField(contactTypeObject, {name: 'parents', type: 'object'})) {
           return await ensureHasValidParentField(input, contactTypeObject);
         } else if (hasField(input, {name: 'parent', type: 'string', ensureTruthyValue: true})){
+          // The current input type is meant to be at the top of the hierarchy.
           throw new InvalidArgumentError(
             `Unexpected parent for [${JSON.stringify(input)}].`
           );
@@ -129,18 +130,47 @@ export namespace v1 {
             const parentWithLineage = await getDocById(medicDb)(input.parent);
             if (parentWithLineage === null){
               throw new InvalidArgumentError(
-                `Invalid parent for [${JSON.stringify(input)}].`
+                `Parent does not exist for [${JSON.stringify(input)}].`
               );
             }
-            if (!((contactTypeObject.parents as string[])
-              .find(parent => parent===(parentWithLineage as PlaceInput).contact_type))) {
+
+            // Check whether parent doc's contact_type matches with any of the allowed parents type.
+            const parentTypeMatchWithAllowedParents = (contactTypeObject.parents as string[])
+              .find(parent => parent===(parentWithLineage as PlaceInput).contact_type);
+
+            if (!(parentTypeMatchWithAllowedParents)) {
               throw new InvalidArgumentError(
-                `Invalid parent for [${JSON.stringify(input)}].`
+                `Invalid parent type for [${JSON.stringify(input)}].`
               );
             }
             return parentWithLineage;
           }
         };
+
+      const appendParentWithLineage = async () => {
+        let parentWithLineage: Doc | null = null;
+        if (typeFoundInSettingsContactTypes){
+          parentWithLineage = await validateParentPresence(typeFoundInSettingsContactTypes, input);
+        } else if (input.parent){
+          parentWithLineage = await getDocById(medicDb)(input.parent);
+        } else if (input.contact_type === 'district_hospital') {
+          // For legacy types, `district_hospital` is at the top of the hierarchy
+          return;
+        } else {
+          throw new InvalidArgumentError(
+            `Missing or empty required field (parent) for [${JSON.stringify(input)}].`
+          );
+        }
+
+        if (parentWithLineage === null){
+          throw new InvalidArgumentError(
+            `Parent does not exist for [${JSON.stringify(input)}].`
+          );
+        }
+        input = {...input, parent: {
+          _id: input.parent, parent: parentWithLineage.parent 
+        } } as unknown as PlaceInput;
+      };
 
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a place.');
@@ -153,39 +183,17 @@ export namespace v1 {
       if (!typeFoundInSettingsContactTypes && !typeIsHardCodedPlaceType) {
         throw new InvalidArgumentError('Invalid place type.');
       }
-      
-      // Append `contact_type` for newer versions.
       if (typeFoundInSettingsContactTypes){
         input={
           ...input,
           contact_type: input.type,
           type: 'contact',
         } as unknown as PlaceInput;
-        
-        const parentWithLineage = await validateParentPresence(typeFoundInSettingsContactTypes, input);
-        if (parentWithLineage){
-          input = {...input, parent: {
-            _id: input.parent,
-            parent: parentWithLineage.parent
-          }} as unknown as PlaceInput;
-        }
-      } else {
-        if (input.parent){
-          const parentWithLineage = await getDocById(medicDb)(input.parent);
-          if (parentWithLineage === null){
-            throw new InvalidArgumentError(
-              `Invalid parent for [${JSON.stringify(input)}].`
-            );
-          }
-          input = {...input, parent: {
-            _id: input.parent, parent: parentWithLineage.parent 
-          } } as unknown as PlaceInput;
-        }
       }
+      // Append `contact_type` for newer versions.
+      await appendParentWithLineage();
 
       return await createPlaceDoc(input) as Place.v1.Place;
     };
   };
-
-  
 }
