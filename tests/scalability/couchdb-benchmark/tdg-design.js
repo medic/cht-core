@@ -231,7 +231,7 @@ module.exports = (context) => {
   return [
     {
       designId: 'district-hospital',
-      amount: 2,
+      amount: 30,
       db: 'not-medic',
       getDoc: () => getDistrictHospital(context),
       children: [
