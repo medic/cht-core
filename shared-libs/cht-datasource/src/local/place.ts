@@ -190,10 +190,12 @@ export namespace v1 {
           return;
         }
         
-        const contactWithLineage = await getDocById(medicDb)(input.contact!);
+        // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
+        const contactWithLineage = await getDocById(medicDb)(input.contact as string);
         if (contactWithLineage === null){
           throw new InvalidArgumentError(
-            `Contact with id ${input.contact!} does not exist for [${JSON.stringify(input)}].`
+            // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
+            `Contact with id ${input.contact as string} does not exist for [${JSON.stringify(input)}].`
           );
         }
         input = {
