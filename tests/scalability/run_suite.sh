@@ -66,13 +66,14 @@ setupTestDataGenerator() {
   git clone https://github.com/medic/test-data-generator.git
   cd test-data-generator
   npm ci
-  export COUCH_URL=$MEDIC_URL
+  export COUCH_URL=$MEDIC_URL_AUTH
+  curl -k -sf -X PUT "$MEDIC_URL_AUTH/not-medic"
   npm run generate "$CHT_BASE_DIR"/cht-core/tests/scalability/couchdb-benchmark/tdg-design.js
 }
 
 runCouchDbBenchmark() {
   cd "$CHT_BASE_DIR/cht-core/tests/scalability/couchdb-benchmark"
-  export COUCH_URL=$MEDIC_URL/not-medic
+  export COUCH_URL=$MEDIC_URL_AUTH/not-medic
   node index.js
   cd ../
   cp benchmark_results.md "$tmp_dir/benchmark_results.md"
