@@ -146,31 +146,44 @@ export namespace v1 {
           return parentWithLineage;
          
         };
-
-      const appendParentWithLineage = async () => {
-        let parentWithLineage: Doc | null = null;
-        if (typeFoundInSettingsContactTypes){
-          // This will throw error is parent is required and missing.
-          parentWithLineage = await validateParentPresence(typeFoundInSettingsContactTypes, input);
+      
+      const getParentWithLineage = async (): Promise<Doc | null> => {
+        if (typeFoundInSettingsContactTypes) {
+          // This will throw error if parent is required and missing.
+          return await validateParentPresence(typeFoundInSettingsContactTypes, input);
           // null is returned only when parent is not required and it is not present in the input
-          if (!parentWithLineage) {
-            return;
-          }
-        } else if (input.parent){
-          parentWithLineage = await getDocById(medicDb)(input.parent);
-          if (parentWithLineage === null){
+        }
+
+        if (input.parent) {
+          const parentDoc = await getDocById(medicDb)(input.parent);
+          if (parentDoc === null) {
             throw new InvalidArgumentError(
               `Parent with id ${input.parent} does not exist for [${JSON.stringify(input)}].`
             );
           }
-        } else {
+          return parentDoc;
+        }
+
+        return null;
+      };
+      
+      const appendParentWithLineage = async () => {
+        let parentWithLineage: Doc | null = null;
+
+        parentWithLineage = await getParentWithLineage();
+        if (!parentWithLineage) {
           return;
         }
 
-        input = {...input, parent: {
-          _id: input.parent, parent: parentWithLineage.parent 
-        } } as unknown as PlaceInput;
+        input = {
+          ...input,
+          parent: {
+            _id: input.parent,
+            parent: parentWithLineage.parent
+          }
+        } as unknown as PlaceInput;
       };
+
 
       const appendContactWithLineage = async() => {
         if (!hasField(input, {name: 'contact', type: 'string', ensureTruthyValue: true})) {
