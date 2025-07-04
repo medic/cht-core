@@ -3,14 +3,25 @@ const sinon = require('sinon');
 const utilsFactory = require('../src/bulk-docs-utils');
 
 describe('Bulk Docs utils', () => {
-  let get;
-  let DB;
   let utils;
-
+  const Contact = {
+    v1: {
+      get: sinon.stub()
+    }
+  };
+  const Qualifier = {
+    byUuid: (id) => id
+  };
+  require.cache[require.resolve('@medic/cht-datasource')] = {
+    exports: { Contact, Qualifier }
+  };
+  
   beforeEach(() => {
-    get = sinon.stub();
-    DB = { get };
-    utils = utilsFactory({ Promise, DB });
+    Contact.v1.get.reset();
+    const dataContext = function() {
+      return Contact.v1.get.apply(this, arguments);
+    };
+    utils = utilsFactory({ Promise, dataContext });
   });
 
   afterEach(() => {
@@ -36,10 +47,10 @@ describe('Bulk Docs utils', () => {
         }
       };
       const expected = Object.assign({}, clinic, { contact: null });
-      get.returns(Promise.resolve(clinic));
+      Contact.v1.get.returns(Promise.resolve(clinic));
       return utils.updateParentContacts([person]).then(updatedParents => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0][0]).to.equal(clinic._id);
+        chai.expect(Contact.v1.get.callCount).to.equal(1);
+        chai.expect(Contact.v1.get.args[0][0]).to.equal(clinic._id);
         chai.expect(updatedParents.docs).to.have.length(1);
         chai.expect(updatedParents.docs[0]).to.deep.equal(expected);
       });
@@ -62,10 +73,10 @@ describe('Bulk Docs utils', () => {
           _id: 'b'
         }
       };
-      get.returns(Promise.resolve(clinic));
+      Contact.v1.get.returns(Promise.resolve(clinic));
       return utils.updateParentContacts([person]).then(updatedParents => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0][0]).to.equal(clinic._id);
+        chai.expect(Contact.v1.get.callCount).to.equal(1);
+        chai.expect(Contact.v1.get.args[0][0]).to.equal(clinic._id);
         chai.expect(updatedParents.docs.length).to.equal(0);
       });
     });
@@ -87,7 +98,7 @@ describe('Bulk Docs utils', () => {
           _id: 'b'
         }
       };
-      get.returns(Promise.resolve(clinic));
+      Contact.v1.get.returns(Promise.resolve(clinic));
       return utils.updateParentContacts([person]).then(updatedParents => {
         chai.expect(updatedParents.documentByParentId[clinic._id]).to.deep.equal(person);
       });
@@ -106,10 +117,10 @@ describe('Bulk Docs utils', () => {
           _id: 'b'
         }
       };
-      get.returns(Promise.resolve(clinic));
+      Contact.v1.get.returns(Promise.resolve(clinic));
       return utils.updateParentContacts([person]).then(updatedParents => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0][0]).to.equal(clinic._id);
+        chai.expect(Contact.v1.get.callCount).to.equal(1);
+        chai.expect(Contact.v1.get.args[0][0]).to.equal(clinic._id);
         chai.expect(updatedParents.docs).to.have.length(0);
       });
     });
