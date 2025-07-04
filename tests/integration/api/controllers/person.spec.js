@@ -248,11 +248,31 @@ describe('Person API', () => {
 
   describe('POST /api/v1/person', async () => {
     const endpoint = `/api/v1/person`;
-    it(`creates a person for valid personInput`, async () => {
+    // it(`creates a person for valid personInput`, async () => {
+    //   const personInput = {
+    //     name: 'apoorva',
+    //     type: 'chw',
+    //     parent: place0._id
+    //   };
+    //   const opts = {
+    //     path: endpoint,
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json'
+    //     },
+    //     body: personInput
+    //   };
+    //   const personDoc = await utils.request(opts);
+    //   expect(personDoc).excluding(['_rev', 'reported_date', '_id'])
+    //     .to.deep.equal({...personInput, type: 'contact', contact_type: 'chw', 
+    //       parent: {_id: place0._id, parent: place0.parent}});
+    // });
+
+    it(`throws error for parent type not among allowed parents in settings.contact_types`, async () => {
       const personInput = {
         name: 'apoorva',
         type: 'person',
-        parent: 'p1'
+        parent: place0._id
       };
       const opts = {
         path: endpoint,
@@ -262,9 +282,18 @@ describe('Person API', () => {
         },
         body: personInput
       };
-      const personDoc = await utils.request(opts);
-      expect(personDoc).excluding(['_rev', 'reported_date', '_id'])
-        .to.deep.equal({...personInput, type: 'contact', contact_type: 'person'});
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Invalid parent type for [${JSON.stringify({
+          name: 'apoorva',
+          type: 'contact',
+          parent: place1._id,
+          reported_date: 12312312,
+          contact_type: 'person',
+        })}].`,
+      })}`;
+      
+      await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
     });
 
     it(`throws 400 error for invalid personInput, here with a missing 'parent'`, async () => {

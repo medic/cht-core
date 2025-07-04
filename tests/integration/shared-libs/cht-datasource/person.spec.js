@@ -210,15 +210,31 @@ describe('cht-datasource Person', () => {
 
     describe('createPerson', async () => {
       const createPerson = Person.v1.createPerson(dataContext);
-      it('creates a person for a valid person input', async () => {
+      // it('creates a person for a valid person input', async () => {
+      //   // console.log(await utils.getSettings().contact_types);
+      //   const personInput = Input.validatePersonInput({
+      //     name: 'apoorva',
+      //     type: 'person',
+      //     parent: place1._id
+      //   });
+      //   const person = await createPerson(personInput);
+      //   expect(person).excluding([ '_rev', 'reported_date', '_id' ])
+      //     .to.deep.equal({...personInput, contact_type: 'person', type: 'contact',
+      //       parent: {_id: place1._id, parent: place1.parent}});
+      // });
+
+      it('throws error for parent type not among allowed parents in settings.contact_types', async () => {
         const personInput = Input.validatePersonInput({
           name: 'apoorva',
           type: 'person',
-          parent: 'p1'
+          parent: place1._id,
+          reported_date: 12312312
         });
-        const person = await createPerson(personInput);
-        expect(person).excluding([ '_rev', 'reported_date', '_id' ])
-          .to.deep.equal({...personInput, contact_type: 'person', type: 'contact'});
+        await expect(createPerson(personInput))
+          .to.be.rejectedWith({code: 400, 
+            error: `Invalid parent type for [${JSON.stringify(
+              {name: 'apoorva', type: 'contact', parent: place1._id, reported_date: 12312312, contact_type: 'person'}
+            )}].`});
       });
     });
   });

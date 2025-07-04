@@ -244,11 +244,29 @@ describe('cht-datasource Report', () => {
       it('creates a report for a valid input', async () => {
         const input = {
           form: 'form-1',
-          type: 'report'
+          type: 'report',
+          contact: contact0._id
         };
 
+        const updatedInput = {
+          ...input, contact: {
+            _id: contact0._id, parent: contact0.parent
+          }
+        };
         const reportDoc = await Report.v1.createReport(dataContext)(Input.validateReportInput(input));
-        expect(reportDoc).excluding(['_id', '_rev', 'reported_date']).to.deep.equal(input);
+        expect(reportDoc).excluding(['_id', '_rev', 'reported_date',]).to.deep.equal(updatedInput);
+      });
+
+      it('throws error for missing contact', () => {
+        const input = {
+          form: 'form-1',
+          type: 'report',
+        };
+        const action = () => Report.v1.createReport(dataContext)(Input.validateReportInput(input));
+        expect(action).to.throw(
+          InvalidArgumentError,
+          `Missing or empty required field (contact) in [${JSON.stringify(input)}].`
+        );
       });
 
       it('throws error for invalid date format via createReport',  () => {

@@ -331,7 +331,8 @@ describe('Report API', () => {
       const input = {
         form: 'form-1',
         type: 'report',
-        reported_date: 11221122
+        reported_date: 11221122,
+        contact: place2._id
       };
       const opts = {
         path: '/api/v1/report', 
@@ -344,7 +345,7 @@ describe('Report API', () => {
       };
 
       const reportDoc = await utils.request(opts);
-      expect(reportDoc).excluding(['_rev', '_id'])
+      expect(reportDoc).excluding(['_rev', '_id', 'contact'])
         .to.deep.equal(input);
     });
 
@@ -366,7 +367,7 @@ describe('Report API', () => {
       await expect(utils.request(opts))
         .to.be.rejectedWith(`400 - ${JSON.stringify({
           code: 400,
-          error: `Missing or empty required fields (type, form) in [${JSON.stringify(input)}].`
+          error: `Missing or empty required field (contact) in [${JSON.stringify(input)}].`
         })}`);
     });
   });
