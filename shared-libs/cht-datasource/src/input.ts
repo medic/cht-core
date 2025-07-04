@@ -81,7 +81,8 @@ export type ReportInput = Readonly<{
     form: string,
     reported_date?: string | number,
     _id?: string,
-    _rev?: string
+    _rev?: string,
+    contact:string
   }>;
   
 /**
@@ -92,6 +93,7 @@ export type ReportInput = Readonly<{
  * @throws Error if data is not an object
  * @throws Error if type is not provided or is empty
  * @throws Error if form is not provided or is empty
+ * @throws Error if contact is not provided or is empty
  * @throws Error if reported_date is not in a valid format.
  * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
  */
@@ -107,6 +109,9 @@ export const validateReportInput = (data: unknown): ReportInput => {
       'Invalid reported_date. Expected format to be ' +
           '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
     );
+  }
+  if (!hasField(input, {name: 'contact', type: 'string', ensureTruthyValue: true})){
+    throw new InvalidArgumentError(`Missing or empty required field (contact) in [${JSON.stringify(data)}].`);
   }
   if (!isReportInput(input)) {
     throw new InvalidArgumentError(`Missing or empty required fields (type, form) in [${JSON.stringify(data)}].`);
