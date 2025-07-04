@@ -113,6 +113,7 @@ seedData "$MEDIC_CONF_URL"
 forwardSentinelSeq "$MEDIC_CONF_URL"
 
 sed -i '4s~^~'MEDIC_URL="$url"'\n~' run_suite.sh
+sed -i '4s~^~'MEDIC_URL_AUTH="$MEDIC_CONF_URL"'\n~' run_suite.sh
 sed -i '4s~^~'TAG="$TAG"'\n~' run_suite.sh
 sed -i '4s~^~'DATA_PATH="$TAG-$GITHUB_RUN_ID"'\n~' run_suite.sh
 sed -i '4s~^~'GH_TOKEN="$SCALABILITY_RESULTS_TOKEN"'\n~' run_suite.sh
