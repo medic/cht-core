@@ -335,7 +335,7 @@ describe('Report Controller Tests', () => {
           .returns(createReport);
       });
 
-      it('throws error for missing required types, here `form`', async () => {
+      it('throws error for missing required types, here `contact`', async () => {
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
 
@@ -349,7 +349,7 @@ describe('Report Controller Tests', () => {
           }
         };
 
-        const error = new InvalidArgumentError(`Missing or empty required fields (type, form) in [${
+        const error = new InvalidArgumentError(`Missing or empty required field (contact) in [${
           JSON.stringify(input)
         }].`);
 
@@ -363,13 +363,14 @@ describe('Report Controller Tests', () => {
         expect(dataContextBind.notCalled).to.be.true;
       });
 
-      it('throws error for missing required types, here `form`', async () => {
+      it('returns a report doc on valid report input', async () => {
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
         const input = {
           type: 'report',
           reported_date: 12312312,
-          form: 'form-1'
+          form: 'form-1',
+          contact: 'c1'
         };
         req = {
           body: {
