@@ -20,7 +20,7 @@ export class DeleteDocsService {
     private dbService:DbService,
     private extractLineageService:ExtractLineageService,
     private sessionService:SessionService,
-    private chtDatasourceService: CHTDatasourceService
+    private readonly chtDatasourceService: CHTDatasourceService
   ) {
   }
 
