@@ -130,7 +130,7 @@ export namespace v1 {
           const parentWithLineage = await getDocById(medicDb)(input.parent);
           if (parentWithLineage === null){
             throw new InvalidArgumentError(
-              `Parent does not exist for [${JSON.stringify(input)}].`
+              `Parent with id ${input.parent} does not exist for [${JSON.stringify(input)}].`
             );
           }
 
@@ -150,27 +150,23 @@ export namespace v1 {
       const appendParentWithLineage = async () => {
         let parentWithLineage: Doc | null = null;
         if (typeFoundInSettingsContactTypes){
+          // This will throw error is parent is required and missing.
           parentWithLineage = await validateParentPresence(typeFoundInSettingsContactTypes, input);
+          // null is returned only when parent is not required and it is not present in the input
           if (!parentWithLineage) {
             return;
           }
         } else if (input.parent){
           parentWithLineage = await getDocById(medicDb)(input.parent);
-        } else if (input.contact_type === 'district_hospital') {
-          // For legacy types, `district_hospital` is at the top of the hierarchy
-          // so no need to append parent.
-          return;
+          if (parentWithLineage === null){
+            throw new InvalidArgumentError(
+              `Parent with id ${input.parent} does not exist for [${JSON.stringify(input)}].`
+            );
+          }
         } else {
-          throw new InvalidArgumentError(
-            `Missing or empty required field (parent) for [${JSON.stringify(input)}].`
-          );
+          return;
         }
 
-        if (parentWithLineage === null){
-          throw new InvalidArgumentError(
-            `Parent does not exist for [${JSON.stringify(input)}].`
-          );
-        }
         input = {...input, parent: {
           _id: input.parent, parent: parentWithLineage.parent 
         } } as unknown as PlaceInput;
@@ -184,7 +180,7 @@ export namespace v1 {
         const contactWithLineage = await getDocById(medicDb)(input.contact!);
         if (contactWithLineage === null){
           throw new InvalidArgumentError(
-            `Contact does not exist for [${JSON.stringify(input)}].`
+            `Contact with id ${input.contact!} does not exist for [${JSON.stringify(input)}].`
           );
         }
         input = {
