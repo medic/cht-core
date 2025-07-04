@@ -151,6 +151,9 @@ export namespace v1 {
         let parentWithLineage: Doc | null = null;
         if (typeFoundInSettingsContactTypes){
           parentWithLineage = await validateParentPresence(typeFoundInSettingsContactTypes, input);
+          if (!parentWithLineage) {
+            return;
+          }
         } else if (input.parent){
           parentWithLineage = await getDocById(medicDb)(input.parent);
         } else if (input.contact_type === 'district_hospital') {
@@ -177,6 +180,7 @@ export namespace v1 {
         if (!hasField(input, {name: 'contact', type: 'string', ensureTruthyValue: true})) {
           return;
         }
+        
         const contactWithLineage = await getDocById(medicDb)(input.contact!);
         if (contactWithLineage === null){
           throw new InvalidArgumentError(
