@@ -110,19 +110,8 @@ export namespace v1 {
     return async (input: PersonInput) :Promise<Person.v1.Person> => {
 
       const ensureHasValidParentFieldAndReturnParentWithLineage =
-    async(input:Record<string, unknown>, contactTypeObject: Record<string, unknown>):Promise<Doc> => {
-      if (!hasField(input, {name: 'parent', type: 'string', ensureTruthyValue: true})){
-        throw new InvalidArgumentError(
-          `Missing or empty required field (parent) for [${JSON.stringify(input)}].`
-        );
-      } 
-
-      const parentWithLineage = await getDocById(medicDb)(input.parent);
-      if (parentWithLineage === null){
-        throw new InvalidArgumentError(
-          `Parent does not exist for [${JSON.stringify(input)}].`
-        );
-      }
+    async(input:Record<string, unknown>, contactTypeObject: Record<string, unknown>):Promise<Doc|null> => {
+      const parentWithLineage = await getDocById(medicDb)(input.parent as string);
       // Check whether parent doc's contact_type matches with any of the allowed parents type.
       const parentTypeMatchWithAllowedParents = (contactTypeObject.parents as string[])
         .find(parent => parent===(parentWithLineage as PersonInput).contact_type);
@@ -138,7 +127,7 @@ export namespace v1 {
 
       const validatePersonParent = 
     async(contactTypeObject: Record<string, unknown>
-      , input:Record<string, unknown> ):Promise<Doc> => {
+      , input:Record<string, unknown> ):Promise<Doc|null> => {
       if (!hasField(contactTypeObject, {name: 'parents', type: 'object'})) {
         throw new InvalidArgumentError(
           `Invalid type of person, cannot have parent for [${JSON.stringify(input)}].`
@@ -154,10 +143,6 @@ export namespace v1 {
           parentWithLineage = await validatePersonParent(typeFoundInSettingsContactTypes, input);
         } else if (input.parent){
           parentWithLineage = await getDocById(medicDb)(input.parent);
-        } else {
-          throw new InvalidArgumentError(
-            `Missing or empty required field (parent) for [${JSON.stringify(input)}].`
-          );
         }
       
         if (parentWithLineage === null){
