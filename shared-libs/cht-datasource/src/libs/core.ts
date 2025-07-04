@@ -84,19 +84,28 @@ export const isRecord = (value: unknown): value is Record<string, unknown> => {
   return value !== null && typeof value === 'object';
 };
 
+interface FieldDescriptor<T> {
+  name: keyof T;
+  type: string;
+  ensureTruthyValue?: boolean
+}
+
 /** @internal */
 export const hasField = <T extends Record<string, unknown>>(
   value: T,
-  field: { name: keyof T, type: string }
-): value is T & Record<typeof field.name, string> => {
-  const valueField = value[field.name];
-  return typeof valueField === field.type;
+  {name, type, ensureTruthyValue = false}: FieldDescriptor<T>
+): value is T & Record<typeof name, string> => {
+  const valueField = value[name];
+  if (ensureTruthyValue) {
+    return typeof valueField === type && !!valueField;
+  }
+  return typeof valueField === type;
 };
 
 /** @internal */
-export const hasFields = (
-  value: Record<string, unknown>,
-  fields: NonEmptyArray<{ name: string, type: string }>
+export const hasFields = <T extends Record<string, unknown>>(
+  value: T,
+  fields: NonEmptyArray<FieldDescriptor<T>>,
 ): boolean => fields.every(field => hasField(value, field));
 
 /** @internal */

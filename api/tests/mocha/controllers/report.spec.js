@@ -56,7 +56,8 @@ describe('Report Controller Tests', () => {
 
         await controller.v1.get(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
+        expect(hasAllPermissions
+          .calledOnceWithExactly(userCtx, ['can_view_reports'])).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.get)).to.be.true;
         expect(reportGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(res.json.calledOnceWithExactly(report)).to.be.true;
@@ -72,7 +73,7 @@ describe('Report Controller Tests', () => {
 
         await controller.v1.get(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_reports'])).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.get)).to.be.true;
         expect(reportGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(res.json.notCalled).to.be.true;
@@ -91,7 +92,7 @@ describe('Report Controller Tests', () => {
 
         await controller.v1.get(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_reports'])).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(reportGet.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
@@ -164,7 +165,7 @@ describe('Report Controller Tests', () => {
 
         await controller.v1.getUuids(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_reports'])).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
         expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
@@ -187,7 +188,7 @@ describe('Report Controller Tests', () => {
 
         await controller.v1.getUuids(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_reports'])).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
         expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, undefined)).to.be.true;
@@ -212,7 +213,7 @@ describe('Report Controller Tests', () => {
 
         await controller.v1.getUuids(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_reports'])).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
         expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, null)).to.be.true;
@@ -235,7 +236,7 @@ describe('Report Controller Tests', () => {
 
         await controller.v1.getUuids(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_reports'])).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(qualifierByFreetext.notCalled).to.be.true;
         expect(reportGetIdsPage.notCalled).to.be.true;
@@ -288,7 +289,7 @@ describe('Report Controller Tests', () => {
 
         await controller.v1.getUuids(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_reports'])).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
         expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
@@ -313,7 +314,7 @@ describe('Report Controller Tests', () => {
 
         await controller.v1.getUuids(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_reports'])).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
         expect(reportGetIdsPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
@@ -321,6 +322,67 @@ describe('Report Controller Tests', () => {
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+      });
+    });
+
+    describe('createReport', () => {
+      let createReport;
+
+      beforeEach(() => {
+        createReport = sinon.stub();
+        dataContextBind
+          .withArgs(Report.v1.createReport)
+          .returns(createReport);
+      });
+
+      it('throws error for missing required types, here `form`', async () => {
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+
+        const input = {
+          type: 'report',
+          reported_date: 12312312
+        };
+        req = {
+          body: {
+            ...input
+          }
+        };
+
+        const error = new InvalidArgumentError(`Missing or empty required fields (type, form) in [${
+          JSON.stringify(input)
+        }].`);
+
+        await controller.v1.createReport(req, res);
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_reports', 'can_create_records'])).to.be.true;
+        expect(createReport.called).to.be.false;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(InvalidArgumentError);
+        expect(serverUtilsError.firstCall.args[0].message).to.equal(error.message);
+        expect(dataContextBind.notCalled).to.be.true;
+      });
+
+      it('throws error for missing required types, here `form`', async () => {
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        const input = {
+          type: 'report',
+          reported_date: 12312312,
+          form: 'form-1'
+        };
+        req = {
+          body: {
+            ...input
+          }
+        };
+        const report = {...input, _id: '1-id', _rev: '1-rev'};
+        createReport.resolves(report);
+        await controller.v1.createReport(req, res);
+        expect(serverUtilsError.called).to.be.false;
+        expect(createReport.calledOnce).to.be.true;
+        expect(dataContextBind.calledOnce).to.be.true;
+        expect(res.json.calledOnceWithExactly(report)).to.be.true;
       });
     });
   });

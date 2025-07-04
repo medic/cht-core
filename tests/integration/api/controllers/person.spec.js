@@ -2,6 +2,7 @@ const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
+const { expect } = require('chai');
 
 describe('Person API', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
@@ -242,6 +243,50 @@ describe('Person API', () => {
         .to.be.rejectedWith(
           `400 - {"code":400,"error":"The cursor must be a string or null for first page: [\\"-1\\"]."}`
         );
+    });
+  });
+
+  describe('POST /api/v1/person', async () => {
+    const endpoint = `/api/v1/person`;
+    it(`creates a person for valid personInput`, async () => {
+      const personInput = {
+        name: 'apoorva',
+        type: 'person',
+        parent: 'p1'
+      };
+      const opts = {
+        path: endpoint,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: personInput
+      };
+      const personDoc = await utils.request(opts);
+      expect(personDoc).excluding(['_rev', 'reported_date', '_id'])
+        .to.deep.equal({...personInput, type: 'contact', contact_type: 'person'});
+    });
+
+    it(`throws 400 error for invalid personInput, here with a missing 'parent'`, async () => {
+      const personInput = {
+        name: 'apoorva',
+        type: 'person',
+        reported_date: 1122334455
+      };
+      const opts = {
+        path: endpoint,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: personInput
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Missing or empty required field (parent) [${JSON.stringify(personInput)}].`
+      })}`;
+      
+      await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
     });
   });
 });

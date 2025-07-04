@@ -206,7 +206,7 @@ describe('cht-datasource Place', () => {
             ...Qualifier.byContactType(placeType),
           }, invalidCursor, limit)
         ).to.be.rejectedWith(
-          `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          {code: 400, error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`}
         );
       });
     });
@@ -222,6 +222,21 @@ describe('cht-datasource Place', () => {
         }
 
         expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPlaces);
+      });
+    });
+
+    describe('createPlace', () => {
+      it('creates a place for a valid input', async () => {
+        const placeInput = {
+          name: 'place-1',
+          type: 'place',
+          parent: 'p1',
+          contact: 'c1'
+        };
+
+        const placeDoc = await Place.v1.createPlace(dataContext)(placeInput);
+        expect(placeDoc).excluding([ '_rev', 'reported_date', '_id' ])
+          .to.deep.equal(placeInput);
       });
     });
   });
