@@ -84,10 +84,26 @@ export namespace v1 {
   } : LocalDataContext) => {
     const createReportDoc = createDoc(medicDb);
     return async (input: ReportInput) :Promise<Report.v1.Report> => {
+      
+      const appendContactWithLineage = async() => {
+        const contactWithLineage = await getDocById(medicDb)(input.contact);
+        if (contactWithLineage === null){
+          throw new InvalidArgumentError(
+            `Contact with id ${input.contact} does not exist for [${JSON.stringify(input)}].`
+          );
+        }
+        input = {
+          ...input, contact: {
+            _id: input.contact,
+            parent: contactWithLineage.parent
+          }
+        } as unknown as ReportInput;
+      };
+
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a report.');
       }
-        
+      await appendContactWithLineage();
       return await createReportDoc(input) as Report.v1.Report;
     };
   };

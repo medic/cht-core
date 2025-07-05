@@ -108,6 +108,56 @@ export namespace v1 {
   } : LocalDataContext) => {
     const createPersonDoc = createDoc(medicDb);
     return async (input: PersonInput) :Promise<Person.v1.Person> => {
+
+      const ensureHasValidParentFieldAndReturnParentWithLineage =
+    async(input:Record<string, unknown>, contactTypeObject: Record<string, unknown>):Promise<Doc|null> => {
+      const parentWithLineage = await getDocById(medicDb)(input.parent as string);
+      // Check whether parent doc's `contact_type` or `type`(if `contact_type` is absent) 
+      // matches with any of the allowed parents type.
+      const typeToMatch = (parentWithLineage as PersonInput).contact_type ?? (parentWithLineage as PersonInput).type;
+      const parentTypeMatchWithAllowedParents = (contactTypeObject.parents as string[])
+        .find(parent => parent===typeToMatch);
+        
+      if (!(parentTypeMatchWithAllowedParents)) {
+        throw new InvalidArgumentError(
+          `Invalid parent type for [${JSON.stringify(input)}].`
+        );
+      }
+      return parentWithLineage;
+      
+    };
+
+      const validatePersonParent = 
+    async(contactTypeObject: Record<string, unknown>
+      , input:Record<string, unknown> ):Promise<Doc|null> => {
+      if (!hasField(contactTypeObject, {name: 'parents', type: 'object'})) {
+        throw new InvalidArgumentError(
+          `Invalid type of person, cannot have parent for [${JSON.stringify(input)}].`
+        );
+      } else {
+        return await ensureHasValidParentFieldAndReturnParentWithLineage(input, contactTypeObject);
+      }
+    };
+
+      const appendParentWithLineage = async() => {
+        let parentWithLineage: Doc | null = null;
+        if (typeFoundInSettingsContactTypes){
+          parentWithLineage = await validatePersonParent(typeFoundInSettingsContactTypes, input);
+        } else if (input.parent){
+          parentWithLineage = await getDocById(medicDb)(input.parent);
+        }
+      
+        if (parentWithLineage === null){
+          throw new InvalidArgumentError(
+            `Parent does not exist for [${JSON.stringify(input)}].`
+          );
+        }
+        input = {...input, parent: {
+          _id: input.parent, parent: parentWithLineage.parent 
+        } } as unknown as PersonInput;
+      };
+
+
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a person.');
       }
@@ -128,7 +178,7 @@ export namespace v1 {
           type: 'contact'
         } as unknown as PersonInput;
       }
-
+      await appendParentWithLineage();
       return await createPersonDoc(input) as Person.v1.Person;
     };
   };
