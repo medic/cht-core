@@ -273,7 +273,7 @@ describe('Person API', () => {
         name: 'apoorva',
         type: 'person',
         reported_date: 12312312,
-        parent: place0._id
+        parent: place1._id
       };
       const opts = {
         path: endpoint,
