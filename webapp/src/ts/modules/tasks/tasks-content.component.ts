@@ -11,7 +11,6 @@ import { GlobalActions } from '@mm-actions/global';
 import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
-import { DbService } from '@mm-services/db.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { NgIf, NgClass, NgFor } from '@angular/common';

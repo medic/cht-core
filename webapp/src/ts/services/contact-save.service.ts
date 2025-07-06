@@ -2,7 +2,6 @@ import { v4 as uuidV4 } from 'uuid';
 import { Injectable, NgZone } from '@angular/core';
 import { defaults as _defaults, isObject as _isObject } from 'lodash-es';
 
-import { DbService } from '@mm-services/db.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
