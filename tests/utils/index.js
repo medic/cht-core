@@ -1153,11 +1153,24 @@ const generateK3DValuesFile = async () => {
   };
 
   const templatePath = path.resolve(
-    __dirname, '..', '..', 'scripts', 'build', 'helm', 'tests',
+    __dirname,
+    '..',
+    '..',
+    'scripts',
+    'build',
+    'helm',
+    'tests',
     'integration-k3d-values.yaml.template'
   );
+
   const testValuesPath = path.resolve(
-    __dirname, '..', '..', 'scripts', 'build', 'helm', 'tests',
+    __dirname,
+    '..',
+    '..',
+    'scripts',
+    'build',
+    'helm',
+    'tests',
     'integration-k3d-values.yaml'
   );
   const template = await fs.promises.readFile(templatePath, 'utf-8');
@@ -1299,7 +1312,16 @@ const prepK3DServices = async (defaultSettings) => {
   await importImages();
 
   const helmChartPath = path.join(__dirname, '..', '..', 'scripts', 'build', 'helm');
-  const valuesPath = path.join(__dirname, '..', '..', 'scripts', 'build', 'helm', 'tests', 'integration-k3d-values.yaml');
+  const valuesPath = path.join(
+    __dirname,
+    '..',
+    '..',
+    'scripts',
+    'build',
+    'helm',
+    'tests',
+    'integration-k3d-values.yaml'
+  );
 
   await runCommand(
     `helm install ${PROJECT_NAME} ${helmChartPath} -n ${PROJECT_NAME} ` +
