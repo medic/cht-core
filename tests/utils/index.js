@@ -1152,15 +1152,8 @@ const generateK3DValuesFile = async () => {
     data_path: K3D_DATA_PATH
   };
 
-  // Use new descriptive names for template and generated values
-  const templatePath = path.resolve(
-    __dirname, '..', '..', 'scripts', 'build', 'helm', 'tests',
-    'integration-k3d-values.yaml.template'
-  );
-  const testValuesPath = path.resolve(
-    __dirname, '..', '..', 'scripts', 'build', 'helm', 'tests',
-    'integration-k3d-values.yaml'
-  );
+  const templatePath = path.resolve(__dirname, '..', '..', 'scripts', 'build', 'helm', 'tests', 'integration-k3d-values.yaml.template');
+  const testValuesPath = path.resolve(__dirname, '..', '..', 'scripts', 'build', 'helm', 'tests', 'integration-k3d-values.yaml');
   const template = await fs.promises.readFile(templatePath, 'utf-8');
   await fs.promises.writeFile(testValuesPath, mustache.render(template, view));
 };
@@ -1305,15 +1298,7 @@ const prepK3DServices = async (defaultSettings) => {
     'integration-k3d-values.yaml'
   );
 
-  await runCommand(
-    `helm install ${PROJECT_NAME} ${helmChartPath} -n ${PROJECT_NAME} ` +
-    `--kube-context k3d-${PROJECT_NAME} ` +
-    `-f ${helmChartPath}/values/base.yaml ` +
-    `-f ${helmChartPath}/values/deployment-multi.yaml ` +
-    `-f ${helmChartPath}/values/platform-k3s-k3d.yaml ` +
-    `-f ${valuesPath} ` +
-    `--create-namespace`
-  );
+  await runCommand(`helm install ${PROJECT_NAME} ${helmChartPath} -n ${PROJECT_NAME} --kube-context k3d-${PROJECT_NAME} -f ${helmChartPath}/values/base.yaml -f ${helmChartPath}/values/deployment-multi.yaml -f ${helmChartPath}/values/platform-k3s-k3d.yaml -f ${valuesPath} --create-namespace`);
   await listenForApi();
 
   if (defaultSettings) {
