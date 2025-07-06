@@ -1,4 +1,3 @@
-
 const _ = require('lodash');
 const constants = require('@constants');
 const fs = require('fs');
@@ -1141,19 +1140,21 @@ const getTestComposeFilePath = file => path.resolve(__dirname, `../${file}-test.
 
 const generateK3DValuesFile = async () => {
   const view = {
-    repo: `${K3D_REPO()}/${buildVersions.getRepo()}`,
-    tag: buildVersions.getImageTag(),
-    db_name: constants.DB_NAME,
-    user: constants.USERNAME,
+    project_name: PROJECT_NAME,
+    namespace: PROJECT_NAME,
+    chtversion: buildVersions.getVersion(),
+    cht_image_tag: buildVersions.getImageTag(),
+    docker_registry: `${K3D_REPO()}/medicmobile`,
     password: constants.PASSWORD,
     secret: env.COUCHDB_SECRET,
+    user: constants.USERNAME,
     uuid: env.COUCHDB_UUID,
-    namespace: PROJECT_NAME,
-    data_path: K3D_DATA_PATH,
+    data_path: K3D_DATA_PATH
   };
 
-  const templatePath = path.resolve(__dirname, '..', 'helm', `values.yaml.template`);
-  const testValuesPath = path.resolve(__dirname, '..', 'helm', `values.yaml`);
+  // Use new descriptive names for template and generated values
+  const templatePath = path.resolve(__dirname, '..', '..', 'scripts', 'build', 'helm', 'tests', 'integration-k3d-values.yaml.template');
+  const testValuesPath = path.resolve(__dirname, '..', '..', 'scripts', 'build', 'helm', 'tests', 'integration-k3d-values.yaml');
   const template = await fs.promises.readFile(templatePath, 'utf-8');
   await fs.promises.writeFile(testValuesPath, mustache.render(template, view));
 };
@@ -1266,16 +1267,17 @@ const importImages = async () => {
 };
 
 const cleanupOldCluster = async () => {
-  try {
-    await runCommand(`k3d registry delete ${K3D_REGISTRY}`);
-  } catch {
-    console.warn('No registry to clean up');
-  }
-  try {
-    await runCommand(`k3d cluster delete ${PROJECT_NAME}`);
-  } catch {
-    console.warn('No cluster to clean up');
-  }
+  console.log('cleanupOldCluster called but cleanup is disabled for debugging');
+  // try {
+  //   await runCommand(`k3d registry delete ${K3D_REGISTRY}`);
+  // } catch {
+  //   console.warn('No registry to clean up');
+  // }
+  // try {
+  //   await runCommand(`k3d cluster delete ${PROJECT_NAME}`);
+  // } catch {
+  //   console.warn('No cluster to clean up');
+  // }
 };
 
 const prepK3DServices = async (defaultSettings) => {
@@ -1287,16 +1289,24 @@ const prepK3DServices = async (defaultSettings) => {
   await fs.promises.mkdir(path.join(dataDir, 'srv2'));
   await fs.promises.mkdir(path.join(dataDir, 'srv3'));
 
-  await cleanupOldCluster();
+  // await cleanupOldCluster(); // Commented out to prevent cleanup during debugging
   await createCluster(dataDir);
   await generateK3DValuesFile();
   await importImages();
 
-  const helmChartPath = path.join(__dirname, '..', 'helm');
-  const valesPath = path.join(helmChartPath, 'values.yaml');
+  // Use production helm charts instead of test helm charts
+  const helmChartPath = path.join(__dirname, '..', '..', 'scripts', 'build', 'helm');
+  const valuesPath = path.join(__dirname, '..', '..', 'scripts', 'build', 'helm', 'tests', 'integration-k3d-values.yaml');
+
+  // Install using production helm charts with multi-node deployment (no node selectors)
   await runCommand(
     `helm install ${PROJECT_NAME} ${helmChartPath} -n ${PROJECT_NAME} ` +
-    `--kube-context k3d-${PROJECT_NAME} --values ${valesPath} --create-namespace`
+    `--kube-context k3d-${PROJECT_NAME} ` +
+    `-f ${helmChartPath}/values/base.yaml ` +
+    `-f ${helmChartPath}/values/deployment-multi.yaml ` +
+    `-f ${helmChartPath}/values/platform-k3s-k3d.yaml ` +
+    `-f ${valuesPath} ` +
+    `--create-namespace`
   );
   await listenForApi();
 
@@ -1365,7 +1375,9 @@ const tearDownServices = async () => {
   await saveLogs();
   if (!DEBUG) {
     if (isK3D()) {
-      return await cleanupOldCluster();
+      // return await cleanupOldCluster(); // Commented out to prevent cleanup during debugging
+      console.log('Skipping k3d cluster cleanup for debugging');
+      return;
     }
     await dockerComposeCmd('down -t 0 --remove-orphans --volumes');
   }

@@ -127,10 +127,12 @@ spec:
           value: {{ $.Values.toleration.value | quote }}
           effect: {{ $.Values.toleration.effect }}
       {{- end }}
-      {{- with index $.Values.nodes (printf "node-%d" $nodeNumber) }}
-        {{- if . }}
+      {{- if and (hasKey $.Values "nodes") (kindIs "map" $.Values.nodes) }}
+        {{- with index $.Values.nodes (printf "node-%d" $nodeNumber) }}
+          {{- if . }}
       nodeSelector:
         kubernetes.io/hostname: {{ . }}
+          {{- end }}
         {{- end }}
       {{- end }}
       containers:

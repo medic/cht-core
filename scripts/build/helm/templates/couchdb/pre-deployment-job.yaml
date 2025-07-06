@@ -1,7 +1,8 @@
 # If there is no pre-existing data and clustered couchdb is enabled and the cluster type is k3s-k3d,
 # then create a job for each node to create the directory for couchdb data on the host machine.
+# Disabled for testing scenarios where dynamic provisioning is used
 
-{{- if and $.Values.couchdb.clusteredCouchEnabled (eq $.Values.cluster_type "k3s-k3d") (not $.Values.couchdb_data.preExistingDataAvailable) }}
+{{- if and $.Values.couchdb.clusteredCouchEnabled (eq $.Values.cluster_type "k3s-k3d") (not $.Values.couchdb_data.preExistingDataAvailable) (ne $.Values.environment "local") }}
 {{- range $i, $e := until (int $.Values.clusteredCouch.noOfCouchDBNodes) }}
 {{ $nodeNumber := add $i 1 }}
 apiVersion: batch/v1
@@ -22,8 +23,10 @@ spec:
           value: {{ $.Values.toleration.value | quote }}
           effect: {{ $.Values.toleration.effect }}
       {{- end }}
+      {{- if and (hasKey $.Values "nodes") (kindIs "map" $.Values.nodes) }}
       nodeSelector:
         kubernetes.io/hostname: {{ index $.Values.nodes (printf "node-%d" $nodeNumber) }}
+      {{- end }}
       restartPolicy: Never
       containers:
       - name: create-directory

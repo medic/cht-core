@@ -10,6 +10,6 @@ nodes:
   node-3: "" # REQUIRED: User must set this. This is the name of the third node where couchdb will be deployed
 
 couchdb_data:
-  preExistingDataAvailable: "false" # DEFAULT: Good default for new deployments. If this is false, you don't have to fill in details in local_storage or remote.
+  preExistingDataAvailable: false # DEFAULT: Good default for new deployments. If this is false, you don't have to fill in details in local_storage or remote.
   dataPathOnDiskForCouchDB: "data" # DEFAULT: Good default path. This is the path where couchdb data will be stored. Leave it as data if you don't have pre-existing data.
   partition: "0" # DEFAULT: Good default partition. This is the partition number for the EBS volume. Leave it as 0 if you don't have a partitioned disk.

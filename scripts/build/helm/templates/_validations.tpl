@@ -30,6 +30,8 @@
 
 {{- /* CouchDB clustering validations */ -}}
 {{- if .Values.couchdb.clusteredCouchEnabled }}
+{{- /* Skip node validation for k3d testing - allow all pods to run on same node */ -}}
+{{- if and (ne .Values.cluster_type "k3s-k3d") (ne .Values.environment "local") }}
 {{- if not (index .Values.nodes "node-1") }}
 {{- fail "node-1 is required when clusteredCouchEnabled is true. Please set it in your values file." }}
 {{- end }}
@@ -38,6 +40,7 @@
 {{- end }}
 {{- if not (index .Values.nodes "node-3") }}
 {{- fail "node-3 is required when clusteredCouchEnabled is true. Please set it in your values file." }}
+{{- end }}
 {{- end }}
 {{- end }}
 

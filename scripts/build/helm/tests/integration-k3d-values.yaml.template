@@ -1,0 +1,56 @@
+project_name: "{{project_name}}"
+namespace: "{{namespace}}"
+chtversion: "{{chtversion}}"
+cht_image_tag: "{{cht_image_tag}}"
+
+# API Service configuration
+api:
+  service:
+    type: ClusterIP
+
+# Image caching configuration
+cache_images: false # Disable for testing to allow image updates
+
+# Upstream server configuration
+upstream_servers:
+  docker_registry: "{{docker_registry}}"
+  builds_url: "https://staging.dev.medicmobile.org/_couch/builds_4"
+
+upgrade_service:
+  tag: 0.32
+
+# CouchDB Settings
+couchdb:
+  password: "{{password}}"
+  secret: "{{secret}}"
+  user: "{{user}}"
+  uuid: "{{uuid}}"
+  db_name: "medic-test"
+  couchdb_node_storage_size: "100Mi"
+  clusteredCouchEnabled: true # Enable clustering for multi-node setup
+  storage_class: "local-path"
+
+# Multi-node CouchDB configuration
+clusteredCouch:
+  noOfCouchDBNodes: 3
+
+# CouchDB data configuration
+couchdb_data:
+  preExistingDataAvailable: false
+  dataPathOnDiskForCouchDB: "data"
+  partition: "0"
+
+# K3s-K3d specific configuration
+environment: "local"
+cluster_type: "k3s-k3d"
+k3s_use_vSphere_storage_class: "false"
+
+# Local storage paths
+local_storage:
+  preExistingDiskPath-1: "{{{data_path}}}/srv1"
+  preExistingDiskPath-2: "{{{data_path}}}/srv2"
+  preExistingDiskPath-3: "{{{data_path}}}/srv3"
+
+# Ingress configuration
+ingress:
+  host: "localhost"

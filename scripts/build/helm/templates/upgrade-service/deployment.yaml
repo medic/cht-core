@@ -1,3 +1,4 @@
+{{- if ne .Values.environment "local" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -39,3 +40,4 @@ spec:
             value: '{{ .Values.upgrade_service.port | default "5008" }}'
         ports:
           - containerPort: {{ .Values.upgrade_service.port | default 5008 }}
+{{- end }}
