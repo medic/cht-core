@@ -13,6 +13,7 @@ import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { REPORT_ATTACHMENT_NAME } from '@mm-services/get-report-content.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 /**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
@@ -32,6 +33,7 @@ export class EnketoService {
     private extractLineageService: ExtractLineageService,
     private translateFromService: TranslateFromService,
     private translateService: TranslateService,
+    private chtDatasourceService: CHTDatasourceService,
     private ngZone: NgZone,
   ) { }
 
@@ -495,17 +497,20 @@ export class EnketoService {
     return docsToStore;
   }
 
-  private update(docId) {
+  private async update(docId) {
     // update an existing doc.  For convenience, get the latest version
     // and then modify the content.  This will avoid most concurrent
     // edits, but is not ideal.
-    return this.dbService.get().get(docId).then((doc) => {
-      // previously XML was stored in the content property
-      // TODO delete this and other "legacy" code support commited against
-      //      the same git commit at some point in the future?
-      delete doc.content;
-      return doc;
-    });
+    const datasource = await this.chtDatasourceService.get();
+    const doc = await datasource.v1.report.getByUuid(docId);
+    if (!doc) {
+      console.error('Report not found:', docId);
+      return null;
+    }
+    // previously XML was stored in the content property
+    // TODO delete this and other "legacy" code support commited against
+    //      the same git commit at some point in the future?
+    return doc;
   }
 
   private create(formInternalId, contact) {
