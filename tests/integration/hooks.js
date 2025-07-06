@@ -34,8 +34,8 @@ exports.mochaHooks = {
   },
 
   afterAll: async () => {
-    // await utils.tearDownServices(); // Commented out to prevent cleanup during debugging
-    console.log('Test done. Signing off ... (cleanup disabled for debugging)');
+    await utils.tearDownServices();
+    console.log('Test done. Signing off ...');
   },
 
   beforeEach: function () {

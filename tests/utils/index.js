@@ -1153,8 +1153,14 @@ const generateK3DValuesFile = async () => {
   };
 
   // Use new descriptive names for template and generated values
-  const templatePath = path.resolve(__dirname, '..', '..', 'scripts', 'build', 'helm', 'tests', 'integration-k3d-values.yaml.template');
-  const testValuesPath = path.resolve(__dirname, '..', '..', 'scripts', 'build', 'helm', 'tests', 'integration-k3d-values.yaml');
+  const templatePath = path.resolve(
+    __dirname, '..', '..', 'scripts', 'build', 'helm', 'tests',
+    'integration-k3d-values.yaml.template'
+  );
+  const testValuesPath = path.resolve(
+    __dirname, '..', '..', 'scripts', 'build', 'helm', 'tests',
+    'integration-k3d-values.yaml'
+  );
   const template = await fs.promises.readFile(templatePath, 'utf-8');
   await fs.promises.writeFile(testValuesPath, mustache.render(template, view));
 };
@@ -1267,17 +1273,16 @@ const importImages = async () => {
 };
 
 const cleanupOldCluster = async () => {
-  console.log('cleanupOldCluster called but cleanup is disabled for debugging');
-  // try {
-  //   await runCommand(`k3d registry delete ${K3D_REGISTRY}`);
-  // } catch {
-  //   console.warn('No registry to clean up');
-  // }
-  // try {
-  //   await runCommand(`k3d cluster delete ${PROJECT_NAME}`);
-  // } catch {
-  //   console.warn('No cluster to clean up');
-  // }
+  try {
+    await runCommand(`k3d registry delete ${K3D_REGISTRY}`);
+  } catch {
+    console.warn('No registry to clean up');
+  }
+  try {
+    await runCommand(`k3d cluster delete ${PROJECT_NAME}`);
+  } catch {
+    console.warn('No cluster to clean up');
+  }
 };
 
 const prepK3DServices = async (defaultSettings) => {
@@ -1289,16 +1294,17 @@ const prepK3DServices = async (defaultSettings) => {
   await fs.promises.mkdir(path.join(dataDir, 'srv2'));
   await fs.promises.mkdir(path.join(dataDir, 'srv3'));
 
-  // await cleanupOldCluster(); // Commented out to prevent cleanup during debugging
+  await cleanupOldCluster();
   await createCluster(dataDir);
   await generateK3DValuesFile();
   await importImages();
 
-  // Use production helm charts instead of test helm charts
   const helmChartPath = path.join(__dirname, '..', '..', 'scripts', 'build', 'helm');
-  const valuesPath = path.join(__dirname, '..', '..', 'scripts', 'build', 'helm', 'tests', 'integration-k3d-values.yaml');
+  const valuesPath = path.join(
+    __dirname, '..', '..', 'scripts', 'build', 'helm', 'tests',
+    'integration-k3d-values.yaml'
+  );
 
-  // Install using production helm charts with multi-node deployment (no node selectors)
   await runCommand(
     `helm install ${PROJECT_NAME} ${helmChartPath} -n ${PROJECT_NAME} ` +
     `--kube-context k3d-${PROJECT_NAME} ` +
@@ -1375,9 +1381,7 @@ const tearDownServices = async () => {
   await saveLogs();
   if (!DEBUG) {
     if (isK3D()) {
-      // return await cleanupOldCluster(); // Commented out to prevent cleanup during debugging
-      console.log('Skipping k3d cluster cleanup for debugging');
-      return;
+      return await cleanupOldCluster();
     }
     await dockerComposeCmd('down -t 0 --remove-orphans --volumes');
   }
