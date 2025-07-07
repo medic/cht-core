@@ -9,11 +9,11 @@ api:
     type: ClusterIP
 
 # Image caching configuration
-cache_images: true # Enable for faster startup - images are already imported into k3d registry
+cache_images: true
 
 # Upstream server configuration
 upstream_servers:
-  docker_registry: "{{docker_registry}}"
+  docker_registry:  "{{repo}}"
   builds_url: "https://staging.dev.medicmobile.org/_couch/builds_4"
 
 upgrade_service:
