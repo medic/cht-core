@@ -4,7 +4,7 @@
     "VirtualName": "ephemeral",
     "Ebs": {
       "DeleteOnTermination": true,
-      "VolumeSize": 10
+      "VolumeSize": 15
     }
   }
 ]

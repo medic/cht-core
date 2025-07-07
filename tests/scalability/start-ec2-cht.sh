@@ -67,6 +67,21 @@ seedData () {
 }
 
 forwardSentinelSeq () {
+  local interval="${2:-15}"  # Default to 30 seconds if not specified
+
+  while true; do
+    active_tasks=$(curl -sf -k "$url/_active_tasks" | jq '. | length')
+
+    # Check if the request was successful and got a number
+    if [ "$active_tasks" -eq 0 ]; then
+      echo "view indexing complete"
+      break
+    else
+      echo "Found $active_tasks active tasks. Waiting $interval seconds before next check..."
+      sleep "$interval"
+    fi
+  done
+
   last_seq=$(curl -k -sf "$1/medic/_changes?limit=1&descending=true" | jq '.last_seq')
   # Update sentinel queue
   sentinel_queue=$(curl -sf -k "$1/medic-sentinel/_local/transitions-seq" | jq --arg seq "$last_seq" '.value=$seq')
