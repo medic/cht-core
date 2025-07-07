@@ -11,6 +11,7 @@ const chtConfUtils = require('@utils/cht-conf');
 const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const chtDbUtils = require('@utils/cht-db');
+const modalPage = require('@page-objects/default/common/modal.wdio.page');
 
 describe('Tasks', () => {
 
@@ -57,16 +58,7 @@ describe('Tasks', () => {
 
     const formsPath = path.join(__dirname, 'forms');
     await chtConfUtils.compileAndUploadAppForms(formsPath);
-  });
-
-  beforeEach(async () => {
     await loginPage.login(chw);
-    await commonPage.waitForPageLoaded();
-  });
-
-  afterEach(async () => {
-    await commonPage.logout();
-    await utils.revertSettings(true);
   });
 
   it('should remove task from list when CHW completes a task successfully', async () => {
@@ -86,7 +78,7 @@ describe('Tasks', () => {
   });
 
   it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
-    await tasksPage.compileTasks('tasks-breadcrumbs-config.js', false);
+    await tasksPage.compileTasks('tasks-breadcrumbs-config.js', true);
 
     await commonPage.goToTasks();
     let list = await tasksPage.getTasks();
@@ -134,10 +126,9 @@ describe('Tasks', () => {
 
   it('Should show error message for bad config', async () => {
     await tasksPage.compileTasks('tasks-error-config.js', true);
+
     await commonPage.goToTasks();
-
     const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
-
     expect(username).to.equal(chw.username);
     expect(url).to.equal('localhost');
     expect(errorMessage).to.equal('Error fetching tasks');
@@ -149,5 +140,34 @@ describe('Tasks', () => {
     expect(feedbackDocs.length).to.equal(1);
     expect(feedbackDocs[0].info.message).to.include('Cannot read properties of undefined (reading \'name\')');
     await chtDbUtils.clearFeedbackDocs();
+  });
+
+  describe('contact tasks', () => {
+    beforeEach(async () => {
+      await tasksPage.compileTasks('tasks-contact-config.js', true);
+      await commonPage.goToTasks();
+    });
+
+    it('should launch an add contact form when type is provided in content', async () => {
+      expect(await tasksPage.getTasks()).to.have.length(4);
+      const task = await tasksPage.getTaskByContactAndForm(clinic.name, 'Add Household Members');
+      await task.click();
+
+      expect(await browser.getUrl()).to.include(`/contacts/${clinic._id}/add/person`);
+      expect(await genericForm.getFormTitle()).to.equal('New person');
+      await genericForm.cancelForm();
+      await modalPage.submit();
+    });
+
+    it('should launch an edit contact form when edit_id is provided in content', async () => {
+      expect(await tasksPage.getTasks()).to.have.length(4);
+      const task = await tasksPage.getTaskByContactAndForm(chwContact.name, 'Edit Person');
+      await task.click();
+
+      expect(await genericForm.getFormTitle()).to.equal('Edit person');
+      expect(await browser.getUrl()).to.include(`/contacts/${chwContact._id}/edit`);
+      await genericForm.cancelForm();
+      await modalPage.submit();
+    });
   });
 });

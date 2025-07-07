@@ -86,7 +86,7 @@ module.exports = {
     // template are not defined.
     try {
       return _.template(value)(ctx || {});
-    } catch (e) {
+    } catch {
       return value;
     }
   },

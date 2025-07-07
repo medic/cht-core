@@ -1,7 +1,0 @@
-{
-  "compilerOptions": { "strict": true },
-  "include": [
-    "webapp/src/**/*.ts",
-    "webapp/tests/**/*.ts"
-  ]
-}

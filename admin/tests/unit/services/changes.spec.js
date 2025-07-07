@@ -302,30 +302,30 @@ describe('Changes service', function() {
       callback: change => {
         calls++;
         switch (change.id) {
-        case '1':
-          chai.expect(change.doc).to.equal(undefined);
-          chai.expect(getLastChangedDoc()._id).to.equal('2');
-          break;
-        case '2':
-          chai.expect(change.doc._id).to.equal('2');
-          chai.expect(change.doc.data).to.equal(1);
-          chai.expect(getLastChangedDoc()).to.equal(false);
-          break;
-        case '3':
-          chai.expect(change.doc).to.equal(undefined);
-          chai.expect(getLastChangedDoc()).to.equal(false);
-          break;
-        case '4':
-          chai.expect(change.doc).to.equal(undefined);
-          chai.expect(getLastChangedDoc()._id).to.equal('5');
-          break;
-        case '5':
-          chai.expect(change.doc._id).to.equal('5');
-          chai.expect(change.doc.data).to.equal(2);
-          chai.expect(getLastChangedDoc()).to.equal(false);
-          break;
-        default:
-          done('Received invalid change');
+          case '1':
+            chai.expect(change.doc).to.equal(undefined);
+            chai.expect(getLastChangedDoc()._id).to.equal('2');
+            break;
+          case '2':
+            chai.expect(change.doc._id).to.equal('2');
+            chai.expect(change.doc.data).to.equal(1);
+            chai.expect(getLastChangedDoc()).to.equal(false);
+            break;
+          case '3':
+            chai.expect(change.doc).to.equal(undefined);
+            chai.expect(getLastChangedDoc()).to.equal(false);
+            break;
+          case '4':
+            chai.expect(change.doc).to.equal(undefined);
+            chai.expect(getLastChangedDoc()._id).to.equal('5');
+            break;
+          case '5':
+            chai.expect(change.doc._id).to.equal('5');
+            chai.expect(change.doc.data).to.equal(2);
+            chai.expect(getLastChangedDoc()).to.equal(false);
+            break;
+          default:
+            done('Received invalid change');
         }
 
         if (calls === 5) {
@@ -359,30 +359,30 @@ describe('Changes service', function() {
       callback: change => {
         calls++;
         switch (change.id) {
-        case '1':
-          chai.expect(change.doc).to.equal(undefined);
-          chai.expect(getLastChangedDoc()._id).to.equal('2');
-          break;
-        case '2':
-          chai.expect(change.doc._id).to.equal('2');
-          chai.expect(change.doc.data).to.equal(0);
-          chai.expect(getLastChangedDoc()).to.equal(false);
-          break;
-        case '3':
-          chai.expect(change.doc).to.equal(undefined);
-          chai.expect(getLastChangedDoc()).to.equal(false);
-          break;
-        case '4':
-          chai.expect(change.doc).to.equal(undefined);
-          chai.expect(getLastChangedDoc()._id).to.equal('5');
-          break;
-        case '5':
-          chai.expect(change.doc._id).to.equal('5');
-          chai.expect(change.doc.data).to.equal(0);
-          chai.expect(getLastChangedDoc()).to.equal(false);
-          break;
-        default:
-          done('Received invalid change');
+          case '1':
+            chai.expect(change.doc).to.equal(undefined);
+            chai.expect(getLastChangedDoc()._id).to.equal('2');
+            break;
+          case '2':
+            chai.expect(change.doc._id).to.equal('2');
+            chai.expect(change.doc.data).to.equal(0);
+            chai.expect(getLastChangedDoc()).to.equal(false);
+            break;
+          case '3':
+            chai.expect(change.doc).to.equal(undefined);
+            chai.expect(getLastChangedDoc()).to.equal(false);
+            break;
+          case '4':
+            chai.expect(change.doc).to.equal(undefined);
+            chai.expect(getLastChangedDoc()._id).to.equal('5');
+            break;
+          case '5':
+            chai.expect(change.doc._id).to.equal('5');
+            chai.expect(change.doc.data).to.equal(0);
+            chai.expect(getLastChangedDoc()).to.equal(false);
+            break;
+          default:
+            done('Received invalid change');
         }
 
         if (calls === 5) {

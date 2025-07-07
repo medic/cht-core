@@ -111,7 +111,7 @@ describe('Enketo service', () => {
     });
 
     it('return error when form initialisation fails', fakeAsync(async () => {
-      EnketoPrepopulationData.resolves('<xml></xml>');
+      EnketoPrepopulationData.returns('<xml></xml>');
       const expectedErrorDetail = [ 'nope', 'still nope' ];
       enketoInit.returns(expectedErrorDetail);
 
@@ -138,7 +138,7 @@ describe('Enketo service', () => {
     it('return form when everything works', () => {
       expect(form.editStatus).to.be.undefined;
       enketoInit.returns([]);
-      EnketoPrepopulationData.resolves('<xml></xml>');
+      EnketoPrepopulationData.returns('<xml></xml>');
       const formContext = {
         selector: $('<div></div>'),
         formDoc: mockEnketoDoc('myform')
@@ -159,7 +159,7 @@ describe('Enketo service', () => {
       dbGetAttachment.resolves('myobjblob');
       createObjectURL.returns('myobjurl');
       enketoInit.returns([]);
-      EnketoPrepopulationData.resolves('<xml></xml>');
+      EnketoPrepopulationData.returns('<xml></xml>');
       const wrapper = $('<div><div class="container"></div><form></form></div>');
       const formContext = {
         selector: wrapper,
@@ -187,7 +187,7 @@ describe('Enketo service', () => {
       dbGetAttachment.rejects('not found');
       createObjectURL.returns('myobjurl');
       enketoInit.returns([]);
-      EnketoPrepopulationData.resolves('<xml></xml>');
+      EnketoPrepopulationData.returns('<xml></xml>');
       const wrapper = $('<div><div class="container"></div><form></form></div>');
       const formContext = {
         selector: wrapper,
@@ -217,7 +217,7 @@ describe('Enketo service', () => {
     it('passes users language to Enketo', () => {
       const data = '<data><patient_id>123</patient_id></data>';
       enketoInit.returns([]);
-      EnketoPrepopulationData.resolves(data);
+      EnketoPrepopulationData.returns(data);
       const formContext = {
         selector: $('<div></div>'),
         formDoc: mockEnketoDoc('myform'),
@@ -238,7 +238,7 @@ describe('Enketo service', () => {
       const data = '<data><patient_id>123</patient_id></data>';
 
       enketoInit.returns([]);
-      EnketoPrepopulationData.resolves(data);
+      EnketoPrepopulationData.returns(data);
       const formContext = {
         selector: $('<div></div>'),
         formDoc: mockEnketoDoc('myform'),
@@ -265,7 +265,7 @@ describe('Enketo service', () => {
         }
       };
       enketoInit.returns([]);
-      EnketoPrepopulationData.resolves(data);
+      EnketoPrepopulationData.returns(data);
       const formContext = {
         selector: $('<div></div>'),
         formDoc: mockEnketoDoc('myform'),
@@ -296,9 +296,9 @@ describe('Enketo service', () => {
         }
       };
       enketoInit.returns([]);
-      EnketoPrepopulationData.resolves(data);
+      EnketoPrepopulationData.returns(data);
       const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
-      formContext.contactSummary = { context: { pregnant: true } };
+      formContext.contactSummary = { id: 'contact-summary', context: { pregnant: true } };
       const doc = {
         html: $('<div>my form</div>'),
         model: VISIT_MODEL_WITH_CONTACT_SUMMARY,
@@ -311,6 +311,73 @@ describe('Enketo service', () => {
         expect(summary.id).to.equal('contact-summary');
         const xmlStr = new XMLSerializer().serializeToString(summary.xml);
         expect(xmlStr).to.equal('<context><pregnant>true</pregnant></context>');
+      });
+    });
+
+    it('passes contact summary data to enketo', () => {
+      const data = '<data><patient_id>123</patient_id></data>';
+      const instanceData = {
+        contact: {
+          _id: 'fffff',
+          patient_id: '44509'
+        },
+        inputs: {
+          patient_id: 123,
+          name: 'sharon'
+        }
+      };
+      enketoInit.returns([]);
+      EnketoPrepopulationData.returns(data);
+      const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
+      formContext.userContactSummary =  { id: 'user-contact-summary', context: { chw: true } };
+      const doc = {
+        html: $('<div>my form</div>'),
+        model: VISIT_MODEL_WITH_CONTACT_SUMMARY,
+      };
+      const userSettings = { language: 'en' };
+      return service.renderForm(formContext, doc, userSettings).then(() => {
+        expect(EnketoForm.callCount).to.equal(1);
+        expect(EnketoForm.args[0][1].external.length).to.equal(1);
+        const summary = EnketoForm.args[0][1].external[0];
+        expect(summary.id).to.equal('user-contact-summary');
+        const xmlStr = new XMLSerializer().serializeToString(summary.xml);
+        expect(xmlStr).to.equal('<context><chw>true</chw></context>');
+      });
+    });
+
+    it('passes both contact summary and user contact summary data to enketo', () => {
+      const data = '<data><patient_id>123</patient_id></data>';
+      const instanceData = {
+        contact: {
+          _id: 'fffff',
+          patient_id: '44509'
+        },
+        inputs: {
+          patient_id: 123,
+          name: 'sharon'
+        }
+      };
+      enketoInit.returns([]);
+      EnketoPrepopulationData.returns(data);
+      const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
+      formContext.contactSummary =  { id: 'contact-summary', context: { pregnant: true } };
+      formContext.userContactSummary =  { id: 'user-contact-summary', context: { chw: true } };
+      const doc = {
+        html: $('<div>my form</div>'),
+        model: VISIT_MODEL_WITH_CONTACT_SUMMARY,
+      };
+      const userSettings = { language: 'en' };
+      return service.renderForm(formContext, doc, userSettings).then(() => {
+        expect(EnketoForm.callCount).to.equal(1);
+        expect(EnketoForm.args[0][1].external.length).to.equal(2);
+        const contactSummary = EnketoForm.args[0][1].external[0];
+        expect(contactSummary.id).to.equal('contact-summary');
+        expect(new XMLSerializer().serializeToString(contactSummary.xml))
+          .to.equal('<context><pregnant>true</pregnant></context>');
+        const userContactSummary = EnketoForm.args[0][1].external[1];
+        expect(userContactSummary.id).to.equal('user-contact-summary');
+        expect(new XMLSerializer().serializeToString(userContactSummary.xml))
+          .to.equal('<context><chw>true</chw></context>');
       });
     });
 
