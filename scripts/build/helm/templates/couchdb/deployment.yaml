@@ -13,12 +13,19 @@ spec:
     matchLabels:
       cht.service: couchdb
   strategy:
+    {{- if eq .Values.environment "local" }}
+    type: RollingUpdate
+    {{- else }}
     type: Recreate
+    {{- end }}
   template:
     metadata:
       labels:
         cht.service: couchdb
     spec:
+      {{- if eq .Values.environment "local" }}
+      terminationGracePeriodSeconds: 0
+      {{- end }}
       securityContext:
         runAsUser: 0  # Run as root
         fsGroup: 0    # Set fsGroup to root
@@ -111,12 +118,19 @@ spec:
     matchLabels:
       cht.service: couchdb-{{ $nodeNumber }}
   strategy:
+    {{- if eq $.Values.environment "local" }}
+    type: RollingUpdate
+    {{- else }}
     type: Recreate
+    {{- end }}
   template:
     metadata:
       labels:
         cht.service: couchdb-{{ $nodeNumber }}
     spec:
+      {{- if eq $.Values.environment "local" }}
+      terminationGracePeriodSeconds: 0
+      {{- end }}
       securityContext:
         runAsUser: 0  # Run as root
         fsGroup: 0    # Set fsGroup to root
