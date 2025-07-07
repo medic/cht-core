@@ -1,6 +1,6 @@
 [
   {
-    "DeviceName": "/dev/sdf",
+    "DeviceName": "/dev/sda1",
     "VirtualName": "ephemeral",
     "Ebs": {
       "DeleteOnTermination": true,
