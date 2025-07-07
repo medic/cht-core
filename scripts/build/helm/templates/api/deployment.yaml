@@ -35,8 +35,10 @@ spec:
                 secretKeyRef:
                   name: cht-couchdb-credentials
                   key: COUCH_URL
+            {{- if ne .Values.environment "local" }}
             - name: UPGRADE_SERVICE_URL
               value: 'http://upgrade-service.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.upgrade_service.port | default "5008" }}'
+            {{- end }}
             - name: API_PORT
               value: '{{ .Values.api.port | default "5988" }}'
           image: '{{ .Values.upstream_servers.docker_registry | default "public.ecr.aws/medic" }}/cht-api:{{ .Values.cht_image_tag }}'

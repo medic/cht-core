@@ -9,7 +9,7 @@ api:
     type: ClusterIP
 
 # Image caching configuration
-cache_images: false # Disable for testing to allow image updates
+cache_images: true # Enable for faster startup - images are already imported into k3d registry
 
 # Upstream server configuration
 upstream_servers:
