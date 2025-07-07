@@ -10,6 +10,7 @@ import { SearchService } from '@mm-services/search.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 /**
  * Hydrates the given contact by uuid and creates a model which
@@ -41,6 +42,7 @@ export class ContactViewModelGeneratorService {
     private contactMutedService:ContactMutedService,
     private getDataRecordsService:GetDataRecordsService,
     private ngZone:NgZone,
+    private chtDatasourceService: CHTDatasourceService,
   ){}
 
   private primaryContactComparator (lhs, rhs) {
@@ -141,7 +143,7 @@ export class ContactViewModelGeneratorService {
     return _groupBy(children, child => this.contactTypesService.getTypeId(child.doc));
   }
 
-  private addPrimaryContact(doc, children) {
+  private async addPrimaryContact(doc, children) {
     const contactId = doc && doc.contact && doc.contact._id;
     if (!contactId) {
       return children;
@@ -154,23 +156,24 @@ export class ContactViewModelGeneratorService {
     }
 
     // If the primary contact is not a child, fetch the document
-    return this.dbService
-      .get()
-      .get(contactId)
-      .then(doc => {
-        children.push({
-          doc: doc,
-          isPrimaryContact: true,
-          id: doc._id,
-        });
+    try {
+      const datasource = await this.chtDatasourceService.get();
+      const contact = await datasource.v1.contact.getByUuid(contactId);
+    
+      if (!contact) {
         return children;
-      })
-      .catch((err) => {
-        if (err.status === 404 || err.error === 'not_found') {
-          return children;
-        }
-        throw err;
+      }
+
+      children.push({
+        doc: contact,
+        isPrimaryContact: true,
+        id: contact._id,
       });
+      return children;
+    } catch (err) {
+      console.error('Error fetching primary contact:', err);
+      return children;
+    }
   }
 
   private sortChildren(childModels) {
