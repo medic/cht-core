@@ -8,7 +8,7 @@ const cleanFile = () => fs.writeFile(FILE_NAME, '', 'utf8');
 
 const printResults = async (endpoint, results) => {
   let formatted = '';
-  formatted += `## ${endpoint} \n`;
+  formatted += `## ${endpoint} benchmark \n`;
 
   const headers = new Set();
   results.forEach(({ scenario }) => {
@@ -27,6 +27,8 @@ const printResults = async (endpoint, results) => {
     formatted += `| ${values.join(' | ')} | ${duration} |\n`;
   });
 
+  formatted += '\n\n';
+
   await fs.appendFile(FILE_NAME, formatted, 'utf8');
 };
 
@@ -41,12 +43,11 @@ const writeDbInfo = async () => {
   const dbInfo = await request.get({ url: module.exports.db });
   const serverInfo = await getServerInfo();
 
-  let formatted = '# CouchDb Performance\n';
+  let formatted = '# CouchDb Performance benchmark \n\n';
 
-  formatted += `## Database Info\n`;
+  formatted += `## Database Info\n\n`;
   formatted += `CouchDb version: ${serverInfo.version}\n\n`;
   formatted += `Database doc count: ${dbInfo.doc_count}\n\n`;
-  formatted += '\n\n';
 
   await fs.appendFile(FILE_NAME, formatted, 'utf8');
 };

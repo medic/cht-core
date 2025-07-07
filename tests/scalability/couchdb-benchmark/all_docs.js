@@ -2,7 +2,7 @@ const request = require('@medic/couch-request');
 const { performance } = require('perf_hooks');
 const utils = require('./utils');
 
-const YES = 'Yes';
+const YES = 'true';
 
 const scenarios = [
   { limit: 100, include_docs: false },
