@@ -895,6 +895,19 @@ const listenForApi = async () => {
     } catch (err) {
       console.log('API check failed, trying again in 1 second');
       console.log(err.message);
+      
+      // Log pod status every 10 retries to see what's happening
+      if (retryCount % 10 === 0) {
+        try {
+          console.log('=== Pod Status Check ===');
+          const podsList = await runCommand(`kubectl ${KUBECTL_CONTEXT} get pods --no-headers -o wide`);
+          console.log(podsList);
+          console.log('=== End Pod Status ===');
+        } catch (podErr) {
+          console.log('Failed to get pod status:', podErr.message);
+        }
+      }
+      
       await delayPromise(1000);
     }
   } while (--retryCount > 0);
