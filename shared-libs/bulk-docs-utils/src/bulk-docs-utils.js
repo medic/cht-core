@@ -1,19 +1,20 @@
 module.exports = function(dependencies) {
   dependencies = dependencies || {};
   const Promise = dependencies.Promise;
-  const DB = dependencies.DB;
+  const dataContext = dependencies.dataContext;
+  const { Contact, Qualifier } = require('@medic/cht-datasource');
 
   const getParent = (doc) => {
     const parentId = doc.parent && doc.parent._id;
     if (!parentId) {
       return Promise.resolve();
     }
-    return DB.get(parentId)
-      .catch(function(err) {
-        if (err.status === 404) {
+    return dataContext.bind(Contact.v1.get)(Qualifier.byUuid(parentId))
+      .then(parent => {
+        if (!parent) {
           return;
         }
-        throw err;
+        return parent;
       });
   };
 
