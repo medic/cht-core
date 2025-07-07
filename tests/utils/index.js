@@ -911,6 +911,7 @@ const listenForApi = async () => {
           // Check specific image pull errors
           console.log('=== Image Pull Errors ===');
           const imageErrors = await runCommand(
+            // eslint-disable-next-line @stylistic/max-len
             `kubectl ${KUBECTL_CONTEXT} describe pods | grep -A 10 -B 5 "Failed to pull image|ErrImagePull|ImagePullBackOff"`
           );
           console.log(imageErrors);
