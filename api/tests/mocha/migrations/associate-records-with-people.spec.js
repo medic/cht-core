@@ -2,9 +2,20 @@ const sinon = require('sinon');
 const chai = require('chai');
 const request = require('@medic/couch-request');
 const db = require('../../../src/db');
+const dataContext = require('../../../src/services/data-context');
 const migration = require('../../../src/migrations/associate-records-with-people');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
 
 describe('associate-records-with-people migration', () => {
+
+  let contactGet;
+  let dataContextBind;
+
+  beforeEach(() => {
+    contactGet = sinon.stub();
+    dataContextBind = sinon.stub(dataContext, 'bind');
+    dataContextBind.withArgs(Contact.v1.get).returns(contactGet);
+  });
 
   afterEach(() => {
     sinon.restore();
@@ -512,11 +523,12 @@ describe('associate-records-with-people migration', () => {
   it('run migrates outgoing message', () => {
     const rows = [ { doc: clone(outgoingMessage) } ];
     sinon.stub(request, 'get').resolves({ rows: rows });
-    const getDoc = sinon.stub(db.medic, 'get').resolves(contact);
+    
+    contactGet.withArgs(Qualifier.byUuid(contact._id)).resolves(contact);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return migration.run().then(() => {
-      chai.expect(getDoc.callCount).to.equal(1);
-      chai.expect(getDoc.args[0][0]).to.equal(contact._id);
+      chai.expect(contactGet.callCount).to.equal(1);
+      chai.expect(contactGet.args[0][0]).to.deep.equal(Qualifier.byUuid(contact._id));
       chai.expect(bulk.callCount).to.equal(1);
       const message = bulk.args[0][0][0].tasks[0].messages[0];
       chai.expect(message.facility).to.equal(undefined);
@@ -527,11 +539,11 @@ describe('associate-records-with-people migration', () => {
   it('run migrates outgoing message to facility without contact id - #2545', () => {
     const rows = [ { doc: clone(outgoingMessageWithoutContactId) } ];
     sinon.stub(request, 'get').resolves({ rows: rows });
-    const getDoc = sinon.stub(db.medic, 'get').resolves(clinic);
+    contactGet.withArgs(Qualifier.byUuid(clinic._id)).resolves(clone(clinic));
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return migration.run().then(() => {
-      chai.expect(getDoc.callCount).to.equal(1);
-      chai.expect(getDoc.args[0][0]).to.equal(clinic._id);
+      chai.expect(contactGet.callCount).to.equal(1);
+      chai.expect(contactGet.args[0][0]).to.deep.equal(Qualifier.byUuid(clinic._id));
       chai.expect(bulk.callCount).to.equal(1);
       const message = bulk.args[0][0][0].tasks[0].messages[0];
       chai.expect(message.facility).to.equal(undefined);
@@ -574,11 +586,13 @@ describe('associate-records-with-people migration', () => {
   it('run migrates incoming message', () => {
     const rows = [ { doc: clone(incomingMessage) } ];
     sinon.stub(request, 'get').resolves({ rows: rows });
-    const getDoc = sinon.stub(db.medic, 'get').resolves(clone(contact));
+    
+    // Use contactGet stub instead of db.medic.get
+    contactGet.withArgs(Qualifier.byUuid(contact._id)).resolves(clone(contact));
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return migration.run().then(() => {
-      chai.expect(getDoc.callCount).to.equal(1);
-      chai.expect(getDoc.args[0][0]).to.equal(contact._id);
+      chai.expect(contactGet.callCount).to.equal(1);
+      chai.expect(contactGet.args[0][0]).to.deep.equal(Qualifier.byUuid(contact._id));
       chai.expect(bulk.callCount).to.equal(1);
       chai.expect(bulk.args[0][0][0].related_entities).to.equal(undefined);
       chai.expect(bulk.args[0][0][0].contact).to.deep.equal(contact);
@@ -588,11 +602,13 @@ describe('associate-records-with-people migration', () => {
   it('run migrates incoming report', () => {
     const rows = [ { doc: clone(incomingReport) } ];
     sinon.stub(request, 'get').resolves({ rows: rows });
-    const getDoc = sinon.stub(db.medic, 'get').resolves(clone(contact));
+    
+    // Use contactGet stub instead of db.medic.get
+    contactGet.withArgs(Qualifier.byUuid(contact._id)).resolves(clone(contact));
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return migration.run().then(() => {
-      chai.expect(getDoc.callCount).to.equal(1);
-      chai.expect(getDoc.args[0][0]).to.equal(contact._id);
+      chai.expect(contactGet.callCount).to.equal(1);
+      chai.expect(contactGet.args[0][0]).to.deep.equal(Qualifier.byUuid(contact._id));
       chai.expect(bulk.callCount).to.equal(1);
       chai.expect(bulk.args[0][0][0].related_entities).to.equal(undefined);
       chai.expect(bulk.args[0][0][0].contact).to.deep.equal(contact);
@@ -602,11 +618,11 @@ describe('associate-records-with-people migration', () => {
   it('run migrates incoming report with no contact id - #2970', () => {
     const rows = [ { doc: clone(incomingReportWithoutContactId) } ];
     sinon.stub(request, 'get').resolves({ rows: rows });
-    const getDoc = sinon.stub(db.medic, 'get').resolves(clone(clinic));
+    contactGet.withArgs(Qualifier.byUuid(clinic._id)).resolves(clone(clinic));
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return migration.run().then(() => {
-      chai.expect(getDoc.callCount).to.equal(1);
-      chai.expect(getDoc.args[0][0]).to.equal(clinic._id);
+      chai.expect(contactGet.callCount).to.equal(1);
+      chai.expect(contactGet.args[0][0]).to.deep.equal(Qualifier.byUuid(clinic._id));
       chai.expect(bulk.callCount).to.equal(1);
       const report = bulk.args[0][0][0];
       chai.expect(report.related_entities).to.equal(undefined);
@@ -623,16 +639,13 @@ describe('associate-records-with-people migration', () => {
       { doc: clone(incomingReport) }
     ];
     sinon.stub(request, 'get').resolves({ rows: rows });
-    const getDoc = sinon.stub(db.medic, 'get');
-    getDoc.onCall(0).resolves(contact);
-    getDoc.onCall(1).resolves(contact);
-    getDoc.onCall(2).resolves(contact);
+    contactGet.withArgs(Qualifier.byUuid(contact._id)).resolves(contact);
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return migration.run().then(() => {
-      chai.expect(getDoc.callCount).to.equal(3);
-      chai.expect(getDoc.args[0][0]).to.equal(contact._id);
-      chai.expect(getDoc.args[1][0]).to.equal(contact._id);
-      chai.expect(getDoc.args[2][0]).to.equal(contact._id);
+      chai.expect(contactGet.callCount).to.equal(3);
+      chai.expect(contactGet.args[0][0]).to.deep.equal(Qualifier.byUuid(contact._id));
+      chai.expect(contactGet.args[1][0]).to.deep.equal(Qualifier.byUuid(contact._id));
+      chai.expect(contactGet.args[2][0]).to.deep.equal(Qualifier.byUuid(contact._id));
       chai.expect(bulk.callCount).to.equal(1);
     });
   });
@@ -640,14 +653,14 @@ describe('associate-records-with-people migration', () => {
   it('run migrates outgoing message with deleted contact', () => {
     const rows = [ { doc: clone(outgoingMessage) } ];
     sinon.stub(request, 'get').resolves({ rows: rows });
-    const getDoc = sinon.stub(db.medic, 'get');
-    getDoc.onCall(0).returns(Promise.reject({ status: 404 }));
-    getDoc.onCall(1).resolves(clinic);
+    contactGet.withArgs(Qualifier.byUuid(contact._id)).resolves(null);
+    contactGet.withArgs(Qualifier.byUuid(clinic._id)).resolves(clone(clinic));
+    
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return migration.run().then(() => {
-      chai.expect(getDoc.callCount).to.equal(2);
-      chai.expect(getDoc.args[0][0]).to.equal(contact._id);
-      chai.expect(getDoc.args[1][0]).to.equal(clinic._id);
+      chai.expect(contactGet.callCount).to.equal(2);
+      chai.expect(contactGet.args[0][0]).to.deep.equal(Qualifier.byUuid(contact._id));
+      chai.expect(contactGet.args[1][0]).to.deep.equal(Qualifier.byUuid(clinic._id));
       chai.expect(bulk.callCount).to.equal(1);
       const message = bulk.args[0][0][0].tasks[0].messages[0];
       chai.expect(message.facility).to.equal(undefined);
@@ -660,14 +673,14 @@ describe('associate-records-with-people migration', () => {
   it('run migrates incoming message with deleted contact and deleted clinic', () => {
     const rows = [ { doc: clone(incomingMessage) } ];
     sinon.stub(request, 'get').resolves({ rows: rows });
-    const getDoc = sinon.stub(db.medic, 'get');
-    getDoc.onCall(0).returns(Promise.reject({ status: 404 }));
-    getDoc.onCall(1).returns(Promise.reject({ status: 404 }));
+    contactGet.withArgs(Qualifier.byUuid(contact._id)).resolves(null);
+    contactGet.withArgs(Qualifier.byUuid(clinic._id)).resolves(null);
+    
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return migration.run().then(() => {
-      chai.expect(getDoc.callCount).to.equal(2);
-      chai.expect(getDoc.args[0][0]).to.equal(contact._id);
-      chai.expect(getDoc.args[1][0]).to.equal(clinic._id);
+      chai.expect(contactGet.callCount).to.equal(2);
+      chai.expect(contactGet.args[0][0]).to.deep.equal(Qualifier.byUuid(contact._id));
+      chai.expect(contactGet.args[1][0]).to.deep.equal(Qualifier.byUuid(clinic._id));
       chai.expect(bulk.callCount).to.equal(1);
       const message = bulk.args[0][0][0];
       chai.expect(message.related_entities).to.equal(undefined);
@@ -678,14 +691,15 @@ describe('associate-records-with-people migration', () => {
   it('run migrates incoming message with deleted contact and clinic has no contact', () => {
     const rows = [ { doc: clone(incomingMessage) } ];
     sinon.stub(request, 'get').resolves({ rows: rows });
-    const getDoc = sinon.stub(db.medic, 'get');
-    getDoc.onCall(0).returns(Promise.reject({ status: 404 }));
-    getDoc.onCall(1).resolves({ _id: 'a' });
+    
+    contactGet.withArgs(Qualifier.byUuid(contact._id)).resolves(null);
+    contactGet.withArgs(Qualifier.byUuid(clinic._id)).resolves({ _id: 'a' });
+    
     const bulk = sinon.stub(db.medic, 'bulkDocs').resolves();
     return migration.run().then(() => {
-      chai.expect(getDoc.callCount).to.equal(2);
-      chai.expect(getDoc.args[0][0]).to.equal(contact._id);
-      chai.expect(getDoc.args[1][0]).to.equal(clinic._id);
+      chai.expect(contactGet.callCount).to.equal(2);
+      chai.expect(contactGet.args[0][0]).to.deep.equal(Qualifier.byUuid(contact._id));
+      chai.expect(contactGet.args[1][0]).to.deep.equal(Qualifier.byUuid(clinic._id));
       chai.expect(bulk.callCount).to.equal(1);
       const message = bulk.args[0][0][0];
       chai.expect(message.related_entities).to.equal(undefined);
