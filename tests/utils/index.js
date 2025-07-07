@@ -910,7 +910,9 @@ const listenForApi = async () => {
           
           // Check specific image pull errors
           console.log('=== Image Pull Errors ===');
-          const imageErrors = await runCommand(`kubectl ${KUBECTL_CONTEXT} describe pods | grep -A 10 -B 5 "Failed to pull image\|ErrImagePull\|ImagePullBackOff"`);
+          const imageErrors = await runCommand(
+            `kubectl ${KUBECTL_CONTEXT} describe pods | grep -A 10 -B 5 "Failed to pull image|ErrImagePull|ImagePullBackOff"`
+          );
           console.log(imageErrors);
           console.log('=== End Image Pull Errors ===');
           
@@ -1326,7 +1328,9 @@ const importImages = async () => {
   // Verify images are in k3d registry
   console.log('Verifying images in k3d registry...');
   try {
-    const registryImages = await runCommand(`docker exec k3d-${K3D_REGISTRY} ls /var/lib/registry/docker/registry/v2/repositories/`);
+    const registryImages = await runCommand(
+      `docker exec k3d-${K3D_REGISTRY} ls /var/lib/registry/docker/registry/v2/repositories/`
+    );
     console.log('Images in k3d registry:', registryImages);
   } catch (err) {
     console.log('Could not verify k3d registry contents:', err.message);
