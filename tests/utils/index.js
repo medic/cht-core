@@ -1174,7 +1174,7 @@ const generateK3DValuesFile = async () => {
     namespace: PROJECT_NAME,
     chtversion: buildVersions.getVersion(),
     cht_image_tag: buildVersions.getImageTag(),
-    docker_registry: `${K3D_REPO()}/medicmobile`,
+    docker_registry: K3D_REPO(),
     password: constants.PASSWORD,
     secret: env.COUCHDB_SECRET,
     user: constants.USERNAME,
