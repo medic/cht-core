@@ -107,14 +107,20 @@ export namespace v1 {
     settings
   } : LocalDataContext) => {
     const createPersonDoc = createDoc(medicDb);
-    return async (input: PersonInput) :Promise<Person.v1.Person> => {
 
-      const ensureHasValidParentFieldAndReturnParentWithLineage =
-    async(input:Record<string, unknown>, contactTypeObject: Record<string, unknown>):Promise<Doc|null> => {
-      const parentWithLineage = await getDocById(medicDb)(input.parent as string);
+    const ensureHasValidParentFieldAndReturnParentDoc = async(
+      input:Record<string, unknown>, 
+      contactTypeObject: Record<string, unknown>
+    ): Promise<Doc|null> => {
+      const parentDoc = await getDocById(medicDb)(input.parent as string);
+      if (parentDoc === null){
+        throw new InvalidArgumentError(
+          `Parent does not exist for [${JSON.stringify(input)}].`
+        );
+      }
       // Check whether parent doc's `contact_type` or `type`(if `contact_type` is absent) 
       // matches with any of the allowed parents type.
-      const typeToMatch = (parentWithLineage as PersonInput).contact_type ?? (parentWithLineage as PersonInput).type;
+      const typeToMatch = (parentDoc as PersonInput).contact_type ?? (parentDoc as PersonInput).type;
       const parentTypeMatchWithAllowedParents = (contactTypeObject.parents as string[])
         .find(parent => parent===typeToMatch);
         
@@ -123,41 +129,46 @@ export namespace v1 {
           `Invalid parent type for [${JSON.stringify(input)}].`
         );
       }
-      return parentWithLineage;
+      return parentDoc;
       
     };
 
-      const validatePersonParent = 
-    async(contactTypeObject: Record<string, unknown>
-      , input:Record<string, unknown> ):Promise<Doc|null> => {
+    const validatePersonParent = async(
+      contactTypeObject: Record<string, unknown>,
+      input:Record<string, unknown>
+    ): Promise<Doc|null> => {
       if (!hasField(contactTypeObject, {name: 'parents', type: 'object'})) {
         throw new InvalidArgumentError(
           `Invalid type of person, cannot have parent for [${JSON.stringify(input)}].`
         );
       } else {
-        return await ensureHasValidParentFieldAndReturnParentWithLineage(input, contactTypeObject);
+        return await ensureHasValidParentFieldAndReturnParentDoc(input, contactTypeObject);
       }
     };
 
-      const appendParentWithLineage = async() => {
-        let parentWithLineage: Doc | null = null;
-        if (typeFoundInSettingsContactTypes){
-          parentWithLineage = await validatePersonParent(typeFoundInSettingsContactTypes, input);
-        } else if (input.parent){
-          parentWithLineage = await getDocById(medicDb)(input.parent);
-        }
-      
-        if (parentWithLineage === null){
-          throw new InvalidArgumentError(
-            `Parent does not exist for [${JSON.stringify(input)}].`
-          );
-        }
-        input = {...input, parent: {
-          _id: input.parent, parent: parentWithLineage.parent 
-        } } as unknown as PersonInput;
-      };
+    const appendParent = async(
+      typeFoundInSettingsContactTypes:Record<string, unknown> | undefined,
+      input: PersonInput
+    ) => {
+      let parentDoc: Doc | null = null;
+      if (typeFoundInSettingsContactTypes){
+        parentDoc = await validatePersonParent(typeFoundInSettingsContactTypes, input);
+      } else if (input.parent){
+        parentDoc = await getDocById(medicDb)(input.parent);
+      }
+    
+      if (parentDoc === null){
+        throw new InvalidArgumentError(
+          `Parent does not exist for [${JSON.stringify(input)}].`
+        );
+      }
+      input = {...input, parent: {
+        _id: input.parent, parent: parentDoc.parent 
+      } } as unknown as PersonInput;
+      return input;
+    };
 
-
+    return async (input: PersonInput) :Promise<Person.v1.Person> => {
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a person.');
       }
@@ -178,7 +189,8 @@ export namespace v1 {
           type: 'contact'
         } as unknown as PersonInput;
       }
-      await appendParentWithLineage();
+
+      input = await appendParent(typeFoundInSettingsContactTypes, input);
       return await createPersonDoc(input) as Person.v1.Person;
     };
   };

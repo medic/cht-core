@@ -422,6 +422,25 @@ describe('local person', () => {
             .to.be.rejectedWith(`Parent does not exist for [${JSON.stringify(input)}].`);
         });
 
+      it('throws error invalid parent id that is not present in the db', 
+        async () => {
+          settingsGetAll.returns({
+            contact_types: [{id: 'person', parents: ['hospital'] }, {id: 'hospital', parents: ['district_hospital']}]
+          });
+
+          isPerson.returns(true);
+          const input = {
+            name: 'user-1',
+            type: 'person',
+            parent: 'p1'
+          };
+
+          getDocByIdInner.resolves(null);
+          const updatedInput = {...input, type: 'contact', contact_type: 'person'};
+          await expect(Person.v1.createPerson(localContext)(input))
+            .to.be.rejectedWith(`Parent does not exist for [${JSON.stringify(updatedInput)}].`);
+        });
+
       it('throws error if type of person cannot have a parent', 
         async () => {
           settingsGetAll.returns({
