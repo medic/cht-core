@@ -1317,7 +1317,9 @@ const importImages = async () => {
       console.log(`✓ Image ${image} pulled successfully`);
     }
     
-    const k3dImage = `${K3D_REPO()}/${image}`;
+    // For k3d registry, we need to tag without the repository prefix
+    const imageName = image.split('/').pop(); // Get just the image name (e.g., "cht-api:tag")
+    const k3dImage = `${K3D_REPO()}/${imageName}`;
     console.log(`Tagging ${image} as ${k3dImage}`);
     await runCommand(`docker tag ${image} ${k3dImage}`);
     
