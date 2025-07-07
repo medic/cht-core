@@ -902,6 +902,20 @@ const listenForApi = async () => {
           console.log('=== Pod Status Check ===');
           const podsList = await runCommand(`kubectl ${KUBECTL_CONTEXT} get pods --no-headers -o wide`);
           console.log(podsList);
+          
+          // Also check what images the pods are trying to pull
+          console.log('=== Pod Image Details ===');
+          const podDetails = await runCommand(`kubectl ${KUBECTL_CONTEXT} describe pods | grep -A 5 -B 5 "Image:"`);
+          console.log(podDetails);
+          
+          // Check specific image pull errors
+          console.log('=== Image Pull Errors ===');
+          const imageErrors = await runCommand(`kubectl ${KUBECTL_CONTEXT} describe pods | grep -A 10 -B 5 "Failed to pull image\|ErrImagePull\|ImagePullBackOff"`);
+          console.log(imageErrors);
+          console.log('=== End Image Pull Errors ===');
+          
+          console.log('=== End Pod Image Details ===');
+          
           console.log('=== End Pod Status ===');
         } catch (podErr) {
           console.log('Failed to get pod status:', podErr.message);
@@ -1284,16 +1298,38 @@ const importImages = async () => {
     });
   const images = [...new Set(allImages)];
 
+  console.log('Importing images to k3d registry:', images);
+  console.log('K3D registry:', K3D_REPO());
+
   for (const image of images) {
+    console.log(`Processing image: ${image}`);
     // authentication to private repos is weird to set up in k3d.
     // https://k3d.io/v5.2.0/usage/registries/#authenticated-registries
     try {
       await runCommand(`docker image inspect ${image}`, { verbose: false });
+      console.log(`✓ Image ${image} found locally`);
     } catch {
+      console.log(`⚠ Image ${image} not found locally, pulling...`);
       await runCommand(`docker pull ${image}`);
+      console.log(`✓ Image ${image} pulled successfully`);
     }
-    await runCommand(`docker tag ${image} ${K3D_REPO()}/${image}`);
-    await runCommand(`docker push ${K3D_REPO()}/${image}`);
+    
+    const k3dImage = `${K3D_REPO()}/${image}`;
+    console.log(`Tagging ${image} as ${k3dImage}`);
+    await runCommand(`docker tag ${image} ${k3dImage}`);
+    
+    console.log(`Pushing ${k3dImage} to k3d registry`);
+    await runCommand(`docker push ${k3dImage}`);
+    console.log(`✓ Image ${k3dImage} pushed successfully`);
+  }
+  
+  // Verify images are in k3d registry
+  console.log('Verifying images in k3d registry...');
+  try {
+    const registryImages = await runCommand(`docker exec k3d-${K3D_REGISTRY} ls /var/lib/registry/docker/registry/v2/repositories/`);
+    console.log('Images in k3d registry:', registryImages);
+  } catch (err) {
+    console.log('Could not verify k3d registry contents:', err.message);
   }
 };
 
