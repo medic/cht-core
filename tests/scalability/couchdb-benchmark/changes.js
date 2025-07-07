@@ -3,7 +3,7 @@ const { performance } = require('perf_hooks');
 const utils = require('./utils');
 
 const MID_SEQ = 'Mid Sequence';
-const YES = 'Yes';
+const YES = 'true';
 
 const scenarios = [
   { limit: 100, since: 0, include_docs: false },
