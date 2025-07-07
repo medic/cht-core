@@ -497,6 +497,39 @@ describe('local place', () => {
           } })).to.be.true;
       });
 
+      it('creates a place on passing a valid legacy PlaceInput with parent', async() => {
+        createDocOuter.returns(createDocInner);
+        isPlace.returns(true);
+        
+        const placeInput:PlaceInput = {
+          name: 'place-x',
+          type: 'place',
+          parent: 'p1'
+        };
+        
+        const expectedParentDoc = {
+          _id: placeInput.parent, parent: {_id: 'p3'}, type: 'contact', contact_type: 'district'
+        };
+        getDocByIdInner.resolves(expectedParentDoc);
+
+        const expected_date = new Date().toISOString();
+        const expected_id = '1-id';
+        const expected_rev = '1-rev';
+        const expected_doc = {
+          ...placeInput, reported_date: expected_date, _id: expected_id, _rev: expected_rev, type: 'contact',
+          contact_type: 'hospital', parent: expectedParentDoc
+        };
+        createDocInner.resolves(expected_doc);
+        const placeDoc = await Place.v1.createPlace(localContext)(placeInput);
+
+        expect(placeDoc).to.deep.equal(expected_doc);
+        expect(Place.v1.isPlace(localContext.settings)(placeDoc)).to.be.true;
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(createDocInner.calledOnceWithExactly({...placeInput, type: 'place', parent: {
+          _id: placeInput.parent, parent: expectedParentDoc.parent
+        } })).to.be.true;
+      });
+
       it('throws error for invalid parent id that is not present in the db', 
         async () => {
           const input = {
