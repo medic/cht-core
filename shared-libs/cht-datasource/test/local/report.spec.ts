@@ -479,7 +479,7 @@ describe('local report', () => {
         expect(createDocOuter.calledOnce).to.be.false;
       
         await expect(Report.v1.createReport(localContext)(input))
-          .to.be.rejectedWith(`Contact with id ${input.contact} does not exist for [${JSON.stringify(input)}].`);
+          .to.be.rejectedWith(`Contact with _id ${input.contact} does not exist.`);
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 

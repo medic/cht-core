@@ -115,7 +115,7 @@ export namespace v1 {
       const parentDoc = await getDocById(medicDb)(input.parent as string);
       if (parentDoc === null){
         throw new InvalidArgumentError(
-          `Parent does not exist for [${JSON.stringify(input)}].`
+          `Parent with _id ${input.parent as string} does not exist.` //NoSONAR
         );
       }
       // Check whether parent doc's `contact_type` or `type`(if `contact_type` is absent) 
@@ -160,7 +160,7 @@ export namespace v1 {
     
       if (parentDoc === null){
         throw new InvalidArgumentError(
-          `Parent does not exist for [${JSON.stringify(input)}].`
+          `Parent with _id ${input.parent} does not exist.`
         );
       }
       input = {...input, parent: {

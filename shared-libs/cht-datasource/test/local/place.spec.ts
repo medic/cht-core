@@ -541,7 +541,7 @@ describe('local place', () => {
           const parentDocReturned = null;
           getDocByIdInner.resolves(parentDocReturned);
           await expect(Place.v1.createPlace(localContext)(input))
-            .to.be.rejectedWith(`Parent with id ${input.parent} does not exist for [${JSON.stringify(input)}].`);
+            .to.be.rejectedWith(`Parent with _id ${input.parent} does not exist.`);
         });
 
       it('returns plain place document if parent is not required', 
@@ -570,17 +570,10 @@ describe('local place', () => {
             type: 'hospital',
             parent: 'p1'
           };
-          const updatedInput = {
-            name: 'place-1',
-            type: 'contact',
-            parent: 'p1',
-            contact_type: 'hospital'
-          };
-              
           const parentDocReturned = null;
           getDocByIdInner.resolves(parentDocReturned);
           await expect(Place.v1.createPlace(localContext)(input))
-            .to.be.rejectedWith(`Parent with id ${input.parent} does not exist for [${JSON.stringify(updatedInput)}].`);
+            .to.be.rejectedWith(`Parent with _id ${input.parent} does not exist.`);
         });
 
       it('throws error for invalid contact id that is not present in the db', 
@@ -593,19 +586,11 @@ describe('local place', () => {
             type: 'hospital',
             contact: 'c1'
           };
-          const updatedInput = {
-            name: 'place-1',
-            type: 'contact',
-            contact: 'c1',
-            contact_type: 'hospital'
-          };
-              
+         
           const parentDocReturned = null;
           getDocByIdInner.resolves(parentDocReturned);
           await expect(Place.v1.createPlace(localContext)(input))
-            .to.be.rejectedWith(`Contact with id ${input.contact} does not exist for [${JSON.stringify(
-              updatedInput
-            )}].`);
+            .to.be.rejectedWith(`Contact with _id ${input.contact} does not exist.`);
         });
     });
 

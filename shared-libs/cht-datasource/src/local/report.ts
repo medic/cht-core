@@ -89,7 +89,7 @@ export namespace v1 {
       const contactWithLineage = await getDocById(medicDb)(input.contact);
       if (contactWithLineage === null){
         throw new InvalidArgumentError(
-          `Contact with id ${input.contact} does not exist for [${JSON.stringify(input)}].`
+          `Contact with _id ${input.contact} does not exist.`
         );
       }
       input = {

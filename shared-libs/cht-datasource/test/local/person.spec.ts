@@ -419,7 +419,7 @@ describe('local person', () => {
           const parentDocReturned = null;
           getDocByIdInner.resolves(parentDocReturned);
           await expect( Person.v1.createPerson(localContext)(input))
-            .to.be.rejectedWith(`Parent does not exist for [${JSON.stringify(input)}].`);
+            .to.be.rejectedWith(`Parent with _id ${input.parent} does not exist.`);
         });
 
       it('throws error invalid parent id that is not present in the db', 
@@ -436,9 +436,8 @@ describe('local person', () => {
           };
 
           getDocByIdInner.resolves(null);
-          const updatedInput = {...input, type: 'contact', contact_type: 'person'};
           await expect(Person.v1.createPerson(localContext)(input))
-            .to.be.rejectedWith(`Parent does not exist for [${JSON.stringify(updatedInput)}].`);
+            .to.be.rejectedWith(`Parent with _id ${input.parent} does not exist.`);
         });
 
       it('throws error if type of person cannot have a parent', 

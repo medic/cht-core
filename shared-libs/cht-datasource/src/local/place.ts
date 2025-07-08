@@ -128,7 +128,7 @@ export namespace v1 {
       const parentDoc = await getDocById(medicDb)(input.parent);
       if (parentDoc === null){
         throw new InvalidArgumentError(
-          `Parent with id ${input.parent} does not exist for [${JSON.stringify(input)}].`
+          `Parent with _id ${input.parent} does not exist.`
         );
       }
 
@@ -161,7 +161,7 @@ export namespace v1 {
         const parentDoc = await getDocById(medicDb)(input.parent);
         if (parentDoc === null) {
           throw new InvalidArgumentError(
-            `Parent with id ${input.parent} does not exist for [${JSON.stringify(input)}].`
+            `Parent with _id ${input.parent} does not exist.`
           );
         }
         return parentDoc;
@@ -201,7 +201,7 @@ export namespace v1 {
       const contactWithLineage = await getDocById(medicDb)(input.contact!); //NoSONAR
       if (contactWithLineage === null){
         throw new InvalidArgumentError(
-          `Contact with id ${input.contact!} does not exist for [${JSON.stringify(input)}].` //NoSONAR
+          `Contact with _id ${input.contact!} does not exist.` //NoSONAR
         );
       }
       input = {
