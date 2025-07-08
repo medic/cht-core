@@ -248,25 +248,25 @@ describe('Person API', () => {
 
   describe('POST /api/v1/person', async () => {
     const endpoint = `/api/v1/person`;
-    // it(`creates a person for valid personInput`, async () => {
-    //   const personInput = {
-    //     name: 'apoorva',
-    //     type: 'chw',
-    //     parent: place0._id
-    //   };
-    //   const opts = {
-    //     path: endpoint,
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json'
-    //     },
-    //     body: personInput
-    //   };
-    //   const personDoc = await utils.request(opts);
-    //   expect(personDoc).excluding(['_rev', 'reported_date', '_id'])
-    //     .to.deep.equal({...personInput, type: 'contact', contact_type: 'chw', 
-    //       parent: {_id: place0._id, parent: place0.parent}});
-    // });
+    it(`creates a person for valid personInput`, async () => {
+      const personInput = {
+        name: 'apoorva',
+        type: 'person',
+        parent: place0._id
+      };
+      const opts = {
+        path: endpoint,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: personInput
+      };
+      const personDoc = await utils.request(opts);
+      expect(personDoc).excluding(['_rev', 'reported_date', '_id'])
+        .to.deep.equal({...personInput, type: 'contact', contact_type: 'person', 
+          parent: {_id: place0._id, parent: place0.parent}});
+    });
 
     it(`throws error for parent type not among allowed parents in settings.contact_types`, async () => {
       const personInput = {
