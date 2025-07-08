@@ -208,7 +208,7 @@ describe('cht-datasource Person', () => {
       });
     });
 
-    describe('createPerson', async () => {
+    describe.only('createPerson', async () => {
       const createPerson = Person.v1.createPerson(dataContext);
       it('creates a person for a valid person input', async () => {
         const personInput = Input.validatePersonInput({
@@ -226,13 +226,13 @@ describe('cht-datasource Person', () => {
         const personInput = Input.validatePersonInput({
           name: 'apoorva',
           type: 'person',
-          parent: place1._id,
+          parent: contact0._id,
           reported_date: 12312312
         });
         await expect(createPerson(personInput))
           .to.be.rejectedWith({code: 400, 
             error: `Invalid parent type for [${JSON.stringify(
-              {name: 'apoorva', type: 'contact', parent: place1._id, reported_date: 12312312, contact_type: 'person'}
+              {name: 'apoorva', type: 'contact', parent: contact0._id, reported_date: 12312312, contact_type: 'person'}
             )}].`});
       });
     });

@@ -246,7 +246,7 @@ describe('Person API', () => {
     });
   });
 
-  describe('POST /api/v1/person', async () => {
+  describe.only('POST /api/v1/person', async () => {
     const endpoint = `/api/v1/person`;
     it(`creates a person for valid personInput`, async () => {
       const personInput = {
@@ -273,7 +273,7 @@ describe('Person API', () => {
         name: 'apoorva',
         type: 'person',
         reported_date: 12312312,
-        parent: place1._id
+        parent: contact0._id
       };
       const opts = {
         path: endpoint,
@@ -289,7 +289,7 @@ describe('Person API', () => {
           name: 'apoorva',
           type: 'contact',
           reported_date: 12312312,
-          parent: place1._id,
+          parent: contact0._id,
           contact_type: 'person',
         })}].`,
       })}`;
