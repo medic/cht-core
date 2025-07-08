@@ -83,10 +83,11 @@ export namespace v1 {
     medicDb
   } : LocalDataContext) => {
     const createReportDoc = createDoc(medicDb);
+    const getReportDoc = getDocById(medicDb);
     const appendContact = async(
       input:ReportInput
     ): Promise<ReportInput> => {
-      const contactWithLineage = await getDocById(medicDb)(input.contact);
+      const contactWithLineage = await getReportDoc(input.contact);
       if (contactWithLineage === null){
         throw new InvalidArgumentError(
           `Contact with _id ${input.contact} does not exist.`

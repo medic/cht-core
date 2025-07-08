@@ -97,6 +97,7 @@ export namespace v1 {
 /** @internal*/
   export const createPlace = ({medicDb, settings}: LocalDataContext) => {
     const createPlaceDoc = createDoc(medicDb);
+    const getPlaceDoc = getDocById(medicDb);
     /**
      * Ensures that places that require a parent (i.e. not at the top of the hirerarchy) 
      * have the parent field as one of the pre-configured `parents` in the `contact_types`
@@ -125,7 +126,7 @@ export namespace v1 {
           `Missing or empty required field (parent) for [${JSON.stringify(input)}].`
         );
       } 
-      const parentDoc = await getDocById(medicDb)(input.parent);
+      const parentDoc = await getPlaceDoc(input.parent);
       if (parentDoc === null){
         throw new InvalidArgumentError(
           `Parent with _id ${input.parent} does not exist.`
@@ -158,7 +159,7 @@ export namespace v1 {
       }
 
       if (input.parent) {
-        const parentDoc = await getDocById(medicDb)(input.parent);
+        const parentDoc = await getPlaceDoc(input.parent);
         if (parentDoc === null) {
           throw new InvalidArgumentError(
             `Parent with _id ${input.parent} does not exist.`
@@ -198,7 +199,7 @@ export namespace v1 {
         return input;
       }
         
-      const contactWithLineage = await getDocById(medicDb)(input.contact!); //NoSONAR
+      const contactWithLineage = await getPlaceDoc(input.contact!); //NoSONAR
       if (contactWithLineage === null){
         throw new InvalidArgumentError(
           `Contact with _id ${input.contact!} does not exist.` //NoSONAR

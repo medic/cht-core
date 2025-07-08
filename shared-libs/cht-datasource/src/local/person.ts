@@ -107,12 +107,12 @@ export namespace v1 {
     settings
   } : LocalDataContext) => {
     const createPersonDoc = createDoc(medicDb);
-
+    const getPersonDoc = getDocById(medicDb);
     const ensureHasValidParentFieldAndReturnParentDoc = async(
       input:Record<string, unknown>, 
       contactTypeObject: Record<string, unknown>
     ): Promise<Nullable<Doc>> => {
-      const parentDoc = await getDocById(medicDb)(input.parent as string);
+      const parentDoc = await getPersonDoc(input.parent as string);
       if (parentDoc === null){
         throw new InvalidArgumentError(
           `Parent with _id ${input.parent as string} does not exist.` //NoSONAR
@@ -155,7 +155,7 @@ export namespace v1 {
       if (typeFoundInSettingsContactTypes){
         parentDoc = await validatePersonParent(typeFoundInSettingsContactTypes, input);
       } else if (input.parent){
-        parentDoc = await getDocById(medicDb)(input.parent);
+        parentDoc = await getPersonDoc(input.parent);
       }
     
       if (parentDoc === null){
