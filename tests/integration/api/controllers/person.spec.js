@@ -246,7 +246,7 @@ describe('Person API', () => {
     });
   });
 
-  describe.only('POST /api/v1/person', async () => {
+  describe('POST /api/v1/person', async () => {
     const endpoint = `/api/v1/person`;
     it(`creates a person for valid personInput`, async () => {
       const personInput = {
