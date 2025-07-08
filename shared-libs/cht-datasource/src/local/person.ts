@@ -111,7 +111,7 @@ export namespace v1 {
     const ensureHasValidParentFieldAndReturnParentDoc = async(
       input:Record<string, unknown>, 
       contactTypeObject: Record<string, unknown>
-    ): Promise<Doc|null> => {
+    ): Promise<Nullable<Doc>> => {
       const parentDoc = await getDocById(medicDb)(input.parent as string);
       if (parentDoc === null){
         throw new InvalidArgumentError(
