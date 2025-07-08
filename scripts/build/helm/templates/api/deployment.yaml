@@ -10,22 +10,13 @@ spec:
     matchLabels:
       cht.service: api
   strategy:
-    {{- if eq .Values.environment "local" }}
     type: RollingUpdate
-    {{- else }}
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 0
-      maxUnavailable: 1
-    {{- end }}
   template:
     metadata:
       labels:
         cht.service: api
     spec:
-      {{- if eq .Values.environment "local" }}
       terminationGracePeriodSeconds: 0
-      {{- end }}
       containers:
         - env:
             - name: BUILDS_URL
