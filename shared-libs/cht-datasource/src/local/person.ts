@@ -228,7 +228,7 @@ export namespace v1 {
       if (ignoreUpdateFields.has(key)) {
         continue;
       }
-      if (originalDoc[key]!==undefined && updatedDoc[key] ===undefined) {
+      if (updatedDoc[key] ===undefined) {
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete originalDoc[key];
         continue;
