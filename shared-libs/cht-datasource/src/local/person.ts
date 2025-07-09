@@ -11,7 +11,7 @@ import {
   getLineageDocsById,
 } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
-import { validateCursor } from './libs/core';
+import { getUpdatedFields, validateCursor } from './libs/core';
 import { PersonInput } from '../input';
 
 /** @internal */
@@ -224,32 +224,14 @@ export namespace v1 {
       if (originalDoc===null){
         throw new InvalidArgumentError(`Person not found`);
       }
-      const originalDocDeepCopy = structuredClone(originalDoc) as unknown as Person.v1.Person;
-      const updatedFields = getUpdatedFields(originalDocDeepCopy, personInput);
+      const originalDocDeepCopy = JSON.parse(JSON.stringify(originalDoc)) as unknown as Person.v1.Person;
+      const ignoredFields = new Set(['_id', '_rev', 'parent', 'reported_date']);
+      const updatedFields = getUpdatedFields(originalDocDeepCopy, personInput, ignoredFields);
       const updatedDoc = {
         ...originalDocDeepCopy, ...updatedFields
       };
       return await updatePerson(updatedDoc);
     };
   };
-
-  /** @internal*/
-  const getUpdatedFields = (originalDoc:Record<string, unknown>, updatedDoc : Record<string, unknown>) => {
-    const updatedFields:Record<string, unknown> = {};
-    const ignoreUpdateFields = new Set(['_id', '_rev', 'parent', 'reported_date']);
-    for (const key of Object.keys(originalDoc)) {
-      if (ignoreUpdateFields.has(key)) {
-        continue;
-      }
-      if (updatedDoc[key] ===undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete originalDoc[key];
-        continue;
-      }
-      updatedFields[key] = updatedDoc[key];
-    }
-    return updatedFields;
-  };
-
 }
 
