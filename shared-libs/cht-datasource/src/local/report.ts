@@ -77,7 +77,22 @@ export namespace v1 {
       return await fetchAndFilterUuids(getDocsFn, limit)(limit, skip);
     };
   };
+  const addParentToInput = (input: ReportInput, contactDehydratedLineage:Doc) : ReportInput => {
+    if (contactDehydratedLineage.parent) {
+      return input = {
+        ...input, contact: {
+          _id: input.contact,
+          parent: contactDehydratedLineage.parent
+        }
+      } as unknown as ReportInput;
+    }
 
+    return input = {
+      ...input, contact: {
+        _id: input.contact
+      }
+    } as unknown as ReportInput;
+  };
   /** @internal*/
   export const createReport = ({
     medicDb
@@ -87,18 +102,13 @@ export namespace v1 {
     const appendContact = async(
       input:ReportInput
     ): Promise<ReportInput> => {
-      const contactWithLineage = await getReportDoc(input.contact);
-      if (contactWithLineage === null){
+      const contactDehydratedLineage = await getReportDoc(input.contact);
+      if (contactDehydratedLineage === null){
         throw new InvalidArgumentError(
           `Contact with _id ${input.contact} does not exist.`
         );
       }
-      input = {
-        ...input, contact: {
-          _id: input.contact,
-          parent: contactWithLineage.parent
-        }
-      } as unknown as ReportInput;
+      input = addParentToInput(input, contactDehydratedLineage);
       return input;
     };
     

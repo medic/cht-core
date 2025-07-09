@@ -439,7 +439,7 @@ describe('local place', () => {
         };
         
         const expectedContactDoc = {
-          _id: placeInput.contact, parent: undefined
+          _id: placeInput.contact
         };
         getDocByIdInner.resolves(expectedContactDoc);
 

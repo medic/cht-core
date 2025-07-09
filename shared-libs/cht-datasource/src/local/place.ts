@@ -172,7 +172,39 @@ export namespace v1 {
 
       return null;
     };
-      
+    
+    const addParentToInput = (input:PlaceInput, Doc: Doc, type:'contact'|'parent'):PlaceInput => {
+      if (type==='parent'){
+        if (Doc.parent){
+          return {
+            ...input, parent: {
+              _id: input.parent,
+              parent: Doc.parent
+            }
+          } as unknown as PlaceInput;
+        }
+        return {
+          ...input, parent: {
+            _id: input.parent
+          }
+        } as unknown as PlaceInput;
+      } else {
+        if (Doc.parent){
+          return input = {
+            ...input, contact: {
+              _id: input.contact,
+              parent: Doc.parent
+            }
+          } as unknown as PlaceInput;
+        }
+        return input = {
+          ...input, contact: {
+            _id: input.contact
+          }
+        } as unknown as PlaceInput;
+      }
+    };
+
     const appendParent = async (
       typeFoundInSettingsContactTypes:Record<string, unknown>|undefined,
       input:PlaceInput
@@ -183,16 +215,9 @@ export namespace v1 {
         return input;
       }
 
-      input = {
-        ...input,
-        parent: {
-          _id: input.parent,
-          parent: parentDoc.parent
-        }
-      } as unknown as PlaceInput;
+      input = addParentToInput(input, parentDoc, 'parent');
       return input;
     };
-
 
     const appendContact = async (
       input:PlaceInput
@@ -201,18 +226,13 @@ export namespace v1 {
         return input;
       }
         
-      const contactWithLineage = await getPlaceDoc(input.contact!); //NoSONAR
-      if (contactWithLineage === null){
+      const contactDehydratedLineage = await getPlaceDoc(input.contact!); //NoSONAR
+      if (contactDehydratedLineage === null){
         throw new InvalidArgumentError(
           `Contact with _id ${input.contact!} does not exist.` //NoSONAR
         );
       }
-      input = {
-        ...input, contact: {
-          _id: input.contact,
-          parent: contactWithLineage.parent
-        }
-      } as unknown as PlaceInput;
+      input = addParentToInput(input, contactDehydratedLineage, 'contact');
       return input;
     };
     return async(

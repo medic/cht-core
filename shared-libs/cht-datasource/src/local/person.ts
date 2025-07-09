@@ -147,6 +147,21 @@ export namespace v1 {
       }
     };
 
+    const addParentToInput = (input:PersonInput, parentDoc: Doc):PersonInput => {
+      if (parentDoc.parent){
+        return {
+          ...input, parent: {
+            _id: input.parent,
+            parent: parentDoc.parent
+          }
+        } as unknown as PersonInput;
+      }
+      return {
+        ...input, parent: {
+          _id: input.parent
+        }
+      } as unknown as PersonInput;
+    };
     const appendParent = async(
       typeFoundInSettingsContactTypes:Record<string, unknown> | undefined,
       input: PersonInput
@@ -163,9 +178,7 @@ export namespace v1 {
           `Parent with _id ${input.parent} does not exist.`
         );
       }
-      input = {...input, parent: {
-        _id: input.parent, parent: parentDoc.parent 
-      } } as unknown as PersonInput;
+      input = addParentToInput(input, parentDoc);
       return input;
     };
 
