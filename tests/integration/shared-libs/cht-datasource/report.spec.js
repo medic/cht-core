@@ -281,7 +281,7 @@ describe('cht-datasource Report', () => {
         expect(action).to.throw(
           InvalidArgumentError,
            
-          `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ',` +
+          `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', ` +
           `'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
         );
       });
