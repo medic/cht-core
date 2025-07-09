@@ -107,17 +107,19 @@ describe('input', () => {
   describe('validateReportInput', () => {
     it('builds a input for creation and update of a report with the required fields.', () => {
       expect(validateReportInput({
-        type: 'data_record', form: 'yes'
+        type: 'data_record', form: 'yes', contact: 'c1'
       })).to.deep.equal({
-        type: 'data_record', form: 'yes', reported_date: CURRENT_ISO_TIMESTAMP
+        type: 'data_record', form: 'yes', reported_date: CURRENT_ISO_TIMESTAMP, contact: 'c1'
       });
     });
 
     it('builds a input for creation and update of a report with the optional fields.', () => {
       expect(validateReportInput({
-        type: 'data_record', form: 'yes', _id: 'id-1', _rev: 'rev-3', reported_date: '2025-06-03T12:45:30.222Z'
+        type: 'data_record', form: 'yes', _id: 'id-1', _rev: 'rev-3', reported_date: '2025-06-03T12:45:30.222Z', 
+        contact: 'c2'
       })).to.deep.equal({
-        type: 'data_record', form: 'yes', _id: 'id-1', _rev: 'rev-3', reported_date: '2025-06-03T12:45:30.222Z'
+        type: 'data_record', form: 'yes', _id: 'id-1', _rev: 'rev-3', 
+        contact: 'c2', reported_date: '2025-06-03T12:45:30.222Z'
       });
     });
 
@@ -144,14 +146,24 @@ describe('input', () => {
 
     it('throws error if type/form is not provided or empty.', () => {
       [
-        {reported_date: 3432433},
-        {type: 'data_record', _id: 'id-1', _rev: 'rev-4', reported_date: CURRENT_ISO_TIMESTAMP},
-        {form: 'yes', _id: 'id-1', _rev: 'rev-4'},
-        {type: '', form: 'yes'},
-        {type: 'data_record', form: ''}
+        {reported_date: 3432433, contact: 'c1'},
+        {type: 'data_record', _id: 'id-1', _rev: 'rev-4', contact: 'c1', reported_date: CURRENT_ISO_TIMESTAMP},
+        {form: 'yes', _id: 'id-1', _rev: 'rev-4', contact: 'c1'},
+        {type: '', form: 'yes', contact: 'c1'},
+        {type: 'data_record', form: '', contact: 'c1'}
       ].forEach((input) => {
         expect(() => validateReportInput(input))
           .to.throw(`Missing or empty required fields (type, form) in [${JSON.stringify(input)}].`);
+      });
+    });
+
+    it('throws error if contact is not provided or empty.', () => {
+      [
+        {type: 'data_record', form: 'yes'},
+        {type: 'data_record', form: 'myform', contact: ''}
+      ].forEach((input) => {
+        expect(() => validateReportInput(input))
+          .to.throw(`Missing or empty required field (contact) in [${JSON.stringify(input)}].`);
       });
     });
   });

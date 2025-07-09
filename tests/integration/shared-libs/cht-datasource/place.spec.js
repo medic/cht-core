@@ -230,13 +230,16 @@ describe('cht-datasource Place', () => {
         const placeInput = {
           name: 'place-1',
           type: 'place',
-          parent: 'p1',
-          contact: 'c1'
+          parent: contact0._id,
+          contact: contact1._id
         };
-
+        const updatedPlaceInput = {
+          ...placeInput, parent: {_id: contact0._id, parent: contact0.parent}, 
+          contact: {_id: contact1._id, parent: contact1.parent }
+        };
         const placeDoc = await Place.v1.createPlace(dataContext)(placeInput);
         expect(placeDoc).excluding([ '_rev', 'reported_date', '_id' ])
-          .to.deep.equal(placeInput);
+          .to.deep.equal(updatedPlaceInput);
       });
     });
   });

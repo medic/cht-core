@@ -426,32 +426,73 @@ describe('local report', () => {
     });
 
     describe('createReport', () => {
+      let getDocByIdOuter: SinonStub;
+      let getDocByIdInner: SinonStub;
+
+      beforeEach(() => {
+        getDocByIdInner = sinon.stub();
+        getDocByIdOuter = sinon.stub(LocalDoc, 'getDocById').returns(getDocByIdInner);
+      });
+
       it('creates a report doc for valid report qualifier', async () => {
-        
-        const qualifier = {
+        const input = {
           type: 'data_record',
-          form: 'yes'
+          form: 'yes',
+          contact: 'c1',
+          reported_date: new Date().toISOString()
         };
-        const expected_reported_date = new Date().toISOString();
-        const expected_report = {...qualifier, _id: '1-id', _rev: '1-rev', reported_date: expected_reported_date}; 
+        const returnedContactDoc = {
+          _id: 'c1',
+          type: 'contact',
+          contact_type: 'person',
+          parent: {
+            _id: 'c2'
+          }
+        };
+        getDocByIdInner.resolves(returnedContactDoc);
+        const updatedInput = {
+          ...input, contact: {
+            _id: input.contact, parent: returnedContactDoc.parent
+          }
+        };
+        const expected_report = {...updatedInput, _id: '1-id', _rev: '1-rev'}; 
         createDocOuter.returns(createDocInner);
         createDocInner.resolves(expected_report);
       
-        const report = await Report.v1.createReport(localContext)(qualifier);
+        const report = await Report.v1.createReport(localContext)(input);
         expect(report).to.deep.equal(expected_report);
         expect(createDocOuter.calledOnce).to.be.true;
-        expect(createDocInner.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(createDocInner.calledOnceWithExactly(updatedInput)).to.be.true;
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
-      it('throws error when _rev is passed in report qualifier', async () => {
-        
-        const qualifier = {
+      it('throws error when contact with id does not exist in the db', async () => {
+        const input = {
           type: 'data_record',
           form: 'yes',
-          _rev: '1-rev'
+          contact: 'c1',
+          reported_date: new Date().toISOString()
+        };
+        
+        getDocByIdInner.resolves(null);
+        
+        expect(createDocOuter.calledOnce).to.be.false;
+      
+        await expect(Report.v1.createReport(localContext)(input))
+          .to.be.rejectedWith(`Contact with _id ${input.contact} does not exist.`);
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+      });
+
+      it('throws error when _rev is passed in report input', async () => {
+        
+        const input = {
+          type: 'data_record',
+          form: 'yes',
+          _rev: '1-rev',
+          contact: 'c1'
         };
 
-        await expect(Report.v1.createReport(localContext)(qualifier))
+        await expect(Report.v1.createReport(localContext)(input))
           .to.be.rejectedWith('Cannot pass `_rev` when creating a report.');
         expect(createDocInner.called).to.be.false;
         expect(createDocOuter.called).to.be.true;

@@ -322,6 +322,14 @@ describe('local place', () => {
     });
 
     describe('createPlace', () => {
+      let getDocByIdOuter: SinonStub;
+      let getDocByIdInner: SinonStub;
+
+      beforeEach(() => {
+        getDocByIdInner = sinon.stub();
+        getDocByIdOuter = sinon.stub(LocalDoc, 'getDocById').returns(getDocByIdInner);
+      });
+
       it('throws error if input contact_type is not a part of settings contact_types', async() => {
         createDocOuter.returns(createDocInner);
         settingsGetAll.returns({
@@ -349,8 +357,11 @@ describe('local place', () => {
           name: 'place-1',
           type: 'hospital',
         };
+        const updatedPlaceInput = {
+          ...placeInput, type: 'contact', contact_type: 'hospital'
+        };
         await expect(Place.v1.createPlace(localContext)(placeInput))
-          .to.be.rejectedWith(`Missing or empty required field (parent) for [${JSON.stringify(placeInput)}].`);
+          .to.be.rejectedWith(`Missing or empty required field (parent) for [${JSON.stringify(updatedPlaceInput)}].`);
         expect(createDocInner.called).to.be.false;
       });
 
@@ -360,15 +371,25 @@ describe('local place', () => {
         settingsGetAll.returns({
           contact_types: [{id: 'hospital', parents: ['clinic', 'city']}, {id: 'clinic'}, {id: 'city'}]
         });
+        const parentReturnedByget = {
+          _id: 'p1',
+          contact_type: 'district_hospital',
+          type: 'contact'
+        };
 
+        getDocByIdInner.resolves(parentReturnedByget);
         const placeInput: PlaceInput = {
           name: 'place-1',
           type: 'hospital',
-          parent: 'town'
+          parent: 'p1'
+        };
+        const updatedPlaceInput = {
+          ...placeInput, type: 'contact', contact_type: placeInput.type
         };
         await expect(Place.v1.createPlace(localContext)(placeInput))
-          .to.be.rejectedWith(`Invalid parent for [${JSON.stringify(placeInput)}].`);
+          .to.be.rejectedWith(`Invalid parent type for [${JSON.stringify(updatedPlaceInput)}].`);
         expect(createDocInner.called).to.be.false;
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('throws error if place at the top of the hierarchy and has a `parent` field', async() => {
@@ -382,8 +403,11 @@ describe('local place', () => {
           type: 'hospital',
           parent: 'town'
         };
+        const updatedPlaceInput = {
+          ...placeInput, type: 'contact', contact_type: 'hospital'
+        };
         await expect(Place.v1.createPlace(localContext)(placeInput))
-          .to.be.rejectedWith(`Unexpected parent for [${JSON.stringify(placeInput)}].`);
+          .to.be.rejectedWith(`Unexpected parent for [${JSON.stringify(updatedPlaceInput)}].`);
         expect(createDocInner.called).to.be.false;
       });
 
@@ -401,33 +425,175 @@ describe('local place', () => {
           .to.be.rejectedWith('Cannot pass `_rev` when creating a place.');
       });
 
-      it('creates a place on passing a valid PlaceInput', async() => {
+      it('creates a place on passing a valid PlaceInput with contact', async() => {
         createDocOuter.returns(createDocInner);
         settingsGetAll.returns({
           contact_types: [{id: 'hospital'}, {id: 'clinic'}]
         });
         isPlace.returns(true);
-
+        
         const placeInput:PlaceInput = {
           name: 'place-x',
           type: 'hospital',
           contact: 'c1'
         };
+        
+        const expectedContactDoc = {
+          _id: placeInput.contact, parent: undefined
+        };
+        getDocByIdInner.resolves(expectedContactDoc);
+
         const expected_date = new Date().toISOString();
         const expected_id = '1-id';
         const expected_rev = '1-rev';
         const expected_doc = {
           ...placeInput, reported_date: expected_date, _id: expected_id, _rev: expected_rev, type: 'contact',
-          contact_type: 'hospital'  
+          contact_type: 'hospital', contact: expectedContactDoc
         };
         createDocInner.resolves(expected_doc);
         const placeDoc = await Place.v1.createPlace(localContext)(placeInput);
 
         expect(placeDoc).to.deep.equal(expected_doc);
         expect(Place.v1.isPlace(localContext.settings)(placeDoc)).to.be.true;
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(createDocInner.calledOnceWithExactly({...placeInput, type: 'contact',
-          contact_type: 'hospital' })).to.be.true;
+          contact_type: 'hospital', contact: expectedContactDoc })).to.be.true;
       });
+
+      it('creates a place on passing a valid PlaceInput with parent', async() => {
+        createDocOuter.returns(createDocInner);
+        settingsGetAll.returns({
+          contact_types: [{id: 'hospital', parents: ['district']}, {id: 'clinic'}]
+        });
+        isPlace.returns(true);
+        
+        const placeInput:PlaceInput = {
+          name: 'place-x',
+          type: 'hospital',
+          parent: 'p1'
+        };
+        
+        const expectedParentDoc = {
+          _id: placeInput.parent, parent: {_id: 'p3'}, type: 'contact', contact_type: 'district'
+        };
+        getDocByIdInner.resolves(expectedParentDoc);
+
+        const expected_date = new Date().toISOString();
+        const expected_id = '1-id';
+        const expected_rev = '1-rev';
+        const expected_doc = {
+          ...placeInput, reported_date: expected_date, _id: expected_id, _rev: expected_rev, type: 'contact',
+          contact_type: 'hospital', parent: expectedParentDoc
+        };
+        createDocInner.resolves(expected_doc);
+        const placeDoc = await Place.v1.createPlace(localContext)(placeInput);
+
+        expect(placeDoc).to.deep.equal(expected_doc);
+        expect(Place.v1.isPlace(localContext.settings)(placeDoc)).to.be.true;
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(createDocInner.calledOnceWithExactly({...placeInput, type: 'contact',
+          contact_type: 'hospital', parent: {
+            _id: placeInput.parent, parent: expectedParentDoc.parent
+          } })).to.be.true;
+      });
+
+      it('creates a place on passing a valid legacy PlaceInput with parent', async() => {
+        createDocOuter.returns(createDocInner);
+        isPlace.returns(true);
+        
+        const placeInput:PlaceInput = {
+          name: 'place-x',
+          type: 'place',
+          parent: 'p1'
+        };
+        
+        const expectedParentDoc = {
+          _id: placeInput.parent, parent: {_id: 'p3'}, type: 'contact', contact_type: 'district'
+        };
+        getDocByIdInner.resolves(expectedParentDoc);
+
+        const expected_date = new Date().toISOString();
+        const expected_id = '1-id';
+        const expected_rev = '1-rev';
+        const expected_doc = {
+          ...placeInput, reported_date: expected_date, _id: expected_id, _rev: expected_rev, type: 'contact',
+          contact_type: 'hospital', parent: expectedParentDoc
+        };
+        createDocInner.resolves(expected_doc);
+        const placeDoc = await Place.v1.createPlace(localContext)(placeInput);
+
+        expect(placeDoc).to.deep.equal(expected_doc);
+        expect(Place.v1.isPlace(localContext.settings)(placeDoc)).to.be.true;
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(createDocInner.calledOnceWithExactly({...placeInput, type: 'place', parent: {
+          _id: placeInput.parent, parent: expectedParentDoc.parent
+        } })).to.be.true;
+      });
+
+      it('throws error for invalid parent id that is not present in the db', 
+        async () => {
+          const input = {
+            name: 'place-1',
+            type: 'place',
+            parent: 'p1'
+          };
+              
+          const parentDocReturned = null;
+          getDocByIdInner.resolves(parentDocReturned);
+          await expect(Place.v1.createPlace(localContext)(input))
+            .to.be.rejectedWith(`Parent with _id ${input.parent} does not exist.`);
+        });
+
+      it('returns plain place document if parent is not required', 
+        async () => {
+          createDocOuter.returns(createDocInner);
+          settingsGetAll.returns({
+            contact_types: [{id: 'hospital'}]
+          });
+          const input = {
+            name: 'place-1',
+            type: 'place',
+          };
+          createDocInner.returns(input);
+          const placeDoc = await Place.v1.createPlace(localContext)(input);
+          expect(placeDoc).to.deep.equal(input);
+          expect(createDocInner.calledOnceWithExactly(input)).to.be.true;
+        });
+
+      it('throws error for invalid parent id that is not present in the db', 
+        async () => {
+          settingsGetAll.returns({
+            contact_types: [{id: 'hospital', parents: ['clinic']}, {id: 'clinic'}]
+          });
+          const input = {
+            name: 'place-1',
+            type: 'hospital',
+            parent: 'p1'
+          };
+          const parentDocReturned = null;
+          getDocByIdInner.resolves(parentDocReturned);
+          await expect(Place.v1.createPlace(localContext)(input))
+            .to.be.rejectedWith(`Parent with _id ${input.parent} does not exist.`);
+        });
+
+      it('throws error for invalid contact id that is not present in the db', 
+        async () => {
+          settingsGetAll.returns({
+            contact_types: [{id: 'hospital'}, {id: 'clinic'}]
+          });
+          const input = {
+            name: 'place-1',
+            type: 'hospital',
+            contact: 'c1'
+          };
+         
+          const parentDocReturned = null;
+          getDocByIdInner.resolves(parentDocReturned);
+          await expect(Place.v1.createPlace(localContext)(input))
+            .to.be.rejectedWith(`Contact with _id ${input.contact} does not exist.`);
+        });
     });
+
+    
   });
 });

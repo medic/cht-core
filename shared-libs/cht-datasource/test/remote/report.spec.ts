@@ -91,7 +91,8 @@ describe('remote report', () => {
         const input = {
           form: 'form-1',
           type: 'report', 
-          reported_date: 11223344
+          reported_date: 11223344,
+          contact: 'c1'
         };
 
         postResourceInner.resolves(input);

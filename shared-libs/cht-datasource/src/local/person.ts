@@ -107,6 +107,68 @@ export namespace v1 {
     settings
   } : LocalDataContext) => {
     const createPersonDoc = createDoc(medicDb);
+    const getPersonDoc = getDocById(medicDb);
+    const ensureHasValidParentFieldAndReturnParentDoc = async(
+      input:Record<string, unknown>, 
+      contactTypeObject: Record<string, unknown>
+    ): Promise<Nullable<Doc>> => {
+      const parentDoc = await getPersonDoc(input.parent as string);
+      if (parentDoc === null){
+        throw new InvalidArgumentError(
+          `Parent with _id ${input.parent as string} does not exist.` //NoSONAR
+        );
+      }
+      // Check whether parent doc's `contact_type` or `type`(if `contact_type` is absent) 
+      // matches with any of the allowed parents type.
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      const typeToMatch = (parentDoc as PersonInput).contact_type || (parentDoc as PersonInput).type;
+      const parentTypeMatchWithAllowedParents = (contactTypeObject.parents as string[])
+        .find(parent => parent===typeToMatch);
+        
+      if (!(parentTypeMatchWithAllowedParents)) {
+        throw new InvalidArgumentError(
+          `Invalid parent type for [${JSON.stringify(input)}].`
+        );
+      }
+      return parentDoc;
+      
+    };
+
+    const validatePersonParent = async(
+      contactTypeObject: Record<string, unknown>,
+      input:Record<string, unknown>
+    ): Promise<Doc|null> => {
+      if (!hasField(contactTypeObject, {name: 'parents', type: 'object'})) {
+        throw new InvalidArgumentError(
+          `Invalid type of person, cannot have parent for [${JSON.stringify(input)}].`
+        );
+      } else {
+        return await ensureHasValidParentFieldAndReturnParentDoc(input, contactTypeObject);
+      }
+    };
+
+    const appendParent = async(
+      typeFoundInSettingsContactTypes:Record<string, unknown> | undefined,
+      input: PersonInput
+    ) => {
+      let parentDoc: Doc | null = null;
+      if (typeFoundInSettingsContactTypes){
+        parentDoc = await validatePersonParent(typeFoundInSettingsContactTypes, input);
+      } else if (input.parent){
+        parentDoc = await getPersonDoc(input.parent);
+      }
+    
+      if (parentDoc === null){
+        throw new InvalidArgumentError(
+          `Parent with _id ${input.parent} does not exist.`
+        );
+      }
+      input = {...input, parent: {
+        _id: input.parent, parent: parentDoc.parent 
+      } } as unknown as PersonInput;
+      return input;
+    };
+
     return async (input: PersonInput) :Promise<Person.v1.Person> => {
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a person.');
@@ -129,6 +191,7 @@ export namespace v1 {
         } as unknown as PersonInput;
       }
 
+      input = await appendParent(typeFoundInSettingsContactTypes, input);
       return await createPersonDoc(input) as Person.v1.Person;
     };
   };

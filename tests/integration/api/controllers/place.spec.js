@@ -275,7 +275,7 @@ describe('Place API', () => {
       const input = {
         type: 'place',
         name: 'place-1',
-        contact: 'c1'
+        contact: contact0._id
       };
 
       const opts = {
@@ -287,7 +287,12 @@ describe('Place API', () => {
         body: input
       };
       const placeDoc = await utils.request(opts);
-      expect(placeDoc).excluding(['reported_date', '_id', '_rev']).to.deep.equal(input);
+      const updatedInput = {
+        ...input, contact: {
+          _id: contact0._id, parent: contact0.parent
+        }
+      };
+      expect(placeDoc).excluding(['reported_date', '_id', '_rev']).to.deep.equal(updatedInput);
     });
 
     it('throws error for missing fields', async () => {
