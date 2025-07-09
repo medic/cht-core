@@ -224,7 +224,7 @@ export namespace v1 {
       if (originalDoc===null){
         throw new InvalidArgumentError(`Invalid person _id, no such person exists.`);
       }
-      const originalDocDeepCopy = JSON.parse(JSON.stringify(originalDoc)) as unknown as Person.v1.Person;
+      const originalDocDeepCopy = structuredClone(originalDoc) as unknown as Person.v1.Person;
       const updatedFields = getUpdatedFields(originalDocDeepCopy, personInput);
       const updatedDoc = {
         ...originalDocDeepCopy, ...updatedFields
