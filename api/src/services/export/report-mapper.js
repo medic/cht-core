@@ -56,8 +56,7 @@ module.exports = {
       }
 
       return db.medic
-        .query('medic-client/reports_by_form', { group: true })
-        .then(results => results.rows.map(r => r.key[0]));
+        .query('medic-client/reports_by_form', { group: false })
     };
 
     // Take an array of the fields property of reports and generate a unique

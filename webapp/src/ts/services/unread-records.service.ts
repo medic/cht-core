@@ -29,7 +29,7 @@ export class UnreadRecordsService implements OnDestroy {
   private getTotal() {
     return this.dbService
       .get()
-      .query('medic-client/data_records_by_type', { group: true });
+      .query('medic-client/reports_by_form', { group: true });
   }
 
   private getRead() {
@@ -39,8 +39,17 @@ export class UnreadRecordsService implements OnDestroy {
   }
 
   private getRowValueForType(type, response:any = {}) {
-    const result = _find(response.rows, { key: type });
-    return (result && result.value) || 0;
+    if (!response.rows) {
+      return 0;
+    }
+    if (type === 'message') {
+      const result = _find(response.rows, { key: 'message' });
+      return (result && result.value) || 0;
+    }
+    // For 'report' type, sum up all values where key is not 'message'
+    return response.rows
+      .filter(row => row.key !== 'message')
+      .reduce((sum, row) => sum + (row.value || 0), 0);
   }
 
   private getCount(callback) {
