@@ -499,6 +499,7 @@ describe('local person', () => {
         expect(createDocInner.called).to.be.false;
       });
     });
+
     describe('updatePerson', () => {
       let getDocByIdOuter: SinonStub;
       let getDocByIdInner: SinonStub;
