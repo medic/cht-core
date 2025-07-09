@@ -79,7 +79,7 @@ export namespace v1 {
   };
   const addParentToInput = (input: ReportInput, contactDehydratedLineage:Doc) : ReportInput => {
     if (contactDehydratedLineage.parent) {
-      return input = {
+      return {
         ...input, contact: {
           _id: input.contact,
           parent: contactDehydratedLineage.parent
@@ -87,7 +87,7 @@ export namespace v1 {
       } as unknown as ReportInput;
     }
 
-    return input = {
+    return {
       ...input, contact: {
         _id: input.contact
       }

@@ -162,6 +162,7 @@ export namespace v1 {
         }
       } as unknown as PersonInput;
     };
+
     const appendParent = async(
       typeFoundInSettingsContactTypes:Record<string, unknown> | undefined,
       input: PersonInput

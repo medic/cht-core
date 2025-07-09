@@ -173,37 +173,22 @@ export namespace v1 {
       return null;
     };
     
-    const addParentToInput = (input:PlaceInput, Doc: Doc, type:'contact'|'parent'):PlaceInput => {
-      if (type==='parent'){
-        if (Doc.parent){
-          return {
-            ...input, parent: {
-              _id: input.parent,
-              parent: Doc.parent
-            }
-          } as unknown as PlaceInput;
-        }
-        return {
-          ...input, parent: {
-            _id: input.parent
-          }
-        } as unknown as PlaceInput;
-      } else {
-        if (Doc.parent){
-          return input = {
-            ...input, contact: {
-              _id: input.contact,
-              parent: Doc.parent
-            }
-          } as unknown as PlaceInput;
-        }
-        return input = {
-          ...input, contact: {
-            _id: input.contact
-          }
-        } as unknown as PlaceInput;
+    const buildWithParent = (input: PlaceInput, key: 'parent' | 'contact', docParent?: unknown): PlaceInput => {
+      const value = { _id: input[key] };
+      if (docParent) {
+        Object.assign(value, { parent: docParent });
       }
+      return {
+        ...input,
+        [key]: value
+      } as unknown as PlaceInput;
     };
+    
+    const addParentToInput = (input: PlaceInput, doc: Doc, type: 'contact' | 'parent'): PlaceInput => {
+      const key = type;
+      return buildWithParent(input, key, doc.parent);
+    };
+    
 
     const appendParent = async (
       typeFoundInSettingsContactTypes:Record<string, unknown>|undefined,
