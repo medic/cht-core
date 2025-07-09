@@ -87,7 +87,7 @@ declare global {
     medicmobile_android: any;
     CHTCore: any;
     angular: any;
-    EnketoForm:any;
+    EnketoForm: any;
   }
   interface JQuery {
     daterangepicker(options?: any, callback?: Function) : any;

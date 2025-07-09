@@ -105,7 +105,7 @@ export class CHTDatasourceService {
    * @returns a "context-aware" version of the function that is bound to the data context and ready to be used
    */
   bind<R, F extends (arg?: unknown) => Promise<R>>(fn: (ctx: DataContext) => F):
-    (...p: Parameters<F>) => ReturnType<F> {
+  (...p: Parameters<F>) => ReturnType<F> {
     return (...p) => {
       return new Promise((resolve, reject) => {
         this.isInitialized().then(() => {
