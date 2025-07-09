@@ -131,11 +131,11 @@ export namespace v1 {
     return curriedGen;
   };
 
- /**
-  * Returns a function for creating a report from the given data context.
-  * @param context the current data context
-  * @returns a function for creating a report.
-  * @throws Error if a data context is not provided
-  */
+  /**
+   * Returns a function for creating a report from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a report.
+   * @throws Error if a data context is not provided
+   */
   export const createReport = createReportDoc(Local.Report.v1.createReport, Remote.Report.v1.createReport);
 }

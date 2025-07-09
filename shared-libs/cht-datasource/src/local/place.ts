@@ -94,7 +94,7 @@ export namespace v1 {
     };
   };
 
-/** @internal*/
+  /** @internal*/
   export const createPlace = ({medicDb, settings}: LocalDataContext) => {
     const createPlaceDoc = createDoc(medicDb);
     const getPlaceDoc = getDocById(medicDb);
@@ -104,8 +104,10 @@ export namespace v1 {
      * for that place.
      */
     /** @internal*/
-    const validateParentPresence = async(contactTypeObject: Record<string, unknown>
-      , input:Record<string, unknown> ):Promise<Doc | null> => {
+    const validateParentPresence = async(
+      contactTypeObject: Record<string, unknown>,
+      input:Record<string, unknown> 
+    ): Promise<Nullable<Doc>> => {
       if (hasField(contactTypeObject, {name: 'parents', type: 'object'})) {
         return await ensureHasValidParentFieldAndReturnParentDoc(input, contactTypeObject);
       } else if (hasField(input, {name: 'parent', type: 'string', ensureTruthyValue: true})){
@@ -151,7 +153,7 @@ export namespace v1 {
     const getParentDoc = async (
       typeFoundInSettingsContactTypes:Record<string, unknown>|undefined,
       input:PlaceInput
-    ): Promise<Doc | null> => {
+    ): Promise<Nullable<Doc>> => {
       if (typeFoundInSettingsContactTypes) {
         // This will throw error if parent is required and missing.
         return await validateParentPresence(typeFoundInSettingsContactTypes, input);
@@ -175,7 +177,7 @@ export namespace v1 {
       typeFoundInSettingsContactTypes:Record<string, unknown>|undefined,
       input:PlaceInput
     ):Promise<PlaceInput> => {
-      let parentDoc: Doc | null = null;
+      let parentDoc: Nullable<Doc> = null;
       parentDoc = await getParentDoc(typeFoundInSettingsContactTypes, input);
       if (!parentDoc) {
         return input;

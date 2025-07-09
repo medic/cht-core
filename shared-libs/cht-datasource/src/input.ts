@@ -5,12 +5,12 @@ import { InvalidArgumentError } from './libs/error';
  * An input for a contact
  */
 type ContactInput = DataObject & Readonly<{
-    type: string,
-    name: string,
-    reported_date?: string | number,
-    _id?: string,
-    _rev?: string
-  }>;
+  type: string,
+  name: string,
+  reported_date?: string | number,
+  _id?: string,
+  _rev?: string
+}>;
   
 /**
  * Builds an input object for creation and update of a contact with
@@ -77,13 +77,13 @@ const checkContactInputFields = (data: unknown): data is Record<string, unknown>
  * An input for a report
  */
 export type ReportInput = Readonly<{
-    type: string,
-    form: string,
-    reported_date?: string | number,
-    _id?: string,
-    _rev?: string,
-    contact:string
-  }>;
+  type: string,
+  form: string,
+  reported_date?: string | number,
+  _id?: string,
+  _rev?: string,
+  contact: string
+}>;
   
 /**
  * Builds an input object for creation and update of a report with
@@ -156,12 +156,12 @@ const isValidReportedDate = (value: unknown): boolean => {
  * An input for a person
  */
 export type PersonInput = ContactInput & Readonly<{
-    parent: string;
-    date_of_birth?: Date;
-    phone?: string;
-    patient_id?: string;
-    sex?: string;
-  }>
+  parent: string;
+  date_of_birth?: Date;
+  phone?: string;
+  patient_id?: string;
+  sex?: string;
+}>;
   
 /**
  * Builds an input object for creation and update of a person with
@@ -199,10 +199,10 @@ export const isPersonInput = (data: unknown): data is PersonInput => {
  * An input for a place
  */
 export type PlaceInput = ContactInput & Readonly<{
-    parent?: string;
-    contact?: string;
-    place_id?: string;
-  }>
+  parent?: string;
+  contact?: string;
+  place_id?: string;
+}>;
   
 /**
  * Builds an input object for creation and update of a place with the given fields

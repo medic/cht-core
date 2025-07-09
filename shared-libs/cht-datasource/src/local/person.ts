@@ -151,7 +151,7 @@ export namespace v1 {
       typeFoundInSettingsContactTypes:Record<string, unknown> | undefined,
       input: PersonInput
     ) => {
-      let parentDoc: Doc | null = null;
+      let parentDoc: Nullable<Doc> = null;
       if (typeFoundInSettingsContactTypes){
         parentDoc = await validatePersonParent(typeFoundInSettingsContactTypes, input);
       } else if (input.parent){
@@ -202,7 +202,7 @@ export namespace v1 {
     settings
   }:LocalDataContext) => {
     const updatePerson = updateDoc(medicDb);
-    const getPerson = get({medicDb, settings} as LocalDataContext)
+    const getPerson = get({medicDb, settings} as LocalDataContext);
     return async(personInput: PersonInput):Promise<Nullable<Doc>> => {
       if (!isDoc(personInput)){
         throw new InvalidArgumentError(`Document for update is not a valid Doc ${JSON.stringify(personInput)}`);
@@ -213,31 +213,30 @@ export namespace v1 {
       }
       const originalDocDeepCopy = JSON.parse(JSON.stringify(originalDoc)) as unknown as Person.v1.Person;
       const updatedFields = getUpdatedFields(originalDocDeepCopy, personInput);
-      console.log('og deep copy:', originalDocDeepCopy)
       const updatedDoc = {
         ...originalDocDeepCopy, ...updatedFields
       };
-      return await updatePerson(updatedDoc)
+      return await updatePerson(updatedDoc);
     };
   };
 
-    /** @internal*/
-    const getUpdatedFields = (originalDoc:Record<string, unknown>, updatedDoc : Record<string, unknown>) => {
-      const updatedFields:Record<string, unknown> = {};
-      const ignoreUpdateFields = new Set(['_id', '_rev', 'parent', 'reported_date']);
-      for (const key of Object.keys(originalDoc)) {
-        if (ignoreUpdateFields.has(key)) {
-          continue;
-        }
-        if (originalDoc[key]!==undefined && updatedDoc[key] ===undefined) {
-          delete originalDoc[key];
-          continue;
-        }
-        updatedFields[key] = updatedDoc[key];
+  /** @internal*/
+  const getUpdatedFields = (originalDoc:Record<string, unknown>, updatedDoc : Record<string, unknown>) => {
+    const updatedFields:Record<string, unknown> = {};
+    const ignoreUpdateFields = new Set(['_id', '_rev', 'parent', 'reported_date']);
+    for (const key of Object.keys(originalDoc)) {
+      if (ignoreUpdateFields.has(key)) {
+        continue;
       }
-      console.log(updatedFields)
-      return updatedFields;
+      if (originalDoc[key]!==undefined && updatedDoc[key] ===undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete originalDoc[key];
+        continue;
+      }
+      updatedFields[key] = updatedDoc[key];
     }
+    return updatedFields;
+  };
 
 }
 

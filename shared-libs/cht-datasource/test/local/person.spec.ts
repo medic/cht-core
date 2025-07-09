@@ -32,7 +32,7 @@ describe('local person', () => {
     createDocInner = sinon.stub();
     createDocOuter = sinon.stub(LocalDoc, 'createDoc');
     updateDocOuter = sinon.stub(LocalDoc, 'updateDoc');
-    updateDocInner = sinon.stub()
+    updateDocInner = sinon.stub();
   });
 
   afterEach(() => sinon.restore());
@@ -499,88 +499,88 @@ describe('local person', () => {
         expect(createDocInner.called).to.be.false;
       });
     });
-    describe('updatePerson',()=>{
+    describe('updatePerson', () => {
       let getDocByIdOuter: SinonStub;
       let getDocByIdInner: SinonStub;
       
       beforeEach(() => {
         getDocByIdInner = sinon.stub();
         getDocByIdOuter = sinon.stub(Person.v1, 'get').returns(getDocByIdInner);
-        updateDocOuter.returns(updateDocInner)
-      })
+        updateDocOuter.returns(updateDocInner);
+      });
 
-      it('throws error for missing _id or _rev', async()=>{
+      it('throws error for missing _id or _rev', async() => {
         const updateDoc = {
-          type:'person',
-          parent:'p1',
-          name:'apoorva2'
-        }
+          type: 'person',
+          parent: 'p1',
+          name: 'apoorva2'
+        };
         await expect(Person.v1.updatePerson(localContext)(updateDoc))
-        .to.be.rejectedWith(`Document for update is not a valid Doc ${JSON.stringify(updateDoc)}`)
-        expect(getDocByIdOuter.calledOnce).to.be.true
-        expect(getDocByIdInner.calledOnce).to.be.false
-      })
+          .to.be.rejectedWith(`Document for update is not a valid Doc ${JSON.stringify(updateDoc)}`);
+        expect(getDocByIdOuter.calledOnce).to.be.true;
+        expect(getDocByIdInner.calledOnce).to.be.false;
+      });
 
-      it('updates doc for valid update input', async()=>{
+      it('updates doc for valid update input', async() => {
         const updateDocInput = {
-          type:'person',
-          parent:'p1',
-          name:'apoorva2',
-          _id:'1',
-          _rev:'1'
-        }
+          type: 'person',
+          parent: 'p1',
+          name: 'apoorva2',
+          _id: '1',
+          _rev: '1'
+        };
 
         const originalDoc = {
-          ...updateDocInput,name:'apoorva', parent:{_id:'1',parent:{_id:'2'}}
-        }
-        getDocByIdInner.resolves(originalDoc)
-        const modifiedDoc = {...originalDoc,name:'apoorva2'};
-        updateDocInner.resolves(modifiedDoc)
+          ...updateDocInput, name: 'apoorva', parent: {_id: '1', parent: {_id: '2'}}
+        };
+        getDocByIdInner.resolves(originalDoc);
+        const modifiedDoc = {...originalDoc, name: 'apoorva2'};
+        updateDocInner.resolves(modifiedDoc);
 
-        const result = await Person.v1.updatePerson(localContext)(updateDocInput)
+        const result = await Person.v1.updatePerson(localContext)(updateDocInput);
 
         expect(updateDocInner.calledOnceWithExactly(modifiedDoc)).to.be.true;
         expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(result).to.deep.equal(modifiedDoc)
-      })
+        expect(result).to.deep.equal(modifiedDoc);
+      });
 
-      it('throws error for non-existent person', async()=>{
+      it('throws error for non-existent person', async() => {
         const updateDocInput = {
-          type:'person',
-          parent:'p1',
-          name:'apoorva2',
-          _id:'1',
-          _rev:'1'
-        }
+          type: 'person',
+          parent: 'p1',
+          name: 'apoorva2',
+          _id: '1',
+          _rev: '1'
+        };
 
-        getDocByIdInner.resolves(null)
+        getDocByIdInner.resolves(null);
 
         await expect(Person.v1.updatePerson(localContext)(updateDocInput))
-        .to.be.rejectedWith(`Invalid person _id, no such person exists.`)
+          .to.be.rejectedWith(`Invalid person _id, no such person exists.`);
 
-        expect(updateDocOuter.called).to.be.true
-        expect(updateDocInner.called).to.be.false
-      })
+        expect(updateDocOuter.called).to.be.true;
+        expect(updateDocInner.called).to.be.false;
+      });
 
-      it('deletes keys from original doc if they are not required', async()=>{
+      it('deletes keys from original doc if they are not required', async() => {
         const updateDocInput = {
-          type:'person',
-          parent:'p1',
-          name:'apoorva2',
-          _id:'1',
-          _rev:'1',
-        }
+          type: 'person',
+          parent: 'p1',
+          name: 'apoorva2',
+          _id: '1',
+          _rev: '1',
+        };
 
-        const originalDoc = {...updateDocInput, hobby:'skating', sex:'male', reported_date:12312312}
-        getDocByIdInner.resolves(originalDoc)
-        updateDocInner.resolves({...updateDocInput, reported_date:originalDoc.reported_date})
+        const originalDoc = {...updateDocInput, hobby: 'skating', sex: 'male', reported_date: 12312312};
+        getDocByIdInner.resolves(originalDoc);
+        updateDocInner.resolves({...updateDocInput, reported_date: originalDoc.reported_date});
 
-        const result= await Person.v1.updatePerson(localContext)(updateDocInput)
-        expect(result).to.deep.equal({...updateDocInput, reported_date:originalDoc.reported_date})
+        const result= await Person.v1.updatePerson(localContext)(updateDocInput);
+        expect(result).to.deep.equal({...updateDocInput, reported_date: originalDoc.reported_date});
         expect(updateDocInner.calledOnceWithExactly({
-          ...updateDocInput, reported_date:originalDoc.reported_date
-        })).to.be.true
-      })
-    })
+          ...updateDocInput, reported_date: originalDoc.reported_date
+        })).to.be.true;
+      });
+    });
   });
 });
