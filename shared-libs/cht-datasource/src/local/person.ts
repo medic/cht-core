@@ -222,7 +222,7 @@ export namespace v1 {
       }
       const originalDoc = await getPerson({uuid: personInput._id});
       if (originalDoc===null){
-        throw new InvalidArgumentError(`Invalid person _id, no such person exists.`);
+        throw new InvalidArgumentError(`Person not found`);
       }
       const originalDocDeepCopy = structuredClone(originalDoc) as unknown as Person.v1.Person;
       const updatedFields = getUpdatedFields(originalDocDeepCopy, personInput);

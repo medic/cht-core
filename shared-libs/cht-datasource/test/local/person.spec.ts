@@ -557,7 +557,7 @@ describe('local person', () => {
         getDocByIdInner.resolves(null);
 
         await expect(Person.v1.updatePerson(localContext)(updateDocInput))
-          .to.be.rejectedWith(`Invalid person _id, no such person exists.`);
+          .to.be.rejectedWith(`Person not found`);
 
         expect(updateDocOuter.called).to.be.true;
         expect(updateDocInner.called).to.be.false;
