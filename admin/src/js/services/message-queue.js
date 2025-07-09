@@ -253,35 +253,35 @@ angular.module('services').factory('MessageQueue',
 
       let paging;
       switch (tab) {
-      case 'scheduled':
-        paging = {
-          start_key: [tab, 0],
-          end_key: [tab, {}]
-        };
-        break;
-      case 'due':
-        paging = {
-          start_key: [tab, {}],
-          end_key: [tab, 0],
-          descending: true
-        };
-        break;
-      case 'muted':
-        if (descending) {
-          // get all past muted messages, descending from most recent
+        case 'scheduled':
           paging = {
-            start_key: [ tab, new Date().getTime() ],
-            end_key: [ tab, 0 ],
+            start_key: [tab, 0],
+            end_key: [tab, {}]
+          };
+          break;
+        case 'due':
+          paging = {
+            start_key: [tab, {}],
+            end_key: [tab, 0],
             descending: true
           };
-        } else {
-          paging = {
-            // get all future muted messages
-            start_key: [ tab, new Date().getTime() ],
-            end_key: [ tab, {} ]
-          };
-        }
-        break;
+          break;
+        case 'muted':
+          if (descending) {
+            // get all past muted messages, descending from most recent
+            paging = {
+              start_key: [ tab, new Date().getTime() ],
+              end_key: [ tab, 0 ],
+              descending: true
+            };
+          } else {
+            paging = {
+              // get all future muted messages
+              start_key: [ tab, new Date().getTime() ],
+              end_key: [ tab, {} ]
+            };
+          }
+          break;
       }
 
       return {

@@ -37,7 +37,7 @@ const getVersion = async () => {
   try {
     const deployInfo = await getDeployInfo();
     return deployInfo.version;
-  } catch (err) {
+  } catch {
     return 'unknown';
   }
 };

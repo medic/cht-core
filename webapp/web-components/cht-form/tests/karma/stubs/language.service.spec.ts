@@ -7,7 +7,7 @@ describe('Language Service', () => {
 
   beforeEach(() => service = TestBed.inject(LanguageService));
 
-  it('setRtlLanguage', async () => {
+  it('setRtlLanguage', () => {
     expect(() => service.setRtlLanguage('')).to.not.throw();
   });
 });

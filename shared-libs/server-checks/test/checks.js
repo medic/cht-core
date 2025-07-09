@@ -9,7 +9,6 @@ describe('checks', () => {
 
   afterEach(() => sinon.restore());
 
-  // eslint-disable-next-line no-console
   const log = idx => console.log.getCall(idx).args.map(arg => arg.toString()).join(' ');
 
   describe('checkServerUrl', () => {
@@ -76,7 +75,7 @@ describe('checks', () => {
       chai.expect(log(0)).to.equal('CouchDB Version: 3.3.3');
     });
 
-    it('throws on invalid version', async () => {
+    it('throws on invalid version', () => {
       sinon.stub(request, 'get').resolves({ version: '3.2.0' });
       return service.checkCouchDbVersion('something')
         .then(() => chai.assert.fail('should have thrown'))
@@ -99,7 +98,7 @@ describe('checks', () => {
       chai.expect(request.get.args[0][0]).to.deep.equal({ json: true, url: 'http://admin:pass@localhost:5984/_membership' });
     });
 
-    it('unfinished cluster', async () => {
+    it('unfinished cluster', () => {
       sinon.stub(request, 'get');
       request.get.onCall(0).resolves({ all_nodes: ['a', 'c'], cluster_nodes: ['a', 'c'] });
       request.get.onCall(1).resolves({ all_nodes: ['b'], cluster_nodes: ['b'] });

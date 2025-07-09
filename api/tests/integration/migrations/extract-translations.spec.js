@@ -51,8 +51,10 @@ describe('extract-translations', function() {
                 },
                 { // test special characters
                   locale: 'hi',
-                  content: 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !', // eslint-disable-line max-len
-                  default: 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !' // eslint-disable-line max-len
+                  // eslint-disable-next-line @stylistic/max-len
+                  content: 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !',
+                  // eslint-disable-next-line @stylistic/max-len
+                  default: 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !'
                 }
               ]
             }
@@ -66,7 +68,8 @@ describe('extract-translations', function() {
             name: 'ANC Reminders LMP',
             messages: [{
               message: [{
-                content: 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !', // eslint-disable-line max-len
+                // eslint-disable-next-line @stylistic/max-len
+                content: 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !',
                 locale: 'hi'
               }]
             }]
@@ -124,7 +127,8 @@ describe('extract-translations', function() {
         if (doc.settings.test !== 'unchanged') {
           throw new Error('Migration changed unexpected property');
         }
-        if (doc.settings.schedules[0].messages[0].message[0].content !== 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !') { // eslint-disable-line max-len
+        // eslint-disable-next-line @stylistic/max-len
+        if (doc.settings.schedules[0].messages[0].message[0].content !== 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !') {
           throw new Error('message content got corrupted');
         }
       });

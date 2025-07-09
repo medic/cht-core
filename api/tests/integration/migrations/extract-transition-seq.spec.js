@@ -10,7 +10,7 @@ const OLD_METADATA_DOCUMENT = 'sentinel-meta-data';
 const MIGRATION = 'extract-transition-seq';
 
 describe(`${MIGRATION} migration`, function() {
-  before(async () => utils.initDb([]));
+  before( () => utils.initDb([]));
 
   const wipe = (dbRef, docName) => {
     return dbRef.get(docName)

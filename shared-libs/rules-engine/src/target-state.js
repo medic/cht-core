@@ -34,8 +34,6 @@
  * }
  */
 
-/* eslint-disable no-console */
-
 const moment = require('moment/moment');
 
 const clearEmissions = (state, contactIds) => {

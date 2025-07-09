@@ -1,10 +1,13 @@
 name: Scalability Workflow
 
 on:
-  workflow_dispatch:
-  push:
+  workflow_run:
+    workflows: [ Build and test ]
+    types:
+      - completed
     tags:
       - "*-beta.*"
+  workflow_dispatch:
 
 env:
   STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_4' || '_couch/builds_external' }}
@@ -13,11 +16,12 @@ env:
   SCALABILITY_ARN: ${{ secrets.SCALABILITY_ARN }}
   BRANCH: ${{ github.head_ref || github.ref_name }}
   BUILD_NUMBER: ${{ github.run_id }}
+  SCALABILITY_RESULTS_TOKEN: ${{ secrets.SCALABILITY_RESULTS_TOKEN }}
 
 jobs:
   build:
     name: Set up Medic on EC2 and Execute Jmeter on another EC2
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
