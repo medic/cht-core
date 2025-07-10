@@ -44,26 +44,18 @@ interface HasParentOrContact {
   parent?: string;
 }
 
-const buildWithParent = <T extends HasParentOrContact>(
+/** @internal*/
+export const addParentToInput = <T extends HasParentOrContact>(
   input: T,
-  key: 'parent' | 'contact',
-  docParent?: unknown
+  key: 'contact' | 'parent',
+  parentDoc: Doc
 ): T => {
   const value = { _id: input[key] };
-  if (docParent) {
-    Object.assign(value, { parent: docParent });
+  if (parentDoc.parent) {
+    Object.assign(value, { parent: parentDoc.parent });
   }
   return {
     ...input,
     [key]: value,
   };
-};
-
-/** @internal*/
-export const addParentToInput = <T extends HasParentOrContact>(
-  input: T,
-  doc: Doc,
-  type: 'contact' | 'parent'
-): T => {
-  return buildWithParent(input, type, doc.parent);
 };

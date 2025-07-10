@@ -163,7 +163,7 @@ export namespace v1 {
           `Parent with _id ${input.parent} does not exist.`
         );
       }
-      input = addParentToInput(input, parentDoc, 'parent');
+      input = addParentToInput(input, 'parent', parentDoc);
       return input;
     };
 

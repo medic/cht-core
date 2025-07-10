@@ -183,7 +183,7 @@ export namespace v1 {
         return input;
       }
 
-      input = addParentToInput(input, parentDoc, 'parent');
+      input = addParentToInput(input, 'parent', parentDoc);
       return input;
     };
 
@@ -200,7 +200,7 @@ export namespace v1 {
           `Contact with _id ${input.contact!} does not exist.` //NoSONAR
         );
       }
-      input = addParentToInput(input, contactDehydratedLineage, 'contact');
+      input = addParentToInput(input, 'contact', contactDehydratedLineage);
       return input;
     };
     return async(

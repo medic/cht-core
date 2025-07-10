@@ -93,7 +93,7 @@ export namespace v1 {
           `Contact with _id ${input.contact} does not exist.`
         );
       }
-      input = addParentToInput(input, contactDehydratedLineage, 'contact');
+      input = addParentToInput(input, 'contact', contactDehydratedLineage);
       return input;
     };
     
