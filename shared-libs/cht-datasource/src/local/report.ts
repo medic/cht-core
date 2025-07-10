@@ -11,7 +11,7 @@ import { hasField, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
-import { normalizeFreetext, validateCursor } from './libs/core';
+import { addParentToInput, normalizeFreetext, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 import { InvalidArgumentError } from '../libs/error';
 import { ReportInput } from '../input';
@@ -77,22 +77,7 @@ export namespace v1 {
       return await fetchAndFilterUuids(getDocsFn, limit)(limit, skip);
     };
   };
-  const addParentToInput = (input: ReportInput, contactDehydratedLineage:Doc) : ReportInput => {
-    if (contactDehydratedLineage.parent) {
-      return {
-        ...input, contact: {
-          _id: input.contact,
-          parent: contactDehydratedLineage.parent
-        }
-      } as unknown as ReportInput;
-    }
 
-    return {
-      ...input, contact: {
-        _id: input.contact
-      }
-    } as unknown as ReportInput;
-  };
   /** @internal*/
   export const createReport = ({
     medicDb
@@ -108,7 +93,7 @@ export namespace v1 {
           `Contact with _id ${input.contact} does not exist.`
         );
       }
-      input = addParentToInput(input, contactDehydratedLineage);
+      input = addParentToInput(input, contactDehydratedLineage, 'contact');
       return input;
     };
     

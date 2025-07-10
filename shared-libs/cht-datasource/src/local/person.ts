@@ -11,7 +11,7 @@ import {
   getLineageDocsById,
 } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
-import { getUpdatedFields, validateCursor } from './libs/core';
+import { addParentToInput, getUpdatedFields, validateCursor } from './libs/core';
 import { PersonInput } from '../input';
 
 /** @internal */
@@ -147,22 +147,6 @@ export namespace v1 {
       }
     };
 
-    const addParentToInput = (input:PersonInput, parentDoc: Doc):PersonInput => {
-      if (parentDoc.parent){
-        return {
-          ...input, parent: {
-            _id: input.parent,
-            parent: parentDoc.parent
-          }
-        } as unknown as PersonInput;
-      }
-      return {
-        ...input, parent: {
-          _id: input.parent
-        }
-      } as unknown as PersonInput;
-    };
-
     const appendParent = async(
       typeFoundInSettingsContactTypes:Record<string, unknown> | undefined,
       input: PersonInput
@@ -179,7 +163,7 @@ export namespace v1 {
           `Parent with _id ${input.parent} does not exist.`
         );
       }
-      input = addParentToInput(input, parentDoc);
+      input = addParentToInput(input, parentDoc, 'parent');
       return input;
     };
 

@@ -1,4 +1,5 @@
 import { Nullable } from '../../libs/core';
+import { Doc } from '../../libs/doc';
 import { InvalidArgumentError } from '../../libs/error';
 
 /** @internal */
@@ -36,4 +37,33 @@ export const getUpdatedFields = (
     updatedFields[key] = updatedDoc[key];
   }
   return updatedFields;
+};
+
+interface HasParentOrContact {
+  contact?: string;
+  parent?: string;
+}
+
+const buildWithParent = <T extends HasParentOrContact>(
+  input: T,
+  key: 'parent' | 'contact',
+  docParent?: unknown
+): T => {
+  const value = { _id: input[key] };
+  if (docParent) {
+    Object.assign(value, { parent: docParent });
+  }
+  return {
+    ...input,
+    [key]: value,
+  };
+};
+
+/** @internal*/
+export const addParentToInput = <T extends HasParentOrContact>(
+  input: T,
+  doc: Doc,
+  type: 'contact' | 'parent'
+): T => {
+  return buildWithParent(input, type, doc.parent);
 };
