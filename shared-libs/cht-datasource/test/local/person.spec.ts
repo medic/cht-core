@@ -582,6 +582,22 @@ describe('local person', () => {
           ...updateDocInput, reported_date: originalDoc.reported_date
         })).to.be.true;
       });
+
+      it('throw error is _rev does not match with the _rev in the original doc', async() => {
+        const updateDocInput = {
+          type: 'person',
+          parent: 'p1',
+          name: 'apoorva2',
+          _id: '1',
+          _rev: '1',
+        };
+
+        const originalDoc = {...updateDocInput, _rev: '2'};
+        getDocByIdInner.resolves(originalDoc);
+        await expect(Person.v1.updatePerson(localContext)(updateDocInput))
+          .to.be.rejectedWith('`_rev` does not match');
+        expect(updateDocInner.called).to.be.false;
+      });
     });
   });
 });

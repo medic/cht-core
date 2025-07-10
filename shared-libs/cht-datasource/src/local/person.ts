@@ -209,6 +209,9 @@ export namespace v1 {
       if (originalDoc===null){
         throw new InvalidArgumentError(`Person not found`);
       }
+      if (personInput._rev !== originalDoc._rev) {
+        throw new InvalidArgumentError('`_rev` does not match');
+      }
       const originalDocDeepCopy = JSON.parse(JSON.stringify(originalDoc)) as unknown as Person.v1.Person;
       const ignoredFields = new Set(['_id', '_rev', 'parent', 'reported_date']);
       const updatedFields = getUpdatedFields(originalDocDeepCopy, personInput, ignoredFields);
