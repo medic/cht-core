@@ -205,11 +205,11 @@ export class ContactViewModelGeneratorService {
       if (!childTypes.length) {
         return Promise.resolve([]);
       }
-      options.keys = childTypes.map(type => [ contactId, type.id ]);
+      options.keys = childTypes.map(type => [ contactId, 1, type.id ]);
     }
     return this.dbService
       .get()
-      .query('medic-client/contacts_by_parent', options)
+      .query('medic-client/contacts_by_depth', options)
       .then(response => response.rows);
   }
 

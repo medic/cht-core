@@ -35,9 +35,9 @@ export class WealthQuintilesWatcherService implements OnDestroy {
 
     this.dbService
       .get()
-      .query('medic-client/contacts_by_parent', {
-        startkey: [ fields.place_id ],
-        endkey: [ fields.place_id, {} ],
+      .query('medic-client/contacts_by_depth', {
+        startkey: [ fields.place_id, 1 ],
+        endkey: [ fields.place_id, 1, {} ],
         include_docs: true
       })
       .then((result:any) => {

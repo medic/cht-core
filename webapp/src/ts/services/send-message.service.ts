@@ -76,10 +76,10 @@ export class SendMessageService {
   private getDescendants(recipient) {
     return this.dbService
       .get()
-      .query('medic-client/contacts_by_parent', {
+      .query('medic-client/contacts_by_depth', {
         include_docs: true,
-        startkey: [ recipient.doc._id ],
-        endkey: [ recipient.doc._id, {} ]
+        startkey: [ recipient.doc._id, 1 ],
+        endkey: [ recipient.doc._id, 1, {} ]
       })
       .then(contacts => {
         const primaryContacts =

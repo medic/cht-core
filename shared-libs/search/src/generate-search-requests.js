@@ -121,9 +121,9 @@ const getContactsByParentRequest = (filters) => {
 
   const types = filters?.types?.selected;
   return {
-    view: 'medic-client/contacts_by_parent',
+    view: 'medic-client/contacts_by_depth',
     params: {
-      keys: types ? types.map(type => ([ filters.parent, type ])) : [ filters.parent ],
+      keys: types ? types.map(type => ([ filters.parent, 1, type ])) : [ filters.parent, 1 ],
     },
   };
 };

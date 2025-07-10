@@ -7,8 +7,9 @@ function(doc) {
     var parent = doc;
     var depth = 0;
     while (parent) {
+      var type = parent.type === 'contact' ? parent.contact_type : parent.type;
       if (parent._id) {
-        emit([parent._id, depth], value);
+        emit([parent._id, depth, type], value);
       }
       depth++;
       parent = parent.parent;
