@@ -6,6 +6,7 @@ import * as LocalDoc from '../../src/local/libs/doc';
 import * as Report from '../../src/local/report';
 import { expect } from 'chai';
 import { END_OF_ALPHABET_MARKER } from '../../src/libs/constants';
+import * as Lineage from '../../src/local/libs/lineage';
 
 describe('local report', () => {
   let localContext: LocalDataContext;
@@ -102,42 +103,45 @@ describe('local report', () => {
 
     describe('getWithLineage', () => {
       const identifier = { uuid: 'uuid' } as const;
-      let mockGetWithLineage: sinon.SinonStub;
+      let mockFetchHydratedDoc: sinon.SinonStub;
 
       beforeEach(() => {
-        mockGetWithLineage = sinon.stub(Report.v1, 'getWithLineage');
+        mockFetchHydratedDoc = sinon.stub(Lineage, 'fetchHydratedDoc');
       });
 
       it('returns a report with contact lineage when found', async () => {
         const report = { type: 'data_record', form: 'yes', _id: 'report_id', contact: { _id: 'contact_id' } };
         const mockFunction = sinon.stub().resolves(report);
-        mockGetWithLineage.withArgs(localContext).returns(mockFunction);
+        mockFetchHydratedDoc.returns(mockFunction);
 
         const result = await Report.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.deep.equal(report);
-        expect(mockFunction.calledOnceWithExactly(identifier)).to.be.true;
+        expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
       });
 
       it('returns null if document is not a report', async () => {
         const report = { type: 'not_a_report', _id: 'doc_id' };
         const mockFunction = sinon.stub().resolves(report);
-        mockGetWithLineage.withArgs(localContext).returns(mockFunction);
+        mockFetchHydratedDoc.returns(mockFunction);
 
         const result = await Report.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.be.null;
-        expect(mockFunction.calledOnceWithExactly(identifier)).to.be.true;
+        expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
       });
 
       it('returns null if document is not found', async () => {
         const mockFunction = sinon.stub().resolves(null);
-        mockGetWithLineage.withArgs(localContext).returns(mockFunction);
+        mockFetchHydratedDoc.returns(mockFunction);
 
         const result = await Report.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.be.null;
-        expect(mockFunction.calledOnceWithExactly(identifier)).to.be.true;
+        expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
       });
     });
 

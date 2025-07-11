@@ -400,7 +400,9 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => report = v1.report);
 
       it('contains expected keys', () => {
-        expect(report).to.have.all.keys(['getUuidsByFreetext', 'getUuidsPageByFreetext', 'getByUuid']);
+        expect(report).to.have.all.keys([
+          'getUuidsByFreetext', 'getUuidsPageByFreetext', 'getByUuid', 'getByUuidWithLineage'
+        ]);
       });
 
       it('getByUuid', async () => {
@@ -414,6 +416,21 @@ describe('CHT Script API - getDatasource', () => {
 
         expect(returnedReport).to.equal(expectedReport);
         expect(dataContextBind.calledOnceWithExactly(Report.v1.get)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('getByUuidWithLineage', async () => {
+        const expectedReport = {};
+        const reportGet = sinon.stub().resolves(expectedReport);
+        dataContextBind.returns(reportGet);
+        const qualifier = { uuid: 'my-report-uuid' };
+        const byUuid = sinon.stub(Qualifier, 'byUuid').returns(qualifier);
+
+        const returnedReport = await report.getByUuidWithLineage(qualifier.uuid);
+
+        expect(returnedReport).to.equal(expectedReport);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getWithLineage)).to.be.true;
         expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
       });
