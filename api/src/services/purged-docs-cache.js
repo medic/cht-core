@@ -75,7 +75,7 @@ const clear = async (username) => {
     const database = await getCacheDatabase();
     const cacheDoc = await getCacheDoc(username);
     logger.debug('Wiping purged docs cache for user %s', username);
-    cacheDoc && await database.remove(cacheDoc);
+    cacheDoc && (await database.remove(cacheDoc));
   } catch (err) {
     catchDocConflictError(err);
   }
@@ -89,7 +89,7 @@ const set = async (username, ids) => {
   ids.sort();
   try {
     const database = await getCacheDatabase();
-    const cacheDoc = await getCacheDoc(username) ||  { _id: getCacheDocId(username) };
+    const cacheDoc = (await getCacheDoc(username)) ||  { _id: getCacheDocId(username) };
     cacheDoc.doc_ids = ids;
     await database.put(cacheDoc);
   } catch (err) {

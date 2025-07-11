@@ -66,11 +66,10 @@ const getLocale = require('./middleware/locale').getLocale;
 const startupLog = require('./services/setup/startup-log');
 const staticResources = /\/(templates|static)\//;
 // CouchDB is very relaxed in matching routes
-const routePrefix = '/+' + environment.db + '/+';
-const pathPrefix = '/' + environment.db + '/';
-const appPrefix = pathPrefix + '_design/' + environment.ddoc + '/_rewrite/';
-const adminAppPrefix = routePrefix + '_design/medic-admin/_rewrite(/*)?';
-const adminAppReg = new RegExp(`/*${environment.db}/_design/medic-admin/_rewrite/?`);
+const routePrefix = `/${environment.db}/`;
+const appPrefix = `${routePrefix}_design/${environment.ddoc}/_rewrite/`;
+const adminAppPrefix = `${routePrefix}_design/medic-admin/_rewrite{/*path}`;
+const adminAppReg = new RegExp(`/${environment.db}/_design/medic-admin/_rewrite/`);
 const serverUtils = require('./server-utils');
 const uuid = require('uuid');
 const compression = require('compression');
@@ -187,6 +186,7 @@ app.use(
   )
 );
 app.use(rateLimiterMiddleware);
+app.use(jsonQueryParser);
 
 app.use(
   helmet({
@@ -199,7 +199,7 @@ app.use(
         manifestSrc: [`'self'`],
         connectSrc: [
           `'self'`,
-          environment.buildsUrl + '/',
+          `${environment.buildsUrl}/`,
           'maps.googleapis.com' // used for enketo geopoint widget
         ],
         childSrc: [`'self'`],
@@ -275,9 +275,9 @@ app.get(
   (req, res) => res.sendFile(path.join(resources.webappPath, 'appcache-upgrade.html'))
 );
 
-app.all('/+medic(/*)?', (req, res, next) => {
+app.all('/medic{/*thing}', (req, res, next) => {
   if (environment.db !== 'medic') {
-    req.url = req.url.replace(/\/medic\/?/, pathPrefix);
+    req.url = req.url.replace(/\/medic\/?/, routePrefix);
   }
   next();
 });
@@ -290,34 +290,34 @@ app.all(adminAppPrefix, (req, res, next) => {
   req.url = req.url.replace(adminAppReg, '/admin/');
   next();
 });
-app.all('/+admin(/*)?', authorization.handleAuthErrors, authorization.offlineUserFirewall);
+app.all('/admin{/*thing}', authorization.handleAuthErrors, authorization.offlineUserFirewall);
 
 app.use(express.static(resources.staticPath));
 app.use(express.static(resources.webappPath));
 app.get('/extension-libs', extensionLibs.list);
 app.get('/extension-libs/:name', extensionLibs.get);
-app.get(routePrefix + 'login', login.get);
-app.get(routePrefix + 'login/identity', login.getIdentity);
-app.postJson(routePrefix + 'login', login.post);
-app.get(routePrefix + 'login/token/:token?', login.tokenGet);
-app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
-app.get(routePrefix + 'password-reset', login.getPasswordReset);
-app.postJson(routePrefix + 'password-reset', login.resetPassword);
-app.get(routePrefix + 'login/oidc/authorize', login.oidcAuthorize);
-app.get(routePrefix + 'login/oidc', login.oidcLogin);
-app.get(routePrefix + 'privacy-policy', privacyPolicyController.get);
+app.get(`${routePrefix}login`, login.get);
+app.get(`${routePrefix}login/identity`, login.getIdentity);
+app.postJson(`${routePrefix}login`, login.post);
+app.get(`${routePrefix}login/token{/:token}`, login.tokenGet);
+app.postJson(`${routePrefix}login/token{/:token}`, login.tokenPost);
+app.get(`${routePrefix}password-reset`, login.getPasswordReset);
+app.postJson(`${routePrefix}password-reset`, login.resetPassword);
+app.get(`${routePrefix}login/oidc/authorize`, login.oidcAuthorize);
+app.get(`${routePrefix}login/oidc`, login.oidcLogin);
+app.get(`${routePrefix}privacy-policy`, privacyPolicyController.get);
 
 // authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB
 const ONLINE_ONLY_ENDPOINTS = [
-  '_design/*/_list/*',
-  '_design/*/_show/*',
-  '_design/*/_view/*',
-  '_find(/*)?',
-  '_explain(/*)?',
-  '_index(/*)?',
-  '_ensure_full_commit(/*)?',
-  '_security(/*)?',
-  '_purge(/*)?',
+  '_design/*db/_list/*list',
+  '_design/*db/_show/*show',
+  '_design/*db/_view/*view',
+  '_find{/*index}',
+  '_explain{/*index}',
+  '_index{/*index}',
+  '_ensure_full_commit{/*commit}',
+  '_security{/*db}',
+  '_purge{/*db}',
 ];
 
 // block offline users from accessing some unaudited CouchDB endpoints
@@ -339,17 +339,17 @@ const UNAUDITED_ENDPOINTS = [
   // This takes arbitrary JSON, not whole documents with `_id`s, so it's not
   // auditable in our current framework
   // Replication machinery we don't care to audit
-  routePrefix + '_local/*',
-  routePrefix + '_revs_diff',
-  routePrefix + '_missing_revs',
+  `${routePrefix}_local/*doc`,
+  `${routePrefix}_revs_diff`,
+  `${routePrefix}_missing_revs`,
   // NB: _changes, _all_docs, _bulk_get are dealt with elsewhere:
   // see `changesHandler`, `allDocsHandler`, `bulkGetHandler`
-  routePrefix + '_design/*/_list/*',
-  routePrefix + '_design/*/_show/*',
-  routePrefix + '_design/*/_view/*',
+  `${routePrefix}_design/*db/_list/*list`,
+  `${routePrefix}_design/*db/_show/*show`,
+  `${routePrefix}_design/*db/_view/*view`,
   // Interacting with mongo filters uses POST
-  routePrefix + '_find',
-  routePrefix + '_explain',
+  `${routePrefix}_find`,
+  `${routePrefix}_explain`,
 ];
 
 UNAUDITED_ENDPOINTS.forEach(function(url) {
@@ -512,7 +512,6 @@ app.get(
   '/api/v1/hydrate',
   authorization.handleAuthErrors,
   authorization.offlineUserFirewall,
-  jsonQueryParser,
   hydration.hydrate
 );
 app.post(
@@ -520,7 +519,6 @@ app.post(
   authorization.handleAuthErrors,
   authorization.offlineUserFirewall,
   jsonParser,
-  jsonQueryParser,
   hydration.hydrate
 );
 
@@ -539,7 +537,7 @@ app.post(
   contactsByPhone.request
 );
 
-app.get(`${appPrefix}app_settings/${environment.ddoc}/:path?`, settings.getV0); // deprecated
+app.get(`${appPrefix}app_settings/${environment.ddoc}{/:path}`, settings.getV0); // deprecated
 app.get('/api/v1/settings', settings.get);
 app.get('/api/v1/settings/deprecated-transitions', settings.getDeprecatedTransitions);
 
@@ -568,7 +566,7 @@ const onlineUserChangesProxy = _.partial(
 
 // DB replication endpoint
 const changesHandler = require('./controllers/changes').request;
-const changesPath = routePrefix + '_changes(/*)?';
+const changesPath = `${routePrefix}_changes{/*any}`;
 
 app.get(
   changesPath,
@@ -586,13 +584,12 @@ app.post(
 
 // filter _all_docs requests for offline users
 const allDocsHandler = require('./controllers/all-docs').request;
-const allDocsPath = routePrefix + '_all_docs(/*)?';
+const allDocsPath = `${routePrefix}_all_docs{/*any}`;
 
 app.get(
   allDocsPath,
   authorization.handleAuthErrors,
   onlineUserProxy,
-  jsonQueryParser,
   allDocsHandler
 );
 app.post(
@@ -600,45 +597,41 @@ app.post(
   authorization.handleAuthErrors,
   onlineUserProxy,
   jsonParser,
-  jsonQueryParser,
   allDocsHandler
 );
 
 // filter _bulk_get requests for offline users
 const bulkGetHandler = require('./controllers/bulk-get').request;
 app.post(
-  routePrefix + '_bulk_get(/*)?',
+  `${routePrefix}_bulk_get{/*any}`,
   authorization.handleAuthErrors,
   onlineUserProxy,
   jsonParser,
-  jsonQueryParser,
   bulkGetHandler
 );
 
 // filter _bulk_docs requests for offline users
 // this is an audited endpoint: online and filtered offline requests will pass through to the audit route
 app.post(
-  routePrefix + '_bulk_docs(/*)?',
+  `${routePrefix}_bulk_docs{/*any}`,
   jsonParser,
   infodoc.mark,
   authorization.handleAuthErrors,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
-  jsonQueryParser,
   bulkDocs.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
-const docPath = routePrefix + ':docId/{0,}';
-const attachmentPath = routePrefix + ':docId/+:attachmentId*';
-const ddocPath = routePrefix + '_design/+:ddocId*';
+const docPath = `${routePrefix}:docId`;
+const attachmentPath = `${routePrefix}:docId/:attachmentId`;
+const ddocPath = `${routePrefix}_design/:ddocId`;
 
 app.get(
   ddocPath,
   authorization.handleAuthErrors,
   onlineUserProxy,
-  jsonQueryParser,
   _.partial(dbDocHandler.requestDdoc, environment.ddoc),
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
@@ -647,16 +640,14 @@ app.get(
   docPath,
   authorization.handleAuthErrors,
   onlineUserProxy, // online user GET requests are proxied directly to CouchDB
-  jsonQueryParser,
   dbDocHandler.request
 );
 app.post(
-  `/+${environment.db}/?`,
+  [`/${environment.db}`, `/${environment.db}/`],
   jsonParser,
   infodoc.mark,
   authorization.handleAuthErrors,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
-  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
@@ -666,7 +657,6 @@ app.put(
   infodoc.mark,
   authorization.handleAuthErrors,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
-  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
@@ -674,7 +664,6 @@ app.delete(
   docPath,
   authorization.handleAuthErrors,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route,
-  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
@@ -682,7 +671,6 @@ app.all(
   attachmentPath,
   authorization.handleAuthErrors,
   authorization.onlineUserPassThrough, // online user requests pass through to the next route
-  jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
@@ -706,9 +694,9 @@ app.post(
   replication.getDocIdsToDelete,
 );
 
-const metaPathPrefix = `/${environment.db}-user-*-meta/`;
+const metaRoutePrefix = `/${environment.db}-user-*"name"-meta/`;
 
-app.all('/+medic-user-*-meta(/*)?', (req, res, next) => {
+app.all('/medic-user-*"name"-meta/{*path}', (req, res, next) => {
   if (environment.db !== 'medic') {
     req.url = req.url.replace('/medic-user-', `/${environment.db}-user-`);
   }
@@ -716,14 +704,14 @@ app.all('/+medic-user-*-meta(/*)?', (req, res, next) => {
 });
 
 // AuthZ for this endpoint should be handled by couchdb
-app.get(metaPathPrefix + '_changes', (req, res) => {
+app.get(`${metaRoutePrefix}_changes`, (req, res) => {
   proxyForChanges.web(req, res);
 });
 
 // Attempting to create the user's personal meta db
-app.put(metaPathPrefix, createUserDb);
+app.put(metaRoutePrefix, createUserDb);
 // AuthZ for this endpoint should be handled by couchdb, allow offline users to access this directly
-app.all(metaPathPrefix + '*', authorization.setAuthorized);
+app.all(`${metaRoutePrefix}{*any}`, authorization.setAuthorized);
 
 const writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;
@@ -742,7 +730,7 @@ const writeHeaders = function(req, res, headers, redirectHumans) {
           _statusCode = 302;
           res.setHeader(
             'Location',
-            pathPrefix + 'login?redirect=' + encodeURIComponent(req.url)
+            `${routePrefix}login?redirect=${encodeURIComponent(req.url)}`
           );
         }
       } else {
@@ -831,7 +819,7 @@ proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
  * Make sure requests to these urls sans trailing / are redirected to the
  * correct slashed endpoint to avoid weird bugs
  */
-[appPrefix, pathPrefix].forEach(function(url) {
+[appPrefix, routePrefix].forEach(function(url) {
   const urlSansTrailingSlash = url.slice(0, -1);
   app.get(urlSansTrailingSlash, function(req, res) {
     res.redirect(url);
@@ -839,7 +827,7 @@ proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
 });
 
 // allow offline users to access the app
-app.all(appPrefix + '*', authorization.setAuthorized);
+app.all(`${appPrefix}*param`, authorization.setAuthorized);
 
 // block offline users requests from accessing CouchDB directly, via Proxy
 // requests which are authorized (fe: by BulkDocsHandler or DbDocHandler) can pass through
@@ -860,12 +848,12 @@ const canEdit = (req, res) => {
     .catch((err) => serverUtils.error(err, req, res));
 };
 
-const editPath = routePrefix + '*';
+const editPath = `${routePrefix}{*any}`;
 app.put(editPath, canEdit);
 app.post(editPath, canEdit);
 app.delete(editPath, canEdit);
 
-app.all('*', function(req, res) {
+app.all('*path', function(req, res) {
   proxy.web(req, res);
 });
 
