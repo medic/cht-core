@@ -1,9 +1,9 @@
-import { Doc } from '../libs/doc';
+import { Doc, isDoc } from '../libs/doc';
 import contactTypeUtils, { getContactTypes } from '@medic/contact-types-utils';
 import { hasField, isNonEmptyArray, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
-import { createDoc, fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
+import { createDoc, fetchAndFilter, getDocById, queryDocsByKey, updateDoc } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
 import {
@@ -11,7 +11,7 @@ import {
   getLineageDocsById,
 } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
-import { validateCursor } from './libs/core';
+import { addParentToInput, getUpdatedFields, validateCursor } from './libs/core';
 import { PersonInput } from '../input';
 
 /** @internal */
@@ -151,7 +151,7 @@ export namespace v1 {
       typeFoundInSettingsContactTypes:Record<string, unknown> | undefined,
       input: PersonInput
     ) => {
-      let parentDoc: Doc | null = null;
+      let parentDoc: Nullable<Doc> = null;
       if (typeFoundInSettingsContactTypes){
         parentDoc = await validatePersonParent(typeFoundInSettingsContactTypes, input);
       } else if (input.parent){
@@ -163,9 +163,7 @@ export namespace v1 {
           `Parent with _id ${input.parent} does not exist.`
         );
       }
-      input = {...input, parent: {
-        _id: input.parent, parent: parentDoc.parent 
-      } } as unknown as PersonInput;
+      input = addParentToInput(input, 'parent', parentDoc);
       return input;
     };
 
@@ -193,6 +191,34 @@ export namespace v1 {
 
       input = await appendParent(typeFoundInSettingsContactTypes, input);
       return await createPersonDoc(input) as Person.v1.Person;
+    };
+  };
+
+  /** @internal*/
+  export const updatePerson = ({
+    medicDb,
+    settings
+  }:LocalDataContext) => {
+    const updatePerson = updateDoc(medicDb);
+    const getPerson = get({medicDb, settings} as LocalDataContext);
+    return async(personInput: PersonInput):Promise<Nullable<Doc>> => {
+      if (!isDoc(personInput)){
+        throw new InvalidArgumentError(`Document for update is not a valid Doc ${JSON.stringify(personInput)}`);
+      }
+      const originalDoc = await getPerson({uuid: personInput._id});
+      if (originalDoc===null){
+        throw new InvalidArgumentError(`Person not found`);
+      }
+      if (personInput._rev !== originalDoc._rev) {
+        throw new InvalidArgumentError('`_rev` does not match');
+      }
+      const originalDocDeepCopy = JSON.parse(JSON.stringify(originalDoc)) as unknown as Person.v1.Person;
+      const ignoredFields = new Set(['_id', '_rev', 'parent', 'reported_date']);
+      const updatedFields = getUpdatedFields(originalDocDeepCopy, personInput, ignoredFields);
+      const updatedDoc = {
+        ...originalDocDeepCopy, ...updatedFields
+      };
+      return await updatePerson(updatedDoc);
     };
   };
 }

@@ -315,8 +315,9 @@ describe('Person Controller', () => {
         };
         isOnlineOnly.returns(true);
         hasAllPermissions.returns(true);
-        // eslint-disable-next-line max-len
-        const err = new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}].`);
+         
+        const err = new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON
+          .stringify(input)}].`);
         await controller.v1.createPerson(req, res);
         expect(hasAllPermissions
           .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_people'])).to.be.true;
@@ -343,7 +344,7 @@ describe('Person Controller', () => {
         hasAllPermissions.returns(true);
         const createdPersonDoc = {...input, _id: '123', rev: '1-rev'}; 
         createPerson.resolves(createdPersonDoc);
-        // eslint-disable-next-line max-len
+         
         await controller.v1.createPerson(req, res);
         expect(hasAllPermissions
           .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_people'])).to.be.true;

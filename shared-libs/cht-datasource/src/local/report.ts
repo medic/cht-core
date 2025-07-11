@@ -11,7 +11,7 @@ import { hasField, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
-import { normalizeFreetext, validateCursor } from './libs/core';
+import { addParentToInput, normalizeFreetext, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 import { InvalidArgumentError } from '../libs/error';
 import { ReportInput } from '../input';
@@ -87,18 +87,13 @@ export namespace v1 {
     const appendContact = async(
       input:ReportInput
     ): Promise<ReportInput> => {
-      const contactWithLineage = await getReportDoc(input.contact);
-      if (contactWithLineage === null){
+      const contactDehydratedLineage = await getReportDoc(input.contact);
+      if (contactDehydratedLineage === null){
         throw new InvalidArgumentError(
           `Contact with _id ${input.contact} does not exist.`
         );
       }
-      input = {
-        ...input, contact: {
-          _id: input.contact,
-          parent: contactWithLineage.parent
-        }
-      } as unknown as ReportInput;
+      input = addParentToInput(input, 'contact', contactDehydratedLineage);
       return input;
     };
     

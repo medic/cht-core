@@ -280,8 +280,9 @@ describe('cht-datasource Report', () => {
       
         expect(action).to.throw(
           InvalidArgumentError,
-          // eslint-disable-next-line max-len
-          `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
+           
+          `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', ` +
+          `'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
         );
       });
       

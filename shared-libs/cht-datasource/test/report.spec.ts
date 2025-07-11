@@ -1,4 +1,4 @@
-import { DataContext } from '../src';
+import { DataContext, Input } from '../src';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import * as Qualifier from '../src/qualifier';
@@ -14,12 +14,13 @@ describe('report', () => {
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
   let isFreetextQualifier: SinonStub;
-
+  let isPlaceInput: SinonStub;
   beforeEach(() => {
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isFreetextQualifier = sinon.stub(Qualifier, 'isFreetextQualifier');
+    isPlaceInput = sinon.stub(Input, 'isPlaceInput');
   });
 
   afterEach(() => sinon.restore());
@@ -255,6 +256,35 @@ describe('report', () => {
         expect(reportGetIdsPage.notCalled).to.be.true;
         expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
       });
+    });
+
+    describe('createReport', () => {
+      it('throws error for invalid input', async() => {
+        const input = {
+          name: 'person-1',
+          type: 'data_record',
+          form: 'yes',
+        };
+        isPlaceInput.returns(false);
+        await expect(Report.v1.createReport(dataContext)(input))
+          .to.be.rejectedWith(`Missing or empty required field (contact) in [${JSON.stringify(input)}].`);
+      });
+
+      it('returns person doc for valid input', async() => {
+        const createReportDoc = sinon.stub();
+        adapt.returns(createReportDoc);
+        const input = {
+          name: 'report-1',
+          type: 'data_record',
+          contact: 'c1',
+          form: 'form'
+        };
+        isPlaceInput.returns(true);
+        createReportDoc.resolves(input);
+        const result = await Report.v1.createReport(dataContext)(input);
+        expect(result).to.deep.equal(input);
+      });
+
     });
   });
 });
