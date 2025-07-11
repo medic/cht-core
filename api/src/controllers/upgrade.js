@@ -58,7 +58,17 @@ const abortUpgrade = (req, res) => {
     .catch(err => serverUtils.error(err, req, res));
 };
 
+const canUpgrade = async (req, res) => {
+  try {
+    await checkAuth(req);
+    res.json({ ok: await service.canUpgrade() });
+  } catch (err) {
+    serverUtils.error(err, req, res);
+  }
+};
+
 module.exports = {
+  canUpgrade: canUpgrade,
   upgrade: (req, res) => upgrade(req, res, false),
   stage: (req, res) => upgrade(req, res, true),
   complete: completeUpgrade,
