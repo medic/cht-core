@@ -43,28 +43,7 @@ spec:
           ports:
             - containerPort: 5984
           env:
-            - name: COUCHDB_LOG_LEVEL
-              value: info
-            - name: COUCHDB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: cht-couchdb-credentials
-                  key: COUCHDB_PASSWORD
-            - name: COUCHDB_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: cht-couchdb-credentials
-                  key: COUCHDB_SECRET
-            - name: COUCHDB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: cht-couchdb-credentials
-                  key: COUCHDB_USER
-            - name: COUCHDB_UUID
-              valueFrom:
-                secretKeyRef:
-                  name: cht-couchdb-credentials
-                  key: COUCHDB_UUID
+{{- include "couchdb.basicEnv" . }}
             - name: SVC_NAME
               value: couchdb.{{ .Values.namespace }}.svc.cluster.local
           resources: {}
@@ -145,44 +124,23 @@ spec:
           - containerPort: 5984
         env:
         {{- if ne $nodeNumber 1 }}
-        - name: COUCHDB_SYNC_ADMINS_NODE
-          valueFrom:
-            configMapKeyRef:
-              name: couchdb-servers-configmap
-              key: COUCHDB_SYNC_ADMINS_NODE
+          - name: COUCHDB_SYNC_ADMINS_NODE
+            valueFrom:
+              configMapKeyRef:
+                name: couchdb-servers-configmap
+                key: COUCHDB_SYNC_ADMINS_NODE
         {{- end }}
-        - name: COUCHDB_LOG_LEVEL
-          value: info
-        - name: COUCHDB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: cht-couchdb-credentials
-              key: COUCHDB_PASSWORD
-        - name: COUCHDB_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: cht-couchdb-credentials
-              key: COUCHDB_SECRET
-        - name: COUCHDB_USER
-          valueFrom:
-            secretKeyRef:
-              name: cht-couchdb-credentials
-              key: COUCHDB_USER
-        - name: COUCHDB_UUID
-          valueFrom:
-            secretKeyRef:
-              name: cht-couchdb-credentials
-              key: COUCHDB_UUID
-        - name: SVC_NAME
-          value: couchdb-{{ $nodeNumber }}.{{ $.Values.namespace }}.svc.cluster.local
-        - name: NODE_COUNT
-          value: {{ $.Values.clusteredCouch.noOfCouchDBNodes | quote }}
+{{- include "couchdb.basicEnv" $ }}
+          - name: SVC_NAME
+            value: couchdb-{{ $nodeNumber }}.{{ $.Values.namespace }}.svc.cluster.local
+          - name: NODE_COUNT
+            value: {{ $.Values.clusteredCouch.noOfCouchDBNodes | quote }}
         {{- if eq $nodeNumber 1 }}
-        - name: CLUSTER_PEER_IPS
-          valueFrom:
-            configMapKeyRef:
-              name: couchdb-servers-configmap
-              key: CLUSTER_PEER_IPS
+          - name: CLUSTER_PEER_IPS
+            valueFrom:
+              configMapKeyRef:
+                name: couchdb-servers-configmap
+                key: CLUSTER_PEER_IPS
         {{- end }}
         resources: {}
         volumeMounts:
