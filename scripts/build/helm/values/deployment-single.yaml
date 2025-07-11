@@ -3,7 +3,7 @@ couchdb:
 
 nodes:
   # For single couchdb node, use the following:
-  # Leave it commented out if you don't know what it means.
+  # Uncomment and set this value if you want to force all components to deploy on a specific Kubernetes node.
   # Leave it commented out if you want to let kubernetes deploy this on any available node. (Recommended)
   #single_node_deploy: "gamma-cht-node" # # OPTIONAL: User can set specific node name. This is the name of the node where all components will be deployed - for non-clustered configuration.
 
