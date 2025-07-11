@@ -57,6 +57,6 @@ webapp/analyzer.report.html
 .nyc_output
 user-password-change.txt
 user-password-change.csv
-/tests/helm/values.yaml
+/scripts/build/helm/tests/integration-k3d-values.yaml
 /tests/e2e/visual/images/*.png
 
