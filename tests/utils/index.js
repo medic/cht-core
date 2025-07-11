@@ -15,6 +15,7 @@ const PouchDB = require('pouchdb-core');
 const chtDbUtils = require('@utils/cht-db');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
+const { setTimeout: setTimeoutPromise } = require('node:timers/promises');
 
 process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
@@ -1017,17 +1018,14 @@ const deepFreeze = (obj) => {
 };
 
 // delays executing a function that returns a promise with the provided interval (in ms)
-const delayPromise = (promiseFn, interval) => {
+const delayPromise = async (promiseFn, interval) => {
   if (typeof promiseFn === 'number') {
     interval = promiseFn;
-    promiseFn = () => Promise.resolve();
+    promiseFn = () => {};
   }
 
-  return new Promise((resolve, reject) => {
-    setTimeout(() => promiseFn()
-      .then(resolve)
-      .catch(reject), interval);
-  });
+  await setTimeoutPromise(interval);
+  return await promiseFn();
 };
 
 const setTransitionSeqToNow = () => {
@@ -1537,16 +1535,19 @@ const collectLogs = (container, ...regex) => {
     killSpawnedProcess(proc);
   }, 180000);
 
-  const collect = () => {
+  const collect = async () => {
+    if (isK3D()) {
+      await delayPromise(500);
+    }
     clearTimeout(timeout);
     if (errors.length) {
       const error = new Error('CollectLogs errored');
       error.errors = errors;
       error.logs = logs;
-      return Promise.reject(error);
+      throw error;
     }
 
-    return Promise.resolve(matches);
+    return matches;
   };
 
   return firstLineReceivedPromise.then(() => collect);
