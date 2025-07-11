@@ -4,6 +4,7 @@ const sinon = require('sinon');
 require('chai').should();
 
 const authorization = require('../../../src/services/authorization');
+const dataContext = require('../../../src/services/data-context');
 
 const testDocs = [
   { _id: 'a' },
@@ -29,6 +30,8 @@ describe('Bulk Docs Service', function () {
     sinon.stub(authorization, 'filterAllowedDocs').returns([]);
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
     sinon.stub(authorization, 'allowedDoc');
+
+    sinon.stub(dataContext, 'bind');
   });
 
   afterEach(function() {
@@ -64,8 +67,7 @@ describe('Bulk Docs Service', function () {
       bulkDocs.onCall(0)
         .resolves([{ id: docA._id, ok: true }, { id: docB._id, ok: true }, { id: parent._id, ok: true }]);
       bulkDocs.onCall(1).resolves([{ id: docC._id, ok: true }]);
-
-      sinon.stub(db.medic, 'get').resolves(parent);
+      dataContext.bind.returns(sinon.stub().resolves(parent));
 
       return service.bulkDelete(testDocs, testRes, { batchSize: 2 })
         .then(() => {
@@ -154,7 +156,8 @@ describe('Bulk Docs Service', function () {
       bulkDocs.onCall(3).resolves([{ id: parent._id, error: true }]);
       bulkDocs.onCall(4).resolves([{ id: docC._id, ok: true }]);
 
-      const get = sinon.stub(db.medic, 'get');
+      const get = sinon.stub();
+      dataContext.bind.returns(get);
       get.onCall(0).resolves(generateParentDoc());
       get.onCall(1).resolves(generateParentDoc());
       get.onCall(2).resolves(generateParentDoc());

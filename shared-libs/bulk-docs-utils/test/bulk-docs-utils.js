@@ -1,16 +1,17 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const utilsFactory = require('../src/bulk-docs-utils');
+const { Contact } = require('@medic/cht-datasource');
 
 describe('Bulk Docs utils', () => {
-  let get;
-  let DB;
   let utils;
+  let bind;
+  let getContact;
 
   beforeEach(() => {
-    get = sinon.stub();
-    DB = { get };
-    utils = utilsFactory({ Promise, DB });
+    getContact = sinon.stub();
+    bind = sinon.stub().returns(getContact);
+    utils = utilsFactory({ Promise, dataContext: { bind } });
   });
 
   afterEach(() => {
@@ -36,10 +37,10 @@ describe('Bulk Docs utils', () => {
         }
       };
       const expected = Object.assign({}, clinic, { contact: null });
-      get.returns(Promise.resolve(clinic));
+      getContact.resolves(clinic);
       return utils.updateParentContacts([person]).then(updatedParents => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0][0]).to.equal(clinic._id);
+        chai.expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+        chai.expect(getContact.calledOnceWithExactly({ uuid: clinic._id })).to.be.true;
         chai.expect(updatedParents.docs).to.have.length(1);
         chai.expect(updatedParents.docs[0]).to.deep.equal(expected);
       });
@@ -62,10 +63,10 @@ describe('Bulk Docs utils', () => {
           _id: 'b'
         }
       };
-      get.returns(Promise.resolve(clinic));
+      getContact.resolves(clinic);
       return utils.updateParentContacts([person]).then(updatedParents => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0][0]).to.equal(clinic._id);
+        chai.expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+        chai.expect(getContact.calledOnceWithExactly({ uuid: clinic._id })).to.be.true;
         chai.expect(updatedParents.docs.length).to.equal(0);
       });
     });
@@ -87,9 +88,11 @@ describe('Bulk Docs utils', () => {
           _id: 'b'
         }
       };
-      get.returns(Promise.resolve(clinic));
+      getContact.resolves(clinic);
       return utils.updateParentContacts([person]).then(updatedParents => {
         chai.expect(updatedParents.documentByParentId[clinic._id]).to.deep.equal(person);
+        chai.expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+        chai.expect(getContact.calledOnceWithExactly({ uuid: clinic._id })).to.be.true;
       });
     });
 
@@ -106,10 +109,10 @@ describe('Bulk Docs utils', () => {
           _id: 'b'
         }
       };
-      get.returns(Promise.resolve(clinic));
+      getContact.resolves(clinic);
       return utils.updateParentContacts([person]).then(updatedParents => {
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0][0]).to.equal(clinic._id);
+        chai.expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+        chai.expect(getContact.calledOnceWithExactly({ uuid: clinic._id })).to.be.true;
         chai.expect(updatedParents.docs).to.have.length(0);
       });
     });
@@ -127,6 +130,8 @@ describe('Bulk Docs utils', () => {
       };
       chai.expect(utils.getDuplicateErrors([ clinic ])).to.have.length(0);
       chai.expect(utils.getDuplicateErrors([ clinic, clinic ])).to.have.length(1);
+      chai.expect(bind.notCalled).to.be.true;
+      chai.expect(getContact.notCalled).to.be.true;
     });
   });
 });
