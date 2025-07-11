@@ -1,10 +1,10 @@
 [
   {
-    "DeviceName": "/dev/xvdf",
+    "DeviceName": "/dev/sda1",
     "VirtualName": "ephemeral",
     "Ebs": {
       "DeleteOnTermination": true,
-      "VolumeSize": 2
+      "VolumeSize": 12
     }
   }
 ]

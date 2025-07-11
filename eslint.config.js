@@ -348,6 +348,12 @@ module.exports = defineConfig([
     },
   },
   {
+    files: ['nginx/tests/**/*.spec.js'],
+    rules: {
+      '@stylistic/max-len': 'off',
+    },
+  },
+  {
     files: ['scripts/**/*.js'],
     rules: {
       'no-console': 'off',
