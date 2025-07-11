@@ -15,7 +15,7 @@ describe('Messages More Menu Component', () => {
   let authService;
   let responsiveService;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     authService = {
       has: sinon.stub().resolves(false),
       any: sinon.stub().resolves(false),

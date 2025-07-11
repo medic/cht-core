@@ -29,6 +29,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit {
 
   @Input() disabled;
   @Input() fieldId;
+  // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() search: EventEmitter<any> = new EventEmitter();
 
   constructor(

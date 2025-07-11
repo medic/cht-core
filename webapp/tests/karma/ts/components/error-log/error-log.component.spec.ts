@@ -15,7 +15,7 @@ describe('Error log component', () => {
   let sessionService;
   let changesService;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     sessionService = {
       isOnlineOnly: sinon.stub().returns(false),
       userCtx: sinon.stub().resolves()

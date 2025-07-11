@@ -16,7 +16,7 @@ describe('environment', () => {
     process.env = originalEnv;
   });
 
-  it('should exit if no couchurl', async () => {
+  it('should exit if no couchurl', () => {
     sinon.stub(process, 'exit');
     stubProcessEnv({ COUCH_URL: '' });
     sinon.stub(logger, 'error');

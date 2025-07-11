@@ -107,7 +107,7 @@ describe('EditUserSettingsComponent', () => {
   });
 
   describe('editUserSettings()', () => {
-    it('should not trigger any error and process successfully', fakeAsync(async () => {
+    it('should not trigger any error and process successfully', fakeAsync(() => {
       sinon.resetHistory();
       component.editUserModel.language.code = 'en';
       component.editUserModel.fullname = 'Sir Admin';
@@ -125,7 +125,7 @@ describe('EditUserSettingsComponent', () => {
       expect(matDialogRef.close.calledOnce).to.be.true;
     }));
 
-    it('should catch any error and not close the modal', fakeAsync(async () => {
+    it('should catch any error and not close the modal', fakeAsync(() => {
       sinon.resetHistory();
       userSettingsService.put.rejects(new Error('some error'));
       component.editUserModel.language.code = 'en';
