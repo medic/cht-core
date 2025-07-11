@@ -130,7 +130,7 @@ describe('Bulk Docs utils', () => {
       };
       chai.expect(utils.getDuplicateErrors([ clinic ])).to.have.length(0);
       chai.expect(utils.getDuplicateErrors([ clinic, clinic ])).to.have.length(1);
-      chai.expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+      chai.expect(bind.notCalled).to.be.true;
       chai.expect(getContact.notCalled).to.be.true;
     });
   });
