@@ -126,8 +126,11 @@ export const validateReportInput = (data: unknown): ReportInput => {
  */
 export const isReportInput = (input: unknown): input is ReportInput => {
   if (isRecord(input) && 
-        hasFields(input, [{name: 'type', type: 'string', ensureTruthyValue: true}, 
-          {name: 'form', type: 'string', ensureTruthyValue: true}])
+        hasFields(input, [
+          {name: 'type', type: 'string', ensureTruthyValue: true}, 
+          {name: 'form', type: 'string', ensureTruthyValue: true},
+          {name: 'contact', type: 'string', ensureTruthyValue: true}
+        ])
   ){
     if ('reported_date' in input && !isValidReportedDate(input.reported_date)){
       return false;

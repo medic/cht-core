@@ -5,7 +5,10 @@ import {
   assertFreetextQualifier,
   assertLimit,
   assertTypeQualifier,
-  assertContactTypeFreetextQualifier, assertUuidQualifier
+  assertContactTypeFreetextQualifier, assertUuidQualifier,
+  assertPersonInput,
+  assertPlaceInput,
+  assertReportInput
 } from '../../src/libs/parameter-validators';
 import { InvalidArgumentError } from '../../src';
 
@@ -195,6 +198,84 @@ describe('libs parameter-validators', () => {
       const invalidType = { uuid: 123 };
 
       expect(() => assertUuidQualifier(invalidType)).to.throw(InvalidArgumentError);
+    });
+  });
+  
+  describe('assertPersonInput', () => {
+    it('throws error for invalid person input with missing fields', () => {
+      const personInput = {
+        name: 'apoorva',
+        type: 'person'
+      };
+      expect(() => assertPersonInput(personInput)).to.throw(
+        InvalidArgumentError,
+        `Invalid person type [${JSON.stringify(personInput)}].`
+      );
+    });
+    
+    it('throws error for invalid person input here with invalid reported_date', () => {
+      const personInput = {
+        name: 'apoorva',
+        type: 'person',
+        parent: 'p1',
+        reported_date: 'last august'
+      };
+      expect(() => assertPersonInput(personInput)).to.throw(
+        InvalidArgumentError,
+        `Invalid person type [${JSON.stringify(personInput)}].`
+      );
+    });
+    
+    it('should not throw error for a valid person input', () => {
+      const personInput = {
+        name: 'apoorva',
+        type: 'person',
+        parent: 'p1',
+      };
+      expect(() => assertPersonInput(personInput)).to.not.throw();
+    });
+  });
+  
+  describe('assertPlaceInput', () => {
+    it('throws error for invalid place input with missing field `name`', () => {
+      const placeInput = {
+        type: 'district_hospital'
+      };
+      expect(() => assertPlaceInput(placeInput)).to.throw(
+        InvalidArgumentError,
+        `Invalid place type [${JSON.stringify(placeInput)}].`
+      );
+    });
+    
+    it('should not throw error for a valid place input', () => {
+      const placeInput = {
+        name: 'h1',
+        type: 'hospital',
+        parent: 'p1'
+      };
+      expect(() => assertPlaceInput(placeInput)).to.not.throw();
+    });
+  });
+  
+  describe('assertReportInput', () => {
+    it('throws error for invalid report input with missing field `contact`', () => {
+      const reportInput = {
+        type: 'data_record',
+        form: 'f1'
+      };
+      expect(() => assertReportInput(reportInput)).to.throw(
+        InvalidArgumentError,
+        `Invalid report type [${JSON.stringify(reportInput)}].`
+      );
+    });
+    
+    it('should not throw error for a valid report input', () => {
+      const reportInput = {
+        type: 'data_record',
+        form: 'f1',
+        contact: 'c1'
+      };
+      expect(() => assertReportInput(reportInput)).to.not.throw();
     });
   });
 });
