@@ -19,6 +19,7 @@ export class FreetextFilterComponent implements OnDestroy, OnInit {
   inputText;
 
   @Input() disabled;
+  // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() search: EventEmitter<any> = new EventEmitter();
   @ViewChild('freetextInput') inputElement;
 

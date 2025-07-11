@@ -27,9 +27,9 @@ interface DebounceActive {
     active?: boolean;
     debounceRef?: any;
     performance?: any;
-    params?:any;
-    promise?:Promise<any>;
-    resolve?:any;
+    params?: any;
+    promise?: Promise<any>;
+    resolve?: any;
   };
 }
 

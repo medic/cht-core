@@ -62,7 +62,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   cancelCallback;
   selectMode;
 
-  private geoHandle:any;
+  private geoHandle: any;
   private globalActions: GlobalActions;
   private reportsActions: ReportsActions;
   private trackRender;

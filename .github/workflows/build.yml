@@ -17,6 +17,7 @@ env:
   BRANCH: ${{ github.head_ref || github.ref_name }}
   BUILD_NUMBER: ${{ github.run_id }}
   NODE_VERSION: '22.15'
+  AFRICAS_TALKING_SANDBOX_API_KEY: ${{ secrets.AFRICAS_TALKING_SANDBOX_API_KEY }}
 
 jobs:
 

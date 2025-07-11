@@ -5,6 +5,7 @@ const sentinelUtils = require('@utils/sentinel');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
+const chai = require('chai');
 
 const getUserId = n => `org.couchdb.user:${n}`;
 const password = 'passwordSUP3RS3CR37!';
@@ -180,7 +181,7 @@ describe('Users API', () => {
           },
           auth: { username, password },
         })
-        .then(() => fail('You should get a 401 in this situation'))
+        .then(() => chai.expect.fail('You should get a 401 in this situation'))
         .catch(err => {
           chai.expect(err.body.error).to.equal('You do not have permissions to modify this person');
         });
@@ -196,7 +197,7 @@ describe('Users API', () => {
           },
           auth: { username, password },
         })
-        .then(() => fail('You should get an error in this situation'))
+        .then(() => chai.expect.fail('You should get an error in this situation'))
         .catch(err => {
           chai.expect(err.body.error).to.equal('unauthorized');
         });
@@ -234,7 +235,7 @@ describe('Users API', () => {
           },
           noAuth: true
         })
-        .then(() => fail('You should get an error in this situation'))
+        .then(() => chai.expect.fail('You should get an error in this situation'))
         .catch(err => {
           chai.expect(err.body.error).to.equal('You must authenticate with Basic Auth to modify your password');
         });

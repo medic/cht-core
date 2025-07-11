@@ -101,7 +101,7 @@ export class UHCStatsService {
 type DateRange = {
   start: number; // Timestamp
   end: number;
-}
+};
 
 interface VisitCountSettings {
   monthStartDate?: number; // Ex: 26

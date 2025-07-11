@@ -9,9 +9,9 @@ module.exports = function(state, action) {
   }
 
   switch (action.type) {
-  case actionTypes.SET_LAST_CHANGED_DOC:
-    return Object.assign({}, state, { lastChangedDoc: action.payload.lastChangedDoc });
-  default:
-    return state;
+    case actionTypes.SET_LAST_CHANGED_DOC:
+      return Object.assign({}, state, { lastChangedDoc: action.payload.lastChangedDoc });
+    default:
+      return state;
   }
 };
