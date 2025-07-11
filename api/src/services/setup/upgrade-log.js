@@ -91,7 +91,7 @@ const getUpgradeLog = async () => {
  * @return {Promise<{upgrade_log_id: string, user: string}>}
  */
 const getDeployInfo = async () => {
-  const log = await module.exports.get() || {};
+  const log = (await module.exports.get()) || {};
   return {
     user: log.user,
     upgrade_log_id: log._id,

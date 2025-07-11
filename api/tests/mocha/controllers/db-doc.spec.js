@@ -15,7 +15,7 @@ describe('db-doc controller', () => {
     sinon.stub(service, 'filterOfflineOpenRevsRequest').resolves();
     sinon.stub(serverUtils, 'serverError');
 
-    testReq = { body: {}, method: 'GET', params: { docId: 'a' }, query: {}};
+    testReq = { body: {}, method: 'GET', params: { docId: 'a' }, parsedQuery: {}, query: {}};
     testRes = {
       json: sinon.stub(),
       status: sinon.stub()
@@ -104,7 +104,7 @@ describe('db-doc controller', () => {
         .then(() => {
           service.filterOfflineRequest.callCount.should.equal(1);
           service.filterOfflineRequest.args[0].should.deep.equal(
-            [ testReq.userCtx, testReq.params, testReq.method, testReq.query, testReq.body ]
+            [ testReq.userCtx, testReq.params, testReq.method, testReq.parsedQuery, testReq.body ]
           );
           next.callCount.should.equal(1);
           testRes.json.callCount.should.equal(0);
@@ -120,7 +120,7 @@ describe('db-doc controller', () => {
           next.callCount.should.equal(0);
           service.filterOfflineRequest.callCount.should.equal(1);
           service.filterOfflineRequest.args[0].should.deep.equal([
-            testReq.userCtx, testReq.params, testReq.method, testReq.query, testReq.body,
+            testReq.userCtx, testReq.params, testReq.method, testReq.parsedQuery, testReq.body,
           ]);
           next.callCount.should.equal(0);
           testRes.json.callCount.should.equal(1);
@@ -157,7 +157,7 @@ describe('db-doc controller', () => {
     });
 
     it('sends 404 error when request is an invalid attachment request without rev', () => {
-      testReq.query = {};
+      testReq.parsedQuery = {};
       testReq.params.attachmentId = 'something';
       service.filterOfflineRequest.resolves(false);
       return controller
@@ -173,7 +173,7 @@ describe('db-doc controller', () => {
     });
 
     it('sends 403 error when request is an invalid attachment request with rev', () => {
-      testReq.query = { rev: 'something' };
+      testReq.parsedQuery = { rev: 'something' };
       testReq.params.attachmentId = 'something';
       service.filterOfflineRequest.resolves(false);
       return controller
@@ -201,7 +201,7 @@ describe('db-doc controller', () => {
 
     describe('Get requests with open_revs', () => {
       it('processes GET requests with open_revs parameter properly', () => {
-        testReq.query = { open_revs: 'something' };
+        testReq.parsedQuery = { open_revs: 'something' };
         service.filterOfflineOpenRevsRequest.resolves({ some: 'thing' });
 
         return controller
@@ -213,12 +213,12 @@ describe('db-doc controller', () => {
             service.filterOfflineRequest.callCount.should.equal(0);
             service.filterOfflineOpenRevsRequest.callCount.should.equal(1);
             service.filterOfflineOpenRevsRequest.args[0]
-              .should.deep.equal([testReq.userCtx, testReq.params, testReq.query]);
+              .should.deep.equal([testReq.userCtx, testReq.params, testReq.parsedQuery]);
           });
       });
 
       it('sends empty results - no allowed revs correctly', () => {
-        testReq.query = { open_revs: 'something' };
+        testReq.parsedQuery = { open_revs: 'something' };
         service.filterOfflineOpenRevsRequest.resolves([]);
 
         return controller
@@ -237,7 +237,7 @@ describe('db-doc controller', () => {
         return Promise
           .all([
             controller.request(testReq, testRes, next), // GET without open revs
-            controller.request(_.defaults({ query: { open_revs: false } }, testReq), testRes, next),
+            controller.request(_.defaults({ parsedQuery: { open_revs: false } }, testReq), testRes, next),
             controller.request(
               _.defaults(
                 { method: 'POST', query: { open_revs: true }, params: {}},
@@ -245,9 +245,11 @@ describe('db-doc controller', () => {
               ), testRes, next
             ),
             controller.request(_.defaults({ method: 'POST', params: {} }, testReq), testRes, next),
-            controller.request(_.defaults({ method: 'PUT', query: { open_revs: true } }, testReq), testRes, next),
+            controller.request(_.defaults({ method: 'PUT', parsedQuery: { open_revs: true } }, testReq), testRes, next),
             controller.request(_.defaults({ method: 'PUT' }, testReq), testRes, next),
-            controller.request(_.defaults({ method: 'DELETE', query: { open_revs: true } }, testReq), testRes, next),
+            controller.request(
+              _.defaults({ method: 'DELETE', parsedQuery: { open_revs: true } }, testReq), testRes, next
+            ),
             controller.request(_.defaults({ method: 'DELETE' }, testReq), testRes, next),
           ])
           .then(() => {
@@ -258,7 +260,7 @@ describe('db-doc controller', () => {
       });
 
       it('catches service errors', () => {
-        testReq.query = { open_revs: 'something' };
+        testReq.parsedQuery = { open_revs: 'something' };
         service.filterOfflineOpenRevsRequest.rejects({ error: 'something' });
 
         return controller

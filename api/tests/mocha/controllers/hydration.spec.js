@@ -42,7 +42,7 @@ describe('hydration controller', () => {
     });
 
     it('should return an error when query doc_ids is not an array', () => {
-      req.query = { doc_ids: 'something' };
+      req.parsedQuery = { doc_ids: 'something' };
 
       return controller.hydrate(req, res).then(() => {
         chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(0);
@@ -72,7 +72,7 @@ describe('hydration controller', () => {
     });
 
     it('should prioritize query over body', () => {
-      req.query = { doc_ids: ['my_doc_id'] };
+      req.parsedQuery = { doc_ids: ['my_doc_id'] };
       req.body = { doc_ids: 'not_even_an_array' }; // yep, CouchDB _all_docs does this too!
       lineage.fetchHydratedDocs.resolves([{ _id: 'my_doc_id', hydrated: true }]);
 
@@ -89,7 +89,7 @@ describe('hydration controller', () => {
   });
 
   it('should work with a query', () => {
-    req.query = { doc_ids: ['a', 'b', 'c', 'd', 'e'] };
+    req.parsedQuery = { doc_ids: ['a', 'b', 'c', 'd', 'e'] };
 
     lineage.fetchHydratedDocs.resolves([
       { _id: 'a', hydrated: 'yes' },
@@ -118,7 +118,7 @@ describe('hydration controller', () => {
   });
 
   it('should work with a body', () => {
-    req.query = { doc_ids: ['one', 'two', 'three'] };
+    req.parsedQuery = { doc_ids: ['one', 'two', 'three'] };
 
     lineage.fetchHydratedDocs.resolves([
       { _id: 'one', not_hydrated: 'no' },
@@ -143,7 +143,7 @@ describe('hydration controller', () => {
   });
 
   it('should treat not found docs', () => {
-    req.query = { doc_ids: ['a', 'b', 'c', 'd', 'e'] };
+    req.parsedQuery = { doc_ids: ['a', 'b', 'c', 'd', 'e'] };
 
     lineage.fetchHydratedDocs.resolves([
       { _id: 'a', complex: 'yes' },
