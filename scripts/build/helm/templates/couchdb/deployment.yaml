@@ -43,7 +43,7 @@ spec:
           ports:
             - containerPort: 5984
           env:
-{{- include "couchdb.basicEnv" . }}
+{{- include "couchdb.basicEnv" . | nindent 12 }}
             - name: SVC_NAME
               value: couchdb.{{ .Values.namespace }}.svc.cluster.local
           resources: {}
@@ -130,7 +130,7 @@ spec:
                 name: couchdb-servers-configmap
                 key: COUCHDB_SYNC_ADMINS_NODE
         {{- end }}
-{{- include "couchdb.basicEnv" $ }}
+{{- include "couchdb.basicEnv" $ | nindent 10 }}
           - name: SVC_NAME
             value: couchdb-{{ $nodeNumber }}.{{ $.Values.namespace }}.svc.cluster.local
           - name: NODE_COUNT

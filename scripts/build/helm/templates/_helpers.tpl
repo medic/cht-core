@@ -43,27 +43,27 @@ spec:
 {{- end -}}
 
 {{- define "couchdb.basicEnv" -}}
-          - name: COUCHDB_LOG_LEVEL
-            value: info
-          - name: COUCHDB_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: cht-couchdb-credentials
-                key: COUCHDB_PASSWORD
-          - name: COUCHDB_SECRET
-            valueFrom:
-              secretKeyRef:
-                name: cht-couchdb-credentials
-                key: COUCHDB_SECRET
-          - name: COUCHDB_USER
-            valueFrom:
-              secretKeyRef:
-                name: cht-couchdb-credentials
-                key: COUCHDB_USER
-          - name: COUCHDB_UUID
-            valueFrom:
-              secretKeyRef:
-                name: cht-couchdb-credentials
-                key: COUCHDB_UUID
+- name: COUCHDB_LOG_LEVEL
+  value: info
+- name: COUCHDB_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: cht-couchdb-credentials
+      key: COUCHDB_PASSWORD
+- name: COUCHDB_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: cht-couchdb-credentials
+      key: COUCHDB_SECRET
+- name: COUCHDB_USER
+  valueFrom:
+    secretKeyRef:
+      name: cht-couchdb-credentials
+      key: COUCHDB_USER
+- name: COUCHDB_UUID
+  valueFrom:
+    secretKeyRef:
+      name: cht-couchdb-credentials
+      key: COUCHDB_UUID
 {{- end -}}
 
