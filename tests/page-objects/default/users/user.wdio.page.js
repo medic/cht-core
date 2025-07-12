@@ -14,6 +14,7 @@ const logoutButton = () => $('i.fa-power-off');
 const usernameTextSelector = '[test-id="username-list"]';
 const usernameText = () => $(usernameTextSelector);
 const usernameTextList = () => $$(usernameTextSelector);
+const userList = () => $$('[test-id="user-list"]');
 const usernameErrorMessage = () => $('span.help-block.ng-binding');
 const passwordErrorMessage = () => $('.password-input-group ~ .help-block');
 const placeErrorMessage = () => $('#facilitySelect ~ .help-block');
@@ -41,6 +42,26 @@ const openAddUserDialog = async () => {
   await addUserButton().click();
   await addUserDialog().waitForDisplayed();
   // wait for animations to finish
+  await browser.pause(500);
+};
+
+const getUsernameRow = async (username) => {
+  await usernameText().waitForDisplayed();
+  const elems = await userList();
+  const found = await elems.filter(async elem => await elem.$$(usernameTextSelector)[0].getText() === username);
+  return found.length === 0? undefined : found[0];
+};
+
+const openEditUserDialog = async (username) => {
+  const el = await getUsernameRow(username);
+
+  if (!el) {
+    return;
+  }
+
+  el.waitForDisplayed();
+  el.click();
+  await addUserDialog().waitForDisplayed();
   await browser.pause(500);
 };
 
@@ -234,6 +255,7 @@ module.exports = {
   goToAdminUser,
   goToAdminUpgrade,
   openAddUserDialog,
+  openEditUserDialog,
   inputAddUserFields,
   saveUser,
   logout,

@@ -1,8 +1,13 @@
 const utils = require('@utils');
 const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
-const placeFactory = require('@factories/cht/contacts/place');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
-const personFactory = require('@factories/cht/contacts/person');
+const {
+  updateSettings,
+  createHierarchy,
+  person,
+  districtHospital,
+  districtHospital2
+} = require('./common');
 
 describe('User Test Cases ->', () => {
   const ONLINE_USER_ROLE = 'program_officer';
@@ -13,26 +18,9 @@ describe('User Test Cases ->', () => {
   const PASSWORD_2 = 'Jacktest@456';
   const INCORRECT_PASSWORD = 'Passwor';
 
-  const places = placeFactory.generateHierarchy();
-  const districtHospital = places.get('district_hospital');
-  const districtHospital2 = placeFactory.place().build({
-    name: 'district_hospital',
-    type: 'district_hospital',
-  });
-
-  const person = personFactory.build({ parent: districtHospital, roles: [OFFLINE_USER_ROLE] });
-
   before(async () => {
-    const settings = await utils.getSettings();
-    const permissions = { ...settings.permissions, can_have_multiple_places: [OFFLINE_USER_ROLE] };
-    await utils.updateSettings({
-      permissions,
-      oidc_provider: {
-        discovery_url: 'https://discovery_url.com',
-        client_id: 'cht'
-      }
-    }, { ignoreReload: true });
-    await utils.saveDocs([...places.values(), person, districtHospital2]);
+    await updateSettings();
+    await createHierarchy();
     await loginPage.cookieLogin();
   });
 
