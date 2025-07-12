@@ -269,4 +269,53 @@ describe('Place API', () => {
         );
     });
   });
+
+  describe('POST /api/v1/place', () => {
+    it('creates place for valid input', async () => {
+      const input = {
+        type: 'place',
+        name: 'place-1',
+        contact: contact0._id
+      };
+
+      const opts = {
+        path: '/api/v1/place',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: input
+      };
+      const placeDoc = await utils.request(opts);
+      const updatedInput = {
+        ...input, contact: {
+          _id: contact0._id, parent: contact0.parent
+        }
+      };
+      expect(placeDoc).excluding(['reported_date', '_id', '_rev']).to.deep.equal(updatedInput);
+    });
+
+    it('throws error for missing fields', async () => {
+      const input = {
+        name: 'place-1',
+        contact: 'c1'
+      };
+
+      const opts = {
+        path: '/api/v1/place',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: input
+      };
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(
+          `400 - ${JSON.stringify({
+            code: 400,
+            error: `Missing or empty required fields (name, type) for [${JSON.stringify(input)}].`
+          })}`
+        );
+    });
+  });
 });

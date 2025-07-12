@@ -62,7 +62,7 @@ describe('Place Controller', () => {
 
         await controller.v1.get(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.get)).to.be.true;
         expect(placeGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
@@ -81,7 +81,7 @@ describe('Place Controller', () => {
 
         await controller.v1.get(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.getWithLineage)).to.be.true;
         expect(placeGet.notCalled).to.be.true;
         expect(placeGetWithLineage.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
@@ -100,7 +100,7 @@ describe('Place Controller', () => {
 
         await controller.v1.get(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.get)).to.be.true;
         expect(placeGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
@@ -117,7 +117,7 @@ describe('Place Controller', () => {
 
         await controller.v1.get(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.get)).to.be.true;
         expect(placeGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
@@ -137,7 +137,7 @@ describe('Place Controller', () => {
 
         await controller.v1.get(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(placeGet.notCalled).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
@@ -205,7 +205,7 @@ describe('Place Controller', () => {
 
         await controller.v1.getAll(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.getPage)).to.be.true;
         expect(placeGetPageByType.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
@@ -221,7 +221,7 @@ describe('Place Controller', () => {
 
         await controller.v1.getAll(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(placeGetPageByType.notCalled).to.be.true;
@@ -264,7 +264,7 @@ describe('Place Controller', () => {
 
         await controller.v1.getAll(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.getPage)).to.be.true;
         expect(placeGetPageByType.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
@@ -282,7 +282,7 @@ describe('Place Controller', () => {
 
         await controller.v1.getAll(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.getPage)).to.be.true;
         expect(placeGetPageByType.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
@@ -290,6 +290,71 @@ describe('Place Controller', () => {
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+      });
+    });
+
+    describe('createPlace', () => {
+      let placeCreate;
+      beforeEach(() => {
+        placeCreate = sinon.stub();
+        dataContextBind.withArgs(Place.v1.createPlace)
+          .returns(placeCreate);
+      });
+
+      it('throws error for missing required fields', async() => {
+        const qualifier = {
+          name: 'place-1',
+          parent: 'p1',
+          reported_date: 12312312
+        };
+        req = {
+          body: {
+            ...qualifier
+          }
+        };
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+
+        const err = new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON.stringify(
+          qualifier
+        )}].`);
+        await controller.v1.createPlace(req, res);
+        expect(hasAllPermissions
+          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_places'])).to.be.true;
+        expect(placeCreate.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(InvalidArgumentError);
+        expect(serverUtilsError.firstCall.args[0].message).to.equal(err.message);
+        expect(dataContextBind.notCalled).to.be.true;
+      });
+
+      it('returns place doc for valid input', async() => {
+        const input = {
+          name: 'place-1',
+          parent: 'p1',
+          type: 'place',
+          reported_date: 12312312
+        };
+        req = {
+          body: {
+            ...input
+          }
+        };
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        const expected_doc = {
+          ...input,
+          _id: '1',
+          _rev: '1-rev'
+        };
+        placeCreate.resolves(expected_doc);
+
+        await controller.v1.createPlace(req, res);
+        expect(hasAllPermissions
+          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_places'])).to.be.true;
+        expect(placeCreate.calledOnceWithExactly(input)).to.be.true;
+        expect(dataContextBind.calledOnce).to.be.true;
+        expect(res.json.calledOnceWithExactly(expected_doc)).to.be.true;
       });
     });
   });

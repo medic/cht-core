@@ -8,6 +8,8 @@ import {
   getDocsByIds,
   queryDocsByKey,
   queryDocsByRange, queryDocUuidsByKey, queryDocUuidsByRange,
+  createDoc,
+  updateDoc
 } from '../../../src/local/libs/doc';
 import * as LocalDoc from '../../../src/local/libs/doc';
 import { expect } from 'chai';
@@ -17,6 +19,8 @@ describe('local doc lib', () => {
   let dbGet: SinonStub;
   let dbAllDocs: SinonStub;
   let dbQuery: SinonStub;
+  let dbPost: SinonStub;
+  let dbPut: SinonStub;
   let db: PouchDB.Database<Doc.Doc>;
   let isDoc: SinonStub;
   let error: SinonStub;
@@ -25,10 +29,14 @@ describe('local doc lib', () => {
     dbGet = sinon.stub();
     dbAllDocs = sinon.stub();
     dbQuery = sinon.stub();
+    dbPost = sinon.stub();
+    dbPut = sinon.stub();
     db = {
       get: dbGet,
       allDocs: dbAllDocs,
-      query: dbQuery
+      query: dbQuery,
+      post: dbPost,
+      put: dbPut
     } as unknown as PouchDB.Database<Doc.Doc>;
     isDoc = sinon.stub(Doc, 'isDoc');
     error = sinon.stub(logger, 'error');
@@ -587,4 +595,95 @@ describe('local doc lib', () => {
       expect(() => fetchAndFilterUuids(getFunction, 3)).to.throw('API Error');
     });
   });
+
+  describe('createDoc', () => {
+    const doc = {
+      type: 'contact',
+      contact_type: 'person',
+      name: 'Medic User',
+      parent: {
+        _id: '2-id'
+      }
+    };
+
+    const createdDoc = {
+      type: 'contact',
+      contact_type: 'person',
+      name: 'Medic User',
+      reported_date: 12312312,
+      _rev: '1-rev',
+      _id: '1-id',
+      parent: {
+        _id: '2-id'
+      }
+    };
+    
+    it('should create and retrieve the doc', async () => {
+      dbPost.resolves({ id: '1-id', ok: true });
+      isDoc.returns(true);
+      dbGet.resolves(createdDoc);
+
+      const result = await createDoc(db)(doc);
+
+      expect(result).to.equal(createdDoc);
+      expect(dbGet.calledOnceWithExactly(createdDoc._id)).to.be.true;
+    });
+
+    it('case when database returns false for ok', async () => {
+      dbPost.resolves({ id: '1-id', ok: false });
+      await expect(createDoc(db)(doc)).to.be.rejectedWith('Error creating document.');
+      expect(dbPost.calledOnceWithExactly(doc)).to.be.true;
+    });
+  });
+
+  describe('updateDoc', () => {
+    it('should update and retrieve the doc', async () => {
+      const updateDocQualifier = {
+        _id: '1-id',
+        _rev: '2-rev',
+        name: 'apoorva',
+        type: 'person'
+      };
+      dbPut.resolves({ id: '1-id', ok: true });
+      isDoc.returns(true);
+      const expectedDoc = {...updateDocQualifier, _rev: '3-rev'};
+      dbGet.resolves(expectedDoc);
+
+      const result = await updateDoc(db)(updateDocQualifier);
+
+      expect(result).to.equal(expectedDoc);
+      expect(dbGet.calledOnceWithExactly(expectedDoc._id)).to.be.true;
+    });
+
+    it('should throw error for missing _id', async () => {
+      const updateDocQualifier = {
+        _rev: '2-rev',
+        name: 'apoorva',
+        type: 'person'
+      };
+
+      await expect(updateDoc(db)(updateDocQualifier))
+        .to.be.rejectedWith(`Missing or empty required field (_id) for [${JSON.stringify(updateDocQualifier)}]`);
+
+      expect(isDoc.called).to.be.false;
+      expect(dbGet.called).to.be.false;
+      expect(dbPut.called).to.be.false;
+    });
+
+    it('should throw error for missing _rev', async () => {
+      const updateDocQualifier = {
+        _id: '1-id',
+        name: 'apoorva',
+        type: 'person'
+      };
+
+      await expect(updateDoc(db)(updateDocQualifier))
+        .to.be.rejectedWith(`Missing or empty required field (_rev) for [${JSON.stringify(updateDocQualifier)}]`);
+
+      expect(isDoc.called).to.be.false;
+      expect(dbGet.called).to.be.false;
+      expect(dbPut.called).to.be.false;
+    });
+  });
+
 });

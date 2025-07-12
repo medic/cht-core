@@ -62,7 +62,7 @@ describe('Person Controller', () => {
 
         await controller.v1.get(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
         expect(personGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
@@ -81,7 +81,7 @@ describe('Person Controller', () => {
 
         await controller.v1.get(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true;
         expect(personGet.notCalled).to.be.true;
         expect(personGetWithLineage.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
@@ -100,7 +100,7 @@ describe('Person Controller', () => {
 
         await controller.v1.get(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
         expect(personGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
@@ -117,7 +117,7 @@ describe('Person Controller', () => {
 
         await controller.v1.get(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
         expect(personGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
@@ -137,7 +137,7 @@ describe('Person Controller', () => {
 
         await controller.v1.get(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(personGet.notCalled).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
@@ -205,7 +205,7 @@ describe('Person Controller', () => {
 
         await controller.v1.getAll(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
         expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
@@ -221,7 +221,7 @@ describe('Person Controller', () => {
 
         await controller.v1.getAll(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(personGetPageByType.notCalled).to.be.true;
@@ -264,7 +264,7 @@ describe('Person Controller', () => {
 
         await controller.v1.getAll(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
         expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
@@ -282,7 +282,7 @@ describe('Person Controller', () => {
 
         await controller.v1.getAll(req, res);
 
-        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_contacts')).to.be.true;
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_contacts'])).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
         expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
@@ -290,6 +290,68 @@ describe('Person Controller', () => {
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+      });
+    });
+
+    describe('createPerson', () => {
+      let createPerson;
+      beforeEach(() => {
+        createPerson = sinon.stub();
+        dataContextBind
+          .withArgs(Person.v1.createPerson)
+          .returns(createPerson);
+      });
+
+      it('throws error for missing required fields', async() => {
+        const input = {
+          name: 'test-user',
+          parent: 'p1',
+          reported_date: 12312312
+        };
+        req = {
+          body: {
+            ...input
+          }
+        };
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        // eslint-disable-next-line max-len
+        const err = new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}].`);
+        await controller.v1.createPerson(req, res);
+        expect(hasAllPermissions
+          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_people'])).to.be.true;
+        expect(createPerson.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(InvalidArgumentError);
+        expect(serverUtilsError.firstCall.args[0].message).to.equal(err.message);
+        expect(dataContextBind.notCalled).to.be.true;
+      });
+
+      it('creates a person doc for valid input', async() => {
+        const input = {
+          name: 'test-user',
+          type: 'person',
+          parent: 'p1',
+          reported_date: 12312312
+        };
+        req = {
+          body: {
+            ...input
+          }
+        };
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        const createdPersonDoc = {...input, _id: '123', rev: '1-rev'}; 
+        createPerson.resolves(createdPersonDoc);
+        // eslint-disable-next-line max-len
+        await controller.v1.createPerson(req, res);
+        expect(hasAllPermissions
+          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_people'])).to.be.true;
+        expect(createPerson.calledOnce).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+        expect(dataContextBind.calledOnce).to.be.true;
+        expect(createPerson.calledOnce).to.be.true;
+        expect(res.json.calledOnceWithExactly(createdPersonDoc)).to.be.true;
       });
     });
   });

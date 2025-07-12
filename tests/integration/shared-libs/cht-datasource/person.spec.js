@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { getRemoteDataContext, Person, Qualifier } = require('@medic/cht-datasource');
+const { getRemoteDataContext, Person, Qualifier, Input } = require('@medic/cht-datasource');
 const { expect } = require('chai');
 const userFactory = require('@factories/cht/users/users');
 const {setAuth, removeAuth} = require('./auth');
@@ -179,7 +179,7 @@ describe('cht-datasource Person', () => {
         await expect(
           getPage({...Qualifier.byContactType(personType)}, cursor, invalidLimit)
         ).to.be.rejectedWith(
-          `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`
+          {code: 400, error: `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`}
         );
       });
 
@@ -189,7 +189,7 @@ describe('cht-datasource Person', () => {
             ...Qualifier.byContactType(personType),
           }, invalidCursor, limit)
         ).to.be.rejectedWith(
-          `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          {code: 400, error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`}
         );
       });
     });
@@ -205,6 +205,35 @@ describe('cht-datasource Person', () => {
         }
 
         expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeople);
+      });
+    });
+
+    describe('createPerson', async () => {
+      const createPerson = Person.v1.createPerson(dataContext);
+      it('creates a person for a valid person input', async () => {
+        const personInput = Input.validatePersonInput({
+          name: 'apoorva',
+          type: 'person',
+          parent: place0._id
+        });
+        const person = await createPerson(personInput);
+        expect(person).excluding([ '_rev', 'reported_date', '_id' ])
+          .to.deep.equal({...personInput, contact_type: 'person', type: 'contact',
+            parent: {_id: place0._id, parent: place0.parent}});
+      });
+
+      it('throws error for parent type not among allowed parents in settings.contact_types', async () => {
+        const personInput = Input.validatePersonInput({
+          name: 'apoorva',
+          type: 'person',
+          parent: contact0._id,
+          reported_date: 12312312
+        });
+        await expect(createPerson(personInput))
+          .to.be.rejectedWith({code: 400, 
+            error: `Invalid parent type for [${JSON.stringify(
+              {name: 'apoorva', type: 'contact', parent: contact0._id, reported_date: 12312312, contact_type: 'person'}
+            )}].`});
       });
     });
   });
