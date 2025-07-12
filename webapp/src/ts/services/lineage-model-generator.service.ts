@@ -1,4 +1,4 @@
-import * as LineageFactory from '@medic/lineage';
+import LineageFactory from '@medic/lineage';
 import { Injectable, NgZone } from '@angular/core';
 
 import { DbService } from '@mm-services/db.service';

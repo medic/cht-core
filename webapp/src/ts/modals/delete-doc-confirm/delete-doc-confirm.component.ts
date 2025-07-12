@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, Inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import * as LineageFactory from '@medic/lineage';
+import LineageFactory from '@medic/lineage';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 

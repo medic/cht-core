@@ -72,6 +72,72 @@ describe('report', () => {
       });
     });
 
+    describe('getWithLineage', () => {
+      const report = { 
+        _id: 'report',
+        contact: {
+          _id: 'contact_id',
+          type: 'person',
+          parent: {
+            _id: 'parent_id',
+            type: 'clinic'
+          }
+        }
+      } as Report.v1.ReportWithLineage;
+      const qualifier = { uuid: report._id } as const;
+      let getReportWithLineage: SinonStub;
+
+      beforeEach(() => {
+        getReportWithLineage = sinon.stub();
+        adapt.returns(getReportWithLineage);
+      });
+
+      it('retrieves the report with lineage for the given qualifier from the data context', async () => {
+        isUuidQualifier.returns(true);
+        getReportWithLineage.resolves(report);
+
+        const result = await Report.v1.getWithLineage(dataContext)(qualifier);
+
+        expect(result).to.equal(report);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(
+          dataContext,
+          Local.Report.v1.getWithLineage,
+          Remote.Report.v1.getWithLineage
+        )).to.be.true;
+        expect(isUuidQualifier.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(getReportWithLineage.calledOnceWithExactly(qualifier)).to.be.true;
+      });
+
+      it('throws an error if the qualifier is invalid', async () => {
+        isUuidQualifier.returns(false);
+
+        await expect(Report.v1.getWithLineage(dataContext)(qualifier))
+          .to.be.rejectedWith(`Invalid identifier [${JSON.stringify(qualifier)}].`);
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(
+          dataContext,
+          Local.Report.v1.getWithLineage,
+          Remote.Report.v1.getWithLineage
+        )).to.be.true;
+        expect(isUuidQualifier.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(getReportWithLineage.notCalled).to.be.true;
+      });
+
+      it('throws an error if the data context is invalid', () => {
+        assertDataContext.throws(new Error(`Invalid data context [null].`));
+
+        expect(() => Report.v1.getWithLineage(dataContext))
+          .to.throw(`Invalid data context [null].`);
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.notCalled).to.be.true;
+        expect(isUuidQualifier.notCalled).to.be.true;
+        expect(getReportWithLineage.notCalled).to.be.true;
+      });
+    });
+
     describe('getUuidsPage', () => {
       const ids = ['report1', 'report2', 'report3'];
       const cursor = '1';
