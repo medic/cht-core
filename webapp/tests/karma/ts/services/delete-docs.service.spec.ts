@@ -7,30 +7,37 @@ import { SessionService } from '@mm-services/session.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { DeleteDocsService } from '@mm-services/delete-docs.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { Contact } from '@medic/cht-datasource';
 
 describe('DeleteDocs service', () => {
 
   let service;
-  let get;
   let bulkDocs;
   let isOnlineOnly;
   let server;
   let extractLineageService;
+  let getDataContext;
+  let bind;
+  let getContact;
 
   beforeEach(() => {
-    get = sinon.stub();
     bulkDocs = sinon.stub();
     isOnlineOnly = sinon.stub().returns(false);
     const Changes = () => undefined;
     Changes.killWatchers = () => undefined;
     extractLineageService = { extract: sinon.stub() };
 
+    getContact = sinon.stub();
+    bind = sinon.stub().returns(getContact);
+    getDataContext = sinon.stub().resolves({ bind });
     TestBed.configureTestingModule({
       providers: [
-        { provide: DbService, useValue: { get: () => ({ bulkDocs, get }) } },
+        { provide: DbService, useValue: { get: () => ({ bulkDocs }) } },
         { provide: SessionService, useValue: { isOnlineOnly } },
         { provide: ChangesService, useValue: Changes },
         { provide: ExtractLineageService, useValue: extractLineageService },
+        { provide: CHTDatasourceService, useValue: { getDataContext } },
       ]
     });
     service = TestBed.inject(DeleteDocsService);
@@ -50,9 +57,11 @@ describe('DeleteDocs service', () => {
       .delete({ _id: 'xyz' })
       .then(() => assert.fail('expected error to be thrown'))
       .catch((err) => {
-        expect(get.callCount).to.equal(0);
         expect(bulkDocs.callCount).to.equal(1);
         expect(err.name).to.equal('errcode2');
+        expect(getDataContext.calledOnceWithExactly()).to.be.true;
+        expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+        expect(getContact.notCalled).to.be.true;
       });
   });
 
@@ -74,7 +83,7 @@ describe('DeleteDocs service', () => {
         _id: 'b'
       }
     };
-    get.resolves(clinic);
+    getContact.resolves(clinic);
     const consoleErrorMock = sinon.stub(console, 'error');
     bulkDocs.resolves(
       // person is not deleted, but clinic is edited just fine. Oops.
@@ -92,6 +101,9 @@ describe('DeleteDocs service', () => {
         expect(err).to.be.ok;
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0]).to.equal('Deletion errors');
+        expect(getDataContext.calledOnceWithExactly()).to.be.true;
+        expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+        expect(getContact.calledOnceWithExactly({ uuid: clinic._id })).to.be.true;
       });
   });
 
@@ -112,7 +124,7 @@ describe('DeleteDocs service', () => {
         _id: 'b'
       }
     };
-    get.resolves(clinic);
+    getContact.resolves(clinic);
     return service
       .delete([ person, clinic ])
       .then(() => {
@@ -120,6 +132,9 @@ describe('DeleteDocs service', () => {
       })
       .catch((err) => {
         expect(err).to.be.ok;
+        expect(getDataContext.calledOnceWithExactly()).to.be.true;
+        expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+        expect(getContact.calledOnceWithExactly({ uuid: clinic._id })).to.be.true;
       });
   });
 
@@ -137,9 +152,11 @@ describe('DeleteDocs service', () => {
       _deleted: true
     };
     return service.delete(record).then(function() {
-      expect(get.callCount).to.equal(0);
       expect(bulkDocs.callCount).to.equal(1);
       expect(bulkDocs.args[0][0][0]).to.deep.equal(expected);
+      expect(getDataContext.calledOnceWithExactly()).to.be.true;
+      expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+      expect(getContact.notCalled).to.be.true;
     });
   });
 
@@ -168,11 +185,13 @@ describe('DeleteDocs service', () => {
       _deleted: true
     };
     return service.delete([ record1, record2 ]).then(() => {
-      expect(get.callCount).to.equal(0);
       expect(bulkDocs.callCount).to.equal(1);
       expect(bulkDocs.args[0][0].length).to.equal(2);
       expect(bulkDocs.args[0][0][0]).to.deep.equal(expected1);
       expect(bulkDocs.args[0][0][1]).to.deep.equal(expected2);
+      expect(getDataContext.calledOnceWithExactly()).to.be.true;
+      expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+      expect(getContact.notCalled).to.be.true;
     });
   });
 
@@ -190,6 +209,9 @@ describe('DeleteDocs service', () => {
         docs: [expected1, expected2]
       }));
       expect(bulkDocs.callCount).to.equal(0);
+      expect(getDataContext.calledOnceWithExactly()).to.be.true;
+      expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+      expect(getContact.notCalled).to.be.true;
     });
   });
 
@@ -208,6 +230,9 @@ describe('DeleteDocs service', () => {
       .catch(() => {
         expect(onProgress.callCount).to.equal(1);
         expect(onProgress.getCall(0).args[0]).to.equal(2);
+        expect(getDataContext.calledOnceWithExactly()).to.be.true;
+        expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+        expect(getContact.notCalled).to.be.true;
       });
   });
 
@@ -229,11 +254,14 @@ describe('DeleteDocs service', () => {
       }
     };
     const docs = [ person ];
-    get.resolves(clinic);
+    getContact.resolves(clinic);
     bulkDocs.resolves([]);
     return service.delete(docs).then(() => {
       expect(docs.length).to.equal(1);
       expect(bulkDocs.args[0][0].length).to.equal(2);
+      expect(getDataContext.calledOnceWithExactly()).to.be.true;
+      expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+      expect(getContact.calledOnceWithExactly({ uuid: clinic._id })).to.be.true;
     });
   });
 
@@ -283,6 +311,9 @@ describe('DeleteDocs service', () => {
       }
       expect(isCircularAfter).to.equal(false);
       expect(bulkDocs.args[0][0].length).to.equal(1);
+      expect(getDataContext.calledOnceWithExactly()).to.be.true;
+      expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+      expect(getContact.notCalled).to.be.true;
     });
   });
 });
