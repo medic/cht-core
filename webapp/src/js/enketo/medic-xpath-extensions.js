@@ -97,30 +97,30 @@ const asMoment = (r) => {
     return moment(date);
   };
   switch (r.t) {
-  case 'bool':
-    return moment(NaN);
-  case 'date':
-    return moment(r.v);
-  case 'num':
-    return dateSinceUnixEpoch(r.v);
-  case 'arr':
-  default: {
-    r = asString(r);
-    if (RAW_NUMBER.test(r)) {
-      return dateSinceUnixEpoch(parseInt(r, 10));
-    }
-    const rMoment = moment(r);
-    if (DATE_STRING.test(r) && rMoment.isValid()) {
-      if (r.indexOf('T')) {
-        return rMoment;
+    case 'bool':
+      return moment(NaN);
+    case 'date':
+      return moment(r.v);
+    case 'num':
+      return dateSinceUnixEpoch(r.v);
+    case 'arr':
+    default: {
+      r = asString(r);
+      if (RAW_NUMBER.test(r)) {
+        return dateSinceUnixEpoch(parseInt(r, 10));
       }
+      const rMoment = moment(r);
+      if (DATE_STRING.test(r) && rMoment.isValid()) {
+        if (r.indexOf('T')) {
+          return rMoment;
+        }
 
-      const rDate = rMoment.format('YYYY-MM-DD');
-      const time = `${rDate}T00:00:00.000${getTimezoneOffsetAsTime(new Date(rDate))}`;
-      return moment(time);
+        const rDate = rMoment.format('YYYY-MM-DD');
+        const time = `${rDate}T00:00:00.000${getTimezoneOffsetAsTime(new Date(rDate))}`;
+        return moment(time);
+      }
+      return rMoment;
     }
-    return rMoment;
-  }
   }
 };
 
