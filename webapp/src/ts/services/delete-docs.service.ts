@@ -16,11 +16,11 @@ export class DeleteDocsService {
   private utils;
 
   constructor(
-    private changesService:ChangesService,
-    private dbService:DbService,
-    private extractLineageService:ExtractLineageService,
-    private sessionService:SessionService,
-    private chtDatasourceService: CHTDatasourceService
+    private readonly changesService:ChangesService,
+    private readonly dbService:DbService,
+    private readonly extractLineageService:ExtractLineageService,
+    private readonly sessionService:SessionService,
+    private readonly chtDatasourceService: CHTDatasourceService
   ) {
   }
 
