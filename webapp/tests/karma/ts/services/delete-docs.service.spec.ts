@@ -60,7 +60,7 @@ describe('DeleteDocs service', () => {
         expect(bulkDocs.callCount).to.equal(1);
         expect(err.name).to.equal('errcode2');
         expect(getDataContext.calledOnceWithExactly()).to.be.true;
-        expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+        expect(bind.notCalled).to.be.true;
         expect(getContact.notCalled).to.be.true;
       });
   });
@@ -155,7 +155,7 @@ describe('DeleteDocs service', () => {
       expect(bulkDocs.callCount).to.equal(1);
       expect(bulkDocs.args[0][0][0]).to.deep.equal(expected);
       expect(getDataContext.calledOnceWithExactly()).to.be.true;
-      expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+      expect(bind.notCalled).to.be.true;
       expect(getContact.notCalled).to.be.true;
     });
   });
@@ -190,7 +190,7 @@ describe('DeleteDocs service', () => {
       expect(bulkDocs.args[0][0][0]).to.deep.equal(expected1);
       expect(bulkDocs.args[0][0][1]).to.deep.equal(expected2);
       expect(getDataContext.calledOnceWithExactly()).to.be.true;
-      expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+      expect(bind.notCalled).to.be.true;
       expect(getContact.notCalled).to.be.true;
     });
   });
@@ -210,7 +210,7 @@ describe('DeleteDocs service', () => {
       }));
       expect(bulkDocs.callCount).to.equal(0);
       expect(getDataContext.calledOnceWithExactly()).to.be.true;
-      expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+      expect(bind.notCalled).to.be.true;
       expect(getContact.notCalled).to.be.true;
     });
   });
@@ -231,7 +231,7 @@ describe('DeleteDocs service', () => {
         expect(onProgress.callCount).to.equal(1);
         expect(onProgress.getCall(0).args[0]).to.equal(2);
         expect(getDataContext.calledOnceWithExactly()).to.be.true;
-        expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+        expect(bind.notCalled).to.be.true;
         expect(getContact.notCalled).to.be.true;
       });
   });
@@ -312,7 +312,7 @@ describe('DeleteDocs service', () => {
       expect(isCircularAfter).to.equal(false);
       expect(bulkDocs.args[0][0].length).to.equal(1);
       expect(getDataContext.calledOnceWithExactly()).to.be.true;
-      expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+      expect(bind.notCalled).to.be.true;
       expect(getContact.notCalled).to.be.true;
     });
   });
