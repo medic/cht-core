@@ -13,7 +13,7 @@ const facility = require('../../src/libs/facility');
 const lineage = require('../../src/libs/lineage');
 const passwords = require('../../src/libs/passwords');
 const roles = require('../../src/roles');
-const { Person, Place, Qualifier } = require('@medic/cht-datasource');
+const { Person, Place, Qualifier, Contact } = require('@medic/cht-datasource');
 const { people, places }  = require('@medic/contacts')(config, db, dataContext);
 const COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 
@@ -32,6 +32,7 @@ let clock;
 let addMessage;
 let getPerson;
 let getPlace;
+let getContact;
 const oneDayInMS = 24 * 60 * 60 * 1000;
 
 let service;
@@ -54,9 +55,11 @@ describe('Users service', () => {
     });
     getPerson = sinon.stub();
     getPlace = sinon.stub();
+    getContact = sinon.stub();
     const bind = sinon.stub();
     bind.withArgs(Person.v1.get).returns(getPerson);
     bind.withArgs(Place.v1.get).returns(getPlace);
+    bind.withArgs(Contact.v1.get).returns(getContact);
     dataContext.init({ bind });
     lineage.init(require('@medic/lineage')(Promise, db.medic));
     addMessage = sinon.stub();
@@ -2036,7 +2039,6 @@ describe('Users service', () => {
           password: 'Sup3rSecret!',
         },
       ];
-      const medicGet = db.medic.get;
       const medicPut = db.medic.put;
       const medicQuery = db.medic.query;
       const usersPut = db.users.put;
@@ -2044,11 +2046,11 @@ describe('Users service', () => {
       service.__set__('storeUpdatedPlace', sinon.stub().resolves());
       sinon.stub(roles, 'hasAllPermissions').returns(false);
       sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
-      medicGet.withArgs('user1')
-        .onFirstCall().rejects({ status: 404 })
+      getContact.withArgs(Qualifier.byUuid('user1'))
+        .onFirstCall().resolves(null)
         .onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 })
-        .withArgs('user2')
-        .onFirstCall().rejects({ status: 404 })
+        .withArgs(Qualifier.byUuid('user2'))
+        .onFirstCall().resolves(null)
         .onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 });
       usersPut.callsFake(user => Promise.resolve({ id: user._id, rev: 1 }));
       medicQuery.resolves({ rows: [] });
@@ -2283,7 +2285,12 @@ describe('Users service', () => {
         password: 'password.123'
       };
 
-      db.medic.get.withArgs('h').resolves({ parent: { _id: 'u', parent: { _id: 't' } } });
+      getContact.withArgs(Qualifier.byUuid('h')).resolves({
+        _id: 'h',
+        type: 'person',
+        parent: { _id: 'u', parent: { _id: 't' } }
+      });
+
 
       await chai.expect(service.createMultiFacilityUser(data))
         .to.be.eventually.rejectedWith(Error)
@@ -2333,7 +2340,11 @@ describe('Users service', () => {
         roles: ['national-manager'],
         password: 'password.123'
       };
-      db.medic.get.withArgs('h').resolves({ parent: { _id: 'u', parent: { _id: 'z' } } });
+      getContact.withArgs(Qualifier.byUuid('h')).resolves({
+        _id: 'h',
+        type: 'person',
+        parent: { _id: 'u', parent: { _id: 'x' } }
+      });
 
       await service.createMultiFacilityUser(userData);
       chai.expect(db.medic.put.args).to.deep.equal([[{
@@ -2376,7 +2387,12 @@ describe('Users service', () => {
         roles: ['national-manager'],
         password: 'password.123'
       };
-      db.medic.get.withArgs('h').resolves({ parent: { _id: 'u', parent: { _id: 'x' } } });
+      getContact.withArgs(Qualifier.byUuid('h')).resolves({
+        _id: 'h',
+        type: 'person',
+        parent: { _id: 'u', parent: { _id: 'x' } }
+      });
+
 
       await service.createMultiFacilityUser(userData);
       chai.expect(db.medic.put.args).to.deep.equal([[{
@@ -2432,14 +2448,7 @@ describe('Users service', () => {
       };
       service.__set__('validateNewUsername', sinon.stub().resolves());
       service.__set__('createPlace', sinon.stub().resolves());
-      db.medic.get.resolves({
-        _id: 'def',
-        type: 'person',
-        name: 'greg',
-        parent: {
-          _id: 'efg'
-        }
-      });
+      getContact.withArgs(Qualifier.byUuid('def')).resolves({ _id: 'def', type: 'person', parent: { _id: 'efg' } });
       sinon.stub(people, 'isAPerson').returns(true);
       return service.createUser(userData).catch(err => {
         chai.expect(err.code).to.equal(400);
@@ -2458,14 +2467,7 @@ describe('Users service', () => {
       };
       service.__set__('validateNewUsername', sinon.stub().resolves());
       service.__set__('createPlace', sinon.stub().resolves());
-      db.medic.get.resolves({
-        _id: 'def',
-        type: 'person',
-        name: 'greg',
-        parent: {
-          _id: 'efg'
-        }
-      });
+      getContact.withArgs(Qualifier.byUuid('def')).resolves({ _id: 'def', type: 'person', parent: { _id: 'efg' } });
       sinon.stub(people, 'isAPerson').returns(true);
       service.__set__('createContact', sinon.stub().resolves());
       service.__set__('storeUpdatedPlace', sinon.stub().resolves());
@@ -2984,7 +2986,11 @@ describe('Users service', () => {
 
       db.users.get.resolves({ facility_id: ['maine'], contact_id: 'june' });
       db.medic.get.withArgs('org.couchdb.user:paul').resolves({ facility_id: ['maine'], contact_id: 'june' });
-      db.medic.get.withArgs('maricica').resolves({ _id: 'maricica', type: 'person', parent: { _id: 'maine' } });
+      getContact.withArgs(Qualifier.byUuid('maricica')).resolves({ 
+        _id: 'maricica', 
+        type: 'person', 
+        parent: { _id: 'maine' } 
+      });
       sinon.stub(people, 'isAPerson').returns(true);
 
       sinon.stub(roles, 'hasAllPermissions').returns(true);
@@ -4209,7 +4215,7 @@ describe('Users service', () => {
       sinon.stub(roles, 'hasAllPermissions').returns(true);
       db.medic.put.resolves({ id: 'success' });
       db.users.put.resolves({ id: 'success' });
-      db.medic.get.withArgs('h').resolves(userContact);
+      getContact.withArgs(Qualifier.byUuid('h')).resolves(userContact);
     });
 
     describe('createMultiFacilityUser', () => {
