@@ -1,4 +1,4 @@
-import { Nullable } from '../../libs/core';
+import { isRecord, Nullable } from '../../libs/core';
 import { Doc } from '../../libs/doc';
 import { InvalidArgumentError } from '../../libs/error';
 
@@ -58,4 +58,56 @@ export const addParentToInput = <T extends HasParentOrContact>(
     ...input,
     [key]: value,
   };
+};
+
+/** @internal*/
+export const dehydrateDoc = (lineage:Record<string, unknown>):Record<string, unknown> => {
+  if (isRecord(lineage.parent)){
+    return {
+      _id: lineage._id,
+      parent: dehydrateDoc(lineage.parent)
+    };
+  }
+  return {
+    _id: lineage._id
+  };
+};
+  
+/** @internal*/
+export const isSameLineage = (
+  a: Record<string, unknown> | null | undefined,
+  b: Record<string, unknown> | null | undefined
+): boolean => {
+  if (!a && !b) {
+    return true;
+  }
+  if (!a || !b) {
+    return false;
+  }
+
+  if (a._id !== b._id) {
+    return false;
+  }
+
+  const aParent = a.parent as Record<string, unknown> | undefined;
+  const bParent = b.parent as Record<string, unknown> | undefined;
+  return isSameLineage(aParent, bParent);
+};
+
+/** @internal*/
+export const ensureHasRequiredImmutableFields=(
+  fields:Set<string>, 
+  originalDoc: Doc, 
+  updateInput:Record<string, unknown>
+):void => {
+  // ensure required immutable fields have the same value as the original doc.
+  for (const field of Array.from(fields)) {
+    if (updateInput[field] !== originalDoc[field]){
+      throw new InvalidArgumentError(
+        `Value ${JSON.stringify(
+          updateInput[field]
+        )} of immutable field '${field}' does not match with the original doc`
+      );
+    }
+  }
 };

@@ -525,7 +525,11 @@ describe('local person', () => {
       it('updates doc for valid update input', async() => {
         const updateDocInput = {
           type: 'person',
-          parent: 'p1',
+          parent: {
+            _id: '1', parent: {
+              _id: '2'
+            }
+          },
           name: 'apoorva2',
           _id: '1',
           _rev: '1'
@@ -566,10 +570,13 @@ describe('local person', () => {
       it('deletes keys from original doc if they are not required', async() => {
         const updateDocInput = {
           type: 'person',
-          parent: 'p1',
+          parent: {
+            _id: 'p1'
+          },
           name: 'apoorva2',
           _id: '1',
           _rev: '1',
+          reported_date: 12312312
         };
 
         const originalDoc = {...updateDocInput, hobby: 'skating', sex: 'male', reported_date: 12312312};

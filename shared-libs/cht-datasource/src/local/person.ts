@@ -1,6 +1,6 @@
 import { Doc, isDoc } from '../libs/doc';
 import contactTypeUtils, { getContactTypes } from '@medic/contact-types-utils';
-import { hasField, isNonEmptyArray, Nullable, Page } from '../libs/core';
+import { hasField, isNonEmptyArray, NormalizedParent, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
 import { createDoc, fetchAndFilter, getDocById, queryDocsByKey, updateDoc } from './libs/doc';
@@ -11,7 +11,8 @@ import {
   getLineageDocsById,
 } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
-import { addParentToInput, getUpdatedFields, validateCursor } from './libs/core';
+import { addParentToInput, dehydrateDoc, ensureHasRequiredImmutableFields, 
+  isSameLineage, validateCursor } from './libs/core';
 import { PersonInput } from '../input';
 
 /** @internal */
@@ -194,6 +195,30 @@ export namespace v1 {
     };
   };
 
+  type UpdatePersonInput = Omit<PersonInput, 'parent'> & {
+    parent: NormalizedParent,
+    contact_type: string
+  };
+
+  const validateUpdatePersonPayload = (originalDoc: Person.v1.Person, updatePersonInput: Record<string, unknown>) => {
+    ensureHasRequiredImmutableFields(new Set(['_rev', '_id', 'reported_date']), originalDoc, updatePersonInput);
+    if (!hasField(updatePersonInput, {type: 'object', name: 'parent', ensureTruthyValue: true})){
+      throw new InvalidArgumentError(
+        `Value ${JSON.stringify(
+          updatePersonInput.parent
+        )} of immutable field 'parent' does not match with the original doc`
+      );
+    }
+    if (!isSameLineage(
+      updatePersonInput.parent as unknown as Record<string, unknown>,
+      originalDoc.parent
+    )){
+      throw new InvalidArgumentError('Lineage does not match with the lineage of the doc in the db');
+    } 
+    const dehydratedUpdatePersonInput = dehydrateDoc(updatePersonInput);
+    return {...updatePersonInput, parent: dehydratedUpdatePersonInput.parent} as UpdatePersonInput;
+  };
+  
   /** @internal*/
   export const updatePerson = ({
     medicDb,
@@ -201,7 +226,7 @@ export namespace v1 {
   }:LocalDataContext) => {
     const updatePerson = updateDoc(medicDb);
     const getPerson = get({medicDb, settings} as LocalDataContext);
-    return async(personInput: PersonInput):Promise<Nullable<Doc>> => {
+    return async(personInput: Record<string, unknown>):Promise<Nullable<Doc>> => {
       if (!isDoc(personInput)){
         throw new InvalidArgumentError(`Document for update is not a valid Doc ${JSON.stringify(personInput)}`);
       }
@@ -212,13 +237,8 @@ export namespace v1 {
       if (personInput._rev !== originalDoc._rev) {
         throw new InvalidArgumentError('`_rev` does not match');
       }
-      const originalDocDeepCopy = JSON.parse(JSON.stringify(originalDoc)) as unknown as Person.v1.Person;
-      const ignoredFields = new Set(['_id', '_rev', 'parent', 'reported_date']);
-      const updatedFields = getUpdatedFields(originalDocDeepCopy, personInput, ignoredFields);
-      const updatedDoc = {
-        ...originalDocDeepCopy, ...updatedFields
-      };
-      return await updatePerson(updatedDoc);
+      personInput = validateUpdatePersonPayload(originalDoc, personInput);
+      return await updatePerson(personInput);
     };
   };
 }
