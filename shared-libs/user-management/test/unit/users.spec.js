@@ -2343,7 +2343,7 @@ describe('Users service', () => {
       getContact.withArgs(Qualifier.byUuid('h')).resolves({
         _id: 'h',
         type: 'person',
-        parent: { _id: 'u', parent: { _id: 'x' } }  // ✅ matches place: ['x']
+        parent: { _id: 'u', parent: { _id: 'x' } }
       });
 
       await service.createMultiFacilityUser(userData);
