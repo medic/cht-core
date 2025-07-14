@@ -1,0 +1,21 @@
+name: 'Close stale issues and PRs'
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+permissions:
+  actions: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          stale-pr-message: 'This PR is now marked "stale" after 30 days without activity. It will be closed automatically in 10 days unless you add a comment, push new changes or remove the "stale" label.'
+          days-before-pr-stale: 30
+          days-before-pr-close: 10
+          days-before-issue-stale: -1 # don't mark issues as stale
+          days-before-issue-close: -1 # don't close stale issues

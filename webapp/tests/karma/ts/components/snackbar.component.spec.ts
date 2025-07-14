@@ -59,7 +59,7 @@ describe('SnackbarComponent', () => {
     expect(getElement('#snackbar.active')).to.not.exist;
   });
 
-  it('should display the snackbar with a message and then hide it', fakeAsync(async () => {
+  it('should display the snackbar with a message and then hide it', fakeAsync(() => {
     const message = 'important message';
     component.ngOnInit();
     store.overrideSelector(Selectors.getSnackbarContent, { message, action: undefined });
@@ -87,7 +87,7 @@ describe('SnackbarComponent', () => {
     expect(getElement('#snackbar.active')).to.not.exist;
   }));
 
-  it('should display the snackbar with a clickable action', async () => {
+  it('should display the snackbar with a clickable action', () => {
     const message = 'important message';
     const action = { label: 'click me', onClick: sinon.stub() };
     component.ngOnInit();
@@ -107,7 +107,7 @@ describe('SnackbarComponent', () => {
     expect(action.onClick.callCount).to.equal(1);
   });
 
-  it('should display the snackbar with a message and queue another one', fakeAsync(async () => {
+  it('should display the snackbar with a message and queue another one', fakeAsync(() => {
     const firstMessage = 'first message';
     const secondMessage = 'second message';
 
@@ -146,7 +146,7 @@ describe('SnackbarComponent', () => {
     expect(getElement('#snackbar.active')).to.not.exist;
   }));
 
-  it('should display the snackbar with a message and queue two others', fakeAsync(async () => {
+  it('should display the snackbar with a message and queue two others', fakeAsync(() => {
     const firstMessage = 'first message';
     const secondMessage = 'second message';
     const thirdMessage = 'third message';

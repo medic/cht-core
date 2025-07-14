@@ -57,7 +57,7 @@ describe('Deduplicate', () => {
   let service;
   let telemetryService;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     telemetryService = {
       record: sinon.stub(),
     };

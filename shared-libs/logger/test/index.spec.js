@@ -20,7 +20,6 @@ describe('logger test', () => {
     const logger = rewire('../src/index');
     expect(winston.createLogger.callCount).to.equal(0);
     logger.info('test');
-    // eslint-disable-next-line no-console
     expect(console.info.args).to.deep.equal([['test']]);
   });
 
@@ -32,7 +31,6 @@ describe('logger test', () => {
 
     expect(winston.createLogger.callCount).to.equal(1);
     logger.info('test');
-    // eslint-disable-next-line no-console
     expect(console.info.callCount).to.equal(0);
   });
 
