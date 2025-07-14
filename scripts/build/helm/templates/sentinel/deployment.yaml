@@ -9,12 +9,12 @@ spec:
   selector:
     matchLabels:
       cht.service: sentinel
+  strategy: {}
   template:
     metadata:
       labels:
         cht.service: sentinel
     spec:
-      terminationGracePeriodSeconds: 0
       containers:
         - env:
             - name: API_HOST
@@ -26,6 +26,9 @@ spec:
                   key: COUCH_URL
             - name: API_PORT
               value: '5988'
-          image: {{ .Values.upstream_servers.docker_registry }}/cht-sentinel:{{ .Values.cht_image_tag }}
+          image: '{{ .Values.upstream_servers.docker_registry }}/cht-sentinel:{{ .Values.cht_image_tag }}'
+          {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
           name: cht-sentinel
+          resources: {}
       restartPolicy: Always
+status: {}

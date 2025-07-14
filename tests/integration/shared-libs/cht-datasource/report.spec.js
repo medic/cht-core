@@ -6,21 +6,39 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const {expect} = require('chai');
 const {setAuth, removeAuth} = require('./auth');
+const uuid = require('uuid').v4;
 
 describe('cht-datasource Report', () => {
-  const contact0 = utils.deepFreeze(personFactory.build({name: 'contact0', role: 'chw'}));
+  const contact0Id = uuid();
   const contact1 = utils.deepFreeze(personFactory.build({name: 'contact1', role: 'chw_supervisor'}));
   const contact2 = utils.deepFreeze(personFactory.build({name: 'contact2', role: 'program_officer'}));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
   const place1 = utils.deepFreeze({...placeMap.get('health_center'), contact: {_id: contact1._id}});
   const place2 = utils.deepFreeze({...placeMap.get('district_hospital'), contact: {_id: contact2._id}});
   const place0 = utils.deepFreeze({
-    ...placeMap.get('clinic'), contact: {_id: contact0._id}, parent: {
-      _id: place1._id, parent: {
+    ...placeMap.get('clinic'),
+    contact: {_id: contact0Id},
+    parent: {
+      _id: place1._id,
+      parent: {
         _id: place2._id
       }
     },
   });
+  const contact0 = utils.deepFreeze(personFactory.build({
+    _id: contact0Id,
+    name: 'contact0',
+    role: 'chw',
+    parent: {
+      _id: place0._id,
+      parent: {
+        _id: place1._id,
+        parent: {
+          _id: place2._id
+        }
+      },
+    }
+  }));
   const patient = utils.deepFreeze(personFactory.build({
     parent: {
       _id: place0._id, parent: {
@@ -28,12 +46,12 @@ describe('cht-datasource Report', () => {
           _id: place2._id
         }
       },
-    }, phone: '1234567890', role: 'patient', short_name: 'Mary'
+    }, phone: '1234567890', role: 'patient', short_name: 'Mary', patient_id: uuid()
   }));
   const report0 = utils.deepFreeze(reportFactory.report().build({
     form: 'report0'
   }, {
-    patient, submitter: contact0
+    patient, submitter: contact0, place: place0
   }));
   const report1 = utils.deepFreeze(reportFactory.report().build({
     form: 'report1'
@@ -128,6 +146,44 @@ describe('cht-datasource Report', () => {
       });
     });
 
+    describe('getWithLineage', async () => {
+      const getReportWithLineage = Report.v1.getWithLineage(dataContext);
+
+      it('should return the report with contact lineage matching the provided UUID', async () => {
+        const resReport = await getReportWithLineage(Qualifier.byUuid(report0._id));
+
+        const expectedPlaceLineage = {
+          ...place0,
+          contact: contact0,
+          parent: {
+            ...place1,
+            contact: contact1,
+            parent: {
+              ...place2,
+              contact: contact2,
+            }
+          }
+        };
+        expect(resReport).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+          ...report0,
+          contact: {
+            ...contact0,
+            parent: expectedPlaceLineage
+          },
+          patient: {
+            ...patient,
+            parent: expectedPlaceLineage
+          },
+          place: expectedPlaceLineage,
+        });
+      });
+
+      it('returns null when no report is found for the UUID', async () => {
+        const report = await getReportWithLineage(Qualifier.byUuid('invalid-uuid'));
+        expect(report).to.be.null;
+      });
+    });
+    
     describe('getUuidsPage', async () => {
       const getUuidsPage = Report.v1.getUuidsPage(dataContext);
       const freetext = 'report';

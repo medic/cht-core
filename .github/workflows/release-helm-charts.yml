@@ -1,0 +1,64 @@
+name: Release Helm Charts
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  package-helm-charts:
+    name: Package Helm Charts
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4.1.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.15'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Helm Chart
+        working-directory: scripts/build/helm
+        run: |
+          TAG_VERSION="${GITHUB_REF#refs/tags/}"
+          TAG_VERSION="${TAG_VERSION#v}"
+          sed -i "s/version: .*/version: $TAG_VERSION/" Chart.yaml
+          sed -i "s/appVersion: .*/appVersion: \"$TAG_VERSION\"/" Chart.yaml
+          sed -i "s/{{cht_version}}/$TAG_VERSION/g" values/base.yaml
+          sed -i "s/{{cht_image_tag}}/$TAG_VERSION/g" values/base.yaml
+
+      - name: Package Helm Chart
+        working-directory: scripts/build/helm
+        run: |
+          mkdir -p ../../helm-packages
+          helm package . --destination ../../helm-packages
+          ls -la ../../helm-packages/
+
+      - name: Create Release Assets
+        run: |
+          mkdir -p release-assets
+          cp helm-packages/*.tgz release-assets/
+          ls -la release-assets/
+
+      - name: Upload Release Assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: helm-charts-${{ github.ref_name }}
+          path: release-assets/
+          retention-days: 30
+
+      - name: Attach Helm Chart to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 

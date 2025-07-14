@@ -1,0 +1,27 @@
+# Test files and directories
+tests/
+test-release.sh
+validate-templates.sh
+
+# Backup and template files
+*.bak
+*.template
+Chart.yaml.template
+
+# Development files
+.git/
+.gitignore
+README.md
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log 

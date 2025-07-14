@@ -4,7 +4,7 @@ const dataContext = require('../data-context');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const utils = require('../lib/utils');
 const contactTypesUtils = require('@medic/contact-types-utils');
-const { Person, Qualifier } = require('@medic/cht-datasource');
+const { Contact, Person, Qualifier } = require('@medic/cht-datasource');
 const NAME = 'update_clinics';
 const FACILITY_NOT_FOUND = 'sys.facility_not_found';
 
@@ -58,6 +58,7 @@ const getContactByPhone = doc => {
     limit: 1,
   };
 
+  const getContactWithLineage = dataContext.bind(Contact.v1.getWithLineage);
   return db.medic
     .query('medic-client/contacts_by_phone', params)
     .then(data => {
@@ -65,7 +66,7 @@ const getContactByPhone = doc => {
         return;
       }
 
-      return lineage.fetchHydratedDoc(data.rows[0].id);
+      return getContactWithLineage(Qualifier.byUuid(data.rows[0].id));
     });
 };
 

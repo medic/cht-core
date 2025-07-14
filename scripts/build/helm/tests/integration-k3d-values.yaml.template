@@ -1,0 +1,29 @@
+project_name: "{{project_name}}"
+namespace: "{{namespace}}"
+chtversion: "{{chtversion}}"
+cht_image_tag: "{{cht_image_tag}}"
+
+# Upstream server configuration
+upstream_servers:
+  docker_registry:  "{{repo}}"
+
+# CouchDB Settings
+couchdb:
+  password: "{{password}}"
+  secret: "{{secret}}"
+  user: "{{user}}"
+  uuid: "{{uuid}}"
+  db_name: "medic-test"
+  couchdb_node_storage_size: "100Mi"
+  storage_class: "local-path"
+
+# CouchDB data configuration
+couchdb_data:
+  preExistingDataAvailable: false
+
+# Local storage paths
+local_storage:
+  preExistingDiskPath-1: "{{{data_path}}}/srv1"
+  preExistingDiskPath-2: "{{{data_path}}}/srv2"
+  preExistingDiskPath-3: "{{{data_path}}}/srv3"
+

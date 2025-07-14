@@ -1,9 +1,9 @@
 const transitionUtils = require('./utils');
 const config = require('../config');
 const db = require('../db');
-const lineage = require('@medic/lineage')(Promise, db.medic);
 const NAME = 'self_report';
-
+const { Contact, Qualifier } = require('@medic/cht-datasource');
+const dataContext = require('../data-context');
 const getConfig = () => config.get(NAME) || [];
 
 const getConfiguredForm = (form) => form && getConfig().find(item => item && item.form === form);
@@ -25,6 +25,7 @@ module.exports = {
   onMatch: change => {
     const doc = change.doc;
     const formConfig = getConfiguredForm(doc.form);
+    const getContactWithLineage = dataContext.bind(Contact.v1.getWithLineage);
 
     return db.medic
       .query('medic-client/contacts_by_phone', { key: String(doc.from) })
@@ -34,7 +35,7 @@ module.exports = {
           return true;
         }
 
-        return lineage.fetchHydratedDoc(result.rows[0].id).then(patient => {
+        return getContactWithLineage(Qualifier.byUuid(result.rows[0].id)).then(patient => {
           doc.patient = patient;
 
           if (!doc.fields) {

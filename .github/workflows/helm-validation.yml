@@ -1,0 +1,31 @@
+name: Helm Template Validation
+
+on:
+  push:
+    paths:
+      - 'scripts/build/helm/**'
+      - '.github/workflows/helm-validation.yml'
+  pull_request:
+    paths:
+      - 'scripts/build/helm/**'
+      - '.github/workflows/helm-validation.yml'
+
+jobs:
+  validate-helm-templates:
+    name: Validate Helm Templates
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4.1.0
+
+      - name: Validate Helm Templates
+        working-directory: scripts/build/helm
+        run: |
+          echo "Running Helm template validation..."
+          ./validate-templates.sh
+

@@ -14,6 +14,7 @@ import {
 import { Doc } from '../../libs/doc';
 import { getDocsByIds, queryDocsByRange } from './doc';
 import logger from '@medic/logger';
+import lineageFactory from '@medic/lineage';
 
 /**
  * Returns the identified document along with the parent documents recorded for its lineage. The returned array is
@@ -119,5 +120,20 @@ export const getContactLineage = (medicDb: PouchDB.Database<Doc>) => {
       contactsWithHydratedPrimaryContact[0] as Contact.v1.Contact,
       contactsWithHydratedPrimaryContact.slice(1)
     ));
+  };
+};
+
+/** @internal */
+export const fetchHydratedDoc = (medicDb: PouchDB.Database<Doc>): (uuid: string) => Promise<Nullable<Doc>> => {
+  const { fetchHydratedDoc } = lineageFactory(Promise, medicDb);
+  return async (uuid: string) => {
+    try {
+      return (await fetchHydratedDoc(uuid) as Doc);
+    } catch (e: unknown) {
+      if ((e as PouchDB.Core.Error).status === 404) {
+        return null;
+      }
+      throw e;
+    }
   };
 };

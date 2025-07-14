@@ -6,12 +6,13 @@ import {
   queryDocUuidsByRange
 } from './libs/doc';
 import { FreetextQualifier, UuidQualifier, isKeyedFreetextQualifier } from '../qualifier';
-import { Nullable, Page } from '../libs/core';
+import { Nullable, Page} from '../libs/core';
 import * as Report from '../report';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
 import { normalizeFreetext, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
+import { fetchHydratedDoc } from './libs/lineage';
 
 /** @internal */
 export namespace v1 {
@@ -41,6 +42,19 @@ export namespace v1 {
         return null;
       }
       return doc;
+    };
+  };
+
+  /** @internal */
+  export const getWithLineage = ({ medicDb }: LocalDataContext) => {
+    const fetchHydratedMedicDoc = fetchHydratedDoc(medicDb);
+    return async (identifier: UuidQualifier): Promise<Nullable<Report.v1.ReportWithLineage>> => {
+      const report = await fetchHydratedMedicDoc(identifier.uuid);
+      if (!isReport(report, identifier.uuid)) {
+        return null;
+      }
+
+      return report;
     };
   };
 

@@ -1,3 +1,5 @@
+{{- /* This service is only used for local development and CI testing with k3s */ -}}
+{{- if eq .Values.environment "local" }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -11,3 +13,4 @@ spec:
       port: 443
       targetPort: webhook
       appProtocol: https
+{{- end }}
