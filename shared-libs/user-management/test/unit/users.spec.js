@@ -2039,7 +2039,6 @@ describe('Users service', () => {
           password: 'Sup3rSecret!',
         },
       ];
-      const medicGet = db.medic.get;
       const medicPut = db.medic.put;
       const medicQuery = db.medic.query;
       const usersPut = db.users.put;
@@ -2047,11 +2046,11 @@ describe('Users service', () => {
       service.__set__('storeUpdatedPlace', sinon.stub().resolves());
       sinon.stub(roles, 'hasAllPermissions').returns(false);
       sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
-      medicGet.withArgs('user1')
-        .onFirstCall().rejects({ status: 404 })
+      getContact.withArgs(Qualifier.byUuid('user1'))
+        .onFirstCall().resolves(null)
         .onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 })
-        .withArgs('user2')
-        .onFirstCall().rejects({ status: 404 })
+        .withArgs(Qualifier.byUuid('user2'))
+        .onFirstCall().resolves(null)
         .onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 });
       usersPut.callsFake(user => Promise.resolve({ id: user._id, rev: 1 }));
       medicQuery.resolves({ rows: [] });
@@ -2063,18 +2062,6 @@ describe('Users service', () => {
         _rev: 1,
       });
 
-      getContact.withArgs(Qualifier.byUuid('user1')).resolves({
-        _id: 'contact_id',
-        type: 'person',
-        parent: { _id: 'foo' }
-      });
-
-      getContact.withArgs(Qualifier.byUuid('user2')).resolves({
-        _id: 'contact_id',
-        type: 'person',
-        parent: { _id: 'foo' }
-      });
-  
       const response = await service.createUsers(users);
 
       chai.expect(response).to.deep.equal([
@@ -4221,7 +4208,6 @@ describe('Users service', () => {
         roles: ['test-role'],
         oidc_username: 'test',
       };
-      getContact.resolves(userContact);
       validateSsoLogin = sinon
         .stub(ssoLogin, 'validateSsoLogin');
       service.__set__('validateNewUsername', sinon.stub().resolves());
@@ -4229,7 +4215,7 @@ describe('Users service', () => {
       sinon.stub(roles, 'hasAllPermissions').returns(true);
       db.medic.put.resolves({ id: 'success' });
       db.users.put.resolves({ id: 'success' });
-      db.medic.get.withArgs('h').resolves(userContact);
+      getContact.withArgs(Qualifier.byUuid('h')).resolves(userContact);
     });
 
     describe('createMultiFacilityUser', () => {

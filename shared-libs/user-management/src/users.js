@@ -153,6 +153,11 @@ const validateContact = (id, placeID) => {
   const getContact = dataContext.bind(Contact.v1.get);
   return getContact(Qualifier.byUuid(id))
     .then(doc => {
+      if (!doc) {
+        const error404 = new Error(`Contact not found [${id}].`);
+        error404.status = 404;
+        return Promise.reject(error404);
+      }
       if (!people.isAPerson(doc)) {
         return Promise.reject(error400('Wrong type, contact is not a person.', 'contact.type.wrong'));
       }
