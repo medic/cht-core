@@ -87,7 +87,7 @@ export class SessionService {
     }
 
     return this.http
-      .get<{ userCtx: { name:string; roles:string[] } }>('/_session', { responseType: 'json', ...this.httpOptions })
+      .get<{ userCtx: { name: string; roles: string[] } }>('/_session', { responseType: 'json', ...this.httpOptions })
       .toPromise()
       .then(value => {
         const name = value && value.userCtx && value.userCtx.name;

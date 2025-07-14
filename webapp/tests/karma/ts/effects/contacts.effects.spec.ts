@@ -35,7 +35,7 @@ describe('Contacts effects', () => {
   let routeSnapshotService;
   let contactTypesService;
 
-  beforeEach(async() => {
+  beforeEach(() => {
     actions$ = new Observable<Action>();
     const mockedSelectors = [
       { selector: Selectors.getSelectedContact, value: null },

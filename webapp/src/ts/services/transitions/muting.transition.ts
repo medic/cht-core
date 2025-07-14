@@ -428,13 +428,13 @@ export class MutingTransition extends Transition {
 
 
 interface MutingContext {
-  docs:Array<Doc>;
-  reports:Array<Doc>;
-  contacts:Array<Doc>;
-  hydratedDocs:HydratedDocs;
-  mutedTimestamp:string;
+  docs: Array<Doc>;
+  reports: Array<Doc>;
+  contacts: Array<Doc>;
+  hydratedDocs: HydratedDocs;
+  mutedTimestamp: string;
 }
 
 interface HydratedDocs {
-  [uuid:string]:Doc;
+  [uuid:string]: Doc;
 }

@@ -15,7 +15,7 @@ const isLimitedKey = async (key) => {
 const consumeKey = async (key) => {
   try {
     await failedLoginLimit.consume(key);
-  } catch (e) {
+  } catch {
     // ignore - the limit has already been reached
   }
 };

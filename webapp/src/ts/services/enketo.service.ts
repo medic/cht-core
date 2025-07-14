@@ -136,45 +136,57 @@ export class EnketoService {
     }
   }
 
-  private convertContactSummaryToXML(summary) {
-    if (!summary) {
-      return;
-    }
+  private convertContactSummaryToXML(contactSummaries:(ContactSummary|undefined)[]) {
+    const convertSummary = (summary) => {
+      if (!summary) {
+        return;
+      }
+      const xmlStr = pojo2xml({ context: summary });
+      return new DOMParser().parseFromString(xmlStr, 'text/xml');
+    };
 
     try {
-      const xmlStr = pojo2xml({ context: summary.context });
-      return {
-        id: 'contact-summary',
-        xml: new DOMParser().parseFromString(xmlStr, 'text/xml'),
-      };
-    } catch (_) {
-      console.error('Error while converting app_summary.contact_summary.context to xml.');
+      const summaries:ContactSummaryXml[] = [];
+      for (const contactSummary of contactSummaries) {
+        const contactSummaryXml = convertSummary(contactSummary?.context);
+        if (contactSummary && contactSummaryXml) {
+          summaries.push({
+            id: contactSummary.id,
+            xml: contactSummaryXml
+          });
+        }
+      }
+
+      return summaries;
+    } catch (e) {
+      console.error('Error while converting app_summary.contact_summary.context to xml.', e);
       throw new Error('contact_summary context is misconfigured');
     }
   }
 
-  private async getEnketoForm(wrapper, doc, instanceData, contactSummary, userSettings) {
-    const contactSummaryXML = this.convertContactSummaryToXML(contactSummary);
-    const instanceStr = await this.enketoPrepopulationDataService.get(userSettings, doc.model, instanceData);
+  private async getEnketoForm(xmlFormContext:XmlFormContext, userSettings) {
+    const instanceStr = this.enketoPrepopulationDataService.get(
+      userSettings,
+      xmlFormContext.doc.model,
+      xmlFormContext.instanceData
+    );
     const options: EnketoOptions = {
-      modelStr: doc.model,
+      modelStr: xmlFormContext.doc.model,
       instanceStr: instanceStr,
+      external: this.convertContactSummaryToXML([xmlFormContext.contactSummary, xmlFormContext.userContactSummary]),
     };
-    if (contactSummaryXML) {
-      options.external = [contactSummaryXML];
-    }
-    const form = wrapper.find('form')[0];
+    const form = xmlFormContext.wrapper.find('form')[0];
     return new window.EnketoForm(form, options, { language: userSettings.language });
   }
 
   private renderFromXmls(xmlFormContext: XmlFormContext, userSettings) {
-    const { doc, instanceData, titleKey, wrapper, isFormInModal, contactSummary } = xmlFormContext;
+    const { doc, titleKey, wrapper, isFormInModal } = xmlFormContext;
 
     const formContainer = wrapper.find('.container').first();
     formContainer.html(doc.html.get(0)!);
 
     return this
-      .getEnketoForm(wrapper, doc, instanceData, contactSummary, userSettings)
+      .getEnketoForm(xmlFormContext, userSettings)
       .then((form) => {
         this.currentForm = form;
         const loadErrors = this.currentForm.init();
@@ -272,8 +284,7 @@ export class EnketoService {
 
   private addPopStateHandler(form, $wrapper) {
     $(window).on('popstate.enketo-pagemode', (event: any) => {
-      if (event.originalEvent &&
-        event.originalEvent.state &&
+      if (event.originalEvent?.state &&
         typeof event.originalEvent.state.enketo_page_number === 'number' &&
         $wrapper.find('.container').not(':empty')) {
 
@@ -335,6 +346,7 @@ export class EnketoService {
       titleKey,
       isFormInModal,
       contactSummary: formContext.contactSummary,
+      userContactSummary: formContext.userContactSummary,
     };
     const form = await this.renderFromXmls(xmlFormContext, userSettings);
     const formContainer = xmlFormContext.wrapper.find('.container').first();
@@ -520,7 +532,7 @@ export class EnketoService {
       content_type: 'xml',
       reported_date: Date.now(),
       contact: this.extractLineageService.extract(contact),
-      from: contact && contact.phone
+      from: contact?.phone
     };
   }
 
@@ -599,7 +611,11 @@ export class EnketoService {
   }
 }
 
-interface ContactSummary {
+export interface ContactSummary {
+  id: string;
+  context: Record<string, any>;
+}
+interface ContactSummaryXml {
   id: string;
   xml: Document;
 }
@@ -607,7 +623,7 @@ interface ContactSummary {
 interface EnketoOptions {
   modelStr: string;
   instanceStr: string;
-  external?: ContactSummary[];
+  external: ContactSummaryXml[];
 }
 
 interface XmlFormContext {
@@ -615,13 +631,13 @@ interface XmlFormContext {
     html: JQuery;
     model: string;
     title: string;
-    hasContactSummary: boolean;
   };
   wrapper: JQuery;
   instanceData?: string | Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey?: string;
   isFormInModal?: boolean;
-  contactSummary?: Record<string, any>;
+  contactSummary?: ContactSummary;
+  userContactSummary?: ContactSummary;
 }
 
 export type FormType = 'contact' | 'report' | 'task' | 'training-card';
@@ -635,5 +651,6 @@ export interface EnketoFormContext {
   readonly valuechangeListener?: () => void;
   readonly titleKey?: string;
   readonly isFormInModal?: boolean;
-  readonly contactSummary?: Record<string, any>;
+  readonly contactSummary?: ContactSummary;
+  readonly userContactSummary?: ContactSummary;
 }

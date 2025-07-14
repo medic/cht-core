@@ -299,10 +299,14 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     }
 
     if (action.type === 'contact') {
-      if (action.content?.parent_id) {
+      if (action.content?.parent_id && action.content?.type) {
         this.router.navigate(['/contacts', action.content.parent_id, 'add', action.content.type || '']);
+      } else if (action.content?.type) {
+        this.router.navigate(['/contacts', 'add', action.content.type]);
+      } else if (action.content?.edit_id) {
+        this.router.navigate(['/contacts', action.content.edit_id, 'edit']);
       } else {
-        this.router.navigate(['/contacts', 'add', action.content?.type || '']);
+        this.router.navigate(['/contacts', action.content?.contact?._id ?? '']);
       }
     }
   }

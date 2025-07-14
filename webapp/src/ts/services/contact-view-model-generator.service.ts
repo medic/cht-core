@@ -27,6 +27,7 @@ import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
  *   label: <the translation key that describes this contact's type>
  * }
  */
+
 @Injectable({
   providedIn: 'root'
 })
@@ -330,11 +331,11 @@ export class ContactViewModelGeneratorService {
     model.type = this.contactTypesService.getTypeById(types, typeId);
   }
 
-  getContact(id, options?) {
+  getContact(id:string, options?) {
     return this.ngZone.runOutsideAngular(() => this._getContact(id, options));
   }
 
-  private _getContact(id, options?) {
+  private _getContact(id:string, options?) {
     return Promise
       .all([
         this.contactTypesService.getAll(),
