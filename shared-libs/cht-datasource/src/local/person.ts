@@ -216,7 +216,10 @@ export namespace v1 {
       throw new InvalidArgumentError('Lineage does not match with the lineage of the doc in the db');
     } 
     const dehydratedUpdatePersonInput = dehydrateDoc(updatePersonInput);
-    return {...updatePersonInput, parent: dehydratedUpdatePersonInput.parent} as UpdatePersonInput;
+    return {
+      ...updatePersonInput,
+      ...dehydratedUpdatePersonInput
+    } as UpdatePersonInput;
   };
   
   /** @internal*/
