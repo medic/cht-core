@@ -204,9 +204,9 @@ export namespace v1 {
     ensureHasRequiredImmutableFields(new Set(['_rev', '_id', 'reported_date']), originalDoc, updatePersonInput);
     if (!hasField(updatePersonInput, {type: 'object', name: 'parent', ensureTruthyValue: true})){
       throw new InvalidArgumentError(
-        `Value ${JSON.stringify(
-          updatePersonInput.parent
-        )} of immutable field 'parent' does not match with the original doc`
+        `Missing required field (parent) for ${JSON.stringify(
+          updatePersonInput
+        )}`
       );
     }
     if (!isSameLineage(
