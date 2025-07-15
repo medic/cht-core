@@ -305,6 +305,7 @@ describe('TasksNotificationService', () => {
   it('should get() notifications', async () => {
     const notifications = await service.get();
     expect(notifications).to.be.an('array').that.has.lengthOf(2);
+    expect(authService.has.calledOnceWith('can_get_task_notifications')).to.be.true;
     expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);
     expect(translateService.instant.callCount).to.equal(2);
     expect(consoleErrorMock.callCount).to.equal(0);
