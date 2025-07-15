@@ -309,7 +309,6 @@ describe('TasksNotificationService', () => {
     expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);
     expect(translateService.instant.callCount).to.equal(2);
     expect(consoleErrorMock.callCount).to.equal(0);
-
     notifications.forEach((notification) => {
       const task = getTask(notification._id);
       expect(notification).to.be.an('object');
