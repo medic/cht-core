@@ -91,8 +91,21 @@ export const ensureHasRequiredFields=(
         .stringify(updateInput)}].`);
     }
   }
+};
+
+/** @internal*/
+export const ensureImmutability = (
+  immutableFields:Set<string>, 
+  originalDoc: Doc, 
+  updateInput:Record<string, unknown>,
+):void => {
   for (const field of Array.from(immutableFields)) {
-    if (updateInput[field] !== originalDoc[field]){
+    if (field === 'parent' || field === 'contact'){
+      checkFieldWithLineage(
+        updateInput[field] as Record<string, unknown>,
+        originalDoc[field] as Record<string, unknown>
+      );
+    } else if (updateInput[field] !== originalDoc[field]){
       throw new InvalidArgumentError(
         `Value ${JSON.stringify(
           updateInput[field]
@@ -100,4 +113,17 @@ export const ensureHasRequiredFields=(
       );
     }
   }
+};
+
+/** @internal*/
+const checkFieldWithLineage = (
+  updateInputLineage:Record<string, unknown>, 
+  originalDocLineage: Record<string, unknown>
+) :void => {
+  if (!isSameLineage(
+    updateInputLineage,
+    originalDocLineage
+  )){
+    throw new InvalidArgumentError('Lineage does not match with the lineage of the doc in the db');
+  } 
 };

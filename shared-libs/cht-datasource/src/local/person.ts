@@ -12,7 +12,7 @@ import {
 } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
 import { addParentToInput, dehydrateDoc, ensureHasRequiredFields, 
-  isSameLineage, validateCursor } from './libs/core';
+  ensureImmutability, validateCursor } from './libs/core';
 import { PersonInput } from '../input';
 
 /** @internal */
@@ -201,22 +201,10 @@ export namespace v1 {
   };
 
   const validateUpdatePersonPayload = (originalDoc: Person.v1.Person, updatePersonInput: Record<string, unknown>) => {
-    const immutableRequiredFields = new Set(['_rev', '_id', 'reported_date']);
+    const immutableRequiredFields = new Set(['_rev', '_id', 'reported_date', 'parent']);
     const mutableRequiredFields = new Set(['name', 'type']);
     ensureHasRequiredFields(immutableRequiredFields, mutableRequiredFields, originalDoc, updatePersonInput);
-    if (!hasField(updatePersonInput, {type: 'object', name: 'parent', ensureTruthyValue: true})){
-      throw new InvalidArgumentError(
-        `Missing required field (parent) for [${JSON.stringify(
-          updatePersonInput
-        )}]`
-      );
-    }
-    if (!isSameLineage(
-      updatePersonInput.parent as unknown as Record<string, unknown>,
-      originalDoc.parent
-    )){
-      throw new InvalidArgumentError('Lineage does not match with the lineage of the doc in the db');
-    } 
+    ensureImmutability(immutableRequiredFields, originalDoc, updatePersonInput);
     const dehydratedUpdatePersonInput = dehydrateDoc(updatePersonInput);
     return {
       ...updatePersonInput,

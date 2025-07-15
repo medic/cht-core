@@ -732,8 +732,8 @@ describe('local person', () => {
         getDocByIdInner.resolves(originalDoc);
         await expect(Person.v1.updatePerson(localContext)(updateDocInput))
           .to.be
-          .rejectedWith(`Missing required field (parent) for [${JSON
-            .stringify(updateDocInput)}]`);
+          .rejectedWith(`Missing or empty required field (parent) for [${JSON
+            .stringify(updateDocInput)}].`);
         expect(updateDocInner.called).to.be.false;
       });
 
