@@ -1,5 +1,5 @@
 'use strict';
 
 module.exports = {
-  reporter: ['text-summary', 'html']
+  reporter: ['text-summary']
 };
