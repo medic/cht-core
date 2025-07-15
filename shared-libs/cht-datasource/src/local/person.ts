@@ -11,7 +11,7 @@ import {
   getLineageDocsById,
 } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
-import { addParentToInput, dehydrateDoc, ensureHasRequiredImmutableFields, 
+import { addParentToInput, dehydrateDoc, ensureHasRequiredFields, 
   isSameLineage, validateCursor } from './libs/core';
 import { PersonInput } from '../input';
 
@@ -201,12 +201,14 @@ export namespace v1 {
   };
 
   const validateUpdatePersonPayload = (originalDoc: Person.v1.Person, updatePersonInput: Record<string, unknown>) => {
-    ensureHasRequiredImmutableFields(new Set(['_rev', '_id', 'reported_date']), originalDoc, updatePersonInput);
+    const immutableRequiredFields = new Set(['_rev', '_id', 'reported_date'])
+    const mutableRequiredFields = new Set(['name', 'type'])
+    ensureHasRequiredFields(immutableRequiredFields, mutableRequiredFields, originalDoc, updatePersonInput);
     if (!hasField(updatePersonInput, {type: 'object', name: 'parent', ensureTruthyValue: true})){
       throw new InvalidArgumentError(
-        `Missing required field (parent) for ${JSON.stringify(
+        `Missing required field (parent) for [${JSON.stringify(
           updatePersonInput
-        )}`
+        )}]`
       );
     }
     if (!isSameLineage(

@@ -1,4 +1,4 @@
-import { isRecord, Nullable } from '../../libs/core';
+import { hasField, isRecord, Nullable } from '../../libs/core';
 import { Doc } from '../../libs/doc';
 import { InvalidArgumentError } from '../../libs/error';
 
@@ -74,13 +74,24 @@ export const isSameLineage = (
 };
 
 /** @internal*/
-export const ensureHasRequiredImmutableFields=(
-  fields:Set<string>, 
+export const ensureHasRequiredFields=(
+  immutableFields:Set<string>, 
+  mutableFields:Set<string>, 
   originalDoc: Doc, 
-  updateInput:Record<string, unknown>
+  updateInput:Record<string, unknown>,
 ):void => {
   // ensure required immutable fields have the same value as the original doc.
-  for (const field of Array.from(fields)) {
+  for (const field of [...immutableFields, ...mutableFields]){
+    if (!hasField(updateInput, 
+      {
+        type: typeof originalDoc[field],
+        name: field, 
+        ensureTruthyValue: true})){
+      throw new InvalidArgumentError(`Missing or empty required field (${field}) for [${JSON
+        .stringify(updateInput)}].`);
+    }
+  }
+  for (const field of Array.from(immutableFields)) {
     if (updateInput[field] !== originalDoc[field]){
       throw new InvalidArgumentError(
         `Value ${JSON.stringify(
