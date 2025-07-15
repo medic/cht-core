@@ -1,17 +1,20 @@
 import { LocalDataContext } from './libs/data-context';
 import {
+  createDoc,
   fetchAndFilterUuids,
   getDocById,
   queryDocUuidsByKey,
   queryDocUuidsByRange
 } from './libs/doc';
 import { FreetextQualifier, UuidQualifier, isKeyedFreetextQualifier } from '../qualifier';
-import { Nullable, Page } from '../libs/core';
+import { hasField, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
 import { normalizeFreetext, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
+import { InvalidArgumentError } from '../libs/error';
+import { ReportInput } from '../input';
 
 /** @internal */
 export namespace v1 {
@@ -74,4 +77,38 @@ export namespace v1 {
       return await fetchAndFilterUuids(getDocsFn, limit)(limit, skip);
     };
   };
+
+  /** @internal*/
+  export const createReport = ({
+    medicDb
+  } : LocalDataContext) => {
+    const createReportDoc = createDoc(medicDb);
+    const getReportDoc = getDocById(medicDb);
+    const appendContact = async(
+      input:ReportInput
+    ): Promise<ReportInput> => {
+      const contactWithLineage = await getReportDoc(input.contact);
+      if (contactWithLineage === null){
+        throw new InvalidArgumentError(
+          `Contact with _id ${input.contact} does not exist.`
+        );
+      }
+      input = {
+        ...input, contact: {
+          _id: input.contact,
+          parent: contactWithLineage.parent
+        }
+      } as unknown as ReportInput;
+      return input;
+    };
+    
+    return async (input: ReportInput) :Promise<Report.v1.Report> => {
+      if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
+        throw new InvalidArgumentError('Cannot pass `_rev` when creating a report.');
+      }
+      input = await appendContact(input);
+      return await createReportDoc(input) as Report.v1.Report;
+    };
+  };
+
 }

@@ -1,9 +1,9 @@
 import { Doc } from '../libs/doc';
-import contactTypeUtils from '@medic/contact-types-utils';
-import { isNonEmptyArray, Nullable, Page } from '../libs/core';
+import contactTypeUtils, { getContactTypes } from '@medic/contact-types-utils';
+import { hasField, isNonEmptyArray, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
-import { fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
+import { createDoc, fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
 import {
@@ -12,10 +12,17 @@ import {
 } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
 import { validateCursor } from './libs/core';
+import { PersonInput } from '../input';
 
 /** @internal */
 export namespace v1 {
-  const isPerson = (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is Person.v1.Person => {
+  /** @internal */
+  export const isPerson = (
+    settings: SettingsService
+  ) => (
+    doc: Nullable<Doc>,
+    uuid?: string
+  ): doc is Person.v1.Person => {
     if (!doc) {
       if (uuid) {
         logger.warn(`No person found for identifier [${uuid}].`);
@@ -92,4 +99,101 @@ export namespace v1 {
       )(limit, skip) as Page<Person.v1.Person>;
     };
   };
+
+  
+  /** @internal */
+  export const createPerson = ({
+    medicDb,
+    settings
+  } : LocalDataContext) => {
+    const createPersonDoc = createDoc(medicDb);
+    const getPersonDoc = getDocById(medicDb);
+    const ensureHasValidParentFieldAndReturnParentDoc = async(
+      input:Record<string, unknown>, 
+      contactTypeObject: Record<string, unknown>
+    ): Promise<Nullable<Doc>> => {
+      const parentDoc = await getPersonDoc(input.parent as string);
+      if (parentDoc === null){
+        throw new InvalidArgumentError(
+          `Parent with _id ${input.parent as string} does not exist.` //NoSONAR
+        );
+      }
+      // Check whether parent doc's `contact_type` or `type`(if `contact_type` is absent) 
+      // matches with any of the allowed parents type.
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      const typeToMatch = (parentDoc as PersonInput).contact_type || (parentDoc as PersonInput).type;
+      const parentTypeMatchWithAllowedParents = (contactTypeObject.parents as string[])
+        .find(parent => parent===typeToMatch);
+        
+      if (!(parentTypeMatchWithAllowedParents)) {
+        throw new InvalidArgumentError(
+          `Invalid parent type for [${JSON.stringify(input)}].`
+        );
+      }
+      return parentDoc;
+      
+    };
+
+    const validatePersonParent = async(
+      contactTypeObject: Record<string, unknown>,
+      input:Record<string, unknown>
+    ): Promise<Doc|null> => {
+      if (!hasField(contactTypeObject, {name: 'parents', type: 'object'})) {
+        throw new InvalidArgumentError(
+          `Invalid type of person, cannot have parent for [${JSON.stringify(input)}].`
+        );
+      } else {
+        return await ensureHasValidParentFieldAndReturnParentDoc(input, contactTypeObject);
+      }
+    };
+
+    const appendParent = async(
+      typeFoundInSettingsContactTypes:Record<string, unknown> | undefined,
+      input: PersonInput
+    ) => {
+      let parentDoc: Doc | null = null;
+      if (typeFoundInSettingsContactTypes){
+        parentDoc = await validatePersonParent(typeFoundInSettingsContactTypes, input);
+      } else if (input.parent){
+        parentDoc = await getPersonDoc(input.parent);
+      }
+    
+      if (parentDoc === null){
+        throw new InvalidArgumentError(
+          `Parent with _id ${input.parent} does not exist.`
+        );
+      }
+      input = {...input, parent: {
+        _id: input.parent, parent: parentDoc.parent 
+      } } as unknown as PersonInput;
+      return input;
+    };
+
+    return async (input: PersonInput) :Promise<Person.v1.Person> => {
+      if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
+        throw new InvalidArgumentError('Cannot pass `_rev` when creating a person.');
+      }
+    
+      // This check can only be done when we have the contact_types from LocalDataContext.
+      const allowedContactTypes = getContactTypes(settings.getAll());
+      const typeFoundInSettingsContactTypes = allowedContactTypes.find(type => type.id === input.type);
+      const typeIsHardCodedPersonType = input.type === 'person';
+      if (!typeFoundInSettingsContactTypes && !typeIsHardCodedPersonType) {
+        throw new InvalidArgumentError('Invalid person type.');
+      }
+
+      // Append `contact_type` for newer versions.
+      if (typeFoundInSettingsContactTypes){
+        input={
+          ...input,
+          contact_type: input.type,
+          type: 'contact'
+        } as unknown as PersonInput;
+      }
+
+      input = await appendParent(typeFoundInSettingsContactTypes, input);
+      return await createPersonDoc(input) as Person.v1.Person;
+    };
+  };
 }
+

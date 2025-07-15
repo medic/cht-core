@@ -10,12 +10,16 @@ describe('remote person', () => {
   let getResourceOuter: SinonStub;
   let getResourcesInner: SinonStub;
   let getResourcesOuter: SinonStub;
+  let postResourceOuter: SinonStub;
+  let postResourceInner: SinonStub;
 
   beforeEach(() => {
     getResourceInner = sinon.stub();
     getResourceOuter = sinon.stub(RemoteEnv, 'getResource').returns(getResourceInner);
     getResourcesInner = sinon.stub();
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
+    postResourceInner= sinon.stub();
+    postResourceOuter = sinon.stub(RemoteEnv, 'postResource').returns(postResourceInner);
   });
 
   afterEach(() => sinon.restore());
@@ -100,6 +104,22 @@ describe('remote person', () => {
         expect(result).to.deep.equal([]);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
+      });
+    });
+
+    describe('createPerson', () => {
+      it('creates a person for a valid input', async () => {
+        const personInput = {
+          type: 'person',
+          name: 'user-1',
+          parent: 'p1'
+        };
+        const expected_doc = {...personInput, _id: '2', _rev: '1'};
+        postResourceInner.resolves(expected_doc);
+        const result = await Person.v1.createPerson(remoteContext)(personInput);
+        expect(result).to.deep.equal(expected_doc);
+        expect(postResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
+        expect(postResourceInner.calledOnceWithExactly(personInput)).to.be.true;
       });
     });
   });

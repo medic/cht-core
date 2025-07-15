@@ -1,7 +1,13 @@
 const reportFactory = require('@factories/cht/reports/generic-report');
 const utils = require('@utils');
 const userFactory = require('@factories/cht/users/users');
-const {getRemoteDataContext, Report, Qualifier} = require('@medic/cht-datasource');
+const {
+  getRemoteDataContext,
+  Report,
+  Qualifier,
+  Input,
+  InvalidArgumentError
+} = require('@medic/cht-datasource');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const {expect} = require('chai');
@@ -204,7 +210,7 @@ describe('cht-datasource Report', () => {
         await expect(
           getUuidsPage(Qualifier.byFreetext(freetext), cursor, invalidLimit)
         ).to.be.rejectedWith(
-          `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`
+          {code: 400, error: `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`}
         );
       });
 
@@ -212,7 +218,8 @@ describe('cht-datasource Report', () => {
         await expect(
           getUuidsPage(Qualifier.byFreetext(freetext), invalidCursor, fourLimit)
         ).to.be.rejectedWith(
-          `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          {code: 400,
+            error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`}
         );
       });
     });
@@ -231,6 +238,53 @@ describe('cht-datasource Report', () => {
 
         expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
       });
+    });
+
+    describe('createReport', () => {
+      it('creates a report for a valid input', async () => {
+        const input = {
+          form: 'form-1',
+          type: 'report',
+          contact: contact0._id
+        };
+
+        const updatedInput = {
+          ...input, contact: {
+            _id: contact0._id, parent: contact0.parent
+          }
+        };
+        const reportDoc = await Report.v1.createReport(dataContext)(Input.validateReportInput(input));
+        expect(reportDoc).excluding(['_id', '_rev', 'reported_date',]).to.deep.equal(updatedInput);
+      });
+
+      it('throws error for missing contact', () => {
+        const input = {
+          form: 'form-1',
+          type: 'report',
+        };
+        const action = () => Report.v1.createReport(dataContext)(Input.validateReportInput(input));
+        expect(action).to.throw(
+          InvalidArgumentError,
+          `Missing or empty required field (contact) in [${JSON.stringify(input)}].`
+        );
+      });
+
+      it('throws error for invalid date format via createReport',  () => {
+        const input = {
+          form: 'form-1',
+          type: 'report',
+          reported_date: '112-9909-123'
+        };
+      
+        const action = () => Report.v1.createReport(dataContext)(Input.validateReportInput(input));
+      
+        expect(action).to.throw(
+          InvalidArgumentError,
+          // eslint-disable-next-line max-len
+          `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
+        );
+      });
+      
     });
   });
 });
