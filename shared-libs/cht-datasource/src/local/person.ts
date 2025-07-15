@@ -201,8 +201,8 @@ export namespace v1 {
   };
 
   const validateUpdatePersonPayload = (originalDoc: Person.v1.Person, updatePersonInput: Record<string, unknown>) => {
-    const immutableRequiredFields = new Set(['_rev', '_id', 'reported_date'])
-    const mutableRequiredFields = new Set(['name', 'type'])
+    const immutableRequiredFields = new Set(['_rev', '_id', 'reported_date']);
+    const mutableRequiredFields = new Set(['name', 'type']);
     ensureHasRequiredFields(immutableRequiredFields, mutableRequiredFields, originalDoc, updatePersonInput);
     if (!hasField(updatePersonInput, {type: 'object', name: 'parent', ensureTruthyValue: true})){
       throw new InvalidArgumentError(

@@ -525,6 +525,7 @@ describe('local person', () => {
       it('updates doc for valid update input', async() => {
         const updateDocInput = {
           type: 'person',
+          reported_date: 12312312,
           parent: {
             _id: '1', parent: {
               _id: '2'
@@ -593,6 +594,7 @@ describe('local person', () => {
       it('throw error is _rev does not match with the _rev in the original doc', async() => {
         const updateDocInput = {
           type: 'person',
+          reported_date: 12312312,
           parent: 'p1',
           name: 'apoorva2',
           _id: '1',
@@ -603,6 +605,162 @@ describe('local person', () => {
         getDocByIdInner.resolves(originalDoc);
         await expect(Person.v1.updatePerson(localContext)(updateDocInput))
           .to.be.rejectedWith('`_rev` does not match');
+        expect(updateDocInner.called).to.be.false;
+      });
+
+      it('throw error if parent lineage of input does not match with originalDoc', async() => {
+        const updateDocInput = {
+          type: 'person',
+          parent: {
+            _id: 'p1',
+            parent: {
+              _id: 'p2'
+            }
+          },
+          name: 'apoorva2',
+          _id: '1',
+          _rev: '1',
+          reported_date: 12312312
+        };
+        const originalDoc = {...updateDocInput, parent: {
+          _id: 'p1',
+          parent: {
+            _id: 'p3'
+          }
+        }};
+        getDocByIdInner.resolves(originalDoc);
+        await expect(Person.v1.updatePerson(localContext)(updateDocInput))
+          .to.be
+          .rejectedWith('Lineage does not match with the lineage of the doc in the db');
+        expect(updateDocInner.called).to.be.false;
+      });
+
+      it('throw error if parent lineage depth of input does not match with originalDoc', async() => {
+        const updateDocInput = {
+          type: 'person',
+          reported_date: 12312312,
+          parent: {
+            _id: 'p1',
+            parent: {
+              _id: 'p2'
+            }
+          },
+          name: 'apoorva2',
+          _id: '1',
+          _rev: '1',
+        };
+        const originalDoc = {...updateDocInput, parent: {
+          _id: 'p1',
+          parent: {
+            _id: 'p2',
+            parent: {
+              _id: 'p3'
+            }
+          }
+        }};
+        getDocByIdInner.resolves(originalDoc);
+        await expect(Person.v1.updatePerson(localContext)(updateDocInput))
+          .to.be
+          .rejectedWith('Lineage does not match with the lineage of the doc in the db');
+        expect(updateDocInner.called).to.be.false;
+      });
+      
+      it('throw error for missing required mutable fields', async() => {
+        const updateDocInput = {
+          type: 'person',
+          reported_date: 12312312,
+          parent: {
+            _id: 'p1',
+            parent: {
+              _id: 'p2'
+            }
+          },
+          _id: '1',
+          _rev: '1',
+        };
+        const originalDoc = {
+          ...updateDocInput,
+          name: 'apoorva'
+        };
+        getDocByIdInner.resolves(originalDoc);
+        await expect(Person.v1.updatePerson(localContext)(updateDocInput))
+          .to.be
+          .rejectedWith(`Missing or empty required field (name) for [${JSON
+            .stringify(updateDocInput)}].`);
+        expect(updateDocInner.called).to.be.false;
+      });
+
+      it('throw error for missing required immutable fields other than parent', async() => {
+        const updateDocInput = {
+          type: 'person',
+          name: 'apoorva',
+          parent: {
+            _id: 'p1',
+            parent: {
+              _id: 'p2'
+            }
+          },
+          _id: '1',
+          _rev: '1'
+        };
+        const originalDoc = {
+          ...updateDocInput,
+          reported_date: 12312312,
+        };
+        getDocByIdInner.resolves(originalDoc);
+        await expect(Person.v1.updatePerson(localContext)(updateDocInput))
+          .to.be
+          .rejectedWith(`Missing or empty required field (reported_date) for [${JSON
+            .stringify(updateDocInput)}].`);
+        expect(updateDocInner.called).to.be.false;
+      });
+
+      it('throw error for missing required immutable field: parent', async() => {
+        const updateDocInput = {
+          type: 'person',
+          name: 'apoorva',
+          _id: '1',
+          _rev: '1',
+          reported_date: 555
+        };
+        const originalDoc = {
+          ...updateDocInput,
+          parent: {
+            _id: '-1'
+          },
+        };
+        getDocByIdInner.resolves(originalDoc);
+        await expect(Person.v1.updatePerson(localContext)(updateDocInput))
+          .to.be
+          .rejectedWith(`Missing required field (parent) for [${JSON
+            .stringify(updateDocInput)}]`);
+        expect(updateDocInner.called).to.be.false;
+      });
+
+      it('throw error for updated required immutable fields other than parent', async() => {
+        const updateDocInput = {
+          type: 'person',
+          name: 'apoorva',
+          parent: {
+            _id: 'p1',
+            parent: {
+              _id: 'p2'
+            }
+          },
+          _id: '1',
+          _rev: '1',
+          reported_date: 333444555,
+        };
+        const originalDoc = {
+          ...updateDocInput,
+          reported_date: 12312312,
+        };
+        getDocByIdInner.resolves(originalDoc);
+        await expect(Person.v1.updatePerson(localContext)(updateDocInput))
+          .to.be
+          .rejectedWith(`Value ${
+            updateDocInput.reported_date
+          } of immutable field 'reported_date' does not match with the original doc`);
         expect(updateDocInner.called).to.be.false;
       });
     });
