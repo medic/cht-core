@@ -126,6 +126,22 @@ describe('CHT Script API - getDatasource', () => {
         expect(placeGetAll.calledOnceWithExactly(placeTypeQualifier)).to.be.true;
         expect(byContactType.calledOnceWithExactly(placeType)).to.be.true;
       });
+
+      it('createPlace', async () => {
+        const placeInput = { name: 'p1', type: 'place'};
+        const expectedPlace = {...placeInput,
+          reported_date: 12312312
+        };
+        const placeCreate = sinon.stub().resolves(expectedPlace);
+        dataContextBind.returns(placeCreate);
+        const validatedPlaceInput = sinon.stub(Index.Input, 'validatePlaceInput').returns(expectedPlace);
+
+        const returnedPlace = await place.createPlace(validatedPlaceInput);
+
+        expect(returnedPlace).to.equal(expectedPlace);
+        expect(dataContextBind.calledOnceWithExactly(Place.v1.createPlace)).to.be.true;
+        expect(placeCreate.calledOnceWithExactly(validatedPlaceInput)).to.be.true;
+      });
     });
 
     describe('person', () => {
@@ -157,6 +173,23 @@ describe('CHT Script API - getDatasource', () => {
         expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
       });
+
+      it('createPerson', async () => {
+        const personInput = { name: 'apoorva', type: 'person', parent: 'p1' };
+        const expectedPerson = {...personInput,
+          reported_date: 12312312
+        };
+        const personCreate = sinon.stub().resolves(expectedPerson);
+        dataContextBind.returns(personCreate);
+        const validatedPersonInput = sinon.stub(Index.Input, 'validatePersonInput').returns(expectedPerson);
+
+        const returnedPerson = await person.createPerson(validatedPersonInput);
+
+        expect(returnedPerson).to.equal(expectedPerson);
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.createPerson)).to.be.true;
+        expect(personCreate.calledOnceWithExactly(validatedPersonInput)).to.be.true;
+      });
+
 
       it('getByUuidWithLineage', async () => {
         const expectedPerson = {};
@@ -469,6 +502,23 @@ describe('CHT Script API - getDatasource', () => {
         expect(contactGetIds.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
       });
+
+      it('createReport', async () => {
+        const reportInput = { form: 'apoorva', type: 'report', contact: 'c1' };
+        const expectedReport = {...reportInput,
+          reported_date: 12312312
+        };
+        const reportCreate = sinon.stub().resolves(expectedReport);
+        dataContextBind.returns(reportCreate);
+        const validatedReportInput = sinon.stub(Index.Input, 'validateReportInput').returns(expectedReport);
+
+        const returnedReport = await report.createReport(validatedReportInput);
+
+        expect(returnedReport).to.equal(expectedReport);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.createReport)).to.be.true;
+        expect(reportCreate.calledOnceWithExactly(validatedReportInput)).to.be.true;
+      });
+
     });
   });
 });

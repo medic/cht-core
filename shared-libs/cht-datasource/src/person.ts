@@ -46,16 +46,16 @@ export namespace v1 {
 
   const createPersonDoc =
   <T>(
-      localFn: (c: LocalDataContext) => (input: PersonInput) => Promise<T>,
-      remoteFn: (c: RemoteDataContext) => (input: PersonInput) => Promise<T>
-    ) => (context: DataContext) => {
-      assertDataContext(context);
-      const fn = adapt(context, localFn, remoteFn);
-      return async (input: unknown): Promise<T> => {
-        const personInput = validatePersonInput(input);
-        return fn(personInput);
-      };
+    localFn: (c: LocalDataContext) => (input: PersonInput) => Promise<T>,
+    remoteFn: (c: RemoteDataContext) => (input: PersonInput) => Promise<T>
+  ) => (context: DataContext) => {
+    assertDataContext(context);
+    const fn = adapt(context, localFn, remoteFn);
+    return async (input: unknown): Promise<T> => {
+      const personInput = validatePersonInput(input);
+      return fn(personInput);
     };
+  };
 
   /**
    * Returns a person for the given qualifier.

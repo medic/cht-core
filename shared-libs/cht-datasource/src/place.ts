@@ -46,16 +46,16 @@ export namespace v1 {
   
   const createPlaceDoc =
   <T>(
-      localFn: (c: LocalDataContext) => (input: PlaceInput) => Promise<T>,
-      remoteFn: (c: RemoteDataContext) => (input: PlaceInput) => Promise<T>,
-    ) => (context: DataContext) => {
-      assertDataContext(context);
-      const fn = adapt(context, localFn, remoteFn);
-      return async (input: unknown): Promise<T> => {
-        const placeInput = validatePlaceInput(input);
-        return fn(placeInput);
-      };
+    localFn: (c: LocalDataContext) => (input: PlaceInput) => Promise<T>,
+    remoteFn: (c: RemoteDataContext) => (input: PlaceInput) => Promise<T>,
+  ) => (context: DataContext) => {
+    assertDataContext(context);
+    const fn = adapt(context, localFn, remoteFn);
+    return async (input: unknown): Promise<T> => {
+      const placeInput = validatePlaceInput(input);
+      return fn(placeInput);
     };
+  };
 
   /**
    * Returns a place for the given qualifier.

@@ -169,9 +169,11 @@ describe('input', () => {
   });
 
   describe('isReportInput', () => {
-    it('returns false for missing or empty required fields', () => {
+    it('returns false for missing or empty or invalid required fields', () => {
       [
         {reported_date: 3432433},
+        {type: 'data_record', form: 'yes', contact: 'c1', reported_date: 'Thursday'},
+        {type: 'data_record', form: 'yes', contact: 'c1', reported_date: {day: '1', month: '12'}},
         {type: 'data_record', _id: 'id-1', _rev: 'rev-4'},
         {form: 'yes', _id: 'id-1', _rev: 'rev-4'},
         {type: '', form: 'yes'},
@@ -183,9 +185,9 @@ describe('input', () => {
 
     it('returns true for valid inputs that have required fields and correct date format', () => {
       [
-        {type: 'data_record', _id: 'id-1', _rev: 'rev-4', form: 'yes', reported_date: 3432433},
-        {type: 'data_record', form: 'yes', _id: 'id-1', reported_date: '2025-06-03T12:45:30.222Z'},
-        {type: 'data_record', form: 'yes'}
+        {type: 'data_record', contact: 'c1', _id: 'id-1', _rev: 'rev-4', form: 'yes', reported_date: 3432433},
+        {type: 'data_record', contact: 'c1', form: 'yes', _id: 'id-1', reported_date: '2025-06-03T12:45:30.222Z'},
+        {type: 'data_record', contact: 'c1', form: 'yes'}
       ].forEach((input) => {
         expect(isReportInput(input)).to.be.true;
       });
