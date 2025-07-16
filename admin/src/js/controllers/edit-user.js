@@ -387,7 +387,7 @@ angular
       }
 
       const getParent = (contactId) => {
-        return DB().get(contactId).then(contact => contact.parent);
+        return chtDatasource.v1.contact.getByUuid(contactId).then(contact => contact.parent);
       };
 
       const checkParent = (parent, placeIds) => {
