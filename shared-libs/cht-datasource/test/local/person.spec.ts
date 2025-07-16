@@ -525,6 +525,7 @@ describe('local person', () => {
       it('updates doc for valid update input', async() => {
         const updateDocInput = {
           type: 'person',
+          contact_type: 'person',
           reported_date: 12312312,
           parent: {
             _id: '1', parent: {
@@ -553,6 +554,7 @@ describe('local person', () => {
       it('throws error for non-existent person', async() => {
         const updateDocInput = {
           type: 'person',
+          contact_type: 'person',
           parent: 'p1',
           name: 'apoorva2',
           _id: '1',
@@ -571,6 +573,7 @@ describe('local person', () => {
       it('deletes keys from original doc if they are not required', async() => {
         const updateDocInput = {
           type: 'person',
+          contact_type: 'person',
           parent: {
             _id: 'p1'
           },
@@ -594,6 +597,7 @@ describe('local person', () => {
       it('throw error is _rev does not match with the _rev in the original doc', async() => {
         const updateDocInput = {
           type: 'person',
+          contact_type: 'person',
           reported_date: 12312312,
           parent: 'p1',
           name: 'apoorva2',
@@ -611,6 +615,7 @@ describe('local person', () => {
       it('throw error if parent lineage of input does not match with originalDoc', async() => {
         const updateDocInput = {
           type: 'person',
+          contact_type: 'person',
           parent: {
             _id: 'p1',
             parent: {
@@ -638,6 +643,7 @@ describe('local person', () => {
       it('throw error if parent lineage depth of input does not match with originalDoc', async() => {
         const updateDocInput = {
           type: 'person',
+          contact_type: 'person',
           reported_date: 12312312,
           parent: {
             _id: 'p1',
@@ -668,6 +674,7 @@ describe('local person', () => {
       it('throw error for missing required mutable fields', async() => {
         const updateDocInput = {
           type: 'person',
+          contact_type: 'person',
           reported_date: 12312312,
           parent: {
             _id: 'p1',
@@ -693,6 +700,7 @@ describe('local person', () => {
       it('throw error for missing required immutable fields other than parent', async() => {
         const updateDocInput = {
           type: 'person',
+          contact_type: 'person',
           name: 'apoorva',
           parent: {
             _id: 'p1',
@@ -718,6 +726,7 @@ describe('local person', () => {
       it('throw error for missing required immutable field: parent', async() => {
         const updateDocInput = {
           type: 'person',
+          contact_type: 'person',
           name: 'apoorva',
           _id: '1',
           _rev: '1',
@@ -740,6 +749,7 @@ describe('local person', () => {
       it('throw error for updated required immutable fields other than parent', async() => {
         const updateDocInput = {
           type: 'person',
+          contact_type: 'person',
           name: 'apoorva',
           parent: {
             _id: 'p1',

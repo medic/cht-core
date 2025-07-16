@@ -155,7 +155,8 @@ describe('CHT Script API - getDatasource', () => {
           'getByUuid',
           'getByUuidWithLineage', 
           'getPageByType',
-          'createPerson'
+          'createPerson',
+          'updatePerson'
         ]);
       });
 

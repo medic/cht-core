@@ -500,6 +500,7 @@ app.postJson('/api/v1/people', function(req, res) {
 app.get('/api/v1/person', person.v1.getAll);
 app.get('/api/v1/person/:uuid', person.v1.get);
 app.postJson('/api/v1/person', person.v1.createPerson);
+app.putJson('/api/v1/person', person.v1.updatePerson);
 
 app.get('/api/v1/contact/uuid', contact.v1.getUuids);
 app.get('/api/v1/contact/:uuid', contact.v1.get);

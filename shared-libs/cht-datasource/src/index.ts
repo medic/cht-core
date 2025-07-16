@@ -290,7 +290,15 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created person.
          * @throws InvalidArgumentError if the type of input is not valid for creating a person.
          */
-        createPerson: (input: unknown) => ctx.bind(Person.v1.createPerson)(input)
+        createPerson: (input: unknown) => ctx.bind(Person.v1.createPerson)(input),
+
+        /**
+         * Updates a person.
+         * @param input the object defining the person properties.
+         * @returns the updated person.
+         * @throws InvalidArgumentError if the type of input is not valid for creating a person.
+         */
+        updatePerson: (input: unknown) => ctx.bind(Person.v1.updatePerson)(input)
       },
       report: {
         /**

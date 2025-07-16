@@ -6,11 +6,12 @@ import * as Local from './local';
 import * as Place from './place';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
-import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
+import { getPagedGenerator, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, 
   assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
 import { PersonInput, validatePersonInput } from './input';
+import { InvalidArgumentError } from './libs/error';
 
 /** */
 export namespace v1 {
@@ -57,6 +58,20 @@ export namespace v1 {
     };
   };
 
+  const updatePersonDoc =
+  <T>(
+    localFn: (c: LocalDataContext) => (input: Record<string, unknown>) => Promise<T>,
+    remoteFn: (c: RemoteDataContext) => (input: Record<string, unknown>) => Promise<T>
+  ) => (context: DataContext) => {
+    assertDataContext(context);
+    const fn = adapt(context, localFn, remoteFn);
+    return async (updateInput: unknown): Promise<T> => {
+      if (!isRecord(updateInput)){
+        throw new InvalidArgumentError('Invalid person update input');
+      }
+      return fn(updateInput);
+    };
+  };
   /**
    * Returns a person for the given qualifier.
    * @param context the current data context
@@ -139,4 +154,12 @@ export namespace v1 {
    * @throws Error if a data context is not provided
    */
   export const createPerson = createPersonDoc(Local.Person.v1.createPerson, Remote.Person.v1.createPerson);
+
+  /**
+   * Returns a function for updating a person from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a person.
+   * @throws Error if a data context is not provided
+   */
+  export const updatePerson = updatePersonDoc(Local.Person.v1.updatePerson, Remote.Person.v1.updatePerson);
 }

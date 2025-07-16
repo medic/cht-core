@@ -201,7 +201,7 @@ export namespace v1 {
   };
 
   const validateUpdatePersonPayload = (originalDoc: Person.v1.Person, updatePersonInput: Record<string, unknown>) => {
-    const immutableRequiredFields = new Set(['_rev', '_id', 'reported_date', 'parent']);
+    const immutableRequiredFields = new Set(['_rev', '_id', 'reported_date', 'parent', 'type', 'contact_type']);
     const mutableRequiredFields = new Set(['name', 'type']);
     ensureHasRequiredFields(immutableRequiredFields, mutableRequiredFields, originalDoc, updatePersonInput);
     ensureImmutability(immutableRequiredFields, originalDoc, updatePersonInput);
@@ -219,7 +219,7 @@ export namespace v1 {
   }:LocalDataContext) => {
     const updatePerson = updateDoc(medicDb);
     const getPerson = get({medicDb, settings} as LocalDataContext);
-    return async(personInput: Record<string, unknown>):Promise<Nullable<Doc>> => {
+    return async(personInput: Record<string, unknown>):Promise<Person.v1.Person> => {
       if (!isDoc(personInput)){
         throw new InvalidArgumentError(`Document for update is not a valid Doc ${JSON.stringify(personInput)}`);
       }
@@ -231,7 +231,7 @@ export namespace v1 {
         throw new InvalidArgumentError('`_rev` does not match');
       }
       personInput = validateUpdatePersonPayload(originalDoc, personInput);
-      return await updatePerson(personInput);
+      return await updatePerson(personInput) as Person.v1.Person;
     };
   };
 }
