@@ -187,6 +187,10 @@ app.use(
 );
 app.use(rateLimiterMiddleware);
 app.use(jsonQueryParser);
+app.use((req, res, next) => {
+  req.url = req.url.replace(/\/+/g, '/');
+  next();
+});
 
 app.use(
   helmet({
@@ -275,7 +279,7 @@ app.get(
   (req, res) => res.sendFile(path.join(resources.webappPath, 'appcache-upgrade.html'))
 );
 
-app.all('/medic{/*thing}', (req, res, next) => {
+app.all('/medic{/{*any}}', (req, res, next) => {
   if (environment.db !== 'medic') {
     req.url = req.url.replace(/\/medic\/?/, routePrefix);
   }
@@ -290,7 +294,7 @@ app.all(adminAppPrefix, (req, res, next) => {
   req.url = req.url.replace(adminAppReg, '/admin/');
   next();
 });
-app.all('/admin{/*thing}', authorization.handleAuthErrors, authorization.offlineUserFirewall);
+app.all('/admin{/{*thing}}', authorization.handleAuthErrors, authorization.offlineUserFirewall);
 
 app.use(express.static(resources.staticPath));
 app.use(express.static(resources.webappPath));
@@ -425,11 +429,8 @@ app.post('/api/v1/sms/africastalking/delivery-reports', formParser, africasTalki
 app.post('/api/v1/sms/radpidpro/incoming-messages', jsonParser, rapidPro.incomingMessages);
 app.post('/api/v2/sms/rapidpro/incoming-messages', jsonParser, rapidPro.incomingMessages);
 
-app.get('/api/sms/', (req, res) => res.redirect(301, '/api/sms'));
-app.get('/api/sms', smsGateway.get);
-
-app.post('/api/sms/', (req, res) => res.redirect(301, '/api/sms'));
-app.postJson('/api/sms', smsGateway.post);
+app.get('/api/sms{/}', smsGateway.get);
+app.postJson('/api/sms{/}', smsGateway.post);
 
 app.get('/api/v2/export/:type', exportData.get);
 app.postJson('/api/v2/export/:type', exportData.get);
@@ -437,10 +438,7 @@ app.postJson('/api/v2/export/:type', exportData.get);
 app.post('/api/v1/records', [jsonParser, formParser], records.v1);
 app.post('/api/v2/records', [jsonParser, formParser], records.v2);
 
-app.get('/api/v1/forms/', (req, res) => {
-  res.redirect(301, '/api/v1/forms');
-});
-app.get('/api/v1/forms', forms.list);
+app.get('/api/v1/forms{/}', forms.list);
 app.get('/api/v1/forms/:form', forms.get);
 app.post('/api/v1/forms/validate', textParser, forms.validate);
 
@@ -566,7 +564,7 @@ const onlineUserChangesProxy = _.partial(
 
 // DB replication endpoint
 const changesHandler = require('./controllers/changes').request;
-const changesPath = `${routePrefix}_changes{/*any}`;
+const changesPath = `${routePrefix}_changes{/{*any}}`;
 
 app.get(
   changesPath,
@@ -584,7 +582,7 @@ app.post(
 
 // filter _all_docs requests for offline users
 const allDocsHandler = require('./controllers/all-docs').request;
-const allDocsPath = `${routePrefix}_all_docs{/*any}`;
+const allDocsPath = `${routePrefix}_all_docs{/{*any}}`;
 
 app.get(
   allDocsPath,
@@ -603,7 +601,7 @@ app.post(
 // filter _bulk_get requests for offline users
 const bulkGetHandler = require('./controllers/bulk-get').request;
 app.post(
-  `${routePrefix}_bulk_get{/*any}`,
+  `${routePrefix}_bulk_get{/{*any}}`,
   authorization.handleAuthErrors,
   onlineUserProxy,
   jsonParser,
@@ -613,7 +611,7 @@ app.post(
 // filter _bulk_docs requests for offline users
 // this is an audited endpoint: online and filtered offline requests will pass through to the audit route
 app.post(
-  `${routePrefix}_bulk_docs{/*any}`,
+  `${routePrefix}_bulk_docs{/{*any}}`,
   jsonParser,
   infodoc.mark,
   authorization.handleAuthErrors,
@@ -625,7 +623,7 @@ app.post(
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
 const docPath = `${routePrefix}:docId`;
-const attachmentPath = `${routePrefix}:docId/:attachmentId`;
+const attachmentPath = `${routePrefix}:docId/*attachmentId`;
 const ddocPath = `${routePrefix}_design/:ddocId`;
 
 app.get(
@@ -643,7 +641,7 @@ app.get(
   dbDocHandler.request
 );
 app.post(
-  [`/${environment.db}`, `/${environment.db}/`],
+  `/${environment.db}{/}`,
   jsonParser,
   infodoc.mark,
   authorization.handleAuthErrors,
@@ -696,7 +694,7 @@ app.post(
 
 const metaRoutePrefix = `/${environment.db}-user-*"name"-meta/`;
 
-app.all('/medic-user-*"name"-meta/{*path}', (req, res, next) => {
+app.all('/medic-user-*"name"-meta{/{*path}}', (req, res, next) => {
   if (environment.db !== 'medic') {
     req.url = req.url.replace('/medic-user-', `/${environment.db}-user-`);
   }
