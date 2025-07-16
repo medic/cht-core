@@ -68,7 +68,7 @@ const staticResources = /\/(templates|static)\//;
 // CouchDB is very relaxed in matching routes
 const routePrefix = `/${environment.db}/`;
 const appPrefix = `${routePrefix}_design/${environment.ddoc}/_rewrite/`;
-const adminAppPrefix = `${routePrefix}_design/medic-admin/_rewrite{/*path}`;
+const adminAppPrefix = `${routePrefix}_design/medic-admin/_rewrite{/{*path}}`;
 const adminAppReg = new RegExp(`/${environment.db}/_design/medic-admin/_rewrite/`);
 const serverUtils = require('./server-utils');
 const uuid = require('uuid');
