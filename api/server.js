@@ -6,8 +6,6 @@ const apiPort = process.env.API_PORT || 5988;
 
 let router;
 
-'use strict';
-
 process
   .on('unhandledRejection', reason => {
     logger.error('UNHANDLED REJECTION!');
