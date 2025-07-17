@@ -74,7 +74,7 @@ export const getDatasource = (ctx: DataContext) => {
         /**
          * Returns a contact by their UUID along with the contact's parent lineage.
          * @param uuid the UUID of the contact to retrieve
-         * @returns the contact or `null` if no contact is found the UUID
+         * @returns the contact or `null` if no contact is found for the UUID
          * @throws InvalidArgumentError if no UUID is provided
          */
         getByUuidWithLineage: (uuid: string) => ctx.bind(Contact.v1.getWithLineage)(Qualifier.byUuid(uuid)),
@@ -283,6 +283,14 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws InvalidArgumentError if no UUID is provided
          */
         getByUuid: (uuid: string) => ctx.bind(Report.v1.get)(Qualifier.byUuid(uuid)),
+
+        /**
+         * Returns a report by UUID along with the report's lineage information.
+         * @param uuid the UUID of the report to retrieve
+         * @returns the report or `null` if no report is found for the UUID
+         * @throws InvalidArgumentError if no UUID is provided
+         */
+        getByUuidWithLineage: (uuid: string) => ctx.bind(Report.v1.getWithLineage)(Qualifier.byUuid(uuid)),
 
         /**
          * Returns a paged array of report identifiers from the given data context.
