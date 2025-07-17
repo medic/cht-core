@@ -459,7 +459,7 @@ describe('local report', () => {
         createDocOuter.returns(createDocInner);
         createDocInner.resolves(expected_report);
       
-        const report = await Report.v1.createReport(localContext)(input);
+        const report = await Report.v1.create(localContext)(input);
         expect(report).to.deep.equal(expected_report);
         expect(createDocOuter.calledOnce).to.be.true;
         expect(createDocInner.calledOnceWithExactly(updatedInput)).to.be.true;
@@ -478,7 +478,7 @@ describe('local report', () => {
         
         expect(createDocOuter.calledOnce).to.be.false;
       
-        await expect(Report.v1.createReport(localContext)(input))
+        await expect(Report.v1.create(localContext)(input))
           .to.be.rejectedWith(`Contact with _id ${input.contact} does not exist.`);
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
@@ -492,7 +492,7 @@ describe('local report', () => {
           contact: 'c1'
         };
 
-        await expect(Report.v1.createReport(localContext)(input))
+        await expect(Report.v1.create(localContext)(input))
           .to.be.rejectedWith('Cannot pass `_rev` when creating a report.');
         expect(createDocInner.called).to.be.false;
         expect(createDocOuter.called).to.be.true;

@@ -96,7 +96,7 @@ describe('remote report', () => {
         };
 
         postResourceInner.resolves(input);
-        const reportDoc = await Report.v1.createReport(remoteContext)(input); 
+        const reportDoc = await Report.v1.create(remoteContext)(input); 
         expect(reportDoc).to.deep.equal(input);
         expect(postResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
         expect(postResourceInner.calledOnceWithExactly(input)).to.be.true;

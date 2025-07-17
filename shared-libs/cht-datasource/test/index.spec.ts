@@ -445,7 +445,7 @@ describe('CHT Script API - getDatasource', () => {
           'getUuidsByFreetext',
           'getUuidsPageByFreetext',
           'getByUuid',
-          'createReport'
+          'create'
         ]);
       });
 
@@ -513,10 +513,10 @@ describe('CHT Script API - getDatasource', () => {
         dataContextBind.returns(reportCreate);
         const validatedReportInput = sinon.stub(Index.Input, 'validateReportInput').returns(expectedReport);
 
-        const returnedReport = await report.createReport(validatedReportInput);
+        const returnedReport = await report.create(validatedReportInput);
 
         expect(returnedReport).to.equal(expectedReport);
-        expect(dataContextBind.calledOnceWithExactly(Report.v1.createReport)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.create)).to.be.true;
         expect(reportCreate.calledOnceWithExactly(validatedReportInput)).to.be.true;
       });
 

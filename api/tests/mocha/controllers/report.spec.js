@@ -331,7 +331,7 @@ describe('Report Controller Tests', () => {
       beforeEach(() => {
         createReport = sinon.stub();
         dataContextBind
-          .withArgs(Report.v1.createReport)
+          .withArgs(Report.v1.create)
           .returns(createReport);
       });
 
