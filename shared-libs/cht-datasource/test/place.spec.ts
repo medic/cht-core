@@ -320,7 +320,7 @@ describe('place', () => {
           parent: 'p1'
         };
         isPlaceInput.returns(false);
-        await expect(Place.v1.createPlace(dataContext)(input as Input.PlaceInput))
+        await expect(Place.v1.create(dataContext)(input as Input.PlaceInput))
           .to.be.rejectedWith(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}].`);
       });
       
@@ -333,7 +333,7 @@ describe('place', () => {
         };
         isPlaceInput.returns(true);
         createPlaceDoc.resolves(input);
-        const result = await Place.v1.createPlace(dataContext)(input);
+        const result = await Place.v1.create(dataContext)(input);
       
         expect(result).to.deep.equal(input);
       });

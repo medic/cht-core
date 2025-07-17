@@ -353,7 +353,7 @@ describe('Report Controller Tests', () => {
           JSON.stringify(input)
         }].`);
 
-        await controller.v1.createReport(req, res);
+        await controller.v1.create(req, res);
         expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
         expect(hasAllPermissions.calledOnceWithExactly(userCtx, ['can_view_reports', 'can_create_records'])).to.be.true;
         expect(createReport.called).to.be.false;
@@ -379,7 +379,7 @@ describe('Report Controller Tests', () => {
         };
         const report = {...input, _id: '1-id', _rev: '1-rev'};
         createReport.resolves(report);
-        await controller.v1.createReport(req, res);
+        await controller.v1.create(req, res);
         expect(serverUtilsError.called).to.be.false;
         expect(createReport.calledOnce).to.be.true;
         expect(dataContextBind.calledOnce).to.be.true;

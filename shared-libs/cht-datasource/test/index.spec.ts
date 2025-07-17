@@ -56,7 +56,7 @@ describe('CHT Script API - getDatasource', () => {
 
       it('contains expected keys', () => {
         expect(place).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType', 
-          'createPlace']);
+          'create']);
       });
 
       it('getByUuid', async () => {
@@ -136,10 +136,10 @@ describe('CHT Script API - getDatasource', () => {
         dataContextBind.returns(placeCreate);
         const validatedPlaceInput = sinon.stub(Index.Input, 'validatePlaceInput').returns(expectedPlace);
 
-        const returnedPlace = await place.createPlace(validatedPlaceInput);
+        const returnedPlace = await place.create(validatedPlaceInput);
 
         expect(returnedPlace).to.equal(expectedPlace);
-        expect(dataContextBind.calledOnceWithExactly(Place.v1.createPlace)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Place.v1.create)).to.be.true;
         expect(placeCreate.calledOnceWithExactly(validatedPlaceInput)).to.be.true;
       });
     });
