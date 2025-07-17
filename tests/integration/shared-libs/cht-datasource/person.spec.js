@@ -209,7 +209,7 @@ describe('cht-datasource Person', () => {
     });
 
     describe('createPerson', async () => {
-      const createPerson = Person.v1.createPerson(dataContext);
+      const createPerson = Person.v1.create(dataContext);
       it('creates a person for a valid person input', async () => {
         const personInput = Input.validatePersonInput({
           name: 'apoorva',
@@ -244,8 +244,8 @@ describe('cht-datasource Person', () => {
         hobby: 'guitar',
         parent: place0._id
       });
-      const createPersonDoc = await Person.v1.createPerson(dataContext)(personInput);
-      const updatePerson = Person.v1.updatePerson(dataContext);
+      const createPersonDoc = await Person.v1.create(dataContext)(personInput);
+      const updatePerson = Person.v1.update(dataContext);
 
       it('update person doc for valid update input', async () => {
         const updatePersonDoc = {

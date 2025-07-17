@@ -10,11 +10,11 @@ export namespace v1 {
 
   const getPeople = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/person');
 
-  const createPersonPost = (
+  const createPerson = (
     remoteContext: RemoteDataContext
   ) => postResource(remoteContext, 'api/v1/person');
  
-  const updatePersonPut = (
+  const updatePerson = (
     remoteContext: RemoteDataContext
   ) => putResource(remoteContext, 'api/v1/person');
 
@@ -46,14 +46,14 @@ export namespace v1 {
   };
 
   /** @internal */
-  export const createPerson = 
+  export const create = 
   (remoteContext: RemoteDataContext) => (
     input:PersonInput
-  ):Promise<Person.v1.Person> => createPersonPost(remoteContext)(input);
+  ):Promise<Person.v1.Person> => createPerson(remoteContext)(input);
   
   /** @internal */
-  export const updatePerson = 
+  export const update = 
   (remoteContext: RemoteDataContext) => (
     input:Record<string, unknown>
-  ):Promise<Person.v1.Person> => updatePersonPut(remoteContext)(input);
+  ):Promise<Person.v1.Person> => updatePerson(remoteContext)(input);
 }

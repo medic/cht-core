@@ -293,12 +293,12 @@ describe('Person Controller', () => {
       });
     });
 
-    describe('createPerson', () => {
+    describe('create', () => {
       let createPerson;
       beforeEach(() => {
         createPerson = sinon.stub();
         dataContextBind
-          .withArgs(Person.v1.createPerson)
+          .withArgs(Person.v1.create)
           .returns(createPerson);
       });
 
@@ -318,7 +318,7 @@ describe('Person Controller', () => {
          
         const err = new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON
           .stringify(input)}].`);
-        await controller.v1.createPerson(req, res);
+        await controller.v1.create(req, res);
         expect(hasAllPermissions
           .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_people'])).to.be.true;
         expect(createPerson.notCalled).to.be.true;
@@ -345,7 +345,7 @@ describe('Person Controller', () => {
         const createdPersonDoc = {...input, _id: '123', rev: '1-rev'}; 
         createPerson.resolves(createdPersonDoc);
          
-        await controller.v1.createPerson(req, res);
+        await controller.v1.create(req, res);
         expect(hasAllPermissions
           .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_people'])).to.be.true;
         expect(createPerson.calledOnce).to.be.true;
@@ -361,7 +361,7 @@ describe('Person Controller', () => {
       beforeEach(() => {
         updatePerson = sinon.stub();
         dataContextBind
-          .withArgs(Person.v1.updatePerson)
+          .withArgs(Person.v1.update)
           .returns(updatePerson);
       });
 
@@ -385,7 +385,7 @@ describe('Person Controller', () => {
         const updatePersonDoc = {...input, _id: '123', rev: '1-rev'}; 
         updatePerson.resolves(updatePersonDoc);
          
-        await controller.v1.updatePerson(req, res);
+        await controller.v1.update(req, res);
         expect(hasAllPermissions
           .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_update_users'])).to.be.true;
         expect(updatePerson.calledOnce).to.be.true;

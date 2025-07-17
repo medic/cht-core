@@ -155,8 +155,8 @@ describe('CHT Script API - getDatasource', () => {
           'getByUuid',
           'getByUuidWithLineage', 
           'getPageByType',
-          'createPerson',
-          'updatePerson'
+          'create',
+          'update'
         ]);
       });
 
@@ -184,10 +184,10 @@ describe('CHT Script API - getDatasource', () => {
         dataContextBind.returns(personCreate);
         const validatedPersonInput = sinon.stub(Index.Input, 'validatePersonInput').returns(expectedPerson);
 
-        const returnedPerson = await person.createPerson(validatedPersonInput);
+        const returnedPerson = await person.create(validatedPersonInput);
 
         expect(returnedPerson).to.equal(expectedPerson);
-        expect(dataContextBind.calledOnceWithExactly(Person.v1.createPerson)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.create)).to.be.true;
         expect(personCreate.calledOnceWithExactly(validatedPersonInput)).to.be.true;
       });
 

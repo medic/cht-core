@@ -103,7 +103,7 @@ export namespace v1 {
 
   
   /** @internal */
-  export const createPerson = ({
+  export const create = ({
     medicDb,
     settings
   } : LocalDataContext) => {
@@ -216,7 +216,7 @@ export namespace v1 {
   };
   
   /** @internal*/
-  export const updatePerson = ({
+  export const update = ({
     medicDb,
     settings
   }:LocalDataContext) => {

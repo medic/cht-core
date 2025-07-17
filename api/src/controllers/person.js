@@ -10,8 +10,8 @@ const getPerson = ({ with_lineage }) => ctx.bind(
     : Person.v1.get
 );
 const getPageByType = () => ctx.bind(Person.v1.getPage);
-const createPerson = () => ctx.bind(Person.v1.createPerson);
-const updatePerson = () => ctx.bind(Person.v1.updatePerson);
+const createPerson = () => ctx.bind(Person.v1.create);
+const updatePerson = () => ctx.bind(Person.v1.update);
 
 const checkUserPermissions = async (req, permissions = ['can_view_contacts']) => {
   const userCtx = await auth.getUserCtx(req);
@@ -41,7 +41,7 @@ module.exports = {
       return res.json(docs);
     }),
     
-    createPerson: serverUtils.doOrError(async (req, res) => {
+    create: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req, ['can_view_contacts', 'can_create_people']);
 
       const personInput = Input.validatePersonInput(req.body);
@@ -49,7 +49,7 @@ module.exports = {
       return res.json(personDoc);
     }),
 
-    updatePerson: serverUtils.doOrError(async (req, res) => {
+    update: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req, ['can_view_contacts', 'can_update_users']);
 
       const updatePersonInput = req.body;

@@ -45,7 +45,7 @@ export namespace v1 {
       };
     };
 
-  const createPersonDoc =
+  const createPerson =
   <T>(
     localFn: (c: LocalDataContext) => (input: PersonInput) => Promise<T>,
     remoteFn: (c: RemoteDataContext) => (input: PersonInput) => Promise<T>
@@ -58,7 +58,7 @@ export namespace v1 {
     };
   };
 
-  const updatePersonDoc =
+  const updatePerson=
   <T>(
     localFn: (c: LocalDataContext) => (input: Record<string, unknown>) => Promise<T>,
     remoteFn: (c: RemoteDataContext) => (input: Record<string, unknown>) => Promise<T>
@@ -153,7 +153,7 @@ export namespace v1 {
    * @returns a function for creating a person.
    * @throws Error if a data context is not provided
    */
-  export const createPerson = createPersonDoc(Local.Person.v1.createPerson, Remote.Person.v1.createPerson);
+  export const create = createPerson(Local.Person.v1.create, Remote.Person.v1.create);
 
   /**
    * Returns a function for updating a person from the given data context.
@@ -161,5 +161,5 @@ export namespace v1 {
    * @returns a function for creating a person.
    * @throws Error if a data context is not provided
    */
-  export const updatePerson = updatePersonDoc(Local.Person.v1.updatePerson, Remote.Person.v1.updatePerson);
+  export const update = updatePerson(Local.Person.v1.update, Remote.Person.v1.update);
 }
