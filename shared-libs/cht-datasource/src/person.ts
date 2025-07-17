@@ -10,7 +10,7 @@ import { getPagedGenerator, isRecord, NormalizedParent, Nullable, Page } from '.
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, 
   assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
-import { PersonInput, validatePersonInput } from './input';
+import { validatePersonInput } from './input';
 import { InvalidArgumentError } from './libs/error';
 
 /** */
@@ -45,33 +45,6 @@ export namespace v1 {
       };
     };
 
-  const createPerson =
-  <T>(
-    localFn: (c: LocalDataContext) => (input: PersonInput) => Promise<T>,
-    remoteFn: (c: RemoteDataContext) => (input: PersonInput) => Promise<T>
-  ) => (context: DataContext) => {
-    assertDataContext(context);
-    const fn = adapt(context, localFn, remoteFn);
-    return async (input: unknown): Promise<T> => {
-      const personInput = validatePersonInput(input);
-      return fn(personInput);
-    };
-  };
-
-  const updatePerson=
-  <T>(
-    localFn: (c: LocalDataContext) => (input: Record<string, unknown>) => Promise<T>,
-    remoteFn: (c: RemoteDataContext) => (input: Record<string, unknown>) => Promise<T>
-  ) => (context: DataContext) => {
-    assertDataContext(context);
-    const fn = adapt(context, localFn, remoteFn);
-    return async (updateInput: unknown): Promise<T> => {
-      if (!isRecord(updateInput)){
-        throw new InvalidArgumentError('Invalid person update input');
-      }
-      return fn(updateInput);
-    };
-  };
   /**
    * Returns a person for the given qualifier.
    * @param context the current data context
@@ -153,7 +126,22 @@ export namespace v1 {
    * @returns a function for creating a person.
    * @throws Error if a data context is not provided
    */
-  export const create = createPerson(Local.Person.v1.create, Remote.Person.v1.create);
+  export const create = (context:DataContext):typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Person.v1.create, Remote.Person.v1.create);
+    /**
+     * @param input input fields for creating a person
+     * @returns a person doc
+     * @throws InvalidArgumentError if the input does not contain required fields
+     * @throws InvalidArgumentError if the input's parent field is not one of the allowed parents in the config
+     * @throws InvalidArgumentError if the required fields do not have the expected type
+     */
+    const curriedFn = async (input: unknown): Promise<Person> => {
+      const personInput = validatePersonInput(input);
+      return fn(personInput);
+    };
+    return curriedFn;
+  };
 
   /**
    * Returns a function for updating a person from the given data context.
@@ -161,5 +149,23 @@ export namespace v1 {
    * @returns a function for creating a person.
    * @throws Error if a data context is not provided
    */
-  export const update = updatePerson(Local.Person.v1.update, Remote.Person.v1.update);
+  export const update = (context: DataContext):typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Person.v1.update, Remote.Person.v1.update);
+    /**
+     * Returns the updated Person Doc for the provided updateInput
+     * @param updateInput the Doc containing updated fields
+     * @returns updated person Doc
+     * @throws InvalidArgumentError if updateInput has changes in immutable fields
+     * @throws InvalidArgumentError if updateInput does not contain required fields
+     * @throws InvalidArgumentError if updateInput fields are not of expected type
+     */
+    const curriedFn = async (updateInput: unknown): Promise<Person> => {
+      if (!isRecord(updateInput)){
+        throw new InvalidArgumentError('Invalid person update input');
+      }
+      return fn(updateInput);
+    };
+    return curriedFn;
+  };
 }
