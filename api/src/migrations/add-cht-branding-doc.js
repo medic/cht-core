@@ -103,8 +103,8 @@ const updateTitle = (doc) => {
 const run = async () => {
   const doc = await getBrandingDoc();
   let updated = updateTitle(doc);
-  updated = (await updateAttachment(doc, logo)) || updated;
-  updated = (await updateAttachment(doc, favicon)) || updated;
+  updated = await updateAttachment(doc, logo) || updated;
+  updated = await updateAttachment(doc, favicon) || updated;
   if (updated) {
     await saveDoc(doc);
   }

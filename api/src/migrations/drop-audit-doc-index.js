@@ -20,8 +20,7 @@ const dropView = function(auditDb, callback) {
 
 const needsUpdate = function(row) {
   return (
-    // is an audit doc, and
-    (row.doc.type === 'audit_record' && row.doc.record_id)
+    row.doc.type === 'audit_record' && row.doc.record_id // is an audit doc, and
   ); // has old property
 };
 

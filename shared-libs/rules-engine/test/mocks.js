@@ -111,7 +111,7 @@ module.exports = {
       }
 
       const defaultRules = defaultConfigSettingsDoc.tasks.rules;
-      return useDeclarative ? defaultRules : productionNoolsTemplate(defaultRules);
+      return useDeclarative ? removeNoolsBoilerplate(defaultRules) : defaultRules;
     };
 
     const defaults = {
@@ -135,4 +135,15 @@ const restorable = (path, attributes = []) => {
   const mod = rewire(path);
   mod.restore = () => attributes.forEach(attr => mod.__set__(attr, undefined));
   return mod;
+};
+
+const removeNoolsBoilerplate = rules => {
+  const noolsRuleLangaugeRegex = /^define.*\} then \{ /s;
+  if (noolsRuleLangaugeRegex.test(rules)) {
+    let result = rules.replace(noolsRuleLangaugeRegex, '');
+    result = result.substring(0, result.length - '\n};'.length);
+    return result;
+  }
+
+  return rules;
 };

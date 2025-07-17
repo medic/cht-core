@@ -27,7 +27,7 @@ const fsExists = (path) => new Promise((resolve) => {
  * @return {Promise<string|undefined>}
  */
 const getServiceWorkerHash = async () => {
-  if (!(await fsExists(scriptOutputPath))) {
+  if (!await fsExists(scriptOutputPath)) {
     return;
   }
 
