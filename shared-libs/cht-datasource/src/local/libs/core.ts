@@ -80,6 +80,7 @@ export const ensureHasRequiredFields=(
   originalDoc: Doc, 
   updateInput:Record<string, unknown>,
 ):void => {
+  const missingFieldsList = [];
   // ensure required immutable fields have the same value as the original doc.
   for (const field of [...immutableFields, ...mutableFields]){
     if (!hasField(updateInput, 
@@ -87,9 +88,12 @@ export const ensureHasRequiredFields=(
         type: typeof originalDoc[field],
         name: field, 
         ensureTruthyValue: true})){
-      throw new InvalidArgumentError(`Missing or empty required field (${field}) for [${JSON
-        .stringify(updateInput)}].`);
+      missingFieldsList.push(field);
     }
+  }
+  if (missingFieldsList.length > 0){
+    throw new InvalidArgumentError(`Missing or empty required fields (${missingFieldsList.join(', ')}) for [${JSON
+      .stringify(updateInput)}].`);
   }
 };
 
