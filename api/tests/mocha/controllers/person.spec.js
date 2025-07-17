@@ -355,5 +355,45 @@ describe('Person Controller', () => {
         expect(res.json.calledOnceWithExactly(createdPersonDoc)).to.be.true;
       });
     });
+
+    describe('updatePerson', () => {
+      let updatePerson;
+      beforeEach(() => {
+        updatePerson = sinon.stub();
+        dataContextBind
+          .withArgs(Person.v1.updatePerson)
+          .returns(updatePerson);
+      });
+
+      it('updated a person doc for valid update input', async() => {
+        const input = {
+          name: 'test-user',
+          _id: '123',
+          rev: '1-rev',
+          type: 'contact',
+          contact_type: 'person',
+          parent: 'p1',
+          reported_date: 12312312
+        };
+        req = {
+          body: {
+            ...input
+          }
+        };
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        const updatePersonDoc = {...input, _id: '123', rev: '1-rev'}; 
+        updatePerson.resolves(updatePersonDoc);
+         
+        await controller.v1.updatePerson(req, res);
+        expect(hasAllPermissions
+          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_update_users'])).to.be.true;
+        expect(updatePerson.calledOnce).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+        expect(dataContextBind.calledOnce).to.be.true;
+        expect(updatePerson.calledOnce).to.be.true;
+        expect(res.json.calledOnceWithExactly(updatePersonDoc)).to.be.true;
+      });
+    });
   });
 });

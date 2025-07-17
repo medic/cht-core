@@ -337,5 +337,28 @@ describe('person', () => {
         expect(result).to.deep.equal(input);
       });
     });
+
+    describe('updatePerson', () => {
+      it('returns person doc for valid input', async() => {
+        const updatePersonDoc = sinon.stub();
+        adapt.returns(updatePersonDoc);
+        const input = {
+          name: 'person-1',
+          type: 'person',
+          parent: 'p1'
+        };
+        updatePersonDoc.resolves(input);
+        const result = await Person.v1.updatePerson(dataContext)(input);
+        expect(result).to.deep.equal(input);
+      });
+
+      it('Throws error is input is not a record', async() => {
+        const updatePersonDoc = sinon.stub();
+        adapt.returns(updatePersonDoc);
+        const input = 'apoorva';
+        await expect(Person.v1.updatePerson(dataContext)(input))
+          .to.be.rejectedWith(`Invalid person update input`);
+      });
+    });
   });
 });

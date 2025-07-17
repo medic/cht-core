@@ -236,5 +236,27 @@ describe('cht-datasource Person', () => {
             )}].`});
       });
     });
+
+    describe('updatePerson', async () => {
+      const personInput = Input.validatePersonInput({
+        name: 'apoorva',
+        type: 'person',
+        hobby: 'guitar',
+        parent: place0._id
+      });
+      const createPersonDoc = await Person.v1.createPerson(dataContext)(personInput);
+      const updatePerson = Person.v1.updatePerson(dataContext);
+
+      it('update person doc for valid update input', async () => {
+        const updatePersonDoc = {
+          ...createPersonDoc,
+          name: 'peter'
+        };
+        delete updatePersonDoc.hobby;
+        const updatedPerson = await updatePerson(updatePersonDoc);
+        expect(updatedPerson).excluding(['_rev'])
+          .to.deep.equal(updatePersonDoc);
+      });
+    });
   });
 });

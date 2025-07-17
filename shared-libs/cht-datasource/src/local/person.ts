@@ -201,8 +201,11 @@ export namespace v1 {
   };
 
   const validateUpdatePersonPayload = (originalDoc: Person.v1.Person, updatePersonInput: Record<string, unknown>) => {
-    const immutableRequiredFields = new Set(['_rev', '_id', 'reported_date', 'parent', 'type', 'contact_type']);
-    const mutableRequiredFields = new Set(['name', 'type']);
+    const immutableRequiredFields = new Set(['_rev', '_id', 'reported_date', 'parent', 'type']);
+    if (originalDoc.type==='contact'){
+      immutableRequiredFields.add('contact_type');
+    }
+    const mutableRequiredFields = new Set(['name']);
     ensureHasRequiredFields(immutableRequiredFields, mutableRequiredFields, originalDoc, updatePersonInput);
     ensureImmutability(immutableRequiredFields, originalDoc, updatePersonInput);
     const dehydratedUpdatePersonInput = dehydrateDoc(updatePersonInput);
