@@ -2,6 +2,7 @@ const environment = require('@medic/environment');
 const serverChecks = require('@medic/server-checks');
 const logger = require('@medic/logger');
 const express = require('express');
+const qs = require('qs');
 const apiPort = process.env.API_PORT || 5988;
 
 let router;
@@ -47,6 +48,7 @@ process
   app.set('strict routing', true);
   app.set('trust proxy', true);
   app.use((req, res, next) => router(req, res, next));
+  app.set('query parser', (str) => qs.parse(str, {}));
 
   const setupRouter = require('./src/services/setup/router');
   router = setupRouter.router;

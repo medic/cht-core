@@ -9,8 +9,8 @@ const requestError = reason => ({
 
 const invalidRequest = req => {
   // error messages copied from CouchDB source
-  if (req.query && req.query.keys) {
-    if (!_.isArray(req.query.keys)) {
+  if (req.parsedQuery && req.parsedQuery.keys) {
+    if (!_.isArray(req.parsedQuery.keys)) {
       return requestError('`keys` parameter must be an array.');
     }
   }
@@ -31,7 +31,7 @@ module.exports = {
     }
 
     return allDocs
-      .filterOfflineRequest(req.userCtx, req.query, req.body)
+      .filterOfflineRequest(req.userCtx, req.parsedQuery, req.body)
       .then(results => res.json(results))
       .catch(err => serverUtils.serverError(err, req, res));
   }

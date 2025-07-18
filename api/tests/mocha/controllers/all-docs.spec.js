@@ -9,7 +9,7 @@ let testRes;
 
 describe('All Docs controller', () => {
   beforeEach(() => {
-    testReq = { body: {}, query: {}};
+    testReq = { body: {}, query: {}, parsedQuery: {}};
     testRes = {
       json: sinon.stub(),
       status: sinon.stub()
@@ -24,13 +24,13 @@ describe('All Docs controller', () => {
 
   describe('invalidRequest', () => {
     it('returns error when request query `keys` is not JSON', () => {
-      testReq.query.keys = 'abcd';
+      testReq.parsedQuery.keys = 'abcd';
       controller._invalidRequest(testReq)
         .should.deep.equal({ error: 'bad_request', reason: '`keys` parameter must be an array.' });
     });
 
     it('returns error when request query `keys` is not an array', () => {
-      testReq.query.keys = { some: 'thing' };
+      testReq.parsedQuery.keys = { some: 'thing' };
       controller._invalidRequest(testReq).should.deep.equal(
         { error: 'bad_request', reason: '`keys` parameter must be an array.' }
       );
@@ -46,7 +46,7 @@ describe('All Docs controller', () => {
 
     it('returns false otherwise', () => {
       controller._invalidRequest({}).should.equal(false);
-      controller._invalidRequest({query: { keys: [1, 2] }}).should.equal(false);
+      controller._invalidRequest({parsedQuery: { keys: [1, 2] }}).should.equal(false);
       controller._invalidRequest({body: { keys: [1, 2] }}).should.equal(false);
     });
   });
@@ -70,7 +70,9 @@ describe('All Docs controller', () => {
         .request(testReq, testRes)
         .then(() => {
           service.filterOfflineRequest.callCount.should.equal(1);
-          service.filterOfflineRequest.args[0].should.deep.equal([ testReq.userCtx, testReq.query, testReq.body ]);
+          service.filterOfflineRequest.args[0].should.deep.equal(
+            [ testReq.userCtx, testReq.parsedQuery, testReq.body ]
+          );
           testRes.json.callCount.should.equal(1);
           testRes.json.args[0].should.deep.equal([['a', 'b']]);
         });
@@ -95,7 +97,7 @@ describe('All Docs controller', () => {
     });
 
     it('handles requests with non-json `keys` query parameter', () => {
-      testReq.query.keys = 'aaaa';
+      testReq.parsedQuery.keys = 'aaaa';
 
       return Promise
         .all([
@@ -112,7 +114,7 @@ describe('All Docs controller', () => {
     });
 
     it('handles requests with non-array `keys` query parameter', () => {
-      testReq.query.keys = JSON.stringify({ some: 'thing' });
+      testReq.parsedQuery.keys = JSON.stringify({ some: 'thing' });
 
       return Promise
         .all([
