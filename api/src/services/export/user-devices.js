@@ -24,7 +24,10 @@ module.exports = async () => {
       user,
       deviceId,
       date,
-      browser: browser && browser.name && browser.version ? { name: browser.name, version: browser.version } : {},
+      browser: {
+        name: browser?.name || undefined,
+        version: browser?.version || undefined,
+      },
       apk,
       android,
       cht,
