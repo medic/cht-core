@@ -146,7 +146,7 @@ export namespace v1 {
   /**
    * Returns a function for updating a person from the given data context.
    * @param context the current data context
-   * @returns a function for creating a person.
+   * @returns a function for updating a person.
    * @throws Error if a data context is not provided
    */
   export const update = (context: DataContext):typeof curriedFn => {
