@@ -432,7 +432,9 @@ describe('Export Data V2.0', () => {
         app: {
           version: apk
         },
-        software: {androidVersion: android},
+        software: {
+          androidVersion: android
+        },
         storage: {
           free: storageFree,
           total: storageTotal
@@ -449,7 +451,8 @@ describe('Export Data V2.0', () => {
           user,
           deviceId,
           versions: {
-            app: cht, settings
+            app: cht,
+            settings
           }
         },
         device: {
