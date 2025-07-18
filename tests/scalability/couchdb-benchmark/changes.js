@@ -28,7 +28,7 @@ const scenarios = [
 
   { limit: 100, since: MID_SEQ, include_docs: false, seq_interval: 100 },
   { limit: 1000, since: MID_SEQ, include_docs: false, seq_interval: 1000 },
-  { limit: 10000, since: MID_SEQ, include_docs: false, seq_interval: 1000 },
+  { limit: 10000, since: MID_SEQ, include_docs: false, seq_interval: 10000 },
 
   { limit: 10000, keys: YES, include_docs: false },
   { limit: 10000, keys: YES, include_docs: true },
