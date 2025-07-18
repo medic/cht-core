@@ -47,9 +47,10 @@ describe('Extension lib xpath function', () => {
     await loginPage.login(offlineUser);
 
     await commonPage.goToReports();
-    console.warn('before throttle');
-    await browser.throttleNetwork('offline');
-    console.warn('after throttle');
+    if (!utils.isMinimumChromeVersion) {
+      // this promise times out on Chrome 90
+      await browser.throttleNetwork('offline');
+    }
 
     await commonPage.openFastActionReport('extension-lib-average-calculator', false);
 
