@@ -38,7 +38,7 @@ describe('ongoing replication', function() {
   });
 
   afterEach(async () => {
-    await browser.throttle('online');
+    await browser.throttleNetwork('online');
     const isRevertingSettings = utils.revertSettings(true);
     if (isRevertingSettings) {
       await isRevertingSettings;
@@ -56,7 +56,7 @@ describe('ongoing replication', function() {
     expect(localDocIdsPreSync).to.include.members(dataFactory.ids(userAllowedDocs.persons));
     expect(localDocIdsPreSync).to.include.members(dataFactory.ids(userAllowedDocs.reports));
 
-    await browser.throttle('offline');
+    await browser.throttleNetwork('offline');
 
     additionalAllowed = dataFactory.createData({
       healthCenter: userAllowedDocs.healthCenter,
@@ -71,7 +71,7 @@ describe('ongoing replication', function() {
     await saveData(additionalAllowed);
     await saveData(additionalDenied);
 
-    await browser.throttle('online');
+    await browser.throttleNetwork('online');
     await commonPage.sync({ expectReload: true, timeout: 30000 });
 
     const localDocsPostSync = await chtDbUtils.getDocs();
@@ -94,13 +94,13 @@ describe('ongoing replication', function() {
   });
 
   it('should handle updates to existing documents', async () => {
-    await browser.throttle('offline');
+    await browser.throttleNetwork('offline');
 
     const serverDocs = await utils.getDocs(dataFactory.ids(userAllowedDocs.reports));
     serverDocs.forEach(doc => doc.updated = 'yes');
     await utils.saveDocs(serverDocs);
 
-    await browser.throttle('online');
+    await browser.throttleNetwork('online');
     await commonPage.sync();
 
     const localDocs = await chtDbUtils.getDocs(dataFactory.ids(userAllowedDocs.reports));
@@ -189,14 +189,14 @@ describe('ongoing replication', function() {
 
     const docId = docs.persons[0]._id;
     //create conflict
-    await browser.throttle('offline');
+    await browser.throttleNetwork('offline');
     await chtDbUtils.updateDoc(docId, { local_update: 1 });
     await chtDbUtils.updateDoc(docId, { local_update: 2 });
     let serverDoc = await utils.getDoc(docId);
     serverDoc.remote_update = 1;
     await utils.saveDoc(serverDoc);
 
-    await browser.throttle('online');
+    await browser.throttleNetwork('online');
     await commonPage.sync();
 
     let localDoc = await chtDbUtils.getDoc(docId);
@@ -204,7 +204,7 @@ describe('ongoing replication', function() {
     expect(localDoc._conflicts).to.be.undefined;
     expect(localDoc.local_update).to.equal(2);
 
-    await browser.throttle('offline');
+    await browser.throttleNetwork('offline');
     await chtDbUtils.updateDoc(docId, { local_update: 3 });
     serverDoc = await utils.getDoc(docId);
     serverDoc.remote_update = 2;
@@ -214,7 +214,7 @@ describe('ongoing replication', function() {
     serverDoc.remote_update = 3;
     await utils.saveDoc(serverDoc);
 
-    await browser.throttle('online');
+    await browser.throttleNetwork('online');
     await commonPage.sync();
 
     localDoc = await chtDbUtils.getDoc(docId);

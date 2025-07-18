@@ -87,10 +87,10 @@ describe('Create user when adding contact', () => {
     await utils.updateSettings(createSettings(true), {ignoreReload: 'sentinel'});
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
-    await browser.throttle('offline');
+    await browser.throttleNetwork('offline');
     await commonPage.goToPeople(district._id);
     await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' });
-    await browser.throttle('online');
+    await browser.throttleNetwork('online');
     await commonPage.sync();
     await verifyUserCreation();
   });
