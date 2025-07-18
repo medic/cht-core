@@ -26,7 +26,7 @@ function(doc) {
           cht: doc.metadata.versions && doc.metadata.versions.app,
           settings: doc.metadata.versions && doc.metadata.versions.settings,
         },
-        storage: {
+        storage: { 
           free: deviceInfo && deviceInfo.storage && deviceInfo.storage.free,
           total: deviceInfo && deviceInfo.storage && deviceInfo.storage.total
         }
