@@ -180,7 +180,7 @@ describe('Create user for contacts', () => {
         await loginAsOfflineUser();
         const originalContactId = ORIGINAL_USER.contact._id;
 
-        await browser.throttle('offline');
+        await browser.throttleNetwork('offline');
 
         // Create existing report (before user is replaced)
         await commonPage.goToReports();
@@ -215,7 +215,7 @@ describe('Create user for contacts', () => {
         const district = await chtDbUtils.getDoc(DISTRICT._id);
         expect(district.contact._id).to.equal(replacementContactId);
 
-        await browser.throttle('online');
+        await browser.throttleNetwork('online');
         try {
           await commonPage.syncAndNotWaitForSuccess();
         } catch {
@@ -378,7 +378,7 @@ describe('Create user for contacts', () => {
         await loginAsOfflineUser();
         const originalContactId = ORIGINAL_USER.contact._id;
 
-        await browser.throttle('offline');
+        await browser.throttleNetwork('offline');
 
         await commonPage.goToPeople(originalContactId);
         await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID);
@@ -432,7 +432,7 @@ describe('Create user for contacts', () => {
         district = await chtDbUtils.getDoc(DISTRICT._id);
         expect(district.contact._id).to.equal(replacementContactId1);
 
-        await browser.throttle('online');
+        await browser.throttleNetwork('online');
         try {
           await commonPage.syncAndNotWaitForSuccess();
         } catch {
@@ -555,7 +555,7 @@ describe('Create user for contacts', () => {
         await utils.createUsers([otherUser]);
         NEW_USERS.push(otherUser.username);
 
-        await browser.throttle('offline');
+        await browser.throttleNetwork('offline');
 
         await commonPage.goToPeople(originalContactId);
         await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID);
@@ -588,7 +588,7 @@ describe('Create user for contacts', () => {
         await commonPage.logout();
 
         // Replace other user
-        await browser.throttle('online');
+        await browser.throttleNetwork('online');
         await loginPage.login(otherUser);
         await commonPage.waitForPageLoaded();
         await commonPage.goToPeople(originalContactId);
@@ -702,7 +702,7 @@ describe('Create user for contacts', () => {
         await loginAsOfflineUser();
         const originalContactId = ORIGINAL_USER.contact._id;
 
-        await browser.throttle('offline');
+        await browser.throttleNetwork('offline');
 
         await commonPage.goToPeople(originalContactId);
         await createUserForContactsPage.submitReplaceUserForm(REPLACE_USER_FORM_ID);
@@ -733,7 +733,7 @@ describe('Create user for contacts', () => {
         // Remove phone number from contact to force the transition to fail
         await chtDbUtils.updateDoc(newContact._id, { ...newContact, phone: undefined }, true);
 
-        await browser.throttle('online');
+        await browser.throttleNetwork('online');
         try {
           await commonPage.syncAndNotWaitForSuccess();
         } catch {
@@ -767,7 +767,7 @@ describe('Create user for contacts', () => {
         await commonPage.reloadSession();
         await loginPage.login(ORIGINAL_USER);
         await commonPage.waitForPageLoaded();
-        await browser.throttle('offline');
+        await browser.throttleNetwork('offline');
         const finalOriginalContactLocal = await chtDbUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(finalOriginalContactLocal, ORIGINAL_USER.username, replacementContactId, 'ERROR');
         await commonPage.goToReports();

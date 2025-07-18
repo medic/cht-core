@@ -158,7 +158,7 @@ describe.skip('Muting', () => {
     expect(doc.muting_history).to.be.undefined;
   };
   const setBrowserOffline = async () => {
-    await browser.throttle({
+    await browser.throttleNetwork({
       offline: true,
       downloadThroughput: 0,
       uploadThroughput: 0,
@@ -166,7 +166,7 @@ describe.skip('Muting', () => {
     });
   };
   const setBrowserOnline = async () => {
-    await browser.throttle({
+    await browser.throttleNetwork({
       offline: false,
       downloadThroughput: 1000 * 1000,
       uploadThroughput: 1000 * 1000,
