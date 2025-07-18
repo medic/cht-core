@@ -10,7 +10,8 @@ describe('Pregnancy form tests', () => {
     async () => {
       await harness.clear();
       await harness.setNow(new Date('2000-01-01'));//UTC 00:00
-    });
+    }
+  );
   afterEach(() => expect(harness.consoleErrors).to.be.empty);
 
   it('pregnancy with pregnancy and danger signs followup dates', async () => {
