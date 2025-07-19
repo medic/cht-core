@@ -208,7 +208,7 @@ describe('cht-datasource Person', () => {
       });
     });
 
-    describe('createPerson', async () => {
+    describe('create', async () => {
       const createPerson = Person.v1.create(dataContext);
       it('creates a person for a valid person input', async () => {
         const personInput = Input.validatePersonInput({
