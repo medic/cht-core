@@ -95,7 +95,7 @@ export namespace v1 {
   };
 
   /** @internal*/
-  export const createPlace = ({medicDb, settings}: LocalDataContext) => {
+  export const create = ({medicDb, settings}: LocalDataContext) => {
     const createPlaceDoc = createDoc(medicDb);
     const getPlaceDoc = getDocById(medicDb);
     /**

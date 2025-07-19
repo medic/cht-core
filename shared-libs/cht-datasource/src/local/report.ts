@@ -79,7 +79,7 @@ export namespace v1 {
   };
 
   /** @internal*/
-  export const createReport = ({
+  export const create = ({
     medicDb
   } : LocalDataContext) => {
     const createReportDoc = createDoc(medicDb);

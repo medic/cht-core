@@ -88,9 +88,24 @@ export const getResources = (context: RemoteDataContext, path: string) => async 
 export const postResource = (context: RemoteDataContext, path: string) => async <T>(
   body: Record<string, unknown>,
 ): Promise<T> => {
+  return await requestWithBody(context, path, body, 'POST');
+};
+
+/** @internal */
+export const putResource = (context: RemoteDataContext, path: string) => async <T>(
+  body: Record<string, unknown>,
+): Promise<T> => {
+  return await requestWithBody(context, path, body, 'PUT');
+};
+
+const requestWithBody = async<T>(
+  context:RemoteDataContext,
+  path:string,
+  body:Record<string, unknown>,
+  method:string):Promise<T> => {
   try {
     const response = await fetch(`${context.url}/${path}`, {
-      method: 'POST', 
+      method: method, 
       headers: {
         'Content-Type': 'application/json',
       },
@@ -104,7 +119,7 @@ export const postResource = (context: RemoteDataContext, path: string) => async 
 
     return (await response.json()) as T;
   } catch (error) {
-    logger.error(`Failed to post ${JSON.stringify(body)} to ${context.url}/${path}.`, error);
+    logger.error(`Failed to ${method} ${JSON.stringify(body)} to ${context.url}/${path}.`, error);
     throw error;
   }
 };

@@ -318,7 +318,7 @@ describe('person', () => {
           parent: 'p1'
         };
         isPersonInput.returns(false);
-        await expect(Person.v1.createPerson(dataContext)(input as Input.PersonInput))
+        await expect(Person.v1.create(dataContext)(input as Input.PersonInput))
           .to.be.rejectedWith(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}]`);
       });
 
@@ -332,9 +332,32 @@ describe('person', () => {
         };
         isPersonInput.returns(true);
         createPersonDoc.resolves(input);
-        const result = await Person.v1.createPerson(dataContext)(input);
+        const result = await Person.v1.create(dataContext)(input);
 
         expect(result).to.deep.equal(input);
+      });
+    });
+
+    describe('updatePerson', () => {
+      it('returns person doc for valid input', async() => {
+        const updatePersonDoc = sinon.stub();
+        adapt.returns(updatePersonDoc);
+        const input = {
+          name: 'person-1',
+          type: 'person',
+          parent: 'p1'
+        };
+        updatePersonDoc.resolves(input);
+        const result = await Person.v1.update(dataContext)(input);
+        expect(result).to.deep.equal(input);
+      });
+
+      it('Throws error is input is not a record', async() => {
+        const updatePersonDoc = sinon.stub();
+        adapt.returns(updatePersonDoc);
+        const input = 'apoorva';
+        await expect(Person.v1.update(dataContext)(input))
+          .to.be.rejectedWith(`Invalid person update input`);
       });
     });
   });

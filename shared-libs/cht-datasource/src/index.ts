@@ -237,7 +237,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created place.
          * @throws InvalidArgumentError if the type of input is not valid for creating a place.
          */
-        createPlace: (input: unknown) => ctx.bind(Place.v1.createPlace)(input)
+        create: (input: unknown) => ctx.bind(Place.v1.create)(input)
       },
       person: {
         /**
@@ -290,7 +290,15 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created person.
          * @throws InvalidArgumentError if the type of input is not valid for creating a person.
          */
-        createPerson: (input: unknown) => ctx.bind(Person.v1.createPerson)(input)
+        create: (input: unknown) => ctx.bind(Person.v1.create)(input),
+
+        /**
+         * Updates a person.
+         * @param input the object defining the person properties.
+         * @returns the updated person.
+         * @throws InvalidArgumentError if the type of input is not valid for updating a person.
+         */
+        update: (input: unknown) => ctx.bind(Person.v1.update)(input)
       },
       report: {
         /**
@@ -336,7 +344,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created report.
          * @throws InvalidArgumentError if the type of input is not valid for creating a report.
          */
-        createReport: (input : unknown) => ctx.bind(Report.v1.createReport)(input)
+        create: (input : unknown) => ctx.bind(Report.v1.create)(input)
       },
     },
   };

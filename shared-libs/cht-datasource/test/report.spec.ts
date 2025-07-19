@@ -266,7 +266,7 @@ describe('report', () => {
           form: 'yes',
         };
         isPlaceInput.returns(false);
-        await expect(Report.v1.createReport(dataContext)(input))
+        await expect(Report.v1.create(dataContext)(input))
           .to.be.rejectedWith(`Missing or empty required field (contact) in [${JSON.stringify(input)}].`);
       });
 
@@ -281,7 +281,7 @@ describe('report', () => {
         };
         isPlaceInput.returns(true);
         createReportDoc.resolves(input);
-        const result = await Report.v1.createReport(dataContext)(input);
+        const result = await Report.v1.create(dataContext)(input);
         expect(result).to.deep.equal(input);
       });
 

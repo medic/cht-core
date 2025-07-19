@@ -116,7 +116,7 @@ describe('remote place', () => {
         };
         const expected_doc = {...placeInput, _id: '2', _rev: '1'};
         postResourceInner.resolves(expected_doc);
-        const result = await Place.v1.createPlace(remoteContext)(placeInput);
+        const result = await Place.v1.create(remoteContext)(placeInput);
         expect(result).to.deep.equal(expected_doc);
         expect(postResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/place')).to.be.true;
         expect(postResourceInner.calledOnceWithExactly(placeInput)).to.be.true;

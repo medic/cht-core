@@ -319,4 +319,64 @@ describe('Person API', () => {
       await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
     });
   });
+
+  describe('PUT /api/v1/person', async () => {
+    const endpoint = '/api/v1/person';
+    const createPersonInput = {
+      name: 'apoorva',
+      type: 'person',
+      parent: place0._id
+    };
+    const createOpts = {
+      path: endpoint,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: createPersonInput
+    };
+    const createPersonDoc = await utils.request(createOpts);
+
+    it(`throws error when we try to mutate lineage.`, async () => {
+      const updatePersonInput = {
+        ...createPersonDoc,
+        parent: {
+          _id: place1._id
+        }
+      };
+      const opts = {
+        path: endpoint,
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updatePersonInput
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Lineage does not match with the lineage of the doc in the db`
+      })}`;
+      
+      await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
+    });
+
+    it(`updates a person for valid personInput`, async () => {
+      const updatePersonInput = {
+        ...createPersonDoc,
+        name: 'apoorva 2'
+      };
+      const opts = {
+        path: endpoint,
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updatePersonInput
+      };
+      const updatePersonDoc = await utils.request(opts);
+      expect(updatePersonDoc).excluding(['_rev'])
+        .to.deep.equal(updatePersonInput);
+    });
+
+  });
 });

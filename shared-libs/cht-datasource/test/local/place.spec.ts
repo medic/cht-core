@@ -342,7 +342,7 @@ describe('local place', () => {
           type: 'school',
           parent: 'p1'
         };
-        await expect(Place.v1.createPlace(localContext)(placeInput))
+        await expect(Place.v1.create(localContext)(placeInput))
           .to.be.rejectedWith('Invalid place type.');
         expect(createDocInner.called).to.be.false;
       });
@@ -360,7 +360,7 @@ describe('local place', () => {
         const updatedPlaceInput = {
           ...placeInput, type: 'contact', contact_type: 'hospital'
         };
-        await expect(Place.v1.createPlace(localContext)(placeInput))
+        await expect(Place.v1.create(localContext)(placeInput))
           .to.be.rejectedWith(`Missing or empty required field (parent) for [${JSON.stringify(updatedPlaceInput)}].`);
         expect(createDocInner.called).to.be.false;
       });
@@ -386,7 +386,7 @@ describe('local place', () => {
         const updatedPlaceInput = {
           ...placeInput, type: 'contact', contact_type: placeInput.type
         };
-        await expect(Place.v1.createPlace(localContext)(placeInput))
+        await expect(Place.v1.create(localContext)(placeInput))
           .to.be.rejectedWith(`Invalid parent type for [${JSON.stringify(updatedPlaceInput)}].`);
         expect(createDocInner.called).to.be.false;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
@@ -406,7 +406,7 @@ describe('local place', () => {
         const updatedPlaceInput = {
           ...placeInput, type: 'contact', contact_type: 'hospital'
         };
-        await expect(Place.v1.createPlace(localContext)(placeInput))
+        await expect(Place.v1.create(localContext)(placeInput))
           .to.be.rejectedWith(`Unexpected parent for [${JSON.stringify(updatedPlaceInput)}].`);
         expect(createDocInner.called).to.be.false;
       });
@@ -421,7 +421,7 @@ describe('local place', () => {
           _rev: '1234',
           parent: 'p1'
         };
-        await expect(Place.v1.createPlace(localContext)(placeInput))
+        await expect(Place.v1.create(localContext)(placeInput))
           .to.be.rejectedWith('Cannot pass `_rev` when creating a place.');
       });
 
@@ -451,7 +451,7 @@ describe('local place', () => {
           contact_type: 'hospital', contact: expectedContactDoc
         };
         createDocInner.resolves(expected_doc);
-        const placeDoc = await Place.v1.createPlace(localContext)(placeInput);
+        const placeDoc = await Place.v1.create(localContext)(placeInput);
 
         expect(placeDoc).to.deep.equal(expected_doc);
         expect(Place.v1.isPlace(localContext.settings)(placeDoc)).to.be.true;
@@ -486,7 +486,7 @@ describe('local place', () => {
           contact_type: 'hospital', parent: expectedParentDoc
         };
         createDocInner.resolves(expected_doc);
-        const placeDoc = await Place.v1.createPlace(localContext)(placeInput);
+        const placeDoc = await Place.v1.create(localContext)(placeInput);
 
         expect(placeDoc).to.deep.equal(expected_doc);
         expect(Place.v1.isPlace(localContext.settings)(placeDoc)).to.be.true;
@@ -520,7 +520,7 @@ describe('local place', () => {
           contact_type: 'hospital', parent: expectedParentDoc
         };
         createDocInner.resolves(expected_doc);
-        const placeDoc = await Place.v1.createPlace(localContext)(placeInput);
+        const placeDoc = await Place.v1.create(localContext)(placeInput);
 
         expect(placeDoc).to.deep.equal(expected_doc);
         expect(Place.v1.isPlace(localContext.settings)(placeDoc)).to.be.true;
@@ -540,7 +540,7 @@ describe('local place', () => {
               
           const parentDocReturned = null;
           getDocByIdInner.resolves(parentDocReturned);
-          await expect(Place.v1.createPlace(localContext)(input))
+          await expect(Place.v1.create(localContext)(input))
             .to.be.rejectedWith(`Parent with _id ${input.parent} does not exist.`);
         });
 
@@ -555,7 +555,7 @@ describe('local place', () => {
             type: 'place',
           };
           createDocInner.returns(input);
-          const placeDoc = await Place.v1.createPlace(localContext)(input);
+          const placeDoc = await Place.v1.create(localContext)(input);
           expect(placeDoc).to.deep.equal(input);
           expect(createDocInner.calledOnceWithExactly(input)).to.be.true;
         });
@@ -572,7 +572,7 @@ describe('local place', () => {
           };
           const parentDocReturned = null;
           getDocByIdInner.resolves(parentDocReturned);
-          await expect(Place.v1.createPlace(localContext)(input))
+          await expect(Place.v1.create(localContext)(input))
             .to.be.rejectedWith(`Parent with _id ${input.parent} does not exist.`);
         });
 
@@ -589,7 +589,7 @@ describe('local place', () => {
          
           const parentDocReturned = null;
           getDocByIdInner.resolves(parentDocReturned);
-          await expect(Place.v1.createPlace(localContext)(input))
+          await expect(Place.v1.create(localContext)(input))
             .to.be.rejectedWith(`Contact with _id ${input.contact} does not exist.`);
         });
     });

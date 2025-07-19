@@ -237,7 +237,7 @@ describe('cht-datasource Place', () => {
           ...placeInput, parent: {_id: contact0._id, parent: contact0.parent}, 
           contact: {_id: contact1._id, parent: contact1.parent }
         };
-        const placeDoc = await Place.v1.createPlace(dataContext)(placeInput);
+        const placeDoc = await Place.v1.create(dataContext)(placeInput);
         expect(placeDoc).excluding([ '_rev', 'reported_date', '_id' ])
           .to.deep.equal(updatedPlaceInput);
       });

@@ -297,7 +297,7 @@ describe('Place Controller', () => {
       let placeCreate;
       beforeEach(() => {
         placeCreate = sinon.stub();
-        dataContextBind.withArgs(Place.v1.createPlace)
+        dataContextBind.withArgs(Place.v1.create)
           .returns(placeCreate);
       });
 
@@ -318,7 +318,7 @@ describe('Place Controller', () => {
         const err = new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON.stringify(
           qualifier
         )}].`);
-        await controller.v1.createPlace(req, res);
+        await controller.v1.create(req, res);
         expect(hasAllPermissions
           .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_places'])).to.be.true;
         expect(placeCreate.notCalled).to.be.true;
@@ -349,7 +349,7 @@ describe('Place Controller', () => {
         };
         placeCreate.resolves(expected_doc);
 
-        await controller.v1.createPlace(req, res);
+        await controller.v1.create(req, res);
         expect(hasAllPermissions
           .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_places'])).to.be.true;
         expect(placeCreate.calledOnceWithExactly(input)).to.be.true;

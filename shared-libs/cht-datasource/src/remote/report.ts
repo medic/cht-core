@@ -10,7 +10,7 @@ export namespace v1 {
 
   const getReportUuids = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/report/uuid');
   
-  const createReportPost = (remoteContext: RemoteDataContext) => postResource(remoteContext, 'api/v1/report');
+  const createReport = (remoteContext: RemoteDataContext) => postResource(remoteContext, 'api/v1/report');
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (
     identifier: UuidQualifier
@@ -31,7 +31,7 @@ export namespace v1 {
   };
 
   /** @internal */
-  export const createReport = (remoteContext: RemoteDataContext) => (
+  export const create = (remoteContext: RemoteDataContext) => (
     input: ReportInput
-  ): Promise<Report.v1.Report> => createReportPost(remoteContext)(input);
+  ): Promise<Report.v1.Report> => createReport(remoteContext)(input);
 }
