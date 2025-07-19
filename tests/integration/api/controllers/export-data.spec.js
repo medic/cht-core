@@ -413,7 +413,9 @@ describe('Export Data V2.0', () => {
       apk,
       android,
       cht,
-      settings
+      settings,
+      storageFree,
+      storageTotal
     }) => {
       const [year, month, day] = date.split('-');
       const getUserAgent = () => {
@@ -425,6 +427,20 @@ describe('Export Data V2.0', () => {
           : `AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${browser.version} Safari/537.36`;
         return `Mozilla/5.0 (X11; Linux x86_64) ${platform}`;
       };
+
+      const deviceInfo = {
+        app: {
+          version: apk
+        },
+        software: {
+          androidVersion: android
+        },
+        storage: {
+          free: storageFree,
+          total: storageTotal
+        }
+      };
+
       return {
         _id: `telemetry-${date}-${user}-${deviceId}`,
         type: 'telemetry',
@@ -441,14 +457,7 @@ describe('Export Data V2.0', () => {
         },
         device: {
           userAgent: getUserAgent(),
-          deviceInfo: {
-            app: {
-              version: apk
-            },
-            software: {
-              androidVersion: android
-            }
-          }
+          deviceInfo: deviceInfo
         }
       };
     };
@@ -533,13 +542,21 @@ describe('Export Data V2.0', () => {
           apk: 'v1.0.1',
           android: '5.1',
           cht: `4.6.0`,
-          settings: uuid()
+          settings: uuid(),
+          storageFree: 16713310208,
+          storageTotal: 26544680960
         },
         {
           user: 'min_data',
           deviceId: uuid(),
           date: '2011-11-11',
-          browser: {}
+          browser: {},
+          apk: undefined,
+          android: undefined,
+          cht: undefined,
+          settings: undefined,
+          storageFree: undefined,
+          storageTotal: undefined
         }
       ];
       await saveUsersMetaDocs([...otherDocs, ...expectedData.map(createTelemetryDoc)]);
@@ -558,6 +575,7 @@ describe('Export Data V2.0', () => {
           name: 'Firefox',
           version: '47.0',
         },
+        storageFree: 1000, storageTotal: 2000
       };
       const userData1 = {
         user: 'chw1',
@@ -567,6 +585,7 @@ describe('Export Data V2.0', () => {
           name: 'Firefox',
           version: '48.0',
         },
+        storageFree: 3000, storageTotal: 4000
       };
       const userDataLatest = {
         user: 'chw1',
@@ -576,6 +595,7 @@ describe('Export Data V2.0', () => {
           name: 'Chrome',
           version: '121.0.6167.184',
         },
+        storageFree: 5000, storageTotal: 6000
       };
       const userDataDifferentDevice = {
         user: 'chw1',
@@ -585,6 +605,7 @@ describe('Export Data V2.0', () => {
           name: 'Firefox',
           version: '122.0.1',
         },
+        storageFree: 7000, storageTotal: 8000
       };
       await saveUsersMetaDocs([userData0, userData1, userDataLatest, userDataDifferentDevice].map(createTelemetryDoc));
 

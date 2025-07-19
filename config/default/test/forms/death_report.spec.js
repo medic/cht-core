@@ -16,7 +16,8 @@ describe('Death Report form', () => {
     async() => {
       await harness.clear();
       await harness.setNow(new Date(TODAY));
-    });
+    }
+  );
 
   afterEach(() => expect(harness.consoleErrors).to.be.empty);
 
