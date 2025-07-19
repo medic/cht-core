@@ -123,7 +123,7 @@
     "cht-conf-test-harness": "^5.0.3",
     "clean-css-cli": "^5.6.2",
     "couchdb-compile": "^1.11.2",
-    "csv": "^6.3.11",
+    "csv": "^6.4.1",
     "csv-writer": "^1.6.0",
     "deep-equal-in-any-order": "^2.0.6",
     "doctoc": "^2.2.1",
