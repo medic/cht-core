@@ -237,7 +237,7 @@ describe('cht-datasource Person', () => {
       });
     });
 
-    describe('updatePerson', async () => {
+    describe('update', async () => {
       const personInput = Input.validatePersonInput({
         name: 'apoorva',
         type: 'person',
