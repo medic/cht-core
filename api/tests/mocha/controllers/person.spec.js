@@ -356,7 +356,7 @@ describe('Person Controller', () => {
       });
     });
 
-    describe('updatePerson', () => {
+    describe('update', () => {
       let updatePerson;
       beforeEach(() => {
         updatePerson = sinon.stub();
