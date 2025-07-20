@@ -321,24 +321,26 @@ const updateParents = function(id, callback) {
     });
 };
 
+const migrate = (id) => new Promise((resolve, reject) => {
+  updateParents(id, function(err) {
+    if (err) {
+      return reject(err);
+    }
+    createPerson(id, function(err) {
+      if (err) {
+        return reject(err);
+      }
+      resolve();
+    });
+  });
+});
+
 const migrateOneType = function(type, callback) {
   const processIds = async () => {
     
     const generator = dataContext.bind(Contact.v1.getUuids)(Qualifier.byContactType(type));
     for await (const id of generator) {
-      await new Promise((resolve, reject) => {
-        updateParents(id, function(err) {
-          if (err) {
-            return reject(err);
-          }
-          createPerson(id, function(err) {
-            if (err) {
-              return reject(err);
-            }
-            resolve();
-          });
-        });
-      });
+      await migrate(id);
     }
     
   };
