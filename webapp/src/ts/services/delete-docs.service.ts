@@ -7,6 +7,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { DbService } from '@mm-services/db.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { SessionService } from '@mm-services/session.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,16 +16,25 @@ export class DeleteDocsService {
   private utils;
 
   constructor(
-    private changesService:ChangesService,
-    private dbService:DbService,
-    private extractLineageService:ExtractLineageService,
-    private sessionService:SessionService,
+    private readonly changesService:ChangesService,
+    private readonly dbService:DbService,
+    private readonly extractLineageService:ExtractLineageService,
+    private readonly sessionService:SessionService,
+    private readonly chtDatasourceService: CHTDatasourceService
   ) {
-    this.utils = utilsFactory({ Promise, DB: this.dbService.get() });
   }
 
-  checkForDuplicates(docs) {
-    const errors = this.utils.getDuplicateErrors(docs);
+  private async getUtils() {
+    if (!this.utils) {
+      const dataContext = await this.chtDatasourceService.getDataContext();
+      this.utils = utilsFactory({ Promise, dataContext });
+    }
+    return this.utils;
+  }
+
+  async checkForDuplicates(docs) {
+    const utils = await this.getUtils();
+    const errors = utils.getDuplicateErrors(docs);
     if (errors.length > 0) {
       console.error('Deletion errors', errors);
       throw new Error('Deletion error');
@@ -39,7 +49,8 @@ export class DeleteDocsService {
     });
   }
 
-  deleteAndUpdateDocs(docsToDelete, eventListeners) {
+  async deleteAndUpdateDocs(docsToDelete, eventListeners) {
+    const utils = await this.getUtils();
     if (this.sessionService.isOnlineOnly()) {
       const docIds = docsToDelete.map((doc) => {
         return { _id: doc._id };
@@ -50,8 +61,8 @@ export class DeleteDocsService {
     docsToDelete.forEach((doc) => {
       doc._deleted = true;
     });
-    this.checkForDuplicates(docsToDelete);
-    return this.utils
+    await this.checkForDuplicates(docsToDelete);
+    return utils
       .updateParentContacts(docsToDelete)
       .then((updatedParents) => {
         const allDocs = docsToDelete.concat(updatedParents.docs);

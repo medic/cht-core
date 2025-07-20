@@ -39,6 +39,7 @@ import { ContactViewModelGeneratorService } from '@mm-services/contact-view-mode
 import { DeduplicateService } from '@mm-services/deduplicate.service';
 import { ContactsService } from '@mm-services/contacts.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -102,6 +103,7 @@ describe('Form service', () => {
   let contactsService;
   let performanceService;
   let performanceTracking;
+  let userContactSummaryService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -170,6 +172,7 @@ describe('Form service', () => {
     extractLineageService = { extract: ExtractLineageService.prototype.extract };
     targetAggregatesService = { getTargetDocs: sinon.stub() };
     contactViewModelGeneratorService = { loadReports: sinon.stub() };
+    userContactSummaryService = { get: sinon.stub() };
 
     const getSiblings = sinon.stub();
     getDuplicates = sinon.stub();
@@ -211,6 +214,7 @@ describe('Form service', () => {
         { provide: DeduplicateService, useValue: deduplicateService },
         { provide: ContactsService, useValue: contactsService },
         { provide: PerformanceService, useValue: performanceService },
+        { provide: UserContactSummaryService, useValue: userContactSummaryService },
       ],
     });
 
@@ -282,11 +286,12 @@ describe('Form service', () => {
       xmlFormsService.canAccessForm.resolves(true);
 
       ContactSummary.resolves({ context: { pregnant: false } });
+      userContactSummaryService.get.resolves({ context: { chw: true } });
       Search.resolves([{ _id: 'some_report' }]);
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'some_parent' }] });
       const instanceData = { contact: { _id: '123-patient-contact' } };
 
-      EnketoPrepopulationData.resolves('<xml></xml>');
+      EnketoPrepopulationData.returns('<xml></xml>');
       const expectedErrorTitle = `Failed during the form "myform" rendering : `;
       const expectedErrorDetail = ['nope', 'still nope'];
       const expectedErrorMessage = expectedErrorTitle + JSON.stringify(expectedErrorDetail);
@@ -300,8 +305,9 @@ describe('Form service', () => {
         expect.fail('Should throw error');
       } catch (error) {
         expect(UserContact.calledOnce).to.be.true;
+        expect(userContactSummaryService.get.calledOnce).to.equal(true);
         expect(xmlFormsService.canAccessForm.calledOnce).to.be.true;
-        expect(xmlFormsService.canAccessForm.args[0]).to.have.deep.members([
+        expect(xmlFormsService.canAccessForm.args[0]).to.deep.equal([
           {
             _attachments: {
               xml: { something: true },
@@ -312,7 +318,12 @@ describe('Form service', () => {
             internalId: 'myform',
           },
           { contact_id: '123-user-contact' },
-          { doc: { _id: '123-patient-contact' }, contactSummary: { pregnant: false }, shouldEvaluateExpression: true },
+          { chw: true },
+          {
+            doc: { _id: '123-patient-contact' },
+            contactSummary: { pregnant: false },
+            shouldEvaluateExpression: true
+          },
         ]);
         expect(enketoInit.callCount).to.equal(1);
         expect(error.message).to.equal(expectedErrorMessage);
@@ -329,7 +340,7 @@ describe('Form service', () => {
         .onSecondCall().resolves(VISIT_MODEL);
       enketoInit.returns([]);
       FileReader.utf8.resolves('<some-blob name="xml"/>');
-      EnketoPrepopulationData.resolves('<xml></xml>');
+      EnketoPrepopulationData.returns('<xml></xml>');
       return service.render(new WebappEnketoFormContext('#div', 'task', mockEnketoDoc('myform'))).then(() => {
         expect(UserContact.callCount).to.equal(1);
         expect(EnketoPrepopulationData.callCount).to.equal(1);
@@ -357,7 +368,7 @@ describe('Form service', () => {
       FileReader.utf8
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
-      EnketoPrepopulationData.resolves(data);
+      EnketoPrepopulationData.returns(data);
       const formContext = new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform'), data);
       return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
@@ -381,7 +392,7 @@ describe('Form service', () => {
       FileReader.utf8
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
-      EnketoPrepopulationData.resolves(data);
+      EnketoPrepopulationData.returns(data);
       const instanceData = {
         contact: {
           _id: 'fffff',
@@ -393,6 +404,7 @@ describe('Form service', () => {
         }
       };
       ContactSummary.resolves({ context: { pregnant: true } });
+      userContactSummaryService.get.resolves({ context: { chw: true } });
       contactViewModelGeneratorService.loadReports.resolves([{ _id: 'somereport' }]);
       targetAggregatesService.getTargetDocs.resolves([{ _id: 't1' }, { _id: 't2' }]);
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'someparent' }] });
@@ -400,11 +412,14 @@ describe('Form service', () => {
       service.setUserContext(['facility'], 'contact');
       return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
-        expect(EnketoForm.args[0][1].external.length).to.equal(1);
-        const summary = EnketoForm.args[0][1].external[0];
-        expect(summary.id).to.equal('contact-summary');
-        const xmlStr = new XMLSerializer().serializeToString(summary.xml);
-        expect(xmlStr).to.equal('<context><pregnant>true</pregnant></context>');
+        const summary = EnketoForm.args[0][1].external;
+        expect(summary.length).to.equal(2);
+        expect(summary[0].id).to.equal('contact-summary');
+        expect(new XMLSerializer().serializeToString(summary[0].xml))
+          .to.equal('<context><pregnant>true</pregnant></context>');
+        expect(summary[1].id).to.equal('user-contact-summary');
+        expect(new XMLSerializer().serializeToString(summary[1].xml))
+          .to.equal('<context><chw>true</chw></context>');
         expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
         expect(contactViewModelGeneratorService.loadReports.args[0]).to.deep.equal(
           [{ doc: instanceData.contact }, []]
@@ -440,7 +455,7 @@ describe('Form service', () => {
       FileReader.utf8
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
-      EnketoPrepopulationData.resolves(data);
+      EnketoPrepopulationData.returns(data);
       const instanceData = {
         contact: {
           _id: 'fffff'
@@ -457,17 +472,24 @@ describe('Form service', () => {
           notes: `always <uses> reserved "characters" & 'words'`
         }
       });
+      userContactSummaryService.get.resolves({ context: { chw: true, forms: false } });
       LineageModelGenerator.contact.resolves({ lineage: [] });
       const formContext = new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
       return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
-        expect(EnketoForm.args[0][1].external.length).to.equal(1);
+        expect(EnketoForm.args[0][1].external.length).to.equal(2);
         const summary = EnketoForm.args[0][1].external[0];
         expect(summary.id).to.equal('contact-summary');
         const xmlStr = new XMLSerializer().serializeToString(summary.xml);
         expect(xmlStr).to.equal('<context><pregnant>true</pregnant><previousChildren><dob>2016</dob>' +
           '<dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved "' +
           'characters" &amp; \'words\'</notes></context>');
+
+        const userSummary = EnketoForm.args[0][1].external[1];
+        expect(userSummary.id).to.equal('user-contact-summary');
+        expect(new XMLSerializer().serializeToString(userSummary.xml))
+          .to.equal('<context><chw>true</chw><forms>false</forms></context>');
+
         expect(ContactSummary.callCount).to.equal(1);
         expect(ContactSummary.args[0][0]._id).to.equal('fffff');
       });
@@ -499,8 +521,9 @@ describe('Form service', () => {
       const formContext = new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
       return service.render(formContext).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
-        expect(EnketoForm.args[0][1].external).to.equal(undefined);
+        expect(EnketoForm.args[0][1].external).to.deep.equal([]);
         expect(ContactSummary.callCount).to.equal(0);
+        expect(userContactSummaryService.get.callCount).to.equal(0);
         expect(LineageModelGenerator.contact.callCount).to.equal(0);
       });
     });
@@ -518,7 +541,7 @@ describe('Form service', () => {
       FileReader.utf8
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
-      EnketoPrepopulationData.resolves('<data><patient_id>123</patient_id></data>');
+      EnketoPrepopulationData.returns('<data><patient_id>123</patient_id></data>');
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
@@ -544,7 +567,7 @@ describe('Form service', () => {
     it('should execute the unload process before rendering the second form', async () => {
       enketoInit.returns([]);
       FileReader.utf8.resolves('<some-blob name="xml"/>');
-      EnketoPrepopulationData.resolves('<xml></xml>');
+      EnketoPrepopulationData.returns('<xml></xml>');
       UserContact.resolves({ contact_id: '123' });
       xmlFormsService.canAccessForm.resolves(true);
       dbGetAttachment
@@ -595,7 +618,7 @@ describe('Form service', () => {
       FileReader.utf8
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
-      EnketoPrepopulationData.resolves(data);
+      EnketoPrepopulationData.returns(data);
       const renderForm = sinon.spy(EnketoService.prototype, 'renderForm');
 
       try {
@@ -618,6 +641,7 @@ describe('Form service', () => {
       UserContact.resolves({ contact_id: '123-user-contact' });
       xmlFormsService.canAccessForm.resolves(false);
       ContactSummary.resolves({ context: { pregnant: false } });
+      userContactSummaryService.get.resolves({ context: { chw: true } });
 
       try {
         await service.render(new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform')));
@@ -638,6 +662,7 @@ describe('Form service', () => {
             internalId: 'myform',
           },
           { contact_id: '123-user-contact' },
+          undefined,
           { doc: undefined, contactSummary: undefined, shouldEvaluateExpression: true },
         ]);
         expect(enketoInit.notCalled).to.be.true;
@@ -1355,7 +1380,8 @@ describe('Form service', () => {
           { provide: TrainingCardsService, useValue: trainingCardsService },
           { provide: FeedbackService, useValue: feedbackService },
           { provide: DeduplicateService, useValue: deduplicateService },
-          { provide: ContactsService, useValue: contactsService }
+          { provide: ContactsService, useValue: contactsService },
+          { provide: UserContactSummaryService, useValue: userContactSummaryService },
         ],
       });
 
@@ -1664,7 +1690,7 @@ describe('Form service', () => {
         docs[0].transitioned = true;
         return Promise.resolve(docs);
       });
-      
+
       dbBulkDocs.resolves([]);
       clock = sinon.useFakeTimers(1000);
 
@@ -1719,7 +1745,7 @@ describe('Form service', () => {
       contactViewModelGeneratorService.loadReports.resolves([{ _id: 'somereport' }]);
       targetAggregatesService.getTargetDocs.resolves([{ _id: 't1' }, { _id: 't2' }]);
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'someparent' }] });
-      ContactSummary.resolves({ 
+      ContactSummary.resolves({
         context: { pregnant: true },
         fields: [
           { label: 'label.short_name', value: contact.short_name },
@@ -1737,7 +1763,7 @@ describe('Form service', () => {
         context: {
           pregnant: true,
         },
-        fields: [ 
+        fields: [
           { label: 'label.short_name', value: 'tp1' },
           { label: 'label.dob_type', value: 'exact' },
         ],

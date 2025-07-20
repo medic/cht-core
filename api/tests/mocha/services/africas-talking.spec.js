@@ -5,7 +5,7 @@ const secureSettings = require('@medic/settings');
 const config = require('../../../src/config');
 const service = require('../../../src/services/africas-talking');
 
-const SUCCESS_RESPONSE = JSON.stringify({
+const SUCCESS_RESPONSE = {
   SMSMessageData: {
     Message: 'Sent to 1/1 Total Cost: KES 0.8000',
     Recipients: [{
@@ -16,9 +16,9 @@ const SUCCESS_RESPONSE = JSON.stringify({
       messageId: 'ATPid_SampleTxnId123'
     }]
   }
-});
+};
 
-const INVALID_PHONE_NUMBER_RESPONSE = JSON.stringify({
+const INVALID_PHONE_NUMBER_RESPONSE = {
   SMSMessageData: {
     Message: 'Sent to 1/1 Total Cost: KES 0.8000',
     Recipients: [{
@@ -29,9 +29,9 @@ const INVALID_PHONE_NUMBER_RESPONSE = JSON.stringify({
       messageId: 'def'
     }]
   }
-});
+};
 
-const INTERNAL_SERVER_ERROR_RESPONSE = JSON.stringify({
+const INTERNAL_SERVER_ERROR_RESPONSE = {
   SMSMessageData: {
     Message: 'Sent to 1/1 Total Cost: KES 0.8000',
     Recipients: [{
@@ -42,7 +42,7 @@ const INTERNAL_SERVER_ERROR_RESPONSE = JSON.stringify({
       messageId: 'ghi'
     }]
   }
-});
+};
 
 describe('africas talking service', () => {
 

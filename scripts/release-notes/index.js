@@ -288,7 +288,7 @@ linkTitle: "${MILESTONE_NAME}"
 sidebar:
   exclude: true
 description: 
-  Released "${currentDate}"
+  Released ${currentDate}
 aliases:
   -    /core/releases/${MILESTONE_NAME}
   -    /releases/${MILESTONE_NAME}

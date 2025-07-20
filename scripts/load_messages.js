@@ -29,7 +29,8 @@ ANCR jina Maria,+13125551212,"Apr 11, 2021 18:00 +0800",sw\n
 "IMMR # mtoto Sandra Muragiri, III# mamaid 48892#dob 200",+13125551212,not a date,sw\n`;
 
 if (!args[2] || !args[3]) {
-  return console.error(usage);
+  console.error(usage);
+  process.exit(1);
 }
 
 const parser = csv.parse();

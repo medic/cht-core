@@ -27,4 +27,12 @@ export namespace v1 {
     };
     return getReportUuids(remoteContext)(queryParams);
   };
+
+  /** @internal */
+  export const getWithLineage = (remoteContext: RemoteDataContext) => (
+    identifier: UuidQualifier
+  ): Promise<Nullable<Report.v1.ReportWithLineage>> => {
+    const queryParams = { with_lineage: 'true' };
+    return getReport(remoteContext)(identifier.uuid, queryParams);
+  };
 }

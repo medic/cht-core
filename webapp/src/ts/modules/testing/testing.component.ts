@@ -21,7 +21,7 @@ import { TranslatePipe } from '@ngx-translate/core';
   ],
 })
 export class TestingComponent implements OnInit {
-  amountFeedbackDocs:any = 5000;
+  amountFeedbackDocs: any = 5000;
   debugEnabled: boolean | null = false;
   purging = false;
   generatingFeedback = false;

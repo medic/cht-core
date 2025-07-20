@@ -575,7 +575,7 @@ describe('transitions', () => {
         try {
           expectTransitions(infodoc, 'default_responses', 'update_clinics');
           chai.expect(infodoc.transitions.muting).to.equal(undefined);
-        } catch (err) {
+        } catch {
           expectTransitions(infodoc, 'default_responses', 'update_clinics', 'muting');
         }
 
