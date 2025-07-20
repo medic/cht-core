@@ -15,7 +15,7 @@ import { InvalidArgumentError } from '../libs/error';
 import { normalizeFreetext, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 import { isContactType, isContactTypeAndFreetextType } from '../libs/parameter-validators';
-import lineage from '@medic/lineage';
+import { fetchHydratedDoc } from './libs/lineage';
 
 /** @internal */
 export namespace v1 {
@@ -50,20 +50,13 @@ export namespace v1 {
 
   /** @internal */
   export const getWithLineage = ({ medicDb, settings }: LocalDataContext) => {
-    const { fetchHydratedDoc } = lineage(Promise, medicDb) as { 
-                                    fetchHydratedDoc: (
-                                      uuid: string, 
-                                      options?: { throwWhenMissingLineage?: boolean }, 
-                                      callback?: (err: Error | null, result?: Doc) => void
-                                    ) => Promise<Doc> 
-                                  };
-    
+    const fetchHydratedMedicDoc = fetchHydratedDoc(medicDb);
     return async (identifier: UuidQualifier): Promise<Nullable<Contact.v1.ContactWithLineage>> => {
-      const contact = await fetchHydratedDoc(identifier.uuid);
+      const contact = await fetchHydratedMedicDoc(identifier.uuid);
       if (!isContact(settings)(contact, identifier.uuid)) {
         return null;
       }
-
+  
       return contact;
     };
   };
