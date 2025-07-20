@@ -124,7 +124,7 @@ describe('local contact', () => {
       });
 
       it('returns a contact with lineage for place type contact', async () => {
-        const placeContact = { type: 'place', _id: 'place0', _rev: 'rev', lineage: true, 
+        const placeContact = { type: 'place', _id: 'place0', _rev: 'rev', 
           contact: { _id: 'contact0', _rev: 'rev' } };
         const mockFunction = sinon.stub().resolves(placeContact);
         mockFetchHydratedDoc.returns(mockFunction);

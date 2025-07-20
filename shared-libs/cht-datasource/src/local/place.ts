@@ -8,7 +8,7 @@ import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
 import { InvalidArgumentError } from '../libs/error';
 import { validateCursor } from './libs/core';
-import lineage from '@medic/lineage';
+import { fetchHydratedDoc } from './libs/lineage';
 
 /** @internal */
 export namespace v1 {
@@ -39,20 +39,13 @@ export namespace v1 {
 
   /** @internal */
   export const getWithLineage = ({ medicDb, settings }: LocalDataContext) => {
-    const { fetchHydratedDoc } = lineage(Promise, medicDb) as { 
-                                        fetchHydratedDoc: (
-                                          uuid: string, 
-                                          options?: { throwWhenMissingLineage?: boolean }, 
-                                          callback?: (err: Error | null, result?: Doc) => void
-                                        ) => Promise<Doc> 
-                                      };
-        
+    const fetchHydratedMedicDoc = fetchHydratedDoc(medicDb);
     return async (identifier: UuidQualifier): Promise<Nullable<Place.v1.PlaceWithLineage>> => {
-      const place = await fetchHydratedDoc(identifier.uuid);
+      const place = await fetchHydratedMedicDoc(identifier.uuid);
       if (!isPlace(settings)(place, identifier.uuid)) {
         return null;
       }
-    
+
       return place;
     };
   };

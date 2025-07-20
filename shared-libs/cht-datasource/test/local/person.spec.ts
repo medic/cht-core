@@ -94,7 +94,7 @@ describe('local person', () => {
       });
 
       it('returns a person with lineage', async () => {
-        const personWithLineage = { type: 'person', _id: 'uuid', _rev: 'rev', lineage: true };
+        const personWithLineage = { type: 'person', _id: 'uuid', _rev: 'rev' };
         const mockFunction = sinon.stub().resolves(personWithLineage);
         mockFetchHydratedDoc.returns(mockFunction);
         isPerson.returns(true);
