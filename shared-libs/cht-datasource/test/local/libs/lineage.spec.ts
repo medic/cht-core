@@ -285,4 +285,43 @@ describe('local lineage lib', () => {
       expect(deepCopy.calledOnceWithExactly(personWithLineage)).to.be.true;
     });
   });
+
+  describe('fetchHydratedDoc', () => {
+    let medicGet: SinonStub;
+    let medicDb: PouchDB.Database<Doc>;
+
+    beforeEach(() => {
+      medicGet = sinon.stub();
+      medicDb = {
+        query: sinon.stub().resolves({ rows: [] }),
+        get: medicGet
+      } as unknown as PouchDB.Database<Doc>;
+    });
+
+    it('returns the result from shared-libs/lineage', async () => {
+      const doc = { _id: '123', _rev: 'rev-1', type: 'data_record', form: 'test_form' };
+      medicGet.resolves(doc);
+
+      const result = await Lineage.fetchHydratedDoc(medicDb)(doc._id);
+
+      expect(result).to.equal(doc);
+    });
+
+    it('returns null when no doc is found', async () => {
+      const error = { status: 404 };
+      medicGet.rejects(error);
+
+      const result = await Lineage.fetchHydratedDoc(medicDb)('not-found');
+
+      expect(result).to.be.null;
+    });
+
+    it('throws error if there is a problem calling shared-libs/lineage', async () => {
+      const error = { message: 'some error' };
+      medicGet.rejects(error);
+      const fetchHydratedMedicDoc = Lineage.fetchHydratedDoc(medicDb);
+
+      await expect(fetchHydratedMedicDoc('not-found')).to.be.rejectedWith(error.message);
+    });
+  });
 });
