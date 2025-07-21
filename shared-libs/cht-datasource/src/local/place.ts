@@ -1,9 +1,9 @@
-import { Doc } from '../libs/doc';
+import { Doc, isDoc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
 import { hasField, isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Place from '../place';
-import { createDoc, fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
+import { createDoc, fetchAndFilter, getDocById, queryDocsByKey, updateDoc } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
 import {
@@ -11,7 +11,13 @@ import {
   getLineageDocsById,
 } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
-import { addParentToInput, validateCursor } from './libs/core';
+import { 
+  addParentToInput, 
+  dehydrateDoc,
+  ensureHasRequiredFields,
+  ensureImmutability,
+  validateCursor 
+} from './libs/core';
 import { PlaceInput } from '../input';
 
 /** @internal */
@@ -233,6 +239,51 @@ export namespace v1 {
       input = await appendContact(input);
 
       return await createPlaceDoc(input) as Place.v1.Place;
+    };
+  };
+
+  const validateUpdatePlacePayload = (
+    originalDoc: Doc,
+    placeInput: Record<string, unknown>
+  ):Record<string, unknown> => {
+    const immutableRequiredFields = new Set(['_rev', '_id', 'type', 'reported_date']);
+    const mutableRequiredFields = new Set(['name']);
+    const hasParent = hasField(originalDoc, {type: 'object', name: 'parent', ensureTruthyValue: true}); 
+    const hasContact = hasField(originalDoc, {type: 'object', name: 'contact', ensureTruthyValue: true}); 
+    if (originalDoc.type==='contact'){
+      immutableRequiredFields.add('contact_type');
+    }
+    if (hasParent){
+      immutableRequiredFields.add('parent');
+    }
+    if (hasContact){
+      immutableRequiredFields.add('contact');
+    }
+    ensureHasRequiredFields(immutableRequiredFields, mutableRequiredFields, originalDoc, placeInput);
+    ensureImmutability(immutableRequiredFields, originalDoc, placeInput);
+    if (hasParent) {
+      placeInput = {...placeInput, ...dehydrateDoc(placeInput)};
+    }
+    if (hasContact) {
+      placeInput = { ...placeInput, contact: {...dehydrateDoc(placeInput.contact as Record<string, unknown>)}};
+    }
+    return placeInput;
+  };
+
+  /** @internal*/
+  export const update = ({medicDb, settings}:LocalDataContext) => {
+    const updatePlace = updateDoc(medicDb);
+    const getPlace = get({medicDb, settings} as LocalDataContext);
+    return async(placeInput: Record<string, unknown>):Promise<Place.v1.Place> => {
+      if (!isDoc(placeInput)){
+        throw new InvalidArgumentError(`Document for update is not a valid Doc ${JSON.stringify(placeInput)}`);
+      }
+      const originalDoc = await getPlace({uuid: placeInput._id});
+      if (originalDoc===null){
+        throw new InvalidArgumentError(`Place not found`);
+      }
+      placeInput = validateUpdatePlacePayload(originalDoc, placeInput);
+      return await updatePlace(placeInput) as Place.v1.Place;
     };
   };
 }

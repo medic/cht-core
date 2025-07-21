@@ -17,6 +17,8 @@ describe('local place', () => {
   let isPlace: SinonStub;
   let createDocOuter: SinonStub;
   let createDocInner: SinonStub;
+  let updateDocOuter: SinonStub;
+  let updateDocInner: SinonStub;
 
   beforeEach(() => {
     settingsGetAll = sinon.stub();
@@ -29,6 +31,8 @@ describe('local place', () => {
     isPlace = sinon.stub(contactTypeUtils, 'isPlace');
     createDocOuter = sinon.stub(LocalDoc, 'createDoc');
     createDocInner = sinon.stub();
+    updateDocOuter = sinon.stub(LocalDoc, 'updateDoc');
+    updateDocInner = sinon.stub();
   });
 
   afterEach(() => sinon.restore());
@@ -321,7 +325,7 @@ describe('local place', () => {
       });
     });
 
-    describe('createPlace', () => {
+    describe('create', () => {
       let getDocByIdOuter: SinonStub;
       let getDocByIdInner: SinonStub;
 
@@ -594,6 +598,162 @@ describe('local place', () => {
         });
     });
 
+    describe('update', () => {
+      let getDocByIdOuter: SinonStub;
+      let getDocByIdInner: SinonStub;
+
+      beforeEach(() => {
+        getDocByIdInner = sinon.stub();
+        getDocByIdOuter = sinon.stub(LocalDoc, 'getDocById').returns(getDocByIdInner);
+        updateDocOuter.returns(updateDocInner);
+      });
+
+      it('throws error if parent field is present but hierarchy does not match', async() => {
+        const updateInput = {
+          _id: '1',
+          _rev: '1',
+          name: 'myPlace',
+          type: 'contact',
+          contact_type: 'district_hospital', 
+          parent: {
+            _id: '1', parent: {
+              _id: '2'
+            }
+          },
+          reported_date: 12312312
+        };
+
+        const originalDoc = {
+          ...updateInput,
+          name: 'myOldPlace',
+          parent: {
+            _id: '1', parent: {
+              _id: '3'
+            }
+          }
+        };
+        isPlace.returns(true);
+        getDocByIdInner.resolves(originalDoc);
+
+        await expect(Place.v1.update(localContext)(updateInput)).to
+          .be.rejectedWith('Lineage does not match with the lineage of the doc in the db');
+      });
+
+      it('throws error if contact field is present but hierarchy does not match', async() => {
+        const updateInput = {
+          _id: '1',
+          _rev: '1',
+          name: 'myPlace',
+          type: 'contact',
+          contact_type: 'district_hospital', 
+          contact: {
+            _id: '1', parent: {
+              _id: '2'
+            }
+          },
+          reported_date: 12312312
+        };
+
+        const originalDoc = {
+          ...updateInput,
+          name: 'myOldPlace',
+          contact: {
+            _id: '1', parent: {
+              _id: '3'
+            }
+          }
+        };
+        isPlace.returns(true);
+        getDocByIdInner.resolves(originalDoc);
+
+        await expect(Place.v1.update(localContext)(updateInput)).to
+          .be.rejectedWith('Lineage does not match with the lineage of the doc in the db');
+      });
+
+      it('throws error if _rev is absent', async() => {
+        const updateInput = {
+          _id: '1',
+          name: 'myPlace',
+          type: 'contact',
+          contact_type: 'district_hospital', 
+          contact: {
+            _id: '1', parent: {
+              _id: '2'
+            }
+          },
+          reported_date: 12312312
+        };
+
+        await expect(Place.v1.update(localContext)(updateInput)).to
+          .be.rejectedWith(`Document for update is not a valid Doc ${JSON.stringify(updateInput)}`);
+        expect(getDocByIdOuter.called).to.be.true;
+      });
     
+      it('throws error if Document does not exist', async() => {
+        const updateInput = {
+          _id: '1',
+          _rev: '1',
+          name: 'myPlace',
+          type: 'contact',
+          contact_type: 'district_hospital', 
+          contact: {
+            _id: '1', parent: {
+              _id: '2'
+            }
+          },
+          reported_date: 12312312
+        };
+        isPlace.returns(true);
+        getDocByIdInner.resolves(null);
+
+        await expect(Place.v1.update(localContext)(updateInput)).to
+          .be.rejectedWith(`Place not found`);
+      });
+
+      it('returns updated place doc for valid input', async() => {
+        const updateInput = {
+          _id: '1',
+          _rev: '1',
+          name: 'myPlace',
+          type: 'contact',
+          contact_type: 'district_hospital', 
+          contact: {
+            _id: '1', parent: {
+              _id: '2',
+              some_extra: 'field',
+            }
+          },
+          parent: {
+            some_extra: 'field',
+            _id: '3', parent: {
+              _id: '4',
+              test: 'field',
+            }
+          },
+          reported_date: 12312312
+        };
+        isPlace.returns(true);
+        const originalDoc = {...updateInput, name: 'hello'};
+        getDocByIdInner.resolves(originalDoc);
+        updateDocInner.resolves(updateInput);
+        const resultDoc = await Place.v1.update(localContext)(updateInput);
+        expect(resultDoc).to.deep.equal({
+          ...updateInput
+        }); 
+        // ensures that the parent and contact lineages are always dehyrated before update.
+        expect(updateDocInner.calledWithExactly({
+          ...updateInput, parent: {
+            _id: '3', parent: {
+              _id: '4'
+            }
+          }, contact: {
+            _id: '1',
+            parent: {
+              _id: '2'
+            }
+          }
+        })).to.be.true;
+      });
+    });
   });
 });
