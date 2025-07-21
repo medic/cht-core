@@ -1,7 +1,6 @@
 const lineageFactory = require('@medic/lineage');
 const cht = require('@medic/cht-datasource');
 const chtDatasource = cht.getDatasource(cht.getRemoteDataContext());
-chtDatasource.v1.report.getByUuidWithLineage;
 /**
  * Hydrates the given doc by uuid and creates a model which holds
  * the doc and associated contacts. eg:
