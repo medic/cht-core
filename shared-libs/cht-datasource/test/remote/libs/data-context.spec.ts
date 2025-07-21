@@ -8,7 +8,8 @@ import {
   getRemoteDataContext,
   isRemoteDataContext,
   RemoteDataContext,
-  postResource
+  postResource,
+  putResource
 } from '../../../src/remote/libs/data-context';
 import { DataContext, InvalidArgumentError } from '../../../src';
 
@@ -206,7 +207,7 @@ describe('remote context lib', () => {
       expect(fetchResponse.text.called).to.be.true;
       expect(fetchResponse.json.notCalled).to.be.true;
       expect(loggerError.args[0]).to.deep.equal([
-        `Failed to post ${JSON.stringify(qualifier)} to ${context.url}/${path}.`,
+        `Failed to POST ${JSON.stringify(qualifier)} to ${context.url}/${path}.`,
         expectedError
       ]);
     });
@@ -218,17 +219,81 @@ describe('remote context lib', () => {
         type: 'place'
       };
 
-      const expoected_response = {...qualifier, _id: '1', _rev: '1', _reported_date: 123123123 };
+      const expected_response = {...qualifier, _id: '1', _rev: '1', _reported_date: 123123123 };
       fetchResponse.ok = true;
       fetchResponse.status = 200;
-      fetchResponse.json.resolves(expoected_response);
+      fetchResponse.json.resolves(expected_response);
 
       const response = await postResource(context, path)(qualifier);
 
-      expect(response).to.deep.equal(expoected_response);
+      expect(response).to.deep.equal(expected_response);
       expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}`,
         {
           method: 'POST', 
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(qualifier)})).to.be.true;
+
+      expect(fetchResponse.json.calledOnceWithExactly()).to.be.true;
+    });
+  });
+
+  describe('putResource', () => {
+    it('throws InvalidArgumentError if the Bad Request - 400 status is returned', async () => {
+      const path = 'path';
+      const input = {
+        name: 'user-1',
+        contact: {
+          _id: '1',
+          parent: {
+            _id: '2'
+          }
+        }
+      };
+      const errorMsg = `Missing or empty required fields [${JSON.stringify(input)}].`;
+      fetchResponse.ok = false;
+      fetchResponse.status = 400;
+      fetchResponse.statusText = errorMsg;
+
+      fetchResponse.text.resolves(errorMsg);
+      const expectedError = new InvalidArgumentError(errorMsg);
+      await expect(putResource(context, path)(input)).to.be.rejectedWith(errorMsg);
+
+      expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}`, 
+        {
+          method: 'PUT', 
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(input)})).to.be.true;
+      
+      expect(fetchResponse.text.called).to.be.true;
+      expect(fetchResponse.json.notCalled).to.be.true;
+      expect(loggerError.args[0]).to.deep.equal([
+        `Failed to PUT ${JSON.stringify(input)} to ${context.url}/${path}.`,
+        expectedError
+      ]);
+    });
+
+    it('updates a resource for valid req body and path', async () => {
+      const path = 'path';
+      const qualifier = {
+        name: 'city-1',
+        type: 'place'
+      };
+
+      const expected_response = {...qualifier, _id: '1', _rev: '1', _reported_date: 123123123 };
+      fetchResponse.ok = true;
+      fetchResponse.status = 200;
+      fetchResponse.json.resolves(expected_response);
+
+      const response = await putResource(context, path)(qualifier);
+
+      expect(response).to.deep.equal(expected_response);
+      expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}`,
+        {
+          method: 'PUT', 
           headers: {
             'Content-Type': 'application/json',
           },

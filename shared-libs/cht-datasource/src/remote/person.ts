@@ -1,7 +1,7 @@
 import { Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
-import { getResource, getResources, postResource, RemoteDataContext } from './libs/data-context';
+import { getResource, getResources, postResource, putResource, RemoteDataContext } from './libs/data-context';
 import { PersonInput } from '../input';
 
 /** @internal */
@@ -10,10 +10,14 @@ export namespace v1 {
 
   const getPeople = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/person');
 
-  const createPersonPost = (
+  const createPerson = (
     remoteContext: RemoteDataContext
   ) => postResource(remoteContext, 'api/v1/person');
  
+  const updatePerson = (
+    remoteContext: RemoteDataContext
+  ) => putResource(remoteContext, 'api/v1/person');
+
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (
     identifier: UuidQualifier
@@ -42,9 +46,14 @@ export namespace v1 {
   };
 
   /** @internal */
-  export const createPerson = 
+  export const create = 
   (remoteContext: RemoteDataContext) => (
     input:PersonInput
-  ):Promise<Person.v1.Person> => createPersonPost(remoteContext)(input);
+  ):Promise<Person.v1.Person> => createPerson(remoteContext)(input);
   
+  /** @internal */
+  export const update = 
+  (remoteContext: RemoteDataContext) => (
+    input:Record<string, unknown>
+  ):Promise<Person.v1.Person> => updatePerson(remoteContext)(input);
 }

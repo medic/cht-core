@@ -10,7 +10,7 @@ export namespace v1 {
 
   const getPlaces = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/place');
 
-  const createPlacePost = (remoteContext: RemoteDataContext) => postResource(remoteContext, 'api/v1/place');
+  const createPlace = (remoteContext: RemoteDataContext) => postResource(remoteContext, 'api/v1/place');
 
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (
@@ -40,8 +40,8 @@ export namespace v1 {
   };
 
   /** @internal */
-  export const createPlace = 
+  export const create = 
   (remoteContext: RemoteDataContext) => (
     input:PlaceInput
-  ):Promise<Place.v1.Place> => createPlacePost(remoteContext)(input);
+  ):Promise<Place.v1.Place> => createPlace(remoteContext)(input);
 }

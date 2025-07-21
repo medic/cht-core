@@ -346,7 +346,7 @@ describe('local person', () => {
           name: 'user-1',
           parent: 'p1'
         };
-        await expect(Person.v1.createPerson(localContext)(personInput))
+        await expect(Person.v1.create(localContext)(personInput))
           .to.be.rejectedWith('Invalid person type.');
         expect(createDocInner.called).to.be.false;
       });
@@ -385,7 +385,7 @@ describe('local person', () => {
             }
           }
         };
-        const person = await Person.v1.createPerson(localContext)(input);
+        const person = await Person.v1.create(localContext)(input);
         expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
         expect(createDocInner.args[0][0]).to.deep.equal(expected_output);
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
@@ -405,7 +405,7 @@ describe('local person', () => {
           getDocByIdInner.resolves(parentDocReturned);
           const input_reported_date = new Date().toISOString();
           createDocInner.resolves({ reported_date: input_reported_date, ...input });
-          const person = await Person.v1.createPerson(localContext)(input);
+          const person = await Person.v1.create(localContext)(input);
           expect(getDocByIdInner.calledOnce).to.be.true;
           expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
           expect(createDocInner.calledOnceWithExactly({...input, parent: parentDocReturned })).to.be.true;
@@ -422,7 +422,7 @@ describe('local person', () => {
           
           const parentDocReturned = null;
           getDocByIdInner.resolves(parentDocReturned);
-          await expect( Person.v1.createPerson(localContext)(input))
+          await expect( Person.v1.create(localContext)(input))
             .to.be.rejectedWith(`Parent with _id ${input.parent} does not exist.`);
         });
 
@@ -440,7 +440,7 @@ describe('local person', () => {
           };
 
           getDocByIdInner.resolves(null);
-          await expect(Person.v1.createPerson(localContext)(input))
+          await expect(Person.v1.create(localContext)(input))
             .to.be.rejectedWith(`Parent with _id ${input.parent} does not exist.`);
         });
 
@@ -457,7 +457,7 @@ describe('local person', () => {
             parent: 'p1'
           };
           const updatedInput = {...input, type: 'contact', contact_type: 'person'};
-          await expect( Person.v1.createPerson(localContext)(input))
+          await expect( Person.v1.create(localContext)(input))
             .to.be.rejectedWith(`Invalid type of person, cannot have parent for [${JSON.stringify(updatedInput)}].`);
           expect(getDocByIdInner.called).to.be.false;
         });
@@ -481,7 +481,7 @@ describe('local person', () => {
           };
           getDocByIdInner.resolves(returnedParentDoc);
           const updatedInput = {...input, type: 'contact', contact_type: 'person'};
-          await expect( Person.v1.createPerson(localContext)(input))
+          await expect( Person.v1.create(localContext)(input))
             .to.be.rejectedWith(`Invalid parent type for [${JSON.stringify(updatedInput)}].`);
         });
 
@@ -494,7 +494,7 @@ describe('local person', () => {
         };
       
         await expect(
-          Person.v1.createPerson(localContext)(input as unknown as PersonInput)
+          Person.v1.create(localContext)(input as unknown as PersonInput)
         ).to.be.rejectedWith('Cannot pass `_rev` when creating a person.');
         expect(createDocInner.called).to.be.false;
       });
@@ -516,7 +516,7 @@ describe('local person', () => {
           parent: 'p1',
           name: 'apoorva2'
         };
-        await expect(Person.v1.updatePerson(localContext)(updateDoc))
+        await expect(Person.v1.update(localContext)(updateDoc))
           .to.be.rejectedWith(`Document for update is not a valid Doc ${JSON.stringify(updateDoc)}`);
         expect(getDocByIdOuter.calledOnce).to.be.true;
         expect(getDocByIdInner.calledOnce).to.be.false;
@@ -524,7 +524,8 @@ describe('local person', () => {
 
       it('updates doc for valid update input', async() => {
         const updateDocInput = {
-          type: 'person',
+          type: 'contact',
+          contact_type: 'person',
           reported_date: 12312312,
           parent: {
             _id: '1', parent: {
@@ -543,7 +544,7 @@ describe('local person', () => {
         const modifiedDoc = {...originalDoc, name: 'apoorva2'};
         updateDocInner.resolves(modifiedDoc);
 
-        const result = await Person.v1.updatePerson(localContext)(updateDocInput);
+        const result = await Person.v1.update(localContext)(updateDocInput);
 
         expect(updateDocInner.calledOnceWithExactly(modifiedDoc)).to.be.true;
         expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
@@ -552,7 +553,8 @@ describe('local person', () => {
 
       it('throws error for non-existent person', async() => {
         const updateDocInput = {
-          type: 'person',
+          type: 'contact',
+          contact_type: 'person',
           parent: 'p1',
           name: 'apoorva2',
           _id: '1',
@@ -561,7 +563,7 @@ describe('local person', () => {
 
         getDocByIdInner.resolves(null);
 
-        await expect(Person.v1.updatePerson(localContext)(updateDocInput))
+        await expect(Person.v1.update(localContext)(updateDocInput))
           .to.be.rejectedWith(`Person not found`);
 
         expect(updateDocOuter.called).to.be.true;
@@ -570,7 +572,8 @@ describe('local person', () => {
 
       it('deletes keys from original doc if they are not required', async() => {
         const updateDocInput = {
-          type: 'person',
+          type: 'contact',
+          contact_type: 'person',
           parent: {
             _id: 'p1'
           },
@@ -584,7 +587,7 @@ describe('local person', () => {
         getDocByIdInner.resolves(originalDoc);
         updateDocInner.resolves({...updateDocInput, reported_date: originalDoc.reported_date});
 
-        const result= await Person.v1.updatePerson(localContext)(updateDocInput);
+        const result= await Person.v1.update(localContext)(updateDocInput);
         expect(result).to.deep.equal({...updateDocInput, reported_date: originalDoc.reported_date});
         expect(updateDocInner.calledOnceWithExactly({
           ...updateDocInput, reported_date: originalDoc.reported_date
@@ -593,7 +596,8 @@ describe('local person', () => {
 
       it('throw error is _rev does not match with the _rev in the original doc', async() => {
         const updateDocInput = {
-          type: 'person',
+          type: 'contact',
+          contact_type: 'person',
           reported_date: 12312312,
           parent: 'p1',
           name: 'apoorva2',
@@ -603,14 +607,15 @@ describe('local person', () => {
 
         const originalDoc = {...updateDocInput, _rev: '2'};
         getDocByIdInner.resolves(originalDoc);
-        await expect(Person.v1.updatePerson(localContext)(updateDocInput))
+        await expect(Person.v1.update(localContext)(updateDocInput))
           .to.be.rejectedWith('`_rev` does not match');
         expect(updateDocInner.called).to.be.false;
       });
 
       it('throw error if parent lineage of input does not match with originalDoc', async() => {
         const updateDocInput = {
-          type: 'person',
+          type: 'contact',
+          contact_type: 'person',
           parent: {
             _id: 'p1',
             parent: {
@@ -629,7 +634,7 @@ describe('local person', () => {
           }
         }};
         getDocByIdInner.resolves(originalDoc);
-        await expect(Person.v1.updatePerson(localContext)(updateDocInput))
+        await expect(Person.v1.update(localContext)(updateDocInput))
           .to.be
           .rejectedWith('Lineage does not match with the lineage of the doc in the db');
         expect(updateDocInner.called).to.be.false;
@@ -637,7 +642,8 @@ describe('local person', () => {
 
       it('throw error if parent lineage depth of input does not match with originalDoc', async() => {
         const updateDocInput = {
-          type: 'person',
+          type: 'contact',
+          contact_type: 'person',
           reported_date: 12312312,
           parent: {
             _id: 'p1',
@@ -659,7 +665,7 @@ describe('local person', () => {
           }
         }};
         getDocByIdInner.resolves(originalDoc);
-        await expect(Person.v1.updatePerson(localContext)(updateDocInput))
+        await expect(Person.v1.update(localContext)(updateDocInput))
           .to.be
           .rejectedWith('Lineage does not match with the lineage of the doc in the db');
         expect(updateDocInner.called).to.be.false;
@@ -667,7 +673,8 @@ describe('local person', () => {
       
       it('throw error for missing required mutable fields', async() => {
         const updateDocInput = {
-          type: 'person',
+          type: 'contact',
+          contact_type: 'person',
           reported_date: 12312312,
           parent: {
             _id: 'p1',
@@ -683,16 +690,17 @@ describe('local person', () => {
           name: 'apoorva'
         };
         getDocByIdInner.resolves(originalDoc);
-        await expect(Person.v1.updatePerson(localContext)(updateDocInput))
+        await expect(Person.v1.update(localContext)(updateDocInput))
           .to.be
-          .rejectedWith(`Missing or empty required field (name) for [${JSON
+          .rejectedWith(`Missing or empty required fields (name) for [${JSON
             .stringify(updateDocInput)}].`);
         expect(updateDocInner.called).to.be.false;
       });
 
       it('throw error for missing required immutable fields other than parent', async() => {
         const updateDocInput = {
-          type: 'person',
+          type: 'contact',
+          contact_type: 'person',
           name: 'apoorva',
           parent: {
             _id: 'p1',
@@ -708,17 +716,17 @@ describe('local person', () => {
           reported_date: 12312312,
         };
         getDocByIdInner.resolves(originalDoc);
-        await expect(Person.v1.updatePerson(localContext)(updateDocInput))
+        await expect(Person.v1.update(localContext)(updateDocInput))
           .to.be
-          .rejectedWith(`Missing or empty required field (reported_date) for [${JSON
+          .rejectedWith(`Missing or empty required fields (reported_date) for [${JSON
             .stringify(updateDocInput)}].`);
         expect(updateDocInner.called).to.be.false;
       });
 
       it('throw error for missing required immutable field: parent', async() => {
         const updateDocInput = {
-          type: 'person',
-          name: 'apoorva',
+          type: 'contact',
+          contact_type: 'person',
           _id: '1',
           _rev: '1',
           reported_date: 555
@@ -730,16 +738,17 @@ describe('local person', () => {
           },
         };
         getDocByIdInner.resolves(originalDoc);
-        await expect(Person.v1.updatePerson(localContext)(updateDocInput))
+        await expect(Person.v1.update(localContext)(updateDocInput))
           .to.be
-          .rejectedWith(`Missing or empty required field (parent) for [${JSON
+          .rejectedWith(`Missing or empty required fields (parent, name) for [${JSON
             .stringify(updateDocInput)}].`);
         expect(updateDocInner.called).to.be.false;
       });
 
       it('throw error for updated required immutable fields other than parent', async() => {
         const updateDocInput = {
-          type: 'person',
+          type: 'contact',
+          contact_type: 'person',
           name: 'apoorva',
           parent: {
             _id: 'p1',
@@ -756,7 +765,7 @@ describe('local person', () => {
           reported_date: 12312312,
         };
         getDocByIdInner.resolves(originalDoc);
-        await expect(Person.v1.updatePerson(localContext)(updateDocInput))
+        await expect(Person.v1.update(localContext)(updateDocInput))
           .to.be
           .rejectedWith(`Value ${
             updateDocInput.reported_date

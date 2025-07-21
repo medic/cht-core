@@ -16,9 +16,7 @@ import {
   assertLimit,
   assertUuidQualifier
 } from './libs/parameter-validators';
-import { ReportInput, validateReportInput } from './input';
-import { LocalDataContext } from './local/libs/data-context';
-import { RemoteDataContext } from './remote/libs/data-context';
+import { validateReportInput } from './input';
 
 /** */
 export namespace v1 {
@@ -55,19 +53,6 @@ export namespace v1 {
     };
     return curriedFn;
   };
-
-  const createReportDoc =
-    <T>(
-      localFn: (c: LocalDataContext) => (input: ReportInput) => Promise<T>,
-      remoteFn: (c: RemoteDataContext) => (input: ReportInput) => Promise<T>
-    ) => (context: DataContext) => {
-      assertDataContext(context);
-      const fn = adapt(context, localFn, remoteFn);
-      return async (input: unknown): Promise<T> => {
-        const reportInput = validateReportInput(input);
-        return fn(reportInput);
-      };
-    };
 
   /**
    * Returns a function for retrieving a paged array of report identifiers from the given data context.
@@ -137,5 +122,19 @@ export namespace v1 {
    * @returns a function for creating a report.
    * @throws Error if a data context is not provided
    */
-  export const createReport = createReportDoc(Local.Report.v1.createReport, Remote.Report.v1.createReport);
+  export const create =(context:DataContext):typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Report.v1.create, Remote.Report.v1.create);
+    /**
+     * Returns a report doc.
+     * @param input input to create the report doc.
+     * @returns the created report doc.
+     * @throws InvalidArgumentError if input is not of valid type.
+     */
+    const curriedFn = async (input: unknown): Promise<Report> => {
+      const reportInput = validateReportInput(input);
+      return fn(reportInput);
+    };
+    return curriedFn;
+  };
 }

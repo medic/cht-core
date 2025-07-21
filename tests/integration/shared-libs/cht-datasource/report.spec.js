@@ -253,7 +253,7 @@ describe('cht-datasource Report', () => {
             _id: contact0._id, parent: contact0.parent
           }
         };
-        const reportDoc = await Report.v1.createReport(dataContext)(Input.validateReportInput(input));
+        const reportDoc = await Report.v1.create(dataContext)(Input.validateReportInput(input));
         expect(reportDoc).excluding(['_id', '_rev', 'reported_date',]).to.deep.equal(updatedInput);
       });
 
@@ -262,7 +262,7 @@ describe('cht-datasource Report', () => {
           form: 'form-1',
           type: 'report',
         };
-        const action = () => Report.v1.createReport(dataContext)(Input.validateReportInput(input));
+        const action = () => Report.v1.create(dataContext)(Input.validateReportInput(input));
         expect(action).to.throw(
           InvalidArgumentError,
           `Missing or empty required field (contact) in [${JSON.stringify(input)}].`
@@ -276,7 +276,7 @@ describe('cht-datasource Report', () => {
           reported_date: '112-9909-123'
         };
       
-        const action = () => Report.v1.createReport(dataContext)(Input.validateReportInput(input));
+        const action = () => Report.v1.create(dataContext)(Input.validateReportInput(input));
       
         expect(action).to.throw(
           InvalidArgumentError,
