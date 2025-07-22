@@ -109,7 +109,7 @@ describe('extract-person-contacts migration', () => {
     return migration.run().then(() => {
       throw new Error('Migration should have failed');
     }).catch(err => {
-      chai.expect(err.message).to.equal('Failed to update contact on facility a: {}');
+      chai.expect(err.message).to.equal('Failed to update contact on facility a: "error"');
       
       // Verify restore contact was called
       chai.expect(updatePlace.callCount).to.equal(3);
