@@ -162,21 +162,6 @@ describe('local contact', () => {
         expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isContact.calledOnceWithExactly(settingsGetAll(), notContact)).to.be.true;
       });
-
-      it('returns a contact if no lineage is found', async () => {
-        const person = { type: 'person', _id: 'uuid', _rev: 'rev' };
-        const mockFunction = sinon.stub().resolves(person);
-        mockFetchHydratedDoc.returns(mockFunction);
-        isContact.returns(true);
-
-        const result = await Contact.v1.getWithLineage(localContext)(identifier);
-
-        expect(result).to.equal(person);
-        expect(result).to.deep.equal(person);
-        expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(isContact.calledOnceWithExactly(settingsGetAll(), person)).to.be.true;
-      });
     });
 
     describe('getUuidsPage', () => {

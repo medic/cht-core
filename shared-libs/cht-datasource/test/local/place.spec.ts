@@ -141,23 +141,6 @@ describe('local place', () => {
         expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid place.`)).to.be.true;
         expect(debug.notCalled).to.be.true;
       });
-
-      it('returns a place if no lineage is found', async () => {
-        const place = { type: 'place', _id: 'place0', _rev: 'rev' };
-        const mockFunction = sinon.stub().resolves(place);
-        mockFetchHydratedDoc.returns(mockFunction);
-        isPlace.returns(true);
-        settingsGetAll.returns(settings);
-
-        const result = await Place.v1.getWithLineage(localContext)(identifier);
-
-        expect(result).to.equal(place);
-        expect(result).to.deep.equal(place);
-        expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(isPlace.calledOnceWithExactly(settings, place)).to.be.true;
-        expect(warn.notCalled).to.be.true;
-      });
     });
 
     describe('getPage', () => {

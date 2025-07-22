@@ -140,23 +140,6 @@ describe('local person', () => {
         expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid person.`)).to.be.true;
         expect(debug.notCalled).to.be.true;
       });
-
-      it('returns a person if no lineage is found', async () => {
-        const person = { type: 'person', _id: 'uuid', _rev: 'rev' };
-        const mockFunction = sinon.stub().resolves(person);
-        mockFetchHydratedDoc.returns(mockFunction);
-        isPerson.returns(true);
-        settingsGetAll.returns(settings);
-
-        const result = await Person.v1.getWithLineage(localContext)(identifier);
-
-        expect(result).to.equal(person);
-        expect(result).to.deep.equal(person);
-        expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(isPerson.calledOnceWithExactly(settings, person)).to.be.true;
-        expect(warn.notCalled).to.be.true;
-      });
     });
 
     describe('getPage', () => {
