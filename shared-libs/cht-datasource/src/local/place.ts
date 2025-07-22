@@ -13,7 +13,6 @@ import {
 import { InvalidArgumentError } from '../libs/error';
 import { 
   addParentToInput, 
-  dehydrateDoc,
   ensureHasRequiredFields,
   ensureImmutability,
   validateCursor 
@@ -245,7 +244,7 @@ export namespace v1 {
   const validateUpdatePlacePayload = (
     originalDoc: Doc,
     placeInput: Record<string, unknown>
-  ):Record<string, unknown> => {
+  ):void => {
     const immutableRequiredFields = new Set(['_rev', '_id', 'type', 'reported_date']);
     const mutableRequiredFields = new Set(['name']);
     const hasParent = hasField(originalDoc, {type: 'object', name: 'parent', ensureTruthyValue: true}); 
@@ -262,12 +261,12 @@ export namespace v1 {
     ensureHasRequiredFields(immutableRequiredFields, mutableRequiredFields, originalDoc, placeInput);
     ensureImmutability(immutableRequiredFields, originalDoc, placeInput);
     if (hasParent) {
-      placeInput = {...placeInput, ...dehydrateDoc(placeInput)};
+      placeInput.parent = originalDoc.parent;
     }
     if (hasContact) {
-      placeInput = { ...placeInput, contact: {...dehydrateDoc(placeInput.contact as Record<string, unknown>)}};
+      placeInput.contact = originalDoc.contact;
     }
-    return placeInput;
+    // return placeInput;
   };
 
   /** @internal*/
@@ -282,7 +281,7 @@ export namespace v1 {
       if (originalDoc===null){
         throw new InvalidArgumentError(`Place not found`);
       }
-      placeInput = validateUpdatePlacePayload(originalDoc, placeInput);
+      validateUpdatePlacePayload(originalDoc, placeInput);
       return await updatePlace(placeInput) as Place.v1.Place;
     };
   };

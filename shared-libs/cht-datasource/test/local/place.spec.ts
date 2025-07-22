@@ -740,18 +740,9 @@ describe('local place', () => {
         expect(resultDoc).to.deep.equal({
           ...updateInput
         }); 
-        // ensures that the parent and contact lineages are always dehydrated before update.
         expect(updateDocInner.calledWithExactly({
-          ...updateInput, parent: {
-            _id: '3', parent: {
-              _id: '4'
-            }
-          }, contact: {
-            _id: '1',
-            parent: {
-              _id: '2'
-            }
-          }
+          ...updateInput, parent: originalDoc.parent,
+          contact: originalDoc.contact
         })).to.be.true;
       });
     });
