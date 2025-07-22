@@ -101,7 +101,7 @@ describe('extract-person-contacts migration', () => {
     createPerson.onCall(0).resolves({ id: 'c'});
     
     // resetContact: update doc with new contact - FAIL
-    updatePlace.onCall(1).rejects(new Error('error'));
+    updatePlace.onCall(1).returns(Promise.reject('error'));
     
     // restoreContact: restore the original contact - success
     updatePlace.onCall(2).resolves();
