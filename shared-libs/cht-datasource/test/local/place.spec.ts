@@ -104,7 +104,6 @@ describe('local place', () => {
         const result = await Place.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.equal(placeWithLineage);
-        expect(result).to.deep.equal(placeWithLineage);
         expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPlace.calledOnceWithExactly(settings, placeWithLineage)).to.be.true;
