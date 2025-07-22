@@ -117,7 +117,6 @@ describe('local contact', () => {
         const result = await Contact.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.equal(contact);
-        expect(result).to.deep.equal(contact);
         expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isContact.calledOnceWithExactly(settingsGetAll(), contact)).to.be.true;
