@@ -740,7 +740,7 @@ describe('local place', () => {
         expect(resultDoc).to.deep.equal({
           ...updateInput
         }); 
-        // ensures that the parent and contact lineages are always dehyrated before update.
+        // ensures that the parent and contact lineages are always dehydrated before update.
         expect(updateDocInner.calledWithExactly({
           ...updateInput, parent: {
             _id: '3', parent: {
