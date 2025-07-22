@@ -61,7 +61,6 @@ export namespace v1 {
     };
   };
 
-
   /** @internal */
   export const getUuidsPage = ({ medicDb, settings }: LocalDataContext) => {
     // Define query functions
