@@ -27,8 +27,6 @@ export namespace v1 {
    */
   export interface PersonWithLineage extends Person {
     readonly parent?: Place.v1.PlaceWithLineage | NormalizedParent;
-    readonly patient?: Place.v1.PlaceWithLineage | NormalizedParent;
-    readonly place?: Place.v1.PlaceWithLineage | NormalizedParent;
   }
 
   const getPerson =
