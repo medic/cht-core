@@ -636,7 +636,7 @@ describe('local person', () => {
         getDocByIdInner.resolves(originalDoc);
         await expect(Person.v1.update(localContext)(updateDocInput))
           .to.be
-          .rejectedWith('Lineage does not match with the lineage of the doc in the db');
+          .rejectedWith('parent lineage does not match with the lineage of the doc in the db');
         expect(updateDocInner.called).to.be.false;
       });
 
@@ -667,7 +667,7 @@ describe('local person', () => {
         getDocByIdInner.resolves(originalDoc);
         await expect(Person.v1.update(localContext)(updateDocInput))
           .to.be
-          .rejectedWith('Lineage does not match with the lineage of the doc in the db');
+          .rejectedWith('parent lineage does not match with the lineage of the doc in the db');
         expect(updateDocInner.called).to.be.false;
       });
       

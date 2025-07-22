@@ -636,7 +636,7 @@ describe('local place', () => {
         getDocByIdInner.resolves(originalDoc);
 
         await expect(Place.v1.update(localContext)(updateInput)).to
-          .be.rejectedWith('Lineage does not match with the lineage of the doc in the db');
+          .be.rejectedWith('parent lineage does not match with the lineage of the doc in the db');
       });
 
       it('throws error if contact field is present but hierarchy does not match', async() => {
@@ -667,7 +667,7 @@ describe('local place', () => {
         getDocByIdInner.resolves(originalDoc);
 
         await expect(Place.v1.update(localContext)(updateInput)).to
-          .be.rejectedWith('Lineage does not match with the lineage of the doc in the db');
+          .be.rejectedWith('contact lineage does not match with the lineage of the doc in the db');
       });
 
       it('throws error if _rev is absent', async() => {
