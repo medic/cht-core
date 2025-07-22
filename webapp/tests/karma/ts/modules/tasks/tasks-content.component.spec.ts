@@ -6,6 +6,8 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { Observable } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 import { FormService } from '@mm-services/form.service';
 import { PerformanceService } from '@mm-services/performance.service';
@@ -38,7 +40,8 @@ describe('TasksContentComponent', () => {
   let compileComponent;
   let component: TasksContentComponent;
   let fixture: ComponentFixture<TasksContentComponent>;
-
+  let chtDatasourceService;
+  
   beforeEach(() => {
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
@@ -51,6 +54,15 @@ describe('TasksContentComponent', () => {
     formService = { render, unload: sinon.stub(), save: sinon.stub() };
     router = { navigate: sinon.stub() };
     tasksForContactService = { getLeafPlaceAncestor: sinon.stub().resolves() };
+    chtDatasourceService = {
+      get: sinon.stub().resolves({
+        v1: {
+          contact: {
+            getByUuid: sinon.stub().callsFake((id) => get(id))
+          }
+        }
+      })
+    };
 
     const mockedSelectors = [
       { selector: Selectors.getTasksLoaded, value: true },
@@ -73,6 +85,8 @@ describe('TasksContentComponent', () => {
         { provide: GeolocationService, useValue: geolocationService },
         { provide: Router, useValue: router },
         { provide: TasksForContactService, useValue: tasksForContactService },
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: HttpClient, useValue: {} },
       ],
     });
 

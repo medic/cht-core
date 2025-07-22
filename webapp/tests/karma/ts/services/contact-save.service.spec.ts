@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { assert } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
+import { HttpClient } from '@angular/common/http';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 import { DbService } from '@mm-services/db.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
@@ -15,6 +17,7 @@ describe('ContactSave service', () => {
   let enketoTranslationService;
   let extractLineageService;
   let clock;
+  let chtDatasourceService;
 
   beforeEach(() => {
     enketoTranslationService = {
@@ -23,13 +26,23 @@ describe('ContactSave service', () => {
 
     extractLineageService = { extract: sinon.stub() };
     get = sinon.stub();
-
+    chtDatasourceService = {
+      get: sinon.stub().resolves({
+        v1: {
+          contact: {
+            getByUuid: sinon.stub().callsFake((id) => get(id))
+          }
+        }
+      })
+    };
     TestBed.configureTestingModule({
       providers: [
         provideMockStore(),
         { provide: DbService, useValue: { get: () => ({ get }) } },
         { provide: EnketoTranslationService, useValue: enketoTranslationService },
         { provide: ExtractLineageService, useValue: extractLineageService },
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: HttpClient, useValue: {} },
       ]
     });
 

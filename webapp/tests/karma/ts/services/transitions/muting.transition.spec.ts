@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { HttpClient } from '@angular/common/http';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 import { DbService } from '@mm-services/db.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
@@ -19,14 +21,26 @@ describe('Muting Transition', () => {
   let validationService;
   let placeHierarchyService;
   let clock;
+  let chtDatasourceService;
+  let get;
 
   beforeEach(() => {
+    get = sinon.stub();
     dbService = { get: sinon.stub(), query: sinon.stub() };
     lineageModelGenerator = { docs: sinon.stub() };
     contactMutedService = { getMutedDoc: sinon.stub(), getMuted: sinon.stub() };
     contactTypesService = { includes: sinon.stub() };
     validationService = { validate: sinon.stub() };
     placeHierarchyService = { getDescendants: sinon.stub() };
+    chtDatasourceService = {
+      get: sinon.stub().resolves({
+        v1: {
+          contact: {
+            getByUuid: sinon.stub().callsFake((id) => get(id))
+          }
+        }
+      })
+    };
 
     contactTypesService.includes.withArgs(sinon.match({ type: 'person' })).returns(true);
     contactTypesService.includes.withArgs(sinon.match({ type: 'clinic' })).returns(true);
@@ -39,6 +53,8 @@ describe('Muting Transition', () => {
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: ValidationService, useValue: validationService },
         { provide: PlaceHierarchyService, useValue: placeHierarchyService },
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: HttpClient, useValue: {} },
       ],
     });
     transition = TestBed.inject(MutingTransition);

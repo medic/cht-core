@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
+import { HttpClient } from '@angular/common/http';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 import { DbService } from '@mm-services/db.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
@@ -11,16 +13,29 @@ describe('UpdateFacility service', () => {
   let extractLineageService;
   let get;
   let put;
+  let chtDatasourceService;
 
   beforeEach(() => {
     get = sinon.stub();
     put = sinon.stub();
     extractLineageService = { extract: ExtractLineageService.prototype.extract };
 
+    chtDatasourceService = {
+      get: sinon.stub().resolves({
+        v1: {
+          contact: {
+            getByUuid: sinon.stub().callsFake((id) => get(id))
+          }
+        }
+      })
+    };
+
     TestBed.configureTestingModule({
       providers: [
         { provide: ExtractLineageService, useValue: extractLineageService },
         { provide: DbService, useValue: { get: () => ({ get, put }) } },
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: HttpClient, useValue: {} },
       ],
     });
 
