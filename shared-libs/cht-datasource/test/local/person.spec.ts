@@ -103,7 +103,6 @@ describe('local person', () => {
         const result = await Person.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.equal(personWithLineage);
-        expect(result).to.deep.equal(personWithLineage);
         expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPerson.calledOnceWithExactly(settings, personWithLineage)).to.be.true;
