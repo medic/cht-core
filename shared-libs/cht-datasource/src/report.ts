@@ -1,6 +1,7 @@
 import {
   DataObject,
   getPagedGenerator,
+  NormalizedParent,
   Nullable,
   Page
 } from './libs/core';
@@ -11,6 +12,7 @@ import { FreetextQualifier, UuidQualifier } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertFreetextQualifier, assertLimit, assertUuidQualifier } from './libs/parameter-validators';
+import * as Contact from './contact';
 
 /** */
 export namespace v1 {
@@ -21,7 +23,18 @@ export namespace v1 {
     readonly form: string;
     readonly reported_date: Date;
     readonly fields: DataObject;
+    readonly contact?: NormalizedParent
   }
+
+  /**
+   * A report document with lineage information.
+   */
+  export interface ReportWithLineage extends Report {
+    readonly contact?: Contact.v1.ContactWithLineage | NormalizedParent;
+    readonly patient?: Contact.v1.ContactWithLineage | NormalizedParent;
+    readonly place?: Contact.v1.ContactWithLineage | NormalizedParent;
+  }
+
 
   /**
    * Returns a function for retrieving a report from the given data context.
@@ -108,5 +121,30 @@ export namespace v1 {
       return getPagedGenerator(getPage, qualifier);
     };
     return curriedGen;
+  };
+
+  /**
+   * Returns a function for retrieving a report with lineage from the given data context.
+   * @param context the current data context
+   * @returns a function for retrieving a report with lineage
+   * @throws Error if a data context is not provided
+   */
+  export const getWithLineage = (context: DataContext): typeof curriedFnWithLineage => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Report.v1.getWithLineage, Remote.Report.v1.getWithLineage);
+
+    /**
+     * Returns a report with lineage for the given qualifier.
+     * @param qualifier identifier for the report to retrieve
+     * @returns the report with lineage or `null` if no report is found for the qualifier
+     * @throws Error if the qualifier is invalid
+     */
+    const curriedFnWithLineage = async (
+      qualifier: UuidQualifier
+    ): Promise<Nullable<ReportWithLineage>> => {
+      assertUuidQualifier(qualifier);
+      return await fn(qualifier);
+    };
+    return curriedFnWithLineage;
   };
 }
