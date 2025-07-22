@@ -195,6 +195,7 @@ const generateModel = formXml => {
   });
 };
 
+
 const getEnketoForm = doc => {
   const collect = doc.context && doc.context.collect;
   return !collect && formsService.getXFormAttachment(doc);
@@ -226,6 +227,18 @@ const updateAttachmentsIfRequired = (doc, updated) => {
   return formUpdated || modelUpdated;
 };
 
+const addGeneratedAttachments = (doc, updated) => {
+  doc._attachments['form.html'] = {
+    data: Buffer.from(updated.form),
+    content_type: 'text/html'
+  };
+  doc._attachments['model.xml'] = {
+    data: Buffer.from(updated.model),
+    content_type: 'text/xml'
+  };
+  return doc;
+};
+
 const updateAttachments = (accumulator, doc) => {
   return accumulator.then(results => {
     const form = getEnketoForm(doc);
@@ -233,11 +246,16 @@ const updateAttachments = (accumulator, doc) => {
       results.push(null); // not an enketo form - no update required
       return results;
     }
-    logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
-    return module.exports.generate(form.data.toString()).then(result => {
-      results.push(result);
-      return results;
-    });
+    const name = formsService.getXFormAttachmentName(doc)
+    return db.medic.attachment.get(doc._id, name, { rev, binary: true })
+      .then(rawXML => {
+        logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
+        return module.exports.generate(rawXML.toString()).then(result => {
+          results.push(result);
+          result && addGeneratedAttachments(doc, result);
+          return results;
+        });
+      });
   });
 };
 
@@ -251,6 +269,7 @@ const updateAllAttachments = docs => {
   });
 };
 
+
 module.exports = {
 
   /**
@@ -258,7 +277,7 @@ module.exports = {
    * @param {string} docId - The db id of the doc defining the form.
    */
   update: docId => {
-    return db.medic.get(docId, { attachments: true, binary: true })
+    return db.medic.get(docId)
       .then(doc => updateAllAttachments([ doc ]))
       .then(docs => {
         const doc = docs.length && docs[0];
@@ -269,7 +288,6 @@ module.exports = {
         logger.info(`Form with ID "${docId}" does not need to be updated.`);
       });
   },
-
   /**
    * Updates the model and form attachments for all forms if necessary.
    */
