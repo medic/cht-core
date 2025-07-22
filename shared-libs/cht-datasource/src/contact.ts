@@ -39,8 +39,6 @@ export namespace v1 {
    */
   export interface ContactWithLineage extends Contact {
     readonly parent?: ContactWithLineage | NormalizedParent;
-    readonly patient?: ContactWithLineage | NormalizedParent;
-    readonly place?: ContactWithLineage | NormalizedParent;
   }
 
   const getContact =
