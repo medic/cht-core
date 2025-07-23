@@ -266,7 +266,6 @@ export namespace v1 {
     if (hasContact) {
       placeInput.contact = originalDoc.contact;
     }
-    // return placeInput;
   };
 
   /** @internal*/
