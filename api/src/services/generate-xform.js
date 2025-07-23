@@ -246,8 +246,8 @@ const updateAttachments = (accumulator, doc) => {
       results.push(null); // not an enketo form - no update required
       return results;
     }
-    const name = formsService.getXFormAttachmentName(doc)
-    return db.medic.attachment.get(doc._id, name, { rev, binary: true })
+    const name = formsService.getXFormAttachmentName(doc);
+    return db.medic.getAttachment(doc._id, name, { rev })
       .then(rawXML => {
         logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
         return module.exports.generate(rawXML.toString()).then(result => {
