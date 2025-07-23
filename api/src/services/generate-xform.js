@@ -9,6 +9,7 @@ const logger = require('@medic/logger');
 const db = require('../db');
 const formsService = require('./forms');
 const markdown = require('../enketo-transformer/markdown');
+const { result } = require('lodash');
 
 const MODEL_ROOT_OPEN = '<root xmlns="http://www.w3.org/2002/xforms" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema">';
 const ROOT_CLOSE = '</root>';
@@ -239,24 +240,21 @@ const addGeneratedAttachments = (doc, updated) => {
   return doc;
 };
 
-const updateAttachments = (accumulator, doc) => {
-  return accumulator.then(results => {
-    const form = getEnketoForm(doc);
-    if (!form) {
-      results.push(null); // not an enketo form - no update required
-      return results;
-    }
+
+const updateAttachments = async (accumulator, doc) => {
+  const results = await accumulator;
+
+  let generated = null;
+  const form = getEnketoForm(doc);
+  if (form) { 
     const name = formsService.getXFormAttachmentName(doc);
-    return db.medic.getAttachment(doc._id, name, { rev })
-      .then(rawXML => {
-        logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
-        return module.exports.generate(rawXML.toString()).then(result => {
-          results.push(result);
-          result && addGeneratedAttachments(doc, result);
-          return results;
-        });
-      });
-  });
+    const rawXML = await db.medic.getAttachment(doc._id, name, { rev });
+    logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
+    generated = await module.exports.generate(rawXML.toString());
+    generated && addGeneratedAttachments(doc, generated);
+  }
+  results.push(generated);
+  return results;
 };
 
 // Returns array of docs that need saving.
