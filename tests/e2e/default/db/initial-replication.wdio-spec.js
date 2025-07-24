@@ -135,16 +135,16 @@ describe('initial-replication', () => {
     await commonPage.waitForAngularLoaded(3000);
 
     // supports reloading the page while offline
-    await browser.throttle('offline');
+    await browser.throttleNetwork('offline');
     await refreshAndWaitForAngular();
-    await browser.throttle('online');
+    await browser.throttleNetwork('online');
 
     // it should not restart initial replication if the local doc is missing on refresh
     await chtDbUtils.deleteDoc(LOCAL_LOG);
     await refreshAndWaitForAngular();
 
     // it should support reloading the page while offline
-    await browser.throttle('offline');
+    await browser.throttleNetwork('offline');
     await refreshAndWaitForAngular();
   });
 
