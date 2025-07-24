@@ -3,6 +3,8 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import * as _ from 'lodash-es';
+import { HttpClient } from '@angular/common/http';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 import { DbService } from '@mm-services/db.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
@@ -43,8 +45,11 @@ describe('Enketo service', () => {
   let EnketoPrepopulationData;
   let translateService;
   let extractLineageService;
+  let get;
+  let chtDatasourceService;
 
   beforeEach(() => {
+    get = sinon.stub();
     enketoInit = sinon.stub();
     dbGetAttachment = sinon.stub();
     dbGet = sinon.stub();
@@ -78,6 +83,15 @@ describe('Enketo service', () => {
       get: sinon.stub(),
     };
     extractLineageService = { extract: ExtractLineageService.prototype.extract };
+    chtDatasourceService = {
+      get: sinon.stub().resolves({
+        v1: {
+          contact: {
+            getByUuid: sinon.stub().callsFake((id) => get(id))
+          }
+        }
+      })
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -93,6 +107,8 @@ describe('Enketo service', () => {
         { provide: AttachmentService, useValue: { add: AddAttachment, remove: removeAttachment } },
         { provide: TranslateService, useValue: translateService },
         { provide: ExtractLineageService, useValue: extractLineageService },
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: HttpClient, useValue: {} },
       ],
     });
 
