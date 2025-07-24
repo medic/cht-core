@@ -182,7 +182,7 @@ module.exports = {
   create: (req, res) => {
     return auth
       .check(req, ['can_edit', 'can_create_users'])
-      .then(() => users.createUsers(req.body, serverUtils.getAppUrl(req)))
+      .then(() => users.createUsers(req.body))
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },
@@ -196,7 +196,7 @@ module.exports = {
       const requesterContext = await auth.getUserCtx(req);
 
       const username = req.params.username;
-      const result = await users.updateUser(username, req.body, !!fullPermission, serverUtils.getAppUrl(req));
+      const result = await users.updateUser(username, req.body, !!fullPermission);
 
       const body = Object.keys(req.body).join(',');
       logger.info(
@@ -269,7 +269,6 @@ module.exports = {
 
         const response = await users.createUsers(
           usersToCreate,
-          serverUtils.getAppUrl(req),
           ignoredUsers,
           logId
         );
@@ -284,7 +283,7 @@ module.exports = {
       try {
         await auth.check(req, ['can_edit', 'can_create_users']);
 
-        const response = await users.createMultiFacilityUser(req.body, serverUtils.getAppUrl(req));
+        const response = await users.createMultiFacilityUser(req.body);
         res.json(response);
       } catch (error) {
         serverUtils.error(error, req, res);
