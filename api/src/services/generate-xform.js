@@ -9,6 +9,7 @@ const logger = require('@medic/logger');
 const db = require('../db');
 const formsService = require('./forms');
 const markdown = require('../enketo-transformer/markdown');
+const { result } = require('lodash');
 
 const MODEL_ROOT_OPEN = '<root xmlns="http://www.w3.org/2002/xforms" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema">';
 const ROOT_CLOSE = '</root>';
@@ -195,6 +196,7 @@ const generateModel = formXml => {
   });
 };
 
+
 const getEnketoForm = doc => {
   const collect = doc.context && doc.context.collect;
   return !collect && formsService.getXFormAttachment(doc);
@@ -226,19 +228,33 @@ const updateAttachmentsIfRequired = (doc, updated) => {
   return formUpdated || modelUpdated;
 };
 
-const updateAttachments = (accumulator, doc) => {
-  return accumulator.then(results => {
-    const form = getEnketoForm(doc);
-    if (!form) {
-      results.push(null); // not an enketo form - no update required
-      return results;
-    }
+const addGeneratedAttachments = (doc, updated) => {
+  doc._attachments['form.html'] = {
+    data: Buffer.from(updated.form),
+    content_type: 'text/html'
+  };
+  doc._attachments['model.xml'] = {
+    data: Buffer.from(updated.model),
+    content_type: 'text/xml'
+  };
+  return doc;
+};
+
+
+const updateAttachments = async (accumulator, doc) => {
+  const results = await accumulator;
+
+  let generated = null;
+  const form = getEnketoForm(doc);
+  if (form) { 
+    const name = formsService.getXFormAttachmentName(doc);
+    const rawXML = await db.medic.getAttachment(doc._id, name, { rev });
     logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
-    return module.exports.generate(form.data.toString()).then(result => {
-      results.push(result);
-      return results;
-    });
-  });
+    generated = await module.exports.generate(rawXML.toString());
+    generated && addGeneratedAttachments(doc, generated);
+  }
+  results.push(generated);
+  return results;
 };
 
 // Returns array of docs that need saving.
@@ -251,6 +267,7 @@ const updateAllAttachments = docs => {
   });
 };
 
+
 module.exports = {
 
   /**
@@ -258,7 +275,7 @@ module.exports = {
    * @param {string} docId - The db id of the doc defining the form.
    */
   update: docId => {
-    return db.medic.get(docId, { attachments: true, binary: true })
+    return db.medic.get(docId)
       .then(doc => updateAllAttachments([ doc ]))
       .then(docs => {
         const doc = docs.length && docs[0];
@@ -269,7 +286,6 @@ module.exports = {
         logger.info(`Form with ID "${docId}" does not need to be updated.`);
       });
   },
-
   /**
    * Updates the model and form attachments for all forms if necessary.
    */
