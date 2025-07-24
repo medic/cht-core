@@ -7,15 +7,15 @@ import {
 } from './libs/doc';
 import { ContactTypeQualifier, FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
 import * as Contact from '../contact';
-import { isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
+import { Nullable, Page } from '../libs/core';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
 import contactTypeUtils from '@medic/contact-types-utils';
-import { getContactLineage, getLineageDocsById } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
 import { normalizeFreetext, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 import { isContactType, isContactTypeAndFreetextType } from '../libs/parameter-validators';
+import { fetchHydratedDoc } from './libs/lineage';
 
 /** @internal */
 export namespace v1 {
@@ -50,27 +50,14 @@ export namespace v1 {
 
   /** @internal */
   export const getWithLineage = ({ medicDb, settings }: LocalDataContext) => {
-    const getLineageDocs = getLineageDocsById(medicDb);
-    const getLineage = getContactLineage(medicDb);
-
+    const fetchHydratedMedicDoc = fetchHydratedDoc(medicDb);
     return async (identifier: UuidQualifier): Promise<Nullable<Contact.v1.ContactWithLineage>> => {
-      const [contact, ...lineageContacts] = await getLineageDocs(identifier.uuid);
+      const contact = await fetchHydratedMedicDoc(identifier.uuid);
       if (!isContact(settings)(contact, identifier.uuid)) {
         return null;
       }
-
-      if (!isNonEmptyArray(lineageContacts)) {
-        logger.debug(`No lineage contacts found for ${contact.type} [${identifier.uuid}].`);
-        return contact;
-      }
-
-      const combinedContacts: NonEmptyArray<Nullable<Doc>> = [contact, ...lineageContacts];
-      
-      if (contactTypeUtils.isPerson(settings.getAll(), contact)) {
-        return await getLineage(lineageContacts, contact);
-      }
-
-      return await getLineage(combinedContacts);
+  
+      return contact;
     };
   };
 
