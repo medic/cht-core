@@ -107,7 +107,8 @@ export const ensureImmutability = (
     if (field === 'parent' || field === 'contact'){
       checkFieldWithLineage(
         updateInput[field] as Record<string, unknown>,
-        originalDoc[field] as Record<string, unknown>
+        originalDoc[field] as Record<string, unknown>,
+        field
       );
     } else if (updateInput[field] !== originalDoc[field]){
       throw new InvalidArgumentError(
@@ -122,12 +123,13 @@ export const ensureImmutability = (
 /** @internal*/
 const checkFieldWithLineage = (
   updateInputLineage:Record<string, unknown>, 
-  originalDocLineage: Record<string, unknown>
+  originalDocLineage: Record<string, unknown>,
+  lineageType: 'parent' | 'contact'
 ) :void => {
   if (!isSameLineage(
     updateInputLineage,
     originalDocLineage
   )){
-    throw new InvalidArgumentError('Lineage does not match with the lineage of the doc in the db');
+    throw new InvalidArgumentError(`${lineageType} lineage does not match with the lineage of the doc in the db`);
   } 
 };

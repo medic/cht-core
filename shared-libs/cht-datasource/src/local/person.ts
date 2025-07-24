@@ -1,6 +1,6 @@
 import { Doc, isDoc } from '../libs/doc';
 import contactTypeUtils, { getContactTypes } from '@medic/contact-types-utils';
-import { hasField, isNonEmptyArray, NormalizedParent, Nullable, Page } from '../libs/core';
+import { hasField, isNonEmptyArray, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
 import { createDoc, fetchAndFilter, getDocById, queryDocsByKey, updateDoc } from './libs/doc';
@@ -11,7 +11,7 @@ import {
   getLineageDocsById,
 } from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
-import { addParentToInput, dehydrateDoc, ensureHasRequiredFields, 
+import { addParentToInput, ensureHasRequiredFields, 
   ensureImmutability, validateCursor } from './libs/core';
 import { PersonInput } from '../input';
 
@@ -195,11 +195,6 @@ export namespace v1 {
     };
   };
 
-  type UpdatePersonInput = Omit<PersonInput, 'parent'> & {
-    parent: NormalizedParent,
-    contact_type: string
-  };
-
   const validateUpdatePersonPayload = (originalDoc: Person.v1.Person, updatePersonInput: Record<string, unknown>) => {
     const immutableRequiredFields = new Set(['_rev', '_id', 'reported_date', 'parent', 'type']);
     if (originalDoc.type==='contact'){
@@ -208,11 +203,9 @@ export namespace v1 {
     const mutableRequiredFields = new Set(['name']);
     ensureHasRequiredFields(immutableRequiredFields, mutableRequiredFields, originalDoc, updatePersonInput);
     ensureImmutability(immutableRequiredFields, originalDoc, updatePersonInput);
-    const dehydratedUpdatePersonInput = dehydrateDoc(updatePersonInput);
-    return {
-      ...updatePersonInput,
-      ...dehydratedUpdatePersonInput
-    } as UpdatePersonInput;
+    // It is safe to assign input's parent to original doc's dehyrated parent lineage
+    // as ensureImmutability ensures that hierarchy is valid.
+    updatePersonInput.parent = originalDoc.parent;
   };
   
   /** @internal*/
@@ -233,7 +226,7 @@ export namespace v1 {
       if (personInput._rev !== originalDoc._rev) {
         throw new InvalidArgumentError('`_rev` does not match');
       }
-      personInput = validateUpdatePersonPayload(originalDoc, personInput);
+      validateUpdatePersonPayload(originalDoc, personInput);
       return await updatePerson(personInput) as Person.v1.Person;
     };
   };
