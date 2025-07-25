@@ -17,17 +17,18 @@ module.exports = async () => {
   return rows.map(doc => {
     const [user, deviceId] = doc.key;
     const date = doc.value.date;
-    const browser = doc.value.device.userAgent && getBrowser(doc.value.device.userAgent);
+    const userAgent = doc.value.device.userAgent;
+    const browser = userAgent && getBrowser(userAgent);
     const { apk, android, cht, settings } = doc.value.device.versions || {};
     const storage = (doc.value.device && doc.value.device.storage) || {};
     return {
       user,
       deviceId,
       date,
-      browser: {
+      browser: userAgent ? {
         name: browser?.name || undefined,
         version: browser?.version || undefined,
-      },
+      } : {},
       apk,
       android,
       cht,

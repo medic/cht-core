@@ -1,4 +1,4 @@
-require('chai').should();
+const chai = require('chai');
 chai.should();
 
 const db = require('../../../src/db');
