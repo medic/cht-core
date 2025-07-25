@@ -437,7 +437,6 @@ describe('Export Data V2.0', () => {
         }
       };
 
-      // Only include storage if values are defined
       if (storageFree !== undefined || storageTotal !== undefined) {
         deviceInfo.storage = {
           free: storageFree,
