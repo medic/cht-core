@@ -51,7 +51,9 @@ describe('Delivery tasks tests', () => {
 
       if (deliveryTaskDays.includes(day)) {
         expect(taskForDelivery.length, day).to.equal(1);
-      } else {
+      }
+
+      else {
         expect(taskForDelivery.length, day).to.equal(0);
       }
     }
@@ -75,7 +77,9 @@ describe('Delivery tasks tests', () => {
         const tasksAfterDangerSignsFollowUp = await harness.getTasks();
         expect(tasksAfterDangerSignsFollowUp).to.be.empty;
         cleared = true;
-      } else {
+      }
+
+      else {
         expect(taskForDelivery).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.delivery.title' });
       }
     }
@@ -99,7 +103,9 @@ describe('Delivery tasks tests', () => {
         const tasksAfterDeliveryReport = await harness.getTasks();
         expect(tasksAfterDeliveryReport).to.be.empty;
         resolved = true;
-      } else {
+      }
+
+      else {
         expect(taskForDelivery).to.be.an('array').that.does.not.contain.something.like({ title: 'task.anc.delivery.title' });
       }
     }

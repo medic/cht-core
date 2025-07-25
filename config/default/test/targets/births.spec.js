@@ -21,9 +21,7 @@ describe('Births this month target tests', () => {
   });
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
-    if (clock) {
-      clock.restore();
-    }
+    if (clock) {clock.restore();}
   });
 
   it('birth this month should be counted', async () => {
