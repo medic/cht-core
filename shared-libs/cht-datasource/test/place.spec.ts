@@ -313,10 +313,10 @@ describe('place', () => {
       });
     });
 
-    describe('createPlace', () => {
+    describe('create', () => {
       it('throws error for invalid input, here with a missing type', async() => {
         const input = {
-          name: 'person-1',
+          name: 'place-1',
           parent: 'p1'
         };
         isPlaceInput.returns(false);
@@ -324,7 +324,7 @@ describe('place', () => {
           .to.be.rejectedWith(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}].`);
       });
       
-      it('returns person doc for valid input', async() => {
+      it('returns place doc for valid input', async() => {
         const createPlaceDoc = sinon.stub();
         adapt.returns(createPlaceDoc);
         const input = {
@@ -336,6 +336,32 @@ describe('place', () => {
         const result = await Place.v1.create(dataContext)(input);
       
         expect(result).to.deep.equal(input);
+      });
+    });
+
+    describe('update', () => {
+      it('returns updated place doc for valid input', async() => {
+        const updatePlaceDoc = sinon.stub();
+        adapt.returns(updatePlaceDoc);
+        const updateInput = {
+          name: 'place-1',
+          type: 'place'
+        };
+        const expectedDoc = {
+          ...updateInput, reported_date: 12312312
+        };
+        updatePlaceDoc.resolves(expectedDoc);
+        const result = await Place.v1.update(dataContext)(updateInput);
+      
+        expect(result).to.deep.equal(expectedDoc);
+      });
+
+      it('throws error for invalid input', async() => {
+        const updatePlaceDoc = sinon.stub();
+        adapt.returns(updatePlaceDoc);
+        const updateInput = 'my-updated-place';
+        await expect(Place.v1.update(dataContext)(updateInput))
+          .to.be.rejectedWith('Invalid place update input');
       });
     });
   });

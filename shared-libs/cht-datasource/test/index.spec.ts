@@ -56,7 +56,7 @@ describe('CHT Script API - getDatasource', () => {
 
       it('contains expected keys', () => {
         expect(place).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType', 
-          'create']);
+          'create', 'update']);
       });
 
       it('getByUuid', async () => {
@@ -127,7 +127,7 @@ describe('CHT Script API - getDatasource', () => {
         expect(byContactType.calledOnceWithExactly(placeType)).to.be.true;
       });
 
-      it('createPlace', async () => {
+      it('create', async () => {
         const placeInput = { name: 'p1', type: 'place'};
         const expectedPlace = {...placeInput,
           reported_date: 12312312
@@ -141,6 +141,21 @@ describe('CHT Script API - getDatasource', () => {
         expect(returnedPlace).to.equal(expectedPlace);
         expect(dataContextBind.calledOnceWithExactly(Place.v1.create)).to.be.true;
         expect(placeCreate.calledOnceWithExactly(validatedPlaceInput)).to.be.true;
+      });
+
+      it('update', async () => {
+        const placeInput = { name: 'p1', type: 'place'};
+        const expectedPlace = {...placeInput,
+          reported_date: 12312312
+        };
+        const placeUpdate = sinon.stub().resolves(expectedPlace);
+        dataContextBind.returns(placeUpdate);
+
+        const returnedPlace = await place.update(placeInput);
+
+        expect(returnedPlace).to.equal(expectedPlace);
+        expect(dataContextBind.calledOnceWithExactly(Place.v1.update)).to.be.true;
+        expect(placeUpdate.calledOnceWithExactly(placeInput)).to.be.true;
       });
     });
 
@@ -175,7 +190,7 @@ describe('CHT Script API - getDatasource', () => {
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
       });
 
-      it('createPerson', async () => {
+      it('create', async () => {
         const personInput = { name: 'apoorva', type: 'person', parent: 'p1' };
         const expectedPerson = {...personInput,
           reported_date: 12312312
@@ -191,6 +206,20 @@ describe('CHT Script API - getDatasource', () => {
         expect(personCreate.calledOnceWithExactly(validatedPersonInput)).to.be.true;
       });
 
+      it('update', async () => {
+        const personInput = { name: 'apoorva', type: 'person', parent: 'p1' };
+        const expectedPerson = {...personInput,
+          reported_date: 12312312
+        };
+        const personUpdate = sinon.stub().resolves(expectedPerson);
+        dataContextBind.returns(personUpdate);
+
+        const returnedPlace = await person.update(personInput);
+
+        expect(returnedPlace).to.equal(expectedPerson);
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.update)).to.be.true;
+        expect(personUpdate.calledOnceWithExactly(personInput)).to.be.true;
+      });
 
       it('getByUuidWithLineage', async () => {
         const expectedPerson = {};

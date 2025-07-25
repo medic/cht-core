@@ -293,7 +293,7 @@ describe('Place Controller', () => {
       });
     });
 
-    describe('createPlace', () => {
+    describe('create', () => {
       let placeCreate;
       beforeEach(() => {
         placeCreate = sinon.stub();
@@ -355,6 +355,48 @@ describe('Place Controller', () => {
         expect(placeCreate.calledOnceWithExactly(input)).to.be.true;
         expect(dataContextBind.calledOnce).to.be.true;
         expect(res.json.calledOnceWithExactly(expected_doc)).to.be.true;
+      });
+    });
+
+    describe('update', () => {
+      let updatePlace;
+      beforeEach(() => {
+        updatePlace = sinon.stub();
+        dataContextBind
+          .withArgs(Place.v1.update)
+          .returns(updatePlace);
+      });
+
+      it('updates a place doc for valid update input', async() => {
+        const input = {
+          name: 'test-user',
+          _id: '123',
+          rev: '1-rev',
+          type: 'contact',
+          contact_type: 'place',
+          parent: {
+            _id: '1'
+          },
+          reported_date: 12312312
+        };
+        req = {
+          body: {
+            ...input
+          }
+        };
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        const updatePlaceDoc = {...input, _id: '123', rev: '2-rev'}; 
+        updatePlace.resolves(updatePlaceDoc);
+         
+        await controller.v1.update(req, res);
+        expect(hasAllPermissions
+          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_update_places'])).to.be.true;
+        expect(updatePlace.calledOnce).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+        expect(dataContextBind.calledOnce).to.be.true;
+        expect(updatePlace.calledOnce).to.be.true;
+        expect(res.json.calledOnceWithExactly(updatePlaceDoc)).to.be.true;
       });
     });
   });

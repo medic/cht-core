@@ -237,7 +237,15 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created place.
          * @throws InvalidArgumentError if the type of input is not valid for creating a place.
          */
-        create: (input: unknown) => ctx.bind(Place.v1.create)(input)
+        create: (input: unknown) => ctx.bind(Place.v1.create)(input),
+
+        /**
+         * Updates a place.
+         * @param input the object defining the place properties.
+         * @returns the updated place.
+         * @throws InvalidArgumentError if the type of input is not valid for updating a place.
+         */
+        update: (input: unknown) => ctx.bind(Place.v1.update)(input)
       },
       person: {
         /**

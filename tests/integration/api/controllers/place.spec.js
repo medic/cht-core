@@ -318,4 +318,77 @@ describe('Place API', () => {
         );
     });
   });
+
+  describe('PUT /api/v1/place', async () => {
+    it(`updates a place for valid placeInput`, async () => {
+      const endpoint = '/api/v1/place';
+      const createPlaceInput = {
+        name: 'place-1',
+        type: 'clinic',
+        parent: place1._id
+      };
+      const createOpts = {
+        path: endpoint,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: createPlaceInput
+      };
+      const createPlaceDoc = await utils.request(createOpts);
+
+      const updatePlaceInput = {
+        ...createPlaceDoc, name: 'myplace'
+      };
+      const updateOpts = {
+        path: endpoint,
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updatePlaceInput
+      };
+      const updatedPlaceDoc = await utils.request(updateOpts);
+      expect(updatedPlaceDoc).excluding(['_rev']).to.deep.equal(updatePlaceInput);
+    });
+
+    it(`throws error on trying to update an immutable field`, async () => {
+      const endpoint = '/api/v1/place';
+      const createPlaceInput = {
+        name: 'place-1',
+        type: 'place',
+        parent: place1._id
+      };
+      const createOpts = {
+        path: endpoint,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: createPlaceInput
+      };
+      const createPlaceDoc = await utils.request(createOpts);
+
+      const updatePlaceInput = {
+        ...createPlaceDoc, reported_date: 222222
+      };
+      const updateOpts = {
+        path: endpoint,
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updatePlaceInput
+      };
+      expect(utils.request(updateOpts))
+        .to.be.rejectedWith(
+          `400 - ${JSON.stringify({
+            code: 400,
+            error: `Value ${JSON.stringify(
+              updatePlaceInput.reported_date 
+            )} of immutable field 'reported_date' does not match with the original doc`
+          })}`
+        );
+    });
+  });
 });

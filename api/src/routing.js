@@ -484,6 +484,7 @@ app.postJson('/api/v1/places/:id', function(req, res) {
 app.get('/api/v1/place', place.v1.getAll);
 app.get('/api/v1/place/:uuid', place.v1.get);
 app.postJson('/api/v1/place', place.v1.create);
+app.putJson('/api/v1/place', place.v1.update);
 
 app.postJson('/api/v1/people', function(req, res) {
   auth
