@@ -434,12 +434,16 @@ describe('Export Data V2.0', () => {
         },
         software: {
           androidVersion: android
-        },
-        storage: {
-          free: storageFree,
-          total: storageTotal
         }
       };
+
+      // Only include storage if values are defined
+      if (storageFree !== undefined || storageTotal !== undefined) {
+        deviceInfo.storage = {
+          free: storageFree,
+          total: storageTotal
+        };
+      }
 
       return {
         _id: `telemetry-${date}-${user}-${deviceId}`,
