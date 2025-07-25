@@ -69,7 +69,9 @@ describe('pregnancy home visit tests', () => {
       const taskForHomeVisit = await harness.getTasks({ title: 'task.anc.pregnancy_home_visit.title' });
       if (pregnancyHomeVisitTaskDays.includes(day)) {
         expect(taskForHomeVisit.length).to.equal(1, day);
-      } else {
+      }
+
+      else {
         expect(taskForHomeVisit).to.be.empty;
       }
     }
@@ -108,7 +110,8 @@ describe('pregnancy home visit tests', () => {
       const taskForHomeVisit = await harness.getTasks({ title: 'task.anc.pregnancy_home_visit.title' });
       if (pregnancyHomeVisitUnknownLMPTaskDays.includes(day)) {
         expect(taskForHomeVisit).to.have.property('length', 1, day);
-      } else {
+      }
+      else {
         expect(taskForHomeVisit, day).to.be.empty;
       }
     }
@@ -132,7 +135,9 @@ describe('pregnancy home visit tests', () => {
 
         expect(followupFormResult.errors).to.be.empty;
         cleared = true;
-      } else {
+      }
+
+      else {
         expect(await harness.getTasks()).to.be.empty;
       }
     }
@@ -156,7 +161,9 @@ describe('pregnancy home visit tests', () => {
 
         expect(followupFormResult.errors).to.be.empty;
         cleared = true;
-      } else {
+      }
+
+      else {
         expect(await harness.getTasks()).to.be.empty;
       }
     }

@@ -16,8 +16,7 @@ describe('Pregnancy danger sign follow-up form', () => {
     async() => {
       await harness.clear();
       await harness.setNow(new Date(TODAY));
-    }
-  );
+    });
 
   afterEach(() => expect(harness.consoleErrors).to.be.empty);
 
