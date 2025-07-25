@@ -36,7 +36,7 @@ describe('Search service', () => {
         { provide: DbService, useValue: { get: () => db } },
         { provide: GetDataRecordsService, useValue: { get: GetDataRecords } },
         { provide: SessionService, useValue: session },
-        { provide: SearchFactoryService, useValue: { get: async () => searchStub } },
+        { provide: SearchFactoryService, useValue: { get: sinon.stub().resolves(searchStub) } },
         { provide: PerformanceService, useValue: performanceService },
       ],
     });
