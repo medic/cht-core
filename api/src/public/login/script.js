@@ -74,27 +74,27 @@ const requestTokenLogin = (retry = 20) => {
     let response = {};
     try {
       response = JSON.parse(xmlhttp.responseText);
-    } catch (err) {
+    } catch {
       // no body
     }
     switch (xmlhttp.status) {
-    case 302:
-      window.location = xmlhttp.response;
-      break;
-    case 401:
-      setTokenState(response && response.error === 'expired' ? 'tokenexpired' : 'tokeninvalid');
-      break;
-    case 408:
-      if (retry <= 0) {
-        return setTokenState('tokentimeout');
-      }
-      requestTokenLogin(retry - 1);
-      break;
-    case 400:
-      setTokenState(response && response.error === 'missing' ? 'tokenmissing' : 'tokenerror');
-      break;
-    default:
-      setTokenState('tokenerror');
+      case 302:
+        window.location = xmlhttp.response;
+        break;
+      case 401:
+        setTokenState(response && response.error === 'expired' ? 'tokenexpired' : 'tokeninvalid');
+        break;
+      case 408:
+        if (retry <= 0) {
+          return setTokenState('tokentimeout');
+        }
+        requestTokenLogin(retry - 1);
+        break;
+      case 400:
+        setTokenState(response && response.error === 'missing' ? 'tokenmissing' : 'tokenerror');
+        break;
+      default:
+        setTokenState('tokenerror');
     }
   });
 };

@@ -23,7 +23,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 })
 export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit {
   private globalActions;
-  private geoHandle:any;
+  private geoHandle: any;
   private routeSnapshot;
   private trackRender;
   private trackEditDuration;

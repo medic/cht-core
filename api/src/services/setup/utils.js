@@ -332,7 +332,7 @@ const makeUpgradeRequest = async (payload) => {
   try {
     url = new URL(UPGRADE_SERVICE_URL);
     url.pathname = '/upgrade';
-  } catch (err) {
+  } catch {
     throw new Error(`Invalid UPGRADE_SERVICE_URL: ${UPGRADE_SERVICE_URL}`);
   }
 

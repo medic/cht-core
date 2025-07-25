@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    cht.service: haproxy
+  name: cht-haproxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cht.service: haproxy
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        cht.service: haproxy
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - env:
+            - name: COUCHDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_PASSWORD
+            - name: COUCHDB_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: couchdb-servers-configmap
+                  key: COUCHDB_SERVERS
+            - name: COUCHDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_USER
+            - name: HAPROXY_IP
+              value: {{ (default (dict "ip" "0.0.0.0") .Values.haproxy).ip | default "0.0.0.0" }}
+            - name: HAPROXY_PORT
+              value: "{{ (default (dict "port" "5984") .Values.haproxy).port | default "5984" }}"
+            - name: HEALTHCHECK_ADDR
+              value: healthcheck.{{ .Values.namespace }}.svc.cluster.local
+          image: '{{ .Values.upstream_servers.docker_registry | default "public.ecr.aws/medic" }}/cht-haproxy:{{ .Values.cht_image_tag }}'
+          {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
+          name: cht-haproxy
+          ports:
+            - containerPort: {{ (default (dict "port" 5984) .Values.haproxy).port | default 5984 }}
+          resources: {}
+      hostname: haproxy
+      restartPolicy: Always
+status: {}

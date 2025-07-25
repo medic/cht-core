@@ -91,7 +91,7 @@ module.exports = {
     try {
       const [username, password] = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
       return { username, password };
-    } catch (err) {
+    } catch {
       throw Error('Corrupted Auth header');
     }
   },

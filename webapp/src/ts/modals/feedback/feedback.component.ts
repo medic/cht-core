@@ -18,8 +18,8 @@ import { TranslatePipe } from '@ngx-translate/core';
 export class FeedbackComponent {
   private globalActions;
   processing = false;
-  errors:{ message?; submit? } = {};
-  model:{ message? } = {};
+  errors: { message?; submit? } = {};
+  model: { message? } = {};
 
   static id = 'feedback-modal';
 

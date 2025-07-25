@@ -31,7 +31,7 @@ if (!server || argv.h || argv.help) {
   console.log('Other options:');
   console.log('  --verbose');
   console.log('    outputs unresolved diffs');
-  return;
+  process.exit(1);
 }
 
 console.log(`Loading and attempting to auto-resolve conflicts on ${server}`);

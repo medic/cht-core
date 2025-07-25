@@ -42,7 +42,7 @@ export class SearchService {
     private readonly ngZone:NgZone,
   ) { }
 
-  private _currentQuery:any = {};
+  private _currentQuery: any = {};
 
   // Silently cancel repeated queries.
   private debounce(type, filters, options) {

@@ -986,7 +986,7 @@
       <bind nodeset="/pregnancy/patient_short_name_start" type="string" calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_start_label)"/>
       <bind nodeset="/pregnancy/lmp_date_8601" type="string" calculate="../gestational_age/g_lmp_date_8601"/>
       <bind nodeset="/pregnancy/edd_8601" type="string" calculate="../gestational_age/g_edd_8601"/>
-      <bind nodeset="/pregnancy/days_since_lmp" type="string" calculate="floor(decimal-date-time(today())) - decimal-date-time(../lmp_date_8601)" relevant="../lmp_date_8601 != ''"/>
+      <bind nodeset="/pregnancy/days_since_lmp" type="string" calculate="floor(decimal-date-time(today()) - decimal-date-time(../lmp_date_8601))" relevant="../lmp_date_8601 != ''"/>
       <bind nodeset="/pregnancy/weeks_since_lmp" type="string" calculate="round(../days_since_lmp div 7, 2)" relevant="../lmp_date_8601 != ''"/>
       <bind nodeset="/pregnancy/weeks_since_lmp_rounded" type="string" calculate="floor(../days_since_lmp div 7)" relevant="../lmp_date_8601 != ''"/>
       <bind nodeset="/pregnancy/lmp_method_approx" type="string" calculate="if(selected(../gestational_age/register_method/lmp_method, 'method_approx'), 'yes', 'no')"/>
@@ -995,7 +995,7 @@
       <bind nodeset="/pregnancy/tt_received" type="string" calculate="../safe_pregnancy_practices/tetanus/tt_imm_received"/>
       <bind nodeset="/pregnancy/t_pregnancy_follow_up_date" type="string" calculate="../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date"/>
       <bind nodeset="/pregnancy/t_pregnancy_follow_up" type="string" calculate="../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known"/>
-      <bind nodeset="/pregnancy/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(decimal-date-time(today()) + 3)"/>
+      <bind nodeset="/pregnancy/t_danger_signs_referral_follow_up_date" type="string" calculate="format-date-time(decimal-date-time(today()) + 3,&quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/pregnancy/t_danger_signs_referral_follow_up" type="string" calculate="../danger_signs/r_danger_sign_present"/>
       <bind nodeset="/pregnancy/gestational_age/register_method/register_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy/gestational_age/register_method/lmp_method" type="select1" required="true()"/>

@@ -31,7 +31,7 @@
       parsedCtx.locale = locale;
       return parsedCtx;
     } catch (e) {
-      return;
+      console.warn('Error parsing userCtx cookie', e);
     }
   };
 
