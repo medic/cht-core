@@ -6,11 +6,12 @@ import { RemoteDataContext } from './remote/libs/data-context';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
-import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
+import { getPagedGenerator, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, 
   assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
 import { validatePlaceInput } from './input';
+import { InvalidArgumentError } from './libs/error';
 
 /** */
 export namespace v1 {
@@ -137,6 +138,32 @@ export namespace v1 {
     const curriedFn = async (input: unknown): Promise<Place> => {
       const placeInput = validatePlaceInput(input);
       return fn(placeInput);
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Returns a function to update a place from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a place.
+   * @throws Error if a data context is not provided
+   */
+  export const update = (context:DataContext):typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Place.v1.update, Remote.Place.v1.update);
+    /**
+     * Returns the updated Place Doc for the provided updateInput
+     * @param updateInput the Doc containing updated fields
+     * @returns updated person Doc
+     * @throws InvalidArgumentError if updateInput has changes in immutable fields
+     * @throws InvalidArgumentError if updateInput does not contain required fields
+     * @throws InvalidArgumentError if updateInput fields are not of expected type
+     */
+    const curriedFn = async (updateInput: unknown): Promise<Place> => {
+      if (!isRecord(updateInput)){
+        throw new InvalidArgumentError('Invalid place update input');
+      }
+      return fn(updateInput);
     };
     return curriedFn;
   };

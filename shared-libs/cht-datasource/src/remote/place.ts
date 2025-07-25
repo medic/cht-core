@@ -1,7 +1,7 @@
 import { Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Place from '../place';
-import { getResource, getResources, postResource, RemoteDataContext } from './libs/data-context';
+import { getResource, getResources, postResource, putResource, RemoteDataContext } from './libs/data-context';
 import { PlaceInput } from '../input';
 
 /** @internal */
@@ -11,6 +11,8 @@ export namespace v1 {
   const getPlaces = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/place');
 
   const createPlace = (remoteContext: RemoteDataContext) => postResource(remoteContext, 'api/v1/place');
+
+  const updatePlace = (remoteContext: RemoteDataContext) => putResource(remoteContext, 'api/v1/place');
 
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (
@@ -44,4 +46,10 @@ export namespace v1 {
   (remoteContext: RemoteDataContext) => (
     input:PlaceInput
   ):Promise<Place.v1.Place> => createPlace(remoteContext)(input);
+
+  /** @internal */
+  export const update = 
+  (remoteContext: RemoteDataContext) => (
+    input:Record<string, unknown>
+  ):Promise<Place.v1.Place> => updatePlace(remoteContext)(input);
 }

@@ -12,6 +12,8 @@ describe('remote place', () => {
   let getResourcesOuter: SinonStub;
   let postResourceOuter: SinonStub;
   let postResourceInner: SinonStub;
+  let putResourceOuter: SinonStub;
+  let putResourceInner: SinonStub;
 
   beforeEach(() => {
     getResourceInner = sinon.stub();
@@ -20,6 +22,8 @@ describe('remote place', () => {
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
     postResourceInner= sinon.stub();
     postResourceOuter = sinon.stub(RemoteEnv, 'postResource').returns(postResourceInner);
+    putResourceInner= sinon.stub();
+    putResourceOuter = sinon.stub(RemoteEnv, 'putResource').returns(putResourceInner);
   });
 
   afterEach(() => sinon.restore());
@@ -120,6 +124,24 @@ describe('remote place', () => {
         expect(result).to.deep.equal(expected_doc);
         expect(postResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/place')).to.be.true;
         expect(postResourceInner.calledOnceWithExactly(placeInput)).to.be.true;
+      });
+    });
+
+    describe('updatePlace', () => {
+      it('updates a place for a valid input', async () => {
+        const placeInput = {
+          type: 'place',
+          name: 'user-1',
+          parent: 'p1',
+          _id: '1',
+          _rev: '1'
+        };
+        const expected_doc = {...placeInput, _id: '1', _rev: '2'};
+        putResourceInner.resolves(expected_doc);
+        const result = await Place.v1.update(remoteContext)(placeInput);
+        expect(result).to.deep.equal(expected_doc);
+        expect(putResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/place')).to.be.true;
+        expect(putResourceInner.calledOnceWithExactly(placeInput)).to.be.true;
       });
     });
   });

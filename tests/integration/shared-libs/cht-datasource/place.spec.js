@@ -225,7 +225,7 @@ describe('cht-datasource Place', () => {
       });
     });
 
-    describe('createPlace', () => {
+    describe('create', () => {
       it('creates a place for a valid input', async () => {
         const placeInput = {
           name: 'place-1',
@@ -240,6 +240,29 @@ describe('cht-datasource Place', () => {
         const placeDoc = await Place.v1.create(dataContext)(placeInput);
         expect(placeDoc).excluding([ '_rev', 'reported_date', '_id' ])
           .to.deep.equal(updatedPlaceInput);
+      });
+    });
+
+    describe('update', () => {
+      it('updates a place for a valid input', async () => {
+        const placeInput = {
+          name: 'place-1',
+          type: 'clinic',
+          parent: place1._id,
+          contact: contact1._id,
+          weather: 'humid'
+        };
+        const placeDoc = await Place.v1.create(dataContext)(placeInput);
+        const updateInput = {
+          ...placeDoc, extraField: 'value'
+        };
+        console.log(placeDoc);
+        delete updateInput.weather;
+
+        const updatedPlaceDoc = await Place.v1.update(dataContext)(updateInput);
+        expect(updatedPlaceDoc).excluding(['_rev']).to.deep.equal(
+          updateInput
+        );
       });
     });
   });
