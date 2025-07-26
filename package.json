@@ -73,7 +73,7 @@
     "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js"
   },
   "devDependencies": {
-    "@angular-eslint/builder": "^20.1.0",
+    "@angular-eslint/builder": "^20.1.1",
     "@angular-eslint/eslint-plugin": "^20.1.0",
     "@angular-eslint/eslint-plugin-template": "^20.1.0",
     "@angular-eslint/schematics": "^20.1.0",
