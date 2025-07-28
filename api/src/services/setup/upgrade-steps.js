@@ -58,7 +58,7 @@ const prep = async (buildInfo, username, stageOnly = true) => {
 
   const packagedBuildInfo = await upgradeUtils.getPackagedBuildInfo();
 
-  if (!buildInfo && !(await upgradeUtils.freshInstall())) {
+  if (!buildInfo && !await upgradeUtils.freshInstall()) {
     // partial installs don't require creating a new upgrade_log doc
     return;
   }

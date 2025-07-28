@@ -61,7 +61,7 @@ const getPurgedIds = async (userCtx, docIds, useCache = true) => {
     // requesting _changes instead of _all_docs because it's roughly twice faster
     const changesResult = await purgeDb.changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length });
     purgeIds = getPurgedIdsFromChanges(changesResult);
-    useCache && (await purgedDocsCache.set(userCtx.name, purgeIds));
+    useCache && await purgedDocsCache.set(userCtx.name, purgeIds);
     db.close(purgeDb);
   } catch (err) {
     catchDbNotFoundError(err, purgeDb);
