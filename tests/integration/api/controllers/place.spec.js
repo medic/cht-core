@@ -390,5 +390,82 @@ describe('Place API', () => {
           })}`
         );
     });
+
+    it(`throws error on missing _id field`, async () => {
+      const endpoint = '/api/v1/place';
+      const createPlaceInput = {
+        name: 'place-1',
+        type: 'place',
+        parent: place1._id
+      };
+      const createOpts = {
+        path: endpoint,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: createPlaceInput
+      };
+      const createPlaceDoc = await utils.request(createOpts);
+
+      const updatePlaceInput = {
+        ...createPlaceDoc, reported_date: 222222
+      };
+      delete updatePlaceInput._id;
+      const updateOpts = {
+        path: endpoint,
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updatePlaceInput
+      };
+      expect(utils.request(updateOpts))
+        .to.be.rejectedWith(
+          `400 - ${JSON.stringify({
+            code: 400,
+            error: `Document for update is not a valid Doc ${JSON.stringify(updatePlaceInput)}` 
+          })}`
+        );
+    });
+
+    it(`throws error on missing _rev field`, async () => {
+      const endpoint = '/api/v1/place';
+      const createPlaceInput = {
+        name: 'place-1',
+        type: 'place',
+        parent: place1._id
+      };
+      const createOpts = {
+        path: endpoint,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: createPlaceInput
+      };
+      const createPlaceDoc = await utils.request(createOpts);
+
+      const updatePlaceInput = {
+        ...createPlaceDoc, reported_date: 222222
+      };
+      delete updatePlaceInput._rev;
+      const updateOpts = {
+        path: endpoint,
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updatePlaceInput
+      };
+      expect(utils.request(updateOpts))
+        .to.be.rejectedWith(
+          `400 - ${JSON.stringify({
+            code: 400,
+            error: `Missing or empty required fields (_rev) for [${JSON
+              .stringify(updatePlaceInput)}].`
+          })}`
+        );
+    });
   });
 });
