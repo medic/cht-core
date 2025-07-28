@@ -51,8 +51,7 @@ module.exports = {
     update: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req, ['can_view_contacts', 'can_update_places']);
       
-      const updatePlaceInput = req.body;
-      const updatedPlaceDoc = await update()(updatePlaceInput);
+      const updatedPlaceDoc = await update()(req.body);
       return res.json(updatedPlaceDoc);
     })
   }
