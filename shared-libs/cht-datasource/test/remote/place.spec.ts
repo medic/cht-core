@@ -127,7 +127,7 @@ describe('remote place', () => {
       });
     });
 
-    describe('updatePlace', () => {
+    describe('update', () => {
       it('updates a place for a valid input', async () => {
         const placeInput = {
           type: 'place',
