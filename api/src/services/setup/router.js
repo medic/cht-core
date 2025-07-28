@@ -60,12 +60,12 @@ router.get('/api/v1/startup-progress', (req, res) => {
   res.json(startupLog.getProgress(req.locale));
 });
 
-router.all('*', wantsJSON, (req, res) => {
+router.all('*any', wantsJSON, (req, res) => {
   res.status(STATUS);
   res.json({ error: 'Service unavailable' });
 });
 
-router.all('*', async (req, res) => {
+router.all('*any', async (req, res) => {
   const page = await renderStartupPage(req);
   res.send(page);
 });
