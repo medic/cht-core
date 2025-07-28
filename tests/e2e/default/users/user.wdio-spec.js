@@ -245,20 +245,17 @@ describe('User Test Cases ->', () => {
 
       await usersAdminPage.openEditUserDialog(user.username);
 
-      const usernameText = await (await $('[id="edit-username"]')).getValue();
-      expect(usernameText).to.equal(user.username);
+      const userDetails = await usersAdminPage.editUserDialogDetails();
 
-      const chwIsSelected = await (await $('input[value="chw"]')).isSelected();
-      expect(chwIsSelected).to.be.true;
+      expect(userDetails.usernameText).to.equal(user.username);
 
-      const place = await (await $('[id="facilitySelect"]')).getValue();
-      expect(place).to.equal(districtHospital._id);
+      expect(userDetails.chwIsSelected).to.be.true;
 
-      const contact = await (await $('[id="contactSelect"]')).getValue();
-      expect(contact).to.equal(person._id);
+      expect(userDetails.place).to.equal(districtHospital._id);
 
-      const ssoEmail = await (await $('[id="sso-login"]')).getValue();
-      expect(ssoEmail).to.equal(user.oidc_username);
+      expect(userDetails.contact).to.equal(person._id);
+
+      expect(userDetails.ssoEmail).to.equal(user.oidc_username);
     });
   });
 });

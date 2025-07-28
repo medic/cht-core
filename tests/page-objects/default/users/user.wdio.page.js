@@ -53,16 +53,26 @@ const getUsernameRow = async (username) => {
 };
 
 const openEditUserDialog = async (username) => {
-  const el = await getUsernameRow(username);
+  const element = await getUsernameRow(username);
 
-  if (!el) {
+  if (!element) {
     return;
   }
 
-  el.waitForDisplayed();
-  el.click();
+  element.waitForDisplayed();
+  element.click();
   await addUserDialog().waitForDisplayed();
   await browser.pause(500);
+};
+
+const editUserDialogDetails = async () => {
+  return {
+    usernameText: await (await $('[id="edit-username"]')).getValue(),
+    chwIsSelected: await (await $('input[value="chw"]')).isSelected(),
+    place: await (await $('[id="facilitySelect"]')).getValue(),
+    contact: await (await $('[id="contactSelect"]')).getValue(),
+    ssoEmail: await (await $('[id="sso-login"]')).getValue()
+  };
 };
 
 const scrollToBottomOfModal = async () => {
@@ -256,6 +266,7 @@ module.exports = {
   goToAdminUpgrade,
   openAddUserDialog,
   openEditUserDialog,
+  editUserDialogDetails,
   inputAddUserFields,
   saveUser,
   logout,
