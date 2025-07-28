@@ -20,6 +20,7 @@ const minify = parent => {
 const report = () => {
   return new Factory()
     .option('patient', null)
+    .option('place', null)
     .option('submitter', null)
     .sequence('_id', uuid.v4)
     .attrs({
@@ -32,11 +33,14 @@ const report = () => {
       }
       return minify(submitter);
     })
-    .attr('fields', ['patient', 'fields'], (patient, fields) => {
+    .attr('fields', ['patient', 'place', 'fields'], (patient, place, fields) => {
       fields = fields || {};
       if (patient) {
         fields.patient_id = patient.patient_id;
         fields.patient_uuid = patient._id;
+      }
+      if (place) {
+        fields.place_id = place.place_id || place._id;
       }
 
       return fields;

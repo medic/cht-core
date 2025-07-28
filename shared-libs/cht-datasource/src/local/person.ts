@@ -1,17 +1,14 @@
 import { Doc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
-import { isNonEmptyArray, Nullable, Page } from '../libs/core';
+import { Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
 import { fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
-import {
-  getContactLineage,
-  getLineageDocsById,
-} from './libs/lineage';
 import { InvalidArgumentError } from '../libs/error';
 import { validateCursor } from './libs/core';
+import { fetchHydratedDoc } from './libs/lineage';
 
 /** @internal */
 export namespace v1 {
@@ -44,21 +41,14 @@ export namespace v1 {
 
   /** @internal */
   export const getWithLineage = ({ medicDb, settings }: LocalDataContext) => {
-    const getLineageDocs = getLineageDocsById(medicDb);
-    const getLineage = getContactLineage(medicDb);
-
+    const fetchHydratedMedicDoc = fetchHydratedDoc(medicDb);
     return async (identifier: UuidQualifier): Promise<Nullable<Person.v1.PersonWithLineage>> => {
-      const [person, ...lineagePlaces] = await getLineageDocs(identifier.uuid);
+      const person = await fetchHydratedMedicDoc(identifier.uuid);
       if (!isPerson(settings)(person, identifier.uuid)) {
         return null;
       }
-      // Intentionally not further validating lineage. For passivity, lineage problems should not block retrieval.
-      if (!isNonEmptyArray(lineagePlaces)) {
-        logger.debug(`No lineage places found for person [${identifier.uuid}].`);
-        return person;
-      }
 
-      return await getLineage(lineagePlaces, person) as Nullable<Person.v1.PersonWithLineage>;
+      return person;
     };
   };
 

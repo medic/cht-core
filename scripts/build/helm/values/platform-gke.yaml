@@ -1,0 +1,23 @@
+# GCP-specific configurations that extend the base.yaml
+
+# Override cluster type for GCP
+environment: "remote" # DEFAULT: Good default for GKE
+cluster_type: "gke" # DEFAULT: Good default for this file
+
+# GCP-specific ingress configuration
+ingress:
+  gcp:
+    enabled: true # DEFAULT: Good default for GKE
+    staticIpName: "cht-api-ip" # DEFAULT: Good default for GKE
+    managedCertificateName: "cht-api-cert" # DEFAULT: Good default for GKE
+
+# GCP-specific storage configuration
+couchdb:
+  storage_class: "standard-rwo"  # DEFAULT: Good default for GCP. GCP standard persistent disk
+  persistent_disk:
+    size: "<storage-size>"  # REQUIRED: User must set this when preExistingDataAvailable is true (e.g. "10Gi", "100Gi")
+    type: "pd-standard"  # # DEFAULT: Good default type. GCP persistent disk type
+    diskName: ""  # REQUIRED: User must set when preExistingDataAvailable is true and clusteredCouchEnabled is false. Name of pre-existing GCP persistent disk
+    diskName-1: ""  # REQUIRED: User must set when preExistingDataAvailable is true and clusteredCouchEnabled is true. Name of pre-existing GCP persistent disk for node 1
+    diskName-2: ""  # REQUIRED: User must set when preExistingDataAvailable is true and clusteredCouchEnabled is true. Name of pre-existing GCP persistent disk for node 2
+    diskName-3: ""  # REQUIRED: User must set when preExistingDataAvailable is true and clusteredCouchEnabled is true. Name of pre-existing GCP persistent disk for node 3
