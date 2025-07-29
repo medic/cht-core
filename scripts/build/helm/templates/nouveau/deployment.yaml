@@ -16,12 +16,14 @@ spec:
       labels:
         cht.service: nouveau
     spec:
+      {{- if .Values.toleration }}
       tolerations:
         - key: {{ .Values.toleration.key }}
           operator: {{ .Values.toleration.operator }}
           value: {{ .Values.toleration.value | quote }}
           effect: {{ .Values.toleration.effect }}
-    {{- if hasKey .Values "nodes" }}
+      {{- end }}
+    {{- if and (hasKey .Values "nodes") (kindIs "map" .Values.nodes) }}
       {{- if hasKey .Values.nodes "single_node_deploy" }}
       nodeSelector:
         kubernetes.io/hostname: {{ .Values.nodes.single_node_deploy }}
