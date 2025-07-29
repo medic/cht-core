@@ -70,7 +70,6 @@ describe('ContactViewModelGenerator service', () => {
 
   beforeEach(() => {
     get = sinon.stub();
-    get.withArgs(childContactPerson._id).resolves(childContactPerson);
     search = sinon.stub();
     dbGet = sinon.stub();
     dbQuery = sinon.stub();
@@ -106,7 +105,7 @@ describe('ContactViewModelGenerator service', () => {
       contact: { _id: contactId }
     };
     forms = [];
-
+    get.withArgs(childContactPerson._id).resolves(childContactPerson);
     contactTypesService = {
       getAll: sinon.stub().resolves(types),
       getTypeId: sinon.stub().callsFake(contact => contact.type === 'contact' ? contact.contact_type : contact.type),
@@ -249,6 +248,8 @@ describe('ContactViewModelGenerator service', () => {
       stubSearch([]);
       stubGetDataRecordsService([]);
       stubDbQueryChildren(doc._id, [childPerson]);
+
+      get.withArgs(childContactPerson._id).rejects({ status: 404 });
 
       return service
         .getContact(doc._id)
@@ -471,6 +472,7 @@ describe('ContactViewModelGenerator service', () => {
       stubLineageModelGenerator(doc);
       stubDbGet({ status: 404 }, childContactPerson);
       stubDbQueryChildren(doc._id, childrenArray);
+      get.reset();
       return service.getContact(doc._id);
     };
 
