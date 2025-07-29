@@ -1,8 +1,52 @@
 const utils = require('@utils');
 const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
-const placeFactory = require('@factories/cht/contacts/place');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const personFactory = require('@factories/cht/contacts/person');
+const placeFactory = require('@factories/cht/contacts/place');
+
+const OFFLINE_USER_ROLE = 'chw';
+const USERNAME = 'jackuser';
+
+const places = placeFactory.generateHierarchy();
+const districtHospital = places.get('district_hospital');
+
+const districtHospital2 = placeFactory.place().build({
+  name: 'district_hospital',
+  type: 'district_hospital',
+});
+
+const person = personFactory.build({ parent: districtHospital, roles: [OFFLINE_USER_ROLE] });
+
+const user = {
+  username: USERNAME,
+  place: [
+    districtHospital._id
+  ],
+  roles: [
+    OFFLINE_USER_ROLE
+  ],
+  contact: person._id,
+  oidc_username: `${USERNAME}@ssollinc.com`
+};
+
+const createUser = () => {
+  utils.createUsers([user]);
+};
+
+const createHierarchy = async () => {
+  await utils.saveDocs([...places.values(), person, districtHospital2]);
+};
+
+const updateSettings =  async () => { 
+  const settings = await utils.getSettings();
+  await utils.updateSettings({
+    permissions: { ...settings.permissions, can_have_multiple_places: [OFFLINE_USER_ROLE] },
+    oidc_provider: {
+      discovery_url: 'https://discovery_url.com',
+      client_id: 'cht'
+    }
+  }, { ignoreReload: true });
+};
 
 describe('User Test Cases ->', () => {
   const ONLINE_USER_ROLE = 'program_officer';
@@ -13,26 +57,9 @@ describe('User Test Cases ->', () => {
   const PASSWORD_2 = 'Jacktest@456';
   const INCORRECT_PASSWORD = 'Passwor';
 
-  const places = placeFactory.generateHierarchy();
-  const districtHospital = places.get('district_hospital');
-  const districtHospital2 = placeFactory.place().build({
-    name: 'district_hospital',
-    type: 'district_hospital',
-  });
-
-  const person = personFactory.build({ parent: districtHospital, roles: [OFFLINE_USER_ROLE] });
-
   before(async () => {
-    const settings = await utils.getSettings();
-    const permissions = { ...settings.permissions, can_have_multiple_places: [OFFLINE_USER_ROLE] };
-    await utils.updateSettings({
-      permissions,
-      oidc_provider: {
-        discovery_url: 'https://discovery_url.com',
-        client_id: 'cht'
-      }
-    }, { ignoreReload: true });
-    await utils.saveDocs([...places.values(), person, districtHospital2]);
+    await updateSettings();
+    await createHierarchy();
     await loginPage.cookieLogin();
   });
 
@@ -41,7 +68,6 @@ describe('User Test Cases ->', () => {
       await usersAdminPage.closeAddUserDialog();
     }
     await usersAdminPage.goToAdminUser();
-    await usersAdminPage.openAddUserDialog();
   });
 
   after(async () => {
@@ -50,6 +76,10 @@ describe('User Test Cases ->', () => {
   });
 
   describe('Creating Users ->', () => {
+
+    beforeEach(async () => {
+      await usersAdminPage.openAddUserDialog();
+    });
 
     after(async () => await utils.deleteUsers([{ username: USERNAME }]));
 
@@ -137,6 +167,10 @@ describe('User Test Cases ->', () => {
 
   describe('Invalid entries -> ', () => {
 
+    beforeEach(async () => {
+      await usersAdminPage.openAddUserDialog();
+    });
+
     [
       { passwordValue: INCORRECT_PASSWORD, errorMessage: 'The password must be at least 8 characters long.' },
       { passwordValue: 'weakPassword', errorMessage: 'The password is too easy to guess.' },
@@ -199,6 +233,29 @@ describe('User Test Cases ->', () => {
       expect(await usersAdminPage.getPlaceErrorText()).to.contain(
         'The selected roles do not have permission to be assigned multiple places.'
       );
+    });
+  });
+
+  describe('Editing User ->', () => {
+
+    after(async () => await utils.deleteUsers([{ username: user.username }]));
+
+    it('should render user details', async () => {
+      await createUser();
+
+      await usersAdminPage.openEditUserDialog(user.username);
+
+      const userDetails = await usersAdminPage.editUserDialogDetails();
+
+      expect(userDetails.usernameText).to.equal(user.username);
+
+      expect(userDetails.chwIsSelected).to.be.true;
+
+      expect(userDetails.place).to.equal(districtHospital._id);
+
+      expect(userDetails.contact).to.equal(person._id);
+
+      expect(userDetails.ssoEmail).to.equal(user.oidc_username);
     });
   });
 });
