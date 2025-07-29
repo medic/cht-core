@@ -256,18 +256,30 @@ export namespace v1 {
     }
   };
 
+  const shouldAppendContact = (
+    originalDoc:Record<string, unknown>,
+    placeInput: Record<string, unknown>
+  ): boolean => {
+    // Contact will only be appended if originalDoc does not already have a contact
+    // and the contact lineage in placeInput is a valid contact lineage. 
+    if (hasField(originalDoc, {type: 'object', name: 'contact', ensureTruthyValue: true})) {
+      return false;
+    }
+    if (!('contact' in placeInput)) {
+      return false;
+    }
+    return true;
+  };
   const maybeAppendContact = 
   async(
     placeInput: Record<string, unknown>,
     originalDoc: Record<string, unknown>,
     medicDb: PouchDB.Database<Doc>
   ) => {
-    // Contact will only be appended if originalDoc does not already have a contact
-    // and the contact lineage in placeInput is a valid contact lineage. 
-    if (hasField(originalDoc, {type: 'object', name: 'contact', ensureTruthyValue: true})) {
+    if (!shouldAppendContact(originalDoc, placeInput)) {
       return;
     }
-
+    
     if (!isRecord(placeInput.contact)
       || 
     !(hasField(placeInput.contact, {
