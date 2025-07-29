@@ -60,10 +60,10 @@ module.exports = {
     }
 
     let promise;
-    if (isOpenRevsRequest(req.method, req.query)) {
-      promise = dbDoc.filterOfflineOpenRevsRequest(req.userCtx, req.params, req.query);
+    if (isOpenRevsRequest(req.method, req.parsedQuery)) {
+      promise = dbDoc.filterOfflineOpenRevsRequest(req.userCtx, req.params, req.parsedQuery);
     } else {
-      promise = dbDoc.filterOfflineRequest(req.userCtx, req.params, req.method, req.query, req.body);
+      promise = dbDoc.filterOfflineRequest(req.userCtx, req.params, req.method, req.parsedQuery, req.body);
     }
 
     return promise
@@ -71,7 +71,7 @@ module.exports = {
         if (!result) {
           // if this is an attachment request without `rev` parameter that is not valid,
           // send a `404` so PouchDB will retry with a `rev` parameter.
-          if (!isValidAttachmentRequest(req.params, req.query)) {
+          if (!isValidAttachmentRequest(req.params, req.parsedQuery)) {
             return notFoundError(res);
           }
 
