@@ -1,6 +1,6 @@
 import { Doc, isDoc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
-import { hasField, isNonEmptyArray, NonEmptyArray, Nullable, Page } from '../libs/core';
+import { hasField, isNonEmptyArray, isRecord, NonEmptyArray, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Place from '../place';
 import { createDoc, fetchAndFilter, getDocById, queryDocsByKey, updateDoc } from './libs/doc';
@@ -13,6 +13,7 @@ import {
 import { InvalidArgumentError } from '../libs/error';
 import { 
   addParentToInput, 
+  checkFieldWithLineage, 
   ensureHasRequiredFields,
   ensureImmutability,
   validateCursor 
@@ -254,6 +255,41 @@ export namespace v1 {
       throw new InvalidArgumentError(`Places at top of the hierarchy cannot have a parent`);
     }
   };
+
+  const maybeAppendContact = 
+  async(
+    placeInput: Record<string, unknown>,
+    originalDoc: Record<string, unknown>,
+    medicDb: PouchDB.Database<Doc>
+  ) => {
+    // Contact will only be appended if originalDoc does not already have a contact
+    // and the contact lineage in placeInput is a valid contact lineage. 
+    if (hasField(originalDoc, {type: 'object', name: 'contact', ensureTruthyValue: true})) {
+      return;
+    }
+
+    if (!isRecord(placeInput.contact)
+      || 
+    !(hasField(placeInput.contact, {
+      name: '_id', type: 'string', ensureTruthyValue: true
+    }))){
+      throw new InvalidArgumentError('Invalid contact type');
+    }
+    const contactDoc = await getDocById(medicDb)(placeInput.contact._id);
+    if (contactDoc===null) {
+      throw new InvalidArgumentError('Contact doc not found');
+    }
+    
+    checkFieldWithLineage(placeInput.contact, contactDoc, 'contact');
+    const contactField = {
+      _id: contactDoc._id
+    };
+    if (contactDoc.parent){
+      Object.assign(contactField, {parent: contactDoc.parent});
+    }
+    placeInput.contact = contactField;
+  };
+
   const validateUpdatePlacePayload = (
     originalDoc: Doc,
     placeInput: Record<string, unknown>
@@ -295,6 +331,7 @@ export namespace v1 {
         throw new InvalidArgumentError(`Place not found`);
       }
       validateUpdatePlacePayload(originalDoc, placeInput);
+      await maybeAppendContact(placeInput, originalDoc, medicDb);
       return await updatePlace(placeInput) as Place.v1.Place;
     };
   };

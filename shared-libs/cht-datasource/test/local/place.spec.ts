@@ -727,6 +727,98 @@ describe('local place', () => {
           .be.rejectedWith(`Places at top of the hierarchy cannot have a parent`);
       });
 
+      it('appends contact if originalDoc does not have one', async() => {
+        const originalDoc = {
+          _id: '1',
+          _rev: '1',
+          name: 'myPlace',
+          type: 'contact',
+          contact_type: 'district_hospital', 
+          reported_date: 12312312
+        };
+        isPlace.returns(true);
+        const contactDoc = {
+          _id: '5',
+          parent: {
+            _id: '6'
+          }
+        };
+        const updateInput = {...originalDoc, contact: {...contactDoc, extra: 'field'}};
+        getDocByIdInner.onCall(0).resolves(originalDoc);
+        getDocByIdInner.onCall(1).resolves(contactDoc);
+
+        updateDocInner.resolves({
+          ...updateInput, contact: contactDoc
+        });
+        await Place.v1.update(localContext)(updateInput);
+        expect(updateDocInner.calledOnceWithExactly({
+          ...updateInput, contact: contactDoc
+        }));
+      });
+
+      it('throws error for invalid contact type when trying to add \
+        contact to a place that does not have one already', async() => {
+        const originalDoc = {
+          _id: '1',
+          _rev: '1',
+          name: 'myPlace',
+          type: 'contact',
+          contact_type: 'district_hospital', 
+          reported_date: 12312312
+        };
+        isPlace.returns(true);
+        
+        const updateInput = {...originalDoc, contact: '5'};
+        getDocByIdInner.onCall(0).resolves(originalDoc);
+
+        await expect(Place.v1.update(localContext)(updateInput))
+          .to.be.rejectedWith('Invalid contact type');
+      });
+
+      it('throws error if contact doc not found trying to add \
+        contact to a place that does not have one already', async() => {
+        const originalDoc = {
+          _id: '1',
+          _rev: '1',
+          name: 'myPlace',
+          type: 'contact',
+          contact_type: 'district_hospital', 
+          reported_date: 12312312
+        };
+        isPlace.returns(true);
+        
+        const updateInput = {...originalDoc, contact: {_id: '5'}};
+        getDocByIdInner.onCall(0).resolves(originalDoc);
+        getDocByIdInner.onCall(1).resolves(null);
+
+        await expect(Place.v1.update(localContext)(updateInput))
+          .to.be.rejectedWith('Contact doc not found');
+      });
+
+      it('throws error if contact lineage does not match with actual doc when adding \
+        contact to a place that does not have one already', async() => {
+        const originalDoc = {
+          _id: '1',
+          _rev: '1',
+          name: 'myPlace',
+          type: 'contact',
+          contact_type: 'district_hospital', 
+          reported_date: 12312312
+        };
+        isPlace.returns(true);
+        
+        const updateInput = {...originalDoc, contact: {_id: '5', parent: {_id: '6'}}};
+        getDocByIdInner.onCall(0).resolves(originalDoc);
+        getDocByIdInner.onCall(1).resolves({
+          _id: '5', parent: {
+            _id: '7'
+          }
+        });
+
+        await expect(Place.v1.update(localContext)(updateInput))
+          .to.be.rejectedWith('contact lineage does not match with the lineage of the doc in the db');
+      });
+
       it('returns updated place doc for valid input', async() => {
         const updateInput = {
           _id: '1',
