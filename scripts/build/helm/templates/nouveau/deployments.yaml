@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    cht.service: nouveau
+  name: cht-couchdb-nouveau
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cht.service: nouveau
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        cht.service: nouveau
+    spec:
+      tolerations:
+        - key: {{ .Values.toleration.key }}
+          operator: {{ .Values.toleration.operator }}
+          value: {{ .Values.toleration.value | quote }}
+          effect: {{ .Values.toleration.effect }}
+    {{- if hasKey .Values "nodes" }}
+      {{- if hasKey .Values.nodes "single_node_deploy" }}
+      nodeSelector:
+        kubernetes.io/hostname: {{ .Values.nodes.single_node_deploy }}
+      {{- end }}
+    {{- end }}
+      containers:
+        - name: cht-couchdb-nouveau
+          image: "{{ .Values.upstream_servers.docker_registry }}/cht-couchdb-nouveau:{{ .Values.cht_image_tag }}"
+          {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
+          ports:
+            - containerPort: 5987
+          resources: {}
+          {{- if eq (toString .Values.cluster_type) "k3s-k3d" }}
+          volumeMounts:
+            - mountPath: /data/nouveau
+              name: local-volume
+              subPath: data
+          {{- else }}
+          volumeMounts:
+            - mountPath: /data/nouveau
+              {{- if eq (toString $.Values.couchdb.clusteredCouchEnabled) "true" }}
+              name: couchdb-1-claim0
+              {{- else }}
+              name: couchdb-claim0
+              {{- end }}
+              subPath: data
+          {{- end }}
+      restartPolicy: Always
+      {{- if eq (toString .Values.cluster_type) "k3s-k3d" }}
+      volumes:
+        - name: local-volume
+          hostPath:
+            path: {{ index .Values.local_storage "preExistingDiskPath-1" }}
+      {{- else }}
+      volumes:
+        {{- if eq (toString $.Values.couchdb.clusteredCouchEnabled) "true" }}
+        - name: couchdb-1-claim0
+          persistentVolumeClaim:
+            claimName: couchdb-1-claim0
+        {{- else }}
+        - name: couchdb-claim0
+          persistentVolumeClaim:
+            claimName: couchdb-claim0
+        {{- end }}
+      {{- end }}
