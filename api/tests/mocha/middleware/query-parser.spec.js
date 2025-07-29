@@ -18,11 +18,11 @@ describe('API queryParser middleware', () => {
     it('should work with bad params', () => {
       req = {};
       queryParser.json(req, res, next);
-      chai.expect(req.query).to.deep.equal({});
+      chai.expect(req.parsedQuery).to.deep.equal({});
 
       req = { query: null };
       queryParser.json(req, res, next);
-      chai.expect(req.query).to.deep.equal({});
+      chai.expect(req.parsedQuery).to.deep.equal({});
 
       chai.expect(next.callCount).to.equal(2);
     });
@@ -41,7 +41,7 @@ describe('API queryParser middleware', () => {
       };
 
       queryParser.json(req, res, next);
-      chai.expect(req.query).to.deep.equal({
+      chai.expect(req.parsedQuery).to.deep.equal({
         first: undefined,
         second: 'whatever',
         third: 'something',
