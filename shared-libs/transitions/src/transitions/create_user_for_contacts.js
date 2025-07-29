@@ -97,7 +97,7 @@ const createNewUser = async ({ roles }, contact) => {
     fullname: name,
   };
   try {
-    await users.createUser(user, config.get('app_url'));
+    await users.createUser(user);
     // Pick up any updates made to the contact
     const getPerson = dataContext.bind(Person.v1.get);
     Object.assign(contact, await getPerson(Qualifier.byUuid(_id)));
