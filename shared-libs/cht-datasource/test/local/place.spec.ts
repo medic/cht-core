@@ -753,7 +753,7 @@ describe('local place', () => {
         await Place.v1.update(localContext)(updateInput);
         expect(updateDocInner.calledOnceWithExactly({
           ...updateInput, contact: contactDoc
-        }));
+        })).to.be.true;
       });
 
       it('throws error for invalid contact type when trying to add \
