@@ -710,6 +710,23 @@ describe('local place', () => {
           .be.rejectedWith(`Place not found`);
       });
 
+      it('throws error if update payload contains a parent and place is at the top of the hierarchy', async() => {
+        const originalDoc = {
+          _id: '1',
+          _rev: '1',
+          name: 'myPlace',
+          type: 'contact',
+          contact_type: 'district_hospital', 
+          reported_date: 12312312
+        };
+        isPlace.returns(true);
+        const updateInput = {...originalDoc, parent: {_id: '5'}};
+        getDocByIdInner.resolves(originalDoc);
+
+        await expect(Place.v1.update(localContext)(updateInput)).to
+          .be.rejectedWith(`Places at top of the hierarchy cannot have a parent`);
+      });
+
       it('returns updated place doc for valid input', async() => {
         const updateInput = {
           _id: '1',

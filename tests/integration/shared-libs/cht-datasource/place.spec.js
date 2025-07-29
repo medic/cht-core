@@ -282,6 +282,23 @@ describe('cht-datasource Place', () => {
             error: `parent lineage does not match with the lineage of the doc in the db`});
       });
 
+      it('throws error if the update payload contains parent for a place at the top of the hierarchy', async () => {
+        const placeInput = {
+          name: 'place-1',
+          type: 'district_hospital',
+          contact: contact1._id,
+          weather: 'humid'
+        };
+        const placeDoc = await Place.v1.create(dataContext)(placeInput);
+        const updateInput = {
+          ...placeDoc, parent: place0
+        };
+
+        await expect(Place.v1.update(dataContext)(updateInput))
+          .to.be.rejectedWith({code: 400, 
+            error: `Places at top of the hierarchy cannot have a parent`});
+      });
+
       it('throws error if the _id is missing', async () => {
         const placeInput = {
           name: 'place-1',

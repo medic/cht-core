@@ -242,10 +242,23 @@ export namespace v1 {
     };
   };
 
+  const ensureDoesNotContainExtraParent = (
+    updateInput: Record<string, unknown>,
+    originalDoc: Doc
+  ): void => {
+    // A created place doc does not have `parent` if and only if
+    // it is at the top of the hierarchy.
+    // So if the original place doc does not have a `parent`, then adding `parent`
+    // field during update should throw an error.
+    if (updateInput.parent && !hasField(originalDoc, {type: 'object', name: 'parent'})){
+      throw new InvalidArgumentError(`Places at top of the hierarchy cannot have a parent`);
+    }
+  };
   const validateUpdatePlacePayload = (
     originalDoc: Doc,
     placeInput: Record<string, unknown>
   ):void => {
+    ensureDoesNotContainExtraParent(placeInput, originalDoc);
     const immutableRequiredFields = new Set(['_rev', '_id', 'type', 'reported_date']);
     const mutableRequiredFields = new Set(['name']);
     const hasParent = hasField(originalDoc, {type: 'object', name: 'parent', ensureTruthyValue: true}); 
