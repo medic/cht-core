@@ -1,7 +1,4 @@
 const lineageFactory = require('@medic/lineage');
-const cht = require('@medic/cht-datasource');
-const chtDatasource = cht.getDatasource(cht.getRemoteDataContext());
-chtDatasource.v1.report.getByUuidWithLineage;
 /**
  * Hydrates the given doc by uuid and creates a model which holds
  * the doc and associated contacts. eg:
@@ -75,26 +72,6 @@ angular.module('inboxServices').factory('LineageModelGenerator',
               result.doc = doc;
             }
             return result;
-          });
-      },
-
-      /**
-       * Fetch a contact and its lineage by the given uuid. Returns a
-       * report model.
-       */
-      report: function(id) {
-        return chtDatasource.v1.report.getByUuidWithLineage(id)
-          .then(function(hydrated) {
-            if (!hydrated) {
-              const err = new Error(`Report not found: ${id}`);
-              err.code = 404;
-              throw err;
-            }
-            return {
-              _id: id,
-              doc: hydrated,
-              contact: hydrated.contact,
-            };
           });
       },
 
