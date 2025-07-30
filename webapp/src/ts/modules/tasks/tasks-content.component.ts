@@ -14,7 +14,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { DbService } from '@mm-services/db.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
-import { NgIf, NgClass, NgFor } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SimpleDatePipe } from '@mm-pipes/date.pipe';
@@ -22,7 +22,7 @@ import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 
 @Component({
   templateUrl: './tasks-content.component.html',
-  imports: [NgIf, NgClass, NgFor, EnketoComponent, TranslatePipe, SimpleDatePipe, TranslateFromPipe]
+  imports: [NgClass, EnketoComponent, TranslatePipe, SimpleDatePipe, TranslateFromPipe]
 })
 export class TasksContentComponent implements OnInit, OnDestroy {
   constructor(

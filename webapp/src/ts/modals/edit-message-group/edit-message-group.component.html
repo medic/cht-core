@@ -8,27 +8,32 @@
   [isFlatButton]="true"
   (onCancel)="close()"
   (onSubmit)="submit()"
->
+  >
   <form action="" method="POST">
 
-    <fieldset *ngFor="let task of group.rows; index as index" [disabled]="task.state !== 'scheduled' && task.state !== 'muted'"><!-- //NOSONAR -->
-      <ng-container *ngIf="!task.deleted">
-        <div class="form-group">
-          <label>
-            <span>{{'tasks.0.messages.0.message' | translate}}</span>
-            <a class="btn btn-link fa fa-trash-o" (click)="deleteTask(index)" *ngIf="task.state === 'scheduled' || task.state === 'muted'"></a>
-          </label>
-          <input type="text" class="form-control" *ngFor="let message of task.messages" [(ngModel)]="message.message" [ngModelOptions]="{standalone: true}" [disabled]="task.hasOwnProperty('translation_key')"/>
-        </div>
-
-        <div class="form-group">
-          <div class="input-group">
-            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-            <input type="text" class="form-control datepicker" [value]="task.due" [attr.data-index]="index" />
+    @for (task of group.rows; track task; let index = $index) {
+      <fieldset [disabled]="task.state !== 'scheduled' && task.state !== 'muted'"><!-- //NOSONAR -->
+        @if (!task.deleted) {
+          <div class="form-group">
+            <label>
+              <span>{{'tasks.0.messages.0.message' | translate}}</span>
+              @if (task.state === 'scheduled' || task.state === 'muted') {
+                <a class="btn btn-link fa fa-trash-o" (click)="deleteTask(index)"></a>
+              }
+            </label>
+            @for (message of task.messages; track message) {
+              <input type="text" class="form-control" [(ngModel)]="message.message" [ngModelOptions]="{standalone: true}" [disabled]="task.hasOwnProperty('translation_key')"/>
+            }
           </div>
-        </div>
-      </ng-container>
-    </fieldset>
+          <div class="form-group">
+            <div class="input-group">
+              <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+              <input type="text" class="form-control datepicker" [value]="task.due" [attr.data-index]="index" />
+            </div>
+          </div>
+        }
+      </fieldset>
+    }
 
     <a class="btn" (click)="addTask()">
       <i class="fa fa-plus"></i>

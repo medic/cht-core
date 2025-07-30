@@ -13,6 +13,8 @@ import {
   KeyedRead,
   LiteralMap,
   LiteralArray,
+  ParseTreeResult,
+  ParseSourceSpan
 } from '@angular/compiler';
 import { Injectable } from '@angular/core';
 import { PipesService } from '@mm-services/pipes.service';
@@ -428,7 +430,7 @@ export class ParseProvider {
     }
 
     const parser = new Parser(new Lexer());
-    const ast = parser.parseBinding(expr, '', 0);
+    const ast = parser.parseBinding(expr, new ParseSourceSpan(), 0);
     let boundFn;
 
     if (ast.errors.length) {

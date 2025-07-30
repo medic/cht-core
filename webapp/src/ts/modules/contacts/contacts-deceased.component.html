@@ -1,41 +1,50 @@
 <div class="content-pane right-pane deceased-page">
 
-  <div class="col-sm-8 item-content empty-selection" *ngIf="loadingContent">
-    <div>
-      <div class="loader"></div>
-    </div>
-  </div>
-
-  <div class="col-sm-8 item-content empty-selection" *ngIf="!selectedContact && !loadingContent">
-    <div>{{'No contact selected' | translate}}</div>
-  </div>
-
-  <div class="col-sm-8 item-content" *ngIf="selectedContact && !loadingContent">
-    <div class="material">
+  @if (loadingContent) {
+    <div class="col-sm-8 item-content empty-selection">
       <div>
-        <div class="card children persons">
-          <div class="action-header cell">
-            <div class="col-xs-12">
-              <h3>{{'contact.deceased.title' | translate}}</h3>
-            </div>
-          </div>
-          <ng-container *ngFor="let group of selectedContact.children" >
-            <ul *ngIf="group.deceasedCount">
-              <ng-container *ngFor="let child of group.contacts">
-                <mm-content-row *ngIf="child.deceased"
-                  [id]="child.doc._id"
-                  [route]="['/', 'contacts', child.id]"
-                  [heading]="child.doc.name"
-                  [dob]="child.doc.date_of_birth"
-                  [dod]="child.doc.date_of_death"
-                ></mm-content-row>
-              </ng-container>
-            </ul>
-          </ng-container>
-        </div>
+        <div class="loader"></div>
       </div>
-
-      <div class="padding"></div>
     </div>
-  </div>
+  }
+
+  @if (!selectedContact && !loadingContent) {
+    <div class="col-sm-8 item-content empty-selection">
+      <div>{{'No contact selected' | translate}}</div>
+    </div>
+  }
+
+  @if (selectedContact && !loadingContent) {
+    <div class="col-sm-8 item-content">
+      <div class="material">
+        <div>
+          <div class="card children persons">
+            <div class="action-header cell">
+              <div class="col-xs-12">
+                <h3>{{'contact.deceased.title' | translate}}</h3>
+              </div>
+            </div>
+            @for (group of selectedContact.children; track group) {
+              @if (group.deceasedCount) {
+                <ul>
+                  @for (child of group.contacts; track child) {
+                    @if (child.deceased) {
+                      <mm-content-row
+                        [id]="child.doc._id"
+                        [route]="['/', 'contacts', child.id]"
+                        [heading]="child.doc.name"
+                        [dob]="child.doc.date_of_birth"
+                        [dod]="child.doc.date_of_death"
+                      ></mm-content-row>
+                    }
+                  }
+                </ul>
+              }
+            }
+          </div>
+        </div>
+        <div class="padding"></div>
+      </div>
+    </div>
+  }
 </div>

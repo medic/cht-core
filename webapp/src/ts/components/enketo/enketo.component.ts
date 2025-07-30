@@ -1,11 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgIf } from '@angular/common';
+
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'mm-enketo',
   templateUrl: './enketo.component.html',
-  imports: [NgIf, TranslatePipe],
+  imports: [TranslatePipe],
 })
 export class EnketoComponent {
   // string: (optional) modal element id

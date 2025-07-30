@@ -15,7 +15,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
-import { NgIf, NgFor } from '@angular/common';
+
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -27,16 +27,14 @@ import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
   templateUrl: './tasks.component.html',
   imports: [
     ToolBarComponent,
-    NgIf,
-    NgFor,
     RouterLink,
     ErrorLogComponent,
     RouterOutlet,
     TranslatePipe,
     LineagePipe,
     ResourceIconPipe,
-    TaskDueDatePipe,
-  ],
+    TaskDueDatePipe
+],
 })
 export class TasksComponent implements OnInit, OnDestroy {
   constructor(

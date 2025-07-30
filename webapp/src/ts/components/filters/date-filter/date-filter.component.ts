@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnDestroy, Output, Input, AfterViewInit, OnInit } from '@angular/core';
-import { DatePipe, NgIf } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Store } from '@ngrx/store';
 import 'bootstrap-daterangepicker';
 import * as moment from 'moment';
@@ -17,7 +17,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'mm-date-filter',
   templateUrl: './date-filter.component.html',
-  imports: [BsDropdownModule, NgIf, TranslatePipe]
+  imports: [BsDropdownModule, TranslatePipe]
 })
 export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   private globalActions: GlobalActions;

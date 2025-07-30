@@ -16,17 +16,16 @@ import { ReportsActions } from '@mm-actions/reports';
 import { FormService, WebappEnketoFormContext } from '@mm-services/form.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { NgIf } from '@angular/common';
+
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   templateUrl: './reports-add.component.html',
   imports: [
-    NgIf,
     EnketoComponent,
-    TranslatePipe,
-  ],
+    TranslatePipe
+],
 })
 export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   subscription: Subscription = new Subscription();

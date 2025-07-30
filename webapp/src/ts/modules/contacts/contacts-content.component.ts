@@ -22,7 +22,7 @@ import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
-import { NgIf, NgClass, NgFor } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
@@ -40,11 +40,9 @@ import {
   selector: 'contacts-content',
   templateUrl: './contacts-content.component.html',
   imports: [
-    NgIf,
     ErrorLogComponent,
     FastActionButtonComponent,
     NgClass,
-    NgFor,
     TranslateDirective,
     AuthDirective,
     ContentRowListItemComponent,
@@ -55,7 +53,7 @@ import {
     FormIconNamePipe,
     LocalizeNumberPipe,
     ContactSummaryContentComponent
-  ]
+]
 })
 export class ContactsContentComponent implements OnInit, OnDestroy {
   subscriptions: Subscription = new Subscription();

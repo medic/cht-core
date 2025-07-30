@@ -1,39 +1,45 @@
 <div class="modal-layout" role="document" [class.enketo-modal]="hasEnketoForm" [class.content-pane]="hasEnketoForm">
-  <mm-panel-header *ngIf="titleKey" [headerTitle]="titleKey" (onClose)="cancel()" [hideCloseButton]="true"/>
+  @if (titleKey) {
+    <mm-panel-header [headerTitle]="titleKey" (onClose)="cancel()" [hideCloseButton]="true"/>
+  }
 
   <div class="modal-body"><ng-content></ng-content></div>
 
-  <div class="modal-footer" *ngIf="!hideFooter">
-    <p class="modal-error" *ngIf="error">{{ error | translate }}</p>
-
-    <button
-      mat-button
-      color="primary"
-      *ngIf="!hideCancelButton"
-      [class.disabled]="processing"
-      (click)="cancel()"
-      test-id="cancel">
-      {{ (cancelKey || 'Cancel') | translate }}
-    </button>
-
-    <button
-      *ngIf="isFlatButton && submitKey"
-      mat-flat-button
-      color="primary"
-      [class.disabled]="processing"
-      (click)="submit()"
-      test-id="submit">
-      {{ (processing && submittingKey ? submittingKey : submitKey) | translate }}
-    </button>
-
-    <button
-      *ngIf="!isFlatButton && submitKey"
-      mat-button
-      color="primary"
-      [class.disabled]="processing"
-      (click)="submit()"
-      test-id="submit">
-      {{ (processing && submittingKey ? submittingKey : submitKey) | translate }}
-    </button>
-  </div>
+  @if (!hideFooter) {
+    <div class="modal-footer">
+      @if (error) {
+        <p class="modal-error">{{ error | translate }}</p>
+      }
+      @if (!hideCancelButton) {
+        <button
+          mat-button
+          color="primary"
+          [class.disabled]="processing"
+          (click)="cancel()"
+          test-id="cancel">
+          {{ (cancelKey || 'Cancel') | translate }}
+        </button>
+      }
+      @if (isFlatButton && submitKey) {
+        <button
+          mat-flat-button
+          color="primary"
+          [class.disabled]="processing"
+          (click)="submit()"
+          test-id="submit">
+          {{ (processing && submittingKey ? submittingKey : submitKey) | translate }}
+        </button>
+      }
+      @if (!isFlatButton && submitKey) {
+        <button
+          mat-button
+          color="primary"
+          [class.disabled]="processing"
+          (click)="submit()"
+          test-id="submit">
+          {{ (processing && submittingKey ? submittingKey : submitKey) | translate }}
+        </button>
+      }
+    </div>
+  }
 </div>

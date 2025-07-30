@@ -1,6 +1,6 @@
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, DOCUMENT } from '@angular/core';
 import { Router } from '@angular/router';
-import { DOCUMENT } from '@angular/common';
+
 import { Store } from '@ngrx/store';
 
 import { AuthService } from '@mm-services/auth.service';

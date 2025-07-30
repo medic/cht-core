@@ -1,12 +1,12 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgIf } from '@angular/common';
+
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 
 @Component({
   selector: 'mm-multiselect-bar',
   templateUrl: './multiselect-bar.component.html',
-  imports: [NgIf, TranslateDirective, TranslatePipe, LocalizeNumberPipe]
+  imports: [TranslateDirective, TranslatePipe, LocalizeNumberPipe]
 })
 export class MultiselectBarComponent {
   @Input() display = 'desktop';

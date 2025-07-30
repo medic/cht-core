@@ -11,7 +11,7 @@ import { Select2SearchService } from '@mm-services/select2-search.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { FormsModule } from '@angular/forms';
-import { NgClass, NgIf } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
@@ -21,9 +21,8 @@ import { TranslatePipe } from '@ngx-translate/core';
     ModalLayoutComponent,
     FormsModule,
     NgClass,
-    NgIf,
-    TranslatePipe,
-  ],
+    TranslatePipe
+],
 })
 export class SendMessageComponent implements AfterViewInit {
   static id = 'send-message-modal';

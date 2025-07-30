@@ -7,7 +7,7 @@ import { DbService } from '@mm-services/db.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { SessionService } from '@mm-services/session.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
-import { NgIf } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -15,10 +15,9 @@ import { TranslatePipe } from '@ngx-translate/core';
   templateUrl: './testing.component.html',
   imports: [
     ToolBarComponent,
-    NgIf,
     FormsModule,
-    TranslatePipe,
-  ],
+    TranslatePipe
+],
 })
 export class TestingComponent implements OnInit {
   amountFeedbackDocs: any = 5000;

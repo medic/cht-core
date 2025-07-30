@@ -1,21 +1,30 @@
 <section class="mm-search-bar-container" [class.disabled]="disabled">
   <div class="search-bar-left-icon">
-    <span class="fa fa-search" *ngIf="showSearchIcon()" (click)="toggleMobileSearch()"></span>
-    <a class="fa fa-chevron-left search-bar-clear" *ngIf="showClearIcon()" (click)="clear()"></a>
+    @if (showSearchIcon()) {
+      <span class="fa fa-search" (click)="toggleMobileSearch()"></span>
+    }
+    @if (showClearIcon()) {
+      <a class="fa fa-chevron-left search-bar-clear" (click)="clear()"></a>
+    }
   </div>
 
   <mm-freetext-filter class="filter" (search)="search.emit()" [disabled]="disabled"></mm-freetext-filter>
 
-  <mm-sort-filter
-    *ngIf="showSort"
-    [lastVisitedDateExtras]="lastVisitedDateExtras"
-    (sort)="applySort($event)"
-    [sortDirection]="sortDirection">
-  </mm-sort-filter>
+  @if (showSort) {
+    <mm-sort-filter
+      [lastVisitedDateExtras]="lastVisitedDateExtras"
+      (sort)="applySort($event)"
+      [sortDirection]="sortDirection">
+    </mm-sort-filter>
+  }
 
-  <button class="btn open-filter" *ngIf="showFilter" (click)="toggleFilter.emit()">
-    <mat-icon class="mat-icon-filter" svgIcon="icon-filter"></mat-icon>
-    <span class="open-filter-label">{{ 'search_bar.filter.label' | translate }}</span>
-    <span class="filter-counter" *ngIf="activeFilters">{{ activeFilters.toString() | translate }}</span>
-  </button>
+  @if (showFilter) {
+    <button class="btn open-filter" (click)="toggleFilter.emit()">
+      <mat-icon class="mat-icon-filter" svgIcon="icon-filter"></mat-icon>
+      <span class="open-filter-label">{{ 'search_bar.filter.label' | translate }}</span>
+      @if (activeFilters) {
+        <span class="filter-counter">{{ activeFilters.toString() | translate }}</span>
+      }
+    </button>
+  }
 </section>

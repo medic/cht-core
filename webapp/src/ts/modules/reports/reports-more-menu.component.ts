@@ -11,7 +11,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { ReportsActions } from '@mm-actions/reports';
-import { NgIf } from '@angular/common';
+
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { MatIcon } from '@angular/material/icon';
@@ -27,7 +27,6 @@ import { TranslatePipe } from '@ngx-translate/core';
   selector: 'mm-reports-more-menu',
   templateUrl: './reports-more-menu.component.html',
   imports: [
-    NgIf,
     MatIconButton,
     MatMenuTrigger,
     MatIcon,
@@ -39,7 +38,7 @@ import { TranslatePipe } from '@ngx-translate/core';
     ReportVerifyInvalidIconComponent,
     ReportVerifyValidIconComponent,
     TranslatePipe
-  ]
+]
 })
 export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   @Output() exportReports: EventEmitter<any> = new EventEmitter();

@@ -23,7 +23,7 @@ import { SendMessageService } from '@mm-services/send-message.service';
 import { ModalService } from '@mm-services/modal.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { PerformanceService } from '@mm-services/performance.service';
-import { NgIf, NgFor, NgClass, AsyncPipe } from '@angular/common';
+import { NgClass, AsyncPipe } from '@angular/common';
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import { AuthDirective } from '@mm-directives/auth.directive';
 import { FormsModule } from '@angular/forms';
@@ -41,9 +41,7 @@ import { AutoreplyPipe, StatePipe } from '@mm-pipes/date.pipe';
   selector: 'messages-content',
   templateUrl: './messages-content.component.html',
   imports: [
-    NgIf,
     SenderComponent,
-    NgFor,
     NgClass,
     AuthDirective,
     FormsModule,
@@ -51,7 +49,7 @@ import { AutoreplyPipe, StatePipe } from '@mm-pipes/date.pipe';
     TranslatePipe,
     AutoreplyPipe,
     StatePipe
-  ]
+]
 })
 export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
   private userCtx;

@@ -16,7 +16,7 @@ import { Selectors } from '@mm-selectors/index';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { SearchFiltersService } from '@mm-services/search-filters.service';
-import { NgIf } from '@angular/common';
+
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -24,7 +24,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'mm-search-bar',
   templateUrl: './search-bar.component.html',
-  imports: [NgIf, FreetextFilterComponent, SortFilterComponent, MatIcon, TranslatePipe]
+  imports: [FreetextFilterComponent, SortFilterComponent, MatIcon, TranslatePipe]
 })
 export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDestroy {
   @Input() disabled;

@@ -1,6 +1,8 @@
 <div id="snackbar" [class.active]="active" [class.display-above-fab]="displayAboveFab">
   <span class="snackbar-content">
     <span class="snackbar-message">{{message}}</span>
-    <span class="snackbar-action" *ngIf="action" (click)="action.onClick()">{{action.label}}</span>
+    @if (action) {
+      <span class="snackbar-action" (click)="action.onClick()">{{action.label}}</span>
+    }
   </span>
 </div>

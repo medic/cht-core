@@ -1,5 +1,6 @@
+import { DOCUMENT } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { DOCUMENT } from '@angular/common';
+
 import sinon from 'sinon';
 import { expect } from 'chai';
 

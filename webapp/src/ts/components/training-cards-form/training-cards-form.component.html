@@ -1,7 +1,13 @@
-<div class="item-content empty-selection" [class.col-sm-8]="isEmbedded" *ngIf="contentError || loadingContent">
-  <div *ngIf="loadingContent"><div class="loader"></div></div>
-  <div *ngIf="!loadingContent && contentError">{{ errorTranslationKey | translate }}</div>
-</div>
+@if (contentError || loadingContent) {
+  <div class="item-content empty-selection" [class.col-sm-8]="isEmbedded">
+    @if (loadingContent) {
+      <div><div class="loader"></div></div>
+    }
+    @if (!loadingContent && contentError) {
+      <div>{{ errorTranslationKey | translate }}</div>
+    }
+  </div>
+}
 
 <div class="item-content" [hidden]="loadingContent || contentError || !trainingCardFormId" [class.col-sm-8]="isEmbedded">
   <div class="body">

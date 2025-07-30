@@ -1,38 +1,42 @@
-<section
-  class="more-options-menu-container"
-  *ngIf="(displayExportOption() || displayDeleteOption() || displayEditOption())">
-
-  <button mat-icon-button [matMenuTriggerFor]="moreOptionsMenu" aria-label="Actions menu" [dir]="direction">
-    <mat-icon fontIcon="fa-ellipsis-v"></mat-icon>
-  </button>
-
-  <mat-menu #moreOptionsMenu="matMenu" xPosition="before" [dir]="direction">
-    <button mat-menu-item test-id="export-reports" *ngIf="displayExportOption()" (click)="exportReports.emit()" [disabled]="!reportsList?.length">
-      <mat-icon fontIcon="fa-arrow-down"></mat-icon>
-      <span>{{ 'Export' | translate }}</span>
+@if ((displayExportOption() || displayDeleteOption() || displayEditOption())) {
+  <section
+    class="more-options-menu-container"
+    >
+    <button mat-icon-button [matMenuTriggerFor]="moreOptionsMenu" aria-label="Actions menu" [dir]="direction">
+      <mat-icon fontIcon="fa-ellipsis-v"></mat-icon>
     </button>
-
-    <button
-      mat-menu-item
-      test-id="review-report"
-      *ngIf="displayVerifyReportOption()"
-      (click)="openVerifyReportOptions()"
-      [disabled]="processingReportVerification || verifyingReport">
-      <mat-icon fontIcon="fa-check"></mat-icon>
-      <span>{{ 'reports.verify' | translate }}</span>
-    </button>
-
-    <a mat-menu-item test-id="edit-reports" *ngIf="displayEditOption()" [routerLink]="['/reports', 'edit', selectedReportDoc?._id]">
-      <mat-icon fontIcon="fa-pencil"></mat-icon>
-      <span>{{ 'Edit' | translate }}</span>
-    </a>
-
-    <button mat-menu-item test-id="delete-reports" *ngIf="displayDeleteOption()" (click)="deleteReport()">
-      <mat-icon fontIcon="fa-trash"></mat-icon>
-      <span>{{ 'Delete' | translate }}</span>
-    </button>
-  </mat-menu>
-</section>
+    <mat-menu #moreOptionsMenu="matMenu" xPosition="before" [dir]="direction">
+      @if (displayExportOption()) {
+        <button mat-menu-item test-id="export-reports" (click)="exportReports.emit()" [disabled]="!reportsList?.length">
+          <mat-icon fontIcon="fa-arrow-down"></mat-icon>
+          <span>{{ 'Export' | translate }}</span>
+        </button>
+      }
+      @if (displayVerifyReportOption()) {
+        <button
+          mat-menu-item
+          test-id="review-report"
+          (click)="openVerifyReportOptions()"
+          [disabled]="processingReportVerification || verifyingReport">
+          <mat-icon fontIcon="fa-check"></mat-icon>
+          <span>{{ 'reports.verify' | translate }}</span>
+        </button>
+      }
+      @if (displayEditOption()) {
+        <a mat-menu-item test-id="edit-reports" [routerLink]="['/reports', 'edit', selectedReportDoc?._id]">
+          <mat-icon fontIcon="fa-pencil"></mat-icon>
+          <span>{{ 'Edit' | translate }}</span>
+        </a>
+      }
+      @if (displayDeleteOption()) {
+        <button mat-menu-item test-id="delete-reports" (click)="deleteReport()">
+          <mat-icon fontIcon="fa-trash"></mat-icon>
+          <span>{{ 'Delete' | translate }}</span>
+        </button>
+      }
+    </mat-menu>
+  </section>
+}
 
 <ng-template #verifyReportWrapper>
   <section class="verify-report-options-wrapper" [dir]="direction">

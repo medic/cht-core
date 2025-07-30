@@ -1,15 +1,14 @@
 <div class="mm-form-type-filter" [id]="fieldId">
   <ul class="filter-options">
-    <li
-      role="presentation"
-      *ngFor="let form of forms; trackBy: trackByFn"
-      [class.selected]="filter?.selected.has(form)"
-      [class.disabled]="disabled">
-
-      <a role="menuitem" tabindex="-1" [attr.data-value]="form" (click)="!disabled && filter?.toggle(form)">
-        {{ form.title || form.code }}
-      </a>
-
-    </li>
+    @for (form of forms; track trackByFn($index, form)) {
+      <li
+        role="presentation"
+        [class.selected]="filter?.selected.has(form)"
+        [class.disabled]="disabled">
+        <a role="menuitem" tabindex="-1" [attr.data-value]="form" (click)="!disabled && filter?.toggle(form)">
+          {{ form.title || form.code }}
+        </a>
+      </li>
+    }
   </ul>
 </div>

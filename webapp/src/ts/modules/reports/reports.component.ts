@@ -26,7 +26,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ButtonType, FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
-import { NgIf, NgClass, NgFor } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { MultiselectBarComponent } from '@mm-components/multiselect-bar/multiselect-bar.component';
 import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
@@ -46,12 +46,10 @@ const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
   templateUrl: './reports.component.html',
   imports: [
     ToolBarComponent,
-    NgIf,
     SearchBarComponent,
     MultiselectBarComponent,
     ReportsMoreMenuComponent,
     NgClass,
-    NgFor,
     RouterLink,
     ReportVerifyValidIconComponent,
     ReportVerifyInvalidIconComponent,
@@ -62,7 +60,7 @@ const CAN_DEFAULT_FACILITY_FILTER = 'can_default_facility_filter';
     LineagePipe,
     ResourceIconPipe,
     RelativeDatePipe
-  ]
+]
 })
 export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(ReportsSidebarFilterComponent) reportsSidebarFilter?: ReportsSidebarFilterComponent;

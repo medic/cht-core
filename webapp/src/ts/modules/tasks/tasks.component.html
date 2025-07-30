@@ -4,41 +4,61 @@
   <div class="inbox page">
 
     <div id="tasks-list" class="col-sm-4 inbox-items left-pane">
-      <ul *ngIf="!errorStack && hasTasks">
-        <li *ngFor="let task of tasksList; trackBy: listTrackBy"
-          [attr.data-record-id]="task._id"
-          [class.selected]="task.selected"
-          [class.overdue]="task.overdue"
-          class="content-row">
-          <a [routerLink]="['/', 'tasks', task._id]" [state]="{ tab: 'tasks', id: task._id }">
-            <div *ngIf="task.icon" class="icon" [innerHTML]="task.icon | resourceIcon"></div>
-            <div class="content">
-              <div class="heading">
-                <h4>
-                  <span>{{task.contact?.name || ''}}</span>
-                </h4>
-                <div class="date">
-                  <span [innerHTML]="task.date | taskDueDate"></span>
+      @if (!errorStack && hasTasks) {
+        <ul>
+          @for (task of tasksList; track listTrackBy($index, task)) {
+            <li
+              [attr.data-record-id]="task._id"
+              [class.selected]="task.selected"
+              [class.overdue]="task.overdue"
+              class="content-row">
+              <a [routerLink]="['/', 'tasks', task._id]" [state]="{ tab: 'tasks', id: task._id }">
+                @if (task.icon) {
+                  <div class="icon" [innerHTML]="task.icon | resourceIcon"></div>
+                }
+                <div class="content">
+                  <div class="heading">
+                    <h4>
+                      <span>{{task.contact?.name || ''}}</span>
+                    </h4>
+                    <div class="date">
+                      <span [innerHTML]="task.date | taskDueDate"></span>
+                    </div>
+                  </div>
+                  @if (task.title) {
+                    <div class="summary">
+                      <p>{{task.title}}</p>
+                    </div>
+                  }
+                  @if (task.priorityLabel) {
+                    <div class="warning">{{task.priorityLabel}}</div>
+                  }
+                  @if (task.lineage?.length) {
+                    <div class="detail" [innerHTML]="task.lineage | lineage"></div>
+                  }
                 </div>
-              </div>
+              </a>
+            </li>
+          }
+        </ul>
+      }
 
-              <div *ngIf="task.title" class="summary">
-                <p>{{task.title}}</p>
-              </div>
+      @if (!!errorStack) {
+        <error-log [errorStack]="errorStack" [errorFor]="'tasks'" [reload]="refreshTaskList"></error-log>
+      }
 
-              <div *ngIf="task.priorityLabel" class="warning">{{task.priorityLabel}}</div>
-              <div *ngIf="task.lineage?.length" class="detail" [innerHTML]="task.lineage | lineage"></div>
-            </div>
-          </a>
-        </li>
-      </ul>
-
-      <error-log *ngIf="!!errorStack" [errorStack]="errorStack" [errorFor]="'tasks'" [reload]="refreshTaskList"></error-log>
-
-      <p class="loading-status" *ngIf="!errorStack && !loading && !hasTasks && !tasksDisabled">{{'No tasks found' | translate}}</p>
-      <p class="loading-status" *ngIf="!errorStack && !loading && hasTasks && !tasksDisabled">{{'task.list.complete' | translate}}</p>
-      <p class="loading-status" *ngIf="tasksDisabled">{{'tasks.disabled' | translate}}</p>
-      <div class="loader" *ngIf="loading && !tasksDisabled && !errorStack"></div>
+      @if (!errorStack && !loading && !hasTasks && !tasksDisabled) {
+        <p class="loading-status">{{'No tasks found' | translate}}</p>
+      }
+      @if (!errorStack && !loading && hasTasks && !tasksDisabled) {
+        <p class="loading-status">{{'task.list.complete' | translate}}</p>
+      }
+      @if (tasksDisabled) {
+        <p class="loading-status">{{'tasks.disabled' | translate}}</p>
+      }
+      @if (loading && !tasksDisabled && !errorStack) {
+        <div class="loader"></div>
+      }
     </div>
 
     <router-outlet></router-outlet>

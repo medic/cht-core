@@ -11,13 +11,13 @@ import { TranslateService } from '@mm-services/translate.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
-import { NgIf, NgFor } from '@angular/common';
+
 import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   templateUrl: './tasks-group.component.html',
-  imports: [NgIf, NgFor, ContentRowListItemComponent, TranslatePipe]
+  imports: [ContentRowListItemComponent, TranslatePipe]
 })
 export class TasksGroupComponent implements OnInit, OnDestroy {
   private globalActions;

@@ -1,53 +1,87 @@
 <li [attr.data-record-id]="id"
-    [class.selected] = "selected"
-    [class.primary]="primary"
-    [class.unread]="unread"
-    [class.deceased]="dod"
-    [class.visit-count]="visits"
-    [class.muted]="muted"
-    [class.overdue]="overdue"
-    class="content-row"
->
+  [class.selected] = "selected"
+  [class.primary]="primary"
+  [class.unread]="unread"
+  [class.deceased]="dod"
+  [class.visit-count]="visits"
+  [class.muted]="muted"
+  [class.overdue]="overdue"
+  class="content-row"
+  >
   <a [routerLink]="route" [state]="{ tab: tab, id: id }">
     <div><input type="checkbox" [checked]="selected"></div>
-    <div *ngIf="icon" class="icon" [innerHTML]="icon | resourceIcon"></div>
+    @if (icon) {
+      <div class="icon" [innerHTML]="icon | resourceIcon"></div>
+    }
     <div class="content">
       <div class="heading">
         <h4>
-          <i *ngIf="primaryContact" class="fa fa-star primary" title="{{'Primary contact' | translate}}"></i>
+          @if (primaryContact) {
+            <i class="fa fa-star primary" title="{{'Primary contact' | translate}}"></i>
+          }
           <span>{{heading}}</span>
         </h4>
         <div class="date">
-          <span *ngIf="dateFormat === 'taskDueDate'" [innerHTML]="date | taskDueDate"></span>
-          <span *ngIf="dateFormat !== 'taskDueDate'" [innerHTML]="date | relativeDate"></span>
-          <span *ngIf="!date && dod" [innerHTML]="dod | dateOfDeath"></span>
+          @if (dateFormat === 'taskDueDate') {
+            <span [innerHTML]="date | taskDueDate"></span>
+          }
+          @if (dateFormat !== 'taskDueDate') {
+            <span [innerHTML]="date | relativeDate"></span>
+          }
+          @if (!date && dod) {
+            <span [innerHTML]="dod | dateOfDeath"></span>
+          }
         </div>
-        <div *ngIf="taskCount" class="status tasks-count">
-          <span class="badge">{{taskCount | localizeNumber}}</span>
-        </div>
-        <div *ngIf="visits" class="visits" [class.danger]="visits.status === 'pending'" [class.warning]="visits.status === 'started'" [class.success]="visits.status === 'done'">
-          <span>{{visits.count | localizeNumber}}</span>
-        </div>
-        <div *ngIf="aggregate" class="aggregate-status" [class.error]="aggregate.hasGoal && !aggregate.goalMet" [class.success]="aggregate.hasGoal && aggregate.goalMet">
-          <span>{{aggregate.summary}}</span>
-        </div>
+        @if (taskCount) {
+          <div class="status tasks-count">
+            <span class="badge">{{taskCount | localizeNumber}}</span>
+          </div>
+        }
+        @if (visits) {
+          <div class="visits" [class.danger]="visits.status === 'pending'" [class.warning]="visits.status === 'started'" [class.success]="visits.status === 'done'">
+            <span>{{visits.count | localizeNumber}}</span>
+          </div>
+        }
+        @if (aggregate) {
+          <div class="aggregate-status" [class.error]="aggregate.hasGoal && !aggregate.goalMet" [class.success]="aggregate.hasGoal && aggregate.goalMet">
+            <span>{{aggregate.summary}}</span>
+          </div>
+        }
       </div>
-      <div *ngIf="summary" class="summary">
-        <p>{{summary}}</p>
-        <div *ngIf="showStatus && (!valid || verified !== undefined)" class="status">
-          <span [class.verified]="valid && verified" [class.error]="!(valid && verified)" class="verification-badge">
-            <report-verify-valid-icon *ngIf="valid && verified"></report-verify-valid-icon>
-            <report-verify-invalid-icon *ngIf="!(valid && verified)"></report-verify-invalid-icon>
-          </span>
+      @if (summary) {
+        <div class="summary">
+          <p>{{summary}}</p>
+          @if (showStatus && (!valid || verified !== undefined)) {
+            <div class="status">
+              <span [class.verified]="valid && verified" [class.error]="!(valid && verified)" class="verification-badge">
+                @if (valid && verified) {
+                  <report-verify-valid-icon></report-verify-valid-icon>
+                }
+                @if (!(valid && verified)) {
+                  <report-verify-invalid-icon></report-verify-invalid-icon>
+                }
+              </span>
+            </div>
+          }
+          @if (visits) {
+            <div class="visits" [class.danger]="visits.status === 'pending'" [class.warning]="visits.status === 'started'" [class.success]="visits.status === 'done'">
+              <span>{{visits.summary}}</span>
+            </div>
+          }
         </div>
-        <div *ngIf="visits" class="visits" [class.danger]="visits.status === 'pending'" [class.warning]="visits.status === 'started'" [class.success]="visits.status === 'done'">
-          <span>{{visits.summary}}</span>
-        </div>
-      </div>
-      <p *ngIf="dob" [innerHTML]="dob | age:dod"></p>
-      <span *ngIf="muted && displayMuted">{{'contact.muted' | translate}}</span>
-      <div *ngIf="lineage && lineage.length" class="detail" [innerHTML]="lineage | lineage"></div>
-      <div *ngIf="warning" class="warning">{{warning}}</div>
+      }
+      @if (dob) {
+        <p [innerHTML]="dob | age:dod"></p>
+      }
+      @if (muted && displayMuted) {
+        <span>{{'contact.muted' | translate}}</span>
+      }
+      @if (lineage && lineage.length) {
+        <div class="detail" [innerHTML]="lineage | lineage"></div>
+      }
+      @if (warning) {
+        <div class="warning">{{warning}}</div>
+      }
     </div>
   </a>
 </li>

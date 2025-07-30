@@ -1,13 +1,17 @@
 <ng-container>
-  <div class="empty-selection" *ngIf="loadingContent">
-    <div>
-      <div class="loader"></div>
+  @if (loadingContent) {
+    <div class="empty-selection">
+      <div>
+        <div class="loader"></div>
+      </div>
     </div>
-  </div>
+  }
 
-  <div class="empty-selection" *ngIf="!loadingContent && contentError">
-    <div>{{ errorTranslationKey | translate}}</div>
-  </div>
+  @if (!loadingContent && contentError) {
+    <div class="empty-selection">
+      <div>{{ errorTranslationKey | translate}}</div>
+    </div>
+  }
 
   <div class="report-wrap" [hidden]="loadingContent || contentError">
     <div class="body">

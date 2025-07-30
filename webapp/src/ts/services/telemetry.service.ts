@@ -1,5 +1,5 @@
-import { Inject, Injectable, NgZone } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+import { Inject, Injectable, NgZone, DOCUMENT } from '@angular/core';
+
 import { v4 as uuidv4 } from 'uuid';
 
 import { DbService } from '@mm-services/db.service';

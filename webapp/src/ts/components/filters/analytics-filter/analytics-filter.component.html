@@ -1,28 +1,35 @@
 <div class="analytics-sidebar-filter">
-  <span *ngIf="analyticsModules?.length > 1" class="dropdown mm-dropdown analytics-module">
-    <span id="module" class="mm-button" data-toggle="dropdown">
-      <span class="mm-button-icon">
-        <span class="fa fa-bar-chart-o"></span>
+  @if (analyticsModules?.length > 1) {
+    <span class="dropdown mm-dropdown analytics-module">
+      <span id="module" class="mm-button" data-toggle="dropdown">
+        <span class="mm-button-icon">
+          <span class="fa fa-bar-chart-o"></span>
+        </span>
+        <span class="mm-button-dropdown">
+          <span class="fa fa-chevron-down"></span>
+        </span>
+        @for (module of analyticsModules; track module) {
+          @if (module.id === activeModule?.id) {
+            <span class="mm-button-text"> {{ module.label | translate }} </span>
+          }
+        }
       </span>
-      <span class="mm-button-dropdown">
-        <span class="fa fa-chevron-down"></span>
-      </span>
-      <ng-container *ngFor="let module of analyticsModules">
-        <span *ngIf="module.id === activeModule?.id" class="mm-button-text"> {{ module.label | translate }} </span>
-      </ng-container>
+      <ul role="menu" aria-labelledby="module" class="dropdown-menu mm-dropdown-menu">
+        @for (module of analyticsModules; track module) {
+          <li role="presentation" [attr.data-id]="module.id">
+            <a [routerLink]="module.route" role="menuitem" tabindex="-1">{{ module.label | translate }}</a>
+          </li>
+        }
+      </ul>
     </span>
+  }
 
-    <ul role="menu" aria-labelledby="module" class="dropdown-menu mm-dropdown-menu">
-      <li role="presentation" *ngFor="let module of analyticsModules" [attr.data-id]="module.id">
-        <a [routerLink]="module.route" role="menuitem" tabindex="-1">{{ module.label | translate }}</a>
-      </li>
-    </ul>
-  </span>
-
-  <div class="right-side-filter" *ngIf="showFilterButton">
-    <button class="btn open-filter" (click)="openSidebar()">
-      <mat-icon class="mat-icon-filter" svgIcon="icon-filter"></mat-icon>
-      <span class="open-filter-label">{{ 'search_bar.filter.label' | translate }}</span>
-    </button>
-  </div>
+  @if (showFilterButton) {
+    <div class="right-side-filter">
+      <button class="btn open-filter" (click)="openSidebar()">
+        <mat-icon class="mat-icon-filter" svgIcon="icon-filter"></mat-icon>
+        <span class="open-filter-label">{{ 'search_bar.filter.label' | translate }}</span>
+      </button>
+    </div>
+  }
 </div>

@@ -1,10 +1,11 @@
 <div class="mm-form-type-filter" [id]="fieldId">
   <ul class="filter-options">
-    <ng-container
-      *ngFor="let facility of displayedFacilities; trackBy: trackByFn"
-      [ngTemplateOutlet]="facilityTemplate"
-      [ngTemplateOutletContext]="{ facility: facility, facilityDepth: 0 }">
-    </ng-container>
+    @for (facility of displayedFacilities; track trackByFn($index, facility)) {
+      <ng-container
+        [ngTemplateOutlet]="facilityTemplate"
+        [ngTemplateOutletContext]="{ facility: facility, facilityDepth: 0 }">
+      </ng-container>
+    }
   </ul>
 </div>
 
@@ -42,13 +43,16 @@
       [class.fa-caret-down] = !facility.toggle
       (click)="select(selectedParent, facility)">
     </span>
-    <ul class="mm-dropdown-submenu" *ngIf="facility?.children?.length">
-      <ng-container
-        *ngFor="let child of facility?.children; trackBy: trackByFn"
-        [ngTemplateOutlet]="facilityTemplate"
-        [ngTemplateOutletContext]="{ facility: child, parent: facility, selectedParent: filter?.selected.has(facility.doc._id), facilityDepth: facilityDepth + 1 }">
-      </ng-container>
-    </ul>
+    @if (facility?.children?.length) {
+      <ul class="mm-dropdown-submenu">
+        @for (child of facility?.children; track trackByFn($index, child)) {
+          <ng-container
+            [ngTemplateOutlet]="facilityTemplate"
+            [ngTemplateOutletContext]="{ facility: child, parent: facility, selectedParent: filter?.selected.has(facility.doc._id), facilityDepth: facilityDepth + 1 }">
+          </ng-container>
+        }
+      </ul>
+    }
 
   </li>
 </ng-template>

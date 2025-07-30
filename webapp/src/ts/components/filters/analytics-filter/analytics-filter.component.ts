@@ -18,14 +18,14 @@ import { SessionService } from '@mm-services/session.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { AGGREGATE_TARGETS_ID } from '@mm-services/analytics-modules.service';
-import { NgIf, NgFor } from '@angular/common';
+
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'mm-analytics-filters',
   templateUrl: './analytics-filter.component.html',
-  imports: [NgIf, NgFor, RouterLink, MatIcon, TranslatePipe]
+  imports: [RouterLink, MatIcon, TranslatePipe]
 })
 export class AnalyticsFilterComponent implements AfterContentInit, AfterContentChecked, OnInit, OnDestroy {
   @Input() analyticsModules: any[] = [];

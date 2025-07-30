@@ -12,7 +12,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { RouterLink } from '@angular/router';
 import { AuthDirective } from '@mm-directives/auth.directive';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
-import { NgIf, NgClass, NgFor } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile-detection.component';
 
 import { TranslatePipe } from '@ngx-translate/core';
@@ -31,16 +31,14 @@ export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
     RouterLink,
     AuthDirective,
     BsDropdownModule,
-    NgIf,
     NgClass,
-    NgFor,
     MobileDetectionComponent,
     TranslatePipe,
     HeaderLogoPipe,
     ResourceIconPipe,
     RelativeDatePipe,
     LocalizeNumberPipe
-  ]
+]
 })
 
 export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDestroy {

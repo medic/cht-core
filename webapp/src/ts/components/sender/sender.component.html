@@ -1,24 +1,31 @@
-<div class="sender" [ngClass]="{ 'small-font': sentBy }" *ngIf="message">
-  <div>
-    <span *ngIf="sentBy && getName()"
+@if (message) {
+  <div class="sender" [ngClass]="{ 'small-font': sentBy }">
+    <div>
+      @if (sentBy && getName()) {
+        <span
           class="name"
           translate
           [translateParams]="{ senderName: getName() || ( 'messages.unknown.sender' | translate ) }">
-      messages.sent.by
-    </span>
-
-    <a class="name" *ngIf="!sentBy && getId() && getName(); else noLinkLabel" [routerLink]="[ '/contacts', getId() ]">{{ getName() }}</a>
-    <ng-template #noLinkLabel>
-      <span class="name" *ngIf="!sentBy || !getName()">{{ getName() || ( 'messages.unknown.sender' | translate ) }}</span>
-    </ng-template>
-
-    <span class="phone" *ngIf="!(message.name && message.name === message.facility?.contact?.phone)">
-      {{ message.doc?.phone || message.contact?.phone || message.phone }}
-    </span>
+          messages.sent.by
+        </span>
+      }
+      @if (!sentBy && getId() && getName()) {
+        <a class="name" [routerLink]="[ '/contacts', getId() ]">{{ getName() }}</a>
+      } @else {
+        @if (!sentBy || !getName()) {
+          <span class="name">{{ getName() || ( 'messages.unknown.sender' | translate ) }}</span>
+        }
+      }
+      @if (!(message.name && message.name === message.facility?.contact?.phone)) {
+        <span class="phone">
+          {{ message.doc?.phone || message.contact?.phone || message.phone }}
+        </span>
+      }
+    </div>
+    @if (!hideLineage && (message.lineage || (message.contact && message.contact.parent) || message.place || (!message.form && message.name))) {
+      <div class="position small-font"
+        [innerHTML]="(message.lineage || (message.contact && message.contact.parent) || message.place) | lineage">
+      </div>
+    }
   </div>
-
-  <div class="position small-font"
-       *ngIf="!hideLineage && (message.lineage || (message.contact && message.contact.parent) || message.place || (!message.form && message.name))"
-       [innerHTML]="(message.lineage || (message.contact && message.contact.parent) || message.place) | lineage">
-  </div>
-</div>
+}

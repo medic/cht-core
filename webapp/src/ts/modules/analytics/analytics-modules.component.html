@@ -1,13 +1,21 @@
 <div class="page reporting">
-  <ul class="mm-navigation-menu" *ngIf="analyticsModules.length">
-    <li *ngFor="let module of analyticsModules">
-      <a [routerLink]="module.route">
-        <span>{{ module.label | translate }}</span>
-      </a>
-    </li>
-  </ul>
-  <div class="loader" *ngIf="loading"></div>
-  <div class="item-content empty-selection" *ngIf="!loading && !analyticsModules.length">
-    <div>{{'analytics.unconfigured' | translate}}</div>
-  </div>
+  @if (analyticsModules.length) {
+    <ul class="mm-navigation-menu">
+      @for (module of analyticsModules; track module) {
+        <li>
+          <a [routerLink]="module.route">
+            <span>{{ module.label | translate }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  }
+  @if (loading) {
+    <div class="loader"></div>
+  }
+  @if (!loading && !analyticsModules.length) {
+    <div class="item-content empty-selection">
+      <div>{{'analytics.unconfigured' | translate}}</div>
+    </div>
+  }
 </div>

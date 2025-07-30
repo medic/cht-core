@@ -13,13 +13,13 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { NgIf } from '@angular/common';
+
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   templateUrl: './contacts-report.component.html',
-  imports: [NgIf, EnketoComponent, TranslatePipe]
+  imports: [EnketoComponent, TranslatePipe]
 })
 export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit {
   private globalActions;

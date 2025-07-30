@@ -1,10 +1,11 @@
+import { DOCUMENT } from '@angular/core';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
-import { DOCUMENT } from '@angular/common';
+
 
 import { ErrorComponent } from '@mm-modules/error/error.component';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';

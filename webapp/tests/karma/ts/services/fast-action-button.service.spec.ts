@@ -1,7 +1,8 @@
+import { DOCUMENT } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { Router } from '@angular/router';
-import { DOCUMENT } from '@angular/common';
+
 import sinon from 'sinon';
 import { expect } from 'chai';
 

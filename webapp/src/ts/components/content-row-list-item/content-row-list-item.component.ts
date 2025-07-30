@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { NgIf } from '@angular/common';
+
 import {
   ReportVerifyValidIconComponent,
   ReportVerifyInvalidIconComponent
@@ -17,7 +17,6 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
   templateUrl: './content-row-list-item.component.html',
   imports: [
     RouterLink,
-    NgIf,
     ReportVerifyValidIconComponent,
     ReportVerifyInvalidIconComponent,
     TranslatePipe,
@@ -28,7 +27,7 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
     RelativeDatePipe,
     TaskDueDatePipe,
     LocalizeNumberPipe
-  ]
+]
 })
 export class ContentRowListItemComponent {
   // string: (required) the _id of the doc

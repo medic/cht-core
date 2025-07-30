@@ -5,33 +5,47 @@
 
     <div id="trainings-list" class="col-sm-4 inbox-items left-pane">
       <div class="items-container">
-        <ul *ngIf="trainingList?.length">
-          <li *ngFor="let training of trainingList; trackBy: trackBy"
-            class="content-row"
-            [attr.data-record-id]="training.code"
-            [class.selected]="training.code === selectedTrainingId"
-            [class.completed]="training.isCompletedTraining">
+        @if (trainingList?.length) {
+          <ul>
+            @for (training of trainingList; track trackBy($index, training)) {
+              <li
+                class="content-row"
+                [attr.data-record-id]="training.code"
+                [class.selected]="training.code === selectedTrainingId"
+                [class.completed]="training.isCompletedTraining">
+                <a [routerLink]="['/', 'trainings', training.code]" [state]="{ tab: 'trainings', id: training.code }">
+                  <div class="content">
+                    <div class="heading">
+                      <h4>
+                        @if (training.title) {
+                          <span>{{ training.title }}</span>
+                        }
+                        @if (!training.title) {
+                          <span>{{ training.code }}</span>
+                        }
+                      </h4>
+                      @if (training.isCompletedTraining) {
+                        <mat-icon class="mat-icon-check" svgIcon="icon-check"/>
+                      }
+                    </div>
+                  </div>
+                </a>
+              </li>
+            }
+          </ul>
+        }
 
-            <a [routerLink]="['/', 'trainings', training.code]" [state]="{ tab: 'trainings', id: training.code }">
-              <div class="content">
-                <div class="heading">
-                  <h4>
-                    <span *ngIf="training.title">{{ training.title }}</span>
-                    <span *ngIf="!training.title">{{ training.code }}</span>
-                  </h4>
-                  <mat-icon *ngIf="training.isCompletedTraining" class="mat-icon-check" svgIcon="icon-check"/>
-                </div>
-              </div>
-            </a>
-
-          </li>
-        </ul>
-
-        <p class="loading-status" *ngIf="!loading && !trainingList?.length">{{ 'training_materials.page.no_trainings' | translate }}</p>
-        <p class="loading-status" *ngIf="!loading && trainingList?.length && !moreTrainings">
-          {{ 'training_materials.page.no_more_trainings' | translate }}
-        </p>
-        <div class="loader" *ngIf="loading"></div>
+        @if (!loading && !trainingList?.length) {
+          <p class="loading-status">{{ 'training_materials.page.no_trainings' | translate }}</p>
+        }
+        @if (!loading && trainingList?.length && !moreTrainings) {
+          <p class="loading-status">
+            {{ 'training_materials.page.no_more_trainings' | translate }}
+          </p>
+        }
+        @if (loading) {
+          <div class="loader"></div>
+        }
         <div class="padding"></div>
       </div>
     </div>

@@ -19,27 +19,29 @@
     <div class="sidebar-body">
       <mat-accordion multi>
         <!-- Facility -->
-        <div class="filter-options-container" *ngIf="userFacilities.length > 1">
-          <span class="filter-options-title">
-            {{ facilityFilterLabel | translate }}
-          </span>
-          <ng-container *ngFor="let facility of userFacilities">
-            <div class="filter-radio-option">
-              <label class="filter-option-wrapper">
-                <input
-                  type="radio"
-                  name="facility"
-                  [value]="facility"
-                  class="filter-option-radio"
-                  [checked]="facility._id === selectedFacility._id"
-                  (change)="fetchAggregateTargetsByFacility(facility)">
-                <span class="filter-option-label">
-                  {{ facility.name }}
-                </span>
-              </label>
-            </div>
-          </ng-container>
-        </div>
+        @if (userFacilities.length > 1) {
+          <div class="filter-options-container">
+            <span class="filter-options-title">
+              {{ facilityFilterLabel | translate }}
+            </span>
+            @for (facility of userFacilities; track facility) {
+              <div class="filter-radio-option">
+                <label class="filter-option-wrapper">
+                  <input
+                    type="radio"
+                    name="facility"
+                    [value]="facility"
+                    class="filter-option-radio"
+                    [checked]="facility._id === selectedFacility._id"
+                    (change)="fetchAggregateTargetsByFacility(facility)">
+                  <span class="filter-option-label">
+                    {{ facility.name }}
+                  </span>
+                </label>
+              </div>
+            }
+          </div>
+        }
       </mat-accordion>
 
       <mat-accordion multi>
@@ -48,20 +50,22 @@
           <span class="filter-options-title">
             {{ 'analytics.target.aggregates.reporting_period' | translate }}
           </span>
-          <div class="filter-radio-option" *ngFor="let period of reportingPeriods">
-            <label class="filter-option-wrapper">
-              <input
-                type="radio"
-                name="reporting-period"
-                class="filter-option-radio"
-                [value]="period.value"
-                [(ngModel)]="selectedReportingPeriod"
-                (change)="fetchAggregateTargetsByReportingPeriod()">
-              <span class="filter-option-label">
-                {{ period.label | translate }}
-              </span>
-            </label>
-          </div>
+          @for (period of reportingPeriods; track period) {
+            <div class="filter-radio-option">
+              <label class="filter-option-wrapper">
+                <input
+                  type="radio"
+                  name="reporting-period"
+                  class="filter-option-radio"
+                  [value]="period.value"
+                  [(ngModel)]="selectedReportingPeriod"
+                  (change)="fetchAggregateTargetsByReportingPeriod()">
+                <span class="filter-option-label">
+                  {{ period.label | translate }}
+                </span>
+              </label>
+            </div>
+          }
         </div>
       </mat-accordion>
     </div>

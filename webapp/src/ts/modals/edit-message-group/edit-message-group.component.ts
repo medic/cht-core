@@ -6,7 +6,7 @@ import { EditGroupService } from '@mm-services/edit-group.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { FormsModule } from '@angular/forms';
-import { NgFor, NgIf } from '@angular/common';
+
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
@@ -15,10 +15,8 @@ import { TranslatePipe } from '@ngx-translate/core';
   imports: [
     ModalLayoutComponent,
     FormsModule,
-    NgFor,
-    NgIf,
-    TranslatePipe,
-  ],
+    TranslatePipe
+],
 })
 export class EditMessageGroupComponent implements AfterViewInit, OnInit, AfterViewChecked, OnDestroy {
 

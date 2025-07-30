@@ -6,7 +6,9 @@
   [hasEnketoForm]="true"
   [class.has-error]="hasError">
 
-  <training-cards-confirm *ngIf="showConfirmExit" (stay)="continueTraining()" (exit)="exitTraining($event)"/>
+  @if (showConfirmExit) {
+    <training-cards-confirm (stay)="continueTraining()" (exit)="exitTraining($event)"/>
+  }
 
   <training-cards-form
     [hidden]="showConfirmExit"

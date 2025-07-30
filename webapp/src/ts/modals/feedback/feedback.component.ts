@@ -7,13 +7,13 @@ import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
 import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { FormsModule } from '@angular/forms';
-import { NgIf } from '@angular/common';
+
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'feedback-modal',
   templateUrl: './feedback.component.html',
-  imports: [ModalLayoutComponent, FormsModule, NgIf, TranslatePipe]
+  imports: [ModalLayoutComponent, FormsModule, TranslatePipe]
 })
 export class FeedbackComponent {
   private globalActions;

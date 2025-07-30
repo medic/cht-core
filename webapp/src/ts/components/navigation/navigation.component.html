@@ -1,13 +1,17 @@
 <div class="right-pane navigation">
-  <a *ngIf="isCancelCallbackSet" (click)="navigationCancel()" class="filter-bar-back">
-    <mat-icon
-      class="mat-icon-close"
-      svgIcon="icon-close"
-      [ngClass]="{ 'mm-icon-disabled': enketoSaving }" translate [title]="'close' | translate">
-    </mat-icon>
-  </a>
-  <a *ngIf="!isCancelCallbackSet" (click)="navigateBack()" class="filter-bar-back">
-    <mat-icon class="mat-icon-back" svgIcon="icon-back" translate [title]="'Back' | translate"></mat-icon>
-  </a>
+  @if (isCancelCallbackSet) {
+    <a (click)="navigationCancel()" class="filter-bar-back">
+      <mat-icon
+        class="mat-icon-close"
+        svgIcon="icon-close"
+        [ngClass]="{ 'mm-icon-disabled': enketoSaving }" translate [title]="'close' | translate">
+      </mat-icon>
+    </a>
+  }
+  @if (!isCancelCallbackSet) {
+    <a (click)="navigateBack()" class="filter-bar-back">
+      <mat-icon class="mat-icon-back" svgIcon="icon-back" translate [title]="'Back' | translate"></mat-icon>
+    </a>
+  }
   <h2 class="ellipsis-title">{{title}}</h2>
 </div>

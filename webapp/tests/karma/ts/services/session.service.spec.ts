@@ -1,9 +1,10 @@
+import { DOCUMENT } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { HttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
-import { DOCUMENT } from '@angular/common';
+
 
 import { SessionService } from '@mm-services/session.service';
 import { LocationService } from '@mm-services/location.service';

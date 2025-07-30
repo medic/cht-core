@@ -6,7 +6,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { NgClass, NgIf, NgFor } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatAccordion } from '@angular/material/expansion';
 import { FormsModule } from '@angular/forms';
@@ -15,7 +15,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'mm-analytics-target-aggregates-sidebar-filter',
   templateUrl: './analytics-target-aggregates-sidebar-filter.component.html',
-  imports: [NgClass, MatIcon, MatAccordion, NgIf, NgFor, FormsModule, TranslatePipe]
+  imports: [NgClass, MatIcon, MatAccordion, FormsModule, TranslatePipe]
 })
 export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, OnDestroy {
 

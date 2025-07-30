@@ -8,9 +8,17 @@
   [cancelKey]="'Cancel'"
   (onCancel)="close()"
   (onSubmit)="submit()"
->
-  <p *ngIf="!processing && docs.length === 1">{{ 'confirm.delete' | translate }}</p>
-  <p *ngIf="!processing && docs.length !== 1" translate [translateParams]="{ number: docs.length }">confirm.delete.plural</p>
-  <p *ngIf="processing">{{ 'confirm.delete.progress' | translate }}</p>
-  <p *ngIf="processing" translate [translateParams]="{ totalDeleted: totalDocsDeleted, totalSelected: totalDocsSelected }">confirm.delete.totals</p>
+  >
+  @if (!processing && docs.length === 1) {
+    <p>{{ 'confirm.delete' | translate }}</p>
+  }
+  @if (!processing && docs.length !== 1) {
+    <p translate [translateParams]="{ number: docs.length }">confirm.delete.plural</p>
+  }
+  @if (processing) {
+    <p>{{ 'confirm.delete.progress' | translate }}</p>
+  }
+  @if (processing) {
+    <p translate [translateParams]="{ totalDeleted: totalDocsDeleted, totalSelected: totalDocsSelected }">confirm.delete.totals</p>
+  }
 </mm-modal-layout>

@@ -1,11 +1,11 @@
-import { Component, EventEmitter, Inject, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, Output, DOCUMENT } from '@angular/core';
 import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import * as medicXpathExtensions from '../../../src/js/enketo/medic-xpath-extensions';
 import moment from 'moment';
 import { toBik_text } from 'bikram-sambat';
 import { TranslateService } from '@mm-services/translate.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
-import { NgIf, DOCUMENT } from '@angular/common';
+
 import { TranslatePipe } from '@ngx-translate/core';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';
@@ -16,7 +16,7 @@ const DEFAULT_FORM_ID = 'cht-form-id';
   selector: 'cht-form',
   templateUrl: './app.component.html',
   standalone: true,
-  imports: [NgIf, TranslatePipe],
+  imports: [TranslatePipe],
 })
 export class AppComponent {
   private readonly DEFAULT_USER = { contact_id: 'default_user', language: 'en' } as const;

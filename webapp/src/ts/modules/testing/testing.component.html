@@ -11,15 +11,21 @@
     <div>
       <h3>{{'debug.mode' | translate}}</h3>
       <p>{{'debug.mode.description' | translate}}</p>
-      <a *ngIf="!debugEnabled" (click)="enableDebug()" class="btn btn-primary">{{'Enable' | translate}}</a>
-      <a *ngIf="debugEnabled" (click)="disableDebug()" class="btn btn-primary">{{'Disable' | translate}}</a>
+      @if (!debugEnabled) {
+        <a (click)="enableDebug()" class="btn btn-primary">{{'Enable' | translate}}</a>
+      }
+      @if (debugEnabled) {
+        <a (click)="disableDebug()" class="btn btn-primary">{{'Disable' | translate}}</a>
+      }
     </div>
 
     <div>
       <h3>{{'wipe.device.title' | translate}}</h3>
       <p>{{'wipe.device.description' | translate}}</p>
       <a (click)="wipe()" class="btn btn-danger">{{'Start' | translate}}</a>
-      <div class="loader inline small" *ngIf="wiping"></div>
+      @if (wiping) {
+        <div class="loader inline small"></div>
+      }
     </div>
 
     <div>
@@ -31,7 +37,9 @@
         </div>
         <div class="col-lg-3 col-sm-6">
           <a (click)="generateFeedback()" class="btn btn-danger">{{'Start' | translate}}</a>
-          <div class="loader inline small" *ngIf="generatingFeedback"></div>
+          @if (generatingFeedback) {
+            <div class="loader inline small"></div>
+          }
         </div>
       </div>
     </div>

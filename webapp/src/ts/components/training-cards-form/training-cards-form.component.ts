@@ -10,7 +10,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
-import { NgIf } from '@angular/common';
+
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -18,10 +18,9 @@ import { TranslatePipe } from '@ngx-translate/core';
   selector: 'training-cards-form',
   templateUrl: './training-cards-form.component.html',
   imports: [
-    NgIf,
     EnketoComponent,
-    TranslatePipe,
-  ],
+    TranslatePipe
+],
 })
 export class TrainingCardsFormComponent implements OnInit, OnDestroy {
   @Input() isEmbedded = true;

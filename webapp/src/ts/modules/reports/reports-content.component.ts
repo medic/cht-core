@@ -17,7 +17,7 @@ import { FastAction, FastActionButtonService } from '@mm-services/fast-action-bu
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { DbService } from '@mm-services/db.service';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
-import { NgIf, NgFor, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import {
@@ -33,9 +33,7 @@ import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
 @Component({
   templateUrl: './reports-content.component.html',
   imports: [
-    NgIf,
     FastActionButtonComponent,
-    NgFor,
     RouterLink,
     SenderComponent,
     ReportVerifyValidIconComponent,
@@ -48,7 +46,7 @@ import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
     StatePipe,
     TitlePipe,
     FormIconPipe
-  ]
+]
 })
 export class ReportsContentComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();

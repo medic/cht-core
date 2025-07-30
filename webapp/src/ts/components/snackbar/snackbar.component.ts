@@ -6,13 +6,13 @@ import { filter, delay } from 'rxjs/operators';
 
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
-import { NgIf } from '@angular/common';
+
 
 @Component({
   selector: 'snackbar',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './snackbar.component.html',
-  imports: [NgIf]
+  imports: []
 })
 export class SnackbarComponent implements OnInit, OnDestroy {
   private subscription: Subscription = new Subscription();

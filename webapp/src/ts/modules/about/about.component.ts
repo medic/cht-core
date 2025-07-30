@@ -14,7 +14,7 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { MatCard, MatCardHeader, MatCardTitle, MatCardContent, MatCardSubtitle } from '@angular/material/card';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 import { MatButton } from '@angular/material/button';
-import { NgSwitch, NgSwitchCase, NgIf, NgFor, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { PartnerImagePipe } from '@mm-pipes/resource-icon.pipe';
 import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';
 
@@ -28,16 +28,12 @@ import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';
     TranslateDirective,
     MatCardContent,
     MatButton,
-    NgSwitch,
-    NgSwitchCase,
-    NgIf,
     MatCardSubtitle,
-    NgFor,
     DecimalPipe,
     TranslatePipe,
     PartnerImagePipe,
     SimpleDateTimePipe
-  ]
+]
 })
 export class AboutComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();

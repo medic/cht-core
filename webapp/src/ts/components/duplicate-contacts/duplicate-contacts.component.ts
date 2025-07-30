@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { NgIf } from '@angular/common';
+
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SimpleDatePipe } from '@mm-pipes/date.pipe';
@@ -21,7 +21,6 @@ import { Contact } from '@medic/cht-datasource';
   selector: 'mm-duplicate-contacts',
   templateUrl: './duplicate-contacts.component.html',
   imports: [
-    NgIf,
     TranslatePipe,
     SimpleDatePipe,
     MatExpansionPanel,
@@ -30,7 +29,7 @@ import { Contact } from '@medic/cht-datasource';
     MatExpansionPanelDescription,
     MatExpansionPanelActionRow,
     ContactSummaryContentComponent
-  ]
+]
 })
 export class DuplicateContactsComponent {
   @Input() duplicate?: Contact.v1.Contact;

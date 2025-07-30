@@ -8,11 +8,13 @@
   [isFlatButton]="true"
   (onCancel)="close()"
   (onSubmit)="submit()"
->
+  >
   <form action="" method="POST" class="message-form">
     <div class="form-group" [ngClass]="{ 'has-error': errors.phone }">
       <select class="form-control" id="send-message-phone" name="phone" autocomplete="off" multiple="multiple"></select>
-      <span class="help-block" *ngIf="errors.phone">{{ errors.phone }}</span>
+      @if (errors.phone) {
+        <span class="help-block">{{ errors.phone }}</span>
+      }
     </div>
 
     <div class="form-group" [ngClass]="{ 'has-error': errors.message }">
@@ -21,7 +23,9 @@
         [placeholder]="'tasks.0.messages.0.message' | translate"
         [(ngModel)]="messageInput">
       </textarea>
-      <span class="help-block" *ngIf="errors.message">{{ errors.message }}</span>
+      @if (errors.message) {
+        <span class="help-block">{{ errors.message }}</span>
+      }
       <!-- Count is done by CountMessageService -->
       <span class="count"></span>
     </div>

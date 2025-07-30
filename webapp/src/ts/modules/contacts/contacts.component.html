@@ -6,7 +6,7 @@
     (sort)="sort($event)"
     (search)="search()">
   </mm-search-bar>
-   <mm-contacts-more-menu (exportContacts)="exportContacts()"></mm-contacts-more-menu>
+  <mm-contacts-more-menu (exportContacts)="exportContacts()"></mm-contacts-more-menu>
 </mm-tool-bar>
 
 <div class="inner">
@@ -14,7 +14,8 @@
     <div id="contacts-list" class="col-sm-4 inbox-items left-pane ">
       <div class="items-container">
         <ul [hidden]="loading && !appending">
-          <li *ngFor="let contact of contactsList; trackBy: listTrackBy"
+          @for (contact of contactsList; track listTrackBy($index, contact)) {
+            <li
               [attr.data-record-id]="contact._id"
               [class.selected] = "contact._id === selectedContact?._id"
               [class.primary]="contact.primary"
@@ -23,37 +24,54 @@
               [class.muted]="contact.muted"
               [class.overdue]="contact.overdue"
               class="content-row"
-          >
-            <a [routerLink]="['/', 'contacts', contact._id]">
-              <div *ngIf="contact.icon" class="icon" [innerHTML]="contact.icon | resourceIcon"></div>
-              <div class="content">
-                <div class="heading">
-                  <h4>
-                    <span>{{contact.heading}}</span>
-                  </h4>
-                  <div class="date">
-                    <span *ngIf="contact.dod" [innerHTML]="contact.dod | dateOfDeath"></span>
+              >
+              <a [routerLink]="['/', 'contacts', contact._id]">
+                @if (contact.icon) {
+                  <div class="icon" [innerHTML]="contact.icon | resourceIcon"></div>
+                }
+                <div class="content">
+                  <div class="heading">
+                    <h4>
+                      <span>{{contact.heading}}</span>
+                    </h4>
+                    <div class="date">
+                      @if (contact.dod) {
+                        <span [innerHTML]="contact.dod | dateOfDeath"></span>
+                      }
+                    </div>
+                    @if (contact.visits) {
+                      <div class="visits" [class.danger]="contact.visits.status === 'pending'" [class.warning]="contact.visits.status === 'started'" [class.success]="contact.visits.status === 'done'">
+                        <span>{{contact.visits.count | localizeNumber}}</span>
+                      </div>
+                    }
                   </div>
-                  <div *ngIf="contact.visits" class="visits" [class.danger]="contact.visits.status === 'pending'" [class.warning]="contact.visits.status === 'started'" [class.success]="contact.visits.status === 'done'">
-                    <span>{{contact.visits.count | localizeNumber}}</span>
-                  </div>
+                  @if (contact.summary) {
+                    <div class="summary">
+                      <p>{{contact.summary}}</p>
+                      @if (contact.visits) {
+                        <div class="visits" [class.danger]="contact.visits.status === 'pending'" [class.warning]="contact.visits.status === 'started'" [class.success]="contact.visits.status === 'done'">
+                          <span>{{contact.visits.summary}}</span>
+                        </div>
+                      }
+                    </div>
+                  }
                 </div>
-
-                <div *ngIf="contact.summary" class="summary">
-                  <p>{{contact.summary}}</p>
-
-                  <div *ngIf="contact.visits" class="visits" [class.danger]="contact.visits.status === 'pending'" [class.warning]="contact.visits.status === 'started'" [class.success]="contact.visits.status === 'done'">
-                    <span>{{contact.visits.summary}}</span>
-                  </div>
-                </div>
-              </div>
-            </a>
-          </li>
+              </a>
+            </li>
+          }
         </ul>
-        <p *ngIf="error" class="alert alert-danger" role="alert">{{'Error fetching contacts' | translate}}</p>
-        <p class="loading-status" *ngIf="!error && !loading && !hasContacts">{{'No contacts found' | translate}}</p>
-        <p class="loading-status" *ngIf="!error && !loading && hasContacts && !moreItems">{{'No more contacts' | translate}}</p>
-        <div class="loader" *ngIf="loading"></div>
+        @if (error) {
+          <p class="alert alert-danger" role="alert">{{'Error fetching contacts' | translate}}</p>
+        }
+        @if (!error && !loading && !hasContacts) {
+          <p class="loading-status">{{'No contacts found' | translate}}</p>
+        }
+        @if (!error && !loading && hasContacts && !moreItems) {
+          <p class="loading-status">{{'No more contacts' | translate}}</p>
+        }
+        @if (loading) {
+          <div class="loader"></div>
+        }
         <div class="padding"></div>
       </div>
 
@@ -61,7 +79,7 @@
         [config]="{ button: { type: buttonType.FAB, label: 'contact.new_place.button' } }"
         [fastActions]="fastActionList">
       </mm-fast-action-button>
-      
+
       <mm-fast-action-button class="desktop-only"
         [config]="{ button: { type: buttonType.FLAT, label: 'contact.new_place.button' } }"
         [fastActions]="fastActionList">

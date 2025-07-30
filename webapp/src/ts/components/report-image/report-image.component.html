@@ -1,2 +1,6 @@
-<div class="loader" *ngIf="loading"></div>
-<img *ngIf="!loading" class="report-image" [src]="objectUrl"/>
+@if (loading) {
+  <div class="loader"></div>
+}
+@if (!loading) {
+  <img class="report-image" [src]="objectUrl"/>
+}

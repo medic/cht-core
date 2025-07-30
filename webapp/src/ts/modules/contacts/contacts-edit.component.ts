@@ -12,7 +12,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { MatAccordion } from '@angular/material/expansion';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -23,7 +23,7 @@ import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Component({
   templateUrl: './contacts-edit.component.html',
-  imports: [NgIf, NgFor, MatAccordion, EnketoComponent, TranslatePipe, DuplicateContactsComponent, NgClass]
+  imports: [MatAccordion, EnketoComponent, TranslatePipe, DuplicateContactsComponent, NgClass]
 })
 export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(

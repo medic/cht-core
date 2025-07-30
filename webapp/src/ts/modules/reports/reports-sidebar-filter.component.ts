@@ -7,7 +7,7 @@ import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { NgClass, NgTemplateOutlet, NgIf } from '@angular/common';
+import { NgClass, NgTemplateOutlet } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import {
   MatAccordion,
@@ -33,10 +33,9 @@ type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateF
     FormTypeFilterComponent,
     FacilityFilterComponent,
     DateFilterComponent,
-    NgIf,
     StatusFilterComponent,
     TranslatePipe
-  ]
+]
 })
 export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   // eslint-disable-next-line @angular-eslint/no-output-native

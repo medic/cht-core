@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, HostListener, Attribute } from '@angular/core';
-import { NgIf } from '@angular/common';
+
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 import { MatButton } from '@angular/material/button';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -7,7 +7,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 @Component({
   selector: 'mm-modal-layout',
   templateUrl: './modal-layout.component.html',
-  imports: [NgIf, PanelHeaderComponent, MatButton, TranslatePipe]
+  imports: [PanelHeaderComponent, MatButton, TranslatePipe]
 })
 export class ModalLayoutComponent {
   @Attribute('id') id;

@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, ViewChild, Input } from '@angular/core';
 import { BaseMenuComponent } from '@mm-components/base-menu/base-menu.component';
 import { MatSidenav, MatSidenavContainer, MatSidenavContent } from '@angular/material/sidenav';
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
-import { NgFor, NgIf, NgClass } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { RouterLink, NavigationStart, Router } from '@angular/router';
 import { AuthDirective } from '@mm-directives/auth.directive';
 import { MatIcon } from '@angular/material/icon';
@@ -28,15 +28,13 @@ import { Selectors } from '@mm-selectors/index';
     MatSidenav,
     PanelHeaderComponent,
     MatSidenavContent,
-    NgFor,
     RouterLink,
     AuthDirective,
     MatIcon,
-    NgIf,
     NgClass,
     TranslatePipe,
-    RelativeDatePipe,
-  ],
+    RelativeDatePipe
+],
 })
 export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, OnDestroy {
   @Input() canLogOut: boolean = false;

@@ -6,7 +6,7 @@
   [class.old-nav]="hasOldNav"
   [class.rtl]="direction === 'rtl'"
   [dir]="direction"
->
+  >
 
   <div class="bootstrap-layer">
     <div>
@@ -16,16 +16,19 @@
     </div>
   </div>
 
-  <mm-privacy-policy [overlay]="true" *ngIf="showPrivacyPolicy && !privacyPolicyAccepted"></mm-privacy-policy>
+  @if (showPrivacyPolicy && !privacyPolicyAccepted) {
+    <mm-privacy-policy [overlay]="true"></mm-privacy-policy>
+  }
   <mm-sidebar-menu [canLogOut]="canLogOut"/>
 
-  <div class="container-fluid" *ngIf="initialisationComplete">
-    <mm-header [adminUrl]="adminUrl" [canLogOut]="canLogOut"></mm-header>
-
-    <div class="row content">
-      <router-outlet></router-outlet>
+  @if (initialisationComplete) {
+    <div class="container-fluid">
+      <mm-header [adminUrl]="adminUrl" [canLogOut]="canLogOut"></mm-header>
+      <div class="row content">
+        <router-outlet></router-outlet>
+      </div>
     </div>
-  </div>
+  }
   <snackbar></snackbar>
 </div>
 
