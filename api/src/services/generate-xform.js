@@ -9,7 +9,6 @@ const logger = require('@medic/logger');
 const db = require('../db');
 const formsService = require('./forms');
 const markdown = require('../enketo-transformer/markdown');
-const { result } = require('lodash');
 
 const MODEL_ROOT_OPEN = '<root xmlns="http://www.w3.org/2002/xforms" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema">';
 const ROOT_CLOSE = '</root>';
@@ -207,19 +206,20 @@ const generate = formXml => {
     .then(([ form, model ]) => ({ form, model }));
 };
 
-const updateAttachment = (doc, updated, name, type) => {
-  const attachmentData = doc._attachments &&
+const updateAttachment = (doc, update, name, type) => {
+  const attachmentData = doc &&
+                         doc._attachments &&
                          doc._attachments[name] &&
                          doc._attachments[name].data &&
-                         doc._attachments[name].data.toString();
-  if (attachmentData === updated) {
-    return false;
+                         doc._attachments[name].data.toString()
+  const canUpdate = Boolean(attachmentData != update && update);
+  if (canUpdate) {
+    doc._attachments[name] = {
+      data: Buffer.from(update),
+      content_type: type
+    };
   }
-  doc._attachments[name] = {
-    data: Buffer.from(updated),
-    content_type: type
-  };
-  return true;
+  return canUpdate;
 };
 
 const updateAttachmentsIfRequired = (doc, updated) => {
@@ -229,6 +229,9 @@ const updateAttachmentsIfRequired = (doc, updated) => {
 };
 
 const addGeneratedAttachments = (doc, updated) => {
+  if(!updated||!updateAttachmentsIfRequired(doc,updated)){
+    return;
+  }
   doc._attachments['form.html'] = {
     data: Buffer.from(updated.form),
     content_type: 'text/html'
@@ -240,32 +243,21 @@ const addGeneratedAttachments = (doc, updated) => {
   return doc;
 };
 
-
-const updateAttachments = async (accumulator, doc) => {
-  const results = await accumulator;
-
+const updateAttachments = async (doc) => {
   let generated = null;
   const form = getEnketoForm(doc);
-  if (form) { 
+  if (form) {
     const name = formsService.getXFormAttachmentName(doc);
-    const rawXML = await db.medic.getAttachment(doc._id, name, { rev });
+    const rawXML = await db.medic.getAttachment(doc._id, name, { rev: doc._rev });
     logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
     generated = await module.exports.generate(rawXML.toString());
-    generated && addGeneratedAttachments(doc, generated);
+    return addGeneratedAttachments(doc, generated);
   }
-  results.push(generated);
-  return results;
 };
-
 // Returns array of docs that need saving.
-const updateAllAttachments = docs => {
-  // spawn the child processes in series so we don't smash the server
-  return docs.reduce(updateAttachments, Promise.resolve([])).then(results => {
-    return docs.filter((doc, i) => {
-      return results[i] && updateAttachmentsIfRequired(doc, results[i]);
-    });
-  });
-};
+const updateAllAttachments = async (docs) =>
+  (await Promise.all(docs.map(updateAttachments))).filter(r=>r);
+
 
 
 module.exports = {
@@ -283,7 +275,6 @@ module.exports = {
           logger.info(`Updating form with ID "${docId}"`);
           return db.medic.put(doc);
         }
-        logger.info(`Form with ID "${docId}" does not need to be updated.`);
       });
   },
   /**
@@ -311,7 +302,6 @@ module.exports = {
           }
         });
       });
-
   },
 
   /**
