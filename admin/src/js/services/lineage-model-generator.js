@@ -1,5 +1,4 @@
 const lineageFactory = require('@medic/lineage');
-
 /**
  * Hydrates the given doc by uuid and creates a model which holds
  * the doc and associated contacts. eg:
@@ -73,21 +72,6 @@ angular.module('inboxServices').factory('LineageModelGenerator',
               result.doc = doc;
             }
             return result;
-          });
-      },
-
-      /**
-       * Fetch a contact and its lineage by the given uuid. Returns a
-       * report model.
-       */
-      report: function(id) {
-        return lineageLib.fetchHydratedDoc(id, { throwWhenMissingLineage: true })
-          .then(function(hydrated) {
-            return {
-              _id: id,
-              doc: hydrated,
-              contact: hydrated.contact,
-            };
           });
       },
 

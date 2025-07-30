@@ -7,7 +7,8 @@ describe('EditUserCtrl controller', () => {
   let mockEditAUser;
   let mockEditCurrentUser;
   let scope;
-  let dbGet;
+  let getContact;
+  let hasPermissions;
   let dbAllDocs;
   let UpdateUser;
   let CreateUser;
@@ -23,7 +24,14 @@ describe('EditUserCtrl controller', () => {
   beforeEach(() => {
     module('adminApp');
 
-    dbGet = sinon.stub();
+    getContact = sinon.stub();
+    hasPermissions = sinon.stub();
+    const dataSource = { v1: { hasPermissions } };
+    const dataContext = {
+      bind: sinon.stub(),
+      getDataSource: sinon.stub().returns(dataSource)
+    };
+    dataContext.bind.returns(getContact);
     dbAllDocs = sinon.stub();
     UpdateUser = sinon.stub().resolves();
     CreateUser = {
@@ -72,10 +80,10 @@ describe('EditUserCtrl controller', () => {
       $provide.factory(
         'DB',
         KarmaUtils.mockDB({
-          get: dbGet,
           allDocs: dbAllDocs,
         })
       );
+      $provide.value('DataContext', dataContext);
       $provide.value('UpdateUser', UpdateUser);
       $provide.value('CreateUser', CreateUser);
       $provide.value('UserSettings', UserSettings);
@@ -143,7 +151,8 @@ describe('EditUserCtrl controller', () => {
       UpdateUser,
       UserSettings,
       Settings,
-      dbGet,
+      getContact,
+      hasPermissions,
       jQuery
     );
   });
@@ -159,7 +168,7 @@ describe('EditUserCtrl controller', () => {
     });
   };
   const mockContactGet = facilityId => {
-    dbGet.resolves({ parent: { _id: facilityId } });
+    getContact.resolves({ parent: { _id: facilityId } });
   };
   const editUser = async () => {
     await scope.editUser();
@@ -288,6 +297,7 @@ describe('EditUserCtrl controller', () => {
         })
         .then(() => {
           chai.expect(UpdateUser.called).to.equal(false);
+          chai.expect(getContact.calledOnceWithExactly({ uuid: 'xyz' })).to.be.true;
         });
     });
 
@@ -304,6 +314,7 @@ describe('EditUserCtrl controller', () => {
         })
         .then(() => {
           chai.expect(UpdateUser.called).to.equal(false);
+          chai.expect(getContact.calledOnceWithExactly({ uuid: 'xyz' })).to.be.true;
         });
     });
 
@@ -386,6 +397,7 @@ describe('EditUserCtrl controller', () => {
         })
         .then(() => {
           chai.expect(scope.errors.contact).to.equal('outside');
+          chai.expect(getContact.calledOnceWithExactly({ uuid: 'xyz' })).to.be.true;
         });
     });
 
@@ -394,7 +406,6 @@ describe('EditUserCtrl controller', () => {
         .setupPromise.then(() => {
           mockContact(userToEdit.contact_id);
           mockFacility(['facility_id', 'facility_id_2']);
-          mockContactGet(userToEdit.contact_id);
           translate.withArgs('permission.description.can_have_multiple_places.not_allowed')
             .resolves('The person with selected role cannot have multiple places');
 
@@ -453,6 +464,7 @@ describe('EditUserCtrl controller', () => {
               contact_id: scope.editUserModel.contact
             }}
           ]);
+          chai.expect(getContact.calledOnceWithExactly({ uuid: 'xyz' })).to.be.true;
         });
     });
 
@@ -470,6 +482,7 @@ describe('EditUserCtrl controller', () => {
           { doc: { _id: 'facility_id_2' } },
         ],
       });
+      hasPermissions.returns(true);
 
       return mockEditAUser(userToEdit)
         .setupPromise.then(() => {
@@ -511,6 +524,25 @@ describe('EditUserCtrl controller', () => {
               },
             },
           ]);
+          chai.expect(hasPermissions.args).to.deep.equal([
+            [
+              ['can_skip_password_change' ],
+              [ 'district-manager', 'supervisor' ],
+              {
+                can_have_multiple_places: [ 'community-health-assistant' ],
+                can_skip_password_change: [ 'community-health-assistant' ]
+              }
+            ],
+            [
+              [ 'can_have_multiple_places' ],
+              [ 'community-health-assistant' ],
+              {
+                can_have_multiple_places: [ 'community-health-assistant' ],
+                can_skip_password_change: [ 'community-health-assistant' ]
+              }
+            ]
+          ]);
+          chai.expect(getContact.calledOnceWithExactly({ uuid: 'xyz' })).to.be.true;
         });
     });
 
@@ -530,6 +562,7 @@ describe('EditUserCtrl controller', () => {
           const updateUserArgs = UpdateUser.getCall(0).args;
           chai.expect(updateUserArgs[0]).to.equal('user.name');
           chai.expect(updateUserArgs[1].roles).to.deep.equal([ 'aardvark', 'supervisor', 'zesty' ]);
+          chai.expect(getContact.calledOnceWithExactly({ uuid: 'xyz' })).to.be.true;
         });
     });
 
@@ -581,6 +614,7 @@ describe('EditUserCtrl controller', () => {
               password: 'medic.1234'
             }
           ]);
+          chai.expect(getContact.calledOnceWithExactly({ uuid: 'xyz' })).to.be.true;
         });
     });
 
@@ -627,6 +661,7 @@ describe('EditUserCtrl controller', () => {
             'translation result',
             'warning'
           ]);
+          chai.expect(getContact.calledOnceWithExactly({ uuid: 'new_contact_id' })).to.be.true;
         });
     });
 
@@ -681,6 +716,10 @@ describe('EditUserCtrl controller', () => {
           chai.expect(updates.phone).to.equal(scope.editUserModel.phone);
           chai.expect(updates.roles).to.deep.equal(scope.editUserModel.roles);
           chai.expect(updates.password).to.deep.equal(scope.editUserModel.password);
+          chai.expect(getContact.args).to.deep.equal([
+            [{ uuid: 'new_contact_id' }],
+            [{ uuid: 'new_contact_id' }]
+          ]);
         });
     });
 
@@ -1047,6 +1086,7 @@ describe('EditUserCtrl controller', () => {
         })
         .then(() => {
           chai.expect(UpdateUser.called).to.equal(false);
+          chai.expect(getContact.calledOnceWithExactly({ uuid: 'xyz' })).to.be.true;
         });
     });
 
@@ -1097,17 +1137,35 @@ describe('EditUserCtrl controller', () => {
 
     it('should set skipPasswordChange to false if user does not have can_skip_password_change permission', () => {
       user.roles = ['supervisor'];
+      hasPermissions.returns(false);
 
       return mockEditAUser(user).setupPromise.then(() => {
         chai.expect(scope.skipPasswordChange).to.equal(false);
+        chai.expect(hasPermissions.calledOnceWithExactly(
+          ['can_skip_password_change' ],
+          [ 'supervisor' ],
+          {
+            can_have_multiple_places: [ 'community-health-assistant' ],
+            can_skip_password_change: [ 'community-health-assistant' ]
+          }
+        )).to.be.true;
       });
     });
 
     it('should set skipPasswordChange to true if user has can_skip_password_change permission', () => {
       user.roles = ['community-health-assistant'];
+      hasPermissions.returns(true);
 
       return mockEditAUser(user).setupPromise.then(() => {
         chai.expect(scope.skipPasswordChange).to.equal(true);
+        chai.expect(hasPermissions.calledOnceWithExactly(
+          ['can_skip_password_change' ],
+          [ 'community-health-assistant' ],
+          {
+            can_have_multiple_places: [ 'community-health-assistant' ],
+            can_skip_password_change: [ 'community-health-assistant' ]
+          }
+        )).to.be.true;
       });
     });
   });
