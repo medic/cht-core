@@ -211,8 +211,8 @@ const updateAttachment = (doc, update, name, type) => {
                          doc._attachments &&
                          doc._attachments[name] &&
                          doc._attachments[name].data &&
-                         doc._attachments[name].data.toString()
-  const canUpdate = Boolean(attachmentData != update && update);
+                         doc._attachments[name].data.toString();
+  const canUpdate = Boolean(attachmentData !== update && update);
   if (canUpdate) {
     doc._attachments[name] = {
       data: Buffer.from(update),
@@ -229,7 +229,7 @@ const updateAttachmentsIfRequired = (doc, updated) => {
 };
 
 const addGeneratedAttachments = (doc, updated) => {
-  if(!updated||!updateAttachmentsIfRequired(doc,updated)){
+  if ( !updated || !updateAttachmentsIfRequired(doc, updated) ){
     return;
   }
   doc._attachments['form.html'] = {
@@ -255,8 +255,7 @@ const updateAttachments = async (doc) => {
   }
 };
 // Returns array of docs that need saving.
-const updateAllAttachments = async (docs) =>
-  (await Promise.all(docs.map(updateAttachments))).filter(r=>r);
+const updateAllAttachments = async (docs) => (await Promise.all(docs.map(updateAttachments))).filter(r => r);
 
 
 
