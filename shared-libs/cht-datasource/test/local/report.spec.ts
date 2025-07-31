@@ -13,8 +13,13 @@ describe('local report', () => {
   let warn: SinonStub;
   let createDocOuter: SinonStub;
   let createDocInner : SinonStub;
+  let updateDocOuter: SinonStub;
+  let updateDocInner : SinonStub;
+  let getDocByIdOuter : SinonStub;
+  let getDocByIdInner : SinonStub;
   beforeEach(() => {
     createDocInner = sinon.stub();
+    updateDocInner = sinon.stub();
     settingsGetAll = sinon.stub();
     localContext = {
       medicDb: {} as PouchDB.Database<Doc>,
@@ -22,6 +27,9 @@ describe('local report', () => {
     } as unknown as LocalDataContext;
     warn = sinon.stub(logger, 'warn');
     createDocOuter = sinon.stub(LocalDoc, 'createDoc');
+    updateDocOuter = sinon.stub(LocalDoc, 'updateDoc').returns(updateDocInner);
+    getDocByIdInner = sinon.stub();
+    getDocByIdOuter = sinon.stub(LocalDoc, 'getDocById').returns(getDocByIdInner);
   });
 
   afterEach(() => sinon.restore());
@@ -31,13 +39,6 @@ describe('local report', () => {
     
     describe('get', () => {
       const identifier = { uuid: 'uuid' } as const;
-      let getDocByIdOuter: SinonStub;
-      let getDocByIdInner: SinonStub;
-
-      beforeEach(() => {
-        getDocByIdInner = sinon.stub();
-        getDocByIdOuter = sinon.stub(LocalDoc, 'getDocById').returns(getDocByIdInner);
-      });
 
       it('returns a report by UUID', async () => {
         const doc = { type: 'data_record', form: 'yes' };
@@ -426,14 +427,6 @@ describe('local report', () => {
     });
 
     describe('createReport', () => {
-      let getDocByIdOuter: SinonStub;
-      let getDocByIdInner: SinonStub;
-
-      beforeEach(() => {
-        getDocByIdInner = sinon.stub();
-        getDocByIdOuter = sinon.stub(LocalDoc, 'getDocById').returns(getDocByIdInner);
-      });
-
       it('creates a report doc for valid report qualifier', async () => {
         const input = {
           type: 'data_record',
@@ -497,6 +490,96 @@ describe('local report', () => {
         expect(createDocInner.called).to.be.false;
         expect(createDocOuter.called).to.be.true;
       });
+    });
+  });
+
+  describe('updateReport', () => {
+    it('throws error when the update payload does not contain _id or _rev', async () => {
+      const reportInput = {
+        form: 'yes',
+        type: 'data_record',
+        reported_date: 12312312
+      };
+      await expect(Report.v1.update(localContext)(reportInput))
+        .to.be.rejectedWith(`Document for update is not a valid Doc ${JSON.stringify(reportInput)}`);
+      expect(getDocByIdInner.called).to.be.false;
+    });
+
+    it('throws error when _rev does not match with the original doc', async () => {
+      const reportInput = {
+        _id: '1',
+        _rev: '2',
+        form: 'yes',
+        type: 'data_record',
+        reported_date: 12312312,
+        contact: {
+          _id: '5'
+        }
+      };
+      getDocByIdInner.resolves({...reportInput, _rev: '3'});
+      await expect(Report.v1.update(localContext)(reportInput))
+        .to.be.rejectedWith('`_rev` does not match');
+    });
+
+    it('throws error original doc does not exist', async () => {
+      const reportInput = {
+        _id: '1',
+        _rev: '2',
+        form: 'yes',
+        type: 'data_record',
+        reported_date: 12312312,
+        contact: {
+          _id: '5'
+        }
+      };
+      getDocByIdInner.resolves(null);
+      await expect(Report.v1.update(localContext)(reportInput))
+        .to.be.rejectedWith('Report not found');
+    });
+
+    it('throws error if contact lineage does not match with the original doc', async() => {
+      const reportInput = {
+        _id: '1',
+        _rev: '2',
+        form: 'yes',
+        type: 'data_record',
+        reported_date: 12312312,
+        contact: {
+          _id: '5', parent: {_id: '7'}
+        }
+      };
+      getDocByIdInner.resolves({...reportInput, contact: {_id: '5', parent: {_id: '6'}}});
+      await expect(Report.v1.update(localContext)(reportInput))
+        .to.be.rejectedWith(`contact lineage does not match with the lineage of the doc in the db`);
+    });
+
+    it('updates report for valid input', async() => {
+      const reportInput = {
+        _id: '1',
+        _rev: '2',
+        form: 'yes',
+        type: 'data_record',
+        reported_date: 12312312,
+        contact: {
+          _id: '5', 
+          extra: 'field',
+          parent: {_id: '7'}
+        }
+      };
+      getDocByIdInner.resolves({...reportInput, old: true, language: 'English'});
+      const modified = {
+        ...reportInput, contact: {
+          _id: '5', parent: {
+            _id: '7'
+          }
+        }
+      };
+      updateDocInner.resolves(modified);
+      const updatedReport = await Report.v1.update(localContext)(reportInput);
+      // ensure dehydrated lineage
+      expect(updatedReport).to.deep.equal(modified);
+      expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+      expect(updateDocInner.calledOnceWithExactly(reportInput)).to.be.true;
     });
   });
 });
