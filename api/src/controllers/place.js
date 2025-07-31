@@ -12,6 +12,7 @@ const getPlace = ({ with_lineage }) => ctx.bind(
 
 const getPageByType = () => ctx.bind(Place.v1.getPage);
 const create = () => ctx.bind(Place.v1.create);
+const update = () => ctx.bind(Place.v1.update);
 
 const checkUserPermissions = async (req, permissions = ['can_view_contacts']) => {
   const userCtx = await auth.getUserCtx(req);
@@ -46,6 +47,12 @@ module.exports = {
       const placeInput = Input.validatePlaceInput(req.body);
       const placeDoc = await create()(placeInput);
       return res.json(placeDoc);
+    }),
+    update: serverUtils.doOrError(async (req, res) => {
+      await checkUserPermissions(req, ['can_view_contacts', 'can_update_places']);
+      
+      const updatedPlaceDoc = await update()(req.body);
+      return res.json(updatedPlaceDoc);
     })
   }
 };

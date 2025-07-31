@@ -121,7 +121,7 @@ export const ensureImmutability = (
 };
 
 /** @internal*/
-const checkFieldWithLineage = (
+export const checkFieldWithLineage = (
   updateInputLineage:Record<string, unknown>, 
   originalDocLineage: Record<string, unknown>,
   lineageType: 'parent' | 'contact'
