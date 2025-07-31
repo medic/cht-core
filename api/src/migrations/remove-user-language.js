@@ -8,26 +8,25 @@ const removeLanguage = (docs) => {
 
 const needsUpdate = (row) => row.doc && Object.prototype.hasOwnProperty.call(row.doc, 'language');
 
-const removeLanguageFromUserSettings = (skipSize) => {
-  const options = {
-    include_docs: true,
+const removeLanguageFromUserSettings = async (skipSize) => {
+  const results = await db.medic.allDocs({
+    startkey: 'org.couchdb.user:',
+    endkey: 'org.couchdb.user:\u9999',
     limit: BATCH_SIZE,
     skip: skipSize,
-    key: [ 'user-settings' ]
-  };
-  return db.medic
-    .query('medic-client/doc_by_type', options)
-    .then(result => {
-      if (!result.rows || !result.rows.length) {
-        return false;
-      }
-      const docsWithLanguage = result.rows.filter(needsUpdate).map(row => row.doc);
-      if (!docsWithLanguage.length) {
-        return true;
-      }
-      return removeLanguage(docsWithLanguage).then(() => true);
-    })
-    .then((moreRows) => moreRows && removeLanguageFromUserSettings(skipSize + BATCH_SIZE));
+    include_docs: true
+  });
+
+  if (!results.rows) {
+    return;
+  }
+
+  const docsWithLanguage = results.rows.filter(needsUpdate).map(row => row.doc);
+  if (docsWithLanguage.length) {
+    await removeLanguage(docsWithLanguage);
+  }
+
+  return removeLanguageFromUserSettings(skipSize + BATCH_SIZE);
 };
 
 module.exports = {
