@@ -162,7 +162,7 @@ describe('GlobalEffects', () => {
         expect(cancelCallback.callCount).to.equal(0);
       }));
 
-      it('when not saving, not edited and cancelCallback ', waitForAsync(async () => {
+      it('when not saving, not edited and cancelCallback ', waitForAsync(() => {
         store.overrideSelector(Selectors.getEnketoStatus, { form: true });
         store.overrideSelector(Selectors.getNavigation, { cancelCallback });
         actions$ = of(GlobalActionsList.navigationCancel(null));

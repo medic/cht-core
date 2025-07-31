@@ -9,8 +9,7 @@ const waitForService = async (url, maxAttempts =  30, delay = 100) => {
       if (response.ok) {
         return true;
       }
-      throw response;
-    } catch (error) {
+    } catch {
       // Intentionally ignore errors while waiting for service
     } finally {
       await new Promise(resolve => setTimeout(resolve, delay));
@@ -19,9 +18,9 @@ const waitForService = async (url, maxAttempts =  30, delay = 100) => {
   throw new Error(`Service at ${url} did not become available`);
 };
 
-describe('haproxy with mock CouchDB', function() {
+describe('HAProxy with mock CouchDB', function() {
   this.timeout(3000);
-  
+
   it('should respond before timeout', async () => {
     await waitForService('http://127.0.0.1:15984');
   });

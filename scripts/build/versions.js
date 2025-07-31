@@ -46,7 +46,8 @@ const getVersion = (release) => {
     return process.env.VERSION;
   }
 
-  return execSync('git branch --show-current', { encoding: 'utf-8' }).trim();
+  const branch = execSync('git branch --show-current', { encoding: 'utf-8' }).trim();
+  return escapeBranchName(branch);
 };
 
 const getImageTag = (service, release = false) => {
