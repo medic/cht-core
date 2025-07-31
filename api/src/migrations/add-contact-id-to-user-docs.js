@@ -6,7 +6,7 @@ const BATCH_SIZE = 100;
 const getUserSettingsDocs = async (skip) => {
   const result = await db.medic.allDocs({
     startkey: 'org.couchdb.user:',
-    endkey: 'org.couchdb.user:\u9999',
+    endkey: 'org.couchdb.user:\uffff',
     limit: BATCH_SIZE,
     skip,
     include_docs: true

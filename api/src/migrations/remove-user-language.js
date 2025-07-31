@@ -11,7 +11,7 @@ const needsUpdate = (row) => row.doc && Object.prototype.hasOwnProperty.call(row
 const removeLanguageFromUserSettings = async (skipSize) => {
   const results = await db.medic.allDocs({
     startkey: 'org.couchdb.user:',
-    endkey: 'org.couchdb.user:\u9999',
+    endkey: 'org.couchdb.user:\uffff',
     limit: BATCH_SIZE,
     skip: skipSize,
     include_docs: true
