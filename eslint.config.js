@@ -317,7 +317,7 @@ module.exports = defineConfig([
     files: ['ddocs/**/*.js'],
 
     languageOptions: {
-      ecmaVersion: 5,
+      ecmaVersion: 6,
       sourceType: 'script',
       parser: {
         meta: {
