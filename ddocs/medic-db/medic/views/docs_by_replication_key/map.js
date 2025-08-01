@@ -53,7 +53,7 @@ function (doc) {
       }
       emit(value.subject, value);
       if (doc.fields &&
-          (doc.fields.needs_signoff && 
+          doc.fields.needs_signoff && // support 
           doc.contact
       ) {
         value.needs_signoff = true;
