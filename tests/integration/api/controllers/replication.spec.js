@@ -856,7 +856,7 @@ describe('replication', () => {
           _id: 'clinic_report_2',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'clinic_patient', needs_signoff: 'something' },
+          fields: { patient_id: 'clinic_patient', needs_signoff: 'true' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
@@ -932,7 +932,7 @@ describe('replication', () => {
           _id: 'clinic_report_2',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'clinic_patient', needs_signoff: 'something' },
+          fields: { patient_id: 'clinic_patient', needs_signoff: 'true' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',

@@ -1308,7 +1308,7 @@ describe('bulk-docs handler', () => {
       });
   });
 
-  describe('editing primary conacts', () => {
+  describe('editing primary contacts', () => {
     const existingDocs = [
       {
         _id: 'existing_clinic', // depth 1
