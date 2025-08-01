@@ -5,21 +5,27 @@ const config = require('../../../src/config');
 const dataContext = require('../../../src/services/data-context');
 const { people, places } = require('@medic/contacts')(config, db, dataContext);
 const migration = require('../../../src/migrations/extract-person-contacts');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
 
 let createPerson;
-let getDoc;
-let getView;
 let insertDoc;
 let updatePlace;
+let dataContextBind;
+let contactGet;
+let contactGetUuids;
 
 describe('extract-person-contacts migration', () => {
 
   beforeEach(() => {
-    getView = sinon.stub(db.medic, 'query');
-    getDoc = sinon.stub(db.medic, 'get');
     insertDoc = sinon.stub(db.medic, 'put');
     updatePlace = sinon.stub(places, 'updatePlace');
     createPerson = sinon.stub(people, 'createPerson');
+    
+    contactGet = sinon.stub();
+    contactGetUuids = sinon.stub();
+    dataContextBind = sinon.stub(dataContext, 'bind');
+    dataContextBind.withArgs(Contact.v1.get).returns(contactGet);
+    dataContextBind.withArgs(Contact.v1.getUuids).returns(contactGetUuids);
   });
 
   afterEach(() => {
@@ -27,12 +33,21 @@ describe('extract-person-contacts migration', () => {
   });
 
   it('run does nothing if no facilities', () => {
-    getView.callsArgWith(2, null, { rows: [] });
-    getDoc.callsArgWith(1, null, {  });
+    const emptyGenerator = async function* () {
+      // Empty generator - no facilities to process
+    };
+    
+    contactGetUuids.returns(emptyGenerator());
+    
     return migration.run().then(() => {
-      // Called once per place type.
-      chai.expect(getView.callCount).to.equal(3);
-      chai.expect(getDoc.callCount).to.equal(0);
+      chai.expect(contactGetUuids.callCount).to.equal(3);
+      
+      chai.expect(contactGetUuids.getCall(0).args[0]).to.deep.equal(Qualifier.byContactType('district_hospital'));
+      chai.expect(contactGetUuids.getCall(1).args[0]).to.deep.equal(Qualifier.byContactType('health_center'));
+      chai.expect(contactGetUuids.getCall(2).args[0]).to.deep.equal(Qualifier.byContactType('clinic'));
+      
+      // No docs should be retrieved since no facilities exist
+      chai.expect(contactGet.callCount).to.equal(0);
       // No edits happened.
       chai.expect(insertDoc.callCount).to.equal(0);
       chai.expect(updatePlace.callCount).to.equal(0);
@@ -40,46 +55,67 @@ describe('extract-person-contacts migration', () => {
     });
   });
 
-  it('run attempts to revert the contact on error', done => {
-    // Migrate one type: Get the 3 levels of hierarchy
-    getView.onCall(0).callsArgWith(2, null, { rows: [ { id: 'a' }] });
-    getView.onCall(1).callsArgWith(2, null, { rows: [ ] });
-    getView.onCall(2).callsArgWith(2, null, { rows: [ ] });
+  it('run attempts to revert the contact on error', () => {
+    const facilityGenerator = async function* () {
+      yield 'a';
+    };
+    
+    const emptyGenerator = async function* () {
+    };
+    
+    // Only district_hospital has facilities, others are empty
+    contactGetUuids.onCall(0).returns(facilityGenerator());
+    contactGetUuids.onCall(1).returns(emptyGenerator());
+    contactGetUuids.onCall(2).returns(emptyGenerator());
 
-    // updateParents: Get doc for parent update
-    getDoc.onCall(0).callsArgWith(1, null, {
+    // Mock facility document for updateParents step
+    contactGet.onCall(0).resolves({
       _id: 'a',
       contact: { name: 'name', phone: 'phone'},
-      parent: {_id: 'b', contact: { name: 'name1', 'phone': 'phone1' }}
+      parent: {_id: 'b', contact: { name: 'name1', phone: 'phone1' }}
     });
-    // removeParent : insert place with deleted parent
-    insertDoc.onCall(0).callsArg(1);
+    
+    // removeParent: insert place with deleted parent
+    insertDoc.onCall(0).callsArgWith(1, null);
+    
     // resetParent: get parent to reset
-    getDoc.onCall(1).callsArgWith(1, null, { _id: 'b', contact: {}, newKey: 'newValue' });
-    // resetParent: update the place
+    contactGet.onCall(1).resolves({ 
+      _id: 'b', 
+      contact: {_id: 'existing-contact'}, 
+      newKey: 'newValue' 
+    });
+    
+    // resetParent: update the place - success
     updatePlace.onCall(0).resolves();
 
-    // Get doc for contact update
-    getDoc.onCall(2).callsArgWith(1, null, {
+    // Mock facility document for createPerson step (after parent update)
+    contactGet.onCall(2).resolves({
       _id: 'a',
-      contact: { name: 'name', phone: 'phone'},
-      parent: { _id: 'b', contact: {_id: 'f'}}
+      contact: { name: 'name', phone: 'phone'}
     });
-    // Update doc : deleted contact
-    insertDoc.onCall(1).callsArg(1);
-    // Create person doc
+    
+    // removeContact: delete contact from facility
+    insertDoc.onCall(1).callsArgWith(1, null);
+    
+    // createPerson: create person doc - success
     createPerson.onCall(0).resolves({ id: 'c'});
-    // Update doc : reset the contact field
+    
+    // resetContact: update doc with new contact - FAIL
     updatePlace.onCall(1).returns(Promise.reject('error'));
-    // Restore the parent
+    
+    // restoreContact: restore the original contact - success
     updatePlace.onCall(2).resolves();
 
-    migration.run().catch(err => {
+    return migration.run().then(() => {
+      throw new Error('Migration should have failed');
+    }).catch(err => {
       chai.expect(err.message).to.equal('Failed to update contact on facility a: "error"');
+      
+      // Verify restore contact was called
+      chai.expect(updatePlace.callCount).to.equal(3);
       chai.expect(updatePlace.thirdCall.args[0]).to.equal('a');
       chai.expect(updatePlace.thirdCall.args[1].contact.name).to.equal('name');
       chai.expect(updatePlace.thirdCall.args[1].contact.phone).to.equal('phone');
-      done();
     });
   });
 });
