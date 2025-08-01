@@ -10,12 +10,12 @@ function (doc) {
       doc.type === 'translations') {
     return emit('_all', {});
   }
-  var parseNeedsSignoff = function (needsSignoff) {
-    if (typeof needsSignoff === 'boolean') {
-      return needsSignoff;
+  var parseBoolean = function (input) {
+    if (typeof input === 'boolean') {
+      return input;
     }
     if (typeof needsSignoff === 'string') {
-      return needsSignoff === 'true';
+      return input.toLowerCase() === 'true';
     }
     return false;
   };
@@ -62,7 +62,7 @@ function (doc) {
       }
       emit(value.subject, value);
       if (doc.fields &&
-          parseNeedsSignoff(doc.fields.needs_signoff) &&
+          parseBoolean(doc.fields.needs_signoff) &&
           doc.contact
       ) {
         value.needs_signoff = true;
