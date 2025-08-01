@@ -517,7 +517,7 @@ describe('all_docs handler', () => {
           form: 'form',
           fields: {
             patient_id: 'the_person',
-            needs_signoff: true,
+            needs_signoff: 'true',
           },
           contact: { _id: 'fixture:user:offline', parent: { _id: 'fixture:offline' } },
         },
@@ -538,7 +538,7 @@ describe('all_docs handler', () => {
           form: 'form',
           fields: {
             patient_id: 'the_patient',
-            needs_signoff: true,
+            needs_signoff: 'true',
           },
           contact: { _id: 'fixture:user:offline', parent: { _id: 'fixture:offline' } },
         },

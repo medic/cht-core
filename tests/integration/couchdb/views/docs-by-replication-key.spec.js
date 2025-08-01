@@ -125,7 +125,7 @@ describe('docs_by_replication_key', () => {
       _id: 'needs_signoff_within_branch',
       type: 'data_record',
       contact: { _id: 'user1', parent: { _id: 'parent1', parent: { _id: 'testuserplace' } } },
-      fields: { patient_id: 'somepatient', needs_signoff: true },
+      fields: { patient_id: 'somepatient', needs_signoff: 'true' },
     },
     {
       _id: 'report_with_patient_uuid',
@@ -210,13 +210,13 @@ describe('docs_by_replication_key', () => {
       _id: 'needs_signoff_outside_branch',
       type: 'data_record',
       contact: { _id: 'user2', parent: { _id: 'parent2', parent: { _id: 'not_testuserplace', parent: {}}}},
-      fields: { patient_id: 'somepatient', needs_signoff: true },
+      fields: { patient_id: 'somepatient', needs_signoff: 'true' },
     },
     {
       _id: 'needs_signoff_within_branch_falsy',
       type: 'data_record',
       contact: { _id: 'user1', parent: { _id: 'parent1', parent: { _id: 'testuserplace' }}},
-      fields: { patient_id: 'somepatient', needs_signoff: false },
+      fields: { patient_id: 'somepatient', needs_signoff: 'false' },
     },
     {
       _id: 'report_with_patient_uuid_other_patient',

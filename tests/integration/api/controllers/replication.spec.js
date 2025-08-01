@@ -782,7 +782,7 @@ describe('replication', () => {
         return utils.saveDocs([patient, healthCenterPatient]);
       });
 
-      it('should do nothing when not truthy or not present', async () => {
+      it(`should do nothing when not true/'true' or not present`, async () => {
         const clinicReport = {
           _id: 'clinic_report',
           type: 'data_record',
@@ -801,6 +801,19 @@ describe('replication', () => {
           type: 'data_record',
           reported_date: 1,
           fields: { patient_id: 'clinic_patient', needs_signoff: false },
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:chw',
+            parent: {
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
+            }
+          }
+        };
+        const clinicReport3 = {
+          _id: 'clinic_report_3',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'clinic_patient', needs_signoff: 'false' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
@@ -836,15 +849,22 @@ describe('replication', () => {
           { replication_depth: [{ role: 'district_admin', depth: 1 }] },
           { ignoreReload: true }
         );
-        await utils.saveDocs([clinicReport, clinicReport2, healthCenterReport, bobReport]);
+        await utils.saveDocs([clinicReport, clinicReport2, clinicReport3, healthCenterReport, bobReport]);
 
-        assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');
+        assertDocIds(
+          await requestDocs('chw'), 
+          ...chwIds, 
+          'clinic_patient', 
+          'clinic_report', 
+          'clinic_report_3', 
+          'clinic_report_2'
+        );
         assertDocIds(await requestDocs('chw-boss'), ...chwBossIds, 'health_center_patient', 'health_center_report');
         assertDocIds(await requestDocs('supervisor'), ...supervisorIds);
         assertDocIds(await requestDocs('bob'), ...bobsIds, 'bob_report');
       });
 
-      it('should replicate to all ancestors when present and truthy', async () => {
+      it(`should replicate to all ancestors when present and true/'true'`, async () => {
         const clinicReport = {
           _id: 'clinic_report',
           type: 'data_record',
@@ -951,7 +971,7 @@ describe('replication', () => {
           _id: 'health_center_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'health_center_patient', needs_signoff: true },
+          fields: { patient_id: 'health_center_patient', needs_signoff: 'true' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
