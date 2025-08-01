@@ -53,7 +53,7 @@ function (doc) {
       }
       emit(value.subject, value);
       if (doc.fields &&
-          doc.fields.needs_signoff && // support 
+          (doc.fields.needs_signoff === true || doc.fields.needs_signoff === 'true') &&
           doc.contact
       ) {
         value.needs_signoff = true;
