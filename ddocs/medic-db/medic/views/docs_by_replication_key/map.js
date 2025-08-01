@@ -10,15 +10,6 @@ function (doc) {
       doc.type === 'translations') {
     return emit('_all', {});
   }
-  var parseBoolean = function (input) {
-    if (typeof input === 'boolean') {
-      return input;
-    }
-    if (typeof needsSignoff === 'string') {
-      return input.toLowerCase() === 'true';
-    }
-    return false;
-  };
   var getSubject = function() {
     if (doc.form) {
       // report
@@ -62,7 +53,7 @@ function (doc) {
       }
       emit(value.subject, value);
       if (doc.fields &&
-          parseBoolean(doc.fields.needs_signoff) &&
+          (doc.fields.needs_signoff === true || doc.fields.needs_signoff === 'true') &&
           doc.contact
       ) {
         value.needs_signoff = true;
