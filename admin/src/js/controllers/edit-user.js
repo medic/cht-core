@@ -177,22 +177,27 @@ angular
       .then(model => {
         $scope.editUserModel = model;
         validateSkipPasswordPermission();
+        populateFacilitynContact();
       })
       .catch(err => {
         $log.error('Error determining user model', err);
       });
 
-    $uibModalInstance.rendered
-      .then(() => ContactTypes.getAll())
-      .then(contactTypes => {
-        // only the #edit-user-profile modal has these fields
-        const personTypes = contactTypes.filter(type => type.person).map(type => type.id);
-        Select2Search($('#edit-user-profile [name=contactSelect]'), personTypes);
-        const placeTypes = contactTypes.filter(type => !type.person).map(type => type.id);
-        return usersPlaces($scope.editUserModel.facilitySelect).then(facilityIds => {
-          Select2Search($('#edit-user-profile [name=facilitySelect]'), placeTypes, { initialValue: facilityIds });
+    const populateFacilitynContact = () => {
+      $uibModalInstance.rendered
+        .then(() => ContactTypes.getAll())
+        .then(contactTypes => {
+          // only the #edit-user-profile modal has these fields
+          const personTypes = contactTypes.filter(type => type.person).map(type => type.id);
+
+          const placeTypes = contactTypes.filter(type => !type.person).map(type => type.id);
+
+          return usersPlaces($scope.editUserModel.facilitySelect).then(facilityIds => {
+            Select2Search($('#edit-user-profile [name=contactSelect]'), personTypes);
+            Select2Search($('#edit-user-profile [name=facilitySelect]'), placeTypes, { initialValue: facilityIds });
+          });
         });
-      });
+    };
 
     const validateRequired = (fieldName, fieldDisplayName) => {
       if (!$scope.editUserModel[fieldName]) {
