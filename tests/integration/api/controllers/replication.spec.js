@@ -1034,7 +1034,7 @@ describe('replication', () => {
           place_id: 'fixture:chwville',
           contact: { _id: 'fixture:user:chw' },
           form: 'form',
-          fields: { private: true },
+          fields: { private: 'true' },
         },
         {
           // private report about place submitted by logged in user
@@ -1051,7 +1051,7 @@ describe('replication', () => {
           patient_id: 'shortcode:user:chw',
           contact: { _id: 'fixture:user:chw' },
           form: 'form',
-          fields: { private: true },
+          fields: { private: 'true' },
         },
         {
           // private report about self submitted by logged in user
@@ -1084,7 +1084,7 @@ describe('replication', () => {
           place_id: 'fixture:chwville',
           contact: { _id: 'someone_else' },
           form: 'form',
-          fields: { private: true },
+          fields: { private: 'true' },
         },
         {
           // private report about place submitted by someone else
@@ -1143,7 +1143,7 @@ describe('replication', () => {
           place_id: 'fixture:clareville',
           contact: { _id: 'fixture:user:clare' },
           form: 'form',
-          fields: { private: true },
+          fields: { private: 'true' },
         },
         {
           // private report about place submitted by logged in user
@@ -1160,7 +1160,7 @@ describe('replication', () => {
           patient_id: 'shortcode:clare',
           contact: { _id: 'fixture:user:clare' },
           form: 'form',
-          fields: { private: true },
+          fields: { private: 'true' },
         },
         {
           // private report about self submitted by logged in user

@@ -48,12 +48,12 @@ function (doc) {
       if (doc.form && doc.contact) {
         value.submitter = doc.contact._id;
       }
-      if (doc.fields && doc.fields.private) {
+      if (doc.fields && (doc.fields.private === 'true' || doc.fields.private === true)) {
         value.private = true;
       }
       emit(value.subject, value);
       if (doc.fields &&
-          (doc.fields.needs_signoff === true || doc.fields.needs_signoff === 'true') &&
+          (doc.fields.needs_signoff === 'true' || doc.fields.needs_signoff === true) &&
           doc.contact
       ) {
         value.needs_signoff = true;
