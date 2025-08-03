@@ -33,7 +33,7 @@ module.exports = {
     }
 
     return bulkGet
-      .filterOfflineRequest(req.userCtx, req.query, req.body.docs)
+      .filterOfflineRequest(req.userCtx, req.parsedQuery, req.body.docs)
       .then(results => res.json(results))
       .catch(err => serverUtils.serverError(err, req, res));
   }

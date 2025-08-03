@@ -1,3 +1,4 @@
+import type PouchDB from 'pouchdb';
 export default function (p: typeof Promise, db: PouchDB.Database): {
   fetchHydratedDoc: (
     uuid: string,
