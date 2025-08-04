@@ -130,23 +130,24 @@ export namespace v1 {
   /** @internal*/
   export const update = ({
     medicDb, settings
-  }:LocalDataContext) => {
+  }: LocalDataContext) => {
     const updateReport = updateDoc(medicDb);
     const getReport = get({medicDb, settings} as LocalDataContext);
-    return async(reportInput: Record<string, unknown>):Promise<Report.v1.Report> => {
-      if (!isDoc(reportInput)){
+    
+    return async (reportInput: Record<string, unknown>): Promise<Report.v1.Report> => {
+      if (!isDoc(reportInput)) {
         throw new InvalidArgumentError(`Document for update is not a valid Doc ${JSON.stringify(reportInput)}`);
       }
       const originalReportDoc = await getReport({uuid: reportInput._id});
-      if (originalReportDoc===null){
+      if (originalReportDoc === null) {
         throw new InvalidArgumentError(`Report not found`);
       }
       if (reportInput._rev !== originalReportDoc._rev) {
         throw new InvalidArgumentError('`_rev` does not match');
       }
       validateReportUpdatePayload(originalReportDoc, reportInput);
+      
       return await updateReport(reportInput) as Report.v1.Report;
     };
   };
-
 }
