@@ -182,6 +182,7 @@
     "util": "^0.12.5",
     "wdio-chromedriver-service": "^8.1.1",
     "webpack-bundle-analyzer": "^4.9.1",
+    "xhr-mock": "^2.5.1",
     "xml-js": "^1.6.11"
   },
   "dependencies": {
