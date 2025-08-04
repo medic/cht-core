@@ -3,7 +3,6 @@ const chai = require('chai');
 const db = require('../../../src/db');
 const migration = require('../../../src/migrations/remove-user-language');
 
-const docByType = 'medic-client/doc_by_type';
 let userAllDocs;
 let bulkDocs;
 let expectedOptions;
@@ -17,7 +16,7 @@ describe('remove-user-language migration', () => {
       limit: 100,
       skip: 0,
       startkey: 'org.couchdb.user:',
-      endkey: 'org.couchdb.user:\ufff0'
+      endkey: 'org.couchdb.user:\uffff'
     };
   });
 
@@ -68,16 +67,16 @@ describe('remove-user-language migration', () => {
 
     userAllDocs.onFirstCall().resolves({ rows: [ userLang0, userNoLang0, userLang1, userNoLang1 ] });
     userAllDocs.onSecondCall().resolves({ rows: [ userLang3 ] });
-    userAllDocs.onThirdCall().resolves({ });
+    userAllDocs.onThirdCall().resolves({ rows: [] });
     bulkDocs.resolves();
 
     return migration.run().then(() => {
       chai.expect(userAllDocs.callCount).to.equal(3);
-      chai.expect(userAllDocs.args[0]).to.deep.equal([docByType, expectedOptions]);
+      chai.expect(userAllDocs.args[0]).to.deep.equal([expectedOptions]);
       expectedOptions.skip = 100;
-      chai.expect(userAllDocs.args[1]).to.deep.equal([docByType, expectedOptions]);
+      chai.expect(userAllDocs.args[1]).to.deep.equal([expectedOptions]);
       expectedOptions.skip = 200;
-      chai.expect(userAllDocs.args[2]).to.deep.equal([docByType, expectedOptions]);
+      chai.expect(userAllDocs.args[2]).to.deep.equal([expectedOptions]);
       chai.expect(bulkDocs.callCount).to.equal(2);
       chai.expect(bulkDocs.args[0])
         .to.deep.equal([[ { _id: 'org.couchdb.user:lang0' }, { _id: 'org.couchdb.user:lang1' } ]]);
@@ -102,9 +101,9 @@ describe('remove-user-language migration', () => {
 
     return migration.run().then(() => {
       chai.expect(userAllDocs.callCount).to.equal(2);
-      chai.expect(userAllDocs.args[0]).to.deep.equal([ docByType, expectedOptions ]);
+      chai.expect(userAllDocs.args[0]).to.deep.equal([ expectedOptions ]);
       expectedOptions.skip = 100;
-      chai.expect(userAllDocs.args[1]).to.deep.equal([ docByType, expectedOptions ]);
+      chai.expect(userAllDocs.args[1]).to.deep.equal([ expectedOptions ]);
       chai.expect(bulkDocs.callCount).to.equal(0);
     });
   });
@@ -118,7 +117,7 @@ describe('remove-user-language migration', () => {
       .then(() => chai.assert.fail('should have thrown'))
       .catch((error) => {
         chai.expect(userAllDocs.callCount).to.equal(1);
-        chai.expect(userAllDocs.args[0]).to.deep.equal([ docByType, expectedOptions ]);
+        chai.expect(userAllDocs.args[0]).to.deep.equal([ expectedOptions ]);
         chai.expect(error.name).to.equal(message);
       });
   });
@@ -140,7 +139,7 @@ describe('remove-user-language migration', () => {
       .then(() => chai.assert.fail('should have thrown'))
       .catch((error) => {
         chai.expect(userAllDocs.callCount).to.equal(1);
-        chai.expect(userAllDocs.args[0]).to.deep.equal([ docByType, expectedOptions ]);
+        chai.expect(userAllDocs.args[0]).to.deep.equal([ expectedOptions ]);
         chai.expect(bulkDocs.callCount).to.equal(1);
         chai.expect(bulkDocs.args[0]).to.deep.equal([[ { _id: 'org.couchdb.user:0' } ]]);
         chai.expect(error).to.equal(message);
