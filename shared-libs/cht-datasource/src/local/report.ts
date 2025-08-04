@@ -12,8 +12,13 @@ import { hasField, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import { Doc, isDoc } from '../libs/doc';
 import logger from '@medic/logger';
-import { addParentToInput, ensureHasRequiredFields,
-  ensureImmutability, normalizeFreetext, validateCursor } from './libs/core';
+import {
+  addParentToInput,
+  ensureHasRequiredFields,
+  ensureImmutability,
+  normalizeFreetext,
+  validateCursor
+} from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 import { InvalidArgumentError } from '../libs/error';
 import { ReportInput } from '../input';
