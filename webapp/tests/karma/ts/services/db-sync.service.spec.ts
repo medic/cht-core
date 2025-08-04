@@ -49,6 +49,8 @@ describe('DBSync service', () => {
 
   let clock;
 
+  const SYNC_INTERVAL = 30 * 60 * 1000;
+
   const realSetTimeout = setTimeout;
   const nextTick = () => new Promise<void>(resolve => realSetTimeout(resolve));
 
@@ -253,7 +255,7 @@ describe('DBSync service', () => {
       await service.sync();
       expectSyncCall(1);
       expect(migrationService.runMigrations.callCount).to.equal(1);
-      clock.tick(5 * 60 * 1000 + 1);
+      clock.tick(SYNC_INTERVAL + 1);
       await nextTick();
       expectSyncCall(2);
     });
@@ -358,7 +360,7 @@ describe('DBSync service', () => {
       expectSyncCall(1);
       // go offline, don't attempt to sync
       service.setOnlineStatus(false);
-      clock.tick(25 * 60 * 1000 + 1);
+      clock.tick(4 * SYNC_INTERVAL + 1);
       await nextTick();
       expectSyncCall(1);
 
@@ -377,7 +379,7 @@ describe('DBSync service', () => {
       expectSyncCall(2);
 
       // eventually, sync on the timer
-      clock.tick(5 * 60 * 1000 + 1);
+      clock.tick(SYNC_INTERVAL + 1);
       await nextTick();
 
       expectSyncCall(3);

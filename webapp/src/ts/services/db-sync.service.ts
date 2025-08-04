@@ -20,7 +20,7 @@ const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-c
 const DDOC_PREFIX = ['_design/'];
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
-const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
+// const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 const BATCH_SIZE = 100;
 const MAX_SUCCESSIVE_SYNCS = 2;
@@ -306,7 +306,7 @@ export class DBSyncService {
     this.intervalPromises.sync = setInterval(() => {
       this.syncIsRecent = false;
       this.sync();
-    }, SYNC_INTERVAL);
+    }, META_SYNC_INTERVAL);
   }
 
   private displayUserFeedback(syncState: SyncState) {
