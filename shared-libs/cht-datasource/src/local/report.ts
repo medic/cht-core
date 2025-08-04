@@ -4,14 +4,21 @@ import {
   fetchAndFilterUuids,
   getDocById,
   queryDocUuidsByKey,
-  queryDocUuidsByRange
+  queryDocUuidsByRange,
+  updateDoc
 } from './libs/doc';
 import { FreetextQualifier, UuidQualifier, isKeyedFreetextQualifier } from '../qualifier';
 import { hasField, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
-import { Doc } from '../libs/doc';
+import { Doc, isDoc } from '../libs/doc';
 import logger from '@medic/logger';
-import { addParentToInput, normalizeFreetext, validateCursor } from './libs/core';
+import {
+  addParentToInput,
+  ensureHasRequiredFields,
+  ensureImmutability,
+  normalizeFreetext,
+  validateCursor
+} from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 import { InvalidArgumentError } from '../libs/error';
 import { ReportInput } from '../input';
@@ -106,4 +113,41 @@ export namespace v1 {
     };
   };
 
+  
+  const validateReportUpdatePayload = (
+    originalDoc:Doc,
+    reportInput: Record<string, unknown>
+  ) => {
+    const immutableRequiredFields = new Set(['_rev', '_id', 'reported_date', 'contact', 'type']);
+    const mutableRequiredFields = new Set(['form']);
+    ensureHasRequiredFields(immutableRequiredFields, mutableRequiredFields, originalDoc, reportInput);
+    ensureImmutability(immutableRequiredFields, originalDoc, reportInput);
+    // Now it is safe to assign reportInput.contact to the original doc's
+    // dehydrated contact lineage as the hierarchy is verified.
+    reportInput.contact = originalDoc.contact;
+  };
+
+  /** @internal*/
+  export const update = ({
+    medicDb, settings
+  }: LocalDataContext) => {
+    const updateReport = updateDoc(medicDb);
+    const getReport = get({medicDb, settings} as LocalDataContext);
+    
+    return async (reportInput: Record<string, unknown>): Promise<Report.v1.Report> => {
+      if (!isDoc(reportInput)) {
+        throw new InvalidArgumentError(`Document for update is not a valid Doc ${JSON.stringify(reportInput)}`);
+      }
+      const originalReportDoc = await getReport({uuid: reportInput._id});
+      if (originalReportDoc === null) {
+        throw new InvalidArgumentError(`Report not found`);
+      }
+      if (reportInput._rev !== originalReportDoc._rev) {
+        throw new InvalidArgumentError('`_rev` does not match');
+      }
+      validateReportUpdatePayload(originalReportDoc, reportInput);
+      
+      return await updateReport(reportInput) as Report.v1.Report;
+    };
+  };
 }
