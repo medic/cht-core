@@ -81,7 +81,7 @@ describe('provider-wireup integration tests', () => {
   let provider;
   let db;
   beforeEach(async () => {
-    clock = sinon.useFakeTimers({now: NOW});
+    clock = sinon.useFakeTimers({ now: NOW, toFake: ['setTimeout', 'Date'] });
     wireup = rewire('../src/provider-wireup');
     rulesStateStore = RestorableRulesStateStore();
     sinon.stub(rulesStateStore, 'currentUserContact').returns(currentUserContact);
@@ -90,6 +90,7 @@ describe('provider-wireup integration tests', () => {
 
     db = await memdownMedic('../..');
     await db.bulkDocs(fixtures);
+    await db.allDocs({ include_docs: true });
 
     sinon.spy(db, 'put');
     sinon.spy(db, 'query');
