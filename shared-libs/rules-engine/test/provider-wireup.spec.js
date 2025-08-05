@@ -90,7 +90,6 @@ describe('provider-wireup integration tests', () => {
 
     db = await memdownMedic('../..');
     await db.bulkDocs(fixtures);
-    await db.allDocs({ include_docs: true });
 
     sinon.spy(db, 'put');
     sinon.spy(db, 'query');
