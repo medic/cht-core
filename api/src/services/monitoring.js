@@ -27,6 +27,18 @@ const VIEW_INDEXES_TO_MONITOR = {
   users: ['users'],
 };
 
+const NOUVEAU_INDEXES_TO_MONITOR = {
+  medic: {
+    'medic': [
+      'contacts_by_freetext',
+      'reports_by_freetext',
+    ],
+  },
+  sentinel: {},
+  usersmeta: {},
+  users: {},
+};
+
 const MESSAGE_QUEUE_STATUS_KEYS = ['due', 'scheduled', 'muted', 'failed', 'delivered'];
 const fromEntries = (keys, value) => {
   // "shim" of Object.fromEntries
@@ -115,7 +127,7 @@ const getFragmentation = ({ sizes }, viewIndexInfos) => {
   return totalFile / totalActive;
 };
 
-const mapDbInfo = (dbInfo, viewIndexInfos) => {
+const mapDbInfo = (dbInfo, viewIndexInfos, nouveauIndexInfos) => {
   return {
     name: dbInfo.db_name || '',
     update_sequence: getSequenceNumber(dbInfo.update_seq),
@@ -131,8 +143,13 @@ const mapDbInfo = (dbInfo, viewIndexInfos) => {
       sizes: {
         active: defaultNumber(viewIndexInfo.view_index?.sizes?.active),
         file: defaultNumber(viewIndexInfo.view_index?.sizes?.file),
-      }
-    }))
+      },
+    })),
+    nouveau_indexes: nouveauIndexInfos?.map(nouveauIndexInfo => ({
+      name: nouveauIndexInfo.name,
+      doc_count: defaultNumber(nouveauIndexInfo.search_index.num_docs),
+      file_size: defaultNumber(nouveauIndexInfo.search_index.disk_size),
+    })),
   };
 };
 
@@ -167,11 +184,38 @@ const fetchViewIndexInfosForDb = (db) => Promise.all(
 
 const fetchAllViewIndexInfos = () => Promise.all(Object.keys(VIEW_INDEXES_TO_MONITOR).map(fetchViewIndexInfosForDb));
 
+const fetchNouveauIndexInfo = (db, designDoc, indexName) => request
+  .get({
+    url: `${environment.serverUrl}/${db}/_design/${designDoc}/_nouveau_info/${indexName}`,
+    json: true
+  })
+  .then(data => ({ ...data, name: `${designDoc}/${indexName}` }))
+  .catch(err => {
+    logger.error('Error fetching nouveau index info: %o', err);
+    return null;
+  });
+
+const fetchNouveauIndexInfosForDdoc = (db, ddoc) => NOUVEAU_INDEXES_TO_MONITOR[db][ddoc].map(
+  indexName => fetchNouveauIndexInfo(DBS_TO_MONITOR[db], ddoc, indexName),
+);
+
+const fetchNouveauIndexInfosForDb = (db) => Promise.all(Object.keys(NOUVEAU_INDEXES_TO_MONITOR[db]).flatMap(
+  ddoc => fetchNouveauIndexInfosForDdoc(db, ddoc),
+)).then((nouveauIndexInfos) => nouveauIndexInfos.filter(info => info));
+
+const fetchAllNouveauIndexInfos = () => Promise.all(
+  Object.keys(NOUVEAU_INDEXES_TO_MONITOR).map(fetchNouveauIndexInfosForDb),
+);
+
 const getDbInfos = async () => {
-  const [dbInfos, viewIndexInfos] = await Promise.all([fetchDbsInfo(), fetchAllViewIndexInfos()]);
+  const [dbInfos, viewIndexInfos, nouveauIndexInfos] = await Promise.all([
+    fetchDbsInfo(),
+    fetchAllViewIndexInfos(),
+    fetchAllNouveauIndexInfos(),
+  ]);
   const result = {};
   Object.keys(DBS_TO_MONITOR).forEach((dbKey, i) => {
-    result[dbKey] = mapDbInfo(dbInfos[i], viewIndexInfos[i]);
+    result[dbKey] = mapDbInfo(dbInfos[i], viewIndexInfos[i], nouveauIndexInfos[i]);
   });
   return result;
 };

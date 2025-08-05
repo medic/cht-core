@@ -1,7 +1,6 @@
 const _ = require('lodash/core');
 const moment = require('moment');
 
-const END_OF_ALPHABET = '\ufff0';
 const MINIMUM_SEARCH_TERM_LENGTH = 3;
 
 const getKeysArray = (keys) => keys.map(key => [ key ]);
@@ -84,19 +83,14 @@ const placeRequest = (filters) => {
 
 const freetextRequestParams = (word) => {
   const params = {};
-  if (word.indexOf(':') !== -1) {
-    // use exact match
-    params.key = [ word ];
-    return params;
-  }
-  
+
   // use starts with
   if (word.length < MINIMUM_SEARCH_TERM_LENGTH) {
     return;
   }
-  
-  params.startkey = [ word ];
-  params.endkey = [ word + END_OF_ALPHABET ];
+
+  params.key = word;
+
   return params;
 };
 
@@ -110,7 +104,7 @@ const freetextRequest = (filters, view) => {
     .split(/\s+/);
   const requests = words.map((word) => {
     const params = freetextRequestParams(word);
-    return params && { view, params };
+    return params && { view, params, freetext: true };
   });
   return _.compact(requests);
 };
@@ -192,7 +186,8 @@ const makeCombinedParams = (freetextRequest, typeKey) => {
   const type = typeKey[0];
   const params = {};
   if (freetextRequest.params.key) {
-    params.key = [ type, freetextRequest.params.key[0] ];
+    params.key = freetextRequest.params.key;
+    params.type = type;
   } else {
     params.startkey = [ type, freetextRequest.params.startkey[0] ];
     params.endkey = [ type, freetextRequest.params.endkey[0] ];
@@ -202,8 +197,9 @@ const makeCombinedParams = (freetextRequest, typeKey) => {
 
 const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest) => {
   const result = {
-    view: 'medic-client/contacts_by_type_freetext',
-    union: typeRequests.params.keys.length > 1
+    view: 'contacts_by_type_freetext',
+    union: typeRequests.params.keys.length > 1,
+    freetext: true
   };
 
   if (result.union) {
@@ -248,7 +244,7 @@ const requestBuilders = {
       validityRequest(filters),
       verificationRequest(filters),
       placeRequest(filters),
-      freetextRequest(filters, 'medic-client/reports_by_freetext'),
+      freetextRequest(filters, 'reports_by_freetext'),
       subjectRequest(filters)
     ];
 
@@ -261,7 +257,7 @@ const requestBuilders = {
   contacts: (filters, extensions) => {
     const shouldSortByLastVisitedDate = module.exports.shouldSortByLastVisitedDate(extensions);
 
-    const freetextRequests = freetextRequest(filters, 'medic-client/contacts_by_freetext');
+    const freetextRequests = freetextRequest(filters, 'contacts_by_freetext');
     const contactsByParentRequest = getContactsByParentRequest(filters);
     const typeRequest = contactTypeRequest(filters, shouldSortByLastVisitedDate);
     const hasTypeRequest = typeRequest?.params.keys.length;

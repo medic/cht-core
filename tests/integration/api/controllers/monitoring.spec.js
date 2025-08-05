@@ -5,7 +5,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 
 const VIEW_INDEXES_BY_DB = {
-  ['medic-test']: [
+  'medic-test': [
     'medic',
     'medic-admin',
     'medic-client',
@@ -13,9 +13,13 @@ const VIEW_INDEXES_BY_DB = {
     'medic-scripts',
     'medic-sms',
   ],
-  ['medic-test-sentinel']: ['sentinel'],
-  ['medic-test-users-meta']: ['users-meta'],
+  'medic-test-sentinel': ['sentinel'],
+  'medic-test-users-meta': ['users-meta'],
   _users: ['users'],
+};
+
+const NOUVEAU_INDEXES_BY_DB = {
+  'medic-test': ['medic/contacts_by_freetext', 'medic/reports_by_freetext'],
 };
 
 const getAppVersion = async () => {
@@ -30,6 +34,11 @@ const getCouchDBVersion = async () => {
 
 const getInfo = (db) => utils.request({ path: `/${db}` });
 const getUpdateSeq = (info) => parseInt(info.update_seq.split('-')[0]);
+const getNouveauIndexInfo = (db, name) => {
+  const dbName = db.replace('-test', '');
+  const [ddocName, indexName] = name.split('/');
+  return utils.request({ path: `/${dbName}/_design/${ddocName}/_nouveau_info/${indexName}` });
+};
 
 const getExpectedViewIndexes = (db) => {
   return VIEW_INDEXES_BY_DB[db].map(viewIndex => ({
@@ -37,7 +46,20 @@ const getExpectedViewIndexes = (db) => {
   }));
 };
 
-const INDETERMINATE_FIELDS = ['current', 'uptime', 'date', 'fragmentation', 'node', 'sizes'];
+const getExpectedNouveauIndex = async (db, name) => {
+  const { search_index: { num_docs } } = await getNouveauIndexInfo(db, name);
+  return {
+    name,
+    doc_count: num_docs,
+  };
+};
+
+const getExpectedNouveauIndexes = (db) => {
+  const indexes = NOUVEAU_INDEXES_BY_DB[db] || [];
+  return Promise.all(indexes.map((name) => getExpectedNouveauIndex(db, name)));
+};
+
+const INDETERMINATE_FIELDS = ['current', 'uptime', 'date', 'fragmentation', 'node', 'sizes', 'file_size'];
 
 const assertCouchDbDataSizeFields = (couchData) => {
   chai.expect(couchData.fragmentation).to.be.gte(0);
@@ -50,6 +72,10 @@ const assertCouchDbDataSizeFields = (couchData) => {
     chai.expect(viewIndex.sizes.active).to.be.gte(0);
     chai.expect(viewIndex.sizes.file).to.be.gte(0);
   });
+
+  const expectedNouveauIndexNames = NOUVEAU_INDEXES_BY_DB[couchData.name] || [];
+  chai.expect(couchData.nouveau_indexes).to.have.lengthOf(expectedNouveauIndexNames.length);
+  couchData.nouveau_indexes.forEach(nouveauIndex => chai.expect(nouveauIndex.file_size).to.be.gte(0));
 };
 
 const assertIndeterminateFields = (result) => {
@@ -86,6 +112,7 @@ describe('monitoring', () => {
             doc_count: medicInfo.doc_count,
             doc_del_count: medicInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test'),
+            nouveau_indexes: await getExpectedNouveauIndexes('medic-test'),
           },
           sentinel: {
             name: 'medic-test-sentinel',
@@ -93,6 +120,7 @@ describe('monitoring', () => {
             doc_count: sentinelInfo.doc_count,
             doc_del_count: sentinelInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test-sentinel'),
+            nouveau_indexes: await getExpectedNouveauIndexes('medic-test-sentinel'),
           },
           usersmeta: {
             name: 'medic-test-users-meta',
@@ -100,6 +128,7 @@ describe('monitoring', () => {
             doc_count: usersMetaInfo.doc_count,
             doc_del_count: usersMetaInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test-users-meta'),
+            nouveau_indexes: await getExpectedNouveauIndexes('medic-test-users-meta'),
           },
           users: {
             name: '_users',
@@ -107,6 +136,7 @@ describe('monitoring', () => {
             doc_count: usersInfo.doc_count,
             doc_del_count: usersInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('_users'),
+            nouveau_indexes: await getExpectedNouveauIndexes('_users'),
           },
         },
         sentinel: {
@@ -164,6 +194,7 @@ describe('monitoring', () => {
             doc_count: medicInfo.doc_count,
             doc_del_count: medicInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test'),
+            nouveau_indexes: await getExpectedNouveauIndexes('medic-test'),
           },
           sentinel: {
             name: 'medic-test-sentinel',
@@ -171,6 +202,7 @@ describe('monitoring', () => {
             doc_count: sentinelInfo.doc_count,
             doc_del_count: sentinelInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test-sentinel'),
+            nouveau_indexes: await getExpectedNouveauIndexes('medic-test-sentinel'),
           },
           usersmeta: {
             name: 'medic-test-users-meta',
@@ -178,6 +210,7 @@ describe('monitoring', () => {
             doc_count: usersMetaInfo.doc_count,
             doc_del_count: usersMetaInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test-users-meta'),
+            nouveau_indexes: await getExpectedNouveauIndexes('medic-test-users-meta'),
           },
           users: {
             name: '_users',
@@ -185,6 +218,7 @@ describe('monitoring', () => {
             doc_count: usersInfo.doc_count,
             doc_del_count: usersInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('_users'),
+            nouveau_indexes: await getExpectedNouveauIndexes('_users'),
           },
         },
         sentinel: {

@@ -391,14 +391,14 @@ describe('Export Data V2.0', () => {
         body: {
           filters: {
             search: 'value',
-            types: { selected: ['chw', 'city', 'district_hospital'] }
+            types: { selected: ['person', 'city', 'district_hospital'] }
           }
         }
       });
       const rows = getRows(result);
       const expected = [
         'id,rev,name,patient_id,type,contact_type,place_id',
-        `"jen_id","${contacts[2]._rev}","jen","123","contact","chw",`,
+        `"john_id","${contacts[0]._rev}","john","12345","person",,`,
       ];
       expectRows(expected, rows);
     });

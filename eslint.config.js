@@ -330,6 +330,7 @@ module.exports = defineConfig([
       globals: {
         emit: true,
         log: true,
+        index: true,
       }
     },
 
@@ -496,6 +497,14 @@ module.exports = defineConfig([
     rules: {
       indent: 'off',
       'max-len': 'off',
+    },
+  },
+  {
+    files: ['webapp/src/js/bootstrapper/offline-ddocs/**/*.js'],
+    languageOptions: {
+      globals: {
+        emit: true,
+      },
     },
   },
   {

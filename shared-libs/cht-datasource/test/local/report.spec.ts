@@ -1,4 +1,4 @@
-import { LocalDataContext } from '../../src/local/libs/data-context';
+import * as LocalDataContext from '../../src/local/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
 import { Doc } from '../../src/libs/doc';
 import logger from '@medic/logger';
@@ -9,7 +9,7 @@ import { END_OF_ALPHABET_MARKER } from '../../src/libs/constants';
 import * as Lineage from '../../src/local/libs/lineage';
 
 describe('local report', () => {
-  let localContext: LocalDataContext;
+  let localContext: LocalDataContext.LocalDataContext;
   let settingsGetAll: SinonStub;
   let warn: SinonStub;
 
@@ -18,7 +18,7 @@ describe('local report', () => {
     localContext = {
       medicDb: {} as PouchDB.Database<Doc>,
       settings: {getAll: settingsGetAll}
-    } as unknown as LocalDataContext;
+    } as unknown as LocalDataContext.LocalDataContext;
     warn = sinon.stub(logger, 'warn');
   });
 
@@ -156,7 +156,10 @@ describe('local report', () => {
       let queryDocUuidsByRangeOuter: SinonStub;
       let fetchAndFilterUuidsInner: SinonStub;
       let fetchAndFilterUuidsOuter: SinonStub;
-
+      let isOffline: SinonStub;
+      let queryNouveauIndexUuidsInner: SinonStub;
+      let queryNouveauIndexUuidsOuter: SinonStub;
+      
       beforeEach(() => {
         queryDocUuidsByKeyInner = sinon.stub();
         queryDocUuidsByKeyOuter = sinon.stub(LocalDoc, 'queryDocUuidsByKey').returns(queryDocUuidsByKeyInner);
@@ -164,105 +167,219 @@ describe('local report', () => {
         queryDocUuidsByRangeOuter = sinon.stub(LocalDoc, 'queryDocUuidsByRange').returns(queryDocUuidsByRangeInner);
         fetchAndFilterUuidsInner = sinon.stub();
         fetchAndFilterUuidsOuter = sinon.stub(LocalDoc, 'fetchAndFilterUuids').returns(fetchAndFilterUuidsInner);
+        isOffline = sinon.stub(LocalDataContext, 'isOffline');
+        queryNouveauIndexUuidsInner = sinon.stub();
+        queryNouveauIndexUuidsOuter = sinon.stub(LocalDoc, 'queryNouveauIndexUuids')
+          .returns(queryNouveauIndexUuidsInner);
       });
 
-      it('returns a page of report identifiers for freetext only qualifier with : delimiter', async () => {
-        const freetext = 'has:delimiter';
-        const qualifier = {
-          freetext
-        };
-        const docs = [
-          { type: reportType, _id: '1', form: 'yes' },
-          { type: reportType, _id: '2', form: 'yes' },
-          { type: reportType, _id: '3', form: 'yes' }
-        ];
-        const getPaginatedDocsResult = {
-          cursor: '3',
-          data: docs.map(doc => doc._id)
-        };
-        const expectedResult = {
-          cursor: '3',
-          data: ['1', '2', '3']
-        };
-        fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
+      it(
+        'returns a page of report identifiers for freetext only qualifier with : delimiter for offline mode',
+        async () => {
+          const freetext = 'has:delimiter';
+          const qualifier = {
+            freetext
+          };
+          const docs = [
+            { type: reportType, _id: '1', form: 'yes' },
+            { type: reportType, _id: '2', form: 'yes' },
+            { type: reportType, _id: '3', form: 'yes' }
+          ];
+          const getPaginatedDocsResult = {
+            cursor: '3',
+            data: docs.map(doc => doc._id)
+          };
+          const expectedResult = {
+            cursor: '3',
+            data: ['1', '2', '3']
+          };
+          isOffline.resolves(true);
+          fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
 
-        const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
-        const fetchAndFilterUuidsOuterFirstArg =
+          const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
+          const fetchAndFilterUuidsOuterFirstArg =
           fetchAndFilterUuidsOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
 
-        expect(res).to.deep.equal(expectedResult);
-        expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
-        expect(
-          queryDocUuidsByKeyOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
-        expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
-        expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
-        expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
-        expect(
-          queryDocUuidsByRangeOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
-        expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
-        expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
-        expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
-        // call the argument to check which one of the inner functions was called
-        fetchAndFilterUuidsOuterFirstArg(limit, Number(cursor));
-        expect(queryDocUuidsByKeyInner.calledWithExactly([qualifier.freetext], limit, Number(cursor))).to.be.true;
-        expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
-      });
+          expect(res).to.deep.equal(expectedResult);
+          expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
+          expect(
+            queryDocUuidsByKeyOuter.getCall(0).args
+          ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+          expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+          expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+          expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
+          expect(
+            queryDocUuidsByRangeOuter.getCall(0).args
+          ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+          expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
+          expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
+          expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
+          expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+          // call the argument to check which one of the inner functions was called
+          fetchAndFilterUuidsOuterFirstArg(limit, Number(cursor));
+          expect(queryDocUuidsByKeyInner.calledWithExactly([qualifier.freetext], limit, Number(cursor))).to.be.true;
+          expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+          expect(queryNouveauIndexUuidsInner.notCalled).to.be.true;
+          expect(queryNouveauIndexUuidsOuter.notCalled).to.be.true;
+        }
+      );
+      
+      it(
+        'returns a page of report identifiers for freetext only qualifier with : delimiter for online mode',
+        async () => {
+          const freetext = 'has:delimiter';
+          const qualifier = {
+            freetext
+          };
+          const docs = [
+            { type: reportType, _id: '1', form: 'yes' },
+            { type: reportType, _id: '2', form: 'yes' },
+            { type: reportType, _id: '3', form: 'yes' }
+          ];
+          const getPaginatedDocsResult = {
+            cursor: '3',
+            data: docs.map(doc => doc._id)
+          };
+          const expectedResult = {
+            cursor: '3',
+            data: ['1', '2', '3']
+          };
+          isOffline.resolves(false);
+          queryNouveauIndexUuidsInner.resolves(getPaginatedDocsResult);
 
-      it('returns a page of report identifiers for freetext only qualifier without : delimiter', async () => {
-        const freetext = 'does not have colon delimiter';
-        const qualifier = {
-          freetext
-        };
-        const docs = [
-          { type: reportType, _id: '1', form: 'yes' },
-          { type: reportType, _id: '2', form: 'yes' },
-          { type: reportType, _id: '3', form: 'yes' }
-        ];
-        const getPaginatedDocsResult = {
-          cursor: '3',
-          data: docs.map(doc => doc._id)
-        };
-        const expectedResult = {
-          cursor: '3',
-          data: ['1', '2', '3']
-        };
-        fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
+          const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
 
-        const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
-        const fetchAndFilterOuterFirstArg =
+          expect(res).to.deep.equal(expectedResult);
+          expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
+          expect(
+            queryDocUuidsByKeyOuter.getCall(0).args
+          ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+          expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+          expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+          expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
+          expect(
+            queryDocUuidsByRangeOuter.getCall(0).args
+          ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+          expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
+          expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
+          expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+          expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'reports_by_freetext')).to.be.true;
+          expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
+            key: [qualifier.freetext],
+            limit,
+            cursor
+          })).to.be.true;
+        }
+      );
+
+      it(
+        'returns a page of report identifiers for freetext only qualifier without : delimiter for offline mode',
+        async () => {
+          const freetext = 'does not have colon delimiter';
+          const qualifier = {
+            freetext
+          };
+          const docs = [
+            { type: reportType, _id: '1', form: 'yes' },
+            { type: reportType, _id: '2', form: 'yes' },
+            { type: reportType, _id: '3', form: 'yes' }
+          ];
+          const getPaginatedDocsResult = {
+            cursor: '3',
+            data: docs.map(doc => doc._id)
+          };
+          const expectedResult = {
+            cursor: '3',
+            data: ['1', '2', '3']
+          };
+          isOffline.resolves(true);
+          fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
+
+          const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
+          const fetchAndFilterOuterFirstArg =
           fetchAndFilterUuidsOuter.firstCall.args[0] as (...args: unknown[]) => unknown;
 
-        expect(res).to.deep.equal(expectedResult);
-        expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
-        expect(
-          queryDocUuidsByKeyOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
-        expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
-        expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
-        expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
-        expect(
-          queryDocUuidsByRangeOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
-        expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
-        expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
-        expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
-        expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
-        // call the argument to check which one of the inner functions was called
-        fetchAndFilterOuterFirstArg(limit, Number(cursor));
-        expect(queryDocUuidsByRangeInner.calledWithExactly(
-          [qualifier.freetext],
-          [qualifier.freetext + END_OF_ALPHABET_MARKER],
-          limit,
-          Number(cursor)
-        )).to.be.true;
-        expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
-      });
+          expect(res).to.deep.equal(expectedResult);
+          expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
+          expect(
+            queryDocUuidsByKeyOuter.getCall(0).args
+          ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+          expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+          expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+          expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
+          expect(
+            queryDocUuidsByRangeOuter.getCall(0).args
+          ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+          expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
+          expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
+          expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
+          expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
+          // call the argument to check which one of the inner functions was called
+          fetchAndFilterOuterFirstArg(limit, Number(cursor));
+          expect(queryDocUuidsByRangeInner.calledWithExactly(
+            [qualifier.freetext],
+            [qualifier.freetext + END_OF_ALPHABET_MARKER],
+            limit,
+            Number(cursor)
+          )).to.be.true;
+          expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+          expect(queryNouveauIndexUuidsInner.notCalled).to.be.true;
+          expect(queryNouveauIndexUuidsOuter.notCalled).to.be.true;
+        }
+      );
+
+      it(
+        'returns a page of report identifiers for freetext only qualifier without : delimiter for online mode',
+        async () => {
+          const freetext = 'does not have colon delimiter';
+          const qualifier = {
+            freetext
+          };
+          const docs = [
+            { type: reportType, _id: '1', form: 'yes' },
+            { type: reportType, _id: '2', form: 'yes' },
+            { type: reportType, _id: '3', form: 'yes' }
+          ];
+          const getPaginatedDocsResult = {
+            cursor: '3',
+            data: docs.map(doc => doc._id)
+          };
+          const expectedResult = {
+            cursor: '3',
+            data: ['1', '2', '3']
+          };
+          isOffline.resolves(false);
+          queryNouveauIndexUuidsInner.resolves(getPaginatedDocsResult);
+
+          const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
+
+          expect(res).to.deep.equal(expectedResult);
+          expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
+          expect(
+            queryDocUuidsByKeyOuter.getCall(0).args
+          ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+          expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+          expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+          expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
+          expect(
+            queryDocUuidsByRangeOuter.getCall(0).args
+          ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+          expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
+          expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
+          expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+          expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+          expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'reports_by_freetext')).to.be.true;
+          expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
+            startKey: [qualifier.freetext],
+            limit,
+            cursor
+          })).to.be.true;
+        }
+      );
 
       it('returns a page of report identifiers for freetext only qualifier' +
-        'with : delimiter for not-null cursor', async () => {
+        'with : delimiter for not-null cursor for offline mode', async () => {
         const freetext = 'has:delimiter';
         const qualifier = {
           freetext
@@ -280,6 +397,7 @@ describe('local report', () => {
           cursor: '8',
           data: ['1', '2', '3']
         };
+        isOffline.resolves(true);
         fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
 
         const res = await Report.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
@@ -290,13 +408,13 @@ describe('local report', () => {
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
         expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
         expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
         expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
         expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
@@ -307,10 +425,59 @@ describe('local report', () => {
           queryDocUuidsByKeyInner.calledWithExactly([qualifier.freetext], limit, Number(notNullCursor))
         ).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+        expect(queryNouveauIndexUuidsInner.notCalled).to.be.true;
+        expect(queryNouveauIndexUuidsOuter.notCalled).to.be.true;
       });
 
       it('returns a page of report identifiers for freetext only qualifier' +
-        'without : delimiter for not-null cursor', async () => {
+        'with : delimiter for not-null cursor for online mode', async () => {
+        const freetext = 'has:delimiter';
+        const qualifier = {
+          freetext
+        };
+        const docs = [
+          { type: reportType, _id: '1', form: 'yes' },
+          { type: reportType, _id: '2', form: 'yes' },
+          { type: reportType, _id: '3', form: 'yes' }
+        ];
+        const getPaginatedDocsResult = {
+          cursor: '8',
+          data: docs.map(doc => doc._id)
+        };
+        const expectedResult = {
+          cursor: '8',
+          data: ['1', '2', '3']
+        };
+        isOffline.resolves(false);
+        queryNouveauIndexUuidsInner.resolves(getPaginatedDocsResult);
+
+        const res = await Report.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
+        expect(
+          queryDocUuidsByKeyOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+        expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+        expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+        expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
+        expect(
+          queryDocUuidsByRangeOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+        expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
+        expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
+        expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+        expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+        expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'reports_by_freetext')).to.be.true;
+        expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
+          key: [qualifier.freetext],
+          limit,
+          cursor: notNullCursor
+        })).to.be.true;
+      });
+
+      it('returns a page of report identifiers for freetext only qualifier' +
+        'without : delimiter for not-null cursor for offline mode', async () => {
         const freetext = 'does not have colon delimiter';
         const qualifier = {
           freetext
@@ -328,6 +495,7 @@ describe('local report', () => {
           cursor: '8',
           data: ['1', '2', '3']
         };
+        isOffline.resolves(true);
         fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
 
         const res = await Report.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
@@ -338,13 +506,13 @@ describe('local report', () => {
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
         expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
         expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
         expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
         expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
@@ -358,6 +526,55 @@ describe('local report', () => {
           Number(notNullCursor)
         )).to.be.true;
         expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+        expect(queryNouveauIndexUuidsInner.notCalled).to.be.true;
+        expect(queryNouveauIndexUuidsOuter.notCalled).to.be.true;
+      });
+
+      it('returns a page of report identifiers for freetext only qualifier' +
+        'without : delimiter for not-null cursor for online mode', async () => {
+        const freetext = 'does not have colon delimiter';
+        const qualifier = {
+          freetext
+        };
+        const docs = [
+          { type: reportType, _id: '1', form: 'yes' },
+          { type: reportType, _id: '2', form: 'yes' },
+          { type: reportType, _id: '3', form: 'yes' }
+        ];
+        const getPaginatedDocsResult = {
+          cursor: '8',
+          data: docs.map(doc => doc._id)
+        };
+        const expectedResult = {
+          cursor: '8',
+          data: ['1', '2', '3']
+        };
+        isOffline.resolves(false);
+        queryNouveauIndexUuidsInner.resolves(getPaginatedDocsResult);
+
+        const res = await Report.v1.getUuidsPage(localContext)(qualifier, notNullCursor, limit);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
+        expect(
+          queryDocUuidsByKeyOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+        expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+        expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+        expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
+        expect(
+          queryDocUuidsByRangeOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+        expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
+        expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
+        expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+        expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+        expect(queryNouveauIndexUuidsOuter.calledOnceWithExactly({}, 'reports_by_freetext')).to.be.true;
+        expect(queryNouveauIndexUuidsInner.calledOnceWithExactly({
+          startKey: [qualifier.freetext],
+          limit,
+          cursor: notNullCursor
+        })).to.be.true;
       });
 
       [
@@ -365,11 +582,12 @@ describe('local report', () => {
         '-1',
         undefined,
       ].forEach((invalidCursor ) => {
-        it(`throws an error if cursor is invalid: ${JSON.stringify(invalidCursor)}`, async () => {
+        it(`throws an error if cursor is invalid for offline mode: ${JSON.stringify(invalidCursor)}`, async () => {
           const freetext = 'nice report';
           const qualifier = {
             freetext,
           };
+          isOffline.resolves(true);
 
           await expect(Report.v1.getUuidsPage(localContext)(qualifier, invalidCursor as string, limit))
             .to.be.rejectedWith(
@@ -379,18 +597,20 @@ describe('local report', () => {
           expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
           expect(
             queryDocUuidsByKeyOuter.getCall(0).args
-          ).to.deep.equal([ localContext.medicDb, 'medic-client/reports_by_freetext' ]);
+          ).to.deep.equal([ localContext.medicDb, 'medic-offline-freetext/reports_by_freetext' ]);
           expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
           expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
           expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
           expect(
             queryDocUuidsByRangeOuter.getCall(0).args
-          ).to.deep.equal([ localContext.medicDb, 'medic-client/reports_by_freetext' ]);
+          ).to.deep.equal([ localContext.medicDb, 'medic-offline-freetext/reports_by_freetext' ]);
           expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
+          expect(queryNouveauIndexUuidsInner.notCalled).to.be.true;
+          expect(queryNouveauIndexUuidsOuter.notCalled).to.be.true;
         });
       });
 
-      it('returns empty array if reports do not exist', async () => {
+      it('returns empty array if reports do not exist for offline mode', async () => {
         const freetext = 'non-existent-report';
         const qualifier = {
           freetext
@@ -399,6 +619,7 @@ describe('local report', () => {
           data: [],
           cursor
         };
+        isOffline.resolves(true);
         fetchAndFilterUuidsInner.resolves(expectedResult);
 
         const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
@@ -409,13 +630,13 @@ describe('local report', () => {
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
         expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
         expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
         expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
         expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
@@ -428,6 +649,39 @@ describe('local report', () => {
           Number(cursor)
         )).to.be.true;
         expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+        expect(queryNouveauIndexUuidsOuter.notCalled).to.be.true;
+        expect(queryNouveauIndexUuidsInner.notCalled).to.be.true;
+      });
+
+      it('returns empty array if reports do not exist for online mode', async () => {
+        const freetext = 'non-existent-report';
+        const qualifier = {
+          freetext
+        };
+        const expectedResult = {
+          data: [],
+          cursor
+        };
+        isOffline.resolves(false);
+        queryNouveauIndexUuidsInner.resolves(expectedResult);
+
+        const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
+        expect(
+          queryDocUuidsByKeyOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+        expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+        expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+        expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
+        expect(
+          queryDocUuidsByRangeOuter.getCall(0).args
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
+        expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
+        expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
+        expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
+        expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
       });
 
       it('propagates error if any internally used function throws an error', async () => {
@@ -436,6 +690,7 @@ describe('local report', () => {
           freetext
         };
         const err = new Error('some error');
+        isOffline.resolves(true);
         fetchAndFilterUuidsInner.throws(err);
 
         await expect(Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit)).to.be.rejectedWith(`some error`);
@@ -445,13 +700,13 @@ describe('local report', () => {
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
         expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/reports_by_freetext']);
         expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
         expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
         expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;

@@ -441,4 +441,18 @@ describe('db', () => {
       });
     });
   });
+
+  describe('nouveau cleanup', () => {
+    it('should call nouveau cleanup', async () => {
+      db = rewire('../../src/db');
+      sinon.stub(request, 'post').resolves();
+      await db.nouveauCleanup();
+      expect(request.post.args).to.deep.equal([[
+        {
+          url: 'http://admin:pass@couch:5984/medic/_nouveau_cleanup',
+          json: true,
+        }
+      ]]);
+    });
+  });
 });
