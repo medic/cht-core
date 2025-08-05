@@ -1,6 +1,7 @@
 import {
   DataObject,
   getPagedGenerator,
+  isRecord,
   Nullable,
   Page
 } from './libs/core';
@@ -17,6 +18,7 @@ import {
   assertUuidQualifier
 } from './libs/parameter-validators';
 import { validateReportInput } from './input';
+import { InvalidArgumentError } from './libs/error';
 
 /** */
 export namespace v1 {
@@ -134,6 +136,32 @@ export namespace v1 {
     const curriedFn = async (input: unknown): Promise<Report> => {
       const reportInput = validateReportInput(input);
       return fn(reportInput);
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Returns a function to update a report from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a report.
+   * @throws Error if a data context is not provided
+   */
+  export const update = (context:DataContext):typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Report.v1.update, Remote.Report.v1.update);
+    /**
+     * Returns the updated Report Doc for the provided updateInput
+     * @param updateInput the Doc containing updated fields
+     * @returns updated report Doc
+     * @throws InvalidArgumentError if updateInput has changes in immutable fields
+     * @throws InvalidArgumentError if updateInput does not contain required fields
+     * @throws InvalidArgumentError if updateInput fields are not of expected type
+     */
+    const curriedFn = async (updateInput: unknown): Promise<Report> => {
+      if (!isRecord(updateInput)){
+        throw new InvalidArgumentError('Invalid report update input');
+      }
+      return fn(updateInput);
     };
     return curriedFn;
   };

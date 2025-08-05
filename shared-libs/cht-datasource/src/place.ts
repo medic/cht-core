@@ -154,7 +154,7 @@ export namespace v1 {
     /**
      * Returns the updated Place Doc for the provided updateInput
      * @param updateInput the Doc containing updated fields
-     * @returns updated person Doc
+     * @returns updated place Doc
      * @throws InvalidArgumentError if updateInput has changes in immutable fields
      * @throws InvalidArgumentError if updateInput does not contain required fields
      * @throws InvalidArgumentError if updateInput fields are not of expected type

@@ -325,7 +325,7 @@ describe('Report Controller Tests', () => {
       });
     });
 
-    describe('createReport', () => {
+    describe('create', () => {
       let createReport;
 
       beforeEach(() => {
@@ -384,6 +384,41 @@ describe('Report Controller Tests', () => {
         expect(createReport.calledOnce).to.be.true;
         expect(dataContextBind.calledOnce).to.be.true;
         expect(res.json.calledOnceWithExactly(report)).to.be.true;
+      });
+    });
+
+    describe('update', () => {
+      let updateReport;
+      beforeEach(() => {
+        updateReport = sinon.stub();
+        dataContextBind
+          .withArgs(Report.v1.update)
+          .returns(updateReport);
+      });
+      it('updates report for valid update input', async() => {
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true); 
+        const updateInput = {
+          type: 'report',
+          reported_date: 12312312, 
+          _id: '1',
+          _rev: '2',
+          contact: {
+            _id: '3'
+          },
+          form: 'abcd'
+        };
+        req = {
+          body: {
+            ...updateInput
+          }
+        };
+        updateReport.resolves(updateInput);
+        await controller.v1.update(req, res);  
+        expect(updateReport.calledOnce).to.be.true;
+        expect(serverUtilsError.called).to.be.false;
+        expect(dataContextBind.calledOnce).to.be.true;
+        expect(res.json.calledOnceWithExactly(updateInput)).to.be.true;
       });
     });
   });

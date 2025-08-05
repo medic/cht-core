@@ -12,6 +12,8 @@ describe('remote report', () => {
   let getResourcesOuter: SinonStub;
   let postResourceOuter: SinonStub;
   let postResourceInner: SinonStub;
+  let putResourceOuter: SinonStub;
+  let putResourceInner: SinonStub;
 
   beforeEach(() => {
     getResourceInner = sinon.stub();
@@ -20,6 +22,8 @@ describe('remote report', () => {
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
     postResourceInner = sinon.stub();
     postResourceOuter = sinon.stub(RemoteEnv, 'postResource').returns(postResourceInner);
+    putResourceInner = sinon.stub();
+    putResourceOuter = sinon.stub(RemoteEnv, 'putResource').returns(putResourceInner);
   });
 
   afterEach(() => sinon.restore());
@@ -86,7 +90,7 @@ describe('remote report', () => {
       });
     });
 
-    describe('createReport', () => {
+    describe('update', () => {
       it('returns a report doc for a valid input', async () => {
         const input = {
           form: 'form-1',
@@ -100,6 +104,25 @@ describe('remote report', () => {
         expect(reportDoc).to.deep.equal(input);
         expect(postResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
         expect(postResourceInner.calledOnceWithExactly(input)).to.be.true;
+      });
+    });
+
+    describe('update', () => {
+      it('returns an updated report doc for a valid input', async () => {
+        const input = {
+          form: 'form-1',
+          type: 'report', 
+          reported_date: 11223344,
+          contact: {
+            _id: '3'
+          }, _id: '1', _rev: '2'
+        };
+
+        putResourceInner.resolves(input);
+        const reportDoc = await Report.v1.update(remoteContext)(input); 
+        expect(reportDoc).to.deep.equal(input);
+        expect(putResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
+        expect(putResourceInner.calledOnceWithExactly(input)).to.be.true;
       });
     });
   });

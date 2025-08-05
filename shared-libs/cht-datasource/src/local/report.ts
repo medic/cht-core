@@ -114,6 +114,7 @@ export namespace v1 {
   };
 
   
+  /** @internal*/
   const validateReportUpdatePayload = (
     originalDoc:Doc,
     reportInput: Record<string, unknown>
@@ -122,7 +123,7 @@ export namespace v1 {
     const mutableRequiredFields = new Set(['form']);
     ensureHasRequiredFields(immutableRequiredFields, mutableRequiredFields, originalDoc, reportInput);
     ensureImmutability(immutableRequiredFields, originalDoc, reportInput);
-    // Now it is safe to assign reportInput.contact to the original doc's
+    // Now it is safe to assign reportInput.contact as the original doc's
     // dehydrated contact lineage as the hierarchy is verified.
     reportInput.contact = originalDoc.contact;
   };
