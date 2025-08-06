@@ -6,6 +6,8 @@ import sinon from 'sinon';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClient } from '@angular/common/http';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
@@ -35,9 +37,12 @@ describe('ContactsEdit component', () => {
   let stopPerformanceTrackStub;
   let performanceService;
   let telemetryService;
+  let chtDatasourceService;
+  let get;
   const loadContactSummary = sinon.stub();
 
   beforeEach(() => {
+    get = sinon.stub();
     contactTypesService = {
       get: sinon.stub().resolves(),
       getChildren: sinon.stub().resolves(),
@@ -64,6 +69,15 @@ describe('ContactsEdit component', () => {
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     lineageModelGeneratorService = { contact: sinon.stub().resolves({ doc: {} }) };
     telemetryService = { record: sinon.stub() };
+    chtDatasourceService = {
+      get: sinon.stub().resolves({
+        v1: {
+          contact: {
+            getByUuid: sinon.stub().callsFake((id) => get(id))
+          }
+        }
+      })
+    };
 
     sinon.stub(console, 'error');
 
@@ -93,7 +107,9 @@ describe('ContactsEdit component', () => {
         { provide: FormService, useValue: formService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: PerformanceService, useValue: performanceService },
-        { provide: TelemetryService, useValue: telemetryService }
+        { provide: TelemetryService, useValue: telemetryService },
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: HttpClient, useValue: {} },
       ],
     });
 

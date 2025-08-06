@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { assert, expect } from 'chai';
 import sinon from 'sinon';
 import { TranslateService } from '@ngx-translate/core';
+import { HttpClient } from '@angular/common/http';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 import { SearchService } from '@mm-services/search.service';
@@ -27,6 +29,8 @@ describe('ContactViewModelGenerator service', () => {
   let contactTypesService;
   let getDataRecordsService;
   let types;
+  let chtDatasourceService;
+  let get;
 
   const childPlaceIcon = 'fa-mushroom';
 
@@ -65,6 +69,7 @@ describe('ContactViewModelGenerator service', () => {
   };
 
   beforeEach(() => {
+    get = sinon.stub();
     search = sinon.stub();
     dbGet = sinon.stub();
     dbQuery = sinon.stub();
@@ -100,7 +105,7 @@ describe('ContactViewModelGenerator service', () => {
       contact: { _id: contactId }
     };
     forms = [];
-
+    get.withArgs(childContactPerson._id).resolves(childContactPerson);
     contactTypesService = {
       getAll: sinon.stub().resolves(types),
       getTypeId: sinon.stub().callsFake(contact => contact.type === 'contact' ? contact.contact_type : contact.type),
@@ -112,6 +117,16 @@ describe('ContactViewModelGenerator service', () => {
       getDocsSummaries: sinon.stub(),
     };
 
+    chtDatasourceService = {
+      get: sinon.stub().resolves({
+        v1: {
+          contact: {
+            getByUuid: sinon.stub().callsFake((id) => get(id))
+          }
+        }
+      })
+    };
+
     TestBed.configureTestingModule({
       providers: [
         { provide: TranslateService, useValue: { instant: sinon.stub().returnsArg(0) } },
@@ -120,6 +135,8 @@ describe('ContactViewModelGenerator service', () => {
         { provide: LineageModelGeneratorService, useValue: lineageModelGenerator },
         { provide: GetDataRecordsService, useValue: getDataRecordsService },
         { provide: DbService, useValue: { get: () => ({ query: dbQuery, get: dbGet }) } },
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: HttpClient, useValue: {} },
       ]
     });
 
@@ -231,6 +248,8 @@ describe('ContactViewModelGenerator service', () => {
       stubSearch([]);
       stubGetDataRecordsService([]);
       stubDbQueryChildren(doc._id, [childPerson]);
+
+      get.withArgs(childContactPerson._id).rejects({ status: 404 });
 
       return service
         .getContact(doc._id)
@@ -453,6 +472,7 @@ describe('ContactViewModelGenerator service', () => {
       stubLineageModelGenerator(doc);
       stubDbGet({ status: 404 }, childContactPerson);
       stubDbQueryChildren(doc._id, childrenArray);
+      get.reset();
       return service.getContact(doc._id);
     };
 
