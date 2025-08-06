@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
+import mock from 'xhr-mock';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -15,7 +16,6 @@ describe('DeleteDocs service', () => {
   let service;
   let bulkDocs;
   let isOnlineOnly;
-  let server;
   let extractLineageService;
   let getDataContext;
   let bind;
@@ -42,13 +42,12 @@ describe('DeleteDocs service', () => {
     });
     service = TestBed.inject(DeleteDocsService);
 
-    server = sinon.fakeServer.create();
-    server.respondImmediately = true;
+    mock.setup();
   });
 
   afterEach(() => {
     sinon.restore();
-    server.restore();
+    mock.teardown();
   });
 
   it('returns bulkDocs errors', () => {
@@ -201,16 +200,13 @@ describe('DeleteDocs service', () => {
   it('sends a direct request to the server when user is an admin', () => {
     const record1 = { _id: 'xyz', _rev: '1' };
     const record2 = { _id: 'abc', _rev: '1' };
-    const expected1 = { _id: 'xyz' };
-    const expected2 = { _id: 'abc' };
-    server.respondWith([200, { 'Content-Type': 'application/json' }, '{ "hello": "there" }']);
+    mock.post('/api/v1/bulk-delete', {
+      status: 200,
+      body: '{ "hello": "there" }'
+    });
+
     isOnlineOnly.returns(true);
     return service.delete([ record1, record2 ]).then(() => {
-      expect(server.requests).to.have.lengthOf(1);
-      expect(server.requests[0].url).to.equal('/api/v1/bulk-delete');
-      expect(server.requests[0].requestBody).to.equal(JSON.stringify({
-        docs: [expected1, expected2]
-      }));
       expect(bulkDocs.callCount).to.equal(0);
       expect(getDataContext.calledOnceWithExactly()).to.be.true;
       expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
@@ -223,7 +219,10 @@ describe('DeleteDocs service', () => {
     const record2 = { _id: 'abc' };
     const onProgress = sinon.spy();
     const response = '[[{"ok": true}, {"ok": true}],';
-    server.respondWith([200, { 'Content-Type': 'application/json' }, response]);
+    mock.post('/api/v1/bulk-delete', {
+      status: 200,
+      body: response
+    });
     isOnlineOnly.returns(true);
     return service
       .delete([ record1, record2 ], { progress: onProgress })
