@@ -371,4 +371,75 @@ describe('Report API', () => {
         })}`);
     });
   });
+
+  describe('PUT /api/v1/report', () => {
+    it('updates doc for a valid update input', async () => {
+      const createInput = {
+        type: 'data_record',
+        contact: contact0._id,
+        form: 'hello'
+      };
+
+      const createOpts = {
+        path: '/api/v1/report', 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: createInput,
+      };
+
+      const originalReportDoc = await utils.request(createOpts);
+      const updateInput = {
+        ...originalReportDoc,
+        form: 'bye bye'
+      };
+      const updateOpts = {
+        path: '/api/v1/report', 
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updateInput,
+      };
+
+      const updatedReportDoc = await utils.request(updateOpts);
+      expect(updatedReportDoc).excluding(['_rev'])
+        .to.deep.equal(updateInput);
+    });
+
+    it('throws error on trying to update an immutable field, here contact', async () => {
+      const createInput = {
+        type: 'data_record',
+        contact: contact0._id,
+        form: 'hello'
+      };
+
+      const createOpts = {
+        path: '/api/v1/report', 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: createInput,
+      };
+
+      const originalReportDoc = await utils.request(createOpts);
+      const updateInput = {
+        ...originalReportDoc,
+        contact: contact1
+      };
+      const updateOpts = {
+        path: '/api/v1/report', 
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updateInput,
+      };
+
+      await expect(utils.request(updateOpts))
+        .to.be.rejectedWith(`contact lineage does not match with the lineage of the doc in the db`);
+    });
+  });
 });
