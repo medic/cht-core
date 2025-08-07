@@ -206,32 +206,13 @@ const generate = formXml => {
     .then(([ form, model ]) => ({ form, model }));
 };
 
-const updateAttachment = (doc, update, name, type) => {
-  const attachmentData = doc &&
-                         doc._attachments &&
-                         doc._attachments[name] &&
-                         doc._attachments[name].data &&
-                         doc._attachments[name].data.toString();
-  const canUpdate = Boolean(attachmentData !== update && update);
-  if (canUpdate) {
-    doc._attachments[name] = {
-      data: Buffer.from(update),
-      content_type: type
-    };
-  }
-  return canUpdate;
-};
-
-const updateAttachmentsIfRequired = (doc, updated) => {
-  const formUpdated = updateAttachment(doc, updated.form, 'form.html', 'text/html');
-  const modelUpdated = updateAttachment(doc, updated.model, 'model.xml', 'text/xml');
-  return formUpdated || modelUpdated;
-};
-
-const addGeneratedAttachments = (doc, updated) => {
-  if ( !updated || !updateAttachmentsIfRequired(doc, updated) ){
+const addGeneratedAttachments = (doc, updated, outdated) => {
+  if (!updated || (
+    updated.form.toString() === outdated.form.toString() &&
+    updated.model.toString() === outdated.model.toString())) {
     return;
   }
+
   doc._attachments['form.html'] = {
     data: Buffer.from(updated.form),
     content_type: 'text/html'
@@ -244,20 +225,20 @@ const addGeneratedAttachments = (doc, updated) => {
 };
 
 const updateAttachments = async (doc) => {
-  let generated = null;
-  const form = getEnketoForm(doc);
-  if (form) {
+  const enketoForm = getEnketoForm(doc);
+  if (enketoForm) {
     const name = formsService.getXFormAttachmentName(doc);
     const rawXML = await db.medic.getAttachment(doc._id, name, { rev: doc._rev });
+    const form = await db.medic.getAttachment(doc._id, 'form.html', { rev: doc._rev });
+    const model = await db.medic.getAttachment(doc._id, 'model.xml', { rev: doc._rev });
+
     logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
-    generated = await module.exports.generate(rawXML.toString());
-    return addGeneratedAttachments(doc, generated);
+    const generated = await module.exports.generate(rawXML.toString());
+    return addGeneratedAttachments(doc, generated, {form, model});
   }
 };
 // Returns array of docs that need saving.
 const updateAllAttachments = async (docs) => (await Promise.all(docs.map(updateAttachments))).filter(r => r);
-
-
 
 module.exports = {
 
