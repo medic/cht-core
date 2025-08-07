@@ -420,6 +420,38 @@ describe('Report Controller Tests', () => {
         expect(dataContextBind.calledOnce).to.be.true;
         expect(res.json.calledOnceWithExactly(updateInput)).to.be.true;
       });
+
+      it('throws error when the user is not an online user', async() => {
+        isOnlineOnly.returns(false);
+        hasAllPermissions.returns(true); 
+        const updateInput = {
+          type: 'report',
+          reported_date: 12312312, 
+          _id: '1',
+          _rev: '2',
+          contact: {
+            _id: '3'
+          },
+          form: 'abcd'
+        };
+        req = {
+          body: {
+            ...updateInput
+          }
+        };
+        await controller.v1.update(req, res);
+
+        expect(hasAllPermissions.notCalled).to.be.true;
+        expect(dataContextBind.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(updateReport.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(PermissionError);
+        expect(serverUtilsError.firstCall.args[0].message === privilegeError.message).to.be.true;
+        expect(serverUtilsError.firstCall.args[0].code === privilegeError.code).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+      });
     });
   });
 });

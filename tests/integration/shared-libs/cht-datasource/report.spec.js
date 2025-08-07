@@ -316,6 +316,18 @@ describe('cht-datasource Report', () => {
             error: `Missing or empty required fields (form) for [${JSON.stringify(updateInput)}].`
           }));
       });
+
+      it('throws error when original report doc does not exist', async () => {
+        const createdReport = await Report.v1.create(dataContext)(createInput);
+        const updateInput={
+          ...createdReport, _id: '123123123'
+        };
+        await expect(Report.v1.update(dataContext)(updateInput))
+          .to.be.rejectedWith(JSON.stringify({
+            code: 400,
+            error: `Report not found`
+          }));
+      });
     });
   });
 });

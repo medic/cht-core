@@ -441,5 +441,40 @@ describe('Report API', () => {
       await expect(utils.request(updateOpts))
         .to.be.rejectedWith(`contact lineage does not match with the lineage of the doc in the db`);
     });
+
+    it('throws error on trying to update a report that does not exist', async () => {
+      const createInput = {
+        type: 'data_record',
+        contact: contact0._id,
+        form: 'hello'
+      };
+
+      const createOpts = {
+        path: '/api/v1/report', 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: createInput,
+      };
+
+      const originalReportDoc = await utils.request(createOpts);
+      const updateInput = {
+        ...originalReportDoc,
+        _id: '12312312',
+        form: 'new form'
+      };
+      const updateOpts = {
+        path: '/api/v1/report', 
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updateInput,
+      };
+
+      await expect(utils.request(updateOpts))
+        .to.be.rejectedWith(`Report not found`);
+    });
   });
 });

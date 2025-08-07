@@ -3,6 +3,7 @@ import sinon, { SinonStub } from 'sinon';
 import * as RemoteEnv from '../../src/remote/libs/data-context';
 import * as Report from '../../src/remote/report';
 import { expect } from 'chai';
+import { InvalidArgumentError } from '../../src';
 
 describe('remote report', () => {
   const remoteContext = {} as RemoteDataContext;
@@ -124,6 +125,20 @@ describe('remote report', () => {
         expect(putResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
         expect(putResourceInner.calledOnceWithExactly(input)).to.be.true;
       });
+
+      it('rejected with an error if report is not found', async () => {
+        const input = {
+          type: 'report',
+          contact: {
+            _id: '2',
+          },
+          _id: '12333', _rev: '2', form: 'hello'
+        };
+        putResourceInner.rejects(new InvalidArgumentError('Report not found'));
+        await expect(Report.v1.update(remoteContext)(input))
+          .to.be.rejectedWith('Report not found');
+      });
+
     });
   });
 });
