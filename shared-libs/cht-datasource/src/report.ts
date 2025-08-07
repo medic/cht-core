@@ -143,7 +143,7 @@ export namespace v1 {
   /**
    * Returns a function to update a report from the given data context.
    * @param context the current data context
-   * @returns a function for creating a report.
+   * @returns a function for updating a report.
    * @throws Error if a data context is not provided
    */
   export const update = (context:DataContext):typeof curriedFn => {
