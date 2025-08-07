@@ -149,6 +149,7 @@ export namespace v1 {
   export const update = (context:DataContext):typeof curriedFn => {
     assertDataContext(context);
     const fn = adapt(context, Local.Report.v1.update, Remote.Report.v1.update);
+
     /**
      * Returns the updated Report Doc for the provided updateInput
      * @param updateInput the Doc containing updated fields
