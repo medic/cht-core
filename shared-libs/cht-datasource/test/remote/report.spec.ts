@@ -90,7 +90,7 @@ describe('remote report', () => {
       });
     });
 
-    describe('update', () => {
+    describe('create', () => {
       it('returns a report doc for a valid input', async () => {
         const input = {
           form: 'form-1',
