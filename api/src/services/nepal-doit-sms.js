@@ -57,7 +57,7 @@ const getStatus = responseMessage => {
       return STATUS_MAP.invalid_number;
     }
   }
-}
+};
 
 const generateStateChange = (message, res) => {
   const responseMessage = getResponseMessage(res);
