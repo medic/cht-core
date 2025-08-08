@@ -4,13 +4,13 @@ const logger = require('@medic/logger');
 const config = require('../config');
 
 const STATUS_MAP = {
-  // success
-  queued: { success: true, state: 'forwarded-by-gateway', detail: 'Processed' },
-  sent: { success: true, state: 'sent', detail: 'Sent' },
-
-  // failure
-  unauthenticated: { success: false, state: 'failed', detail: 'InvalidCredentials' },
-  invalid_number: { success: false, state: 'failed', detail: 'InvalidPhoneNumber' }
+  // success - based on API response status field
+  1: { success: true, state: 'forwarded-by-gateway', detail: 'Processed' },
+  
+  // HTTP error status codes (from error object in catch block)
+  401: { success: false, state: 'failed', detail: 'InvalidCredentials' },
+  422: { success: false, state: 'failed', detail: 'UnprocessableContent' },
+  500: { success: false, state: 'failed', detail: 'InternalServerError', retry: true },
 };
 
 const getUrl = () => {
@@ -36,43 +36,29 @@ const getCredentials = () => {
     });
 };
 
-const getResponseMessage = res => {
-  return res &&
-    res.message;
-};
-
-const getStatus = responseMessage => {
-  // Response messages according to: https://sms.doit.gov.np/developer-guide
-  if (typeof responseMessage === 'string') {
-    if (responseMessage.toLowerCase().includes('queued')) {
-      return STATUS_MAP.queued;
-    }
-    if (responseMessage.toLowerCase().includes('sent')) {
-      return STATUS_MAP.sent;
-    }
-    if (responseMessage.toLowerCase().includes('unauthenticated')) {
-      return STATUS_MAP.unauthenticated;
-    }
-    if (responseMessage.toLowerCase().includes('invalid number')) {
-      return STATUS_MAP.invalid_number;
-    }
+const getStatus = response => {
+  // For API success response, check the status field
+  if (response && response.status !== undefined) {
+    return STATUS_MAP[response.status];
   }
+  // For HTTP error status codes (in catch block)
+  if (response && response.statusCode !== undefined) {
+    return STATUS_MAP[response.statusCode];
+  }
+  return null;
 };
 
 const generateStateChange = (message, res) => {
-  const responseMessage = getResponseMessage(res);
-  if (!responseMessage) {
+  if (!res) {
     return;
   }
-  const status = getStatus(responseMessage);
+  const status = getStatus(res);
   return {
     messageId: message.id,
-    // gatewayRef: recipient.messageId,
     state: status.state,
-    details: status.message
+    details: status.detail
   };
 };
-
 
 const sendMessage = (credentials, message) => {
   const url = getUrl();
@@ -96,19 +82,34 @@ const sendMessage = (credentials, message) => {
     })
     .then(result => {
       if (!result) {
-        logger.error(`Unable to JSON parse response: %o`, result);
+        logger.error(`No response received: %o`, result);
         return; // retry later
       }
-      const validResponse = getStatus(result.message);
+      
+      logger.debug(`SMS API Response: %o`, result);
+      
+      // Use the API's own status field for validation
+      const validResponse = getStatus(result);
       if (!validResponse) {
-        logger.error(`Invalid response when trying to send messages: %o`, result);
+        logger.error(`SMS API returned status ${result.status}: %o`, result);
         return; // retry later
       }
+      
       return generateStateChange(message, result);
     })
     .catch(err => {
-      // unknown error - ignore it so the message will be retried again later
-      logger.error(`Error thrown trying to send messages: %o`, err);
+      // Handle HTTP errors (401, 422, 500, etc.)
+      logger.error(`SMS API error: ${err.message}`);
+      
+      const errorStatus = getStatus(err);
+      if (errorStatus) {
+        // Known error status - generate appropriate state change
+        return generateStateChange(message, err);
+      }
+      
+      // Unknown error - retry later
+      logger.error(`Unknown error sending SMS: %o`, err);
+      return; // retry later
     });
 };
 
