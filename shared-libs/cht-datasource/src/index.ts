@@ -352,7 +352,15 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created report.
          * @throws InvalidArgumentError if the type of input is not valid for creating a report.
          */
-        create: (input : unknown) => ctx.bind(Report.v1.create)(input)
+        create: (input : unknown) => ctx.bind(Report.v1.create)(input),
+
+        /**
+         * Updates a report.
+         * @param input the object defining the report properties.
+         * @returns the updated report.
+         * @throws InvalidArgumentError if the type of input is not valid for updating a report.
+         */
+        update: (input: unknown) => ctx.bind(Report.v1.update)(input)
       },
     },
   };
