@@ -224,7 +224,7 @@
     "pouchdb-replication": "^9.0.0",
     "prometheus-api-metrics": "^4.0.0",
     "properties": "^1.2.1",
-    "rate-limiter-flexible": "^7.1.1",
+    "rate-limiter-flexible": "^7.2.0",
     "sanitize-html": "^2.17.0",
     "semver": "^7.7.0",
     "simple-password-tester": "^1.0.0",
