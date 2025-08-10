@@ -1,8 +1,7 @@
 const moment = require('moment');
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
-const cht = require('@medic/cht-datasource');
-const chtDatasource = cht.getDatasource(cht.getRemoteDataContext());
+const CHT = require('@medic/cht-datasource');
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 const SHOW_PASSWORD_ICON = '/login/images/show-password.svg';
@@ -30,6 +29,7 @@ angular
     ContactTypes,
     CreateUser,
     DB,
+    DataContext,
     Select2Search,
     Settings,
     Translate,
@@ -39,6 +39,8 @@ angular
     'ngInject';
 
     $scope.cancel = () => $uibModalInstance.dismiss();
+    const chtDatasource = DataContext.getDataSource();
+    const getContact = DataContext.bind(CHT.Contact.v1.get);
 
     const getRoles = roles => {
       if (!roles || !roles.length) {
@@ -177,22 +179,27 @@ angular
       .then(model => {
         $scope.editUserModel = model;
         validateSkipPasswordPermission();
+        populateFacilitynContact();
       })
       .catch(err => {
         $log.error('Error determining user model', err);
       });
 
-    $uibModalInstance.rendered
-      .then(() => ContactTypes.getAll())
-      .then(contactTypes => {
-        // only the #edit-user-profile modal has these fields
-        const personTypes = contactTypes.filter(type => type.person).map(type => type.id);
-        Select2Search($('#edit-user-profile [name=contactSelect]'), personTypes);
-        const placeTypes = contactTypes.filter(type => !type.person).map(type => type.id);
-        return usersPlaces($scope.editUserModel.facilitySelect).then(facilityIds => {
-          Select2Search($('#edit-user-profile [name=facilitySelect]'), placeTypes, { initialValue: facilityIds });
+    const populateFacilitynContact = () => {
+      $uibModalInstance.rendered
+        .then(() => ContactTypes.getAll())
+        .then(contactTypes => {
+          // only the #edit-user-profile modal has these fields
+          const personTypes = contactTypes.filter(type => type.person).map(type => type.id);
+
+          const placeTypes = contactTypes.filter(type => !type.person).map(type => type.id);
+
+          return usersPlaces($scope.editUserModel.facilitySelect).then(facilityIds => {
+            Select2Search($('#edit-user-profile [name=contactSelect]'), personTypes);
+            Select2Search($('#edit-user-profile [name=facilitySelect]'), placeTypes, { initialValue: facilityIds });
+          });
         });
-      });
+    };
 
     const validateRequired = (fieldName, fieldDisplayName) => {
       if (!$scope.editUserModel[fieldName]) {
@@ -387,7 +394,7 @@ angular
       }
 
       const getParent = (contactId) => {
-        return DB().get(contactId).then(contact => contact.parent);
+        return getContact(CHT.Qualifier.byUuid(contactId)).then(contact => contact.parent);
       };
 
       const checkParent = (parent, placeIds) => {

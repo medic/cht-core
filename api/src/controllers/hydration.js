@@ -9,7 +9,7 @@ const serverUtils = require('../server-utils');
  * @returns {(Boolean|Array)} returns Boolean false if the chosen param is not an array, otherwise returns the param
  */
 const getDocIds = (req) => {
-  const docIds = (req.query && req.query.doc_ids) ||
+  const docIds = (req.parsedQuery && req.parsedQuery.doc_ids) ||
                  (req.body && req.body.doc_ids);
 
   return Array.isArray(docIds) && docIds;
