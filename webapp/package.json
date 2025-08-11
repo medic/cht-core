@@ -53,7 +53,7 @@
     "moment-locales-webpack-plugin": "^1.2.0",
     "ngrx-store-logger": "^0.2.4",
     "ngx-bootstrap": "^19.0.2",
-    "ngx-cookie-service": "^19.1.2",
+    "ngx-cookie-service": "^20.1.0",
     "odk-xform-compact-record-representation-for-sms": "^1.0.1",
     "openrosa-xpath-evaluator": "^2.0.13",
     "partial-json-parser": "^1.2.2",
