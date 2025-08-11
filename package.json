@@ -162,7 +162,7 @@
     "loose-envify": "^1.4.0",
     "mocha": "^11.1.0",
     "module-alias": "^2.2.3",
-    "nodemon": "^3.1.9",
+    "nodemon": "^3.1.10",
     "nyc": "^17.1.0",
     "patch-package": "^8.0.0",
     "postcss": "^8.5.6",
