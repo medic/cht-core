@@ -212,7 +212,6 @@ const addGeneratedAttachments = (doc, updated, outdated) => {
     updated.model.toString() === String(outdated.model))) {
     return;
   }
-
   doc._attachments['form.html'] = {
     data: Buffer.from(updated.form),
     content_type: 'text/html'
@@ -224,23 +223,31 @@ const addGeneratedAttachments = (doc, updated, outdated) => {
   return doc;
 };
 
-const updateAttachments = async (doc) => {
-  const enketoForm = getEnketoForm(doc);
-  if (enketoForm) {
-    const name = formsService.getXFormAttachmentName(doc);
-    const [rawXML, form, model] = await Promise.allSettled([
-      db.medic.getAttachment(doc._id, name, { rev: doc._rev }),
-      db.medic.getAttachment(doc._id, 'form.html', { rev: doc._rev }),
-      db.medic.getAttachment(doc._id, 'model.xml', { rev: doc._rev })
-    ]).then(results => results.map(result => result.status !== 'rejected' ? result.value : null));
+const getAttachment = async (doc, name) => {
+  try { 
+    return await db.medic.getAttachment(doc._id, name, { rev: doc._rev }); 
+  } catch (error) { 
+    logger.error(error);
+    return null;
+  }
+};
 
-    if (rawXML === null) {
+const updateAttachments = async (doc) => {
+  if (getEnketoForm(doc)) {
+
+    const [xml, form, model] = await Promise.all([
+      getAttachment(doc, formsService.getXFormAttachmentName(doc)),
+      getAttachment(doc, 'form.html'),
+      getAttachment(doc, 'model.xml')
+    ]);
+
+    if ( !xml ) {
       logger.error(`Could not fetch the XML attachment for enketo form with id "${doc._id}"`);
       return;
     }
 
     logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
-    const generated = await module.exports.generate(rawXML.toString());
+    const generated = await module.exports.generate(xml.toString());
     return addGeneratedAttachments(doc, generated, { form, model });
   }
 };
