@@ -70,7 +70,7 @@ const getUser = (user) => {
   return utils.request(opts);
 };
 
-const setupTokenLoginSettings = (configureAppUrl = false, configureOidc = false) => {
+const setupTokenLoginSettings = (configureAppUrl = true, configureOidc = false) => {
   const settings = { token_login: { translation_key: 'login_sms', enabled: true } };
   if (configureAppUrl) {
     settings.app_url = utils.getOrigin();
@@ -184,7 +184,7 @@ describe('login', () => {
 
   describe('token login', () => {
     it('should fail with invalid url', () => {
-      return setupTokenLoginSettings()
+      return setupTokenLoginSettings(false)
         .then(() => loginWithTokenLink())
         .then(response => chai.expect(response).to.deep.include({ status: 401 }));
     });
@@ -271,7 +271,7 @@ describe('login', () => {
         headers: { 'Host': 'definitely-not-our-host.com' },
       };
       let tokenLogin;
-      return setupTokenLoginSettings(true)
+      return setupTokenLoginSettings()
         .then(() => utils.request(opts))
         .then(() => getUser(user))
         .then(user => tokenLogin = user.token_login)
@@ -289,7 +289,7 @@ describe('login', () => {
         method: 'POST',
         body: user
       };
-      return setupTokenLoginSettings(false, true)
+      return setupTokenLoginSettings(true, true)
         .then(() => utils.request(createOpts))
         .then(() => getUser(user))
         .then(userDoc => {
@@ -343,7 +343,8 @@ describe('login', () => {
           discovery_url: mockIdProvider.getDiscoveryUrl(),
           client_id: 'cht',
           allow_insecure_requests: true
-        }
+        },
+        app_url: utils.getOrigin()
       };
 
       return utils.updateSettings(settings, { ignoreReload: true });
