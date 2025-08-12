@@ -228,13 +228,20 @@ const updateAttachments = async (doc) => {
   const enketoForm = getEnketoForm(doc);
   if (enketoForm) {
     const name = formsService.getXFormAttachmentName(doc);
-    const rawXML = await db.medic.getAttachment(doc._id, name, { rev: doc._rev });
-    const form = await db.medic.getAttachment(doc._id, 'form.html', { rev: doc._rev });
-    const model = await db.medic.getAttachment(doc._id, 'model.xml', { rev: doc._rev });
+    const [rawXML, form, model] = await Promise.allSettled([
+      db.medic.getAttachment(doc._id, name, { rev: doc._rev }),
+      db.medic.getAttachment(doc._id, 'form.html', { rev: doc._rev }),
+      db.medic.getAttachment(doc._id, 'model.xml', { rev: doc._rev })
+    ]).then(results => results.map(result => result.status !== 'rejected' ? result.value : null));
+
+    if (rawXML === null) {
+      logger.error(`Could not fetch the XML attachment for enketo form with id "${doc._id}"`);
+      return;
+    }
 
     logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
     const generated = await module.exports.generate(rawXML.toString());
-    return addGeneratedAttachments(doc, generated, {form, model});
+    return addGeneratedAttachments(doc, generated, { form, model });
   }
 };
 // Returns array of docs that need saving.
