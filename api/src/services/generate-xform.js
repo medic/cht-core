@@ -208,8 +208,8 @@ const generate = formXml => {
 
 const addGeneratedAttachments = (doc, updated, outdated) => {
   if (!updated || (
-    updated.form.toString() === outdated.form.toString() &&
-    updated.model.toString() === outdated.model.toString())) {
+    updated.form.toString() === String(outdated.form)  &&
+    updated.model.toString() === String(outdated.model))) {
     return;
   }
 
