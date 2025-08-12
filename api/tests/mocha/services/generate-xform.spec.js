@@ -357,11 +357,11 @@ describe('generate-xform service', () => {
       });
     });
 
-    it('should not update doc if attachment is not xml/html', async () => {
+    it('Should not update doc at all if no xml attachment is found', async () => {
       const newForm = '<html><title>Hello</title></html>';
       const newModel = '<instance><multimedia/></instance>';
       
-      sinon.stub(db.medic, 'getAttachment').resolves({ _attachments: {}});
+      sinon.stub(db.medic, 'getAttachment').resolves(null);
 
       sinon.stub(db.medic, 'get').resolves({ _attachments: {
         'xform.xml': {stub: true},
@@ -372,8 +372,10 @@ describe('generate-xform service', () => {
       sinon.stub(db.medic, 'put');
 
       await service.update('form:exists');
-      expect(db.medic.put.callCount).to.equal(1);
-      expectAttachments(db.medic.put.args[0][0], newForm, newModel);
+      expect(db.medic.getAttachment.callCount).to.equal(3);
+      expect(service.generate.callCount).to.equal(0);
+      expect(db.medic.put.callCount).to.equal(0);
+      // expectAttachments(db.medic.put.args[0][0], newForm, newModel);
     });
 
     it('updates only form.html and model.xml; preserves audio/image/videos attachments unchanged', async () => {
