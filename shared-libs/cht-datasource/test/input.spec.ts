@@ -20,7 +20,7 @@ describe('input', () => {
       expect(validateContactInput({
         name: 'A', type: 'person'
       })).to.deep.equal({
-        name: 'A', type: 'person', reported_date: CURRENT_ISO_TIMESTAMP
+        name: 'A', type: 'person', reported_date: 1672531283000
       });
     });
   
@@ -28,7 +28,7 @@ describe('input', () => {
       expect(validateContactInput({
         name: 'A', type: 'person', reported_date: '2025-06-03T12:45:30Z'
       })).to.deep.equal({
-        name: 'A', type: 'person', reported_date: '2025-06-03T12:45:30Z'
+        name: 'A', type: 'person', reported_date: 1748954730000
       });
     });
   
@@ -109,7 +109,7 @@ describe('input', () => {
       expect(validateReportInput({
         type: 'data_record', form: 'yes', contact: 'c1'
       })).to.deep.equal({
-        type: 'data_record', form: 'yes', reported_date: CURRENT_ISO_TIMESTAMP, contact: 'c1'
+        type: 'data_record', form: 'yes', reported_date: 1672531283000, contact: 'c1'
       });
     });
 
@@ -119,7 +119,7 @@ describe('input', () => {
         contact: 'c2'
       })).to.deep.equal({
         type: 'data_record', form: 'yes', _id: 'id-1', _rev: 'rev-3', 
-        contact: 'c2', reported_date: '2025-06-03T12:45:30.222Z'
+        contact: 'c2', reported_date: 1748954730222
       });
     });
 
@@ -226,7 +226,7 @@ describe('input', () => {
       };
 
       const expected_data = {
-        ...data, reported_date: CURRENT_ISO_TIMESTAMP
+        ...data, reported_date: 1672531283000
       };
 
       expect(() => validatePersonInput(data)).to
@@ -241,7 +241,7 @@ describe('input', () => {
       };
 
       const expected_data = {
-        ...data, reported_date: CURRENT_ISO_TIMESTAMP
+        ...data, reported_date: 1672531283000
       };
 
       expect(() => validatePersonInput(data)).to
@@ -267,7 +267,7 @@ describe('input', () => {
           parent: 'p-1'
         }
       ].forEach((input) => {
-        const expected_input = {reported_date: CURRENT_ISO_TIMESTAMP, ...input};
+        const expected_input = {reported_date: 1672531283000, ...input};
         expect(validatePersonInput(input))
           .to.deep.equal({...expected_input});
       });
@@ -317,7 +317,7 @@ describe('input', () => {
         parent: ''
       };
       
-      const expected_input = { ...input, reported_date: CURRENT_ISO_TIMESTAMP };
+      const expected_input = { ...input, reported_date: 1672531283000 };
       expect(() => validatePlaceInput(input))
         .to.throw(`Missing or empty required field (parent) for [${JSON.stringify(expected_input)}].`);
     });
@@ -329,7 +329,7 @@ describe('input', () => {
         contact: ''
       };
       
-      const expected_input = { ...input, reported_date: CURRENT_ISO_TIMESTAMP };
+      const expected_input = { ...input, reported_date: 1672531283000 };
       expect(() => validatePlaceInput(input))
         .to.throw(`Missing or empty required field (contact) for [${JSON.stringify(expected_input)}].`);
     });
@@ -382,7 +382,7 @@ describe('input', () => {
           parent: 'p1'
         }
       ].forEach((input) => {
-        const expected_input = {reported_date: CURRENT_ISO_TIMESTAMP, ...input };
+        const expected_input = {reported_date: 1672531283000, ...input };
         expect(validatePlaceInput(input)).to.deep.equal(expected_input);
       });
     });

@@ -1,4 +1,5 @@
 import { DataContext } from './data-context';
+import { InvalidArgumentError } from './error';
 
 /**
  * A value that could be `null`.
@@ -166,4 +167,21 @@ export interface NormalizedParent extends DataObject, Identifiable {
 /** @ignore */
 export const isNormalizedParent = (value: unknown): value is NormalizedParent => {
   return isDataObject(value) && isIdentifiable(value) && (!value.parent || isNormalizedParent(value.parent));
+};
+
+/** @internal */
+export const convertToUnixTimestamp = (date: string | number): number => {
+  if (typeof date === 'number') {
+    return date;
+  }
+
+  const parsedDate = new Date(date);
+  if (isNaN(parsedDate.getTime())) {
+    throw new InvalidArgumentError(
+      'Invalid reported_date. Expected format to be ' +
+          '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
+    );
+  }
+
+  return parsedDate.getTime();
 };
