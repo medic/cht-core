@@ -116,7 +116,7 @@ export const validateReportInput = (data: unknown): ReportInput => {
     throw new InvalidArgumentError(`Missing or empty required field (contact) in [${JSON.stringify(data)}].`);
   }
   if (!isReportInput(input)) {
-    throw new InvalidArgumentError(`Missing or empty required fields (type, form) in [${JSON.stringify(data)}].`);
+    throw new InvalidArgumentError(`Missing or empty required field (form) in [${JSON.stringify(data)}].`);
   }
   return input;
 };
@@ -129,7 +129,6 @@ export const validateReportInput = (data: unknown): ReportInput => {
 export const isReportInput = (input: unknown): input is ReportInput => {
   if (isRecord(input) && 
         hasFields(input, [
-          {name: 'type', type: 'string', ensureTruthyValue: true}, 
           {name: 'form', type: 'string', ensureTruthyValue: true},
           {name: 'contact', type: 'string', ensureTruthyValue: true}
         ])

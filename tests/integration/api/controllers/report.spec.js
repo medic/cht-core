@@ -330,7 +330,6 @@ describe('Report API', () => {
     it('creates a report doc for valid input', async () => {
       const input = {
         form: 'form-1',
-        type: 'report',
         reported_date: 11221122,
         contact: place2._id
       };
@@ -346,7 +345,7 @@ describe('Report API', () => {
 
       const reportDoc = await utils.request(opts);
       expect(reportDoc).excluding(['_rev', '_id', 'contact'])
-        .to.deep.equal(input);
+        .to.deep.equal({...input, type: 'data_record'});
     });
 
     it('throws error for missing report fields', async () => {

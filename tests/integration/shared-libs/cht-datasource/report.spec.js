@@ -244,7 +244,7 @@ describe('cht-datasource Report', () => {
       it('creates a report for a valid input', async () => {
         const input = {
           form: 'form-1',
-          type: 'report',
+          type: 'data_record',
           contact: contact0._id
         };
 
@@ -260,7 +260,7 @@ describe('cht-datasource Report', () => {
       it('throws error for missing contact', () => {
         const input = {
           form: 'form-1',
-          type: 'report',
+          type: 'data_record',
         };
         const action = () => Report.v1.create(dataContext)(Input.validateReportInput(input));
         expect(action).to.throw(
@@ -272,7 +272,7 @@ describe('cht-datasource Report', () => {
       it('throws error for invalid date format via createReport',  () => {
         const input = {
           form: 'form-1',
-          type: 'report',
+          type: 'data_record',
           reported_date: '112-9909-123'
         };
       

@@ -109,6 +109,7 @@ export namespace v1 {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a report.');
       }
       input = await appendContact(input);
+      input = {...input, type: 'data_record'};
       return await createReportDoc(input) as Report.v1.Report;
     };
   };

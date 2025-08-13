@@ -144,16 +144,16 @@ describe('input', () => {
         .to.throw('Invalid "data": expected an object.'));
     });
 
-    it('throws error if type/form is not provided or empty.', () => {
+    it('throws error if form is not provided or empty.', () => {
       [
         {reported_date: 3432433, contact: 'c1'},
-        {type: 'data_record', _id: 'id-1', _rev: 'rev-4', contact: 'c1', reported_date: CURRENT_ISO_TIMESTAMP},
-        {form: 'yes', _id: 'id-1', _rev: 'rev-4', contact: 'c1'},
-        {type: '', form: 'yes', contact: 'c1'},
-        {type: 'data_record', form: '', contact: 'c1'}
+        {_id: 'id-1', _rev: 'rev-4', contact: 'c1', reported_date: CURRENT_ISO_TIMESTAMP},
+        {form: '', _id: 'id-1', _rev: 'rev-4', contact: 'c1'},
+        {contact: 'c1'},
+        {form: '', contact: 'c1'}
       ].forEach((input) => {
         expect(() => validateReportInput(input))
-          .to.throw(`Missing or empty required fields (type, form) in [${JSON.stringify(input)}].`);
+          .to.throw(`Missing or empty required field (form) in [${JSON.stringify(input)}].`);
       });
     });
 
