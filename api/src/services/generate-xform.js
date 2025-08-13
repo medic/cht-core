@@ -224,11 +224,14 @@ const addGeneratedAttachments = (doc, updated, outdated) => {
 };
 
 const getAttachment = async (doc, name) => {
-  try { 
-    return await db.medic.getAttachment(doc._id, name, { rev: doc._rev }); 
-  } catch (error) { 
-    logger.error(error);
-    return null;
+  try {
+    return await db.medic.getAttachment(doc._id, name, { rev: doc._rev });
+  } catch (error) {
+    if (error.status === 404) {
+      logger.error(error);
+      return null;
+    }
+    throw error;
   }
 };
 
@@ -269,6 +272,7 @@ module.exports = {
           logger.info(`Updating form with ID "${docId}"`);
           return db.medic.put(doc);
         }
+        logger.info(`Form with ID "${docId}" does not need to be updated.`);
       });
   },
   /**
