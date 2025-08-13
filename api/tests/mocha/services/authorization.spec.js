@@ -2904,7 +2904,7 @@ describe('Authorization service', () => {
           doc: {
             _id: 'r1', type: 'data_record',
             contact: { _id: 'c1', parent: { _id: 'p1', parent: { _id: 'facility_id' } } },
-            fields: { patient_id: 'patient1', needs_signoff: true }
+            fields: { patient_id: 'patient1', needs_signoff: 'true' }
           },
           viewResults: {
             contactsByDepth: [],
@@ -2919,7 +2919,7 @@ describe('Authorization service', () => {
         { // denied
           doc: {
             _id: 'r2', type: 'data_record', contact: { _id: 'c2', parent: { _id: 'p2', parent: { _id: 'p3' } } },
-            fields: { patient_uuid: 'patient2', needs_signoff: true }
+            fields: { patient_uuid: 'patient2', needs_signoff: 'true' }
           },
           viewResults: {
             contactsByDepth: [],
