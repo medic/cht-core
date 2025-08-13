@@ -3,6 +3,7 @@ import {
   createDoc,
   fetchAndFilterUuids,
   getDocById,
+  queryDocs,
   queryDocUuidsByKey,
   queryDocUuidsByRange,
   updateDoc
@@ -86,6 +87,29 @@ export namespace v1 {
   };
 
   /** @internal*/
+  const ensureFormFieldValidity = async(
+    medicDb: PouchDB.Database<Doc>,
+    input: Record<string, unknown>
+  ): Promise<void> => {
+    const allowedFormDocs = await queryDocs(medicDb, 'medic-client/doc_by_type', {
+      key: ['form'],
+      include_docs: true 
+    });
+
+    const allowedFormIds = allowedFormDocs
+      .filter(doc => doc !== null)
+      .map(doc => doc._id); 
+
+    const isValidFormType = allowedFormIds.some((id: string) => {
+      const expectedID = id.substring(5);
+      return expectedID === input.form;
+    });
+    if (!isValidFormType){
+      throw new InvalidArgumentError('Invalid `form` value');
+    }
+  };
+  
+  /** @internal*/
   export const create = ({
     medicDb
   } : LocalDataContext) => {
@@ -103,11 +127,12 @@ export namespace v1 {
       input = addParentToInput(input, 'contact', contactDehydratedLineage);
       return input;
     };
-    
+
     return async (input: ReportInput) :Promise<Report.v1.Report> => {
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a report.');
       }
+      await ensureFormFieldValidity(medicDb, input);
       input = await appendContact(input);
       input = {...input, type: 'data_record'};
       return await createReportDoc(input) as Report.v1.Report;
@@ -148,6 +173,7 @@ export namespace v1 {
         throw new InvalidArgumentError('`_rev` does not match');
       }
       validateReportUpdatePayload(originalReportDoc, reportInput);
+      await ensureFormFieldValidity(medicDb, reportInput);
       
       return await updateReport(reportInput) as Report.v1.Report;
     };

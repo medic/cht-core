@@ -243,7 +243,7 @@ describe('cht-datasource Report', () => {
     describe('create', () => {
       it('creates a report for a valid input', async () => {
         const input = {
-          form: 'form-1',
+          form: 'pregnancy_home_visit',
           type: 'data_record',
           contact: contact0._id
         };
@@ -259,7 +259,7 @@ describe('cht-datasource Report', () => {
 
       it('throws error for missing contact', () => {
         const input = {
-          form: 'form-1',
+          form: 'pregnancy_home_visit',
           type: 'data_record',
         };
         const action = () => Report.v1.create(dataContext)(Input.validateReportInput(input));
@@ -271,7 +271,7 @@ describe('cht-datasource Report', () => {
 
       it('throws error for invalid date format via createReport',  () => {
         const input = {
-          form: 'form-1',
+          form: 'pregnancy_home_visit',
           type: 'data_record',
           reported_date: '112-9909-123'
         };
@@ -289,7 +289,7 @@ describe('cht-datasource Report', () => {
 
     describe('update', () => {
       const createInput = {
-        form: 'form-1',
+        form: 'pregnancy_home_visit',
         type: 'data_record',
         contact: contact0._id
       };
@@ -297,7 +297,7 @@ describe('cht-datasource Report', () => {
       it('updates report for a valid update input', async () => {
         const createdReport = await Report.v1.create(dataContext)(createInput);
         const updateInput={
-          ...createdReport, form: 'hello world'
+          ...createdReport, form: 'pnc_danger_sign_follow_up_baby'
         };
         const updatedReport = await Report.v1.update(dataContext)(updateInput);
         expect(updatedReport).excluding(['_rev'])

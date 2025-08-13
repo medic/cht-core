@@ -28,11 +28,12 @@ export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (uuids: string[
     .filter((doc): doc is Doc => isDoc(doc));
 };
 
-const queryDocs = (
+/** @internal */
+export const queryDocs = (
   db: PouchDB.Database<Doc>,
   view: string,
   options: PouchDB.Query.Options<Doc, Record<string, unknown>>
-) => db
+):Promise<(Doc | null)[]> => db
   .query(view, options)
   .then(({ rows }) => rows.map(({ doc }) => isDoc(doc) ? doc : null));
 

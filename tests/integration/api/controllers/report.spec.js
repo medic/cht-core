@@ -329,7 +329,7 @@ describe('Report API', () => {
   describe('POST /api/v1/report/', () => {
     it('creates a report doc for valid input', async () => {
       const input = {
-        form: 'form-1',
+        form: 'pregnancy_danger_sign_follow_up',
         reported_date: 11221122,
         contact: place2._id
       };
@@ -350,7 +350,7 @@ describe('Report API', () => {
 
     it('throws error for missing report fields', async () => {
       const input = {
-        form: 'form-1',
+        form: 'pregnancy_danger_sign_follow_up',
         reported_date: 11221122
       };
       const opts = {
@@ -376,7 +376,7 @@ describe('Report API', () => {
       const createInput = {
         type: 'data_record',
         contact: contact0._id,
-        form: 'hello'
+        form: 'pregnancy_danger_sign_follow_up'
       };
 
       const createOpts = {
@@ -391,7 +391,7 @@ describe('Report API', () => {
       const originalReportDoc = await utils.request(createOpts);
       const updateInput = {
         ...originalReportDoc,
-        form: 'bye bye'
+        form: 'undo_death_report'
       };
       const updateOpts = {
         path: '/api/v1/report', 
@@ -411,7 +411,7 @@ describe('Report API', () => {
       const createInput = {
         type: 'data_record',
         contact: contact0._id,
-        form: 'hello'
+        form: 'undo_death_report'
       };
 
       const createOpts = {
@@ -445,7 +445,7 @@ describe('Report API', () => {
       const createInput = {
         type: 'data_record',
         contact: contact0._id,
-        form: 'hello'
+        form: 'undo_death_report'
       };
 
       const createOpts = {
@@ -461,7 +461,7 @@ describe('Report API', () => {
       const updateInput = {
         ...originalReportDoc,
         _id: '12312312',
-        form: 'new form'
+        form: 'pregnancy_home_visit'
       };
       const updateOpts = {
         path: '/api/v1/report', 
