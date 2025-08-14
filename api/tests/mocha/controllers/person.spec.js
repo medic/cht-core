@@ -157,7 +157,6 @@ describe('Person Controller', () => {
 
         await controller.v1.get(req, res);
 
-        expect(hasAllPermissions.notCalled).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(personGet.notCalled).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
@@ -241,7 +240,6 @@ describe('Person Controller', () => {
 
         await controller.v1.getAll(req, res);
 
-        expect(hasAllPermissions.notCalled).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(personGetPageByType.notCalled).to.be.true;
@@ -320,7 +318,9 @@ describe('Person Controller', () => {
           .stringify(input)}].`);
         await controller.v1.create(req, res);
         expect(hasAllPermissions
-          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_people'])).to.be.true;
+          .calledWith(userCtx, ['can_view_contacts', 'can_create_people'])).to.be.true;
+        expect(hasAllPermissions
+          .calledWith(userCtx, ['can_edit'])).to.be.true;
         expect(createPerson.notCalled).to.be.true;
         expect(serverUtilsError.calledOnce).to.be.true;
         expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(InvalidArgumentError);
@@ -347,7 +347,9 @@ describe('Person Controller', () => {
          
         await controller.v1.create(req, res);
         expect(hasAllPermissions
-          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_create_people'])).to.be.true;
+          .calledWith(userCtx, ['can_view_contacts', 'can_create_people'])).to.be.true;
+        expect(hasAllPermissions
+          .calledWith(userCtx, ['can_edit'])).to.be.true;
         expect(createPerson.calledOnce).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
         expect(dataContextBind.calledOnce).to.be.true;
@@ -387,7 +389,9 @@ describe('Person Controller', () => {
          
         await controller.v1.update(req, res);
         expect(hasAllPermissions
-          .calledOnceWithExactly(userCtx, ['can_view_contacts', 'can_update_users'])).to.be.true;
+          .calledWith(userCtx, ['can_view_contacts', 'can_update_people'])).to.be.true;
+        expect(hasAllPermissions
+          .calledWith(userCtx, ['can_edit'])).to.be.true;
         expect(updatePerson.calledOnce).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
         expect(dataContextBind.calledOnce).to.be.true;

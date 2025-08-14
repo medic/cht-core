@@ -111,7 +111,6 @@ describe('Report Controller Tests', () => {
 
         await controller.v1.get(req, res);
 
-        expect(hasAllPermissions.notCalled).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(reportGet.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
@@ -261,7 +260,6 @@ describe('Report Controller Tests', () => {
 
         await controller.v1.getUuids(req, res);
 
-        expect(hasAllPermissions.notCalled).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(qualifierByFreetext.notCalled).to.be.true;
         expect(reportGetIdsPage.notCalled).to.be.true;

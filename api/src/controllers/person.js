@@ -13,9 +13,13 @@ const getPageByType = () => ctx.bind(Person.v1.getPage);
 const createPerson = () => ctx.bind(Person.v1.create);
 const updatePerson = () => ctx.bind(Person.v1.update);
 
-const checkUserPermissions = async (req, permissions = ['can_view_contacts']) => {
+const checkUserPermissions = async (req, permissions = ['can_view_contacts'], altPermissions = []) => {
   const userCtx = await auth.getUserCtx(req);
-  if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, permissions)){
+  const isOnlineUser = auth.isOnlineOnly(userCtx);
+  const hasRegularPermissions = auth.hasAllPermissions(userCtx, permissions);
+  const hasAlternativePermissions = altPermissions.length > 0 && auth.hasAllPermissions(userCtx, altPermissions);
+
+  if (!isOnlineUser || (!hasRegularPermissions && !hasAlternativePermissions)) {
     throw new PermissionError('Insufficient privileges');
   }
 };
@@ -23,7 +27,7 @@ const checkUserPermissions = async (req, permissions = ['can_view_contacts']) =>
 module.exports = {
   v1: {
     get: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req);
+      await checkUserPermissions(req, ['can_view_contacts']);
       const { uuid } = req.params;
       const person = await getPerson(req.query)(Qualifier.byUuid(uuid));
       if (!person) {
@@ -32,7 +36,7 @@ module.exports = {
       return res.json(person);
     }),
     getAll: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req);
+      await checkUserPermissions(req, ['can_view_contacts']);
 
       const personType  = Qualifier.byContactType(req.query.type);
 
@@ -42,7 +46,7 @@ module.exports = {
     }),
     
     create: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req, ['can_view_contacts', 'can_create_people']);
+      await checkUserPermissions(req, ['can_view_contacts', 'can_create_people'], ['can_edit']);
 
       const personInput = Input.validatePersonInput(req.body);
       const personDoc = await createPerson()(personInput);
@@ -50,11 +54,12 @@ module.exports = {
     }),
 
     update: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req, ['can_view_contacts', 'can_update_users']);
+      await checkUserPermissions(req, ['can_view_contacts', 'can_update_people'], ['can_edit']);
 
       const updatePersonInput = req.body;
       const updatedPersonDoc = await updatePerson()(updatePersonInput);
       return res.json(updatedPersonDoc);
-    })
+    }),
+    checkUserPermissions
   },
 };
