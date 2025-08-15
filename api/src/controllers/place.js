@@ -1,7 +1,7 @@
 const { Place, Qualifier, Input } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
-const { checkUserPermissions } = require('../auth');
+const auth = require('../auth');
 
 
 const getPlace = ({ with_lineage }) => ctx.bind(
@@ -17,7 +17,7 @@ const update = () => ctx.bind(Place.v1.update);
 module.exports = {
   v1: {
     get: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req, ['can_view_contacts']);
+      await auth.checkUserPermissions(req, ['can_view_contacts']);
       const { uuid } = req.params;
       const place = await getPlace(req.query)(Qualifier.byUuid(uuid));
       if (!place) {
@@ -26,7 +26,7 @@ module.exports = {
       return res.json(place);
     }),
     getAll: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req, ['can_view_contacts']);
+      await auth.checkUserPermissions(req, ['can_view_contacts']);
 
       const placeType = Qualifier.byContactType(req.query.type);
 
@@ -35,14 +35,14 @@ module.exports = {
       return res.json(docs);
     }),
     create: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req, ['can_view_contacts', 'can_create_places'], ['can_edit']);
+      await auth.checkUserPermissions(req, ['can_view_contacts', 'can_create_places'], ['can_edit']);
       
       const placeInput = Input.validatePlaceInput(req.body);
       const placeDoc = await create()(placeInput);
       return res.json(placeDoc);
     }),
     update: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req, ['can_view_contacts', 'can_update_places'], ['can_edit']);
+      await auth.checkUserPermissions(req, ['can_view_contacts', 'can_update_places'], ['can_edit']);
       
       const updatedPlaceDoc = await update()(req.body);
       return res.json(updatedPlaceDoc);
