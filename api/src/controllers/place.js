@@ -1,7 +1,7 @@
 const { Place, Qualifier, Input } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
-const { v1: { checkUserPermissions } } = require('./person');
+const { checkUserPermissions } = require('../auth');
 
 
 const getPlace = ({ with_lineage }) => ctx.bind(

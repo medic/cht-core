@@ -1,7 +1,7 @@
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const { Report, Qualifier, Input } = require('@medic/cht-datasource');
-const { v1: { checkUserPermissions } } = require('./person');
+const { checkUserPermissions } = require('../auth');
 
 const getReport = () => ctx.bind(Report.v1.get);
 const getReportIds = () => ctx.bind(Report.v1.getUuidsPage);
