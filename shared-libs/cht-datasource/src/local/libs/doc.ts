@@ -33,7 +33,7 @@ export const queryDocs = (
   db: PouchDB.Database<Doc>,
   view: string,
   options: PouchDB.Query.Options<Doc, Record<string, unknown>>
-):Promise<(Doc | null)[]> => db
+):Promise<Nullable<Doc>[]> => db
   .query(view, options)
   .then(({ rows }) => rows.map(({ doc }) => isDoc(doc) ? doc : null));
 
