@@ -16,7 +16,7 @@ const updatePerson = () => ctx.bind(Person.v1.update);
 const checkUserPermissions = async (req, permissions = ['can_view_contacts'], altPermissions = []) => {
   const userCtx = await auth.getUserCtx(req);
   const isOnlineUser = auth.isOnlineOnly(userCtx);
-  const hasRegularPermissions = auth.hasAllPermissions(userCtx, permissions);
+  const hasPrimaryPermissions = auth.hasAllPermissions(userCtx, permissions);
   const hasAlternativePermissions = altPermissions.length > 0 && auth.hasAllPermissions(userCtx, altPermissions);
 
   if (!isOnlineUser || (!hasRegularPermissions && !hasAlternativePermissions)) {
