@@ -237,9 +237,6 @@ export class TableContentComponent implements OnInit, AfterViewInit {
   };
   
   //   async loadData(){
-  //     // To reduce telemetry doc results we want to:
-  //     // - reduce the amount of returned "connected users" to only this period's year 
-  //     // - only request telemetry docs up to two months
   //     const startingPoint = moment().subtract(2, 'months'); 
   //     const connectedUsersCutoff = startingPoint.clone().subtract(8, 'months').valueOf();
   

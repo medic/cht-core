@@ -132,11 +132,6 @@ type DynamicTemplate = WithKey<typeof SUPPORTED_TEMPLATES.DYNAMIC, {
   onReload: string
 }>;
 
-// A more intricate template could be defined
-// It would need a set of services or libs that can be accessed
-// Without foreclosing too much :/.
-// Perhaps allow the user to define a set of methods, maybe onInit, onDestroy, to which we pass data/methods.
-
 type Template = iFrameTemplate | GridTemplate | TableTemplate | DynamicTemplate;
 
 type CustomPageSettings = {

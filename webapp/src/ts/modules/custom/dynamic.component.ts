@@ -12,14 +12,6 @@ import { DomSanitizer } from '@angular/platform-browser';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicTemplateRenderer {
-  // intermediary: Map<string, any> = new Map(Object.entries({
-  //   isLoading: false,
-  //   displayedColumns: [] as Array<string>,
-  //   // TODO: rest
-    
-  //   testing: 'my test value here'
-  // })); // This var should be used to tie code and html together.
-
   constructor(
     private injector: EnvironmentInjector,
     private sanitizer: DomSanitizer
