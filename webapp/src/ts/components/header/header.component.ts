@@ -21,6 +21,7 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 import { HeaderLogoPipe, ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 
 import { HeaderTab, HeaderTabsService } from '@mm-services/header-tabs.service';
+import { partition } from 'lodash-es';
 
 export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
 
@@ -48,10 +49,10 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
   @Input() canLogOut;
 
   showPrivacyPolicy = false;
-  // replicationStatus;
   currentTab;
   unreadCount = {};
   permittedTabs: HeaderTab[] = [];
+  secondaryTabs: HeaderTab[] = [];
 
   constructor(
     protected readonly store: Store,
@@ -94,7 +95,10 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
       .get()
       .then(settings => this.headerTabsService.getAuthorizedTabs(settings))
       .then(permittedTabs => {
-        this.permittedTabs = permittedTabs;
+        [this.permittedTabs, this.secondaryTabs] = partition(
+          permittedTabs,
+          tab => tab.tabType !== 'secondary'
+        );
       });
   }
 }

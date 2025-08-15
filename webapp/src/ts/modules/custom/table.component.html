@@ -1,0 +1,129 @@
+<div style="display: flex; flex-direction: column; height: 100%;">
+  <div>
+    <!-- <ng-container #pageHeaderContainer></ng-container> -->
+    <ng-container *ngIf="hasCustomHeader; else defaultHeader">
+        <ng-container #pageHeaderContainer></ng-container>
+    </ng-container>
+    <!-- <h3>User login status dashboard</h3>
+    <p>This screen displays data, and averages, for the selected period of [to] [from].</p>
+    <p><strong>NOTE: Replication tracking can be delayed by a few days due to how the telemetry records are created.
+      Each time an action is performed on the client, a record will be created in the user's own meta db.
+      The aggregate doc for the previous day is created when the first telemetry item is recorded each day. 
+      After which the singular telemetry docs will be removed from the user's specific db to reduce the amount of records required to sync.
+      Sentinel wil then pick up these documents and move them over to the communal meta database, this aggregation process occurs "nightly".
+      <a href="https://forum.communityhealthtoolkit.org/t/sync-issues-status-scrutiny/3359/11">Read more on the related CHT Forum Post</a>
+    </strong></p> -->
+    <ng-template #defaultHeader>
+        <h1>{{ title }}</h1>
+        <mat-expansion-panel [expanded]="expanded">
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                {{ descriptionCollapsed }}
+                </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div style="display: block; width: 100%;">
+                <ng-container #descriptionExpandedContainer></ng-container>
+            </div>
+        </mat-expansion-panel>
+    </ng-template>
+    <p><button type="button" (click)="reload()">Reload</button></p> 
+  </div>
+
+  <div class="loader inline small" *ngIf="isLoading"></div>
+  <div style="flex: 1 1 auto; overflow: auto;">
+    <table matSort mat-table [dataSource]="dataSource" class="mat-elevation-z2" [style.display]="isLoading ? 'none' : ''">
+        @for (entry of displayedColumns | keyvalue; track entry.key) {
+            <ng-container [matColumnDef]="entry.key">
+                <th 
+                    mat-header-cell 
+                    *matHeaderCellDef 
+                    mat-sort-header 
+                    [disabled]="!entry.value.canSort"
+                    style="position: sticky; top: 0; background: white; z-index: 1;"> 
+                        {{entry.value.displayValue}} 
+                </th>
+                <!-- All of the different supported pipes -->
+                <td mat-cell *matCellDef="let element; let i = index">
+                    <!-- Preprocess the value just once -->
+                     <ng-container 
+                        *ngTemplateOutlet="cellTemplate; 
+                        context: { 
+                            processed: (entry.key | processValue : element[entry.key] : i : dataSource.data.length : element : processValueFn),
+                            pipeType: entry.value?.pipe
+                        }">
+                    </ng-container>
+                    <!-- <ng-container 
+                        *ngTemplateOutlet="cellTemplate; 
+                        context: { 
+                            processed: processValue(entry.key, element[entry.key], i, dataSource.data.length), 
+                            pipeType: entry.value?.pipe 
+                        }">
+                    </ng-container> -->
+                </td>
+
+                <!-- Template that applies the right pipe -->
+                <ng-template #cellTemplate let-processed="processed" let-pipeType="pipeType">
+                    <ng-container [ngSwitch]="pipeType">
+                        <span *ngSwitchCase="'date'">{{ processed | simpleDateTime }}</span>
+                        <span *ngSwitchCase="'decimal2'">{{ (typeof processed === 'number' && !isNaN(processed)) ? processed.toFixed(2) : processed }}</span>
+                        <span *ngSwitchDefault>{{ processed }}</span>
+                    </ng-container>
+                </ng-template>
+                <!-- <td mat-cell *matCellDef="let element">
+                    <ng-container [ngSwitch]="entry.value?.pipe">
+                        <span *ngSwitchCase="'date'">{{ element[entry.key] | simpleDateTime }}</span>
+                        <span *ngSwitchCase="'decimal2'">{{ element[entry.key].toFixed(2) }}</span>
+                        <span *ngSwitchDefault>{{ element[entry.key] }}</span>
+                    </ng-container>
+                </td> -->
+            </ng-container>
+        } @empty {
+            <li>There are no items.</li>
+        }
+
+        <!-- <ng-container matColumnDef="username">
+        <th mat-header-cell *matHeaderCellDef> Username: </th>
+        <td mat-cell *matCellDef="let element"> {{element.username}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="lastServerConnectionDate">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Last Server Connection: </th>
+        <td mat-cell *matCellDef="let element"> {{ element.lastServerConnectionDate | simpleDateTime }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="latestFromSyncDateMs">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Last ↓ Sync: </th>
+        <td mat-cell *matCellDef="let element"> {{ element.entryCount === 0 ? 'NA' : (element.latestFromSyncDateMs | simpleDateTime) }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="latestToSyncDateMs">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Last ↑ Sync: </th>
+        <td mat-cell *matCellDef="let element"> {{ element.entryCount === 0 ? 'NA' : (element.latestToSyncDateMs | simpleDateTime) }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="latestApproximateDeviceDocCount">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Approximate doc count: </th>
+        <td mat-cell *matCellDef="let element"> {{ element.entryCount === 0 ? 'NA' : (element.latestApproximateDeviceDocCount) }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="totalDaysBetweenUpSync">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Avg days between ↑ sync (w adj) </th>
+        <td mat-cell *matCellDef="let element"> {{ element.entryCount === 0 ? 'NA' : (calcAvgTo2(element.totalDaysBetweenUpSync, element.entryCount)) }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="totalDaysBetweenDownSync">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Avg days between ↓ sync (w adj) </th>
+        <td mat-cell *matCellDef="let element"> {{ element.entryCount === 0 ? 'NA' : (calcAvgTo2(element.totalDaysBetweenDownSync, element.entryCount)) }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="totalInactiveDays">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Activity gap (w adj) </th>
+        <td mat-cell *matCellDef="let element"> {{ element.entryCount === 0 ? 'NA' : (calcAvgTo2(element.totalInactiveDays, element.entryCount, 0)) }} </td>
+        </ng-container> -->
+
+        <tr mat-header-row *matHeaderRowDef="getColumns()"></tr>
+        <tr mat-row *matRowDef="let row; columns: getColumns();"></tr>
+    </table>
+  </div>
+</div>

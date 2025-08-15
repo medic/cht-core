@@ -1,0 +1,64 @@
+<div class="filters">
+  <div class="inner">
+    <mm-navigation></mm-navigation>
+  </div>
+</div>
+
+<div class="inner">
+  <div class="inbox page">
+    <div *ngIf="isSupportedTemplate(); else elseBlock" style="width: 100%; height: 100%;">
+        <ng-container *ngTemplateOutlet="currentTemplate"></ng-container>
+    </div>
+    <ng-template #elseBlock><span style="display: block; width: 100%; height: 100%; text-align: center; align-content: center;">Invalid template key</span></ng-template>
+  </div>
+</div>
+
+<!-- A couple of pre-defined templates for the user to choose from -->
+<!-- If none of these fit their needs, the dynamic template is available -->
+
+<!-- Content for the iframe template type -->
+<ng-template #iframe>
+  <iframe [src]="getIFrameTemplateURL()" width="100%" height="100%" frameborder="0"></iframe>
+</ng-template>
+
+<!-- Content for the grid template type-->
+<ng-template #grid>
+  <div width="100%" height="100%">
+    <div class="grid-container" style="align-content: center;">
+        <!-- If internal link we should use: -->
+        <!-- <a [routerLink]="item.url" class="grid-item">...</a> -->
+        <!-- So maybe accept another prop -->
+        <a 
+            class="grid-item" 
+            *ngFor="let item of getGridItems()"
+            [href]="item.url"
+            rel="noopener noreferrer"
+        >
+            <div 
+                class="thumbnail" 
+                [innerHTML]="item.thumbnailResource | resourceIcon" 
+                role="img">
+            </div>
+            <!-- <img 
+                *ngIf="item.thumbnailResource" 
+                [src]="item.thumbnailResource | resourceIcon" 
+                alt="Thumbnail" 
+                class="thumbnail" 
+            /> -->
+            <p class="description">{{ item.description }}</p>
+        </a>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #table>
+  <table-content [config]="config"></table-content>
+</ng-template>
+
+<!-- We'll still need some sort of framework to allow for safe usage of exposed data -->
+<!-- To avoid running into cross site scripting attack warnings -->
+<!-- WARNING: sanitizing HTML stripped some content, see https://g.co/ng/security#xss -->
+<ng-template #dynamic>
+  <p>Dynamic content here</p>
+  <!-- <div *ngIf="intermediary.get('html')" [innerHTML]="intermediary.get('html')"></div> -->
+</ng-template>

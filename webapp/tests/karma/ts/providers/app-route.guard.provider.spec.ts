@@ -4,17 +4,20 @@ import { expect } from 'chai';
 import { ActivatedRouteSnapshot } from '@angular/router';
 
 import { AppRouteGuardProvider } from '../../../../src/ts/app-route.guard.provider';
+import { SettingsService } from '@mm-services/settings.service';
 
 describe('RouteGuard provider', () => {
   let authService;
   let router;
   let provider:AppRouteGuardProvider;
+  let settingService;
 
   beforeEach(() => {
     authService = { has: sinon.stub() };
     router = { navigate: sinon.stub() };
+    settingService = { get: sinon.stub() };
 
-    provider = new AppRouteGuardProvider(authService, router);
+    provider = new AppRouteGuardProvider(authService, router, settingService as SettingsService);
   });
 
   afterEach(() => sinon.stub());

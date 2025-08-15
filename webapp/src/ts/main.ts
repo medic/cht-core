@@ -15,7 +15,11 @@ if (!window.startupTimes) {
 }
 window.startupTimes.firstCodeExecution = performance.now();
 
-window.PouchDB = require('pouchdb-browser').default;
+// window.PouchDB = require('pouchdb-browser').default;
+const PouchDB = require('pouchdb-browser').default;
+const PouchFind = require('pouchdb-find');
+PouchDB.plugin(PouchFind.default);
+window.PouchDB = PouchDB;
 window.$ = window.jQuery = require('jquery');
 
 import { enableProdMode, importProvidersFrom } from '@angular/core';
