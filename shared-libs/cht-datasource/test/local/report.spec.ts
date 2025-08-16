@@ -13,7 +13,6 @@ describe('local report', () => {
   let warn: SinonStub;
   let createDocOuter: SinonStub;
   let createDocInner : SinonStub;
-  let queryDocs: SinonStub;
   let updateDocOuter: SinonStub;
   let updateDocInner : SinonStub;
   let getDocByIdOuter : SinonStub;
@@ -28,10 +27,6 @@ describe('local report', () => {
     } as unknown as LocalDataContext;
     warn = sinon.stub(logger, 'warn');
     createDocOuter = sinon.stub(LocalDoc, 'createDoc');
-    queryDocs = sinon.stub(LocalDoc, 'queryDocs')
-      .resolves([
-        {_id: 'form:pregnancy_danger_sign'}, {_id: 'form:undo_death_report'}
-      ] as Doc[]);
     updateDocOuter = sinon.stub(LocalDoc, 'updateDoc').returns(updateDocInner);
     getDocByIdInner = sinon.stub();
     getDocByIdOuter = sinon.stub(LocalDoc, 'getDocById').returns(getDocByIdInner);
@@ -432,6 +427,14 @@ describe('local report', () => {
     });
 
     describe('createReport', () => {
+      let queryDocUuidsByKeyInner :SinonStub;
+      let queryDocUuidsByKeyOuter :SinonStub;
+
+      beforeEach(() => {
+        queryDocUuidsByKeyInner = sinon.stub();
+        queryDocUuidsByKeyOuter = sinon.stub(LocalDoc, 'queryDocUuidsByKey');
+        queryDocUuidsByKeyOuter.returns(queryDocUuidsByKeyInner);
+      });
       it('creates a report doc for valid report qualifier', async () => {
         const input = {
           type: 'data_record',
@@ -447,6 +450,7 @@ describe('local report', () => {
             _id: 'c2'
           }
         };
+        queryDocUuidsByKeyInner.resolves(['form:pregnancy_danger_sign']);
         getDocByIdInner.resolves(returnedContactDoc);
         const updatedInput = {
           ...input, contact: {
@@ -471,7 +475,7 @@ describe('local report', () => {
           contact: 'c1',
           reported_date: new Date().toISOString()
         };
-        
+        queryDocUuidsByKeyInner.resolves(['form:pregnancy_danger_sign']);
         getDocByIdInner.resolves(null);
         
         expect(createDocOuter.calledOnce).to.be.false;
@@ -482,16 +486,13 @@ describe('local report', () => {
       });
 
       it('throws error for invalid `form` value', async () => {
-        queryDocs.resolves([
-          {_id: 'form:undo_death_report'}
-        ] as Doc[]);
+        queryDocUuidsByKeyInner.resolves(['form:undo_death_report']);
         const input = {
           type: 'data_record',
           form: 'dummy_form_value',
           contact: 'c1',
           reported_date: new Date().toISOString()
         };
-        
         
         await expect(Report.v1.create(localContext)(input))
           .to.be.rejectedWith('Invalid `form` value');
@@ -517,6 +518,14 @@ describe('local report', () => {
   });
 
   describe('updateReport', () => {
+    let queryDocUuidsByKeyInner :SinonStub;
+    let queryDocUuidsByKeyOuter :SinonStub;
+
+    beforeEach(() => {
+      queryDocUuidsByKeyInner = sinon.stub();
+      queryDocUuidsByKeyOuter = sinon.stub(LocalDoc, 'queryDocUuidsByKey');
+      queryDocUuidsByKeyOuter.returns(queryDocUuidsByKeyInner);
+    });
     it('throws error when the update payload does not contain _id or _rev', async () => {
       const reportInput = {
         form: 'pregnancy_danger_sign',
@@ -555,6 +564,7 @@ describe('local report', () => {
           _id: '5'
         }
       };
+      queryDocUuidsByKeyInner.resolves(['form:pregnancy_danger_sign']);
       getDocByIdInner.resolves({...reportInput, form: 'pregnancy_danger_sign'});
       await expect(Report.v1.update(localContext)(reportInput))
         .to.be.rejectedWith('Invalid `form` value');
@@ -605,6 +615,7 @@ describe('local report', () => {
           parent: {_id: '7'}
         }
       };
+      queryDocUuidsByKeyInner.resolves(['form:pregnancy_danger_sign']);
       getDocByIdInner.resolves({...reportInput, old: true, language: 'English'});
       const modified = {
         ...reportInput, contact: {
