@@ -20,9 +20,9 @@ describe('update clinic', () => {
     transition = require('../../../src/transitions/update_clinics');
     dataContext.init({ bind: sinon.stub() });
     getContactWithLineage = sinon.stub();
-        dataContext.init({
-          bind: sinon.stub().returns(getContactWithLineage),
-        });
+    dataContext.init({
+      bind: sinon.stub().returns(getContactWithLineage),
+    });
   });
 
   afterEach(() => {
