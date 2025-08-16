@@ -30,7 +30,7 @@ const getCredentials = () => {
   return secureSettings.getCredentials('nepal_doit_sms:outgoing')
     .then(apiKey => {
       if (!apiKey) {
-        return Promise.reject('No api key configured. Refer to the Nepal DoIT SMS configuration documentation.');
+        return Promise.reject('No API key configured. Refer to the Nepal DoIT SMS configuration documentation.');
       }
       return { apiKey };
     });
@@ -53,6 +53,9 @@ const generateStateChange = (message, res) => {
     return;
   }
   const status = getStatus(res);
+  if (!status || status.retry) {
+    return;
+  }
   return {
     messageId: message.id,
     state: status.state,
@@ -123,16 +126,20 @@ module.exports = {
   send: messages => {
     // get the credentials every call so changes can be made without restarting api
     return getCredentials().then(credentials => {
-      return messages.reduce((promise, message) => {
-        return promise.then(changes => {
+      const changes = [];
+      let promise = Promise.resolve();
+      
+      messages.forEach(message => {
+        promise = promise.then(() => {
           return sendMessage(credentials, message).then(change => {
             if (change) {
               changes.push(change);
             }
-            return changes;
           });
         });
-      }, Promise.resolve([]));
+      });
+      
+      return promise.then(() => changes);
     });
   }
 
