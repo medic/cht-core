@@ -8,7 +8,7 @@ const utils = require('../../../src/lib/utils');
 const phone = '+34567890123';
 
 let transition;
-let lineageStub;
+let getContactWithLineage;
 
 describe('update clinic', () => {
   beforeEach(() => {
@@ -18,8 +18,11 @@ describe('update clinic', () => {
       getTranslations: sinon.stub().returns({})
     });
     transition = require('../../../src/transitions/update_clinics');
-    lineageStub = sinon.stub(transition._lineage, 'fetchHydratedDoc');
     dataContext.init({ bind: sinon.stub() });
+    getContactWithLineage = sinon.stub();
+        dataContext.init({
+          bind: sinon.stub().returns(getContactWithLineage),
+        });
   });
 
   afterEach(() => {
@@ -86,7 +89,7 @@ describe('update clinic', () => {
     };
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ id: contact._id }] });
-    lineageStub.resolves(contact);
+    getContactWithLineage.resolves(contact);
 
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
@@ -164,7 +167,7 @@ describe('update clinic', () => {
 
     config.getAll.returns({ contact_types: [ { id: 'clinic' } ] });
     sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: contact }] });
-    lineageStub.returns(Promise.resolve(contact));
+    getContactWithLineage.returns(Promise.resolve(contact));
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
       assert(doc.contact);
@@ -269,7 +272,7 @@ describe('update clinic', () => {
     };
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'someID' }] });
-    lineageStub.withArgs('someID').rejects('some error');
+    getContactWithLineage.withArgs('someID').rejects('some error');
 
     return transition.onMatch({ doc: doc }).catch(err => {
       assert.equal(err, 'some error');
@@ -498,7 +501,7 @@ describe('update clinic', () => {
 
     config.getAll.returns({ contact_types: [ { id: 'clinic' } ] });
     sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: contact }] });
-    lineageStub.resolves(contact);
+    getContactWithLineage.resolves(contact);
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
       assert(doc.contact);
