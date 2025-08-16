@@ -102,6 +102,7 @@ require('./services/cache');
 require('./services/changes');
 require('./services/contact-muted');
 require('./services/contact-types');
+require('./services/data-context');
 require('./services/db');
 require('./services/export');
 require('./services/extract-lineage');
