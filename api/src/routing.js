@@ -509,6 +509,7 @@ app.get('/api/v1/contact/:uuid', contact.v1.get);
 app.get('/api/v1/report/uuid', report.v1.getUuids);
 app.get('/api/v1/report/:uuid', report.v1.get);
 app.postJson('/api/v1/report', report.v1.create);
+app.putJson('/api/v1/report', report.v1.update);
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 

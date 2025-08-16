@@ -86,6 +86,21 @@ export namespace v1 {
   };
 
   /** @internal*/
+  const ensureFormFieldValidity = async(
+    medicDb: PouchDB.Database<Doc>,
+    input: Record<string, unknown>
+  ): Promise<void> => {
+    const allowedFormIds = await queryDocUuidsByKey(medicDb, 'medic-client/doc_by_type')(['form'], 1e6, 0);
+    const isValidFormType = allowedFormIds.some((id: string) => {
+      const expectedID = id.substring(5);
+      return expectedID === input.form;
+    });
+    if (!isValidFormType){
+      throw new InvalidArgumentError('Invalid `form` value');
+    }
+  };
+  
+  /** @internal*/
   export const create = ({
     medicDb
   } : LocalDataContext) => {
@@ -103,17 +118,20 @@ export namespace v1 {
       input = addParentToInput(input, 'contact', contactDehydratedLineage);
       return input;
     };
-    
+
     return async (input: ReportInput) :Promise<Report.v1.Report> => {
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a report.');
       }
+      await ensureFormFieldValidity(medicDb, input);
       input = await appendContact(input);
+      input = {...input, type: 'data_record'};
       return await createReportDoc(input) as Report.v1.Report;
     };
   };
 
   
+  /** @internal*/
   const validateReportUpdatePayload = (
     originalDoc:Doc,
     reportInput: Record<string, unknown>
@@ -122,7 +140,7 @@ export namespace v1 {
     const mutableRequiredFields = new Set(['form']);
     ensureHasRequiredFields(immutableRequiredFields, mutableRequiredFields, originalDoc, reportInput);
     ensureImmutability(immutableRequiredFields, originalDoc, reportInput);
-    // Now it is safe to assign reportInput.contact to the original doc's
+    // Now it is safe to assign reportInput.contact as the original doc's
     // dehydrated contact lineage as the hierarchy is verified.
     reportInput.contact = originalDoc.contact;
   };
@@ -146,6 +164,7 @@ export namespace v1 {
         throw new InvalidArgumentError('`_rev` does not match');
       }
       validateReportUpdatePayload(originalReportDoc, reportInput);
+      await ensureFormFieldValidity(medicDb, reportInput);
       
       return await updateReport(reportInput) as Report.v1.Report;
     };

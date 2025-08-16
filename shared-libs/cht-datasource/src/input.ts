@@ -1,4 +1,4 @@
-import {hasField, isRecord, hasFields, DataObject} from './libs/core';
+import {hasField, isRecord, hasFields, DataObject, convertToUnixTimestamp} from './libs/core';
 import { InvalidArgumentError } from './libs/error';
 
 /** 
@@ -40,6 +40,7 @@ export const validateContactInputNonAssertive = (data: unknown) : Record<string,
           '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
     );
   }
+  input.reported_date = convertToUnixTimestamp(input.reported_date as string|number);
   if (!checkContactInputFields(input)){
     throw new InvalidArgumentError(
       `Missing or empty required fields (name, type) for [${JSON.stringify(data)}].`
@@ -110,11 +111,12 @@ export const validateReportInput = (data: unknown): ReportInput => {
           '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
     );
   }
+  input.reported_date = convertToUnixTimestamp(input.reported_date as string|number);
   if (!hasField(input, {name: 'contact', type: 'string', ensureTruthyValue: true})){
     throw new InvalidArgumentError(`Missing or empty required field (contact) in [${JSON.stringify(data)}].`);
   }
   if (!isReportInput(input)) {
-    throw new InvalidArgumentError(`Missing or empty required fields (type, form) in [${JSON.stringify(data)}].`);
+    throw new InvalidArgumentError(`Missing or empty required field (form) in [${JSON.stringify(data)}].`);
   }
   return input;
 };
@@ -127,7 +129,6 @@ export const validateReportInput = (data: unknown): ReportInput => {
 export const isReportInput = (input: unknown): input is ReportInput => {
   if (isRecord(input) && 
         hasFields(input, [
-          {name: 'type', type: 'string', ensureTruthyValue: true}, 
           {name: 'form', type: 'string', ensureTruthyValue: true},
           {name: 'contact', type: 'string', ensureTruthyValue: true}
         ])

@@ -240,11 +240,11 @@ describe('cht-datasource Report', () => {
       });
     });
 
-    describe('createReport', () => {
+    describe('create', () => {
       it('creates a report for a valid input', async () => {
         const input = {
-          form: 'form-1',
-          type: 'report',
+          form: 'pregnancy_home_visit',
+          type: 'data_record',
           contact: contact0._id
         };
 
@@ -259,8 +259,8 @@ describe('cht-datasource Report', () => {
 
       it('throws error for missing contact', () => {
         const input = {
-          form: 'form-1',
-          type: 'report',
+          form: 'pregnancy_home_visit',
+          type: 'data_record',
         };
         const action = () => Report.v1.create(dataContext)(Input.validateReportInput(input));
         expect(action).to.throw(
@@ -271,8 +271,8 @@ describe('cht-datasource Report', () => {
 
       it('throws error for invalid date format via createReport',  () => {
         const input = {
-          form: 'form-1',
-          type: 'report',
+          form: 'pregnancy_home_visit',
+          type: 'data_record',
           reported_date: '112-9909-123'
         };
       
@@ -285,7 +285,49 @@ describe('cht-datasource Report', () => {
           `'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
         );
       });
-      
+    });
+
+    describe('update', () => {
+      const createInput = {
+        form: 'pregnancy_home_visit',
+        type: 'data_record',
+        contact: contact0._id
+      };
+
+      it('updates report for a valid update input', async () => {
+        const createdReport = await Report.v1.create(dataContext)(createInput);
+        const updateInput={
+          ...createdReport, form: 'pnc_danger_sign_follow_up_baby'
+        };
+        const updatedReport = await Report.v1.update(dataContext)(updateInput);
+        expect(updatedReport).excluding(['_rev'])
+          .to.deep.equal(updateInput);
+      });
+
+      it('throws error for missing required field', async () => {
+        const createdReport = await Report.v1.create(dataContext)(createInput);
+        const updateInput={
+          ...createdReport
+        };
+        delete updateInput.form;
+        await expect(Report.v1.update(dataContext)(updateInput))
+          .to.be.rejectedWith(JSON.stringify({
+            code: 400,
+            error: `Missing or empty required fields (form) for [${JSON.stringify(updateInput)}].`
+          }));
+      });
+
+      it('throws error when original report doc does not exist', async () => {
+        const createdReport = await Report.v1.create(dataContext)(createInput);
+        const updateInput={
+          ...createdReport, _id: '123123123'
+        };
+        await expect(Report.v1.update(dataContext)(updateInput))
+          .to.be.rejectedWith(JSON.stringify({
+            code: 400,
+            error: `Report not found`
+          }));
+      });
     });
   });
 });

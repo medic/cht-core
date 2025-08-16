@@ -474,7 +474,8 @@ describe('CHT Script API - getDatasource', () => {
           'getUuidsByFreetext',
           'getUuidsPageByFreetext',
           'getByUuid',
-          'create'
+          'create',
+          'update'
         ]);
       });
 

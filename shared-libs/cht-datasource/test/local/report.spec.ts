@@ -427,10 +427,18 @@ describe('local report', () => {
     });
 
     describe('createReport', () => {
+      let queryDocUuidsByKeyInner :SinonStub;
+      let queryDocUuidsByKeyOuter :SinonStub;
+
+      beforeEach(() => {
+        queryDocUuidsByKeyInner = sinon.stub();
+        queryDocUuidsByKeyOuter = sinon.stub(LocalDoc, 'queryDocUuidsByKey');
+        queryDocUuidsByKeyOuter.returns(queryDocUuidsByKeyInner);
+      });
       it('creates a report doc for valid report qualifier', async () => {
         const input = {
           type: 'data_record',
-          form: 'yes',
+          form: 'pregnancy_danger_sign',
           contact: 'c1',
           reported_date: new Date().toISOString()
         };
@@ -442,6 +450,7 @@ describe('local report', () => {
             _id: 'c2'
           }
         };
+        queryDocUuidsByKeyInner.resolves(['form:pregnancy_danger_sign']);
         getDocByIdInner.resolves(returnedContactDoc);
         const updatedInput = {
           ...input, contact: {
@@ -462,11 +471,11 @@ describe('local report', () => {
       it('throws error when contact with id does not exist in the db', async () => {
         const input = {
           type: 'data_record',
-          form: 'yes',
+          form: 'pregnancy_danger_sign',
           contact: 'c1',
           reported_date: new Date().toISOString()
         };
-        
+        queryDocUuidsByKeyInner.resolves(['form:pregnancy_danger_sign']);
         getDocByIdInner.resolves(null);
         
         expect(createDocOuter.calledOnce).to.be.false;
@@ -476,11 +485,26 @@ describe('local report', () => {
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
+      it('throws error for invalid `form` value', async () => {
+        queryDocUuidsByKeyInner.resolves(['form:undo_death_report']);
+        const input = {
+          type: 'data_record',
+          form: 'dummy_form_value',
+          contact: 'c1',
+          reported_date: new Date().toISOString()
+        };
+        
+        await expect(Report.v1.create(localContext)(input))
+          .to.be.rejectedWith('Invalid `form` value');
+        expect(getDocByIdInner.called).to.be.false;
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+      });
+
       it('throws error when _rev is passed in report input', async () => {
         
         const input = {
           type: 'data_record',
-          form: 'yes',
+          form: 'pregnancy_danger_sign',
           _rev: '1-rev',
           contact: 'c1'
         };
@@ -494,9 +518,17 @@ describe('local report', () => {
   });
 
   describe('updateReport', () => {
+    let queryDocUuidsByKeyInner :SinonStub;
+    let queryDocUuidsByKeyOuter :SinonStub;
+
+    beforeEach(() => {
+      queryDocUuidsByKeyInner = sinon.stub();
+      queryDocUuidsByKeyOuter = sinon.stub(LocalDoc, 'queryDocUuidsByKey');
+      queryDocUuidsByKeyOuter.returns(queryDocUuidsByKeyInner);
+    });
     it('throws error when the update payload does not contain _id or _rev', async () => {
       const reportInput = {
-        form: 'yes',
+        form: 'pregnancy_danger_sign',
         type: 'data_record',
         reported_date: 12312312
       };
@@ -509,7 +541,7 @@ describe('local report', () => {
       const reportInput = {
         _id: '1',
         _rev: '2',
-        form: 'yes',
+        form: 'pregnancy_danger_sign',
         type: 'data_record',
         reported_date: 12312312,
         contact: {
@@ -521,11 +553,28 @@ describe('local report', () => {
         .to.be.rejectedWith('`_rev` does not match');
     });
 
+    it('throws error when update input `form` is invalid', async () => {
+      const reportInput = {
+        _id: '1',
+        _rev: '2',
+        form: 'hello world',
+        type: 'data_record',
+        reported_date: 12312312,
+        contact: {
+          _id: '5'
+        }
+      };
+      queryDocUuidsByKeyInner.resolves(['form:pregnancy_danger_sign']);
+      getDocByIdInner.resolves({...reportInput, form: 'pregnancy_danger_sign'});
+      await expect(Report.v1.update(localContext)(reportInput))
+        .to.be.rejectedWith('Invalid `form` value');
+    });
+
     it('throws error original doc does not exist', async () => {
       const reportInput = {
         _id: '1',
         _rev: '2',
-        form: 'yes',
+        form: 'pregnancy_danger_sign',
         type: 'data_record',
         reported_date: 12312312,
         contact: {
@@ -541,7 +590,7 @@ describe('local report', () => {
       const reportInput = {
         _id: '1',
         _rev: '2',
-        form: 'yes',
+        form: 'pregnancy_danger_sign',
         type: 'data_record',
         reported_date: 12312312,
         contact: {
@@ -557,7 +606,7 @@ describe('local report', () => {
       const reportInput = {
         _id: '1',
         _rev: '2',
-        form: 'yes',
+        form: 'pregnancy_danger_sign',
         type: 'data_record',
         reported_date: 12312312,
         contact: {
@@ -566,6 +615,7 @@ describe('local report', () => {
           parent: {_id: '7'}
         }
       };
+      queryDocUuidsByKeyInner.resolves(['form:pregnancy_danger_sign']);
       getDocByIdInner.resolves({...reportInput, old: true, language: 'English'});
       const modified = {
         ...reportInput, contact: {
