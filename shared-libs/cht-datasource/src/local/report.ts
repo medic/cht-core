@@ -3,7 +3,6 @@ import {
   createDoc,
   fetchAndFilterUuids,
   getDocById,
-  queryDocs,
   queryDocUuidsByKey,
   queryDocUuidsByRange,
   updateDoc
@@ -91,15 +90,7 @@ export namespace v1 {
     medicDb: PouchDB.Database<Doc>,
     input: Record<string, unknown>
   ): Promise<void> => {
-    const allowedFormDocs = await queryDocs(medicDb, 'medic-client/doc_by_type', {
-      key: ['form'],
-      include_docs: true 
-    });
-
-    const allowedFormIds = allowedFormDocs
-      .filter(doc => doc !== null)
-      .map(doc => doc._id); 
-
+    const allowedFormIds = await queryDocUuidsByKey(medicDb, 'medic-client/doc_by_type')(['form'], 1e6, 0);
     const isValidFormType = allowedFormIds.some((id: string) => {
       const expectedID = id.substring(5);
       return expectedID === input.form;
