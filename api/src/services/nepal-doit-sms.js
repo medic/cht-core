@@ -95,7 +95,7 @@ const sendMessage = (credentials, message) => {
       const validResponse = getStatus(result);
       if (!validResponse) {
         logger.error(`SMS API returned status ${result.status}: %o`, result);
-        return; // retry later
+        return; // retry later - explicit return undefined
       }
       
       return generateStateChange(message, result);
@@ -112,8 +112,15 @@ const sendMessage = (credentials, message) => {
       
       // Unknown error - retry later
       logger.error(`Unknown error sending SMS: %o`, err);
-      return; // retry later
     });
+};
+
+const processMessage = (credentials, message, changes) => {
+  return sendMessage(credentials, message).then(change => {
+    if (change) {
+      changes.push(change);
+    }
+  });
 };
 
 module.exports = {
@@ -130,13 +137,7 @@ module.exports = {
       let promise = Promise.resolve();
       
       messages.forEach(message => {
-        promise = promise.then(() => {
-          return sendMessage(credentials, message).then(change => {
-            if (change) {
-              changes.push(change);
-            }
-          });
-        });
+        promise = promise.then(() => processMessage(credentials, message, changes));
       });
       
       return promise.then(() => changes);
