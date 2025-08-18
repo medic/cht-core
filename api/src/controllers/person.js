@@ -16,7 +16,7 @@ const updatePerson = () => ctx.bind(Person.v1.update);
 module.exports = {
   v1: {
     get: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, ['can_view_contacts']);
+      await auth.checkUserPermissions(req, [ 'can_view_contacts' ]);
       const { uuid } = req.params;
       const person = await getPerson(req.query)(Qualifier.byUuid(uuid));
       if (!person) {
@@ -25,17 +25,17 @@ module.exports = {
       return res.json(person);
     }),
     getAll: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, ['can_view_contacts']);
+      await auth.checkUserPermissions(req, [ 'can_view_contacts' ]);
 
-      const personType  = Qualifier.byContactType(req.query.type);
+      const personType = Qualifier.byContactType(req.query.type);
 
-      const docs = await getPageByType()( personType, req.query.cursor, req.query.limit );
+      const docs = await getPageByType()(personType, req.query.cursor, req.query.limit);
 
       return res.json(docs);
     }),
-    
+
     create: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, ['can_view_contacts', 'can_create_people'], ['can_edit']);
+      await auth.checkUserPermissions(req, [ 'can_view_contacts', 'can_create_people' ], [ 'can_edit' ]);
 
       const personInput = Input.validatePersonInput(req.body);
       const personDoc = await createPerson()(personInput);
@@ -43,7 +43,7 @@ module.exports = {
     }),
 
     update: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, ['can_view_contacts', 'can_update_people'], ['can_edit']);
+      await auth.checkUserPermissions(req, [ 'can_view_contacts', 'can_update_people' ], [ 'can_edit' ]);
 
       const updatePersonInput = req.body;
       const updatedPersonDoc = await updatePerson()(updatePersonInput);

@@ -20,7 +20,7 @@ describe('qualifier', () => {
   after(() => {
     clock.restore();
   });
-  
+
   describe('byUuid', () => {
     it('builds a qualifier that identifies an entity by its UUID', () => {
       expect(byUuid('uuid')).to.deep.equal({ uuid: 'uuid' });
@@ -29,7 +29,7 @@ describe('qualifier', () => {
     [
       null,
       '',
-      { },
+      {},
     ].forEach(uuid => {
       it(`throws an error for ${JSON.stringify(uuid)}`, () => {
         expect(() => byUuid(uuid as string)).to.throw(`Invalid UUID [${JSON.stringify(uuid)}].`);
@@ -41,7 +41,7 @@ describe('qualifier', () => {
     [
       [ null, false ],
       [ 'uuid', false ],
-      [ { uuid: { } }, false ],
+      [ { uuid: {} }, false ],
       [ { uuid: 'uuid' }, true ],
       [ { uuid: 'uuid', other: 'other' }, true ]
     ].forEach(([ identifier, expected ]) => {
@@ -59,7 +59,7 @@ describe('qualifier', () => {
     [
       null,
       '',
-      { },
+      {},
     ].forEach(contactType => {
       it(`throws an error for ${JSON.stringify(contactType)}`, () => {
         expect(() => byContactType(contactType as string)).to.throw(
@@ -73,7 +73,7 @@ describe('qualifier', () => {
     [
       [ null, false ],
       [ 'person', false ],
-      [ { contactType: { } }, false ],
+      [ { contactType: {} }, false ],
       [ { contactType: 'person' }, true ],
       [ { contactType: 'person', other: 'other' }, true ]
     ].forEach(([ contactType, expected ]) => {
@@ -95,7 +95,7 @@ describe('qualifier', () => {
     [
       null,
       '',
-      { },
+      {},
       'ab',
       ' '
     ].forEach(freetext => {
@@ -121,5 +121,5 @@ describe('qualifier', () => {
       });
     });
   });
-  
+
 });

@@ -1,4 +1,4 @@
-import { getResource, RemoteDataContext, getResources, postResource, putResource } from './libs/data-context';
+import { getResource, getResources, postResource, putResource, RemoteDataContext } from './libs/data-context';
 import { FreetextQualifier, UuidQualifier } from '../qualifier';
 import * as Report from '../report';
 import { Nullable, Page } from '../libs/core';
@@ -9,7 +9,7 @@ export namespace v1 {
   const getReport = (remoteContext: RemoteDataContext) => getResource(remoteContext, 'api/v1/report');
 
   const getReportUuids = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/report/uuid');
-  
+
   const createReport = (remoteContext: RemoteDataContext) => postResource(remoteContext, 'api/v1/report');
 
   const updateReport = (remoteContext: RemoteDataContext) => putResource(remoteContext, `api/v1/report`);

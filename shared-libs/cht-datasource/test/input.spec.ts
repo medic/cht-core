@@ -1,5 +1,12 @@
-import { isContactInput, isPersonInput, isPlaceInput, isReportInput, 
-  validateContactInput, validatePersonInput, validatePlaceInput, validateReportInput 
+import {
+  isContactInput,
+  isPersonInput,
+  isPlaceInput,
+  isReportInput,
+  validateContactInput,
+  validatePersonInput,
+  validatePlaceInput,
+  validateReportInput
 } from '../src/input';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -23,7 +30,7 @@ describe('input', () => {
         name: 'A', type: 'person', reported_date: 1672531283000
       });
     });
-  
+
     it('builds a input for creation and update of a contact with the optional reported_date field.', () => {
       expect(validateContactInput({
         name: 'A', type: 'person', reported_date: '2025-06-03T12:45:30Z'
@@ -31,14 +38,14 @@ describe('input', () => {
         name: 'A', type: 'person', reported_date: 1748954730000
       });
     });
-  
+
     it('throws error for invalid reported_date field.', () => {
       expect(() => validateContactInput({
         name: 'A', type: 'person', reported_date: '2025-06'
       })).to.throw('Invalid reported_date. Expected format to be ' +
         '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.');
     });
-  
+
     it('throws error for missing or empty required fields.', () => {
       [
         {
@@ -52,7 +59,7 @@ describe('input', () => {
         }
       ].forEach((input) => expect(() => validateContactInput(input))
         .to.throw(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}].`));
-      
+
     });
 
     it('throws error for invalid data object type.', () => {
@@ -61,7 +68,7 @@ describe('input', () => {
         .to.throw('Invalid "data": expected an object.');
     });
   });
-  
+
   describe('isContactInput', () => {
     it('returns false for missing or empty required fields.', () => {
       [
@@ -76,7 +83,7 @@ describe('input', () => {
         }
       ].forEach((input) => expect(isContactInput(input)).to.be.false);
     });
-  
+
     it('returns false for invalid reported_date format', () => {
       [
         {
@@ -87,7 +94,7 @@ describe('input', () => {
         }
       ].forEach((input) => expect(isContactInput(input)).to.be.false);
     });
-  
+
     it('returns true for valid contact inputs', () => {
       [
         {
@@ -115,10 +122,10 @@ describe('input', () => {
 
     it('builds a input for creation and update of a report with the optional fields.', () => {
       expect(validateReportInput({
-        type: 'data_record', form: 'yes', _id: 'id-1', _rev: 'rev-3', reported_date: '2025-06-03T12:45:30.222Z', 
+        type: 'data_record', form: 'yes', _id: 'id-1', _rev: 'rev-3', reported_date: '2025-06-03T12:45:30.222Z',
         contact: 'c2'
       })).to.deep.equal({
-        type: 'data_record', form: 'yes', _id: 'id-1', _rev: 'rev-3', 
+        type: 'data_record', form: 'yes', _id: 'id-1', _rev: 'rev-3',
         contact: 'c2', reported_date: 1748954730222
       });
     });
@@ -130,10 +137,10 @@ describe('input', () => {
         reported_date: '2025',
       })).to.throw(
         'Invalid reported_date. Expected format to be \'YYYY-MM-DDTHH:mm:ssZ\', ' +
-          '\'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
+        '\'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
       );
     });
-    
+
 
     it('throws error if input is not an object.', () => {
       [
@@ -146,11 +153,11 @@ describe('input', () => {
 
     it('throws error if form is not provided or empty.', () => {
       [
-        {reported_date: 3432433, contact: 'c1'},
-        {_id: 'id-1', _rev: 'rev-4', contact: 'c1', reported_date: CURRENT_ISO_TIMESTAMP},
-        {form: '', _id: 'id-1', _rev: 'rev-4', contact: 'c1'},
-        {contact: 'c1'},
-        {form: '', contact: 'c1'}
+        { reported_date: 3432433, contact: 'c1' },
+        { _id: 'id-1', _rev: 'rev-4', contact: 'c1', reported_date: CURRENT_ISO_TIMESTAMP },
+        { form: '', _id: 'id-1', _rev: 'rev-4', contact: 'c1' },
+        { contact: 'c1' },
+        { form: '', contact: 'c1' }
       ].forEach((input) => {
         expect(() => validateReportInput(input))
           .to.throw(`Missing or empty required field (form) in [${JSON.stringify(input)}].`);
@@ -159,8 +166,8 @@ describe('input', () => {
 
     it('throws error if contact is not provided or empty.', () => {
       [
-        {type: 'data_record', form: 'yes'},
-        {type: 'data_record', form: 'myform', contact: ''}
+        { type: 'data_record', form: 'yes' },
+        { type: 'data_record', form: 'myform', contact: '' }
       ].forEach((input) => {
         expect(() => validateReportInput(input))
           .to.throw(`Missing or empty required field (contact) in [${JSON.stringify(input)}].`);
@@ -171,13 +178,13 @@ describe('input', () => {
   describe('isReportInput', () => {
     it('returns false for missing or empty or invalid required fields', () => {
       [
-        {reported_date: 3432433},
-        {type: 'data_record', form: 'yes', contact: 'c1', reported_date: 'Thursday'},
-        {type: 'data_record', form: 'yes', contact: 'c1', reported_date: {day: '1', month: '12'}},
-        {type: 'data_record', _id: 'id-1', _rev: 'rev-4'},
-        {form: 'yes', _id: 'id-1', _rev: 'rev-4'},
-        {type: '', form: 'yes'},
-        {type: 'data_record', form: ''}
+        { reported_date: 3432433 },
+        { type: 'data_record', form: 'yes', contact: 'c1', reported_date: 'Thursday' },
+        { type: 'data_record', form: 'yes', contact: 'c1', reported_date: { day: '1', month: '12' } },
+        { type: 'data_record', _id: 'id-1', _rev: 'rev-4' },
+        { form: 'yes', _id: 'id-1', _rev: 'rev-4' },
+        { type: '', form: 'yes' },
+        { type: 'data_record', form: '' }
       ].forEach((input) => {
         expect(isReportInput(input)).to.be.false;
       });
@@ -185,9 +192,15 @@ describe('input', () => {
 
     it('returns true for valid inputs that have required fields and correct date format', () => {
       [
-        {type: 'data_record', contact: 'c1', _id: 'id-1', _rev: 'rev-4', form: 'yes', reported_date: 3432433},
-        {type: 'data_record', contact: 'c1', form: 'yes', _id: 'id-1', reported_date: '2025-06-03T12:45:30.222Z'},
-        {type: 'data_record', contact: 'c1', form: 'yes'}
+        { type: 'data_record', contact: 'c1', _id: 'id-1', _rev: 'rev-4', form: 'yes', reported_date: 3432433 },
+        {
+          type: 'data_record',
+          contact: 'c1',
+          form: 'yes',
+          _id: 'id-1',
+          reported_date: '2025-06-03T12:45:30.222Z'
+        },
+        { type: 'data_record', contact: 'c1', form: 'yes' }
       ].forEach((input) => {
         expect(isReportInput(input)).to.be.true;
       });
@@ -195,18 +208,18 @@ describe('input', () => {
 
     it('returns false for invalid reported_date format', () => {
       const input = {
-        type: 'data_record', 
-        _id: 'id-1', _rev: 'rev-4', 
+        type: 'data_record',
+        _id: 'id-1', _rev: 'rev-4',
         form: 'yes',
         reported_date: '2020-05-12'
       };
       expect(isReportInput(input)).to.be.false;
     });
-    
+
     it('returns false for invalid reported_date type', () => {
       const input = {
-        type: 'data_record', 
-        _id: 'id-1', _rev: 'rev-4', 
+        type: 'data_record',
+        _id: 'id-1', _rev: 'rev-4',
         form: 'yes',
         reported_date: {
           day: '12',
@@ -267,9 +280,9 @@ describe('input', () => {
           parent: 'p-1'
         }
       ].forEach((input) => {
-        const expected_input = {reported_date: 1672531283000, ...input};
+        const expected_input = { reported_date: 1672531283000, ...input };
         expect(validatePersonInput(input))
-          .to.deep.equal({...expected_input});
+          .to.deep.equal({ ...expected_input });
       });
 
     });
@@ -280,8 +293,8 @@ describe('input', () => {
       const data = {
         name: 'user-1',
         parent: 'p-1'
-      }; 
-      expect(isPersonInput(data)).to.be.false; 
+      };
+      expect(isPersonInput(data)).to.be.false;
     });
 
     it('returns false on missing parent object', () => {
@@ -316,7 +329,7 @@ describe('input', () => {
         name: 'place-1',
         parent: ''
       };
-      
+
       const expected_input = { ...input, reported_date: 1672531283000 };
       expect(() => validatePlaceInput(input))
         .to.throw(`Missing or empty required field (parent) for [${JSON.stringify(expected_input)}].`);
@@ -328,7 +341,7 @@ describe('input', () => {
         name: 'place-1',
         contact: ''
       };
-      
+
       const expected_input = { ...input, reported_date: 1672531283000 };
       expect(() => validatePlaceInput(input))
         .to.throw(`Missing or empty required field (contact) for [${JSON.stringify(expected_input)}].`);
@@ -368,21 +381,21 @@ describe('input', () => {
           name: 'place-1',
           type: 'hospital'
         }, {
-          name: 'place-1',
-          type: 'place',
-          parent: 'p1'
-        }, {
-          name: 'place-1',
-          type: 'place',
-          reported_date: 21231231, 
-        }, {
-          name: 'place-1',
-          type: 'place',
-          contact: 'c1',
-          parent: 'p1'
-        }
+        name: 'place-1',
+        type: 'place',
+        parent: 'p1'
+      }, {
+        name: 'place-1',
+        type: 'place',
+        reported_date: 21231231,
+      }, {
+        name: 'place-1',
+        type: 'place',
+        contact: 'c1',
+        parent: 'p1'
+      }
       ].forEach((input) => {
-        const expected_input = {reported_date: 1672531283000, ...input };
+        const expected_input = { reported_date: 1672531283000, ...input };
         expect(validatePlaceInput(input)).to.deep.equal(expected_input);
       });
     });
@@ -437,22 +450,22 @@ describe('input', () => {
           name: 'place-1',
           type: 'place'
         }, {
-          name: 'place-1',
-          type: 'contact',
-        }, {
-          name: 'place-1',
-          type: 'place',
-        }, {
-          name: 'place-1',
-          type: 'place',
-          reported_date: 21231231, 
-          contact: 'c1'
-        }, {
-          name: 'place-1',
-          type: 'place',
-          contact: 'c1',
-          parent: 'p1'
-        }
+        name: 'place-1',
+        type: 'contact',
+      }, {
+        name: 'place-1',
+        type: 'place',
+      }, {
+        name: 'place-1',
+        type: 'place',
+        reported_date: 21231231,
+        contact: 'c1'
+      }, {
+        name: 'place-1',
+        type: 'place',
+        contact: 'c1',
+        parent: 'p1'
+      }
       ].forEach((input) => {
         expect(isPlaceInput(input)).to.be.true;
       });

@@ -3,13 +3,13 @@ import logger from '@medic/logger';
 import sinon, { SinonStub } from 'sinon';
 import {
   assertRemoteDataContext,
+  getRemoteDataContext,
   getResource,
   getResources,
-  getRemoteDataContext,
   isRemoteDataContext,
-  RemoteDataContext,
   postResource,
-  putResource
+  putResource,
+  RemoteDataContext
 } from '../../../src/remote/libs/data-context';
 import { DataContext, InvalidArgumentError } from '../../../src';
 
@@ -20,7 +20,7 @@ describe('remote context lib', () => {
   let loggerError: SinonStub;
 
   beforeEach(() => {
-    fetchResponse = { 
+    fetchResponse = {
       ok: true,
       status: 200,
       statusText: 'OK',
@@ -35,10 +35,10 @@ describe('remote context lib', () => {
 
   describe('isRemoteDataContext', () => {
     ([
-      [{ url: 'hello.world' }, true],
-      [{ hello: 'world' }, false],
-      [{ }, false],
-    ] as [DataContext, boolean][]).forEach(([context, expected]) => {
+      [ { url: 'hello.world' }, true ],
+      [ { hello: 'world' }, false ],
+      [ {}, false ],
+    ] as [ DataContext, boolean ][]).forEach(([ context, expected ]) => {
       it(`evaluates ${JSON.stringify(context)}`, () => {
         expect(isRemoteDataContext(context)).to.equal(expected);
       });
@@ -54,7 +54,7 @@ describe('remote context lib', () => {
 
     ([
       { hello: 'world' },
-      { },
+      {},
     ] as DataContext[]).forEach(context => {
       it(`throws an error for ${JSON.stringify(context)}`, () => {
         expect(() => assertRemoteDataContext(context))
@@ -159,7 +159,8 @@ describe('remote context lib', () => {
 
     it('throws an error if the resource fetch resolves an error status', async () => {
       const path = 'path';
-      const resourceId = 'resource';      fetchResponse.ok = false;
+      const resourceId = 'resource';
+      fetchResponse.ok = false;
       fetchResponse.status = 501;
       fetchResponse.statusText = 'Not Implemented';
 
@@ -196,14 +197,17 @@ describe('remote context lib', () => {
       const expectedError = new InvalidArgumentError(errorMsg);
       await expect(postResource(context, path)(qualifier)).to.be.rejectedWith(errorMsg);
 
-      expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}`, 
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}`,
         {
-          method: 'POST', 
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(qualifier)})).to.be.true;
-      
+          body: JSON.stringify(qualifier)
+        }
+      )).to.be.true;
+
       expect(fetchResponse.text.called).to.be.true;
       expect(fetchResponse.json.notCalled).to.be.true;
       expect(loggerError.args[0]).to.deep.equal([
@@ -219,7 +223,7 @@ describe('remote context lib', () => {
         type: 'place'
       };
 
-      const expected_response = {...qualifier, _id: '1', _rev: '1', _reported_date: 123123123 };
+      const expected_response = { ...qualifier, _id: '1', _rev: '1', _reported_date: 123123123 };
       fetchResponse.ok = true;
       fetchResponse.status = 200;
       fetchResponse.json.resolves(expected_response);
@@ -227,13 +231,16 @@ describe('remote context lib', () => {
       const response = await postResource(context, path)(qualifier);
 
       expect(response).to.deep.equal(expected_response);
-      expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}`,
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}`,
         {
-          method: 'POST', 
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(qualifier)})).to.be.true;
+          body: JSON.stringify(qualifier)
+        }
+      )).to.be.true;
 
       expect(fetchResponse.json.calledOnceWithExactly()).to.be.true;
     });
@@ -260,14 +267,17 @@ describe('remote context lib', () => {
       const expectedError = new InvalidArgumentError(errorMsg);
       await expect(putResource(context, path)(input)).to.be.rejectedWith(errorMsg);
 
-      expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}`, 
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}`,
         {
-          method: 'PUT', 
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(input)})).to.be.true;
-      
+          body: JSON.stringify(input)
+        }
+      )).to.be.true;
+
       expect(fetchResponse.text.called).to.be.true;
       expect(fetchResponse.json.notCalled).to.be.true;
       expect(loggerError.args[0]).to.deep.equal([
@@ -283,7 +293,7 @@ describe('remote context lib', () => {
         type: 'place'
       };
 
-      const expected_response = {...qualifier, _id: '1', _rev: '1', _reported_date: 123123123 };
+      const expected_response = { ...qualifier, _id: '1', _rev: '1', _reported_date: 123123123 };
       fetchResponse.ok = true;
       fetchResponse.status = 200;
       fetchResponse.json.resolves(expected_response);
@@ -291,20 +301,23 @@ describe('remote context lib', () => {
       const response = await putResource(context, path)(qualifier);
 
       expect(response).to.deep.equal(expected_response);
-      expect(fetchStub.calledOnceWithExactly(`${context.url}/${path}`,
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}`,
         {
-          method: 'PUT', 
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(qualifier)})).to.be.true;
+          body: JSON.stringify(qualifier)
+        }
+      )).to.be.true;
 
       expect(fetchResponse.json.calledOnceWithExactly()).to.be.true;
     });
   });
 
   describe('getResources', () => {
-    const params = {abc: 'xyz'};
+    const params = { abc: 'xyz' };
     const stringifiedParams = new URLSearchParams(params).toString();
 
     it('fetches a resource with a path', async () => {

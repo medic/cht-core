@@ -10,7 +10,7 @@ import { expect } from 'chai';
 import { DataContext } from '../src';
 
 describe('person', () => {
-  const dataContext = { } as DataContext;
+  const dataContext = {} as DataContext;
   let assertDataContext: SinonStub;
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
@@ -131,12 +131,12 @@ describe('person', () => {
     });
 
     describe('getPage', () => {
-      const people = [{ _id: 'person1' }, { _id: 'person2' }, { _id: 'person3' }] as Person.v1.Person[];
+      const people = [ { _id: 'person1' }, { _id: 'person2' }, { _id: 'person3' } ] as Person.v1.Person[];
       const cursor = '1';
       const pageData = { data: people, cursor };
       const limit = 3;
       const stringifiedLimit = '3';
-      const personTypeQualifier = {contactType: 'person'} as const;
+      const personTypeQualifier = { contactType: 'person' } as const;
       const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;
 
@@ -257,11 +257,11 @@ describe('person', () => {
 
     describe('getAll', () => {
       const personType = 'person';
-      const personTypeQualifier = {contactType: personType} as const;
+      const personTypeQualifier = { contactType: personType } as const;
       const firstPerson = { _id: 'person1' } as Person.v1.Person;
       const secondPerson = { _id: 'person2' } as Person.v1.Person;
       const thirdPerson = { _id: 'person3' } as Person.v1.Person;
-      const people = [firstPerson, secondPerson, thirdPerson];
+      const people = [ firstPerson, secondPerson, thirdPerson ];
       const mockGenerator = function* () {
         for (const person of people) {
           yield person;
@@ -312,7 +312,7 @@ describe('person', () => {
     });
 
     describe('createPerson', () => {
-      it('throws error for invalid input', async() => {
+      it('throws error for invalid input', async () => {
         const input = {
           name: 'person-1',
           parent: 'p1'
@@ -322,7 +322,7 @@ describe('person', () => {
           .to.be.rejectedWith(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}]`);
       });
 
-      it('returns person doc for valid input', async() => {
+      it('returns person doc for valid input', async () => {
         const createPersonDoc = sinon.stub();
         adapt.returns(createPersonDoc);
         const input = {
@@ -339,7 +339,7 @@ describe('person', () => {
     });
 
     describe('updatePerson', () => {
-      it('returns person doc for valid input', async() => {
+      it('returns person doc for valid input', async () => {
         const updatePersonDoc = sinon.stub();
         adapt.returns(updatePersonDoc);
         const input = {
@@ -352,7 +352,7 @@ describe('person', () => {
         expect(result).to.deep.equal(input);
       });
 
-      it('Throws error is input is not a record', async() => {
+      it('Throws error is input is not a record', async () => {
         const updatePersonDoc = sinon.stub();
         adapt.returns(updatePersonDoc);
         const input = 'apoorva';

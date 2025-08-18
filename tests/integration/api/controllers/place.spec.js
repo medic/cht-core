@@ -58,7 +58,7 @@ describe('Place API', () => {
       _id: 'fixture:user:online-no-perms',
       name: 'Online User',
     },
-    roles: ['mm-online']
+    roles: [ 'mm-online' ]
   }));
   const offlineUser = utils.deepFreeze(userFactory.build({
     username: 'offline-has-perms',
@@ -67,18 +67,18 @@ describe('Place API', () => {
       _id: 'fixture:user:offline-has-perms',
       name: 'Offline User',
     },
-    roles: ['chw']
+    roles: [ 'chw' ]
   }));
-  const expectedPlaces = [place0, clinic1, clinic3];
+  const expectedPlaces = [ place0, clinic1, clinic3 ];
 
   before(async () => {
-    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic3, healthCenter2]);
-    await utils.createUsers([userNoPerms, offlineUser]);
+    await utils.saveDocs([ contact0, contact1, contact2, place0, place1, place2, clinic1, clinic3, healthCenter2 ]);
+    await utils.createUsers([ userNoPerms, offlineUser ]);
   });
 
   after(async () => {
     await utils.revertDb([], true);
-    await utils.deleteUsers([userNoPerms, offlineUser]);
+    await utils.deleteUsers([ userNoPerms, offlineUser ]);
   });
 
   describe('GET /api/v1/place/:uuid', async () => {
@@ -89,7 +89,7 @@ describe('Place API', () => {
         path: `${endpoint}/${place0._id}`,
       };
       const place = await utils.request(opts);
-      expect(place).excluding(['_rev', 'reported_date']).to.deep.equal(place0);
+      expect(place).excluding([ '_rev', 'reported_date' ]).to.deep.equal(place0);
     });
 
     it('returns the place with lineage when the withLineage query parameter is provided', async () => {
@@ -100,7 +100,7 @@ describe('Place API', () => {
         }
       };
       const place = await utils.request(opts);
-      expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+      expect(place).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
         ...place0,
         contact: contact0,
         parent: {
@@ -123,7 +123,7 @@ describe('Place API', () => {
         }
       };
       const place = await utils.request(opts);
-      expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+      expect(place).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
         ...clinic3,
         contact: {},
         parent: {
@@ -146,7 +146,7 @@ describe('Place API', () => {
         }
       };
       const place = await utils.request(opts);
-      expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+      expect(place).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
         ...healthCenter2,
       });
     });
@@ -159,9 +159,9 @@ describe('Place API', () => {
     });
 
     [
-      ['does not have can_view_contacts permission', userNoPerms],
-      ['is not an online user', offlineUser]
-    ].forEach(([description, user]) => {
+      [ 'does not have can_view_contacts permission', userNoPerms ],
+      [ 'is not an online user', offlineUser ]
+    ].forEach(([ description, user ]) => {
       it(`throws error when user ${description}`, async () => {
         const opts = {
           path: `/api/v1/place/${place0._id}`,
@@ -188,7 +188,7 @@ describe('Place API', () => {
       const responsePlaces = responsePage.data;
       const responseCursor = responsePage.cursor;
 
-      expect(responsePlaces).excludingEvery(['_rev', 'reported_date'])
+      expect(responsePlaces).excludingEvery([ '_rev', 'reported_date' ])
         .to.deep.equalInAnyOrder(expectedPlaces);
       expect(responseCursor).to.be.equal(null);
     });
@@ -200,9 +200,9 @@ describe('Place API', () => {
         qs: { type: placeType, cursor: firstPage.cursor, limit }
       });
 
-      const allPeople = [...firstPage.data, ...secondPage.data];
+      const allPeople = [ ...firstPage.data, ...secondPage.data ];
 
-      expect(allPeople).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPlaces);
+      expect(allPeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPlaces);
       expect(firstPage.data.length).to.be.equal(2);
       expect(secondPage.data.length).to.be.equal(1);
       expect(firstPage.cursor).to.be.equal('2');
@@ -292,7 +292,7 @@ describe('Place API', () => {
           _id: contact0._id, parent: contact0.parent
         }
       };
-      expect(placeDoc).excluding(['reported_date', '_id', '_rev']).to.deep.equal(updatedInput);
+      expect(placeDoc).excluding([ 'reported_date', '_id', '_rev' ]).to.deep.equal(updatedInput);
     });
 
     it('throws error for missing fields', async () => {
@@ -349,7 +349,7 @@ describe('Place API', () => {
         body: updatePlaceInput
       };
       const updatedPlaceDoc = await utils.request(updateOpts);
-      expect(updatedPlaceDoc).excluding(['_rev']).to.deep.equal(updatePlaceInput);
+      expect(updatedPlaceDoc).excluding([ '_rev' ]).to.deep.equal(updatePlaceInput);
     });
 
     it(`throws error on trying to update an immutable field`, async () => {
@@ -382,13 +382,13 @@ describe('Place API', () => {
       };
       expect(utils.request(updateOpts))
         .to.be.rejectedWith(
-          `400 - ${JSON.stringify({
-            code: 400,
-            error: `Value ${JSON.stringify(
-              updatePlaceInput.reported_date 
-            )} of immutable field 'reported_date' does not match with the original doc`
-          })}`
-        );
+        `400 - ${JSON.stringify({
+          code: 400,
+          error: `Value ${JSON.stringify(
+            updatePlaceInput.reported_date
+          )} of immutable field 'reported_date' does not match with the original doc`
+        })}`
+      );
     });
 
     it(`throws error on missing _id field`, async () => {
@@ -422,11 +422,11 @@ describe('Place API', () => {
       };
       expect(utils.request(updateOpts))
         .to.be.rejectedWith(
-          `400 - ${JSON.stringify({
-            code: 400,
-            error: `Document for update is not a valid Doc ${JSON.stringify(updatePlaceInput)}` 
-          })}`
-        );
+        `400 - ${JSON.stringify({
+          code: 400,
+          error: `Document for update is not a valid Doc ${JSON.stringify(updatePlaceInput)}`
+        })}`
+      );
     });
 
     it(`throws error on missing _rev field`, async () => {
@@ -460,12 +460,12 @@ describe('Place API', () => {
       };
       expect(utils.request(updateOpts))
         .to.be.rejectedWith(
-          `400 - ${JSON.stringify({
-            code: 400,
-            error: `Missing or empty required fields (_rev) for [${JSON
-              .stringify(updatePlaceInput)}].`
-          })}`
-        );
+        `400 - ${JSON.stringify({
+          code: 400,
+          error: `Missing or empty required fields (_rev) for [${JSON
+            .stringify(updatePlaceInput)}].`
+        })}`
+      );
     });
   });
 });

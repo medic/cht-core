@@ -10,7 +10,7 @@ import { DataContext } from '../src';
 import * as Core from '../src/libs/core';
 
 describe('place', () => {
-  const dataContext = { } as DataContext;
+  const dataContext = {} as DataContext;
   let assertDataContext: SinonStub;
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
@@ -131,12 +131,12 @@ describe('place', () => {
     });
 
     describe('getPage', () => {
-      const places = [{ _id: 'place1' }, { _id: 'place2' }, { _id: 'place3' }] as Place.v1.Place[];
+      const places = [ { _id: 'place1' }, { _id: 'place2' }, { _id: 'place3' } ] as Place.v1.Place[];
       const cursor = '1';
       const pageData = { data: places, cursor };
       const limit = 3;
       const stringifiedLimit = '3';
-      const placeTypeQualifier = {contactType: 'place'} as const;
+      const placeTypeQualifier = { contactType: 'place' } as const;
       const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;
 
@@ -259,11 +259,11 @@ describe('place', () => {
 
     describe('getAll', () => {
       const placeType = 'place';
-      const placeTypeQualifier = {contactType: placeType} as const;
+      const placeTypeQualifier = { contactType: placeType } as const;
       const firstPlace = { _id: 'place1' } as Place.v1.Place;
       const secondPlace = { _id: 'place2' } as Place.v1.Place;
       const thirdPlace = { _id: 'place3' } as Place.v1.Place;
-      const places = [firstPlace, secondPlace, thirdPlace];
+      const places = [ firstPlace, secondPlace, thirdPlace ];
       const mockGenerator = function* () {
         for (const place of places) {
           yield place;
@@ -283,7 +283,7 @@ describe('place', () => {
         isContactTypeQualifier.returns(true);
         getPagedGenerator.returns(mockGenerator);
 
-        const generator =   Place.v1.getAll(dataContext)(placeTypeQualifier);
+        const generator = Place.v1.getAll(dataContext)(placeTypeQualifier);
 
         expect(generator).to.deep.equal(mockGenerator);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -314,7 +314,7 @@ describe('place', () => {
     });
 
     describe('create', () => {
-      it('throws error for invalid input, here with a missing type', async() => {
+      it('throws error for invalid input, here with a missing type', async () => {
         const input = {
           name: 'place-1',
           parent: 'p1'
@@ -323,8 +323,8 @@ describe('place', () => {
         await expect(Place.v1.create(dataContext)(input as Input.PlaceInput))
           .to.be.rejectedWith(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}].`);
       });
-      
-      it('returns place doc for valid input', async() => {
+
+      it('returns place doc for valid input', async () => {
         const createPlaceDoc = sinon.stub();
         adapt.returns(createPlaceDoc);
         const input = {
@@ -334,13 +334,13 @@ describe('place', () => {
         isPlaceInput.returns(true);
         createPlaceDoc.resolves(input);
         const result = await Place.v1.create(dataContext)(input);
-      
+
         expect(result).to.deep.equal(input);
       });
     });
 
     describe('update', () => {
-      it('returns updated place doc for valid input', async() => {
+      it('returns updated place doc for valid input', async () => {
         const updatePlaceDoc = sinon.stub();
         adapt.returns(updatePlaceDoc);
         const updateInput = {
@@ -352,11 +352,11 @@ describe('place', () => {
         };
         updatePlaceDoc.resolves(expectedDoc);
         const result = await Place.v1.update(dataContext)(updateInput);
-      
+
         expect(result).to.deep.equal(expectedDoc);
       });
 
-      it('throws error for invalid input', async() => {
+      it('throws error for invalid input', async () => {
         const updatePlaceDoc = sinon.stub();
         adapt.returns(updatePlaceDoc);
         const updateInput = 'my-updated-place';

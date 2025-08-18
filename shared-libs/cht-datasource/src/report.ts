@@ -137,7 +137,7 @@ export namespace v1 {
    * @returns a function for creating a report.
    * @throws Error if a data context is not provided
    */
-  export const create =(context:DataContext):typeof curriedFn => {
+  export const create = (context: DataContext): typeof curriedFn => {
     assertDataContext(context);
     const fn = adapt(context, Local.Report.v1.create, Remote.Report.v1.create);
     /**
@@ -159,7 +159,7 @@ export namespace v1 {
    * @returns a function for updating a report.
    * @throws Error if a data context is not provided
    */
-  export const update = (context:DataContext):typeof curriedFn => {
+  export const update = (context: DataContext): typeof curriedFn => {
     assertDataContext(context);
     const fn = adapt(context, Local.Report.v1.update, Remote.Report.v1.update);
 
@@ -172,7 +172,7 @@ export namespace v1 {
      * @throws InvalidArgumentError if updateInput fields are not of expected type
      */
     const curriedFn = async (updateInput: unknown): Promise<Report> => {
-      if (!isRecord(updateInput)){
+      if (!isRecord(updateInput)) {
         throw new InvalidArgumentError('Invalid report update input');
       }
       return fn(updateInput);

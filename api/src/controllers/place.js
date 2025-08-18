@@ -17,7 +17,7 @@ const update = () => ctx.bind(Place.v1.update);
 module.exports = {
   v1: {
     get: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, ['can_view_contacts']);
+      await auth.checkUserPermissions(req, [ 'can_view_contacts' ]);
       const { uuid } = req.params;
       const place = await getPlace(req.query)(Qualifier.byUuid(uuid));
       if (!place) {
@@ -25,25 +25,28 @@ module.exports = {
       }
       return res.json(place);
     }),
+
     getAll: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, ['can_view_contacts']);
+      await auth.checkUserPermissions(req, [ 'can_view_contacts' ]);
 
       const placeType = Qualifier.byContactType(req.query.type);
 
-      const docs = await getPageByType()( placeType, req.query.cursor, req.query.limit );
+      const docs = await getPageByType()(placeType, req.query.cursor, req.query.limit);
 
       return res.json(docs);
     }),
+
     create: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, ['can_view_contacts', 'can_create_places'], ['can_edit']);
-      
+      await auth.checkUserPermissions(req, [ 'can_view_contacts', 'can_create_places' ], [ 'can_edit' ]);
+
       const placeInput = Input.validatePlaceInput(req.body);
       const placeDoc = await create()(placeInput);
       return res.json(placeDoc);
     }),
+
     update: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, ['can_view_contacts', 'can_update_places'], ['can_edit']);
-      
+      await auth.checkUserPermissions(req, [ 'can_view_contacts', 'can_update_places' ], [ 'can_edit' ]);
+
       const updatedPlaceDoc = await update()(req.body);
       return res.json(updatedPlaceDoc);
     })

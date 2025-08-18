@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import * as Index from '../src';
+import { DataContext } from '../src';
 import { hasAnyPermission, hasPermissions } from '../src/auth';
 import * as Contact from '../src/contact';
 import * as Person from '../src/person';
@@ -8,7 +9,6 @@ import * as Qualifier from '../src/qualifier';
 import * as Report from '../src/report';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
-import { DataContext } from '../src';
 import { Page } from '../src/libs/core';
 
 describe('CHT Script API - getDatasource', () => {
@@ -55,8 +55,8 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => place = v1.place);
 
       it('contains expected keys', () => {
-        expect(place).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType', 
-          'create', 'update']);
+        expect(place).to.have.all.keys([ 'getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType',
+          'create', 'update' ]);
       });
 
       it('getByUuid', async () => {
@@ -90,7 +90,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getPageByType', async () => {
-        const expectedPlaces: Page<Place.v1.Place> = {data: [], cursor: null};
+        const expectedPlaces: Page<Place.v1.Place> = { data: [], cursor: null };
         const placeGetPage = sinon.stub().resolves(expectedPlaces);
         dataContextBind.returns(placeGetPage);
         const placeType = 'place';
@@ -119,7 +119,7 @@ describe('CHT Script API - getDatasource', () => {
         const placeTypeQualifier = { contactType: placeType };
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(placeTypeQualifier);
 
-        const res =  place.getByType(placeType);
+        const res = place.getByType(placeType);
 
         expect(res).to.deep.equal(mockAsyncGenerator);
         expect(dataContextBind.calledOnceWithExactly(Place.v1.getAll)).to.be.true;
@@ -128,8 +128,9 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('create', async () => {
-        const placeInput = { name: 'p1', type: 'place'};
-        const expectedPlace = {...placeInput,
+        const placeInput = { name: 'p1', type: 'place' };
+        const expectedPlace = {
+          ...placeInput,
           reported_date: 12312312
         };
         const placeCreate = sinon.stub().resolves(expectedPlace);
@@ -144,8 +145,9 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('update', async () => {
-        const placeInput = { name: 'p1', type: 'place'};
-        const expectedPlace = {...placeInput,
+        const placeInput = { name: 'p1', type: 'place' };
+        const expectedPlace = {
+          ...placeInput,
           reported_date: 12312312
         };
         const placeUpdate = sinon.stub().resolves(expectedPlace);
@@ -168,7 +170,7 @@ describe('CHT Script API - getDatasource', () => {
         expect(person).to.have.all.keys([
           'getByType',
           'getByUuid',
-          'getByUuidWithLineage', 
+          'getByUuidWithLineage',
           'getPageByType',
           'create',
           'update'
@@ -192,7 +194,8 @@ describe('CHT Script API - getDatasource', () => {
 
       it('create', async () => {
         const personInput = { name: 'apoorva', type: 'person', parent: 'p1' };
-        const expectedPerson = {...personInput,
+        const expectedPerson = {
+          ...personInput,
           reported_date: 12312312
         };
         const personCreate = sinon.stub().resolves(expectedPerson);
@@ -208,7 +211,8 @@ describe('CHT Script API - getDatasource', () => {
 
       it('update', async () => {
         const personInput = { name: 'apoorva', type: 'person', parent: 'p1' };
-        const expectedPerson = {...personInput,
+        const expectedPerson = {
+          ...personInput,
           reported_date: 12312312
         };
         const personUpdate = sinon.stub().resolves(expectedPerson);
@@ -237,7 +241,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getPageByType', async () => {
-        const expectedPeople: Page<Person.v1.Person> = {data: [], cursor: null};
+        const expectedPeople: Page<Person.v1.Person> = { data: [], cursor: null };
         const personGetPage = sinon.stub().resolves(expectedPeople);
         dataContextBind.returns(personGetPage);
         const personType = 'person';
@@ -266,7 +270,7 @@ describe('CHT Script API - getDatasource', () => {
         const personTypeQualifier = { contactType: personType };
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
 
-        const res =  person.getByType(personType);
+        const res = person.getByType(personType);
 
         expect(res).to.deep.equal(mockAsyncGenerator);
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getAll)).to.be.true;
@@ -326,7 +330,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getUuidsPageByTypeFreetext', async () => {
-        const expectedContactIds: Page<Contact.v1.Contact> = {data: [], cursor: null};
+        const expectedContactIds: Page<Contact.v1.Contact> = { data: [], cursor: null };
         const contactGetIdsPage = sinon.stub().resolves(expectedContactIds);
         dataContextBind.returns(contactGetIdsPage);
         const freetext = 'abc';
@@ -353,7 +357,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getUuidsPageByType', async () => {
-        const expectedContactIds: Page<Contact.v1.Contact> = {data: [], cursor: null};
+        const expectedContactIds: Page<Contact.v1.Contact> = { data: [], cursor: null };
         const contactGetIdsPage = sinon.stub().resolves(expectedContactIds);
         dataContextBind.returns(contactGetIdsPage);
         const contactType = 'person';
@@ -375,7 +379,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getUuidsPageByFreetext', async () => {
-        const expectedContactIds: Page<Contact.v1.Contact> = {data: [], cursor: null};
+        const expectedContactIds: Page<Contact.v1.Contact> = { data: [], cursor: null };
         const contactGetIdsPage = sinon.stub().resolves(expectedContactIds);
         dataContextBind.returns(contactGetIdsPage);
         const freetext = 'abc';
@@ -407,13 +411,13 @@ describe('CHT Script API - getDatasource', () => {
         const freetext = 'abc';
         const contactType = 'person';
         const contactTypeQualifier = { contactType };
-        const freetextQualifier = {freetext };
+        const freetextQualifier = { freetext };
         const qualifier = { contactType, freetext };
         const andQualifier = sinon.stub(Qualifier, 'and').returns(qualifier);
         const byFreetext = sinon.stub(Qualifier, 'byFreetext').returns(freetextQualifier);
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(contactTypeQualifier);
 
-        const res =  contact.getUuidsByTypeFreetext(freetext, contactType);
+        const res = contact.getUuidsByTypeFreetext(freetext, contactType);
 
         expect(res).to.deep.equal(mockAsyncGenerator);
         expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
@@ -435,7 +439,7 @@ describe('CHT Script API - getDatasource', () => {
         const contactTypeQualifier = { contactType };
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(contactTypeQualifier);
 
-        const res =  contact.getUuidsByType(contactType);
+        const res = contact.getUuidsByType(contactType);
 
         expect(res).to.deep.equal(mockAsyncGenerator);
         expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
@@ -452,10 +456,10 @@ describe('CHT Script API - getDatasource', () => {
         const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(contactGetIds);
         const freetext = 'abc';
-        const freetextQualifier = {freetext };
+        const freetextQualifier = { freetext };
         const byFreetext = sinon.stub(Qualifier, 'byFreetext').returns(freetextQualifier);
 
-        const res =  contact.getUuidsByFreetext(freetext);
+        const res = contact.getUuidsByFreetext(freetext);
 
         expect(res).to.deep.equal(mockAsyncGenerator);
         expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
@@ -511,7 +515,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getUuidsPageByFreetext', async () => {
-        const expectedReportIds: Page<Report.v1.Report> = {data: [], cursor: null};
+        const expectedReportIds: Page<Report.v1.Report> = { data: [], cursor: null };
         const reportGetIdsPage = sinon.stub().resolves(expectedReportIds);
         dataContextBind.returns(reportGetIdsPage);
         const freetext = 'abc';
@@ -542,7 +546,7 @@ describe('CHT Script API - getDatasource', () => {
         const qualifier = { freetext };
         const byFreetext = sinon.stub(Qualifier, 'byFreetext').returns(qualifier);
 
-        const res =  report.getUuidsByFreetext(freetext);
+        const res = report.getUuidsByFreetext(freetext);
 
         expect(res).to.deep.equal(mockAsyncGenerator);
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuids)).to.be.true;
@@ -552,7 +556,8 @@ describe('CHT Script API - getDatasource', () => {
 
       it('createReport', async () => {
         const reportInput = { form: 'apoorva', type: 'report', contact: 'c1' };
-        const expectedReport = {...reportInput,
+        const expectedReport = {
+          ...reportInput,
           reported_date: 12312312
         };
         const reportCreate = sinon.stub().resolves(expectedReport);

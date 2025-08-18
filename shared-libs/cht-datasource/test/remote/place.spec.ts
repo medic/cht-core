@@ -20,9 +20,9 @@ describe('remote place', () => {
     getResourceOuter = sinon.stub(RemoteEnv, 'getResource').returns(getResourceInner);
     getResourcesInner = sinon.stub();
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
-    postResourceInner= sinon.stub();
+    postResourceInner = sinon.stub();
     postResourceOuter = sinon.stub(RemoteEnv, 'postResource').returns(postResourceInner);
-    putResourceInner= sinon.stub();
+    putResourceInner = sinon.stub();
     putResourceOuter = sinon.stub(RemoteEnv, 'putResource').returns(putResourceInner);
   });
 
@@ -89,7 +89,7 @@ describe('remote place', () => {
       };
 
       it('returns places', async () => {
-        const doc = [{ type: 'place' }, {type: 'place'}];
+        const doc = [ { type: 'place' }, { type: 'place' } ];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
@@ -118,7 +118,7 @@ describe('remote place', () => {
           name: 'user-1',
           parent: 'p1'
         };
-        const expected_doc = {...placeInput, _id: '2', _rev: '1'};
+        const expected_doc = { ...placeInput, _id: '2', _rev: '1' };
         postResourceInner.resolves(expected_doc);
         const result = await Place.v1.create(remoteContext)(placeInput);
         expect(result).to.deep.equal(expected_doc);
@@ -136,7 +136,7 @@ describe('remote place', () => {
           _id: '1',
           _rev: '1'
         };
-        const expected_doc = {...placeInput, _id: '1', _rev: '2'};
+        const expected_doc = { ...placeInput, _id: '1', _rev: '2' };
         putResourceInner.resolves(expected_doc);
         const result = await Place.v1.update(remoteContext)(placeInput);
         expect(result).to.deep.equal(expected_doc);

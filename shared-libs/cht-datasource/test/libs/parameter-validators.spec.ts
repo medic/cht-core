@@ -1,14 +1,15 @@
 import { ContactTypeQualifier, FreetextQualifier } from '../../src/qualifier';
 import { expect } from 'chai';
 import {
+  assertContactTypeFreetextQualifier,
   assertCursor,
   assertFreetextQualifier,
   assertLimit,
-  assertTypeQualifier,
-  assertContactTypeFreetextQualifier, assertUuidQualifier,
   assertPersonInput,
   assertPlaceInput,
-  assertReportInput
+  assertReportInput,
+  assertTypeQualifier,
+  assertUuidQualifier
 } from '../../src/libs/parameter-validators';
 import { InvalidArgumentError } from '../../src';
 
@@ -38,7 +39,7 @@ describe('libs parameter-validators', () => {
 
   describe('assertLimit', () => {
     it('should not throw for valid number limits', () => {
-      const validLimits = [1, 10, '1', '10'];
+      const validLimits = [ 1, 10, '1', '10' ];
       validLimits.forEach(limit => {
         expect(() => assertLimit(limit)).to.not.throw();
       });
@@ -68,13 +69,13 @@ describe('libs parameter-validators', () => {
 
   describe('assertCursor', () => {
     it('should not throw for valid cursors', () => {
-      const validCursors = ['valid-cursor', 'abc123', null];
+      const validCursors = [ 'valid-cursor', 'abc123', null ];
       validCursors.forEach(cursor => {
         expect(() => assertCursor(cursor)).to.not.throw();
       });
     });
 
-    ['', undefined, {}, [], 123].forEach(cursor => {
+    [ '', undefined, {}, [], 123 ].forEach(cursor => {
       it(`should throw for invalid cursors: ${JSON.stringify(cursor)}`, () => {
         expect(() => assertCursor(cursor))
           .to.throw(InvalidArgumentError)
@@ -200,7 +201,7 @@ describe('libs parameter-validators', () => {
       expect(() => assertUuidQualifier(invalidType)).to.throw(InvalidArgumentError);
     });
   });
-  
+
   describe('assertPersonInput', () => {
     it('throws error for invalid person input with missing fields', () => {
       const personInput = {
@@ -212,7 +213,7 @@ describe('libs parameter-validators', () => {
         `Invalid person type [${JSON.stringify(personInput)}].`
       );
     });
-    
+
     it('throws error for invalid person input here with invalid reported_date', () => {
       const personInput = {
         name: 'apoorva',
@@ -225,7 +226,7 @@ describe('libs parameter-validators', () => {
         `Invalid person type [${JSON.stringify(personInput)}].`
       );
     });
-    
+
     it('should not throw error for a valid person input', () => {
       const personInput = {
         name: 'apoorva',
@@ -235,7 +236,7 @@ describe('libs parameter-validators', () => {
       expect(() => assertPersonInput(personInput)).to.not.throw();
     });
   });
-  
+
   describe('assertPlaceInput', () => {
     it('throws error for invalid place input with missing field `name`', () => {
       const placeInput = {
@@ -246,7 +247,7 @@ describe('libs parameter-validators', () => {
         `Invalid place type [${JSON.stringify(placeInput)}].`
       );
     });
-    
+
     it('should not throw error for a valid place input', () => {
       const placeInput = {
         name: 'h1',
@@ -256,7 +257,7 @@ describe('libs parameter-validators', () => {
       expect(() => assertPlaceInput(placeInput)).to.not.throw();
     });
   });
-  
+
   describe('assertReportInput', () => {
     it('throws error for invalid report input with missing field `contact`', () => {
       const reportInput = {
@@ -268,7 +269,7 @@ describe('libs parameter-validators', () => {
         `Invalid report type [${JSON.stringify(reportInput)}].`
       );
     });
-    
+
     it('should not throw error for a valid report input', () => {
       const reportInput = {
         type: 'data_record',

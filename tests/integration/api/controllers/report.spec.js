@@ -3,19 +3,19 @@ const utils = require('@utils');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const {expect} = require('chai');
+const { expect } = require('chai');
 const uuid = require('uuid').v4;
 
 describe('Report API', () => {
   const contact0Id = uuid();
-  const contact1 = utils.deepFreeze(personFactory.build({name: 'contact1', role: 'chw_supervisor'}));
-  const contact2 = utils.deepFreeze(personFactory.build({name: 'contact2', role: 'program_officer'}));
+  const contact1 = utils.deepFreeze(personFactory.build({ name: 'contact1', role: 'chw_supervisor' }));
+  const contact2 = utils.deepFreeze(personFactory.build({ name: 'contact2', role: 'program_officer' }));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
-  const place1 = utils.deepFreeze({...placeMap.get('health_center'), contact: {_id: contact1._id}});
-  const place2 = utils.deepFreeze({...placeMap.get('district_hospital'), contact: {_id: contact2._id}});
+  const place1 = utils.deepFreeze({ ...placeMap.get('health_center'), contact: { _id: contact1._id } });
+  const place2 = utils.deepFreeze({ ...placeMap.get('district_hospital'), contact: { _id: contact2._id } });
   const place0 = utils.deepFreeze({
     ...placeMap.get('clinic'),
-    contact: {_id: contact0Id},
+    contact: { _id: contact0Id },
     parent: {
       _id: place1._id,
       parent: {
@@ -150,7 +150,7 @@ describe('Report API', () => {
     ].forEach(([ description, user ]) => {
       it(`throws error when user ${description}`, async () => {
         const opts = {
-          path: `/api/v1/report/${patient._id}`, auth: {username: user.username, password: user.password},
+          path: `/api/v1/report/${patient._id}`, auth: { username: user.username, password: user.password },
         };
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
       });
@@ -175,7 +175,7 @@ describe('Report API', () => {
           }
         }
       };
-      expect(resReport).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+      expect(resReport).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
         ...report0,
         contact: {
           ...contact0,
@@ -195,7 +195,7 @@ describe('Report API', () => {
         qs: { with_lineage: 'false' }
       };
       const resReport = await utils.request(opts);
-      expect(resReport).excluding(['_rev', 'reported_date']).to.deep.equal(report0);
+      expect(resReport).excluding([ '_rev', 'reported_date' ]).to.deep.equal(report0);
     });
 
     it('throws 404 error when no report is found for the UUID with lineage request', async () => {
@@ -207,9 +207,9 @@ describe('Report API', () => {
     });
 
     [
-      ['does not have can_view_reports permission', userNoPerms],
-      ['is not an online user', offlineUser]
-    ].forEach(([description, user]) => {
+      [ 'does not have can_view_reports permission', userNoPerms ],
+      [ 'is not an online user', offlineUser ]
+    ].forEach(([ description, user ]) => {
       it(`throws error when user ${description} for lineage request`, async () => {
         const opts = {
           path: `${endpoint}/${report0._id}`,
@@ -221,7 +221,7 @@ describe('Report API', () => {
       });
     });
   });
-  
+
   describe('GET /api/v1/report/uuid', async () => {
     const freetext = 'report';
     const fourLimit = 4;
@@ -293,7 +293,8 @@ describe('Report API', () => {
       expect(responseCursor).to.be.equal(null);
     });
 
-    it('returns a page of unique report ids for when multiple fields match the same freetext with limit',
+    it(
+      'returns a page of unique report ids for when multiple fields match the same freetext with limit',
       async () => {
         const expectedContactIds = [ report6._id, report7._id, report8._id ];
         // NOTE: adding a limit of 4 to deliberately fetch 4 contacts with the given search word
@@ -314,9 +315,11 @@ describe('Report API', () => {
         expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
           .to.deep.equalInAnyOrder(expectedContactIds);
         expect(responseCursor).to.be.equal(null);
-      });
+      }
+    );
 
-    it('returns a page of unique report ids for when multiple fields match the same freetext with lower limit',
+    it(
+      'returns a page of unique report ids for when multiple fields match the same freetext with lower limit',
       async () => {
         const expectedContactIds = [ report6._id, report7._id, report8._id ];
         const qs = {
@@ -337,18 +340,19 @@ describe('Report API', () => {
         expect(responseIds).to.satisfy(subsetArray => {
           return subsetArray.every(item => expectedContactIds.includes(item));
         });
-      });
+      }
+    );
 
     it(`throws error when user does not have can_view_reports permission`, async () => {
       const opts = {
-        path: endpoint, auth: {username: userNoPerms.username, password: userNoPerms.password},
+        path: endpoint, auth: { username: userNoPerms.username, password: userNoPerms.password },
       };
       await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
     });
 
     it(`throws error when user is not an online user`, async () => {
       const opts = {
-        path: endpoint, auth: {username: offlineUser.username, password: offlineUser.password},
+        path: endpoint, auth: { username: offlineUser.username, password: offlineUser.password },
       };
       await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
     });
@@ -417,7 +421,7 @@ describe('Report API', () => {
         contact: place2._id
       };
       const opts = {
-        path: '/api/v1/report', 
+        path: '/api/v1/report',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -427,8 +431,8 @@ describe('Report API', () => {
       };
 
       const reportDoc = await utils.request(opts);
-      expect(reportDoc).excluding(['_rev', '_id', 'contact'])
-        .to.deep.equal({...input, type: 'data_record'});
+      expect(reportDoc).excluding([ '_rev', '_id', 'contact' ])
+        .to.deep.equal({ ...input, type: 'data_record' });
     });
 
     it('throws error for missing report fields', async () => {
@@ -437,7 +441,7 @@ describe('Report API', () => {
         reported_date: 11221122
       };
       const opts = {
-        path: '/api/v1/report', 
+        path: '/api/v1/report',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -463,7 +467,7 @@ describe('Report API', () => {
       };
 
       const createOpts = {
-        path: '/api/v1/report', 
+        path: '/api/v1/report',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -477,7 +481,7 @@ describe('Report API', () => {
         form: 'undo_death_report'
       };
       const updateOpts = {
-        path: '/api/v1/report', 
+        path: '/api/v1/report',
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -486,7 +490,7 @@ describe('Report API', () => {
       };
 
       const updatedReportDoc = await utils.request(updateOpts);
-      expect(updatedReportDoc).excluding(['_rev'])
+      expect(updatedReportDoc).excluding([ '_rev' ])
         .to.deep.equal(updateInput);
     });
 
@@ -498,7 +502,7 @@ describe('Report API', () => {
       };
 
       const createOpts = {
-        path: '/api/v1/report', 
+        path: '/api/v1/report',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -512,7 +516,7 @@ describe('Report API', () => {
         contact: contact1
       };
       const updateOpts = {
-        path: '/api/v1/report', 
+        path: '/api/v1/report',
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -532,7 +536,7 @@ describe('Report API', () => {
       };
 
       const createOpts = {
-        path: '/api/v1/report', 
+        path: '/api/v1/report',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -547,7 +551,7 @@ describe('Report API', () => {
         form: 'pregnancy_home_visit'
       };
       const updateOpts = {
-        path: '/api/v1/report', 
+        path: '/api/v1/report',
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'

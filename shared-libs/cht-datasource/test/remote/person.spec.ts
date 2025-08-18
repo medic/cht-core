@@ -20,9 +20,9 @@ describe('remote person', () => {
     getResourceOuter = sinon.stub(RemoteEnv, 'getResource').returns(getResourceInner);
     getResourcesInner = sinon.stub();
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
-    postResourceInner= sinon.stub();
+    postResourceInner = sinon.stub();
     postResourceOuter = sinon.stub(RemoteEnv, 'postResource').returns(postResourceInner);
-    putResourceInner= sinon.stub();
+    putResourceInner = sinon.stub();
     putResourceOuter = sinon.stub(RemoteEnv, 'putResource').returns(putResourceInner);
   });
 
@@ -81,7 +81,7 @@ describe('remote person', () => {
       const limit = 3;
       const cursor = '1';
       const personType = 'person';
-      const personTypeQualifier = {contactType: personType};
+      const personTypeQualifier = { contactType: personType };
       const queryParam = {
         limit: limit.toString(),
         type: personType,
@@ -89,7 +89,7 @@ describe('remote person', () => {
       };
 
       it('returns people', async () => {
-        const doc = [{ type: 'person' }, {type: 'person'}];
+        const doc = [ { type: 'person' }, { type: 'person' } ];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
@@ -118,7 +118,7 @@ describe('remote person', () => {
           name: 'user-1',
           parent: 'p1'
         };
-        const expected_doc = {...personInput, _id: '2', _rev: '1'};
+        const expected_doc = { ...personInput, _id: '2', _rev: '1' };
         postResourceInner.resolves(expected_doc);
         const result = await Person.v1.create(remoteContext)(personInput);
         expect(result).to.deep.equal(expected_doc);

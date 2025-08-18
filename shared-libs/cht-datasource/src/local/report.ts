@@ -7,7 +7,7 @@ import {
   queryDocUuidsByRange,
   updateDoc
 } from './libs/doc';
-import { FreetextQualifier, UuidQualifier, isKeyedFreetextQualifier } from '../qualifier';
+import { FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
 import { hasField, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import { Doc, isDoc } from '../libs/doc';
@@ -77,11 +77,11 @@ export namespace v1 {
       qualifier: FreetextQualifier
     ): (limit: number, skip: number) => Promise<string[]> => {
       if (isKeyedFreetextQualifier(qualifier)) {
-        return (limit, skip) => getByExactMatchFreetext([normalizeFreetext(qualifier.freetext)], limit, skip);
+        return (limit, skip) => getByExactMatchFreetext([ normalizeFreetext(qualifier.freetext) ], limit, skip);
       }
       return (limit, skip) => getByStartsWithFreetext(
-        [normalizeFreetext(qualifier.freetext)],
-        [normalizeFreetext(qualifier.freetext) + END_OF_ALPHABET_MARKER],
+        [ normalizeFreetext(qualifier.freetext) ],
+        [ normalizeFreetext(qualifier.freetext) + END_OF_ALPHABET_MARKER ],
         limit,
         skip
       );
@@ -90,7 +90,7 @@ export namespace v1 {
     return async (
       qualifier: FreetextQualifier,
       cursor: Nullable<string>,
-      limit:  number
+      limit: number
     ): Promise<Page<string>> => {
       const skip = validateCursor(cursor);
       const getDocsFn = getDocsFnForFreetextType(qualifier);
@@ -100,31 +100,31 @@ export namespace v1 {
   };
 
   /** @internal*/
-  const ensureFormFieldValidity = async(
+  const ensureFormFieldValidity = async (
     medicDb: PouchDB.Database<Doc>,
     input: Record<string, unknown>
   ): Promise<void> => {
-    const allowedFormIds = await queryDocUuidsByKey(medicDb, 'medic-client/doc_by_type')(['form'], 1e6, 0);
+    const allowedFormIds = await queryDocUuidsByKey(medicDb, 'medic-client/doc_by_type')([ 'form' ], 1e6, 0);
     const isValidFormType = allowedFormIds.some((id: string) => {
       const expectedID = id.substring(5);
       return expectedID === input.form;
     });
-    if (!isValidFormType){
+    if (!isValidFormType) {
       throw new InvalidArgumentError('Invalid `form` value');
     }
   };
-  
+
   /** @internal*/
   export const create = ({
     medicDb
-  } : LocalDataContext) => {
+  }: LocalDataContext) => {
     const createReportDoc = createDoc(medicDb);
     const getReportDoc = getDocById(medicDb);
-    const appendContact = async(
-      input:ReportInput
+    const appendContact = async (
+      input: ReportInput
     ): Promise<ReportInput> => {
       const contactDehydratedLineage = await getReportDoc(input.contact);
-      if (contactDehydratedLineage === null){
+      if (contactDehydratedLineage === null) {
         throw new InvalidArgumentError(
           `Contact with _id ${input.contact} does not exist.`
         );
@@ -133,25 +133,25 @@ export namespace v1 {
       return input;
     };
 
-    return async (input: ReportInput) :Promise<Report.v1.Report> => {
+    return async (input: ReportInput): Promise<Report.v1.Report> => {
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a report.');
       }
       await ensureFormFieldValidity(medicDb, input);
       input = await appendContact(input);
-      input = {...input, type: 'data_record'};
+      input = { ...input, type: 'data_record' };
       return await createReportDoc(input) as Report.v1.Report;
     };
   };
 
-  
+
   /** @internal*/
   const validateReportUpdatePayload = (
-    originalDoc:Doc,
+    originalDoc: Doc,
     reportInput: Record<string, unknown>
   ) => {
-    const immutableRequiredFields = new Set(['_rev', '_id', 'reported_date', 'contact', 'type']);
-    const mutableRequiredFields = new Set(['form']);
+    const immutableRequiredFields = new Set([ '_rev', '_id', 'reported_date', 'contact', 'type' ]);
+    const mutableRequiredFields = new Set([ 'form' ]);
     ensureHasRequiredFields(immutableRequiredFields, mutableRequiredFields, originalDoc, reportInput);
     ensureImmutability(immutableRequiredFields, originalDoc, reportInput);
     // Now it is safe to assign reportInput.contact as the original doc's
@@ -164,13 +164,13 @@ export namespace v1 {
     medicDb, settings
   }: LocalDataContext) => {
     const updateReport = updateDoc(medicDb);
-    const getReport = get({medicDb, settings} as LocalDataContext);
-    
+    const getReport = get({ medicDb, settings } as LocalDataContext);
+
     return async (reportInput: Record<string, unknown>): Promise<Report.v1.Report> => {
       if (!isDoc(reportInput)) {
         throw new InvalidArgumentError(`Document for update is not a valid Doc ${JSON.stringify(reportInput)}`);
       }
-      const originalReportDoc = await getReport({uuid: reportInput._id});
+      const originalReportDoc = await getReport({ uuid: reportInput._id });
       if (originalReportDoc === null) {
         throw new InvalidArgumentError(`Report not found`);
       }
@@ -179,7 +179,7 @@ export namespace v1 {
       }
       validateReportUpdatePayload(originalReportDoc, reportInput);
       await ensureFormFieldValidity(medicDb, reportInput);
-      
+
       return await updateReport(reportInput) as Report.v1.Report;
     };
   };

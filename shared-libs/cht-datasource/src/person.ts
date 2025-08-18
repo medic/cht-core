@@ -8,8 +8,7 @@ import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { getPagedGenerator, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertLimit, 
-  assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
 import { validatePersonInput } from './input';
 import { InvalidArgumentError } from './libs/error';
 
@@ -126,7 +125,7 @@ export namespace v1 {
    * @returns a function for creating a person.
    * @throws Error if a data context is not provided
    */
-  export const create = (context:DataContext):typeof curriedFn => {
+  export const create = (context: DataContext): typeof curriedFn => {
     assertDataContext(context);
     const fn = adapt(context, Local.Person.v1.create, Remote.Person.v1.create);
     /**
@@ -149,7 +148,7 @@ export namespace v1 {
    * @returns a function for updating a person.
    * @throws Error if a data context is not provided
    */
-  export const update = (context: DataContext):typeof curriedFn => {
+  export const update = (context: DataContext): typeof curriedFn => {
     assertDataContext(context);
     const fn = adapt(context, Local.Person.v1.update, Remote.Person.v1.update);
     /**
@@ -161,7 +160,7 @@ export namespace v1 {
      * @throws InvalidArgumentError if updateInput fields are not of expected type
      */
     const curriedFn = async (updateInput: unknown): Promise<Person> => {
-      if (!isRecord(updateInput)){
+      if (!isRecord(updateInput)) {
         throw new InvalidArgumentError('Invalid person update input');
       }
       return fn(updateInput);

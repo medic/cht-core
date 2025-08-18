@@ -9,7 +9,7 @@ import * as Remote from '../src/remote';
 import * as Core from '../src/libs/core';
 
 describe('report', () => {
-  const dataContext = { } as DataContext;
+  const dataContext = {} as DataContext;
   let assertDataContext: SinonStub;
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
@@ -28,9 +28,9 @@ describe('report', () => {
   describe('v1', () => {
     describe('get', () => {
       const report = { _id: 'report' } as Report.v1.Report;
-      const qualifier = { uuid: report._id} as const;
+      const qualifier = { uuid: report._id } as const;
       let getReport: SinonStub;
-      
+
       beforeEach(() => {
         getReport = sinon.stub();
         adapt.returns(getReport);
@@ -74,7 +74,7 @@ describe('report', () => {
     });
 
     describe('getWithLineage', () => {
-      const report = { 
+      const report = {
         _id: 'report',
         contact: {
           _id: 'contact_id',
@@ -140,13 +140,13 @@ describe('report', () => {
     });
 
     describe('getUuidsPage', () => {
-      const ids = ['report1', 'report2', 'report3'];
+      const ids = [ 'report1', 'report2', 'report3' ];
       const cursor = '1';
       const pageData = { data: ids, cursor };
       const limit = 3;
       const stringifiedLimit = '3';
-      const freetextQualifier = { freetext: 'freetext'} as const;
-      const invalidFreetextQualifier = { freetext: 'invalid_freetext'} as const;
+      const freetextQualifier = { freetext: 'freetext' } as const;
+      const invalidFreetextQualifier = { freetext: 'invalid_freetext' } as const;
       let getIdsPage: SinonStub;
 
       beforeEach(() => {
@@ -274,7 +274,7 @@ describe('report', () => {
 
     describe('getUuids', () => {
       const freetextQualifier = { freetext: 'freetext' } as const;
-      const reportIds = ['report1', 'report2', 'report3'];
+      const reportIds = [ 'report1', 'report2', 'report3' ];
       const mockGenerator = function* () {
         for (const reportId of reportIds) {
           yield reportId;
@@ -325,7 +325,7 @@ describe('report', () => {
     });
 
     describe('createReport', () => {
-      it('throws error for invalid input', async() => {
+      it('throws error for invalid input', async () => {
         const input = {
           name: 'person-1',
           type: 'data_record',
@@ -336,7 +336,7 @@ describe('report', () => {
           .to.be.rejectedWith(`Missing or empty required field (contact) in [${JSON.stringify(input)}].`);
       });
 
-      it('returns person doc for valid input', async() => {
+      it('returns person doc for valid input', async () => {
         const createReportDoc = sinon.stub();
         adapt.returns(createReportDoc);
         const input = {

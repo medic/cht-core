@@ -10,12 +10,12 @@ import { DataContext } from '../../../src';
 describe('local context lib', () => {
   describe('isLocalDataContext', () => {
     ([
-      [{ medicDb: {}, settings: {} }, true],
-      [{ medicDb: {}, settings: {}, hello: 'world' }, true],
-      [{ medicDb: {} }, false],
-      [{ settings: {} }, false],
-      [{}, false]
-    ] as [DataContext, boolean][]).forEach(([context, expected]) => {
+      [ { medicDb: {}, settings: {} }, true ],
+      [ { medicDb: {}, settings: {}, hello: 'world' }, true ],
+      [ { medicDb: {} }, false ],
+      [ { settings: {} }, false ],
+      [ {}, false ]
+    ] as [ DataContext, boolean ][]).forEach(([ context, expected ]) => {
       it(`evaluates ${JSON.stringify(context)}`, () => {
         expect(isLocalDataContext(context)).to.equal(expected);
       });

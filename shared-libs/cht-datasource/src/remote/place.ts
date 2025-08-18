@@ -42,14 +42,14 @@ export namespace v1 {
   };
 
   /** @internal */
-  export const create = 
-  (remoteContext: RemoteDataContext) => (
-    input:PlaceInput
-  ):Promise<Place.v1.Place> => createPlace(remoteContext)(input);
+  export const create =
+    (remoteContext: RemoteDataContext) => (
+      input: PlaceInput
+    ): Promise<Place.v1.Place> => createPlace(remoteContext)(input);
 
   /** @internal */
-  export const update = 
-  (remoteContext: RemoteDataContext) => (
-    input:Record<string, unknown>
-  ):Promise<Place.v1.Place> => updatePlace(remoteContext)(input);
+  export const update =
+    (remoteContext: RemoteDataContext) => (
+      input: Record<string, unknown>
+    ): Promise<Place.v1.Place> => updatePlace(remoteContext)(input);
 }

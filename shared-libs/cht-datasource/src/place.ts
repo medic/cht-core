@@ -8,8 +8,7 @@ import * as Local from './local';
 import * as Remote from './remote';
 import { getPagedGenerator, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertLimit, 
-  assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
 import { validatePlaceInput } from './input';
 import { InvalidArgumentError } from './libs/error';
 
@@ -119,14 +118,14 @@ export namespace v1 {
     };
     return curriedGen;
   };
-  
+
   /**
    * Returns a function for creating a place from the given data context.
    * @param context the current data context
    * @returns a function for creating a place.
    * @throws Error if a data context is not provided
    */
-  export const create = (context:DataContext):typeof curriedFn => {
+  export const create = (context: DataContext): typeof curriedFn => {
     assertDataContext(context);
     const fn = adapt(context, Local.Place.v1.create, Remote.Place.v1.create);
     /**
@@ -148,7 +147,7 @@ export namespace v1 {
    * @returns a function for creating a place.
    * @throws Error if a data context is not provided
    */
-  export const update = (context:DataContext):typeof curriedFn => {
+  export const update = (context: DataContext): typeof curriedFn => {
     assertDataContext(context);
     const fn = adapt(context, Local.Place.v1.update, Remote.Place.v1.update);
     /**
@@ -160,7 +159,7 @@ export namespace v1 {
      * @throws InvalidArgumentError if updateInput fields are not of expected type
      */
     const curriedFn = async (updateInput: unknown): Promise<Place> => {
-      if (!isRecord(updateInput)){
+      if (!isRecord(updateInput)) {
         throw new InvalidArgumentError('Invalid place update input');
       }
       return fn(updateInput);

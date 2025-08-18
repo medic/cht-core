@@ -98,18 +98,20 @@ export const putResource = (context: RemoteDataContext, path: string) => async <
   return await requestWithBody(context, path, body, 'PUT');
 };
 
-const requestWithBody = async<T>(
-  context:RemoteDataContext,
-  path:string,
-  body:Record<string, unknown>,
-  method:string):Promise<T> => {
+const requestWithBody = async <T>(
+  context: RemoteDataContext,
+  path: string,
+  body: Record<string, unknown>,
+  method: string
+): Promise<T> => {
   try {
     const response = await fetch(`${context.url}/${path}`, {
-      method: method, 
+      method: method,
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body)});
+      body: JSON.stringify(body)
+    });
     if (response.status === 400) {
       const errorMessage = await response.text();
       throw new InvalidArgumentError(errorMessage);

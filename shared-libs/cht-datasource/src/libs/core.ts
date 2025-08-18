@@ -71,7 +71,7 @@ export const deepCopy = <T extends DataObject | DataArray | DataPrimitive>(value
   return Object.fromEntries(
     Object
       .entries(value)
-      .map(([key, value]) => [key, deepCopy(value)])
+      .map(([ key, value ]) => [ key, deepCopy(value) ])
   ) as unknown as T;
 };
 
@@ -94,7 +94,7 @@ interface FieldDescriptor<T> {
 /** @internal */
 export const hasField = <T extends Record<string, unknown>>(
   value: T,
-  {name, type, ensureTruthyValue = false}: FieldDescriptor<T>
+  { name, type, ensureTruthyValue = false }: FieldDescriptor<T>
 ): value is T & Record<typeof name, string> => {
   const valueField = value[name];
   if (ensureTruthyValue) {
@@ -144,7 +144,7 @@ export const getPagedGenerator = async function* <S, T>(
   fetchFunctionArgs: S
 ): AsyncGenerator<T, null> {
   const limit = 100;
-  let cursor: Nullable<string> =  null;
+  let cursor: Nullable<string> = null;
 
   do {
     const docs = await fetchFunction(fetchFunctionArgs, cursor, limit);
@@ -179,7 +179,7 @@ export const convertToUnixTimestamp = (date: string | number): number => {
   if (isNaN(parsedDate.getTime())) {
     throw new InvalidArgumentError(
       'Invalid reported_date. Expected format to be ' +
-          '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
+      '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
     );
   }
 

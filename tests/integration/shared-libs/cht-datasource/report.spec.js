@@ -10,20 +10,20 @@ const {
 } = require('@medic/cht-datasource');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const {expect} = require('chai');
-const {setAuth, removeAuth} = require('./auth');
+const { expect } = require('chai');
+const { setAuth, removeAuth } = require('./auth');
 const uuid = require('uuid').v4;
 
 describe('cht-datasource Report', () => {
   const contact0Id = uuid();
-  const contact1 = utils.deepFreeze(personFactory.build({name: 'contact1', role: 'chw_supervisor'}));
-  const contact2 = utils.deepFreeze(personFactory.build({name: 'contact2', role: 'program_officer'}));
+  const contact1 = utils.deepFreeze(personFactory.build({ name: 'contact1', role: 'chw_supervisor' }));
+  const contact2 = utils.deepFreeze(personFactory.build({ name: 'contact2', role: 'program_officer' }));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
-  const place1 = utils.deepFreeze({...placeMap.get('health_center'), contact: {_id: contact1._id}});
-  const place2 = utils.deepFreeze({...placeMap.get('district_hospital'), contact: {_id: contact2._id}});
+  const place1 = utils.deepFreeze({ ...placeMap.get('health_center'), contact: { _id: contact1._id } });
+  const place2 = utils.deepFreeze({ ...placeMap.get('district_hospital'), contact: { _id: contact2._id } });
   const place0 = utils.deepFreeze({
     ...placeMap.get('clinic'),
-    contact: {_id: contact0Id},
+    contact: { _id: contact0Id },
     parent: {
       _id: place1._id,
       parent: {
@@ -170,7 +170,7 @@ describe('cht-datasource Report', () => {
             }
           }
         };
-        expect(resReport).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+        expect(resReport).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
           ...report0,
           contact: {
             ...contact0,
@@ -189,7 +189,7 @@ describe('cht-datasource Report', () => {
         expect(report).to.be.null;
       });
     });
-    
+
     describe('getUuidsPage', async () => {
       const getUuidsPage = Report.v1.getUuidsPage(dataContext);
       const freetext = 'report';
@@ -234,7 +234,8 @@ describe('cht-datasource Report', () => {
         expect(responseCursor).to.be.equal(null);
       });
 
-      it('returns a page of unique report ids for when multiple fields match the same freetext with limit', 
+      it(
+        'returns a page of unique report ids for when multiple fields match the same freetext with limit',
         async () => {
           const expectedContactIds = [ report6._id, report7._id, report8._id ];
           // NOTE: adding a limit of 4 to deliberately fetch 4 contacts with the given search word
@@ -246,9 +247,11 @@ describe('cht-datasource Report', () => {
           expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
             .to.deep.equalInAnyOrder(expectedContactIds);
           expect(responseCursor).to.be.equal(null);
-        });
+        }
+      );
 
-      it('returns a page of unique report ids for when multiple fields match the same freetext with lower limit',
+      it(
+        'returns a page of unique report ids for when multiple fields match the same freetext with lower limit',
         async () => {
           const expectedContactIds = [ report6._id, report7._id, report8._id ];
           const responsePage = await getUuidsPage(Qualifier.byFreetext(searchWord), null, twoLimit);
@@ -260,13 +263,14 @@ describe('cht-datasource Report', () => {
           expect(responseIds).to.satisfy(subsetArray => {
             return subsetArray.every(item => expectedContactIds.includes(item));
           });
-        });
+        }
+      );
 
       it('throws error when limit is invalid', async () => {
         await expect(
           getUuidsPage(Qualifier.byFreetext(freetext), cursor, invalidLimit)
         ).to.be.rejectedWith(
-          {code: 400, error: `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`}
+          { code: 400, error: `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].` }
         );
       });
 
@@ -274,8 +278,10 @@ describe('cht-datasource Report', () => {
         await expect(
           getUuidsPage(Qualifier.byFreetext(freetext), invalidCursor, fourLimit)
         ).to.be.rejectedWith(
-          {code: 400,
-            error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`}
+          {
+            code: 400,
+            error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          }
         );
       });
     });
@@ -310,7 +316,7 @@ describe('cht-datasource Report', () => {
           }
         };
         const reportDoc = await Report.v1.create(dataContext)(Input.validateReportInput(input));
-        expect(reportDoc).excluding(['_id', '_rev', 'reported_date',]).to.deep.equal(updatedInput);
+        expect(reportDoc).excluding([ '_id', '_rev', 'reported_date', ]).to.deep.equal(updatedInput);
       });
 
       it('throws error for missing contact', () => {
@@ -325,18 +331,18 @@ describe('cht-datasource Report', () => {
         );
       });
 
-      it('throws error for invalid date format via createReport',  () => {
+      it('throws error for invalid date format via createReport', () => {
         const input = {
           form: 'pregnancy_home_visit',
           type: 'data_record',
           reported_date: '112-9909-123'
         };
-      
+
         const action = () => Report.v1.create(dataContext)(Input.validateReportInput(input));
-      
+
         expect(action).to.throw(
           InvalidArgumentError,
-           
+
           `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', ` +
           `'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
         );
@@ -352,17 +358,17 @@ describe('cht-datasource Report', () => {
 
       it('updates report for a valid update input', async () => {
         const createdReport = await Report.v1.create(dataContext)(createInput);
-        const updateInput={
+        const updateInput = {
           ...createdReport, form: 'pnc_danger_sign_follow_up_baby'
         };
         const updatedReport = await Report.v1.update(dataContext)(updateInput);
-        expect(updatedReport).excluding(['_rev'])
+        expect(updatedReport).excluding([ '_rev' ])
           .to.deep.equal(updateInput);
       });
 
       it('throws error for missing required field', async () => {
         const createdReport = await Report.v1.create(dataContext)(createInput);
-        const updateInput={
+        const updateInput = {
           ...createdReport
         };
         delete updateInput.form;
@@ -375,7 +381,7 @@ describe('cht-datasource Report', () => {
 
       it('throws error when original report doc does not exist', async () => {
         const createdReport = await Report.v1.create(dataContext)(createInput);
-        const updateInput={
+        const updateInput = {
           ...createdReport, _id: '123123123'
         };
         await expect(Report.v1.update(dataContext)(updateInput))

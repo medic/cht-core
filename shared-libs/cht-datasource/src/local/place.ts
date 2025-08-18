@@ -7,15 +7,15 @@ import { createDoc, fetchAndFilter, getDocById, queryDocsByKey, updateDoc } from
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
 import { InvalidArgumentError } from '../libs/error';
-import { 
-  addParentToInput, 
-  checkFieldWithLineage, 
+import {
+  addParentToInput,
+  checkFieldWithLineage,
   ensureHasRequiredFields,
   ensureImmutability,
-  validateCursor 
+  validateCursor
 } from './libs/core';
 import { PlaceInput } from '../input';
-import {fetchHydratedDoc} from './libs/lineage';
+import { fetchHydratedDoc } from './libs/lineage';
 
 /** @internal */
 export namespace v1 {
@@ -79,7 +79,7 @@ export namespace v1 {
       const getDocsByPageWithPlaceType = (
         limit: number,
         skip: number
-      ) => getDocsByPage([placeType.contactType], limit, skip);
+      ) => getDocsByPage([ placeType.contactType ], limit, skip);
 
       return await fetchAndFilter(
         getDocsByPageWithPlaceType,
@@ -90,22 +90,22 @@ export namespace v1 {
   };
 
   /** @internal*/
-  export const create = ({medicDb, settings}: LocalDataContext) => {
+  export const create = ({ medicDb, settings }: LocalDataContext) => {
     const createPlaceDoc = createDoc(medicDb);
     const getPlaceDoc = getDocById(medicDb);
     /**
-     * Ensures that places that require a parent (i.e. not at the top of the hirerarchy) 
+     * Ensures that places that require a parent (i.e. not at the top of the hirerarchy)
      * have the parent field as one of the pre-configured `parents` in the `contact_types`
      * for that place.
      */
     /** @internal*/
-    const validateParentPresence = async(
+    const validateParentPresence = async (
       contactTypeObject: Record<string, unknown>,
-      input:Record<string, unknown> 
+      input: Record<string, unknown>
     ): Promise<Nullable<Doc>> => {
-      if (hasField(contactTypeObject, {name: 'parents', type: 'object'})) {
+      if (hasField(contactTypeObject, { name: 'parents', type: 'object' })) {
         return await ensureHasValidParentFieldAndReturnParentDoc(input, contactTypeObject);
-      } else if (hasField(input, {name: 'parent', type: 'string', ensureTruthyValue: true})){
+      } else if (hasField(input, { name: 'parent', type: 'string', ensureTruthyValue: true })) {
         // The current input type is meant to be at the top of the hierarchy.
         throw new InvalidArgumentError(
           `Unexpected parent for [${JSON.stringify(input)}].`
@@ -114,17 +114,17 @@ export namespace v1 {
       return null;
     };
 
-    const ensureHasValidParentFieldAndReturnParentDoc = async(
-      input:Record<string, unknown>,
+    const ensureHasValidParentFieldAndReturnParentDoc = async (
+      input: Record<string, unknown>,
       contactTypeObject: Record<string, unknown>
     ): Promise<Doc> => {
-      if (!hasField(input, {name: 'parent', type: 'string', ensureTruthyValue: true})){
+      if (!hasField(input, { name: 'parent', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError(
           `Missing or empty required field (parent) for [${JSON.stringify(input)}].`
         );
-      } 
+      }
       const parentDoc = await getPlaceDoc(input.parent);
-      if (parentDoc === null){
+      if (parentDoc === null) {
         throw new InvalidArgumentError(
           `Parent with _id ${input.parent} does not exist.`
         );
@@ -135,7 +135,7 @@ export namespace v1 {
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       const typeToMatch = (parentDoc as PlaceInput).contact_type || (parentDoc as PlaceInput).type;
       const parentTypeMatchWithAllowedParents = (contactTypeObject.parents as string[])
-        .find(parent => parent===typeToMatch);
+        .find(parent => parent === typeToMatch);
 
       if (!(parentTypeMatchWithAllowedParents)) {
         throw new InvalidArgumentError(
@@ -143,12 +143,12 @@ export namespace v1 {
         );
       }
       return parentDoc;
-         
+
     };
-      
+
     const getParentDoc = async (
-      typeFoundInSettingsContactTypes:Record<string, unknown>|undefined,
-      input:PlaceInput
+      typeFoundInSettingsContactTypes: Record<string, unknown> | undefined,
+      input: PlaceInput
     ): Promise<Nullable<Doc>> => {
       if (typeFoundInSettingsContactTypes) {
         // This will throw error if parent is required and missing.
@@ -168,11 +168,11 @@ export namespace v1 {
 
       return null;
     };
-    
+
     const appendParent = async (
-      typeFoundInSettingsContactTypes:Record<string, unknown>|undefined,
-      input:PlaceInput
-    ):Promise<PlaceInput> => {
+      typeFoundInSettingsContactTypes: Record<string, unknown> | undefined,
+      input: PlaceInput
+    ): Promise<PlaceInput> => {
       let parentDoc: Nullable<Doc> = null;
       parentDoc = await getParentDoc(typeFoundInSettingsContactTypes, input);
       if (!parentDoc) {
@@ -184,14 +184,14 @@ export namespace v1 {
     };
 
     const appendContact = async (
-      input:PlaceInput
+      input: PlaceInput
     ) => {
-      if (!hasField(input, {name: 'contact', type: 'string', ensureTruthyValue: true})) {
+      if (!hasField(input, { name: 'contact', type: 'string', ensureTruthyValue: true })) {
         return input;
       }
-        
+
       const contactDehydratedLineage = await getPlaceDoc(input.contact!); //NoSONAR
-      if (contactDehydratedLineage === null){
+      if (contactDehydratedLineage === null) {
         throw new InvalidArgumentError(
           `Contact with _id ${input.contact!} does not exist.` //NoSONAR
         );
@@ -199,11 +199,11 @@ export namespace v1 {
       input = addParentToInput(input, 'contact', contactDehydratedLineage);
       return input;
     };
-    return async(
+    return async (
       input: PlaceInput
-    ):Promise<Place.v1.Place> => {
+    ): Promise<Place.v1.Place> => {
 
-  
+
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a place.');
       }
@@ -215,16 +215,16 @@ export namespace v1 {
       if (!typeFoundInSettingsContactTypes && !typeIsHardCodedPlaceType) {
         throw new InvalidArgumentError('Invalid place type.');
       }
-      
+
       // Append `contact_type` for newer versions.
-      if (typeFoundInSettingsContactTypes){
-        input={
+      if (typeFoundInSettingsContactTypes) {
+        input = {
           ...input,
           contact_type: input.type,
           type: 'contact',
         } as unknown as PlaceInput;
       }
-      
+
       input = await appendParent(typeFoundInSettingsContactTypes, input);
       input = await appendContact(input);
 
@@ -240,18 +240,18 @@ export namespace v1 {
     // it is at the top of the hierarchy.
     // So if the original place doc does not have a `parent`, then adding `parent`
     // field during update should throw an error.
-    if (updateInput.parent && !hasField(originalDoc, {type: 'object', name: 'parent'})){
+    if (updateInput.parent && !hasField(originalDoc, { type: 'object', name: 'parent' })) {
       throw new InvalidArgumentError(`Places at top of the hierarchy cannot have a parent`);
     }
   };
 
   const shouldAppendContact = (
-    originalDoc:Record<string, unknown>,
+    originalDoc: Record<string, unknown>,
     placeInput: Record<string, unknown>
   ): boolean => {
     // Contact will only be appended if originalDoc does not already have a contact
     // and the contact lineage in placeInput is a valid contact lineage. 
-    if (hasField(originalDoc, {type: 'object', name: 'contact', ensureTruthyValue: true})) {
+    if (hasField(originalDoc, { type: 'object', name: 'contact', ensureTruthyValue: true })) {
       return false;
     }
     if (!('contact' in placeInput)) {
@@ -259,54 +259,54 @@ export namespace v1 {
     }
     return true;
   };
-  const maybeAppendContact = 
-  async(
-    placeInput: Record<string, unknown>,
-    originalDoc: Record<string, unknown>,
-    medicDb: PouchDB.Database<Doc>
-  ) => {
-    if (!shouldAppendContact(originalDoc, placeInput)) {
-      return;
-    }
-    
-    if (!isRecord(placeInput.contact)
-      || 
-    !(hasField(placeInput.contact, {
-      name: '_id', type: 'string', ensureTruthyValue: true
-    }))){
-      throw new InvalidArgumentError('Invalid contact type');
-    }
-    const contactDoc = await getDocById(medicDb)(placeInput.contact._id);
-    if (contactDoc===null) {
-      throw new InvalidArgumentError('Contact doc not found');
-    }
-    
-    checkFieldWithLineage(placeInput.contact, contactDoc, 'contact');
-    const contactField = {
-      _id: contactDoc._id
+  const maybeAppendContact =
+    async (
+      placeInput: Record<string, unknown>,
+      originalDoc: Record<string, unknown>,
+      medicDb: PouchDB.Database<Doc>
+    ) => {
+      if (!shouldAppendContact(originalDoc, placeInput)) {
+        return;
+      }
+
+      if (!isRecord(placeInput.contact)
+        ||
+        !(hasField(placeInput.contact, {
+          name: '_id', type: 'string', ensureTruthyValue: true
+        }))) {
+        throw new InvalidArgumentError('Invalid contact type');
+      }
+      const contactDoc = await getDocById(medicDb)(placeInput.contact._id);
+      if (contactDoc === null) {
+        throw new InvalidArgumentError('Contact doc not found');
+      }
+
+      checkFieldWithLineage(placeInput.contact, contactDoc, 'contact');
+      const contactField = {
+        _id: contactDoc._id
+      };
+      if (contactDoc.parent) {
+        Object.assign(contactField, { parent: contactDoc.parent });
+      }
+      placeInput.contact = contactField;
     };
-    if (contactDoc.parent){
-      Object.assign(contactField, {parent: contactDoc.parent});
-    }
-    placeInput.contact = contactField;
-  };
 
   const validateUpdatePlacePayload = (
     originalDoc: Doc,
     placeInput: Record<string, unknown>
-  ):void => {
+  ): void => {
     ensureDoesNotContainExtraParent(placeInput, originalDoc);
-    const immutableRequiredFields = new Set(['_rev', '_id', 'type', 'reported_date']);
-    const mutableRequiredFields = new Set(['name']);
-    const hasParent = hasField(originalDoc, {type: 'object', name: 'parent', ensureTruthyValue: true}); 
-    const hasContact = hasField(originalDoc, {type: 'object', name: 'contact', ensureTruthyValue: true}); 
-    if (originalDoc.type==='contact'){
+    const immutableRequiredFields = new Set([ '_rev', '_id', 'type', 'reported_date' ]);
+    const mutableRequiredFields = new Set([ 'name' ]);
+    const hasParent = hasField(originalDoc, { type: 'object', name: 'parent', ensureTruthyValue: true });
+    const hasContact = hasField(originalDoc, { type: 'object', name: 'contact', ensureTruthyValue: true });
+    if (originalDoc.type === 'contact') {
       immutableRequiredFields.add('contact_type');
     }
-    if (hasParent){
+    if (hasParent) {
       immutableRequiredFields.add('parent');
     }
-    if (hasContact){
+    if (hasContact) {
       immutableRequiredFields.add('contact');
     }
     ensureHasRequiredFields(immutableRequiredFields, mutableRequiredFields, originalDoc, placeInput);
@@ -320,15 +320,15 @@ export namespace v1 {
   };
 
   /** @internal*/
-  export const update = ({medicDb, settings}:LocalDataContext) => {
+  export const update = ({ medicDb, settings }: LocalDataContext) => {
     const updatePlace = updateDoc(medicDb);
-    const getPlace = get({medicDb, settings} as LocalDataContext);
-    return async(placeInput: Record<string, unknown>):Promise<Place.v1.Place> => {
-      if (!isDoc(placeInput)){
+    const getPlace = get({ medicDb, settings } as LocalDataContext);
+    return async (placeInput: Record<string, unknown>): Promise<Place.v1.Place> => {
+      if (!isDoc(placeInput)) {
         throw new InvalidArgumentError(`Document for update is not a valid Doc ${JSON.stringify(placeInput)}`);
       }
-      const originalDoc = await getPlace({uuid: placeInput._id});
-      if (originalDoc===null){
+      const originalDoc = await getPlace({ uuid: placeInput._id });
+      if (originalDoc === null) {
         throw new InvalidArgumentError(`Place not found`);
       }
       validateUpdatePlacePayload(originalDoc, placeInput);

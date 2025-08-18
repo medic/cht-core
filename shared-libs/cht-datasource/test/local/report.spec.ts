@@ -13,18 +13,18 @@ describe('local report', () => {
   let settingsGetAll: SinonStub;
   let warn: SinonStub;
   let createDocOuter: SinonStub;
-  let createDocInner : SinonStub;
+  let createDocInner: SinonStub;
   let updateDocOuter: SinonStub;
-  let updateDocInner : SinonStub;
-  let getDocByIdOuter : SinonStub;
-  let getDocByIdInner : SinonStub;
+  let updateDocInner: SinonStub;
+  let getDocByIdOuter: SinonStub;
+  let getDocByIdInner: SinonStub;
   beforeEach(() => {
     createDocInner = sinon.stub();
     updateDocInner = sinon.stub();
     settingsGetAll = sinon.stub();
     localContext = {
       medicDb: {} as PouchDB.Database<Doc>,
-      settings: {getAll: settingsGetAll}
+      settings: { getAll: settingsGetAll }
     } as unknown as LocalDataContext;
     warn = sinon.stub(logger, 'warn');
     createDocOuter = sinon.stub(LocalDoc, 'createDoc');
@@ -36,8 +36,8 @@ describe('local report', () => {
   afterEach(() => sinon.restore());
 
   describe('v1', () => {
-    const settings = {hello: 'world'} as const;
-    
+    const settings = { hello: 'world' } as const;
+
     describe('get', () => {
       const identifier = { uuid: 'uuid' } as const;
 
@@ -186,7 +186,7 @@ describe('local report', () => {
         };
         const expectedResult = {
           cursor: '3',
-          data: ['1', '2', '3']
+          data: [ '1', '2', '3' ]
         };
         fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
 
@@ -198,20 +198,20 @@ describe('local report', () => {
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([ localContext.medicDb, 'medic-client/reports_by_freetext' ]);
         expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([ localContext.medicDb, 'medic-client/reports_by_freetext' ]);
         expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
         expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
         expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
         expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
         // call the argument to check which one of the inner functions was called
         fetchAndFilterUuidsOuterFirstArg(limit, Number(cursor));
-        expect(queryDocUuidsByKeyInner.calledWithExactly([qualifier.freetext], limit, Number(cursor))).to.be.true;
+        expect(queryDocUuidsByKeyInner.calledWithExactly([ qualifier.freetext ], limit, Number(cursor))).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
       });
 
@@ -231,7 +231,7 @@ describe('local report', () => {
         };
         const expectedResult = {
           cursor: '3',
-          data: ['1', '2', '3']
+          data: [ '1', '2', '3' ]
         };
         fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
 
@@ -243,13 +243,13 @@ describe('local report', () => {
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([ localContext.medicDb, 'medic-client/reports_by_freetext' ]);
         expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([ localContext.medicDb, 'medic-client/reports_by_freetext' ]);
         expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
         expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
         expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
@@ -257,8 +257,8 @@ describe('local report', () => {
         // call the argument to check which one of the inner functions was called
         fetchAndFilterOuterFirstArg(limit, Number(cursor));
         expect(queryDocUuidsByRangeInner.calledWithExactly(
-          [qualifier.freetext],
-          [qualifier.freetext + END_OF_ALPHABET_MARKER],
+          [ qualifier.freetext ],
+          [ qualifier.freetext + END_OF_ALPHABET_MARKER ],
           limit,
           Number(cursor)
         )).to.be.true;
@@ -282,7 +282,7 @@ describe('local report', () => {
         };
         const expectedResult = {
           cursor: '8',
-          data: ['1', '2', '3']
+          data: [ '1', '2', '3' ]
         };
         fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
 
@@ -294,13 +294,13 @@ describe('local report', () => {
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([ localContext.medicDb, 'medic-client/reports_by_freetext' ]);
         expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([ localContext.medicDb, 'medic-client/reports_by_freetext' ]);
         expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
         expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
         expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
@@ -308,7 +308,7 @@ describe('local report', () => {
         // call the argument to check which one of the inner functions was called
         fetchAndFilterUuidsOuterFirstArg(limit, Number(notNullCursor));
         expect(
-          queryDocUuidsByKeyInner.calledWithExactly([qualifier.freetext], limit, Number(notNullCursor))
+          queryDocUuidsByKeyInner.calledWithExactly([ qualifier.freetext ], limit, Number(notNullCursor))
         ).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
       });
@@ -330,7 +330,7 @@ describe('local report', () => {
         };
         const expectedResult = {
           cursor: '8',
-          data: ['1', '2', '3']
+          data: [ '1', '2', '3' ]
         };
         fetchAndFilterUuidsInner.resolves(getPaginatedDocsResult);
 
@@ -342,13 +342,13 @@ describe('local report', () => {
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([ localContext.medicDb, 'medic-client/reports_by_freetext' ]);
         expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([ localContext.medicDb, 'medic-client/reports_by_freetext' ]);
         expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
         expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
         expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
@@ -356,8 +356,8 @@ describe('local report', () => {
         // call the argument to check which one of the inner functions was called
         fetchAndFilterUuidsOuterFirstArg(limit, Number(notNullCursor));
         expect(queryDocUuidsByRangeInner.calledWithExactly(
-          [qualifier.freetext],
-          [qualifier.freetext + END_OF_ALPHABET_MARKER],
+          [ qualifier.freetext ],
+          [ qualifier.freetext + END_OF_ALPHABET_MARKER ],
           limit,
           Number(notNullCursor)
         )).to.be.true;
@@ -368,7 +368,7 @@ describe('local report', () => {
         {},
         '-1',
         undefined,
-      ].forEach((invalidCursor ) => {
+      ].forEach((invalidCursor) => {
         it(`throws an error if cursor is invalid: ${JSON.stringify(invalidCursor)}`, async () => {
           const freetext = 'nice report';
           const qualifier = {
@@ -413,21 +413,21 @@ describe('local report', () => {
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([ localContext.medicDb, 'medic-client/reports_by_freetext' ]);
         expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([ localContext.medicDb, 'medic-client/reports_by_freetext' ]);
         expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
         expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
         expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
         // call the argument to check which one of the inner functions was called
         fetchAndFilterUuidsOuterFirstArg(limit, Number(cursor));
         expect(queryDocUuidsByRangeInner.calledWithExactly(
-          [qualifier.freetext],
-          [qualifier.freetext + END_OF_ALPHABET_MARKER],
+          [ qualifier.freetext ],
+          [ qualifier.freetext + END_OF_ALPHABET_MARKER ],
           limit,
           Number(cursor)
         )).to.be.true;
@@ -449,21 +449,21 @@ describe('local report', () => {
         expect(queryDocUuidsByKeyOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByKeyOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([ localContext.medicDb, 'medic-client/reports_by_freetext' ]);
         expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeInner.notCalled).to.be.true;
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(1);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/reports_by_freetext']);
+        ).to.deep.equal([ localContext.medicDb, 'medic-client/reports_by_freetext' ]);
         expect(fetchAndFilterUuidsOuter.firstCall.args[0]).to.be.a('function');
         expect(fetchAndFilterUuidsOuter.firstCall.args[1]).to.be.equal(limit);
         expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, Number(cursor))).to.be.true;
         // call the argument to check which one of the inner functions was called
         fetchAndFilterUuidsOuterFirstArg(limit, Number(cursor));
         expect(queryDocUuidsByRangeInner.calledWithExactly(
-          [qualifier.freetext],
-          [qualifier.freetext + END_OF_ALPHABET_MARKER],
+          [ qualifier.freetext ],
+          [ qualifier.freetext + END_OF_ALPHABET_MARKER ],
           limit,
           Number(cursor)
         )).to.be.true;
@@ -472,8 +472,8 @@ describe('local report', () => {
     });
 
     describe('createReport', () => {
-      let queryDocUuidsByKeyInner :SinonStub;
-      let queryDocUuidsByKeyOuter :SinonStub;
+      let queryDocUuidsByKeyInner: SinonStub;
+      let queryDocUuidsByKeyOuter: SinonStub;
 
       beforeEach(() => {
         queryDocUuidsByKeyInner = sinon.stub();
@@ -495,17 +495,17 @@ describe('local report', () => {
             _id: 'c2'
           }
         };
-        queryDocUuidsByKeyInner.resolves(['form:pregnancy_danger_sign']);
+        queryDocUuidsByKeyInner.resolves([ 'form:pregnancy_danger_sign' ]);
         getDocByIdInner.resolves(returnedContactDoc);
         const updatedInput = {
           ...input, contact: {
             _id: input.contact, parent: returnedContactDoc.parent
           }
         };
-        const expected_report = {...updatedInput, _id: '1-id', _rev: '1-rev'}; 
+        const expected_report = { ...updatedInput, _id: '1-id', _rev: '1-rev' };
         createDocOuter.returns(createDocInner);
         createDocInner.resolves(expected_report);
-      
+
         const report = await Report.v1.create(localContext)(input);
         expect(report).to.deep.equal(expected_report);
         expect(createDocOuter.calledOnce).to.be.true;
@@ -520,25 +520,25 @@ describe('local report', () => {
           contact: 'c1',
           reported_date: new Date().toISOString()
         };
-        queryDocUuidsByKeyInner.resolves(['form:pregnancy_danger_sign']);
+        queryDocUuidsByKeyInner.resolves([ 'form:pregnancy_danger_sign' ]);
         getDocByIdInner.resolves(null);
-        
+
         expect(createDocOuter.calledOnce).to.be.false;
-      
+
         await expect(Report.v1.create(localContext)(input))
           .to.be.rejectedWith(`Contact with _id ${input.contact} does not exist.`);
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('throws error for invalid `form` value', async () => {
-        queryDocUuidsByKeyInner.resolves(['form:undo_death_report']);
+        queryDocUuidsByKeyInner.resolves([ 'form:undo_death_report' ]);
         const input = {
           type: 'data_record',
           form: 'dummy_form_value',
           contact: 'c1',
           reported_date: new Date().toISOString()
         };
-        
+
         await expect(Report.v1.create(localContext)(input))
           .to.be.rejectedWith('Invalid `form` value');
         expect(getDocByIdInner.called).to.be.false;
@@ -546,7 +546,7 @@ describe('local report', () => {
       });
 
       it('throws error when _rev is passed in report input', async () => {
-        
+
         const input = {
           type: 'data_record',
           form: 'pregnancy_danger_sign',
@@ -563,8 +563,8 @@ describe('local report', () => {
   });
 
   describe('updateReport', () => {
-    let queryDocUuidsByKeyInner :SinonStub;
-    let queryDocUuidsByKeyOuter :SinonStub;
+    let queryDocUuidsByKeyInner: SinonStub;
+    let queryDocUuidsByKeyOuter: SinonStub;
 
     beforeEach(() => {
       queryDocUuidsByKeyInner = sinon.stub();
@@ -593,7 +593,7 @@ describe('local report', () => {
           _id: '5'
         }
       };
-      getDocByIdInner.resolves({...reportInput, _rev: '3'});
+      getDocByIdInner.resolves({ ...reportInput, _rev: '3' });
       await expect(Report.v1.update(localContext)(reportInput))
         .to.be.rejectedWith('`_rev` does not match');
     });
@@ -609,8 +609,8 @@ describe('local report', () => {
           _id: '5'
         }
       };
-      queryDocUuidsByKeyInner.resolves(['form:pregnancy_danger_sign']);
-      getDocByIdInner.resolves({...reportInput, form: 'pregnancy_danger_sign'});
+      queryDocUuidsByKeyInner.resolves([ 'form:pregnancy_danger_sign' ]);
+      getDocByIdInner.resolves({ ...reportInput, form: 'pregnancy_danger_sign' });
       await expect(Report.v1.update(localContext)(reportInput))
         .to.be.rejectedWith('Invalid `form` value');
     });
@@ -631,7 +631,7 @@ describe('local report', () => {
         .to.be.rejectedWith('Report not found');
     });
 
-    it('throws error if contact lineage does not match with the original doc', async() => {
+    it('throws error if contact lineage does not match with the original doc', async () => {
       const reportInput = {
         _id: '1',
         _rev: '2',
@@ -639,15 +639,15 @@ describe('local report', () => {
         type: 'data_record',
         reported_date: 12312312,
         contact: {
-          _id: '5', parent: {_id: '7'}
+          _id: '5', parent: { _id: '7' }
         }
       };
-      getDocByIdInner.resolves({...reportInput, contact: {_id: '5', parent: {_id: '6'}}});
+      getDocByIdInner.resolves({ ...reportInput, contact: { _id: '5', parent: { _id: '6' } } });
       await expect(Report.v1.update(localContext)(reportInput))
         .to.be.rejectedWith(`contact lineage does not match with the lineage of the doc in the db`);
     });
 
-    it('updates report for valid input', async() => {
+    it('updates report for valid input', async () => {
       const reportInput = {
         _id: '1',
         _rev: '2',
@@ -655,13 +655,13 @@ describe('local report', () => {
         type: 'data_record',
         reported_date: 12312312,
         contact: {
-          _id: '5', 
+          _id: '5',
           extra: 'field',
-          parent: {_id: '7'}
+          parent: { _id: '7' }
         }
       };
-      queryDocUuidsByKeyInner.resolves(['form:pregnancy_danger_sign']);
-      getDocByIdInner.resolves({...reportInput, old: true, language: 'English'});
+      queryDocUuidsByKeyInner.resolves([ 'form:pregnancy_danger_sign' ]);
+      getDocByIdInner.resolves({ ...reportInput, old: true, language: 'English' });
       const modified = {
         ...reportInput, contact: {
           _id: '5', parent: {
