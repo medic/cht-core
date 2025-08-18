@@ -38,7 +38,7 @@ module.exports = {
       return res.json(reportDoc);
     }),
     update: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req, ['can_view_reports', 'can_update_records']);
+      await auth.checkUserPermissions(req, ['can_view_reports', 'can_update_records']);
 
       const updatedReportDoc = await update()(req.body);
       return res.json(updatedReportDoc);

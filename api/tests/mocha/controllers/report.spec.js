@@ -358,9 +358,9 @@ describe('Report Controller Tests', () => {
           .withArgs(Report.v1.update)
           .returns(updateReport);
       });
+
       it('updates report for valid update input', async() => {
-        isOnlineOnly.returns(true);
-        hasAllPermissions.returns(true); 
+        checkUserPermissions.resolves();
         const updateInput = {
           type: 'report',
           reported_date: 12312312, 
@@ -377,7 +377,9 @@ describe('Report Controller Tests', () => {
           }
         };
         updateReport.resolves(updateInput);
-        await controller.v1.update(req, res);  
+
+        await controller.v1.update(req, res);
+
         expect(updateReport.calledOnce).to.be.true;
         expect(serverUtilsError.called).to.be.false;
         expect(dataContextBind.calledOnce).to.be.true;
@@ -385,8 +387,8 @@ describe('Report Controller Tests', () => {
       });
 
       it('throws error when the user is not an online user', async() => {
-        isOnlineOnly.returns(false);
-        hasAllPermissions.returns(true); 
+        const privilegeError = new PermissionError('Insufficient Privileges');
+        checkUserPermissions.rejects(privilegeError);
         const updateInput = {
           type: 'report',
           reported_date: 12312312, 
@@ -404,7 +406,6 @@ describe('Report Controller Tests', () => {
         };
         await controller.v1.update(req, res);
 
-        expect(hasAllPermissions.notCalled).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(updateReport.notCalled).to.be.true;
@@ -412,8 +413,37 @@ describe('Report Controller Tests', () => {
         expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(PermissionError);
         expect(serverUtilsError.firstCall.args[0].message === privilegeError.message).to.be.true;
         expect(serverUtilsError.firstCall.args[0].code === privilegeError.code).to.be.true;
-        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
-        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+      });
+
+      it('rethrows error in case of other errors', async () => {
+        const updateInput = {
+          type: 'report',
+          reported_date: 12312312,
+          _id: '1',
+          _rev: '2',
+          contact: {
+            _id: '3'
+          },
+          form: 'abcd'
+        };
+        req = {
+          body: {
+            ...updateInput
+          }
+        };
+
+        const err = new Error('error');
+        checkUserPermissions.resolves();
+        updateReport.throws(err);
+
+        await controller.v1.update(req, res);
+
+        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_reports', 'can_update_records'])).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.update)).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+        expect(updateReport.calledOnce).to.be.true;
+        expect(serverUtilsError.called).to.be.true;
       });
     });
   });
