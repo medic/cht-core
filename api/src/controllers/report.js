@@ -7,6 +7,7 @@ const { PermissionError } = require('../errors');
 const getReport = () => ctx.bind(Report.v1.get);
 const getReportIds = () => ctx.bind(Report.v1.getUuidsPage);
 const create = () => ctx.bind(Report.v1.create);
+const update = () => ctx.bind(Report.v1.update);
 
 const checkUserPermissions = async (req, permissions = ['can_view_reports']) => {
   const userCtx = await auth.getUserCtx(req);
@@ -43,6 +44,12 @@ module.exports = {
       const input = Input.validateReportInput(req.body);
       const reportDoc = await create()(input);
       return res.json(reportDoc);
+    }),
+    update: serverUtils.doOrError(async (req, res) => {
+      await checkUserPermissions(req, ['can_view_reports', 'can_update_records']);
+
+      const updatedReportDoc = await update()(req.body);
+      return res.json(updatedReportDoc);
     }),
   }
 };

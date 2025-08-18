@@ -329,8 +329,7 @@ describe('Report API', () => {
   describe('POST /api/v1/report/', () => {
     it('creates a report doc for valid input', async () => {
       const input = {
-        form: 'form-1',
-        type: 'report',
+        form: 'pregnancy_danger_sign_follow_up',
         reported_date: 11221122,
         contact: place2._id
       };
@@ -346,12 +345,12 @@ describe('Report API', () => {
 
       const reportDoc = await utils.request(opts);
       expect(reportDoc).excluding(['_rev', '_id', 'contact'])
-        .to.deep.equal(input);
+        .to.deep.equal({...input, type: 'data_record'});
     });
 
     it('throws error for missing report fields', async () => {
       const input = {
-        form: 'form-1',
+        form: 'pregnancy_danger_sign_follow_up',
         reported_date: 11221122
       };
       const opts = {
@@ -369,6 +368,112 @@ describe('Report API', () => {
           code: 400,
           error: `Missing or empty required field (contact) in [${JSON.stringify(input)}].`
         })}`);
+    });
+  });
+
+  describe('PUT /api/v1/report', () => {
+    it('updates doc for a valid update input', async () => {
+      const createInput = {
+        type: 'data_record',
+        contact: contact0._id,
+        form: 'pregnancy_danger_sign_follow_up'
+      };
+
+      const createOpts = {
+        path: '/api/v1/report', 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: createInput,
+      };
+
+      const originalReportDoc = await utils.request(createOpts);
+      const updateInput = {
+        ...originalReportDoc,
+        form: 'undo_death_report'
+      };
+      const updateOpts = {
+        path: '/api/v1/report', 
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updateInput,
+      };
+
+      const updatedReportDoc = await utils.request(updateOpts);
+      expect(updatedReportDoc).excluding(['_rev'])
+        .to.deep.equal(updateInput);
+    });
+
+    it('throws error on trying to update an immutable field, here contact', async () => {
+      const createInput = {
+        type: 'data_record',
+        contact: contact0._id,
+        form: 'undo_death_report'
+      };
+
+      const createOpts = {
+        path: '/api/v1/report', 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: createInput,
+      };
+
+      const originalReportDoc = await utils.request(createOpts);
+      const updateInput = {
+        ...originalReportDoc,
+        contact: contact1
+      };
+      const updateOpts = {
+        path: '/api/v1/report', 
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updateInput,
+      };
+
+      await expect(utils.request(updateOpts))
+        .to.be.rejectedWith(`contact lineage does not match with the lineage of the doc in the db`);
+    });
+
+    it('throws error on trying to update a report that does not exist', async () => {
+      const createInput = {
+        type: 'data_record',
+        contact: contact0._id,
+        form: 'undo_death_report'
+      };
+
+      const createOpts = {
+        path: '/api/v1/report', 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: createInput,
+      };
+
+      const originalReportDoc = await utils.request(createOpts);
+      const updateInput = {
+        ...originalReportDoc,
+        _id: '12312312',
+        form: 'pregnancy_home_visit'
+      };
+      const updateOpts = {
+        path: '/api/v1/report', 
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updateInput,
+      };
+
+      await expect(utils.request(updateOpts))
+        .to.be.rejectedWith(`Report not found`);
     });
   });
 });
