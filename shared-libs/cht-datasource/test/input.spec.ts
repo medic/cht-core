@@ -381,19 +381,19 @@ describe('input', () => {
           name: 'place-1',
           type: 'hospital'
         }, {
-        name: 'place-1',
-        type: 'place',
-        parent: 'p1'
-      }, {
-        name: 'place-1',
-        type: 'place',
-        reported_date: 21231231,
-      }, {
-        name: 'place-1',
-        type: 'place',
-        contact: 'c1',
-        parent: 'p1'
-      }
+          name: 'place-1',
+          type: 'place',
+          parent: 'p1'
+        }, {
+          name: 'place-1',
+          type: 'place',
+          reported_date: 21231231,
+        }, {
+          name: 'place-1',
+          type: 'place',
+          contact: 'c1',
+          parent: 'p1'
+        }
       ].forEach((input) => {
         const expected_input = { reported_date: 1672531283000, ...input };
         expect(validatePlaceInput(input)).to.deep.equal(expected_input);
@@ -450,22 +450,22 @@ describe('input', () => {
           name: 'place-1',
           type: 'place'
         }, {
-        name: 'place-1',
-        type: 'contact',
-      }, {
-        name: 'place-1',
-        type: 'place',
-      }, {
-        name: 'place-1',
-        type: 'place',
-        reported_date: 21231231,
-        contact: 'c1'
-      }, {
-        name: 'place-1',
-        type: 'place',
-        contact: 'c1',
-        parent: 'p1'
-      }
+          name: 'place-1',
+          type: 'contact',
+        }, {
+          name: 'place-1',
+          type: 'place',
+        }, {
+          name: 'place-1',
+          type: 'place',
+          reported_date: 21231231,
+          contact: 'c1'
+        }, {
+          name: 'place-1',
+          type: 'place',
+          contact: 'c1',
+          parent: 'p1'
+        }
       ].forEach((input) => {
         expect(isPlaceInput(input)).to.be.true;
       });

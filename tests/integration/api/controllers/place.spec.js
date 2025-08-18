@@ -382,13 +382,13 @@ describe('Place API', () => {
       };
       expect(utils.request(updateOpts))
         .to.be.rejectedWith(
-        `400 - ${JSON.stringify({
-          code: 400,
-          error: `Value ${JSON.stringify(
-            updatePlaceInput.reported_date
-          )} of immutable field 'reported_date' does not match with the original doc`
-        })}`
-      );
+          `400 - ${JSON.stringify({
+            code: 400,
+            error: `Value ${JSON.stringify(
+              updatePlaceInput.reported_date
+            )} of immutable field 'reported_date' does not match with the original doc`
+          })}`
+        );
     });
 
     it(`throws error on missing _id field`, async () => {
@@ -422,11 +422,11 @@ describe('Place API', () => {
       };
       expect(utils.request(updateOpts))
         .to.be.rejectedWith(
-        `400 - ${JSON.stringify({
-          code: 400,
-          error: `Document for update is not a valid Doc ${JSON.stringify(updatePlaceInput)}`
-        })}`
-      );
+          `400 - ${JSON.stringify({
+            code: 400,
+            error: `Document for update is not a valid Doc ${JSON.stringify(updatePlaceInput)}`
+          })}`
+        );
     });
 
     it(`throws error on missing _rev field`, async () => {
@@ -460,12 +460,12 @@ describe('Place API', () => {
       };
       expect(utils.request(updateOpts))
         .to.be.rejectedWith(
-        `400 - ${JSON.stringify({
-          code: 400,
-          error: `Missing or empty required fields (_rev) for [${JSON
-            .stringify(updatePlaceInput)}].`
-        })}`
-      );
+          `400 - ${JSON.stringify({
+            code: 400,
+            error: `Missing or empty required fields (_rev) for [${JSON
+              .stringify(updatePlaceInput)}].`
+          })}`
+        );
     });
   });
 });

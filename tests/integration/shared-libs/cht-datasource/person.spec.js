@@ -222,9 +222,9 @@ describe('cht-datasource Person', () => {
         const person = await createPerson(personInput);
         expect(person).excluding([ '_rev', 'reported_date', '_id' ])
           .to.deep.equal({
-          ...personInput, contact_type: 'person', type: 'contact',
-          parent: { _id: place0._id, parent: place0.parent }
-        });
+            ...personInput, contact_type: 'person', type: 'contact',
+            parent: { _id: place0._id, parent: place0.parent }
+          });
       });
 
       it('throws error for parent type not among allowed parents in settings.contact_types', async () => {
