@@ -289,10 +289,10 @@
     "can_export_devices_details": [
       "national_admin"
     ],
-    "can_view_my_custom_page_1": [
+    "can_view_my_page_1": [
       "national_admin"
     ],
-    "can_view_my_custom_page_2": [
+    "can_view_my_page_2": [
       "national_admin"
     ],
     "can_view_grid": [
@@ -378,20 +378,20 @@
     }
   ],
   "pages": {
-    "my_custom_page_1": {
+    "my_page_1": {
       "tab_type": "secondary",
       "permissions": [
-        "can_view_my_custom_page_1"
+        "can_view_my_page_1"
       ],
       "template": {
         "key": "iframe",
         "url": "http://localhost:5988/#/about"
       }
     },
-    "my_custom_page_2": {
+    "my_page_2": {
       "tab_type": "secondary",
       "permissions": [
-        "can_view_my_custom_page_2"
+        "can_view_my_page_2"
       ],
       "template": {
         "key": "iframe",
@@ -437,53 +437,53 @@
       "template": {
         "key": "table",
         "page_header": {
-          "title": "User login status dashboard",
-          "descriptionCollapsed": "Login data can be delayed by a few days",
-          "descriptionExpanded": "<p><strong>NOTE: Replication tracking can be delayed by a few days due to how the telemetry records are created. Each time an action is performed on the client, a record will be created in the user's own meta db. The aggregate doc for the previous day is created when the first telemetry item is recorded each day. After which the singular telemetry docs will be removed from the user's specific db to reduce the amount of records required to sync. Sentinel wil then pick up these documents and move them over to the communal meta database, this aggregation process occurs \"nightly\". <a href=\"https://forum.communityhealthtoolkit.org/t/sync-issues-status-scrutiny/3359/11\">Read more on the related CHT Forum Post</a> </strong></p>",
+          "title": "Sync & Connectivity Dashboard",
+          "description_collapsed": "Login data can be delayed by a few days",
+          "description_expanded": "<p><strong>NOTE: Replication tracking can be delayed by a few days due to how the telemetry records are created. Each time an action is performed on the client, a record will be created in the user's own meta db. The aggregate doc for the previous day is created when the first telemetry item is recorded each day. After which the singular telemetry docs will be removed from the user's specific db to reduce the amount of records required to sync. Sentinel wil then pick up these documents and copy them over to the communal meta database, this aggregation process occurs \"nightly\". <a href=\"https://forum.communityhealthtoolkit.org/t/sync-issues-status-scrutiny/3359/11\">Read more on the related CHT Forum Post</a> </strong></p>",
           "expanded": true
         },
         "table_headers": {
           "username": {
-            "canSort": false,
-            "displayValue": "Username:"
+            "can_sort": false,
+            "display_value": "Username:"
           },
-          "lastServerConnectionDate": {
-            "canSort": true,
-            "displayValue": "Last Server Connection:",
+          "last_server_connection_date": {
+            "can_sort": true,
+            "display_value": "Last Server Connection:",
             "pipe": "date"
           },
-          "latestToSyncDateMs": {
-            "canSort": true,
-            "displayValue": "Last ↑ Sync:",
+          "latest_to_sync_date_ms": {
+            "can_sort": true,
+            "display_value": "Last ↑ Sync:",
             "pipe": "date"
           },
-          "latestFromSyncDateMs": {
-            "canSort": true,
-            "displayValue": "Last ↓ Sync:",
+          "latest_from_sync_date_ms": {
+            "can_sort": true,
+            "display_value": "Last ↓ Sync:",
             "pipe": "date"
           },
-          "totalDaysBetweenUpSync": {
-            "canSort": true,
-            "displayValue": "Avg days between ↓ sync (w adj):",
-            "preprocessHook": "const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount - 1, 1)).toFixed(2) : 'NA';"
+          "total_days_between_up_sync": {
+            "can_sort": true,
+            "display_value": "Avg days between ↓ sync (w adj):",
+            "preprocess_hook": "const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount - 1, 1)).toFixed(2) : 'NA';"
           },
-          "totalDaysBetweenDownSync": {
-            "canSort": true,
-            "displayValue": "Avg days between ↑ sync (w adj):",
-            "preprocessHook": "const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount - 1, 1)).toFixed(2) : 'NA';"
+          "total_days_between_down_sync": {
+            "can_sort": true,
+            "display_value": "Avg days between ↑ sync (w adj):",
+            "preprocess_hook": "const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount - 1, 1)).toFixed(2) : 'NA';"
           },
-          "totalInactiveDays": {
-            "canSort": true,
-            "displayValue": "Activity gap (w adj):",
-            "preprocessHook": "const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount, 1)).toFixed(2) : 'NA';"
+          "total_inactive_days": {
+            "can_sort": true,
+            "display_value": "Activity gap (w adj):",
+            "preprocess_hook": "const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount, 1)).toFixed(2) : 'NA';"
           },
-          "latestApproximateDeviceDocCount": {
-            "canSort": true,
-            "displayValue": "Approximate doc count:",
-            "preprocessHook": "const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount, 1)).toFixed(2) : 'NA';"
+          "latest_approximate_device_doc_count": {
+            "can_sort": true,
+            "display_value": "Approximate doc count:",
+            "preprocess_hook": "const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount, 1)).toFixed(2) : 'NA';"
           }
         },
-        "on_screen_load": "const startingPoint=moment().subtract(2,'months');const connectedUsersCutoff=startingPoint.clone().subtract(8,'months').valueOf();const strict=false;const medicLogs=dbService.get({remote:true,custom:'medic-logs'});const medicLogsInfo=await medicLogs.info();console.log('Remote medic logs info: ',medicLogsInfo);const connectedUsersQueryResult=await medicLogs.query('logs/connected_users',{reduce:false,startkey:strict?startingPoint.valueOf():connectedUsersCutoff,endkey:9999999999999});console.log('Connected users query result: ',connectedUsersQueryResult);const connectedUsers=connectedUsersQueryResult?.rows?.map(entry=>({name:entry.id.replace(/^connected-user-/,''),timestamp:entry.key}));console.log('Connected users (active this year): ',connectedUsers);const countWeekdaysBetween=function(startDate,endDate){const SUNDAY=0;const SATURDAY=6;let count=0;const current=moment(startDate).clone();while(current.isBefore(endDate,'day')){const day=current.day();if(day!==SUNDAY&&day!==SATURDAY){count++}current.add(1,'day')}return count};const adjustedGapExcludingWeekends=function(prevDate,currentDate){const SUNDAY=0;const SATURDAY=6;const totalDays=currentDate.diff(prevDate,'days',true);if(totalDays<=0){return 0}let weekendDays=0;const checkDate=prevDate.clone().add(1,'days');while(checkDate.isBefore(currentDate,'day')){const day=checkDate.day();if(day===SUNDAY||day===SATURDAY){weekendDays++}checkDate.add(1,'days')}return totalDays-weekendDays};const getTelemetry=async function(dbService,yearLowerLimit,monthLowerLimit,connectedUsers){console.log('Year lower limit: ',yearLowerLimit);console.log('Month lower limit: ',monthLowerLimit);const medicUsersMeta=dbService.get({remote:true,custom:'medic-users-meta'});let bookmark=null;let results=[];const limit=25;let response;do{const query={selector:{type:'telemetry','metrics.replication:medic:from:ms-since-last-replicated-date':{$exists:true},'metadata.year':{$gte:yearLowerLimit},'metadata.month':{$gte:monthLowerLimit},'metadata.user':{$in:connectedUsers.map(e=>e.name)}},fields:['metadata.user','metadata.year','metadata.month','metadata.day','metadata.aggregate_date','metrics.boot_time:2:to_bootstrap','metrics.replication:medic:from:ms-since-last-replicated-date','metrics.replication:medic:to:ms-since-last-replicated-date','dbInfo.doc_count','dbInfo.db_name'],limit:limit,bookmark:bookmark||undefined};response=await medicUsersMeta.find(query);results=results.concat(response.docs);bookmark=response.bookmark}while(response.docs.length===limit);console.log('Telemetry results: ',results);const data=Object.fromEntries(connectedUsers.map(user=>[user.name,{lastServerConnectionDate:user.timestamp,mostRecentTelemetry:-1,latestFromSyncDateMs:-1,latestToSyncDateMs:-1,latestApproximateDeviceDocCount:-1,totalDaysBetweenDownSync:0,totalDaysBetweenUpSync:0,totalInactiveDays:0,entryCount:0}]));for(const entry of results??[]){console.log('Entry: ',entry);console.log('username: ',entry.metadata.user);const bucket=data[entry.metadata.user];if(bucket){const startPeriod=`${entry.metadata.year}-${entry.metadata.month}-${entry.metadata.day}`;console.log('Start period: ',startPeriod);const momentStartPeriod=moment(new Date(startPeriod));const diffInWeekDays=countWeekdaysBetween(startPeriod,moment(new Date(entry.metadata.aggregate_date)));console.log('Diff in days: ',diffInWeekDays);bucket.totalInactiveDays+=diffInWeekDays;const msSinceLastRepUpSuccess=entry.metrics['replication:medic:to:ms-since-last-replicated-date'].min;const msSinceLastRepDownSuccess=entry.metrics['replication:medic:from:ms-since-last-replicated-date'].min;const lastSuccessfulRepUpDate=momentStartPeriod.subtract(msSinceLastRepUpSuccess,'milliseconds');const lastSuccessfulRepDownDate=momentStartPeriod.subtract(msSinceLastRepDownSuccess,'milliseconds');const telemetryTimestamp=momentStartPeriod.valueOf();if(momentStartPeriod.valueOf()>bucket.mostRecentTelemetry){console.log('Last up: ',lastSuccessfulRepUpDate.toISOString());console.log('Last down: ',lastSuccessfulRepDownDate.toISOString());if(bucket.latestFromSyncDateMs>0){const prevDate=moment(bucket.latestFromSyncDateMs);const gapDays=adjustedGapExcludingWeekends(prevDate,lastSuccessfulRepDownDate);bucket.totalDaysBetweenDownSync+=gapDays}if(bucket.latestToSyncDateMs>0){const prevDate=moment(bucket.latestToSyncDateMs);const gapDays=adjustedGapExcludingWeekends(prevDate,lastSuccessfulRepUpDate);bucket.totalDaysBetweenUpSync+=gapDays}bucket.latestFromSyncDateMs=lastSuccessfulRepDownDate.valueOf();bucket.latestToSyncDateMs=lastSuccessfulRepUpDate.valueOf();bucket.latestApproximateDeviceDocCount=entry.dbInfo?.doc_count??bucket.latestApproximateDeviceDocCount;bucket.mostRecentTelemetry=telemetryTimestamp}bucket.entryCount++}};return data};const info=await getTelemetry(dbService,startingPoint.year(),startingPoint.month()+1,connectedUsers);console.log('Info: ',info);return info;",
+        "on_screen_load": "const startingPoint=moment().subtract(2,'months');const connectedUsersCutoff=startingPoint.clone().subtract(8,'months').valueOf();const strict=false;const medicLogs=dbService.get({remote:true,custom:'medic-logs'});const medicLogsInfo=await medicLogs.info();console.log('Remote medic logs info: ',medicLogsInfo);const connectedUsersQueryResult=await medicLogs.query('logs/connected_users',{reduce:false,startkey:strict?startingPoint.valueOf():connectedUsersCutoff,endkey:9999999999999});console.log('Connected users query result: ',connectedUsersQueryResult);const connectedUsers=connectedUsersQueryResult?.rows?.map(entry=>({name:entry.id.replace(/^connected-user-/,''),timestamp:entry.key}));console.log('Connected users (active this year): ',connectedUsers);const countWeekdaysBetween=function(startDate,endDate){const SUNDAY=0;const SATURDAY=6;let count=0;const current=moment(startDate).clone();while(current.isBefore(endDate,'day')){const day=current.day();if(day!==SUNDAY&&day!==SATURDAY){count++}current.add(1,'day')}return count};const adjustedGapExcludingWeekends=function(prevDate,currentDate){const SUNDAY=0;const SATURDAY=6;const totalDays=currentDate.diff(prevDate,'days',true);if(totalDays<=0){return 0}let weekendDays=0;const checkDate=prevDate.clone().add(1,'days');while(checkDate.isBefore(currentDate,'day')){const day=checkDate.day();if(day===SUNDAY||day===SATURDAY){weekendDays++}checkDate.add(1,'days')}return totalDays-weekendDays};const getTelemetry=async function(dbService,yearLowerLimit,monthLowerLimit,connectedUsers){console.log('Year lower limit: ',yearLowerLimit);console.log('Month lower limit: ',monthLowerLimit);const medicUsersMeta=dbService.get({remote:true,custom:'medic-users-meta'});let bookmark=null;let results=[];const limit=25;let response;do{const query={selector:{type:'telemetry','metrics.replication:medic:from:ms-since-last-replicated-date':{$exists:true},'metadata.year':{$gte:yearLowerLimit},'metadata.month':{$gte:monthLowerLimit},'metadata.user':{$in:connectedUsers.map(e=>e.name)}},fields:['metadata.user','metadata.year','metadata.month','metadata.day','metadata.aggregate_date','metrics.boot_time:2:to_bootstrap','metrics.replication:medic:from:ms-since-last-replicated-date','metrics.replication:medic:to:ms-since-last-replicated-date','dbInfo.doc_count','dbInfo.db_name'],limit:limit,bookmark:bookmark||undefined};response=await medicUsersMeta.find(query);results=results.concat(response.docs);bookmark=response.bookmark}while(response.docs.length===limit);console.log('Telemetry results: ',results);const data=Object.fromEntries(connectedUsers.map(user=>[user.name,{last_server_connection_date:user.timestamp,mostRecentTelemetry:-1,latest_from_sync_date_ms:-1,latest_to_sync_date_ms:-1,latest_approximate_device_doc_count:-1,total_days_between_down_sync:0,total_days_between_up_sync:0,total_inactive_days:0,entryCount:0}]));for(const entry of results??[]){console.log('Entry: ',entry);console.log('username: ',entry.metadata.user);const bucket=data[entry.metadata.user];if(bucket){const startPeriod=`${entry.metadata.year}-${entry.metadata.month}-${entry.metadata.day}`;console.log('Start period: ',startPeriod);const momentStartPeriod=moment(new Date(startPeriod));const diffInWeekDays=countWeekdaysBetween(startPeriod,moment(new Date(entry.metadata.aggregate_date)));console.log('Diff in days: ',diffInWeekDays);bucket.total_inactive_days+=diffInWeekDays;const msSinceLastRepUpSuccess=entry.metrics['replication:medic:to:ms-since-last-replicated-date'].min;const msSinceLastRepDownSuccess=entry.metrics['replication:medic:from:ms-since-last-replicated-date'].min;const lastSuccessfulRepUpDate=momentStartPeriod.subtract(msSinceLastRepUpSuccess,'milliseconds');const lastSuccessfulRepDownDate=momentStartPeriod.subtract(msSinceLastRepDownSuccess,'milliseconds');const telemetryTimestamp=momentStartPeriod.valueOf();if(momentStartPeriod.valueOf()>bucket.mostRecentTelemetry){console.log('Last up: ',lastSuccessfulRepUpDate.toISOString());console.log('Last down: ',lastSuccessfulRepDownDate.toISOString());if(bucket.latest_from_sync_date_ms>0){const prevDate=moment(bucket.latest_from_sync_date_ms);const gapDays=adjustedGapExcludingWeekends(prevDate,lastSuccessfulRepDownDate);bucket.total_days_between_down_sync+=gapDays}if(bucket.latest_to_sync_date_ms>0){const prevDate=moment(bucket.latest_to_sync_date_ms);const gapDays=adjustedGapExcludingWeekends(prevDate,lastSuccessfulRepUpDate);bucket.total_days_between_up_sync+=gapDays}bucket.latest_from_sync_date_ms=lastSuccessfulRepDownDate.valueOf();bucket.latest_to_sync_date_ms=lastSuccessfulRepUpDate.valueOf();bucket.latest_approximate_device_doc_count=entry.dbInfo?.doc_count??bucket.latest_approximate_device_doc_count;bucket.mostRecentTelemetry=telemetryTimestamp}bucket.entryCount++}};return data};const info=await getTelemetry(dbService,startingPoint.year(),startingPoint.month()+1,connectedUsers);console.log('Info: ',info);return info;",
         "on_reload": "console.log('This reload content is pushed via config'); return await onScreenLoad();"
       }
     },

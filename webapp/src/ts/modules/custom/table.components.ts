@@ -80,29 +80,29 @@ export class TableContentComponent implements OnInit, AfterViewInit {
     this.displayedColumns = headers;
 
     // this.displayedColumns = {
-    //   username: { canSort: false, displayValue: 'Username:' },
-    //   lastServerConnectionDate: { canSort: true, displayValue: 'Last Server Connection:', pipe: 'date' },
-    //   latestToSyncDateMs: { canSort: true, displayValue: 'Last ↑ Sync:', pipe: 'date' },
-    //   latestFromSyncDateMs: { canSort: true, displayValue: 'Last ↓ Sync:', pipe: 'date' },
-    //   totalDaysBetweenUpSync: { 
-    //     canSort: true, 
-    //     displayValue: 'Avg days between ↑ sync (w adj):', 
-    //     preprocessHook: 'const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount - 1, 1)).toFixed(2) : -1;',
+    //   username: { can_sort: false, display_value: 'Username:' },
+    //   last_server_connection_date: { can_sort: true, display_value: 'Last Server Connection:', pipe: 'date' },
+    //   latest_to_sync_date_ms: { can_sort: true, display_value: 'Last ↑ Sync:', pipe: 'date' },
+    //   latest_from_sync_date_ms: { can_sort: true, display_value: 'Last ↓ Sync:', pipe: 'date' },
+    //   total_days_between_up_sync: { 
+    //     can_sort: true, 
+    //     display_value: 'Avg days between ↑ sync (w adj):', 
+    //     preprocess_hook: 'const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount - 1, 1)).toFixed(2) : -1;',
     //   },
     //   totalDaysBetweenDownSync: { 
-    //     canSort: true, 
-    //     displayValue: 'Avg days between ↓ sync (w adj):', 
-    //     preprocessHook: 'const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount - 1, 1)).toFixed(2) : -1;',
+    //     can_sort: true, 
+    //     display_value: 'Avg days between ↓ sync (w adj):', 
+    //     preprocess_hook: 'const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount - 1, 1)).toFixed(2) : -1;',
     //   },
-    //   latestApproximateDeviceDocCount: { 
-    //     canSort: true,
-    //     displayValue: 'Approximate doc count:',
-    //     preprocessHook: 'const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount, 1)).toFixed(2) : -1;',
+    //   latest_approximate_device_doc_count: { 
+    //     can_sort: true,
+    //     display_value: 'Approximate doc count:',
+    //     preprocess_hook: 'const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount, 1)).toFixed(2) : -1;',
     //   },
     //   totalInactiveDays: { 
-    //     canSort: true,
-    //     displayValue: 'Activity gap (w adj):',
-    //     preprocessHook: 'const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount, 1)).toFixed(2) : -1;',
+    //     can_sort: true,
+    //     display_value: 'Activity gap (w adj):',
+    //     preprocess_hook: 'const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount, 1)).toFixed(2) : -1;',
     //   },
     // };
 
@@ -110,22 +110,22 @@ export class TableContentComponent implements OnInit, AfterViewInit {
     if (!pageHeader){
       console.log('No header config provided');
       return;
-    } else if ('title' in pageHeader && 'descriptionCollapsed' in pageHeader && 'descriptionExpanded' in pageHeader){
+    } else if ('title' in pageHeader && 'description_collapsed' in pageHeader && 'description_expanded' in pageHeader){
       console.log('Is pre-defined header');
       this.title = pageHeader.title;
-      this.descriptionCollapsed = pageHeader.descriptionCollapsed;
-      this.descriptionExpanded = pageHeader.descriptionExpanded;
+      this.descriptionCollapsed = pageHeader.description_collapsed;
+      this.descriptionExpanded = pageHeader.description_expanded;
       this.expanded = pageHeader.expanded??false;
       this.hasCustomHeader = false;
-    } else if ('customHtml' in pageHeader){
+    } else if ('content' in pageHeader){
       this.hasCustomHeader = true;
     }
 
     for (const entry of Object.entries(this.displayedColumns)){
-      if (entry[1].preprocessHook){
+      if (entry[1].preprocess_hook){
         this.onProcessFns[entry[0]] = this.createFunctionFromString(
           ['cellValue', 'rowIndex', 'tableRowCount', 'rowData', 'Math'],
-          entry[1].preprocessHook
+          entry[1].preprocess_hook
         );
       }
     }
@@ -177,10 +177,10 @@ export class TableContentComponent implements OnInit, AfterViewInit {
       );
     }
 
-    if (this.hasCustomHeader && this.pageHeaderContainer && 'customHtml' in this.config.page_header){
+    if (this.hasCustomHeader && this.pageHeaderContainer && 'content' in this.config.page_header){
       this.renderer.render(
         this.pageHeaderContainer,
-        this.config.page_header.customHtml,
+        this.config.page_header.content,
         { reload: () => this.reload() }
         // extraImports if needed, e.g. [MatTableModule]
       );
@@ -364,14 +364,14 @@ export class TableContentComponent implements OnInit, AfterViewInit {
   //       // TODO: days since last successful up/down ?
         
   //       const data = Object.fromEntries(connectedUsers.map(user => [user.name, {
-  //         lastServerConnectionDate: user.timestamp,
+  //         last_server_connection_date: user.timestamp,
   //         mostRecentTelemetry: -1,
-  //         latestFromSyncDateMs: -1,
-  //         latestToSyncDateMs: -1,
-  //         latestApproximateDeviceDocCount: -1, // Syncing is delayed by at least a day. 2/3 over weekends.
+  //         latest_from_sync_date_ms: -1,
+  //         latest_to_sync_date_ms: -1,
+  //         latest_approximate_device_doc_count: -1, // Syncing is delayed by at least a day. 2/3 over weekends.
   
   //         totalDaysBetweenDownSync: 0,
-  //         totalDaysBetweenUpSync: 0,
+  //         total_days_between_up_sync: 0,
   //         totalInactiveDays: 0,
   //         entryCount: 0, // We should divide all of the above by the amount of entries returned to get the avg
   //       }]));
@@ -423,22 +423,22 @@ export class TableContentComponent implements OnInit, AfterViewInit {
   //             console.log('Last up: ', lastSuccessfulRepUpDate.toISOString());
   //             console.log('Last down: ', lastSuccessfulRepDownDate.toISOString());
   
-  //             if (bucket.latestFromSyncDateMs > 0) {
-  //               const prevDate = moment(bucket.latestFromSyncDateMs);
+  //             if (bucket.latest_from_sync_date_ms > 0) {
+  //               const prevDate = moment(bucket.latest_from_sync_date_ms);
   //               const gapDays = adjustedGapExcludingWeekends(prevDate, lastSuccessfulRepDownDate);
   //               bucket.totalDaysBetweenDownSync += gapDays;
   //             }
   
-  //             if (bucket.latestToSyncDateMs > 0) {
-  //               const prevDate = moment(bucket.latestToSyncDateMs);
+  //             if (bucket.latest_to_sync_date_ms > 0) {
+  //               const prevDate = moment(bucket.latest_to_sync_date_ms);
   //               const gapDays = adjustedGapExcludingWeekends(prevDate, lastSuccessfulRepUpDate);
-  //               bucket.totalDaysBetweenUpSync += gapDays;
+  //               bucket.total_days_between_up_sync += gapDays;
   //             }
   
-  //             bucket.latestFromSyncDateMs = lastSuccessfulRepDownDate.valueOf();
-  //             bucket.latestToSyncDateMs = lastSuccessfulRepUpDate.valueOf();
+  //             bucket.latest_from_sync_date_ms = lastSuccessfulRepDownDate.valueOf();
+  //             bucket.latest_to_sync_date_ms = lastSuccessfulRepUpDate.valueOf();
   
-  //             bucket.latestApproximateDeviceDocCount = entry.dbInfo?.doc_count ?? bucket.latestApproximateDeviceDocCount;
+  //             bucket.latest_approximate_device_doc_count = entry.dbInfo?.doc_count ?? bucket.latest_approximate_device_doc_count;
   
   //             bucket.mostRecentTelemetry = telemetryTimestamp;
   //           }
@@ -514,11 +514,11 @@ export class TableContentComponent implements OnInit, AfterViewInit {
 export type TableConfig = {
   page_header: { 
     title: string, 
-    descriptionCollapsed: string, 
-    descriptionExpanded: string, 
+    description_collapsed: string, 
+    description_expanded: string, 
     expanded: boolean 
   } | { 
-    customHtml: string 
+    content: string 
   },
   table_headers: {[key: string]: ColumnConfig},
   on_screen_load: string,
@@ -526,9 +526,9 @@ export type TableConfig = {
 };
 
 type ColumnConfig = {
-  canSort: boolean;
-  displayValue: string;
+  can_sort: boolean;
+  display_value: string;
   // The cell value, row index, total row count, and row data obj will be fed into this function
-  preprocessHook?: string;
+  preprocess_hook?: string;
   pipe?: string;
 };

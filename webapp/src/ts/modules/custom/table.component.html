@@ -29,9 +29,9 @@
                     mat-header-cell 
                     *matHeaderCellDef 
                     mat-sort-header 
-                    [disabled]="!entry.value.canSort"
+                    [disabled]="!entry.value.can_sort"
                     style="position: sticky; top: 0; background: white; z-index: 1;"> 
-                        {{entry.value.displayValue}} 
+                        {{entry.value.display_value}} 
                 </th>
                 <!-- All of the different supported pipes -->
                 <td mat-cell *matCellDef="let element; let i = index">
