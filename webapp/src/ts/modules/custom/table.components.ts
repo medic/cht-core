@@ -66,8 +66,8 @@ export class TableContentComponent implements OnInit, AfterViewInit {
   private onLoadFn: Function | undefined = async () => console.log('The default on load method action');
   private onReloadFn: Function | undefined = async () => console.log('The default on reload method action');
 
-  // TODO: get the screen filter to work here. Allow the user to configure what can be filtered.
-  // In this case we want to be able to grab documents from 2 months ago. What if we want to check 4 months ago?
+  // TODO: get the screen filter to work here.
+  // At the moment we hard code the lookup to 2 months ago. What if we want to check 4 months ago?
 
   constructor(
     private renderer: DynamicTemplateRenderer,
@@ -78,33 +78,6 @@ export class TableContentComponent implements OnInit, AfterViewInit {
     const headers = this.config.table_headers;
     console.log('Configured headers: ', headers);
     this.displayedColumns = headers;
-
-    // this.displayedColumns = {
-    //   username: { can_sort: false, display_value: 'Username:' },
-    //   last_server_connection_date: { can_sort: true, display_value: 'Last Server Connection:', pipe: 'date' },
-    //   latest_to_sync_date_ms: { can_sort: true, display_value: 'Last ↑ Sync:', pipe: 'date' },
-    //   latest_from_sync_date_ms: { can_sort: true, display_value: 'Last ↓ Sync:', pipe: 'date' },
-    //   total_days_between_up_sync: { 
-    //     can_sort: true, 
-    //     display_value: 'Avg days between ↑ sync (w adj):', 
-    //     preprocess_hook: 'const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount - 1, 1)).toFixed(2) : -1;',
-    //   },
-    //   totalDaysBetweenDownSync: { 
-    //     can_sort: true, 
-    //     display_value: 'Avg days between ↓ sync (w adj):', 
-    //     preprocess_hook: 'const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount - 1, 1)).toFixed(2) : -1;',
-    //   },
-    //   latest_approximate_device_doc_count: { 
-    //     can_sort: true,
-    //     display_value: 'Approximate doc count:',
-    //     preprocess_hook: 'const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount, 1)).toFixed(2) : -1;',
-    //   },
-    //   totalInactiveDays: { 
-    //     can_sort: true,
-    //     display_value: 'Activity gap (w adj):',
-    //     preprocess_hook: 'const entryCount = ((rowData ?? {}).entryCount || 0); return entryCount > 0 ? (cellValue / Math.max(entryCount, 1)).toFixed(2) : -1;',
-    //   },
-    // };
 
     const pageHeader = (this.config as TableConfig).page_header;
     if (!pageHeader){
@@ -142,7 +115,7 @@ export class TableContentComponent implements OnInit, AfterViewInit {
 
     // If the reload function is undefined then we use the load function again
     this.onReloadFn = this.config.on_reload ? this.createFunctionFromString(
-      // The loading function itself is also provided back to the user
+      // The loading function is also provided back to the user
       // Just in case they want to do something more than just hit the load code
       ['dbService', 'moment', 'ctx', 'onScreenLoad'],
       this.asyncWrapCode(this.config.on_reload)
@@ -235,6 +208,9 @@ export class TableContentComponent implements OnInit, AfterViewInit {
     //   this.isLoading = false;
     // });
   };
+
+  // TODO: remove commented code
+  // The commented code is kept to make testing easier since cht-conf doesn't consume additional files yet
   
   //   async loadData(){
   //     const startingPoint = moment().subtract(2, 'months'); 
