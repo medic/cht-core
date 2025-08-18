@@ -1,6 +1,6 @@
 import { Doc, isDoc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
-import { hasField, isNonEmptyArray, isRecord, NonEmptyArray, Nullable, Page } from '../libs/core';
+import { hasField, isRecord, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Place from '../place';
 import { createDoc, fetchAndFilter, getDocById, queryDocsByKey, updateDoc } from './libs/doc';
@@ -15,6 +15,7 @@ import {
   validateCursor 
 } from './libs/core';
 import { PlaceInput } from '../input';
+import {fetchHydratedDoc} from './libs/lineage';
 
 /** @internal */
 export namespace v1 {

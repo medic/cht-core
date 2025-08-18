@@ -1,6 +1,6 @@
 import { Doc, isDoc } from '../libs/doc';
 import contactTypeUtils, { getContactTypes } from '@medic/contact-types-utils';
-import { hasField, isNonEmptyArray, Nullable, Page } from '../libs/core';
+import { hasField, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
 import { createDoc, fetchAndFilter, getDocById, queryDocsByKey, updateDoc } from './libs/doc';
@@ -10,6 +10,7 @@ import { InvalidArgumentError } from '../libs/error';
 import { addParentToInput, ensureHasRequiredFields, 
   ensureImmutability, validateCursor } from './libs/core';
 import { PersonInput } from '../input';
+import {fetchHydratedDoc} from './libs/lineage';
 
 /** @internal */
 export namespace v1 {
