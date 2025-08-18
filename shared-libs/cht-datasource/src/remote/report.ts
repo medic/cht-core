@@ -42,4 +42,11 @@ export namespace v1 {
   export const update = (remoteContext: RemoteDataContext) => (
     input: Record<string, unknown>
   ): Promise<Report.v1.Report> => updateReport(remoteContext)(input);
+  
+  export const getWithLineage = (remoteContext: RemoteDataContext) => (
+    identifier: UuidQualifier
+  ): Promise<Nullable<Report.v1.ReportWithLineage>> => {
+    const queryParams = { with_lineage: 'true' };
+    return getReport(remoteContext)(identifier.uuid, queryParams);
+  };
 }

@@ -1,12 +1,10 @@
 module.exports = {
   json: (req, res, next) => {
-    if (!req.query) {
-      req.query = {};
-    }
+    req.parsedQuery = req.query ? { ...req.query } : {};
 
-    Object.keys(req.query).forEach(key => {
+    Object.keys(req.parsedQuery).forEach(key => {
       try {
-        req.query[key] = JSON.parse(req.query[key]);
+        req.parsedQuery[key] = JSON.parse(req.parsedQuery[key]);
       } catch {
         // no change
       }

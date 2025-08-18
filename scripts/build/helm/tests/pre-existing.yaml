@@ -1,0 +1,71 @@
+# Test values file for Pre-existing Data Scenarios
+# Contains platform-specific sections for GKE, EKS, and K3s-K3d
+# Usage:
+#   Single Node:
+#     helm template test scripts/build/helm \
+#       -f scripts/build/helm/values/base.yaml \
+#       -f scripts/build/helm/values/deployment-single.yaml \
+#       -f scripts/build/helm/values/platform-{gke|eks|k3s-k3d}.yaml \
+#       -f scripts/build/helm/tests/pre-existing.yaml
+#
+#   Multi Node:
+#     helm template test scripts/build/helm \
+#       -f scripts/build/helm/values/base.yaml \
+#       -f scripts/build/helm/values/deployment-multi.yaml \
+#       -f scripts/build/helm/values/platform-{gke|eks|k3s-k3d}.yaml \
+#       -f scripts/build/helm/tests/pre-existing.yaml
+
+project_name: "test"
+namespace: "test"
+cht_image_tag: "test"
+
+couchdb_data:
+  preExistingDataAvailable: true
+
+couchdb:
+  password: "test"
+  secret: "test"
+  uuid: "test"
+  couchdb_node_storage_size: 10Gi
+
+# Multi-node configuration (only used when deployment-multi.yaml is included)
+nodes:
+  node-1: node1
+  node-2: node2
+  node-3: node3
+
+# Platform-specific storage configurations
+# Uncomment the section for your platform:
+
+# GKE Configuration
+# couchdb:
+#   persistent_disk:
+#     size: 100Gi
+#     # Single node: uncomment this line
+#     # diskName: disk1
+#     # Multi node: uncomment these lines
+#     # diskName-1: disk1
+#     # diskName-2: disk2
+#     # diskName-3: disk3
+
+# EKS Configuration
+# ebs:
+#   preExistingEBSVolumeSize: 100Gi
+#   # Single node: uncomment this line
+#   # preExistingEBSVolumeID-1: vol-12345678
+#   # Multi node: uncomment these lines
+#   # preExistingEBSVolumeID-1: vol-12345678
+#   # preExistingEBSVolumeID-2: vol-87654321
+#   # preExistingEBSVolumeID-3: vol-11223344
+
+# K3s-K3d Configuration
+# local_storage:
+#   # Single node: uncomment this line
+#   # preExistingDiskPath-1: /var/lib/couchdb1
+#   # Multi node: uncomment these lines
+#   # preExistingDiskPath-1: /var/lib/couchdb1
+#   # preExistingDiskPath-2: /var/lib/couchdb2
+#   # preExistingDiskPath-3: /var/lib/couchdb3
+
+ingress:
+  host: "test.example.com"

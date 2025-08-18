@@ -96,100 +96,58 @@ describe('local person', () => {
 
     describe('getWithLineage', () => {
       const identifier = { uuid: 'uuid' } as const;
-      let getLineageDocsByIdInner: SinonStub;
-      let getLineageDocsByIdOuter: SinonStub;
-      let getContactLineageInner: SinonStub;
-      let getContactLineageOuter: SinonStub;
+      let mockFetchHydratedDoc: SinonStub;
 
       beforeEach(() => {
-        getLineageDocsByIdInner = sinon.stub();
-        getLineageDocsByIdOuter = sinon
-          .stub(Lineage, 'getLineageDocsById')
-          .returns(getLineageDocsByIdInner);
-        getContactLineageInner = sinon.stub();
-        getContactLineageOuter = sinon
-          .stub(Lineage, 'getContactLineage')
-          .returns(getContactLineageInner);
+        mockFetchHydratedDoc = sinon.stub(Lineage, 'fetchHydratedDoc');
       });
 
       it('returns a person with lineage', async () => {
-        const person = { type: 'person', _id: 'uuid', _rev: 'rev' };
-        const place0 = { _id: 'place0', _rev: 'rev' };
-        const place1 = { _id: 'place1', _rev: 'rev' };
-        const place2 = { _id: 'place2', _rev: 'rev' };
-        const lineageDocs = [person, place0, place1, place2];
-        const lineagePlaces = [place0, place1, place2];
-        getLineageDocsByIdInner.resolves(lineageDocs);
+        const personWithLineage = { type: 'person', _id: 'uuid', _rev: 'rev' };
+        const mockFunction = sinon.stub().resolves(personWithLineage);
+        mockFetchHydratedDoc.returns(mockFunction);
         isPerson.returns(true);
         settingsGetAll.returns(settings);
-        const personWithLineage = { ...person, lineage: true };
-        const copiedPerson = { ...personWithLineage };
-        getContactLineageInner.returns(copiedPerson);
 
         const result = await Person.v1.getWithLineage(localContext)(identifier);
 
-        expect(result).to.equal(copiedPerson);
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(isPerson.calledOnceWithExactly(settings, person)).to.be.true;
+        expect(result).to.equal(personWithLineage);
+        expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(isPerson.calledOnceWithExactly(settings, personWithLineage)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.notCalled).to.be.true;
-        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getContactLineageInner.calledOnceWithExactly(lineagePlaces, person)).to.be.true;
-        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('returns null when no person or lineage is found', async () => {
-        getLineageDocsByIdInner.resolves([]);
+        const mockFunction = sinon.stub().resolves(null);
+        mockFetchHydratedDoc.returns(mockFunction);
 
         const result = await Person.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.be.null;
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPerson.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No person found for identifier [${identifier.uuid}].`)).to.be.true;
         expect(debug.notCalled).to.be.true;
-        expect(getContactLineageInner.notCalled).to.be.true;
-        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('returns null if the doc returned is not a person', async () => {
-        const person = { type: 'person', _id: 'uuid', _rev: 'rev' };
-        const place0 = { _id: 'place0', _rev: 'rev' };
-        const place1 = { _id: 'place1', _rev: 'rev' };
-        const place2 = { _id: 'place2', _rev: 'rev' };
-        getLineageDocsByIdInner.resolves([person, place0, place1, place2]);
+        const notPerson = { type: 'not-person', _id: 'uuid', _rev: 'rev' };
+        const mockFunction = sinon.stub().resolves(notPerson);
+        mockFetchHydratedDoc.returns(mockFunction);
         isPerson.returns(false);
         settingsGetAll.returns(settings);
 
         const result = await Person.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.be.null;
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(isPerson.calledOnceWithExactly(settings, person)).to.be.true;
+        expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(isPerson.calledOnceWithExactly(settings, notPerson)).to.be.true;
         expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid person.`)).to.be.true;
         expect(debug.notCalled).to.be.true;
-        expect(getContactLineageInner.notCalled).to.be.true;
-        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-      });
-
-      it('returns a person if no lineage is found', async () => {
-        const person = { type: 'person', _id: 'uuid', _rev: 'rev' };
-        getLineageDocsByIdInner.resolves([person]);
-        isPerson.returns(true);
-        settingsGetAll.returns(settings);
-
-        const result = await Person.v1.getWithLineage(localContext)(identifier);
-
-        expect(result).to.equal(person);
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(isPerson.calledOnceWithExactly(settings, person)).to.be.true;
-        expect(warn.notCalled).to.be.true;
-        expect(debug.calledOnceWithExactly(`No lineage places found for person [${identifier.uuid}].`)).to.be.true;
-        expect(getContactLineageInner.notCalled).to.be.true;
-        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
     });
 

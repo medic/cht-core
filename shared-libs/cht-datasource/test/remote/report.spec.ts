@@ -55,6 +55,33 @@ describe('remote report', () => {
       });
     });
 
+    describe('getWithLineage', () => {
+      it('returns a report with lineage by UUID', async () => {
+        const doc = { 
+          type: 'data_record', 
+          form: 'yes',
+          lineage: ['parent1', 'parent2']
+        };
+        getResourceInner.resolves(doc);
+
+        const result = await Report.v1.getWithLineage(remoteContext)(identifier);
+
+        expect(result).to.equal(doc);
+        expect(getResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
+        expect(getResourceInner.calledOnceWithExactly(identifier.uuid, { with_lineage: 'true' })).to.be.true;
+      });
+
+      it('returns null if the identified doc is not found', async () => {
+        getResourceInner.resolves(null);
+
+        const result = await Report.v1.getWithLineage(remoteContext)(identifier);
+
+        expect(result).to.be.null;
+        expect(getResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
+        expect(getResourceInner.calledOnceWithExactly(identifier.uuid, { with_lineage: 'true' })).to.be.true;
+      });
+    });
+    
     describe('getUuidsPage', () => {
       const limit = 3;
       const cursor = '1';

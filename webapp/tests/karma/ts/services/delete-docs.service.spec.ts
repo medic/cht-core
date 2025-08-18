@@ -1,47 +1,53 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
+import mock from 'xhr-mock';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { DeleteDocsService } from '@mm-services/delete-docs.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { Contact } from '@medic/cht-datasource';
 
 describe('DeleteDocs service', () => {
 
   let service;
-  let get;
   let bulkDocs;
   let isOnlineOnly;
-  let server;
   let extractLineageService;
+  let getDataContext;
+  let bind;
+  let getContact;
 
   beforeEach(() => {
-    get = sinon.stub();
     bulkDocs = sinon.stub();
     isOnlineOnly = sinon.stub().returns(false);
     const Changes = () => undefined;
     Changes.killWatchers = () => undefined;
     extractLineageService = { extract: sinon.stub() };
 
+    getContact = sinon.stub();
+    bind = sinon.stub().returns(getContact);
+    getDataContext = sinon.stub().resolves({ bind });
     TestBed.configureTestingModule({
       providers: [
-        { provide: DbService, useValue: { get: () => ({ bulkDocs, get }) } },
+        { provide: DbService, useValue: { get: () => ({ bulkDocs }) } },
         { provide: SessionService, useValue: { isOnlineOnly } },
         { provide: ChangesService, useValue: Changes },
         { provide: ExtractLineageService, useValue: extractLineageService },
+        { provide: CHTDatasourceService, useValue: { getDataContext } },
       ]
     });
     service = TestBed.inject(DeleteDocsService);
 
-    server = sinon.fakeServer.create();
-    server.respondImmediately = true;
+    mock.setup();
   });
 
   afterEach(() => {
     sinon.restore();
-    server.restore();
+    mock.teardown();
   });
 
   it('returns bulkDocs errors', () => {
@@ -50,9 +56,11 @@ describe('DeleteDocs service', () => {
       .delete({ _id: 'xyz' })
       .then(() => assert.fail('expected error to be thrown'))
       .catch((err) => {
-        expect(get.callCount).to.equal(0);
         expect(bulkDocs.callCount).to.equal(1);
         expect(err.name).to.equal('errcode2');
+        expect(getDataContext.calledOnceWithExactly()).to.be.true;
+        expect(bind.notCalled).to.be.true;
+        expect(getContact.notCalled).to.be.true;
       });
   });
 
@@ -74,7 +82,7 @@ describe('DeleteDocs service', () => {
         _id: 'b'
       }
     };
-    get.resolves(clinic);
+    getContact.resolves(clinic);
     const consoleErrorMock = sinon.stub(console, 'error');
     bulkDocs.resolves(
       // person is not deleted, but clinic is edited just fine. Oops.
@@ -92,6 +100,9 @@ describe('DeleteDocs service', () => {
         expect(err).to.be.ok;
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0]).to.equal('Deletion errors');
+        expect(getDataContext.calledOnceWithExactly()).to.be.true;
+        expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+        expect(getContact.calledOnceWithExactly({ uuid: clinic._id })).to.be.true;
       });
   });
 
@@ -112,7 +123,7 @@ describe('DeleteDocs service', () => {
         _id: 'b'
       }
     };
-    get.resolves(clinic);
+    getContact.resolves(clinic);
     return service
       .delete([ person, clinic ])
       .then(() => {
@@ -120,6 +131,9 @@ describe('DeleteDocs service', () => {
       })
       .catch((err) => {
         expect(err).to.be.ok;
+        expect(getDataContext.calledOnceWithExactly()).to.be.true;
+        expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+        expect(getContact.calledOnceWithExactly({ uuid: clinic._id })).to.be.true;
       });
   });
 
@@ -137,9 +151,11 @@ describe('DeleteDocs service', () => {
       _deleted: true
     };
     return service.delete(record).then(function() {
-      expect(get.callCount).to.equal(0);
       expect(bulkDocs.callCount).to.equal(1);
       expect(bulkDocs.args[0][0][0]).to.deep.equal(expected);
+      expect(getDataContext.calledOnceWithExactly()).to.be.true;
+      expect(bind.notCalled).to.be.true;
+      expect(getContact.notCalled).to.be.true;
     });
   });
 
@@ -168,28 +184,30 @@ describe('DeleteDocs service', () => {
       _deleted: true
     };
     return service.delete([ record1, record2 ]).then(() => {
-      expect(get.callCount).to.equal(0);
       expect(bulkDocs.callCount).to.equal(1);
       expect(bulkDocs.args[0][0].length).to.equal(2);
       expect(bulkDocs.args[0][0][0]).to.deep.equal(expected1);
       expect(bulkDocs.args[0][0][1]).to.deep.equal(expected2);
+      expect(getDataContext.calledOnceWithExactly()).to.be.true;
+      expect(bind.notCalled).to.be.true;
+      expect(getContact.notCalled).to.be.true;
     });
   });
 
   it('sends a direct request to the server when user is an admin', () => {
     const record1 = { _id: 'xyz', _rev: '1' };
     const record2 = { _id: 'abc', _rev: '1' };
-    const expected1 = { _id: 'xyz' };
-    const expected2 = { _id: 'abc' };
-    server.respondWith([200, { 'Content-Type': 'application/json' }, '{ "hello": "there" }']);
+    mock.post('/api/v1/bulk-delete', {
+      status: 200,
+      body: '{ "hello": "there" }'
+    });
+
     isOnlineOnly.returns(true);
     return service.delete([ record1, record2 ]).then(() => {
-      expect(server.requests).to.have.lengthOf(1);
-      expect(server.requests[0].url).to.equal('/api/v1/bulk-delete');
-      expect(server.requests[0].requestBody).to.equal(JSON.stringify({
-        docs: [expected1, expected2]
-      }));
       expect(bulkDocs.callCount).to.equal(0);
+      expect(getDataContext.calledOnceWithExactly()).to.be.true;
+      expect(bind.notCalled).to.be.true;
+      expect(getContact.notCalled).to.be.true;
     });
   });
 
@@ -198,7 +216,10 @@ describe('DeleteDocs service', () => {
     const record2 = { _id: 'abc' };
     const onProgress = sinon.spy();
     const response = '[[{"ok": true}, {"ok": true}],';
-    server.respondWith([200, { 'Content-Type': 'application/json' }, response]);
+    mock.post('/api/v1/bulk-delete', {
+      status: 200,
+      body: response
+    });
     isOnlineOnly.returns(true);
     return service
       .delete([ record1, record2 ], { progress: onProgress })
@@ -208,6 +229,9 @@ describe('DeleteDocs service', () => {
       .catch(() => {
         expect(onProgress.callCount).to.equal(1);
         expect(onProgress.getCall(0).args[0]).to.equal(2);
+        expect(getDataContext.calledOnceWithExactly()).to.be.true;
+        expect(bind.notCalled).to.be.true;
+        expect(getContact.notCalled).to.be.true;
       });
   });
 
@@ -229,11 +253,14 @@ describe('DeleteDocs service', () => {
       }
     };
     const docs = [ person ];
-    get.resolves(clinic);
+    getContact.resolves(clinic);
     bulkDocs.resolves([]);
     return service.delete(docs).then(() => {
       expect(docs.length).to.equal(1);
       expect(bulkDocs.args[0][0].length).to.equal(2);
+      expect(getDataContext.calledOnceWithExactly()).to.be.true;
+      expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
+      expect(getContact.calledOnceWithExactly({ uuid: clinic._id })).to.be.true;
     });
   });
 
@@ -283,6 +310,9 @@ describe('DeleteDocs service', () => {
       }
       expect(isCircularAfter).to.equal(false);
       expect(bulkDocs.args[0][0].length).to.equal(1);
+      expect(getDataContext.calledOnceWithExactly()).to.be.true;
+      expect(bind.notCalled).to.be.true;
+      expect(getContact.notCalled).to.be.true;
     });
   });
 });

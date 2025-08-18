@@ -23,9 +23,12 @@ describe('Report Controller Tests', () => {
     };
   });
 
+  afterEach(() => sinon.restore());
+
   describe('v1', () => {
     describe('get', () => {
       let reportGet;
+      let reportGetWithLineage;
 
       beforeEach(() => {
         req = {
@@ -33,9 +36,13 @@ describe('Report Controller Tests', () => {
           query: { }
         };
         reportGet = sinon.stub();
+        reportGetWithLineage = sinon.stub();
         dataContextBind
           .withArgs(Report.v1.get)
           .returns(reportGet);
+        dataContextBind
+          .withArgs(Report.v1.getWithLineage)
+          .returns(reportGetWithLineage);
       });
 
       it('returns a report', async () => {
@@ -56,6 +63,44 @@ describe('Report Controller Tests', () => {
         expect(reportGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(res.json.calledOnceWithExactly(report)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('returns a report with lineage when the query parameter is set to "true"', async () => {
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        const report = { name: 'John Doe\'s Report', type: 'data_record', form: 'yes' };
+        reportGetWithLineage.resolves(report);
+        req.query.with_lineage = 'true';
+
+        await controller.v1.get(req, res);
+
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getWithLineage)).to.be.true;
+        expect(reportGet.notCalled).to.be.true;
+        expect(reportGetWithLineage.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
+        expect(res.json.calledOnceWithExactly(report)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+      });
+
+      it('returns a report without lineage when the query parameter is set something else', async () => {
+        isOnlineOnly.returns(true);
+        hasAllPermissions.returns(true);
+        const report = { name: 'John Doe\'s Report', type: 'data_record', form: 'yes' };
+        reportGet.resolves(report);
+        req.query.with_lineage = '1';
+
+        await controller.v1.get(req, res);
+
+        expect(hasAllPermissions.calledOnceWithExactly(userCtx, 'can_view_reports')).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.get)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
+        expect(reportGetWithLineage.notCalled).to.be.true;
+        expect(res.json.calledOnceWithExactly(report)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+        expect(getUserCtx.calledOnceWithExactly(req)).to.be.true;
+        expect(isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       });
 
       it('returns a 404 error if report is not found', async () => {

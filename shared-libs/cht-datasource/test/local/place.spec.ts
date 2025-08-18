@@ -96,99 +96,59 @@ describe('local place', () => {
 
     describe('getWithLineage', () => {
       const identifier = { uuid: 'place0' } as const;
-      let getLineageDocsByIdInner: SinonStub;
-      let getLineageDocsByIdOuter: SinonStub;
-      let getContactLineageInner: SinonStub;
-      let getContactLineageOuter: SinonStub;
+      let mockFetchHydratedDoc: SinonStub;
 
       beforeEach(() => {
-        getLineageDocsByIdInner = sinon.stub();
-        getLineageDocsByIdOuter = sinon
-          .stub(Lineage, 'getLineageDocsById')
-          .returns(getLineageDocsByIdInner);
-        getContactLineageInner = sinon.stub();
-        getContactLineageOuter = sinon
-          .stub(Lineage, 'getContactLineage')
-          .returns(getContactLineageInner);
+        mockFetchHydratedDoc = sinon.stub(Lineage, 'fetchHydratedDoc');
       });
 
       it('returns a place with lineage', async () => {
-        const place0 = { _id: 'place0', _rev: 'rev' };
-        const place1 = { _id: 'place1', _rev: 'rev' };
-        const place2 = { _id: 'place2', _rev: 'rev' };
-        const contact0 = { _id: 'contact0', _rev: 'rev' };
-        const lineageDocs = [place0, place1, place2];
-        getLineageDocsByIdInner.resolves(lineageDocs);
+        const placeWithLineage = { type: 'place', _id: 'place0', _rev: 'rev', 
+          contact: { _id: 'contact0', _rev: 'rev' } };
+        const mockFunction = sinon.stub().resolves(placeWithLineage);
+        mockFetchHydratedDoc.returns(mockFunction);
         isPlace.returns(true);
         settingsGetAll.returns(settings);
-        const place0WithContact = { ...place0, contact: contact0 };
-        const place0WithLineage = { ...place0WithContact, lineage: true };
-        const copiedPlace = { ...place0WithLineage };
-        getContactLineageInner.returns(copiedPlace);
 
         const result = await Place.v1.getWithLineage(localContext)(identifier);
 
-        expect(result).to.equal(copiedPlace);
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(isPlace.calledOnceWithExactly(settings, place0)).to.be.true;
+        expect(result).to.equal(placeWithLineage);
+        expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(isPlace.calledOnceWithExactly(settings, placeWithLineage)).to.be.true;
         expect(warn.notCalled).to.be.true;
         expect(debug.notCalled).to.be.true;
-        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getContactLineageInner.calledOnceWithExactly(lineageDocs)).to.be.true;
-        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('returns null when no place or lineage is found', async () => {
-        getLineageDocsByIdInner.resolves([]);
+        const mockFunction = sinon.stub().resolves(null);
+        mockFetchHydratedDoc.returns(mockFunction);
 
         const result = await Place.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.be.null;
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isPlace.notCalled).to.be.true;
         expect(warn.calledOnceWithExactly(`No place found for identifier [${identifier.uuid}].`)).to.be.true;
         expect(debug.notCalled).to.be.true;
-        expect(getContactLineageInner.notCalled).to.be.true;
-        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('returns null if the doc returned is not a place', async () => {
-        const place0 = { _id: 'place0', _rev: 'rev' };
-        const place1 = { _id: 'place1', _rev: 'rev' };
-        const place2 = { _id: 'place2', _rev: 'rev' };
-        getLineageDocsByIdInner.resolves([place0, place1, place2]);
+        const notPlace = { type: 'not-place', _id: 'place0', _rev: 'rev' };
+        const mockFunction = sinon.stub().resolves(notPlace);
+        mockFetchHydratedDoc.returns(mockFunction);
         isPlace.returns(false);
         settingsGetAll.returns(settings);
 
         const result = await Place.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.be.null;
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(isPlace.calledOnceWithExactly(settings, place0)).to.be.true;
+        expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(isPlace.calledOnceWithExactly(settings, notPlace)).to.be.true;
         expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid place.`)).to.be.true;
         expect(debug.notCalled).to.be.true;
-        expect(getContactLineageInner.notCalled).to.be.true;
-        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-      });
-
-      it('returns a place if no lineage is found', async () => {
-        const place = { _id: 'place0', _rev: 'rev' };
-        getLineageDocsByIdInner.resolves([place]);
-        isPlace.returns(true);
-        settingsGetAll.returns(settings);
-
-        const result = await Place.v1.getWithLineage(localContext)(identifier);
-
-        expect(result).to.equal(place);
-        expect(getLineageDocsByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(isPlace.calledOnceWithExactly(settings, place)).to.be.true;
-        expect(warn.notCalled).to.be.true;
-        expect(debug.calledOnceWithExactly(`No lineage places found for place [${identifier.uuid}].`)).to.be.true;
-        expect(getContactLineageInner.notCalled).to.be.true;
-        expect(getContactLineageOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getLineageDocsByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
     });
 
