@@ -9,6 +9,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { DeleteDocsService } from '@mm-services/delete-docs.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { Contact } from '@medic/cht-datasource';
 
 describe('DeleteDocs service', () => {
 
@@ -100,7 +101,7 @@ describe('DeleteDocs service', () => {
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0]).to.equal('Deletion errors');
         expect(getDataContext.calledOnceWithExactly()).to.be.true;
-        
+        expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
         expect(getContact.calledOnceWithExactly({ uuid: clinic._id })).to.be.true;
       });
   });
@@ -131,7 +132,7 @@ describe('DeleteDocs service', () => {
       .catch((err) => {
         expect(err).to.be.ok;
         expect(getDataContext.calledOnceWithExactly()).to.be.true;
-        
+        expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
         expect(getContact.calledOnceWithExactly({ uuid: clinic._id })).to.be.true;
       });
   });
@@ -205,6 +206,7 @@ describe('DeleteDocs service', () => {
     return service.delete([ record1, record2 ]).then(() => {
       expect(bulkDocs.callCount).to.equal(0);
       expect(getDataContext.calledOnceWithExactly()).to.be.true;  
+      expect(bind.notCalled).to.be.true;
       expect(getContact.notCalled).to.be.true;
     });
   });
@@ -257,6 +259,7 @@ describe('DeleteDocs service', () => {
       expect(docs.length).to.equal(1);
       expect(bulkDocs.args[0][0].length).to.equal(2);
       expect(getDataContext.calledOnceWithExactly()).to.be.true; 
+      expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
       expect(getContact.calledOnceWithExactly({ uuid: clinic._id })).to.be.true;
     });
   });
