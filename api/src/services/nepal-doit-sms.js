@@ -5,7 +5,7 @@ const config = require('../config');
 
 const STATUS_MAP = {
   // success - based on API response status field
-  1: { success: true, state: 'forwarded-by-gateway', detail: 'Processed' },
+  1: { success: true, state: 'sent', detail: 'Processed' },
   
   // HTTP error status codes (from error object in catch block)
   401: { success: false, state: 'failed', detail: 'InvalidCredentials' },
