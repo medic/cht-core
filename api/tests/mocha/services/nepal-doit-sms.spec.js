@@ -85,7 +85,7 @@ describe('nepal doit sms service', () => {
       return service.send(given).then(actual => {
         chai.expect(actual).to.deep.equal([{
           messageId: 'a',
-          state: 'forwarded-by-gateway',
+          state: 'sent',
           details: 'Processed'
         }]);
         chai.expect(request.post.callCount).to.equal(1);
@@ -112,7 +112,7 @@ describe('nepal doit sms service', () => {
       return service.send(given).then(actual => {
         chai.expect(actual).to.deep.equal([{
           messageId: 'a',
-          state: 'forwarded-by-gateway',
+          state: 'sent',
           details: 'Processed'
         }]);
         chai.expect(request.post.args[0][0].body.mobile).to.equal('9876543210'); // unchanged
@@ -138,7 +138,7 @@ describe('nepal doit sms service', () => {
         chai.expect(actual).to.deep.equal([
           {
             messageId: 'a',
-            state: 'forwarded-by-gateway',
+            state: 'sent',
             details: 'Processed'
           },
           {
@@ -228,12 +228,12 @@ describe('nepal doit sms service', () => {
         chai.expect(actual).to.deep.equal([
           {
             messageId: 'a',
-            state: 'forwarded-by-gateway',
+            state: 'sent',
             details: 'Processed'
           },
           {
             messageId: 'b',
-            state: 'forwarded-by-gateway',
+            state: 'sent',
             details: 'Processed'
           }
         ]);
