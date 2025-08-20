@@ -115,7 +115,7 @@ const replayClientMutingEvents = (reportIds = []) => {
     promiseChain = promiseChain
       .then(() => getReportWithLineage(Qualifier.byUuid(reportId)))
       .then(hydratedDoc => {
-        if (!hydratedDoc || !isRelevantReport(hydratedDoc, {})) {
+        if (!isRelevantReport(hydratedDoc, {})) {
           return;
         }
 
