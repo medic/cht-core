@@ -205,7 +205,7 @@ describe('DeleteDocs service', () => {
     isOnlineOnly.returns(true);
     return service.delete([ record1, record2 ]).then(() => {
       expect(bulkDocs.callCount).to.equal(0);
-      expect(getDataContext.calledOnceWithExactly()).to.be.true;  
+      expect(getDataContext.calledOnceWithExactly()).to.be.true;
       expect(bind.notCalled).to.be.true;
       expect(getContact.notCalled).to.be.true;
     });
@@ -229,7 +229,7 @@ describe('DeleteDocs service', () => {
       .catch(() => {
         expect(onProgress.callCount).to.equal(1);
         expect(onProgress.getCall(0).args[0]).to.equal(2);
-        expect(getDataContext.calledOnceWithExactly()).to.be.true;      
+        expect(getDataContext.calledOnceWithExactly()).to.be.true;
         expect(bind.notCalled).to.be.true;
         expect(getContact.notCalled).to.be.true;
       });
@@ -258,7 +258,7 @@ describe('DeleteDocs service', () => {
     return service.delete(docs).then(() => {
       expect(docs.length).to.equal(1);
       expect(bulkDocs.args[0][0].length).to.equal(2);
-      expect(getDataContext.calledOnceWithExactly()).to.be.true; 
+      expect(getDataContext.calledOnceWithExactly()).to.be.true;
       expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
       expect(getContact.calledOnceWithExactly({ uuid: clinic._id })).to.be.true;
     });
