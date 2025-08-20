@@ -12,7 +12,6 @@ import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { FormService } from '@mm-services/form.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { DbService } from '@mm-services/db.service';
 import { TasksContentComponent } from '@mm-modules/tasks/tasks-content.component';
 import { GlobalActions } from '@mm-actions/global';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
@@ -20,13 +19,14 @@ import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { TasksActions } from '@mm-actions/tasks';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 
 describe('TasksContentComponent', () => {
   let tasks;
   let setEnketoEditedStatus;
 
   let render;
-  let get;
+  let getContact;
   let xmlFormsService;
   let route;
   let store;
@@ -47,7 +47,7 @@ describe('TasksContentComponent', () => {
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     render = sinon.stub().resolves();
     xmlFormsService = { get: sinon.stub().resolves() };
-    get = sinon.stub().resolves({ _id: 'contact' });
+    getContact = sinon.stub().resolves({ _id: 'contact' });
     route = { params: new Observable(obs => obs.next({ id: '123' })) };
     setEnketoEditedStatus = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');
     geolocationService = { init: sinon.stub() };
@@ -55,13 +55,7 @@ describe('TasksContentComponent', () => {
     router = { navigate: sinon.stub() };
     tasksForContactService = { getLeafPlaceAncestor: sinon.stub().resolves() };
     chtDatasourceService = {
-      get: sinon.stub().resolves({
-        v1: {
-          contact: {
-            getByUuid: sinon.stub().callsFake((id) => get(id))
-          }
-        }
-      })
+      bind: sinon.stub().withArgs(Contact.v1.get).returns(getContact)
     };
 
     const mockedSelectors = [
@@ -79,7 +73,6 @@ describe('TasksContentComponent', () => {
         provideMockStore({ selectors: mockedSelectors }),
         { provide: ActivatedRoute, useValue: route },
         { provide: FormService, useValue: formService },
-        { provide: DbService, useValue: { get: () => ({ get }) } },
         { provide: XmlFormsService, useValue: xmlFormsService },
         { provide: PerformanceService, useValue: performanceService },
         { provide: GeolocationService, useValue: geolocationService },
@@ -161,7 +154,7 @@ describe('TasksContentComponent', () => {
       instanceData: 'nothing',
     });
 
-    expect(get.callCount).to.eq(0);
+    expect(getContact.callCount).to.eq(0);
     expect(setEnketoEditedStatus.callCount).to.equal(1);
     expect(setEnketoEditedStatus.args[0]).to.deep.equal([false]);
   });
@@ -184,8 +177,7 @@ describe('TasksContentComponent', () => {
 
     await compileComponent();
 
-    expect(get.callCount).to.eq(1);
-    expect(get.args).to.deep.eq([['contact']]);
+    expect(getContact.calledOnceWithExactly(Qualifier.byUuid('contact'))).to.be.true;
     expect(geolocationService.init.callCount).to.equal(1);
     expect(render.callCount).to.eq(1);
     expect(render.args[0][0].instanceData).to.deep.eq({
@@ -221,8 +213,7 @@ describe('TasksContentComponent', () => {
 
     await compileComponent();
 
-    expect(get.callCount).to.eq(1);
-    expect(get.args).to.deep.eq([['contact']]);
+    expect(getContact.calledOnceWithExactly(Qualifier.byUuid('contact'))).to.be.true;
     expect(render.callCount).to.eq(0);
     expect(setSelectedTask.callCount).to.equal(1);
     expect(setSelectedTask.args[0]).to.deep.equal([
@@ -251,7 +242,7 @@ describe('TasksContentComponent', () => {
   });
 
   it('unsuccessful hydration', async () => {
-    get.rejects({ status: 404 });
+    getContact.resolves(null);
     tasks = [{
       _id: '123',
       forId: 'dne',
@@ -265,8 +256,7 @@ describe('TasksContentComponent', () => {
 
     await compileComponent();
 
-    expect(get.callCount).to.eq(1);
-    expect(get.args).to.deep.eq([['dne']]);
+    expect(getContact.calledOnceWithExactly(Qualifier.byUuid('dne'))).to.be.true;
     expect(render.callCount).to.eq(1);
     expect(render.args[0][0].instanceData).to.deep.eq({ contact: { _id: 'dne' }, task_id: '123' });
   });

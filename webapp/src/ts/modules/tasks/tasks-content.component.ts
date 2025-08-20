@@ -19,6 +19,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { SimpleDatePipe } from '@mm-pipes/date.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 
 @Component({
   templateUrl: './tasks-content.component.html',
@@ -34,17 +35,19 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     private translateFromService:TranslateFromService,
     private xmlFormsService:XmlFormsService,
     private geolocationService:GeolocationService,
-    private chtDatasourceService: CHTDatasourceService,
+    chtDatasourceService: CHTDatasourceService,
     private router:Router,
     private tasksForContactService:TasksForContactService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.tasksActions = new TasksActions(store);
+    this.getContact = chtDatasourceService.bind(Contact.v1.get);
   }
 
   subscription = new Subscription();
   private globalActions;
   private tasksActions;
+  private getContact: ReturnType<typeof Contact.v1.get>;
 
   enketoStatus;
   private enketoEdited;
@@ -188,8 +191,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       };
     };
 
-    const datasource = await this.chtDatasourceService.get();
-    const contact = await datasource.v1.contact.getByUuid(task.forId);
+    const contact = await this.getContact(Qualifier.byUuid(task.forId));
 
     if (!contact) {
       console.info('Contact not found for task action:', task.forId);

@@ -1,32 +1,32 @@
 import { Injectable } from '@angular/core';
-
-import { DbService } from '@mm-services/db.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { Transition, Doc } from '@mm-services/transitions/transition';
+import { Doc, Transition } from '@mm-services/transitions/transition';
 import { ValidationService } from '@mm-services/validation.service';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MutingTransition extends Transition {
   constructor(
-    private dbService:DbService,
     private lineageModelGeneratorService:LineageModelGeneratorService,
     private contactMutedService:ContactMutedService,
     private contactTypesService:ContactTypesService,
     private validationService:ValidationService,
     private placeHierarchyService:PlaceHierarchyService,
-    private chtDatasourceService: CHTDatasourceService,
+    chtDatasourceService: CHTDatasourceService,
   ) {
     super();
+    this.getContact = chtDatasourceService.bind(Contact.v1.get);
   }
 
   readonly name = 'muting';
 
+  private readonly getContact: ReturnType<typeof Contact.v1.get>;
   private transitionConfig;
   private inited;
   private readonly CONFIG_NAME = this.name;
@@ -242,8 +242,7 @@ export class MutingTransition extends Transition {
       return Promise.resolve(knownDoc);
     }
 
-    const datasource = await this.chtDatasourceService.get();
-    const doc = await datasource.v1.contact.getByUuid(docId);
+    const doc = await this.getContact(Qualifier.byUuid(docId));
 
     return doc;
   }

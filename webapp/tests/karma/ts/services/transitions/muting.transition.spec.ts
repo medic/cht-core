@@ -3,18 +3,16 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { HttpClient } from '@angular/common/http';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
-
-import { DbService } from '@mm-services/db.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ValidationService } from '@mm-services/validation.service';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 
 describe('Muting Transition', () => {
   let transition:MutingTransition;
-  let dbService;
   let lineageModelGenerator;
   let contactMutedService;
   let contactTypesService;
@@ -22,24 +20,17 @@ describe('Muting Transition', () => {
   let placeHierarchyService;
   let clock;
   let chtDatasourceService;
-  let get;
+  let getContact;
 
   beforeEach(() => {
-    get = sinon.stub();
-    dbService = { get: sinon.stub(), query: sinon.stub() };
+    getContact = sinon.stub();
     lineageModelGenerator = { docs: sinon.stub() };
     contactMutedService = { getMutedDoc: sinon.stub(), getMuted: sinon.stub() };
     contactTypesService = { includes: sinon.stub() };
     validationService = { validate: sinon.stub() };
     placeHierarchyService = { getDescendants: sinon.stub() };
     chtDatasourceService = {
-      get: sinon.stub().resolves({
-        v1: {
-          contact: {
-            getByUuid: sinon.stub().callsFake((id) => get(id))
-          }
-        }
-      })
+      bind: sinon.stub().withArgs(Contact.v1.get).returns(getContact)
     };
 
     contactTypesService.includes.withArgs(sinon.match({ type: 'person' })).returns(true);
@@ -47,7 +38,6 @@ describe('Muting Transition', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: DbService, useValue: { get: () => dbService } },
         { provide: LineageModelGeneratorService, useValue: lineageModelGenerator },
         { provide: ContactMutedService, useValue: contactMutedService },
         { provide: ContactTypesService, useValue: contactTypesService },
@@ -271,7 +261,7 @@ describe('Muting Transition', () => {
 
         lineageModelGenerator.docs.resolves([hydratedReport]);
         placeHierarchyService.getDescendants.resolves([]);
-        dbService.get.withArgs('patient').resolves(minifiedPatient);
+        getContact.withArgs(Qualifier.byUuid('patient')).resolves(minifiedPatient);
         contactMutedService.getMuted.returns(false);
 
         const updatedDocs = await transition.run(docs);
@@ -279,8 +269,7 @@ describe('Muting Transition', () => {
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(lineageModelGenerator.docs.args[0]).to.deep.equal([[docs[0]]]);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
-        expect(dbService.get.args[0]).to.deep.equal(['patient']);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('patient'))).to.be.true;
         expect(contactMutedService.getMuted.callCount).to.equal(1);
         expect(contactMutedService.getMuted.args[0]).to.deep.equal([hydratedReport.patient]);
 
@@ -350,7 +339,7 @@ describe('Muting Transition', () => {
         };
         lineageModelGenerator.docs.resolves([hydratedReport]);
         placeHierarchyService.getDescendants.resolves([]);
-        dbService.get.withArgs('patient').resolves({
+        getContact.withArgs(Qualifier.byUuid('patient')).resolves({
           _id: 'patient',
           name: 'patient name',
           type: 'person',
@@ -365,8 +354,7 @@ describe('Muting Transition', () => {
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(lineageModelGenerator.docs.args[0]).to.deep.equal([[docs[0]]]);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
-        expect(dbService.get.args[0]).to.deep.equal(['patient']);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('patient'))).to.be.true;
         expect(contactMutedService.getMuted.callCount).to.equal(1);
         expect(contactMutedService.getMuted.args[0]).to.deep.equal([hydratedReport.patient]);
 
@@ -425,8 +413,7 @@ describe('Muting Transition', () => {
 
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(lineageModelGenerator.docs.args[0]).to.deep.equal([[docs[0]]]);
-        expect(dbService.query.callCount).to.equal(0);
-        expect(dbService.get.callCount).to.equal(0);
+        expect(getContact.notCalled).to.be.true;
 
         expect(updatedDocs).to.deep.equal([
           {
@@ -477,8 +464,7 @@ describe('Muting Transition', () => {
 
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(lineageModelGenerator.docs.args[0]).to.deep.equal([[docs[0]]]);
-        expect(dbService.query.callCount).to.equal(0);
-        expect(dbService.get.callCount).to.equal(0);
+        expect(getContact.notCalled).to.be.true;
 
         expect(updatedDocs).to.deep.equal([
           {
@@ -530,8 +516,7 @@ describe('Muting Transition', () => {
         const updatedDocs = await transition.run(docs);
 
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
-        expect(dbService.query.callCount).to.equal(0);
-        expect(dbService.get.callCount).to.equal(0);
+        expect(getContact.notCalled).to.be.true;
 
         expect(updatedDocs).to.deep.equal([
           {
@@ -625,7 +610,7 @@ describe('Muting Transition', () => {
             }
           }
         ]);
-        dbService.get.withArgs('place').resolves({
+        getContact.withArgs(Qualifier.byUuid('place')).resolves({
           _id: 'place',
           name: 'place name',
           type: 'health_center',
@@ -640,8 +625,7 @@ describe('Muting Transition', () => {
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(lineageModelGenerator.docs.args[0]).to.deep.equal([[docs[0]]]);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
-        expect(dbService.get.args[0]).to.deep.equal(['place']);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('place'))).to.be.true;
         expect(contactMutedService.getMuted.callCount).to.equal(1);
         expect(contactMutedService.getMuted.args[0]).to.deep.equal([hydratedDocs[0].place]);
 
@@ -828,7 +812,7 @@ describe('Muting Transition', () => {
             },
           },
         ]);
-        dbService.get.withArgs('parent').resolves({
+        getContact.withArgs(Qualifier.byUuid('parent')).resolves({
           _id: 'parent',
           type: 'health_center',
           contact: { _id: 'chw' },
@@ -842,8 +826,7 @@ describe('Muting Transition', () => {
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(lineageModelGenerator.docs.args[0]).to.deep.equal([[docs[0]]]);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
-        expect(dbService.get.args[0]).to.deep.equal(['parent']);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('parent'))).to.be.true;
         expect(contactMutedService.getMuted.callCount).to.equal(1);
         expect(contactMutedService.getMuted.args[0]).to.deep.equal([hydratedReport.place]);
 
@@ -987,7 +970,7 @@ describe('Muting Transition', () => {
             }
           }
         ]);
-        dbService.get.withArgs('place_uuid').resolves({
+        getContact.withArgs(Qualifier.byUuid('place_uuid')).resolves({
           _id: 'place_uuid',
           name: 'place name',
           type: 'clinic',
@@ -1010,8 +993,7 @@ describe('Muting Transition', () => {
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(lineageModelGenerator.docs.args[0]).to.deep.equal([[docs[0]]]);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
-        expect(dbService.get.args[0]).to.deep.equal(['place_uuid']);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('place_uuid'))).to.be.true;
         expect(updatedDocs).to.deep.equal([
           {
             _id: 'a_report',
@@ -1482,7 +1464,7 @@ describe('Muting Transition', () => {
 
         lineageModelGenerator.docs.resolves([validHydratedReport]);
         placeHierarchyService.getDescendants.resolves([]);
-        dbService.get.withArgs(minifiedPatient._id).resolves(minifiedPatient);
+        getContact.withArgs(Qualifier.byUuid(minifiedPatient._id)).resolves(minifiedPatient);
         contactMutedService.getMuted.returns(false);
 
         const updatedDocs = await transition.run(docs);
@@ -1490,8 +1472,7 @@ describe('Muting Transition', () => {
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(lineageModelGenerator.docs.args[0]).to.deep.equal([[validMutingReport]]);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
-        expect(dbService.get.args[0]).to.deep.equal([minifiedPatient._id]);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid(minifiedPatient._id))).to.be.true;
         expect(contactMutedService.getMuted.callCount).to.equal(1);
         expect(contactMutedService.getMuted.args[0]).to.deep.equal([validHydratedReport.patient]);
 
@@ -1527,7 +1508,7 @@ describe('Muting Transition', () => {
 
         lineageModelGenerator.docs.resolves([validHydratedReport]);
         placeHierarchyService.getDescendants.resolves([]);
-        dbService.get.withArgs(minifiedPatient._id).resolves(minifiedPatient);
+        getContact.withArgs(Qualifier.byUuid(minifiedPatient._id)).resolves(minifiedPatient);
         contactMutedService.getMuted.returns(false);
 
         const updatedDocs = await transition.run(docs);
@@ -1535,8 +1516,7 @@ describe('Muting Transition', () => {
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(lineageModelGenerator.docs.args[0]).to.deep.equal([[validMutingReport]]);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
-        expect(dbService.get.args[0]).to.deep.equal([minifiedPatient._id]);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid(minifiedPatient._id))).to.be.true;
         expect(contactMutedService.getMuted.callCount).to.equal(1);
         expect(contactMutedService.getMuted.args[0]).to.deep.equal([validHydratedReport.patient]);
 
@@ -1584,7 +1564,7 @@ describe('Muting Transition', () => {
         const docs = [ validMutingReport, invalidMutingReport ];
         lineageModelGenerator.docs.resolves([validHydratedReport, invalidHydratedReport]);
         placeHierarchyService.getDescendants.resolves([]);
-        dbService.get.withArgs(minifiedPatient._id).resolves(minifiedPatient);
+        getContact.withArgs(Qualifier.byUuid(minifiedPatient._id)).resolves(minifiedPatient);
         contactMutedService.getMuted.returns(false);
         validationService.validate.withArgs(invalidHydratedReport).returns([{ code: 'error', message: 'message' }]);
 
@@ -1593,8 +1573,7 @@ describe('Muting Transition', () => {
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(lineageModelGenerator.docs.args[0]).to.deep.equal([[ validMutingReport, invalidMutingReport ]]);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
-        expect(dbService.get.args[0]).to.deep.equal([minifiedPatient._id]);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid(minifiedPatient._id))).to.be.true;
         expect(contactMutedService.getMuted.callCount).to.equal(1);
         expect(contactMutedService.getMuted.args[0]).to.deep.equal([validHydratedReport.patient]);
         expect(validationService.validate.callCount).to.equal(2);
@@ -1648,7 +1627,7 @@ describe('Muting Transition', () => {
 
         lineageModelGenerator.docs.resolves([validHydratedReport, invalidHydratedReport]);
         placeHierarchyService.getDescendants.resolves([]);
-        dbService.get.withArgs(minifiedPatient._id).resolves(minifiedPatient);
+        getContact.withArgs(Qualifier.byUuid(minifiedPatient._id)).resolves(minifiedPatient);
         contactMutedService.getMuted.returns(false);
         validationService.validate.withArgs(invalidHydratedReport).returns([{ code: 'error', message: 'message' }]);
 
@@ -1657,8 +1636,7 @@ describe('Muting Transition', () => {
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(lineageModelGenerator.docs.args[0]).to.deep.equal([[ validMutingReport, invalidMutingReport ]]);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
-        expect(dbService.get.args[0]).to.deep.equal([minifiedPatient._id]);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid(minifiedPatient._id))).to.be.true;
         expect(contactMutedService.getMuted.callCount).to.equal(1);
         expect(contactMutedService.getMuted.args[0]).to.deep.equal([validHydratedReport.patient]);
         expect(validationService.validate.callCount).to.equal(2);
@@ -1834,7 +1812,7 @@ describe('Muting Transition', () => {
         };
         lineageModelGenerator.docs.resolves([hydratedReport]);
         placeHierarchyService.getDescendants.resolves([]);
-        dbService.get.withArgs('patient').resolves(minifiedPatient);
+        getContact.withArgs(Qualifier.byUuid('patient')).resolves(minifiedPatient);
         contactMutedService.getMuted.returns(true);
 
         const updatedDocs = await transition.run(docs);
@@ -1843,8 +1821,7 @@ describe('Muting Transition', () => {
 
         expect(lineageModelGenerator.docs.args[0]).to.deep.equal([[docs[0]]]);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
-        expect(dbService.get.args[0]).to.deep.equal(['patient']);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('patient'))).to.be.true;
         expect(contactMutedService.getMuted.callCount).to.equal(1);
         expect(contactMutedService.getMuted.args[0]).to.deep.equal([hydratedReport.patient]);
 
@@ -1950,7 +1927,7 @@ describe('Muting Transition', () => {
 
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(0);
+        expect(getContact.callCount).to.equal(0);
 
         const mutingDate = new Date(date).toISOString();
 
@@ -2069,7 +2046,7 @@ describe('Muting Transition', () => {
 
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(0);
+        expect(getContact.callCount).to.equal(0);
 
         const mutingDate = new Date(date).toISOString();
 
@@ -2200,7 +2177,7 @@ describe('Muting Transition', () => {
 
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(0);
+        expect(getContact.callCount).to.equal(0);
 
         const mutingDate = new Date(date).toISOString();
 
@@ -2295,7 +2272,7 @@ describe('Muting Transition', () => {
           { id: 'old_person1', doc: { _id: 'old_person1', parent: { _id: 'old_place' }, type: 'person' } },
           { id: 'old_person2', doc: { _id: 'old_person2', parent: { _id: 'old_place' }, type: 'person' } },
         ]);
-        dbService.get.withArgs('old_place').resolves({
+        getContact.withArgs(Qualifier.byUuid('old_place')).resolves({
           _id: 'old_place',
           type: 'clinic',
           name: 'clinic',
@@ -2306,7 +2283,7 @@ describe('Muting Transition', () => {
 
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('old_place'))).to.be.true;
 
         const mutingDate = new Date(date).toISOString();
 
@@ -2424,7 +2401,7 @@ describe('Muting Transition', () => {
 
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(0);
+        expect(getContact.callCount).to.equal(0);
 
         const mutingDate = new Date(date).toISOString();
 
@@ -2515,7 +2492,7 @@ describe('Muting Transition', () => {
           { id: 'contact1', doc: { _id: 'contact1', type: 'person', muted: 100, parent: { _id: 'district' } } },
           { id: 'old_place2', doc: { _id: 'old_place2', type: 'clinic', muted: 100, parent: { _id: 'district' } } },
         ]);
-        dbService.get.withArgs('district').resolves({
+        getContact.withArgs(Qualifier.byUuid('district')).resolves({
           _id: 'district',
           type: 'district',
           muted: 100,
@@ -2525,7 +2502,7 @@ describe('Muting Transition', () => {
 
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('district'))).to.be.true;
 
         const mutingDate = new Date(date).toISOString();
         expect(updatedDocs).to.deep.equal([
@@ -2652,7 +2629,7 @@ describe('Muting Transition', () => {
           { id: 'contact1', doc: { _id: 'contact1', type: 'person', muted: 100, parent: { _id: 'district' } } },
           { id: 'old_place2', doc: { _id: 'old_place2', type: 'clinic', muted: 100, parent: { _id: 'district' } } },
         ]);
-        dbService.get.withArgs('district').resolves({
+        getContact.withArgs(Qualifier.byUuid('district')).resolves({
           _id: 'district',
           type: 'district',
           muted: 100,
@@ -2662,7 +2639,7 @@ describe('Muting Transition', () => {
 
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('district'))).to.be.true;
 
         const mutingDate = new Date(date).toISOString();
         expect(updatedDocs).to.deep.equal([
@@ -2786,7 +2763,7 @@ describe('Muting Transition', () => {
         placeHierarchyService.getDescendants.resolves([
           { id: 'old_contact', doc: { _id: 'old_contact', type: 'person', muted: 400, parent: { _id: 'parent' } } },
         ]);
-        dbService.get.withArgs('parent').resolves({
+        getContact.withArgs(Qualifier.byUuid('parent')).resolves({
           _id: 'parent',
           type: 'district',
           muted: 400,
@@ -2796,7 +2773,7 @@ describe('Muting Transition', () => {
 
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('parent'))).to.be.true;
 
         expect(updatedDocs).to.deep.equal([
           {
@@ -2897,7 +2874,7 @@ describe('Muting Transition', () => {
         placeHierarchyService.getDescendants.resolves([
           { id: 'old_contact', doc: { _id: 'old_contact', type: 'person', muted: 400, parent: { _id: 'parent' } } },
         ]);
-        dbService.get.withArgs('parent').resolves({
+        getContact.withArgs(Qualifier.byUuid('parent')).resolves({
           _id: 'parent',
           type: 'district',
           muted: 400,
@@ -2907,7 +2884,7 @@ describe('Muting Transition', () => {
 
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('parent'))).to.be.true;
 
         expect(updatedDocs).to.deep.equal([
           {
@@ -3020,7 +2997,7 @@ describe('Muting Transition', () => {
         placeHierarchyService.getDescendants.resolves([
           { id: 'old_contact', doc: { _id: 'old_contact', type: 'person', muted: 400, parent: { _id: 'old_place' } } }
         ]);
-        dbService.get.withArgs('old_place').resolves({
+        getContact.withArgs(Qualifier.byUuid('old_place')).resolves({
           _id: 'old_place',
           muted: 500,
           parent: { _id: 'parent' },
@@ -3030,7 +3007,7 @@ describe('Muting Transition', () => {
 
         expect(lineageModelGenerator.docs.callCount).to.equal(1);
         expect(placeHierarchyService.getDescendants.callCount).to.equal(1);
-        expect(dbService.get.callCount).to.equal(1);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('old_place'))).to.be.true;
 
         expect(updatedDocs).to.deep.equal([
           {

@@ -5,19 +5,22 @@ import { defaults as _defaults, isObject as _isObject } from 'lodash-es';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ContactSaveService {
   private readonly CONTACT_FIELD_NAMES = [ 'parent', 'contact' ];
+  private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   constructor(
     private enketoTranslationService:EnketoTranslationService,
     private extractLineageService:ExtractLineageService,
     private ngZone:NgZone,
-    private chtDatasourceService: CHTDatasourceService,
+    chtDatasourceService: CHTDatasourceService,
   ) {
+    this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
   }
 
   private prepareSubmittedDocsForSave(original, submitted, typeFields) {
@@ -101,8 +104,7 @@ export class ContactSaveService {
   }
 
   private async getContact(doc, fieldName, contactId) {
-    const datasource = await this.chtDatasourceService.get();
-    const dbFieldValue = await datasource.v1.contact.getByUuid(contactId);
+    const dbFieldValue = await this.getContactFromDatasource(Qualifier.byUuid(contactId));
     if (!dbFieldValue) {
       throw new Error(`Contact not found: ${contactId}`);
     }
@@ -148,8 +150,7 @@ export class ContactSaveService {
 
   async save(form, docId, typeFields, xmlVersion) {
     return this.ngZone.runOutsideAngular(async () => {
-      const datasource = await this.chtDatasourceService.get();
-      const original = docId ? await datasource.v1.contact.getByUuid(docId) : null;
+      const original = docId ? await this.getContactFromDatasource(Qualifier.byUuid(docId)) : null;
       const submitted = this.enketoTranslationService.contactRecordToJs(form.getDataStr({ irrelevant: false }));
       const docData = await this.prepareSubmittedDocsForSave(original, submitted, typeFields);
       if (xmlVersion) {

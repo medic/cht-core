@@ -18,7 +18,7 @@ import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { DuplicateContactsComponent } from '@mm-components/duplicate-contacts/duplicate-contacts.component';
 import { DuplicateCheck } from '@mm-services/deduplicate.service';
-import { Contact } from '@medic/cht-datasource';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
@@ -37,16 +37,18 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly dbService: DbService,
     private readonly performanceService: PerformanceService,
     private readonly telemetryService: TelemetryService,
-    private readonly chtDatasourceService: CHTDatasourceService,
+    readonly chtDatasourceService: CHTDatasourceService,
     private readonly translateService: TranslateService,
   ) {
     this.globalActions = new GlobalActions(store);
+    this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
   }
 
   subscription = new Subscription();
   translationsLoadedSubscription;
   private globalActions;
   private xmlVersion;
+  private getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   enketoStatus;
   enketoSaving;
@@ -268,8 +270,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    const datasource = await this.chtDatasourceService.get();
-    const parent = await datasource.v1.contact.getByUuid(this.contact.parent);
+    const parent = await this.getContactFromDatasource(Qualifier.byUuid(this.contact.parent));
 
     if (!parent){
       throw new Error(`Parent contact with UUID ${this.contact.parent} not found.`);
