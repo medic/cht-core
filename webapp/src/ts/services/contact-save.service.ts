@@ -105,9 +105,6 @@ export class ContactSaveService {
 
   private async getContact(doc, fieldName, contactId) {
     const dbFieldValue = await this.getContactFromDatasource(Qualifier.byUuid(contactId));
-    if (!dbFieldValue) {
-      throw new Error(`Contact not found: ${contactId}`);
-    }
     // In a correctly configured form one of these will be the
     // parent. This must happen before we attempt to run
     // ExtractLineage on any siblings or repeats, otherwise they
