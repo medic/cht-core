@@ -7,6 +7,7 @@ import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { DbService } from '@mm-services/db.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { UpdateFacilityService } from '@mm-services/update-facility.service';
+import { Contact } from '@medic/cht-datasource';
 
 describe('UpdateFacility service', () => {
   let service;
@@ -14,20 +15,16 @@ describe('UpdateFacility service', () => {
   let get;
   let put;
   let chtDatasourceService;
+  let getContact;
 
   beforeEach(() => {
+    getContact = sinon.stub();
     get = sinon.stub();
     put = sinon.stub();
     extractLineageService = { extract: ExtractLineageService.prototype.extract };
 
     chtDatasourceService = {
-      get: sinon.stub().resolves({
-        v1: {
-          contact: {
-            getByUuid: sinon.stub().callsFake((id) => get(id))
-          }
-        }
-      })
+      bind: sinon.stub().withArgs(Contact.v1.get).returns(getContact)
     };
 
     TestBed.configureTestingModule({
