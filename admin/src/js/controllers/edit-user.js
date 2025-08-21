@@ -26,7 +26,6 @@ angular
     $scope,
     $translate,
     $uibModalInstance,
-    CHTDatasource,
     ContactTypes,
     CreateUser,
     DB,
@@ -39,7 +38,7 @@ angular
     'use strict';
     'ngInject';
 
-    const datasource = CHTDatasource.datasource;
+    const datasource = DataContext.getDatasource();
     $scope.cancel = () => $uibModalInstance.dismiss();
     const getContact = DataContext.bind(CHT.Contact.v1.get);
 
