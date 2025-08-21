@@ -342,7 +342,7 @@ describe('ContactViewModelGenerator service', () => {
     describe('muted sorting', () => {
       it('when child type has sort_by_dob should sort muted persons on the bottom sorted by age', () => {
         doc.type = 'clinic';
-          getContact.withArgs(Qualifier.byUuid(childContactPerson._id)).resolves(childContactPerson);
+        getContact.withArgs(Qualifier.byUuid(childContactPerson._id)).resolves(childContactPerson);
 
         const childPerson1 = { _id: 'childPerson1', type: 'person', name: 'person 1', date_of_birth: '2000-01-01' };
         const childPerson2 = { _id: 'childPerson2', type: 'person', name: 'person 2', date_of_birth: '1999-01-01' };
