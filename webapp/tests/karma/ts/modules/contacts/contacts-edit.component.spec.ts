@@ -179,6 +179,21 @@ describe('ContactsEdit component', () => {
     });
   });
 
+  describe('validateParentForCreateForm', () => {
+    it('should throw an error if parent contact is not found', async () => {
+      await createComponent();
+      component.contact = {
+        parent: 'missing_parent_uuid',
+        contact_type: 'clinic'
+      };
+      getContact.withArgs(Qualifier.byUuid('missing_parent_uuid')).resolves(null);
+
+      await expect(component.validateParentForCreateForm()).to.be.rejectedWith(
+        'Parent contact with UUID missing_parent_uuid not found.'
+      );
+    });
+  });
+
   describe('initialization', () => {
     it('should initialize the component', fakeAsync(async () => {
       const setLoadingContent = sinon.stub(GlobalActions.prototype, 'setLoadingContent');

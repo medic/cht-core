@@ -11,6 +11,7 @@ import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 
 /**
  * Hydrates the given contact by uuid and creates a model which
@@ -43,8 +44,12 @@ export class ContactViewModelGeneratorService {
     private contactMutedService:ContactMutedService,
     private getDataRecordsService:GetDataRecordsService,
     private ngZone:NgZone,
-    private chtDatasourceService: CHTDatasourceService,
-  ){}
+    readonly chtDatasourceService: CHTDatasourceService,
+  ){
+    this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
+  }
+
+  private getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   private primaryContactComparator (lhs, rhs) {
     if (lhs.isPrimaryContact) {
@@ -156,25 +161,19 @@ export class ContactViewModelGeneratorService {
       return children;
     }
 
-    // If the primary contact is not a child, fetch the document
-    try {
-      const datasource = await this.chtDatasourceService.get();
-      const contact = await datasource.v1.contact.getByUuid(contactId);
+    // If the primary contact is not a child, fetch the document    
+    const contact = await this.getContactFromDatasource(Qualifier.byUuid(contactId));
     
-      if (!contact) {
-        return children;
-      }
-
-      children.push({
-        doc: contact,
-        isPrimaryContact: true,
-        id: contact._id,
-      });
-      return children;
-    } catch (err) {
-      console.error('Error fetching primary contact:', err);
+    if (!contact) {
       return children;
     }
+
+    children.push({
+      doc: contact,
+      isPrimaryContact: true,
+      id: contact._id,
+    });
+    return children;
   }
 
   private sortChildren(childModels) {
