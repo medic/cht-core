@@ -1,10 +1,5 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
-import {
-  fetchAndFilterUuids,
-  getDocById,
-  queryDocUuidsByKey,
-  queryDocUuidsByRange
-} from './libs/doc';
+import { fetchAndFilterUuids, getDocById, queryDocUuidsByKey, queryDocUuidsByRange } from './libs/doc';
 import { ContactTypeQualifier, FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
 import * as Contact from '../contact';
 import { Nullable, Page } from '../libs/core';
@@ -56,7 +51,7 @@ export namespace v1 {
       if (!isContact(settings)(contact, identifier.uuid)) {
         return null;
       }
-  
+
       return contact;
     };
   };
@@ -91,7 +86,7 @@ export namespace v1 {
       // this is for an exact match search
       if (isKeyedFreetextQualifier(qualifier)) {
         return (limit, skip) => getByTypeExactMatchFreetext(
-          [qualifier.contactType, normalizeFreetext(qualifier.freetext)],
+          [ qualifier.contactType, normalizeFreetext(qualifier.freetext) ],
           limit,
           skip
         );
@@ -99,8 +94,8 @@ export namespace v1 {
 
       // this is for a begins with search
       return (limit, skip) => getByTypeStartsWithFreetext(
-        [qualifier.contactType, normalizeFreetext(qualifier.freetext)],
-        [qualifier.contactType, normalizeFreetext(qualifier.freetext) + END_OF_ALPHABET_MARKER],
+        [ qualifier.contactType, normalizeFreetext(qualifier.freetext) ],
+        [ qualifier.contactType, normalizeFreetext(qualifier.freetext) + END_OF_ALPHABET_MARKER ],
         limit,
         skip
       );
@@ -111,17 +106,17 @@ export namespace v1 {
     ): (limit: number, skip: number) => Promise<string[]> => (
       limit,
       skip
-    ) => getByType([qualifier.contactType], limit, skip);
+    ) => getByType([ qualifier.contactType ], limit, skip);
 
     const getDocsFnForFreetextType = (
       qualifier: FreetextQualifier
     ): (limit: number, skip: number) => Promise<string[]> => {
       if (isKeyedFreetextQualifier(qualifier)) {
-        return (limit, skip) => getByExactMatchFreetext([normalizeFreetext(qualifier.freetext)], limit, skip);
+        return (limit, skip) => getByExactMatchFreetext([ normalizeFreetext(qualifier.freetext) ], limit, skip);
       }
       return (limit, skip) => getByStartsWithFreetext(
-        [normalizeFreetext(qualifier.freetext)],
-        [normalizeFreetext(qualifier.freetext) + END_OF_ALPHABET_MARKER],
+        [ normalizeFreetext(qualifier.freetext) ],
+        [ normalizeFreetext(qualifier.freetext) + END_OF_ALPHABET_MARKER ],
         limit,
         skip
       );

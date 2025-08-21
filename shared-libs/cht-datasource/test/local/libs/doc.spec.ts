@@ -1,15 +1,19 @@
 import * as Doc from '../../../src/libs/doc';
 import sinon, { SinonStub } from 'sinon';
 import logger from '@medic/logger';
+import * as LocalDoc from '../../../src/local/libs/doc';
 import {
+  createDoc,
   fetchAndFilter,
   fetchAndFilterUuids,
   getDocById,
   getDocsByIds,
   queryDocsByKey,
-  queryDocsByRange, queryDocUuidsByKey, queryDocUuidsByRange,
+  queryDocsByRange,
+  queryDocUuidsByKey,
+  queryDocUuidsByRange,
+  updateDoc
 } from '../../../src/local/libs/doc';
-import * as LocalDoc from '../../../src/local/libs/doc';
 import { expect } from 'chai';
 import { Nullable } from '../../../src';
 
@@ -17,6 +21,8 @@ describe('local doc lib', () => {
   let dbGet: SinonStub;
   let dbAllDocs: SinonStub;
   let dbQuery: SinonStub;
+  let dbPost: SinonStub;
+  let dbPut: SinonStub;
   let db: PouchDB.Database<Doc.Doc>;
   let isDoc: SinonStub;
   let error: SinonStub;
@@ -25,10 +31,14 @@ describe('local doc lib', () => {
     dbGet = sinon.stub();
     dbAllDocs = sinon.stub();
     dbQuery = sinon.stub();
+    dbPost = sinon.stub();
+    dbPut = sinon.stub();
     db = {
       get: dbGet,
       allDocs: dbAllDocs,
-      query: dbQuery
+      query: dbQuery,
+      post: dbPost,
+      put: dbPut
     } as unknown as PouchDB.Database<Doc.Doc>;
     isDoc = sinon.stub(Doc, 'isDoc');
     error = sinon.stub(logger, 'error');
@@ -93,7 +103,7 @@ describe('local doc lib', () => {
       const doc0 = { _id: 'doc0' };
       const doc1 = { _id: 'doc1' };
       const doc2 = { _id: 'doc2' };
-      const ids = [doc0._id, doc1._id, doc2._id];
+      const ids = [ doc0._id, doc1._id, doc2._id ];
       dbAllDocs.resolves({
         rows: [
           { doc: doc0 },
@@ -105,9 +115,9 @@ describe('local doc lib', () => {
 
       const result = await getDocsByIds(db)(ids);
 
-      expect(result).to.deep.equal([doc0, doc1, doc2]);
+      expect(result).to.deep.equal([ doc0, doc1, doc2 ]);
       expect(dbAllDocs.calledOnceWithExactly({ keys: ids, include_docs: true })).to.be.true;
-      expect(isDoc.args).to.deep.equal([[doc0], [doc1], [doc2]]);
+      expect(isDoc.args).to.deep.equal([ [ doc0 ], [ doc1 ], [ doc2 ] ]);
     });
 
     it('returns an empty array if no ids are provided', async () => {
@@ -119,7 +129,7 @@ describe('local doc lib', () => {
     });
 
     it('does not return an entry for a blank id', async () => {
-      const result = await getDocsByIds(db)(['']);
+      const result = await getDocsByIds(db)([ '' ]);
 
       expect(result).to.deep.equal([]);
       expect(dbAllDocs.notCalled).to.be.true;
@@ -128,7 +138,7 @@ describe('local doc lib', () => {
 
     it('does not return an entry that is not a doc', async () => {
       const doc0 = { _id: 'doc0' };
-      const ids = [doc0._id];
+      const ids = [ doc0._id ];
       dbAllDocs.resolves({
         rows: [
           { doc: doc0 },
@@ -140,20 +150,20 @@ describe('local doc lib', () => {
 
       expect(result).to.deep.equal([]);
       expect(dbAllDocs.calledOnceWithExactly({ keys: ids, include_docs: true })).to.be.true;
-      expect(isDoc.args).to.deep.equal([[doc0]]);
+      expect(isDoc.args).to.deep.equal([ [ doc0 ] ]);
     });
 
     it('returns one entry when duplicate ids are provided', async () => {
       const doc0 = { _id: 'doc0' };
       dbAllDocs.resolves({
-        rows: [{ doc: doc0 }]
+        rows: [ { doc: doc0 } ]
       });
       isDoc.returns(true);
 
-      const result = await getDocsByIds(db)([doc0._id, doc0._id]);
+      const result = await getDocsByIds(db)([ doc0._id, doc0._id ]);
 
-      expect(result).to.deep.equal([doc0]);
-      expect(dbAllDocs.calledOnceWithExactly({ keys: [doc0._id], include_docs: true })).to.be.true;
+      expect(result).to.deep.equal([ doc0 ]);
+      expect(dbAllDocs.calledOnceWithExactly({ keys: [ doc0._id ], include_docs: true })).to.be.true;
       expect(isDoc.calledOnceWithExactly(doc0)).to.be.true;
     });
   });
@@ -177,7 +187,7 @@ describe('local doc lib', () => {
 
       const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc1._id);
 
-      expect(result).to.deep.equal([doc0, doc1, doc2]);
+      expect(result).to.deep.equal([ doc0, doc1, doc2 ]);
 
       expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
         include_docs: true,
@@ -186,7 +196,7 @@ describe('local doc lib', () => {
         limit: undefined,
         skip: 0
       })).to.be.true;
-      expect(isDoc.args).to.deep.equal([[doc0], [doc1], [doc2]]);
+      expect(isDoc.args).to.deep.equal([ [ doc0 ], [ doc1 ], [ doc2 ] ]);
     });
 
     it('returns null if a doc in the lineage is not found', async () => {
@@ -203,7 +213,7 @@ describe('local doc lib', () => {
 
       const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc2._id, limit, skip);
 
-      expect(result).to.deep.equal([doc0, null, doc2]);
+      expect(result).to.deep.equal([ doc0, null, doc2 ]);
       expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
         startkey: doc0._id,
         endkey: doc2._id,
@@ -211,19 +221,19 @@ describe('local doc lib', () => {
         limit,
         skip,
       })).to.be.true;
-      expect(isDoc.args).to.deep.equal([[doc0], [null], [doc2]]);
+      expect(isDoc.args).to.deep.equal([ [ doc0 ], [ null ], [ doc2 ] ]);
     });
 
     it('returns null if the returned object is not a doc', async () => {
       const doc0 = { _id: 'doc0' };
       dbQuery.resolves({
-        rows: [{ doc: doc0 }]
+        rows: [ { doc: doc0 } ]
       });
       isDoc.returns(false);
 
       const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc0._id, limit, skip);
 
-      expect(result).to.deep.equal([null]);
+      expect(result).to.deep.equal([ null ]);
       expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
         startkey: doc0._id,
         endkey: doc0._id,
@@ -256,14 +266,14 @@ describe('local doc lib', () => {
 
       const result = await queryDocsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
 
-      expect(result).to.deep.equal([doc0, doc1, doc2]);
+      expect(result).to.deep.equal([ doc0, doc1, doc2 ]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
         include_docs: true,
         key: contactType,
         limit,
         skip
       })).to.be.true;
-      expect(isDoc.args).to.deep.equal([[doc0], [doc1], [doc2]]);
+      expect(isDoc.args).to.deep.equal([ [ doc0 ], [ doc1 ], [ doc2 ] ]);
     });
 
     it('returns empty array if docs are not found', async () => {
@@ -291,14 +301,14 @@ describe('local doc lib', () => {
 
       const result = await queryDocsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
 
-      expect(result).to.deep.equal([null]);
+      expect(result).to.deep.equal([ null ]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
         include_docs: true,
         key: contactType,
         limit,
         skip
       })).to.be.true;
-      expect(isDoc.args).to.deep.equal([[doc0]]);
+      expect(isDoc.args).to.deep.equal([ [ doc0 ] ]);
     });
   });
 
@@ -320,7 +330,7 @@ describe('local doc lib', () => {
 
       const result = await queryDocUuidsByRange(db, 'medic-client/contacts_by_type')(doc0.id, doc1.id);
 
-      expect(result).to.deep.equal([doc0.id, doc1.id, doc2.id]);
+      expect(result).to.deep.equal([ doc0.id, doc1.id, doc2.id ]);
 
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
         include_docs: false,
@@ -371,7 +381,7 @@ describe('local doc lib', () => {
 
       const result = await queryDocUuidsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
 
-      expect(result).to.deep.equal([doc0.id, doc1.id, doc2.id]);
+      expect(result).to.deep.equal([ doc0.id, doc1.id, doc2.id ]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
         include_docs: false,
         key: contactType,
@@ -406,7 +416,7 @@ describe('local doc lib', () => {
     });
 
     it('should return correct data when all docs are valid', async () => {
-      const docs = [{ _id: '1' }, { _id: '2' }, { _id: '3' }];
+      const docs = [ { _id: '1' }, { _id: '2' }, { _id: '3' } ];
       getFunction.resolves(docs);
       filterFunction.returns(true);
 
@@ -420,8 +430,8 @@ describe('local doc lib', () => {
     });
 
     it('should filter out invalid docs and fetch more if needed', async () => {
-      const docs1 = [{ _id: '1' }, { _id: '2' }, { _id: '3' }];
-      const docs2 = [{ _id: '4' }, { _id: '5' }];
+      const docs1 = [ { _id: '1' }, { _id: '2' }, { _id: '3' } ];
+      const docs2 = [ { _id: '4' }, { _id: '5' } ];
       getFunction.onFirstCall().resolves(docs1);
       getFunction.onSecondCall().resolves(docs2);
       filterFunction.callsFake((doc: Doc.Doc) => doc._id !== '2');
@@ -429,7 +439,7 @@ describe('local doc lib', () => {
       const fetchAndFilterFunc = fetchAndFilter(getFunction, filterFunction, 3);
       const result = await fetchAndFilterFunc(3, 0);
 
-      expect(result.data).to.deep.equal([{ _id: '1' }, { _id: '3' }, { _id: '4' }]);
+      expect(result.data).to.deep.equal([ { _id: '1' }, { _id: '3' }, { _id: '4' } ]);
       expect(result.cursor).to.equal('4');
       expect(getFunction.firstCall.calledWith(3, 0)).to.be.true;
       expect(getFunction.secondCall.calledWith(2, 3)).to.be.true;
@@ -437,7 +447,7 @@ describe('local doc lib', () => {
     });
 
     it('should return null cursor when no more results', async () => {
-      const docs = [{ _id: '1' }, { _id: '2' }];
+      const docs = [ { _id: '1' }, { _id: '2' } ];
       getFunction.resolves(docs);
       filterFunction.returns(true);
 
@@ -464,8 +474,8 @@ describe('local doc lib', () => {
     });
 
     it('should handle all docs being filtered out', async () => {
-      const docs1 = [{ _id: '1' }, { _id: '2' }, { _id: '3' }];
-      const docs2 = [{ _id: '4' }, { _id: '5' }, { _id: '6' }];
+      const docs1 = [ { _id: '1' }, { _id: '2' }, { _id: '3' } ];
+      const docs2 = [ { _id: '4' }, { _id: '5' }, { _id: '6' } ];
       getFunction.onFirstCall().resolves(docs1);
       getFunction.onSecondCall().resolves(docs2);
       filterFunction.returns(false);
@@ -517,9 +527,11 @@ describe('local doc lib', () => {
           return results;
         });
 
-      const result =  fetchAndFilterUuids(getFunction, 3);
+      const result = fetchAndFilterUuids(getFunction, 3);
 
-      expect(result).to.have.members(['123e4567-e89b-12d3-a456-426614174000', '987fcdeb-51a2-43d7-9b56-254125174000']);
+      expect(result).to.have.members(
+        [ '123e4567-e89b-12d3-a456-426614174000', '987fcdeb-51a2-43d7-9b56-254125174000' ]
+      );
       expect(fetchAndFilterStubFake.calledOnce).to.be.true;
     });
 
@@ -558,7 +570,7 @@ describe('local doc lib', () => {
       const limit = 2;
 
       fetchAndFilterStub
-        .callsFake( (fn, filterFn, passedLimit) => {
+        .callsFake((fn, filterFn, passedLimit) => {
           expect(passedLimit).to.equal(limit);
           return [];
         });
@@ -587,4 +599,95 @@ describe('local doc lib', () => {
       expect(() => fetchAndFilterUuids(getFunction, 3)).to.throw('API Error');
     });
   });
+
+  describe('createDoc', () => {
+    const doc = {
+      type: 'contact',
+      contact_type: 'person',
+      name: 'Medic User',
+      parent: {
+        _id: '2-id'
+      }
+    };
+
+    const createdDoc = {
+      type: 'contact',
+      contact_type: 'person',
+      name: 'Medic User',
+      reported_date: 12312312,
+      _rev: '1-rev',
+      _id: '1-id',
+      parent: {
+        _id: '2-id'
+      }
+    };
+
+    it('should create and retrieve the doc', async () => {
+      dbPost.resolves({ id: '1-id', ok: true });
+      isDoc.returns(true);
+      dbGet.resolves(createdDoc);
+
+      const result = await createDoc(db)(doc);
+
+      expect(result).to.equal(createdDoc);
+      expect(dbGet.calledOnceWithExactly(createdDoc._id)).to.be.true;
+    });
+
+    it('case when database returns false for ok', async () => {
+      dbPost.resolves({ id: '1-id', ok: false });
+      await expect(createDoc(db)(doc)).to.be.rejectedWith('Error creating document.');
+      expect(dbPost.calledOnceWithExactly(doc)).to.be.true;
+    });
+  });
+
+  describe('updateDoc', () => {
+    it('should update and retrieve the doc', async () => {
+      const updateDocQualifier = {
+        _id: '1-id',
+        _rev: '2-rev',
+        name: 'apoorva',
+        type: 'person'
+      };
+      dbPut.resolves({ id: '1-id', ok: true });
+      isDoc.returns(true);
+      const expectedDoc = { ...updateDocQualifier, _rev: '3-rev' };
+      dbGet.resolves(expectedDoc);
+
+      const result = await updateDoc(db)(updateDocQualifier);
+
+      expect(result).to.equal(expectedDoc);
+      expect(dbGet.calledOnceWithExactly(expectedDoc._id)).to.be.true;
+    });
+
+    it('should throw error for missing _id', async () => {
+      const updateDocQualifier = {
+        _rev: '2-rev',
+        name: 'apoorva',
+        type: 'person'
+      };
+
+      await expect(updateDoc(db)(updateDocQualifier))
+        .to.be.rejectedWith(`Missing or empty required field (_id) for [${JSON.stringify(updateDocQualifier)}]`);
+
+      expect(isDoc.called).to.be.false;
+      expect(dbGet.called).to.be.false;
+      expect(dbPut.called).to.be.false;
+    });
+
+    it('should throw error for missing _rev', async () => {
+      const updateDocQualifier = {
+        _id: '1-id',
+        name: 'apoorva',
+        type: 'person'
+      };
+
+      await expect(updateDoc(db)(updateDocQualifier))
+        .to.be.rejectedWith(`Missing or empty required field (_rev) for [${JSON.stringify(updateDocQualifier)}]`);
+
+      expect(isDoc.called).to.be.false;
+      expect(dbGet.called).to.be.false;
+      expect(dbPut.called).to.be.false;
+    });
+  });
+
 });

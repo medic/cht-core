@@ -1,17 +1,27 @@
 import { LocalDataContext } from './libs/data-context';
 import {
+  createDoc,
   fetchAndFilterUuids,
   getDocById,
   queryDocUuidsByKey,
-  queryDocUuidsByRange
+  queryDocUuidsByRange,
+  updateDoc
 } from './libs/doc';
-import { FreetextQualifier, UuidQualifier, isKeyedFreetextQualifier } from '../qualifier';
-import { Nullable, Page} from '../libs/core';
+import { FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
+import { hasField, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
-import { Doc } from '../libs/doc';
+import { Doc, isDoc } from '../libs/doc';
 import logger from '@medic/logger';
-import { normalizeFreetext, validateCursor } from './libs/core';
+import {
+  addParentToInput,
+  ensureHasRequiredFields,
+  ensureImmutability,
+  normalizeFreetext,
+  validateCursor
+} from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
+import { InvalidArgumentError } from '../libs/error';
+import { ReportInput } from '../input';
 import { fetchHydratedDoc } from './libs/lineage';
 
 /** @internal */
@@ -67,11 +77,11 @@ export namespace v1 {
       qualifier: FreetextQualifier
     ): (limit: number, skip: number) => Promise<string[]> => {
       if (isKeyedFreetextQualifier(qualifier)) {
-        return (limit, skip) => getByExactMatchFreetext([normalizeFreetext(qualifier.freetext)], limit, skip);
+        return (limit, skip) => getByExactMatchFreetext([ normalizeFreetext(qualifier.freetext) ], limit, skip);
       }
       return (limit, skip) => getByStartsWithFreetext(
-        [normalizeFreetext(qualifier.freetext)],
-        [normalizeFreetext(qualifier.freetext) + END_OF_ALPHABET_MARKER],
+        [ normalizeFreetext(qualifier.freetext) ],
+        [ normalizeFreetext(qualifier.freetext) + END_OF_ALPHABET_MARKER ],
         limit,
         skip
       );
@@ -80,12 +90,97 @@ export namespace v1 {
     return async (
       qualifier: FreetextQualifier,
       cursor: Nullable<string>,
-      limit:  number
+      limit: number
     ): Promise<Page<string>> => {
       const skip = validateCursor(cursor);
       const getDocsFn = getDocsFnForFreetextType(qualifier);
 
       return await fetchAndFilterUuids(getDocsFn, limit)(limit, skip);
+    };
+  };
+
+  /** @internal*/
+  const ensureFormFieldValidity = async (
+    medicDb: PouchDB.Database<Doc>,
+    input: Record<string, unknown>
+  ): Promise<void> => {
+    const allowedFormIds = await queryDocUuidsByKey(medicDb, 'medic-client/doc_by_type')([ 'form' ], 1e6, 0);
+    const isValidFormType = allowedFormIds.some((id: string) => {
+      const expectedID = id.substring(5);
+      return expectedID === input.form;
+    });
+    if (!isValidFormType) {
+      throw new InvalidArgumentError('Invalid `form` value');
+    }
+  };
+
+  /** @internal*/
+  export const create = ({
+    medicDb
+  }: LocalDataContext) => {
+    const createReportDoc = createDoc(medicDb);
+    const getReportDoc = getDocById(medicDb);
+    const appendContact = async (
+      input: ReportInput
+    ): Promise<ReportInput> => {
+      const contactDehydratedLineage = await getReportDoc(input.contact);
+      if (contactDehydratedLineage === null) {
+        throw new InvalidArgumentError(
+          `Contact with _id ${input.contact} does not exist.`
+        );
+      }
+      input = addParentToInput(input, 'contact', contactDehydratedLineage);
+      return input;
+    };
+
+    return async (input: ReportInput): Promise<Report.v1.Report> => {
+      if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
+        throw new InvalidArgumentError('Cannot pass `_rev` when creating a report.');
+      }
+      await ensureFormFieldValidity(medicDb, input);
+      input = await appendContact(input);
+      input = { ...input, type: 'data_record' };
+      return await createReportDoc(input) as Report.v1.Report;
+    };
+  };
+
+
+  /** @internal*/
+  const validateReportUpdatePayload = (
+    originalDoc: Doc,
+    reportInput: Record<string, unknown>
+  ) => {
+    const immutableRequiredFields = new Set([ '_rev', '_id', 'reported_date', 'contact', 'type' ]);
+    const mutableRequiredFields = new Set([ 'form' ]);
+    ensureHasRequiredFields(immutableRequiredFields, mutableRequiredFields, originalDoc, reportInput);
+    ensureImmutability(immutableRequiredFields, originalDoc, reportInput);
+    // Now it is safe to assign reportInput.contact as the original doc's
+    // dehydrated contact lineage as the hierarchy is verified.
+    reportInput.contact = originalDoc.contact;
+  };
+
+  /** @internal*/
+  export const update = ({
+    medicDb, settings
+  }: LocalDataContext) => {
+    const updateReport = updateDoc(medicDb);
+    const getReport = get({ medicDb, settings } as LocalDataContext);
+
+    return async (reportInput: Record<string, unknown>): Promise<Report.v1.Report> => {
+      if (!isDoc(reportInput)) {
+        throw new InvalidArgumentError(`Document for update is not a valid Doc ${JSON.stringify(reportInput)}`);
+      }
+      const originalReportDoc = await getReport({ uuid: reportInput._id });
+      if (originalReportDoc === null) {
+        throw new InvalidArgumentError(`Report not found`);
+      }
+      if (reportInput._rev !== originalReportDoc._rev) {
+        throw new InvalidArgumentError('`_rev` does not match');
+      }
+      validateReportUpdatePayload(originalReportDoc, reportInput);
+      await ensureFormFieldValidity(medicDb, reportInput);
+
+      return await updateReport(reportInput) as Report.v1.Report;
     };
   };
 }

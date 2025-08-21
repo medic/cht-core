@@ -1,6 +1,7 @@
 import logger from '@medic/logger';
-import { Nullable, Page } from '../../libs/core';
+import { hasField, Nullable, Page } from '../../libs/core';
 import { Doc, isDoc } from '../../libs/doc';
+import { InvalidArgumentError } from '../../libs/error';
 
 /** @internal */
 export const getDocById = (db: PouchDB.Database<Doc>) => async (uuid: string): Promise<Nullable<Doc>> => db
@@ -27,11 +28,12 @@ export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (uuids: string[
     .filter((doc): doc is Doc => isDoc(doc));
 };
 
-const queryDocs = (
+/** @internal */
+export const queryDocs = (
   db: PouchDB.Database<Doc>,
   view: string,
   options: PouchDB.Query.Options<Doc, Record<string, unknown>>
-) => db
+): Promise<Nullable<Doc>[]> => db
   .query(view, options)
   .then(({ rows }) => rows.map(({ doc }) => isDoc(doc) ? doc : null));
 
@@ -127,16 +129,16 @@ export const fetchAndFilter = <T>(
     const noMoreResults = docs.length < currentLimit;
     const newDocs = docs.filter((doc): doc is T => filterFunction(doc));
     const overFetchCount = currentDocs.length + newDocs.length - limit || 0;
-    const totalDocs = [...currentDocs, ...newDocs].slice(0, limit);
+    const totalDocs = [ ...currentDocs, ...newDocs ].slice(0, limit);
 
     if (noMoreResults) {
-      return {data: totalDocs, cursor: null};
+      return { data: totalDocs, cursor: null };
     }
 
     if (totalDocs.length === limit) {
       const nextSkip = currentSkip + currentLimit - overFetchCount;
 
-      return {data: totalDocs, cursor: nextSkip.toString()};
+      return { data: totalDocs, cursor: nextSkip.toString() };
     }
 
     // Re-fetch twice as many docs as we need to limit number of recursions
@@ -174,4 +176,30 @@ export const fetchAndFilterUuids = (
     filterFn,
     limit
   );
+};
+
+/** @internal */
+export const createDoc = (db: PouchDB.Database) => async (data: Record<string, unknown>): Promise<Nullable<Doc>> => {
+  const { id, ok } = await db.post(data);
+  if (!ok) {
+    throw new Error('Error creating document.');
+  }
+  return getDocById(db as PouchDB.Database<Doc>)(id);
+};
+
+/** @internal */
+export const updateDoc = (db: PouchDB.Database) => async (data: Record<string, unknown>): Promise<Nullable<Doc>> => {
+  if (!hasField(data, { name: '_id', type: 'string', ensureTruthyValue: true })) {
+    throw new InvalidArgumentError(`Missing or empty required field (_id) for [${JSON.stringify(data)}]`);
+  }
+  if (!hasField(data, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
+    throw new InvalidArgumentError(`Missing or empty required field (_rev) for [${JSON.stringify(data)}]`);
+  }
+
+  const { id, ok } = await db.put(data);
+
+  if (!ok) {
+    throw new Error('Error updating document.');
+  }
+  return getDocById(db as PouchDB.Database<Doc>)(id);
 };

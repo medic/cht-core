@@ -1,6 +1,6 @@
+import * as RemoteEnv from '../../src/remote/libs/data-context';
 import { RemoteDataContext } from '../../src/remote/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
-import * as RemoteEnv from '../../src/remote/libs/data-context';
 import * as Contact from '../../src/remote/contact';
 import { expect } from 'chai';
 
@@ -21,7 +21,7 @@ describe('remote contact', () => {
   afterEach(() => sinon.restore());
 
   describe('v1', () => {
-    const identifier = {uuid: 'uuid'} as const;
+    const identifier = { uuid: 'uuid' } as const;
 
     describe('get', () => {
       it('returns a contact by UUID', async () => {
@@ -86,7 +86,7 @@ describe('remote contact', () => {
       };
 
       it('returns array of contact identifiers', async () => {
-        const doc = [{ type: 'person' }, {type: 'person'}];
+        const doc = [ { type: 'person' }, { type: 'person' } ];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
