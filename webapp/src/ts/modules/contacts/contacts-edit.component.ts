@@ -263,10 +263,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private async validateParentForCreateForm() {
     if (!this.contact.parent) {
-      const topLevelTypes = await this.contactTypesService.getChildren();
-      if (!topLevelTypes.some(({ id }) => id === this.contact.contact_type)) {
-        throw new Error(`Cannot create a ${this.contact.contact_type} at the top level. It requires a parent.`);
-      }
+      await this.ensureValidTopLevelType();
       return;
     }
 
@@ -276,12 +273,22 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       throw new Error(`Parent contact with UUID ${this.contact.parent} not found.`);
     }
   
-
     const parentType = this.contactTypesService.getTypeId(parent);
     if (!parentType) {
       throw new Error(`Parent type is undefined for parent UUID ${this.contact.parent}.`);
     }
 
+    await this.ensureValidChildType(parentType);
+  }
+
+  private async ensureValidTopLevelType() {
+    const topLevelTypes = await this.contactTypesService.getChildren();
+    if (!topLevelTypes.some(({ id }) => id === this.contact.contact_type)) {
+      throw new Error(`Cannot create a ${this.contact.contact_type} at the top level. It requires a parent.`);
+    }
+  }
+
+  private async ensureValidChildType(parentType: string) {
     const validChildTypes = await this.contactTypesService.getChildren(parentType);
     if (!validChildTypes.some(({ id }) => id === this.contact.contact_type)) {
       throw new Error(`Cannot create a ${this.contact.contact_type} as a child of a ${parentType}.`);
