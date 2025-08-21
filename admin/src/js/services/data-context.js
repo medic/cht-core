@@ -7,7 +7,7 @@ angular.module('inboxServices').factory('DataContext', function(
   'ngInject';
 
   const dataContext = cht.getRemoteDataContext(Location.rootUrl);
-  return Object.assign(
+  return Object.assign( // NoSONAR
     {},
     dataContext,
     { getDatasource: () => cht.getDatasource(dataContext) }

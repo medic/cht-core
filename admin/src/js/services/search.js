@@ -8,8 +8,8 @@ const Search = require('@medic/search');
   // To make it easier to mock out
   angular.module('inboxServices').factory('SearchFactory',
     function(
+      DB,
       DataContext,
-      DB
     ) {
 
       'ngInject';
