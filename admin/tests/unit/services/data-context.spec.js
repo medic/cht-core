@@ -20,7 +20,7 @@ describe('DataContext service', () => {
   });
 
   it('returns the data source', () => {
-    const dataSource = service.getDataSource();
+    const dataSource = service.getDatasource();
     chai.expect(dataSource).to.haveOwnProperty('v1');
   });
 });
