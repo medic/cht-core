@@ -43,7 +43,6 @@ describe('Muting Transition', () => {
         { provide: ValidationService, useValue: validationService },
         { provide: PlaceHierarchyService, useValue: placeHierarchyService },
         { provide: CHTDatasourceService, useValue: chtDatasourceService },
-        { provide: HttpClient, useValue: {} },
       ],
     });
     transition = TestBed.inject(MutingTransition);
