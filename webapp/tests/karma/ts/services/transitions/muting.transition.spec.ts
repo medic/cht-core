@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { HttpClient } from '@angular/common/http';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
