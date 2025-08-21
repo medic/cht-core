@@ -9,7 +9,7 @@ const Search = require('@medic/search');
   angular.module('inboxServices').factory('SearchFactory',
     function(
       DB,
-      DataContext,
+      DataContext
     ) {
 
       'ngInject';
