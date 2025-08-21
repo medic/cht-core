@@ -1,8 +1,13 @@
 describe('DataContext service', () => {
   let service;
+  let Location;
 
   beforeEach(() => {
+    Location = { rootUrl: 'ftp//myhost:21' };
     module('adminApp');
+    module($provide => {
+      $provide.value('Location', Location);
+    });
     inject(_DataContext_ => {
       service = _DataContext_;
     });
@@ -19,7 +24,8 @@ describe('DataContext service', () => {
     chai.expect(innerFn.notCalled).to.be.true;
   });
 
-  it('returns the data source', () => {
+  it('initializes a datasource and data context', () => {
+    chai.expect(service.url).to.equal(Location.rootUrl);
     const dataSource = service.getDatasource();
     chai.expect(dataSource).to.haveOwnProperty('v1');
   });
