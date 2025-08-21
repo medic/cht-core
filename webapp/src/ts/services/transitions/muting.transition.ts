@@ -242,9 +242,7 @@ export class MutingTransition extends Transition {
       return Promise.resolve(knownDoc);
     }
 
-    const doc = await this.getContact(Qualifier.byUuid(docId));
-
-    return doc;
+    return this.getContact(Qualifier.byUuid(docId));
   }
 
   /**
