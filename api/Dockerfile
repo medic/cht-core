@@ -12,9 +12,9 @@ WORKDIR /service
 
 # ID 1000 is 'node' user in node:22-alpine image
 
-COPY --chown=1000 ./shared-libs ./shared-libs
-COPY --chown=1000 node_modules/@medic ./node_modules/@medic
-COPY --chown=1000 api ./api
+COPY --chown=root:root --chmod=755  ./shared-libs ./shared-libs
+COPY --chown=root:root --chmod=755  node_modules/@medic ./node_modules/@medic
+COPY --chown=root:root --chmod=755  api ./api
 
 ENV NODE_PATH=/service/api/node_modules
 USER 1000
