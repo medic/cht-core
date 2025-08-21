@@ -1,6 +1,7 @@
 const moment = require('moment');
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
+const CHT = require('@medic/cht-datasource');
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 const SHOW_PASSWORD_ICON = '/login/images/show-password.svg';
@@ -29,6 +30,7 @@ angular
     ContactTypes,
     CreateUser,
     DB,
+    DataContext,
     Select2Search,
     Settings,
     Translate,
@@ -39,6 +41,7 @@ angular
 
     const datasource = CHTDatasource.datasource;
     $scope.cancel = () => $uibModalInstance.dismiss();
+    const getContact = DataContext.bind(CHT.Contact.v1.get);
 
     const getRoles = roles => {
       if (!roles || !roles.length) {
@@ -392,7 +395,7 @@ angular
       }
 
       const getParent = (contactId) => {
-        return DB().get(contactId).then(contact => contact.parent);
+        return getContact(CHT.Qualifier.byUuid(contactId)).then(contact => contact.parent);
       };
 
       const checkParent = (parent, placeIds) => {
