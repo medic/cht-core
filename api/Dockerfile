@@ -15,6 +15,8 @@ WORKDIR /service
 COPY --chown=root:root --chmod=755  ./shared-libs ./shared-libs
 COPY --chown=root:root --chmod=755  node_modules/@medic ./node_modules/@medic
 COPY --chown=root:root --chmod=755  api ./api
+RUN chown -R root:1000 /service/api/build/static/webapp && \
+    chmod -R 775 /service/api/build/static/webapp
 
 ENV NODE_PATH=/service/api/node_modules
 USER 1000
