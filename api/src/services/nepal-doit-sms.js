@@ -16,9 +16,7 @@ const STATUS_MAP = {
 const getUrl = () => {
   const settings = config.get('sms');
 
-  const url = settings &&
-    settings.nepal_doit_sms &&
-    settings.nepal_doit_sms.url;
+  const url = settings?.nepal_doit_sms?.url;
   if (!url) {
     // invalid configuration
     return Promise.reject('No URL configured. Refer to the Nepal DoIT SMS configuration documentation.');
