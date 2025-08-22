@@ -64,6 +64,9 @@ const cleanup = () => {
         logger.error('Error while running cleanup: %o', err);
       });
   }
+  db.nouveauCleanup().catch(err => {
+    logger.error('Error while running cleanup: %o', err);
+  });
 };
 /**
  * Updates json ddocs to add the :staged: ddoc name prefix

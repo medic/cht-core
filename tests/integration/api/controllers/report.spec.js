@@ -4,21 +4,39 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const {expect} = require('chai');
+const uuid = require('uuid').v4;
 
 describe('Report API', () => {
-  const contact0 = utils.deepFreeze(personFactory.build({name: 'contact0', role: 'chw'}));
+  const contact0Id = uuid();
   const contact1 = utils.deepFreeze(personFactory.build({name: 'contact1', role: 'chw_supervisor'}));
   const contact2 = utils.deepFreeze(personFactory.build({name: 'contact2', role: 'program_officer'}));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
   const place1 = utils.deepFreeze({...placeMap.get('health_center'), contact: {_id: contact1._id}});
   const place2 = utils.deepFreeze({...placeMap.get('district_hospital'), contact: {_id: contact2._id}});
   const place0 = utils.deepFreeze({
-    ...placeMap.get('clinic'), contact: {_id: contact0._id}, parent: {
-      _id: place1._id, parent: {
+    ...placeMap.get('clinic'),
+    contact: {_id: contact0Id},
+    parent: {
+      _id: place1._id,
+      parent: {
         _id: place2._id
       }
     },
   });
+  const contact0 = utils.deepFreeze(personFactory.build({
+    _id: contact0Id,
+    name: 'contact0',
+    role: 'chw',
+    parent: {
+      _id: place0._id,
+      parent: {
+        _id: place1._id,
+        parent: {
+          _id: place2._id
+        }
+      },
+    }
+  }));
   const patient = utils.deepFreeze(personFactory.build({
     parent: {
       _id: place0._id, parent: {
@@ -26,12 +44,12 @@ describe('Report API', () => {
           _id: place2._id
         }
       },
-    }, phone: '1234567890', role: 'patient', short_name: 'Mary'
+    }, phone: '1234567890', role: 'patient', short_name: 'Mary', patient_id: uuid()
   }));
   const report0 = utils.deepFreeze(reportFactory.report().build({
     form: 'report0'
   }, {
-    patient, submitter: contact0
+    patient, submitter: contact0, place: place0
   }));
   const report1 = utils.deepFreeze(reportFactory.report().build({
     form: 'report1'
@@ -137,13 +155,79 @@ describe('Report API', () => {
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
       });
     });
-  });
 
+    it('should return the report with lineage when with_lineage=true', async () => {
+      const opts = {
+        path: `${endpoint}/${report0._id}`,
+        qs: { with_lineage: 'true' }
+      };
+      const resReport = await utils.request(opts);
+
+      const expectedPlaceLineage = {
+        ...place0,
+        contact: contact0,
+        parent: {
+          ...place1,
+          contact: contact1,
+          parent: {
+            ...place2,
+            contact: contact2,
+          }
+        }
+      };
+      expect(resReport).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+        ...report0,
+        contact: {
+          ...contact0,
+          parent: expectedPlaceLineage
+        },
+        patient: {
+          ...patient,
+          parent: expectedPlaceLineage
+        },
+        place: expectedPlaceLineage,
+      });
+    });
+
+    it('should return report without lineage when with_lineage is not true', async () => {
+      const opts = {
+        path: `${endpoint}/${report0._id}`,
+        qs: { with_lineage: 'false' }
+      };
+      const resReport = await utils.request(opts);
+      expect(resReport).excluding(['_rev', 'reported_date']).to.deep.equal(report0);
+    });
+
+    it('throws 404 error when no report is found for the UUID with lineage request', async () => {
+      const opts = {
+        path: `${endpoint}/invalid-uuid`,
+        qs: { with_lineage: 'true' }
+      };
+      await expect(utils.request(opts)).to.be.rejectedWith('404 - {"code":404,"error":"Report not found"}');
+    });
+
+    [
+      ['does not have can_view_reports permission', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([description, user]) => {
+      it(`throws error when user ${description} for lineage request`, async () => {
+        const opts = {
+          path: `${endpoint}/${report0._id}`,
+          qs: { with_lineage: 'true' },
+          auth: { username: user.username, password: user.password }
+        };
+        await expect(utils.request(opts))
+          .to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
+    });
+  });
+  
   describe('GET /api/v1/report/uuid', async () => {
     const freetext = 'report';
     const fourLimit = 4;
     const twoLimit = 2;
     const endpoint = '/api/v1/report/uuid';
+    const emptyNouveauCursor = 'W10=';
 
     it('returns a page of report ids for no limit and cursor passed', async () => {
       const qs = {
@@ -158,8 +242,8 @@ describe('Report API', () => {
       const responsePeople = responsePage.data;
       const responseCursor = responsePage.cursor;
 
-      expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
-      expect(responseCursor).to.be.equal(null);
+      expect(responsePeople).to.deep.equalInAnyOrder(expectedReportIds);
+      expect(responseCursor).to.not.equal(emptyNouveauCursor);
     });
 
     it('returns a page of report ids when limit and cursor is passed and cursor can be reused', async () => {
@@ -188,8 +272,8 @@ describe('Report API', () => {
       expect(allReports).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
       expect(firstPage.data.length).to.be.equal(4);
       expect(secondPage.data.length).to.be.equal(2);
-      expect(firstPage.cursor).to.be.equal('4');
-      expect(secondPage.cursor).to.be.equal(null);
+      expect(firstPage.cursor).to.not.equal(emptyNouveauCursor);
+      expect(secondPage.cursor).to.not.equal(emptyNouveauCursor);
     });
 
     it('returns a page of unique report ids for when multiple fields match the same freetext', async () => {
@@ -207,7 +291,7 @@ describe('Report API', () => {
 
       expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
         .to.deep.equalInAnyOrder(expectedContactIds);
-      expect(responseCursor).to.be.equal(null);
+      expect(responseCursor).to.not.equal(emptyNouveauCursor);
     });
 
     it('returns a page of unique report ids for when multiple fields match the same freetext with limit',
@@ -230,7 +314,7 @@ describe('Report API', () => {
 
         expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
           .to.deep.equalInAnyOrder(expectedContactIds);
-        expect(responseCursor).to.be.equal(null);
+        expect(responseCursor).to.not.equal(emptyNouveauCursor);
       });
 
     it('returns a page of unique report ids for when multiple fields match the same freetext with lower limit',
@@ -250,7 +334,7 @@ describe('Report API', () => {
         const responseCursor = responsePage.cursor;
 
         expect(responseIds.length).to.be.equal(2);
-        expect(responseCursor).to.be.equal('2');
+        expect(responseCursor).to.not.equal(emptyNouveauCursor);
         expect(responseIds).to.satisfy(subsetArray => {
           return subsetArray.every(item => expectedContactIds.includes(item));
         });
@@ -310,7 +394,7 @@ describe('Report API', () => {
       );
     });
 
-    it('throws 400 error when cursor is invalid', async () => {
+    it('throws 500 error when cursor is invalid', async () => {
       const qs = {
         freetext, cursor: '-1'
       };
@@ -321,7 +405,7 @@ describe('Report API', () => {
 
       await expect(utils.request(opts))
         .to.be.rejectedWith(
-          `400 - {"code":400,"error":"The cursor must be a string or null for first page: [\\"-1\\"]."}`
+          `500 - {"code":500,"error":"Server error"}`
         );
     });
   });

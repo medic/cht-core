@@ -13,7 +13,7 @@ const config = require('./libs/config');
 const moment = require('moment');
 const bulkUploadLog = require('./bulk-upload-log');
 const passwords = require('./libs/passwords');
-const { Person, Place, Qualifier } = require('@medic/cht-datasource');
+const { Person, Place, Qualifier, Contact } = require('@medic/cht-datasource');
 const { people, places } = require('@medic/contacts')(config, db, dataContext);
 
 const USER_PREFIX = 'org.couchdb.user:';
@@ -150,8 +150,14 @@ const getUsersAndSettings = async ({ facilityId, contactId } = {}) => {
 };
 
 const validateContact = (id, placeID) => {
-  return db.medic.get(id)
+  const getContact = dataContext.bind(Contact.v1.get);
+  return getContact(Qualifier.byUuid(id))
     .then(doc => {
+      if (!doc) {
+        const error404 = new Error(`Contact not found [${id}].`);
+        error404.status = 404;
+        return Promise.reject(error404);
+      }
       if (!people.isAPerson(doc)) {
         return Promise.reject(error400('Wrong type, contact is not a person.', 'contact.type.wrong'));
       }
