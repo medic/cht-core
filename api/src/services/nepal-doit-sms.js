@@ -18,8 +18,9 @@ const getUrl = () => {
 
   const url = settings?.nepal_doit_sms?.url;
   if (!url) {
-    // invalid configuration
-    throw new Error('No URL configured. Refer to the Nepal DoIT SMS configuration documentation.');
+  // invalid configuration - return null so callers can handle retry behavior
+  logger.error('No URL configured. Refer to the Nepal DoIT SMS configuration documentation.');
+  return null;
   }
   return url;
 };
@@ -28,7 +29,9 @@ const getCredentials = () => {
   return secureSettings.getCredentials('nepal_doit_sms:outgoing')
     .then(apiKey => {
       if (!apiKey) {
-        return Promise.reject('No API key configured. Refer to the Nepal DoIT SMS configuration documentation.');
+  // no API key configured - return null so callers can handle retry behavior
+  logger.error('No API key configured. Refer to the Nepal DoIT SMS configuration documentation.');
+  return null;
       }
       return { apiKey };
     });
@@ -61,7 +64,7 @@ const generateStateChange = (message, res) => {
   };
 };
 
-const sendMessage = (credentials, message) => {
+const sendMessage = async (credentials, message) => {
   const url = getUrl();
   logger.debug(`Sending message to "${url}"`);
 
@@ -131,6 +134,10 @@ module.exports = {
   send: messages => {
     // get the credentials every call so changes can be made without restarting api
     return getCredentials().then(credentials => {
+      if (!credentials) {
+        // No credentials configured - nothing to send, preserve retry semantics
+        return [];
+      }
       const changes = [];
       let promise = Promise.resolve();
       

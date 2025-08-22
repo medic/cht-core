@@ -60,19 +60,16 @@ describe('nepal doit sms service', () => {
       });
     });
 
-    it('fails early with bad config - no API key', done => {
+    it('fails early with bad config - no API key', () => {
       sinon.stub(config, 'get').returns({
         nepal_doit_sms: { url: 'https://api.example.com/sms' }
       });
       sinon.stub(secureSettings, 'getCredentials').resolves(null);
       const given = [ { id: 'a', to: '+9779876543210', content: 'hello' } ];
-      service.send(given)
-        .then(() => done(new Error('expected error to be thrown')))
-        .catch(err => {
-          chai.expect(err)
-            .to.equal('No API key configured. Refer to the Nepal DoIT SMS configuration documentation.');
-          done();
-        });
+      return service.send(given).then(actual => {
+        // When API key is missing, getCredentials returns null and send() should return no changes
+        chai.expect(actual.length).to.equal(0);
+      });
     });
 
     it('forwards messages to API and strips country code for Nepal', () => {
