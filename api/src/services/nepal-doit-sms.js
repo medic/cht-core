@@ -19,7 +19,7 @@ const getUrl = () => {
   const url = settings?.nepal_doit_sms?.url;
   if (!url) {
     // invalid configuration
-    return Promise.reject('No URL configured. Refer to the Nepal DoIT SMS configuration documentation.');
+    throw new Error('No URL configured. Refer to the Nepal DoIT SMS configuration documentation.');
   }
   return url;
 };
