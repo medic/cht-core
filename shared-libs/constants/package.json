@@ -1,0 +1,7 @@
+{
+  "name": "@medic/constants",
+  "version": "1.0.0",
+  "description": "Shared constants for CHT Core",
+  "main": "src/index.js",
+  "license": "Apache-2.0"
+}
