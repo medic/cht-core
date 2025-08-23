@@ -7,6 +7,9 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc -p tsconfig.build.json"
+  },
+  "devDependencies": {
+    "@types/node": "20.4.2"
   }
 }
 
