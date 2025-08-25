@@ -65,15 +65,32 @@ const generateStateChange = (message, res) => {
   };
 };
 
+const validateSuccessResponse = (result) => {
+  if (!result) {
+    logger.error(`No response received: %o`, result);
+    return false;
+  }
+
+  logger.debug(`SMS API Response: %o`, result);
+
+  const validResponse = getStatus(result);
+  if (!validResponse) {
+    logger.error(`SMS API returned status ${result.status}: %o`, result);
+    return false;
+  }
+
+  return true;
+};
+
 const sendMessage = async (credentials, message) => {
   const url = getUrl();
   if (!url) {
     logger.error('No URL configured');
     return; // retry later
   }
-  
+
   logger.debug(`Sending message to "${url}"`);
-  
+
   // Strip the country code from recipient number
   const recipientNumber = message.to.replace(/^\+977/, '');
 
@@ -91,17 +108,7 @@ const sendMessage = async (credentials, message) => {
       }
     });
 
-    if (!result) {
-      logger.error(`No response received: %o`, result);
-      return; // retry later
-    }
-
-    logger.debug(`SMS API Response: %o`, result);
-
-    // Use the API's own status field for validation
-    const validResponse = getStatus(result);
-    if (!validResponse) {
-      logger.error(`SMS API returned status ${result.status}: %o`, result);
+    if (!validateSuccessResponse(result)) {
       return; // retry later
     }
 
