@@ -67,13 +67,18 @@ const generateStateChange = (message, res) => {
 
 const sendMessage = async (credentials, message) => {
   const url = getUrl();
+  if (!url) {
+    logger.error('No URL configured');
+    return; // retry later
+  }
+  
   logger.debug(`Sending message to "${url}"`);
-
+  
   // Strip the country code from recipient number
   const recipientNumber = message.to.replace(/^\+977/, '');
 
-  return request
-    .post({
+  try {
+    const result = await request.post({
       url: url,
       json: true,
       body: {
@@ -84,37 +89,37 @@ const sendMessage = async (credentials, message) => {
         authorization: `Bearer ${credentials.apiKey}`,
         accept: 'application/json'
       }
-    })
-    .then(result => {
-      if (!result) {
-        logger.error(`No response received: %o`, result);
-        return; // retry later
-      }
-
-      logger.debug(`SMS API Response: %o`, result);
-
-      // Use the API's own status field for validation
-      const validResponse = getStatus(result);
-      if (!validResponse) {
-        logger.error(`SMS API returned status ${result.status}: %o`, result);
-        return; // retry later - explicit return undefined
-      }
-
-      return generateStateChange(message, result);
-    })
-    .catch(err => {
-      // Handle HTTP errors (401, 422, 500, etc.)
-      logger.error(`SMS API error: ${err.message}`);
-
-      const errorStatus = getStatus(err);
-      if (errorStatus) {
-        // Known error status - generate appropriate state change
-        return generateStateChange(message, err);
-      }
-
-      // Unknown error - retry later
-      logger.error(`Unknown error sending SMS: %o`, err);
     });
+
+    if (!result) {
+      logger.error(`No response received: %o`, result);
+      return; // retry later
+    }
+
+    logger.debug(`SMS API Response: %o`, result);
+
+    // Use the API's own status field for validation
+    const validResponse = getStatus(result);
+    if (!validResponse) {
+      logger.error(`SMS API returned status ${result.status}: %o`, result);
+      return; // retry later
+    }
+
+    return generateStateChange(message, result);
+  } catch (err) {
+    // Handle HTTP errors (401, 422, 500, etc.)
+    logger.error(`SMS API error: ${err.message}`);
+
+    const errorStatus = getStatus(err);
+    if (errorStatus) {
+      // Known error status - generate appropriate state change
+      return generateStateChange(message, err);
+    }
+
+    // Unknown error - retry later
+    logger.error(`Unknown error sending SMS: %o`, err);
+    // implicit return undefined for retry
+  }
 };
 
 const processMessage = (credentials, message) => {
