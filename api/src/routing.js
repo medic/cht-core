@@ -233,6 +233,9 @@ app.use(
           `'self'`,
           `'unsafe-inline'` // angular-ui-bootstrap
         ],
+        frameSrc: [
+          // If the user wants to add an iframe as the content for a page, they'll need to add that URL here
+        ]
       },
       browserSniff: false,
     },

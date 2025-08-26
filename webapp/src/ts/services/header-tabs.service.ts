@@ -20,6 +20,7 @@ export class HeaderTabsService {
       typeName: 'message',
       icon: undefined,
       resourceIcon: undefined,
+      tabType: 'primary',
     },
     {
       name: 'tasks',
@@ -29,6 +30,7 @@ export class HeaderTabsService {
       permissions: ['can_view_tasks', 'can_view_tasks_tab'],
       icon: undefined,
       resourceIcon: undefined,
+      tabType: 'primary',
     },
     {
       name: 'reports',
@@ -39,6 +41,7 @@ export class HeaderTabsService {
       typeName: 'report',
       icon: undefined,
       resourceIcon: undefined,
+      tabType: 'primary',
     },
     {
       name: 'contacts',
@@ -48,6 +51,7 @@ export class HeaderTabsService {
       permissions: ['can_view_contacts', 'can_view_contacts_tab'],
       icon: undefined,
       resourceIcon: undefined,
+      tabType: 'primary',
     },
     {
       name: 'analytics',
@@ -57,8 +61,31 @@ export class HeaderTabsService {
       permissions: ['can_view_analytics', 'can_view_analytics_tab'],
       icon: undefined,
       resourceIcon: undefined,
+      tabType: 'primary',
     }
   ];
+
+  private getCustomPages(settings?): HeaderTab[] {
+    const pages : {
+      [key:string]: { permissions: Array<string>, tab_type: 'primary' | 'secondary' },
+    } = settings?.pages ?? {};
+    const customPages: Array<any> = [];
+    for (const [key, value] of Object.entries(pages)) {
+      const item: HeaderTab = {
+        name: key,
+        route: 'custom/' + key,
+        defaultIcon: 'fa-square',
+        translation: key,
+        permissions: value?.permissions ?? [],
+        typeName: key,
+        icon: undefined,
+        resourceIcon: undefined,
+        tabType: value?.tab_type ?? 'secondary'
+      };
+      customPages.push(item);
+    }
+    return customPages;
+  }
 
   /**
    * Returns the list of header tabs.
@@ -69,11 +96,13 @@ export class HeaderTabsService {
    * @returns HeaderTab[]
    */
   get(settings?): HeaderTab[] {
+    const tabs = [...this.tabs, ...this.getCustomPages(settings) ];
+
     if (!settings?.header_tabs) {
-      return this.tabs;
+      return tabs;
     }
 
-    this.tabs.forEach(tab => {
+    tabs.forEach(tab => {
       if (!settings.header_tabs[tab.name]) {
         return;
       }
@@ -87,7 +116,7 @@ export class HeaderTabsService {
       }
     });
 
-    return this.tabs;
+    return tabs;
   }
 
   /**
@@ -129,4 +158,5 @@ export interface HeaderTab {
   typeName?: string;
   icon?: string;
   resourceIcon?: string;
+  tabType: 'primary' | 'secondary';
 }

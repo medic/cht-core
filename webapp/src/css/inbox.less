@@ -1958,3 +1958,42 @@ mm-sidebar-menu .mat-sidenav-container {
     display: none;
   }
 }
+
+// Temporary.
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
+
+.grid-item {
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  text-decoration: none; /* removes underline */
+  color: inherit; /* keeps text color consistent */
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: block; /* ensure <a> fills grid cell */
+}
+
+.grid-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.thumbnail {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.description {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #333;
+}
