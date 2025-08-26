@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { DataContext } from '@medic/cht-datasource';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,12 @@ export class CHTDatasourceService {
     return { v1: {
       getExtensionLib: (libId: string) => this.extensionLibs[libId]
     } };
+  }
+
+  bind<R, F extends (arg?: unknown) => Promise<R>>(
+    _: (ctx: DataContext) => F
+  ): (...p: Parameters<F>) => ReturnType<F> {
+    return (..._) => Promise.resolve() as ReturnType<F>;
   }
 
   addExtensionLib(libId: string, libFn: string) {

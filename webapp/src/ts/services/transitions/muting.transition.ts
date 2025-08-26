@@ -1,30 +1,32 @@
 import { Injectable } from '@angular/core';
-
-import { DbService } from '@mm-services/db.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { Transition, Doc } from '@mm-services/transitions/transition';
+import { Doc, Transition } from '@mm-services/transitions/transition';
 import { ValidationService } from '@mm-services/validation.service';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MutingTransition extends Transition {
   constructor(
-    private dbService:DbService,
     private lineageModelGeneratorService:LineageModelGeneratorService,
     private contactMutedService:ContactMutedService,
     private contactTypesService:ContactTypesService,
     private validationService:ValidationService,
     private placeHierarchyService:PlaceHierarchyService,
+    chtDatasourceService: CHTDatasourceService,
   ) {
     super();
+    this.getContact = chtDatasourceService.bind(Contact.v1.get);
   }
 
   readonly name = 'muting';
 
+  private readonly getContact: ReturnType<typeof Contact.v1.get>;
   private transitionConfig;
   private inited;
   private readonly CONFIG_NAME = this.name;
@@ -233,14 +235,14 @@ export class MutingTransition extends Transition {
     });
   }
 
-  private getDoc(docId, context) {
+  private async getDoc(docId, context) {
     const knownDoc = this.getKnownDoc(docId, context);
     if (knownDoc) {
       // if we've already loaded a doc, assume the copy we already have is the latest and up to date
       return Promise.resolve(knownDoc);
     }
 
-    return this.dbService.get().get(docId);
+    return this.getContact(Qualifier.byUuid(docId));
   }
 
   /**
