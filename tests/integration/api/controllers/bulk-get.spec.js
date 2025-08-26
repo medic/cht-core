@@ -540,7 +540,7 @@ describe('bulk-get handler', () => {
         _id: 'allowed_report_about_existing_person',
         type: 'data_record',
         form: 'form',
-        fields: { patient_id: 'existing_person', needs_signoff: true },
+        fields: { patient_id: 'existing_person', needs_signoff: 'true' },
         contact: {
           _id: 'existing_person',
           parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
@@ -625,7 +625,7 @@ describe('bulk-get handler', () => {
         _id: 'allowed_report_about_existing_person',
         type: 'data_record',
         form: 'form',
-        fields: { patient_id: 'existing_person', needs_signoff: true },
+        fields: { patient_id: 'existing_person', needs_signoff: 'true' },
         contact: {
           _id: 'existing_person',
           parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
@@ -719,7 +719,7 @@ describe('bulk-get handler', () => {
       {
         _id: 'allowed_report_about_existing_person2',
         type: 'data_record',
-        fields: { patient_id: 'existing_person', needs_signoff: true },
+        fields: { patient_id: 'existing_person', needs_signoff: 'true' },
         form: 'form',
         contact: {
           _id: 'existing_person',
