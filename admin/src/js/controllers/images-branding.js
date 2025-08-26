@@ -25,8 +25,13 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
       return DB().get(DOC_ID, { attachments: true })
         .then(doc => {
           $scope.doc = doc;
-          $scope.favicon = doc._attachments[doc.resources.favicon];
-          $scope.icon = doc._attachments[doc.resources.icon];
+          if (!$scope.doc.resources) {
+            $scope.doc.resources = {};
+          }
+          if (doc._attachments && doc.resources) {
+            $scope.favicon = doc._attachments[doc.resources.favicon];
+            $scope.icon = doc._attachments[doc.resources.icon];
+          }
         })
         .catch(err => {
           $log.error('Error fetching resources file', err);
@@ -36,7 +41,7 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
         });
     };
 
-    getResourcesDoc();
+    this.$onInit = getResourcesDoc;
 
     const validateTitle = () => {
       if (!$scope.doc.title) {
@@ -98,17 +103,17 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
     $scope.submit = () => {
       $scope.error = null;
 
-      if (!$scope.doc) {
-        $log.error('Doc not found on scope when saving branding images');
+      if (!$scope.doc || !$scope.doc.resources) {
+        $log.error('Invalid or missing doc found on scope when saving branding images');
         $translate('Error saving settings').then(msg => $scope.error = msg);
-        return;
+        return Promise.resolve();
       }
 
       if (!validateTitle() ||
           !updateLogo() ||
           !updateFavicon() ||
           !updateIcon()) {
-        return;
+        return Promise.resolve();
       }
 
       removeObsoleteAttachments();
