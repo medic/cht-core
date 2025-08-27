@@ -2,12 +2,15 @@ import { Injectable } from '@angular/core';
 
 import { AuthService } from '@mm-services/auth.service';
 
+import { PluginManagerService } from '../plugins/core/plugin.manager.service';
+
 @Injectable({
   providedIn: 'root'
 })
 export class HeaderTabsService {
   constructor(
-    private authService: AuthService
+    private authService: AuthService,
+    private pluginManagerService: PluginManagerService
   ) { }
 
   private readonly tabs: HeaderTab[] = [
@@ -65,26 +68,18 @@ export class HeaderTabsService {
     }
   ];
 
-  private getCustomPages(settings?): HeaderTab[] {
-    const pages : {
-      [key:string]: { permissions: Array<string>, tab_type: 'primary' | 'secondary' },
-    } = settings?.pages ?? {};
-    const customPages: Array<any> = [];
-    for (const [key, value] of Object.entries(pages)) {
-      const item: HeaderTab = {
-        name: key,
-        route: 'custom/' + key,
-        defaultIcon: 'fa-square',
-        translation: key,
-        permissions: value?.permissions ?? [],
-        typeName: key,
-        icon: undefined,
-        resourceIcon: undefined,
-        tabType: value?.tab_type ?? 'secondary'
-      };
-      customPages.push(item);
-    }
-    return customPages;
+  private getPluginPages(): HeaderTab[] {
+    return this.pluginManagerService.getNavEntries().map((e) => ({
+      name: e.key,
+      route: e.route,
+      defaultIcon: 'fa-square',
+      translation: e.key,
+      permissions: e.permissions ?? [],
+      typeName: e.key,
+      icon: undefined,
+      resourceIcon: undefined,
+      tabType: e.tab_type ?? 'secondary'
+    } as HeaderTab));
   }
 
   /**
@@ -96,7 +91,7 @@ export class HeaderTabsService {
    * @returns HeaderTab[]
    */
   get(settings?): HeaderTab[] {
-    const tabs = [...this.tabs, ...this.getCustomPages(settings) ];
+    const tabs = [...this.tabs, ...this.getPluginPages() ];
 
     if (!settings?.header_tabs) {
       return tabs;

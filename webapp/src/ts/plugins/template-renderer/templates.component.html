@@ -1,0 +1,32 @@
+<!-- 
+  TODO: Make the screen filter work here.
+  Pass the filter data back to any template that might need it.
+-->
+
+<div class="inner">
+  <div class="inbox page">
+    <div *ngIf="isValidTemplate; else elseBlock" style="width: 100%; height: 100%;">
+        <ng-container *ngTemplateOutlet="currentTemplate"></ng-container>
+    </div>
+    <ng-template #elseBlock><span style="display: block; width: 100%; height: 100%; text-align: center; align-content: center;">Invalid template key</span></ng-template>
+  </div>
+</div>
+
+<!-- A couple of pre-defined templates for the user to choose from -->
+<!-- If none of these fit their needs, the dynamic template is available -->
+
+<ng-template #iframe>
+  <iframe-content [config]="config"></iframe-content>
+</ng-template>
+
+<ng-template #grid>
+  <grid-content [config]="config"></grid-content>
+</ng-template>
+
+<ng-template #table>
+  <table-content [config]="config"></table-content>
+</ng-template>
+
+<ng-template #dynamic>
+  <dynamic-content [config]="config"></dynamic-content>
+</ng-template>

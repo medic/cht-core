@@ -46,7 +46,9 @@
                 </td>
                 <ng-template #cellTemplate let-processed="processed" let-pipeType="pipeType">
                     <ng-container [ngSwitch]="pipeType">
-                        <span *ngSwitchCase="'date'">{{ processed | simpleDateTime }}</span>
+                         <ng-container *ngFor="let pipeClass of pipes">
+                            <span *ngSwitchCase="'date'" [innerHTML]="processed | dynamicPipe: pipeClass: ['simpleDateTime']"></span>
+                         </ng-container>
                         <span *ngSwitchCase="'decimal2'">{{ (typeof processed === 'number' && !isNaN(processed)) ? processed.toFixed(2) : processed }}</span>
                         <span *ngSwitchDefault>{{ processed }}</span>
                     </ng-container>

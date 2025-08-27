@@ -55,6 +55,8 @@ import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-polic
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
 
+import { PluginManagerService } from './plugins/core/plugin.manager.service';
+
 const SYNC_STATUS = {
   inProgress: {
     icon: 'fa-refresh',
@@ -156,6 +158,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private browserDetectorService: BrowserDetectorService,
     private userSettingsService: UserSettingsService,
     private formService: FormService,
+    private pluginManagerService: PluginManagerService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
@@ -332,6 +335,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.requestPersistentStorage();
     this.startWealthQuintiles();
     this.initAnalyticsModules();
+    this.startPluginManager();
   }
 
   private async initUser() {
@@ -729,5 +733,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     } catch (error) {
       console.error('Error while initializing analytics modules', error);
     }
+  }
+
+  private async startPluginManager() {
+    await this.pluginManagerService.init();
+    this.pluginManagerService.loadAll();
   }
 }

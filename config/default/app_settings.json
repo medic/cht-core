@@ -289,6 +289,12 @@
     "can_export_devices_details": [
       "national_admin"
     ],
+    "can_view_plugins": [
+      "national_admin"
+    ],
+    "can_view_template-renderer": [
+      "national_admin"
+    ],
     "can_view_my_page_1": [
       "national_admin"
     ],

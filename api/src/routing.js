@@ -234,6 +234,8 @@ app.use(
           `'unsafe-inline'` // angular-ui-bootstrap
         ],
         frameSrc: [
+          `'self'`,
+          'http://localhost:5988'
           // If the user wants to add an iframe as the content for a page, they'll need to add that URL here
         ]
       },

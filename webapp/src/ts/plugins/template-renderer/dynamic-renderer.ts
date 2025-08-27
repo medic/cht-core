@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 import { DomSanitizer } from '@angular/platform-browser';
 
 @Injectable({ providedIn: 'root' })
-export class DynamicTemplateRenderer {
+export class DynamicRenderer {
   constructor(
     private injector: EnvironmentInjector,
     private sanitizer: DomSanitizer
