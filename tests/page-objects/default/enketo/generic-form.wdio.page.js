@@ -33,14 +33,18 @@ const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
   }
 };
 
-const selectContact = async (contactName, label, searchTerm = '') => {
+const searchContact = async (label, searchTerm) => {
   const searchField = await $('.select2-search__field');
   if (!await searchField.isDisplayed()) {
     await select2Selection(label).click();
   }
 
-  await searchField.setValue(searchTerm || contactName);
+  await searchField.setValue(searchTerm);
   await $('.select2-results__option.loading-results').waitForDisplayed({ reverse: true });
+};
+
+const selectContact = async (contactName, label, searchTerm = '') => {
+  await searchContact(label, searchTerm || contactName);
   const contact = await $(`.name*=${contactName}`);
   await contact.waitForDisplayed();
   await contact.click();
@@ -81,10 +85,7 @@ const getFormTitle = async () => {
   return await formTitle().getText();
 };
 
-const getDBObjectWidgetValues = async (field) => {
-  const widget = $(`[data-contains-ref-target="${field}"] .selection`);
-  await widget.click();
-
+const getDBObjectWidgetValues = async () => {
   const dropdown = $('.select2-dropdown--below');
   await dropdown.waitForDisplayed();
   const firstElement = $('.select2-results__options > li');
@@ -93,8 +94,12 @@ const getDBObjectWidgetValues = async (field) => {
   const list = await $$('.select2-results__options > li');
   const contacts = [];
   for (const item of list) {
+    const itemName = item.$('.name');
+    if (!(await itemName.isExisting())) {
+      continue;
+    }
     contacts.push({
-      name: await (item.$('.name').getText()),
+      name: await itemName.getText(),
       click: () => item.click(),
     });
   }
@@ -143,6 +148,7 @@ module.exports = {
   nextPage,
   nameField,
   fieldByName,
+  searchContact,
   selectContact,
   clearSelectedContact,
   cancelForm,

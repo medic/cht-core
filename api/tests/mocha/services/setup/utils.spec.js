@@ -3,6 +3,7 @@ const { expect } = require('chai');
 const rewire = require('rewire');
 const fs = require('fs');
 const request = require('@medic/couch-request');
+const logger = require('@medic/logger');
 
 const db = require('../../../../src/db');
 const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
@@ -23,6 +24,7 @@ const mockDb = (db) => {
   sinon.stub(db, 'compact');
   sinon.stub(db, 'viewCleanup');
 };
+
 
 'use strict';
 
@@ -155,13 +157,17 @@ describe('Setup utils', () => {
   });
 
   describe('cleanup', () => {
-    it('should start db compact and view cleanup for every database', () => {
+    beforeEach(() => {
+      sinon.stub(db, 'nouveauCleanup').returns(new Promise(() => {}));
+      sinon.stub(logger, 'error');
       mockDb(db.medic);
       mockDb(db.sentinel);
       mockDb(db.medicLogs);
       mockDb(db.medicUsersMeta);
       mockDb(db.users);
+    });
 
+    it('should start db compact and view cleanup for every database', () => {
       utils.cleanup();
 
       expect(db.medic.compact.callCount).to.equal(1);
@@ -175,19 +181,52 @@ describe('Setup utils', () => {
       expect(db.medicLogs.viewCleanup.callCount).to.equal(1);
       expect(db.medicUsersMeta.viewCleanup.callCount).to.equal(1);
       expect(db.users.viewCleanup.callCount).to.equal(1);
+
+      expect(db.nouveauCleanup.callCount).to.equal(1);
     });
 
-    it('should catch errors', async () => {
-      mockDb(db.medic);
-      mockDb(db.sentinel);
-      mockDb(db.medicLogs);
-      mockDb(db.medicUsersMeta);
-      mockDb(db.users);
+    it('should catch compact errors and log them', async () => {
+      const error = { some: 'error' };
+      db.sentinel.compact.rejects(error);
 
-      db.sentinel.compact.rejects({ some: 'error' });
       utils.cleanup();
 
       await Promise.resolve();
+      await Promise.resolve();
+
+      expect(db.medic.compact.callCount).to.equal(1);
+      // this should return an error, but the other compacts
+      // and viewCleanups whould be called.
+      expect(db.sentinel.compact.callCount).to.equal(1);
+      expect(db.medicLogs.compact.callCount).to.equal(1);
+      expect(db.medicUsersMeta.compact.callCount).to.equal(1);
+      expect(db.users.compact.callCount).to.equal(1);
+
+      expect(db.medic.viewCleanup.callCount).to.equal(1);
+      expect(db.nouveauCleanup.callCount).to.equal(1);
+      expect(db.sentinel.viewCleanup.callCount).to.equal(1);
+      expect(db.medicLogs.viewCleanup.callCount).to.equal(1);
+      expect(db.medicUsersMeta.viewCleanup.callCount).to.equal(1);
+      expect(db.users.viewCleanup.callCount).to.equal(1);
+
+      expect(logger.error.callCount).to.be.at.least(1);
+      expect(logger.error.args[0][0]).to.include('Error while running cleanup');
+      expect(logger.error.args[0][1]).to.deep.equal(error);
+    });
+
+    it('should catch nouveau cleanup errors and log them', async () => {
+      const error = { some: 'error' };
+      db.nouveauCleanup.rejects(error);
+
+      utils.cleanup();
+
+      await Promise.resolve();
+
+      expect(db.nouveauCleanup.callCount).to.equal(1);
+
+      expect(logger.error.callCount).to.be.at.least(1);
+      expect(logger.error.args[0][0]).to.include('Error while running cleanup');
+      expect(logger.error.args[0][1]).to.deep.equal(error);
     });
   });
 
@@ -1046,6 +1085,41 @@ describe('Setup utils', () => {
       const payload = { docker_compose: { a: 'a' }, containers: [{ container_name: 'aa' }, { container_name: 'bb' }] };
       const response = { aa: { ok: true }, bb: { ok: false } };
       expect(utils.__get__('upgradeResponseSuccess')(payload, response)).to.equal(true);
+    });
+  });
+
+  describe('isDockerUpgradeServiceRunning', () => {
+    it('should return true when docker upgrade service is running', async () => {
+      sinon.stub(request, 'get').resolves({ ok: true });
+
+      expect(await utils.isDockerUpgradeServiceRunning()).to.equal(true);
+      expect(request.get.callCount).to.equal(1);
+      expect(request.get.args[0]).to.deep.equal([{ url: 'http://localhost:5008' }]);
+    });
+
+    it('should return false when another upgrade service is running', async () => {
+      sinon.stub(request, 'get').resolves({ message: 'ok' });
+
+      expect(await utils.isDockerUpgradeServiceRunning()).to.equal(false);
+      expect(request.get.callCount).to.equal(1);
+      expect(request.get.args[0]).to.deep.equal([{ url: 'http://localhost:5008' }]);
+    });
+
+    it('should return false when connection to service does not work', async () => {
+      sinon.stub(request, 'get').rejects(new Error('boom'));
+
+      expect(await utils.isDockerUpgradeServiceRunning()).to.equal(false);
+    });
+
+    it('should use URL from environment', async () => {
+      process.env.UPGRADE_SERVICE_URL = 'http://someurl';
+      utils = rewire('../../../../src/services/setup/utils');
+
+      sinon.stub(request, 'get').resolves({ ok: true });
+
+      expect(await utils.isDockerUpgradeServiceRunning()).to.equal(true);
+      expect(request.get.callCount).to.equal(1);
+      expect(request.get.args[0]).to.deep.equal([{ url: 'http://someurl' }]);
     });
   });
 });

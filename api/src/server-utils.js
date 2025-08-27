@@ -7,7 +7,6 @@ const MEDIC_BASIC_AUTH = 'Basic realm="Medic Web Services"';
 const REQUEST_ID_HEADER = 'X-Request-Id';
 const cookie = require('./services/cookie');
 const {InvalidArgumentError} = require('@medic/cht-datasource');
-const config = require('./config');
 
 const wantsJSON = req => req.accepts(['text', 'json']) === 'json';
 
@@ -52,13 +51,6 @@ const promptForBasicAuth = res => {
 module.exports = {
   MEDIC_BASIC_AUTH: MEDIC_BASIC_AUTH,
   REQUEST_ID_HEADER: REQUEST_ID_HEADER,
-  /**
-   * Returns the URL used to access the app. The configured `app_url` value is preferred because a non-standard
-   * host port (not 443) will not be reflected in the `req` object when deployed in Docker behind a reverse proxy.
-   *
-   * We should remove this function once https://github.com/medic/cht-core/issues/9983 is addressed.
-   */
-  getAppUrl: req => (config.get('app_url') || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, ''),
 
   /*
    * Attempts to determine the correct response given the error code.
