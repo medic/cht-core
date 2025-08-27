@@ -11,6 +11,7 @@ import { context, PluginContext } from './plugin';
 @Component({
   selector: 'grid-content',
   templateUrl: './grid.component.html',
+  styleUrls: ['./grid.css'],
   imports: [
     NgIf, 
     NgForOf,
