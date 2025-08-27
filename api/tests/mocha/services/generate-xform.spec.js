@@ -310,7 +310,6 @@ describe('generate-xform service', () => {
         },
         _rev: '1-rev'
       });
-      // sinon.stub(db.medic, 'getAttachment').resolves(Buffer.from(formXml));
       sinon.stub(db.medic, 'getAttachment').callsFake(fakeGetAttachment);
       sinon.stub(service, 'generate').resolves({ form: currentForm, model: currentModel });
       sinon.stub(db.medic, 'put');
@@ -375,7 +374,6 @@ describe('generate-xform service', () => {
       expect(db.medic.getAttachment.callCount).to.equal(3);
       expect(service.generate.callCount).to.equal(0);
       expect(db.medic.put.callCount).to.equal(0);
-      // expectAttachments(db.medic.put.args[0][0], newForm, newModel);
     });
 
     it('updates only form.html and model.xml; preserves audio/image/videos attachments unchanged', async () => {
