@@ -1,4 +1,4 @@
-import { hasField, isRecord, Nullable } from '../../libs/core';
+import { convertToUnixTimestamp, hasField, isRecord, Nullable } from '../../libs/core';
 import { Doc } from '../../libs/doc';
 import { InvalidArgumentError } from '../../libs/error';
 
@@ -81,6 +81,9 @@ export const ensureHasRequiredFields = (
   updateInput: Record<string, unknown>,
 ): void => {
   const missingFieldsList = [];
+  if (updateInput.reported_date){
+    updateInput.reported_date = convertToUnixTimestamp(updateInput.reported_date as string | number);
+  }
   // ensure required immutable fields have the same value as the original doc.
   for (const field of [ ...immutableFields, ...mutableFields ]) {
     if (!hasField(
