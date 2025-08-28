@@ -1,0 +1,74 @@
+[35madmin/src/js/services/session.js[m[36m:[m[32m2[m[36m:[mconst ONLINE_ROLE = '[1;31mmm-online[m';
+[35mshared-libs/constants/src/index.js[m[36m:[m[32m8[m[36m:[m  MM_ONLINE: '[1;31mmm-online[m',
+[35mshared-libs/purging-utils/src/index.js[m[36m:[m[32m3[m[36m:[mconst ONLINE_ROLE = '[1;31mmm-online[m';
+[35mshared-libs/purging-utils/test/index.js[m[36m:[m[32m51[m[36m:[m      chai.expect(utils.isOffline(config, ['[1;31mmm-online[m', 'roleA'])).to.equal(false);
+[35mshared-libs/purging-utils/test/index.js[m[36m:[m[32m52[m[36m:[m      chai.expect(utils.isOffline(config, ['[1;31mmm-online[m', 'roleB'])).to.equal(false);
+[35mshared-libs/user-management/src/roles.js[m[36m:[m[32m8[m[36m:[mconst ONLINE_ROLE = '[1;31mmm-online[m';
+[35mshared-libs/user-management/test/unit/roles.spec.js[m[36m:[m[32m41[m[36m:[m        ['[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/roles.spec.js[m[36m:[m[32m42[m[36m:[m        ['[1;31mmm-online[m', 'other'],
+[35mshared-libs/user-management/test/unit/roles.spec.js[m[36m:[m[32m43[m[36m:[m        ['not-[1;31mmm-online[m', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/roles.spec.js[m[36m:[m[32m64[m[36m:[m    it('should check for "[1;31mmm-online[m" role', () => {
+[35mshared-libs/user-management/test/unit/roles.spec.js[m[36m:[m[32m65[m[36m:[m      chai.expect(roles.isOnlineOnly({ roles: ['[1;31mmm-online[m'] })).to.equal(true);
+[35mshared-libs/user-management/test/unit/roles.spec.js[m[36m:[m[32m66[m[36m:[m      chai.expect(roles.isOnlineOnly({ roles: ['[1;31mmm-online[m', 'offline'] })).to.equal(true);
+[35mshared-libs/user-management/test/unit/roles.spec.js[m[36m:[m[32m90[m[36m:[m    it('should return true when at least one role is offline and no [1;31mmm-online[m role', () => {
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m1712[m[36m:[m          roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m1720[m[36m:[m          roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m1742[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m1749[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m1759[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m1770[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m1798[m[36m:[m            roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m2895[m[36m:[m        chai.expect(db.medic.put.args[0][0].roles).to.deep.equal(['rebel', '[1;31mmm-online[m']);
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m2897[m[36m:[m        chai.expect(db.users.put.args[0][0].roles).to.deep.equal(['rebel', '[1;31mmm-online[m']);
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3018[m[36m:[m        roles: ['rambler', '[1;31mmm-online[m']
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3069[m[36m:[m        chai.expect(settings.roles).to.deep.equal(['rambler', '[1;31mmm-online[m']);
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3074[m[36m:[m        chai.expect(user.roles).to.deep.equal(['rambler', '[1;31mmm-online[m']);
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3536[m[36m:[m          roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3544[m[36m:[m          roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3565[m[36m:[m          roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3572[m[36m:[m          roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3582[m[36m:[m          roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3593[m[36m:[m          roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3621[m[36m:[m              roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3646[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3651[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3673[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3679[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3704[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3712[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3718[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3724[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3748[m[36m:[m          roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3755[m[36m:[m          roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3768[m[36m:[m          roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3775[m[36m:[m          roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3801[m[36m:[m          roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3821[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3827[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3850[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3855[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3880[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mshared-libs/user-management/test/unit/users.spec.js[m[36m:[m[32m3903[m[36m:[m        roles: ['a', 'b', '[1;31mmm-online[m'],
+[35mtests/e2e/default/transitions/create-user-for-contacts.replace-user.wdio-spec.js[m[36m:[m[32m44[m[36m:[m    roles: ['program_officer', '[1;31mmm-online[m'],
+[35mtests/integration/api/controllers/contact.spec.js[m[36m:[m[32m101[m[36m:[m    roles: ['[1;31mmm-online[m']
+[35mtests/integration/api/controllers/person.spec.js[m[36m:[m[32m36[m[36m:[m    roles: ['[1;31mmm-online[m']
+[35mtests/integration/api/controllers/place.spec.js[m[36m:[m[32m61[m[36m:[m    roles: ['[1;31mmm-online[m']
+[35mtests/integration/api/controllers/report.spec.js[m[36m:[m[32m107[m[36m:[m    }, roles: [ '[1;31mmm-online[m' ]
+[35mtests/integration/api/controllers/users.spec.js[m[36m:[m[32m475[m[36m:[m    it('auth should check for [1;31mmm-online[m role when requesting other user docs', () => {
+[35mtests/integration/api/controllers/users.spec.js[m[36m:[m[32m494[m[36m:[m    it('auth should check for [1;31mmm-online[m role when requesting with missing params', () => {
+[35mtests/integration/api/controllers/users.spec.js[m[36m:[m[32m547[m[36m:[m        role: JSON.stringify(['national_admin', '[1;31mmm-online[m']),
+[35mtests/integration/api/controllers/users.spec.js[m[36m:[m[32m561[m[36m:[m        role: JSON.stringify(['random', 'national_admin', '[1;31mmm-online[m']),
+[35mtests/integration/api/controllers/users.spec.js[m[36m:[m[32m1013[m[36m:[m            roles: ['district_admin', '[1;31mmm-online[m2']
+[35mtests/integration/api/controllers/users.spec.js[m[36m:[m[32m1120[m[36m:[m            roles: ['district_admin', '[1;31mmm-online[m2']
+[35mtests/integration/api/controllers/users.spec.js[m[36m:[m[32m1726[m[36m:[m        roles: ['district_admin', '[1;31mmm-online[m']
+[35mtests/integration/api/controllers/users.spec.js[m[36m:[m[32m1774[m[36m:[m        roles: ['district_admin', '[1;31mmm-online[m'],
+[35mtests/integration/api/controllers/users.spec.js[m[36m:[m[32m1934[m[36m:[m        roles: [...onlineUserPayload.roles, '[1;31mmm-online[m'],
+[35mtests/integration/api/controllers/users.spec.js[m[36m:[m[32m1940[m[36m:[m        roles: [...onlineUserPayload.roles, '[1;31mmm-online[m'],
+[35mtests/integration/api/controllers/users.spec.js[m[36m:[m[32m2003[m[36m:[m        roles: [...onlineUserPayload.roles, '[1;31mmm-online[m'],
+[35mtests/integration/shared-libs/cht-datasource/contact.spec.js[m[36m:[m[32m79[m[36m:[m    }, roles: [ '[1;31mmm-online[m' ]
+[35mtests/integration/shared-libs/cht-datasource/person.spec.js[m[36m:[m[32m39[m[36m:[m    roles: ['[1;31mmm-online[m']
+[35mtests/integration/shared-libs/cht-datasource/place.spec.js[m[36m:[m[32m64[m[36m:[m    roles: ['[1;31mmm-online[m']
+[35mtests/integration/shared-libs/cht-datasource/report.spec.js[m[36m:[m[32m109[m[36m:[m    }, roles: [ '[1;31mmm-online[m' ]
+[35mtests/scalability/generate-real-world-data/generate-real-world-data.js[m[36m:[m[32m123[m[36m:[m    roles = ['national_admin', '[1;31mmm-online[m'];
+[35mwebapp/src/js/bootstrapper/index.js[m[36m:[m[32m12[m[36m:[m  const ONLINE_ROLE = '[1;31mmm-online[m';
+[35mwebapp/src/ts/services/session.service.ts[m[36m:[m[32m2[m[36m:[mconst ONLINE_ROLE = '[1;31mmm-online[m';

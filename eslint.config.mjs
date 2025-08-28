@@ -1,23 +1,27 @@
-const { FlatCompat } = require('@eslint/eslintrc');
-const js = require('@eslint/js');
-const { fixupPluginRules } = require('@eslint/compat');
-const promisePlugin = require('eslint-plugin-promise');
-const nodePlugin = require('eslint-plugin-n');
-const { defineConfig, globalIgnores } = require('eslint/config');
-const angularPlugin = require('eslint-plugin-angular');
-const globalsPlugin = require('globals');
-const compatPlugin = require('eslint-plugin-compat');
-const espree = require('espree');
-const noOnlyTests = require('eslint-plugin-no-only-tests');
-const jasminePlugin = require('eslint-plugin-jasmine');
-const asyncPlugin = require('eslint-plugin-async');
-const typescriptEslint = require('@typescript-eslint/eslint-plugin');
-const jsdocPlugin = require('eslint-plugin-jsdoc');
-const tsParser = require('@typescript-eslint/parser');
-const angularEslintEslintPlugin = require('@angular-eslint/eslint-plugin');
-const angularEslintEslintPluginTemplate = require('@angular-eslint/eslint-plugin-template');
-const templateParser = require('@angular-eslint/template-parser');
-const stylisticPlugin = require('@stylistic/eslint-plugin');
+import { FlatCompat } from '@eslint/eslintrc';
+import js from '@eslint/js';
+import { fixupPluginRules } from '@eslint/compat';
+import promisePlugin from 'eslint-plugin-promise';
+import nodePlugin from 'eslint-plugin-n';
+import { defineConfig, globalIgnores } from 'eslint/config';
+import angularPlugin from 'eslint-plugin-angular';
+import globalsPlugin from 'globals';
+import compatPlugin from 'eslint-plugin-compat';
+import * as espree from 'espree';
+import noOnlyTests from 'eslint-plugin-no-only-tests';
+import jasminePlugin from 'eslint-plugin-jasmine';
+import asyncPlugin from 'eslint-plugin-async';
+import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import jsdocPlugin from 'eslint-plugin-jsdoc';
+import tsParser from '@typescript-eslint/parser';
+import angularEslintEslintPlugin from '@angular-eslint/eslint-plugin';
+import angularEslintEslintPluginTemplate from '@angular-eslint/eslint-plugin-template';
+import templateParser from '@angular-eslint/template-parser';
+import stylisticPlugin from '@stylistic/eslint-plugin';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
@@ -35,7 +39,7 @@ const JS_DOC_REQUIRED_CONTEXTS = [
   'TSMethodSignature'
 ];
 
-module.exports = defineConfig([
+export default defineConfig([
   globalIgnores([
     '**/node_modules/**/*',
     'allure-report/**/*',
@@ -160,7 +164,6 @@ module.exports = defineConfig([
       promise: promisePlugin,
       async: asyncPlugin,
     },
-
     languageOptions: {
       globals: {
         ...globalsPlugin.node,
@@ -202,7 +205,6 @@ module.exports = defineConfig([
       compat: compatPlugin,
       angular: fixupPluginRules(angularPlugin),
     },
-
     languageOptions: {
       globals: {
         ...globalsPlugin.browser,
@@ -211,7 +213,6 @@ module.exports = defineConfig([
         angular: true,
       },
     },
-
     rules: {
       'compat/compat': 'error',
       'angular/window-service': 'error',
@@ -249,7 +250,6 @@ module.exports = defineConfig([
     plugins: {
       jasmine: jasminePlugin,
     },
-
     languageOptions: {
       globals: {
         ...globalsPlugin.jasmine,
@@ -267,30 +267,26 @@ module.exports = defineConfig([
       ecmaVersion: 2020,
       sourceType: 'commonjs',
     },
-
     rules: {
       'no-only-tests/no-only-tests': 'error',
       'jasmine/no-focused-tests': 'error',
     },
   },
   {
-    files: [ 'api/**/*', 'sentinel/**/*'], // add node recommended
+    files: [ 'api/**/*', 'sentinel/**/*'],
     extends: compat.extends('plugin:n/recommended-module'),
     plugins: {
       compat: compatPlugin,
       n: nodePlugin,
     },
-
     languageOptions: {
       globals: {
         ...globalsPlugin.node,
         emit: true,
       },
-
       ecmaVersion: 2020,
       sourceType: 'commonjs',
     },
-
     rules: {
       'n/no-process-exit': 'off',
       'n/no-extraneous-require': 'off',
@@ -315,9 +311,8 @@ module.exports = defineConfig([
   },
   {
     files: ['ddocs/**/*.js'],
-
     languageOptions: {
-      ecmaVersion: 5,
+      ecmaVersion: 6,
       sourceType: 'script',
       parser: {
         meta: {
@@ -333,7 +328,6 @@ module.exports = defineConfig([
         index: true,
       }
     },
-
     rules: {
       semi: 'off',
       '@stylistic/semi': 'off',
@@ -366,7 +360,6 @@ module.exports = defineConfig([
       jasmine: jasminePlugin,
       async: asyncPlugin,
     },
-
     languageOptions: {
       globals: {
         ...globalsPlugin.node,
@@ -381,7 +374,6 @@ module.exports = defineConfig([
       },
       sourceType: 'script',
     },
-
     rules: {
       'no-only-tests/no-only-tests': 'error',
       'jasmine/no-focused-tests': 'error',
@@ -403,7 +395,6 @@ module.exports = defineConfig([
         ...globalsPlugin.browser,
         ...globalsPlugin.jquery,
       },
-
       ecmaVersion: 2018,
       sourceType: 'commonjs',
     },
@@ -419,22 +410,18 @@ module.exports = defineConfig([
   },
   {
     files: ['webapp/**/*.ts', 'webapp/**/*.tsx'],
-
     plugins: {
       '@typescript-eslint': typescriptEslint,
       '@angular-eslint': angularEslintEslintPlugin,
     },
-
     languageOptions: {
       parser: tsParser,
       ecmaVersion: 5,
       sourceType: 'script',
-
       parserOptions: {
         createDefaultProgram: true,
       },
     },
-
     rules: {
       '@angular-eslint/component-class-suffix': 'error',
       '@angular-eslint/contextual-lifecycle': 'error',
@@ -450,25 +437,21 @@ module.exports = defineConfig([
       'no-console': 'off',
       'no-restricted-syntax': 'off',
       'no-unused-vars': 'off',
-
       '@typescript-eslint/no-unused-vars': ['error', {
         argsIgnorePattern: '^_',
         caughtErrorsIgnorePattern: '^_',
         destructuredArrayIgnorePattern: '^_',
         varsIgnorePattern: '^_',
       }],
-
       '@typescript-eslint/ban-ts-comment': 'error',
       'quote-props': ['error', 'as-needed'],
     },
   },
   {
     files: ['webapp/**/*.spec.ts'],
-
     plugins: {
       '@typescript-eslint': typescriptEslint,
     },
-
     languageOptions: {
       parser: tsParser,
       globals: {
@@ -477,7 +460,6 @@ module.exports = defineConfig([
         ...globalsPlugin.jquery,
       },
     },
-
     rules: {
       '@typescript-eslint/ban-ts-comment': 'off',
     },
@@ -485,15 +467,12 @@ module.exports = defineConfig([
   {
     files: ['webapp/**/*.component.html'],
     extends: compat.extends('plugin:@angular-eslint/template/recommended'),
-
     plugins: {
       '@angular-eslint/template': angularEslintEslintPluginTemplate,
     },
-
     languageOptions: {
       parser: templateParser,
     },
-
     rules: {
       indent: 'off',
       'max-len': 'off',
@@ -531,6 +510,7 @@ module.exports = defineConfig([
       sourceType: 'module',
     }
   },
+  // ======= JSDOC & TYPESCRIPT-ESLINT CHT-DATASOURCE BLOCKS =======
   {
     files: ['shared-libs/cht-datasource/**/*.ts'],
     extends: compat.extends(
@@ -541,7 +521,6 @@ module.exports = defineConfig([
     ),
     languageOptions: {
       parser: tsParser,
-
       parserOptions: {
         project: 'tsconfig.json',
         tsconfigRootDir: 'shared-libs/cht-datasource/'
@@ -549,33 +528,25 @@ module.exports = defineConfig([
     },
     plugins: {
       '@typescript-eslint': typescriptEslint,
-      jsdoc: jsdocPlugin,
-      compat: compatPlugin,
     },
     settings: {
       jsdoc: {
         contexts: [],
       },
-
       polyfills: ['Report'],
     },
-
     rules: {
       ['@typescript-eslint/explicit-module-boundary-types']: ['error', {
         allowedNames: ['getDatasource'],
       }],
-
       ['@typescript-eslint/no-confusing-void-expression']: ['error', {
         ignoreArrowShorthand: true,
       }],
-
       ['@typescript-eslint/no-empty-interface']: ['error', {
         allowSingleExtends: true,
       }],
-
       ['@typescript-eslint/no-namespace']: 'off',
       ['@typescript-eslint/no-non-null-assertion']: 'off',
-
       '@typescript-eslint/no-redundant-type-constituents': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
@@ -585,8 +556,6 @@ module.exports = defineConfig([
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/restrict-plus-operands': 'off',
-
-
       ['jsdoc/require-jsdoc']: ['error', {
         require: {
           ArrowFunctionExpression: true,
@@ -596,26 +565,21 @@ module.exports = defineConfig([
           FunctionExpression: true,
           MethodDefinition: true,
         },
-
         contexts: JS_DOC_REQUIRED_CONTEXTS,
         publicOnly: true,
       }],
-
       ['jsdoc/require-param']: ['error', {
         contexts: JS_DOC_REQUIRED_CONTEXTS,
         exemptedBy: ['inheritdoc', 'private', 'internal'],
       }],
-
       ['jsdoc/require-returns']: ['error', {
         contexts: JS_DOC_REQUIRED_CONTEXTS,
         exemptedBy: ['inheritdoc', 'private', 'internal'],
       }],
-
       ['jsdoc/require-yields']: ['error', {
         contexts: JS_DOC_REQUIRED_CONTEXTS,
         exemptedBy: ['inheritdoc', 'private', 'internal'],
       }],
-
       ['jsdoc/check-tag-names']: ['error', {
         definedTags: ['typeParam'],
       }],
@@ -623,6 +587,7 @@ module.exports = defineConfig([
   },
   {
     files: ['shared-libs/cht-datasource/**/*.spec.ts'],
+    // DO NOT re-add jsdoc plugin here!
     plugins: {
       '@typescript-eslint': typescriptEslint,
     },

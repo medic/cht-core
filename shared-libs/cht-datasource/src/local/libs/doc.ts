@@ -5,6 +5,9 @@ import { QueryParams } from './core';
 import { getAuthenticatedFetch, getRequestBody } from './request-utils';
 import { DEFAULT_IDS_PAGE_LIMIT } from '../../libs/constants';
 
+function hasDoc<T>(row: any): row is { doc: T } {
+  return typeof row === 'object' && row !== null && 'doc' in row && !!row.doc;
+}
 /** @internal */
 export const getDocById = (db: PouchDB.Database<Doc>) => async (uuid: string): Promise<Nullable<Doc>> => db
   .get(uuid)
@@ -26,8 +29,11 @@ export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (uuids: string[
   }
   const response = await db.allDocs({ keys, include_docs: true });
   return response.rows
-    .map(({ doc }) => doc)
-    .filter((doc): doc is Doc => isDoc(doc));
+    .filter(
+      (row): row is { doc: Doc } & { id: string; key: string; value: { rev: string; deleted?: boolean } } =>
+        'doc' in row && !!row.doc && isDoc(row.doc)
+    )
+    .map(row => row.doc);
 };
 
 const queryDocs = (

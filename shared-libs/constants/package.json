@@ -2,6 +2,11 @@
   "name": "@medic/constants",
   "version": "1.0.0",
   "description": "Shared constants for CHT Core",
-  "main": "src/index.js",
-  "license": "Apache-2.0"
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  }
 }
+
