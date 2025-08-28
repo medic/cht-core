@@ -33,6 +33,7 @@ export class DbService {
     getAttachment: this.outOfZonePromise.bind(this),
     removeAttachment: this.outOfZonePromise.bind(this),
     query: this.outOfZonePromise.bind(this),
+    find: this.outOfZonePromise.bind(this),
     viewCleanup: this.outOfZonePromise.bind(this),
     info: this.outOfZonePromise.bind(this),
     compact: this.outOfZonePromise.bind(this),
@@ -116,10 +117,16 @@ export class DbService {
     return username.replace(DISALLOWED_CHARS, match => `(${match.charCodeAt(0)})`);
   }
 
-  private getDbName(remote, meta, usersMeta) {
+  private getDbName(remote, meta, usersMeta, custom) {
     const parts: string[] = [];
     if (remote) {
-      parts.push(this.locationService.url);
+      if (custom){
+        const instanceURL = this.locationService.url; // This path also contains the suffix 'medic'
+        parts.push(instanceURL.substring(0, instanceURL.lastIndexOf('/')) + '/' + custom);
+      } else {
+        parts.push(this.locationService.url);
+      }
+      // parts.push(this.locationService.url);
     } else {
       parts.push(this.locationService.dbName);
     }
@@ -157,8 +164,9 @@ export class DbService {
     return db;
   }
 
-  get({ remote=this.isOnlineOnly, meta=false, usersMeta=false }={}) {
-    const name = this.getDbName(remote, meta, usersMeta);
+  custom: undefined|string;
+  get({ remote=this.isOnlineOnly, meta=false, usersMeta=false, custom=this.custom }={}) {
+    const name = this.getDbName(remote, meta, usersMeta, custom);
     if (!this.cache[name]) {
       const db = window.PouchDB(name, this.getParams(remote, meta, usersMeta));
       this.cache[name] = this.wrapMethods(db);
