@@ -38,17 +38,42 @@ const getViewsToIndex = async () => {
   for (const database of DATABASES) {
     const stagedDdocs = await ddocsService.getStagedDdocs(database);
     stagedDdocs.forEach(ddoc => {
-      if (!ddoc.views || !_.isObject(ddoc.views)) {
-        return;
+      if (ddoc.views && _.isObject(ddoc.views)) {
+        const ddocViewIndexPromises = Object
+          .keys(ddoc.views)
+          .map(viewName => indexView.bind({}, database.name, ddoc._id, viewName));
+        viewsToIndex.push(...ddocViewIndexPromises);
       }
 
-      const ddocViewIndexPromises = Object
-        .keys(ddoc.views)
-        .map(viewName => indexView.bind({}, database.name, ddoc._id, viewName));
-      viewsToIndex.push(...ddocViewIndexPromises);
+      if (ddoc.nouveau && _.isObject(ddoc.nouveau)) {
+        const ddocNouveauIndexPromises = Object
+          .keys(ddoc.nouveau)
+          .map(indexName => indexNouveauIndex.bind({}, database.name, ddoc._id, indexName));
+        viewsToIndex.push(...ddocNouveauIndexPromises);
+      }
     });
   }
   return viewsToIndex;
+};
+
+/**
+ * Attempts to make a request, retrying on socket timeout errors
+ * @param {Object} requestArgs - Arguments for the request
+ * @return {Promise} - Resolves with the request result or undefined if stopped
+ */
+const waitForRequest = async (requestArgs) => {
+  const handleError = (requestError) => {
+    if (continueIndexing && !SOCKET_TIMEOUT_ERROR_CODE.includes(requestError?.error?.code)) {
+      throw requestError;
+    }
+  };
+  do {
+    try {
+      return await request.get(requestArgs);
+    } catch (requestError) {
+      handleError(requestError);
+    }
+  } while (continueIndexing);
 };
 
 /**
@@ -60,23 +85,27 @@ const getViewsToIndex = async () => {
  * @return {Promise}
  */
 const indexView = async (dbName, ddocId, viewName) => {
-  do {
-    try {
-      return await request.get({
-        uri: `${environment.serverUrl}/${dbName}/${ddocId}/_view/${viewName}`,
-        json: true,
-        qs: { limit: 1 },
-      });
-    } catch (requestError) {
-      if (!continueIndexing) {
-        return;
-      }
+  return await waitForRequest({
+    uri: `${environment.serverUrl}/${dbName}/${ddocId}/_view/${viewName}`,
+    json: true,
+    qs: { limit: 1 },
+  });
+};
 
-      if (!requestError || !requestError.error || !SOCKET_TIMEOUT_ERROR_CODE.includes(requestError.error.code)) {
-        throw requestError;
-      }
-    }
-  } while (continueIndexing);
+/**
+ * Returns a promise that resolves when a nouveau index is indexed.
+ * Retries querying the index until no error is thrown
+ * @param {String} dbName
+ * @param {String} ddocId
+ * @param {String} indexName
+ * @return {Promise}
+ */
+const indexNouveauIndex = async (dbName, ddocId, indexName) => {
+  return await waitForRequest({
+    uri: `${environment.serverUrl}/${dbName}/${ddocId}/_nouveau/${indexName}`,
+    json: true,
+    qs: { q: '*:*', limit: 1 },
+  });
 };
 
 const stopIndexing = () => {

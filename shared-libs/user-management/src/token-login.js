@@ -49,11 +49,10 @@ const generateToken = () => {
  * - if the user already had token-login enabled, the previous sms document's tasks are cleared
  * - updates the user document to contain information about the active `token-login` context for the user
  * - updates the user-settings document to contain some information to be displayed in the admin page
- * @param {String} appUrl - the base URL of the application
  * @param {Object} response - the response of previous actions
  * @returns {Promise<{Object}>} - updated response to be sent to the client
  */
-const enableTokenLogin = (appUrl, response) => {
+const enableTokenLogin = (response) => {
   return Promise
     .all([
       db.users.get(response.user.id),
@@ -61,7 +60,7 @@ const enableTokenLogin = (appUrl, response) => {
       generateToken()
     ])
     .then(([ user, userSettings, token ]) => {
-      return generateTokenLoginDoc(user, userSettings, token, appUrl)
+      return generateTokenLoginDoc(user, userSettings, token)
         .then(() => {
           user.token_login = {
             active: true,
@@ -118,11 +117,10 @@ const disableTokenLogin = (response) => {
  * Enables or disables token-login for a user
  * When enabling, if `token-login` configuration is missing or invalid, no changes are made.
  * @param {Object} data - the request body
- * @param {String} appUrl - the base URL of the application
  * @param {Object} response - the response of previous actions
  * @returns {Promise<{Object}>} - updated response to be sent to the client
  */
-const manageTokenLogin = (data, appUrl, response) => {
+const manageTokenLogin = (data, response) => {
   if (shouldDisableTokenLogin(data)) {
     return disableTokenLogin(response);
   }
@@ -131,7 +129,7 @@ const manageTokenLogin = (data, appUrl, response) => {
     return Promise.resolve(response);
   }
 
-  return enableTokenLogin(appUrl, response);
+  return enableTokenLogin(response);
 };
 
 const getTokenLoginDocId = token => `token:login:${token}`;
@@ -184,8 +182,12 @@ const clearOldTokenLoginDoc = ({ token_login: { token }={} }={}) => {
  * @param {String} appUrl - the base URL of the application
  * @returns {Promise<Object>} - returns the result of saving the new token_login_sms document
  */
-const generateTokenLoginDoc = (user, userSettings, token, appUrl) => {
+const generateTokenLoginDoc = (user, userSettings, token) => {
   return clearOldTokenLoginDoc(user).then(() => {
+    const appUrl = config.get('app_url');
+    if (!appUrl){
+      throw new Error('app_url configuration is required for token login');
+    }
     const doc = {
       _id: getTokenLoginDocId(token),
       type: 'token_login',
@@ -194,7 +196,8 @@ const generateTokenLoginDoc = (user, userSettings, token, appUrl) => {
       tasks: [],
     };
 
-    const url = `${appUrl.replace(/\/+$/, '')}/medic/login/token/${token}`;
+    const baseUrl = appUrl.replace(/\/+$/, '');
+    const url = `${baseUrl}/medic/login/token/${token}`;
 
     const messagesLib = config.getTransitionsLib().messages;
     const tokenLoginConfig = config.get('token_login');

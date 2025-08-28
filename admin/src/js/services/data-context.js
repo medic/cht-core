@@ -1,13 +1,15 @@
 const cht = require('@medic/cht-datasource');
-const dataContext = cht.getRemoteDataContext();
 
-angular.module('inboxServices').service('DataContext', function(
+angular.module('inboxServices').factory('DataContext', function(
+  Location
 ) {
   'use strict';
   'ngInject';
 
-  return {
-    bind: (fn) => dataContext.bind(fn),
-    getDataSource: () => cht.getDatasource(dataContext)
-  };
+  const dataContext = cht.getRemoteDataContext(Location.rootUrl);
+  return Object.assign( // NoSONAR
+    {},
+    dataContext,
+    { getDatasource: () => cht.getDatasource(dataContext) }
+  );
 });

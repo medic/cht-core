@@ -1,6 +1,6 @@
 {
   "name": "medic",
-  "version": "4.21.0",
+  "version": "5.0.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "repository": {
@@ -100,7 +100,7 @@
     "@types/pouchdb": "^6.4.0",
     "@types/sinon": "^17.0.3",
     "@typescript-eslint/eslint-plugin": "^8.24.1",
-    "@typescript-eslint/parser": "^8.24.0",
+    "@typescript-eslint/parser": "^8.40.0",
     "@typescript-eslint/utils": "^8.38.0",
     "@wdio/allure-reporter": "^9.19.1",
     "@wdio/appium-service": "^9.19.1",

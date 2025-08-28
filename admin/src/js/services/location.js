@@ -10,12 +10,14 @@ angular.module('inboxServices').factory('Location',
     const path = '/';
     const adminPath = '/admin/';
     const port = location.port ? ':' + location.port : '';
-    const url = location.protocol + '//' + location.hostname + port + '/' + dbName;
+    const rootUrl = location.protocol + '//' + location.hostname + port;
+    const url = rootUrl + '/' + dbName;
 
     return {
       path: path,
       adminPath: adminPath,
       dbName: dbName,
-      url: url
+      rootUrl: rootUrl,
+      url: url,
     };
   });
