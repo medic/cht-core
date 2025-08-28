@@ -12,7 +12,6 @@ import noOnlyTests from 'eslint-plugin-no-only-tests';
 import jasminePlugin from 'eslint-plugin-jasmine';
 import asyncPlugin from 'eslint-plugin-async';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import jsdocPlugin from 'eslint-plugin-jsdoc';
 import tsParser from '@typescript-eslint/parser';
 import angularEslintEslintPlugin from '@angular-eslint/eslint-plugin';
 import angularEslintEslintPluginTemplate from '@angular-eslint/eslint-plugin-template';
