@@ -36,8 +36,6 @@ module.exports = {
         startkey: FORM_DOC_ID_PREFIX,
         endkey: `${FORM_DOC_ID_PREFIX}\ufff0`,
         include_docs: true,
-        attachments: true,
-        binary: true,
       })
       .then(response => {
         return response.rows
