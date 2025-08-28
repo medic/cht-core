@@ -1,4 +1,4 @@
-import { convertToUnixTimestamp, hasField, isRecord, Nullable } from '../../libs/core';
+import { convertToUnixTimestamp, hasField, Nullable } from '../../libs/core';
 import { Doc } from '../../libs/doc';
 import { InvalidArgumentError } from '../../libs/error';
 
@@ -36,19 +36,6 @@ export const addParentToInput = <T extends HasParentOrContact>(
   return {
     ...input,
     [key]: value,
-  };
-};
-
-/** @internal*/
-export const dehydrateDoc = (lineage: Record<string, unknown>): Record<string, unknown> => {
-  if (isRecord(lineage.parent)) {
-    return {
-      _id: lineage._id,
-      parent: dehydrateDoc(lineage.parent)
-    };
-  }
-  return {
-    _id: lineage._id
   };
 };
 
