@@ -7,9 +7,12 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc -p tsconfig.build.json"
+<<<<<<< HEAD
   },
   "devDependencies": {
     "@types/node": "20.4.2"
+=======
+>>>>>>> 8e43549db (Fix build and update shared constants library)
   }
 }
 
