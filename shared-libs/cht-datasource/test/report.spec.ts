@@ -14,13 +14,15 @@ describe('report', () => {
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
   let isFreetextQualifier: SinonStub;
-  let isPlaceInput: SinonStub;
+  let isRecord: SinonStub;
+  let validateReportInput: SinonStub;
   beforeEach(() => {
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isFreetextQualifier = sinon.stub(Qualifier, 'isFreetextQualifier');
-    isPlaceInput = sinon.stub(Input, 'isPlaceInput');
+    isRecord = sinon.stub(Core, 'isRecord');
+    validateReportInput = sinon.stub(Input, 'validateReportInput');
   });
 
   afterEach(() => sinon.restore());
@@ -324,14 +326,16 @@ describe('report', () => {
       });
     });
 
-    describe('createReport', () => {
+    describe('create', () => {
       it('throws error for invalid input', async () => {
         const input = {
           name: 'person-1',
           type: 'data_record',
           form: 'yes',
         };
-        isPlaceInput.returns(false);
+        validateReportInput.throws(
+          `Missing or empty required field (contact) in [${JSON.stringify(input)}].`
+        );
         await expect(Report.v1.create(dataContext)(input))
           .to.be.rejectedWith(`Missing or empty required field (contact) in [${JSON.stringify(input)}].`);
       });
@@ -345,12 +349,36 @@ describe('report', () => {
           contact: 'c1',
           form: 'form'
         };
-        isPlaceInput.returns(true);
+        validateReportInput.returns(input);
         createReportDoc.resolves(input);
         const result = await Report.v1.create(dataContext)(input);
         expect(result).to.deep.equal(input);
       });
 
+    });
+    describe('update', () => {
+      it('throws error for invalid input', async () => {
+        const input = 'my-string-report';
+        isRecord.returns(false);
+        await expect(Report.v1.update(dataContext)(input))
+          .to.be.rejectedWith(`Invalid report update input`);
+      });
+
+      it('returns updated report doc for valid input', async() => {
+        const updateReportDoc = sinon.stub();
+        adapt.returns(updateReportDoc);
+        const input = {
+          '_id': 'b8208fa332bf1f09b606e6efd8002a4a',
+          '_rev': '1-9ffca0e670bcc111de86f68ae8f47d3b',
+          'form': 'pregnancy_danger_sign',
+          'type': 'data_record',
+          'reported_date': '2025-08-24T11:37:06.815Z'
+        };
+        isRecord.returns(true);
+        updateReportDoc.resolves(input);
+        const result = await Report.v1.update(dataContext)(input);
+        expect(result).to.deep.equal(input);
+      });
     });
   });
 });
