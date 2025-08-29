@@ -1,0 +1,47 @@
+name: Publish cht-deploy to npm
+
+on:
+  push:
+    branches:
+      - master
+      - 9362-publish-cht-deploy-to-npm-on-version-change # temp changes
+    paths:
+      - 'scripts/deploy/**'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./scripts/deploy/
+
+      - name: Check if version exists
+        id: version-check
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" version 2>/dev/null; then
+            echo "Version $PACKAGE_VERSION already exists"
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Version $PACKAGE_VERSION is new"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        working-directory: ./scripts/deploy/
+
+      - name: Publish to npm
+        if: steps.version-check.outputs.exists == 'false'
+        run: npm publish --dry-run
+        working-directory: ./scripts/deploy/
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
