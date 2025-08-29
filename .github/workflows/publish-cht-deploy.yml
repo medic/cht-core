@@ -1,5 +1,8 @@
 name: Publish cht-deploy to npm
 
+env:
+  PACKAGE_PATH: ./scripts/deploy
+
 on:
   push:
     branches:
@@ -23,13 +26,13 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        working-directory: ./scripts/deploy/
+        working-directory: ${{ env.PACKAGE_PATH }}
 
       - name: Check if version exists
         id: version-check
         run: |
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          PACKAGE_VERSION=$(jq -r '.version' package.json)
+          PACKAGE_NAME=$(jq -r '.name' package.json)
           if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" version 2>/dev/null; then
             echo "Version $PACKAGE_VERSION already exists"
             echo "exists=true" >> $GITHUB_OUTPUT
@@ -37,11 +40,11 @@ jobs:
             echo "Version $PACKAGE_VERSION is new"
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
-        working-directory: ./scripts/deploy/
+        working-directory: ${{ env.PACKAGE_PATH }}
 
       - name: Publish to npm
         if: steps.version-check.outputs.exists == 'false'
         run: npm publish --dry-run
-        working-directory: ./scripts/deploy/
+        working-directory: ${{ env.PACKAGE_PATH }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
