@@ -7,9 +7,10 @@ on:
   push:
     branches:
       - master
-      - 9362-publish-cht-deploy-to-npm-on-version-change # temp changes
     paths:
       - 'scripts/deploy/**'
+      - '!scripts/deploy/tests/**'
+      - '!scripts/deploy/README.md'
 
 jobs:
   publish:
@@ -44,7 +45,7 @@ jobs:
 
       - name: Publish to npm
         if: steps.version-check.outputs.exists == 'false'
-        run: npm publish --dry-run
+        run: npm publish
         working-directory: ${{ env.PACKAGE_PATH }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
