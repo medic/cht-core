@@ -13,6 +13,8 @@ import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { REPORT_ATTACHMENT_NAME } from '@mm-services/get-report-content.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { Qualifier, Report } from '@medic/cht-datasource';
 
 /**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
@@ -32,10 +34,14 @@ export class EnketoService {
     private extractLineageService: ExtractLineageService,
     private translateFromService: TranslateFromService,
     private translateService: TranslateService,
+    chtDatasourceService: CHTDatasourceService,
     private ngZone: NgZone,
-  ) { }
+  ) {
+    this.getReport = chtDatasourceService.bind(Report.v1.get);
+  }
 
   private readonly objUrls: string[] = [];
+  private readonly getReport: ReturnType<typeof Report.v1.get>;
   private currentForm;
 
   getCurrentForm() {
@@ -507,17 +513,15 @@ export class EnketoService {
     return docsToStore;
   }
 
-  private update(docId) {
+  private async update(docId) {
     // update an existing doc.  For convenience, get the latest version
     // and then modify the content.  This will avoid most concurrent
     // edits, but is not ideal.
-    return this.dbService.get().get(docId).then((doc) => {
-      // previously XML was stored in the content property
-      // TODO delete this and other "legacy" code support commited against
-      //      the same git commit at some point in the future?
-      delete doc.content;
-      return doc;
-    });
+    const doc = await this.getReport(Qualifier.byUuid(docId));
+    // previously XML was stored in the content property
+    // TODO delete this and other "legacy" code support commited against
+    //      the same git commit at some point in the future?
+    return { ...doc, content: undefined };
   }
 
   private create(formInternalId, contact) {

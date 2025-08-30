@@ -18,8 +18,9 @@ import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { DuplicateContactsComponent } from '@mm-components/duplicate-contacts/duplicate-contacts.component';
 import { DuplicateCheck } from '@mm-services/deduplicate.service';
-import { Contact } from '@medic/cht-datasource';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @Component({
   templateUrl: './contacts-edit.component.html',
@@ -36,15 +37,18 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly dbService: DbService,
     private readonly performanceService: PerformanceService,
     private readonly telemetryService: TelemetryService,
+    readonly chtDatasourceService: CHTDatasourceService,
     private readonly translateService: TranslateService,
   ) {
     this.globalActions = new GlobalActions(store);
+    this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
   }
 
   subscription = new Subscription();
   translationsLoadedSubscription;
   private globalActions;
   private xmlVersion;
+  private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   enketoStatus;
   enketoSaving;
@@ -259,22 +263,32 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private async validateParentForCreateForm() {
     if (!this.contact.parent) {
-      const topLevelTypes = await this.contactTypesService.getChildren();
-      if (!topLevelTypes.some(({ id }) => id === this.contact.contact_type)) {
-        throw new Error(`Cannot create a ${this.contact.contact_type} at the top level. It requires a parent.`);
-      }
+      await this.ensureValidTopLevelType();
       return;
     }
 
-    const parent = await this.dbService
-      .get()
-      .get(this.contact.parent);
+    const parent = await this.getContactFromDatasource(Qualifier.byUuid(this.contact.parent));
 
+    if (!parent){
+      throw new Error(`Parent contact with UUID ${this.contact.parent} not found.`);
+    }
+  
     const parentType = this.contactTypesService.getTypeId(parent);
     if (!parentType) {
       throw new Error(`Parent type is undefined for parent UUID ${this.contact.parent}.`);
     }
 
+    await this.ensureValidChildType(parentType);
+  }
+
+  private async ensureValidTopLevelType() {
+    const topLevelTypes = await this.contactTypesService.getChildren();
+    if (!topLevelTypes.some(({ id }) => id === this.contact.contact_type)) {
+      throw new Error(`Cannot create a ${this.contact.contact_type} at the top level. It requires a parent.`);
+    }
+  }
+
+  private async ensureValidChildType(parentType: string) {
     const validChildTypes = await this.contactTypesService.getChildren(parentType);
     if (!validChildTypes.some(({ id }) => id === this.contact.contact_type)) {
       throw new Error(`Cannot create a ${this.contact.contact_type} as a child of a ${parentType}.`);

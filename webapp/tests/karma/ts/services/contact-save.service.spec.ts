@@ -2,19 +2,21 @@ import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { assert } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
-
-import { DbService } from '@mm-services/db.service';
+import { HttpClient } from '@angular/common/http';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 
 describe('ContactSave service', () => {
 
   let service;
-  let get;
   let enketoTranslationService;
   let extractLineageService;
   let clock;
+  let chtDatasourceService;
+  let getContact;
 
   beforeEach(() => {
     enketoTranslationService = {
@@ -22,14 +24,15 @@ describe('ContactSave service', () => {
     };
 
     extractLineageService = { extract: sinon.stub() };
-    get = sinon.stub();
-
+    getContact = sinon.stub();
+    chtDatasourceService = { bind: sinon.stub().withArgs(Contact.v1.get).returns(getContact) };
     TestBed.configureTestingModule({
       providers: [
         provideMockStore(),
-        { provide: DbService, useValue: { get: () => ({ get }) } },
         { provide: EnketoTranslationService, useValue: enketoTranslationService },
         { provide: ExtractLineageService, useValue: extractLineageService },
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: HttpClient, useValue: {} },
       ]
     });
 
@@ -49,14 +52,13 @@ describe('ContactSave service', () => {
     enketoTranslationService.contactRecordToJs.returns({
       doc: { _id: 'main1', type: 'main', contact: 'abc' }
     });
-    get.resolves({ _id: 'abc', name: 'gareth', parent: { _id: 'def' } });
+    getContact.resolves({ _id: 'abc', name: 'gareth', parent: { _id: 'def' } });
     extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
 
     return service
       .save(form, docId, type)
       .then(({ preparedDocs: savedDocs }) => {
-        assert.equal(get.callCount, 1);
-        assert.equal(get.args[0][0], 'abc');
+        assert.isTrue(getContact.calledOnceWithExactly(Qualifier.byUuid('abc')));
 
         assert.equal(savedDocs.length, 1);
         assert.deepEqual(savedDocs[0].contact, {
@@ -76,14 +78,13 @@ describe('ContactSave service', () => {
     enketoTranslationService.contactRecordToJs.returns({
       doc: { _id: 'main1', type: 'main', contact: { _id: 'abc', name: 'Richard' } }
     });
-    get.resolves({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } });
+    getContact.resolves({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } });
     extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
 
     return service
       .save(form, docId, type)
       .then(({ preparedDocs: savedDocs }) => {
-        assert.equal(get.callCount, 1);
-        assert.equal(get.args[0][0], 'abc');
+        assert.isTrue(getContact.calledOnceWithExactly(Qualifier.byUuid('abc')));
 
         assert.equal(savedDocs.length, 1);
         assert.deepEqual(savedDocs[0].contact, {
@@ -182,8 +183,8 @@ describe('ContactSave service', () => {
         value: undefined,
       }
     });
-    get
-      .withArgs('main1')
+    getContact
+      .withArgs(Qualifier.byUuid('main1'))
       .resolves({
         _id: 'main1',
         name: 'Richard',
@@ -192,7 +193,7 @@ describe('ContactSave service', () => {
         some: 'additional',
         data: 'is present',
       })
-      .withArgs('contact')
+      .withArgs(Qualifier.byUuid('contact'))
       .resolves({ _id: 'contact', name: 'Richard', parent: { _id: 'def' } });
 
     extractLineageService.extract
@@ -205,9 +206,9 @@ describe('ContactSave service', () => {
     return service
       .save(form, docId, type)
       .then(({ preparedDocs: savedDocs }) => {
-        assert.equal(get.callCount, 2);
-        assert.deepEqual(get.args[0], ['main1']);
-        assert.deepEqual(get.args[1], ['contact']);
+        assert.equal(getContact.callCount, 2);
+        assert.deepEqual(getContact.args[0], [Qualifier.byUuid('main1')]);
+        assert.deepEqual(getContact.args[1], [Qualifier.byUuid('contact')]);
 
         assert.equal(savedDocs.length, 1);
         assert.deepEqual(savedDocs[0], {
