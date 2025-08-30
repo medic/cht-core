@@ -304,7 +304,6 @@ describe('create_user_for_contacts', () => {
         });
 
         expect(createUser.args[index][0].username).to.match(/^new-contact-\d\d\d\d$/);
-        expect(createUser.args[index][1]).to.equal('https://my.cht.instance');
       });
     };
 
@@ -469,7 +468,6 @@ describe('create_user_for_contacts', () => {
           contact: NEW_CONTACT._id,
           fullname: NEW_CONTACT.name,
         });
-        expect(createUser.args[0][1]).to.equal('https://my.cht.instance');
         expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
       });
     });

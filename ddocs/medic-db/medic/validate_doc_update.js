@@ -19,6 +19,7 @@ function(newDoc, oldDoc, userCtx, secObj) {
     'partners',
     'privacy-policies',
     'extension-libs',
+    'migration-log'
   ];
 
   var _err = function(msg) {
