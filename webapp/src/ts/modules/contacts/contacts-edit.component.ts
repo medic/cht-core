@@ -48,7 +48,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   translationsLoadedSubscription;
   private globalActions;
   private xmlVersion;
-  private getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
+  private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   enketoStatus;
   enketoSaving;

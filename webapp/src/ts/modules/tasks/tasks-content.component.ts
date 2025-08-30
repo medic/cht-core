@@ -47,7 +47,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   subscription = new Subscription();
   private globalActions;
   private tasksActions;
-  private getContact: ReturnType<typeof Contact.v1.get>;
+  private readonly getContact: ReturnType<typeof Contact.v1.get>;
 
   enketoStatus;
   private enketoEdited;
