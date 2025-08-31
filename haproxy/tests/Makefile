@@ -23,14 +23,3 @@ test_with_couch_single:
 	docker compose -f $(COMPOSE_SINGLE) up --build --wait
 	npm run test:integration || { docker compose -f $(COMPOSE_SINGLE) logs && docker compose -f $(COMPOSE_SINGLE) down && exit 1; }
 	docker compose -f $(COMPOSE_SINGLE) down
-
-.PHONY: clean
-clean:
-	docker compose -f $(COMPOSE_SINGLE) down --rmi local || :
-	docker compose -f $(COMPOSE_CLUSTER) down --rmi local || :
-
-# Cleanup handler
-.PHONY: emergency-cleanup
-emergency-cleanup:
-	-docker compose -f $(COMPOSE_SINGLE) down
-	-docker compose -f $(COMPOSE_CLUSTER) down
