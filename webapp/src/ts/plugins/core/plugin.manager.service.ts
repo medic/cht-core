@@ -9,12 +9,17 @@ import { SettingsService } from '@mm-services/settings.service';
 import { SessionService } from '@mm-services/session.service';
 import { DbService } from '@mm-services/db.service';
 
+import * as moment from 'moment';
+
 import { PluginContract, PluginContext } from './plugin.contract';
+import { PluginFallbackComponent } from './plugin-fallback.component';
 import pipeArr from './plugin.pipes';
+
+import { plugins as manifest } from '../auto-gen-manifest';
 
 @Injectable({ providedIn: 'root' })
 export class PluginManagerService {
-  private readonly DEFAULT_PLUGIN_MANIFEST_FILE_PATH = 'plugins/auto-gen-manifest.json';
+  private readonly APP_VERSION = '4.21.0'; // TODO: get from service
   private readonly VISUAL_PLUGIN_BASE_ROUTE_PATH = 'plugin';
   private readonly BASE_PLUGIN_PERMISSION = 'can_view_plugins';
   private plugins = new Map<string, PluginContract>();
@@ -61,34 +66,26 @@ export class PluginManagerService {
     }
   }
 
-  async loadAll(manifestUrl = this.DEFAULT_PLUGIN_MANIFEST_FILE_PATH): Promise<void> {
+  async loadAll(): Promise<void> {
     if (!this.initialized){
       throw Error('[Plugin man] The plugin manager has to be initialized first');
     }
 
-    // TODO: figure out how to load plugin as lib
-    // const entries: Array<{ id: string; url: string }> =
-    // await this.http.get<any>(manifestUrl).toPromise();
-
-    // TODO: remove the hardcoded plugin details - see plugins/auto-gen-manifest.json
-    console.log('[Plugin man] Manifest url: ', manifestUrl);
-    const entries = [{ id: 'template-renderer', url: './plugins/template-renderer/plugin' }];
-
-    for (const entry of entries) {
-      await this.tryLoad(entry.id, entry.url);
+    for (const [id, func] of Object.entries(manifest)) {
+      await this.tryLoad(id, func as any);
     }
 
     // After all routes are collected, apply them once
     this.applyRoutes();
   }
 
-  private async tryLoad(id: string, url: string) {
+  private async tryLoad(id: string, func: () => Promise<any>) {
     try {
-      // TODO: load plugins from passed in plugin info
       // Each plugin bundle must default-export an object that implements PluginContract
-      // const mod = await import(url);
-      const mod = await import('../template-renderer/plugin'); // TODO: remove
-      const plugin: PluginContract = mod.default;
+      const mod = await func();
+      console.log('[Plugin man] mod: ', mod.plugin);
+      const plugin: PluginContract = mod.plugin.default;
+      console.log('[Plugin man] default: ', plugin);
 
       if (!plugin?.manifest?.id || plugin.manifest.id !== id) {
         throw new Error(`[Plugin man] Plugin ${id} has invalid manifest`);
@@ -114,7 +111,8 @@ export class PluginManagerService {
         },
         // We could provide an adapter over the service, limiting what a plugin has access to
         db: this.database,
-        pipes: pipeArr
+        pipes: pipeArr,
+        moment
       };
 
       await plugin.init?.(ctx);
@@ -123,7 +121,8 @@ export class PluginManagerService {
 
       await plugin.afterInit?.(ctx);
     } catch (err) {
-      console.error(`[Plugin man] Failed to load plugin ${id} from ${url}`, err);
+      // console.error(`[Plugin man] Failed to load plugin ${id} from ${url}`, err);
+      console.error(`[Plugin man] Failed to load plugin ${id}`, err);
       // Do not crash the app. Optionally emit telemetry.
     }
   }
@@ -139,8 +138,27 @@ export class PluginManagerService {
         childRoutes.push({
           path: r.path,
           loadComponent: r.getComponent
-            ? async () => (await r.getComponent!()) as any
+            ? async () => {
+              try {
+                if (
+                  plugin.manifest.compatibility?.minCHT &&
+                  this.APP_VERSION < plugin.manifest.compatibility.minCHT
+                ) {
+                  throw Error(`⚠️ Plugin ${pluginID} requires CHT >= ${plugin.manifest.compatibility.minCHT}`);
+                }
+                return (await r.getComponent!()) as any;
+              } catch (e){
+                console.error(`Failed to load plugin ${pluginID}`, e);
+                return PluginFallbackComponent;
+              }
+            }
             : undefined,
+          data: { 
+            id: pluginID,
+            version: plugin.manifest.version,
+            compatibility: plugin.manifest.compatibility,
+            chtVersion: this.APP_VERSION
+          },
           canActivate: r.canActivate,
         });
 

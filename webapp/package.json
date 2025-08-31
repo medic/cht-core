@@ -13,12 +13,14 @@
     "os": false
   },
   "scripts": {
+    "preinstall": "ng build template-renderer",
     "postinstall": "patch-package && ng cache clean",
     "unit:mocha": "UNIT_TEST_ENV=1 mocha 'tests/mocha/**/*.spec.js'",
     "unit:mocha:tz": "TZ=Canada/Pacific npm run unit:mocha && TZ=Africa/Monrovia npm run unit:mocha && TZ=Pacific/Auckland npm run unit:mocha",
     "unit:cht-form": "ng test cht-form",
     "unit": "UNIT_TEST_ENV=1 ng test webapp",
-    "build": "ng build",
+    "prebuild": "node scripts/plugin-manifest.generator.js",
+    "build": "npm run prebuild && ng build",
     "build-watch": "npm run build -- --configuration=development --watch=true",
     "build:cht-form": "ng build cht-form",
     "compile": "ngc"
@@ -62,7 +64,8 @@
     "select2": "4.0.13",
     "signature_pad": "2.3.x",
     "tslib": "^2.8.1",
-    "zone.js": "^0.15.0"
+    "zone.js": "^0.15.0",
+    "@plugins/template-renderer": "file:plugins/template-renderer/dist"
   },
   "overrides": {
     "minimist": ">=1.2.6"
@@ -75,6 +78,8 @@
     "@angular-devkit/build-angular": "^19.1.8",
     "@angular/cli": "^19.1.8",
     "@angular/compiler-cli": "^19.1.7",
-    "@angular/localize": "^19.1.7"
+    "@angular/localize": "^19.1.7",
+    "ng-packagr": "^19.1.0",
+    "typescript": "~5.7.2"
   }
 }

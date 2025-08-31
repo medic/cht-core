@@ -11,8 +11,6 @@ import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatExpansionModule } from '@angular/material/expansion';
 
-import * as moment from 'moment';
-
 import { DynamicRenderer } from './dynamic-renderer';
 
 import { ProcessValuePipe } from './processvalue.pipe';
@@ -38,6 +36,7 @@ import { context, PluginContext } from './plugin';
 export class TableContentComponent implements OnInit, AfterViewInit {
   @Input() config!: TableConfig;
   public pipes: any[];
+  private moment: any;
   private readonly dbService;
 
   hasCustomHeader: boolean = false;
@@ -67,6 +66,7 @@ export class TableContentComponent implements OnInit, AfterViewInit {
   ) {
     const ctx = context as PluginContext;
     this.pipes = ctx.pipes;
+    this.moment = ctx.moment;
     console.log('We can access the surfaced db methods here', ctx.db);
     this.dbService = ctx.db;
     // Currently, we hardcode the lookup to 2 months ago. What if we want to check 4 months ago or further back?
@@ -123,7 +123,7 @@ export class TableContentComponent implements OnInit, AfterViewInit {
     if (this.onLoadFn) {
       this.isLoading = true;
       // We probably want to limit what the 'this' exposes
-      this.onLoadFn(this.dbService, moment, this)
+      this.onLoadFn(this.dbService, this.moment, this)
         .then((info) => {
           this.updateTableDataSourceAndSort(info);
           this.isLoading = false;
@@ -178,13 +178,13 @@ export class TableContentComponent implements OnInit, AfterViewInit {
       this.isLoading = true;
       this.onReloadFn(
         this.dbService,
-        moment,
+        this.moment,
         this, // We probably want to limit what the 'this' exposes
         async () => {
           if (!this.onLoadFn) {
             throw new Error('onLoadFn is not defined');
           }
-          return this.onLoadFn(this.dbService, moment, this);
+          return this.onLoadFn(this.dbService, this.moment, this);
         } 
       )
         .then((info) => {

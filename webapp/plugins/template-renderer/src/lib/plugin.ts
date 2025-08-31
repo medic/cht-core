@@ -1,5 +1,10 @@
-import { PluginContract, PluginManifest, PluginNavItem, PluginContext } from '../core/plugin.contract';
-import { routes, BASE_PATH } from '../template-renderer/templates.routes';
+import { 
+  PluginContract, 
+  PluginManifest, 
+  PluginNavItem, 
+  PluginContext 
+} from './plugin.contract';
+import { routes, BASE_PATH } from './templates.routes';
 
 let context;
 
