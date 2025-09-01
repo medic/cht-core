@@ -28,6 +28,7 @@ const LOCAL_NAME_MAP = {
 };
 
 const RTL_LANGUAGES =  ['ar'];
+const ALL_ENABLED = Object.keys(LOCAL_NAME_MAP).map(code => ({ locale: code, enabled: true }));
 
 const extractLocaleCode = filename => {
   const parts = TRANSLATION_FILE_NAME_REGEX.exec(filename);
@@ -55,7 +56,6 @@ const createDoc = attachment => {
     type: DOC_TYPE,
     code: attachment.code,
     name: LOCAL_NAME_MAP[attachment.code] || attachment.code,
-    enabled: true,
     generic: attachment.generic,
     rtl: RTL_LANGUAGES.includes(attachment.code),
   };
@@ -110,21 +110,16 @@ const getTranslationDocs = async () => {
     });
 };
 
-const getEnabledLocaleCodes = (languages, translationDocs) => {
-  if (
-    languages &&
-    Array.isArray(languages) &&
-    languages.length > 0
-  ) {
-    return languages.filter(language => language.enabled !== false).map(language => language.locale);
-  }
-
-  return translationDocs.filter(doc => doc.enabled).map(doc => doc.code);
-};
-
 const getEnabledLocales = async () => {
-  const [settings, translationDocs] = await Promise.all([settingsService.get(), getTranslationDocs()]);
-  const enabledLocaleCodes = getEnabledLocaleCodes(settings.languages, translationDocs);
+  const settings = await settingsService.get();
+  const translationDocs = await getTranslationDocs();
+
+  const languages = settings.languages || ALL_ENABLED;
+
+  const enabledLocaleCodes = languages
+    .filter(language => language.enabled !== false)
+    .map(language => language.locale);
+
   return translationDocs.filter(doc => enabledLocaleCodes.includes(doc.code));
 };
 
@@ -165,4 +160,5 @@ module.exports = {
   },
   getEnabledLocales,
   getTranslationDocs,
+  localeNames: () => ({ ...LOCAL_NAME_MAP }),
 };
