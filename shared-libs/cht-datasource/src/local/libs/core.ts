@@ -1,4 +1,4 @@
-import { hasField, isRecord, Nullable } from '../../libs/core';
+import { convertToUnixTimestamp, hasField, Nullable } from '../../libs/core';
 import { Doc } from '../../libs/doc';
 import { InvalidArgumentError } from '../../libs/error';
 
@@ -40,19 +40,6 @@ export const addParentToInput = <T extends HasParentOrContact>(
 };
 
 /** @internal*/
-export const dehydrateDoc = (lineage: Record<string, unknown>): Record<string, unknown> => {
-  if (isRecord(lineage.parent)) {
-    return {
-      _id: lineage._id,
-      parent: dehydrateDoc(lineage.parent)
-    };
-  }
-  return {
-    _id: lineage._id
-  };
-};
-
-/** @internal*/
 export const isSameLineage = (
   a: Record<string, unknown> | null | undefined,
   b: Record<string, unknown> | null | undefined
@@ -81,6 +68,9 @@ export const ensureHasRequiredFields = (
   updateInput: Record<string, unknown>,
 ): void => {
   const missingFieldsList = [];
+  if (updateInput.reported_date){
+    updateInput.reported_date = convertToUnixTimestamp(updateInput.reported_date as string | number);
+  }
   // ensure required immutable fields have the same value as the original doc.
   for (const field of [ ...immutableFields, ...mutableFields ]) {
     if (!hasField(
