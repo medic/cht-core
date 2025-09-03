@@ -1,8 +1,11 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Support Request
+  - name: 📚 Documentation
+    url: https://docs.communityhealthtoolkit.org/
+    about: Read the CHT documentation.
+  - name: 💬 Ask on the forum
     url: https://forum.communityhealthtoolkit.org/
-    about: Request support from the community
-  - name: Security Vulnerability
-    url: https://docs.communityhealthtoolkit.org/contribute/code/#disclosing-vulnerabilities
-    about: Report a security vulnerability.
+    about: The best place for asking for support or general purpose questions.
+  - name: 👥 Get involved
+    url: https://docs.communityhealthtoolkit.org/community/
+    about: Learn how to contribute.
