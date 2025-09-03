@@ -9,6 +9,3 @@ contact_links:
   - name: 👥 Get involved
     url: https://docs.communityhealthtoolkit.org/community/
     about: Learn how to contribute.
-  - name: 🔐 Security Vulnerability
-    url: https://docs.communityhealthtoolkit.org/community/contributing/disclosing-vulnerabilities/
-    about: Report a security vulnerability.
