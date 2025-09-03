@@ -11,7 +11,6 @@ import { GlobalActions } from '@mm-actions/global';
 import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
-import { DbService } from '@mm-services/db.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { NgIf, NgClass, NgFor } from '@angular/common';
@@ -19,6 +18,8 @@ import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SimpleDatePipe } from '@mm-pipes/date.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 
 @Component({
   templateUrl: './tasks-content.component.html',
@@ -34,17 +35,19 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     private translateFromService:TranslateFromService,
     private xmlFormsService:XmlFormsService,
     private geolocationService:GeolocationService,
-    private dbService:DbService,
+    chtDatasourceService: CHTDatasourceService,
     private router:Router,
     private tasksForContactService:TasksForContactService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.tasksActions = new TasksActions(store);
+    this.getContact = chtDatasourceService.bind(Contact.v1.get);
   }
 
   subscription = new Subscription();
   private globalActions;
   private tasksActions;
+  private readonly getContact: ReturnType<typeof Contact.v1.get>;
 
   enketoStatus;
   private enketoEdited;
@@ -167,7 +170,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       });
   }
 
-  private hydrateTaskEmission(task) {
+  private async hydrateTaskEmission(task) {
     if (!Array.isArray(task.actions) || task.actions.length === 0 || !task.forId) {
       return Promise.resolve(task);
     }
@@ -188,20 +191,14 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       };
     };
 
-    return this.dbService
-      .get()
-      .get(task.forId)
-      .catch(err => {
-        if (err.status !== 404) {
-          throw err;
-        }
+    const contact = await this.getContact(Qualifier.byUuid(task.forId));
 
-        console.info('Failed to hydrate contact information in task action', err);
-        return { _id: task.forId };
-      })
-      .then(contactDoc => {
-        return setActionsContacts(task, contactDoc);
-      });
+    if (!contact) {
+      console.info('Contact not found for task action:', task.forId);
+      return setActionsContacts(task, { _id: task.forId });
+    }
+
+    return setActionsContacts(task, contact);
   }
 
   private hasOneActionAndNoFields(task) {

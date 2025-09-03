@@ -519,14 +519,14 @@ describe('TokenLogin service', () => {
 
   describe('manageTokenLogin', () => {
     it('should do nothing when undefined', () => {
-      return service.manageTokenLogin({}, '', { user: { id: 'user' } }).then(actual => {
+      return service.manageTokenLogin({}, { user: { id: 'user' } }).then(actual => {
         chai.expect(actual).to.deep.equal({ user: { id: 'user' } });
       });
     });
 
     it('should do nothing when no config', () => {
       config.get.withArgs('token_login').returns();
-      return service.manageTokenLogin({ token_login: true }, '', { user: { id: 'user' } }).then(actual => {
+      return service.manageTokenLogin({ token_login: true }, { user: { id: 'user' } }).then(actual => {
         chai.expect(actual).to.deep.equal({ user: { id: 'user' } });
       });
     });
@@ -537,7 +537,7 @@ describe('TokenLogin service', () => {
         db.medic.get.withArgs('userID').resolves({ _id: 'userID' });
         db.users.get.withArgs('userID').resolves({ _id: 'userID' });
 
-        return service.manageTokenLogin({ token_login: false }, '', response).then(actual => {
+        return service.manageTokenLogin({ token_login: false }, response).then(actual => {
           chai.expect(actual).to.deep.equal({ user: { id: 'userID' }, 'user-settings': { id: 'userID' } });
         });
       });
@@ -575,7 +575,7 @@ describe('TokenLogin service', () => {
         db.medic.put.resolves();
         db.users.put.resolves();
 
-        return service.manageTokenLogin({ token_login: false }, '', response).then(actual => {
+        return service.manageTokenLogin({ token_login: false }, response).then(actual => {
           chai.expect(db.medic.put.callCount).to.equal(2);
           chai.expect(db.medic.put.args[0]).to.deep.equal([{
             _id: 'token:login:aaa',
@@ -647,7 +647,7 @@ describe('TokenLogin service', () => {
         db.medic.put.resolves();
         db.users.put.resolves();
 
-        return service.manageTokenLogin({ token_login: false }, '', response).then(actual => {
+        return service.manageTokenLogin({ token_login: false }, response).then(actual => {
           chai.expect(db.medic.put.callCount).to.equal(1);
           chai.expect(db.medic.put.args[0]).to.deep.equal([{
             _id: 'userID',
@@ -690,7 +690,7 @@ describe('TokenLogin service', () => {
         db.medic.put.resolves();
         db.users.put.resolves();
 
-        return service.manageTokenLogin({ token_login: false }, '', response).then(actual => {
+        return service.manageTokenLogin({ token_login: false }, response).then(actual => {
           chai.expect(db.medic.put.callCount).to.equal(1);
           chai.expect(db.medic.put.args[0]).to.deep.equal([{
             _id: 'userID',
@@ -715,6 +715,7 @@ describe('TokenLogin service', () => {
       beforeEach(() => {
         addMessage = sinon.stub();
         config.getTransitionsLib.returns({ messages: { addMessage } });
+        config.get.withArgs('app_url').returns('http://host');
       });
 
       it('should generate password, token, create sms and update user docs', () => {
@@ -740,7 +741,7 @@ describe('TokenLogin service', () => {
 
         clock.tick(2000);
 
-        return service.manageTokenLogin({ token_login: true }, 'http://host', response).then(actual => {
+        return service.manageTokenLogin({ token_login: true }, response).then(actual => {
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0][0]).to.deep.include({
             _id: 'userID',
@@ -846,7 +847,7 @@ describe('TokenLogin service', () => {
 
         clock.tick(2000);
 
-        return service.manageTokenLogin({ token_login: true }, 'http://host', response).then(actual => {
+        return service.manageTokenLogin({ token_login: true }, response).then(actual => {
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0][0]).to.deep.include({
             _id: 'my_user',
@@ -986,7 +987,7 @@ describe('TokenLogin service', () => {
 
         clock.tick(5000);
 
-        return service.manageTokenLogin({ token_login: true }, 'http://host', response).then(actual => {
+        return service.manageTokenLogin({ token_login: true }, response).then(actual => {
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0][0].token_login).to.deep.include({
             active: true,
@@ -1081,7 +1082,7 @@ describe('TokenLogin service', () => {
 
         clock.tick(2000);
 
-        return service.manageTokenLogin({ token_login: true }, 'http://host', response).then(actual => {
+        return service.manageTokenLogin({ token_login: true }, response).then(actual => {
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0][0]).to.deep.include({
             _id: 'userID',
@@ -1139,7 +1140,7 @@ describe('TokenLogin service', () => {
         clock.tick(2000);
 
         return service
-          .manageTokenLogin({ token_login: true }, 'http://host', response)
+          .manageTokenLogin({ token_login: true }, response)
           .then(() => chai.assert.fail('Should have thrown'))
           .catch(err => {
             chai.expect(err.message).to.equal('Failed to generate unique token');

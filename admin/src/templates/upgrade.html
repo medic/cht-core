@@ -33,7 +33,7 @@
 
     <div ng-show="upgradeDoc.state === 'indexed' && upgradeDoc.action === 'stage'">
       <p class="col-xs-10" translate>instance.stage.complete</p>
-      <button class="col-xs-1 btn btn-primary" ng-click="upgrade(upgradeDoc.to, 'complete')" translate>instance.upgrade.install</button>
+      <button class="col-xs-1 btn btn-primary" ng-show="canUpgrade" ng-click="upgrade(upgradeDoc.to, 'complete')" translate>instance.upgrade.install</button>
     </div>
     <div ng-show="upgradeDoc.state === 'interrupted'">
       <p class="alert alert-warning" translate>instance.upgrade.interrupted</p>
@@ -85,7 +85,7 @@
           </div>
           <ul>
             <li ng-repeat="release in versions.releases" class="row">
-              <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade"/>
+              <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" can-upgrade="canUpgrade"/>
             </li>
           </ul>
         </div>
@@ -111,7 +111,7 @@
                 </div>
                 <ul>
                   <li ng-repeat="release in versions.featureReleases" class="row">
-                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" />
+                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" can-upgrade="canUpgrade" />
                   </li>
                 </ul>
               </div>
@@ -129,7 +129,7 @@
                 </div>
                 <ul>
                   <li ng-repeat="release in versions.betas" class="row">
-                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade"/>
+                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" can-upgrade="canUpgrade"/>
                   </li>
                 </ul>
               </div>
@@ -147,7 +147,7 @@
                 </div>
                 <ul>
                   <li ng-repeat="release in versions.branches" class="row">
-                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" />
+                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" can-upgrade="canUpgrade" />
                   </li>
                 </ul>
               </div>
