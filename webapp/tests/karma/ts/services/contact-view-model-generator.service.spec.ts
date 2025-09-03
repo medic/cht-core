@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { assert, expect } from 'chai';
 import sinon from 'sinon';
 import { TranslateService } from '@ngx-translate/core';
+import { HttpClient } from '@angular/common/http';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 import { SearchService } from '@mm-services/search.service';
@@ -9,6 +11,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { DbService } from '@mm-services/db.service';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 
 describe('ContactViewModelGenerator service', () => {
   let service: ContactViewModelGeneratorService;
@@ -27,6 +30,9 @@ describe('ContactViewModelGenerator service', () => {
   let contactTypesService;
   let getDataRecordsService;
   let types;
+  let chtDatasourceService;
+  let get;
+  let getContact;
 
   const childPlaceIcon = 'fa-mushroom';
 
@@ -65,6 +71,8 @@ describe('ContactViewModelGenerator service', () => {
   };
 
   beforeEach(() => {
+    getContact = sinon.stub();
+    get = sinon.stub();
     search = sinon.stub();
     dbGet = sinon.stub();
     dbQuery = sinon.stub();
@@ -100,7 +108,7 @@ describe('ContactViewModelGenerator service', () => {
       contact: { _id: contactId }
     };
     forms = [];
-
+    get.withArgs(childContactPerson._id).resolves(childContactPerson);
     contactTypesService = {
       getAll: sinon.stub().resolves(types),
       getTypeId: sinon.stub().callsFake(contact => contact.type === 'contact' ? contact.contact_type : contact.type),
@@ -112,6 +120,10 @@ describe('ContactViewModelGenerator service', () => {
       getDocsSummaries: sinon.stub(),
     };
 
+    chtDatasourceService = {
+      bind: sinon.stub().withArgs(Contact.v1.get).returns(getContact)
+    };
+
     TestBed.configureTestingModule({
       providers: [
         { provide: TranslateService, useValue: { instant: sinon.stub().returnsArg(0) } },
@@ -120,6 +132,8 @@ describe('ContactViewModelGenerator service', () => {
         { provide: LineageModelGeneratorService, useValue: lineageModelGenerator },
         { provide: GetDataRecordsService, useValue: getDataRecordsService },
         { provide: DbService, useValue: { get: () => ({ query: dbQuery, get: dbGet }) } },
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: HttpClient, useValue: {} },
       ]
     });
 
@@ -184,6 +198,7 @@ describe('ContactViewModelGenerator service', () => {
     });
 
     it('should load external primary contact correctly', () => {
+      getContact.withArgs(Qualifier.byUuid(childContactPerson._id)).resolves(childContactPerson);
       return runPlaceTest([childPerson]).then(model => {
         assert.equal(model.children[0].contacts.length, 2);
         assert.equal(model.children[0].contacts[0].id, childContactPerson._id);
@@ -232,6 +247,8 @@ describe('ContactViewModelGenerator service', () => {
       stubGetDataRecordsService([]);
       stubDbQueryChildren(doc._id, [childPerson]);
 
+      get.withArgs(childContactPerson._id).rejects({ status: 404 });
+
       return service
         .getContact(doc._id)
         .then(waitForModelToLoad)
@@ -241,6 +258,7 @@ describe('ContactViewModelGenerator service', () => {
     });
 
     it('if contact does not belong to place, it still gets displayed', () => {
+      getContact.withArgs(Qualifier.byUuid(childContactPerson._id)).resolves(childContactPerson);
       return runPlaceTest([]).then(model => {
         assert.equal(model.children[0].contacts.length, 1);
         assert.equal(model.children[0].contacts[0].doc._id, childContactPerson._id);
@@ -249,6 +267,7 @@ describe('ContactViewModelGenerator service', () => {
     });
 
     it('child places are sorted in alphabetical order', () => {
+      getContact.withArgs(Qualifier.byUuid(childContactPerson._id)).resolves(childContactPerson);
       return runPlaceTest([childPlace2, childPlace]).then(model => {
         assert.equal(model.children[1].contacts[0].doc._id, childPlace._id);
         assert.equal(model.children[1].contacts[1].doc._id, childPlace2._id);
@@ -257,6 +276,7 @@ describe('ContactViewModelGenerator service', () => {
 
     it('when selected doc is a clinic, child places are sorted in alphabetical order (like for other places)', () => {
       doc.type = 'clinic';
+      getContact.withArgs(Qualifier.byUuid(childContactPerson._id)).resolves(childContactPerson);
       return runPlaceTest([childPlace2, childPlace]).then(model => {
         assert.equal(model.children[1].contacts[0].doc._id, childPlace._id);
         assert.equal(model.children[1].contacts[1].doc._id, childPlace2._id);
@@ -265,6 +285,7 @@ describe('ContactViewModelGenerator service', () => {
 
     it('when selected contact type specifies sort_by_dob, child persons are sorted by age', () => {
       doc.type = 'clinic';
+      getContact.withArgs(Qualifier.byUuid(childContactPerson._id)).resolves(childContactPerson);
       return runPlaceTest([childPerson2, childPerson]).then(model => {
         assert.equal(model.children[0].contacts.length, 3);
         assert.equal(model.children[0].contacts[1].doc._id, childPerson2._id);
@@ -321,6 +342,8 @@ describe('ContactViewModelGenerator service', () => {
     describe('muted sorting', () => {
       it('when child type has sort_by_dob should sort muted persons on the bottom sorted by age', () => {
         doc.type = 'clinic';
+        getContact.withArgs(Qualifier.byUuid(childContactPerson._id)).resolves(childContactPerson);
+
         const childPerson1 = { _id: 'childPerson1', type: 'person', name: 'person 1', date_of_birth: '2000-01-01' };
         const childPerson2 = { _id: 'childPerson2', type: 'person', name: 'person 2', date_of_birth: '1999-01-01' };
         const mutedChildPerson1 =
@@ -360,6 +383,7 @@ describe('ContactViewModelGenerator service', () => {
 
       it('should sort muted places to the bottom, alphabetically', () => {
         doc.type = 'mushroom';
+        getContact.withArgs(Qualifier.byUuid(childContactPerson._id)).resolves(childContactPerson);
         const childPlace1 = { _id: 'childPlace1', type: 'clinic', name: 'place 1' };
         const childPlace2 = { _id: 'childPlace2', type: 'clinic', name: 'place 2' };
         const mutedChildPlace1 = { _id: 'mutedChildPlace1', type: 'clinic', name: 'muted 1', muted: 123 };
@@ -377,6 +401,7 @@ describe('ContactViewModelGenerator service', () => {
       it('should propagate muted state to not yet muted children and sort correctly', () => {
         doc.type = 'mushroom';
         doc.muted = 123456;
+        getContact.withArgs(Qualifier.byUuid(childContactPerson._id)).resolves(childContactPerson);
         const childPerson1 = { _id: 'childPerson1', type: 'chp', name: 'person 1', date_of_birth: '2000-01-01' };
         const childPerson2 = { _id: 'childPerson2', type: 'chp', name: 'person 2', date_of_birth: '1999-01-01' };
         const mutedChildPerson1 =
@@ -453,6 +478,7 @@ describe('ContactViewModelGenerator service', () => {
       stubLineageModelGenerator(doc);
       stubDbGet({ status: 404 }, childContactPerson);
       stubDbQueryChildren(doc._id, childrenArray);
+      get.reset();
       return service.getContact(doc._id);
     };
 

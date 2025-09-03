@@ -10,6 +10,8 @@ import { SearchService } from '@mm-services/search.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 
 /**
  * Hydrates the given contact by uuid and creates a model which
@@ -42,7 +44,12 @@ export class ContactViewModelGeneratorService {
     private contactMutedService:ContactMutedService,
     private getDataRecordsService:GetDataRecordsService,
     private ngZone:NgZone,
-  ){}
+    readonly chtDatasourceService: CHTDatasourceService,
+  ){
+    this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
+  }
+
+  private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   private primaryContactComparator (lhs, rhs) {
     if (lhs.isPrimaryContact) {
@@ -142,7 +149,7 @@ export class ContactViewModelGeneratorService {
     return _groupBy(children, child => this.contactTypesService.getTypeId(child.doc));
   }
 
-  private addPrimaryContact(doc, children) {
+  private async addPrimaryContact(doc, children) {
     const contactId = doc && doc.contact && doc.contact._id;
     if (!contactId) {
       return children;
@@ -154,24 +161,19 @@ export class ContactViewModelGeneratorService {
       return children;
     }
 
-    // If the primary contact is not a child, fetch the document
-    return this.dbService
-      .get()
-      .get(contactId)
-      .then(doc => {
-        children.push({
-          doc: doc,
-          isPrimaryContact: true,
-          id: doc._id,
-        });
-        return children;
-      })
-      .catch((err) => {
-        if (err.status === 404 || err.error === 'not_found') {
-          return children;
-        }
-        throw err;
-      });
+    // If the primary contact is not a child, fetch the document    
+    const contact = await this.getContactFromDatasource(Qualifier.byUuid(contactId));
+    
+    if (!contact) {
+      return children;
+    }
+
+    children.push({
+      doc: contact,
+      isPrimaryContact: true,
+      id: contact._id,
+    });
+    return children;
   }
 
   private sortChildren(childModels) {
