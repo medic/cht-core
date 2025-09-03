@@ -7,7 +7,7 @@ contact_links:
     url: https://forum.communityhealthtoolkit.org/
     about: The best place for asking for support or general purpose questions.
   - name: 👥 Get involved
-    url: https://docs.communityhealthtoolkit.org/community/contributing/disclosing-vulnerabilities/
+    url: https://docs.communityhealthtoolkit.org/community/
     about: Learn how to contribute.
   - name: 🔐 Security Vulnerability
     url: https://docs.communityhealthtoolkit.org/community/contributing/disclosing-vulnerabilities/
