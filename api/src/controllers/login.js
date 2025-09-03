@@ -342,7 +342,7 @@ const loginByToken = async (req, res) => {
 
     const sessionCookie = await createSessionCookieRetry(req);
     const redirectUrl = await setCookies(req, res, sessionCookie);
-    
+
     await tokenLogin.deactivateTokenLogin(userId);
     return res.status(302).send(redirectUrl);
   } catch (err) {
@@ -404,13 +404,12 @@ const login = async (req, res) => {
   }
 };
 
-const updatePassword = (user, newPassword, req) => {
+const updatePassword = (user, newPassword) => {
   const updateData = {
     password: newPassword,
     password_change_required: false,
   };
-  const appUrl = serverUtils.getAppUrl(req);
-  return users.updateUser(user.name, updateData, true, appUrl);
+  return users.updateUser(user.name, updateData, true);
 };
 
 const validateCurrentPassword = async (username, currentPassword, newPassword) => {
@@ -457,6 +456,15 @@ const passwordResetValidation = async (username, currentPassword, password) => {
   }
 
   return { isValid: true };
+};
+
+const getAppUrl = () => {
+  const appUrl = config.get('app_url');
+  if (!appUrl) {
+    throw new Error('The app_url value is not configured.');
+  }
+
+  return appUrl.replace(/\/+$/, '');
 };
 
 module.exports = {
@@ -533,7 +541,7 @@ module.exports = {
         error.status = 400;
         throw error;
       }
-      await updatePassword(userDoc, password, req);
+      await updatePassword(userDoc, password);
 
       req.body = { user: username, password, locale };
       const sessionCookie = await createSessionCookieRetry(req);
@@ -566,8 +574,8 @@ module.exports = {
     if (limited) {
       return serverUtils.rateLimited(req, res);
     }
-    const currentUrl =  new URL(`${serverUtils.getAppUrl(req)}${req.originalUrl}`);
     try {
+      const currentUrl =  new URL(`${getAppUrl()}${req.originalUrl}`);
       const { username, locale } = await sso.getIdToken(currentUrl);
       const sessionCookie = await sso.getCookie(username);
       req.body = { locale };
@@ -591,8 +599,8 @@ module.exports = {
       return serverUtils.rateLimited(req, res);
     }
 
-    const redirectUrl = new URL(`${serverUtils.getAppUrl(req)}/${environment.db}/login/oidc`);
     try {
+      const redirectUrl = new URL(`${getAppUrl()}/${environment.db}/login/oidc`);
       const authUrl = await sso.getAuthorizationUrl(redirectUrl.toString());
       res.status(302).send(authUrl.href);
     } catch (e) {

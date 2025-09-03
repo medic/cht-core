@@ -214,7 +214,13 @@ describe('auditing', () => {
     });
 
     it('should only store 10 history entries', async () => {
-      const docId = 'migration-log';
+      const docId = docs.reports[1]._id;
+
+      for (let i = 0; i < 26; i++) {
+        const doc = await utils.db.get(docId);
+        await utils.db.put(doc);
+      }
+
       const MAX_HISTORY_LIMIT = 10;
       const doc = await utils.db.get(docId);
       const revCount = parseInt(doc._rev.split('-')[0]);
