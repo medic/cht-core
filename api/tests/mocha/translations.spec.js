@@ -611,7 +611,7 @@ describe('translations', () => {
     });
 
     describe('without new "languages" setting', () => {
-      it('should only all languages', async () => {
+      it('should enable all languages', async () => {
         sinon.stub(settings, 'get').resolves({});
         sinon.stub(db.medic, 'allDocs').resolves({
           rows: [
