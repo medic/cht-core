@@ -1,0 +1,23 @@
+<div width="100%" height="100%">
+  <div class="grid-container" style="align-content: center;">
+      <!-- If internal link we should use: -->
+      <!-- <a [routerLink]="item.url" class="grid-item">...</a> -->
+      <!-- So maybe accept another prop -->
+      <a 
+          class="grid-item" 
+          *ngFor="let item of getGridItems()"
+          [href]="item.url"
+          rel="noopener noreferrer"
+      >
+          <ng-container *ngFor="let pipeClass of pipes">
+            <div 
+              *ngIf="pipeClass.name === 'ResourceIconPipe'"
+              class="thumbnail" 
+              [innerHTML]="item.thumbnailResource | dynamicPipe: pipeClass: ['resourceIcon']" 
+              role="img">
+            </div>
+          </ng-container>
+          <p class="description">{{ item.description }}</p>
+      </a>
+  </div>
+</div>

@@ -2,12 +2,15 @@ import { Injectable } from '@angular/core';
 
 import { AuthService } from '@mm-services/auth.service';
 
+import { PluginManagerService } from '../plugins/core/plugin.manager.service';
+
 @Injectable({
   providedIn: 'root'
 })
 export class HeaderTabsService {
   constructor(
-    private authService: AuthService
+    private authService: AuthService,
+    private pluginManagerService: PluginManagerService
   ) { }
 
   private readonly tabs: HeaderTab[] = [
@@ -20,6 +23,7 @@ export class HeaderTabsService {
       typeName: 'message',
       icon: undefined,
       resourceIcon: undefined,
+      tabType: 'primary',
     },
     {
       name: 'tasks',
@@ -29,6 +33,7 @@ export class HeaderTabsService {
       permissions: ['can_view_tasks', 'can_view_tasks_tab'],
       icon: undefined,
       resourceIcon: undefined,
+      tabType: 'primary',
     },
     {
       name: 'reports',
@@ -39,6 +44,7 @@ export class HeaderTabsService {
       typeName: 'report',
       icon: undefined,
       resourceIcon: undefined,
+      tabType: 'primary',
     },
     {
       name: 'contacts',
@@ -48,6 +54,7 @@ export class HeaderTabsService {
       permissions: ['can_view_contacts', 'can_view_contacts_tab'],
       icon: undefined,
       resourceIcon: undefined,
+      tabType: 'primary',
     },
     {
       name: 'analytics',
@@ -57,8 +64,23 @@ export class HeaderTabsService {
       permissions: ['can_view_analytics', 'can_view_analytics_tab'],
       icon: undefined,
       resourceIcon: undefined,
+      tabType: 'primary',
     }
   ];
+
+  private getPluginPages(): HeaderTab[] {
+    return this.pluginManagerService.getNavEntries().map((e) => ({
+      name: e.key,
+      route: e.route,
+      defaultIcon: 'fa-square',
+      translation: e.key,
+      permissions: e.permissions ?? [],
+      typeName: e.key,
+      icon: undefined,
+      resourceIcon: undefined,
+      tabType: e.tab_type ?? 'secondary'
+    } as HeaderTab));
+  }
 
   /**
    * Returns the list of header tabs.
@@ -69,11 +91,13 @@ export class HeaderTabsService {
    * @returns HeaderTab[]
    */
   get(settings?): HeaderTab[] {
+    const tabs = [...this.tabs, ...this.getPluginPages() ];
+
     if (!settings?.header_tabs) {
-      return this.tabs;
+      return tabs;
     }
 
-    this.tabs.forEach(tab => {
+    tabs.forEach(tab => {
       if (!settings.header_tabs[tab.name]) {
         return;
       }
@@ -87,7 +111,7 @@ export class HeaderTabsService {
       }
     });
 
-    return this.tabs;
+    return tabs;
   }
 
   /**
@@ -129,4 +153,5 @@ export interface HeaderTab {
   typeName?: string;
   icon?: string;
   resourceIcon?: string;
+  tabType: 'primary' | 'secondary';
 }
