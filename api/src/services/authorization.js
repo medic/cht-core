@@ -601,12 +601,33 @@ const isTaskDoc = (row) => row.value && row.value.type === 'task';
 const prepareForSortedSearch = array => array.map(element => String(element)).sort();
 const sortedIncludes = (sortedArray, element) => _.sortedIndexOf(sortedArray, String(element)) !== -1;
 
+const escapeKeys = (keys) => {
+  const specialChars = [
+    '+', '-', '&', '|', '!',
+    '^', '"',  '~',  '*', '?', ':'
+  ];
+
+  const escapedChars = specialChars.map(char => {
+    return char.replace(/[.*+?^${}()~\-|[\]\\]/g, '\\$&');
+  });
+
+  // Move hyphen to the end to avoid range interpretation
+  const charSet = escapedChars.join('');
+  const finalCharSet = charSet.includes('\\-')
+    ? charSet.replace('\\-', '') + '-'
+    : charSet;
+
+  const pattern = new RegExp(`([${finalCharSet}])`, 'g');
+  return keys.replace(pattern, `\\$1`);
+};
+
+
 const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
   const keys = authorizationContext.subjectIds.join(' or ');
   const response = await request.post({
     uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
     body: {
-      q: `key:(${keys})`,
+      q: `key:(${escapeKeys(keys)})`,
       limit: 200000,
     }
   });
@@ -640,7 +661,7 @@ const getDocsByReplicationKey = async (authorizationContext) => {
 
     results.rows.forEach(row => {
       const { key: subject, value: { submitter } = {} } = row;
-      const priv = row?.value?.private; // private is a reserved word
+      const priv = row?.value?.private === 'true'; // private is a reserved word
       const allowedSubmitter = () => sortedIncludes(sortedSubjects, submitter);
       if (isSensitive(authorizationContext.userCtx, subject, submitter, priv, allowedSubmitter)) {
         return;
