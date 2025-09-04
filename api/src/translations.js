@@ -55,7 +55,6 @@ const createDoc = attachment => {
     type: DOC_TYPE,
     code: attachment.code,
     name: LOCAL_NAME_MAP[attachment.code] || attachment.code,
-    enabled: true,
     generic: attachment.generic,
     rtl: RTL_LANGUAGES.includes(attachment.code),
   };
@@ -110,21 +109,16 @@ const getTranslationDocs = async () => {
     });
 };
 
-const getEnabledLocaleCodes = (languages, translationDocs) => {
-  if (
-    languages &&
-    Array.isArray(languages) &&
-    languages.length > 0
-  ) {
-    return languages.filter(language => language.enabled !== false).map(language => language.locale);
-  }
-
-  return translationDocs.filter(doc => doc.enabled).map(doc => doc.code);
-};
-
 const getEnabledLocales = async () => {
-  const [settings, translationDocs] = await Promise.all([settingsService.get(), getTranslationDocs()]);
-  const enabledLocaleCodes = getEnabledLocaleCodes(settings.languages, translationDocs);
+  const settings = await settingsService.get();
+  const translationDocs = await getTranslationDocs();
+
+  const languages = settings.languages || translationDocs.map(doc => ({ locale: doc.code, enabled: true }));
+
+  const enabledLocaleCodes = languages
+    .filter(language => language.enabled !== false)
+    .map(language => language.locale);
+
   return translationDocs.filter(doc => enabledLocaleCodes.includes(doc.code));
 };
 

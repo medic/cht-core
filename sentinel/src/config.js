@@ -19,8 +19,7 @@ let transitionsLib;
 
 const loadTranslations = () => {
   const options = {
-    startkey: ['translations', false],
-    endkey: ['translations', true],
+    key: ['translations'],
     include_docs: true,
   };
   return db.medic
@@ -81,8 +80,6 @@ const initTransitionLib = () => {
 };
 
 module.exports = {
-  _initConfig: initConfig,
-  _initFeed: initFeed,
   get: key => (key ? config[key] : config),
   getAll: () => config,
   getTranslations: () => {
