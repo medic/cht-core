@@ -4,6 +4,8 @@ const _ = require('lodash');
 const config = require('../config');
 const viewMapUtils = require('@medic/view-map-utils');
 const registrationUtils = require('@medic/registration-utils');
+const request = require('@medic/couch-request');
+const environment = require('@medic/environment');
 
 const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
 const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
@@ -599,13 +601,37 @@ const isTaskDoc = (row) => row.value && row.value.type === 'task';
 const prepareForSortedSearch = array => array.map(element => String(element)).sort();
 const sortedIncludes = (sortedArray, element) => _.sortedIndexOf(sortedArray, String(element)) !== -1;
 
+const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
+  const keys = authorizationContext.subjectIds.join(' or ');
+  const response = await request.post({
+    uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
+    body: {
+      q: `key:(${keys})`,
+      limit: 100000,
+    }
+  });
+
+  const mockViewRequest = { rows: [] };
+  response.hits.forEach(hit => {
+    mockViewRequest.rows.push({
+      id: hit.id,
+      key: hit.key,
+      value: hit.fields,
+    });
+  });
+
+  return mockViewRequest;
+};
+
 /**
  * Returns a list of document ids that the user is allowed to see and edit
  * @param {AuthorizationContext} authorizationContext
  * @returns {Promise<string[]>}
  */
-const getDocsByReplicationKey = (authorizationContext) => {
-  return db.medic.query('medic/docs_by_replication_key', { keys: authorizationContext.subjectIds }).then(results => {
+const getDocsByReplicationKey = async (authorizationContext) => {
+  //await getDocsByReplicationKeyNouveau(authorizationContext);
+  return getDocsByReplicationKeyNouveau(authorizationContext).then(results => {
+  //return db.medic.query('medic/docs_by_replication_key', { keys: authorizationContext.subjectIds }).then(results => {
     const viewResultsById = groupViewResultsById(authorizationContext, results);
 
     // leverage binary search when looking up subjects
