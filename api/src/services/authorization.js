@@ -607,7 +607,7 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
     uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
     body: {
       q: `key:(${keys})`,
-      limit: 100000,
+      limit: 200000,
     }
   });
 
@@ -629,7 +629,6 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
  * @returns {Promise<string[]>}
  */
 const getDocsByReplicationKey = async (authorizationContext) => {
-  //await getDocsByReplicationKeyNouveau(authorizationContext);
   return getDocsByReplicationKeyNouveau(authorizationContext).then(results => {
   //return db.medic.query('medic/docs_by_replication_key', { keys: authorizationContext.subjectIds }).then(results => {
     const viewResultsById = groupViewResultsById(authorizationContext, results);

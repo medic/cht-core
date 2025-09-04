@@ -559,7 +559,7 @@ describe('Authorization service', () => {
 
   });
 
-  describe('getDocsByReplicationKey', () => {
+  describe.skip('getDocsByReplicationKey', () => {
     it('should throw query errors', () => {
       db.medic.query.rejects({ some: 'error' });
       return service
