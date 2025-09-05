@@ -1,5 +1,4 @@
 function(doc) {
-
   if (doc._id === 'resources' ||
       doc._id === 'branding' ||
       doc._id === 'partners' ||
@@ -13,7 +12,13 @@ function(doc) {
     return;
   }
 
-  var getSubject = function() {
+  var indexMaybe = (fieldName, value) => {
+    if (value) {
+      index('string', fieldName, value.toString(), { store: true });
+    }
+  }
+
+  var getSubject = () => {
     if (doc.form) {
       // report
       if (doc.contact && doc.errors && doc.errors.length) {
@@ -44,41 +49,42 @@ function(doc) {
              doc.tasks[0].messages[0].contact._id;
     }
   };
-  index('string', 'type', doc.type, { store: true });
+
+  indexMaybe( 'type', doc.type);
   switch (doc.type) {
   case 'data_record':
     var subject = getSubject() || '_unassigned';
-    index('string', 'key', subject, { store: true });
+    indexMaybe('subject', subject);
+    indexMaybe('key', subject);
     if (doc.form && doc.contact) {
-      // value.submitter = doc.contact._id;
-      index('string', 'submitter',  doc.contact._id, { store: true });
+      indexMaybe('submitter', doc.contact._id);
     }
     if (doc.fields && doc.fields.private) {
-      index('string', 'private', 'true', { store: true });
+      indexMaybe('private', 'true');
     }
     if (doc.fields &&
         doc.fields.needs_signoff &&
         doc.contact
     ) {
-      index('string', 'needs_signoff', 'true', { store: true });
+      indexMaybe('needs_signoff', 'true');
       var contact = doc.contact;
       while (contact) {
         if (contact._id && contact._id !== subject) {
-          index('string', 'key', contact._id, { store: true });
+          indexMaybe('key', contact._id);
         }
         contact = contact.parent;
       }
     }
     return;
   case 'task':
-    return index('string', 'key', doc.user, { store: true });
+    return indexMaybe('key', doc.user);
   case 'target':
-    return index('string', 'key', doc.owner, { store: true });
+    return indexMaybe('key', doc.owner);
   case 'contact':
   case 'clinic':
   case 'district_hospital':
   case 'health_center':
   case 'person':
-    return index('string', 'key', doc._id, { store: true });
+    return indexMaybe('key', doc._id);
   }
 }

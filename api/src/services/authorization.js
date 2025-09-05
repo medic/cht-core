@@ -172,7 +172,7 @@ const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
  * Returns whether an authenticated user has access to a document
  * @param   {String}   docId - CouchDB document ID
  * @param   {AuthorizationContext}   authorizationContext
- * @param   {Object}   replicationKey - result of `medic/docs_by_replication_key` view against doc
+ * @param   {Object}   replicationKeys - result of `medic/index/docs_by_replication_key` index against doc
  * @param   {Array}    contactsByDepth - results of `medic/contacts_by_depth` view against doc
  * @returns {Boolean}
  */
@@ -181,11 +181,8 @@ const allowedDoc = (docId, authorizationContext, { replicationKeys, contactsByDe
     return true;
   }
 
-  if (!replicationKeys?.length) {
-    return false;
-  }
-
-  if (replicationKeys[0].key === ALL_KEY) {
+  const keys = Array.isArray(replicationKeys.key) ? replicationKeys.key : [replicationKeys.key];
+  if (keys.includes(ALL_KEY)) {
     return true;
   }
 
@@ -196,13 +193,13 @@ const allowedDoc = (docId, authorizationContext, { replicationKeys, contactsByDe
 
   // it's a report, task or target
   const allowedDepth = isAllowedDepth(authorizationContext, replicationKeys);
-  return replicationKeys.some(replicationKey => {
-    const { key: subjectId, value: { submitter: submitterId } = {} } = replicationKey;
-    const priv = replicationKey?.value?.private; // private is a reserved word
-    const allowedSubmitter = submitterId && authorizationContext.subjectIds.includes(submitterId);
-    if (!subjectId && allowedSubmitter) {
-      return true;
-    }
+  const { subject: subjectId, submitter: submitterId, private: priv } = replicationKeys;
+  const allowedSubmitter = submitterId && authorizationContext.subjectIds.includes(submitterId);
+  if (!subjectId && allowedSubmitter) {
+    return true;
+  }
+
+  return keys.some(subjectId => {
     const allowedSubject = subjectId && authorizationContext.subjectIds.includes(subjectId);
     return allowedSubject &&
            !isSensitive(authorizationContext.userCtx, subjectId, submitterId, priv, allowedSubmitter) &&
@@ -395,12 +392,10 @@ const getReplicationKeys = (viewResults) => {
     return replicationKeys;
   }
 
-  viewResults.replicationKeys.forEach(({ key: subjectId, value: { submitter: submitterId } = {}}) => {
-    replicationKeys.push(subjectId);
-    if (submitterId) {
-      replicationKeys.push(submitterId);
-    }
-  });
+  replicationKeys.push(
+    ...(viewResults.replicationKeys.key || []),
+    viewResults.replicationKeys.submitter,
+  );
 
   return replicationKeys;
 };
@@ -561,38 +556,31 @@ const isSensitive = (userCtx, subject, submitter, isPrivate, allowedSubmitter) =
  * In cases of reports with `needs_signoff`, the replication key of valid depth might be at facility level, but that
  * key would be marked as sensitive.
  * @param {AuthorizationContext} authorizationContext
- * @param {Array[]} replicationKeys - array of pairs of subject + value, emitted by docs_by_replication_keys view
+ * @param { type:string, submitter: string, key: string|[string] } viewResult - query view result
  * @returns {boolean}
  */
-const isAllowedDepth = (authorizationContext, replicationKeys) => {
+const isAllowedDepth = (authorizationContext, viewResult) => {
   if (!usesReportDepth(authorizationContext)) {
     // no depth limitation
     return true;
   }
 
-  const [{ value: { type: docType } = {} }] = replicationKeys;
+  const { type: docType, key, submitter } = viewResult;
   if (docType !== 'data_record') {
     // allow everything that's not a data_record through (f.e. targets)
     return true;
   }
 
-  return replicationKeys.some(replicationKey => {
-    const { key: subject, value: { submitter } = {} } = replicationKey;
-    if (submitter === authorizationContext.userCtx.contact_id) {
-      // current user is the submitter
-      return true;
-    }
-
-    return authorizationContext.subjectsDepth[subject] <= authorizationContext.reportDepth;
-  });
-};
-
-const groupViewResultsById = (authorizationContext, viewResults) => {
-  if (!usesReportDepth(authorizationContext)) {
-    return {};
+  if (submitter === authorizationContext.userCtx.contact_id) {
+    // current user is the submitter
+    return true;
   }
 
-  return _.groupBy(viewResults.rows, 'id');
+  const replicationKeys = Array.isArray(key) ? key : [key];
+
+  return replicationKeys.some(replicationKey => {
+    return authorizationContext.subjectsDepth[replicationKey] <= authorizationContext.reportDepth;
+  });
 };
 
 const isTaskDoc = (row) => row.value && row.value.type === 'task';
@@ -636,7 +624,7 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
   response.hits.forEach(hit => {
     mockViewRequest.rows.push({
       id: hit.id,
-      key: hit.key,
+      key: hit.fields.key,
       value: hit.fields,
     });
   });
@@ -652,22 +640,20 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
 const getDocsByReplicationKey = async (authorizationContext) => {
   return getDocsByReplicationKeyNouveau(authorizationContext).then(results => {
   //return db.medic.query('medic/docs_by_replication_key', { keys: authorizationContext.subjectIds }).then(results => {
-    const viewResultsById = groupViewResultsById(authorizationContext, results);
-
     // leverage binary search when looking up subjects
     const sortedSubjects = prepareForSortedSearch(authorizationContext.subjectIds);
 
     const docsByReplicationKey = [];
 
     results.rows.forEach(row => {
-      const { key: subject, value: { submitter } = {} } = row;
-      const priv = row?.value?.private === 'true'; // private is a reserved word
+      const { value: { submitter, subject } = {} } = row;
+      const priv = row?.value?.private; // private is a reserved word
       const allowedSubmitter = () => sortedIncludes(sortedSubjects, submitter);
       if (isSensitive(authorizationContext.userCtx, subject, submitter, priv, allowedSubmitter)) {
         return;
       }
 
-      if (isAllowedDepth(authorizationContext, viewResultsById[row.id])) {
+      if (isAllowedDepth(authorizationContext, row.value)) {
         docsByReplicationKey.push(row);
       }
     });
@@ -702,7 +688,7 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = tru
 const getViewResults = (doc) => {
   return {
     contactsByDepth: viewMapUtils.getViewMapFn('medic', 'contacts_by_depth')(doc),
-    replicationKeys: viewMapUtils.getViewMapFn('medic', 'docs_by_replication_key')(doc),
+    replicationKeys: viewMapUtils.getNouveauViewMapFn('medic', 'docs_by_replication_key')(doc),
     couchDbUser: couchDbUser(doc)
   };
 };
