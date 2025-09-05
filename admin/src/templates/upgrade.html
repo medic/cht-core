@@ -125,11 +125,12 @@
               <div ng-show="versions.betas.length">
                 <div class="row selection-heading">
                   <div class="col-xs-5" translate>instance.upgrade.version</div>
-                  <div class="col-xs-7" translate>instance.upgrade.date</div>
+                  <div class="col-xs-3" translate>instance.upgrade.date</div>
+                  <div class="col-xs-3" translate>instance.upgrade.base_version</div>
                 </div>
                 <ul>
                   <li ng-repeat="release in versions.betas" class="row">
-                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" can-upgrade="canUpgrade"/>
+                    <release release="release" show-base-version="true" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" can-upgrade="canUpgrade"/>
                   </li>
                 </ul>
               </div>
@@ -143,11 +144,12 @@
               <div ng-show="versions.branches.length">
                 <div class="row selection-heading">
                   <div class="col-xs-5" translate>instance.upgrade.version</div>
-                  <div class="col-xs-7" translate>instance.upgrade.date</div>
+                  <div class="col-xs-3" translate>instance.upgrade.date</div>
+                  <div class="col-xs-3" translate>instance.upgrade.base_version</div>
                 </div>
                 <ul>
                   <li ng-repeat="release in versions.branches" class="row">
-                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" can-upgrade="canUpgrade" />
+                    <release release="release" show-base-version="true" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" can-upgrade="canUpgrade" />
                   </li>
                 </ul>
               </div>
