@@ -21,7 +21,7 @@ setResolver() {
 
 if [[ ${#SERVERS[@]} -eq 1 ]]; then
     {
-      basic_auth=$(echo -n "$COUCHDB_USER:$COUCHDB_PASSWORD" | base64)
+      basic_auth=$(echo -n "$COUCHDB_USER:$COUCHDB_PASSWORD" | base64 -w 0)
       echo "  option httpchk"
       echo "  http-check send meth GET uri /_up hdr Authorization 'Basic ${basic_auth}'" >> "$BACKEND"
       echo "  http-check expect status 200" >> "$BACKEND"
