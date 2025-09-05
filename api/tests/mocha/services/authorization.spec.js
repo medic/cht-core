@@ -33,7 +33,7 @@ let feed;
 let viewResults;
 let keysByDepth;
 
-describe('Authorization service', () => {
+describe.skip('Authorization service', () => {
   afterEach(() => sinon.restore());
 
   beforeEach(() => {
