@@ -29,7 +29,6 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       if (hasEnabledLanguages(languages)) {
         return languages.some(translation => translation.enabled !== false && translation.locale === doc.code);
       }
-      $scope.error = $translate.instant('language.settings.invalid');
       return true;
     };
 
@@ -52,11 +51,6 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
     };
 
     const updateLanguageSettings = (languages, doc, enabled) => {
-      if (!languages) {
-        $log.error('No languages settings found.');
-        return;
-      }
-
       let language = languages.find(language => language.locale === doc.code);
       if (!language) {
         language = { locale: doc.code };

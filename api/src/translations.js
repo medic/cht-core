@@ -28,6 +28,7 @@ const LOCAL_NAME_MAP = {
 };
 
 const RTL_LANGUAGES =  ['ar'];
+const ALL_ENABLED = Object.keys(LOCAL_NAME_MAP).map(code => ({ locale: code, enabled: true }));
 
 const extractLocaleCode = filename => {
   const parts = TRANSLATION_FILE_NAME_REGEX.exec(filename);
@@ -113,7 +114,7 @@ const getEnabledLocales = async () => {
   const settings = await settingsService.get();
   const translationDocs = await getTranslationDocs();
 
-  const languages = settings.languages || translationDocs.map(doc => ({ locale: doc.code, enabled: true }));
+  const languages = settings.languages || ALL_ENABLED;
 
   const enabledLocaleCodes = languages
     .filter(language => language.enabled !== false)
