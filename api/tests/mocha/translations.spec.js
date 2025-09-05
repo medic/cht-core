@@ -226,6 +226,7 @@ describe('translations', () => {
           type: 'translations',
           code: 'fr',
           name: 'Français (French)',
+          enabled: true,
           generic: {
             hello: 'Hello UPDATED',
             bye: 'Goodbye UPDATED',
@@ -266,6 +267,7 @@ describe('translations', () => {
         type: 'translations',
         code: 'ar',
         name: 'عربي (Arabic)',
+        enabled: true,
         generic: {
           hello: 'Hello UPDATED',
           bye: 'Goodbye UPDATED',
@@ -307,6 +309,7 @@ describe('translations', () => {
             added: 'ADDED'
           },
           name: 'Français (French)',
+          enabled: true,
           rtl: false,
         }
       ]);
@@ -611,20 +614,19 @@ describe('translations', () => {
     });
 
     describe('without new "languages" setting', () => {
-      it('should only all languages', async () => {
+      it('should only return translation docs enabled in translation doc', async () => {
         sinon.stub(settings, 'get').resolves({});
         sinon.stub(db.medic, 'allDocs').resolves({
           rows: [
-            { doc: { _id: 'messages-en', type: 'translations', code: 'en', generic: {} } },
-            { doc: { _id: 'messages-fr', type: 'translations', code: 'fr', generic: {} } },
-            { doc: { _id: 'messages-es', type: 'translations', code: 'es', generic: {} } },
+            { doc: { _id: 'messages-en', type: 'translations', code: 'en', generic: {}, enabled: true } },
+            { doc: { _id: 'messages-fr', type: 'translations', code: 'fr', generic: {}, enabled: false } },
+            { doc: { _id: 'messages-es', type: 'translations', code: 'es', generic: {}, enabled: true } },
           ],
         });
         const enabledLocales = await translations.getEnabledLocales();
         chai.expect(enabledLocales).to.deep.equal([
-          { _id: 'messages-en', type: 'translations', code: 'en', generic: {} },
-          { _id: 'messages-fr', type: 'translations', code: 'fr', generic: {} },
-          { _id: 'messages-es', type: 'translations', code: 'es', generic: {} },
+          { _id: 'messages-en', type: 'translations', code: 'en', generic: {}, enabled: true },
+          { _id: 'messages-es', type: 'translations', code: 'es', generic: {}, enabled: true },
         ]);
       });
     });

@@ -14,20 +14,23 @@ export class LanguagesService {
 
   async get(): Promise<Object> {
     const settings = await this.settingsService.get();
+    if (
+      settings.languages &&
+      Array.isArray(settings.languages) &&
+      settings.languages.length > 0
+    ) {
+      const result = await this.dbService.get().query('medic-client/doc_by_type', {
+        startkey: ['translations', false],
+        endkey: ['translations', true],
+      });
+      return result.rows
+        .filter(row => settings.languages.some(
+          language => language.enabled !== false && language.locale === row.value.code,
+        ))
+        .map(row => row.value);
+    }
 
-    const enabledLanguages = (settings.languages || [])
-      .filter(language => language.enabled !== false)
-      .map(language => language.locale);
-
-    const result = await this.dbService
-      .get()
-      .query('medic-client/doc_by_type', { key: ['translations'], include_docs: true });
-
-    return result.rows
-      .filter(row => enabledLanguages.includes(row.doc.code) || !enabledLanguages.length)
-      .map(row => ({
-        code: row.doc.code,
-        name: row.doc.name,
-      }));
+    const result = await this.dbService.get().query('medic-client/doc_by_type', { key: ['translations', true] });
+    return result.rows.map(row => row.value);
   }
 }

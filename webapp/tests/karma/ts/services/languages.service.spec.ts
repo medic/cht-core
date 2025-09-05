@@ -23,36 +23,27 @@ describe('Languages service', () => {
       rows: [
         {
           id: 'messages-es',
-          key: ['translations'],
-          doc: {
-            _id: 'messages-es',
+          key: ['translations', false],
+          value: {
             code: 'es',
-            name: 'Español (Spanish)',
-            generic: {},
-            custom: {},
+            name: 'Español (Spanish)'
           }
         },
         {
           id: 'messages-en',
-          key: ['translations'],
-          doc: {
-            _id: 'messages-en',
+          key: ['translations', true],
+          value: {
             code: 'en',
-            name: 'English',
-            generic: {},
-            custom: {},
+            name: 'English'
           }
         },
         {
           id: 'messages-fr',
-          key: ['translations'],
-          doc: {
-            _id: 'messages-fe',
+          key: ['translations', true],
+          value: {
             code: 'fr',
-            name: 'Français (French)',
-            generic: {},
-            custom: {},
-          },
+            name: 'Français (French)'
+          }
         },
       ],
     });
@@ -84,7 +75,7 @@ describe('Languages service', () => {
   });
 
   describe('without new "languages" setting', () => {
-    it('should return all translations', async () => {
+    it('should only return translation docs enabled in translation doc', async () => {
       settingsService.get.resolves({});
       const enabledLocales = await languagesService.get();
       expect(enabledLocales).to.deep.equal([
