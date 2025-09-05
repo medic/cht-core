@@ -5,6 +5,7 @@ const logger = require('@medic/logger');
 const config = require('../config');
 const africasTalking = require('./africas-talking');
 const rapidPro = require('./rapidpro');
+const nepalDoITSMS = require('./nepal-doit-sms');
 const records = require('../services/records');
 const environment = require('@medic/environment');
 
@@ -14,6 +15,7 @@ const DB_CHECKING_INTERVAL = environment.isTesting ? 1000 : 1000 * 60;
 const SMS_SENDING_SERVICES = {
   'africas-talking': africasTalking,
   'rapidpro': rapidPro,
+  'nepal-doit-sms': nepalDoITSMS,
   // medic-gateway -- ignored because it's a pull not a push service
 };
 const DEFAULT_CONFIG = { outgoing_service: 'medic-gateway' };

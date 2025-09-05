@@ -16,3 +16,15 @@ export const normalizeFreetext = (
 ): string => {
   return freetext.trim().toLowerCase();
 };
+
+/** @internal */
+export type QueryKey = string | string[];
+
+/** @internal */
+export interface QueryParams {
+  key?: QueryKey;
+  startKey?: QueryKey;
+  endKey?: QueryKey;
+  limit?: number;
+  cursor?: Nullable<string>;
+}

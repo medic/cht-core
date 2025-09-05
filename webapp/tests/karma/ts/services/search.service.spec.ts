@@ -9,6 +9,7 @@ import { SessionService } from '@mm-services/session.service';
 import { SearchFactoryService } from '@mm-services/search.service';
 import { DbService } from '@mm-services/db.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 describe('Search service', () => {
   let service:SearchService;
@@ -31,10 +32,11 @@ describe('Search service', () => {
 
     TestBed.configureTestingModule({
       providers: [
+        { provide: CHTDatasourceService, useValue: { } },
         { provide: DbService, useValue: { get: () => db } },
         { provide: GetDataRecordsService, useValue: { get: GetDataRecords } },
         { provide: SessionService, useValue: session },
-        { provide: SearchFactoryService, useValue: { get: () => searchStub } },
+        { provide: SearchFactoryService, useValue: { get: sinon.stub().resolves(searchStub) } },
         { provide: PerformanceService, useValue: performanceService },
       ],
     });
@@ -165,11 +167,11 @@ describe('Search service', () => {
     it('sends correct params to search service', () => {
       GetDataRecords.resolves([{ _id: 'a' }]);
       return service
-        .search('contacts', {}, {}, { extensions: true })
+        .search('contacts', {}, { sortByLastVisitedDate: false })
         .then(result => {
           expect(searchStub.callCount).to.equal(1);
           expect(searchStub.args[0])
-            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { extensions: true }]);
+            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { sortByLastVisitedDate: false }]);
           expect(result).to.deep.equal([{ _id: 'a' }]);
         });
     });
@@ -177,11 +179,11 @@ describe('Search service', () => {
     it('does not query last visited dates when not set', () => {
       GetDataRecords.resolves([{ _id: 'a' }]);
       return service
-        .search('contacts', {}, {}, { displayLastVisitedDate: false })
+        .search('contacts', {}, { sortByLastVisitedDate: false })
         .then(result => {
           expect(searchStub.callCount).to.equal(1);
           expect(searchStub.args[0])
-            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { displayLastVisitedDate: false }]);
+            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { sortByLastVisitedDate: false }]);
           expect(result).to.deep.equal([{ _id: 'a' }]);
           expect(db.query.callCount).to.equal(0);
         });
@@ -226,11 +228,11 @@ describe('Search service', () => {
         });
 
       return service
-        .search('contacts', {}, {}, { displayLastVisitedDate: true })
+        .search('contacts', {}, { displayLastVisitedDate: true })
         .then(result => {
           expect(searchStub.callCount).to.equal(1);
           expect(searchStub.args[0])
-            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { displayLastVisitedDate: true }]);
+            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { sortByLastVisitedDate: undefined }]);
           expect(db.query.callCount).to.equal(2);
           expect(db.query.args[0]).to.deep.equal([
             'medic-client/visits_by_date',
@@ -307,17 +309,17 @@ describe('Search service', () => {
           ]
         });
 
-      const extensions = {
-        displayLastVisitedDate: true,
-        visitCountSettings: {
-          visitCountGoal: 2,
-          monthStartDate: 25
-        },
-        sortByLastVisitedDate: 'yes!!!!'
-      };
+      const extensions = { sortByLastVisitedDate: true };
 
       return service
-        .search('contacts', {}, {}, extensions )
+        .search('contacts', {}, {
+          ...extensions,
+          displayLastVisitedDate: true,
+          visitCountSettings: {
+            visitCountGoal: 2,
+            monthStartDate: 25
+          }
+        })
         .then(result => {
           expect(searchStub.callCount).to.equal(1);
           expect(searchStub.args[0])
@@ -339,21 +341,21 @@ describe('Search service', () => {
               lastVisitedDate: moment('2018-08-10 00:00:00').valueOf(),
               visitCountGoal: 2,
               visitCount: 4,
-              sortByLastVisitedDate: 'yes!!!!'
+              sortByLastVisitedDate: true
             },
             {
               _id: '2',
               lastVisitedDate: -1,
               visitCountGoal: 2,
               visitCount: 0,
-              sortByLastVisitedDate: 'yes!!!!'
+              sortByLastVisitedDate: true
             },
             {
               _id: '3',
               lastVisitedDate: moment('2018-07-25 00:00:00').valueOf(),
               visitCountGoal: 2,
               visitCount: 1,
-              sortByLastVisitedDate: 'yes!!!!'
+              sortByLastVisitedDate: true
             }
           ]);
         });
@@ -401,7 +403,7 @@ describe('Search service', () => {
         }
       };
 
-      return service.search('contacts', {}, {}, extensions).then(actual => {
+      return service.search('contacts', {}, extensions).then(actual => {
         expect(actual).to.deep.equal([
           {
             _id: '1',
@@ -449,17 +451,17 @@ describe('Search service', () => {
           ]
         });
 
-      const extensions = {
-        displayLastVisitedDate: true,
-        visitCountSettings: {
-          visitCountGoal: 2,
-          monthStartDate: 25
-        },
-        sortByLastVisitedDate: 'yes!!!!'
-      };
+      const extensions = { sortByLastVisitedDate: true };
 
       return service
-        .search('contacts', {}, {}, extensions )
+        .search('contacts', {}, {
+          ...extensions,
+          displayLastVisitedDate: true,
+          visitCountSettings: {
+            visitCountGoal: 2,
+            monthStartDate: 25
+          },
+        } )
         .then(result => {
           expect(searchStub.callCount).to.equal(1);
           expect(searchStub.args[0])
@@ -483,21 +485,21 @@ describe('Search service', () => {
               lastVisitedDate: moment('2018-08-10 00:00:00').valueOf(),
               visitCountGoal: 2,
               visitCount: 4,
-              sortByLastVisitedDate: 'yes!!!!'
+              sortByLastVisitedDate: true
             },
             {
               _id: '2',
               lastVisitedDate: -1,
               visitCountGoal: 2,
               visitCount: 0,
-              sortByLastVisitedDate: 'yes!!!!'
+              sortByLastVisitedDate: true
             },
             {
               _id: '3',
               lastVisitedDate: moment('2018-07-25 00:00:00').valueOf(),
               visitCountGoal: 2,
               visitCount: 1,
-              sortByLastVisitedDate: 'yes!!!!'
+              sortByLastVisitedDate: true
             }
           ]);
         });
@@ -527,16 +529,18 @@ describe('Search service', () => {
         });
 
       const extensions = {
-        displayLastVisitedDate: true,
-        visitCountSettings: {
-          visitCountGoal: 2,
-          monthStartDate: 25
-        },
-        sortByLastVisitedDate: 'yes!!!!'
+        sortByLastVisitedDate: true
       };
 
       return service
-        .search('contacts', {}, {}, extensions )
+        .search('contacts', {}, {
+          ...extensions,
+          displayLastVisitedDate: true,
+          visitCountSettings: {
+            visitCountGoal: 2,
+            monthStartDate: 25
+          },
+        } )
         .then(result => {
           expect(searchStub.callCount).to.equal(1);
           expect(searchStub.args[0])
@@ -560,21 +564,21 @@ describe('Search service', () => {
               lastVisitedDate: 0,
               visitCountGoal: 2,
               visitCount: 0,
-              sortByLastVisitedDate: 'yes!!!!'
+              sortByLastVisitedDate: true
             },
             {
               _id: '2',
               lastVisitedDate: -1,
               visitCountGoal: 2,
               visitCount: 0,
-              sortByLastVisitedDate: 'yes!!!!'
+              sortByLastVisitedDate: true
             },
             {
               _id: '3',
               lastVisitedDate: moment('2018-07-25 00:00:00').valueOf(),
               visitCountGoal: 2,
               visitCount: 1,
-              sortByLastVisitedDate: 'yes!!!!'
+              sortByLastVisitedDate: true
             }
           ]);
         });
@@ -616,14 +620,14 @@ describe('Search service', () => {
         });
 
       return service
-        .search('contacts', {}, {}, { displayLastVisitedDate: true, sortByLastVisitedDate: true })
+        .search('contacts', {}, { displayLastVisitedDate: true, sortByLastVisitedDate: true })
         .then(result => {
           expect(searchStub.callCount).to.equal(1);
           expect(searchStub.args[0]).to.deep.equal([
             'contacts',
             {},
             { limit: 50, skip: 0 },
-            { displayLastVisitedDate: true, sortByLastVisitedDate: true }
+            { sortByLastVisitedDate: true }
           ]);
           expect(db.query.callCount).to.equal(1);
           expect(db.query.args[0]).to.deep.equal([
@@ -670,14 +674,14 @@ describe('Search service', () => {
 
   describe('provided docIds', () => {
     it('merges provided docIds with search results', () => {
-      searchStub.resolves({ docIds: [1, 2, 3, 4] });
-      GetDataRecords.withArgs([1, 2, 3, 4, 5, 6, 7, 8]).resolves([
+      searchStub.resolves({ docIds: ['1', '2', '3', '4'] });
+      GetDataRecords.withArgs(['1', '2', '3', '4', '5', '6', '7', '8']).resolves([
         { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }, { _id: 6 }, { _id: 7 }, { _id: 8 }
       ]);
 
-      return service.search('contacts', {}, {}, {}, [5, 6, 7, 8]).then(result => {
+      return service.search('contacts', {}, { additionalDocIds: ['5', '6', '7', '8'] }).then(result => {
         expect(GetDataRecords.callCount).to.equal(1);
-        expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8]);
+        expect(GetDataRecords.args[0][0]).to.deep.equal(['1', '2', '3', '4', '5', '6', '7', '8']);
         expect(result).to.deep.equal([
           { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }, { _id: 6 }, { _id: 7 }, { _id: 8 }
         ]);
@@ -685,14 +689,14 @@ describe('Search service', () => {
     });
 
     it('merges the lists keeping records unique', () => {
-      searchStub.resolves({ docIds: [1, 2, 3, 4] });
-      GetDataRecords.withArgs([1, 2, 3, 4, 5]).resolves([
+      searchStub.resolves({ docIds: ['1', '2', '3', '4'] });
+      GetDataRecords.withArgs(['1', '2', '3', '4', '5']).resolves([
         { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }
       ]);
 
-      return service.search('contacts', {}, {}, {}, [1, 2, 3, 4, 5]).then(result => {
+      return service.search('contacts', {}, { additionalDocIds: ['1', '2', '3', '4', '5'] }).then(result => {
         expect(GetDataRecords.callCount).to.equal(1);
-        expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3, 4, 5]);
+        expect(GetDataRecords.args[0][0]).to.deep.equal(['1', '2', '3', '4', '5']);
         expect(result).to.deep.equal([
           { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }
         ]);
@@ -717,9 +721,9 @@ describe('Search service', () => {
           ]
         });
 
-      const extensions = { displayLastVisitedDate: true };
+      const extensions = { displayLastVisitedDate: true, additionalDocIds: ['3', '4'] };
 
-      return service.search('contacts', {}, {}, extensions, ['3', '4']).then(results => {
+      return service.search('contacts', {}, extensions).then(results => {
         expect(GetDataRecords.callCount).to.equal(1);
         expect(GetDataRecords.args[0][0]).to.deep.equal(['1', '2', '3', '4']);
         expect(db.query.callCount).to.equal(2);
@@ -740,14 +744,14 @@ describe('Search service', () => {
     });
 
     it('works for reports too', () => {
-      searchStub.resolves({ docIds: [1, 2, 3] });
-      GetDataRecords.withArgs([1, 2, 3, 4, 5]).resolves([
+      searchStub.resolves({ docIds: ['1', '2', '3'] });
+      GetDataRecords.withArgs(['1', '2', '3', '4', '5']).resolves([
         { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }
       ]);
 
-      return service.search('reports', {}, {}, {}, [1, 2, 3, 4, 5]).then(result => {
+      return service.search('reports', {}, { additionalDocIds: ['1', '2', '3', '4', '5'] }).then(result => {
         expect(GetDataRecords.callCount).to.equal(1);
-        expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3, 4, 5]);
+        expect(GetDataRecords.args[0][0]).to.deep.equal(['1', '2', '3', '4', '5']);
         expect(result).to.deep.equal([
           { _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }
         ]);
@@ -760,7 +764,7 @@ describe('Search service', () => {
         { _id: 1 }, { _id: 2 }, { _id: 3 }
       ]);
 
-      return service.search('reports', {}, {}, {}, []).then(result => {
+      return service.search('reports', {}, { additionalDocIds: [] }).then(result => {
         expect(GetDataRecords.callCount).to.equal(1);
         expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3]);
         expect(result).to.deep.equal([
@@ -775,7 +779,7 @@ describe('Search service', () => {
         { _id: 1 }, { _id: 2 }, { _id: 3 }
       ]);
 
-      return service.search('reports', {}, {}, {}, undefined).then(result => {
+      return service.search('reports', {}, { additionalDocIds: undefined }).then(result => {
         expect(GetDataRecords.callCount).to.equal(1);
         expect(GetDataRecords.args[0][0]).to.deep.equal([1, 2, 3]);
         expect(result).to.deep.equal([
