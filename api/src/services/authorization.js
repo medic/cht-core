@@ -392,10 +392,12 @@ const getReplicationKeys = (viewResults) => {
     return replicationKeys;
   }
 
-  replicationKeys.push(
-    ...(viewResults.replicationKeys.key || []),
-    viewResults.replicationKeys.submitter,
-  );
+  if (Array.isArray(viewResults.replicationKeys.key)) {
+    replicationKeys.push(...viewResults.replicationKeys.key);
+  } else {
+    replicationKeys.push(viewResults.replicationKeys.key);
+  }
+  replicationKeys.push(viewResults.replicationKeys.submitter);
 
   return replicationKeys;
 };
