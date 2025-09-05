@@ -2,7 +2,7 @@
     <span class="label label-info release-name" title="{{release | buildVersion}}">{{release | buildVersion}}</span>
 </div>
 <div class="col-xs-3" ng-if="!dateFormat" ng-bind-html="release.time | date"></div>
-<div class="col-xs-3"2 ng-if="dateFormat === 'medium'" ng-bind-html="release.time | date:'medium'"></div>
+<div class="col-xs-3" ng-if="dateFormat === 'medium'" ng-bind-html="release.time | date:'medium'"></div>
 <div class="col-xs-1">
   <span ng-if="showBaseVersion">{{ release.base_version }}</span>
 </div>
