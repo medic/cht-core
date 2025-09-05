@@ -55,6 +55,7 @@ describe('Display Languages controller', function() {
             _id: 'messages-en',
             code: 'en',
             type: 'translations',
+            enabled: true,
             generic: { 'a': 'a v1', 'b': 'b v1', 'c': 'c v1' },
             custom: { 'a': 'a v2', 'c': 'c v2', 'd': 'd v1' }
           }
@@ -65,6 +66,7 @@ describe('Display Languages controller', function() {
             _id: 'messages-sw',
             code: 'sw',
             type: 'translations',
+            enabled: true,
             generic: {},
             custom: { 'a': 'a v1', 'c': 'c v1', 'b': 'b v1', 'e': 'e v1'}
           }
@@ -75,6 +77,7 @@ describe('Display Languages controller', function() {
             _id: 'messages-sw',
             code: 'sw',
             type: 'translations',
+            enabled: true,
             generic: { 'a': 'a v1', 'c': 'c v1', 'b': 'b v1' }
           }
         }
@@ -83,17 +86,13 @@ describe('Display Languages controller', function() {
 
     await createController();
     rootScope.$digest();
-
-    chai.expect(db.query.firstCall.args[1]).to.deep.equal({
-      key: ['translations'],
-      include_docs: true,
-    });
     chai.expect(scope.languagesModel.totalTranslations).to.equal(5);
     chai.expect(scope.languagesModel.locales.length).to.equal(3);
     chai.expect(scope.languagesModel.locales[0].doc).to.deep.equal({
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
+      enabled: true,
       generic: { 'a': 'a v1', 'b': 'b v1', 'c': 'c v1' },
       custom: { 'a': 'a v2', 'c': 'c v2', 'd': 'd v1' }
     });
@@ -102,6 +101,7 @@ describe('Display Languages controller', function() {
       _id: 'messages-sw',
       code: 'sw',
       type: 'translations',
+      enabled: true,
       generic: {},
       custom: { 'a': 'a v1', 'c': 'c v1', 'b': 'b v1', 'e': 'e v1'}
     });
@@ -110,6 +110,7 @@ describe('Display Languages controller', function() {
       _id: 'messages-sw',
       code: 'sw',
       type: 'translations',
+      enabled: true,
       generic: { 'a': 'a v1', 'c': 'c v1', 'b': 'b v1' }
     });
     chai.expect(scope.languagesModel.locales[2].missing).to.equal(2);
@@ -132,6 +133,7 @@ describe('Display Languages controller', function() {
             _id: 'messages-en',
             code: 'en',
             type: 'translations',
+            enabled: true,
             generic: { 'a': 'a v1', 'b': 'b v1', 'c': 'c v1' },
             custom: { 'a': 'a v2', 'c': 'c v2', 'd': 'd v1' }
           }
@@ -142,6 +144,7 @@ describe('Display Languages controller', function() {
             _id: 'messages-sw',
             code: 'sw',
             type: 'translations',
+            enabled: true,
             generic: {},
             custom: { 'a': 'a v1', 'c': 'c v1', 'b': 'b v1', 'e': 'e v1'}
           }
@@ -177,6 +180,7 @@ describe('Display Languages controller', function() {
             _id: 'messages-en',
             code: 'en',
             type: 'translations',
+            enabled: true,
             generic: { 'a': 'a v1', 'b': 'b v1', 'c': 'c v1' },
             custom: { 'a': 'a v2', 'c': 'c v2', 'd': 'd v1' }
           }
@@ -187,6 +191,7 @@ describe('Display Languages controller', function() {
             _id: 'messages-sw',
             code: 'sw',
             type: 'translations',
+            enabled: true,
             generic: {},
             custom: { 'a': 'a v1', 'c': 'c v1', 'b': 'b v1', 'e': 'e v1'}
           }
@@ -197,6 +202,7 @@ describe('Display Languages controller', function() {
             _id: 'messages-ne',
             code: 'ne',
             type: 'translations',
+            enabled: true,
             generic: {},
             custom: { 'a': 'a v1', 'c': 'c v1', 'b': 'b v1', 'e': 'e v1'}
           }

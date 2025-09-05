@@ -160,4 +160,5 @@ module.exports = {
   },
   getEnabledLocales,
   getTranslationDocs,
+  localeNames: () => ({ ...LOCAL_NAME_MAP }),
 };

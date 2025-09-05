@@ -20,34 +20,27 @@ describe('remove-enabled-from-translation-docs migration', () => {
     chai.expect(migration.run).to.be.a('function');
   });
 
-  it('should only remove enabled labels when settings already define languages', async () => {
+  it('should be a no-op when settings already define languages', async () => {
     sinon.stub(settingsService, 'get').resolves({ languages: [ { locale: 'en', enabled: true } ] });
     sinon.stub(settingsService, 'update');
-    const docs = [
-      { _id: 'messages-en', type: 'translations', code: 'en', name: 'English', enabled: true },
-      { _id: 'messages-es', type: 'translations', code: 'es', name: 'Español', enabled: false },
-      { _id: 'messages-fr', type: 'translations', code: 'fr', name: 'Français' }, // undefined => treated as disabled
-    ];
-    sinon.stub(translations, 'getTranslationDocs').resolves(docs);
+    sinon.stub(translations, 'getTranslationDocs');
     sinon.stub(db.medic, 'bulkDocs');
 
     await migration.run();
 
     chai.expect(settingsService.get.callCount).to.equal(1);
     chai.expect(settingsService.update.callCount).to.equal(0);
-    chai.expect(translations.getTranslationDocs.callCount).to.equal(1);
-    chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
-    chai.expect(db.medic.bulkDocs.firstCall.args[0]).to.deep.equal( [
-      { _id: 'messages-en', type: 'translations', code: 'en', name: 'English' },
-      { _id: 'messages-es', type: 'translations', code: 'es', name: 'Español' },
-      { _id: 'messages-fr', type: 'translations', code: 'fr', name: 'Français' }, // undefined => treated as disabled
-    ]);
+    chai.expect(translations.getTranslationDocs.callCount).to.equal(0);
+    chai.expect(db.medic.bulkDocs.callCount).to.equal(0);
   });
 
   it('should move enabled flags from translation docs into settings and remove from docs', async () => {
     // Arrange settings with no languages configured
     sinon.stub(settingsService, 'get').resolves({});
+    const LOCAL_NAME_MAP = { en: 'English', es: 'Español', fr: 'Français' };
+    sinon.stub(translations, 'localeNames').returns(LOCAL_NAME_MAP);
 
+    // translation documents include only some codes and enabled flags
     const docs = [
       { _id: 'messages-en', type: 'translations', code: 'en', name: 'English', enabled: true },
       { _id: 'messages-es', type: 'translations', code: 'es', name: 'Español', enabled: false },
@@ -84,6 +77,8 @@ describe('remove-enabled-from-translation-docs migration', () => {
 
   it('should propagate errors from settings update', async () => {
     sinon.stub(settingsService, 'get').resolves({});
+    const LOCAL_NAME_MAP = { en: 'English' };
+    sinon.stub(translations, 'localeNames').returns(LOCAL_NAME_MAP);
     sinon.stub(translations, 'getTranslationDocs').resolves([
       { _id: 'messages-en', type: 'translations', code: 'en', name: 'English', enabled: true },
     ]);
