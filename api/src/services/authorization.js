@@ -591,16 +591,10 @@ const isTaskDoc = (row) => row.value && row.value.type === 'task';
 const prepareForSortedSearch = array => array.map(element => String(element)).sort();
 const sortedIncludes = (sortedArray, element) => _.sortedIndexOf(sortedArray, String(element)) !== -1;
 
-const escapeKeys = (keys) => {
-  const specialChars = [
-    '+', '-', '&', '|', '!',
-    '^', '"',  '~',  '*', '?', ':'
-  ];
+const specialChars = [ '+', '-', '&', '|', '!', '^', '"',  '~',  '*', '?', ':' ];
 
-  const escapedChars = specialChars.map(char => {
-    return char.replace(/[.*+?^${}()~\-|[\]\\]/g, '\\$&');
-  });
-
+const escapedChars = specialChars.map(char => char.replace(/[.*+?^${}()~\-|[\]\\]/g, '\\$&'));
+const escapeKeys = (key) => {
   // Move hyphen to the end to avoid range interpretation
   const charSet = escapedChars.join('');
   const finalCharSet = charSet.includes('\\-')
@@ -608,7 +602,7 @@ const escapeKeys = (keys) => {
     : charSet;
 
   const pattern = new RegExp(`([${finalCharSet}])`, 'g');
-  return keys.replace(pattern, `\\$1`);
+  return String(key).replace(pattern, `\\$1`);
 };
 
 
