@@ -613,23 +613,31 @@ const escapeKeys = (keys) => {
 
 
 const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
-  const keys = authorizationContext.subjectIds.join(' or ');
-  const response = await request.post({
-    uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
-    body: {
-      q: `key:(${escapeKeys(keys)})`,
-      limit: 200000,
-    }
-  });
-
+  const allKeys = [...authorizationContext.subjectIds];
   const mockViewRequest = { rows: [] };
-  response.hits.forEach(hit => {
-    mockViewRequest.rows.push({
-      id: hit.id,
-      key: hit.fields.key,
-      value: hit.fields,
+
+  while (allKeys.length) {
+    const chunk = allKeys.splice(0, 1000);
+    const response = await request.post({
+      uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
+      body: {
+        q: `key:(${chunk.map(escapeKeys).join(' OR ')})`,
+        limit: 200000,
+      }
     });
-  });
+
+    if (!response.hits || !response.hits.length) {
+      continue;
+    }
+
+    response.hits.forEach(hit => {
+      mockViewRequest.rows.push({
+        id: hit.id,
+        key: hit.fields.key,
+        value: hit.fields,
+      });
+    });
+  }
 
   return mockViewRequest;
 };
@@ -641,7 +649,6 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
  */
 const getDocsByReplicationKey = async (authorizationContext) => {
   return getDocsByReplicationKeyNouveau(authorizationContext).then(results => {
-  //return db.medic.query('medic/docs_by_replication_key', { keys: authorizationContext.subjectIds }).then(results => {
     // leverage binary search when looking up subjects
     const sortedSubjects = prepareForSortedSearch(authorizationContext.subjectIds);
 
