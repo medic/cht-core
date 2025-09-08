@@ -453,5 +453,35 @@ describe('ResourceIcons service', () => {
           expect(consoleErrorMock.args[0][0]).to.equal('Error updating icons');
         });
     });
+
+    it('should not fail when doc is malformed (empty object)', () => {
+      get.resolves({});
+      const service = getService();
+      return service.getDocResources('partners').then(result => {
+        expect(result).to.deep.equal([]);
+        expect(get.callCount).to.equal(4);
+        expect(get.args[3]).to.deep.equal(['partners']);
+      });
+    });
+
+    it('should not fail when doc has null resources', () => {
+      get.resolves({ resources: null });
+      const service = getService();
+      return service.getDocResources('partners').then(result => {
+        expect(result).to.deep.equal([]);
+        expect(get.callCount).to.equal(4);
+        expect(get.args[3]).to.deep.equal(['partners']);
+      });
+    });
+
+    it('should not fail when doc has undefined resources', () => {
+      get.resolves({ resources: undefined });
+      const service = getService();
+      return service.getDocResources('partners').then(result => {
+        expect(result).to.deep.equal([]);
+        expect(get.callCount).to.equal(4);
+        expect(get.args[3]).to.deep.equal(['partners']);
+      });
+    });
   });
 });
