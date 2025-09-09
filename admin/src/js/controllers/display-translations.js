@@ -55,8 +55,7 @@ angular.module('controllers').controller('DisplayTranslationsCtrl',
     const updateTranslations = function() {
       return DB()
         .query('medic-client/doc_by_type', {
-          startkey: [ 'translations', false ],
-          endkey: [ 'translations', true ],
+          key: [ 'translations' ],
           include_docs: true
         })
         .then(function(results) {
@@ -78,7 +77,7 @@ angular.module('controllers').controller('DisplayTranslationsCtrl',
     };
 
 
-    updateTranslations();
+    $scope.setupPromise = updateTranslations();
 
     $scope.editTranslation = function(key) {
       Modal({
