@@ -8,13 +8,21 @@ const DOC_TYPE = 'form';
 module.exports = {
 
   /**
+   * @param {Object} doc The doc to find the name of xform attachment on.
+   * @return {String} The name of xform xml attachment.
+   */
+  getXFormAttachmentName: doc => {
+    return Object.keys(doc && doc._attachments || {})
+      .find(name => name === 'xml' ||
+            (name.endsWith('.xml') && name !== 'model.xml'));
+  },
+
+  /**
    * @param {Object} doc The doc to find the xform attachment on.
    * @return {String} The xform xml content.
    */
   getXFormAttachment: doc => {
-    const name = Object.keys(doc && doc._attachments || {})
-      .find(name => name === 'xml' ||
-            (name.endsWith('.xml') && name !== 'model.xml'));
+    const name = module.exports.getXFormAttachmentName(doc);
     return name && doc._attachments[name];
   },
 
@@ -28,8 +36,6 @@ module.exports = {
         startkey: FORM_DOC_ID_PREFIX,
         endkey: `${FORM_DOC_ID_PREFIX}\ufff0`,
         include_docs: true,
-        attachments: true,
-        binary: true,
       })
       .then(response => {
         return response.rows
