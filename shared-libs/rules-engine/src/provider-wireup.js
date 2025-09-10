@@ -25,7 +25,7 @@ module.exports = {
    * @param {Boolean} settings.enableTasks Flag to enable tasks
    * @param {Boolean} settings.enableTargets Flag to enable targets
    * @param {Boolean} [settings.rulesAreDeclarative=true] Flag to indicate the content of settings.rules. When true,
-   * rules is processed as native JavaScript. When false, nools is used.
+   * rules is processed as native JavaScript. When false, an error is thrown.
    * @param {RulesEmitter} [settings.customEmitter] Optional custom RulesEmitter object
    * @param {number} settings.monthStartDate reporting interval start date
    * @param {Object} userDoc User's hydrated contact document
@@ -37,13 +37,14 @@ module.exports = {
     }
 
     const { enableTasks=true, enableTargets=true } = settings;
+
+    if (!settings.rulesAreDeclarative) {
+      throw Error('Rules Engine: Rules are not declarative. Updates are required');
+    }
+
     wireupOptions = { enableTasks, enableTargets };
 
     const existingStateDoc = await provider.existingRulesStateStore();
-    if (!rulesEmitter.isLatestNoolsSchema()) {
-      throw Error('Rules Engine: Updates to the nools schema are required');
-    }
-
     const contactClosure = updatedState => provider.stateChangeCallback(
       existingStateDoc,
       { rulesStateStore: updatedState }

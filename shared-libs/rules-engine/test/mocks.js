@@ -43,50 +43,8 @@ const chtDocs = {
 const userContactDoc = { _id: 'user' };
 const userSettingsDoc = { _id: 'org.couchdb.user:username' };
 
-const simpleNoolsTemplate = (code, options = {}) => `define Target { data: null }
-define Contact { contact: null, ${options.includeTasks ? 'tasks: null,' : ''} reports: null }
-define Task { data: null }
-rule GenerateEvents {
-  when { c: Contact } then { ${code} }
-}`;
-
-const productionNoolsTemplate = (code) => `define Target {
-  _id: null,
-  contact: null,
-  deleted: null,
-  type: null,
-  pass: null,
-  date: null,
-  groupBy: null
-}
-define Contact { 
-  contact: null,
-  reports: null,
-  tasks: null
-}
-define Task {
-  _id: null,
-  deleted: null,
-  doc: null,
-  contact: null,
-  icon: null,
-  date: null,
-  readyStart: null,
-  readyEnd: null,
-  title: null,
-  fields: null,
-  resolved: null,
-  priority: null,
-  priorityLabel: null,
-  reports: null,
-  actions: null
-}
-rule GenerateEvents { when { c: Contact } then { ${code} } }`;
-
 module.exports = {
   MS_IN_DAY,
-
-  simpleNoolsTemplate,
 
   mockEmission: (msOffset, assigned = {}) => {
     return Object.assign({
@@ -103,21 +61,19 @@ module.exports = {
   defaultConfigSettingsDoc,
   chtDocs,
 
-  engineSettings: (assign, addNoolsBoilerplate = productionNoolsTemplate) => {
+  engineSettings: (assign) => {
     const determineRules = () => {
-      const useDeclarative = assign && assign.rulesAreDeclarative;
       if (assign && assign.rules) {
-        return useDeclarative ? assign.rules : addNoolsBoilerplate(assign.rules);
+        return assign.rules;
       }
 
-      const defaultRules = defaultConfigSettingsDoc.tasks.rules;
-      return useDeclarative ? removeNoolsBoilerplate(defaultRules) : defaultRules;
+      return defaultConfigSettingsDoc.tasks.rules;
     };
 
     const defaults = {
       targets: defaultConfigSettingsDoc.tasks.targets.items,
       taskSchedules: defaultConfigSettingsDoc.tasks.schedules,
-      rulesAreDeclarative: false,
+      rulesAreDeclarative: true,
       enableTasks: true,
       enableTargets: true,
       user: userSettingsDoc,
