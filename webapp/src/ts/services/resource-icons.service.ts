@@ -115,10 +115,7 @@ export class ResourceIconsService {
 
   getDocResources(doc) {
     return this.db.get().get(doc).then(res => {
-      if (res && res.resources) {
-        return Object.keys(res.resources);
-      }
-      return [];
+      return Object.keys((res && res.resources) ? res.resources : {});
     });
   }
 
