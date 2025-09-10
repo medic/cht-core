@@ -236,9 +236,6 @@
     "xmlbuilder": "^15.1.1"
   },
   "overrides": {
-    "node-fetch": "$node-fetch",
-    "nools": {
-      "uglify-js": ">=2.6.0"
-    }
+    "node-fetch": "$node-fetch"
   }
 }

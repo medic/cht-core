@@ -147,7 +147,7 @@ describe(`rules-emitter rulesAreDeclarative: true`, () => {
     });
   });
 
-  it('reports are sorted by reported_date before being pushed into nools', async () => {
+  it('reports are sorted by reported_date before being pushed into the emitter', async () => {
     const rules = `emit('task', new Task({ data: c }));`;
     const settingsDoc = settingsWithRules(rules, {}, {}, { includeTasks: true });
     const contactDoc = { _id: 'contact', patient_id: 'foo' };

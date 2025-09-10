@@ -92,14 +92,3 @@ const restorable = (path, attributes = []) => {
   mod.restore = () => attributes.forEach(attr => mod.__set__(attr, undefined));
   return mod;
 };
-
-const removeNoolsBoilerplate = rules => {
-  const noolsRuleLangaugeRegex = /^define.*\} then \{ /s;
-  if (noolsRuleLangaugeRegex.test(rules)) {
-    let result = rules.replace(noolsRuleLangaugeRegex, '');
-    result = result.substring(0, result.length - '\n};'.length);
-    return result;
-  }
-
-  return rules;
-};

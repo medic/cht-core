@@ -15,7 +15,7 @@ const updateAggregateTargetsSettings = async (targetsConfig, user, contactSummar
   settings.permissions.can_aggregate_targets = user.roles;
   let contactSummary;
   if (contactSummaryFile) {
-    const configs = await chtConfUtils.compileNoolsConfig({ contactSummary: contactSummaryFile });
+    const configs = await chtConfUtils.compileConfig({ contactSummary: contactSummaryFile });
     contactSummary = configs.contactSummary;
   }
 
