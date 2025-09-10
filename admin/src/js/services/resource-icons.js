@@ -111,7 +111,10 @@ angular.module('inboxServices').factory('ResourceIcons',
       },
       getDocResources: doc => {
         return DB().get(doc).then(res => {
-          return res && res.resources ? Object.keys(res.resources) : [];
+          if (res && res.resources) {
+            return Object.keys(res.resources);
+          }
+          return [];
         });
       },
       getAppTitle: () => DB().get(DOC_IDS[1]).then(doc => doc.title),
