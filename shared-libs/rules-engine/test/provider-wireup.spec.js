@@ -662,6 +662,7 @@ describe('provider-wireup integration tests', () => {
         const settings = {
           enableTargets: true,
           rules,
+          rulesAreDeclarative: true,
           targets: [{
             id: 'uhc',
           }]
@@ -674,6 +675,7 @@ describe('provider-wireup integration tests', () => {
         const rules = '';
         const settings = {
           rules,
+          rulesAreDeclarative: true,
           enableTargets: true,
           targets: [{ id: 'uhc' }]
         };
@@ -692,6 +694,7 @@ describe('provider-wireup integration tests', () => {
       it('should do nothing when stale state is within same interval', async () => {
         const rules = '';
         const settings = {
+          rulesAreDeclarative: true,
           rules,
           enableTargets: true,
           targets: [{
@@ -718,6 +721,7 @@ describe('provider-wireup integration tests', () => {
         clock.setSystemTime(moment('2020-04-28').valueOf());
         const rules = '';
         const settings = {
+          rulesAreDeclarative: true,
           rules,
           enableTargets: true,
           targets: [{ id: 'uhc' }],
@@ -754,6 +758,7 @@ describe('provider-wireup integration tests', () => {
         const rules = '';
         const settings = {
           rules,
+          rulesAreDeclarative: true,
           enableTargets: true,
           targets: [{
             id: 'uhc',
@@ -793,6 +798,7 @@ describe('provider-wireup integration tests', () => {
         const rules = '';
         const settings = {
           rules,
+          rulesAreDeclarative: true,
           enableTargets: true,
           targets: [{
             id: 'uhc',
@@ -832,6 +838,7 @@ describe('provider-wireup integration tests', () => {
         const rules = '';
         const settings = {
           rules,
+          rulesAreDeclarative: true,
           enableTargets: true,
           targets: [{ id: 'uhc' }],
           monthStartDate: 1,
@@ -866,6 +873,7 @@ describe('provider-wireup integration tests', () => {
         const rules = '';
         const settings = {
           rules,
+          rulesAreDeclarative: true,
           enableTargets: true,
           targets: [{ id: 'uhc' }],
           monthStartDate: 1,
@@ -1105,7 +1113,7 @@ describe('provider-wireup integration tests', () => {
     });
 
     it('should provide `on` property and emit nothing when actions are disabled', async () => {
-      const settings = { rules: '', enableTargets: false, enableTasks: false };
+      const settings = { rules: '', enableTargets: false, enableTasks: false, rulesAreDeclarative: true };
       await wireup.initialize(provider, settings, {});
       const generateListeners = () => ({ queued: sinon.stub(), running: sinon.stub() });
       const listeners = [];
