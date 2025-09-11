@@ -31,16 +31,16 @@ module.exports = {
    * @param {Object} userDoc User's hydrated contact document
    */
   initialize: async (provider, settings) => {
+    if (!settings.rulesAreDeclarative) {
+      throw Error('Rules Engine: Rules are not declarative. Updates are required');
+    }
+
     const isEnabled = rulesEmitter.initialize(settings);
     if (!isEnabled) {
       return Promise.resolve();
     }
 
     const { enableTasks=true, enableTargets=true } = settings;
-
-    if (!settings.rulesAreDeclarative) {
-      throw Error('Rules Engine: Rules are not declarative. Updates are required');
-    }
 
     wireupOptions = { enableTasks, enableTargets };
 
