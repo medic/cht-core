@@ -85,7 +85,7 @@ describe('Bikram Sambat date display', () => {
     await chtConfUtils.initializeConfigDir();
     const contactSummaryFile = path.join(__dirname, 'config', 'bikram-sambat-contact-template-config.js');
 
-    const { contactSummary } = await chtConfUtils.compileNoolsConfig({ contactSummary: contactSummaryFile });
+    const { contactSummary } = await chtConfUtils.compileConfig({ contactSummary: contactSummaryFile });
     await utils.updateSettings(
       { contact_summary: contactSummary, forms: FORMS, registrations: REGISTRATIONS, transitions: TRANSITIONS },
       { ignoreReload: true }

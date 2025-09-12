@@ -210,7 +210,6 @@
     "mustache": "^4.2.0",
     "node-fetch": "^2.6.9",
     "node-html-parser": "^7.0.1",
-    "nools": "^0.4.4",
     "object-path": "^0.11.8",
     "openid-client": "^6.4.2",
     "openrosa-formlist": "github:medic/openrosa-formlist#sax",
@@ -237,9 +236,6 @@
     "xmlbuilder": "^15.1.1"
   },
   "overrides": {
-    "node-fetch": "$node-fetch",
-    "nools": {
-      "uglify-js": ">=2.6.0"
-    }
+    "node-fetch": "$node-fetch"
   }
 }

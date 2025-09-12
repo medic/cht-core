@@ -17,7 +17,7 @@ describe('Task list due dates', () => {
     await chtConfUtils.initializeConfigDir();
     const tasksFilePath = path.join(__dirname, 'config/due-dates-config.js');
 
-    const { tasks } = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
+    const { tasks } = await chtConfUtils.compileConfig({ tasks: tasksFilePath });
     updates.tasks = tasks;
     await utils.updateSettings(updates, { ignoreReload: 'api', sync: true, refresh: true });
   };

@@ -17,7 +17,7 @@ const compileConfig = async (tasksFileName, targetFileName) => {
   await chtConfUtils.initializeConfigDir();
   const tasksFilePath = path.join(__dirname, `config/${tasksFileName}`);
   const targetFilePath = path.join(__dirname, `config/${targetFileName}`);
-  return await chtConfUtils.compileNoolsConfig({
+  return await chtConfUtils.compileConfig({
     tasks: tasksFilePath,
     targets: targetFilePath,
   });
