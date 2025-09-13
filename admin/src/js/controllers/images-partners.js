@@ -35,6 +35,9 @@ angular.module('controllers').controller('ImagesPartnersCtrl',
     
     getPartnersDoc().then(doc => {
       $scope.doc = doc;
+      if (!$scope.doc.resources) {
+        $scope.doc.resources = {};
+      }
       renderResources();
     }).catch(err => {
       if (err.status === 404) {
@@ -57,6 +60,9 @@ angular.module('controllers').controller('ImagesPartnersCtrl',
         .putAttachment(PARTNER_ID, file.name, $scope.doc._rev, file, file.type)
         .then(getPartnersDoc)
         .then(doc => {
+          if (!doc.resources) {
+            doc.resources = {};
+          }
           doc.resources[$scope.name] = file.name;
           $scope.doc = doc;
           return DB().put(doc);
