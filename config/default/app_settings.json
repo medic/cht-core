@@ -90,203 +90,55 @@
     }
   },
   "permissions": {
-    "can_access_gateway_api": [
-      "gateway"
-    ],
-    "can_bulk_delete_reports": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_configure": [
-      "program_officer",
-      "crfo"
-    ],
-    "can_create_people": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_create_places": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_create_records": [
-      "data_entry",
-      "gateway",
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_create_users": [
-      "program_officer"
-    ],
-    "can_delete_contacts": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_delete_messages": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_delete_reports": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_delete_users": [
-      "program_officer"
-    ],
-    "can_edit": [
-      "gateway",
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_edit_profile": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_edit_verification": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_export_all": [
-      "program_officer",
-      "crfo"
-    ],
-    "can_export_contacts": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_export_feedback": [
-      "program_officer"
-    ],
-    "can_export_messages": [
-      "analytics",
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
+    "can_access_gateway_api": ["gateway"],
+    "can_bulk_delete_reports": ["program_officer", "chw_supervisor", "chw"],
+    "can_configure": ["program_officer", "crfo"],
+    "can_create_people": ["program_officer", "chw_supervisor", "chw"],
+    "can_create_places": ["program_officer", "chw_supervisor", "chw"],
+    "can_create_records": ["data_entry", "gateway", "program_officer", "chw_supervisor", "chw"],
+    "can_create_users": ["program_officer"],
+    "can_delete_contacts": ["program_officer", "chw_supervisor", "chw"],
+    "can_delete_messages": ["program_officer", "chw_supervisor", "chw"],
+    "can_delete_reports": ["program_officer", "chw_supervisor", "chw"],
+    "can_delete_users": ["program_officer"],
+    "can_edit": ["gateway", "program_officer", "chw_supervisor", "chw"],
+    "can_edit_profile": ["program_officer", "chw_supervisor", "chw"],
+    "can_edit_verification": ["program_officer", "chw_supervisor", "chw"],
+    "can_export_all": ["program_officer", "crfo"],
+    "can_export_contacts": ["program_officer", "chw_supervisor", "chw"],
+    "can_export_feedback": ["program_officer"],
+    "can_export_messages": ["analytics", "program_officer", "chw_supervisor", "chw"],
     "can_log_out_on_android": [],
-    "can_update_places": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_update_reports": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_update_users": [
-      "program_officer"
-    ],
-    "can_export_dhis": [
-      "national_admin",
-      "crfo"
-    ],
-    "can_verify_reports": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_view_analytics": [
-      "analytics",
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_view_analytics_tab": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_view_call_action": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_view_contacts": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_view_contacts_tab": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
+    "can_update_places": ["program_officer", "chw_supervisor", "chw"],
+    "can_update_reports": ["program_officer", "chw_supervisor", "chw"],
+    "can_update_users": ["program_officer"],
+    "can_export_dhis": ["national_admin", "crfo"],
+    "can_verify_reports": ["program_officer", "chw_supervisor", "chw"],
+    "can_view_analytics": ["analytics", "program_officer", "chw_supervisor", "chw"],
+    "can_view_analytics_tab": ["program_officer", "chw_supervisor", "chw"],
+    "can_view_call_action": ["program_officer", "chw_supervisor", "chw"],
+    "can_view_contacts": ["program_officer", "chw_supervisor", "chw"],
+    "can_view_contacts_tab": ["program_officer", "chw_supervisor", "chw"],
     "can_view_last_visited_date": [],
     "can_view_uhc_stats": [],
-    "can_view_message_action": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_view_messages": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_view_messages_tab": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_view_outgoing_messages": [
-      "program_officer"
-    ],
-    "can_view_reports": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_view_reports_tab": [
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_view_tasks": [
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_view_tasks_tab": [
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_view_tasks_group": [
-      "chw"
-    ],
-    "can_view_unallocated_data_records": [
-      "gateway",
-      "program_officer",
-      "chw_supervisor",
-      "chw"
-    ],
-    "can_view_users": [
-      "program_officer"
-    ],
+    "can_view_message_action": ["program_officer", "chw_supervisor", "chw"],
+    "can_view_messages": ["program_officer", "chw_supervisor", "chw"],
+    "can_view_messages_tab": ["program_officer", "chw_supervisor", "chw"],
+    "can_view_outgoing_messages": ["program_officer"],
+    "can_view_reports": ["program_officer", "chw_supervisor", "chw"],
+    "can_view_reports_tab": ["program_officer", "chw_supervisor", "chw"],
+    "can_view_tasks": ["chw_supervisor", "chw"],
+    "can_view_tasks_tab": ["chw_supervisor", "chw"],
+    "can_view_tasks_group": ["chw"],
+    "can_view_unallocated_data_records": ["gateway", "program_officer", "chw_supervisor", "chw"],
+    "can_view_users": ["program_officer"],
     "can_write_wealth_quintiles": [],
-    "can_aggregate_targets": [
-      "chw_supervisor"
-    ],
-    "can_upgrade": [
-      "program_officer"
-    ],
-    "can_view_old_navigation": [],
+    "can_aggregate_targets": ["chw_supervisor"],
+    "can_upgrade": ["program_officer"],
     "can_default_facility_filter": [],
     "can_have_multiple_places": [],
     "can_skip_password_change": [],
-    "can_export_devices_details": [
-      "national_admin"
-    ]
+    "can_export_devices_details": ["national_admin"]
   },
   "uhc": {
     "contacts_default_sort": "",

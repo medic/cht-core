@@ -38,7 +38,6 @@ describe('Old Navigation', () => {
     tasks.targets.items = targetsConfig;
     const permissions = settings.permissions;
     permissions.can_aggregate_targets = offlineUser.roles;
-    permissions.can_view_old_navigation = offlineUser.roles;
     await utils.updateSettings({ tasks, permissions }, true);
 
     await loginPage.login({username: offlineUser.username, password: offlineUser.password, loadPage: false});
