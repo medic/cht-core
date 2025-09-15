@@ -223,25 +223,13 @@ const addGeneratedAttachments = (doc, updated, outdated) => {
   return doc;
 };
 
-const getAttachment = async (doc, name) => {
-  try {
-    return await db.medic.getAttachment(doc._id, name, { rev: doc._rev });
-  } catch (error) {
-    if (error.status === 404) {
-      logger.error(error);
-      return null;
-    }
-    throw error;
-  }
-};
-
 const updateAttachments = async (doc) => {
   if (getEnketoForm(doc)) {
 
     const [xml, form, model] = await Promise.all([
-      getAttachment(doc, formsService.getXFormAttachmentName(doc)),
-      getAttachment(doc, 'form.html'),
-      getAttachment(doc, 'model.xml')
+      formsService.getAttachment(doc, formsService.getXFormAttachmentName(doc)),
+      formsService.getAttachment(doc, 'form.html'),
+      formsService.getAttachment(doc, 'model.xml')
     ]);
 
     if ( !xml ) {
