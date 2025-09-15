@@ -10,6 +10,7 @@ angular.module('directives').directive('release', function() {
       potentiallyIncompatible: '=',
       upgrade: '=',
       canUpgrade: '=',
+      showBaseVersion: '=',
     }
   };
 });
