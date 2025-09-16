@@ -131,6 +131,7 @@
         </pregnancy_facility_visit_reminder>
       </instance>
       <instance id="contact-summary"/>
+      <instance id="user-contact-summary"/>
       <bind nodeset="/pregnancy_facility_visit_reminder/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/pregnancy_facility_visit_reminder/inputs/source" type="string"/>
       <bind nodeset="/pregnancy_facility_visit_reminder/inputs/source_id" type="string"/>
