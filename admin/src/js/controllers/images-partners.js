@@ -35,9 +35,6 @@ angular.module('controllers').controller('ImagesPartnersCtrl',
     
     getPartnersDoc().then(doc => {
       $scope.doc = doc;
-      if (!$scope.doc.resources) {
-        $scope.doc.resources = {};
-      }
       renderResources();
     }).catch(err => {
       if (err.status === 404) {
