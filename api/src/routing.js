@@ -144,17 +144,24 @@ app.use(prometheusMiddleware({
 // from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the
 // --allow-cors commandline switch will enable this from within a web browser.
 if (process.argv.slice(2).includes('--allow-cors')) {
-  logger.warn('WARNING: allowing CORS requests to API!');
+  logger.warn('WARNING: allowing CORS requests to API! Only the following origins will be allowed:');
+  // Whitelist of allowed origins for CORS with credentials. Update as needed for your use-case.
+  const allowedOrigins = [
+    'http://localhost:8080',
+    'http://localhost:5988',
+    // add more origins as needed
+  ];
+  logger.warn(`CORS whitelist: ${allowedOrigins.join(', ')}`);
   app.use((req, res, next) => {
-    res.setHeader(
-      'Access-Control-Allow-Origin',
-      req.headers.origin || req.headers.host
-    );
+    const origin = req.headers.origin;
+    if (origin && allowedOrigins.includes(origin) && origin !== 'null') {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
     res.setHeader(
       'Access-Control-Allow-Methods',
       'GET, POST, PUT, OPTIONS, HEAD, DELETE'
     );
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
     next();
   });
 }
