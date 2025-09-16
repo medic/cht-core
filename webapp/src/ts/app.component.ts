@@ -518,7 +518,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   private async enableOldNav() {
     // #10277 (v5.0): Legacy navigation disabled. 
     // This method is kept temporarily for backward compatibility.
-    // TODO Use shared code across all navigation #10277-followup
+    // To be done: Use shared code across all navigation #10277-followup
     this.hasOldNav = false;
   }
 
