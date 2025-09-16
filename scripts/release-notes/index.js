@@ -274,17 +274,15 @@ const formatGroups = (groups) => {
 const formatCommits = (commits) => {
   const ignoreLogins = new Set(BOTS);
   const lines = [];
-  for (const commit of commits) {
-    const authors = commit.authors.nodes;
-    for (const author of authors) {
-      const { login, name, url } = author.user;
-      if (login && !ignoreLogins.has(login)) {
-        ignoreLogins.add(login);
-        const profileUrl = url;
-        lines.push(`- [${name || login}](${profileUrl})`);
-      }
+  const authors = commits.flatMap((commit) => commit.authors.nodes);
+  authors.forEach((author) => {
+    const { login, name, url } = author.user;
+    if (login && !ignoreLogins.has(login)) {
+      ignoreLogins.add(login);
+      const profileUrl = url;
+      lines.push(`- [${name || login}](${profileUrl})`);
     }
-  }
+  });
   return lines.join('\n');
 };
 
