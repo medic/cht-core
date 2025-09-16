@@ -60,9 +60,7 @@ angular.module('controllers').controller('ImagesPartnersCtrl',
         .putAttachment(PARTNER_ID, file.name, $scope.doc._rev, file, file.type)
         .then(getPartnersDoc)
         .then(doc => {
-          if (!doc.resources) {
-            doc.resources = {};
-          }
+          doc.resources = doc.resources || {};
           doc.resources[$scope.name] = file.name;
           $scope.doc = doc;
           return DB().put(doc);
