@@ -276,7 +276,6 @@
     "can_upgrade": [
       "program_officer"
     ],
-    "can_view_old_navigation": [],
     "can_skip_password_change": []
   },
   "uhc": {

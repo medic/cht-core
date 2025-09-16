@@ -516,7 +516,9 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private async enableOldNav() {
-    this.hasOldNav = !this.sessionService.isAdmin() && await this.authService.has(OLD_NAV_PERMISSION);
+    // #10277 (v5.0): Legacy navigation disabled. 
+    // TODO: Remove legacy navigation code in a future major release.
+    this.hasOldNav = false;
   }
 
   private initForms() {

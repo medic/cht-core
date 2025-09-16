@@ -11,7 +11,8 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
 
-describe('Old Navigation', () => {
+// #10277: Legacy (old) navigation disabled in v5.0. Mobile suite skipped pending full removal.
+describe.skip('Old Navigation (deprecated #10277)', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
 
@@ -38,7 +39,7 @@ describe('Old Navigation', () => {
     tasks.targets.items = targetsConfig;
     const permissions = settings.permissions;
     permissions.can_aggregate_targets = offlineUser.roles;
-    permissions.can_view_old_navigation = offlineUser.roles;
+    // Removed can_view_old_navigation permission (#10277) – legacy nav permanently disabled.
     await utils.updateSettings({ tasks, permissions }, true);
 
     await loginPage.login({username: offlineUser.username, password: offlineUser.password, loadPage: false});
