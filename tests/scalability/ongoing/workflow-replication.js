@@ -4,14 +4,18 @@ const PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-adapter-leveldb'));
 const { performance } = require('perf_hooks');
 
-const [,, instanceUrl, dataDir, threadId, skipUsers] = process.argv;
+const [,, instanceUrl, dataDir, threadId, skipUsers, phase] = process.argv;
 const dataDirPath = path.resolve(dataDir || __dirname);
 const users = require(path.resolve(dataDirPath, 'users.json'));
 const config = require('./config');
 
 const dataFactory = require('./data-factory');
 
+// Helper function for delays
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 const idx = ((+threadId || 0) + +skipUsers) % users.length;
+
 console.log(idx, skipUsers);
 const user = users[idx];
 console.log(user);
@@ -77,11 +81,84 @@ const replicateTo = async () => {
     console.log(`Upload replication completed in ${duration.toFixed(2)}ms`);
     console.log(`Uploaded: ${result.docs_written} docs, ${result.docs_read} docs read`);
     
-    return result;
+    // Performance metrics
+    const metrics = {
+      ...result,
+      duration: duration,
+      docs_per_second: result.docs_written ? (result.docs_written / (duration / 1000)).toFixed(2) : 0,
+      timestamp: new Date().toISOString(),
+      user: user.username,
+      phase: 'upload'
+    };
+    
+    console.log(`📊 UPLOAD METRICS: ${metrics.docs_written} docs in ${duration.toFixed(2)}ms (${metrics.docs_per_second} docs/sec)`);
+    
+    return metrics;
   } catch (err) {
     console.error('Upload replication failed:', err);
     throw err;
   }
+};
+
+// Reuse CHT's initial replication logic for incremental sync
+const fetchJSON = async (url) => {
+  const response = await fetch(`${instanceUrl}${url}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Basic ' + btoa(`${user.username}:${user.password}`),
+    }
+  });
+  if (response.ok) {
+    return await response.json();
+  }
+  throw new Error(await response.text());
+};
+
+// CHT's proven replication logic (adapted from initial-replication.js)
+let docIdsRevs;
+let remoteDocCount;
+const BATCH_SIZE = 100;
+
+const getMissingDocIdsRevsPairs = async (localDb, remoteDocIdsRevs) => {
+  const localDocs = await getLocalDocList(localDb);
+  return remoteDocIdsRevs.filter(({ id, rev }) => !localDocs[id] || localDocs[id] !== rev);
+};
+
+const getLocalDocList = async (localDb) => {
+  const response = await localDb.allDocs();
+  const localDocMap = {};
+  response.rows.forEach(row => localDocMap[row.id] = row.value && row.value.rev);
+  return localDocMap;
+};
+
+const getDocsBatch = async (remoteDb, localDb) => {
+  const batch = docIdsRevs.splice(0, BATCH_SIZE);
+  if (!batch.length) {
+    return 0;
+  }
+
+  const res = await remoteDb.bulkGet({ docs: batch, attachments: true, revs: true });
+  const docs = res.results
+    .map(result => result.docs && result.docs[0] && result.docs[0].ok)
+    .filter(doc => doc);
+  await localDb.bulkDocs(docs, { new_edits: false });
+  
+  console.log(`  Downloaded batch of ${docs.length} documents`);
+  docs.forEach(doc => {
+    console.log(`    Downloaded: ${doc._id} (${doc.type || 'unknown'})`);
+  });
+  
+  return docs.length;
+};
+
+const downloadDocs = async (remoteDb, localDb) => {
+  let totalDownloaded = 0;
+  do {
+    const batchDownloaded = await getDocsBatch(remoteDb, localDb);
+    totalDownloaded += batchDownloaded;
+  } while (docIdsRevs.length > 0);
+  
+  return totalDownloaded;
 };
 
 const replicateFrom = async (previousReplicationResult) => {
@@ -125,52 +202,19 @@ const replicateFrom = async (previousReplicationResult) => {
     // 2. Download server changes to local (replicateFrom)
     console.log('Downloading server changes to local...');
     
-    // Get changes since last sync (incremental)
-    // Use a sequence number that should capture our uploaded data
-    const serverChanges = await remoteDb.changes({
-      since: 0, // Get all changes to see what's available
-      include_docs: true
-    });
+    // Use CHT's proven replication logic (same as initial-replication.js)
+    const response = await fetchJSON('/api/v1/replication/get-ids');
+    console.log(`Found ${response.doc_ids_revs.length} remote documents available to user`);
     
-    console.log(`Found ${serverChanges.results.length} server changes since seq ${localInfo.update_seq || 0}`);
+    // Filter to only missing/updated documents (incremental sync)
+    docIdsRevs = await getMissingDocIdsRevsPairs(localDb, response.doc_ids_revs);
+    remoteDocCount = response.doc_ids_revs.length;
     
-    // Debug: Show what server changes we found
-    if (serverChanges.results.length > 0) {
-      console.log('Server changes details:');
-      serverChanges.results.forEach((change, index) => {
-        console.log(`  ${index + 1}. ID: ${change.id}, Rev: ${change.changes[0]?.rev}, Deleted: ${change.deleted || false}`);
-        console.log(`     Has doc: ${!!change.doc}, Doc keys: ${change.doc ? Object.keys(change.doc) : 'none'}`);
-      });
-    }
+    console.log(`Need to download ${docIdsRevs.length} missing/updated documents`);
     
-    let downloaded = 0;
-    let skipped = 0;
-    for (const change of serverChanges.results) {
-      if (change.doc && change.doc._id) {
-        try {
-          await localDb.put(change.doc);
-          downloaded++;
-          console.log(`  Downloaded: ${change.doc._id} (${change.doc.type})`);
-        } catch (err) {
-          // Handle conflicts by getting the latest version
-          if (err.status === 409) {
-            console.log(`  Conflict on ${change.doc._id}, getting latest version`);
-            const latest = await remoteDb.get(change.doc._id);
-            await localDb.put(latest);
-            downloaded++;
-          } else {
-            console.log(`  Error downloading ${change.doc._id}: ${err.message}`);
-            skipped++;
-          }
-        }
-      } else {
-        console.log(`  Skipped change (no doc or missing _id): ${change.id}`);
-        if (change.doc) {
-          console.log(`    Doc structure: ${JSON.stringify(change.doc, null, 2)}`);
-        }
-        skipped++;
-      }
-    }
+    // Download documents using CHT's proven batch logic
+    const downloaded = await downloadDocs(remoteDb, localDb);
+    const skipped = 0; // CHT API handles filtering
     
     console.log(`Download summary: ${downloaded} downloaded, ${skipped} skipped`);
     
@@ -180,7 +224,21 @@ const replicateFrom = async (previousReplicationResult) => {
     console.log(`Sync replication completed in ${duration.toFixed(2)}ms`);
     console.log(`Uploaded: ${result.uploaded_docs} docs, Downloaded: ${result.read_docs} docs`);
     
-    return result;
+    // Performance metrics
+    const metrics = {
+      ...result,
+      duration: duration,
+      docs_per_second: downloaded ? (downloaded / (duration / 1000)).toFixed(2) : 0,
+      timestamp: new Date().toISOString(),
+      user: user.username,
+      phase: 'download',
+      total_remote_docs: response.doc_ids_revs.length,
+      missing_docs: docIdsRevs.length
+    };
+    
+    console.log(`📊 DOWNLOAD METRICS: ${metrics.read_docs} docs in ${duration.toFixed(2)}ms (${metrics.docs_per_second} docs/sec)`);
+    
+    return metrics;
   } catch (err) {
     console.error('Download replication failed:', err);
     throw err;
@@ -275,6 +333,7 @@ const generateData = async () => {
   try {
     console.log(`Starting workflow replication for user: ${user.username}`);
     console.log(`Thread ID: ${threadId}, Skip Users: ${skipUsers}`);
+    console.log(`Phase: ${phase || 'both'}`);
     console.log(`Iterations: ${config.workflowContactsNbr.iterations}`);
     
     await getClinics();
@@ -285,8 +344,28 @@ const generateData = async () => {
       // Generate new data locally
       await generateData();
       
-      // Perform bidirectional sync
-      await replicate();
+      if (phase === 'upload' || !phase) {
+        // Phase 1: Upload local changes to server
+        console.log('=== PHASE 1: UPLOAD ===');
+        const uploadResult = await replicateTo();
+        
+        if (phase === 'upload') {
+          console.log(`Upload phase completed for iteration ${i + 1}`);
+          continue;
+        }
+        
+        // Add delay to ensure data is available on server
+        console.log('Waiting 2 seconds for data to be available on server...');
+        await delay(2000);
+      }
+      
+      if (phase === 'download' || !phase) {
+        // Phase 2: Download server changes to local
+        console.log('=== PHASE 2: DOWNLOAD ===');
+        await replicateFrom(); // Download-only phase will use local sequence
+        
+        console.log(`Download phase completed for iteration ${i + 1}`);
+      }
       
       console.log(`Iteration ${i + 1} completed successfully`);
     }

@@ -9,7 +9,7 @@ const uploadData = require('./upload-data');
 const users = [];
 
 const userRolesByFacilityType = {
-  'district_hospital': ['supervisor'],
+  'district_hospital': ['chw_supervisor', 'district_admin'],
   'health_center': ['district_admin', 'chw'],
   'clinic': null
 };
@@ -60,6 +60,10 @@ const generateUser = async (parent) => {
 
 const generateHierarchy = async () => {
   const districtHospital = await generatePlace('district_hospital');
+  
+  // Create supervisor user at district hospital level
+  await generateUser(districtHospital);
+  
   for (let i = 0; i < config.contactsNbr.health_center; i++) {
     const healthCenter = await generatePlace('health_center', districtHospital);
 
