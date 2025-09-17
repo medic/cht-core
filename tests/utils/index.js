@@ -1649,7 +1649,7 @@ const logFeedbackDocs = async (test) => {
 
 const isMinimumChromeVersion = process.env.CHROME_VERSION === MINIMUM_BROWSER_VERSION;
 
-const escapeBranchName = (branch) => branch?.replace(/[/|_]/g, '-');
+const escapeBranchName = (branch) => branch?.replace(/[^A-Za-z0-9.-]/g, '-');
 
 const toggleSentinelTransitions = () => sendSignal('sentinel', 'USR1');
 const runSentinelTasks = () => sendSignal('sentinel', 'USR2');
