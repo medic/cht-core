@@ -27,21 +27,32 @@ describe('indexer progress', () => {
       return `shards/${getShardRange()}-${getShardRange()}/${dbName}.${getShardRange()}`;
     };
     const ddocName = (ddocName, staged = true) => `_design/${staged ? ':staged:': ''}${ddocName}`;
+    const indexer = (database, node, ddoc, progress, pid, type = 'indexer') => ({
+      database,
+      node,
+      design_document: ddocName(ddoc),
+      progress,
+      pid: `${database}-${pid}`,
+      type,
+    });
 
     it('should get db active tasks, calculate progress and return indexers ', async () => {
       sinon.stub(db, 'activeTasks').resolves([
-        { database: 'd1', node: '1', design_document: ddocName('ddoc1'), progress: 3, pid: 'd1-1-1', type: 'indexer' },
-        { database: 'd1', node: '1', design_document: ddocName('ddoc1'), progress: 7, pid: 'd1-1-2', type: 'indexer' },
+        indexer('d1', '1', 'ddoc1', 3, '1-1'),
+        indexer('d1', '1', 'ddoc1', 7, '1-2'),
 
-        { database: 'd1', node: '1', design_document: ddocName('ddoc2'), progress: 9, pid: 'd1-2-1', type: 'indexer' },
-        { database: 'd1', node: '1', design_document: ddocName('ddoc2'), progress: 21, pid: 'd1-2-2', type: 'indexer' },
-        { database: 'd1', node: '1', design_document: ddocName('ddoc2'), progress: 12, pid: 'd1-2-3', type: 'indexer' },
+        indexer('d1', '1', 'ddoc1', 9, '1-1', 'search_indexer'),
+        indexer('d1', '1', 'ddoc1', 12, '1-2', 'search_indexer'),
 
-        { database: 'd2', node: '1', design_document: ddocName('ddoc1'), progress: 4, pid: 'd2-1-1', type: 'indexer' },
-        { database: 'd2', node: '1', design_document: ddocName('ddoc1'), progress: 12, pid: 'd2-1-2', type: 'indexer' },
+        indexer('d1', '1', 'ddoc2', 9, '2-1'),
+        indexer('d1', '1', 'ddoc2', 21, '2-2'),
+        indexer('d1', '1', 'ddoc2', 12, '2-3'),
 
-        { database: 'd3', node: '1', design_document: ddocName('ddoc2'), progress: 2, pid: 'd3-2-1', type: 'indexer' },
-        { database: 'd3', node: '1', design_document: ddocName('ddoc2'), progress: 8, pid: 'd3-2-2', type: 'indexer' },
+        indexer('d2', '1', 'ddoc1', 4, '1-1'),
+        indexer('d2', '1', 'ddoc1', 12, '1-2'),
+
+        indexer('d3', '1', 'ddoc2', 2, '2-1'),
+        indexer('d3', '1', 'ddoc2', 8, '2-2'),
       ]);
 
       const indexers = await viewIndexerProgress.query([]);
@@ -55,6 +66,17 @@ describe('indexer progress', () => {
             '1-d1-1-2': 7,
           },
           progress: 5,
+          type: 'indexer'
+        },
+        {
+          database: 'd1',
+          ddoc: 'ddoc1',
+          tasks: {
+            '1-d1-1-1': 9,
+            '1-d1-1-2': 12,
+          },
+          progress: 11,
+          type: 'search_indexer'
         },
         {
           database: 'd1',
@@ -65,6 +87,7 @@ describe('indexer progress', () => {
             '1-d1-2-3': 12,
           },
           progress: 14,
+          type: 'indexer'
         },
         {
           database: 'd2',
@@ -74,6 +97,7 @@ describe('indexer progress', () => {
             '1-d2-1-2': 12,
           },
           progress: 8,
+          type: 'indexer'
         },
         {
           database: 'd3',
@@ -83,6 +107,7 @@ describe('indexer progress', () => {
             '1-d3-2-2': 8,
           },
           progress: 5,
+          type: 'indexer'
         },
       ]);
     });
@@ -96,6 +121,10 @@ describe('indexer progress', () => {
         { database: 'd1', node, design_document: '_design/ddoc2', progress: 9, pid: 'd1-2-1', type: 'indexer' },
         { database: 'd1', node, design_document: '_design/ddoc2', progress: 21, pid: 'd1-2-2', type: 'indexer' },
         { database: 'd1', node, design_document: '_design/ddoc2', progress: 12, pid: 'd1-2-3', type: 'indexer' },
+
+        { database: 'd1', node, design_document: '_design/ddoc2', progress: 9, pid: 'd1-3-1', type: 'search_indexer' },
+        { database: 'd1', node, design_document: '_design/ddoc2', progress: 21, pid: 'd1-3-2', type: 'search_indexer' },
+        { database: 'd1', node, design_document: '_design/ddoc2', progress: 12, pid: 'd1-3-3', type: 'search_indexer' },
 
         { database: 'd3', node, design_document: ddocName('ddoc2'), progress: 3, pid: 'd3-2-1', type: 'indexer' },
         { database: 'd3', node, design_document: ddocName('ddoc2'), progress: 54, pid: 'd3-2-2', type: 'indexer' },
@@ -112,6 +141,7 @@ describe('indexer progress', () => {
             'nonode@nohost-d1-1-2': 98,
           },
           progress: 55,
+          type: 'indexer',
         },
         {
           database: 'd3',
@@ -121,6 +151,7 @@ describe('indexer progress', () => {
             'nonode@nohost-d3-2-2': 54,
           },
           progress: 29,
+          type: 'indexer',
         },
       ]);
     });
@@ -135,6 +166,7 @@ describe('indexer progress', () => {
             'n1-d1-1-2': 16,
           },
           progress: 14,
+          type: 'indexer',
         },
         {
           database: 'd1',
@@ -144,6 +176,7 @@ describe('indexer progress', () => {
             'n1-d1-2-2': 43,
           },
           progress: 14,
+          type: 'indexer',
         },
         {
           database: 'd2',
@@ -153,6 +186,7 @@ describe('indexer progress', () => {
             'n1-d2-1-2': 88,
           },
           progress: 14,
+          type: 'indexer',
         },
         {
           database: 'd3',
@@ -162,6 +196,18 @@ describe('indexer progress', () => {
             'n1-d3-2-2': 36,
           },
           progress: 31,
+          type: 'indexer',
+        },
+
+        {
+          database: 'd1',
+          ddoc: 'ddoc1',
+          tasks: {
+            'n1-d1-2-1': 16,
+            'n1-d1-2-2': 18,
+          },
+          progress: 17,
+          type: 'search_indexer',
         },
       ];
 
@@ -214,6 +260,23 @@ describe('indexer progress', () => {
           pid: 'd3-2-2',
           type: 'indexer'
         },
+
+        {
+          database: dbName('d1'),
+          node: 'n1',
+          design_document: ddocName('ddoc1'),
+          progress: 22,
+          pid: 'd1-2-1',
+          type: 'search_indexer'
+        },
+        {
+          database: dbName('d1'),
+          node: 'n1',
+          design_document: ddocName('ddoc1'),
+          progress: 23,
+          pid: 'd1-2-2',
+          type: 'search_indexer'
+        },
       ]);
 
       const updatedIndexers = await viewIndexerProgress.query(indexers);
@@ -227,6 +290,7 @@ describe('indexer progress', () => {
             'n1-d1-1-2': 21,
           },
           progress: 18,
+          type: 'indexer',
         },
         {
           database: 'd1',
@@ -236,6 +300,7 @@ describe('indexer progress', () => {
             'n1-d1-2-2': 78,
           },
           progress: 69,
+          type: 'indexer',
         },
         {
           database: 'd2',
@@ -245,6 +310,7 @@ describe('indexer progress', () => {
             'n1-d2-1-2': 100,
           },
           progress: 100,
+          type: 'indexer',
         },
         {
           database: 'd3',
@@ -254,6 +320,18 @@ describe('indexer progress', () => {
             'n1-d3-2-2': 54,
           },
           progress: 41,
+          type: 'indexer',
+        },
+
+        {
+          database: 'd1',
+          ddoc: 'ddoc1',
+          tasks: {
+            'n1-d1-2-1': 22,
+            'n1-d1-2-2': 23,
+          },
+          progress: 23,
+          type: 'search_indexer',
         },
       ]);
     });
@@ -289,6 +367,7 @@ describe('indexer progress', () => {
             [`${node2}-d1-1-2`]: 22,
           },
           progress: 35,
+          type: 'indexer',
         },
         {
           database: 'd2',
@@ -301,6 +380,7 @@ describe('indexer progress', () => {
             [`${node2}-d2-1-2`]: 54,
           },
           progress: 20,
+          type: 'indexer',
         },
       ]);
     });
