@@ -7,6 +7,7 @@ const environment = require('@medic/environment');
 const { performance } = require('perf_hooks');
 const db = require('../db');
 const dataContext = require('../data-context');
+const request = require('@medic/couch-request');
 const moment = require('moment');
 
 const TASK_EXPIRATION_PERIOD = 60; // days
@@ -205,20 +206,20 @@ const assignContactToGroups = (row, groups, subjectIds) => {
   subjectIds.push(...group.subjectIds);
 };
 
-const isRelevantRecordEmission = (row, groups) => {
+const isRelevantRecordEmission = (row, groups, subjectIds) => {
   if (groups[row.id]) { // groups keys are contact ids, we already know everything about contacts
     return false;
   }
 
-  if (row.value.type !== 'data_record') {
+  if (row.fields.type !== 'data_record') {
     return false;
   }
 
-  if (row.value.needs_signoff && row.key !== row.value.subject) {
+  if (row.fields.needs_signoff && !subjectIds.includes(row.fields.subject)) {
     // reports with `needs_signoff` will emit for every contact from their submitter lineage,
     // but we only want to process them once, either associated to their subject, or to their submitter
     // when they have no subject or have an invalid subject.
-    // if the report has a subject, but it's not the the same as the emission key, we hit the emit
+    // if the report has a subject, but it's not the same as the emission key, we hit the emit
     // for the submitter or submitter lineage via the `needs_signoff` path. Skip.
     return false;
   }
@@ -226,17 +227,18 @@ const isRelevantRecordEmission = (row, groups) => {
   return true;
 };
 
-const getRecordGroupInfo = (row) => {
+const getRecordGroupInfo = (row, subjectIds) => {
   if (row.doc.form) {
     const subjectId = registrationUtils.getSubjectId(row.doc);
     // use subject as a key, as to keep subject to report associations correct
     // reports without a subject are processed separately
-    const key = subjectId === row.key ? subjectId : row.id;
+
+    const key = (subjectId && subjectIds.includes(subjectId)) ? subjectId : row.id;
     return { key, report: row.doc };
   }
 
   // messages only emit once, either their sender or receiver
-  return { key: row.key, message: row.doc };
+  return { key: row.fields.key, message: row.doc };
 };
 
 const hydrateRecords = async (recordRows) => {
@@ -247,27 +249,45 @@ const hydrateRecords = async (recordRows) => {
   return recordRows.filter(row => row.doc);
 };
 
+const specialChars = [ '+', '-', '&', '|', '!', '^', '"',  '~',  '*', '?', ':' ];
+const escapedChars = specialChars.map(char => char.replace(/[.*+?^${}()~\-|[\]\\]/g, '\\$&'));
+const escapeKeys = (key) => {
+  // Move hyphen to the end to avoid range interpretation
+  const charSet = escapedChars.join('');
+  const finalCharSet = charSet.includes('\\-')
+    ? charSet.replace('\\-', '') + '-'
+    : charSet;
+
+  const pattern = new RegExp(`([${finalCharSet}])`, 'g');
+  return String(key).replace(pattern, `\\$1`);
+};
+
 const getRecordsForContacts = async (groups, subjectIds) => {
   if (!subjectIds.length) {
     return;
   }
 
   const relevantRows = [];
-  let skip = 0;
+  let bookmark = '';
   let requestNext;
 
   do {
     const opts = {
-      keys: subjectIds,
+      q: `key:(${subjectIds.map(escapeKeys).join(' OR ')})`,
       limit: VIEW_LIMIT,
-      skip: skip,
     };
-    const result = await db.medic.query('medic/docs_by_replication_key', opts);
+    if (bookmark) {
+      opts.bookmark = bookmark;
+    }
+    const result = await request.post({
+      uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
+      body: opts
+    });
 
-    skip += result.rows.length;
-    requestNext = result.rows.length === VIEW_LIMIT;
+    bookmark = result.bookmark;
+    requestNext = result.hits.length === VIEW_LIMIT;
 
-    relevantRows.push(...result.rows.filter(row => isRelevantRecordEmission(row, groups)));
+    relevantRows.push(...result.hits.filter(row => isRelevantRecordEmission(row, groups, subjectIds)));
     if (relevantRows.length >= MAX_BATCH_SIZE) {
       return Promise.reject({
         code: MAX_BATCH_SIZE_REACHED,
@@ -287,14 +307,14 @@ const getRecordsForContacts = async (groups, subjectIds) => {
   }
 
   const hydratedRows = await hydrateRecords(relevantRows);
-  const recordsByKey = getRecordsByKey(hydratedRows);
+  const recordsByKey = getRecordsByKey(hydratedRows, subjectIds);
   assignRecordsToGroups(recordsByKey, groups);
 };
 
-const getRecordsByKey = (rows) => {
+const getRecordsByKey = (rows, subjectIds) => {
   const recordsByKey = {};
   rows.forEach(row => {
-    const { key, report, message } = getRecordGroupInfo(row);
+    const { key, report, message } = getRecordGroupInfo(row, subjectIds);
     recordsByKey[key] = recordsByKey[key] || { reports: [], messages: [] };
 
     return report ?
@@ -447,12 +467,37 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
   let nextBatch;
 
   // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
-  const getBatch = () => db.queryMedic('medic/docs_by_replication_key', {
-    limit: MAX_BATCH_SIZE,
-    key: JSON.stringify('_unassigned'),
-    startkey_docid: startKeyDocId,
-    include_docs: true
-  });
+  const getBatch = async () => {
+    const opts = {
+      limit: MAX_BATCH_SIZE,
+      include_docs: true,
+      q: `key:_unassigned`,
+    };
+    if (startKey) {
+      opts.bookmark = startKey;
+    }
+    const results = await request.post({
+      url: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
+      body: opts,
+    });
+
+    const viewResults = {
+      rows: [],
+      bookmark: results.bookmark
+    };
+
+    results.hits.forEach(hit => {
+      viewResults.rows.push({
+        id: hit.id,
+        key: hit.fields.key,
+        value: hit.fields,
+        doc: hit.doc,
+      });
+    });
+
+    return viewResults;
+  };
+
   const permissionSettings = config.get('permissions');
 
   const getIdsToPurge = (rolesHashes, rows) => {
@@ -556,12 +601,18 @@ const batchedPurge = (getBatch, getIdsToPurge, roles, startKeyDocId) => {
 
   return getBatch()
     .then(result => {
+      if (result.bookmark) {
+        nextKey = result.bookmark;
+      }
+
       result.rows.forEach(row => {
         if (row.id === startKeyDocId) {
           return;
         }
 
-        ({ id: nextKeyDocId, key: nextKey } = row);
+        if (!result.bookmark) {
+          ({ id: nextKeyDocId, key: nextKey } = row);
+        }
         nextBatch = true;
         docIds.push(row.id);
         rows.push(row);

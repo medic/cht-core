@@ -592,7 +592,6 @@ const prepareForSortedSearch = array => array.map(element => String(element)).so
 const sortedIncludes = (sortedArray, element) => _.sortedIndexOf(sortedArray, String(element)) !== -1;
 
 const specialChars = [ '+', '-', '&', '|', '!', '^', '"',  '~',  '*', '?', ':' ];
-
 const escapedChars = specialChars.map(char => char.replace(/[.*+?^${}()~\-|[\]\\]/g, '\\$&'));
 const escapeKeys = (key) => {
   // Move hyphen to the end to avoid range interpretation
@@ -604,7 +603,6 @@ const escapeKeys = (key) => {
   const pattern = new RegExp(`([${finalCharSet}])`, 'g');
   return String(key).replace(pattern, `\\$1`);
 };
-
 
 const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
   const allKeys = [...authorizationContext.subjectIds];
