@@ -84,7 +84,8 @@ const replicateTo = async () => {
       phase: 'upload'
     };
     
-    console.log(`UPLOAD METRICS: ${metrics.docs_written} docs in ${duration.toFixed(2)}ms (${metrics.docs_per_second} docs/sec)`);
+    console.log(`UPLOAD METRICS: ${metrics.docs_written} docs in ${duration.toFixed(2)}ms ` +
+                `(${metrics.docs_per_second} docs/sec)`);
     
     return metrics;
   } catch (err) {
@@ -107,6 +108,7 @@ const fetchJSON = async (url) => {
 };
 
 let docIdsRevs;
+let remoteDocCount;
 const BATCH_SIZE = 100;
 
 const getMissingDocIdsRevsPairs = async (localDb, remoteDocIdsRevs) => {
@@ -210,7 +212,8 @@ const replicateFrom = async (previousReplicationResult) => {
       missing_docs: docIdsRevs.length
     };
     
-    console.log(`DOWNLOAD METRICS: ${metrics.read_docs} docs in ${duration.toFixed(2)}ms (${metrics.docs_per_second} docs/sec)`);
+    console.log(`DOWNLOAD METRICS: ${metrics.read_docs} docs in ${duration.toFixed(2)}ms ` +
+                `(${metrics.docs_per_second} docs/sec)`);
     
     return metrics;
   } catch (err) {
@@ -303,7 +306,7 @@ const generateData = async () => {
       
       if (phase === 'upload' || !phase) {
         console.log('=== PHASE 1: UPLOAD ===');
-        const uploadResult = await replicateTo();
+        await replicateTo();
         
         if (phase === 'upload') {
           console.log(`Upload phase completed for iteration ${i + 1}`);
