@@ -75,7 +75,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   private canDefaultFilter = false;
   private trackInitialLoadPerformance;
   readonly buttonType = ButtonType;
-  private totalReportsCount?: number;
 
   subscription: Subscription = new Subscription();
   reportsList;
@@ -98,6 +97,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   userParentPlace;
   fastActionList?: FastAction[];
   userLineageLevel;
+  totalReportsCount?: number;
 
   LIMIT_SELECT_ALL_REPORTS = 500;
 
