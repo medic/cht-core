@@ -211,7 +211,6 @@
         </pnc_danger_sign_follow_up_mother>
       </instance>
       <instance id="contact-summary"/>
-      <instance id="user-contact-summary"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/source" type="string"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/inputs/source_id" type="string"/>
@@ -236,11 +235,11 @@
       <bind nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/visit_confirm" type="select1" required="true()"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/danger_sign_present" type="select1" required="true()"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/danger_signs_question_note" readonly="true()" type="string" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/fever" type="select1" required="true()" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/severe_headache" type="select1" required="true()" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/vaginal_bleeding" type="select1" required="true()" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/vaginal_discharge" type="select1" required="true()" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/convulsion" type="select1" required="true()" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/fever" type="select1" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'" required="true()"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/severe_headache" type="select1" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'" required="true()"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/vaginal_bleeding" type="select1" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'" required="true()"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/vaginal_discharge" type="select1" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'" required="true()"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/convulsion" type="select1" relevant="../danger_sign_present = 'yes' or ../danger_sign_present = 'no'" required="true()"/>
       <bind nodeset="/pnc_danger_sign_follow_up_mother/danger_signs/r_danger_sign_present" type="string" calculate="if(selected(../fever, 'yes') or
 selected(../severe_headache, 'yes') or
 selected(../vaginal_bleeding, 'yes') or

@@ -104,7 +104,6 @@
         </undo_death_report>
       </instance>
       <instance id="contact-summary"/>
-      <instance id="user-contact-summary"/>
       <bind nodeset="/undo_death_report/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/undo_death_report/inputs/source" type="string"/>
       <bind nodeset="/undo_death_report/inputs/source_id" type="string"/>
@@ -125,7 +124,7 @@
       <bind nodeset="/undo_death_report/patient_name" type="string" calculate="../inputs/contact/name"/>
       <bind nodeset="/undo_death_report/patient_short_name" type="string" calculate="../inputs/contact/short_name"/>
       <bind nodeset="/undo_death_report/patient_display_name" type="string" calculate="if(../patient_short_name = '', ../patient_name, concat(../patient_name, ' (', ../patient_short_name, ')'))"/>
-      <bind nodeset="/undo_death_report/undo/undo_information" type="select1" jr:constraintMsg="jr:itext('/undo_death_report/undo/undo_information:jr:constraintMsg')" constraint=". = 'yes'" required="true()"/>
+      <bind nodeset="/undo_death_report/undo/undo_information" type="select1" constraint=". = 'yes'" required="true()" jr:constraintMsg="jr:itext('/undo_death_report/undo/undo_information:jr:constraintMsg')"/>
       <bind nodeset="/undo_death_report/data/__confirm_undo" type="string" calculate=" /undo_death_report/undo/undo_information "/>
       <bind nodeset="/undo_death_report/data/meta/__patient_uuid" type="string" calculate="../../../inputs/contact/_id"/>
       <bind nodeset="/undo_death_report/data/meta/__patient_id" type="string" calculate="../../../inputs/contact/patient_id"/>

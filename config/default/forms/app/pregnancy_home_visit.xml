@@ -1069,7 +1069,6 @@
         </pregnancy_home_visit>
       </instance>
       <instance id="contact-summary"/>
-      <instance id="user-contact-summary"/>
       <instance id="yes_no">
         <root>
           <item>
