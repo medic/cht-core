@@ -364,7 +364,7 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="number_of_threads" elementType="Argument">
             <stringProp name="Argument.name">number_of_threads</stringProp>
-            <stringProp name="Argument.value">${__P(number_of_threads, 10)}</stringProp>
+            <stringProp name="Argument.value">${__P(number_of_threads, 20)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="skip" elementType="Argument">

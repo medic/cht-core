@@ -124,8 +124,6 @@ const indexViews = async () => {
   return await Promise.all(indexViewsPromises);
 };
 
-const loginListExists = () => fs.existsSync(path.join(dataDirPath, 'users.json'));
-
 const generateLoginList = (users) => {
   return fs.promises.writeFile(path.join(dataDirPath, 'users.json'), JSON.stringify(users, null, 2 ));
 };
@@ -135,37 +133,11 @@ const uploadGeneratedDocs = async () => {
   await deleteJsonDocs();
 };
 
-const getHealthCenters = async () => {
-  const result = await rpn.get({
-    url: `${instanceUrl}/medic/_design/medic-client/_view/contacts_by_type`,
-    qs: { keys: JSON.stringify([['health_center']]), include_docs: true },
-    json: true,
-  });
-  return result.rows.map(row => row.doc);
-};
-
-const getUsers = async () => {
-  const result = await rpn.get({
-    url: `${instanceUrl}/medic/_all_docs`,
-    qs: {
-      start_key: JSON.stringify('org.couchdb.user:scal-'),
-      end_key: JSON.stringify('org.couchdb.user:z'),
-    },
-    json: true,
-  });
-  return result.rows
-    .map(row => row.id)
-    .map(id => id.replace('org.couchdb.user:', ''));
-};
-
 module.exports = {
   uploadGeneratedDocs,
   uploadUsers,
   indexViews,
   saveJson,
-  loginListExists,
   generateLoginList,
   createJsonDir,
-  getHealthCenters,
-  getUsers,
 };

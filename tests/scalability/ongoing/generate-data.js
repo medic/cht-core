@@ -7,6 +7,7 @@ const dataFactory = require('./data-factory');
 const uploadData = require('./upload-data');
 
 const users = [];
+let userCounter = 1; 
 
 const userRolesByFacilityType = {
   'district_hospital': ['chw_supervisor', 'district_admin'],
@@ -39,19 +40,18 @@ const generateUser = async (parent) => {
   const personDoc = await generatePerson(parent);
   const user = userFactory.generateUser(personDoc.name, roles, parent);
   
-  // Sanitize username to meet CHT requirements (lowercase, numbers, underscore, hyphen only)
-  const sanitizedUsername = user.name
+  const cleanName = user.name
     .toLowerCase()
-    .replace(/[^a-z0-9_-]/g, '_')
-    .replace(/_+/g, '_')
-    .replace(/^_|_$/g, '');
+    .replace(/[^a-z0-9]/g, ''); 
   
-  // Transform to the format expected by CHT API
+  const uniqueUsername = `scal${cleanName}${userCounter}`;
+  userCounter++;
+  
   const chtUser = {
-    username: sanitizedUsername,
+    username: uniqueUsername,
     password: user.password,
     roles: user.roles,
-    place: user.facility_id._id, // Use the ID of the facility, not the full object
+    place: user.facility_id._id,
     contact: personDoc._id
   };
   
@@ -61,7 +61,6 @@ const generateUser = async (parent) => {
 const generateHierarchy = async () => {
   const districtHospital = await generatePlace('district_hospital');
   
-  // Create supervisor user at district hospital level
   await generateUser(districtHospital);
   
   for (let i = 0; i < config.contactsNbr.health_center; i++) {

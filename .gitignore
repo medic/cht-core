@@ -62,3 +62,4 @@ user-password-change.csv
 .envrc
 /tests/scalability/ongoing/data/
 /tests/scalability/ongoing/report/
+tests/scalability/ongoing/performance-report.json

@@ -18,7 +18,6 @@ fi
 
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 
-# Check for required environment variables
 if [ -z $BASE_URL ]
 then
     echo "Please pass the base URL via BASE_URL environment variable (e.g., https://192.168.86.250:10449)"
@@ -36,8 +35,6 @@ then
     echo "Please pass the admin password via ADMIN_PASSWORD environment variable (e.g., password)"
     exit 1
 fi
-
-# Construct URLs
 
 ADMIN_INSTANCE_URL="https://${ADMIN_USER}:${ADMIN_PASSWORD}@${BASE_URL#https://}"
 BASE_INSTANCE_URL="$BASE_URL"
@@ -66,7 +63,11 @@ java -cp $DATA_DIR/jmeter/lib/ext/jmeter-plugins-manager-1.4.jar org.jmeterplugi
 $DATA_DIR/jmeter/bin/PluginsManagerCMD.sh install jpgc-mergeresults
 echo "jmeter do it!"
 echo $(which node)
-$DATA_DIR/jmeter/bin/jmeter -n  -t ./sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -Jdata_dir=$DATA_DIR -Jinstance_url=$BASE_INSTANCE_URL -Jskip=1 -l ./report/cli_run.jtl -e -o ./report
+
+OPTIMAL_THREADS=$(node calculate-threads.js 2>/dev/null | grep -E '^[0-9]+$' | head -1)
+echo "Calculated optimal threads from config.js: $OPTIMAL_THREADS"
+
+$DATA_DIR/jmeter/bin/jmeter -n  -t ./sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -Jdata_dir=$DATA_DIR -Jinstance_url=$BASE_INSTANCE_URL -Jskip=1 -Jnumber_of_threads=$OPTIMAL_THREADS -l ./report/cli_run.jtl -e -o ./report
 mv ./jmeter.log ./report/jmeter.log
 echo "FINISHED! "
 

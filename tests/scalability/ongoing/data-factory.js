@@ -55,7 +55,6 @@ const generateReports = (person, parent) => {
 const generatePlace = (type, parent) => {
   const lineage = parent && { _id: parent._id, parent: parent.parent };
   
-  // Generate simple names based on type
   let name = '';
   if (type === 'district_hospital') {
     name = `District Hospital ${Faker.faker.person.firstName()}`;
