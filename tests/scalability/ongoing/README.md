@@ -1,34 +1,60 @@
 # Real-world Data Scalability testing suite
 
-## Introduction
+## Test phases
 
-This suite is to test the scalability of CHT-Core.
-Tests initial replication and workflow replication.
+1. **Initial Sync (Two-Phase)**: Users download initial data in batches
+2. **Workflow Upload**: All users upload generated data simultaneously  
+3. **Workflow Download**: All users download shared data simultaneously
 
 ## Requirements
 
-- Java
-- NodeJS
-- a target medic instance
+- **Java 8+** (for JMeter)
+- **Node.js 16+** 
+- **CHT instance** (local Docker or remote)
 
-## Run
+## Configuration
 
-To run locally: 
+Edit `config.js` to adjust scale:
 
-1. Go to `/tests/scalability/ongoing` and run `npm ci`.
-2. [optional] Edit the `config.json` to change doc counts.
-3. Export required environment variables: 
-   1. `INSTANCE_URL` should point to your instance. ```export INSTANCE_URL=http://192.100.86.152:10449```
-   2.  export ADMIN_USER=medic  
-   3.  export ADMIN_PASSWORD=password
-   4. `DATA_DIR` should point to a non-existent writable path ```export DATA_DIR=./data```. This folder will host jmeter, the generated json docs before upload and PouchDb LevelDb data.  
-4. Run `./run.sh local`
-5. `index.html` report is generated in the `report` directory.
+```javascript
+module.exports = {
+  contactsNbr: {
+    health_center: 19,    // 19 CHWs + 1 supervisor = 20 total users
+    clinic: 1,            // 1 clinic per health center
+    person: 3,            // 3 persons per clinic (initial data)
+    chw: 1,               // 1 CHW per health center
+    supervisor: 1,        // 1 supervisor per district hospital
+  },
+  workflowContactsNbr: {
+    person: 5,            // 5 persons per user per iteration
+    iterations: 3,        // 3 sync cycles
+  },
+};
+```
 
-To run in CI: 
+## Usage
 
-1. Go to `/tests/scalability/ongoing` and run `npm ci`.
-2. Export required environment variables:
-   1. `INSTANCE_URL` should point to your instance. ```export INSTANCE_URL=http://admin:pass@localhost```
-   2. `DATA_DIR` should point to a non-existent writable path ```export DATA_DIR=./data```. This folder will host the generated json docs before upload and PouchDb LevelDb data.
-3. Run `./run.sh`
+### Local Testing
+
+1. **Setup environment:**
+   ```bash
+   cd tests/scalability/ongoing
+   npm ci
+   ```
+
+2. **Configure CHT instance:**
+   ```bash
+   export BASE_URL="https://your-cht-instance.com"
+   export ADMIN_USER="medic"
+   export ADMIN_PASSWORD="password"
+   ```
+
+3. **Run test:**
+   ```bash
+   ./run.sh local
+   ```
+
+4. **View results:**
+   - JMeter HTML report: `report/index.html`
+   - Individual user logs: `report/workflow-*-stdout*`
+
