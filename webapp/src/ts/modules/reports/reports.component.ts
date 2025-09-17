@@ -75,6 +75,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   private canDefaultFilter = false;
   private trackInitialLoadPerformance;
   readonly buttonType = ButtonType;
+  private totalReportsCount?: number;
 
   subscription: Subscription = new Subscription();
   reportsList;
@@ -482,6 +483,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
         { limit: this.LIMIT_SELECT_ALL_REPORTS, hydrateContactNames: true }
       );
       const preparedReports = await this.prepareReports(reports, true);
+      this.totalReportsCount = preparedReports.length;
       this.reportsActions.setSelectedReports(preparedReports);
       this.globalActions.unsetComponents();
 
@@ -532,7 +534,12 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       return false;
     }
 
-    const isMaxReportsSelected = this.selectedReports?.length >= this.LIMIT_SELECT_ALL_REPORTS;
-    return isMaxReportsSelected || this.reportsList?.length === this.selectedReports?.length;
+    const selectedCount = this.selectedReports.length;
+
+    if (this.totalReportsCount) {
+      return selectedCount === this.totalReportsCount;
+    }
+
+    return selectedCount >= this.LIMIT_SELECT_ALL_REPORTS;
   }
 }
