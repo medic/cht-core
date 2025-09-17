@@ -1,5 +1,4 @@
 const path = require('path');
-const rewire = require('rewire');
 const PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-adapter-leveldb'));
 const { performance } = require('perf_hooks');
@@ -11,7 +10,6 @@ const config = require('./config');
 
 const dataFactory = require('./data-factory');
 
-// Helper function for delays
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const idx = ((+threadId || 0) + +skipUsers) % users.length;
@@ -30,17 +28,14 @@ const remoteDb = new PouchDB(dbUrl, {
 
 const localDb = new PouchDB(path.join(dataDirPath, `/dbs/scalability-test-${user.username}`), { 
   adapter: 'leveldb',
-  auto_compaction: true // Enable auto-compaction to prevent database bloat
+  auto_compaction: true
 });
 
-// CHT-style bidirectional sync with proper error handling and timeouts
-// Filter function to identify read-only documents (same as CHT)
 const isReadOnlyDoc = (doc) => {
   const READ_ONLY_TYPES = ['form', 'translations'];
   const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
   const DDOC_PREFIX = '_design/';
   
-  // Never replicate "purged" documents upwards
   const keys = Object.keys(doc);
   if (keys.length === 4 &&
     keys.includes('_id') &&
@@ -50,7 +45,6 @@ const isReadOnlyDoc = (doc) => {
     return true;
   }
 
-  // Don't try to replicate read only docs back to the server
   return (
     READ_ONLY_TYPES.indexOf(doc.type) !== -1 ||
     READ_ONLY_IDS.indexOf(doc._id) !== -1 ||
@@ -72,7 +66,7 @@ const replicateTo = async () => {
     const result = await localDb.replicate.to(remoteDb, {
       live: false,
       retry: true,
-      timeout: 30000 // 30 second timeout to prevent hanging
+      timeout: 30000 
     });
     
     console.log('Replication result:', result);
@@ -81,7 +75,6 @@ const replicateTo = async () => {
     console.log(`Upload replication completed in ${duration.toFixed(2)}ms`);
     console.log(`Uploaded: ${result.docs_written} docs, ${result.docs_read} docs read`);
     
-    // Performance metrics
     const metrics = {
       ...result,
       duration: duration,
@@ -91,7 +84,7 @@ const replicateTo = async () => {
       phase: 'upload'
     };
     
-    console.log(`📊 UPLOAD METRICS: ${metrics.docs_written} docs in ${duration.toFixed(2)}ms (${metrics.docs_per_second} docs/sec)`);
+    console.log(`UPLOAD METRICS: ${metrics.docs_written} docs in ${duration.toFixed(2)}ms (${metrics.docs_per_second} docs/sec)`);
     
     return metrics;
   } catch (err) {
@@ -100,7 +93,6 @@ const replicateTo = async () => {
   }
 };
 
-// Reuse CHT's initial replication logic for incremental sync
 const fetchJSON = async (url) => {
   const response = await fetch(`${instanceUrl}${url}`, {
     headers: {
@@ -114,9 +106,7 @@ const fetchJSON = async (url) => {
   throw new Error(await response.text());
 };
 
-// CHT's proven replication logic (adapted from initial-replication.js)
 let docIdsRevs;
-let remoteDocCount;
 const BATCH_SIZE = 100;
 
 const getMissingDocIdsRevsPairs = async (localDb, remoteDocIdsRevs) => {
@@ -165,17 +155,7 @@ const replicateFrom = async (previousReplicationResult) => {
   const startTime = performance.now();
   try {
     console.log('Starting sync replication (bidirectional)...');
-    console.log('Simulating CHT sync behavior');
-    
-    // Simulate what happens when user clicks "sync" in CHT
-    // This is incremental bidirectional replication, not full download
-    
-    // 1. Upload local changes to server (replicateTo)
-    console.log('Uploading local changes to server...');
-    const localInfo = await localDb.info();
-    
-    // Get only NEW changes since last sync (incremental)
-    // Since we can't get remote info, we'll use the last_seq from the previous replication
+      
     const lastReplicatedSeq = previousReplicationResult?.last_seq || 0;
     const localChanges = await localDb.changes({
       since: lastReplicatedSeq,
@@ -191,7 +171,6 @@ const replicateFrom = async (previousReplicationResult) => {
           await remoteDb.put(change.doc);
           uploaded++;
         } catch (err) {
-          // Handle conflicts - server version wins
           if (err.status === 409) {
             console.log(`Conflict on ${change.doc._id}, keeping server version`);
           }
@@ -199,22 +178,18 @@ const replicateFrom = async (previousReplicationResult) => {
       }
     }
     
-    // 2. Download server changes to local (replicateFrom)
     console.log('Downloading server changes to local...');
     
-    // Use CHT's proven replication logic (same as initial-replication.js)
     const response = await fetchJSON('/api/v1/replication/get-ids');
     console.log(`Found ${response.doc_ids_revs.length} remote documents available to user`);
     
-    // Filter to only missing/updated documents (incremental sync)
     docIdsRevs = await getMissingDocIdsRevsPairs(localDb, response.doc_ids_revs);
     remoteDocCount = response.doc_ids_revs.length;
     
     console.log(`Need to download ${docIdsRevs.length} missing/updated documents`);
     
-    // Download documents using CHT's proven batch logic
     const downloaded = await downloadDocs(remoteDb, localDb);
-    const skipped = 0; // CHT API handles filtering
+    const skipped = 0;
     
     console.log(`Download summary: ${downloaded} downloaded, ${skipped} skipped`);
     
@@ -224,7 +199,6 @@ const replicateFrom = async (previousReplicationResult) => {
     console.log(`Sync replication completed in ${duration.toFixed(2)}ms`);
     console.log(`Uploaded: ${result.uploaded_docs} docs, Downloaded: ${result.read_docs} docs`);
     
-    // Performance metrics
     const metrics = {
       ...result,
       duration: duration,
@@ -236,26 +210,11 @@ const replicateFrom = async (previousReplicationResult) => {
       missing_docs: docIdsRevs.length
     };
     
-    console.log(`📊 DOWNLOAD METRICS: ${metrics.read_docs} docs in ${duration.toFixed(2)}ms (${metrics.docs_per_second} docs/sec)`);
+    console.log(`DOWNLOAD METRICS: ${metrics.read_docs} docs in ${duration.toFixed(2)}ms (${metrics.docs_per_second} docs/sec)`);
     
     return metrics;
   } catch (err) {
     console.error('Download replication failed:', err);
-    throw err;
-  }
-};
-
-const replicate = async () => {
-  try {
-    // Step 1: Upload local changes to server
-    const uploadResult = await replicateTo();
-    
-    // Step 2: Download server changes to local
-    await replicateFrom(uploadResult);
-    
-    console.log('Bidirectional sync completed successfully');
-  } catch (err) {
-    console.error('Bidirectional sync failed:', err);
     throw err;
   }
 };
@@ -283,7 +242,6 @@ const getClinics = async () => {
     clinics = contacts.rows.map(row => row.doc);
     console.log(`Found ${clinics.length} clinics`);
     
-    // If no clinics found, try alternative query
     if (clinics.length === 0) {
       console.log('No clinics found with contacts_by_type view, trying alternative query...');
       const allDocs = await localDb.allDocs({ 
@@ -341,11 +299,9 @@ const generateData = async () => {
     for (let i = 0; i < config.workflowContactsNbr.iterations; i++) {
       console.log(`\n=== Iteration ${i + 1}/${config.workflowContactsNbr.iterations} ===`);
       
-      // Generate new data locally
       await generateData();
       
       if (phase === 'upload' || !phase) {
-        // Phase 1: Upload local changes to server
         console.log('=== PHASE 1: UPLOAD ===');
         const uploadResult = await replicateTo();
         
@@ -354,15 +310,13 @@ const generateData = async () => {
           continue;
         }
         
-        // Add delay to ensure data is available on server
         console.log('Waiting 2 seconds for data to be available on server...');
         await delay(2000);
       }
       
       if (phase === 'download' || !phase) {
-        // Phase 2: Download server changes to local
         console.log('=== PHASE 2: DOWNLOAD ===');
-        await replicateFrom(); // Download-only phase will use local sequence
+        await replicateFrom();
         
         console.log(`Download phase completed for iteration ${i + 1}`);
       }

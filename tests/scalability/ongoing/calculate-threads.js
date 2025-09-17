@@ -2,7 +2,7 @@
 
 const config = require('./config');
 
-function calculateTotalUsers() {
+const calculateTotalUsers = () => {
   const { contactsNbr } = config;
   
   const chws = contactsNbr.health_center * contactsNbr.chw;
@@ -10,9 +10,9 @@ function calculateTotalUsers() {
   const totalUsers = chws + supervisors;
   
   return totalUsers;
-}
+};
 
-function calculateOptimalThreads() {
+const calculateOptimalThreads = () => {
   const totalUsers = calculateTotalUsers();
   
   const optimalThreads = totalUsers % 2 === 0 ? totalUsers : totalUsers + 1;
@@ -22,7 +22,7 @@ function calculateOptimalThreads() {
     optimalThreads,
     initialSyncThreads: optimalThreads / 2
   };
-}
+};
 
 if (require.main === module) {
   const result = calculateOptimalThreads();

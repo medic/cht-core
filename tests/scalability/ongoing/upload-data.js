@@ -31,7 +31,7 @@ const createJsonDir = async () => {
   try {
     await fs.promises.mkdir(jsonDirPath);
   } catch (err) {
-    throw new Error(`Could not create ${jsonDirPath} folder.`);
+    throw new Error(`Could not create ${jsonDirPath} folder: ${err.message}`);
   }
 };
 
@@ -98,7 +98,8 @@ const indexView = async (ddoc, view) => {
         url: `${instanceUrl}/medic/_design/${ddoc}/_view/${view}?limit=1`,
       });
     } catch (err) {
-      // timeout
+      // timeout - retry
+      console.log(`View not ready, retrying... (${err.message})`);
     }
     // eslint-disable-next-line no-constant-condition
   } while (true);
