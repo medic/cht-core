@@ -593,14 +593,15 @@ const sortedIncludes = (sortedArray, element) => _.sortedIndexOf(sortedArray, St
 
 const specialChars = [ '+', '-', '&', '|', '!', '^', '"',  '~',  '*', '?', ':' ];
 const escapedChars = specialChars.map(char => char.replace(/[.*+?^${}()~\-|[\]\\]/g, '\\$&'));
-const escapeKeys = (key) => {
-  // Move hyphen to the end to avoid range interpretation
-  const charSet = escapedChars.join('');
-  const finalCharSet = charSet.includes('\\-')
-    ? charSet.replace('\\-', '') + '-'
-    : charSet;
+// Move hyphen to the end to avoid range interpretation
+const charSet = escapedChars.join('');
+const finalCharSet = charSet.includes('\\-')
+  ? charSet.replace('\\-', '') + '-'
+  : charSet;
 
-  const pattern = new RegExp(`([${finalCharSet}])`, 'g');
+const pattern = new RegExp(`([${finalCharSet}])`, 'g');
+
+const escapeKeys = (key) => {
   return String(key).replace(pattern, `\\$1`);
 };
 

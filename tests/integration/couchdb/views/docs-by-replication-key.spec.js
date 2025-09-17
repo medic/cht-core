@@ -279,15 +279,34 @@ describe('docs_by_replication_key', () => {
     }
   ];
 
+  const specialChars = [ '+', '-', '&', '|', '!', '^', '"',  '~',  '*', '?', ':' ];
+  const escapedChars = specialChars.map(char => char.replace(/[.*+?^${}()~\-|[\]\\]/g, '\\$&'));
+  // Move hyphen to the end to avoid range interpretation
+  const charSet = escapedChars.join('');
+  const finalCharSet = charSet.includes('\\-')
+    ? charSet.replace('\\-', '') + '-'
+    : charSet;
+  const pattern = new RegExp(`([${finalCharSet}])`, 'g');
+
+  const escapeKeys = (key) => {
+    return String(key).replace(pattern, `\\$1`);
+  };
+
   const getChanges = async (keys) => {
     console.log('Requesting changes, please be patient…');
 
+    const opts = {
+      limit: 100000,
+      q: `key:(${keys.map(escapeKeys).join(' OR ')})`,
+    };
+
     return await utils
       .requestOnTestDb({
-        path: '/_design/medic/_view/docs_by_replication_key?keys=' + JSON.stringify(keys),
-        method: 'GET',
+        path: '/_design/medic/_nouveau/docs_by_replication_key',
+        method: 'POST',
+        body: opts,
       })
-      .then(response => response.rows.map(doc => doc.id))
+      .then(response => response.hits.map(doc => doc.id))
       .catch(err => console.log('Error requesting changes', err));
   };
 
