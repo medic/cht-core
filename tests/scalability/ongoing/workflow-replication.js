@@ -108,7 +108,6 @@ const fetchJSON = async (url) => {
 };
 
 let docIdsRevs;
-let remoteDocCount;
 const BATCH_SIZE = 100;
 
 const getMissingDocIdsRevsPairs = async (localDb, remoteDocIdsRevs) => {
@@ -186,7 +185,6 @@ const replicateFrom = async (previousReplicationResult) => {
     console.log(`Found ${response.doc_ids_revs.length} remote documents available to user`);
     
     docIdsRevs = await getMissingDocIdsRevsPairs(localDb, response.doc_ids_revs);
-    remoteDocCount = response.doc_ids_revs.length;
     
     console.log(`Need to download ${docIdsRevs.length} missing/updated documents`);
     
