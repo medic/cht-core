@@ -36,7 +36,7 @@ const initializeConfigDir = async () => {
   await fs.promises.writeFile(eslintPath, JSON.stringify(eslintRules));
 };
 
-const compileNoolsConfig = async ({ tasks, targets, contactSummary, contactSummaryExtras }) => {
+const compileConfig = async ({ tasks, targets, contactSummary, contactSummaryExtras }) => {
   const dir = getDirPath();
 
   if (tasks && fs.existsSync(tasks)) {
@@ -88,7 +88,7 @@ const compileAndUploadAppForms = async (formsDir) => {
 
 module.exports = {
   runCommand,
-  compileNoolsConfig,
+  compileConfig,
   initializeConfigDir,
   compileAndUploadAppForms,
 };
