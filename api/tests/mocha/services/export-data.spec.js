@@ -343,6 +343,10 @@ describe('Export Data Service', () => {
               // eslint-disable-next-line @stylistic/max-len
               userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
               versions: { cht: 'unknown', settings: '4-83c8561a13479b245b295e97401f2f55' },
+              storage: {
+                free: 16713310208,
+                total: 26544680960,
+              },
             },
           },
         },
@@ -359,6 +363,10 @@ describe('Export Data Service', () => {
                 android: '10',
                 cht: 'unknown',
                 settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba',
+              },
+              storage: {
+                free: 10737418240,
+                total: 42949672960,
               },
             },
           },
@@ -394,7 +402,9 @@ describe('Export Data Service', () => {
           apk: undefined,
           android: undefined,
           cht: 'unknown',
-          settings: '4-83c8561a13479b245b295e97401f2f55'
+          settings: '4-83c8561a13479b245b295e97401f2f55',
+          storageFree: 16713310208,
+          storageTotal: 26544680960
         },
         {
           user: 'chw1',
@@ -407,7 +417,9 @@ describe('Export Data Service', () => {
           apk: 'v1.0.4-4',
           android: '10',
           cht: 'unknown',
-          settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba'
+          settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba',
+          storageFree: 10737418240,
+          storageTotal: 42949672960
         },
         {
           android: undefined,
@@ -420,6 +432,8 @@ describe('Export Data Service', () => {
           date: '2022-11-29',
           deviceId: 'b1c172d8-82b0-42fd-8401-313796b8c802',
           settings: undefined,
+          storageFree: undefined,
+          storageTotal: undefined,
           user: 'min-data'
         }
       ]);
@@ -436,6 +450,10 @@ describe('Export Data Service', () => {
           device: {
             userAgent: 'Not a real user agent',
             versions: { cht: 'unknown', settings: '4-83c8561a13479b245b295e97401f2f55' },
+            storage: {
+              free: 16713310208,
+              total: 26544680960,
+            },
           },
         },
       },
@@ -451,6 +469,10 @@ describe('Export Data Service', () => {
               android: '10',
               cht: 'unknown',
               settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba',
+            },
+            storage: {
+              free: 10737418240,
+              total: 42949672960,
             },
           },
         },
@@ -471,7 +493,9 @@ describe('Export Data Service', () => {
         apk: undefined,
         android: undefined,
         cht: 'unknown',
-        settings: '4-83c8561a13479b245b295e97401f2f55'
+        settings: '4-83c8561a13479b245b295e97401f2f55',
+        storageFree: 16713310208,
+        storageTotal: 26544680960
       },
       {
         user: 'chw1',
@@ -484,7 +508,9 @@ describe('Export Data Service', () => {
         apk: 'v1.0.4-4',
         android: '10',
         cht: 'unknown',
-        settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba'
+        settings: '5-5ad24c388d1d4c4a7fcb6b05cff875ba',
+        storageFree: 10737418240,
+        storageTotal: 42949672960
       }
     ]);
     logger.error.callCount.should.equal(1);
