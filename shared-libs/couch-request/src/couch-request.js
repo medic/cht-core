@@ -2,6 +2,8 @@ const environment = require('@medic/environment');
 const audit = require('@medic/audit');
 const path = require('path');
 const os = require('os');
+const undici = require('undici');
+
 let asyncLocalStorage;
 let requestIdHeader;
 
@@ -163,6 +165,12 @@ const setRequestOptions = async (options) => {
   if (!isInternalRequest(options) && !options.headers['user-agent']) {
     options.headers['user-agent'] = await getUserAgent();
   }
+
+  options.dispatcher = new undici.Agent({
+    headersTimeout: 0,
+    connectTimeout: 0,
+    bodyTimeout: 0
+  });
 };
 
 const getResponseBody = async (response, sendJson) => {
