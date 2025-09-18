@@ -93,6 +93,15 @@
 
           <li role="separator" class="divider" *ngIf="!replicationStatus.disabled"></li>
 
+          <li *ngFor="let tab of secondaryTabs" id="{{tab.name}}-tab">
+            <a routerLink="{{tab.route}}" role="menuitem" tabindex="-1">
+              <i *ngIf="!tab.resourceIcon" class="fa {{tab.icon}}"><i class="fa {{tab.defaultIcon}}"></i></i>
+              <i *ngIf="tab.resourceIcon" [innerHTML]="tab.resourceIcon | resourceIcon:tab.defaultIcon"></i>
+              <span>{{tab.translation | translate}}</span>
+            </a>
+          </li>
+          <li role="separator" class="divider" *ngIf="secondaryTabs.length > 0"></li>
+
           <li role="presentation">
             <a routerLink="trainings" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-graduation-cap"></i>

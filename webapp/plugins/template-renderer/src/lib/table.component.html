@@ -1,0 +1,64 @@
+<div style="display: flex; flex-direction: column; height: 100%;">
+  <div>
+    <ng-container *ngIf="hasCustomHeader; else defaultHeader">
+        <ng-container #pageHeaderContainer></ng-container>
+    </ng-container>
+    <ng-template #defaultHeader>
+        <h1>{{ title }}</h1>
+        <mat-expansion-panel [expanded]="expanded">
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                {{ descriptionCollapsed }}
+                </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div style="display: block; width: 100%;">
+                <ng-container #descriptionExpandedContainer></ng-container>
+            </div>
+        </mat-expansion-panel>
+    </ng-template>
+    <p><button type="button" (click)="reload()">Reload</button></p> 
+  </div>
+
+  <div class="loader inline small" *ngIf="isLoading"></div>
+  <div style="flex: 1 1 auto; overflow: auto;">
+    <table matSort mat-table [dataSource]="dataSource" class="mat-elevation-z2" [style.display]="isLoading ? 'none' : ''">
+        @for (entry of displayedColumns | keyvalue; track entry.key) {
+            <ng-container [matColumnDef]="entry.key">
+                <th 
+                    mat-header-cell 
+                    *matHeaderCellDef 
+                    mat-sort-header 
+                    [disabled]="!entry.value.can_sort"
+                    style="position: sticky; top: 0; background: white; z-index: 1;"> 
+                        {{entry.value.display_value}} 
+                </th>
+                <!-- All of the different supported pipes -->
+                <td mat-cell *matCellDef="let element; let i = index">
+                    <!-- Preprocess the value just once -->
+                     <ng-container 
+                        *ngTemplateOutlet="cellTemplate; 
+                        context: { 
+                            processed: (entry.key | processValue : element[entry.key] : i : dataSource.data.length : element : processValueFn),
+                            pipeType: entry.value?.pipe
+                        }">
+                    </ng-container>
+                </td>
+                <ng-template #cellTemplate let-processed="processed" let-pipeType="pipeType">
+                    <ng-container [ngSwitch]="pipeType">
+                         <ng-container *ngFor="let pipeClass of pipes">
+                            <span *ngSwitchCase="'date'" [innerHTML]="processed | dynamicPipe: pipeClass: ['simpleDateTime']"></span>
+                         </ng-container>
+                        <span *ngSwitchCase="'decimal2'">{{ (typeof processed === 'number' && !isNaN(processed)) ? processed.toFixed(2) : processed }}</span>
+                        <span *ngSwitchDefault>{{ processed }}</span>
+                    </ng-container>
+                </ng-template>
+            </ng-container>
+        } @empty {
+            <li>There are no items.</li>
+        }
+        <tr mat-header-row *matHeaderRowDef="getColumns()"></tr>
+        <tr mat-row *matRowDef="let row; columns: getColumns();"></tr>
+    </table>
+  </div>
+</div>

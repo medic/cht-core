@@ -29,7 +29,8 @@
       "@mm-providers/*": ["src/ts/providers/*"],
       "@mm-reducers/*": ["src/ts/reducers/*"],
       "@mm-selectors/*": ["src/ts/selectors/*"],
-      "@mm-services/*": ["src/ts/services/*"]
+      "@mm-services/*": ["src/ts/services/*"],
+      "@plugins/*": ["node_modules/@plugins/*"],
     },
     "strictNullChecks": true,
     "alwaysStrict": true,

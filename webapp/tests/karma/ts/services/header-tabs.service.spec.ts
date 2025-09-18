@@ -82,6 +82,7 @@ describe('HeaderTabs service', () => {
           typeName: 'message',
           icon: undefined,
           resourceIcon: undefined,
+          tabType: 'primary'
         },
         {
           name: 'reports',
@@ -92,6 +93,7 @@ describe('HeaderTabs service', () => {
           typeName: 'report',
           icon: undefined,
           resourceIcon: undefined,
+          tabType: 'primary'
         },
         {
           name: 'analytics',
@@ -101,6 +103,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_analytics', 'can_view_analytics_tab'],
           icon: undefined,
           resourceIcon: undefined,
+          tabType: 'primary'
         }
       ]);
     });
@@ -131,6 +134,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_tasks', 'can_view_tasks_tab'],
           icon: undefined,
           resourceIcon: undefined,
+          tabType: 'primary'
         },
         {
           name: 'contacts',
@@ -140,6 +144,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_contacts', 'can_view_contacts_tab'],
           icon: undefined,
           resourceIcon: undefined,
+          tabType: 'primary'
         },
         {
           name: 'analytics',
@@ -149,6 +154,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_analytics', 'can_view_analytics_tab'],
           icon: undefined,
           resourceIcon: undefined,
+          tabType: 'primary'
         }
       ]);
     });
@@ -179,6 +185,7 @@ describe('HeaderTabs service', () => {
           typeName: 'message',
           icon: undefined,
           resourceIcon: 'pomegranate-icon',
+          tabType: 'primary'
         },
         {
           name: 'tasks',
@@ -188,6 +195,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_tasks', 'can_view_tasks_tab'],
           icon: 'fa-apple',
           resourceIcon: undefined,
+          tabType: 'primary'
         },
         {
           name: 'contacts',
@@ -197,6 +205,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_contacts', 'can_view_contacts_tab'],
           icon: undefined,
           resourceIcon: 'pear-icon',
+          tabType: 'primary'
         },
         {
           name: 'analytics',
@@ -206,6 +215,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_analytics', 'can_view_analytics_tab'],
           icon: 'fa-mango-icon',
           resourceIcon: 'mango-icon',
+          tabType: 'primary'
         }
       ]);
     });
@@ -230,6 +240,7 @@ describe('HeaderTabs service', () => {
         typeName: 'message',
         icon: undefined,
         resourceIcon: undefined,
+        tabType: 'primary'
       });
     });
 
@@ -251,6 +262,7 @@ describe('HeaderTabs service', () => {
         typeName: 'report',
         icon: undefined,
         resourceIcon: undefined,
+        tabType: 'primary'
       });
     });
 
@@ -279,6 +291,7 @@ describe('HeaderTabs service', () => {
         permissions: ['can_view_contacts', 'can_view_contacts_tab'],
         icon: undefined,
         resourceIcon: undefined,
+        tabType: 'primary'
       });
     });
 
@@ -306,6 +319,7 @@ describe('HeaderTabs service', () => {
         permissions: ['can_view_analytics', 'can_view_analytics_tab'],
         icon: 'fa-mango-icon',
         resourceIcon: 'mango-icon',
+        tabType: 'primary'
       });
     });
   });
