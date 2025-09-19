@@ -109,7 +109,7 @@
     "@wdio/local-runner": "^9.19.2",
     "@wdio/mocha-framework": "^9.19.2",
     "@wdio/spec-reporter": "^9.19.2",
-    "allure-commandline": "^2.32.0",
+    "allure-commandline": "^2.34.1",
     "appium-uiautomator2-driver": "^3.10.0",
     "browserify": "^17.0.1",
     "browserify-ngannotate": "^2.0.0",
