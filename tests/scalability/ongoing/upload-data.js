@@ -1,10 +1,6 @@
 // Disable debugger to prevent hanging when spawned by JMeter
 if (process.debugPort) {
-  try {
-    process.debugPort = undefined;
-  } catch (e) {
-    // Ignore errors when trying to disable debugger
-  }
+  process.debugPort = undefined;
 }
 
 const path = require('path');
