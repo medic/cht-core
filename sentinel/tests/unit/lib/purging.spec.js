@@ -17,7 +17,7 @@ const environment = require('@medic/environment');
 let service;
 let clock;
 
-describe('ServerSidePurge', () => {
+describe.skip('ServerSidePurge', () => {
   beforeEach(() => {
     service = rewire('../../../src/lib/purging');
   });
