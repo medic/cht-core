@@ -95,7 +95,7 @@ const docs = [
     form: 'yes',
     fields: {
       patient_id: 'patient1',
-      needs_signoff: true,
+      needs_signoff: 'true',
     },
     contact: { _id: 'fixture:user:user1', parent: { _id: 'clinic1' } },
     to_be_purged: true,
@@ -106,7 +106,7 @@ const docs = [
     form: 'yes',
     fields: {
       patient_id: 'patient1',
-      needs_signoff: true,
+      needs_signoff: 'true',
     },
     errors: [{ code: 'registration_not_found' }],
     contact: { _id: 'fixture:user:user1', parent: { _id: 'clinic1' } },
@@ -118,7 +118,7 @@ const docs = [
     form: 'yes',
     fields: {
       patient_id: 'orphaned',
-      needs_signoff: true,
+      needs_signoff: 'true',
     },
     contact: { _id: 'fixture:user:user1', parent: { _id: 'clinic1' } },
     to_be_purged: true,
