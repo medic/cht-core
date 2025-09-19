@@ -9,7 +9,7 @@ import { RemoteDataContext } from './remote/libs/data-context';
 import { getPagedGenerator, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
-import { validatePersonInput } from './input';
+import { PersonInput, validatePersonInput } from './input';
 import { InvalidArgumentError } from './libs/error';
 
 /** */
@@ -135,8 +135,14 @@ export namespace v1 {
      * @throws InvalidArgumentError if the input does not contain required fields
      * @throws InvalidArgumentError if the input's parent field is not one of the allowed parents in the config
      * @throws InvalidArgumentError if the required fields do not have the expected type
+     * @throws Error if data is not an object
+     * @throws Error if type is not provided or is empty
+     * @throws Error if name is not provided or is empty
+     * @throws Error if parent is not provided or is empty
+     * @throws Error if reported_date is not in a valid format.
+     * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
      */
-    const curriedFn = async (input: unknown): Promise<Person> => {
+    const curriedFn = async (input: PersonInput): Promise<Person> => {
       const personInput = validatePersonInput(input);
       return fn(personInput);
     };

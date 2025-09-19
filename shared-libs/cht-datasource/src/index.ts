@@ -38,6 +38,7 @@ import {
   DEFAULT_DOCS_PAGE_LIMIT,
   DEFAULT_IDS_PAGE_LIMIT,
 } from './libs/constants';
+import { PersonInput } from './input';
 
 export { Nullable, NonEmptyArray } from './libs/core';
 export { DataContext } from './libs/data-context';
@@ -298,7 +299,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created person.
          * @throws InvalidArgumentError if the type of input is not valid for creating a person.
          */
-        create: (input: unknown) => ctx.bind(Person.v1.create)(input),
+        create: (input: PersonInput) => ctx.bind(Person.v1.create)(input),
 
         /**
          * Updates a person.
