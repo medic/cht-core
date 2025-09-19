@@ -31,7 +31,6 @@ describe('forms service', () => {
       const actual = service.getXFormAttachment(given);
       expect(actual).to.equal(undefined);
     });
-
   });
 
   describe('getFormDocs', () => {
@@ -45,8 +44,6 @@ describe('forms service', () => {
           startkey: 'form:',
           endkey: 'form:\ufff0',
           include_docs: true,
-          attachments: true,
-          binary: true,
         }]]);
       });
     });
@@ -60,8 +57,6 @@ describe('forms service', () => {
           startkey: 'form:',
           endkey: 'form:\ufff0',
           include_docs: true,
-          attachments: true,
-          binary: true,
         }]]);
       });
     });
@@ -74,6 +69,7 @@ describe('forms service', () => {
         { doc: { _id: 'form:d', type: 'not_form', _attachments: { xml: '<myxml/>' } } },
       ];
       sinon.stub(db.medic, 'allDocs').resolves({ rows: given });
+      sinon.stub(service, 'getAttachment').resolves('<myxsl>');
       return service.getFormDocs().then(actual => {
         expect(actual.length).to.equal(1);
         expect(actual[0]._id).to.equal('form:a');
