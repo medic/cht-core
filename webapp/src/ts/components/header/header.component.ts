@@ -22,6 +22,7 @@ import { HeaderLogoPipe, ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 
 import { HeaderTab, HeaderTabsService } from '@mm-services/header-tabs.service';
 
+// #10277 (v5.0): @deprecated Legacy navigation permission retained temporarily.
 export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
 
 @Component({

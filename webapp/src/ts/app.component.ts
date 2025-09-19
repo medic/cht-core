@@ -49,7 +49,7 @@ import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserSettings, UserSettingsService } from '@mm-services/user-settings.service';
-import { OLD_NAV_PERMISSION, HeaderComponent } from '@mm-components/header/header.component';
+import { HeaderComponent } from '@mm-components/header/header.component';
 import { NgIf } from '@angular/common';
 import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-policy.component';
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
@@ -516,7 +516,10 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private async enableOldNav() {
-    this.hasOldNav = !this.sessionService.isAdmin() && await this.authService.has(OLD_NAV_PERMISSION);
+    // #10277 (v5.0): Legacy navigation disabled. 
+    // This method is kept temporarily for backward compatibility.
+    // To be done: Use shared code across all navigation #10277-followup
+    this.hasOldNav = false;
   }
 
   private initForms() {
