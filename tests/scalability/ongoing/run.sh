@@ -51,7 +51,8 @@ mkdir -p "$DATA_DIR"/dbs
 echo "npm install for jmeter suite"
 npm ci
 
-node --inspect=0.0.0.0:9930 ./generate-data.js "$ADMIN_INSTANCE_URL" "$DATA_DIR"
+unset NODE_OPTIONS VSCODE_INSPECTOR_OPTIONS
+node ./generate-data.js "$ADMIN_INSTANCE_URL" "$DATA_DIR"
 
 echo "jmeter install"
 wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz -O "$DATA_DIR"/apache-jmeter.tgz
@@ -67,7 +68,8 @@ which node
 OPTIMAL_THREADS=$(node calculate-threads.js 2>/dev/null | grep -E '^[0-9]+$' | head -1)
 echo "Calculated optimal threads from config.js: $OPTIMAL_THREADS"
 
-"$DATA_DIR"/jmeter/bin/jmeter -n  -t ./sync.jmx -Jworking_dir=./ -Jnode_binary="$(which node)" -Jdata_dir="$DATA_DIR" -Jinstance_url="$BASE_INSTANCE_URL" -Jskip=1 -Jnumber_of_threads="$OPTIMAL_THREADS" -l ./report/cli_run.jtl -e -o ./report
+# Ensure clean environment for JMeter execution (no debugger inheritance)
+env -u NODE_OPTIONS -u VSCODE_INSPECTOR_OPTIONS "$DATA_DIR"/jmeter/bin/jmeter -n  -t ./sync.jmx -Jworking_dir=./ -Jnode_binary="$(which node)" -Jdata_dir="$DATA_DIR" -Jinstance_url="$BASE_INSTANCE_URL" -Jskip=1 -Jnumber_of_threads="$OPTIMAL_THREADS" -l ./report/cli_run.jtl -e -o ./report
 mv ./jmeter.log ./report/jmeter.log
 echo "FINISHED! "
 

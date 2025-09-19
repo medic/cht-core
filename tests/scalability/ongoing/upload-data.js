@@ -1,3 +1,12 @@
+// Disable debugger to prevent hanging when spawned by JMeter
+if (process.debugPort) {
+  try {
+    process.debugPort = undefined;
+  } catch (e) {
+    // Ignore errors when trying to disable debugger
+  }
+}
+
 const path = require('path');
 const { spawn } = require('child_process');
 const rpn = require('request-promise-native');
