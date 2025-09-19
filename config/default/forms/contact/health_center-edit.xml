@@ -57,13 +57,13 @@
             <value>Household</value>
           </text>
           <text id="generated_name-0">
-            <value><output value=" /data/health_center/contact/contact_name "/>'s Health Facility </value>
+            <value><output value=" /data/health_center/contact/contact_name "></output>'s Health Facility </value>
           </text>
           <text id="generated_name-1">
-            <value><output value=" /data/health_center/contact/contact_name "/>'s Area </value>
+            <value><output value=" /data/health_center/contact/contact_name "></output>'s Area </value>
           </text>
           <text id="generated_name-2">
-            <value><output value=" /data/health_center/contact/contact_name "/>'s Household </value>
+            <value><output value=" /data/health_center/contact/contact_name "></output>'s Household </value>
           </text>
           <text id="/data/inputs:label">
             <value></value>
@@ -102,10 +102,10 @@
             <value>Select the Primary Contact</value>
           </text>
           <text id="/data/health_center/is_name_generated:label">
-            <value> Would you like to name the place after the primary contact: &quot;<output value=" /data/health_center/generated_name "/>&quot;? </value>
+            <value> Would you like to name the place after the primary contact: "<output value=" /data/health_center/generated_name "></output>"? </value>
           </text>
           <text id="/data/health_center/name:label">
-            <value> Name of this <output value=" /data/init/place_type_translation "/> </value>
+            <value> Name of this <output value=" /data/init/place_type_translation "></output> </value>
           </text>
           <text id="/data/health_center/external_id:label">
             <value>External ID</value>
@@ -188,13 +188,13 @@
             <value>क्षेत्र</value>
           </text>
           <text id="generated_name-0">
-            <value><output value=" /data/health_center/contact/contact_name "/> का ज़िला </value>
+            <value><output value=" /data/health_center/contact/contact_name "></output> का ज़िला </value>
           </text>
           <text id="generated_name-1">
-            <value><output value=" /data/health_center/contact/contact_name "/> का स्वास्थ्य केंद्र </value>
+            <value><output value=" /data/health_center/contact/contact_name "></output> का स्वास्थ्य केंद्र </value>
           </text>
           <text id="generated_name-2">
-            <value><output value=" /data/health_center/contact/contact_name "/> का क्षेत्र </value>
+            <value><output value=" /data/health_center/contact/contact_name "></output> का क्षेत्र </value>
           </text>
           <text id="/data/inputs:label">
             <value></value>
@@ -233,10 +233,10 @@
             <value>प्राथमिक कॉंटॅक्ट चुनें</value>
           </text>
           <text id="/data/health_center/is_name_generated:label">
-            <value> क्या आप इस स्थान को प्राथमिक कॉंटॅक्ट का नाम देना चाहेंगे &quot;<output value=" /data/health_center/generated_name "/>&quot;? </value>
+            <value> क्या आप इस स्थान को प्राथमिक कॉंटॅक्ट का नाम देना चाहेंगे "<output value=" /data/health_center/generated_name "></output>"? </value>
           </text>
           <text id="/data/health_center/name:label">
-            <value> इस स्थान का नाम <output value=" /data/init/place_type_translation "/> </value>
+            <value> इस स्थान का नाम <output value=" /data/init/place_type_translation "></output> </value>
           </text>
           <text id="/data/health_center/external_id:label">
             <value>बाहरी ID</value>
@@ -319,13 +319,13 @@
             <value>Daerah</value>
           </text>
           <text id="generated_name-0">
-            <value> Kabupaten <output value=" /data/health_center/contact/contact_name "/> </value>
+            <value> Kabupaten <output value=" /data/health_center/contact/contact_name "></output> </value>
           </text>
           <text id="generated_name-1">
-            <value> Fasilitas Kesehatan <output value=" /data/health_center/contact/contact_name "/> </value>
+            <value> Fasilitas Kesehatan <output value=" /data/health_center/contact/contact_name "></output> </value>
           </text>
           <text id="generated_name-2">
-            <value> Daerah <output value=" /data/health_center/contact/contact_name "/> </value>
+            <value> Daerah <output value=" /data/health_center/contact/contact_name "></output> </value>
           </text>
           <text id="/data/inputs:label">
             <value></value>
@@ -364,7 +364,7 @@
             <value>Pilih Kontak Utama</value>
           </text>
           <text id="/data/health_center/is_name_generated:label">
-            <value> Apakah Anda ingin nama tempat setelah kontak utama: &quot;<output value=" /data/health_center/generated_name "/>&quot;? </value>
+            <value> Apakah Anda ingin nama tempat setelah kontak utama: "<output value=" /data/health_center/generated_name "></output>"? </value>
           </text>
           <text id="/data/health_center/name:label">
             <value>Masukkan nama tempat ini</value>
@@ -450,13 +450,13 @@
             <value>Eneo</value>
           </text>
           <text id="generated_name-0">
-            <value> WIlaya ya  <output value=" /data/health_center/contact/contact_name "/> </value>
+            <value> WIlaya ya  <output value=" /data/health_center/contact/contact_name "></output> </value>
           </text>
           <text id="generated_name-1">
-            <value> Kituo cha afya cha  <output value=" /data/health_center/contact/contact_name "/> </value>
+            <value> Kituo cha afya cha  <output value=" /data/health_center/contact/contact_name "></output> </value>
           </text>
           <text id="generated_name-2">
-            <value> Eneo ya  <output value=" /data/health_center/contact/contact_name "/> </value>
+            <value> Eneo ya  <output value=" /data/health_center/contact/contact_name "></output> </value>
           </text>
           <text id="/data/inputs:label">
             <value></value>
@@ -495,7 +495,7 @@
             <value>Chagua Mwasiliwa mkuu</value>
           </text>
           <text id="/data/health_center/is_name_generated:label">
-            <value> Je, Ungependa kuita eneo hii kama mwasilishi mkuu wa eneo hii? &quot;<output value=" /data/health_center/generated_name "/>&quot;? </value>
+            <value> Je, Ungependa kuita eneo hii kama mwasilishi mkuu wa eneo hii? "<output value=" /data/health_center/generated_name "></output>"? </value>
           </text>
           <text id="/data/health_center/name:label">
             <value>Jaza jina la eneo hii</value>
@@ -581,13 +581,13 @@
             <value>क्षेत्र</value>
           </text>
           <text id="generated_name-0">
-            <value><output value=" /data/health_center/contact/contact_name "/>को जिल्ला </value>
+            <value><output value=" /data/health_center/contact/contact_name "></output>को जिल्ला </value>
           </text>
           <text id="generated_name-1">
-            <value><output value=" /data/health_center/contact/contact_name "/>को स्वास्थ्य केन्द्र </value>
+            <value><output value=" /data/health_center/contact/contact_name "></output>को स्वास्थ्य केन्द्र </value>
           </text>
           <text id="generated_name-2">
-            <value><output value=" /data/health_center/contact/contact_name "/>को क्षेत्र </value>
+            <value><output value=" /data/health_center/contact/contact_name "></output>को क्षेत्र </value>
           </text>
           <text id="/data/inputs:label">
             <value></value>
@@ -626,7 +626,7 @@
             <value>प्राथमिक सम्पर्क व्यक्ति छान्नुहोस्</value>
           </text>
           <text id="/data/health_center/is_name_generated:label">
-            <value> के तपाई यस स्थानको प्राथमिक सम्पर्क व्यक्तिलाई नाम दिन चाहनुहुन्छ &quot;<output value=" /data/health_center/generated_name "/>&quot;? </value>
+            <value> के तपाई यस स्थानको प्राथमिक सम्पर्क व्यक्तिलाई नाम दिन चाहनुहुन्छ "<output value=" /data/health_center/generated_name "></output>"? </value>
           </text>
           <text id="/data/health_center/name:label">
             <value>यस स्थानको नाम लेख्नुहोस्</value>
@@ -712,13 +712,13 @@
             <value>Zone</value>
           </text>
           <text id="generated_name-0">
-            <value> District de <output value=" /data/health_center/contact/contact_name "/> </value>
+            <value> District de <output value=" /data/health_center/contact/contact_name "></output> </value>
           </text>
           <text id="generated_name-1">
-            <value> Centre de santé de <output value=" /data/health_center/contact/contact_name "/> </value>
+            <value> Centre de santé de <output value=" /data/health_center/contact/contact_name "></output> </value>
           </text>
           <text id="generated_name-2">
-            <value> Zone de <output value=" /data/health_center/contact/contact_name "/> </value>
+            <value> Zone de <output value=" /data/health_center/contact/contact_name "></output> </value>
           </text>
           <text id="/data/inputs:label">
             <value></value>
@@ -757,10 +757,10 @@
             <value>Sélectionnez le contact primaire</value>
           </text>
           <text id="/data/health_center/is_name_generated:label">
-            <value> Voulez-vous nommer l'endroit: &quot;<output value=" /data/health_center/generated_name "/>&quot;? </value>
+            <value> Voulez-vous nommer l'endroit: "<output value=" /data/health_center/generated_name "></output>"? </value>
           </text>
           <text id="/data/health_center/name:label">
-            <value> Nom pour <output value=" /data/init/place_type_translation "/> </value>
+            <value> Nom pour <output value=" /data/init/place_type_translation "></output> </value>
           </text>
           <text id="/data/health_center/external_id:label">
             <value>Code externe</value>
@@ -796,49 +796,49 @@
           <inputs>
             <meta>
               <location>
-                <lat/>
-                <long/>
-                <error/>
-                <message/>
+                <lat></lat>
+                <long></long>
+                <error></error>
+                <message></message>
               </location>
             </meta>
             <user>
-              <contact_id/>
-              <facility_id/>
-              <name/>
+              <contact_id></contact_id>
+              <facility_id></facility_id>
+              <name></name>
             </user>
           </inputs>
           <health_center>
-            <parent/>
-            <type/>
+            <parent></parent>
+            <type></type>
             <contact>
-              <name/>
-              <contact_name/>
-              <_id/>
+              <name></name>
+              <contact_name></contact_name>
+              <_id></_id>
             </contact>
-            <is_name_generated/>
-            <generated_name/>
-            <name/>
-            <external_id/>
-            <notes/>
-            <geolocation/>
+            <is_name_generated></is_name_generated>
+            <generated_name></generated_name>
+            <name></name>
+            <external_id></external_id>
+            <notes></notes>
+            <geolocation></geolocation>
             <meta tag="hidden">
-              <created_by/>
-              <created_by_person_uuid/>
-              <created_by_place_uuid/>
-              <last_edited_by/>
-              <last_edited_by_person_uuid/>
-              <last_edited_by_place_uuid/>
+              <created_by></created_by>
+              <created_by_person_uuid></created_by_person_uuid>
+              <created_by_place_uuid></created_by_place_uuid>
+              <last_edited_by></last_edited_by>
+              <last_edited_by_person_uuid></last_edited_by_person_uuid>
+              <last_edited_by_place_uuid></last_edited_by_place_uuid>
             </meta>
           </health_center>
           <init>
-            <place_type/>
-            <place_type_translation/>
-            <select_generated_name/>
-            <generated_name_translation/>
+            <place_type></place_type>
+            <place_type_translation></place_type_translation>
+            <select_generated_name></select_generated_name>
+            <generated_name_translation></generated_name_translation>
           </init>
           <meta tag="hidden">
-            <instanceID/>
+            <instanceID></instanceID>
           </meta>
         </data>
       </instance>
@@ -950,98 +950,89 @@
           </item>
         </root>
       </instance>
-      <bind nodeset="/data/inputs" relevant="false()"/>
-      <bind nodeset="/data/inputs/user/contact_id" type="string"/>
-      <bind nodeset="/data/inputs/user/facility_id" type="string"/>
-      <bind nodeset="/data/inputs/user/name" type="string"/>
-      <bind nodeset="/data/health_center/parent" type="string" readonly="true()"/>
-      <bind nodeset="/data/health_center/type" type="string" readonly="true()"/>
-      <bind nodeset="/data/health_center/contact/name" type="string"/>
-      <bind nodeset="/data/health_center/contact/contact_name" type="string" calculate="../name"/>
-      <bind nodeset="/data/health_center/contact/_id" type="string"/>
-      <bind nodeset="/data/health_center/is_name_generated" type="string" required="true()" relevant="not( /data/health_center/contact/_id ) or selected( . , 'true') or boolean( /data/health_center/contact/_id )" readonly="boolean( /data/health_center/contact/_id )" calculate="if(  /data/health_center/generated_name  = ../name, 'true', 'false')"/>
-      <bind nodeset="/data/health_center/generated_name" type="string" calculate=" /data/init/generated_name_translation "/>
-      <bind nodeset="/data/health_center/name" type="string" required="true()" relevant="boolean( /data/health_center/contact/_id ) or not( /data/health_center/contact/_id ) or not(selected( /data/health_center/is_name_generated , 'true')) or not(selected( /data/health_center/is_name_generated , 'yes'))" calculate="if( ( selected( /data/health_center/is_name_generated , 'true') or selected( /data/health_center/is_name_generated , 'yes') ),  /data/health_center/generated_name , .)"/>
-      <bind nodeset="/data/health_center/external_id" type="string"/>
-      <bind nodeset="/data/health_center/notes" type="string"/>
-      <bind nodeset="/data/health_center/geolocation" type="string" calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))"/>
-      <bind nodeset="/data/health_center/meta/created_by" type="string" readonly="true()"/>
-      <bind nodeset="/data/health_center/meta/created_by_person_uuid" type="string" readonly="true()"/>
-      <bind nodeset="/data/health_center/meta/created_by_place_uuid" type="string"/>
-      <bind nodeset="/data/health_center/meta/last_edited_by" type="string" calculate="../../../inputs/user/name"/>
-      <bind nodeset="/data/health_center/meta/last_edited_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
-      <bind nodeset="/data/health_center/meta/last_edited_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
-      <bind nodeset="/data/init/place_type" type="string" calculate="&quot;health_center&quot;"/>
-      <bind nodeset="/data/init/place_type_translation" type="string" calculate="jr:choice-name( /data/init/place_type ,' /data/init/place_type ')"/>
-      <bind nodeset="/data/init/select_generated_name" type="string" calculate="&quot;health_center&quot;"/>
-      <bind nodeset="/data/init/generated_name_translation" type="string" calculate="if (boolean( /data/health_center/contact/_id ), jr:choice-name( /data/init/select_generated_name ,' /data/init/select_generated_name '), '')"/>
-      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+      <bind nodeset="/data/inputs" relevant="false()"></bind>
+      <bind nodeset="/data/inputs/user/contact_id" type="string"></bind>
+      <bind nodeset="/data/inputs/user/facility_id" type="string"></bind>
+      <bind nodeset="/data/inputs/user/name" type="string"></bind>
+      <bind nodeset="/data/health_center/parent" type="string" readonly="true()"></bind>
+      <bind nodeset="/data/health_center/type" type="string" readonly="true()"></bind>
+      <bind nodeset="/data/health_center/contact/name" type="string"></bind>
+      <bind nodeset="/data/health_center/contact/contact_name" type="string" calculate="../name"></bind>
+      <bind nodeset="/data/health_center/contact/_id" type="string"></bind>
+      <bind nodeset="/data/health_center/is_name_generated" type="string" required="true()" relevant="not( /data/health_center/contact/_id ) or selected( . , 'true') or boolean( /data/health_center/contact/_id )" readonly="boolean( /data/health_center/contact/_id )" calculate="if(  /data/health_center/generated_name  = ../name, 'true', 'false')"></bind>
+      <bind nodeset="/data/health_center/generated_name" type="string" calculate=" /data/init/generated_name_translation "></bind>
+      <bind nodeset="/data/health_center/name" type="string" required="true()" relevant="boolean( /data/health_center/contact/_id ) or not( /data/health_center/contact/_id ) or not(selected( /data/health_center/is_name_generated , 'true')) or not(selected( /data/health_center/is_name_generated , 'yes'))" calculate="if( ( selected( /data/health_center/is_name_generated , 'true') or selected( /data/health_center/is_name_generated , 'yes') ),  /data/health_center/generated_name , .)"></bind>
+      <bind nodeset="/data/health_center/external_id" type="string"></bind>
+      <bind nodeset="/data/health_center/notes" type="string"></bind>
+      <bind nodeset="/data/health_center/geolocation" type="string" calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))"></bind>
+      <bind nodeset="/data/health_center/meta/created_by" type="string" readonly="true()"></bind>
+      <bind nodeset="/data/health_center/meta/created_by_person_uuid" type="string" readonly="true()"></bind>
+      <bind nodeset="/data/health_center/meta/created_by_place_uuid" type="string"></bind>
+      <bind nodeset="/data/health_center/meta/last_edited_by" type="string" calculate="../../../inputs/user/name"></bind>
+      <bind nodeset="/data/health_center/meta/last_edited_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"></bind>
+      <bind nodeset="/data/health_center/meta/last_edited_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"></bind>
+      <bind nodeset="/data/init/place_type" type="string" calculate="&quot;health_center&quot;"></bind>
+      <bind nodeset="/data/init/place_type_translation" type="string" calculate="jr:choice-name( /data/init/place_type ,' /data/init/place_type ')"></bind>
+      <bind nodeset="/data/init/select_generated_name" type="string" calculate="&quot;health_center&quot;"></bind>
+      <bind nodeset="/data/init/generated_name_translation" type="string" calculate="if (boolean( /data/health_center/contact/_id ), jr:choice-name( /data/init/select_generated_name ,' /data/init/select_generated_name '), '')"></bind>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"></bind>
     </model>
   </h:head>
   <h:body>
     <group ref="/data/inputs">
-      <label ref="jr:itext('/data/inputs:label')"/>
+      <label ref="jr:itext('/data/inputs:label')"></label>
       <group ref="/data/inputs/user">
-        <label ref="jr:itext('/data/inputs/user:label')"/>
+        <label ref="jr:itext('/data/inputs/user:label')"></label>
         <input ref="/data/inputs/user/contact_id">
-          <label ref="jr:itext('/data/inputs/user/contact_id:label')"/>
+          <label ref="jr:itext('/data/inputs/user/contact_id:label')"></label>
         </input>
         <input ref="/data/inputs/user/facility_id">
-          <label ref="jr:itext('/data/inputs/user/facility_id:label')"/>
+          <label ref="jr:itext('/data/inputs/user/facility_id:label')"></label>
         </input>
         <input ref="/data/inputs/user/name">
-          <label ref="jr:itext('/data/inputs/user/name:label')"/>
+          <label ref="jr:itext('/data/inputs/user/name:label')"></label>
         </input>
       </group>
     </group>
     <group appearance="field-list" ref="/data/health_center">
-      <label ref="jr:itext('/data/health_center:label')"/>
+      <label ref="jr:itext('/data/health_center:label')"></label>
       <group ref="/data/health_center/contact">
-        <label ref="jr:itext('/data/health_center/contact:label')"/>
+        <label ref="jr:itext('/data/health_center/contact:label')"></label>
         <input ref="/data/health_center/contact/name" appearance="hidden">
-          <label ref="jr:itext('/data/health_center/contact/name:label')"/>
+          <label ref="jr:itext('/data/health_center/contact/name:label')"></label>
         </input>
         <input ref="/data/health_center/contact/_id" appearance="select-contact type-person">
-          <label ref="jr:itext('/data/health_center/contact/_id:label')"/>
-          <hint ref="jr:itext('/data/health_center/contact/_id:hint')"/>
+          <label ref="jr:itext('/data/health_center/contact/_id:label')"></label>
+          <hint ref="jr:itext('/data/health_center/contact/_id:hint')"></hint>
         </input>
       </group>
       <select1 ref="/data/health_center/is_name_generated" appearance="columns-pack">
-        <label ref="jr:itext('/data/health_center/is_name_generated:label')"/>
-        <itemset nodeset="instance('yes_no_generated_name')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/health_center/is_name_generated:label')"></label>
+        
+      <item><label ref="jr:itext('yes_no_generated_name-0')"></label><value>true</value></item><item><label ref="jr:itext('yes_no_generated_name-1')"></label><value>false</value></item></select1>
       <input ref="/data/health_center/name">
-        <label ref="jr:itext('/data/health_center/name:label')"/>
+        <label ref="jr:itext('/data/health_center/name:label')"></label>
       </input>
       <input ref="/data/health_center/external_id">
-        <label ref="jr:itext('/data/health_center/external_id:label')"/>
+        <label ref="jr:itext('/data/health_center/external_id:label')"></label>
       </input>
       <input ref="/data/health_center/notes" appearance="multiline">
-        <label ref="jr:itext('/data/health_center/notes:label')"/>
+        <label ref="jr:itext('/data/health_center/notes:label')"></label>
       </input>
       <group appearance="hidden" ref="/data/health_center/meta">
-        <label ref="jr:itext('/data/health_center/meta:label')"/>
+        <label ref="jr:itext('/data/health_center/meta:label')"></label>
       </group>
     </group>
     <group appearance="field-list hidden" ref="/data/init">
-      <label ref="jr:itext('/data/init:label')"/>
+      <label ref="jr:itext('/data/init:label')"></label>
       <select1 ref="/data/init/place_type" appearance="hidden">
-        <label ref="jr:itext('/data/init/place_type:label')"/>
-        <itemset nodeset="instance('place_type')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/init/place_type:label')"></label>
+        
+      <item><label ref="jr:itext('place_type-0')"></label><value>district_hospital</value></item><item><label ref="jr:itext('place_type-1')"></label><value>health_center</value></item><item><label ref="jr:itext('place_type-2')"></label><value>clinic</value></item></select1>
       <select1 ref="/data/init/select_generated_name" appearance="hidden">
-        <label ref="jr:itext('/data/init/select_generated_name:label')"/>
-        <itemset nodeset="instance('generated_name')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/init/select_generated_name:label')"></label>
+        
+      <item><label ref="jr:itext('generated_name-0')"></label><value>district_hospital</value></item><item><label ref="jr:itext('generated_name-1')"></label><value>health_center</value></item><item><label ref="jr:itext('generated_name-2')"></label><value>clinic</value></item></select1>
     </group>
   </h:body>
 </h:html>

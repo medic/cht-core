@@ -63,13 +63,13 @@
             <value>Household</value>
           </text>
           <text id="generated_name-0">
-            <value><output value=" /data/init/contact_name "/>'s Health Facility </value>
+            <value><output value=" /data/init/contact_name "></output>'s Health Facility </value>
           </text>
           <text id="generated_name-1">
-            <value><output value=" /data/init/contact_name "/>'s Area </value>
+            <value><output value=" /data/init/contact_name "></output>'s Area </value>
           </text>
           <text id="generated_name-2">
-            <value><output value=" /data/init/contact_name "/>'s Household </value>
+            <value><output value=" /data/init/contact_name "></output>'s Household </value>
           </text>
           <text id="translate_name_label-0">
             <value>Name</value>
@@ -106,7 +106,7 @@
           </text>
           <text id="/data/init/custom_place_name:label">
             <value>
-              <output value=" /data/init/custom_place_name_label "/>
+              <output value=" /data/init/custom_place_name_label "></output>
             </value>
           </text>
           <text id="/data/init/place_type:label">
@@ -160,9 +160,9 @@
             <value>Date of Birth</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
-            <value> DOB Approx: <output value=" /data/contact/ephemeral_dob/dob_approx "/>
-DOB Calendar: <output value=" /data/contact/ephemeral_dob/dob_calendar "/>
-DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
+            <value> DOB Approx: <output value=" /data/contact/ephemeral_dob/dob_approx "></output>
+DOB Calendar: <output value=" /data/contact/ephemeral_dob/dob_calendar "></output>
+DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "></output> </value>
           </text>
           <text id="/data/contact/phone:label">
             <value>Phone Number</value>
@@ -201,7 +201,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value></value>
           </text>
           <text id="/data/clinic/is_name_generated:label">
-            <value> Would you like to name the place after the primary contact: &quot;<output value=" /data/init/generated_name_translation "/>&quot;? </value>
+            <value> Would you like to name the place after the primary contact: "<output value=" /data/init/generated_name_translation "></output>"? </value>
           </text>
           <text id="/data/clinic/name:label">
             <value>Name</value>
@@ -213,6 +213,21 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value>Notes</value>
           </text>
           <text id="/data/clinic/meta:label">
+            <value></value>
+          </text>
+          <text id="/data/repeat:label">
+            <value>Add household members</value>
+          </text>
+          <text id="/data/repeat/child/parent:label">
+            <value></value>
+          </text>
+          <text id="/data/repeat/child/type:label">
+            <value></value>
+          </text>
+          <text id="/data/repeat/child/name:label">
+            <value>Full Name</value>
+          </text>
+          <text id="/data/repeat/child/meta:label">
             <value></value>
           </text>
         </translation>
@@ -272,13 +287,13 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value>क्षेत्र</value>
           </text>
           <text id="generated_name-0">
-            <value><output value=" /data/init/contact_name "/> का ज़िला </value>
+            <value><output value=" /data/init/contact_name "></output> का ज़िला </value>
           </text>
           <text id="generated_name-1">
-            <value><output value=" /data/init/contact_name "/> का स्वास्थ्य केंद्र </value>
+            <value><output value=" /data/init/contact_name "></output> का स्वास्थ्य केंद्र </value>
           </text>
           <text id="generated_name-2">
-            <value><output value=" /data/init/contact_name "/> का क्षेत्र </value>
+            <value><output value=" /data/init/contact_name "></output> का क्षेत्र </value>
           </text>
           <text id="translate_name_label-0">
             <value>नाम</value>
@@ -315,7 +330,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
           </text>
           <text id="/data/init/custom_place_name:label">
             <value>
-              <output value=" /data/init/custom_place_name_label "/>
+              <output value=" /data/init/custom_place_name_label "></output>
             </value>
           </text>
           <text id="/data/init/place_type:label">
@@ -373,7 +388,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value></value>
           </text>
           <text id="/data/clinic/is_name_generated:label">
-            <value> क्या आप इस स्थान को प्राथमिक कॉंटॅक्ट का नाम देना चाहेंगे?: <output value=" /data/init/generated_name_translation "/> </value>
+            <value> क्या आप इस स्थान को प्राथमिक कॉंटॅक्ट का नाम देना चाहेंगे?: <output value=" /data/init/generated_name_translation "></output> </value>
           </text>
           <text id="/data/clinic/name:label">
             <value>नाम</value>
@@ -386,6 +401,15 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
           </text>
           <text id="/data/clinic/meta:label">
             <value></value>
+          </text>
+          <text id="/data/repeat/child/parent:label">
+            <value></value>
+          </text>
+          <text id="/data/repeat/child/type:label">
+            <value></value>
+          </text>
+          <text id="/data/repeat/child/name:label">
+            <value>नाम</value>
           </text>
           <text id="select_dob_method-0">
             <value>-</value>
@@ -424,6 +448,12 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value>-</value>
           </text>
           <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
+          <text id="/data/repeat:label">
+            <value>-</value>
+          </text>
+          <text id="/data/repeat/child/meta:label">
             <value>-</value>
           </text>
         </translation>
@@ -483,13 +513,13 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value>Daerah</value>
           </text>
           <text id="generated_name-0">
-            <value> Kabupaten <output value=" /data/init/contact_name "/> </value>
+            <value> Kabupaten <output value=" /data/init/contact_name "></output> </value>
           </text>
           <text id="generated_name-1">
-            <value> Fasilitas Kesehatan <output value=" /data/init/contact_name "/> </value>
+            <value> Fasilitas Kesehatan <output value=" /data/init/contact_name "></output> </value>
           </text>
           <text id="generated_name-2">
-            <value> Daerah <output value=" /data/init/contact_name "/> </value>
+            <value> Daerah <output value=" /data/init/contact_name "></output> </value>
           </text>
           <text id="translate_name_label-0">
             <value>Nama</value>
@@ -526,7 +556,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
           </text>
           <text id="/data/init/custom_place_name:label">
             <value>
-              <output value=" /data/init/custom_place_name_label "/>
+              <output value=" /data/init/custom_place_name_label "></output>
             </value>
           </text>
           <text id="/data/init/place_type:label">
@@ -584,7 +614,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value></value>
           </text>
           <text id="/data/clinic/is_name_generated:label">
-            <value> Apakah Anda ingin nama tempat setelah kontak utama: &quot;<output value=" /data/init/generated_name_translation "/>&quot;? </value>
+            <value> Apakah Anda ingin nama tempat setelah kontak utama: "<output value=" /data/init/generated_name_translation "></output>"? </value>
           </text>
           <text id="/data/clinic/name:label">
             <value>Nama</value>
@@ -597,6 +627,15 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
           </text>
           <text id="/data/clinic/meta:label">
             <value></value>
+          </text>
+          <text id="/data/repeat/child/parent:label">
+            <value></value>
+          </text>
+          <text id="/data/repeat/child/type:label">
+            <value></value>
+          </text>
+          <text id="/data/repeat/child/name:label">
+            <value>Nama</value>
           </text>
           <text id="select_dob_method-0">
             <value>-</value>
@@ -635,6 +674,12 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value>-</value>
           </text>
           <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
+          <text id="/data/repeat:label">
+            <value>-</value>
+          </text>
+          <text id="/data/repeat/child/meta:label">
             <value>-</value>
           </text>
         </translation>
@@ -694,13 +739,13 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value>Eneo</value>
           </text>
           <text id="generated_name-0">
-            <value> WIlaya ya  <output value=" /data/init/contact_name "/> </value>
+            <value> WIlaya ya  <output value=" /data/init/contact_name "></output> </value>
           </text>
           <text id="generated_name-1">
-            <value> Kituo cha afya cha  <output value=" /data/init/contact_name "/> </value>
+            <value> Kituo cha afya cha  <output value=" /data/init/contact_name "></output> </value>
           </text>
           <text id="generated_name-2">
-            <value> Eneo ya  <output value=" /data/init/contact_name "/> </value>
+            <value> Eneo ya  <output value=" /data/init/contact_name "></output> </value>
           </text>
           <text id="translate_name_label-0">
             <value>Jina</value>
@@ -737,7 +782,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
           </text>
           <text id="/data/init/custom_place_name:label">
             <value>
-              <output value=" /data/init/custom_place_name_label "/>
+              <output value=" /data/init/custom_place_name_label "></output>
             </value>
           </text>
           <text id="/data/init/place_type:label">
@@ -795,7 +840,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value></value>
           </text>
           <text id="/data/clinic/is_name_generated:label">
-            <value> Je, Ungependa kuita eneo hii kama mwasilishi mkuu wa eneo hii? &quot;<output value=" /data/init/generated_name_translation "/>&quot;? </value>
+            <value> Je, Ungependa kuita eneo hii kama mwasilishi mkuu wa eneo hii? "<output value=" /data/init/generated_name_translation "></output>"? </value>
           </text>
           <text id="/data/clinic/name:label">
             <value>Jina</value>
@@ -808,6 +853,15 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
           </text>
           <text id="/data/clinic/meta:label">
             <value></value>
+          </text>
+          <text id="/data/repeat/child/parent:label">
+            <value></value>
+          </text>
+          <text id="/data/repeat/child/type:label">
+            <value></value>
+          </text>
+          <text id="/data/repeat/child/name:label">
+            <value>Jina</value>
           </text>
           <text id="select_dob_method-0">
             <value>-</value>
@@ -846,6 +900,12 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value>-</value>
           </text>
           <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
+          <text id="/data/repeat:label">
+            <value>-</value>
+          </text>
+          <text id="/data/repeat/child/meta:label">
             <value>-</value>
           </text>
         </translation>
@@ -905,13 +965,13 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value>क्षेत्र</value>
           </text>
           <text id="generated_name-0">
-            <value><output value=" /data/init/contact_name "/>को जिल्ला </value>
+            <value><output value=" /data/init/contact_name "></output>को जिल्ला </value>
           </text>
           <text id="generated_name-1">
-            <value><output value=" /data/init/contact_name "/>को स्वास्थ्य केन्द्र </value>
+            <value><output value=" /data/init/contact_name "></output>को स्वास्थ्य केन्द्र </value>
           </text>
           <text id="generated_name-2">
-            <value><output value=" /data/init/contact_name "/>को क्षेत्र </value>
+            <value><output value=" /data/init/contact_name "></output>को क्षेत्र </value>
           </text>
           <text id="translate_name_label-0">
             <value>नाम</value>
@@ -948,7 +1008,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
           </text>
           <text id="/data/init/custom_place_name:label">
             <value>
-              <output value=" /data/init/custom_place_name_label "/>
+              <output value=" /data/init/custom_place_name_label "></output>
             </value>
           </text>
           <text id="/data/init/place_type:label">
@@ -1006,7 +1066,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value></value>
           </text>
           <text id="/data/clinic/is_name_generated:label">
-            <value> के तपाइ यस स्थानकाे प्राथमिक सम्पर्क नाम दिन चाहानु हुन्छ?:<output value=" /data/init/generated_name_translation "/> </value>
+            <value> के तपाइ यस स्थानकाे प्राथमिक सम्पर्क नाम दिन चाहानु हुन्छ?:<output value=" /data/init/generated_name_translation "></output> </value>
           </text>
           <text id="/data/clinic/name:label">
             <value>नाम</value>
@@ -1019,6 +1079,15 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
           </text>
           <text id="/data/clinic/meta:label">
             <value></value>
+          </text>
+          <text id="/data/repeat/child/parent:label">
+            <value></value>
+          </text>
+          <text id="/data/repeat/child/type:label">
+            <value></value>
+          </text>
+          <text id="/data/repeat/child/name:label">
+            <value>नाम</value>
           </text>
           <text id="select_dob_method-0">
             <value>-</value>
@@ -1057,6 +1126,12 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value>-</value>
           </text>
           <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
+          <text id="/data/repeat:label">
+            <value>-</value>
+          </text>
+          <text id="/data/repeat/child/meta:label">
             <value>-</value>
           </text>
         </translation>
@@ -1116,13 +1191,13 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value>Zone</value>
           </text>
           <text id="generated_name-0">
-            <value> District de <output value=" /data/init/contact_name "/> </value>
+            <value> District de <output value=" /data/init/contact_name "></output> </value>
           </text>
           <text id="generated_name-1">
-            <value> Centre de santé de <output value=" /data/init/contact_name "/> </value>
+            <value> Centre de santé de <output value=" /data/init/contact_name "></output> </value>
           </text>
           <text id="generated_name-2">
-            <value> Zone de <output value=" /data/init/contact_name "/> </value>
+            <value> Zone de <output value=" /data/init/contact_name "></output> </value>
           </text>
           <text id="translate_name_label-0">
             <value>Nom</value>
@@ -1159,7 +1234,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
           </text>
           <text id="/data/init/custom_place_name:label">
             <value>
-              <output value=" /data/init/custom_place_name_label "/>
+              <output value=" /data/init/custom_place_name_label "></output>
             </value>
           </text>
           <text id="/data/init/place_type:label">
@@ -1217,7 +1292,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
             <value></value>
           </text>
           <text id="/data/clinic/is_name_generated:label">
-            <value> Voulez-vous nommer l'endroit: &quot;<output value=" /data/init/generated_name_translation "/>&quot;? </value>
+            <value> Voulez-vous nommer l'endroit: "<output value=" /data/init/generated_name_translation "></output>"? </value>
           </text>
           <text id="/data/clinic/name:label">
             <value>Nom</value>
@@ -1230,6 +1305,15 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
           </text>
           <text id="/data/clinic/meta:label">
             <value></value>
+          </text>
+          <text id="/data/repeat/child/parent:label">
+            <value></value>
+          </text>
+          <text id="/data/repeat/child/type:label">
+            <value></value>
+          </text>
+          <text id="/data/repeat/child/name:label">
+            <value>Nom</value>
           </text>
           <text id="select_dob_method-0">
             <value>-</value>
@@ -1270,89 +1354,117 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
           <text id="/data/contact/meta:label">
             <value>-</value>
           </text>
+          <text id="/data/repeat:label">
+            <value>-</value>
+          </text>
+          <text id="/data/repeat/child/meta:label">
+            <value>-</value>
+          </text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:clinic:create" version="2025-05-01 22-44" prefix="J1!contact:clinic:create!" delimiter="#">
+        <data id="contact:clinic:create" version="2025-09-09  8-22" prefix="J1!contact:clinic:create!" delimiter="#">
           <inputs>
             <meta>
               <location>
-                <lat/>
-                <long/>
-                <error/>
-                <message/>
+                <lat></lat>
+                <long></long>
+                <error></error>
+                <message></message>
               </location>
             </meta>
             <user>
-              <contact_id/>
-              <facility_id/>
-              <name/>
+              <contact_id></contact_id>
+              <facility_id></facility_id>
+              <name></name>
             </user>
           </inputs>
           <clinic>
             <parent>PARENT</parent>
-            <type/>
+            <type></type>
             <is_name_generated>true</is_name_generated>
-            <name/>
-            <external_id/>
-            <notes/>
-            <contact/>
-            <geolocation/>
+            <name></name>
+            <external_id></external_id>
+            <notes></notes>
+            <contact></contact>
+            <geolocation></geolocation>
             <meta tag="hidden">
-              <created_by/>
-              <created_by_person_uuid/>
-              <created_by_place_uuid/>
+              <created_by></created_by>
+              <created_by_person_uuid></created_by_person_uuid>
+              <created_by_place_uuid></created_by_place_uuid>
             </meta>
           </clinic>
           <init>
-            <create_new_person/>
-            <select_person/>
-            <name/>
-            <contact_name/>
-            <custom_place_name_label_translator/>
-            <custom_place_name_label/>
-            <custom_place_name/>
+            <create_new_person></create_new_person>
+            <select_person></select_person>
+            <name></name>
+            <contact_name></contact_name>
+            <custom_place_name_label_translator></custom_place_name_label_translator>
+            <custom_place_name_label></custom_place_name_label>
+            <custom_place_name></custom_place_name>
             <place_type>clinic</place_type>
-            <place_type_translation/>
+            <place_type_translation></place_type_translation>
             <generated_name>clinic</generated_name>
-            <generated_name_translation/>
+            <generated_name_translation></generated_name_translation>
           </init>
           <contact>
             <parent>PARENT</parent>
             <type>person</type>
-            <name/>
-            <short_name/>
-            <date_of_birth/>
-            <date_of_birth_method/>
+            <name></name>
+            <short_name></short_name>
+            <date_of_birth></date_of_birth>
+            <date_of_birth_method></date_of_birth_method>
             <ephemeral_dob>
-              <dob_calendar/>
-              <age_label/>
-              <age_years/>
-              <age_months/>
-              <dob_method/>
-              <dob_approx/>
-              <dob_raw/>
-              <dob_iso/>
-              <dob_debug/>
+              <dob_calendar></dob_calendar>
+              <age_label></age_label>
+              <age_years></age_years>
+              <age_months></age_months>
+              <dob_method></dob_method>
+              <dob_approx></dob_approx>
+              <dob_raw></dob_raw>
+              <dob_iso></dob_iso>
+              <dob_debug></dob_debug>
             </ephemeral_dob>
-            <phone/>
-            <phone_alternate/>
-            <sex/>
-            <role/>
-            <role_other/>
-            <external_id/>
-            <notes/>
+            <phone></phone>
+            <phone_alternate></phone_alternate>
+            <sex></sex>
+            <role></role>
+            <role_other></role_other>
+            <external_id></external_id>
+            <notes></notes>
             <user_for_contact>
-              <create/>
+              <create></create>
             </user_for_contact>
             <meta tag="hidden">
-              <created_by/>
-              <created_by_person_uuid/>
-              <created_by_place_uuid/>
+              <created_by></created_by>
+              <created_by_person_uuid></created_by_person_uuid>
+              <created_by_place_uuid></created_by_place_uuid>
             </meta>
           </contact>
+          <repeat>
+            <child jr:template="">
+              <parent>PARENT</parent>
+              <type>person</type>
+              <name></name>
+              <meta tag="hidden">
+                <created_by></created_by>
+                <created_by_person_uuid></created_by_person_uuid>
+                <created_by_place_uuid></created_by_place_uuid>
+              </meta>
+            </child>
+            <child>
+              <parent>PARENT</parent>
+              <type>person</type>
+              <name></name>
+              <meta tag="hidden">
+                <created_by></created_by>
+                <created_by_person_uuid></created_by_person_uuid>
+                <created_by_place_uuid></created_by_place_uuid>
+              </meta>
+            </child>
+          </repeat>
           <meta tag="hidden">
-            <instanceID/>
+            <instanceID></instanceID>
           </meta>
         </data>
       </instance>
@@ -1484,206 +1596,202 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/> </value>
           </item>
         </root>
       </instance>
-      <bind nodeset="/data/inputs" relevant="false()"/>
-      <bind nodeset="/data/inputs/user/contact_id" type="string"/>
-      <bind nodeset="/data/inputs/user/facility_id" type="string"/>
-      <bind nodeset="/data/inputs/user/name" type="string"/>
-      <bind nodeset="/data/init/create_new_person" type="string" required="true()"/>
-      <bind nodeset="/data/init/select_person" type="string" required="true()" relevant="selected( /data/init/create_new_person ,'old_person')"/>
-      <bind nodeset="/data/init/name" type="string"/>
-      <bind nodeset="/data/init/contact_name" type="string" calculate="coalesce(../../contact/name, ../name)"/>
-      <bind nodeset="/data/init/custom_place_name_label_translator" type="string" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/clinic/is_name_generated , 'false')" calculate="&quot;name&quot;"/>
-      <bind nodeset="/data/init/custom_place_name_label" type="string" calculate="jr:choice-name( /data/init/custom_place_name_label_translator ,' /data/init/custom_place_name_label_translator ')"/>
-      <bind nodeset="/data/init/custom_place_name" type="string" required="true()" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/clinic/is_name_generated , 'false')"/>
-      <bind nodeset="/data/init/place_type" type="string"/>
-      <bind nodeset="/data/init/place_type_translation" type="string" calculate="jr:choice-name( /data/init/place_type ,' /data/init/place_type ')"/>
-      <bind nodeset="/data/init/generated_name" type="string"/>
-      <bind nodeset="/data/init/generated_name_translation" type="string" calculate="jr:choice-name( /data/init/generated_name ,' /data/init/generated_name ')"/>
-      <bind nodeset="/data/contact" relevant="selected( /data/init/create_new_person ,'new_person')"/>
-      <bind nodeset="/data/contact/parent" type="string"/>
-      <bind nodeset="/data/contact/type" type="string"/>
-      <bind nodeset="/data/contact/name" type="string" required="true()"/>
-      <bind nodeset="/data/contact/short_name" type="string" required="false()" constraint="string-length(.) &lt;= 10" jr:constraintMsg="Short name can not be more than 10 characters long."/>
-      <bind nodeset="/data/contact/date_of_birth" type="string" required="true()" calculate="../ephemeral_dob/dob_iso"/>
-      <bind nodeset="/data/contact/date_of_birth_method" type="string" calculate="../ephemeral_dob/dob_method"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_calendar" type="date" required="true()" relevant="not(selected(../dob_method,'approx'))" constraint=". &lt;= now()" jr:constraintMsg="Date must be before today"/>
-      <bind nodeset="/data/contact/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected(../dob_method,'approx')"/>
-      <bind nodeset="/data/contact/ephemeral_dob/age_years" type="int" required="true()" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 130" jr:constraintMsg="Age must be between 0 and 130"/>
-      <bind nodeset="/data/contact/ephemeral_dob/age_months" type="int" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 11" jr:constraintMsg="Months must between 0 and 11"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_method" type="string"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_approx" type="string" calculate="add-date(today(), 0- /data/contact/ephemeral_dob/age_years , 0- /data/contact/ephemeral_dob/age_months )"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')), &#10;../dob_calendar,&#10;../dob_approx)"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
-      <bind nodeset="/data/contact/phone" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678"/>
-      <bind nodeset="/data/contact/phone_alternate" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678"/>
-      <bind nodeset="/data/contact/sex" type="string" required="true()" relevant="selected( /data/init/create_new_person ,'new_person')"/>
-      <bind nodeset="/data/contact/role" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
-      <bind nodeset="/data/contact/role_other" type="string" required="true()" relevant="selected(  /data/contact/role ,'other')"/>
-      <bind nodeset="/data/contact/external_id" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
-      <bind nodeset="/data/contact/notes" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
-      <bind nodeset="/data/contact/user_for_contact/create" type="string" calculate=" /data/contact/phone  != '' and (selected(  /data/contact/role ,'chw') or selected(  /data/contact/role ,'chw_supervisor'))"/>
-      <bind nodeset="/data/contact/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
-      <bind nodeset="/data/contact/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
-      <bind nodeset="/data/contact/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
-      <bind nodeset="/data/clinic/parent" type="string"/>
-      <bind nodeset="/data/clinic/type" type="string"/>
-      <bind nodeset="/data/clinic/is_name_generated" type="string" required="true()" relevant="not(selected( /data/init/create_new_person ,'none'))"/>
-      <bind nodeset="/data/clinic/name" type="string" required="true()" calculate="if( ( selected( /data/clinic/is_name_generated , 'true') or selected( /data/clinic/is_name_generated , 'yes') ),  /data/init/generated_name_translation ,  /data/init/custom_place_name )"/>
-      <bind nodeset="/data/clinic/external_id" type="string"/>
-      <bind nodeset="/data/clinic/notes" type="string"/>
-      <bind nodeset="/data/clinic/contact" type="string" calculate="if(selected( /data/init/create_new_person ,'none'), &quot;&quot;, coalesce( /data/init/select_person ,&quot;NEW&quot;))"/>
-      <bind nodeset="/data/clinic/geolocation" type="string" calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))"/>
-      <bind nodeset="/data/clinic/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
-      <bind nodeset="/data/clinic/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
-      <bind nodeset="/data/clinic/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
-      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+      <bind nodeset="/data/inputs" relevant="false()"></bind>
+      <bind nodeset="/data/inputs/user/contact_id" type="string"></bind>
+      <bind nodeset="/data/inputs/user/facility_id" type="string"></bind>
+      <bind nodeset="/data/inputs/user/name" type="string"></bind>
+      <bind nodeset="/data/init/create_new_person" type="string" required="true()"></bind>
+      <bind nodeset="/data/init/select_person" type="string" required="true()" relevant="selected( /data/init/create_new_person ,'old_person')"></bind>
+      <bind nodeset="/data/init/name" type="string"></bind>
+      <bind nodeset="/data/init/contact_name" type="string" calculate="coalesce(../../contact/name, ../name)"></bind>
+      <bind nodeset="/data/init/custom_place_name_label_translator" type="string" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/clinic/is_name_generated , 'false')" calculate="&quot;name&quot;"></bind>
+      <bind nodeset="/data/init/custom_place_name_label" type="string" calculate="jr:choice-name( /data/init/custom_place_name_label_translator ,' /data/init/custom_place_name_label_translator ')"></bind>
+      <bind nodeset="/data/init/custom_place_name" type="string" required="true()" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/clinic/is_name_generated , 'false')"></bind>
+      <bind nodeset="/data/init/place_type" type="string"></bind>
+      <bind nodeset="/data/init/place_type_translation" type="string" calculate="jr:choice-name( /data/init/place_type ,' /data/init/place_type ')"></bind>
+      <bind nodeset="/data/init/generated_name" type="string"></bind>
+      <bind nodeset="/data/init/generated_name_translation" type="string" calculate="jr:choice-name( /data/init/generated_name ,' /data/init/generated_name ')"></bind>
+      <bind nodeset="/data/contact" relevant="selected( /data/init/create_new_person ,'new_person')"></bind>
+      <bind nodeset="/data/contact/parent" type="string"></bind>
+      <bind nodeset="/data/contact/type" type="string"></bind>
+      <bind nodeset="/data/contact/name" type="string" required="true()"></bind>
+      <bind nodeset="/data/contact/short_name" type="string" required="false()" constraint="string-length(.) &lt;= 10" jr:constraintMsg="Short name can not be more than 10 characters long."></bind>
+      <bind nodeset="/data/contact/date_of_birth" type="string" required="true()" calculate="../ephemeral_dob/dob_iso"></bind>
+      <bind nodeset="/data/contact/date_of_birth_method" type="string" calculate="../ephemeral_dob/dob_method"></bind>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_calendar" type="date" required="true()" relevant="not(selected(../dob_method,'approx'))" constraint=". &lt;= now()" jr:constraintMsg="Date must be before today"></bind>
+      <bind nodeset="/data/contact/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected(../dob_method,'approx')"></bind>
+      <bind nodeset="/data/contact/ephemeral_dob/age_years" type="int" required="true()" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 130" jr:constraintMsg="Age must be between 0 and 130"></bind>
+      <bind nodeset="/data/contact/ephemeral_dob/age_months" type="int" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 11" jr:constraintMsg="Months must between 0 and 11"></bind>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_method" type="string"></bind>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_approx" type="string" calculate="add-date(today(), 0- /data/contact/ephemeral_dob/age_years , 0- /data/contact/ephemeral_dob/age_months )"></bind>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')), &#10;../dob_calendar,&#10;../dob_approx)"></bind>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"></bind>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"></bind>
+      <bind nodeset="/data/contact/phone" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678"></bind>
+      <bind nodeset="/data/contact/phone_alternate" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678"></bind>
+      <bind nodeset="/data/contact/sex" type="string" required="true()" relevant="selected( /data/init/create_new_person ,'new_person')"></bind>
+      <bind nodeset="/data/contact/role" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"></bind>
+      <bind nodeset="/data/contact/role_other" type="string" required="true()" relevant="selected(  /data/contact/role ,'other')"></bind>
+      <bind nodeset="/data/contact/external_id" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"></bind>
+      <bind nodeset="/data/contact/notes" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"></bind>
+      <bind nodeset="/data/contact/user_for_contact/create" type="string" calculate=" /data/contact/phone  != '' and (selected(  /data/contact/role ,'chw') or selected(  /data/contact/role ,'chw_supervisor'))"></bind>
+      <bind nodeset="/data/contact/meta/created_by" type="string" calculate="../../../inputs/user/name"></bind>
+      <bind nodeset="/data/contact/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"></bind>
+      <bind nodeset="/data/contact/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"></bind>
+      <bind nodeset="/data/clinic/parent" type="string"></bind>
+      <bind nodeset="/data/clinic/type" type="string"></bind>
+      <bind nodeset="/data/clinic/is_name_generated" type="string" required="true()" relevant="not(selected( /data/init/create_new_person ,'none'))"></bind>
+      <bind nodeset="/data/clinic/name" type="string" required="true()" calculate="if( ( selected( /data/clinic/is_name_generated , 'true') or selected( /data/clinic/is_name_generated , 'yes') ),  /data/init/generated_name_translation ,  /data/init/custom_place_name )"></bind>
+      <bind nodeset="/data/clinic/external_id" type="string"></bind>
+      <bind nodeset="/data/clinic/notes" type="string"></bind>
+      <bind nodeset="/data/clinic/contact" type="string" calculate="if(selected( /data/init/create_new_person ,'none'), &quot;&quot;, coalesce( /data/init/select_person ,&quot;NEW&quot;))"></bind>
+      <bind nodeset="/data/clinic/geolocation" type="string" calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))"></bind>
+      <bind nodeset="/data/clinic/meta/created_by" type="string" calculate="../../../inputs/user/name"></bind>
+      <bind nodeset="/data/clinic/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"></bind>
+      <bind nodeset="/data/clinic/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"></bind>
+      <bind nodeset="/data/repeat/child/parent" type="string"></bind>
+      <bind nodeset="/data/repeat/child/type" type="string"></bind>
+      <bind nodeset="/data/repeat/child/name" type="string" required="true()"></bind>
+      <bind nodeset="/data/repeat/child/meta/created_by" type="string" calculate="../../../../inputs/user/name"></bind>
+      <bind nodeset="/data/repeat/child/meta/created_by_person_uuid" type="string" calculate="../../../../inputs/user/contact_id"></bind>
+      <bind nodeset="/data/repeat/child/meta/created_by_place_uuid" type="string" calculate="../../../../inputs/user/facility_id"></bind>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"></bind>
     </model>
   </h:head>
   <h:body class="pages">
     <group ref="/data/inputs">
-      <label ref="jr:itext('/data/inputs:label')"/>
+      <label ref="jr:itext('/data/inputs:label')"></label>
       <group ref="/data/inputs/user">
-        <label ref="jr:itext('/data/inputs/user:label')"/>
+        <label ref="jr:itext('/data/inputs/user:label')"></label>
         <input ref="/data/inputs/user/contact_id">
-          <label ref="jr:itext('/data/inputs/user/contact_id:label')"/>
+          <label ref="jr:itext('/data/inputs/user/contact_id:label')"></label>
         </input>
         <input ref="/data/inputs/user/facility_id">
-          <label ref="jr:itext('/data/inputs/user/facility_id:label')"/>
+          <label ref="jr:itext('/data/inputs/user/facility_id:label')"></label>
         </input>
         <input ref="/data/inputs/user/name">
-          <label ref="jr:itext('/data/inputs/user/name:label')"/>
+          <label ref="jr:itext('/data/inputs/user/name:label')"></label>
         </input>
       </group>
     </group>
     <group appearance="field-list" ref="/data/init">
-      <label ref="jr:itext('/data/init:label')"/>
+      <label ref="jr:itext('/data/init:label')"></label>
       <select1 ref="/data/init/create_new_person" appearance="columns-pack">
-        <label ref="jr:itext('/data/init/create_new_person:label')"/>
-        <itemset nodeset="instance('contact')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/init/create_new_person:label')"></label>
+        
+      <item><label ref="jr:itext('contact-0')"></label><value>new_person</value></item><item><label ref="jr:itext('contact-1')"></label><value>old_person</value></item><item><label ref="jr:itext('contact-2')"></label><value>none</value></item></select1>
       <input ref="/data/init/select_person" appearance="select-contact type-person">
-        <label ref="jr:itext('/data/init/select_person:label')"/>
+        <label ref="jr:itext('/data/init/select_person:label')"></label>
       </input>
       <input ref="/data/init/name" appearance="hidden">
-        <label ref="jr:itext('/data/init/name:label')"/>
+        <label ref="jr:itext('/data/init/name:label')"></label>
       </input>
       <select1 ref="/data/init/custom_place_name_label_translator" appearance="hidden">
-        <label ref="jr:itext('/data/init/custom_place_name_label_translator:label')"/>
-        <itemset nodeset="instance('translate_name_label')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/init/custom_place_name_label_translator:label')"></label>
+        
+      <item><label ref="jr:itext('translate_name_label-0')"></label><value>name</value></item></select1>
       <select1 ref="/data/init/place_type" appearance="hidden">
-        <label ref="jr:itext('/data/init/place_type:label')"/>
-        <itemset nodeset="instance('place_type')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/init/place_type:label')"></label>
+        
+      <item><label ref="jr:itext('place_type-0')"></label><value>district_hospital</value></item><item><label ref="jr:itext('place_type-1')"></label><value>health_center</value></item><item><label ref="jr:itext('place_type-2')"></label><value>clinic</value></item></select1>
       <select1 ref="/data/init/generated_name" appearance="hidden">
-        <label ref="jr:itext('/data/init/generated_name:label')"/>
-        <itemset nodeset="instance('generated_name')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/init/generated_name:label')"></label>
+        
+      <item><label ref="jr:itext('generated_name-0')"></label><value>district_hospital</value></item><item><label ref="jr:itext('generated_name-1')"></label><value>health_center</value></item><item><label ref="jr:itext('generated_name-2')"></label><value>clinic</value></item></select1>
       <group appearance="field-list" ref="/data/contact">
-        <label ref="jr:itext('/data/contact:label')"/>
+        <label ref="jr:itext('/data/contact:label')"></label>
         <input ref="/data/contact/name">
-          <label ref="jr:itext('/data/contact/name:label')"/>
+          <label ref="jr:itext('/data/contact/name:label')"></label>
         </input>
         <input ref="/data/contact/short_name">
-          <label ref="jr:itext('/data/contact/short_name:label')"/>
-          <hint ref="jr:itext('/data/contact/short_name:hint')"/>
+          <label ref="jr:itext('/data/contact/short_name:label')"></label>
+          <hint ref="jr:itext('/data/contact/short_name:hint')"></hint>
         </input>
         <group ref="/data/contact/ephemeral_dob">
-          <label ref="jr:itext('/data/contact/ephemeral_dob:label')"/>
+          <label ref="jr:itext('/data/contact/ephemeral_dob:label')"></label>
           <input ref="/data/contact/ephemeral_dob/dob_calendar">
-            <label ref="jr:itext('/data/contact/ephemeral_dob/dob_calendar:label')"/>
-            <hint ref="jr:itext('/data/contact/ephemeral_dob/dob_calendar:hint')"/>
+            <label ref="jr:itext('/data/contact/ephemeral_dob/dob_calendar:label')"></label>
+            <hint ref="jr:itext('/data/contact/ephemeral_dob/dob_calendar:hint')"></hint>
           </input>
           <input ref="/data/contact/ephemeral_dob/age_label">
-            <label ref="jr:itext('/data/contact/ephemeral_dob/age_label:label')"/>
+            <label ref="jr:itext('/data/contact/ephemeral_dob/age_label:label')"></label>
           </input>
           <input ref="/data/contact/ephemeral_dob/age_years">
-            <label ref="jr:itext('/data/contact/ephemeral_dob/age_years:label')"/>
+            <label ref="jr:itext('/data/contact/ephemeral_dob/age_years:label')"></label>
           </input>
           <input ref="/data/contact/ephemeral_dob/age_months">
-            <label ref="jr:itext('/data/contact/ephemeral_dob/age_months:label')"/>
+            <label ref="jr:itext('/data/contact/ephemeral_dob/age_months:label')"></label>
           </input>
           <select ref="/data/contact/ephemeral_dob/dob_method" appearance="columns">
-            <label ref="jr:itext('/data/contact/ephemeral_dob/dob_method:label')"/>
-            <itemset nodeset="instance('select_dob_method')/root/item">
-              <value ref="name"/>
-              <label ref="jr:itext(itextId)"/>
-            </itemset>
-          </select>
+            <label ref="jr:itext('/data/contact/ephemeral_dob/dob_method:label')"></label>
+            
+          <item><label ref="jr:itext('select_dob_method-0')"></label><value>approx</value></item></select>
           <input ref="/data/contact/ephemeral_dob/dob_debug">
-            <label ref="jr:itext('/data/contact/ephemeral_dob/dob_debug:label')"/>
+            <label ref="jr:itext('/data/contact/ephemeral_dob/dob_debug:label')"></label>
           </input>
         </group>
       </group>
       <input ref="/data/contact/phone">
-        <label ref="jr:itext('/data/contact/phone:label')"/>
+        <label ref="jr:itext('/data/contact/phone:label')"></label>
       </input>
       <input ref="/data/contact/phone_alternate">
-        <label ref="jr:itext('/data/contact/phone_alternate:label')"/>
+        <label ref="jr:itext('/data/contact/phone_alternate:label')"></label>
       </input>
       <select1 ref="/data/contact/sex" appearance="columns">
-        <label ref="jr:itext('/data/contact/sex:label')"/>
-        <itemset nodeset="instance('male_female')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/contact/sex:label')"></label>
+        
+      <item><label ref="jr:itext('male_female-0')"></label><value>female</value></item><item><label ref="jr:itext('male_female-1')"></label><value>male</value></item></select1>
       <select1 ref="/data/contact/role">
-        <label ref="jr:itext('/data/contact/role:label')"/>
-        <itemset nodeset="instance('roles')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/contact/role:label')"></label>
+        
+      <item><label ref="jr:itext('roles-0')"></label><value>chw</value></item><item><label ref="jr:itext('roles-1')"></label><value>chw_supervisor</value></item><item><label ref="jr:itext('roles-2')"></label><value>nurse</value></item><item><label ref="jr:itext('roles-3')"></label><value>manager</value></item><item><label ref="jr:itext('roles-4')"></label><value>patient</value></item><item><label ref="jr:itext('roles-5')"></label><value>other</value></item></select1>
       <input ref="/data/contact/role_other">
-        <label ref="jr:itext('/data/contact/role_other:label')"/>
+        <label ref="jr:itext('/data/contact/role_other:label')"></label>
       </input>
       <input ref="/data/contact/external_id">
-        <label ref="jr:itext('/data/contact/external_id:label')"/>
+        <label ref="jr:itext('/data/contact/external_id:label')"></label>
       </input>
       <input ref="/data/contact/notes" appearance="multiline">
-        <label ref="jr:itext('/data/contact/notes:label')"/>
+        <label ref="jr:itext('/data/contact/notes:label')"></label>
       </input>
       <group ref="/data/contact/user_for_contact">
-        <label ref="jr:itext('/data/contact/user_for_contact:label')"/>
+        <label ref="jr:itext('/data/contact/user_for_contact:label')"></label>
       </group>
       <group appearance="hidden" ref="/data/contact/meta">
-        <label ref="jr:itext('/data/contact/meta:label')"/>
+        <label ref="jr:itext('/data/contact/meta:label')"></label>
       </group>
     </group>
     <group appearance="field-list" ref="/data/clinic">
-      <label ref="jr:itext('/data/clinic:label')"/>
+      <label ref="jr:itext('/data/clinic:label')"></label>
       <select1 ref="/data/clinic/is_name_generated" appearance="columns-pack">
-        <label ref="jr:itext('/data/clinic/is_name_generated:label')"/>
-        <itemset nodeset="instance('yes_no_generated_name')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/clinic/is_name_generated:label')"></label>
+        
+      <item><label ref="jr:itext('yes_no_generated_name-0')"></label><value>true</value></item><item><label ref="jr:itext('yes_no_generated_name-1')"></label><value>false</value></item></select1>
       <input ref="/data/init/custom_place_name">
-        <label ref="jr:itext('/data/init/custom_place_name:label')"/>
+        <label ref="jr:itext('/data/init/custom_place_name:label')"></label>
       </input>
       <input ref="/data/clinic/external_id">
-        <label ref="jr:itext('/data/clinic/external_id:label')"/>
+        <label ref="jr:itext('/data/clinic/external_id:label')"></label>
       </input>
       <input ref="/data/clinic/notes" appearance="multiline">
-        <label ref="jr:itext('/data/clinic/notes:label')"/>
+        <label ref="jr:itext('/data/clinic/notes:label')"></label>
       </input>
       <group appearance="hidden" ref="/data/clinic/meta">
-        <label ref="jr:itext('/data/clinic/meta:label')"/>
+        <label ref="jr:itext('/data/clinic/meta:label')"></label>
+      </group>
+    </group>
+    <group ref="/data/repeat">
+      <label ref="jr:itext('/data/repeat:label')"></label>
+      <group ref="/data/repeat/child">
+        <label></label>
+        <repeat nodeset="/data/repeat/child" appearance="field-list">
+          <input ref="/data/repeat/child/name">
+            <label ref="jr:itext('/data/repeat/child/name:label')"></label>
+          </input>
+          <group appearance="hidden" ref="/data/repeat/child/meta">
+            <label ref="jr:itext('/data/repeat/child/meta:label')"></label>
+          </group>
+        </repeat>
       </group>
     </group>
   </h:body>

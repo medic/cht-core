@@ -264,22 +264,22 @@
             <value></value>
           </text>
           <text id="/data/gestational_age/method_lmp_summary/lmp_check_note:label">
-            <value> You entered an LMP of: **<output value=" /data/gestational_age/g_lmp_date "/>**&lt;/span&gt; </value>
+            <value> You entered an LMP of: **<output value=" /data/gestational_age/g_lmp_date "></output>**&lt;/span&gt; </value>
           </text>
           <text id="/data/gestational_age/method_lmp_summary/lmp_approx_weeks_check_note:label">
-            <value> You entered **<output value=" /data/gestational_age/method_approx/lmp_approx_weeks "/> weeks** pregnant. </value>
+            <value> You entered **<output value=" /data/gestational_age/method_approx/lmp_approx_weeks "></output> weeks** pregnant. </value>
           </text>
           <text id="/data/gestational_age/method_lmp_summary/lmp_approx_months_check_note:label">
-            <value> You entered **<output value=" /data/gestational_age/method_approx/lmp_approx_months "/> months** pregnant. </value>
+            <value> You entered **<output value=" /data/gestational_age/method_approx/lmp_approx_months "></output> months** pregnant. </value>
           </text>
           <text id="/data/gestational_age/method_lmp_summary/u_edd_note:label">
-            <value> You entered the EDD: **<output value=" /data/gestational_age/g_edd "/>** </value>
+            <value> You entered the EDD: **<output value=" /data/gestational_age/g_edd "></output>** </value>
           </text>
           <text id="/data/gestational_age/method_lmp_summary/edd_note:label">
-            <value> The estimated date of delivery is: **<output value=" /data/gestational_age/g_edd "/>**&lt;/span&gt; </value>
+            <value> The estimated date of delivery is: **<output value=" /data/gestational_age/g_edd "></output>**&lt;/span&gt; </value>
           </text>
           <text id="/data/gestational_age/method_lmp_summary/lmp_note:label">
-            <value><output value=" /data/patient_short_name_start "/> is currently &lt;span style=&quot;font-family:monospace&quot;&gt;<output value=" /data/weeks_since_lmp_rounded "/> weeks&lt;/span&gt; pregnant. </value>
+            <value><output value=" /data/patient_short_name_start "></output> is currently &lt;span style="font-family:monospace"&gt;<output value=" /data/weeks_since_lmp_rounded "></output> weeks&lt;/span&gt; pregnant. </value>
           </text>
           <text id="/data/gestational_age/method_lmp_summary/edd_check_note:label">
             <value>If this seems incorrect, click "&lt; Prev" and update the pregnancy information.</value>
@@ -303,13 +303,13 @@
             <value>You selected "No information is known."</value>
           </text>
           <text id="/data/gestational_age/method_none/no_info_pregnancy_reason:label">
-            <value> Why do you want to register <output value=" /data/patient_short_name "/>? </value>
+            <value> Why do you want to register <output value=" /data/patient_short_name "></output>? </value>
           </text>
           <text id="/data/gestational_age/method_none/no_info_pregnancy_reason:hint">
             <value>Select one.</value>
           </text>
           <text id="/data/gestational_age/method_none/pregnancy_confirm_note:label">
-            <value> Refer <output value=" /data/patient_short_name "/> to the health facility to confirm. You will receive tasks every two weeks to check in on the pregnancy. Schedule will follow WHO recommendations once LMP or EDD is entered. </value>
+            <value> Refer <output value=" /data/patient_short_name "></output> to the health facility to confirm. You will receive tasks every two weeks to check in on the pregnancy. Schedule will follow WHO recommendations once LMP or EDD is entered. </value>
           </text>
           <text id="/data/anc_visits_hf:label">
             <value></value>
@@ -321,7 +321,7 @@
             <value>Must be an integer between 0 and 9.</value>
           </text>
           <text id="/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count:label">
-            <value> How many times has <output value=" /data/patient_short_name "/> been to the health facility for ANC? </value>
+            <value> How many times has <output value=" /data/patient_short_name "></output> been to the health facility for ANC? </value>
           </text>
           <text id="/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count:hint">
             <value>Enter 0 if she has not been yet.</value>
@@ -330,10 +330,10 @@
             <value></value>
           </text>
           <text id="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_single:label">
-            <value> You entered that <output value=" /data/patient_short_name "/> has attended 1 ANC visit at the health facility. </value>
+            <value> You entered that <output value=" /data/patient_short_name "></output> has attended 1 ANC visit at the health facility. </value>
           </text>
           <text id="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_multiple:label">
-            <value> You entered that <output value=" /data/patient_short_name "/> has attended <output value=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count "/> ANC visits at the health facility. </value>
+            <value> You entered that <output value=" /data/patient_short_name "></output> has attended <output value=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count "></output> ANC visits at the health facility. </value>
           </text>
           <text id="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_ask_single:label">
             <value>Please enter the date if you know it.</value>
@@ -369,7 +369,7 @@
             <value></value>
           </text>
           <text id="/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known:label">
-            <value> If <output value=" /data/patient_short_name "/> has a specific upcoming ANC appointment date, enter it here. You will receive a task three days before to remind her to attend. </value>
+            <value> If <output value=" /data/patient_short_name "></output> has a specific upcoming ANC appointment date, enter it here. You will receive a task three days before to remind her to attend. </value>
           </text>
           <text id="/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date:jr:constraintMsg">
             <value>Date cannot be in the past. Date cannot be more than one month from today.</value>
@@ -384,10 +384,10 @@
             <value>The WHO recommends ANC visits at 12, 20, 26, 30, 34, 36, 38, 40 weeks.</value>
           </text>
           <text id="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/prenancy_age_note:label">
-            <value><output value=" /data/patient_short_name_start "/> is **<output value=" /data/weeks_since_lmp_rounded "/> weeks** pregnant. </value>
+            <value><output value=" /data/patient_short_name_start "></output> is **<output value=" /data/weeks_since_lmp_rounded "></output> weeks** pregnant. </value>
           </text>
           <text id="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/refer_note:label">
-            <value> Please refer <output value=" /data/patient_short_name "/> to the health facility at the appropriate time. </value>
+            <value> Please refer <output value=" /data/patient_short_name "></output> to the health facility at the appropriate time. </value>
           </text>
           <text id="/data/risk_factors:label">
             <value>Risk Factors</value>
@@ -396,10 +396,10 @@
             <value></value>
           </text>
           <text id="/data/risk_factors/risk_factors_history/first_pregnancy:label">
-            <value> Is this <output value=" /data/patient_short_name "/>'s first pregnancy? </value>
+            <value> Is this <output value=" /data/patient_short_name "></output>'s first pregnancy? </value>
           </text>
           <text id="/data/risk_factors/risk_factors_history/previous_miscarriage:label">
-            <value> Has <output value=" /data/patient_short_name "/> had any miscarriages or stillbirths? </value>
+            <value> Has <output value=" /data/patient_short_name "></output> had any miscarriages or stillbirths? </value>
           </text>
           <text id="/data/risk_factors/risk_factors_present:label">
             <value></value>
@@ -408,7 +408,7 @@
             <value>If "None of the above" selected, cannot select any other option.</value>
           </text>
           <text id="/data/risk_factors/risk_factors_present/primary_condition:label">
-            <value> Does <output value=" /data/patient_short_name "/> have any of these risk factors? </value>
+            <value> Does <output value=" /data/patient_short_name "></output> have any of these risk factors? </value>
           </text>
           <text id="/data/risk_factors/risk_factors_present/primary_condition:hint">
             <value>Select all that apply.</value>
@@ -417,7 +417,7 @@
             <value>If "None of the above" selected, cannot select any other option.</value>
           </text>
           <text id="/data/risk_factors/risk_factors_present/secondary_condition:label">
-            <value> Does <output value=" /data/patient_short_name "/> have any of these risk factors? </value>
+            <value> Does <output value=" /data/patient_short_name "></output> have any of these risk factors? </value>
           </text>
           <text id="/data/risk_factors/risk_factors_present/secondary_condition:hint">
             <value>Select all that apply.</value>
@@ -438,10 +438,10 @@
             <value>Danger Sign Check</value>
           </text>
           <text id="/data/danger_signs/danger_signs_note:label">
-            <value> Ask <output value=" /data/patient_short_name "/> to monitor these danger signs throughout the pregnancy. </value>
+            <value> Ask <output value=" /data/patient_short_name "></output> to monitor these danger signs throughout the pregnancy. </value>
           </text>
           <text id="/data/danger_signs/danger_signs_question_note:label">
-            <value> Does <output value=" /data/patient_short_name "/> currently have any of these danger signs? </value>
+            <value> Does <output value=" /data/patient_short_name "></output> currently have any of these danger signs? </value>
           </text>
           <text id="/data/danger_signs/vaginal_bleeding:label">
             <value>Vaginal bleeding</value>
@@ -495,7 +495,7 @@
             <value></value>
           </text>
           <text id="/data/safe_pregnancy_practices/malaria/uses_llin:label">
-            <value> Does <output value=" /data/patient_short_name "/> use a long-lasting insecticidal net (LLIN)? </value>
+            <value> Does <output value=" /data/patient_short_name "></output> use a long-lasting insecticidal net (LLIN)? </value>
           </text>
           <text id="/data/safe_pregnancy_practices/malaria/llin_advice_note:label">
             <value>Sleeping under a LLIN **EVERY night** prevents malaria.</value>
@@ -507,7 +507,7 @@
             <value></value>
           </text>
           <text id="/data/safe_pregnancy_practices/iron_folate/iron_folate_daily:label">
-            <value> Is <output value=" /data/patient_short_name "/> taking iron folate daily? </value>
+            <value> Is <output value=" /data/patient_short_name "></output> taking iron folate daily? </value>
           </text>
           <text id="/data/safe_pregnancy_practices/iron_folate/iron_folate_note:label">
             <value>Iron folate aids in the development of child's brain and spinal cord. It also prevents premature birth, sepsis, anemia and low birth weight.</value>
@@ -516,10 +516,10 @@
             <value></value>
           </text>
           <text id="/data/safe_pregnancy_practices/deworming/deworming_med:label">
-            <value> Has <output value=" /data/patient_short_name "/> received deworming medication? </value>
+            <value> Has <output value=" /data/patient_short_name "></output> received deworming medication? </value>
           </text>
           <text id="/data/safe_pregnancy_practices/deworming/deworming_med_note:label">
-            <value> Worms can affect the nutritional status of <output value=" /data/patient_short_name "/> and baby. </value>
+            <value> Worms can affect the nutritional status of <output value=" /data/patient_short_name "></output> and baby. </value>
           </text>
           <text id="/data/safe_pregnancy_practices/safe_practices_tips:label">
             <value></value>
@@ -534,22 +534,22 @@
             <value>Respond to the baby's movements-kicks by gentle touching or massaging your tummy.</value>
           </text>
           <text id="/data/safe_pregnancy_practices/safe_practices_tips/deliver_hf_note:label">
-            <value> It's safest to deliver in a health facility. Discuss a birth plan with <output value=" /data/patient_short_name "/>. </value>
+            <value> It's safest to deliver in a health facility. Discuss a birth plan with <output value=" /data/patient_short_name "></output>. </value>
           </text>
           <text id="/data/safe_pregnancy_practices/hiv_status:label">
             <value></value>
           </text>
           <text id="/data/safe_pregnancy_practices/hiv_status/hiv_tested:label">
-            <value> Has <output value=" /data/patient_short_name "/> been tested for HIV in the past 3 months? </value>
+            <value> Has <output value=" /data/patient_short_name "></output> been tested for HIV in the past 3 months? </value>
           </text>
           <text id="/data/safe_pregnancy_practices/hiv_status/hiv_importance_note:label">
-            <value> Frequent testing ensures that <output value=" /data/patient_short_name "/> receives medicine to prevent transmission of HIV to the baby. </value>
+            <value> Frequent testing ensures that <output value=" /data/patient_short_name "></output> receives medicine to prevent transmission of HIV to the baby. </value>
           </text>
           <text id="/data/safe_pregnancy_practices/tetanus:label">
             <value></value>
           </text>
           <text id="/data/safe_pregnancy_practices/tetanus/tt_imm_received:label">
-            <value> Has <output value=" /data/patient_short_name "/> received any Tetanus Toxoid (TT) immunizations during this pregnancy? </value>
+            <value> Has <output value=" /data/patient_short_name "></output> received any Tetanus Toxoid (TT) immunizations during this pregnancy? </value>
           </text>
           <text id="/data/safe_pregnancy_practices/tetanus/tt_note_1:label">
             <value>Immunizing with at least two doses of tetanus toxoid before or during pregnancy protects the newborn for the first few weeks of life and protects the mother.</value>
@@ -570,13 +570,13 @@
             <value>Patient&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/data/summary/r_patient_details:label">
-            <value> &lt;h2 style=&quot;text-align:center;margin-bottom:0px;&quot;&gt;<output value=" /data/patient_name "/>&lt;/h2&gt; &lt;p style=&quot;text-align:center;&quot;&gt;<output value=" /data/patient_age_in_years "/> years old&lt;/p&gt; </value>
+            <value> &lt;h2 style="text-align:center;margin-bottom:0px;"&gt;<output value=" /data/patient_name "></output>&lt;/h2&gt; &lt;p style="text-align:center;"&gt;<output value=" /data/patient_age_in_years "></output> years old&lt;/p&gt; </value>
           </text>
           <text id="/data/summary/r_summary:label">
             <value>Summary&lt;I class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/data/summary/r_pregnancy_details:label">
-            <value> &lt;p&gt;<output value=" /data/weeks_since_lmp_rounded "/> weeks pregnant.&lt;/p&gt; &lt;p&gt; EDD: <output value=" /data/summary/edd_summary "/>&lt;/p&gt; </value>
+            <value> &lt;p&gt;<output value=" /data/weeks_since_lmp_rounded "></output> weeks pregnant.&lt;/p&gt; &lt;p&gt; EDD: <output value=" /data/summary/edd_summary "></output>&lt;/p&gt; </value>
           </text>
           <text id="/data/summary/r_pregnancy_details_unknown:label">
             <value>Unknown weeks pregnant.</value>
@@ -613,7 +613,7 @@
           </text>
           <text id="/data/summary/r_risk_additional:label">
             <value>
-              <output value=" /data/risk_factors/risk_factors_present/additional_risk "/>
+              <output value=" /data/risk_factors/risk_factors_present/additional_risk "></output>
             </value>
           </text>
           <text id="/data/summary/r_danger_signs:label">
@@ -665,7 +665,7 @@
             <value>Danger Sign</value>
           </text>
           <text id="/data/summary/r_routine_anc:label">
-            <value> Please attend ANC on: <output value=" /data/summary/next_appointment_date "/> </value>
+            <value> Please attend ANC on: <output value=" /data/summary/next_appointment_date "></output> </value>
           </text>
           <text id="/data/summary/r_request_services:label">
             <value>Request the following services:</value>
@@ -686,10 +686,10 @@
             <value>The WHO recommends routine ANC visits at 12, 20, 26, 30, 34, 36, 38, 40 weeks.</value>
           </text>
           <text id="/data/summary/r_refer_hf_appropriate_time:label">
-            <value> Please refer <output value=" /data/patient_short_name "/> to the health facility at the appropriate time. </value>
+            <value> Please refer <output value=" /data/patient_short_name "></output> to the health facility at the appropriate time. </value>
           </text>
           <text id="/data/summary/r_refer_hf_immediately:label">
-            <value> Please refer <output value=" /data/patient_short_name "/> to the health facility immediately to receive the EDD and appropriate care. </value>
+            <value> Please refer <output value=" /data/patient_short_name "></output> to the health facility immediately to receive the EDD and appropriate care. </value>
           </text>
           <text id="/data/summary/r_space_2:label">
             <value></value>
@@ -704,10 +704,10 @@
             <value>Please conduct a danger sign follow-up in 3 days.</value>
           </text>
           <text id="/data/summary/r_fup_hf_visit:label">
-            <value> Make sure <output value=" /data/patient_short_name "/> attends her clinic visit on <output value=" /data/summary/next_appointment_date "/>. Please remind her three days before. </value>
+            <value> Make sure <output value=" /data/patient_short_name "></output> attends her clinic visit on <output value=" /data/summary/next_appointment_date "></output>. Please remind her three days before. </value>
           </text>
           <text id="/data/summary/r_fup_pregnancy_visit:label">
-            <value> Please conduct the next pregnancy home visit in <output value=" /data/summary/next_visit_weeks "/> week(s). </value>
+            <value> Please conduct the next pregnancy home visit in <output value=" /data/summary/next_visit_weeks "></output> week(s). </value>
           </text>
           <text id="/data/summary/r_fup_pregnancy_visit_2_weeks:label">
             <value>Please conduct the next pregnancy home visit in 2 weeks.</value>
@@ -881,302 +881,302 @@
           <inputs>
             <meta>
               <location>
-                <lat/>
-                <long/>
-                <error/>
-                <message/>
+                <lat></lat>
+                <long></long>
+                <error></error>
+                <message></message>
               </location>
             </meta>
             <source>user</source>
-            <source_id/>
+            <source_id></source_id>
             <user>
-              <contact_id/>
+              <contact_id></contact_id>
               <parent>
-                <_id/>
+                <_id></_id>
               </parent>
             </user>
             <contact>
-              <_id/>
-              <name/>
-              <short_name/>
-              <patient_id/>
+              <_id></_id>
+              <name></name>
+              <short_name></short_name>
+              <patient_id></patient_id>
               <date_of_birth>0</date_of_birth>
-              <sex/>
+              <sex></sex>
               <parent>
-                <_id/>
+                <_id></_id>
                 <parent>
                   <contact>
-                    <chw_name/>
-                    <phone/>
+                    <chw_name></chw_name>
+                    <phone></phone>
                   </contact>
                 </parent>
               </parent>
             </contact>
           </inputs>
-          <patient_age_in_years tag="hidden"/>
-          <patient_uuid tag="hidden"/>
-          <patient_id tag="hidden"/>
-          <patient_name tag="hidden"/>
-          <patient_short_name tag="hidden"/>
-          <patient_short_name_start tag="hidden"/>
-          <lmp_date_8601 tag="hidden"/>
-          <edd_8601 tag="hidden"/>
-          <days_since_lmp tag="hidden"/>
-          <weeks_since_lmp tag="hidden"/>
-          <weeks_since_lmp_rounded tag="hidden"/>
-          <lmp_method_approx tag="hidden"/>
-          <hiv_status_known tag="hidden"/>
-          <deworming_med_received tag="hidden"/>
-          <tt_received tag="hidden"/>
-          <t_pregnancy_follow_up_date tag="hidden"/>
-          <t_pregnancy_follow_up tag="hidden"/>
-          <t_danger_signs_referral_follow_up_date tag="hidden"/>
-          <t_danger_signs_referral_follow_up tag="hidden"/>
+          <patient_age_in_years tag="hidden"></patient_age_in_years>
+          <patient_uuid tag="hidden"></patient_uuid>
+          <patient_id tag="hidden"></patient_id>
+          <patient_name tag="hidden"></patient_name>
+          <patient_short_name tag="hidden"></patient_short_name>
+          <patient_short_name_start tag="hidden"></patient_short_name_start>
+          <lmp_date_8601 tag="hidden"></lmp_date_8601>
+          <edd_8601 tag="hidden"></edd_8601>
+          <days_since_lmp tag="hidden"></days_since_lmp>
+          <weeks_since_lmp tag="hidden"></weeks_since_lmp>
+          <weeks_since_lmp_rounded tag="hidden"></weeks_since_lmp_rounded>
+          <lmp_method_approx tag="hidden"></lmp_method_approx>
+          <hiv_status_known tag="hidden"></hiv_status_known>
+          <deworming_med_received tag="hidden"></deworming_med_received>
+          <tt_received tag="hidden"></tt_received>
+          <t_pregnancy_follow_up_date tag="hidden"></t_pregnancy_follow_up_date>
+          <t_pregnancy_follow_up tag="hidden"></t_pregnancy_follow_up>
+          <t_danger_signs_referral_follow_up_date tag="hidden"></t_danger_signs_referral_follow_up_date>
+          <t_danger_signs_referral_follow_up tag="hidden"></t_danger_signs_referral_follow_up>
           <gestational_age>
             <register_method>
-              <register_note tag="hidden"/>
-              <lmp_method/>
+              <register_note tag="hidden"></register_note>
+              <lmp_method></lmp_method>
             </register_method>
             <method_lmp>
-              <u_lmp_date/>
+              <u_lmp_date></u_lmp_date>
             </method_lmp>
             <method_approx>
-              <lmp_approx tag="hidden"/>
-              <lmp_approx_weeks/>
-              <lmp_approx_months/>
+              <lmp_approx tag="hidden"></lmp_approx>
+              <lmp_approx_weeks></lmp_approx_weeks>
+              <lmp_approx_months></lmp_approx_months>
             </method_approx>
             <method_edd>
-              <u_edd/>
+              <u_edd></u_edd>
             </method_edd>
             <method_lmp_summary tag="hidden">
-              <lmp_check_note/>
-              <lmp_approx_weeks_check_note/>
-              <lmp_approx_months_check_note/>
-              <u_edd_note/>
-              <edd_note/>
-              <lmp_note/>
-              <edd_check_note/>
+              <lmp_check_note></lmp_check_note>
+              <lmp_approx_weeks_check_note></lmp_approx_weeks_check_note>
+              <lmp_approx_months_check_note></lmp_approx_months_check_note>
+              <u_edd_note></u_edd_note>
+              <edd_note></edd_note>
+              <lmp_note></lmp_note>
+              <edd_check_note></edd_check_note>
             </method_lmp_summary>
-            <g_lmp_date_8601 tag="hidden"/>
-            <g_lmp_date tag="hidden"/>
-            <g_edd_8601 tag="hidden"/>
-            <g_edd tag="hidden"/>
+            <g_lmp_date_8601 tag="hidden"></g_lmp_date_8601>
+            <g_lmp_date tag="hidden"></g_lmp_date>
+            <g_edd_8601 tag="hidden"></g_edd_8601>
+            <g_edd tag="hidden"></g_edd>
             <method_none>
-              <no_info_notice tag="hidden"/>
-              <no_info_pregnancy_reason/>
-              <pregnancy_confirm_note tag="hidden"/>
+              <no_info_notice tag="hidden"></no_info_notice>
+              <no_info_pregnancy_reason></no_info_pregnancy_reason>
+              <pregnancy_confirm_note tag="hidden"></pregnancy_confirm_note>
             </method_none>
           </gestational_age>
           <anc_visits_hf>
             <anc_visits_hf_past>
-              <visited_hf_count/>
+              <visited_hf_count></visited_hf_count>
               <visited_dates_group>
-                <visited_count_confim_note_single tag="hidden"/>
-                <visited_count_confim_note_multiple tag="hidden"/>
-                <visited_date_ask_single/>
-                <visited_date_single/>
-                <visited_dates_multiple_note tag="hidden"/>
-                <visited_dates_multiple_note_section tag="hidden"/>
+                <visited_count_confim_note_single tag="hidden"></visited_count_confim_note_single>
+                <visited_count_confim_note_multiple tag="hidden"></visited_count_confim_note_multiple>
+                <visited_date_ask_single></visited_date_ask_single>
+                <visited_date_single></visited_date_single>
+                <visited_dates_multiple_note tag="hidden"></visited_dates_multiple_note>
+                <visited_dates_multiple_note_section tag="hidden"></visited_dates_multiple_note_section>
                 <visited_dates jr:template="">
-                  <visited_date_ask_multiple/>
-                  <visited_date/>
+                  <visited_date_ask_multiple></visited_date_ask_multiple>
+                  <visited_date></visited_date>
                 </visited_dates>
                 <visited_dates>
-                  <visited_date_ask_multiple/>
-                  <visited_date/>
+                  <visited_date_ask_multiple></visited_date_ask_multiple>
+                  <visited_date></visited_date>
                 </visited_dates>
               </visited_dates_group>
             </anc_visits_hf_past>
             <anc_visits_hf_next>
               <anc_next_visit_date>
-                <appointment_date_known/>
-                <appointment_date/>
+                <appointment_date_known></appointment_date_known>
+                <appointment_date></appointment_date>
               </anc_next_visit_date>
               <anc_visit_advice_note tag="hidden">
-                <who_recommends_note/>
-                <prenancy_age_note/>
-                <refer_note/>
+                <who_recommends_note></who_recommends_note>
+                <prenancy_age_note></prenancy_age_note>
+                <refer_note></refer_note>
               </anc_visit_advice_note>
             </anc_visits_hf_next>
           </anc_visits_hf>
           <risk_factors>
             <risk_factors_history>
-              <first_pregnancy/>
-              <previous_miscarriage/>
+              <first_pregnancy></first_pregnancy>
+              <previous_miscarriage></previous_miscarriage>
             </risk_factors_history>
             <risk_factors_present>
-              <primary_condition/>
-              <secondary_condition/>
-              <additional_risk_check/>
-              <additional_risk/>
+              <primary_condition></primary_condition>
+              <secondary_condition></secondary_condition>
+              <additional_risk_check></additional_risk_check>
+              <additional_risk></additional_risk>
             </risk_factors_present>
-            <r_risk_factor_present tag="hidden"/>
+            <r_risk_factor_present tag="hidden"></r_risk_factor_present>
           </risk_factors>
           <danger_signs>
-            <danger_signs_note tag="hidden"/>
-            <danger_signs_question_note/>
-            <vaginal_bleeding/>
-            <fits/>
-            <severe_abdominal_pain/>
-            <severe_headache/>
-            <very_pale/>
-            <fever/>
-            <reduced_or_no_fetal_movements/>
-            <breaking_water/>
-            <easily_tired/>
-            <face_hand_swelling/>
-            <breathlessness/>
-            <r_danger_sign_present tag="hidden"/>
-            <congratulate_no_ds_note tag="hidden"/>
-            <refer_patient_note_1 tag="hidden"/>
-            <refer_patient_note_2 tag="hidden"/>
+            <danger_signs_note tag="hidden"></danger_signs_note>
+            <danger_signs_question_note></danger_signs_question_note>
+            <vaginal_bleeding></vaginal_bleeding>
+            <fits></fits>
+            <severe_abdominal_pain></severe_abdominal_pain>
+            <severe_headache></severe_headache>
+            <very_pale></very_pale>
+            <fever></fever>
+            <reduced_or_no_fetal_movements></reduced_or_no_fetal_movements>
+            <breaking_water></breaking_water>
+            <easily_tired></easily_tired>
+            <face_hand_swelling></face_hand_swelling>
+            <breathlessness></breathlessness>
+            <r_danger_sign_present tag="hidden"></r_danger_sign_present>
+            <congratulate_no_ds_note tag="hidden"></congratulate_no_ds_note>
+            <refer_patient_note_1 tag="hidden"></refer_patient_note_1>
+            <refer_patient_note_2 tag="hidden"></refer_patient_note_2>
           </danger_signs>
           <safe_pregnancy_practices>
             <malaria>
-              <uses_llin/>
-              <llin_advice_note tag="hidden"/>
-              <malaria_prophylaxis_note tag="hidden"/>
+              <uses_llin></uses_llin>
+              <llin_advice_note tag="hidden"></llin_advice_note>
+              <malaria_prophylaxis_note tag="hidden"></malaria_prophylaxis_note>
             </malaria>
             <iron_folate>
-              <iron_folate_daily/>
-              <iron_folate_note tag="hidden"/>
+              <iron_folate_daily></iron_folate_daily>
+              <iron_folate_note tag="hidden"></iron_folate_note>
             </iron_folate>
             <deworming>
-              <deworming_med/>
-              <deworming_med_note tag="hidden"/>
+              <deworming_med></deworming_med>
+              <deworming_med_note tag="hidden"></deworming_med_note>
             </deworming>
             <safe_practices_tips tag="hidden">
-              <eat_more_note/>
-              <talk_softly_note/>
-              <respond_move_note/>
-              <deliver_hf_note/>
+              <eat_more_note></eat_more_note>
+              <talk_softly_note></talk_softly_note>
+              <respond_move_note></respond_move_note>
+              <deliver_hf_note></deliver_hf_note>
             </safe_practices_tips>
             <hiv_status>
-              <hiv_tested/>
-              <hiv_importance_note tag="hidden"/>
+              <hiv_tested></hiv_tested>
+              <hiv_importance_note tag="hidden"></hiv_importance_note>
             </hiv_status>
             <tetanus>
-              <tt_imm_received/>
-              <tt_note_1 tag="hidden"/>
-              <tt_note_2 tag="hidden"/>
+              <tt_imm_received></tt_imm_received>
+              <tt_note_1 tag="hidden"></tt_note_1>
+              <tt_note_2 tag="hidden"></tt_note_2>
             </tetanus>
-            <request_services tag="hidden"/>
+            <request_services tag="hidden"></request_services>
           </safe_pregnancy_practices>
           <summary tag="hidden">
-            <r_submit_note/>
-            <r_summary_details/>
-            <r_patient_details/>
-            <r_summary/>
-            <r_pregnancy_details/>
-            <r_pregnancy_details_unknown/>
-            <r_risk_factors/>
-            <r_risk_first_pregnancy/>
-            <r_risk_previous_miscarriage/>
-            <r_risk_previous_difficulties/>
-            <r_risk_more_than_4_children/>
-            <r_risk_last_baby_born_less_than_1_year_ago/>
-            <r_risk_heart_condition/>
-            <r_risk_asthma/>
-            <r_risk_high_blood_pressure/>
-            <r_risk_diabetes/>
-            <r_risk_additional/>
-            <r_danger_signs/>
-            <r_danger_sign_vaginal_bleeding/>
-            <r_danger_sign_fits/>
-            <r_danger_sign_severe_abdominal_pain/>
-            <r_danger_sign_severe_headache/>
-            <r_danger_sign_very_pale/>
-            <r_danger_sign_fever/>
-            <r_danger_sign_reduced_or_no_fetal_movements/>
-            <r_danger_sign_breaking_water/>
-            <r_danger_sign_easily_tired/>
-            <r_danger_sign_face_hand_swelling/>
-            <r_danger_sign_breathlessness/>
-            <r_space_1/>
-            <r_referrals/>
-            <r_refer_clinic_immediately/>
-            <r_refer_danger_sign/>
-            <r_routine_anc/>
-            <r_request_services/>
-            <r_request_service_tt/>
-            <r_request_service_hiv_test/>
-            <r_request_service_deworming/>
-            <r_request_service_iron/>
-            <r_who_recommends/>
-            <r_refer_hf_appropriate_time/>
-            <r_refer_hf_immediately/>
-            <r_space_2/>
-            <check-/>
-            <r_following_tasks/>
-            <r_fup_danger_sign/>
-            <r_fup_hf_visit/>
-            <r_fup_pregnancy_visit/>
-            <r_fup_pregnancy_visit_2_weeks/>
-            <next_visit_weeks/>
-            <edd_summary/>
-            <next_appointment_date/>
+            <r_submit_note></r_submit_note>
+            <r_summary_details></r_summary_details>
+            <r_patient_details></r_patient_details>
+            <r_summary></r_summary>
+            <r_pregnancy_details></r_pregnancy_details>
+            <r_pregnancy_details_unknown></r_pregnancy_details_unknown>
+            <r_risk_factors></r_risk_factors>
+            <r_risk_first_pregnancy></r_risk_first_pregnancy>
+            <r_risk_previous_miscarriage></r_risk_previous_miscarriage>
+            <r_risk_previous_difficulties></r_risk_previous_difficulties>
+            <r_risk_more_than_4_children></r_risk_more_than_4_children>
+            <r_risk_last_baby_born_less_than_1_year_ago></r_risk_last_baby_born_less_than_1_year_ago>
+            <r_risk_heart_condition></r_risk_heart_condition>
+            <r_risk_asthma></r_risk_asthma>
+            <r_risk_high_blood_pressure></r_risk_high_blood_pressure>
+            <r_risk_diabetes></r_risk_diabetes>
+            <r_risk_additional></r_risk_additional>
+            <r_danger_signs></r_danger_signs>
+            <r_danger_sign_vaginal_bleeding></r_danger_sign_vaginal_bleeding>
+            <r_danger_sign_fits></r_danger_sign_fits>
+            <r_danger_sign_severe_abdominal_pain></r_danger_sign_severe_abdominal_pain>
+            <r_danger_sign_severe_headache></r_danger_sign_severe_headache>
+            <r_danger_sign_very_pale></r_danger_sign_very_pale>
+            <r_danger_sign_fever></r_danger_sign_fever>
+            <r_danger_sign_reduced_or_no_fetal_movements></r_danger_sign_reduced_or_no_fetal_movements>
+            <r_danger_sign_breaking_water></r_danger_sign_breaking_water>
+            <r_danger_sign_easily_tired></r_danger_sign_easily_tired>
+            <r_danger_sign_face_hand_swelling></r_danger_sign_face_hand_swelling>
+            <r_danger_sign_breathlessness></r_danger_sign_breathlessness>
+            <r_space_1></r_space_1>
+            <r_referrals></r_referrals>
+            <r_refer_clinic_immediately></r_refer_clinic_immediately>
+            <r_refer_danger_sign></r_refer_danger_sign>
+            <r_routine_anc></r_routine_anc>
+            <r_request_services></r_request_services>
+            <r_request_service_tt></r_request_service_tt>
+            <r_request_service_hiv_test></r_request_service_hiv_test>
+            <r_request_service_deworming></r_request_service_deworming>
+            <r_request_service_iron></r_request_service_iron>
+            <r_who_recommends></r_who_recommends>
+            <r_refer_hf_appropriate_time></r_refer_hf_appropriate_time>
+            <r_refer_hf_immediately></r_refer_hf_immediately>
+            <r_space_2></r_space_2>
+            <check-></check->
+            <r_following_tasks></r_following_tasks>
+            <r_fup_danger_sign></r_fup_danger_sign>
+            <r_fup_hf_visit></r_fup_hf_visit>
+            <r_fup_pregnancy_visit></r_fup_pregnancy_visit>
+            <r_fup_pregnancy_visit_2_weeks></r_fup_pregnancy_visit_2_weeks>
+            <next_visit_weeks></next_visit_weeks>
+            <edd_summary></edd_summary>
+            <next_appointment_date></next_appointment_date>
             <custom_translations>
-              <custom_woman_label_translator/>
-              <custom_woman_label/>
-              <custom_woman_start_label_translator/>
-              <custom_woman_start_label/>
+              <custom_woman_label_translator></custom_woman_label_translator>
+              <custom_woman_label></custom_woman_label>
+              <custom_woman_start_label_translator></custom_woman_start_label_translator>
+              <custom_woman_start_label></custom_woman_start_label>
             </custom_translations>
           </summary>
           <data tag="hidden">
-            <__lmp_method/>
-            <__no_lmp_registration_reason/>
-            <__lmp_date/>
-            <__lmp_approx_weeks/>
-            <__lmp_approx_months/>
-            <__edd/>
-            <__num_previous_anc_hf_visits/>
-            <__previous_anc_hf_visit_dates/>
-            <__next_anc_hf_visit_date_known/>
-            <__next_anc_hf_visit_date/>
-            <__has_risk_factors/>
-            <__first_pregnancy/>
-            <__previous_miscarriage/>
-            <__previous_difficulties/>
-            <__more_than_4_children/>
-            <__last_baby_born_less_than_1_year_ago/>
-            <__heart_condition/>
-            <__asthma/>
-            <__high_blood_pressure/>
-            <__diabetes/>
-            <__additional_high_risk_condition_to_report/>
-            <__additional_high_risk_condition/>
-            <__has_danger_sign/>
-            <__vaginal_bleeding/>
-            <__fits/>
-            <__severe_abdominal_pain/>
-            <__severe_headache/>
-            <__very_pale/>
-            <__fever/>
-            <__reduced_or_no_fetal_movements/>
-            <__breaking_water/>
-            <__easily_tired/>
-            <__face_hand_swelling/>
-            <__breathlessness/>
-            <__uses_llin/>
-            <__takes_iron_folate_daily/>
-            <__received_deworming_meds/>
-            <__tested_for_hiv_in_past_3_months/>
-            <__received_tetanus_toxoid_this_pregnancy/>
+            <__lmp_method></__lmp_method>
+            <__no_lmp_registration_reason></__no_lmp_registration_reason>
+            <__lmp_date></__lmp_date>
+            <__lmp_approx_weeks></__lmp_approx_weeks>
+            <__lmp_approx_months></__lmp_approx_months>
+            <__edd></__edd>
+            <__num_previous_anc_hf_visits></__num_previous_anc_hf_visits>
+            <__previous_anc_hf_visit_dates></__previous_anc_hf_visit_dates>
+            <__next_anc_hf_visit_date_known></__next_anc_hf_visit_date_known>
+            <__next_anc_hf_visit_date></__next_anc_hf_visit_date>
+            <__has_risk_factors></__has_risk_factors>
+            <__first_pregnancy></__first_pregnancy>
+            <__previous_miscarriage></__previous_miscarriage>
+            <__previous_difficulties></__previous_difficulties>
+            <__more_than_4_children></__more_than_4_children>
+            <__last_baby_born_less_than_1_year_ago></__last_baby_born_less_than_1_year_ago>
+            <__heart_condition></__heart_condition>
+            <__asthma></__asthma>
+            <__high_blood_pressure></__high_blood_pressure>
+            <__diabetes></__diabetes>
+            <__additional_high_risk_condition_to_report></__additional_high_risk_condition_to_report>
+            <__additional_high_risk_condition></__additional_high_risk_condition>
+            <__has_danger_sign></__has_danger_sign>
+            <__vaginal_bleeding></__vaginal_bleeding>
+            <__fits></__fits>
+            <__severe_abdominal_pain></__severe_abdominal_pain>
+            <__severe_headache></__severe_headache>
+            <__very_pale></__very_pale>
+            <__fever></__fever>
+            <__reduced_or_no_fetal_movements></__reduced_or_no_fetal_movements>
+            <__breaking_water></__breaking_water>
+            <__easily_tired></__easily_tired>
+            <__face_hand_swelling></__face_hand_swelling>
+            <__breathlessness></__breathlessness>
+            <__uses_llin></__uses_llin>
+            <__takes_iron_folate_daily></__takes_iron_folate_daily>
+            <__received_deworming_meds></__received_deworming_meds>
+            <__tested_for_hiv_in_past_3_months></__tested_for_hiv_in_past_3_months>
+            <__received_tetanus_toxoid_this_pregnancy></__received_tetanus_toxoid_this_pregnancy>
             <meta tag="hidden">
-              <__patient_uuid/>
-              <__patient_id/>
-              <__household_uuid/>
-              <__source/>
-              <__source_id/>
+              <__patient_uuid></__patient_uuid>
+              <__patient_id></__patient_id>
+              <__household_uuid></__household_uuid>
+              <__source></__source>
+              <__source_id></__source_id>
             </meta>
           </data>
           <meta tag="hidden">
-            <instanceID/>
+            <instanceID></instanceID>
           </meta>
         </data>
       </instance>
-      <instance id="contact-summary"/>
-      <instance id="user-contact-summary"/>
+      <instance id="contact-summary"></instance>
+      <instance id="user-contact-summary"></instance>
       <instance id="yes_no">
         <root>
           <item>
@@ -1325,826 +1325,739 @@
           </item>
         </root>
       </instance>
-      <bind nodeset="/data/inputs" relevant="./source = 'user'"/>
-      <bind nodeset="/data/inputs/source" type="string"/>
-      <bind nodeset="/data/inputs/source_id" type="string"/>
-      <bind nodeset="/data/inputs/user/contact_id" type="string"/>
-      <bind nodeset="/data/inputs/user/parent/_id" type="string"/>
-      <bind nodeset="/data/inputs/contact/_id" type="string"/>
-      <bind nodeset="/data/inputs/contact/name" type="string"/>
-      <bind nodeset="/data/inputs/contact/short_name" type="string"/>
-      <bind nodeset="/data/inputs/contact/patient_id" type="string"/>
-      <bind nodeset="/data/inputs/contact/date_of_birth" type="string"/>
-      <bind nodeset="/data/inputs/contact/sex" type="string"/>
-      <bind nodeset="/data/inputs/contact/parent/_id" type="string"/>
-      <bind nodeset="/data/inputs/contact/parent/parent/contact/chw_name" type="string"/>
-      <bind nodeset="/data/inputs/contact/parent/parent/contact/phone" type="string"/>
-      <bind nodeset="/data/patient_age_in_years" type="string" calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )"/>
-      <bind nodeset="/data/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
-      <bind nodeset="/data/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
-      <bind nodeset="/data/patient_name" type="string" calculate="../inputs/contact/name"/>
-      <bind nodeset="/data/patient_short_name" type="string" calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_label)"/>
-      <bind nodeset="/data/patient_short_name_start" type="string" calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_start_label)"/>
-      <bind nodeset="/data/lmp_date_8601" type="string" calculate="../gestational_age/g_lmp_date_8601"/>
-      <bind nodeset="/data/edd_8601" type="string" calculate="../gestational_age/g_edd_8601"/>
-      <bind nodeset="/data/days_since_lmp" type="string" relevant="../lmp_date_8601 != ''" calculate="floor(decimal-date-time(today()) - decimal-date-time(../lmp_date_8601))"/>
-      <bind nodeset="/data/weeks_since_lmp" type="string" relevant="../lmp_date_8601 != ''" calculate="round(../days_since_lmp div 7, 2)"/>
-      <bind nodeset="/data/weeks_since_lmp_rounded" type="string" relevant="../lmp_date_8601 != ''" calculate="floor(../days_since_lmp div 7)"/>
-      <bind nodeset="/data/lmp_method_approx" type="string" calculate="if(selected(../gestational_age/register_method/lmp_method, 'method_approx'), 'yes', 'no')"/>
-      <bind nodeset="/data/hiv_status_known" type="string" calculate="../safe_pregnancy_practices/hiv_status/hiv_tested"/>
-      <bind nodeset="/data/deworming_med_received" type="string" calculate="../safe_pregnancy_practices/deworming/deworming_med"/>
-      <bind nodeset="/data/tt_received" type="string" calculate="../safe_pregnancy_practices/tetanus/tt_imm_received"/>
-      <bind nodeset="/data/t_pregnancy_follow_up_date" type="string" calculate="../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date"/>
-      <bind nodeset="/data/t_pregnancy_follow_up" type="string" calculate="../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known"/>
-      <bind nodeset="/data/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(decimal-date-time(today()) + 3)"/>
-      <bind nodeset="/data/t_danger_signs_referral_follow_up" type="string" calculate="../danger_signs/r_danger_sign_present"/>
-      <bind nodeset="/data/gestational_age/register_method/register_note" readonly="true()" type="string"/>
-      <bind nodeset="/data/gestational_age/register_method/lmp_method" type="string" required="true()"/>
-      <bind nodeset="/data/gestational_age/method_lmp" relevant="selected(../register_method/lmp_method, 'method_lmp')"/>
-      <bind nodeset="/data/gestational_age/method_lmp/u_lmp_date" type="date" required="true()" constraint=". &lt;= date-time(decimal-date-time(today()) - (1 * 30)) and&#10;. &gt;= date-time(decimal-date-time(today()) - (9 * 30))" jr:constraintMsg="jr:itext('/data/gestational_age/method_lmp/u_lmp_date:jr:constraintMsg')"/>
-      <bind nodeset="/data/gestational_age/method_approx" relevant="selected(../register_method/lmp_method, 'method_approx')"/>
-      <bind nodeset="/data/gestational_age/method_approx/lmp_approx" type="string" required="true()"/>
-      <bind nodeset="/data/gestational_age/method_approx/lmp_approx_weeks" type="int" required="true()" relevant="selected(../lmp_approx, 'approx_weeks')" constraint=". &gt;= 4 and . &lt;= 40" jr:constraintMsg="jr:itext('/data/gestational_age/method_approx/lmp_approx_weeks:jr:constraintMsg')"/>
-      <bind nodeset="/data/gestational_age/method_approx/lmp_approx_months" type="int" required="true()" relevant="selected(../lmp_approx, 'approx_months')" constraint=". &gt;= 1 and . &lt;= 9" jr:constraintMsg="jr:itext('/data/gestational_age/method_approx/lmp_approx_months:jr:constraintMsg')"/>
-      <bind nodeset="/data/gestational_age/method_edd" relevant="selected(../register_method/lmp_method, 'method_edd')"/>
-      <bind nodeset="/data/gestational_age/method_edd/u_edd" type="date" required="true()" constraint=". &gt;= today() and&#10;. &lt;= date-time(decimal-date-time(today()) + (9 * 30))" jr:constraintMsg="jr:itext('/data/gestational_age/method_edd/u_edd:jr:constraintMsg')"/>
-      <bind nodeset="/data/gestational_age/method_lmp_summary" relevant="not(selected(../register_method/lmp_method, 'method_none'))"/>
-      <bind nodeset="/data/gestational_age/method_lmp_summary/lmp_check_note" readonly="true()" type="string" relevant="selected(../../register_method/lmp_method, 'method_lmp')"/>
-      <bind nodeset="/data/gestational_age/method_lmp_summary/lmp_approx_weeks_check_note" readonly="true()" type="string" relevant="selected(../../method_approx/lmp_approx, 'approx_weeks')"/>
-      <bind nodeset="/data/gestational_age/method_lmp_summary/lmp_approx_months_check_note" readonly="true()" type="string" relevant="selected(../../method_approx/lmp_approx, 'approx_months')"/>
-      <bind nodeset="/data/gestational_age/method_lmp_summary/u_edd_note" readonly="true()" type="string" relevant="selected(../../register_method/lmp_method, 'method_edd')"/>
-      <bind nodeset="/data/gestational_age/method_lmp_summary/edd_note" readonly="true()" type="string" relevant="selected(../../register_method/lmp_method, 'method_lmp')&#10;or selected(../../method_approx/lmp_approx, 'approx_weeks')&#10;or selected(../../method_approx/lmp_approx, 'approx_months')"/>
-      <bind nodeset="/data/gestational_age/method_lmp_summary/lmp_note" readonly="true()" type="string" relevant="selected(../../register_method/lmp_method, 'method_edd')"/>
-      <bind nodeset="/data/gestational_age/method_lmp_summary/edd_check_note" readonly="true()" type="string"/>
-      <bind nodeset="/data/gestational_age/g_lmp_date_8601" type="string" calculate="format-date-time(&#10;if(selected(../register_method/lmp_method, 'method_lmp'), ../method_lmp/u_lmp_date,&#10;if(selected(../method_approx/lmp_approx, 'approx_weeks'), date-time(decimal-date-time(today()) - (../method_approx/lmp_approx_weeks * 7)), &#10;if(selected(../method_approx/lmp_approx, 'approx_months'), date-time(decimal-date-time(today()) - round(../method_approx/lmp_approx_months * 30.5)),&#10;if(selected(../register_method/lmp_method, 'method_edd'), date-time(decimal-date-time(../method_edd/u_edd) - 280), '')&#10;))), &quot;%Y-%m-%d&quot;)"/>
-      <bind nodeset="/data/gestational_age/g_lmp_date" type="string" calculate="format-date-time(../g_lmp_date_8601, &quot;%e %b, %Y&quot;)"/>
-      <bind nodeset="/data/gestational_age/g_edd_8601" type="string" calculate="format-date-time(date-time(decimal-date-time(../g_lmp_date_8601)+280),&quot;%Y-%m-%d&quot;)"/>
-      <bind nodeset="/data/gestational_age/g_edd" type="string" calculate="format-date-time(../g_edd_8601,&quot;%e %b, %Y&quot;)"/>
-      <bind nodeset="/data/gestational_age/method_none" relevant="selected(../register_method/lmp_method, 'method_none')"/>
-      <bind nodeset="/data/gestational_age/method_none/no_info_notice" readonly="true()" type="string"/>
-      <bind nodeset="/data/gestational_age/method_none/no_info_pregnancy_reason" type="string" required="true()"/>
-      <bind nodeset="/data/gestational_age/method_none/pregnancy_confirm_note" readonly="true()" type="string"/>
-      <bind nodeset="/data/anc_visits_hf" relevant="not(selected(../gestational_age/register_method/lmp_method, 'method_none'))"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count" type="int" required="true()" constraint=".&gt;= 0 and . &lt;= 9" jr:constraintMsg="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count:jr:constraintMsg')"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_single" readonly="true()" type="string" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  = 1"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_multiple" readonly="true()" type="string" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_ask_single" type="string" required="true()" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  = 1"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single" type="date" required="true()" relevant="selected(../visited_date_ask_single, 'yes')" constraint=". &lt;= today() and . &gt;=  /data/gestational_age/g_lmp_date_8601 " jr:constraintMsg="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single:jr:constraintMsg')"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates_multiple_note" readonly="true()" type="string" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates_multiple_note_section" readonly="true()" type="string" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date_ask_multiple" type="string" required="true()" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date" type="date" required="true()" relevant="selected(../visited_date_ask_multiple, 'yes')" constraint=". &lt;= today() and . &gt;=  /data/gestational_age/g_lmp_date_8601 " jr:constraintMsg="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date:jr:constraintMsg')"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known" type="string" required="true()"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date" type="date" required="true()" relevant="selected(../appointment_date_known, 'yes')" constraint="(. &gt;= today()) and&#10;(decimal-date-time(.) &lt;= decimal-date-time(today()) + 30)" jr:constraintMsg="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date:jr:constraintMsg')"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note" relevant="selected(../anc_next_visit_date/appointment_date_known, 'no')"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/who_recommends_note" readonly="true()" type="string"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/prenancy_age_note" readonly="true()" type="string"/>
-      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/refer_note" readonly="true()" type="string"/>
-      <bind nodeset="/data/risk_factors/risk_factors_history/first_pregnancy" type="string" required="true()"/>
-      <bind nodeset="/data/risk_factors/risk_factors_history/previous_miscarriage" type="string" required="true()" relevant="selected(../first_pregnancy, 'no')"/>
-      <bind nodeset="/data/risk_factors/risk_factors_present/primary_condition" type="string" required="true()" relevant="selected(../../risk_factors_history/first_pregnancy, 'yes')" constraint="not(selected(.,'none')) or count-selected(.) &lt; 2" jr:constraintMsg="jr:itext('/data/risk_factors/risk_factors_present/primary_condition:jr:constraintMsg')"/>
-      <bind nodeset="/data/risk_factors/risk_factors_present/secondary_condition" type="string" required="true()" relevant="selected(../../risk_factors_history/first_pregnancy, 'no')" constraint="not(selected(.,'none')) or count-selected(.) &lt; 2" jr:constraintMsg="jr:itext('/data/risk_factors/risk_factors_present/secondary_condition:jr:constraintMsg')"/>
-      <bind nodeset="/data/risk_factors/risk_factors_present/additional_risk_check" type="string" required="true()"/>
-      <bind nodeset="/data/risk_factors/risk_factors_present/additional_risk" type="string" required="true()" relevant="selected(../additional_risk_check, 'yes')" constraint="string-length(.) &lt;= 100" jr:constraintMsg="jr:itext('/data/risk_factors/risk_factors_present/additional_risk:jr:constraintMsg')"/>
-      <bind nodeset="/data/risk_factors/r_risk_factor_present" type="string" calculate="if(selected(../risk_factors_history/first_pregnancy, 'yes') or&#10;selected(../risk_factors_history/previous_miscarriage, 'yes') or &#10;not(selected(../risk_factors_present/primary_condition, 'none')) and ../risk_factors_present/primary_condition != '' or&#10;not(selected(../risk_factors_present/secondary_condition, 'none')) and ../risk_factors_present/secondary_condition != '' or&#10;selected(../risk_factors_present/additional_risk_check, 'yes')&#10;, 'yes', 'no')"/>
-      <bind nodeset="/data/danger_signs/danger_signs_note" readonly="true()" type="string"/>
-      <bind nodeset="/data/danger_signs/danger_signs_question_note" readonly="true()" type="string"/>
-      <bind nodeset="/data/danger_signs/vaginal_bleeding" type="string" required="true()"/>
-      <bind nodeset="/data/danger_signs/fits" type="string" required="true()"/>
-      <bind nodeset="/data/danger_signs/severe_abdominal_pain" type="string" required="true()"/>
-      <bind nodeset="/data/danger_signs/severe_headache" type="string" required="true()"/>
-      <bind nodeset="/data/danger_signs/very_pale" type="string" required="true()"/>
-      <bind nodeset="/data/danger_signs/fever" type="string" required="true()"/>
-      <bind nodeset="/data/danger_signs/reduced_or_no_fetal_movements" type="string" required="true()"/>
-      <bind nodeset="/data/danger_signs/breaking_water" type="string" required="true()"/>
-      <bind nodeset="/data/danger_signs/easily_tired" type="string" required="true()"/>
-      <bind nodeset="/data/danger_signs/face_hand_swelling" type="string" required="true()"/>
-      <bind nodeset="/data/danger_signs/breathlessness" type="string" required="true()"/>
-      <bind nodeset="/data/danger_signs/r_danger_sign_present" type="string" calculate="if(selected(../vaginal_bleeding, 'yes')&#10;or selected(../fits, 'yes')&#10;or selected(../severe_abdominal_pain, 'yes')&#10;or selected(../severe_headache, 'yes')&#10;or selected(../very_pale, 'yes')&#10;or selected(../fever, 'yes')&#10;or selected(../reduced_or_no_fetal_movements, 'yes')&#10;or selected(../breaking_water, 'yes')&#10;or selected(../easily_tired, 'yes')&#10;or selected(../face_hand_swelling, 'yes')&#10;or selected(../breathlessness, 'yes'), &#10;'yes',&#10;if(selected(../vaginal_bleeding, 'no')&#10;and selected(../fits, 'no')&#10;and selected(../severe_abdominal_pain, 'no')&#10;and selected(../severe_headache, 'no')&#10;and selected(../very_pale, 'no')&#10;and selected(../fever, 'no')&#10;and selected(../reduced_or_no_fetal_movements, 'no')&#10;and selected(../breaking_water, 'no')&#10;and selected(../easily_tired, 'no')&#10;and selected(../face_hand_swelling, 'no')&#10;and selected(../breathlessness, 'no'), 'no', ''))"/>
-      <bind nodeset="/data/danger_signs/congratulate_no_ds_note" readonly="true()" type="string" relevant="../r_danger_sign_present = 'no'"/>
-      <bind nodeset="/data/danger_signs/refer_patient_note_1" readonly="true()" type="string" relevant="../r_danger_sign_present = 'yes'"/>
-      <bind nodeset="/data/danger_signs/refer_patient_note_2" readonly="true()" type="string" relevant="../r_danger_sign_present = 'yes'"/>
-      <bind nodeset="/data/safe_pregnancy_practices/malaria/uses_llin" type="string" required="true()"/>
-      <bind nodeset="/data/safe_pregnancy_practices/malaria/llin_advice_note" readonly="true()" type="string"/>
-      <bind nodeset="/data/safe_pregnancy_practices/malaria/malaria_prophylaxis_note" readonly="true()" type="string"/>
-      <bind nodeset="/data/safe_pregnancy_practices/iron_folate/iron_folate_daily" type="string" required="true()"/>
-      <bind nodeset="/data/safe_pregnancy_practices/iron_folate/iron_folate_note" readonly="true()" type="string"/>
-      <bind nodeset="/data/safe_pregnancy_practices/deworming" relevant=" /data/weeks_since_lmp  &gt; 12"/>
-      <bind nodeset="/data/safe_pregnancy_practices/deworming/deworming_med" type="string" required="true()"/>
-      <bind nodeset="/data/safe_pregnancy_practices/deworming/deworming_med_note" readonly="true()" type="string"/>
-      <bind nodeset="/data/safe_pregnancy_practices/safe_practices_tips" relevant="not(selected(../../gestational_age/register_method/lmp_method, 'method_none'))"/>
-      <bind nodeset="/data/safe_pregnancy_practices/safe_practices_tips/eat_more_note" readonly="true()" type="string" relevant=" /data/weeks_since_lmp  &lt;= 24"/>
-      <bind nodeset="/data/safe_pregnancy_practices/safe_practices_tips/talk_softly_note" readonly="true()" type="string" relevant=" /data/weeks_since_lmp  &gt;= 25 and  /data/weeks_since_lmp  &lt;= 30"/>
-      <bind nodeset="/data/safe_pregnancy_practices/safe_practices_tips/respond_move_note" readonly="true()" type="string" relevant=" /data/weeks_since_lmp  &gt;= 25 and  /data/weeks_since_lmp  &lt;= 30"/>
-      <bind nodeset="/data/safe_pregnancy_practices/safe_practices_tips/deliver_hf_note" readonly="true()" type="string" relevant=" /data/weeks_since_lmp  &gt;= 31"/>
-      <bind nodeset="/data/safe_pregnancy_practices/hiv_status/hiv_tested" type="string" required="true()"/>
-      <bind nodeset="/data/safe_pregnancy_practices/hiv_status/hiv_importance_note" readonly="true()" type="string"/>
-      <bind nodeset="/data/safe_pregnancy_practices/tetanus" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 0"/>
-      <bind nodeset="/data/safe_pregnancy_practices/tetanus/tt_imm_received" type="string" required="true()"/>
-      <bind nodeset="/data/safe_pregnancy_practices/tetanus/tt_note_1" readonly="true()" type="string"/>
-      <bind nodeset="/data/safe_pregnancy_practices/tetanus/tt_note_2" readonly="true()" type="string"/>
-      <bind nodeset="/data/safe_pregnancy_practices/request_services" type="string" calculate="if((selected(../tetanus/tt_imm_received, 'no') or&#10;selected(../hiv_status/hiv_tested, 'no') or&#10;selected(../deworming/deworming_med, 'no') or&#10;selected(../iron_folate/iron_folate_daily, 'no')), 'yes', 'no')"/>
-      <bind nodeset="/data/summary/r_submit_note" readonly="true()" type="string"/>
-      <bind nodeset="/data/summary/r_summary_details" readonly="true()" type="string"/>
-      <bind nodeset="/data/summary/r_patient_details" readonly="true()" type="string"/>
-      <bind nodeset="/data/summary/r_summary" readonly="true()" type="string"/>
-      <bind nodeset="/data/summary/r_pregnancy_details" readonly="true()" type="string" relevant="not(selected(../../gestational_age/register_method/lmp_method, 'method_none'))"/>
-      <bind nodeset="/data/summary/r_pregnancy_details_unknown" readonly="true()" type="string" relevant="selected(../../gestational_age/register_method/lmp_method, 'method_none')"/>
-      <bind nodeset="/data/summary/r_risk_factors" readonly="true()" type="string" relevant="../../risk_factors/r_risk_factor_present = 'yes'"/>
-      <bind nodeset="/data/summary/r_risk_first_pregnancy" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_history/first_pregnancy, 'yes')"/>
-      <bind nodeset="/data/summary/r_risk_previous_miscarriage" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_history/previous_miscarriage, 'yes')"/>
-      <bind nodeset="/data/summary/r_risk_previous_difficulties" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/secondary_condition, 'previous_difficulties')"/>
-      <bind nodeset="/data/summary/r_risk_more_than_4_children" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/secondary_condition, 'more_than_4_children')"/>
-      <bind nodeset="/data/summary/r_risk_last_baby_born_less_than_1_year_ago" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/secondary_condition, 'last_baby_born_less_than_1_year_ago')"/>
-      <bind nodeset="/data/summary/r_risk_heart_condition" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'heart_condition') or selected(../../risk_factors/risk_factors_present/secondary_condition, 'heart_condition')"/>
-      <bind nodeset="/data/summary/r_risk_asthma" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'asthma') or selected(../../risk_factors/risk_factors_present/secondary_condition, 'asthma')"/>
-      <bind nodeset="/data/summary/r_risk_high_blood_pressure" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'high_blood_pressure') or selected(../../risk_factors/risk_factors_present/secondary_condition, 'high_blood_pressure')"/>
-      <bind nodeset="/data/summary/r_risk_diabetes" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'diabetes') or selected(../../risk_factors/risk_factors_present/secondary_condition, 'diabetes')"/>
-      <bind nodeset="/data/summary/r_risk_additional" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/additional_risk_check, 'yes')"/>
-      <bind nodeset="/data/summary/r_danger_signs" readonly="true()" type="string" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')"/>
-      <bind nodeset="/data/summary/r_danger_sign_vaginal_bleeding" readonly="true()" type="string" relevant="selected(../../danger_signs/vaginal_bleeding, 'yes')"/>
-      <bind nodeset="/data/summary/r_danger_sign_fits" readonly="true()" type="string" relevant="selected(../../danger_signs/fits, 'yes')"/>
-      <bind nodeset="/data/summary/r_danger_sign_severe_abdominal_pain" readonly="true()" type="string" relevant="selected(../../danger_signs/severe_abdominal_pain, 'yes')"/>
-      <bind nodeset="/data/summary/r_danger_sign_severe_headache" readonly="true()" type="string" relevant="selected(../../danger_signs/severe_headache, 'yes')"/>
-      <bind nodeset="/data/summary/r_danger_sign_very_pale" readonly="true()" type="string" relevant="selected(../../danger_signs/very_pale, 'yes')"/>
-      <bind nodeset="/data/summary/r_danger_sign_fever" readonly="true()" type="string" relevant="selected(../../danger_signs/fever, 'yes')"/>
-      <bind nodeset="/data/summary/r_danger_sign_reduced_or_no_fetal_movements" readonly="true()" type="string" relevant="selected(../../danger_signs/reduced_or_no_fetal_movements, 'yes')"/>
-      <bind nodeset="/data/summary/r_danger_sign_breaking_water" readonly="true()" type="string" relevant="selected(../../danger_signs/breaking_water, 'yes')"/>
-      <bind nodeset="/data/summary/r_danger_sign_easily_tired" readonly="true()" type="string" relevant="selected(../../danger_signs/easily_tired, 'yes')"/>
-      <bind nodeset="/data/summary/r_danger_sign_face_hand_swelling" readonly="true()" type="string" relevant="selected(../../danger_signs/face_hand_swelling, 'yes')"/>
-      <bind nodeset="/data/summary/r_danger_sign_breathlessness" readonly="true()" type="string" relevant="selected(../../danger_signs/breathlessness, 'yes')"/>
-      <bind nodeset="/data/summary/r_space_1" readonly="true()" type="string"/>
-      <bind nodeset="/data/summary/r_referrals" readonly="true()" type="string"/>
-      <bind nodeset="/data/summary/r_refer_clinic_immediately" readonly="true()" type="string" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')"/>
-      <bind nodeset="/data/summary/r_refer_danger_sign" readonly="true()" type="string" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')"/>
-      <bind nodeset="/data/summary/r_routine_anc" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'yes')"/>
-      <bind nodeset="/data/summary/r_request_services" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/request_services, 'yes')"/>
-      <bind nodeset="/data/summary/r_request_service_tt" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/tetanus/tt_imm_received, 'no')"/>
-      <bind nodeset="/data/summary/r_request_service_hiv_test" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/hiv_status/hiv_tested, 'no')"/>
-      <bind nodeset="/data/summary/r_request_service_deworming" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/deworming/deworming_med, 'no')"/>
-      <bind nodeset="/data/summary/r_request_service_iron" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/iron_folate/iron_folate_daily, 'no')"/>
-      <bind nodeset="/data/summary/r_who_recommends" readonly="true()" type="string" relevant="selected(../../gestational_age/register_method/lmp_method, 'method_none') or selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'no')"/>
-      <bind nodeset="/data/summary/r_refer_hf_appropriate_time" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'no')"/>
-      <bind nodeset="/data/summary/r_refer_hf_immediately" readonly="true()" type="string" relevant="selected(../../gestational_age/register_method/lmp_method, 'method_none')"/>
-      <bind nodeset="/data/summary/r_space_2" readonly="true()" type="string"/>
-      <bind nodeset="/data/summary/check-" readonly="true()" type="string"/>
-      <bind nodeset="/data/summary/r_following_tasks" readonly="true()" type="string"/>
-      <bind nodeset="/data/summary/r_fup_danger_sign" readonly="true()" type="string" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')"/>
-      <bind nodeset="/data/summary/r_fup_hf_visit" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'yes')"/>
-      <bind nodeset="/data/summary/r_fup_pregnancy_visit" readonly="true()" type="string" relevant="not(selected(../../gestational_age/register_method/lmp_method, 'method_none')) and&#10;../next_visit_weeks &lt; 40 and&#10;../next_visit_weeks &gt; 0"/>
-      <bind nodeset="/data/summary/r_fup_pregnancy_visit_2_weeks" readonly="true()" type="string" relevant="selected(../../gestational_age/register_method/lmp_method, 'method_none')"/>
-      <bind nodeset="/data/summary/next_visit_weeks" type="string" calculate="round((if((decimal-date-time( /data/lmp_date_8601 ) + 12*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 12*7,&#10;if((decimal-date-time( /data/lmp_date_8601 ) + 20*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 20*7,&#10;if((decimal-date-time( /data/lmp_date_8601 ) + 26*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 26*7,&#10;if((decimal-date-time( /data/lmp_date_8601 ) + 30*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 30*7,&#10;if((decimal-date-time( /data/lmp_date_8601 ) + 34*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 34*7,&#10;if((decimal-date-time( /data/lmp_date_8601 ) + 36*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 36*7,&#10;if((decimal-date-time( /data/lmp_date_8601 ) + 38*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 38*7,&#10;if((decimal-date-time( /data/lmp_date_8601 ) + 40*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 40*7, 0&#10;)))))))) - decimal-date-time(today())) div 7, 0)"/>
-      <bind nodeset="/data/summary/edd_summary" type="string" calculate="format-date-time( /data/edd_8601 , &quot;%e %b, %Y&quot;)"/>
-      <bind nodeset="/data/summary/next_appointment_date" type="string" calculate="format-date-time( /data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date , &quot;%e %b, %Y&quot;)"/>
-      <bind nodeset="/data/summary/custom_translations/custom_woman_label_translator" type="string" calculate="&quot;woman&quot;"/>
-      <bind nodeset="/data/summary/custom_translations/custom_woman_label" type="string" calculate="jr:choice-name( /data/summary/custom_translations/custom_woman_label_translator ,' /data/summary/custom_translations/custom_woman_label_translator ')"/>
-      <bind nodeset="/data/summary/custom_translations/custom_woman_start_label_translator" type="string" calculate="&quot;woman-start&quot;"/>
-      <bind nodeset="/data/summary/custom_translations/custom_woman_start_label" type="string" calculate="jr:choice-name( /data/summary/custom_translations/custom_woman_start_label_translator ,' /data/summary/custom_translations/custom_woman_start_label_translator ')"/>
-      <bind nodeset="/data/data/__lmp_method" type="string" calculate=" /data/gestational_age/register_method/lmp_method "/>
-      <bind nodeset="/data/data/__no_lmp_registration_reason" type="string" calculate=" /data/gestational_age/method_none/no_info_pregnancy_reason "/>
-      <bind nodeset="/data/data/__lmp_date" type="string" calculate=" /data/lmp_date_8601 "/>
-      <bind nodeset="/data/data/__lmp_approx_weeks" type="string" calculate=" /data/gestational_age/method_approx/lmp_approx_weeks "/>
-      <bind nodeset="/data/data/__lmp_approx_months" type="string" calculate=" /data/gestational_age/method_approx/lmp_approx_months "/>
-      <bind nodeset="/data/data/__edd" type="string" calculate=" /data/edd_8601 "/>
-      <bind nodeset="/data/data/__num_previous_anc_hf_visits" type="string" calculate=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count "/>
-      <bind nodeset="/data/data/__previous_anc_hf_visit_dates" type="string" calculate="coalesce( /data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single , join(',',  /data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date ))"/>
-      <bind nodeset="/data/data/__next_anc_hf_visit_date_known" type="string" calculate=" /data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known "/>
-      <bind nodeset="/data/data/__next_anc_hf_visit_date" type="string" calculate=" /data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date "/>
-      <bind nodeset="/data/data/__has_risk_factors" type="string" calculate=" /data/risk_factors/r_risk_factor_present "/>
-      <bind nodeset="/data/data/__first_pregnancy" type="string" calculate=" /data/risk_factors/risk_factors_history/first_pregnancy "/>
-      <bind nodeset="/data/data/__previous_miscarriage" type="string" calculate=" /data/risk_factors/risk_factors_history/previous_miscarriage "/>
-      <bind nodeset="/data/data/__previous_difficulties" type="string" calculate="if(selected( /data/risk_factors/risk_factors_present/secondary_condition , 'previous_difficulties'), &quot;yes&quot;, &quot;no&quot;)"/>
-      <bind nodeset="/data/data/__more_than_4_children" type="string" calculate="if(selected( /data/risk_factors/risk_factors_present/secondary_condition , 'more_than_4_children'), &quot;yes&quot;, &quot;no&quot;)"/>
-      <bind nodeset="/data/data/__last_baby_born_less_than_1_year_ago" type="string" calculate="if(selected( /data/risk_factors/risk_factors_present/secondary_condition , 'last_baby_born_less_than_1_year_ago'), &quot;yes&quot;, &quot;no&quot;)"/>
-      <bind nodeset="/data/data/__heart_condition" type="string" calculate="if(selected( /data/risk_factors/risk_factors_present/primary_condition , 'heart_condition'), &quot;yes&quot;, if(selected( /data/risk_factors/risk_factors_present/secondary_condition , 'heart_condition'), &quot;yes&quot;, &quot;no&quot;))"/>
-      <bind nodeset="/data/data/__asthma" type="string" calculate="if(selected( /data/risk_factors/risk_factors_present/primary_condition , 'asthma'), &quot;yes&quot;, if(selected( /data/risk_factors/risk_factors_present/secondary_condition , 'asthma'), &quot;yes&quot;, &quot;no&quot;))"/>
-      <bind nodeset="/data/data/__high_blood_pressure" type="string" calculate="if(selected( /data/risk_factors/risk_factors_present/primary_condition , 'high_blood_pressure'), &quot;yes&quot;, if(selected( /data/risk_factors/risk_factors_present/secondary_condition , 'high_blood_pressure'), &quot;yes&quot;, &quot;no&quot;))"/>
-      <bind nodeset="/data/data/__diabetes" type="string" calculate="if(selected( /data/risk_factors/risk_factors_present/primary_condition , 'diabetes'), &quot;yes&quot;, if(selected( /data/risk_factors/risk_factors_present/secondary_condition , 'diabetes'), &quot;yes&quot;, &quot;no&quot;))"/>
-      <bind nodeset="/data/data/__additional_high_risk_condition_to_report" type="string" calculate=" /data/risk_factors/risk_factors_present/additional_risk_check "/>
-      <bind nodeset="/data/data/__additional_high_risk_condition" type="string" calculate=" /data/risk_factors/risk_factors_present/additional_risk "/>
-      <bind nodeset="/data/data/__has_danger_sign" type="string" calculate=" /data/danger_signs/r_danger_sign_present "/>
-      <bind nodeset="/data/data/__vaginal_bleeding" type="string" calculate=" /data/danger_signs/vaginal_bleeding "/>
-      <bind nodeset="/data/data/__fits" type="string" calculate=" /data/danger_signs/fits "/>
-      <bind nodeset="/data/data/__severe_abdominal_pain" type="string" calculate=" /data/danger_signs/severe_abdominal_pain "/>
-      <bind nodeset="/data/data/__severe_headache" type="string" calculate=" /data/danger_signs/severe_headache "/>
-      <bind nodeset="/data/data/__very_pale" type="string" calculate=" /data/danger_signs/very_pale "/>
-      <bind nodeset="/data/data/__fever" type="string" calculate=" /data/danger_signs/fever "/>
-      <bind nodeset="/data/data/__reduced_or_no_fetal_movements" type="string" calculate=" /data/danger_signs/reduced_or_no_fetal_movements "/>
-      <bind nodeset="/data/data/__breaking_water" type="string" calculate=" /data/danger_signs/breaking_water "/>
-      <bind nodeset="/data/data/__easily_tired" type="string" calculate=" /data/danger_signs/easily_tired "/>
-      <bind nodeset="/data/data/__face_hand_swelling" type="string" calculate=" /data/danger_signs/face_hand_swelling "/>
-      <bind nodeset="/data/data/__breathlessness" type="string" calculate=" /data/danger_signs/breathlessness "/>
-      <bind nodeset="/data/data/__uses_llin" type="string" calculate=" /data/safe_pregnancy_practices/malaria/uses_llin "/>
-      <bind nodeset="/data/data/__takes_iron_folate_daily" type="string" calculate=" /data/safe_pregnancy_practices/iron_folate/iron_folate_daily "/>
-      <bind nodeset="/data/data/__received_deworming_meds" type="string" calculate=" /data/safe_pregnancy_practices/deworming/deworming_med "/>
-      <bind nodeset="/data/data/__tested_for_hiv_in_past_3_months" type="string" calculate=" /data/safe_pregnancy_practices/hiv_status/hiv_tested "/>
-      <bind nodeset="/data/data/__received_tetanus_toxoid_this_pregnancy" type="string" calculate=" /data/safe_pregnancy_practices/tetanus/tt_imm_received "/>
-      <bind nodeset="/data/data/meta/__patient_uuid" type="string" calculate="../../../inputs/contact/_id"/>
-      <bind nodeset="/data/data/meta/__patient_id" type="string" calculate="../../../inputs/contact/patient_id"/>
-      <bind nodeset="/data/data/meta/__household_uuid" type="string" calculate="../../../inputs/contact/parent/_id"/>
-      <bind nodeset="/data/data/meta/__source" type="string" calculate="../../../inputs/source"/>
-      <bind nodeset="/data/data/meta/__source_id" type="string" calculate="../../../inputs/source_id"/>
-      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+      <bind nodeset="/data/inputs" relevant="./source = 'user'"></bind>
+      <bind nodeset="/data/inputs/source" type="string"></bind>
+      <bind nodeset="/data/inputs/source_id" type="string"></bind>
+      <bind nodeset="/data/inputs/user/contact_id" type="string"></bind>
+      <bind nodeset="/data/inputs/user/parent/_id" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/_id" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/name" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/short_name" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/patient_id" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/date_of_birth" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/sex" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/parent/_id" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/parent/parent/contact/chw_name" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/parent/parent/contact/phone" type="string"></bind>
+      <bind nodeset="/data/patient_age_in_years" type="string" calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )"></bind>
+      <bind nodeset="/data/patient_uuid" type="string" calculate="../inputs/contact/_id"></bind>
+      <bind nodeset="/data/patient_id" type="string" calculate="../inputs/contact/patient_id"></bind>
+      <bind nodeset="/data/patient_name" type="string" calculate="../inputs/contact/name"></bind>
+      <bind nodeset="/data/patient_short_name" type="string" calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_label)"></bind>
+      <bind nodeset="/data/patient_short_name_start" type="string" calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_start_label)"></bind>
+      <bind nodeset="/data/lmp_date_8601" type="string" calculate="../gestational_age/g_lmp_date_8601"></bind>
+      <bind nodeset="/data/edd_8601" type="string" calculate="../gestational_age/g_edd_8601"></bind>
+      <bind nodeset="/data/days_since_lmp" type="string" relevant="../lmp_date_8601 != ''" calculate="floor(decimal-date-time(today()) - decimal-date-time(../lmp_date_8601))"></bind>
+      <bind nodeset="/data/weeks_since_lmp" type="string" relevant="../lmp_date_8601 != ''" calculate="round(../days_since_lmp div 7, 2)"></bind>
+      <bind nodeset="/data/weeks_since_lmp_rounded" type="string" relevant="../lmp_date_8601 != ''" calculate="floor(../days_since_lmp div 7)"></bind>
+      <bind nodeset="/data/lmp_method_approx" type="string" calculate="if(selected(../gestational_age/register_method/lmp_method, 'method_approx'), 'yes', 'no')"></bind>
+      <bind nodeset="/data/hiv_status_known" type="string" calculate="../safe_pregnancy_practices/hiv_status/hiv_tested"></bind>
+      <bind nodeset="/data/deworming_med_received" type="string" calculate="../safe_pregnancy_practices/deworming/deworming_med"></bind>
+      <bind nodeset="/data/tt_received" type="string" calculate="../safe_pregnancy_practices/tetanus/tt_imm_received"></bind>
+      <bind nodeset="/data/t_pregnancy_follow_up_date" type="string" calculate="../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date"></bind>
+      <bind nodeset="/data/t_pregnancy_follow_up" type="string" calculate="../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known"></bind>
+      <bind nodeset="/data/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(decimal-date-time(today()) + 3)"></bind>
+      <bind nodeset="/data/t_danger_signs_referral_follow_up" type="string" calculate="../danger_signs/r_danger_sign_present"></bind>
+      <bind nodeset="/data/gestational_age/register_method/register_note" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/gestational_age/register_method/lmp_method" type="string" required="true()"></bind>
+      <bind nodeset="/data/gestational_age/method_lmp" relevant="selected(../register_method/lmp_method, 'method_lmp')"></bind>
+      <bind nodeset="/data/gestational_age/method_lmp/u_lmp_date" type="date" required="true()" constraint=". &lt;= date-time(decimal-date-time(today()) - (1 * 30)) and&#10;. &gt;= date-time(decimal-date-time(today()) - (9 * 30))" jr:constraintMsg="jr:itext('/data/gestational_age/method_lmp/u_lmp_date:jr:constraintMsg')"></bind>
+      <bind nodeset="/data/gestational_age/method_approx" relevant="selected(../register_method/lmp_method, 'method_approx')"></bind>
+      <bind nodeset="/data/gestational_age/method_approx/lmp_approx" type="string" required="true()"></bind>
+      <bind nodeset="/data/gestational_age/method_approx/lmp_approx_weeks" type="int" required="true()" relevant="selected(../lmp_approx, 'approx_weeks')" constraint=". &gt;= 4 and . &lt;= 40" jr:constraintMsg="jr:itext('/data/gestational_age/method_approx/lmp_approx_weeks:jr:constraintMsg')"></bind>
+      <bind nodeset="/data/gestational_age/method_approx/lmp_approx_months" type="int" required="true()" relevant="selected(../lmp_approx, 'approx_months')" constraint=". &gt;= 1 and . &lt;= 9" jr:constraintMsg="jr:itext('/data/gestational_age/method_approx/lmp_approx_months:jr:constraintMsg')"></bind>
+      <bind nodeset="/data/gestational_age/method_edd" relevant="selected(../register_method/lmp_method, 'method_edd')"></bind>
+      <bind nodeset="/data/gestational_age/method_edd/u_edd" type="date" required="true()" constraint=". &gt;= today() and&#10;. &lt;= date-time(decimal-date-time(today()) + (9 * 30))" jr:constraintMsg="jr:itext('/data/gestational_age/method_edd/u_edd:jr:constraintMsg')"></bind>
+      <bind nodeset="/data/gestational_age/method_lmp_summary" relevant="not(selected(../register_method/lmp_method, 'method_none'))"></bind>
+      <bind nodeset="/data/gestational_age/method_lmp_summary/lmp_check_note" readonly="true()" type="string" relevant="selected(../../register_method/lmp_method, 'method_lmp')"></bind>
+      <bind nodeset="/data/gestational_age/method_lmp_summary/lmp_approx_weeks_check_note" readonly="true()" type="string" relevant="selected(../../method_approx/lmp_approx, 'approx_weeks')"></bind>
+      <bind nodeset="/data/gestational_age/method_lmp_summary/lmp_approx_months_check_note" readonly="true()" type="string" relevant="selected(../../method_approx/lmp_approx, 'approx_months')"></bind>
+      <bind nodeset="/data/gestational_age/method_lmp_summary/u_edd_note" readonly="true()" type="string" relevant="selected(../../register_method/lmp_method, 'method_edd')"></bind>
+      <bind nodeset="/data/gestational_age/method_lmp_summary/edd_note" readonly="true()" type="string" relevant="selected(../../register_method/lmp_method, 'method_lmp')&#10;or selected(../../method_approx/lmp_approx, 'approx_weeks')&#10;or selected(../../method_approx/lmp_approx, 'approx_months')"></bind>
+      <bind nodeset="/data/gestational_age/method_lmp_summary/lmp_note" readonly="true()" type="string" relevant="selected(../../register_method/lmp_method, 'method_edd')"></bind>
+      <bind nodeset="/data/gestational_age/method_lmp_summary/edd_check_note" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/gestational_age/g_lmp_date_8601" type="string" calculate="format-date-time(&#10;if(selected(../register_method/lmp_method, 'method_lmp'), ../method_lmp/u_lmp_date,&#10;if(selected(../method_approx/lmp_approx, 'approx_weeks'), date-time(decimal-date-time(today()) - (../method_approx/lmp_approx_weeks * 7)), &#10;if(selected(../method_approx/lmp_approx, 'approx_months'), date-time(decimal-date-time(today()) - round(../method_approx/lmp_approx_months * 30.5)),&#10;if(selected(../register_method/lmp_method, 'method_edd'), date-time(decimal-date-time(../method_edd/u_edd) - 280), '')&#10;))), &quot;%Y-%m-%d&quot;)"></bind>
+      <bind nodeset="/data/gestational_age/g_lmp_date" type="string" calculate="format-date-time(../g_lmp_date_8601, &quot;%e %b, %Y&quot;)"></bind>
+      <bind nodeset="/data/gestational_age/g_edd_8601" type="string" calculate="format-date-time(date-time(decimal-date-time(../g_lmp_date_8601)+280),&quot;%Y-%m-%d&quot;)"></bind>
+      <bind nodeset="/data/gestational_age/g_edd" type="string" calculate="format-date-time(../g_edd_8601,&quot;%e %b, %Y&quot;)"></bind>
+      <bind nodeset="/data/gestational_age/method_none" relevant="selected(../register_method/lmp_method, 'method_none')"></bind>
+      <bind nodeset="/data/gestational_age/method_none/no_info_notice" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/gestational_age/method_none/no_info_pregnancy_reason" type="string" required="true()"></bind>
+      <bind nodeset="/data/gestational_age/method_none/pregnancy_confirm_note" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/anc_visits_hf" relevant="not(selected(../gestational_age/register_method/lmp_method, 'method_none'))"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count" type="int" required="true()" constraint=".&gt;= 0 and . &lt;= 9" jr:constraintMsg="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count:jr:constraintMsg')"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_single" readonly="true()" type="string" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  = 1"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_multiple" readonly="true()" type="string" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_ask_single" type="string" required="true()" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  = 1"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single" type="date" required="true()" relevant="selected(../visited_date_ask_single, 'yes')" constraint=". &lt;= today() and . &gt;=  /data/gestational_age/g_lmp_date_8601 " jr:constraintMsg="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single:jr:constraintMsg')"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates_multiple_note" readonly="true()" type="string" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates_multiple_note_section" readonly="true()" type="string" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date_ask_multiple" type="string" required="true()" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date" type="date" required="true()" relevant="selected(../visited_date_ask_multiple, 'yes')" constraint=". &lt;= today() and . &gt;=  /data/gestational_age/g_lmp_date_8601 " jr:constraintMsg="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date:jr:constraintMsg')"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known" type="string" required="true()"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date" type="date" required="true()" relevant="selected(../appointment_date_known, 'yes')" constraint="(. &gt;= today()) and&#10;(decimal-date-time(.) &lt;= decimal-date-time(today()) + 30)" jr:constraintMsg="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date:jr:constraintMsg')"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note" relevant="selected(../anc_next_visit_date/appointment_date_known, 'no')"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/who_recommends_note" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/prenancy_age_note" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/refer_note" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/risk_factors/risk_factors_history/first_pregnancy" type="string" required="true()"></bind>
+      <bind nodeset="/data/risk_factors/risk_factors_history/previous_miscarriage" type="string" required="true()" relevant="selected(../first_pregnancy, 'no')"></bind>
+      <bind nodeset="/data/risk_factors/risk_factors_present/primary_condition" type="string" required="true()" relevant="selected(../../risk_factors_history/first_pregnancy, 'yes')" constraint="not(selected(.,'none')) or count-selected(.) &lt; 2" jr:constraintMsg="jr:itext('/data/risk_factors/risk_factors_present/primary_condition:jr:constraintMsg')"></bind>
+      <bind nodeset="/data/risk_factors/risk_factors_present/secondary_condition" type="string" required="true()" relevant="selected(../../risk_factors_history/first_pregnancy, 'no')" constraint="not(selected(.,'none')) or count-selected(.) &lt; 2" jr:constraintMsg="jr:itext('/data/risk_factors/risk_factors_present/secondary_condition:jr:constraintMsg')"></bind>
+      <bind nodeset="/data/risk_factors/risk_factors_present/additional_risk_check" type="string" required="true()"></bind>
+      <bind nodeset="/data/risk_factors/risk_factors_present/additional_risk" type="string" required="true()" relevant="selected(../additional_risk_check, 'yes')" constraint="string-length(.) &lt;= 100" jr:constraintMsg="jr:itext('/data/risk_factors/risk_factors_present/additional_risk:jr:constraintMsg')"></bind>
+      <bind nodeset="/data/risk_factors/r_risk_factor_present" type="string" calculate="if(selected(../risk_factors_history/first_pregnancy, 'yes') or&#10;selected(../risk_factors_history/previous_miscarriage, 'yes') or &#10;not(selected(../risk_factors_present/primary_condition, 'none')) and ../risk_factors_present/primary_condition != '' or&#10;not(selected(../risk_factors_present/secondary_condition, 'none')) and ../risk_factors_present/secondary_condition != '' or&#10;selected(../risk_factors_present/additional_risk_check, 'yes')&#10;, 'yes', 'no')"></bind>
+      <bind nodeset="/data/danger_signs/danger_signs_note" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/danger_signs/danger_signs_question_note" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/danger_signs/vaginal_bleeding" type="string" required="true()"></bind>
+      <bind nodeset="/data/danger_signs/fits" type="string" required="true()"></bind>
+      <bind nodeset="/data/danger_signs/severe_abdominal_pain" type="string" required="true()"></bind>
+      <bind nodeset="/data/danger_signs/severe_headache" type="string" required="true()"></bind>
+      <bind nodeset="/data/danger_signs/very_pale" type="string" required="true()"></bind>
+      <bind nodeset="/data/danger_signs/fever" type="string" required="true()"></bind>
+      <bind nodeset="/data/danger_signs/reduced_or_no_fetal_movements" type="string" required="true()"></bind>
+      <bind nodeset="/data/danger_signs/breaking_water" type="string" required="true()"></bind>
+      <bind nodeset="/data/danger_signs/easily_tired" type="string" required="true()"></bind>
+      <bind nodeset="/data/danger_signs/face_hand_swelling" type="string" required="true()"></bind>
+      <bind nodeset="/data/danger_signs/breathlessness" type="string" required="true()"></bind>
+      <bind nodeset="/data/danger_signs/r_danger_sign_present" type="string" calculate="if(selected(../vaginal_bleeding, 'yes')&#10;or selected(../fits, 'yes')&#10;or selected(../severe_abdominal_pain, 'yes')&#10;or selected(../severe_headache, 'yes')&#10;or selected(../very_pale, 'yes')&#10;or selected(../fever, 'yes')&#10;or selected(../reduced_or_no_fetal_movements, 'yes')&#10;or selected(../breaking_water, 'yes')&#10;or selected(../easily_tired, 'yes')&#10;or selected(../face_hand_swelling, 'yes')&#10;or selected(../breathlessness, 'yes'), &#10;'yes',&#10;if(selected(../vaginal_bleeding, 'no')&#10;and selected(../fits, 'no')&#10;and selected(../severe_abdominal_pain, 'no')&#10;and selected(../severe_headache, 'no')&#10;and selected(../very_pale, 'no')&#10;and selected(../fever, 'no')&#10;and selected(../reduced_or_no_fetal_movements, 'no')&#10;and selected(../breaking_water, 'no')&#10;and selected(../easily_tired, 'no')&#10;and selected(../face_hand_swelling, 'no')&#10;and selected(../breathlessness, 'no'), 'no', ''))"></bind>
+      <bind nodeset="/data/danger_signs/congratulate_no_ds_note" readonly="true()" type="string" relevant="../r_danger_sign_present = 'no'"></bind>
+      <bind nodeset="/data/danger_signs/refer_patient_note_1" readonly="true()" type="string" relevant="../r_danger_sign_present = 'yes'"></bind>
+      <bind nodeset="/data/danger_signs/refer_patient_note_2" readonly="true()" type="string" relevant="../r_danger_sign_present = 'yes'"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/malaria/uses_llin" type="string" required="true()"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/malaria/llin_advice_note" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/malaria/malaria_prophylaxis_note" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/iron_folate/iron_folate_daily" type="string" required="true()"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/iron_folate/iron_folate_note" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/deworming" relevant=" /data/weeks_since_lmp  &gt; 12"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/deworming/deworming_med" type="string" required="true()"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/deworming/deworming_med_note" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/safe_practices_tips" relevant="not(selected(../../gestational_age/register_method/lmp_method, 'method_none'))"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/safe_practices_tips/eat_more_note" readonly="true()" type="string" relevant=" /data/weeks_since_lmp  &lt;= 24"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/safe_practices_tips/talk_softly_note" readonly="true()" type="string" relevant=" /data/weeks_since_lmp  &gt;= 25 and  /data/weeks_since_lmp  &lt;= 30"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/safe_practices_tips/respond_move_note" readonly="true()" type="string" relevant=" /data/weeks_since_lmp  &gt;= 25 and  /data/weeks_since_lmp  &lt;= 30"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/safe_practices_tips/deliver_hf_note" readonly="true()" type="string" relevant=" /data/weeks_since_lmp  &gt;= 31"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/hiv_status/hiv_tested" type="string" required="true()"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/hiv_status/hiv_importance_note" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/tetanus" relevant=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 0"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/tetanus/tt_imm_received" type="string" required="true()"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/tetanus/tt_note_1" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/tetanus/tt_note_2" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/safe_pregnancy_practices/request_services" type="string" calculate="if((selected(../tetanus/tt_imm_received, 'no') or&#10;selected(../hiv_status/hiv_tested, 'no') or&#10;selected(../deworming/deworming_med, 'no') or&#10;selected(../iron_folate/iron_folate_daily, 'no')), 'yes', 'no')"></bind>
+      <bind nodeset="/data/summary/r_submit_note" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/summary/r_summary_details" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/summary/r_patient_details" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/summary/r_summary" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/summary/r_pregnancy_details" readonly="true()" type="string" relevant="not(selected(../../gestational_age/register_method/lmp_method, 'method_none'))"></bind>
+      <bind nodeset="/data/summary/r_pregnancy_details_unknown" readonly="true()" type="string" relevant="selected(../../gestational_age/register_method/lmp_method, 'method_none')"></bind>
+      <bind nodeset="/data/summary/r_risk_factors" readonly="true()" type="string" relevant="../../risk_factors/r_risk_factor_present = 'yes'"></bind>
+      <bind nodeset="/data/summary/r_risk_first_pregnancy" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_history/first_pregnancy, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_risk_previous_miscarriage" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_history/previous_miscarriage, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_risk_previous_difficulties" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/secondary_condition, 'previous_difficulties')"></bind>
+      <bind nodeset="/data/summary/r_risk_more_than_4_children" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/secondary_condition, 'more_than_4_children')"></bind>
+      <bind nodeset="/data/summary/r_risk_last_baby_born_less_than_1_year_ago" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/secondary_condition, 'last_baby_born_less_than_1_year_ago')"></bind>
+      <bind nodeset="/data/summary/r_risk_heart_condition" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'heart_condition') or selected(../../risk_factors/risk_factors_present/secondary_condition, 'heart_condition')"></bind>
+      <bind nodeset="/data/summary/r_risk_asthma" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'asthma') or selected(../../risk_factors/risk_factors_present/secondary_condition, 'asthma')"></bind>
+      <bind nodeset="/data/summary/r_risk_high_blood_pressure" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'high_blood_pressure') or selected(../../risk_factors/risk_factors_present/secondary_condition, 'high_blood_pressure')"></bind>
+      <bind nodeset="/data/summary/r_risk_diabetes" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'diabetes') or selected(../../risk_factors/risk_factors_present/secondary_condition, 'diabetes')"></bind>
+      <bind nodeset="/data/summary/r_risk_additional" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/additional_risk_check, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_danger_signs" readonly="true()" type="string" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_danger_sign_vaginal_bleeding" readonly="true()" type="string" relevant="selected(../../danger_signs/vaginal_bleeding, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_danger_sign_fits" readonly="true()" type="string" relevant="selected(../../danger_signs/fits, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_danger_sign_severe_abdominal_pain" readonly="true()" type="string" relevant="selected(../../danger_signs/severe_abdominal_pain, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_danger_sign_severe_headache" readonly="true()" type="string" relevant="selected(../../danger_signs/severe_headache, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_danger_sign_very_pale" readonly="true()" type="string" relevant="selected(../../danger_signs/very_pale, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_danger_sign_fever" readonly="true()" type="string" relevant="selected(../../danger_signs/fever, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_danger_sign_reduced_or_no_fetal_movements" readonly="true()" type="string" relevant="selected(../../danger_signs/reduced_or_no_fetal_movements, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_danger_sign_breaking_water" readonly="true()" type="string" relevant="selected(../../danger_signs/breaking_water, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_danger_sign_easily_tired" readonly="true()" type="string" relevant="selected(../../danger_signs/easily_tired, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_danger_sign_face_hand_swelling" readonly="true()" type="string" relevant="selected(../../danger_signs/face_hand_swelling, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_danger_sign_breathlessness" readonly="true()" type="string" relevant="selected(../../danger_signs/breathlessness, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_space_1" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/summary/r_referrals" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/summary/r_refer_clinic_immediately" readonly="true()" type="string" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_refer_danger_sign" readonly="true()" type="string" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_routine_anc" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_request_services" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/request_services, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_request_service_tt" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/tetanus/tt_imm_received, 'no')"></bind>
+      <bind nodeset="/data/summary/r_request_service_hiv_test" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/hiv_status/hiv_tested, 'no')"></bind>
+      <bind nodeset="/data/summary/r_request_service_deworming" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/deworming/deworming_med, 'no')"></bind>
+      <bind nodeset="/data/summary/r_request_service_iron" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/iron_folate/iron_folate_daily, 'no')"></bind>
+      <bind nodeset="/data/summary/r_who_recommends" readonly="true()" type="string" relevant="selected(../../gestational_age/register_method/lmp_method, 'method_none') or selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'no')"></bind>
+      <bind nodeset="/data/summary/r_refer_hf_appropriate_time" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'no')"></bind>
+      <bind nodeset="/data/summary/r_refer_hf_immediately" readonly="true()" type="string" relevant="selected(../../gestational_age/register_method/lmp_method, 'method_none')"></bind>
+      <bind nodeset="/data/summary/r_space_2" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/summary/check-" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/summary/r_following_tasks" readonly="true()" type="string"></bind>
+      <bind nodeset="/data/summary/r_fup_danger_sign" readonly="true()" type="string" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_fup_hf_visit" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'yes')"></bind>
+      <bind nodeset="/data/summary/r_fup_pregnancy_visit" readonly="true()" type="string" relevant="not(selected(../../gestational_age/register_method/lmp_method, 'method_none')) and&#10;../next_visit_weeks &lt; 40 and&#10;../next_visit_weeks &gt; 0"></bind>
+      <bind nodeset="/data/summary/r_fup_pregnancy_visit_2_weeks" readonly="true()" type="string" relevant="selected(../../gestational_age/register_method/lmp_method, 'method_none')"></bind>
+      <bind nodeset="/data/summary/next_visit_weeks" type="string" calculate="round((if((decimal-date-time( /data/lmp_date_8601 ) + 12*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 12*7,&#10;if((decimal-date-time( /data/lmp_date_8601 ) + 20*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 20*7,&#10;if((decimal-date-time( /data/lmp_date_8601 ) + 26*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 26*7,&#10;if((decimal-date-time( /data/lmp_date_8601 ) + 30*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 30*7,&#10;if((decimal-date-time( /data/lmp_date_8601 ) + 34*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 34*7,&#10;if((decimal-date-time( /data/lmp_date_8601 ) + 36*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 36*7,&#10;if((decimal-date-time( /data/lmp_date_8601 ) + 38*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 38*7,&#10;if((decimal-date-time( /data/lmp_date_8601 ) + 40*7) &gt; decimal-date-time(today()), decimal-date-time( /data/lmp_date_8601 ) + 40*7, 0&#10;)))))))) - decimal-date-time(today())) div 7, 0)"></bind>
+      <bind nodeset="/data/summary/edd_summary" type="string" calculate="format-date-time( /data/edd_8601 , &quot;%e %b, %Y&quot;)"></bind>
+      <bind nodeset="/data/summary/next_appointment_date" type="string" calculate="format-date-time( /data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date , &quot;%e %b, %Y&quot;)"></bind>
+      <bind nodeset="/data/summary/custom_translations/custom_woman_label_translator" type="string" calculate="&quot;woman&quot;"></bind>
+      <bind nodeset="/data/summary/custom_translations/custom_woman_label" type="string" calculate="jr:choice-name( /data/summary/custom_translations/custom_woman_label_translator ,' /data/summary/custom_translations/custom_woman_label_translator ')"></bind>
+      <bind nodeset="/data/summary/custom_translations/custom_woman_start_label_translator" type="string" calculate="&quot;woman-start&quot;"></bind>
+      <bind nodeset="/data/summary/custom_translations/custom_woman_start_label" type="string" calculate="jr:choice-name( /data/summary/custom_translations/custom_woman_start_label_translator ,' /data/summary/custom_translations/custom_woman_start_label_translator ')"></bind>
+      <bind nodeset="/data/data/__lmp_method" type="string" calculate=" /data/gestational_age/register_method/lmp_method "></bind>
+      <bind nodeset="/data/data/__no_lmp_registration_reason" type="string" calculate=" /data/gestational_age/method_none/no_info_pregnancy_reason "></bind>
+      <bind nodeset="/data/data/__lmp_date" type="string" calculate=" /data/lmp_date_8601 "></bind>
+      <bind nodeset="/data/data/__lmp_approx_weeks" type="string" calculate=" /data/gestational_age/method_approx/lmp_approx_weeks "></bind>
+      <bind nodeset="/data/data/__lmp_approx_months" type="string" calculate=" /data/gestational_age/method_approx/lmp_approx_months "></bind>
+      <bind nodeset="/data/data/__edd" type="string" calculate=" /data/edd_8601 "></bind>
+      <bind nodeset="/data/data/__num_previous_anc_hf_visits" type="string" calculate=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count "></bind>
+      <bind nodeset="/data/data/__previous_anc_hf_visit_dates" type="string" calculate="coalesce( /data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single , join(',',  /data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date ))"></bind>
+      <bind nodeset="/data/data/__next_anc_hf_visit_date_known" type="string" calculate=" /data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known "></bind>
+      <bind nodeset="/data/data/__next_anc_hf_visit_date" type="string" calculate=" /data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date "></bind>
+      <bind nodeset="/data/data/__has_risk_factors" type="string" calculate=" /data/risk_factors/r_risk_factor_present "></bind>
+      <bind nodeset="/data/data/__first_pregnancy" type="string" calculate=" /data/risk_factors/risk_factors_history/first_pregnancy "></bind>
+      <bind nodeset="/data/data/__previous_miscarriage" type="string" calculate=" /data/risk_factors/risk_factors_history/previous_miscarriage "></bind>
+      <bind nodeset="/data/data/__previous_difficulties" type="string" calculate="if(selected( /data/risk_factors/risk_factors_present/secondary_condition , 'previous_difficulties'), &quot;yes&quot;, &quot;no&quot;)"></bind>
+      <bind nodeset="/data/data/__more_than_4_children" type="string" calculate="if(selected( /data/risk_factors/risk_factors_present/secondary_condition , 'more_than_4_children'), &quot;yes&quot;, &quot;no&quot;)"></bind>
+      <bind nodeset="/data/data/__last_baby_born_less_than_1_year_ago" type="string" calculate="if(selected( /data/risk_factors/risk_factors_present/secondary_condition , 'last_baby_born_less_than_1_year_ago'), &quot;yes&quot;, &quot;no&quot;)"></bind>
+      <bind nodeset="/data/data/__heart_condition" type="string" calculate="if(selected( /data/risk_factors/risk_factors_present/primary_condition , 'heart_condition'), &quot;yes&quot;, if(selected( /data/risk_factors/risk_factors_present/secondary_condition , 'heart_condition'), &quot;yes&quot;, &quot;no&quot;))"></bind>
+      <bind nodeset="/data/data/__asthma" type="string" calculate="if(selected( /data/risk_factors/risk_factors_present/primary_condition , 'asthma'), &quot;yes&quot;, if(selected( /data/risk_factors/risk_factors_present/secondary_condition , 'asthma'), &quot;yes&quot;, &quot;no&quot;))"></bind>
+      <bind nodeset="/data/data/__high_blood_pressure" type="string" calculate="if(selected( /data/risk_factors/risk_factors_present/primary_condition , 'high_blood_pressure'), &quot;yes&quot;, if(selected( /data/risk_factors/risk_factors_present/secondary_condition , 'high_blood_pressure'), &quot;yes&quot;, &quot;no&quot;))"></bind>
+      <bind nodeset="/data/data/__diabetes" type="string" calculate="if(selected( /data/risk_factors/risk_factors_present/primary_condition , 'diabetes'), &quot;yes&quot;, if(selected( /data/risk_factors/risk_factors_present/secondary_condition , 'diabetes'), &quot;yes&quot;, &quot;no&quot;))"></bind>
+      <bind nodeset="/data/data/__additional_high_risk_condition_to_report" type="string" calculate=" /data/risk_factors/risk_factors_present/additional_risk_check "></bind>
+      <bind nodeset="/data/data/__additional_high_risk_condition" type="string" calculate=" /data/risk_factors/risk_factors_present/additional_risk "></bind>
+      <bind nodeset="/data/data/__has_danger_sign" type="string" calculate=" /data/danger_signs/r_danger_sign_present "></bind>
+      <bind nodeset="/data/data/__vaginal_bleeding" type="string" calculate=" /data/danger_signs/vaginal_bleeding "></bind>
+      <bind nodeset="/data/data/__fits" type="string" calculate=" /data/danger_signs/fits "></bind>
+      <bind nodeset="/data/data/__severe_abdominal_pain" type="string" calculate=" /data/danger_signs/severe_abdominal_pain "></bind>
+      <bind nodeset="/data/data/__severe_headache" type="string" calculate=" /data/danger_signs/severe_headache "></bind>
+      <bind nodeset="/data/data/__very_pale" type="string" calculate=" /data/danger_signs/very_pale "></bind>
+      <bind nodeset="/data/data/__fever" type="string" calculate=" /data/danger_signs/fever "></bind>
+      <bind nodeset="/data/data/__reduced_or_no_fetal_movements" type="string" calculate=" /data/danger_signs/reduced_or_no_fetal_movements "></bind>
+      <bind nodeset="/data/data/__breaking_water" type="string" calculate=" /data/danger_signs/breaking_water "></bind>
+      <bind nodeset="/data/data/__easily_tired" type="string" calculate=" /data/danger_signs/easily_tired "></bind>
+      <bind nodeset="/data/data/__face_hand_swelling" type="string" calculate=" /data/danger_signs/face_hand_swelling "></bind>
+      <bind nodeset="/data/data/__breathlessness" type="string" calculate=" /data/danger_signs/breathlessness "></bind>
+      <bind nodeset="/data/data/__uses_llin" type="string" calculate=" /data/safe_pregnancy_practices/malaria/uses_llin "></bind>
+      <bind nodeset="/data/data/__takes_iron_folate_daily" type="string" calculate=" /data/safe_pregnancy_practices/iron_folate/iron_folate_daily "></bind>
+      <bind nodeset="/data/data/__received_deworming_meds" type="string" calculate=" /data/safe_pregnancy_practices/deworming/deworming_med "></bind>
+      <bind nodeset="/data/data/__tested_for_hiv_in_past_3_months" type="string" calculate=" /data/safe_pregnancy_practices/hiv_status/hiv_tested "></bind>
+      <bind nodeset="/data/data/__received_tetanus_toxoid_this_pregnancy" type="string" calculate=" /data/safe_pregnancy_practices/tetanus/tt_imm_received "></bind>
+      <bind nodeset="/data/data/meta/__patient_uuid" type="string" calculate="../../../inputs/contact/_id"></bind>
+      <bind nodeset="/data/data/meta/__patient_id" type="string" calculate="../../../inputs/contact/patient_id"></bind>
+      <bind nodeset="/data/data/meta/__household_uuid" type="string" calculate="../../../inputs/contact/parent/_id"></bind>
+      <bind nodeset="/data/data/meta/__source" type="string" calculate="../../../inputs/source"></bind>
+      <bind nodeset="/data/data/meta/__source_id" type="string" calculate="../../../inputs/source_id"></bind>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"></bind>
     </model>
   </h:head>
   <h:body class="pages">
     <group appearance="field-list" ref="/data/inputs">
-      <label ref="jr:itext('/data/inputs:label')"/>
+      <label ref="jr:itext('/data/inputs:label')"></label>
       <group ref="/data/inputs/user">
-        <label ref="jr:itext('/data/inputs/user:label')"/>
+        <label ref="jr:itext('/data/inputs/user:label')"></label>
         <input ref="/data/inputs/user/contact_id" appearance="select-contact type-person">
-          <label ref="jr:itext('/data/inputs/user/contact_id:label')"/>
+          <label ref="jr:itext('/data/inputs/user/contact_id:label')"></label>
         </input>
         <group ref="/data/inputs/user/parent">
-          <label ref="jr:itext('/data/inputs/user/parent:label')"/>
+          <label ref="jr:itext('/data/inputs/user/parent:label')"></label>
         </group>
       </group>
       <group ref="/data/inputs/contact">
-        <label ref="jr:itext('/data/inputs/contact:label')"/>
+        <label ref="jr:itext('/data/inputs/contact:label')"></label>
         <input ref="/data/inputs/contact/_id" appearance="select-contact type-person">
-          <label ref="jr:itext('/data/inputs/contact/_id:label')"/>
+          <label ref="jr:itext('/data/inputs/contact/_id:label')"></label>
         </input>
         <group ref="/data/inputs/contact/parent">
-          <label ref="jr:itext('/data/inputs/contact/parent:label')"/>
+          <label ref="jr:itext('/data/inputs/contact/parent:label')"></label>
           <group ref="/data/inputs/contact/parent/parent">
-            <label ref="jr:itext('/data/inputs/contact/parent/parent:label')"/>
+            <label ref="jr:itext('/data/inputs/contact/parent/parent:label')"></label>
             <group ref="/data/inputs/contact/parent/parent/contact">
-              <label ref="jr:itext('/data/inputs/contact/parent/parent/contact:label')"/>
+              <label ref="jr:itext('/data/inputs/contact/parent/parent/contact:label')"></label>
             </group>
           </group>
         </group>
       </group>
     </group>
     <group ref="/data/gestational_age">
-      <label ref="jr:itext('/data/gestational_age:label')"/>
+      <label ref="jr:itext('/data/gestational_age:label')"></label>
       <group appearance="field-list" ref="/data/gestational_age/register_method">
-        <label ref="jr:itext('/data/gestational_age/register_method:label')"/>
+        <label ref="jr:itext('/data/gestational_age/register_method:label')"></label>
         <input ref="/data/gestational_age/register_method/register_note">
-          <label ref="jr:itext('/data/gestational_age/register_method/register_note:label')"/>
+          <label ref="jr:itext('/data/gestational_age/register_method/register_note:label')"></label>
         </input>
         <select1 ref="/data/gestational_age/register_method/lmp_method">
-          <label ref="jr:itext('/data/gestational_age/register_method/lmp_method:label')"/>
-          <hint ref="jr:itext('/data/gestational_age/register_method/lmp_method:hint')"/>
-          <itemset nodeset="instance('lmp_methods')/root/item">
-            <value ref="name"/>
-            <label ref="jr:itext(itextId)"/>
-          </itemset>
-        </select1>
+          <label ref="jr:itext('/data/gestational_age/register_method/lmp_method:label')"></label>
+          <hint ref="jr:itext('/data/gestational_age/register_method/lmp_method:hint')"></hint>
+          
+        <item><label ref="jr:itext('lmp_methods-0')"></label><value>method_lmp</value></item><item><label ref="jr:itext('lmp_methods-1')"></label><value>method_approx</value></item><item><label ref="jr:itext('lmp_methods-2')"></label><value>method_edd</value></item><item><label ref="jr:itext('lmp_methods-3')"></label><value>method_none</value></item></select1>
       </group>
       <group ref="/data/gestational_age/method_lmp">
-        <label ref="jr:itext('/data/gestational_age/method_lmp:label')"/>
+        <label ref="jr:itext('/data/gestational_age/method_lmp:label')"></label>
         <input ref="/data/gestational_age/method_lmp/u_lmp_date">
-          <label ref="jr:itext('/data/gestational_age/method_lmp/u_lmp_date:label')"/>
+          <label ref="jr:itext('/data/gestational_age/method_lmp/u_lmp_date:label')"></label>
         </input>
       </group>
       <group appearance="field-list" ref="/data/gestational_age/method_approx">
-        <label ref="jr:itext('/data/gestational_age/method_approx:label')"/>
+        <label ref="jr:itext('/data/gestational_age/method_approx:label')"></label>
         <select1 ref="/data/gestational_age/method_approx/lmp_approx">
-          <label ref="jr:itext('/data/gestational_age/method_approx/lmp_approx:label')"/>
-          <hint ref="jr:itext('/data/gestational_age/method_approx/lmp_approx:hint')"/>
-          <itemset nodeset="instance('lmp_approximations')/root/item">
-            <value ref="name"/>
-            <label ref="jr:itext(itextId)"/>
-          </itemset>
-        </select1>
+          <label ref="jr:itext('/data/gestational_age/method_approx/lmp_approx:label')"></label>
+          <hint ref="jr:itext('/data/gestational_age/method_approx/lmp_approx:hint')"></hint>
+          
+        <item><label ref="jr:itext('lmp_approximations-0')"></label><value>approx_weeks</value></item><item><label ref="jr:itext('lmp_approximations-1')"></label><value>approx_months</value></item></select1>
         <input ref="/data/gestational_age/method_approx/lmp_approx_weeks">
-          <label ref="jr:itext('/data/gestational_age/method_approx/lmp_approx_weeks:label')"/>
+          <label ref="jr:itext('/data/gestational_age/method_approx/lmp_approx_weeks:label')"></label>
         </input>
         <input ref="/data/gestational_age/method_approx/lmp_approx_months">
-          <label ref="jr:itext('/data/gestational_age/method_approx/lmp_approx_months:label')"/>
+          <label ref="jr:itext('/data/gestational_age/method_approx/lmp_approx_months:label')"></label>
         </input>
       </group>
       <group ref="/data/gestational_age/method_edd">
-        <label ref="jr:itext('/data/gestational_age/method_edd:label')"/>
+        <label ref="jr:itext('/data/gestational_age/method_edd:label')"></label>
         <input ref="/data/gestational_age/method_edd/u_edd">
-          <label ref="jr:itext('/data/gestational_age/method_edd/u_edd:label')"/>
+          <label ref="jr:itext('/data/gestational_age/method_edd/u_edd:label')"></label>
         </input>
       </group>
       <group appearance="field-list" ref="/data/gestational_age/method_lmp_summary">
-        <label ref="jr:itext('/data/gestational_age/method_lmp_summary:label')"/>
+        <label ref="jr:itext('/data/gestational_age/method_lmp_summary:label')"></label>
         <input ref="/data/gestational_age/method_lmp_summary/lmp_check_note">
-          <label ref="jr:itext('/data/gestational_age/method_lmp_summary/lmp_check_note:label')"/>
+          <label ref="jr:itext('/data/gestational_age/method_lmp_summary/lmp_check_note:label')"></label>
         </input>
         <input ref="/data/gestational_age/method_lmp_summary/lmp_approx_weeks_check_note">
-          <label ref="jr:itext('/data/gestational_age/method_lmp_summary/lmp_approx_weeks_check_note:label')"/>
+          <label ref="jr:itext('/data/gestational_age/method_lmp_summary/lmp_approx_weeks_check_note:label')"></label>
         </input>
         <input ref="/data/gestational_age/method_lmp_summary/lmp_approx_months_check_note">
-          <label ref="jr:itext('/data/gestational_age/method_lmp_summary/lmp_approx_months_check_note:label')"/>
+          <label ref="jr:itext('/data/gestational_age/method_lmp_summary/lmp_approx_months_check_note:label')"></label>
         </input>
         <input ref="/data/gestational_age/method_lmp_summary/u_edd_note">
-          <label ref="jr:itext('/data/gestational_age/method_lmp_summary/u_edd_note:label')"/>
+          <label ref="jr:itext('/data/gestational_age/method_lmp_summary/u_edd_note:label')"></label>
         </input>
         <input ref="/data/gestational_age/method_lmp_summary/edd_note">
-          <label ref="jr:itext('/data/gestational_age/method_lmp_summary/edd_note:label')"/>
+          <label ref="jr:itext('/data/gestational_age/method_lmp_summary/edd_note:label')"></label>
         </input>
         <input ref="/data/gestational_age/method_lmp_summary/lmp_note">
-          <label ref="jr:itext('/data/gestational_age/method_lmp_summary/lmp_note:label')"/>
+          <label ref="jr:itext('/data/gestational_age/method_lmp_summary/lmp_note:label')"></label>
         </input>
         <input ref="/data/gestational_age/method_lmp_summary/edd_check_note">
-          <label ref="jr:itext('/data/gestational_age/method_lmp_summary/edd_check_note:label')"/>
+          <label ref="jr:itext('/data/gestational_age/method_lmp_summary/edd_check_note:label')"></label>
         </input>
       </group>
       <group appearance="field-list" ref="/data/gestational_age/method_none">
-        <label ref="jr:itext('/data/gestational_age/method_none:label')"/>
+        <label ref="jr:itext('/data/gestational_age/method_none:label')"></label>
         <input ref="/data/gestational_age/method_none/no_info_notice">
-          <label ref="jr:itext('/data/gestational_age/method_none/no_info_notice:label')"/>
+          <label ref="jr:itext('/data/gestational_age/method_none/no_info_notice:label')"></label>
         </input>
         <select1 ref="/data/gestational_age/method_none/no_info_pregnancy_reason">
-          <label ref="jr:itext('/data/gestational_age/method_none/no_info_pregnancy_reason:label')"/>
-          <hint ref="jr:itext('/data/gestational_age/method_none/no_info_pregnancy_reason:hint')"/>
-          <itemset nodeset="instance('no_info_pregnancy_reasons')/root/item">
-            <value ref="name"/>
-            <label ref="jr:itext(itextId)"/>
-          </itemset>
-        </select1>
+          <label ref="jr:itext('/data/gestational_age/method_none/no_info_pregnancy_reason:label')"></label>
+          <hint ref="jr:itext('/data/gestational_age/method_none/no_info_pregnancy_reason:hint')"></hint>
+          
+        <item><label ref="jr:itext('no_info_pregnancy_reasons-0')"></label><value>visibly_pregnant</value></item><item><label ref="jr:itext('no_info_pregnancy_reasons-1')"></label><value>test_positive</value></item><item><label ref="jr:itext('no_info_pregnancy_reasons-2')"></label><value>missed_periods</value></item></select1>
         <input ref="/data/gestational_age/method_none/pregnancy_confirm_note">
-          <label ref="jr:itext('/data/gestational_age/method_none/pregnancy_confirm_note:label')"/>
+          <label ref="jr:itext('/data/gestational_age/method_none/pregnancy_confirm_note:label')"></label>
         </input>
       </group>
     </group>
     <group ref="/data/anc_visits_hf">
-      <label ref="jr:itext('/data/anc_visits_hf:label')"/>
+      <label ref="jr:itext('/data/anc_visits_hf:label')"></label>
       <group ref="/data/anc_visits_hf/anc_visits_hf_past">
-        <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past:label')"/>
+        <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past:label')"></label>
         <input ref="/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count">
-          <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count:label')"/>
-          <hint ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count:hint')"/>
+          <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count:label')"></label>
+          <hint ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count:hint')"></hint>
         </input>
         <group appearance="field-list" ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group">
-          <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group:label')"/>
+          <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group:label')"></label>
           <input ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_single">
-            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_single:label')"/>
+            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_single:label')"></label>
           </input>
           <input ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_multiple">
-            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_multiple:label')"/>
+            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_multiple:label')"></label>
           </input>
           <select1 ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_ask_single">
-            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_ask_single:label')"/>
-            <itemset nodeset="instance('knows_date')/root/item">
-              <value ref="name"/>
-              <label ref="jr:itext(itextId)"/>
-            </itemset>
-          </select1>
+            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_ask_single:label')"></label>
+            
+          <item><label ref="jr:itext('knows_date-0')"></label><value>no</value></item><item><label ref="jr:itext('knows_date-1')"></label><value>yes</value></item></select1>
           <input ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single">
-            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single:label')"/>
+            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single:label')"></label>
           </input>
           <input ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates_multiple_note">
-            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates_multiple_note:label')"/>
+            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates_multiple_note:label')"></label>
           </input>
           <input ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates_multiple_note_section">
-            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates_multiple_note_section:label')"/>
+            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates_multiple_note_section:label')"></label>
           </input>
           <group ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates">
-            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates:label')"/>
+            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates:label')"></label>
             <repeat nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates" jr:count=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count ">
               <select1 ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date_ask_multiple">
-                <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date_ask_multiple:label')"/>
-                <itemset nodeset="instance('knows_date')/root/item">
-                  <value ref="name"/>
-                  <label ref="jr:itext(itextId)"/>
-                </itemset>
-              </select1>
+                <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date_ask_multiple:label')"></label>
+                
+              <item><label ref="jr:itext('knows_date-0')"></label><value>no</value></item><item><label ref="jr:itext('knows_date-1')"></label><value>yes</value></item></select1>
               <input ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date">
-                <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date:label')"/>
+                <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date:label')"></label>
               </input>
             </repeat>
           </group>
         </group>
       </group>
       <group ref="/data/anc_visits_hf/anc_visits_hf_next">
-        <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next:label')"/>
+        <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next:label')"></label>
         <group appearance="field-list" ref="/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date">
-          <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date:label')"/>
+          <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date:label')"></label>
           <select1 ref="/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known">
-            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known:label')"/>
-            <itemset nodeset="instance('knows_date')/root/item">
-              <value ref="name"/>
-              <label ref="jr:itext(itextId)"/>
-            </itemset>
-          </select1>
+            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known:label')"></label>
+            
+          <item><label ref="jr:itext('knows_date-0')"></label><value>no</value></item><item><label ref="jr:itext('knows_date-1')"></label><value>yes</value></item></select1>
           <input ref="/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date">
-            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date:label')"/>
+            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date:label')"></label>
           </input>
         </group>
         <group appearance="field-list" ref="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note">
-          <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note:label')"/>
+          <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note:label')"></label>
           <input ref="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/who_recommends_note">
-            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/who_recommends_note:label')"/>
+            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/who_recommends_note:label')"></label>
           </input>
           <input ref="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/prenancy_age_note">
-            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/prenancy_age_note:label')"/>
+            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/prenancy_age_note:label')"></label>
           </input>
           <input ref="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/refer_note">
-            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/refer_note:label')"/>
+            <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/refer_note:label')"></label>
           </input>
         </group>
       </group>
     </group>
     <group ref="/data/risk_factors">
-      <label ref="jr:itext('/data/risk_factors:label')"/>
+      <label ref="jr:itext('/data/risk_factors:label')"></label>
       <group appearance="field-list" ref="/data/risk_factors/risk_factors_history">
-        <label ref="jr:itext('/data/risk_factors/risk_factors_history:label')"/>
+        <label ref="jr:itext('/data/risk_factors/risk_factors_history:label')"></label>
         <select1 ref="/data/risk_factors/risk_factors_history/first_pregnancy">
-          <label ref="jr:itext('/data/risk_factors/risk_factors_history/first_pregnancy:label')"/>
-          <itemset nodeset="instance('yes_no')/root/item">
-            <value ref="name"/>
-            <label ref="jr:itext(itextId)"/>
-          </itemset>
-        </select1>
+          <label ref="jr:itext('/data/risk_factors/risk_factors_history/first_pregnancy:label')"></label>
+          
+        <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
         <select1 ref="/data/risk_factors/risk_factors_history/previous_miscarriage">
-          <label ref="jr:itext('/data/risk_factors/risk_factors_history/previous_miscarriage:label')"/>
-          <itemset nodeset="instance('yes_no')/root/item">
-            <value ref="name"/>
-            <label ref="jr:itext(itextId)"/>
-          </itemset>
-        </select1>
+          <label ref="jr:itext('/data/risk_factors/risk_factors_history/previous_miscarriage:label')"></label>
+          
+        <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
       </group>
       <group appearance="field-list" ref="/data/risk_factors/risk_factors_present">
-        <label ref="jr:itext('/data/risk_factors/risk_factors_present:label')"/>
+        <label ref="jr:itext('/data/risk_factors/risk_factors_present:label')"></label>
         <select ref="/data/risk_factors/risk_factors_present/primary_condition">
-          <label ref="jr:itext('/data/risk_factors/risk_factors_present/primary_condition:label')"/>
-          <hint ref="jr:itext('/data/risk_factors/risk_factors_present/primary_condition:hint')"/>
-          <itemset nodeset="instance('primary_conditions')/root/item">
-            <value ref="name"/>
-            <label ref="jr:itext(itextId)"/>
-          </itemset>
-        </select>
+          <label ref="jr:itext('/data/risk_factors/risk_factors_present/primary_condition:label')"></label>
+          <hint ref="jr:itext('/data/risk_factors/risk_factors_present/primary_condition:hint')"></hint>
+          
+        <item><label ref="jr:itext('primary_conditions-0')"></label><value>heart_condition</value></item><item><label ref="jr:itext('primary_conditions-1')"></label><value>asthma</value></item><item><label ref="jr:itext('primary_conditions-2')"></label><value>high_blood_pressure</value></item><item><label ref="jr:itext('primary_conditions-3')"></label><value>diabetes</value></item><item><label ref="jr:itext('primary_conditions-4')"></label><value>none</value></item></select>
         <select ref="/data/risk_factors/risk_factors_present/secondary_condition">
-          <label ref="jr:itext('/data/risk_factors/risk_factors_present/secondary_condition:label')"/>
-          <hint ref="jr:itext('/data/risk_factors/risk_factors_present/secondary_condition:hint')"/>
-          <itemset nodeset="instance('secondary_conditions')/root/item">
-            <value ref="name"/>
-            <label ref="jr:itext(itextId)"/>
-          </itemset>
-        </select>
+          <label ref="jr:itext('/data/risk_factors/risk_factors_present/secondary_condition:label')"></label>
+          <hint ref="jr:itext('/data/risk_factors/risk_factors_present/secondary_condition:hint')"></hint>
+          
+        <item><label ref="jr:itext('secondary_conditions-0')"></label><value>previous_difficulties</value></item><item><label ref="jr:itext('secondary_conditions-1')"></label><value>more_than_4_children</value></item><item><label ref="jr:itext('secondary_conditions-2')"></label><value>last_baby_born_less_than_1_year_ago</value></item><item><label ref="jr:itext('secondary_conditions-3')"></label><value>heart_condition</value></item><item><label ref="jr:itext('secondary_conditions-4')"></label><value>asthma</value></item><item><label ref="jr:itext('secondary_conditions-5')"></label><value>high_blood_pressure</value></item><item><label ref="jr:itext('secondary_conditions-6')"></label><value>diabetes</value></item><item><label ref="jr:itext('secondary_conditions-7')"></label><value>none</value></item></select>
         <select1 ref="/data/risk_factors/risk_factors_present/additional_risk_check">
-          <label ref="jr:itext('/data/risk_factors/risk_factors_present/additional_risk_check:label')"/>
-          <itemset nodeset="instance('yes_no')/root/item">
-            <value ref="name"/>
-            <label ref="jr:itext(itextId)"/>
-          </itemset>
-        </select1>
+          <label ref="jr:itext('/data/risk_factors/risk_factors_present/additional_risk_check:label')"></label>
+          
+        <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
         <input ref="/data/risk_factors/risk_factors_present/additional_risk">
-          <label ref="jr:itext('/data/risk_factors/risk_factors_present/additional_risk:label')"/>
+          <label ref="jr:itext('/data/risk_factors/risk_factors_present/additional_risk:label')"></label>
         </input>
       </group>
     </group>
     <group appearance="field-list" ref="/data/danger_signs">
-      <label ref="jr:itext('/data/danger_signs:label')"/>
+      <label ref="jr:itext('/data/danger_signs:label')"></label>
       <input ref="/data/danger_signs/danger_signs_note">
-        <label ref="jr:itext('/data/danger_signs/danger_signs_note:label')"/>
+        <label ref="jr:itext('/data/danger_signs/danger_signs_note:label')"></label>
       </input>
       <input ref="/data/danger_signs/danger_signs_question_note">
-        <label ref="jr:itext('/data/danger_signs/danger_signs_question_note:label')"/>
+        <label ref="jr:itext('/data/danger_signs/danger_signs_question_note:label')"></label>
       </input>
       <select1 ref="/data/danger_signs/vaginal_bleeding">
-        <label ref="jr:itext('/data/danger_signs/vaginal_bleeding:label')"/>
-        <itemset nodeset="instance('yes_no')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/danger_signs/vaginal_bleeding:label')"></label>
+        
+      <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
       <select1 ref="/data/danger_signs/fits">
-        <label ref="jr:itext('/data/danger_signs/fits:label')"/>
-        <itemset nodeset="instance('yes_no')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/danger_signs/fits:label')"></label>
+        
+      <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
       <select1 ref="/data/danger_signs/severe_abdominal_pain">
-        <label ref="jr:itext('/data/danger_signs/severe_abdominal_pain:label')"/>
-        <itemset nodeset="instance('yes_no')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/danger_signs/severe_abdominal_pain:label')"></label>
+        
+      <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
       <select1 ref="/data/danger_signs/severe_headache">
-        <label ref="jr:itext('/data/danger_signs/severe_headache:label')"/>
-        <itemset nodeset="instance('yes_no')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/danger_signs/severe_headache:label')"></label>
+        
+      <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
       <select1 ref="/data/danger_signs/very_pale">
-        <label ref="jr:itext('/data/danger_signs/very_pale:label')"/>
-        <itemset nodeset="instance('yes_no')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/danger_signs/very_pale:label')"></label>
+        
+      <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
       <select1 ref="/data/danger_signs/fever">
-        <label ref="jr:itext('/data/danger_signs/fever:label')"/>
-        <itemset nodeset="instance('yes_no')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/danger_signs/fever:label')"></label>
+        
+      <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
       <select1 ref="/data/danger_signs/reduced_or_no_fetal_movements">
-        <label ref="jr:itext('/data/danger_signs/reduced_or_no_fetal_movements:label')"/>
-        <itemset nodeset="instance('yes_no')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/danger_signs/reduced_or_no_fetal_movements:label')"></label>
+        
+      <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
       <select1 ref="/data/danger_signs/breaking_water">
-        <label ref="jr:itext('/data/danger_signs/breaking_water:label')"/>
-        <itemset nodeset="instance('yes_no')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/danger_signs/breaking_water:label')"></label>
+        
+      <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
       <select1 ref="/data/danger_signs/easily_tired">
-        <label ref="jr:itext('/data/danger_signs/easily_tired:label')"/>
-        <itemset nodeset="instance('yes_no')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/danger_signs/easily_tired:label')"></label>
+        
+      <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
       <select1 ref="/data/danger_signs/face_hand_swelling">
-        <label ref="jr:itext('/data/danger_signs/face_hand_swelling:label')"/>
-        <itemset nodeset="instance('yes_no')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/danger_signs/face_hand_swelling:label')"></label>
+        
+      <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
       <select1 ref="/data/danger_signs/breathlessness">
-        <label ref="jr:itext('/data/danger_signs/breathlessness:label')"/>
-        <itemset nodeset="instance('yes_no')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
+        <label ref="jr:itext('/data/danger_signs/breathlessness:label')"></label>
+        
+      <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
       <input ref="/data/danger_signs/congratulate_no_ds_note">
-        <label ref="jr:itext('/data/danger_signs/congratulate_no_ds_note:label')"/>
+        <label ref="jr:itext('/data/danger_signs/congratulate_no_ds_note:label')"></label>
       </input>
       <input ref="/data/danger_signs/refer_patient_note_1">
-        <label ref="jr:itext('/data/danger_signs/refer_patient_note_1:label')"/>
+        <label ref="jr:itext('/data/danger_signs/refer_patient_note_1:label')"></label>
       </input>
       <input ref="/data/danger_signs/refer_patient_note_2">
-        <label ref="jr:itext('/data/danger_signs/refer_patient_note_2:label')"/>
+        <label ref="jr:itext('/data/danger_signs/refer_patient_note_2:label')"></label>
       </input>
     </group>
     <group ref="/data/safe_pregnancy_practices">
-      <label ref="jr:itext('/data/safe_pregnancy_practices:label')"/>
+      <label ref="jr:itext('/data/safe_pregnancy_practices:label')"></label>
       <group appearance="field-list" ref="/data/safe_pregnancy_practices/malaria">
-        <label ref="jr:itext('/data/safe_pregnancy_practices/malaria:label')"/>
+        <label ref="jr:itext('/data/safe_pregnancy_practices/malaria:label')"></label>
         <select1 ref="/data/safe_pregnancy_practices/malaria/uses_llin">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/malaria/uses_llin:label')"/>
-          <itemset nodeset="instance('yes_no')/root/item">
-            <value ref="name"/>
-            <label ref="jr:itext(itextId)"/>
-          </itemset>
-        </select1>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/malaria/uses_llin:label')"></label>
+          
+        <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
         <input ref="/data/safe_pregnancy_practices/malaria/llin_advice_note">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/malaria/llin_advice_note:label')"/>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/malaria/llin_advice_note:label')"></label>
         </input>
         <input ref="/data/safe_pregnancy_practices/malaria/malaria_prophylaxis_note">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/malaria/malaria_prophylaxis_note:label')"/>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/malaria/malaria_prophylaxis_note:label')"></label>
         </input>
       </group>
       <group appearance="field-list" ref="/data/safe_pregnancy_practices/iron_folate">
-        <label ref="jr:itext('/data/safe_pregnancy_practices/iron_folate:label')"/>
+        <label ref="jr:itext('/data/safe_pregnancy_practices/iron_folate:label')"></label>
         <select1 ref="/data/safe_pregnancy_practices/iron_folate/iron_folate_daily">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/iron_folate/iron_folate_daily:label')"/>
-          <itemset nodeset="instance('yes_no')/root/item">
-            <value ref="name"/>
-            <label ref="jr:itext(itextId)"/>
-          </itemset>
-        </select1>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/iron_folate/iron_folate_daily:label')"></label>
+          
+        <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
         <input ref="/data/safe_pregnancy_practices/iron_folate/iron_folate_note">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/iron_folate/iron_folate_note:label')"/>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/iron_folate/iron_folate_note:label')"></label>
         </input>
       </group>
       <group appearance="field-list" ref="/data/safe_pregnancy_practices/deworming">
-        <label ref="jr:itext('/data/safe_pregnancy_practices/deworming:label')"/>
+        <label ref="jr:itext('/data/safe_pregnancy_practices/deworming:label')"></label>
         <select1 ref="/data/safe_pregnancy_practices/deworming/deworming_med">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/deworming/deworming_med:label')"/>
-          <itemset nodeset="instance('yes_no')/root/item">
-            <value ref="name"/>
-            <label ref="jr:itext(itextId)"/>
-          </itemset>
-        </select1>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/deworming/deworming_med:label')"></label>
+          
+        <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
         <input ref="/data/safe_pregnancy_practices/deworming/deworming_med_note">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/deworming/deworming_med_note:label')"/>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/deworming/deworming_med_note:label')"></label>
         </input>
       </group>
       <group ref="/data/safe_pregnancy_practices/safe_practices_tips">
-        <label ref="jr:itext('/data/safe_pregnancy_practices/safe_practices_tips:label')"/>
+        <label ref="jr:itext('/data/safe_pregnancy_practices/safe_practices_tips:label')"></label>
         <input ref="/data/safe_pregnancy_practices/safe_practices_tips/eat_more_note">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/safe_practices_tips/eat_more_note:label')"/>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/safe_practices_tips/eat_more_note:label')"></label>
         </input>
         <input ref="/data/safe_pregnancy_practices/safe_practices_tips/talk_softly_note">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/safe_practices_tips/talk_softly_note:label')"/>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/safe_practices_tips/talk_softly_note:label')"></label>
         </input>
         <input ref="/data/safe_pregnancy_practices/safe_practices_tips/respond_move_note">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/safe_practices_tips/respond_move_note:label')"/>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/safe_practices_tips/respond_move_note:label')"></label>
         </input>
         <input ref="/data/safe_pregnancy_practices/safe_practices_tips/deliver_hf_note">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/safe_practices_tips/deliver_hf_note:label')"/>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/safe_practices_tips/deliver_hf_note:label')"></label>
         </input>
       </group>
       <group appearance="field-list" ref="/data/safe_pregnancy_practices/hiv_status">
-        <label ref="jr:itext('/data/safe_pregnancy_practices/hiv_status:label')"/>
+        <label ref="jr:itext('/data/safe_pregnancy_practices/hiv_status:label')"></label>
         <select1 ref="/data/safe_pregnancy_practices/hiv_status/hiv_tested">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/hiv_status/hiv_tested:label')"/>
-          <itemset nodeset="instance('yes_no')/root/item">
-            <value ref="name"/>
-            <label ref="jr:itext(itextId)"/>
-          </itemset>
-        </select1>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/hiv_status/hiv_tested:label')"></label>
+          
+        <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
         <input ref="/data/safe_pregnancy_practices/hiv_status/hiv_importance_note">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/hiv_status/hiv_importance_note:label')"/>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/hiv_status/hiv_importance_note:label')"></label>
         </input>
       </group>
       <group appearance="field-list" ref="/data/safe_pregnancy_practices/tetanus">
-        <label ref="jr:itext('/data/safe_pregnancy_practices/tetanus:label')"/>
+        <label ref="jr:itext('/data/safe_pregnancy_practices/tetanus:label')"></label>
         <select1 ref="/data/safe_pregnancy_practices/tetanus/tt_imm_received">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/tetanus/tt_imm_received:label')"/>
-          <itemset nodeset="instance('yes_no')/root/item">
-            <value ref="name"/>
-            <label ref="jr:itext(itextId)"/>
-          </itemset>
-        </select1>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/tetanus/tt_imm_received:label')"></label>
+          
+        <item><label ref="jr:itext('yes_no-0')"></label><value>yes</value></item><item><label ref="jr:itext('yes_no-1')"></label><value>no</value></item></select1>
         <input ref="/data/safe_pregnancy_practices/tetanus/tt_note_1">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/tetanus/tt_note_1:label')"/>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/tetanus/tt_note_1:label')"></label>
         </input>
         <input ref="/data/safe_pregnancy_practices/tetanus/tt_note_2">
-          <label ref="jr:itext('/data/safe_pregnancy_practices/tetanus/tt_note_2:label')"/>
+          <label ref="jr:itext('/data/safe_pregnancy_practices/tetanus/tt_note_2:label')"></label>
         </input>
       </group>
     </group>
     <group appearance="field-list summary" ref="/data/summary">
-      <label ref="jr:itext('/data/summary:label')"/>
+      <label ref="jr:itext('/data/summary:label')"></label>
       <input ref="/data/summary/r_submit_note">
-        <label ref="jr:itext('/data/summary/r_submit_note:label')"/>
+        <label ref="jr:itext('/data/summary/r_submit_note:label')"></label>
       </input>
       <input ref="/data/summary/r_summary_details" appearance="h1 yellow">
-        <label ref="jr:itext('/data/summary/r_summary_details:label')"/>
+        <label ref="jr:itext('/data/summary/r_summary_details:label')"></label>
       </input>
       <input ref="/data/summary/r_patient_details">
-        <label ref="jr:itext('/data/summary/r_patient_details:label')"/>
+        <label ref="jr:itext('/data/summary/r_patient_details:label')"></label>
       </input>
       <input ref="/data/summary/r_summary" appearance="h1 blue">
-        <label ref="jr:itext('/data/summary/r_summary:label')"/>
+        <label ref="jr:itext('/data/summary/r_summary:label')"></label>
       </input>
       <input ref="/data/summary/r_pregnancy_details" appearance="center">
-        <label ref="jr:itext('/data/summary/r_pregnancy_details:label')"/>
+        <label ref="jr:itext('/data/summary/r_pregnancy_details:label')"></label>
       </input>
       <input ref="/data/summary/r_pregnancy_details_unknown" appearance="center">
-        <label ref="jr:itext('/data/summary/r_pregnancy_details_unknown:label')"/>
+        <label ref="jr:itext('/data/summary/r_pregnancy_details_unknown:label')"></label>
       </input>
       <input ref="/data/summary/r_risk_factors" appearance="h3 blue center underline">
-        <label ref="jr:itext('/data/summary/r_risk_factors:label')"/>
+        <label ref="jr:itext('/data/summary/r_risk_factors:label')"></label>
       </input>
       <input ref="/data/summary/r_risk_first_pregnancy" appearance="li">
-        <label ref="jr:itext('/data/summary/r_risk_first_pregnancy:label')"/>
+        <label ref="jr:itext('/data/summary/r_risk_first_pregnancy:label')"></label>
       </input>
       <input ref="/data/summary/r_risk_previous_miscarriage" appearance="li">
-        <label ref="jr:itext('/data/summary/r_risk_previous_miscarriage:label')"/>
+        <label ref="jr:itext('/data/summary/r_risk_previous_miscarriage:label')"></label>
       </input>
       <input ref="/data/summary/r_risk_previous_difficulties" appearance="li">
-        <label ref="jr:itext('/data/summary/r_risk_previous_difficulties:label')"/>
+        <label ref="jr:itext('/data/summary/r_risk_previous_difficulties:label')"></label>
       </input>
       <input ref="/data/summary/r_risk_more_than_4_children" appearance="li">
-        <label ref="jr:itext('/data/summary/r_risk_more_than_4_children:label')"/>
+        <label ref="jr:itext('/data/summary/r_risk_more_than_4_children:label')"></label>
       </input>
       <input ref="/data/summary/r_risk_last_baby_born_less_than_1_year_ago" appearance="li">
-        <label ref="jr:itext('/data/summary/r_risk_last_baby_born_less_than_1_year_ago:label')"/>
+        <label ref="jr:itext('/data/summary/r_risk_last_baby_born_less_than_1_year_ago:label')"></label>
       </input>
       <input ref="/data/summary/r_risk_heart_condition" appearance="li">
-        <label ref="jr:itext('/data/summary/r_risk_heart_condition:label')"/>
+        <label ref="jr:itext('/data/summary/r_risk_heart_condition:label')"></label>
       </input>
       <input ref="/data/summary/r_risk_asthma" appearance="li">
-        <label ref="jr:itext('/data/summary/r_risk_asthma:label')"/>
+        <label ref="jr:itext('/data/summary/r_risk_asthma:label')"></label>
       </input>
       <input ref="/data/summary/r_risk_high_blood_pressure" appearance="li">
-        <label ref="jr:itext('/data/summary/r_risk_high_blood_pressure:label')"/>
+        <label ref="jr:itext('/data/summary/r_risk_high_blood_pressure:label')"></label>
       </input>
       <input ref="/data/summary/r_risk_diabetes" appearance="li">
-        <label ref="jr:itext('/data/summary/r_risk_diabetes:label')"/>
+        <label ref="jr:itext('/data/summary/r_risk_diabetes:label')"></label>
       </input>
       <input ref="/data/summary/r_risk_additional" appearance="li">
-        <label ref="jr:itext('/data/summary/r_risk_additional:label')"/>
+        <label ref="jr:itext('/data/summary/r_risk_additional:label')"></label>
       </input>
       <input ref="/data/summary/r_danger_signs" appearance="h3 blue center underline">
-        <label ref="jr:itext('/data/summary/r_danger_signs:label')"/>
+        <label ref="jr:itext('/data/summary/r_danger_signs:label')"></label>
       </input>
       <input ref="/data/summary/r_danger_sign_vaginal_bleeding" appearance="li">
-        <label ref="jr:itext('/data/summary/r_danger_sign_vaginal_bleeding:label')"/>
+        <label ref="jr:itext('/data/summary/r_danger_sign_vaginal_bleeding:label')"></label>
       </input>
       <input ref="/data/summary/r_danger_sign_fits" appearance="li">
-        <label ref="jr:itext('/data/summary/r_danger_sign_fits:label')"/>
+        <label ref="jr:itext('/data/summary/r_danger_sign_fits:label')"></label>
       </input>
       <input ref="/data/summary/r_danger_sign_severe_abdominal_pain" appearance="li">
-        <label ref="jr:itext('/data/summary/r_danger_sign_severe_abdominal_pain:label')"/>
+        <label ref="jr:itext('/data/summary/r_danger_sign_severe_abdominal_pain:label')"></label>
       </input>
       <input ref="/data/summary/r_danger_sign_severe_headache" appearance="li">
-        <label ref="jr:itext('/data/summary/r_danger_sign_severe_headache:label')"/>
+        <label ref="jr:itext('/data/summary/r_danger_sign_severe_headache:label')"></label>
       </input>
       <input ref="/data/summary/r_danger_sign_very_pale" appearance="li">
-        <label ref="jr:itext('/data/summary/r_danger_sign_very_pale:label')"/>
+        <label ref="jr:itext('/data/summary/r_danger_sign_very_pale:label')"></label>
       </input>
       <input ref="/data/summary/r_danger_sign_fever" appearance="li">
-        <label ref="jr:itext('/data/summary/r_danger_sign_fever:label')"/>
+        <label ref="jr:itext('/data/summary/r_danger_sign_fever:label')"></label>
       </input>
       <input ref="/data/summary/r_danger_sign_reduced_or_no_fetal_movements" appearance="li">
-        <label ref="jr:itext('/data/summary/r_danger_sign_reduced_or_no_fetal_movements:label')"/>
+        <label ref="jr:itext('/data/summary/r_danger_sign_reduced_or_no_fetal_movements:label')"></label>
       </input>
       <input ref="/data/summary/r_danger_sign_breaking_water" appearance="li">
-        <label ref="jr:itext('/data/summary/r_danger_sign_breaking_water:label')"/>
+        <label ref="jr:itext('/data/summary/r_danger_sign_breaking_water:label')"></label>
       </input>
       <input ref="/data/summary/r_danger_sign_easily_tired" appearance="li">
-        <label ref="jr:itext('/data/summary/r_danger_sign_easily_tired:label')"/>
+        <label ref="jr:itext('/data/summary/r_danger_sign_easily_tired:label')"></label>
       </input>
       <input ref="/data/summary/r_danger_sign_face_hand_swelling" appearance="li">
-        <label ref="jr:itext('/data/summary/r_danger_sign_face_hand_swelling:label')"/>
+        <label ref="jr:itext('/data/summary/r_danger_sign_face_hand_swelling:label')"></label>
       </input>
       <input ref="/data/summary/r_danger_sign_breathlessness" appearance="li">
-        <label ref="jr:itext('/data/summary/r_danger_sign_breathlessness:label')"/>
+        <label ref="jr:itext('/data/summary/r_danger_sign_breathlessness:label')"></label>
       </input>
       <input ref="/data/summary/r_space_1">
-        <label ref="jr:itext('/data/summary/r_space_1:label')"/>
+        <label ref="jr:itext('/data/summary/r_space_1:label')"></label>
       </input>
       <input ref="/data/summary/r_referrals" appearance="h1 lime">
-        <label ref="jr:itext('/data/summary/r_referrals:label')"/>
+        <label ref="jr:itext('/data/summary/r_referrals:label')"></label>
       </input>
       <input ref="/data/summary/r_refer_clinic_immediately">
-        <label ref="jr:itext('/data/summary/r_refer_clinic_immediately:label')"/>
+        <label ref="jr:itext('/data/summary/r_refer_clinic_immediately:label')"></label>
       </input>
       <input ref="/data/summary/r_refer_danger_sign" appearance="li">
-        <label ref="jr:itext('/data/summary/r_refer_danger_sign:label')"/>
+        <label ref="jr:itext('/data/summary/r_refer_danger_sign:label')"></label>
       </input>
       <input ref="/data/summary/r_routine_anc">
-        <label ref="jr:itext('/data/summary/r_routine_anc:label')"/>
+        <label ref="jr:itext('/data/summary/r_routine_anc:label')"></label>
       </input>
       <input ref="/data/summary/r_request_services">
-        <label ref="jr:itext('/data/summary/r_request_services:label')"/>
+        <label ref="jr:itext('/data/summary/r_request_services:label')"></label>
       </input>
       <input ref="/data/summary/r_request_service_tt" appearance="li">
-        <label ref="jr:itext('/data/summary/r_request_service_tt:label')"/>
+        <label ref="jr:itext('/data/summary/r_request_service_tt:label')"></label>
       </input>
       <input ref="/data/summary/r_request_service_hiv_test" appearance="li">
-        <label ref="jr:itext('/data/summary/r_request_service_hiv_test:label')"/>
+        <label ref="jr:itext('/data/summary/r_request_service_hiv_test:label')"></label>
       </input>
       <input ref="/data/summary/r_request_service_deworming" appearance="li">
-        <label ref="jr:itext('/data/summary/r_request_service_deworming:label')"/>
+        <label ref="jr:itext('/data/summary/r_request_service_deworming:label')"></label>
       </input>
       <input ref="/data/summary/r_request_service_iron" appearance="li">
-        <label ref="jr:itext('/data/summary/r_request_service_iron:label')"/>
+        <label ref="jr:itext('/data/summary/r_request_service_iron:label')"></label>
       </input>
       <input ref="/data/summary/r_who_recommends">
-        <label ref="jr:itext('/data/summary/r_who_recommends:label')"/>
+        <label ref="jr:itext('/data/summary/r_who_recommends:label')"></label>
       </input>
       <input ref="/data/summary/r_refer_hf_appropriate_time">
-        <label ref="jr:itext('/data/summary/r_refer_hf_appropriate_time:label')"/>
+        <label ref="jr:itext('/data/summary/r_refer_hf_appropriate_time:label')"></label>
       </input>
       <input ref="/data/summary/r_refer_hf_immediately">
-        <label ref="jr:itext('/data/summary/r_refer_hf_immediately:label')"/>
+        <label ref="jr:itext('/data/summary/r_refer_hf_immediately:label')"></label>
       </input>
       <input ref="/data/summary/r_space_2">
-        <label ref="jr:itext('/data/summary/r_space_2:label')"/>
+        <label ref="jr:itext('/data/summary/r_space_2:label')"></label>
       </input>
       <input ref="/data/summary/check-" appearance="h1 green">
-        <label ref="jr:itext('/data/summary/check-:label')"/>
+        <label ref="jr:itext('/data/summary/check-:label')"></label>
       </input>
       <input ref="/data/summary/r_following_tasks">
-        <label ref="jr:itext('/data/summary/r_following_tasks:label')"/>
+        <label ref="jr:itext('/data/summary/r_following_tasks:label')"></label>
       </input>
       <input ref="/data/summary/r_fup_danger_sign">
-        <label ref="jr:itext('/data/summary/r_fup_danger_sign:label')"/>
+        <label ref="jr:itext('/data/summary/r_fup_danger_sign:label')"></label>
       </input>
       <input ref="/data/summary/r_fup_hf_visit">
-        <label ref="jr:itext('/data/summary/r_fup_hf_visit:label')"/>
+        <label ref="jr:itext('/data/summary/r_fup_hf_visit:label')"></label>
       </input>
       <input ref="/data/summary/r_fup_pregnancy_visit">
-        <label ref="jr:itext('/data/summary/r_fup_pregnancy_visit:label')"/>
+        <label ref="jr:itext('/data/summary/r_fup_pregnancy_visit:label')"></label>
       </input>
       <input ref="/data/summary/r_fup_pregnancy_visit_2_weeks">
-        <label ref="jr:itext('/data/summary/r_fup_pregnancy_visit_2_weeks:label')"/>
+        <label ref="jr:itext('/data/summary/r_fup_pregnancy_visit_2_weeks:label')"></label>
       </input>
       <group appearance="hidden" ref="/data/summary/custom_translations">
-        <label ref="jr:itext('/data/summary/custom_translations:label')"/>
+        <label ref="jr:itext('/data/summary/custom_translations:label')"></label>
         <select1 ref="/data/summary/custom_translations/custom_woman_label_translator">
-          <label ref="jr:itext('/data/summary/custom_translations/custom_woman_label_translator:label')"/>
-          <itemset nodeset="instance('translate_woman_label')/root/item">
-            <value ref="name"/>
-            <label ref="jr:itext(itextId)"/>
-          </itemset>
-        </select1>
+          <label ref="jr:itext('/data/summary/custom_translations/custom_woman_label_translator:label')"></label>
+          
+        <item><label ref="jr:itext('translate_woman_label-0')"></label><value>woman</value></item></select1>
         <select1 ref="/data/summary/custom_translations/custom_woman_start_label_translator">
-          <label ref="jr:itext('/data/summary/custom_translations/custom_woman_start_label_translator:label')"/>
-          <itemset nodeset="instance('translate_woman_start_label')/root/item">
-            <value ref="name"/>
-            <label ref="jr:itext(itextId)"/>
-          </itemset>
-        </select1>
+          <label ref="jr:itext('/data/summary/custom_translations/custom_woman_start_label_translator:label')"></label>
+          
+        <item><label ref="jr:itext('translate_woman_start_label-0')"></label><value>woman-start</value></item></select1>
       </group>
     </group>
     <group appearance="hidden" ref="/data/data">
-      <label ref="jr:itext('/data/data:label')"/>
+      <label ref="jr:itext('/data/data:label')"></label>
       <group ref="/data/data/meta">
-        <label ref="jr:itext('/data/data/meta:label')"/>
+        <label ref="jr:itext('/data/data/meta:label')"></label>
       </group>
     </group>
   </h:body>

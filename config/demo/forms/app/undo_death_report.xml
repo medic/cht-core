@@ -1,77 +1,143 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
   <h:head>
     <h:title>Undo death report</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/undo_death_report/inputs/contact/_id:label">
-            <value>What is the patient's name?</value>
+          <text id="/data/inputs:label">
+            <value></value>
           </text>
-          <text id="/undo_death_report/inputs/contact/date_of_birth:label">
-            <value>Date of Birth</value>
-          </text>
-          <text id="/undo_death_report/inputs/contact/name:label">
-            <value>Name</value>
-          </text>
-          <text id="/undo_death_report/inputs/contact/parent/_id:label">
-            <value>Household ID</value>
-          </text>
-          <text id="/undo_death_report/inputs/contact/parent/parent/contact/name:label">
-            <value>CHW name</value>
-          </text>
-          <text id="/undo_death_report/inputs/contact/parent/parent/contact/phone:label">
-            <value>CHW phone</value>
-          </text>
-          <text id="/undo_death_report/inputs/contact/patient_id:label">
-            <value>Patient ID</value>
-          </text>
-          <text id="/undo_death_report/inputs/contact/sex:label">
-            <value>Sex</value>
-          </text>
-          <text id="/undo_death_report/inputs/contact/short_name:label">
-            <value>Short Name</value>
-          </text>
-          <text id="/undo_death_report/inputs/source:label">
+          <text id="/data/inputs/source:label">
             <value>Source</value>
           </text>
-          <text id="/undo_death_report/inputs/source_id:label">
+          <text id="/data/inputs/source_id:label">
             <value>Source ID</value>
           </text>
-          <text id="/undo_death_report/undo/undo_information:jr:constraintMsg">
+          <text id="/data/inputs/contact:label">
+            <value></value>
+          </text>
+          <text id="/data/inputs/contact/_id:label">
+            <value>What is the patient's name?</value>
+          </text>
+          <text id="/data/inputs/contact/name:label">
+            <value>Name</value>
+          </text>
+          <text id="/data/inputs/contact/short_name:label">
+            <value>Short Name</value>
+          </text>
+          <text id="/data/inputs/contact/patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/data/inputs/contact/date_of_birth:label">
+            <value>Date of Birth</value>
+          </text>
+          <text id="/data/inputs/contact/sex:label">
+            <value>Sex</value>
+          </text>
+          <text id="/data/inputs/contact/parent:label">
+            <value></value>
+          </text>
+          <text id="/data/inputs/contact/parent/_id:label">
+            <value>Household ID</value>
+          </text>
+          <text id="/data/inputs/contact/parent/parent:label">
+            <value></value>
+          </text>
+          <text id="/data/inputs/contact/parent/parent/contact:label">
+            <value></value>
+          </text>
+          <text id="/data/inputs/contact/parent/parent/contact/name:label">
+            <value>CHW name</value>
+          </text>
+          <text id="/data/inputs/contact/parent/parent/contact/phone:label">
+            <value>CHW phone</value>
+          </text>
+          <text id="/data/patient_age_in_years:label">
+            <value></value>
+          </text>
+          <text id="/data/patient_age_in_months:label">
+            <value></value>
+          </text>
+          <text id="/data/patient_age_in_days:label">
+            <value></value>
+          </text>
+          <text id="/data/patient_uuid:label">
+            <value></value>
+          </text>
+          <text id="/data/patient_id:label">
+            <value></value>
+          </text>
+          <text id="/data/patient_name:label">
+            <value></value>
+          </text>
+          <text id="/data/patient_short_name:label">
+            <value></value>
+          </text>
+          <text id="/data/patient_display_name:label">
+            <value></value>
+          </text>
+          <text id="/data/undo:label">
+            <value></value>
+          </text>
+          <text id="/data/undo/undo_information:jr:constraintMsg">
             <value>Only submit this report if you want to undo the death report.</value>
           </text>
-          <text id="/undo_death_report/undo/undo_information:label">
-            <value>Submitting this form will undo the death report of <output value=" /undo_death_report/patient_display_name "/>. Are you sure you want to undo the death report?</value>
+          <text id="/data/undo/undo_information:label">
+            <value> Submitting this form will undo the death report of <output value=" /data/patient_display_name "></output>. Are you sure you want to undo the death report? </value>
+          </text>
+          <text id="/data/data:label">
+            <value></value>
+          </text>
+          <text id="/data/data/__confirm_undo:label">
+            <value></value>
+          </text>
+          <text id="/data/data/meta:label">
+            <value></value>
+          </text>
+          <text id="/data/data/meta/__patient_uuid:label">
+            <value></value>
+          </text>
+          <text id="/data/data/meta/__patient_id:label">
+            <value></value>
+          </text>
+          <text id="/data/data/meta/__household_uuid:label">
+            <value></value>
+          </text>
+          <text id="/data/data/meta/__source:label">
+            <value></value>
+          </text>
+          <text id="/data/data/meta/__source_id:label">
+            <value></value>
           </text>
         </translation>
       </itext>
       <instance>
-        <undo_death_report id="undo_death_report" prefix="J1!undo_death_report!" delimiter="#" version="2022-08-19 15:59:55">
+        <data id="undo_death_report" version="2022-08-19 15:59:55" prefix="J1!undo_death_report!" delimiter="#">
           <inputs>
             <meta>
               <location>
-                <lat/>
-                <long/>
-                <error/>
-                <message/>
+                <lat></lat>
+                <long></long>
+                <error></error>
+                <message></message>
               </location>
             </meta>
             <source>user</source>
-            <source_id/>
+            <source_id></source_id>
             <contact>
-              <_id/>
-              <name/>
-              <short_name/>
-              <patient_id/>
+              <_id></_id>
+              <name></name>
+              <short_name></short_name>
+              <patient_id></patient_id>
               <date_of_birth>0</date_of_birth>
-              <sex/>
+              <sex></sex>
               <parent>
-                <_id/>
+                <_id></_id>
                 <parent>
                   <contact>
-                    <name/>
-                    <phone/>
+                    <name></name>
+                    <phone></phone>
                   </contact>
                 </parent>
               </parent>
@@ -79,89 +145,108 @@
           </inputs>
           <patient_age_in_years tag="hidden">0</patient_age_in_years>
           <patient_age_in_months tag="hidden">0</patient_age_in_months>
-          <patient_age_in_days tag="hidden"/>
-          <patient_uuid tag="hidden"/>
-          <patient_id tag="hidden"/>
-          <patient_name tag="hidden"/>
-          <patient_short_name tag="hidden"/>
-          <patient_display_name tag="hidden"/>
+          <patient_age_in_days tag="hidden"></patient_age_in_days>
+          <patient_uuid tag="hidden"></patient_uuid>
+          <patient_id tag="hidden"></patient_id>
+          <patient_name tag="hidden"></patient_name>
+          <patient_short_name tag="hidden"></patient_short_name>
+          <patient_display_name tag="hidden"></patient_display_name>
           <undo>
-            <undo_information/>
+            <undo_information></undo_information>
           </undo>
           <data tag="hidden">
-            <__confirm_undo/>
+            <__confirm_undo></__confirm_undo>
             <meta tag="hidden">
-              <__patient_uuid/>
-              <__patient_id/>
-              <__household_uuid/>
-              <__source/>
-              <__source_id/>
+              <__patient_uuid></__patient_uuid>
+              <__patient_id></__patient_id>
+              <__household_uuid></__household_uuid>
+              <__source></__source>
+              <__source_id></__source_id>
             </meta>
           </data>
           <meta tag="hidden">
-            <instanceID/>
+            <instanceID></instanceID>
           </meta>
-        </undo_death_report>
+        </data>
       </instance>
-      <instance id="contact-summary"/>
-      <bind nodeset="/undo_death_report/inputs" relevant="./source = 'user'"/>
-      <bind nodeset="/undo_death_report/inputs/source" type="string"/>
-      <bind nodeset="/undo_death_report/inputs/source_id" type="string"/>
-      <bind nodeset="/undo_death_report/inputs/contact/_id" type="db:person"/>
-      <bind nodeset="/undo_death_report/inputs/contact/name" type="string"/>
-      <bind nodeset="/undo_death_report/inputs/contact/short_name" type="string"/>
-      <bind nodeset="/undo_death_report/inputs/contact/patient_id" type="string"/>
-      <bind nodeset="/undo_death_report/inputs/contact/date_of_birth" type="string"/>
-      <bind nodeset="/undo_death_report/inputs/contact/sex" type="string"/>
-      <bind nodeset="/undo_death_report/inputs/contact/parent/_id" type="string"/>
-      <bind nodeset="/undo_death_report/inputs/contact/parent/parent/contact/name" type="string"/>
-      <bind nodeset="/undo_death_report/inputs/contact/parent/parent/contact/phone" type="string"/>
-      <bind nodeset="/undo_death_report/patient_age_in_years" type="string" calculate="floor( difference-in-months(  /undo_death_report/inputs/contact/date_of_birth , today() ) div 12 )"/>
-      <bind nodeset="/undo_death_report/patient_age_in_months" type="string" calculate="difference-in-months(  /undo_death_report/inputs/contact/date_of_birth , today() )"/>
-      <bind nodeset="/undo_death_report/patient_age_in_days" type="string" calculate="floor(decimal-date-time(today()) - decimal-date-time( /undo_death_report/inputs/contact/date_of_birth ) )"/>
-      <bind nodeset="/undo_death_report/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
-      <bind nodeset="/undo_death_report/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
-      <bind nodeset="/undo_death_report/patient_name" type="string" calculate="../inputs/contact/name"/>
-      <bind nodeset="/undo_death_report/patient_short_name" type="string" calculate="../inputs/contact/short_name"/>
-      <bind nodeset="/undo_death_report/patient_display_name" type="string" calculate="if(../patient_short_name = '', ../patient_name, concat(../patient_name, ' (', ../patient_short_name, ')'))"/>
-      <bind nodeset="/undo_death_report/undo/undo_information" type="select1" required="true()" jr:constraintMsg="jr:itext('/undo_death_report/undo/undo_information:jr:constraintMsg')" constraint=". = 'yes'"/>
-      <bind nodeset="/undo_death_report/data/__confirm_undo" type="string" calculate=" /undo_death_report/undo/undo_information "/>
-      <bind nodeset="/undo_death_report/data/meta/__patient_uuid" type="string" calculate="../../../inputs/contact/_id"/>
-      <bind nodeset="/undo_death_report/data/meta/__patient_id" type="string" calculate="../../../inputs/contact/patient_id"/>
-      <bind nodeset="/undo_death_report/data/meta/__household_uuid" type="string" calculate="../../../inputs/contact/parent/_id"/>
-      <bind nodeset="/undo_death_report/data/meta/__source" type="string" calculate="../../../inputs/source"/>
-      <bind nodeset="/undo_death_report/data/meta/__source_id" type="string" calculate="../../../inputs/source_id"/>
-      <bind nodeset="/undo_death_report/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+      <instance id="contact-summary"></instance>
+      <instance id="user-contact-summary"></instance>
+      <instance id="yes_no">
+        <root>
+          <item>
+            <name>yes</name>
+            <label>Yes</label>
+          </item>
+          <item>
+            <name>no</name>
+            <label>No</label>
+          </item>
+        </root>
+      </instance>
+      <bind nodeset="/data/inputs" relevant="./source = 'user'"></bind>
+      <bind nodeset="/data/inputs/source" type="string"></bind>
+      <bind nodeset="/data/inputs/source_id" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/_id" type="db:person"></bind>
+      <bind nodeset="/data/inputs/contact/name" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/short_name" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/patient_id" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/date_of_birth" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/sex" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/parent/_id" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/parent/parent/contact/name" type="string"></bind>
+      <bind nodeset="/data/inputs/contact/parent/parent/contact/phone" type="string"></bind>
+      <bind nodeset="/data/patient_age_in_years" type="string" calculate="floor( difference-in-months(  /data/inputs/contact/date_of_birth , today() ) div 12 )"></bind>
+      <bind nodeset="/data/patient_age_in_months" type="string" calculate="difference-in-months(  /data/inputs/contact/date_of_birth , today() )"></bind>
+      <bind nodeset="/data/patient_age_in_days" type="string" calculate="floor(decimal-date-time(today()) - decimal-date-time( /data/inputs/contact/date_of_birth ) )"></bind>
+      <bind nodeset="/data/patient_uuid" type="string" calculate="../inputs/contact/_id"></bind>
+      <bind nodeset="/data/patient_id" type="string" calculate="../inputs/contact/patient_id"></bind>
+      <bind nodeset="/data/patient_name" type="string" calculate="../inputs/contact/name"></bind>
+      <bind nodeset="/data/patient_short_name" type="string" calculate="../inputs/contact/short_name"></bind>
+      <bind nodeset="/data/patient_display_name" type="string" calculate="if(../patient_short_name = '', ../patient_name, concat(../patient_name, ' (', ../patient_short_name, ')'))"></bind>
+      <bind nodeset="/data/undo/undo_information" type="string" required="true()" constraint=". = 'yes'" jr:constraintMsg="jr:itext('/data/undo/undo_information:jr:constraintMsg')"></bind>
+      <bind nodeset="/data/data/__confirm_undo" type="string" calculate=" /data/undo/undo_information "></bind>
+      <bind nodeset="/data/data/meta/__patient_uuid" type="string" calculate="../../../inputs/contact/_id"></bind>
+      <bind nodeset="/data/data/meta/__patient_id" type="string" calculate="../../../inputs/contact/patient_id"></bind>
+      <bind nodeset="/data/data/meta/__household_uuid" type="string" calculate="../../../inputs/contact/parent/_id"></bind>
+      <bind nodeset="/data/data/meta/__source" type="string" calculate="../../../inputs/source"></bind>
+      <bind nodeset="/data/data/meta/__source_id" type="string" calculate="../../../inputs/source_id"></bind>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"></bind>
     </model>
   </h:head>
   <h:body class="pages">
-    <group appearance="field-list" ref="/undo_death_report/inputs">
-      <group ref="/undo_death_report/inputs/contact">
-        <input appearance="db-object" ref="/undo_death_report/inputs/contact/_id">
-          <label ref="jr:itext('/undo_death_report/inputs/contact/_id:label')"/>
+    <group appearance="field-list" ref="/data/inputs">
+      <label ref="jr:itext('/data/inputs:label')"></label>
+      <group ref="/data/inputs/contact">
+        <label ref="jr:itext('/data/inputs/contact:label')"></label>
+        <input ref="/data/inputs/contact/_id" appearance="db-object">
+          <label ref="jr:itext('/data/inputs/contact/_id:label')"></label>
         </input>
-        <group ref="/undo_death_report/inputs/contact/parent">
-          <group ref="/undo_death_report/inputs/contact/parent/parent">
-            <group ref="/undo_death_report/inputs/contact/parent/parent/contact"/>
+        <group ref="/data/inputs/contact/parent">
+          <label ref="jr:itext('/data/inputs/contact/parent:label')"></label>
+          <group ref="/data/inputs/contact/parent/parent">
+            <label ref="jr:itext('/data/inputs/contact/parent/parent:label')"></label>
+            <group ref="/data/inputs/contact/parent/parent/contact">
+              <label ref="jr:itext('/data/inputs/contact/parent/parent/contact:label')"></label>
+            </group>
           </group>
         </group>
       </group>
     </group>
-    <group appearance="field-list" ref="/undo_death_report/undo">
-      <select1 appearance="multiline" ref="/undo_death_report/undo/undo_information">
-        <label ref="jr:itext('/undo_death_report/undo/undo_information:label')"/>
-        <item>
-          <label>Yes</label>
-          <value>yes</value>
-        </item>
-        <item>
-          <label>No</label>
-          <value>no</value>
-        </item>
+    <group appearance="field-list" ref="/data/undo">
+      <label ref="jr:itext('/data/undo:label')"></label>
+      <select1 ref="/data/undo/undo_information" appearance="multiline">
+        <label ref="jr:itext('/data/undo/undo_information:label')"></label>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"></value>
+          <label ref="label"></label>
+        </itemset>
       </select1>
     </group>
-    <group appearance="hidden" ref="/undo_death_report/data">
-      <group ref="/undo_death_report/data/meta"/>
+    <group appearance="hidden" ref="/data/data">
+      <label ref="jr:itext('/data/data:label')"></label>
+      <group ref="/data/data/meta">
+        <label ref="jr:itext('/data/data/meta:label')"></label>
+      </group>
     </group>
   </h:body>
 </h:html>
