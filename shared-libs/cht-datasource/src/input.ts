@@ -171,13 +171,8 @@ export type PersonInput = ContactInput & Readonly<{
  * Builds an input object for creation and update of a person with
  * the given fields.
  * @param data object containing the fields for a person
- * @returns the person input
- * @throws Error if data is not an object
- * @throws Error if type is not provided or is empty
- * @throws Error if name is not provided or is empty
- * @throws Error if parent is not provided or is empty
- * @throws Error if reported_date is not in a valid format.
- * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+ * @returns the validated person input
+ * @internal
  */
 export const validatePersonInput = (data: unknown): PersonInput => {
   const input = validateContactInputNonAssertive(data);
