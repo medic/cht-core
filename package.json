@@ -100,7 +100,7 @@
     "@types/pouchdb": "^6.4.0",
     "@types/sinon": "^17.0.3",
     "@typescript-eslint/eslint-plugin": "^8.24.1",
-    "@typescript-eslint/parser": "^8.40.0",
+    "@typescript-eslint/parser": "^8.44.0",
     "@typescript-eslint/utils": "^8.38.0",
     "@wdio/allure-reporter": "^9.19.2",
     "@wdio/appium-service": "^9.19.2",
