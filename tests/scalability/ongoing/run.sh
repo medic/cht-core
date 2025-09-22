@@ -11,6 +11,17 @@ fi
 if [ $RUN_LOCAL = false ]
 then
   sudo shutdown -P +60
+  
+  # Set environment variables for CI execution
+  export BASE_URL="$MEDIC_URL"
+  export ADMIN_USER="medic"
+  export ADMIN_PASSWORD="medicScalability"
+  export DATA_DIR="./data"
+  
+  # Install dependencies
+  apt-get update
+  apt-get install default-jre nodejs npm git wget bzip2 jq -y
+  
   echo Cloning cht-core to /cht-core
   git clone --single-branch --branch "$TAG_NAME" https://github.com/medic/cht-core.git;
   cd cht-core/tests/scalability/ongoing

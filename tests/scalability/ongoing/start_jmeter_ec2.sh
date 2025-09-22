@@ -7,8 +7,7 @@ echo "$GITHUB_RUN_ID"
 
 export S3_PATH=s3://medic-e2e/scalability/$TAG_NAME-$GITHUB_RUN_ID
 export DATA_DIR=./data
-# shellcheck source=run.sh
-source run.sh
+export NODE_TLS_REJECT_UNAUTHORIZED=0
 
 echo "Triggering EC2 Run Instance Command and getting Instance ID"
 instanceID=$(aws ec2 run-instances \
