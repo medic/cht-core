@@ -2,11 +2,12 @@
 # Fail job when script errors
 set -e
 
-echo $MEDIC_URL
-echo $GITHUB_RUN_ID
+echo "$MEDIC_URL"
+echo "$GITHUB_RUN_ID"
 
 export S3_PATH=s3://medic-e2e/scalability/$TAG_NAME-$GITHUB_RUN_ID
 export DATA_DIR=./data
+# shellcheck source=run.sh
 source run.sh
 
 echo "Triggering EC2 Run Instance Command and getting Instance ID"
@@ -17,7 +18,7 @@ instanceID=$(aws ec2 run-instances \
   --block-device-mappings file://block-device-mapping.json \
   --user-data file://run.sh \
   --instance-initiated-shutdown-behavior terminate \
-  --iam-instance-profile Arn=$SCALABILITY_ARN \
+  --iam-instance-profile Arn="$SCALABILITY_ARN" \
   | jq .Instances[0].InstanceId -r)
 
 echo "instance id is $instanceID"

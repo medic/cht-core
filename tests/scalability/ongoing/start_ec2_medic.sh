@@ -17,13 +17,13 @@ instanceID=$(aws ec2 run-instances \
 echo "Instance id is $instanceID"
 
 echo "Getting PublicDnsName"
-PublicDnsName=$(aws ec2 describe-instances --instance-ids $instanceID | jq .Reservations[0].Instances[0].PublicDnsName -r)
+PublicDnsName=$(aws ec2 describe-instances --instance-ids "$instanceID" | jq .Reservations[0].Instances[0].PublicDnsName -r)
 echo "DNS is $PublicDnsName"
 
 if [ -z "$PublicDnsName" ]
 then
   echo "DNS name not setting. Trying to get again"
-  PublicDnsName=$(aws ec2 describe-instances --instance-ids $instanceID | jq .Reservations[0].Instances[0].PublicDnsName -r)
+  PublicDnsName=$(aws ec2 describe-instances --instance-ids "$instanceID" | jq .Reservations[0].Instances[0].PublicDnsName -r)
 fi
 
 if [ -z "$PublicDnsName" ]
@@ -34,14 +34,14 @@ fi
 
 url=https://$PublicDnsName
 
-echo "MEDIC_URL=$url" >> $GITHUB_ENV
+echo "MEDIC_URL=$url" >> "$GITHUB_ENV"
 
 echo "Begin Checking $url/api/info is up"
-version=$(curl -s $url/api/info -k | jq .version -r)
+version=$(curl -s "$url"/api/info -k | jq .version -r)
 
 until [ "$version" = "0.1.0" ]
 do
-  version=$(curl -s $url/api/info -k | jq .version -r)
+  version=$(curl -s "$url"/api/info -k | jq .version -r)
   sleep 10
   echo "Sleeping again. Version is $version"
 done
@@ -53,20 +53,20 @@ INSTANCE_URL='https://medic:medicScalability@'$PublicDnsName
 sleep 10
 
 echo "staging updates"
-curl $INSTANCE_URL/api/v1/upgrade/stage -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"'$1'"}}'
+curl "$INSTANCE_URL"/api/v1/upgrade/stage -k -X POST -H "Content-Type: application/json" -d '{"build":{"namespace":"medic","application":"medic","version":"'"$1"'"}}'
 
-staged=$(curl $INSTANCE_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
-echo "$(curl $INSTANCE_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)"
+staged=$(curl "$INSTANCE_URL"/medic/horti-upgrade -s -k | jq .staging_complete -r)
+curl "$INSTANCE_URL"/medic/horti-upgrade -s -k | jq .staging_complete -r
 
 until [ "$staged" == "true" ]
 do
-  echo "$(curl $INSTANCE_URL/medic/horti-upgrade -s -k | jq)"
-  staged=$(curl $INSTANCE_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
+  curl "$INSTANCE_URL"/medic/horti-upgrade -s -k | jq
+  staged=$(curl "$INSTANCE_URL"/medic/horti-upgrade -s -k | jq .staging_complete -r)
   sleep 60
   echo "waiting for staging to complete"
 done
 
-curl $INSTANCE_URL/api/v1/upgrade/complete -k -X POST
+curl "$INSTANCE_URL"/api/v1/upgrade/complete -k -X POST
 
 sleep 10
 
