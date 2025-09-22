@@ -28,9 +28,12 @@ jobs:
         if: ${{ !inputs.branch_name }}
         
       - name: Set TAG and BRANCH
+        env:
+          TAG_NAME: ${{ inputs.tag_name }}
+          BRANCH_NAME: ${{ inputs.branch_name || github.ref_name }}
         run: |
-          echo "TAG_NAME=${{ inputs.tag_name }}" >> $GITHUB_ENV
-          echo "BRANCH_NAME=${{ inputs.branch_name || github.ref_name }}" >> $GITHUB_ENV
+          echo "TAG_NAME=$TAG_NAME" >> "$GITHUB_ENV"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> "$GITHUB_ENV"
           
       - name: Checkout
         uses: actions/checkout@v4
