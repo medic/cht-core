@@ -1,0 +1,70 @@
+name: Ongoing Scalability Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'CHT version tag to test'
+        required: true
+        default: 'latest'
+      branch_name:
+        description: 'Branch name for the test'
+        required: false
+        default: 'master'
+
+env:
+  INTERNAL_CONTRIBUTOR: ${{ secrets.SCALABILITY_ARN && 'true' }}
+  SCALABILITY_ARN: ${{ secrets.SCALABILITY_ARN }}
+
+jobs:
+  build:
+    name: Set up CHT on EC2 and Execute JMeter on another EC2
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    
+    steps:
+      - name: Get branch name
+        uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
+        if: ${{ !inputs.branch_name }}
+        
+      - name: Set TAG and BRANCH
+        run: |
+          echo "TAG_NAME=${{ inputs.tag_name }}" >> $GITHUB_ENV
+          echo "BRANCH_NAME=${{ inputs.branch_name || github.ref_name }}" >> $GITHUB_ENV
+          
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Configure AWS Credentials
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.SCALABILITY_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SCALABILITY_SECRET_ACCESS_KEY }}
+          aws-region: ca-central-1
+          
+      - name: Start EC2 and CHT
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        run: cd tests/scalability/ongoing && ./start_ec2_medic.sh $TAG_NAME $BRANCH_NAME
+        
+      - name: Execute JMeter
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        env:
+          SCALABILITY_ARN: ${{ secrets.SCALABILITY_ARN }}
+        run: cd tests/scalability/ongoing && ./start_jmeter_ec2.sh
+        
+      - name: Upload test results
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ongoing-scalability-results-${{ github.run_id }}
+          path: |
+            tests/scalability/ongoing/report/
+            tests/scalability/ongoing/jmeter.log
+          retention-days: 30
+          
+      - name: Notify on failure
+        if: ${{ failure() && env.INTERNAL_CONTRIBUTOR }}
+        run: |
+          echo "Ongoing scalability test failed for tag: $TAG_NAME, branch: $BRANCH_NAME"
+          echo "Check the artifacts for detailed logs and results"
