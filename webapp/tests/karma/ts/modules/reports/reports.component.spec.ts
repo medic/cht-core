@@ -484,7 +484,7 @@ describe('Reports Component', () => {
       store.refreshState();
       sinon.resetHistory();
       component.selectMode = true;
-
+      component.totalReportsCount = 2;
       await component.selectAllReports();
 
       expect(searchService.search.notCalled).to.be.true;
@@ -661,6 +661,7 @@ describe('Reports Component', () => {
 
       component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
       component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
+      component.totalReportsCount = component.reportsList.length;
 
       expect(component.areAllReportsSelected()).to.be.true;
     });
