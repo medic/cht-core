@@ -243,7 +243,7 @@ const updateAttachments = async (doc) => {
   }
 };
 // Returns array of docs that need saving.
-const updateAllAttachments = async (docs) => (await Promise.all(docs.map(updateAttachments))).filter(r => r);
+const updateAllAttachments = async (docs) => (await Promise.all(docs.map(updateAttachments))).filter(Boolean);
 
 module.exports = {
 

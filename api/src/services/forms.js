@@ -64,7 +64,7 @@ module.exports = {
       doc._attachments[name].data =  Buffer.from(xml);
       return doc;
     }));
-    return docs.filter(doc => doc);
+    return docs.filter(Boolean);
 
   },
 };
