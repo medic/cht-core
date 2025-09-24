@@ -1,4 +1,6 @@
-<div class="page scrolling">
+<div
+    class="page scrolling"
+    [ngClass]="{'sidebar-open': !!sidebarFilter.isOpen, 'sidebar-closed': !sidebarFilter.isOpen}">
   <div class="item-content empty-selection" *ngIf="targetsDisabled">
     <div>{{ 'targets.disabled' | translate }}</div>
   </div>
@@ -13,7 +15,10 @@
 
   <error-log class="targets" *ngIf="!targetsDisabled && !loading && !!errorStack" [errorStack]="errorStack" [errorFor]="'targets'"></error-log>
 
-  <div class="targets" *ngIf="!targetsDisabled && !loading && targets?.length && !errorStack">
+  <div
+      class="targets"
+      [ngClass]="{'sidebar-open': !!sidebarFilter.isOpen, 'sidebar-closed': !sidebarFilter.isOpen}"
+      *ngIf="!targetsDisabled && !loading && targets?.length && !errorStack">
     <div class="target" *ngFor="let target of targets"
       [ngClass]="{ 'has-goal': target.goal >= 0, 'goal-met': (target.value?.pass >= target.goal) || (target.value?.percent >= target.goal) }"
       attr.test-target-id="{{ target.id }}">
@@ -39,5 +44,9 @@
         </div>
       </div>
     </div>
+    <mm-analytics-sidebar-filter class="col-sm-3 sidebar-filter-wrapper">
+      [showFacilityFilter]="false"
+      (reportingPeriodSelectionChanged)="handleReportingPeriodChange($event)"
+    </mm-analytics-sidebar-filter>
   </div>
 </div>
