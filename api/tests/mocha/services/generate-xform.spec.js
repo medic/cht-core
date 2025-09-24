@@ -526,6 +526,7 @@ describe('generate-xform service', () => {
     it('should ignore collect forms', () => {
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [ COLLECT_FORM_ROW ] });
       sinon.stub(db, 'saveDocs');
+      sinon.stub(db.medic, 'getAttachment');
       return service.updateAll().then(() => {
         expect(db.medic.allDocs.callCount).to.equal(1);
         expect(db.saveDocs.callCount).to.equal(0);

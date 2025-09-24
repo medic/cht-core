@@ -28,9 +28,9 @@ module.exports = {
     return name && doc._attachments[name];
   },
 
-  getAttachment: async (doc_id, name) => {
+  getAttachment: async (docId, name) => {
     try {
-      return await db.medic.getAttachment(doc_id, name);
+      return await db.medic.getAttachment(docId, name);
     } catch (error) {
       if (error.status === 404) {
         logger.error(error);
