@@ -50,6 +50,8 @@ exports.config = Object.assign(wdioBaseConfig.config, {
     : [desktopCapability],
   maxInstances: 1,
   beforeSuite: async function () {
-    await resizeWindowForScreenshots();
+    // Pass the suite type to the resize function
+    const isMobileSuite = process.argv.includes('--suite=mobileTests');
+    await resizeWindowForScreenshots(isMobileSuite);
   },
 });
