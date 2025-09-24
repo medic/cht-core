@@ -3,6 +3,7 @@ const sinon = require('sinon');
 
 const service = require('../../../src/services/forms');
 const db = require('../../../src/db');
+const logger = require('@medic/logger');
 
 describe('forms service', () => {
 
@@ -14,22 +15,72 @@ describe('forms service', () => {
 
     it('returns attachment called "xml"', () => {
       const expected = '<myxml/>';
-      const given =  { _attachments: { xml: expected } };
+      const given = { _attachments: { xml: expected } };
       const actual = service.getXFormAttachment(given);
       expect(actual).to.equal(expected);
     });
 
     it('returns attachment with "xml" file extension', () => {
       const expected = '<myxml/>';
-      const given =  { _attachments: { 'my-form.xml': expected } };
+      const given = { _attachments: { 'my-form.xml': expected } };
       const actual = service.getXFormAttachment(given);
       expect(actual).to.equal(expected);
     });
 
     it('ignores attachment called "model.xml"', () => {
-      const given =  { _attachments: { 'model.xml': '<myxml/>' } };
+      const given = { _attachments: { 'model.xml': '<myxml/>' } };
       const actual = service.getXFormAttachment(given);
       expect(actual).to.equal(undefined);
+    });
+  });
+
+  describe('getAttachment', () => {
+    it('should return attachment when db.medic.getAttachment succeeds', async () => {
+      const fakeDoc = { _id: 'doc1', _rev: '1-abc' };
+      const fakeName = 'file.txt';
+      const fakeAttachment = { data: 'hello' };
+
+      sinon.stub(db.medic, 'getAttachment').resolves(fakeAttachment);
+      sinon.stub(logger, 'error');
+
+
+      const result = await service.getAttachment(fakeDoc._id, fakeName);
+
+      expect(result).to.equal(fakeAttachment);
+      expect(db.medic.getAttachment.calledOnceWith(fakeDoc._id, fakeName)).to.be.true;
+      expect(logger.error.called).to.be.false;
+    });
+
+    it('should return null and log error when error status is 404', async () => {
+      const fakeDoc = { _id: 'doc1', _rev: '1-abc' };
+      const fakeName = 'missing.txt';
+      const notFoundError = new Error('Not found');
+      notFoundError.status = 404;
+
+      sinon.stub(db.medic, 'getAttachment').rejects(notFoundError);
+      sinon.stub(logger, 'error');
+      const result = await service.getAttachment(fakeDoc._id, fakeName);
+
+      expect(result).to.be.null;
+      expect(logger.error.calledOnceWith(notFoundError)).to.be.true;
+    });
+
+    it('should throw error for non-404 errors', async () => {
+      const fakeDoc = { _id: 'doc1', _rev: '1-abc' };
+      const fakeName = 'error.txt';
+      const someError = new Error('DB down');
+      someError.status = 500;
+
+      sinon.stub(db.medic, 'getAttachment').rejects(someError);
+      sinon.stub(logger, 'error');
+
+      try {
+        await service.getAttachment(fakeDoc, fakeName, db);
+        throw new Error('Expected error to be thrown');
+      } catch (err) {
+        expect(err).to.equal(someError);
+        expect(logger.error.called).to.be.false;
+      }
     });
   });
 
@@ -49,7 +100,7 @@ describe('forms service', () => {
     });
 
     it('returns an empty array when no xform docs found', () => {
-      const given = [ { doc: {} } ];
+      const given = [{ doc: {} }];
       sinon.stub(db.medic, 'allDocs').resolves({ rows: given });
       return service.getFormDocs().then(actual => {
         expect(actual).to.deep.equal([]);

@@ -227,9 +227,9 @@ const updateAttachments = async (doc) => {
   if (getEnketoForm(doc)) {
 
     const [xml, form, model] = await Promise.all([
-      formsService.getAttachment(doc, formsService.getXFormAttachmentName(doc)),
-      formsService.getAttachment(doc, 'form.html'),
-      formsService.getAttachment(doc, 'model.xml')
+      formsService.getAttachment(doc._id, formsService.getXFormAttachmentName(doc)),
+      formsService.getAttachment(doc._id, 'form.html'),
+      formsService.getAttachment(doc._id, 'model.xml')
     ]);
 
     if ( !xml ) {

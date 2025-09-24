@@ -27,7 +27,7 @@ const expectAttachments = (doc, form, model) => {
   expect(modelAttachment.content_type).to.equal('text/xml');
 };
 
-const fakeGetAttachment = (id, name, opt) => {
+const fakeGetAttachment = (id, name) => {
   // Fail the test if the code tries to fetch any non-XML attachment
   const formXml = '<my-xml/>';
   const currentForm = '<html/>';
@@ -40,7 +40,7 @@ const fakeGetAttachment = (id, name, opt) => {
     case 'model.xml': attachment=Buffer.from(currentModel); break;
     default: throw new Error(`Should only fetch xml or form.html attachment: ${name}`);
   }
-  return opt.rev && Promise.resolve(attachment);
+  return Promise.resolve(attachment);
 };
 
 afterEach(() => sinon.restore());
@@ -452,7 +452,7 @@ describe('generate-xform service', () => {
 
       expect(db.medic.get.calledOnce).to.be.true;
       expect(db.medic.getAttachment.callCount).to.equal(3);
-      expect(db.medic.getAttachment.calledWith(docId, 'xml', { rev: '1-rev' })).to.be.true;
+      expect(db.medic.getAttachment.calledWith(docId, 'xml')).to.be.true;
       expect(service.generate.calledOnce).to.be.true;
       expect(db.medic.put.calledOnce).to.be.true;
 

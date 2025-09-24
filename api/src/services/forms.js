@@ -28,9 +28,9 @@ module.exports = {
     return name && doc._attachments[name];
   },
 
-  getAttachment: async (doc, name) => {
+  getAttachment: async (doc_id, name) => {
     try {
-      return await db.medic.getAttachment(doc._id, name, { rev: doc._rev });
+      return await db.medic.getAttachment(doc_id, name);
     } catch (error) {
       if (error.status === 404) {
         logger.error(error);
@@ -57,16 +57,11 @@ module.exports = {
         return null;
       }
 
-      const xml = await module.exports.getAttachment(doc, name);
-      if (xml===null){
-        return null;
+      const xml = await module.exports.getAttachment(doc._id, name);
+      if (!xml){
+        return;
       }
-
-      doc._attachments = doc._attachments || {};
-      doc._attachments[name] = {
-        data: Buffer.from(xml),
-        content_type: 'text/xml'
-      };
+      doc._attachments[name].data =  Buffer.from(xml);
       return doc;
     }));
     return docs.filter(doc => doc);
