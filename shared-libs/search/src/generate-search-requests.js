@@ -140,7 +140,10 @@ const contactTypeRequest = (filters, sortByLastVisitedDate) => {
     // Used by select2search
     request = getRequestWithMappedKeys(view, filters.types.selected, getKeysArray);
   }
-
+  
+  request.params = request.params || {};
+  request.params.reduce = false;
+  
   if (sortByLastVisitedDate) {
     request.map = row => {
       const [ dead, muted ] = row.value.split(' ');
@@ -163,6 +166,7 @@ const defaultReportRequest = () => {
 const defaultContactRequest = () => {
   return {
     view: 'medic-client/contacts_by_type',
+    params: { reduce: false },
     ordered: true
   };
 };

@@ -67,7 +67,7 @@ export namespace v1 {
     // Define offline query functions
     const getByTypeExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic-offline-freetext/contacts_by_type_freetext');
     const getByExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic-offline-freetext/contacts_by_freetext');
-    const getByType = queryDocUuidsByKey(medicDb, 'medic-client/contacts_by_type'); // common function
+    const getByType = queryDocUuidsByKey(medicDb, 'medic-client/contacts_by_type', false); // common function
     const getByTypeStartsWithFreetext = queryDocUuidsByRange(
       medicDb, 'medic-offline-freetext/contacts_by_type_freetext'
     );
