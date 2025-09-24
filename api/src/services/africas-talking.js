@@ -4,7 +4,7 @@ const logger = require('@medic/logger');
 const config = require('../config');
 
 // Map of sending statuses to Medic statuses
-// https://build.at-labs.io/docs/sms%2Fsending
+// https://developers.africastalking.com/docs/sms/sending/premium -> API Response section
 const STATUS_MAP = {
   // success
   100: { success: true, state: 'forwarded-by-gateway', detail: 'Processed' },
