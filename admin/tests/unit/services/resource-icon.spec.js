@@ -403,6 +403,35 @@ describe('ResourceIcons service', () => {
         .then(() => chai.assert.fail('Should have thrown'))
         .catch(err => chai.expect(err).to.deep.equal({ err: 'omg' }));
     });
+
+    it('should not fail when doc is malformed (empty object)', () => {
+      get.resolves({});
+      const service = injector.get('ResourceIcons');
+      return service.getDocResources('partners').then(result => {
+        chai.expect(result).to.deep.equal([]);
+        chai.expect(get.callCount).to.equal(4);
+      });
+    });
+
+    it('should not fail when doc has null resources', () => {
+      get.resolves({ resources: null });
+      const service = injector.get('ResourceIcons');
+      return service.getDocResources('partners').then(result => {
+        chai.expect(result).to.deep.equal([]);
+        chai.expect(get.callCount).to.equal(4); 
+        chai.expect(get.args[3]).to.deep.equal(['partners']);
+      });
+    });
+
+    it('should not fail when doc has undefined resources', () => {
+      get.resolves({ resources: undefined });
+      const service = injector.get('ResourceIcons');
+      return service.getDocResources('partners').then(result => {
+        chai.expect(result).to.deep.equal([]);
+        chai.expect(get.callCount).to.equal(4);
+        chai.expect(get.args[3]).to.deep.equal(['partners']);
+      });
+    });
   });
 
   describe('getDocResourcesByMimeType', () => {
