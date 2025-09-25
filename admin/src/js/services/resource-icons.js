@@ -110,7 +110,9 @@ angular.module('inboxServices').factory('ResourceIcons',
         return getHtml(name, docId, faPlaceholder);
       },
       getDocResources: doc => {
-        return DB().get(doc).then(res => Object.keys(res.resources));
+        return DB().get(doc).then(res => {
+          return Object.keys((res && res.resources) ? res.resources : {});
+        });
       },
       getAppTitle: () => DB().get(DOC_IDS[1]).then(doc => doc.title),
       replacePlaceholders: $elem => {

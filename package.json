@@ -127,7 +127,7 @@
     "csv-writer": "^1.6.0",
     "deep-equal-in-any-order": "^2.0.6",
     "doctoc": "^2.2.1",
-    "eslint": "^9.32.0",
+    "eslint": "^9.36.0",
     "eslint-plugin-angular": "^4.1.0",
     "eslint-plugin-async": "^0.1.1",
     "eslint-plugin-compat": "^6.0.2",
@@ -210,7 +210,6 @@
     "mustache": "^4.2.0",
     "node-fetch": "^2.6.9",
     "node-html-parser": "^7.0.1",
-    "nools": "^0.4.4",
     "object-path": "^0.11.8",
     "openid-client": "^6.4.2",
     "openrosa-formlist": "github:medic/openrosa-formlist#sax",
@@ -229,6 +228,7 @@
     "semver": "^7.7.0",
     "simple-password-tester": "^1.0.0",
     "tmp-promise": "^3.0.3",
+    "undici": "^7.16.0",
     "url": "^0.11.1",
     "url-join": "^4.0.1",
     "uuid": "^10.0.0",
@@ -237,9 +237,6 @@
     "xmlbuilder": "^15.1.1"
   },
   "overrides": {
-    "node-fetch": "$node-fetch",
-    "nools": {
-      "uglify-js": ">=2.6.0"
-    }
+    "node-fetch": "$node-fetch"
   }
 }
