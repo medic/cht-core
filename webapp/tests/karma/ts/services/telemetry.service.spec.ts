@@ -140,7 +140,6 @@ describe('TelemetryService', () => {
     it('should record a piece of telemetry', async () => {
       medicDb.query.resolves({ rows: [] });
       telemetryDb.query.resolves({ rows: [] });
-      const invalidDBNameWarning = 'Invalid telemetry database name, deleting database. Name:';
       const oldTelemetryDBNames = [
         '_pouch_medic-user-koko-telemetry-98y7c3a1-5a1a-4d3f-a076-d86ec38b1d87',
         '_pouch_medic-user-greg-telemetry-59d4c3a1-5a1a-4d3f-a076-d86ec38b1d32',
