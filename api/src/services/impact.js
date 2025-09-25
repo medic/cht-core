@@ -47,21 +47,30 @@ const getContactsByType = async () => {
   }
 };
 
+const getUserCount = async () => {
+  const info = await db.users.info();
+  const count = info?.doc_count || 0;
+  return Math.max(count-2, 0); // deduct count of _auth and _users
+};
+
 const jsonV1 = () => {
   return Promise
     .all([
+      getUserCount(),
       getContactsByType(),
       getReportsCount(),
       getReportsCountByForm()
     ])
     .then(([
+      userCount,
       contactsByType,
       reportsCount,
       reportsByForm
     ]) => {
       return {
-        contactsByType: contactsByType,
+        totalUsers: userCount,
         totalReports: reportsCount,
+        contactsByType: contactsByType,
         reportsByForm: reportsByForm
       };
     });
