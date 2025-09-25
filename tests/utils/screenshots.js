@@ -24,8 +24,11 @@ const isMobile = async () => {
   return width < MOBILE_WINDOW_WIDTH;
 };
 
-const resizeWindowForScreenshots = async () => {
-  if (await isMobile()) {
+const resizeWindowForScreenshots = async (isMobileSuite = null) => {
+  // Use explicit suite parameter if provided, otherwise fall back to window size detection
+  const shouldUseMobile = isMobileSuite !== null ? isMobileSuite : await isMobile();
+  
+  if (shouldUseMobile) {
     return await browser.emulateDevice({
       viewport: {
         width: MOBILE_VIEWPORT_WIDTH,
