@@ -16,7 +16,6 @@ export class TelemetryService {
   // Intentionally scoped to the whole browser (for this domain). We can then tell if multiple users use the same device
   private readonly DEVICE_ID_KEY = 'medic-telemetry-device-id';
   private isAggregationRunning = false;
-  private hasTransitionFinished = false;
   private windowRef;
 
   constructor(
