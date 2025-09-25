@@ -30,8 +30,8 @@ import { Selectors } from '@mm-selectors/index';
     TranslatePipe,
     ResourceIconPipe,
     TranslateFromPipe,
-    LocalizeNumberPipe
-  ]
+    LocalizeNumberPipe,
+  ],
 })
 export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
   private globalActions: GlobalActions;
@@ -43,14 +43,15 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
   trackPerformance;
   direction;
   sidebarFilter;
+  reportingPeriodFilter;
 
   constructor(
-      private rulesEngineService: RulesEngineService,
-      private performanceService: PerformanceService,
-      private store: Store,
+    private rulesEngineService: RulesEngineService,
+    private performanceService: PerformanceService,
+    private store: Store
   ) {
     this.trackPerformance = this.performanceService.track();
-    this.store.select(Selectors.getDirection).subscribe(direction => {
+    this.store.select(Selectors.getDirection).subscribe((direction) => {
       this.direction = direction;
     });
     this.globalActions = new GlobalActions(store);
@@ -68,41 +69,16 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.globalActions.clearSidebarFilter();
+    this.subscriptions.unsubscribe();
   }
 
   private subscribeToStore() {
-    const selectorsSubscription = this.store.select(Selectors.getSidebarFilter)
-        .subscribe((sidebarFilter) => {
-          this.sidebarFilter = sidebarFilter;
-        });
+    const selectorsSubscription = this.store
+      .select(Selectors.getSidebarFilter)
+      .subscribe((sidebarFilter) => {
+        this.sidebarFilter = sidebarFilter;
+      });
     this.subscriptions.add(selectorsSubscription);
-  }
-
-  private getTargets() {
-    return this.rulesEngineService
-        .isEnabled()
-        .then(isEnabled => {
-          this.targetsDisabled = !isEnabled;
-          return isEnabled ? this.rulesEngineService.fetchTargets() : [];
-        })
-        .catch(err => {
-          console.error('Error getting targets', err);
-          this.errorStack = err.stack;
-          return [];
-        })
-        .then((targets: any[] = []) => {
-          this.loading = false;
-          this.targets = targets.filter(target => target.visible !== false);
-          this.trackPerformance?.stop({
-            name: [ 'analytics', 'targets', 'load' ].join(':'),
-            recordApdex: true,
-          });
-        });
-  }
-
-  handleReportingPeriodChange(reportingPeriod: ReportingPeriod) {
-    // Handle reporting period change for targets
-    console.log('Reporting period changed:', reportingPeriod);
   }
 
   private async setDefaultFilters() {
@@ -110,5 +86,32 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
       reportingPeriod: ReportingPeriod.CURRENT,
     };
     this.globalActions.setSidebarFilter({ defaultFilters });
+    this.reportingPeriodFilter = defaultFilters.reportingPeriod;
+  }
+
+  getTargets(reportingPeriod?) {
+    if (reportingPeriod) {
+      this.reportingPeriodFilter = reportingPeriod;
+    }
+
+    return this.rulesEngineService
+      .isEnabled()
+      .then(isEnabled => {
+        this.targetsDisabled = !isEnabled;
+        return isEnabled ? this.rulesEngineService.fetchTargets() : [];
+      })
+      .catch(err => {
+        console.error('Error getting targets', err);
+        this.errorStack = err.stack;
+        return [];
+      })
+      .then((targets: any[] = []) => {
+        this.loading = false;
+        this.targets = targets.filter(target => target.visible !== false);
+        this.trackPerformance?.stop({
+          name: [ 'analytics', 'targets', 'load' ].join(':'),
+          recordApdex: true,
+        });
+      });
   }
 }

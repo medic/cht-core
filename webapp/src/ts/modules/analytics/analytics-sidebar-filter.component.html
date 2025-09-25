@@ -1,6 +1,6 @@
 <section class="sidebar-filter">
   <div class="sidebar-backdrop" [ngClass]="{ hidden: !isOpen }"
-       (click)="toggleSidebarFilter()" (keydown.escape)="toggleSidebarFilter()">
+    (click)="toggleSidebarFilter()" (keydown.escape)="toggleSidebarFilter()">
   </div>
 
   <div class="sidebar-main" [ngClass]="{ hidden: !isOpen }">
@@ -24,9 +24,9 @@
             <div class="filter-radio-option">
               <label class="filter-option-wrapper">
                 <input type="radio" name="facility" [value]="facility"
-                       class="filter-option-radio"
-                       [checked]="facility._id === selectedFacility._id"
-                       (change)="fetchAggregateTargetsByFacility(facility)">
+                  class="filter-option-radio"
+                  [checked]="facility._id === selectedFacility._id"
+                  (change)="fetchAggregateTargetsByFacility(facility)">
                 <span class="filter-option-label">
                   {{ facility.name }}
                 </span>
@@ -43,12 +43,12 @@
             {{ 'analytics.target.aggregates.reporting_period' | translate }}
           </span>
           <div class="filter-radio-option"
-               *ngFor="let period of reportingPeriods">
+            *ngFor="let period of reportingPeriods">
             <label class="filter-option-wrapper">
               <input type="radio" name="reporting-period"
-                     class="filter-option-radio" [value]="period.value"
-                     [(ngModel)]="selectedReportingPeriod"
-                     (change)="fetchAggregateTargetsByReportingPeriod()">
+                class="filter-option-radio" [value]="period.value"
+                [(ngModel)]="selectedReportingPeriod"
+                (change)="fetchAggregateTargetsByReportingPeriod()">
               <span class="filter-option-label">
                 {{ period.label | translate }}
               </span>
@@ -60,7 +60,7 @@
 
     <div class="sidebar-footer">
       <button type="button" class="btn btn-primary"
-              (click)="toggleSidebarFilter()">
+        (click)="toggleSidebarFilter()">
         {{ 'reports.sidebar.filter.submit' | translate }}
       </button>
     </div>
