@@ -140,9 +140,11 @@ const contactTypeRequest = (filters, sortByLastVisitedDate) => {
     // Used by select2search
     request = getRequestWithMappedKeys(view, filters.types.selected, getKeysArray);
   }
-  
-  request.params = request.params || {};
-  request.params.reduce = false;
+
+  if (request){
+    request.params = request.params || {};
+    request.params.reduce = false;
+  }
   
   if (sortByLastVisitedDate) {
     request.map = row => {
