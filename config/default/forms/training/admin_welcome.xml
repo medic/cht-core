@@ -4,47 +4,35 @@
     <h:title>Getting started</h:title>
     <model>
       <itext>
-        <translation lang="English (en)">
+        <translation lang="en">
           <text id="/admin_welcome/community/forum:label">
-            <value>Please introduce yourself on the [CHT Forum](https://forum.communityhealthtoolkit.org)! This is a great place to find answers to your questions and connect with others who are deploying, configuring, and/or developing software in the CHT ecosystem.</value>
+            <value>Introduce yourself on the [CHT Forum](https://forum.communityhealthtoolkit.org)! This is a great place to find answers and connect with others in the community.</value>
           </text>
           <text id="/admin_welcome/community/img:label">
             <value form="image">jr://images/logo.png</value>
           </text>
           <text id="/admin_welcome/community/intro:label">
-            <value>The Community Health Toolkit is maintained by a thriving community of people around the world!</value>
-          </text>
-          <text id="/admin_welcome/community:label">
-            <value>The CHT Community</value>
+            <value>The CHT is maintained by a community of people around the world.</value>
           </text>
           <text id="/admin_welcome/contacts/add_contacts:label">
-            <value>Start using this instance by [adding some contacts and then creating a new user](https://docs.communityhealthtoolkit.org/building/contact-management/contact-and-users-1/).</value>
-          </text>
-          <text id="/admin_welcome/contacts/data:label">
-            <value>Data in the Community Health Toolkit is associated with [contacts](https://docs.communityhealthtoolkit.org/building/contact-management/contacts/) (persons and places).</value>
+            <value>Get started by [adding contacts and users](https://docs.communityhealthtoolkit.org/building/contact-management/contact-and-users-1/).</value>
           </text>
           <text id="/admin_welcome/contacts/img:label">
             <value form="image">jr://images/household-profile.png</value>
           </text>
-          <text id="/admin_welcome/contacts:label">
-            <value>Add Contacts</value>
-          </text>
           <text id="/admin_welcome/welcome/docs:label">
-            <value>See [the documentation](https://docs.communityhealthtoolkit.org/building/) for details on how to customize the CHT configuration for your specific workflows.</value>
+            <value>To configure this instance for your specific workflows, see [the documentation](https://docs.communityhealthtoolkit.org/building/).</value>
           </text>
           <text id="/admin_welcome/welcome/img:label">
             <value form="image">jr://images/icon-people-pregnant-clinic.png</value>
           </text>
           <text id="/admin_welcome/welcome/instance_info:label">
-            <value>This instance is currently configured with the default [Maternal and Newborn Health app](https://docs.communityhealthtoolkit.org/reference-apps/maternal-newborn/).</value>
-          </text>
-          <text id="/admin_welcome/welcome:label">
-            <value>Welcome to your new CHT instance!</value>
+            <value>Welcome to your new CHT instance! It is running the [Maternal and Newborn Health app](https://docs.communityhealthtoolkit.org/reference-apps/maternal-newborn/).</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <admin_welcome id="training:admin_welcome" prefix="J1!training:admin_welcome!" delimiter="#" version="20250910160444">
+        <admin_welcome id="training:admin_welcome" prefix="J1!training:admin_welcome!" delimiter="#" version="20250926152620">
           <welcome>
             <img/>
             <instance_info/>
@@ -52,7 +40,6 @@
           </welcome>
           <contacts>
             <img/>
-            <data/>
             <add_contacts/>
           </contacts>
           <community>
@@ -69,7 +56,6 @@
       <bind nodeset="/admin_welcome/welcome/instance_info" readonly="true()" type="string"/>
       <bind nodeset="/admin_welcome/welcome/docs" readonly="true()" type="string"/>
       <bind nodeset="/admin_welcome/contacts/img" readonly="true()" type="string"/>
-      <bind nodeset="/admin_welcome/contacts/data" readonly="true()" type="string"/>
       <bind nodeset="/admin_welcome/contacts/add_contacts" readonly="true()" type="string"/>
       <bind nodeset="/admin_welcome/community/img" readonly="true()" type="string"/>
       <bind nodeset="/admin_welcome/community/intro" readonly="true()" type="string"/>
@@ -79,7 +65,6 @@
   </h:head>
   <h:body class="pages">
     <group appearance="field-list" ref="/admin_welcome/welcome">
-      <label ref="jr:itext('/admin_welcome/welcome:label')"/>
       <input ref="/admin_welcome/welcome/img">
         <label ref="jr:itext('/admin_welcome/welcome/img:label')"/>
       </input>
@@ -91,19 +76,14 @@
       </input>
     </group>
     <group appearance="field-list" ref="/admin_welcome/contacts">
-      <label ref="jr:itext('/admin_welcome/contacts:label')"/>
       <input ref="/admin_welcome/contacts/img">
         <label ref="jr:itext('/admin_welcome/contacts/img:label')"/>
-      </input>
-      <input ref="/admin_welcome/contacts/data">
-        <label ref="jr:itext('/admin_welcome/contacts/data:label')"/>
       </input>
       <input ref="/admin_welcome/contacts/add_contacts">
         <label ref="jr:itext('/admin_welcome/contacts/add_contacts:label')"/>
       </input>
     </group>
     <group appearance="field-list" ref="/admin_welcome/community">
-      <label ref="jr:itext('/admin_welcome/community:label')"/>
       <input ref="/admin_welcome/community/img">
         <label ref="jr:itext('/admin_welcome/community/img:label')"/>
       </input>
