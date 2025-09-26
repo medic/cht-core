@@ -38,7 +38,7 @@ const assertDocIds = (response, ...expectedIds) => {
   const receivedIds = response.doc_ids_revs
     .map(pair => pair.id)
     .filter(id => !isFormOrTranslation(id));
-  expect(receivedIds.sort()).to.have.members([ ...expectedIds, ...DEFAULT_EXPECTED ].sort());
+  expect(receivedIds.sort()).to.have.members([...expectedIds, ...DEFAULT_EXPECTED].sort());
 };
 
 const users = [
@@ -198,7 +198,7 @@ describe('replication', () => {
     await utils.createUsers(users, true);
   });
 
-  after( async () => {
+  after(async () => {
     // Clean up like normal
     await utils.revertDb([], true);// And also revert users we created in before
     await utils.deleteUsers(users, true);
@@ -278,7 +278,7 @@ describe('replication', () => {
       const allowedSteve = createSomeContacts(3, 'fixture:steveville');
       const deniedDocs = createSomeContacts(10, 'irrelevant-place');
 
-      await utils.saveDocs([ ...allowedBob, ...allowedSteve, ...deniedDocs ]);
+      await utils.saveDocs([...allowedBob, ...allowedSteve, ...deniedDocs]);
       const [responseBob, responseSteve] = await Promise.all([
         await requestDocs('bob'),
         await requestDocs('steve')
@@ -768,18 +768,21 @@ describe('replication', () => {
           _id: 'clinic_patient',
           type: 'person',
           reported_date: 1,
-          parent: { _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
+          parent: {
+            _id: 'fixture:chwville',
+            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
+          }
         };
         const healthCenterPatient = {
           _id: 'health_center_patient',
           type: 'person',
           reported_date: 1,
-          parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+          parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
         };
         return utils.saveDocs([patient, healthCenterPatient]);
       });
 
-      it('should do nothing when not truthy or not present', async () => {
+      it(`should do nothing when not true/'true' or not present`, async () => {
         const clinicReport = {
           _id: 'clinic_report',
           type: 'data_record',
@@ -789,7 +792,7 @@ describe('replication', () => {
           contact: {
             _id: 'fixture:user:chw',
             parent: {
-              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
             }
           }
         };
@@ -802,7 +805,20 @@ describe('replication', () => {
           contact: {
             _id: 'fixture:user:chw',
             parent: {
-              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
+            }
+          }
+        };
+        const clinicReport3 = {
+          _id: 'clinic_report_3',
+          type: 'data_record',
+          reported_date: 1,
+          fields: { patient_id: 'clinic_patient', needs_signoff: 'false' },
+          form: 'f',
+          contact: {
+            _id: 'fixture:user:chw',
+            parent: {
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
             }
           }
         };
@@ -810,11 +826,11 @@ describe('replication', () => {
           _id: 'health_center_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'health_center_patient', needs_signoff: ''},
+          fields: { patient_id: 'health_center_patient', needs_signoff: '' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
-            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
           }
         };
         const bobReport = {
@@ -825,20 +841,30 @@ describe('replication', () => {
           form: 'f',
           contact: {
             _id: 'fixture:user:bob',
-            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id } }
           }
         };
 
-        await utils.updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, { ignoreReload: true });
-        await utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]);
+        await utils.updateSettings(
+          { replication_depth: [{ role: 'district_admin', depth: 1 }] },
+          { ignoreReload: true }
+        );
+        await utils.saveDocs([clinicReport, clinicReport2, clinicReport3, healthCenterReport, bobReport]);
 
-        assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');
-        assertDocIds(await requestDocs('chw-boss'), ...chwBossIds,  'health_center_patient', 'health_center_report');
+        assertDocIds(
+          await requestDocs('chw'), 
+          ...chwIds, 
+          'clinic_patient', 
+          'clinic_report', 
+          'clinic_report_3', 
+          'clinic_report_2'
+        );
+        assertDocIds(await requestDocs('chw-boss'), ...chwBossIds, 'health_center_patient', 'health_center_report');
         assertDocIds(await requestDocs('supervisor'), ...supervisorIds);
         assertDocIds(await requestDocs('bob'), ...bobsIds, 'bob_report');
       });
 
-      it('should replicate to all ancestors when present and truthy', async () => {
+      it(`should replicate to all ancestors when present and true/'true'`, async () => {
         const clinicReport = {
           _id: 'clinic_report',
           type: 'data_record',
@@ -848,7 +874,7 @@ describe('replication', () => {
           contact: {
             _id: 'fixture:user:chw',
             parent: {
-              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
             }
           }
         };
@@ -856,12 +882,12 @@ describe('replication', () => {
           _id: 'clinic_report_2',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'clinic_patient', needs_signoff: 'something' },
+          fields: { patient_id: 'clinic_patient', needs_signoff: 'true' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
             parent: {
-              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
             }
           }
         };
@@ -869,30 +895,30 @@ describe('replication', () => {
           _id: 'health_center_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'health_center_patient', needs_signoff: 'YES!'},
+          fields: { patient_id: 'health_center_patient', needs_signoff: true },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
-            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
           }
         };
         const bobReport = {
           _id: 'bob_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'fixture:user:bob', needs_signoff: {} },
+          fields: { patient_id: 'fixture:user:bob', needs_signoff: true },
           form: 'f',
           contact: {
             _id: 'fixture:user:bob',
-            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id } }
           }
         };
 
         await utils.updateSettings(
-          { replication_depth: [{ role: 'district_admin', depth: 1 }]},
+          { replication_depth: [{ role: 'district_admin', depth: 1 }] },
           { ignoreReload: true }
         );
-        await utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]);
+        await utils.saveDocs([clinicReport, clinicReport2, healthCenterReport, bobReport]);
 
         assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');
         assertDocIds(
@@ -924,7 +950,7 @@ describe('replication', () => {
           contact: {
             _id: 'fixture:user:chw',
             parent: {
-              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
             }
           }
         };
@@ -932,12 +958,12 @@ describe('replication', () => {
           _id: 'clinic_report_2',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'clinic_patient', needs_signoff: 'something' },
+          fields: { patient_id: 'clinic_patient', needs_signoff: 'true' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
             parent: {
-              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+              _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
             }
           }
         };
@@ -945,30 +971,30 @@ describe('replication', () => {
           _id: 'health_center_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'health_center_patient', needs_signoff: 'YES!'},
+          fields: { patient_id: 'health_center_patient', needs_signoff: 'true' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
-            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id } }
           }
         };
         const bobReport = {
           _id: 'bob_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'fixture:user:bob', needs_signoff: {} },
+          fields: { patient_id: 'fixture:user:bob', needs_signoff: true },
           form: 'f',
           contact: {
             _id: 'fixture:user:bob',
-            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id }}
+            parent: { _id: 'fixture:bobville', parent: { _id: parentPlace._id } }
           }
         };
 
         await utils.updateSettings(
-          {replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }]},
+          { replication_depth: [{ role: 'district_admin', depth: 1, report_depth: 0 }] },
           { ignoreReload: true }
         );
-        await utils.saveDocs([ clinicReport, clinicReport2, healthCenterReport, bobReport ]);
+        await utils.saveDocs([clinicReport, clinicReport2, healthCenterReport, bobReport]);
 
         assertDocIds(await requestDocs('chw'), ...chwIds, 'clinic_patient', 'clinic_report', 'clinic_report_2');
         assertDocIds(
@@ -1008,7 +1034,7 @@ describe('replication', () => {
           place_id: 'fixture:chwville',
           contact: { _id: 'fixture:user:chw' },
           form: 'form',
-          fields: { private: true },
+          fields: { private: 'true' },
         },
         {
           // private report about place submitted by logged in user
@@ -1025,7 +1051,7 @@ describe('replication', () => {
           patient_id: 'shortcode:user:chw',
           contact: { _id: 'fixture:user:chw' },
           form: 'form',
-          fields: { private: true },
+          fields: { private: 'true' },
         },
         {
           // private report about self submitted by logged in user
@@ -1058,7 +1084,7 @@ describe('replication', () => {
           place_id: 'fixture:chwville',
           contact: { _id: 'someone_else' },
           form: 'form',
-          fields: { private: true },
+          fields: { private: 'true' },
         },
         {
           // private report about place submitted by someone else
@@ -1117,7 +1143,7 @@ describe('replication', () => {
           place_id: 'fixture:clareville',
           contact: { _id: 'fixture:user:clare' },
           form: 'form',
-          fields: { private: true },
+          fields: { private: 'true' },
         },
         {
           // private report about place submitted by logged in user
@@ -1134,7 +1160,7 @@ describe('replication', () => {
           patient_id: 'shortcode:clare',
           contact: { _id: 'fixture:user:clare' },
           form: 'form',
-          fields: { private: true },
+          fields: { private: 'true' },
         },
         {
           // private report about self submitted by logged in user
@@ -1217,14 +1243,14 @@ describe('replication', () => {
         type: 'data_record',
         contact: { _id: 'fixture:user:bob' },
         form: 'form',
-        fields: { },
+        fields: {},
       },
       {
         _id: 'not_purged_2',
         type: 'data_record',
         contact: { _id: 'fixture:user:bob' },
         form: 'form',
-        fields: { },
+        fields: {},
       },
       {
         _id: 'purged_1',
@@ -1232,7 +1258,7 @@ describe('replication', () => {
         contact: { _id: 'fixture:user:bob' },
         form: 'form',
         to_be_purged: true,
-        fields: { },
+        fields: {},
       },
       {
         _id: 'purged_2',
@@ -1240,11 +1266,11 @@ describe('replication', () => {
         contact: { _id: 'fixture:user:bob' },
         form: 'form',
         to_be_purged: true,
-        fields: { },
+        fields: {},
       },
     ];
 
-    const purgeFn = function(userCtx, contact, reports) {
+    const purgeFn = function (userCtx, contact, reports) {
       return reports.filter(r => r.to_be_purged).map(r => r._id);
     };
 
@@ -1304,7 +1330,7 @@ describe('replication', () => {
       await sentinelUtils.waitForPurgeCompletion(seq);
 
       const response = await requestDeletes('bob', [...savedIds, ...deletedIds, ...getIds(reports)]);
-      expect(response.doc_ids).to.have.members([ ...deletedIds, 'purged_1', 'purged_2']);
+      expect(response.doc_ids).to.have.members([...deletedIds, 'purged_1', 'purged_2']);
     });
   });
 });
