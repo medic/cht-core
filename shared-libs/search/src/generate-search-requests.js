@@ -133,13 +133,16 @@ const contactTypeRequest = (filters, sortByLastVisitedDate) => {
     return;
   }
   const view = 'medic-client/contacts_by_type';
-  let request;
-  if (filters.types.selected && filters.types.options) {
-    request = getRequestForMultidropdown(view, filters.types, getKeysArray);
-  } else {
-    // Used by select2search
-    request = getRequestWithMappedKeys(view, filters.types.selected, getKeysArray);
+  const {selected, options} = filters.types;
+  const request= (selected && options)
+    ? getRequestForMultidropdown(view, filters.types, getKeysArray)
+    : getRequestWithMappedKeys(view, selected, getKeysArray);
+
+  if (!request) {
+    return;
   }
+
+  request.params.reduce = false;
 
   if (sortByLastVisitedDate) {
     request.map = row => {
@@ -163,6 +166,7 @@ const defaultReportRequest = () => {
 const defaultContactRequest = () => {
   return {
     view: 'medic-client/contacts_by_type',
+    params: { reduce: false },
     ordered: true
   };
 };

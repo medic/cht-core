@@ -142,7 +142,8 @@ describe('GenerateSearchRequests service', () => {
     chai.expect(result.length).to.equal(1);
     chai.expect(result[0]).to.deep.equal({
       ordered: true,
-      view: 'medic-client/contacts_by_type'
+      view: 'medic-client/contacts_by_type',
+      params: { reduce: false }
     });
   };
 
@@ -163,7 +164,8 @@ describe('GenerateSearchRequests service', () => {
     chai.expect(result[0]).to.deep.equal({
       view: 'medic-client/contacts_by_type',
       params: {
-        keys: [ [ 'person' ], [ 'clinic' ] ]
+        keys: [ [ 'person' ], [ 'clinic' ] ],
+        reduce: false
       }
     });
   });
@@ -243,7 +245,7 @@ describe('GenerateSearchRequests service', () => {
         selected: [],
         options: [ 'person', 'clinic', 'district_hospital' ]
       }
-    };
+    };    
     const result = service('contacts', filters);
     assertUnfilteredContactRequest(result);
   });
@@ -261,7 +263,8 @@ describe('GenerateSearchRequests service', () => {
     chai.expect(result[0]).to.deep.equal({
       view: 'medic-client/contacts_by_type',
       params: {
-        keys: [ [ 'person' ], [ 'clinic' ] ]
+        keys: [ [ 'person' ], [ 'clinic' ] ],
+        reduce: false
       }
     });
   });
@@ -489,7 +492,7 @@ describe('GenerateSearchRequests service', () => {
     const result = service('contacts', { types: { selected: [ 'clinic' ] } }, { sortByLastVisitedDate: true } );
     chai.expect(result.length).to.equal(2);
     chai.expect(result[0].view).to.equal('medic-client/contacts_by_type');
-    chai.expect(result[0].params).to.deep.equal({ keys: [ [ 'clinic' ] ]});
+    chai.expect(result[0].params).to.deep.equal({ reduce: false, keys: [ [ 'clinic' ] ]});
     chai.expect(result[0].map).to.be.ok;
     const map = result[0].map;
 
