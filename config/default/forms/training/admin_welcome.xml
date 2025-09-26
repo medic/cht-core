@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
+  <h:head>
+    <h:title>Getting started</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="/admin_welcome/community/forum:label">
+            <value>Introduce yourself on the [CHT Forum](https://forum.communityhealthtoolkit.org)! This is a great place to find answers and connect with others in the community.</value>
+          </text>
+          <text id="/admin_welcome/community/img:label">
+            <value form="image">jr://images/logo.png</value>
+          </text>
+          <text id="/admin_welcome/community/intro:label">
+            <value>The CHT is maintained by a community of people around the world.</value>
+          </text>
+          <text id="/admin_welcome/contacts/add_contacts:label">
+            <value>Get started by [adding contacts and users](https://docs.communityhealthtoolkit.org/building/contact-management/contact-and-users-1/).</value>
+          </text>
+          <text id="/admin_welcome/contacts/img:label">
+            <value form="image">jr://images/household-profile.png</value>
+          </text>
+          <text id="/admin_welcome/welcome/docs:label">
+            <value>To configure this instance for your specific workflows, see [the documentation](https://docs.communityhealthtoolkit.org/building/).</value>
+          </text>
+          <text id="/admin_welcome/welcome/img:label">
+            <value form="image">jr://images/icon-people-pregnant-clinic.png</value>
+          </text>
+          <text id="/admin_welcome/welcome/instance_info:label">
+            <value>Welcome to your new CHT instance! It is running the [Maternal and Newborn Health app](https://docs.communityhealthtoolkit.org/reference-apps/maternal-newborn/).</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <admin_welcome id="training:admin_welcome" prefix="J1!training:admin_welcome!" delimiter="#" version="20250926152620">
+          <welcome>
+            <img/>
+            <instance_info/>
+            <docs/>
+          </welcome>
+          <contacts>
+            <img/>
+            <add_contacts/>
+          </contacts>
+          <community>
+            <img/>
+            <intro/>
+            <forum/>
+          </community>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </admin_welcome>
+      </instance>
+      <bind nodeset="/admin_welcome/welcome/img" readonly="true()" type="string"/>
+      <bind nodeset="/admin_welcome/welcome/instance_info" readonly="true()" type="string"/>
+      <bind nodeset="/admin_welcome/welcome/docs" readonly="true()" type="string"/>
+      <bind nodeset="/admin_welcome/contacts/img" readonly="true()" type="string"/>
+      <bind nodeset="/admin_welcome/contacts/add_contacts" readonly="true()" type="string"/>
+      <bind nodeset="/admin_welcome/community/img" readonly="true()" type="string"/>
+      <bind nodeset="/admin_welcome/community/intro" readonly="true()" type="string"/>
+      <bind nodeset="/admin_welcome/community/forum" readonly="true()" type="string"/>
+      <bind nodeset="/admin_welcome/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/admin_welcome/welcome">
+      <input ref="/admin_welcome/welcome/img">
+        <label ref="jr:itext('/admin_welcome/welcome/img:label')"/>
+      </input>
+      <input ref="/admin_welcome/welcome/instance_info">
+        <label ref="jr:itext('/admin_welcome/welcome/instance_info:label')"/>
+      </input>
+      <input ref="/admin_welcome/welcome/docs">
+        <label ref="jr:itext('/admin_welcome/welcome/docs:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/admin_welcome/contacts">
+      <input ref="/admin_welcome/contacts/img">
+        <label ref="jr:itext('/admin_welcome/contacts/img:label')"/>
+      </input>
+      <input ref="/admin_welcome/contacts/add_contacts">
+        <label ref="jr:itext('/admin_welcome/contacts/add_contacts:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/admin_welcome/community">
+      <input ref="/admin_welcome/community/img">
+        <label ref="jr:itext('/admin_welcome/community/img:label')"/>
+      </input>
+      <input ref="/admin_welcome/community/intro">
+        <label ref="jr:itext('/admin_welcome/community/intro:label')"/>
+      </input>
+      <input ref="/admin_welcome/community/forum">
+        <label ref="jr:itext('/admin_welcome/community/forum:label')"/>
+      </input>
+    </group>
+  </h:body>
+</h:html>
