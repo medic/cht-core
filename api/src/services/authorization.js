@@ -6,6 +6,7 @@ const viewMapUtils = require('@medic/view-map-utils');
 const registrationUtils = require('@medic/registration-utils');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
+const nouveau = require('@medic/nouveau');
 
 const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
 const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
@@ -36,6 +37,20 @@ const DEFAULT_DDOCS = [
  * @property {number} reportDepth.
  * @property {{[docId:string]:number}} subjectsDepth,
  * @property {boolean} replicatePrimaryContacts,
+ */
+
+/**
+ * @typedef {{
+ *   id: string,
+ *   fields: {
+ *     key: string|string[],
+ *     type?: string,
+ *     submitter?: string,
+ *     subject?: string,
+ *     private?: boolean,
+ *     needed_signoff?: boolean,
+ *   }
+ * }} DocByReplicationKey
  */
 
 // fake view map, to store whether doc is a medic.user-settings doc
@@ -152,7 +167,7 @@ const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
     return false;
   }
 
-  //first element of `contactsByDepth` contains both `subjectId` and `docID`
+  // first element of `contactsByDepth` contains both `subjectId` and `docID`
   const [{ key: [ docId ], value: { shortcode: subjectId, primary_contact: primaryContact } }] = contactsByDepth;
 
   if (allowed) {
@@ -172,17 +187,19 @@ const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
  * Returns whether an authenticated user has access to a document
  * @param   {String}   docId - CouchDB document ID
  * @param   {AuthorizationContext}   authorizationContext
- * @param   {Object}   replicationKeys - result of `medic/index/docs_by_replication_key` index against doc
+ * @param   {DocByReplicationKey}   docsByReplicationKey - result of `medic/_nouveau/docs_by_replication_key` index
  * @param   {Array}    contactsByDepth - results of `medic/contacts_by_depth` view against doc
  * @returns {Boolean}
  */
-const allowedDoc = (docId, authorizationContext, { replicationKeys, contactsByDepth }) => {
+const allowedDoc = (docId, authorizationContext, { docsByReplicationKey, contactsByDepth }) => {
   if ([MEDIC_CLIENT_DDOC, getUserSettingsId(authorizationContext.userCtx.name)].includes(docId)) {
     return true;
   }
 
-  const keys = Array.isArray(replicationKeys.key) ? replicationKeys.key : [replicationKeys.key];
-  if (keys.includes(ALL_KEY)) {
+  const replicationKeys = Array.isArray(docsByReplicationKey.key) ?
+    docsByReplicationKey.key : [docsByReplicationKey.key];
+
+  if (replicationKeys.includes(ALL_KEY)) {
     return true;
   }
 
@@ -192,14 +209,14 @@ const allowedDoc = (docId, authorizationContext, { replicationKeys, contactsByDe
   }
 
   // it's a report, task or target
-  const allowedDepth = isAllowedDepth(authorizationContext, replicationKeys);
-  const { subject: subjectId, submitter: submitterId, private: priv } = replicationKeys;
+  const allowedDepth = isAllowedDepth(authorizationContext, docsByReplicationKey);
+  const { subject: subjectId, submitter: submitterId, private: priv } = docsByReplicationKey;
   const allowedSubmitter = submitterId && authorizationContext.subjectIds.includes(submitterId);
   if (!subjectId && allowedSubmitter) {
     return true;
   }
 
-  return keys.some(subjectId => {
+  return replicationKeys.some(subjectId => {
     const allowedSubject = subjectId && authorizationContext.subjectIds.includes(subjectId);
     return allowedSubject &&
            !isSensitive(authorizationContext.userCtx, subjectId, submitterId, priv, allowedSubmitter) &&
@@ -388,16 +405,16 @@ const addPrimaryContactsSubjects = async (authCtx, contacts) => {
 
 const getReplicationKeys = (viewResults) => {
   const replicationKeys = [];
-  if (!viewResults || !viewResults.replicationKeys) {
+  if (!viewResults || !viewResults.docsByReplicationKey) {
     return replicationKeys;
   }
 
-  if (Array.isArray(viewResults.replicationKeys.key)) {
-    replicationKeys.push(...viewResults.replicationKeys.key);
+  if (Array.isArray(viewResults.docsByReplicationKey.key)) {
+    replicationKeys.push(...viewResults.docsByReplicationKey.key);
   } else {
-    replicationKeys.push(viewResults.replicationKeys.key);
+    replicationKeys.push(viewResults.docsByReplicationKey.key);
   }
-  replicationKeys.push(viewResults.replicationKeys.submitter);
+  replicationKeys.push(viewResults.docsByReplicationKey.submitter);
 
   return replicationKeys;
 };
@@ -558,64 +575,54 @@ const isSensitive = (userCtx, subject, submitter, isPrivate, allowedSubmitter) =
  * In cases of reports with `needs_signoff`, the replication key of valid depth might be at facility level, but that
  * key would be marked as sensitive.
  * @param {AuthorizationContext} authorizationContext
- * @param { type:string, submitter: string, key: string|[string] } viewResult - query view result
+ * @param {DocByReplicationKey} docByReplicationKey
  * @returns {boolean}
  */
-const isAllowedDepth = (authorizationContext, viewResult) => {
+const isAllowedDepth = (authorizationContext, docByReplicationKey) => {
   if (!usesReportDepth(authorizationContext)) {
     // no depth limitation
     return true;
   }
 
-  const { type: docType, key, submitter } = viewResult;
-  if (docType !== 'data_record') {
+  if (docByReplicationKey?.type !== 'data_record') {
     // allow everything that's not a data_record through (f.e. targets)
     return true;
   }
 
-  if (submitter === authorizationContext.userCtx.contact_id) {
+  if (docByReplicationKey.submitter === authorizationContext.userCtx.contact_id) {
     // current user is the submitter
     return true;
   }
 
-  const replicationKeys = Array.isArray(key) ? key : [key];
+  const replicationKeys = Array.isArray(docByReplicationKey.key) ?
+    docByReplicationKey.key : [docByReplicationKey.key];
 
   return replicationKeys.some(replicationKey => {
     return authorizationContext.subjectsDepth[replicationKey] <= authorizationContext.reportDepth;
   });
 };
 
-const isTaskDoc = (row) => row.value && row.value.type === 'task';
-
 // casting everything to string to insure that comparisons are against the same type to avoid 5 > 'a' || 5 < 'a'
 const prepareForSortedSearch = array => array.map(element => String(element)).sort();
 const sortedIncludes = (sortedArray, element) => _.sortedIndexOf(sortedArray, String(element)) !== -1;
 
-const specialChars = [ '+', '-', '&', '|', '!', '^', '"',  '~',  '*', '?', ':' ];
-const escapedChars = specialChars.map(char => char.replace(/[.*+?^${}()~\-|[\]\\]/g, '\\$&'));
-// Move hyphen to the end to avoid range interpretation
-const charSet = escapedChars.join('');
-const finalCharSet = charSet.includes('\\-')
-  ? charSet.replace('\\-', '') + '-'
-  : charSet;
 
-const pattern = new RegExp(`([${finalCharSet}])`, 'g');
-
-const escapeKeys = (key) => {
-  return String(key).replace(pattern, `\\$1`);
-};
-
+/**
+ * Returns a list of document ids that the user is allowed to see and edit
+ * @param authorizationContext
+ * @returns {Promise<DocByReplicationKey[]>}
+ */
 const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
   const allKeys = [...authorizationContext.subjectIds];
-  const mockViewRequest = { rows: [] };
+  const hits = [];
 
   while (allKeys.length) {
-    const chunk = allKeys.splice(0, 1000);
+    const chunk = allKeys.splice(0, nouveau.BATCH_LIMIT);
     const response = await request.post({
       uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
       body: {
-        q: `key:(${chunk.map(escapeKeys).join(' OR ')})`,
-        limit: 200000,
+        q: `key:(${chunk.map(nouveau.escapeKeys).join(' OR ')})`,
+        limit: nouveau.RESULTS_LIMIT,
       }
     });
 
@@ -623,16 +630,16 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
       continue;
     }
 
-    response.hits.forEach(hit => {
-      mockViewRequest.rows.push({
-        id: hit.id,
-        key: hit.fields.key,
-        value: hit.fields,
-      });
-    });
+    hits.push(...response.hits.map(hit => ({
+      id: hit.id,
+      fields: {
+        ...hit.fields,
+        key: Array.isArray(hit.fields.key) ? hit.fields.key : [hit.fields.key],
+      }
+    })));
   }
 
-  return mockViewRequest;
+  return hits;
 };
 
 /**
@@ -641,22 +648,21 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
  * @returns {Promise<string[]>}
  */
 const getDocsByReplicationKey = async (authorizationContext) => {
-  return getDocsByReplicationKeyNouveau(authorizationContext).then(results => {
+  return getDocsByReplicationKeyNouveau(authorizationContext).then(hits => {
     // leverage binary search when looking up subjects
     const sortedSubjects = prepareForSortedSearch(authorizationContext.subjectIds);
 
     const docsByReplicationKey = [];
 
-    results.rows.forEach(row => {
-      const { value: { submitter, subject } = {} } = row;
-      const priv = row?.value?.private; // private is a reserved word
+    hits.forEach((hit) => {
+      const { submitter, subject } = hit.fields;
       const allowedSubmitter = () => sortedIncludes(sortedSubjects, submitter);
-      if (isSensitive(authorizationContext.userCtx, subject, submitter, priv, allowedSubmitter)) {
+      if (isSensitive(authorizationContext.userCtx, subject, submitter, hit.fields.private, allowedSubmitter)) {
         return;
       }
 
-      if (isAllowedDepth(authorizationContext, row.value)) {
-        docsByReplicationKey.push(row);
+      if (isAllowedDepth(authorizationContext, hit.fields)) {
+        docsByReplicationKey.push(hit);
       }
     });
 
@@ -664,6 +670,13 @@ const getDocsByReplicationKey = async (authorizationContext) => {
   });
 };
 
+/**
+ * Returns a list of document ids that the user is allowed to see and edit
+ * @param {AuthorizationContext} authCtx
+ * @param {DocByReplicationKey[]} docsByReplicationKey
+ * @param {boolean} includeTasks - whether task documents should be included
+ * @returns {string[]}
+ */
 const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = true } = {}) => {
   const validatedIds = [MEDIC_CLIENT_DDOC, getUserSettingsId(authCtx.userCtx.name)];
 
@@ -671,11 +684,11 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = tru
     return validatedIds;
   }
 
-  docsByReplicationKey.forEach(row => {
-    if (isTaskDoc(row) && !includeTasks) {
+  docsByReplicationKey.forEach(hit => {
+    if (!includeTasks && hit.fields.type === 'task') {
       return;
     }
-    validatedIds.push(row.id);
+    validatedIds.push(hit.id);
   });
 
   return _.uniq(validatedIds);
@@ -685,12 +698,12 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = tru
  * Evaluates medic/contacts_by_depth and medic/docs_by_replication_key view map functions over the document and
  * returns results, and whether the document is a user-settings document or not
  * @param {Object} doc - CouchDb document
- * @returns {{contactsByDepth: [], replicationKeys: [], couchDbUser: boolean}}
+ * @returns {{contactsByDepth: [], docsByReplicationKey: [], couchDbUser: boolean}}
  */
 const getViewResults = (doc) => {
   return {
     contactsByDepth: viewMapUtils.getViewMapFn('medic', 'contacts_by_depth')(doc),
-    replicationKeys: viewMapUtils.getNouveauViewMapFn('medic', 'docs_by_replication_key')(doc),
+    docsByReplicationKey: viewMapUtils.getNouveauViewMapFn('medic', 'docs_by_replication_key')(doc),
     couchDbUser: couchDbUser(doc)
   };
 };

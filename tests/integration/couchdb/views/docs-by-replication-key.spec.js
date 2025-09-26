@@ -1,4 +1,5 @@
 const utils = require('@utils');
+const nouveau = require('@medic/nouveau');
 const { expect } = require('chai');
 
 describe('docs_by_replication_key', () => {
@@ -279,25 +280,12 @@ describe('docs_by_replication_key', () => {
     }
   ];
 
-  const specialChars = [ '+', '-', '&', '|', '!', '^', '"',  '~',  '*', '?', ':' ];
-  const escapedChars = specialChars.map(char => char.replace(/[.*+?^${}()~\-|[\]\\]/g, '\\$&'));
-  // Move hyphen to the end to avoid range interpretation
-  const charSet = escapedChars.join('');
-  const finalCharSet = charSet.includes('\\-')
-    ? charSet.replace('\\-', '') + '-'
-    : charSet;
-  const pattern = new RegExp(`([${finalCharSet}])`, 'g');
-
-  const escapeKeys = (key) => {
-    return String(key).replace(pattern, `\\$1`);
-  };
-
   const getChanges = async (keys) => {
     console.log('Requesting changes, please be patient…');
 
     const opts = {
-      limit: 100000,
-      q: `key:(${keys.map(escapeKeys).join(' OR ')})`,
+      limit: nouveau.RESULTS_LIMIT,
+      q: `key:(${keys.map(nouveau.escapeKeys).join(' OR ')})`,
     };
 
     return await utils

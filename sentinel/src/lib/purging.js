@@ -8,13 +8,13 @@ const { performance } = require('perf_hooks');
 const db = require('../db');
 const dataContext = require('../data-context');
 const request = require('@medic/couch-request');
+const nouveau = require('@medic/nouveau');
 const moment = require('moment');
 
 const TASK_EXPIRATION_PERIOD = 60; // days
 const TARGET_EXPIRATION_PERIOD = 6; // months
 
-const MAX_CONTACT_BATCH_SIZE = 1000;
-const VIEW_LIMIT = 100 * 1000;
+const MAX_CONTACT_BATCH_SIZE = nouveau.BATCH_LIMIT;
 const MAX_BATCH_SIZE = 20 * 1000;
 const MIN_BATCH_SIZE = 5 * 1000;
 const MAX_BATCH_SIZE_REACHED = 'max_size_reached';
@@ -249,19 +249,6 @@ const hydrateRecords = async (recordRows) => {
   return recordRows.filter(row => row.doc);
 };
 
-const specialChars = [ '+', '-', '&', '|', '!', '^', '"',  '~',  '*', '?', ':' ];
-const escapedChars = specialChars.map(char => char.replace(/[.*+?^${}()~\-|[\]\\]/g, '\\$&'));
-const escapeKeys = (key) => {
-  // Move hyphen to the end to avoid range interpretation
-  const charSet = escapedChars.join('');
-  const finalCharSet = charSet.includes('\\-')
-    ? charSet.replace('\\-', '') + '-'
-    : charSet;
-
-  const pattern = new RegExp(`([${finalCharSet}])`, 'g');
-  return String(key).replace(pattern, `\\$1`);
-};
-
 const getRecordsForContacts = async (groups, subjectIds) => {
   if (!subjectIds.length) {
     return;
@@ -273,8 +260,8 @@ const getRecordsForContacts = async (groups, subjectIds) => {
 
   do {
     const opts = {
-      q: `key:(${subjectIds.map(escapeKeys).join(' OR ')})`,
-      limit: VIEW_LIMIT,
+      q: `key:(${subjectIds.map(nouveau.escapeKeys).join(' OR ')})`,
+      limit: nouveau.RESULTS_LIMIT,
     };
     if (bookmark) {
       opts.bookmark = bookmark;
@@ -285,7 +272,7 @@ const getRecordsForContacts = async (groups, subjectIds) => {
     });
 
     bookmark = result.bookmark;
-    requestNext = result.hits.length === VIEW_LIMIT;
+    requestNext = result.hits.length === nouveau.RESULTS_LIMIT;
 
     relevantRows.push(...result.hits.filter(row => isRelevantRecordEmission(row, groups, subjectIds)));
     if (relevantRows.length >= MAX_BATCH_SIZE) {
