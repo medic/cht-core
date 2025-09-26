@@ -12,7 +12,7 @@ describe('impact', () => {
           person: 1
         },
         totalReports: 0,
-        totalUsers: 0,
+        totalUsers: 1,
         reportsByForm: {}
       });
     });
@@ -24,7 +24,7 @@ describe('impact', () => {
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
         totalReports: 0,
-        totalUsers: 0,
+        totalUsers: 1,
         contactsByType: {
           person: 2
         },        
@@ -43,7 +43,7 @@ describe('impact', () => {
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
         totalReports: 0,
-        totalUsers: 0,
+        totalUsers: 1,
         contactsByType: {
           p10_province: 1,
           p20_district: 1,
@@ -65,7 +65,7 @@ describe('impact', () => {
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
         totalReports: docs.length,
-        totalUsers: 0,
+        totalUsers: 1,
         contactsByType: {
           person: 1
         },
@@ -88,7 +88,7 @@ describe('impact', () => {
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
         totalReports: docs.length,
-        totalUsers: 0,
+        totalUsers: 1,
         contactsByType: {
           person: 1
         },
