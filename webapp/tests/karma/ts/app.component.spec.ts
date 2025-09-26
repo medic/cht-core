@@ -318,37 +318,9 @@ describe('AppComponent', () => {
     expect(modalService.show.args[0]).to.have.deep.members([BrowserCompatibilityComponent]);
   });
 
-  it('should set hasOldNav to be false by default', fakeAsync(async () => {
+  it('should always have hasOldNav set to false (legacy navigation disabled #10277)', fakeAsync(async () => {
     sessionService.isAdmin.returns(false);
-    authService.has
-      .withArgs(OLD_NAV_PERMISSION)
-      .resolves(false);
-    await getComponent();
-    await component.ngAfterViewInit();
-    flush();
-    discardPeriodicTasks();
-
-    expect(component.hasOldNav).to.be.false;
-  }));
-
-  it('should set hasOldNav to be true if user has permission and is not admin', fakeAsync(async () => {
-    sessionService.isAdmin.returns(false);
-    authService.has
-      .withArgs(OLD_NAV_PERMISSION)
-      .resolves(true);
-    await getComponent();
-    await component.ngAfterViewInit();
-    flush();
-    discardPeriodicTasks();
-
-    expect(component.hasOldNav).to.be.true;
-  }));
-
-  it('should set hasOldNav to be false if user has permission but is admin', fakeAsync(async () => {
-    sessionService.isAdmin.returns(true);
-    authService.has
-      .withArgs(OLD_NAV_PERMISSION)
-      .resolves(true);
+    authService.has.withArgs(OLD_NAV_PERMISSION).resolves(true);
     await getComponent();
     await component.ngAfterViewInit();
     flush();

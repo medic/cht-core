@@ -8,6 +8,8 @@ const SUITES = {
     './about/**/*.wdio-spec.js',
     './training-materials/**/*.wdio-spec.js',
     './navigation/**/*.wdio-spec.js',
+    // #10277: Legacy old-navigation tests are deprecated but kept in the suite;
+    // specs are describe.skip to avoid execution while satisfying suite completeness.
     './old-navigation/**/*.wdio-spec.js',
     './privacy-policy/**/*.wdio-spec.js',
   ],
