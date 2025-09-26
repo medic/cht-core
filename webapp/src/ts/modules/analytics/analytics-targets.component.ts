@@ -34,7 +34,7 @@ import { Selectors } from '@mm-selectors/index';
   ],
 })
 export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
-  private globalActions: GlobalActions;
+  private readonly globalActions: GlobalActions;
   subscriptions: Subscription = new Subscription();
   targets: any[] = [];
   loading = true;
@@ -48,7 +48,7 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
   constructor(
     private rulesEngineService: RulesEngineService,
     private performanceService: PerformanceService,
-    private store: Store
+    private readonly store: Store
   ) {
     this.trackPerformance = this.performanceService.track();
     this.store.select(Selectors.getDirection).subscribe((direction) => {

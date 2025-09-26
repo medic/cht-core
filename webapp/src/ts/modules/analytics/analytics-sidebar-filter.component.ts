@@ -23,7 +23,7 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
   @Input() showFacilityFilter = true;
   @Output() facilitySelectionChanged = new EventEmitter<string>();
   @Output() reportingPeriodSelectionChanged = new EventEmitter<string>();
-  private globalActions;
+  private readonly globalActions;
   readonly reportingPeriods = [
     { value: ReportingPeriod.CURRENT, label: 'targets.this_month.subtitle' },
     { value: ReportingPeriod.PREVIOUS, label: 'targets.last_month.subtitle' }
@@ -37,9 +37,9 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
   facilityFilterLabel;
 
   constructor(
-    private store: Store,
-    private contactTypesService: ContactTypesService,
-    private settingsService: SettingsService,
+    private  readonly store: Store,
+    private readonly contactTypesService: ContactTypesService,
+    private readonly settingsService: SettingsService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
