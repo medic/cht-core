@@ -1,5 +1,5 @@
 ---
-name: Technical issue
+name: ⚙️ Technical issue
 about: Suggest an improvement users won't notice
 title: ''
 labels: 'Type: Technical issue'
