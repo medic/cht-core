@@ -8,16 +8,16 @@ import { FormsModule } from '@angular/forms';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 
 import { Selectors } from '@mm-selectors/index';
-import { AnalyticsTargetAggregatesSidebarFilterComponent }
-  from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
+import {
+  AnalyticsSidebarFilterComponent, ReportingPeriod
+} from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { GlobalActions } from '@mm-actions/global';
-import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 
-describe('Analytics Target Aggregate Sidebar Filter Component', () => {
-  let component: AnalyticsTargetAggregatesSidebarFilterComponent;
-  let fixture: ComponentFixture<AnalyticsTargetAggregatesSidebarFilterComponent>;
+describe('Analytics Sidebar Filter Component', () => {
+  let component: AnalyticsSidebarFilterComponent;
+  let fixture: ComponentFixture<AnalyticsSidebarFilterComponent>;
   let contactTypesService;
   let settingsService;
   let globalActions;
@@ -47,7 +47,7 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           MatExpansionModule,
           MatIconModule,
-          AnalyticsTargetAggregatesSidebarFilterComponent,
+          AnalyticsSidebarFilterComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
@@ -57,7 +57,7 @@ describe('Analytics Target Aggregate Sidebar Filter Component', () => {
       })
       .compileComponents()
       .then(() => {
-        fixture = TestBed.createComponent(AnalyticsTargetAggregatesSidebarFilterComponent);
+        fixture = TestBed.createComponent(AnalyticsSidebarFilterComponent);
         component = fixture.componentInstance;
         store = TestBed.inject(MockStore);
         component.userFacilities = [];

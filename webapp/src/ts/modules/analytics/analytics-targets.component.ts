@@ -11,7 +11,7 @@ import {
   AnalyticsTargetsProgressComponent
 } from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
 import { AnalyticsSidebarFilterComponent } from './analytics-sidebar-filter.component';
-import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';

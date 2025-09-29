@@ -5,7 +5,10 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { AnalyticsTargetAggregatesComponent } from '@mm-modules/analytics/analytics-target-aggregates.component';
-import { AnalyticsSidebarFilterComponent, ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
+import {
+  AnalyticsSidebarFilterComponent,
+  ReportingPeriod
+} from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { PerformanceService } from '@mm-services/performance.service';
