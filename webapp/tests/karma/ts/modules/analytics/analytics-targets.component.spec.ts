@@ -101,7 +101,7 @@ describe('AnalyticsTargetsComponent', () => {
         ]
       })
       .compileComponents()
-      .then(() => {
+      .then(async () => {
         const { MatIconRegistry } = await import('@angular/material/icon');
         const { DomSanitizer } = await import('@angular/platform-browser');
         const matIconRegistry = TestBed.inject(MatIconRegistry);
