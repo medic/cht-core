@@ -99,7 +99,7 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     this.subscriptions.add(routeSubscription);
   }
 
-  private isTargetAggregates() {
+  private isAnalyticsModule() {
     const moduleId = this.getCurrentModuleId();
     return moduleId === AGGREGATE_TARGETS_ID || moduleId === TARGETS_ID;
   }
@@ -112,7 +112,7 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     const isAdmin = this.sessionService.isAdmin();
     const isTargetAggregateEnabled = await this.isTargetAggregateEnabled();
 
-    this.showFilterButton = !isAdmin && this.isTargetAggregates() && isTargetAggregateEnabled;
+    this.showFilterButton = !isAdmin && this.isAnalyticsModule() && isTargetAggregateEnabled;
   }
 
   openSidebar() {

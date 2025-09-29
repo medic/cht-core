@@ -1,9 +1,9 @@
 <div
   class="page scrolling targets-page"
-  [ngClass]="{'sidebar-open': !!sidebarFilter.isOpen, 'sidebar-closed': !sidebarFilter.isOpen}">
+  [ngClass]="{'sidebar-open': !!sidebarFilter?.isOpen, 'sidebar-closed': !sidebarFilter?.isOpen}">
   <div
     class="targets-content"
-    [ngClass]="{'sidebar-open': !!sidebarFilter.isOpen, 'sidebar-closed': !sidebarFilter.isOpen}">
+    [ngClass]="{'sidebar-open': !!sidebarFilter?.isOpen, 'sidebar-closed': !sidebarFilter?.isOpen}">
     <div class="item-content empty-selection" *ngIf="targetsDisabled">
       <div>{{ 'targets.disabled' | translate }}</div>
     </div>
@@ -46,8 +46,7 @@
           <div class="icon" [innerHTML]="target.icon | resourceIcon"></div>
           <div class="title">
             <h2 *ngIf="target.translation_key">{{ target.translation_key | translate }}</h2>
-            <h2 *ngIf="!target.translation_key">{{ target.name | translateFrom }}
-            </h2>
+            <h2 *ngIf="!target.translation_key">{{ target.name | translateFrom }}</h2>
             <p *ngIf="target.subtitle_translation_key">{{ target.subtitle_translation_key | translate }}</p>
           </div>
         </div>

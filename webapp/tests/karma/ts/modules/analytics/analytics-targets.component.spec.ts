@@ -1,13 +1,23 @@
 import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
+import { provideMockStore } from '@ngrx/store/testing';
+import { provideHttpClient } from '@angular/common/http';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
+import { GlobalActions } from '@mm-actions/global';
 import { AnalyticsTargetsComponent } from '@mm-modules/analytics/analytics-targets.component';
+import {
+  AnalyticsSidebarFilterComponent,
+  ReportingPeriod
+} from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { SessionService } from '@mm-services/session.service';
-import { provideMockStore } from '@ngrx/store/testing';
 import { PerformanceService } from '@mm-services/performance.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('AnalyticsTargetsComponent', () => {
   let component: AnalyticsTargetsComponent;
@@ -16,6 +26,8 @@ describe('AnalyticsTargetsComponent', () => {
   let performanceService;
   let stopPerformanceTrackStub;
   let sessionService;
+  let userSettingsService;
+  let globalActions;
 
   beforeEach(waitForAsync(() => {
     rulesEngineService = {
@@ -24,6 +36,45 @@ describe('AnalyticsTargetsComponent', () => {
     };
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
+
+    globalActions = {
+      setSidebarFilter: sinon.spy(GlobalActions.prototype, 'setSidebarFilter'),
+      clearSidebarFilter: sinon.spy(GlobalActions.prototype, 'clearSidebarFilter'),
+    };
+
+    userSettingsService = {
+      getUserFacilities: sinon.stub().resolves([
+        {
+          _id: 'facility_1',
+          type: 'district_hospital',
+          name: 'some-facility-1',
+        },
+      ]),
+    };
+
+    const contactTypesService = {
+      getTypeId: sinon.stub().returns('district_hospital'),
+    };
+
+    const settingsService = {
+      get: sinon.stub().resolves({
+        contact_types: [
+          {
+            id: 'district_hospital',
+            name: 'contact.type.district_hospital',
+          }
+        ],
+      }),
+    };
+
+    const telemetryService = {
+      record: sinon.stub(),
+    };
+
+    const mockedSelectors = [
+      { selector: 'getSidebarFilter', value: { isOpen: false } },
+      { selector: 'getDirection', value: 'ltr' },
+    ];
 
     sessionService = {
       isOnlineOnly: sinon.stub().returns(false),
@@ -35,16 +86,29 @@ describe('AnalyticsTargetsComponent', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           AnalyticsTargetsComponent,
+          AnalyticsSidebarFilterComponent
         ],
         providers: [
-          provideMockStore(),
+          provideMockStore({ selectors: mockedSelectors }),
+          provideHttpClient(),
           { provide: RulesEngineService, useValue: rulesEngineService },
           { provide: PerformanceService, useValue: performanceService },
           { provide: SessionService, useValue: sessionService },
+          { provide: UserSettingsService, useValue: userSettingsService },
+          { provide: ContactTypesService, useValue: contactTypesService },
+          { provide: SettingsService, useValue: settingsService },
+          { provide: TelemetryService, useValue: telemetryService },
         ]
       })
       .compileComponents()
       .then(() => {
+        const { MatIconRegistry } = await import('@angular/material/icon');
+        const { DomSanitizer } = await import('@angular/platform-browser');
+        const matIconRegistry = TestBed.inject(MatIconRegistry);
+        const domSanitizer = TestBed.inject(DomSanitizer);
+        const iconUrl = domSanitizer.bypassSecurityTrustResourceUrl('./img/icon-close.svg');
+        matIconRegistry.addSvgIcon('icon-close', iconUrl);
+
         fixture = TestBed.createComponent(AnalyticsTargetsComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
@@ -58,6 +122,16 @@ describe('AnalyticsTargetsComponent', () => {
   it('should create', () => {
     expect(component).to.exist;
     expect(performanceService.track.calledOnce).to.be.true;
+  });
+
+  it('ngOnDestroy() should unsubscribe from observables', () => {
+    sinon.reset();
+    const spySubscriptionsUnsubscribe = sinon.spy(component.subscriptions, 'unsubscribe');
+
+    component.ngOnDestroy();
+
+    expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
+    expect(globalActions.clearSidebarFilter.callCount).to.equal(1);
   });
 
   it('should set up component when rules engine is not enabled', fakeAsync(() => {
@@ -85,6 +159,11 @@ describe('AnalyticsTargetsComponent', () => {
     component.ngOnInit();
     tick(50);
 
+    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({
+      defaultFilters: {
+        reportingPeriod: ReportingPeriod.CURRENT,
+      },
+    });
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     expect(rulesEngineService.fetchTargets.callCount).to.equal(1);
     expect(component.targetsDisabled).to.equal(false);

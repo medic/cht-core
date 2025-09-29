@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
+import { combineLatest, Subscription } from 'rxjs';
 
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { PerformanceService } from '@mm-services/performance.service';
@@ -51,9 +51,6 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
     private readonly store: Store
   ) {
     this.trackPerformance = this.performanceService.track();
-    this.store.select(Selectors.getDirection).subscribe((direction) => {
-      this.direction = direction;
-    });
     this.globalActions = new GlobalActions(store);
   }
 
@@ -73,11 +70,13 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToStore() {
-    const selectorsSubscription = this.store
-      .select(Selectors.getSidebarFilter)
-      .subscribe((sidebarFilter) => {
-        this.sidebarFilter = sidebarFilter;
-      });
+    const selectorsSubscription = combineLatest([
+      this.store.select(Selectors.getSidebarFilter),
+      this.store.select(Selectors.getDirection),
+    ]).subscribe(([sidebarFilter, direction]) => {
+      this.sidebarFilter = sidebarFilter;
+      this.direction = direction;
+    });
     this.subscriptions.add(selectorsSubscription);
   }
 
@@ -96,20 +95,20 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
 
     return this.rulesEngineService
       .isEnabled()
-      .then(isEnabled => {
+      .then((isEnabled) => {
         this.targetsDisabled = !isEnabled;
         return isEnabled ? this.rulesEngineService.fetchTargets() : [];
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Error getting targets', err);
         this.errorStack = err.stack;
         return [];
       })
       .then((targets: any[] = []) => {
         this.loading = false;
-        this.targets = targets.filter(target => target.visible !== false);
+        this.targets = targets.filter((target) => target.visible !== false);
         this.trackPerformance?.stop({
-          name: [ 'analytics', 'targets', 'load' ].join(':'),
+          name: ['analytics', 'targets', 'load'].join(':'),
           recordApdex: true,
         });
       });

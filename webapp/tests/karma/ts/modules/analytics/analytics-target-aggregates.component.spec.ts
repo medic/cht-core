@@ -5,14 +5,12 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { AnalyticsTargetAggregatesComponent } from '@mm-modules/analytics/analytics-target-aggregates.component';
-import { AnalyticsTargetAggregatesSidebarFilterComponent }
-  from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
+import { AnalyticsSidebarFilterComponent, ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { GlobalActions } from '@mm-actions/global';
-import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 
 describe('Analytics Target Aggregates Component', () => {
   let component: AnalyticsTargetAggregatesComponent;
@@ -63,7 +61,7 @@ describe('Analytics Target Aggregates Component', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           AnalyticsTargetAggregatesComponent,
-          AnalyticsTargetAggregatesSidebarFilterComponent,
+          AnalyticsSidebarFilterComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
