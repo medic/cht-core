@@ -21,6 +21,7 @@ import { CalendarIntervalService } from '@mm-services/calendar-interval.service'
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 
 interface DebounceActive {
   [key: string]: {
@@ -79,7 +80,8 @@ export class RulesEngineService implements OnDestroy {
     private rulesEngineCoreFactoryService:RulesEngineCoreFactoryService,
     private calendarIntervalService:CalendarIntervalService,
     private ngZone:NgZone,
-    private chtDatasourceService:CHTDatasourceService
+    private chtDatasourceService:CHTDatasourceService,
+    private dbService:DbService
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
@@ -459,11 +461,28 @@ export class RulesEngineService implements OnDestroy {
       });
   }
 
-  fetchTargets() {
-    return this.ngZone.runOutsideAngular(() => this._fetchTargets());
+  fetchTargets(reportingPeriod: ReportingPeriod = ReportingPeriod.CURRENT): Promise<Target[]> {
+    return this.ngZone.runOutsideAngular(() => this._fetchTargets(reportingPeriod));
   }
 
-  private async _fetchTargets(): Promise<Target[]> {
+  private async _fetchTargets(reportingPeriod: ReportingPeriod): Promise<Target[]> {
+    // If current month, use existing logic
+    if (reportingPeriod === ReportingPeriod.CURRENT) {
+      return this._fetchCurrentTargets();
+    }
+
+    // Previous month: use target documents
+    try {
+      const settings = await this.settingsService.get();
+      const targetDocs = await this.fetchTargetDocumentsForPeriod(settings, reportingPeriod);
+      return this.processTargetDocuments(targetDocs, settings);
+    } catch (error) {
+      console.error('Error fetching previous month targets:', error);
+      return [];
+    }
+  }
+
+  private async _fetchCurrentTargets(): Promise<Target[]> {
     const trackName = this.getTelemetryTrackName('targets');
     let trackPerformanceQueueing;
     let trackPerformanceRunning;
@@ -490,6 +509,99 @@ export class RulesEngineService implements OnDestroy {
     }
     trackPerformanceRunning?.stop({ name: trackName });
     return targets;
+  }
+
+  /**
+   * Get target interval tag for a specific reporting period
+   * Follows same pattern as TargetAggregatesService.getTargetIntervalTag
+   */
+  private getTargetIntervalTag(settings: any, reportingPeriod: ReportingPeriod): string {
+    const INTERVAL_TAG_FORMAT = 'YYYY-MM';
+    const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
+    const currentInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
+    
+    if (reportingPeriod === ReportingPeriod.CURRENT) {
+      return moment(currentInterval.end).format(INTERVAL_TAG_FORMAT);
+    }
+    
+    // Previous month calculation
+    const previousMonthDate = moment(currentInterval.end).subtract(1, 'months');
+    const previousInterval = this.calendarIntervalService.getInterval(uhcMonthStartDate, previousMonthDate.valueOf());
+    return moment(previousInterval.end).format(INTERVAL_TAG_FORMAT);
+  }
+
+  /**
+   * Fetch target documents for a specific reporting period
+   * Uses existing target document storage system
+   */
+  private async fetchTargetDocumentsForPeriod(settings: any, reportingPeriod: ReportingPeriod): Promise<any[]> {
+    const intervalTag = this.getTargetIntervalTag(settings, reportingPeriod);
+    const userContact = await this.userContactService.get();
+    
+    if (!userContact?._id) {
+      return [];
+    }
+
+    // Query target documents using interval-based approach
+    // Pattern: target~<interval_tag>~<contact_uuid>~<user_id>
+    const opts = {
+      start_key: `target~${intervalTag}~${userContact._id}~`,
+      end_key: `target~${intervalTag}~${userContact._id}~\ufff0`,
+      include_docs: true,
+    };
+
+    try {
+      const results = await this.dbService.get().allDocs(opts);
+      return results.rows.map(row => row.doc).filter(doc => doc && doc.targets);
+    } catch (error) {
+      console.error('Error fetching target documents for period:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Process target documents into target format expected by UI
+   */
+  private processTargetDocuments(targetDocs: any[], settings: any): Target[] {
+    const targetsConfig = settings?.tasks?.targets?.items || [];
+    const processedTargets: Target[] = [];
+
+    if (targetDocs.length > 0) {
+      // Get the most recent target document (there should typically be one per period)
+      const latestTargetDoc = targetDocs.sort((a, b) => {
+        return new Date(b.reporting_period || 0).getTime() - new Date(a.reporting_period || 0).getTime();
+      })[0];
+
+      if (latestTargetDoc?.targets) {
+        latestTargetDoc.targets.forEach(targetValue => {
+          const targetConfig = targetsConfig.find(config => config.id === targetValue.id);
+          if (targetConfig) {
+            processedTargets.push({
+              ...targetConfig,
+              ...targetValue,
+              visible: targetConfig.visible !== false
+            });
+          }
+        });
+      }
+    } else {
+      // No target documents found - return target configurations with zero values
+      targetsConfig.forEach(targetConfig => {
+        if (targetConfig.visible !== false) {
+          processedTargets.push({
+            ...targetConfig,
+            value: {
+              pass: 0,
+              total: 0,
+              percent: targetConfig.type === 'percent' ? 0 : undefined
+            },
+            visible: true
+          });
+        }
+      });
+    }
+
+    return processedTargets;
   }
 
   async monitorExternalChanges(replicationResult?) {
