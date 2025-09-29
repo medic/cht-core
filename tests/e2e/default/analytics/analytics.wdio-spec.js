@@ -3,6 +3,7 @@ const path = require('path');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
+const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const userFactory = require('@factories/cht/users/users');
@@ -94,6 +95,14 @@ describe('Targets', () => {
     expect(await emptySelection.getText()).to.equal(
       'Targets are disabled for admin users. If you need to see targets, login as a normal user.'
     );
+  });
+
+  it('should display filter button that opens the sidebar filter', async () => {
+    await analyticsPage.goToTargets();
+    await targetAggregatesPage.openSidebarFilter();
+
+    const filterLabel = await analyticsPage.filterOptionLabel();
+    expect(await filterLabel.getText()).to.equal('This month');
   });
 
   it('should show error message for bad config', async () => {

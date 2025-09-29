@@ -46,22 +46,18 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
   reportingPeriodFilter;
 
   constructor(
-    private rulesEngineService: RulesEngineService,
-    private performanceService: PerformanceService,
+    private readonly rulesEngineService: RulesEngineService,
+    private  readonly performanceService: PerformanceService,
     private readonly store: Store
   ) {
     this.trackPerformance = this.performanceService.track();
     this.globalActions = new GlobalActions(store);
   }
 
-  async ngOnInit() {
-    try {
-      this.subscribeToStore();
-      this.getTargets();
-      await this.setDefaultFilters();
-    } catch (error) {
-      console.error('Error loading aggregate targets', error);
-    }
+  ngOnInit(): void {
+    this.subscribeToStore();
+    this.getTargets();
+    this.setDefaultFilters();
   }
 
   ngOnDestroy(): void {
@@ -80,7 +76,7 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
     this.subscriptions.add(selectorsSubscription);
   }
 
-  private async setDefaultFilters() {
+  private setDefaultFilters() {
     const defaultFilters = {
       reportingPeriod: ReportingPeriod.CURRENT,
     };
@@ -95,18 +91,18 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
 
     return this.rulesEngineService
       .isEnabled()
-      .then((isEnabled) => {
+      .then(isEnabled => {
         this.targetsDisabled = !isEnabled;
         return isEnabled ? this.rulesEngineService.fetchTargets() : [];
       })
-      .catch((err) => {
+      .catch(err => {
         console.error('Error getting targets', err);
         this.errorStack = err.stack;
         return [];
       })
       .then((targets: any[] = []) => {
         this.loading = false;
-        this.targets = targets.filter((target) => target.visible !== false);
+        this.targets = targets.filter(target => target.visible !== false);
         this.trackPerformance?.stop({
           name: ['analytics', 'targets', 'load'].join(':'),
           recordApdex: true,

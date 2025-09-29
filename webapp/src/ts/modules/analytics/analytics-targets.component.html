@@ -47,7 +47,9 @@
           <div class="title">
             <h2 *ngIf="target.translation_key">{{ target.translation_key | translate }}</h2>
             <h2 *ngIf="!target.translation_key">{{ target.name | translateFrom }}</h2>
-            <p *ngIf="target.subtitle_translation_key">{{ target.subtitle_translation_key | translate }}</p>
+            <p *ngIf="target.subtitle_translation_key">
+              {{ target.subtitle_translation_key | translate }}
+            </p>
           </div>
         </div>
       </div>
