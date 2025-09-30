@@ -324,9 +324,6 @@ export class FormService {
 
   async save(formInternalId, form, geoHandle, docId?) {
     const docs = await this.completeReport(formInternalId, form, docId);
-    if (!docId && this.trainingCardsService.isTrainingCardForm(formInternalId)) {
-      docs[0]._id = this.trainingCardsService.getTrainingCardDocId();
-    }
     return this.ngZone.runOutsideAngular(() => this._save(docs, geoHandle));
   }
 
