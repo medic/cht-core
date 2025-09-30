@@ -597,7 +597,7 @@ describe('Authorization service', () => {
       request.post.resolves({
         hits: [
           { id: 'r1', fields: { key: 'sbj1', subject: 'sbj1', submitter: 'c1' } },
-          { id: 'r2', fields: { key: 'sbj3', subject: 'sbj3', subject: 'sbj3' } },
+          { id: 'r2', fields: { key: 'sbj3', subject: 'sbj3' } },
           { id: 'r3', fields: { key: 'sbj2', subject: 'sbj2', submitter: 'nurse'} },
           { id: 'r4', fields: { key: '', subject: '', submitter: 'c2' } },
           { id: 'r5', fields: { key: 'facility_id', subject: 'facility_id',} },
@@ -630,7 +630,12 @@ describe('Authorization service', () => {
             { id: 'r11', fields: { key: 'sbj3', subject: 'sbj3', } },
             { id: 'r12', fields: { key: 'sbj4', subject: 'sbj4', submitter: 'someone' } },
             { id: 'r13', fields: { key: '', subject: '', submitter: 'someone else' } },
-            { id: 'r14', fields: { key: 'contact_id', subject: 'contact_id', submitter: 'c-unknown', private: false } }, // not sensitive
+            {
+              id: 'r14',
+              fields: {
+                key: 'contact_id', subject: 'contact_id', submitter: 'c-unknown', private: false
+              }
+            }, // not sensitive
           ]);
         });
     });
@@ -648,14 +653,20 @@ describe('Authorization service', () => {
           { id: 'r6', fields: { key: 'contact_id', subject: 'contact_id',} },
           { id: 'r7', fields: { key: 'f1', subject: 'f1', submitter: 'c-unknown', private: true } }, //sensitive
           { id: 'r77', fields: { key: 'f2', subject: 'f2', submitter: 'c-unknown', private: true } }, //sensitive
-          { id: 'r8', fields: { key: 'contact_id', subject: 'contact_id', submitter: 'c-unknown', private: 'something' } }, //sensitive
+          {
+            id: 'r8',
+            fields: { key: 'contact_id', subject: 'contact_id', submitter: 'c-unknown', private: 'something' }
+          }, //sensitive
           { id: 'r9', fields: { key: 'f1', subject: 'f1', submitter: 'c3' } },
           { id: 'r99', fields: { key: 'f2', subject: 'f2', submitter: 'c3' } },
           { id: 'r10', fields: { key: 'contact_id', subject: 'contact_id', submitter: 'c4' } },
           { id: 'r11', fields: { key: 'sbj3', subject: 'sbj3', } },
           { id: 'r12', fields: { key: 'sbj4', subject: 'sbj4', submitter: 'someone' } },
           { id: 'r13', fields: { key: '', subject: '', submitter: 'someone else' } },
-          { id: 'r14', fields: { key: 'contact_id', subject: 'contact_id', submitter: 'c-unknown', private: false } }, // not sensitive
+          {
+            id: 'r14',
+            fields: { key: 'contact_id', subject: 'contact_id', submitter: 'c-unknown', private: false }
+          }, // not sensitive
         ]
       });
 
@@ -677,7 +688,10 @@ describe('Authorization service', () => {
             { id: 'r11', fields: { key: 'sbj3', subject: 'sbj3', } },
             { id: 'r12', fields: { key: 'sbj4', subject: 'sbj4', submitter: 'someone' } },
             { id: 'r13', fields: { key: '', subject: '', submitter: 'someone else' } },
-            { id: 'r14', fields: { key: 'contact_id', subject: 'contact_id', submitter: 'c-unknown', private: false } }, // not sensitive
+            {
+              id: 'r14',
+              fields: { key: 'contact_id', subject: 'contact_id', submitter: 'c-unknown', private: false }
+            }, // not sensitive
           ]);
         });
     });
@@ -720,15 +734,27 @@ describe('Authorization service', () => {
       request.post.resolves({
         hits:
           [
-            { id: 'r1', fields: { key: 'subject', subject: 'subject', submitter: null, type: 'data_record' } }, // depth 2
+            {
+              id: 'r1',
+              fields: { key: 'subject', subject: 'subject', submitter: null, type: 'data_record' }
+            }, // depth 2
             { id: 'r2', fields: { key: 'contact', subject: 'contact', type: 'data_record' } }, // depth 1
             { id: 'r3', fields: { key: 'parent', subject: 'parent', type: 'task' } }, // not a report, but depth 0
             { id: 'r4', fields: { key: 'contact', subject: 'contact', type: 'target' } },  // not a report, but depth 1
             { id: 'r5', fields: { key: 'parent', subject: 'parent', type: 'contact' } },  // not a report, but depth 0
-            { id: 'r6', fields: { key: 'subject', subject: 'subject', type: 'data_record', submitter: 'some_person' } }, // depth 2
-            { id: 'r7', fields: { key: 'contact', subject: 'contact', type: 'data_record', submitter: 'some_person' } }, // depth 1
+            {
+              id: 'r6',
+              fields: { key: 'subject', subject: 'subject', type: 'data_record', submitter: 'some_person' }
+            }, // depth 2
+            {
+              id: 'r7',
+              fields: { key: 'contact', subject: 'contact', type: 'data_record', submitter: 'some_person' }
+            }, // depth 1
             { id: 'r8', fields: { key: 'subject', subject: 'subject', type: 'target' } },  // not a report, but depth 2
-            { id: 'r9', fields: { key: 'subject', subject: 'subject', type: 'data_record', submitter: 'contact_id' } }, // depth 2, self
+            {
+              id: 'r9',
+              fields: { key: 'subject', subject: 'subject', type: 'data_record', submitter: 'contact_id' }
+            }, // depth 2, self
           ]
       });
 
@@ -746,9 +772,15 @@ describe('Authorization service', () => {
             { id: 'r3', fields: { key: 'parent', subject: 'parent', type: 'task' } }, // not a report, but depth 0
             { id: 'r4', fields: { key: 'contact', subject: 'contact', type: 'target' } },  // not a report, but depth 1
             { id: 'r5', fields: { key: 'parent', subject: 'parent', type: 'contact' } },  // not a report, but depth 0
-            { id: 'r7', fields: { key: 'contact', subject: 'contact', type: 'data_record', submitter: 'some_person' } }, // depth 1
+            {
+              id: 'r7',
+              fields: { key: 'contact', subject: 'contact', type: 'data_record', submitter: 'some_person' }
+            }, // depth 1
             { id: 'r8', fields: { key: 'subject', subject: 'subject', type: 'target' } },  // not a report, but depth 2
-            { id: 'r9', fields: { key: 'subject', subject: 'subject', type: 'data_record', submitter: 'contact_id' } }, // depth 2, self
+            {
+              id: 'r9',
+              fields: { key: 'subject', subject: 'subject', type: 'data_record', submitter: 'contact_id' }
+            }, // depth 2, self
           ]);
         });
     });
@@ -758,11 +790,23 @@ describe('Authorization service', () => {
       request.post.resolves({
         hits:
           [
-            { id: 'r1', fields: { key: ['place', 'parent'], subject: 'place', submitter: 'p', type: 'data_record' } }, // depth 1
-            { id: 'r2', fields: { key: ['place', 'parent'], subject: 'place', submitter: 'contact', type: 'data_record' } }, // depth 1
-            { id: 'r3', fields: { key: 'contact', subject: 'contact', submitter: 'contact', type: 'data_record' } }, // depth 1
+            {
+              id: 'r1',
+              fields: { key: ['place', 'parent'], subject: 'place', submitter: 'p', type: 'data_record' }
+            }, // depth 1
+            {
+              id: 'r2',
+              fields: { key: ['place', 'parent'], subject: 'place', submitter: 'contact', type: 'data_record' }
+            }, // depth 1
+            {
+              id: 'r3',
+              fields: { key: 'contact', subject: 'contact', submitter: 'contact', type: 'data_record' }
+            }, // depth 1
             { id: 'r4', fields: { key: 'place', subject: 'place', submitter: 'p', type: 'data_record' } }, // depth 1
-            { id: 'r5', fields: { key: 'place', subject: 'place', submitter: 'contact', type: 'data_record' } }, // depth 1
+            {
+              id: 'r5',
+              fields: { key: 'place', subject: 'place', submitter: 'contact', type: 'data_record' }
+            }, // depth 1
           ]
       });
 
@@ -776,10 +820,22 @@ describe('Authorization service', () => {
         })
         .then(result => {
           result.should.have.deep.members([
-            { id: 'r1', fields: { key: ['place', 'parent'], subject: 'place', submitter: 'p', type: 'data_record' } }, // depth 1
-            { id: 'r2', fields: { key: ['place', 'parent'], subject: 'place', submitter: 'contact', type: 'data_record' } }, // depth 1
-            { id: 'r3', fields: { key: 'contact', subject: 'contact', submitter: 'contact', type: 'data_record' } }, // depth 1
-            { id: 'r5', fields: { key: 'place', subject: 'place', submitter: 'contact', type: 'data_record' } }, // depth 1
+            {
+              id: 'r1',
+              fields: { key: ['place', 'parent'], subject: 'place', submitter: 'p', type: 'data_record' }
+            }, // depth 1
+            {
+              id: 'r2',
+              fields: { key: ['place', 'parent'], subject: 'place', submitter: 'contact', type: 'data_record' }
+            }, // depth 1
+            {
+              id: 'r3',
+              fields: { key: 'contact', subject: 'contact', submitter: 'contact', type: 'data_record' }
+            }, // depth 1
+            {
+              id: 'r5',
+              fields: { key: 'place', subject: 'place', submitter: 'contact', type: 'data_record' }
+            }, // depth 1
           ]);
         });
     });
@@ -789,13 +845,31 @@ describe('Authorization service', () => {
       request.post.resolves({
         hits:
           [
-            { id: 'r1', fields: { key: ['place', 'facility1'], subject: 'place', submitter: 'p', type: 'data_record' } }, // depth 1
-            { id: 'r11', fields: { key: ['place', 'facility2'], subject: 'place', submitter: 'p', type: 'data_record' } }, // depth 1
-            { id: 'r2', fields: { key: ['place', 'facility1'], subject: 'place', submitter: 'contact', type: 'data_record' } }, // depth 1
-            { id: 'r22', fields: { key: ['place', 'facility2'], subject: 'place', submitter: 'contact', type: 'data_record' } }, // depth 1
-            { id: 'r3', fields: { key: 'contact', subject: 'contact', submitter: 'contact', type: 'data_record' } }, // depth 1
+            {
+              id: 'r1',
+              fields: { key: ['place', 'facility1'], subject: 'place', submitter: 'p', type: 'data_record' }
+            }, // depth 1
+            {
+              id: 'r11',
+              fields: { key: ['place', 'facility2'], subject: 'place', submitter: 'p', type: 'data_record' }
+            }, // depth 1
+            {
+              id: 'r2',
+              fields: { key: ['place', 'facility1'], subject: 'place', submitter: 'contact', type: 'data_record' }
+            }, // depth 1
+            {
+              id: 'r22',
+              fields: { key: ['place', 'facility2'], subject: 'place', submitter: 'contact', type: 'data_record' }
+            }, // depth 1
+            {
+              id: 'r3',
+              fields: { key: 'contact', subject: 'contact', submitter: 'contact', type: 'data_record' }
+            }, // depth 1
             { id: 'r4', fields: { key: 'place', subject: 'place', submitter: 'p', type: 'data_record' } }, // depth 1
-            { id: 'r5', fields: { key: 'place', subject: 'place', submitter: 'contact', type: 'data_record' } }, // depth 1
+            {
+              id: 'r5',
+              fields: { key: 'place', subject: 'place', submitter: 'contact', type: 'data_record' }
+            }, // depth 1
           ]
       });
 
@@ -809,12 +883,30 @@ describe('Authorization service', () => {
         })
         .then(result => {
           result.should.have.deep.members([
-            { id: 'r1', fields: { key: ['place', 'facility1'], subject: 'place', submitter: 'p', type: 'data_record' } }, // depth 1
-            { id: 'r11', fields: { key: ['place', 'facility2'], subject: 'place', submitter: 'p', type: 'data_record' } }, // depth 1
-            { id: 'r2', fields: { key: ['place', 'facility1'], subject: 'place', submitter: 'contact', type: 'data_record' } }, // depth 1
-            { id: 'r22', fields: { key: ['place', 'facility2'], subject: 'place', submitter: 'contact', type: 'data_record' } }, // depth 1
-            { id: 'r3', fields: { key: 'contact', subject: 'contact', submitter: 'contact', type: 'data_record' } }, // depth 1
-            { id: 'r5', fields: { key: 'place', subject: 'place', submitter: 'contact', type: 'data_record' } }, // depth 1
+            {
+              id: 'r1',
+              fields: { key: ['place', 'facility1'], subject: 'place', submitter: 'p', type: 'data_record' }
+            }, // depth 1
+            {
+              id: 'r11',
+              fields: { key: ['place', 'facility2'], subject: 'place', submitter: 'p', type: 'data_record' }
+            }, // depth 1
+            {
+              id: 'r2',
+              fields: { key: ['place', 'facility1'], subject: 'place', submitter: 'contact', type: 'data_record' }
+            }, // depth 1
+            {
+              id: 'r22',
+              fields: { key: ['place', 'facility2'], subject: 'place', submitter: 'contact', type: 'data_record' }
+            }, // depth 1
+            {
+              id: 'r3',
+              fields: { key: 'contact', subject: 'contact', submitter: 'contact', type: 'data_record' }
+            }, // depth 1
+            {
+              id: 'r5',
+              fields: { key: 'place', subject: 'place', submitter: 'contact', type: 'data_record' }
+            }, // depth 1
           ]);
         });
     });
@@ -944,7 +1036,11 @@ describe('Authorization service', () => {
         )
         .should.equal(true);
       service
-        .allowedDoc('org.couchdb.user:' + userCtx.name, { userCtx }, { docsByReplicationKey: null, contactsByDepth: null })
+        .allowedDoc(
+          'org.couchdb.user:' + userCtx.name,
+          { userCtx },
+          { docsByReplicationKey: null, contactsByDepth: null }
+        )
         .should.equal(true);
 
       service
@@ -1489,28 +1585,44 @@ describe('Authorization service', () => {
       it('returns false for reports with allowed subject, denied submitter and sensitive', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact_id ];
         viewResults = {
-          docsByReplicationKey: { key: userCtx.contact_id, submitter: 'submitter', type: 'data_record', private: true },
+          docsByReplicationKey: {
+            key: userCtx.contact_id,
+            subject: userCtx.contact_id,
+            submitter: 'submitter', type: 'data_record', private: true
+          },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
 
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact.patient_id ];
         viewResults = {
-          docsByReplicationKey: { key: userCtx.contact.patient_id, submitter: 'submitter', type: 'data_record', private: true },
+          docsByReplicationKey: {
+            key: userCtx.contact.patient_id,
+            subject: userCtx.contact.patient_id,
+            submitter: 'submitter', type: 'data_record', private: true
+          },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
 
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', ...userCtx.facility_id ];
         viewResults = {
-          docsByReplicationKey: { key: userCtx.facility_id, submitter: 'submitter', type: 'data_record', private: true },
+          docsByReplicationKey: {
+            key: userCtx.facility_id,
+            subject: userCtx.facility_id,
+            submitter: 'submitter', type: 'data_record', private: true
+          },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
 
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility[0].place_id ];
         viewResults = {
-          docsByReplicationKey: { key: userCtx.facility[0].place_id, submitter: 'submitter', type: 'data_record', private: true },
+          docsByReplicationKey: {
+            key: userCtx.facility[0].place_id,
+            subject: userCtx.facility[0].place_id,
+            submitter: 'submitter', type: 'data_record', private: true
+          },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
@@ -2825,12 +2937,20 @@ describe('Authorization service', () => {
       ]);
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns({ key: 'c1', type: 'contact' });
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'patient1doc' })).returns({ key: 'patient1doc', type: 'contact' });
+      docsByReplicationKey
+        .withArgs(sinon.match({ _id: 'patient1doc' }))
+        .returns({ key: 'patient1doc', type: 'contact' });
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c2' })).returns({ key: 'c2', type: 'contact' });
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'patient2doc' })).returns({ key: 'patient2doc', type: 'contact' });
+      docsByReplicationKey
+        .withArgs(sinon.match({ _id: 'patient2doc' }))
+        .returns({ key: 'patient2doc', type: 'contact' });
       docsByReplicationKey.withArgs(sinon.match({ _id: 'c3' })).returns({ key: 'c3',  type: 'contact'  });
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'patient4doc' })).returns({ key: 'patient4doc', type: 'contact' });
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'patient3doc' })).returns({ key: 'patient3doc', type: 'contact' });
+      docsByReplicationKey
+        .withArgs(sinon.match({ _id: 'patient4doc' }))
+        .returns({ key: 'patient4doc', type: 'contact' });
+      docsByReplicationKey
+        .withArgs(sinon.match({ _id: 'patient3doc' }))
+        .returns({ key: 'patient3doc', type: 'contact' });
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
@@ -2911,12 +3031,22 @@ describe('Authorization service', () => {
           { id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
           {
             id: 'patient1doc',
-            doc: { _id: 'patient1doc', type: 'person', patient_id: 'patient1', parent: { _id: 'p1', parent: { _id: 'facility_id' } } }
+            doc: {
+              _id: 'patient1doc',
+              type: 'person',
+              patient_id: 'patient1',
+              parent: { _id: 'p1', parent: { _id: 'facility_id' } }
+            }
           },
           { id: 'c2', doc: { _id: 'c2', type: 'person', parent: { _id: 'p2', parent: { _id: 'p3' } } } },
           {
             id: 'patient2doc',
-            doc: { _id: 'patient2doc', type: 'person', patient_id: 'patient2', parent: { _id: 'p2', parent: { _id: 'p3' } } }
+            doc: {
+              _id: 'patient2doc',
+              type: 'person',
+              patient_id: 'patient2',
+              parent: { _id: 'p2', parent: { _id: 'p3' } }
+            }
           },
           { id: 'p1', doc: { _id: 'p1', type: 'clinic', parent: { _id: 'facility_id' } } },
           { id: 'facility_id', doc: { _id: 'facility_id', type: 'district_hospital' } },
