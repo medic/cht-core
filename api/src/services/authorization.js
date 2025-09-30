@@ -196,8 +196,8 @@ const allowedDoc = (docId, authorizationContext, { docsByReplicationKey, contact
     return true;
   }
 
-  const replicationKeys = Array.isArray(docsByReplicationKey.key) ?
-    docsByReplicationKey.key : [docsByReplicationKey.key];
+  const replicationKeys = Array.isArray(docsByReplicationKey?.key) ?
+    docsByReplicationKey?.key : [docsByReplicationKey?.key];
 
   if (replicationKeys.includes(ALL_KEY)) {
     return true;
@@ -206,6 +206,10 @@ const allowedDoc = (docId, authorizationContext, { docsByReplicationKey, contact
   if (contactsByDepth?.length) {
     // it's a contact
     return allowedContact(docId, contactsByDepth, authorizationContext);
+  }
+
+  if (!docsByReplicationKey) {
+    return false;
   }
 
   // it's a report, task or target
@@ -416,7 +420,7 @@ const getReplicationKeys = (viewResults) => {
   }
   replicationKeys.push(viewResults.docsByReplicationKey.submitter);
 
-  return replicationKeys;
+  return replicationKeys.filter(key => !!key);
 };
 
 /**
@@ -632,10 +636,7 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
 
     hits.push(...response.hits.map(hit => ({
       id: hit.id,
-      fields: {
-        ...hit.fields,
-        key: Array.isArray(hit.fields.key) ? hit.fields.key : [hit.fields.key],
-      }
+      fields: hit.fields,
     })));
   }
 
