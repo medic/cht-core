@@ -65,7 +65,8 @@
     "zone.js": "^0.15.0"
   },
   "overrides": {
-    "minimist": ">=1.2.6"
+    "minimist": ">=1.2.6",
+    "esbuild": "0.25.10"
   },
   "resolutions": {
     "**/jquery": "3.5.1"
