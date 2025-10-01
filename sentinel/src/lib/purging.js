@@ -206,16 +206,16 @@ const assignContactToGroups = (row, groups, subjectIds) => {
   subjectIds.push(...group.subjectIds);
 };
 
-const isRelevantRecordEmission = (row, groups, subjectIds) => {
-  if (groups[row.id]) { // groups keys are contact ids, we already know everything about contacts
+const isRelevantRecordEmission = (hit, groups, subjectIds) => {
+  if (groups[hit.id]) { // groups keys are contact ids, we already know everything about contacts
     return false;
   }
 
-  if (row.fields.type !== 'data_record') {
+  if (hit.fields.type !== 'data_record') {
     return false;
   }
 
-  if (row.fields.needs_signoff && !subjectIds.includes(row.fields.subject)) {
+  if (hit.fields.needs_signoff && !subjectIds.includes(hit.fields.subject)) {
     // reports with `needs_signoff` will emit for every contact from their submitter lineage,
     // but we only want to process them once, either associated to their subject, or to their submitter
     // when they have no subject or have an invalid subject.
@@ -274,7 +274,7 @@ const getRecordsForContacts = async (groups, subjectIds) => {
     bookmark = result.bookmark;
     requestNext = result.hits.length === nouveau.RESULTS_LIMIT;
 
-    relevantRows.push(...result.hits.filter(row => isRelevantRecordEmission(row, groups, subjectIds)));
+    relevantRows.push(...result.hits.filter(hit => isRelevantRecordEmission(hit, groups, subjectIds)));
     if (relevantRows.length >= MAX_BATCH_SIZE) {
       return Promise.reject({
         code: MAX_BATCH_SIZE_REACHED,
@@ -453,7 +453,6 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
   let startKey = '';
   let nextBatch;
 
-  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
   const getBatch = async () => {
     const opts = {
       limit: MAX_BATCH_SIZE,
@@ -476,7 +475,6 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
     results.hits.forEach(hit => {
       viewResults.rows.push({
         id: hit.id,
-        key: hit.fields.key,
         value: hit.fields,
         doc: hit.doc,
       });
