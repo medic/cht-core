@@ -74,8 +74,8 @@ const getDepth = (userCtx) => {
   };
 
   const getReportDepth = (value) => {
-    value = parseInt(value, 10);
-    return isNaN(value) ? NO_VAL : value;
+    value = Number.parseInt(value, 10);
+    return Number.isNaN(value) ? NO_VAL : value;
   };
 
   if (!userCtx.roles || !userCtx.roles.length) {
@@ -93,8 +93,8 @@ const getDepth = (userCtx) => {
     if (!setting) {
       return;
     }
-    const settingDepth = parseInt(setting.depth, 10);
-    if (isNaN(setting.depth)) {
+    const settingDepth = Number.parseInt(setting.depth, 10);
+    if (Number.isNaN(setting.depth)) {
       return;
     }
 
@@ -208,9 +208,51 @@ const allowedDoc = (docId, authorizationContext, { docsByReplicationKey, contact
     return allowedContact(docId, contactsByDepth, authorizationContext);
   }
 
+  return allowedReport(authorizationContext, docsByReplicationKey);
+};
+
+/**
+ * Returns whether an authenticated user has access to a document
+ * @param {String} docId document id
+ * @param {Array<{ key: [string, string?], value: { _id:string, shortcode:string} }>} docContactsByDepth
+ * @param {AuthorizationContext} authorizationContext
+ * @param {Boolean} authorizationContext.replicatePrimaryContacts - whether to allow replication of primary contacts
+ *
+ * @returns {Boolean}
+ */
+const allowedContact = (docId, docContactsByDepth, authorizationContext) => {
+  const viewResultKeys = docContactsByDepth.map(result => result.key);
+  const contactsByDepthKeys = authorizationContext.contactsByDepthKeys;
+  const matchedView = viewResultKeys.some(
+    viewResult => contactsByDepthKeys.some(generated => _.isEqual(viewResult, generated))
+  );
+
+  if (matchedView) {
+    return true;
+  }
+
+  if (!authorizationContext.replicatePrimaryContacts) {
+    return false;
+  }
+
+  // this doc isn't allowed through its direct lineage, but can be a primary contact of a place that is.
+  return authorizationContext.subjectIds.includes(docId);
+};
+
+/**
+ * Returns whether an authenticated user has access to a document
+ * @param {AuthorizationContext} authorizationContext
+ * @param {DocByReplicationKey}   docsByReplicationKey - result of `medic/_nouveau/docs_by_replication_key` index
+ *
+ * @returns {Boolean}
+ */
+const allowedReport = (authorizationContext, docsByReplicationKey) => {
   if (!docsByReplicationKey) {
     return false;
   }
+
+  const replicationKeys = Array.isArray(docsByReplicationKey.key) ?
+    docsByReplicationKey.key : [docsByReplicationKey.key];
 
   // it's a report, task or target
   const allowedDepth = isAllowedDepth(authorizationContext, docsByReplicationKey);
@@ -275,34 +317,6 @@ const getContactsByDepthKeys = (userCtx, depth) => {
   }
 
   return keys;
-};
-
-/**
- * Returns whether an authenticated user has access to a document
- * @param {String} docId document id
- * @param {Array<{ key: [string, string?], value: { _id:string, shortcode:string} }>} docContactsByDepth
- * @param {AuthorizationContext} authorizationContext
- * @param {Boolean} authorizationContext.replicatePrimaryContacts - whether to allow replication of primary contacts
- *
- * @returns {Boolean}
- */
-const allowedContact = (docId, docContactsByDepth, authorizationContext) => {
-  const viewResultKeys = docContactsByDepth.map(result => result.key);
-  const contactsByDepthKeys = authorizationContext.contactsByDepthKeys;
-  const matchedView = viewResultKeys.some(
-    viewResult => contactsByDepthKeys.some(generated => _.isEqual(viewResult, generated))
-  );
-
-  if (matchedView) {
-    return true;
-  }
-
-  if (!authorizationContext.replicatePrimaryContacts) {
-    return false;
-  }
-
-  // this doc isn't allowed through its direct lineage, but can be a primary contact of a place that is.
-  return authorizationContext.subjectIds.includes(docId);
 };
 
 /**
@@ -442,14 +456,14 @@ const findContactsByReplicationKeys = (replicationKeys) => {
     .query('medic-client/contacts_by_reference', { keys })
     .then(result => {
       const docIds = new Set();
-      replicationKeys.forEach(replicationKey => {
+      for (const replicationKey of replicationKeys) {
         const keys = result.rows.filter(row => row.key[1] === replicationKey).map(row => row.id);
         if (keys.length) {
           docIds.add(...keys);
         } else {
           docIds.add(replicationKey);
         }
-      });
+      }
 
       return db.medic.allDocs({ keys: [...docIds], include_docs: true });
     })
@@ -655,17 +669,20 @@ const getDocsByReplicationKey = async (authorizationContext) => {
 
     const docsByReplicationKey = [];
 
-    hits.forEach((hit) => {
+    for (const hit of hits) {
       const { submitter, subject } = hit.fields;
       const allowedSubmitter = () => sortedIncludes(sortedSubjects, submitter);
-      if (isSensitive(authorizationContext.userCtx, subject, submitter, hit.fields.private, allowedSubmitter)) {
-        return;
-      }
-
-      if (isAllowedDepth(authorizationContext, hit.fields)) {
+      const sensitive = isSensitive(
+        authorizationContext.userCtx,
+        subject,
+        submitter,
+        hit.fields.private,
+        allowedSubmitter
+      );
+      if (!sensitive && isAllowedDepth(authorizationContext, hit.fields)) {
         docsByReplicationKey.push(hit);
       }
-    });
+    }
 
     return docsByReplicationKey;
   });
@@ -685,12 +702,11 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = tru
     return validatedIds;
   }
 
-  docsByReplicationKey.forEach(hit => {
-    if (!includeTasks && hit.fields.type === 'task') {
-      return;
+  for (const hit of docsByReplicationKey) {
+    if (hit.fields.type !== 'task' || includeTasks) {
+      validatedIds.push(hit.id);
     }
-    validatedIds.push(hit.id);
-  });
+  }
 
   return _.uniq(validatedIds);
 };
