@@ -12,7 +12,6 @@ import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filte
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { GlobalActions } from '@mm-actions/global';
 
 describe('Analytics Filter Component', () => {
@@ -21,7 +20,6 @@ describe('Analytics Filter Component', () => {
   let authService;
   let sessionService;
   let telemetryService;
-  let targetAggregatesService;
   let globalActions;
   let route;
   let router;
@@ -34,9 +32,6 @@ describe('Analytics Filter Component', () => {
     };
     sessionService = { isAdmin: sinon.stub() };
     telemetryService = { record: sinon.stub() };
-    targetAggregatesService = {
-      isEnabled: sinon.stub().resolves(false),
-    };
     globalActions = {
       setSidebarFilter: sinon.stub(GlobalActions.prototype, 'setSidebarFilter'),
     };
@@ -67,7 +62,6 @@ describe('Analytics Filter Component', () => {
           { provide: AuthService, useValue: authService },
           { provide: SessionService, useValue: sessionService },
           { provide: TelemetryService, useValue: telemetryService },
-          { provide: TargetAggregatesService, useValue: targetAggregatesService },
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
         ]
@@ -94,14 +88,12 @@ describe('Analytics Filter Component', () => {
     sinon.resetHistory();
     sessionService.isAdmin.returns(false);
     route.snapshot.firstChild.data.moduleId = 'target-aggregates';
-    targetAggregatesService.isEnabled.resolves(true);
 
     component.ngOnInit();
     flush();
 
     expect(component.showFilterButton).to.be.true;
     expect(sessionService.isAdmin.callCount).to.equal(1);
-    expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
   }));
 
   it('should open and close sidebar filter', () => {
@@ -128,18 +120,6 @@ describe('Analytics Filter Component', () => {
     expect(component.showFilterButton).to.be.false;
   }));
 
-  it('should not display filter button if targetAggregate is not enabled', fakeAsync(() => {
-    sinon.resetHistory();
-    targetAggregatesService.isEnabled.resolves(false);
-
-    component.ngOnInit();
-    flush();
-
-    expect(component.showFilterButton).to.be.false;
-    expect(sessionService.isAdmin.callCount).to.equal(1);
-    expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
-  }));
-
   it('should not display filter button if module is not target aggregates', fakeAsync(() => {
     sinon.resetHistory();
     route.snapshot.firstChild.data.moduleId = 'not-target-aggregates';
@@ -149,7 +129,6 @@ describe('Analytics Filter Component', () => {
 
     expect(component.showFilterButton).to.be.false;
     expect(sessionService.isAdmin.callCount).to.equal(1);
-    expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
   }));
 
   it('should update the active module when route changes', fakeAsync(() => {

@@ -1,6 +1,5 @@
 <section class="sidebar-filter">
-  <div
-    class="sidebar-backdrop"
+  <div class="sidebar-backdrop"
     [ngClass]="{ hidden: !isOpen }"
     (click)="toggleSidebarFilter()"
     (keydown.escape)="toggleSidebarFilter()">
@@ -19,7 +18,7 @@
     <div class="sidebar-body">
       <mat-accordion multi>
         <!-- Facility -->
-        <div class="filter-options-container" *ngIf="userFacilities.length > 1">
+        <div class="filter-options-container" *ngIf="showFacilityFilter && userFacilities.length > 1">
           <span class="filter-options-title">
             {{ facilityFilterLabel | translate }}
           </span>
@@ -27,10 +26,10 @@
             <div class="filter-radio-option">
               <label class="filter-option-wrapper">
                 <input
+                  class="filter-option-radio"
                   type="radio"
                   name="facility"
                   [value]="facility"
-                  class="filter-option-radio"
                   [checked]="facility._id === selectedFacility._id"
                   (change)="fetchAggregateTargetsByFacility(facility)">
                 <span class="filter-option-label">
@@ -48,12 +47,13 @@
           <span class="filter-options-title">
             {{ 'analytics.target.aggregates.reporting_period' | translate }}
           </span>
-          <div class="filter-radio-option" *ngFor="let period of reportingPeriods">
+          <div class="filter-radio-option"
+            *ngFor="let period of reportingPeriods">
             <label class="filter-option-wrapper">
               <input
+                class="filter-option-radio"
                 type="radio"
                 name="reporting-period"
-                class="filter-option-radio"
                 [value]="period.value"
                 [(ngModel)]="selectedReportingPeriod"
                 (change)="fetchAggregateTargetsByReportingPeriod()">
@@ -67,7 +67,8 @@
     </div>
 
     <div class="sidebar-footer">
-      <button type="button" class="btn btn-primary" (click)="toggleSidebarFilter()">
+      <button type="button" class="btn btn-primary"
+        (click)="toggleSidebarFilter()">
         {{ 'reports.sidebar.filter.submit' | translate }}
       </button>
     </div>

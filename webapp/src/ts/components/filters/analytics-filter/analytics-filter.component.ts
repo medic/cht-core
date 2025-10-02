@@ -16,8 +16,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { SessionService } from '@mm-services/session.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
-import { AGGREGATE_TARGETS_ID } from '@mm-services/analytics-modules.service';
+import { AGGREGATE_TARGETS_ID, TARGETS_ID } from '@mm-services/analytics-modules.service';
 import { NgIf, NgFor } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -43,7 +42,6 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     private router: Router,
     private sessionService: SessionService,
     private telemetryService: TelemetryService,
-    private targetAggregatesService: TargetAggregatesService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -99,19 +97,15 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     this.subscriptions.add(routeSubscription);
   }
 
-  private isTargetAggregates() {
-    return this.getCurrentModuleId() === AGGREGATE_TARGETS_ID;
-  }
-
-  private isTargetAggregateEnabled() {
-    return this.targetAggregatesService.isEnabled();
+  private isAnalyticsModule() {
+    const moduleId = this.getCurrentModuleId();
+    return moduleId === AGGREGATE_TARGETS_ID || moduleId === TARGETS_ID;
   }
 
   private async canDisplayFilterButton() {
     const isAdmin = this.sessionService.isAdmin();
-    const isTargetAggregateEnabled = await this.isTargetAggregateEnabled();
 
-    this.showFilterButton = !isAdmin && this.isTargetAggregates() && isTargetAggregateEnabled;
+    this.showFilterButton = !isAdmin && this.isAnalyticsModule();
   }
 
   openSidebar() {

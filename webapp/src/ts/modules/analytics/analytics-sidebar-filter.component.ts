@@ -1,6 +1,7 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output, Input } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { Place } from '@medic/cht-datasource';
 
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
@@ -13,16 +14,17 @@ import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  selector: 'mm-analytics-target-aggregates-sidebar-filter',
-  templateUrl: './analytics-target-aggregates-sidebar-filter.component.html',
+  selector: 'mm-analytics-sidebar-filter',
+  templateUrl: './analytics-sidebar-filter.component.html',
   imports: [NgClass, MatIcon, MatAccordion, NgIf, NgFor, FormsModule, TranslatePipe]
 })
-export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, OnDestroy {
+export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
 
-  @Input() userFacilities;
+  @Input() userFacilities: Place.v1.Place[] = [];
+  @Input() showFacilityFilter = true;
   @Output() facilitySelectionChanged = new EventEmitter<string>();
   @Output() reportingPeriodSelectionChanged = new EventEmitter<string>();
-  private globalActions;
+  private readonly globalActions;
   readonly reportingPeriods = [
     { value: ReportingPeriod.CURRENT, label: 'targets.this_month.subtitle' },
     { value: ReportingPeriod.PREVIOUS, label: 'targets.last_month.subtitle' }
@@ -36,9 +38,9 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   facilityFilterLabel;
 
   constructor(
-    private store: Store,
-    private contactTypesService: ContactTypesService,
-    private settingsService: SettingsService,
+    private  readonly store: Store,
+    private readonly contactTypesService: ContactTypesService,
+    private readonly settingsService: SettingsService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -75,6 +77,11 @@ export class AnalyticsTargetAggregatesSidebarFilterComponent implements OnInit, 
   }
 
   private async setFacilityLabel() {
+    if (!this.userFacilities?.length) {
+      this.facilityFilterLabel = this.DEFAULT_FACILITY_LABEL;
+      return;
+    }
+
     try {
       const facility = this.userFacilities[0];
       const settings = await this.settingsService.get();
