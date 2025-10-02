@@ -11,7 +11,11 @@ const viewMapFns = {};
 const nouveauViewMapStrings = {};
 const nouveauViewMapFns = {};
 
-const resetObj = obj => Object.keys(obj).forEach(key => delete obj[key]);
+const resetObj = obj => {
+  for (const key of Object.keys(obj)) {
+    delete obj[key];
+  }
+};
 
 const reset = ddoc => {
   if (ddoc) {
@@ -30,14 +34,14 @@ const reset = ddoc => {
 
 module.exports = {
   loadViewMaps: (ddoc, viewNames = [], nouveauViewNames = []) => {
-    const ddocId = ddoc._id && ddoc._id.replace('_design/', '');
+    const ddocId = ddoc._id && ddoc._id.replaceAll('_design/', '');
     reset(ddocId);
-    viewNames.forEach(view => {
+    for (const view of viewNames) {
       viewMapStrings[ddocId][view] = ddoc.views?.[view]?.map || false;
-    });
-    nouveauViewNames.forEach(view => {
+    }
+    for (const view of nouveauViewNames) {
       nouveauViewMapStrings[ddocId][view] = ddoc.nouveau?.[view]?.index || false;
-    });
+    }
   },
 
   getViewMapFn: (ddocId, viewName) => {
@@ -47,13 +51,13 @@ module.exports = {
 
     let fnString = viewMapStrings[ddocId] && viewMapStrings[ddocId][viewName];
     if (!fnString) {
-      throw new Error('Requested view '+ ddocId + '/' + viewName + ' was not found');
+      throw new Error('Requested view ' + ddocId + '/' + viewName + ' was not found');
     }
 
     fnString = fnString
-      .replace(NEW_LINE_REGEX, '\n')
-      .replace(COMMENT_REGEX, '')
-      .replace(SIGNATURE_REGEX, 'this.emit(')
+      .replaceAll(NEW_LINE_REGEX, '\n')
+      .replaceAll(COMMENT_REGEX, '')
+      .replaceAll(SIGNATURE_REGEX, 'this.emit(')
       .trim();
 
     const fn = new Function('return ' + fnString)();
@@ -77,13 +81,13 @@ module.exports = {
 
     let fnString = nouveauViewMapStrings[ddocId]?.[viewName];
     if (!fnString) {
-      throw new Error('Requested nouveau index '+ ddocId + '/' + viewName + ' was not found');
+      throw new Error('Requested nouveau index ' + ddocId + '/' + viewName + ' was not found');
     }
 
     fnString = fnString
-      .replace(NEW_LINE_REGEX, '\n')
-      .replace(COMMENT_REGEX, '')
-      .replace(INDEX_REGEX, 'this.index(')
+      .replaceAll(NEW_LINE_REGEX, '\n')
+      .replaceAll(COMMENT_REGEX, '')
+      .replaceAll(INDEX_REGEX, 'this.index(')
       .trim();
 
     const fn = new Function('return ' + fnString)();
@@ -92,11 +96,11 @@ module.exports = {
     const viewMapFn = (...args) => {
       const hits = {};
       const index = (type, key, value) => {
-        if (!hits[key]) {
-          hits[key] = value;
-        } else {
-          hits[key] = Array.isArray(hits[key]) ? hits[key] : [hits[key]];
+        if (hits[key]) {
+          hits[key] = Array.isArray(hits[key]) ? hits[key] : [ hits[key] ];
           hits[key].push(value);
+        } else {
+          hits[key] = value;
         }
       };
 

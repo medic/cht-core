@@ -258,38 +258,52 @@ describe('Replication Helper Views Lib', () => {
   describe('hot reloading', () => {
     it('returns correct functions when views are reloaded', () => {
       let fnStringView1 = 'function(a) { return emit(a); }';
+      let fnStringView2 = 'function(a) { return index("string", "key", a + 2); }';
       let ddoc = {
         _id: '_design/ddoc',
         views: {
           view1: { map: fnStringView1 }
+        },
+        nouveau: {
+          view2: { index: fnStringView2 }
         }
       };
-      lib.loadViewMaps(ddoc, ['view1']);
+      lib.loadViewMaps(ddoc, ['view1'], ['view2']);
 
       lib.getViewMapFn('ddoc', 'view1')(1).should.deep.equal([{ key: 1, value: null }]);
       lib.getViewMapFn('ddoc', 'view1')('I am a happy hippo')
         .should.deep.equal([{ key: 'I am a happy hippo', value: null }]);
+      lib.getNouveauViewMapFn('ddoc', 'view2')(1).should.deep.equal({ key: 3 });
 
       fnStringView1 = 'function(a) { return emit(4); }';
+      fnStringView2 = 'function(a) { return index("string", "key", "Jason"); }';
       ddoc = {
         _id: 'ddoc',
         views: {
           view1: { map: fnStringView1 }
+        },
+        nouveau: {
+          view2: { index: fnStringView2 }
         }
       };
-      lib.loadViewMaps(ddoc, ['view1']);
+      lib.loadViewMaps(ddoc, ['view1'], ['view2']);
       lib.getViewMapFn('ddoc', 'view1')(1).should.deep.equal([{ key: 4, value: null }]);
       lib.getViewMapFn('ddoc', 'view1')('I am a happy hippo').should.deep.equal([{ key: 4, value: null }]);
+      lib.getNouveauViewMapFn('ddoc', 'view2')(1).should.deep.equal({ key: 'Jason' });
 
-      fnStringView1 = 'function(a) { return emit(4); }';
       ddoc = {
         _id: '_design/ddoc',
         views: {
           view2: { map: fnStringView1 }
+        },
+        nouveau: {
+          view1: { map: fnStringView2 }
         }
       };
-      lib.loadViewMaps(ddoc, ['view2']);
+      lib.loadViewMaps(ddoc, ['view2'], ['view1']);
       lib.getViewMapFn.bind(lib, 'ddoc', 'view1').should.throw(Error, 'Requested view ddoc/view1 was not found');
+      lib.getNouveauViewMapFn.bind(lib, 'ddoc', 'view2')
+        .should.throw(Error, 'Requested nouveau index ddoc/view2 was not found');
     });
 
     it('supports hot reloading for multiple ddocs', () => {
