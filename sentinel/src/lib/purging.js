@@ -472,13 +472,13 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
       bookmark: results.bookmark
     };
 
-    results.hits.forEach(hit => {
+    for (const hit of results.hits) {
       viewResults.rows.push({
         id: hit.id,
         value: hit.fields,
         doc: hit.doc,
       });
-    });
+    }
 
     return viewResults;
   };

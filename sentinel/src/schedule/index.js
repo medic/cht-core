@@ -4,7 +4,7 @@ const transitionsLib = config.getTransitionsLib();
 const date = transitionsLib.date;
 const logger = require('@medic/logger');
 
-const RUN_EVERY_MS = 5 * 60 * 1000; // 5 minutes
+const RUN_EVERY_MS = 30 * 1000; // 5 minutes
 
 const ongoingTasks = new Set();
 

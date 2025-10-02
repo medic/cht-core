@@ -2,12 +2,24 @@
 // The following characters require escaping if you want to search on them:
 // + - && || ! ( ) { } [ ] ^ " ~ * ? : \ /
 
-const specialChars = [ '\\+', '&', '\\|', '!', '\\^', '"',  '\\~',  '\\*', '\\?', ':', '\\-', ];
+const specialChars = [
+  String.raw`\+`,
+  '&',
+  String.raw`\|`,
+  '!',
+  String.raw`\^`,
+  '"',
+  String.raw`\~`,
+  String.raw`\*`,
+  String.raw`\?`,
+  ':',
+  String.raw`\-`
+];
 const charSet = specialChars.join('');
 const pattern = new RegExp(`([${charSet}])`, 'g');
 
 const escapeKeys = (key) => {
-  return String(key).replace(pattern, `\\$1`);
+  return String(key).replaceAll(pattern, String.raw`\$1`);
 };
 
 module.exports = {
