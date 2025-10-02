@@ -122,9 +122,9 @@ describe('Analytics Sidebar Filter Component', () => {
   it('should set user facility name_key as facilityFilterLabel, when user has multiple facilities', fakeAsync(() => {
     sinon.resetHistory();
     component.userFacilities = [
-      { _id: 'id_1', type: 'district_hospital' },
-      { _id: 'id_2', type: 'district_hospital' },
-      { _id: 'id_3', type: 'district_hospital' },
+      { _id: 'id_1', _rev: '1-abc', type: 'district_hospital' },
+      { _id: 'id_2', _rev: '1-def', type: 'district_hospital' },
+      { _id: 'id_3', _rev: '1-ghi', type: 'district_hospital' },
     ];
     const settings = { contact_types: [{ id: 'district_hospital', name_key: 'District Hospital' }] };
     settingsService.get.resolves(settings);
@@ -141,8 +141,8 @@ describe('Analytics Sidebar Filter Component', () => {
   it('should set error and default facilityFilterLabel when settingsService fails', fakeAsync(() => {
     sinon.resetHistory();
     component.userFacilities = [
-      { _id: 'place_1', type: 'district_hospital' },
-      { _id: 'place_2', type: 'district_hospital' },
+      { _id: 'place_1', _rev: '1-abc', type: 'district_hospital' },
+      { _id: 'place_2', _rev: '1-def', type: 'district_hospital' },
     ];
     settingsService.get.rejects({ some: 'err' });
 
@@ -157,8 +157,8 @@ describe('Analytics Sidebar Filter Component', () => {
     sinon.resetHistory();
     const settings = { contact_types: [{ id: 'district_hospital', name_key: 'District Hospital' }] };
     component.userFacilities = [
-      { _id: 'place_1', type: 'district_hospital' },
-      { _id: 'place_2', type: 'district_hospital' },
+      { _id: 'place_1', _rev: '1-abc', type: 'district_hospital' },
+      { _id: 'place_2', _rev: '1-def', type: 'district_hospital' },
     ];
     settingsService.get.resolves(settings);
     contactTypesService.getTypeId.returns(undefined);
@@ -175,8 +175,8 @@ describe('Analytics Sidebar Filter Component', () => {
     sinon.resetHistory();
     const settings = { contact_types: [{ id: 'health_center', name_key: 'Health Center' }] };
     component.userFacilities = [
-      { _id: 'id_1', type: 'district_hospital' },
-      { _id: 'id_2', type: 'district_hospital' },
+      { _id: 'id_1', _rev: '1-abc', type: 'district_hospital' },
+      { _id: 'id_2', _rev: '1-def', type: 'district_hospital' },
     ];
     settingsService.get.resolves(settings);
     contactTypesService.getTypeId.returns('district_hospital');
@@ -190,7 +190,11 @@ describe('Analytics Sidebar Filter Component', () => {
   }));
 
   it('should emit selected facility when fetchAggregateTargetsByFacility is called', () => {
-    const facility = { _id: 'place_1', type: 'district_hospital' };
+    const facility = {
+      _id: 'place_1',
+      _rev: '1-abc',
+      type: 'district_hospital',
+    };
     const spyFacility = sinon.spy(component.facilitySelectionChanged, 'emit');
 
     component.fetchAggregateTargetsByFacility(facility);
