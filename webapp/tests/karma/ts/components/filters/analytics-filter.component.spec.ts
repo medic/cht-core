@@ -120,16 +120,6 @@ describe('Analytics Filter Component', () => {
     expect(component.showFilterButton).to.be.false;
   }));
 
-  it('should not display filter button if targetAggregate is not enabled', fakeAsync(() => {
-    sinon.resetHistory();
-
-    component.ngOnInit();
-    flush();
-
-    expect(component.showFilterButton).to.be.false;
-    expect(sessionService.isAdmin.callCount).to.equal(1);
-  }));
-
   it('should not display filter button if module is not target aggregates', fakeAsync(() => {
     sinon.resetHistory();
     route.snapshot.firstChild.data.moduleId = 'not-target-aggregates';

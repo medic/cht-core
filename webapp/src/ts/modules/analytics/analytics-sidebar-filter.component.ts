@@ -1,6 +1,7 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output, Input } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { Place } from '@medic/cht-datasource';
 
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
@@ -19,7 +20,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 })
 export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
 
-  @Input() userFacilities: any[] = [];
+  @Input() userFacilities: Place.v1.Place[] = [];
   @Input() showFacilityFilter = true;
   @Output() facilitySelectionChanged = new EventEmitter<string>();
   @Output() reportingPeriodSelectionChanged = new EventEmitter<string>();

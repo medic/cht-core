@@ -101,14 +101,7 @@ describe('AnalyticsTargetsComponent', () => {
         ]
       })
       .compileComponents()
-      .then(async () => {
-        const { MatIconRegistry } = await import('@angular/material/icon');
-        const { DomSanitizer } = await import('@angular/platform-browser');
-        const matIconRegistry = TestBed.inject(MatIconRegistry);
-        const domSanitizer = TestBed.inject(DomSanitizer);
-        const iconUrl = domSanitizer.bypassSecurityTrustResourceUrl('./img/icon-close.svg');
-        matIconRegistry.addSvgIcon('icon-close', iconUrl);
-
+      .then(() => {
         fixture = TestBed.createComponent(AnalyticsTargetsComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
