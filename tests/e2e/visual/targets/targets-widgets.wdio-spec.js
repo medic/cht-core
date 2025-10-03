@@ -56,8 +56,7 @@ describe('Targets Widgets', () => {
   });
 
   afterEach(async () => {
-    await utils.revertDb([], true);
-    await utils.deleteAllDocs();
+    await utils.revertDb([/^form:/], true);
   });
 
   it('should go to Targets and take the screenshots with default data', async () => {
@@ -69,6 +68,7 @@ describe('Targets Widgets', () => {
 
   it('should go to Targets and take the screenshots without data', async () => {
     await utils.saveDocs([ ...places.values(), ...patients, ...emptyReport ]);
+    await commonPage.sync({reload: true});
     await commonPage.goToAnalytics();
     await commonPage.waitForPageLoaded();
     await browser.pause(2000);
@@ -77,8 +77,11 @@ describe('Targets Widgets', () => {
 
   xit('should go to Targets and take the screenshots showing widgets with goals', async () => {
     await utils.saveDocs([ ...places.values(), ...patients, ...goalsReport ]);
+    await commonPage.sync({reload: true});
     await commonPage.goToAnalytics();
     await commonPage.waitForPageLoaded();
+    const goalTarget = await $('.target-progress');
+    await goalTarget.scrollIntoView();
     await browser.pause(2000);
     await generateScreenshot('targets', 'widgets-goals');
   });
