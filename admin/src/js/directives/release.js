@@ -9,6 +9,8 @@ angular.module('directives').directive('release', function() {
       release: '=',
       potentiallyIncompatible: '=',
       upgrade: '=',
+      canUpgrade: '=',
+      showBaseVersion: '=',
     }
   };
 });

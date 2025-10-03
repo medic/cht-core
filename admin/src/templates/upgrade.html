@@ -18,9 +18,9 @@
           <div class="col-xs-9">{{'instance.upgrade.state.' + entry.state | translate}}</div>
         </div>
         <div>
-          <ul class="col-xs-12" ng-if="entry.state === 'indexing'">
-            <li ng-repeat="indexer in indexerProgress">
-              <div class="col-xs-3">{{indexer.database}}/{{indexer.ddoc}}</div>
+          <ul ng-if="entry.state === 'indexing'">
+            <li ng-repeat="indexer in indexerProgress" class="col-xs-12" >
+              <div class="col-xs-3">{{indexer.database}}/{{indexer.ddoc}} <span ng-if="indexer.type === 'search_indexer'" translate>instance.upgrade.nouveau</span></div>
               <div class="col-xs-9 progress">
                 <div class="progress-bar" role="progressbar" style="width: {{indexer.progress}}%;" aria-valuenow="{{indexer.progress}}" aria-valuemin="0" aria-valuemax="100">{{indexer.progress}}%</div>
               </div>
@@ -33,7 +33,7 @@
 
     <div ng-show="upgradeDoc.state === 'indexed' && upgradeDoc.action === 'stage'">
       <p class="col-xs-10" translate>instance.stage.complete</p>
-      <button class="col-xs-1 btn btn-primary" ng-click="upgrade(upgradeDoc.to, 'complete')" translate>instance.upgrade.install</button>
+      <button class="col-xs-1 btn btn-primary" ng-show="canUpgrade" ng-click="upgrade(upgradeDoc.to, 'complete')" translate>instance.upgrade.install</button>
     </div>
     <div ng-show="upgradeDoc.state === 'interrupted'">
       <p class="alert alert-warning" translate>instance.upgrade.interrupted</p>
@@ -85,7 +85,7 @@
           </div>
           <ul>
             <li ng-repeat="release in versions.releases" class="row">
-              <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade"/>
+              <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" can-upgrade="canUpgrade"/>
             </li>
           </ul>
         </div>
@@ -111,7 +111,7 @@
                 </div>
                 <ul>
                   <li ng-repeat="release in versions.featureReleases" class="row">
-                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" />
+                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" can-upgrade="canUpgrade" />
                   </li>
                 </ul>
               </div>
@@ -125,11 +125,12 @@
               <div ng-show="versions.betas.length">
                 <div class="row selection-heading">
                   <div class="col-xs-5" translate>instance.upgrade.version</div>
-                  <div class="col-xs-7" translate>instance.upgrade.date</div>
+                  <div class="col-xs-3" translate>instance.upgrade.date</div>
+                  <div class="col-xs-3" translate>instance.upgrade.base_version</div>
                 </div>
                 <ul>
                   <li ng-repeat="release in versions.betas" class="row">
-                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade"/>
+                    <release release="release" show-base-version="true" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" can-upgrade="canUpgrade"/>
                   </li>
                 </ul>
               </div>
@@ -143,11 +144,12 @@
               <div ng-show="versions.branches.length">
                 <div class="row selection-heading">
                   <div class="col-xs-5" translate>instance.upgrade.version</div>
-                  <div class="col-xs-7" translate>instance.upgrade.date</div>
+                  <div class="col-xs-3" translate>instance.upgrade.date</div>
+                  <div class="col-xs-3" translate>instance.upgrade.base_version</div>
                 </div>
                 <ul>
                   <li ng-repeat="release in versions.branches" class="row">
-                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" />
+                    <release release="release" show-base-version="true" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" can-upgrade="canUpgrade" />
                   </li>
                 </ul>
               </div>

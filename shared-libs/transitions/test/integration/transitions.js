@@ -5,10 +5,11 @@ const chaiExclude = require('chai-exclude');
 const db = require('../../src/db');
 const config = require('../../src/config');
 const infodoc = require('@medic/infodoc');
+const dataContext = require('../../src/data-context');
+const { Contact } = require('@medic/cht-datasource');
 
 chai.use(chaiExclude);
 
-let updateClinics;
 let transitions;
 let configGet;
 
@@ -20,7 +21,6 @@ describe('functional transitions', () => {
       get: configGet,
       getTranslations: sinon.stub()
     });
-    updateClinics = require('../../src/transitions/update_clinics');
     transitions = require('../../src/transitions/index');
   });
 
@@ -380,6 +380,15 @@ describe('functional transitions', () => {
   });
 
   describe('processDocs', () => {
+    let getContactWithLineage;
+
+    beforeEach(() => {
+      getContactWithLineage = sinon.stub();
+      dataContext.init({
+        bind: sinon.stub().withArgs(Contact.v1.getWithLineage).returns(getContactWithLineage),
+      });
+    });
+
     it('should run all async transitions over docs and save all docs', () => {
       configGet.withArgs('transitions').returns({
         conditional_alerts: { disabled: true },
@@ -530,7 +539,7 @@ describe('functional transitions', () => {
         .withArgs('medic-client/contacts_by_phone', { key: 'phone3', include_docs: true })
         .resolves({ rows: [{ id: 'contact3', doc: contact3 }] });
 
-      sinon.stub(updateClinics._lineage, 'fetchHydratedDoc').withArgs('contact1').resolves(contact1);
+      getContactWithLineage.resolves(contact1);
 
       config.getTranslations.returns({
         en: {

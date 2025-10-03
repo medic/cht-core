@@ -391,14 +391,14 @@ describe('Export Data V2.0', () => {
         body: {
           filters: {
             search: 'value',
-            types: { selected: ['chw', 'city', 'district_hospital'] }
+            types: { selected: ['person', 'city', 'district_hospital'] }
           }
         }
       });
       const rows = getRows(result);
       const expected = [
         'id,rev,name,patient_id,type,contact_type,place_id',
-        `"jen_id","${contacts[2]._rev}","jen","123","contact","chw",`,
+        `"john_id","${contacts[0]._rev}","john","12345","person",,`,
       ];
       expectRows(expected, rows);
     });
@@ -413,7 +413,8 @@ describe('Export Data V2.0', () => {
       apk,
       android,
       cht,
-      settings
+      settings,
+      storage
     }) => {
       const [year, month, day] = date.split('-');
       const getUserAgent = () => {
@@ -447,7 +448,9 @@ describe('Export Data V2.0', () => {
             },
             software: {
               androidVersion: android
-            }
+            },
+            // Optional storage information
+            ...(storage ? { storage: { free: storage.free, total: storage.total } } : {})
           }
         }
       };
@@ -591,6 +594,89 @@ describe('Export Data V2.0', () => {
       const result = await utils.request({ path: '/api/v2/export/user-devices' });
 
       expect(result).to.deep.equal([userDataDifferentDevice, userDataLatest]);
+    });
+
+    it('Includes storage fields only when present', async () => {
+      const withStorage = {
+        user: 'with_storage',
+        deviceId: 'aaa-device',
+        date: '2013-03-03',
+        browser: {},
+        storage: { free: 1024, total: 2048 },
+      };
+      const withoutStorage = {
+        user: 'without_storage',
+        deviceId: 'bbb-device',
+        date: '2013-03-03',
+        browser: {},
+      };
+      await saveUsersMetaDocs([withStorage, withoutStorage].map(createTelemetryDoc));
+
+      const result = await utils.request({ path: '/api/v2/export/user-devices' });
+
+      expect(result).to.deep.equal([
+        {
+          user: 'with_storage',
+          deviceId: 'aaa-device',
+          date: '2013-03-03',
+          browser: {},
+          storageFree: 1024,
+          storageTotal: 2048,
+        },
+        {
+          user: 'without_storage',
+          deviceId: 'bbb-device',
+          date: '2013-03-03',
+          browser: {},
+        },
+      ]);
+    });
+
+    it('Picks latest storage per device', async () => {
+      const older = {
+        user: 'chw2',
+        deviceId: 'device-x',
+        date: '2011-11-10',
+        browser: {},
+        storage: { free: 1000, total: 2000 },
+      };
+      const latest = {
+        user: 'chw2',
+        deviceId: 'device-x',
+        date: '2011-11-11',
+        browser: {},
+        storage: { free: 3000, total: 4000 },
+      };
+      const otherDevice = {
+        user: 'chw2',
+        deviceId: 'device-a',
+        date: '2011-11-11',
+        browser: {},
+        storage: { free: 1, total: 2 },
+      };
+      await saveUsersMetaDocs([older, latest, otherDevice].map(createTelemetryDoc));
+
+      const result = await utils.request({ path: '/api/v2/export/user-devices' });
+
+      // Expect order by [user, deviceId] => device-a then device-x
+      expect(result).to.deep.equal([
+        {
+          user: 'chw2',
+          deviceId: 'device-a',
+          date: '2011-11-11',
+          browser: {},
+          storageFree: 1,
+          storageTotal: 2,
+        },
+        {
+          user: 'chw2',
+          deviceId: 'device-x',
+          date: '2011-11-11',
+          browser: {},
+          storageFree: 3000,
+          storageTotal: 4000,
+        },
+      ]);
     });
   });
 

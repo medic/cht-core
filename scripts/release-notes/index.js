@@ -101,7 +101,15 @@ const getCommitsForRelease = async (release, milestoneBranch) => queryRepoPagina
           nodes {
             oid
             messageHeadline
-            author { user { login, name, url } }
+            authors(first: 25) {
+              nodes {
+                user {
+                  login
+                  name
+                  url
+                }
+              }
+            }
             associatedPullRequests(first: 50) {
               nodes {
                 milestone { id }
@@ -264,18 +272,17 @@ const formatGroups = (groups) => {
 };
 
 const formatCommits = (commits) => {
-  const ignoreLogins = BOTS;
+  const ignoreLogins = new Set(BOTS);
   const lines = [];
-  for (const commit of commits) {
-    const login = commit.author?.user?.login;
-    if (login && !ignoreLogins.includes(login)) {
-      ignoreLogins.push(login);
-      const user = commit.author.user;
-      const name = user.name || user.login;
-      const profileUrl = user.url;
-      lines.push(`- [${name}](${profileUrl})`);
+  const authors = commits.flatMap((commit) => commit.authors.nodes);
+  authors.forEach((author) => {
+    const { login, name, url } = author.user;
+    if (login && !ignoreLogins.has(login)) {
+      ignoreLogins.add(login);
+      const profileUrl = url;
+      lines.push(`- [${name || login}](${profileUrl})`);
     }
-  }
+  });
   return lines.join('\n');
 };
 
