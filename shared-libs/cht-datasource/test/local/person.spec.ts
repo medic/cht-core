@@ -158,7 +158,7 @@ describe('local person', () => {
 
       beforeEach(() => {
         queryDocsByKeyInner = sinon.stub();
-        queryDocsByKeyOuter = sinon.stub(LocalDoc, 'queryDocsByKey').returns(queryDocsByKeyInner);
+        queryDocsByKeyOuter = sinon.stub(LocalDoc, 'queryDocsByKey').returns(queryDocsByKeyInner);       
         getPersonTypes = sinon.stub(contactTypeUtils, 'getPersonTypes').returns(personType);
         settingsGetAll.returns(settings);
         fetchAndFilterInner = sinon.stub();
@@ -180,7 +180,7 @@ describe('local person', () => {
         expect(settingsGetAll.callCount).to.equal(1);
         expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
         expect(
-          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type', false)
         ).to.be.true;
         expect(queryDocsByKeyInner.notCalled).to.be.true;
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
@@ -206,7 +206,7 @@ describe('local person', () => {
         expect(settingsGetAll.callCount).to.equal(1);
         expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
         expect(
-          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type', false)
         ).to.be.true;
         expect(queryDocsByKeyInner.notCalled).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
@@ -223,7 +223,7 @@ describe('local person', () => {
 
         expect(settingsGetAll.calledOnce).to.be.true;
         expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
-        expect(queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type'))
+        expect(queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type', false))
           .to.be.true;
         expect(queryDocsByKeyInner.notCalled).to.be.true;
         expect(fetchAndFilterInner.notCalled).to.be.true;
@@ -241,8 +241,9 @@ describe('local person', () => {
 
           expect(settingsGetAll.calledOnce).to.be.true;
           expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
-          expect(queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type'))
-            .to.be.true;
+          expect(queryDocsByKeyOuter.calledOnceWithExactly(
+            localContext.medicDb, 'medic-client/contacts_by_type', false
+          )).to.be.true;
           expect(queryDocsByKeyInner.notCalled).to.be.true;
           expect(fetchAndFilterInner.notCalled).to.be.true;
           expect(fetchAndFilterOuter.notCalled).to.be.true;
@@ -263,7 +264,7 @@ describe('local person', () => {
         expect(settingsGetAll.calledOnce).to.be.true;
         expect(getPersonTypes.calledOnceWithExactly(settings)).to.be.true;
         expect(
-          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type', false)
         ).to.be.true;
         expect(queryDocsByKeyInner.notCalled).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');

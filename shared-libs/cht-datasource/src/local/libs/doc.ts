@@ -62,12 +62,13 @@ export const queryDocsByRange = (
 /** @internal */
 export const queryDocsByKey = (
   db: PouchDB.Database<Doc>,
-  view: string
+  view: string,
+  reduce = true
 ) => async (
   key: unknown,
   limit: number,
   skip: number
-): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, key, limit, skip });
+): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, key, limit, skip, reduce: reduce });
 
 const queryDocUuids = (
   db: PouchDB.Database<Doc>,
@@ -101,12 +102,13 @@ export const queryDocUuidsByRange = (
 /** @internal */
 export const queryDocUuidsByKey = (
   db: PouchDB.Database<Doc>,
-  view: string
+  view: string,
+  reduce = true
 ) => async (
   key: unknown,
   limit: number,
   skip: number
-): Promise<string[]> => queryDocUuids(db, view, { include_docs: false, key, limit, skip });
+): Promise<string[]> => queryDocUuids(db, view, { include_docs: false, reduce: reduce, key, limit, skip });
 
 /**
  * Resolves a page containing an array of T using the getFunction to retrieve documents from the database

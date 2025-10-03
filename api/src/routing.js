@@ -50,6 +50,7 @@ const monitoring = require('./controllers/monitoring');
 const africasTalking = require('./controllers/africas-talking');
 const rapidPro = require('./controllers/rapidpro');
 const infodoc = require('./controllers/infodoc');
+const impact = require('./controllers/impact');
 const credentials = require('./controllers/credentials');
 const authorization = require('./middleware/authorization');
 const deprecation = require('./middleware/deprecation');
@@ -411,6 +412,7 @@ app.get('/api/deploy-info', async (req, res) => {
 
 app.get('/api/v1/monitoring', deprecation.deprecate('/api/v2/monitoring'), monitoring.getV1);
 app.get('/api/v2/monitoring', monitoring.getV2);
+app.get('/api/v1/impact', impact.getV1);
 
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
