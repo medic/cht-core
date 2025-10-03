@@ -755,6 +755,41 @@ describe('Form service', () => {
         });
     });
 
+    it('creates training when user has no contact', () => {
+      const content = loadXML('sally-lmp');
+      form.getDataStr.returns(content);
+      trainingCardsService.isTrainingCardForm.returns(true);
+      trainingCardsService.getTrainingCardDocId.returns('training:user-jim:');
+      form.validate.resolves(true);
+      dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
+      UserContact.resolves(null);
+
+      return service
+        .save('training:a_new_training', form)
+        .then(actual => {
+          actual = actual[0];
+
+          expect(form.validate.calledOnce).to.be.true;
+          expect(form.getDataStr.calledOnce).to.be.true;
+          expect(dbBulkDocs.calledOnce).to.be.true;
+          expect(UserContact.calledOnce).to.be.true;
+          expect(actual._id.startsWith('training:user-jim:')).to.be.true;
+          expect(actual._rev).to.equal('1-abc');
+          expect(actual.fields.name).to.equal('Sally');
+          expect(actual.fields.lmp).to.equal('10');
+          expect(actual.form).to.equal('training:a_new_training');
+          expect(actual.type).to.equal('data_record');
+          expect(actual.content_type).to.equal('xml');
+          expect(actual.contact).to.be.null;
+          expect(actual.from).to.be.undefined;
+          expect(xmlFormGetWithAttachment.callCount).to.equal(1);
+          expect(xmlFormGetWithAttachment.args[0][0]).to.equal('training:a_new_training');
+          expect(AddAttachment.callCount).to.equal(0);
+          expect(removeAttachment.callCount).to.equal(1);
+          expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
+        });
+    });
+
     describe('Geolocation recording', () => {
       it('saves geolocation data into a new report', () => {
         form.validate.resolves(true);
@@ -1813,5 +1848,10 @@ describe('WebappEnketoFormContext', () => {
   it('requiresContact should return false when type is contact', () => {
     const ctxReport = new WebappEnketoFormContext('a', 'contact', {}, {});
     expect(ctxReport.requiresContact()).to.eq(false);
+  });
+
+  it('requiresContact should return false for training forms', () => {
+    const ctxTraining = new WebappEnketoFormContext('a', 'training-card', {}, {});
+    expect(ctxTraining.requiresContact()).to.eq(false);
   });
 });

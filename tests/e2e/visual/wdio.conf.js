@@ -35,6 +35,7 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       'reports/report-filter.wdio-spec.js',
       'reports/report-action-bar.wdio-spec.js',
       'targets/targets-overview.wdio-spec.js',
+      'reports/report-search.wdio-spec.js',
     ],
     mobileTests: [
       'contacts/contact-user-management.wdio-spec.js',
@@ -43,6 +44,7 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       'reports/report-filter.wdio-spec.js',
       'reports/report-action-bar.wdio-spec.js',
       'targets/targets-overview.wdio-spec.js',
+      'reports/report-search.wdio-spec.js',
     ]
   },
   capabilities: process.argv.includes('--suite=mobileTests')
@@ -50,6 +52,8 @@ exports.config = Object.assign(wdioBaseConfig.config, {
     : [desktopCapability],
   maxInstances: 1,
   beforeSuite: async function () {
-    await resizeWindowForScreenshots();
+    // Pass the suite type to the resize function
+    const isMobileSuite = process.argv.includes('--suite=mobileTests');
+    await resizeWindowForScreenshots(isMobileSuite);
   },
 });
