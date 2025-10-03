@@ -57,6 +57,8 @@ updates:
         - "@ngrx/*"
         - "rxjs"
         - "zone.js"
+        - "ngx-bootstrap"
+        - "ngx-cookie-service"
     ignore:
       - dependency-name: "bootstrap" # https://github.com/medic/cht-core/issues/8176
       - dependency-name: "bootstrap-daterangepicker" # https://github.com/medic/cht-core/issues/8176
