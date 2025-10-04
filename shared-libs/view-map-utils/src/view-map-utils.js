@@ -2,31 +2,46 @@
 
 const COMMENT_REGEX = /\/\/.*/g;
 const SIGNATURE_REGEX = /emit\(/g;
+const INDEX_REGEX = /index\(/g;
 const NEW_LINE_REGEX = /\\n/g;
 
 const viewMapStrings = {};
 const viewMapFns = {};
 
-const resetObj = obj => Object.keys(obj).forEach(key => delete obj[key]);
+const nouveauViewMapStrings = {};
+const nouveauViewMapFns = {};
+
+const resetObj = obj => {
+  for (const key of Object.keys(obj)) {
+    delete obj[key];
+  }
+};
 
 const reset = ddoc => {
   if (ddoc) {
     viewMapStrings[ddoc] = {};
     viewMapFns[ddoc] = {};
+    nouveauViewMapStrings[ddoc] = {};
+    nouveauViewMapFns[ddoc] = {};
     return;
   }
 
   resetObj(viewMapFns);
   resetObj(viewMapStrings);
+  resetObj(nouveauViewMapFns);
+  resetObj(nouveauViewMapStrings);
 };
 
 module.exports = {
-  loadViewMaps: (ddoc, ...viewNames) => {
-    const ddocId = ddoc._id && ddoc._id.replace('_design/', '');
+  loadViewMaps: (ddoc, viewNames = [], nouveauViewNames = []) => {
+    const ddocId = ddoc._id && ddoc._id.replaceAll('_design/', '');
     reset(ddocId);
-    viewNames.forEach(view => {
-      viewMapStrings[ddocId][view] = ddoc.views && ddoc.views[view] && ddoc.views[view].map || false;
-    });
+    for (const view of viewNames) {
+      viewMapStrings[ddocId][view] = ddoc.views?.[view]?.map || false;
+    }
+    for (const view of nouveauViewNames) {
+      nouveauViewMapStrings[ddocId][view] = ddoc.nouveau?.[view]?.index || false;
+    }
   },
 
   getViewMapFn: (ddocId, viewName) => {
@@ -36,13 +51,13 @@ module.exports = {
 
     let fnString = viewMapStrings[ddocId] && viewMapStrings[ddocId][viewName];
     if (!fnString) {
-      throw new Error('Requested view '+ ddocId + '/' + viewName + ' was not found');
+      throw new Error('Requested view ' + ddocId + '/' + viewName + ' was not found');
     }
 
     fnString = fnString
-      .replace(NEW_LINE_REGEX, '\n')
-      .replace(COMMENT_REGEX, '')
-      .replace(SIGNATURE_REGEX, 'this.emit(')
+      .replaceAll(NEW_LINE_REGEX, '\n')
+      .replaceAll(COMMENT_REGEX, '')
+      .replaceAll(SIGNATURE_REGEX, 'this.emit(')
       .trim();
 
     const fn = new Function('return ' + fnString)();
@@ -59,8 +74,40 @@ module.exports = {
     return viewMapFn;
   },
 
-  //used for testing
-  _getViewMapStrings: () => viewMapStrings,
-  _getViewMapFns: () => viewMapFns,
-  _reset: reset,
+  getNouveauViewMapFn: (ddocId, viewName) => {
+    if (nouveauViewMapFns[ddocId]?.[viewName]) {
+      return nouveauViewMapFns[ddocId][viewName];
+    }
+
+    let fnString = nouveauViewMapStrings[ddocId]?.[viewName];
+    if (!fnString) {
+      throw new Error('Requested nouveau index ' + ddocId + '/' + viewName + ' was not found');
+    }
+
+    fnString = fnString
+      .replaceAll(NEW_LINE_REGEX, '\n')
+      .replaceAll(COMMENT_REGEX, '')
+      .replaceAll(INDEX_REGEX, 'this.index(')
+      .trim();
+
+    const fn = new Function('return ' + fnString)();
+
+    //support multiple hits
+    const viewMapFn = (...args) => {
+      const hits = {};
+      const index = (type, key, value) => {
+        if (hits[key]) {
+          hits[key] = Array.isArray(hits[key]) ? hits[key] : [ hits[key] ];
+          hits[key].push(value);
+        } else {
+          hits[key] = value;
+        }
+      };
+
+      fn.apply({ index: index }, args);
+      return hits;
+    };
+    nouveauViewMapFns[ddocId][viewName] = viewMapFn;
+    return viewMapFn;
+  },
 };
