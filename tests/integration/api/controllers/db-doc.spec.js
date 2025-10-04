@@ -155,7 +155,7 @@ const reportForPatient = (patientUuid, username, fields = [], needs_signoff = fa
 
   setReportContact(report, username);
   setReportPatient(report, patientUuid, fields, temporaryPatients);
-  report.fields.needs_signoff = needs_signoff;
+  report.fields.needs_signoff = `${needs_signoff}`;
 
   return report;
 };
