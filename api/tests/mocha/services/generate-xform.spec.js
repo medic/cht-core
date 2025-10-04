@@ -27,6 +27,22 @@ const expectAttachments = (doc, form, model) => {
   expect(modelAttachment.content_type).to.equal('text/xml');
 };
 
+const fakeGetAttachment = (id, name) => {
+  // Fail the test if the code tries to fetch any non-XML attachment
+  const formXml = '<my-xml/>';
+  const currentForm = '<html/>';
+  const currentModel = '<xml/>';
+  let attachment=null;
+  switch (name){
+    case 'xform.xml': attachment=Buffer.from(formXml); break;
+    case 'xml': attachment=Buffer.from(formXml); break;
+    case 'form.html': attachment=Buffer.from(currentForm); break;
+    case 'model.xml': attachment=Buffer.from(currentModel); break;
+    default: throw new Error(`Should only fetch xml or form.html attachment: ${name}`);
+  }
+  return Promise.resolve(attachment);
+};
+
 afterEach(() => sinon.restore());
 
 describe('generate-xform service', () => {
@@ -286,11 +302,16 @@ describe('generate-xform service', () => {
       const formXml = '<my-xml/>';
       const currentForm = '<html/>';
       const currentModel = '<xml/>';
-      sinon.stub(db.medic, 'get').resolves({ _attachments: {
-        'xform.xml': { data: Buffer.from(formXml) },
-        'form.html': { data: Buffer.from(currentForm) },
-        'model.xml': { data: Buffer.from(currentModel) }
-      } });
+      sinon.stub(db.medic, 'get').resolves({
+        _attachments: {
+          'xform.xml': { stub: true },
+          'form.html': { stub: true },
+          'model.xml': { stub: true },
+        },
+        _rev: '1-rev'
+      });
+      // sinon.stub(db.medic, 'getAttachment').resolves(Buffer.from(formXml));
+      sinon.stub(db.medic, 'getAttachment').callsFake(fakeGetAttachment);
       sinon.stub(service, 'generate').resolves({ form: currentForm, model: currentModel });
       sinon.stub(db.medic, 'put');
       return service.update('form:exists').then(() => {
@@ -307,6 +328,7 @@ describe('generate-xform service', () => {
       sinon.stub(db.medic, 'get').resolves({ _attachments: {
         xml: { data: Buffer.from(formXml) }
       } });
+      sinon.stub(db.medic, 'getAttachment').resolves(Buffer.from(formXml));
       sinon.stub(service, 'generate').resolves({ form: newForm, model: newModel });
       sinon.stub(db.medic, 'put');
       return service.update('form:exists').then(() => {
@@ -317,15 +339,16 @@ describe('generate-xform service', () => {
 
     it('should update doc when attachments have changed', () => {
       const formXml = '<my-xml/>';
-      const currentForm = '<html/>';
       const newForm = '<html><title>Hello</title></html>';
-      const currentModel = '<xml/>';
       const newModel = '<instance><multimedia/></instance>';
       sinon.stub(db.medic, 'get').resolves({ _attachments: {
-        'xform.xml': { data: Buffer.from(formXml) },
-        'form.html': { data: Buffer.from(currentForm) },
-        'model.xml': { data: Buffer.from(currentModel) }
+        'xform.xml': { stub: true },
+        'form.html': { stub: true },
+        'model.xml': { stub: true }
       } });
+
+      sinon.stub(db.medic, 'getAttachment').resolves(Buffer.from(formXml));
+
       sinon.stub(service, 'generate').resolves({ form: newForm, model: newModel });
       sinon.stub(db.medic, 'put');
       return service.update('form:exists').then(() => {
@@ -334,8 +357,137 @@ describe('generate-xform service', () => {
       });
     });
 
+    it('Should not update doc at all if no xml attachment is found', async () => {
+      const newForm = '<html><title>Hello</title></html>';
+      const newModel = '<instance><multimedia/></instance>';
+      
+      sinon.stub(db.medic, 'getAttachment').resolves(null);
+
+      sinon.stub(db.medic, 'get').resolves({ _attachments: {
+        'xform.xml': {stub: true},
+        'form.html': { stub: true },
+        'model.xml': { stub: true }
+      } });
+      sinon.stub(service, 'generate').resolves({ form: newForm, model: newModel });
+      sinon.stub(db.medic, 'put');
+
+      await service.update('form:exists');
+      expect(db.medic.getAttachment.callCount).to.equal(3);
+      expect(service.generate.callCount).to.equal(0);
+      expect(db.medic.put.callCount).to.equal(0);
+      // expectAttachments(db.medic.put.args[0][0], newForm, newModel);
+    });
+
+    it('updates only form.html and model.xml; preserves audio/image/videos attachments unchanged', async () => {
+      const crypto = require('crypto');
+      const computeDigest = data => {
+        return 'md5-' + crypto.createHash('md5').update(data).digest('base64');
+      };
+
+      const docId = 'form:test';
+      const originalFormXml = '<form>original xml</form>';
+      const originalFormHtml = '<html>old html</html>';
+      const originalModelXml = '<model>old model</model>';
+      const newFormHtml = '<html>new html</html>';
+      const newModelXml = '<model>new model</model>';
+      const audioContent = 'audio content';
+      const imageContent = 'image content';
+
+      const audioBuffer = Buffer.from(audioContent);
+      const imageBuffer = Buffer.from(imageContent);
+      const originalFormXmlBuffer = Buffer.from(originalFormXml);
+      const originalFormHtmlBuffer = Buffer.from(originalFormHtml);
+      const originalModelXmlBuffer = Buffer.from(originalModelXml);
+
+      const originalDoc = {
+        _id: docId,
+        _rev: '1-rev',
+        _attachments: {
+          'xml': {
+            content_type: 'application/xml',
+            digest: computeDigest(originalFormXmlBuffer),
+            length: originalFormXmlBuffer.length,
+            stub: true
+          },
+          'form.html': {
+            content_type: 'text/html',
+            digest: computeDigest(originalFormHtmlBuffer),
+            length: originalFormHtmlBuffer.length,
+            stub: true
+          },
+          'model.xml': {
+            content_type: 'text/xml',
+            digest: computeDigest(originalModelXmlBuffer),
+            length: originalModelXmlBuffer.length,
+            stub: true
+          },
+          'audio.mp3': {
+            content_type: 'audio/mp3',
+            digest: computeDigest(audioBuffer),
+            length: audioBuffer.length,
+            stub: true
+          },
+          'image.jpg': {
+            content_type: 'image/jpeg',
+            digest: computeDigest(imageBuffer),
+            length: imageBuffer.length,
+            stub: true
+          }
+        },
+        context: {
+          person: false,
+          place: false
+        }
+      };
+
+      sinon.stub(db.medic, 'get').withArgs(docId).resolves(originalDoc);
+      sinon.stub(db.medic, 'getAttachment').callsFake(fakeGetAttachment);
+      sinon.stub(db.medic, 'put').resolves({ ok: true });
+      sinon.stub(service, 'generate').resolves({
+        form: newFormHtml,
+        model: newModelXml
+      });
+
+      await service.update(docId);
+
+      expect(db.medic.get.calledOnce).to.be.true;
+      expect(db.medic.getAttachment.callCount).to.equal(3);
+      expect(db.medic.getAttachment.calledWith(docId, 'xml')).to.be.true;
+      expect(service.generate.calledOnce).to.be.true;
+      expect(db.medic.put.calledOnce).to.be.true;
+
+      const updatedDoc = db.medic.put.args[0][0];
+
+      // Check updated attachments have data
+      expect(updatedDoc._attachments['form.html'].data.toString()).to.equal(newFormHtml);
+      expect(updatedDoc._attachments['form.html'].content_type).to.equal('text/html');
+      expect('stub' in updatedDoc._attachments['form.html']).to.be.false;
+      expect('data' in updatedDoc._attachments['form.html']).to.be.true;
+
+      expect(updatedDoc._attachments['model.xml'].data.toString()).to.equal(newModelXml);
+      expect(updatedDoc._attachments['model.xml'].content_type).to.equal('text/xml');
+      expect('stub' in updatedDoc._attachments['model.xml']).to.be.false;
+      expect('data' in updatedDoc._attachments['model.xml']).to.be.true;
+
+      // Check preserved attachments remain as stubs and unchanged
+      expect(updatedDoc._attachments['audio.mp3']).to.deep.equal(originalDoc._attachments['audio.mp3']);
+      expect(updatedDoc._attachments['audio.mp3'].stub).to.be.true;
+      expect('data' in updatedDoc._attachments['audio.mp3']).to.be.false;
+
+      expect(updatedDoc._attachments['image.jpg']).to.deep.equal(originalDoc._attachments['image.jpg']);
+      expect(updatedDoc._attachments['image.jpg'].stub).to.be.true;
+      expect('data' in updatedDoc._attachments['image.jpg']).to.be.false;
+
+      // Check xml attachment remains as stub and unchanged
+      expect(updatedDoc._attachments['xml']).to.deep.equal(originalDoc._attachments['xml']);
+      expect(updatedDoc._attachments['xml'].stub).to.be.true;
+      expect('data' in updatedDoc._attachments['xml']).to.be.false;
+    });
+
   });
 
+
+  
   describe('updateAll', () => {
 
     const JSON_FORM_ROW = {
@@ -374,39 +526,38 @@ describe('generate-xform service', () => {
     it('should ignore collect forms', () => {
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [ COLLECT_FORM_ROW ] });
       sinon.stub(db, 'saveDocs');
+      sinon.stub(db.medic, 'getAttachment');
       return service.updateAll().then(() => {
         expect(db.medic.allDocs.callCount).to.equal(1);
         expect(db.saveDocs.callCount).to.equal(0);
       });
     });
 
-    it('should do nothing when no forms have changed', () => {
-      const formXml = '<my-xml/>';
+    it('should do nothing when no forms have changed', async() => {
       const currentForm = '<html/>';
       const currentModel = '<xml/>';
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [ {
         doc: {
           type: 'form',
+          _rev: '1-rev',
           _attachments: {
-            'xform.xml': { data: Buffer.from(formXml) },
-            'form.html': { data: Buffer.from(currentForm) },
-            'model.xml': { data: Buffer.from(currentModel) }
+            'xform.xml': { stub: true },
+            'form.html': { stub: true },
+            'model.xml': { stub: true }
           }
         }
       } ] });
+      sinon.stub(db.medic, 'getAttachment').callsFake(fakeGetAttachment);
       sinon.stub(service, 'generate').resolves({ form: currentForm, model: currentModel });
-      sinon.stub(db, 'saveDocs');
-      return service.updateAll().then(() => {
-        expect(db.medic.allDocs.callCount).to.equal(1);
-        expect(db.saveDocs.callCount).to.equal(0);
-      });
+      sinon.stub(db, 'saveDocs').resolves([]);
+      await service.updateAll();
+      expect(db.medic.allDocs.callCount).to.equal(1);
+      expect(db.saveDocs.callCount).to.equal(0);
     });
 
     it('should throw when not all updated successfully', () => {
       const formXml = '<my-xml/>';
-      const currentForm = '<html/>';
       const newForm = '<html><title>Hello</title></html>';
-      const currentModel = '<xml/>';
       const newModel = '<instance><multimedia/></instance>';
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [
         {
@@ -414,13 +565,14 @@ describe('generate-xform service', () => {
             _id: 'd',
             type: 'form',
             _attachments: {
-              'xform.xml': { data: Buffer.from(formXml) },
-              'form.html': { data: Buffer.from(currentForm) },
-              'model.xml': { data: Buffer.from(currentModel) }
+              'xform.xml': { stub: true },
+              'form.html': { stub: true },
+              'model.xml': { stub: true }
             }
           }
         }
       ] });
+      sinon.stub(db.medic, 'getAttachment').resolves(Buffer.from(formXml));
       sinon.stub(service, 'generate').resolves({ form: newForm, model: newModel });
       sinon.stub(db, 'saveDocs').resolves([ { error: 'some error' } ]);
       return service
@@ -432,7 +584,6 @@ describe('generate-xform service', () => {
     });
 
     it('should save all updated forms', () => {
-      const formXml = '<my-xml/>';
       const currentForm = '<html/>';
       const newForm = '<html><title>Hello</title></html>';
       const currentModel = '<xml/>';
@@ -443,26 +594,29 @@ describe('generate-xform service', () => {
         {
           doc: {
             _id: 'c',
+            _rev: '1-rev2',
             type: 'form',
             _attachments: {
-              'xform.xml': { data: Buffer.from(formXml) },
-              'form.html': { data: Buffer.from(currentForm) },
-              'model.xml': { data: Buffer.from(currentModel) }
+              'xform.xml': { stub: true },
+              'form.html': { stub: true },
+              'model.xml': { stub: true }
             }
           }
         },
         {
           doc: {
             _id: 'd',
+            _rev: '1-rev3',
             type: 'form',
             _attachments: {
-              'xform.xml': { data: Buffer.from(formXml) },
-              'form.html': { data: Buffer.from(currentForm) },
-              'model.xml': { data: Buffer.from(currentModel) }
+              'xform.xml': { stub: true },
+              'form.html': { stub: true },
+              'model.xml': { stub: true }
             }
           }
         }
       ] });
+      sinon.stub(db.medic, 'getAttachment').callsFake(fakeGetAttachment);
       sinon.stub(service, 'generate')
         .onCall(0).resolves({ form: currentForm, model: currentModel })
         .onCall(1).resolves({ form: newForm, model: newModel });
