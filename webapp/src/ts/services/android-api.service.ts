@@ -5,6 +5,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
 import { NavigationService } from '@mm-services/navigation.service';
+import { TasksNotificationService } from '@mm-services/task-notifications.service';
 
 /**
  * An API to provide integration with the medic-android app.
@@ -24,6 +25,7 @@ export class AndroidApiService {
     private sessionService:SessionService,
     private zone:NgZone,
     private navigationService:NavigationService,
+    private readonly tasksNotificationService: TasksNotificationService,
   ) { }
 
   private runInZone(property:string, args:any[]=[]) {
@@ -169,6 +171,14 @@ export class AndroidApiService {
   }
 
   /**
+   * Gets notifcations for tasks
+   * returns {Promise} A promise that resolves to Notification[].
+   */
+  taskNotifications() {
+    return this.tasksNotificationService.get();
+  }
+
+  /**
    * Handle the response from the MRDT app
    * @param response The stringified JSON response from the MRDT app.
    */
@@ -222,5 +232,6 @@ export class AndroidApiService {
     smsStatusUpdate: (...args) => this.runInZone('smsStatusUpdate', args),
     locationPermissionRequestResolved: () => this.runInZone('locationPermissionRequestResolve'),
     resolveCHTExternalAppResponse: (...args) => this.runInZone('resolveCHTExternalAppResponse', args),
+    taskNotifications: () => this.runInZone('taskNotifications'),
   };
 }
