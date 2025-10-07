@@ -185,7 +185,7 @@ const isPouchDBNotFoundError = (error: unknown): error is { status: number, name
     typeof error === 'object' && error !== null &&
     'status' in error && (error as { status: number }).status === 404
   );
-}
+};
 
 /** @internal */
 export const ddocExists = async (db: PouchDB.Database<Doc>, ddocId: string): Promise<boolean> => {

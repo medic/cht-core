@@ -23,7 +23,6 @@ describe('local doc lib', () => {
   let db: PouchDB.Database<Doc.Doc>;
   let isDoc: SinonStub;
   let error: SinonStub;
-  let debug: SinonStub;
 
   beforeEach(() => {
     dbGet = sinon.stub();
@@ -36,7 +35,6 @@ describe('local doc lib', () => {
     } as unknown as PouchDB.Database<Doc.Doc>;
     isDoc = sinon.stub(Doc, 'isDoc');
     error = sinon.stub(logger, 'error');
-    debug = sinon.stub(logger, 'debug');
   });
 
   afterEach(() => sinon.restore());
