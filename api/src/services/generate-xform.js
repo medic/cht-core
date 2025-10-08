@@ -195,6 +195,7 @@ const generateModel = formXml => {
   });
 };
 
+
 const getEnketoForm = doc => {
   const collect = doc.context && doc.context.collect;
   return !collect && formsService.getXFormAttachment(doc);
@@ -205,51 +206,44 @@ const generate = formXml => {
     .then(([ form, model ]) => ({ form, model }));
 };
 
-const updateAttachment = (doc, updated, name, type) => {
-  const attachmentData = doc._attachments &&
-                         doc._attachments[name] &&
-                         doc._attachments[name].data &&
-                         doc._attachments[name].data.toString();
-  if (attachmentData === updated) {
-    return false;
+const addGeneratedAttachments = (doc, updated, outdated) => {
+  if (!updated || (
+    updated.form.toString() === String(outdated.form)  &&
+    updated.model.toString() === String(outdated.model))) {
+    return;
   }
-  doc._attachments[name] = {
-    data: Buffer.from(updated),
-    content_type: type
+  doc._attachments['form.html'] = {
+    data: Buffer.from(updated.form),
+    content_type: 'text/html'
   };
-  return true;
+  doc._attachments['model.xml'] = {
+    data: Buffer.from(updated.model),
+    content_type: 'text/xml'
+  };
+  return doc;
 };
 
-const updateAttachmentsIfRequired = (doc, updated) => {
-  const formUpdated = updateAttachment(doc, updated.form, 'form.html', 'text/html');
-  const modelUpdated = updateAttachment(doc, updated.model, 'model.xml', 'text/xml');
-  return formUpdated || modelUpdated;
-};
+const updateAttachments = async (doc) => {
+  if (getEnketoForm(doc)) {
 
-const updateAttachments = (accumulator, doc) => {
-  return accumulator.then(results => {
-    const form = getEnketoForm(doc);
-    if (!form) {
-      results.push(null); // not an enketo form - no update required
-      return results;
+    const [xml, form, model] = await Promise.all([
+      formsService.getAttachment(doc._id, formsService.getXFormAttachmentName(doc)),
+      formsService.getAttachment(doc._id, 'form.html'),
+      formsService.getAttachment(doc._id, 'model.xml')
+    ]);
+
+    if ( !xml ) {
+      logger.error(`Could not fetch the XML attachment for enketo form with id "${doc._id}"`);
+      return;
     }
-    logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
-    return module.exports.generate(form.data.toString()).then(result => {
-      results.push(result);
-      return results;
-    });
-  });
-};
 
-// Returns array of docs that need saving.
-const updateAllAttachments = docs => {
-  // spawn the child processes in series so we don't smash the server
-  return docs.reduce(updateAttachments, Promise.resolve([])).then(results => {
-    return docs.filter((doc, i) => {
-      return results[i] && updateAttachmentsIfRequired(doc, results[i]);
-    });
-  });
+    logger.debug(`Generating html and xml model for enketo form "${doc._id}"`);
+    const generated = await module.exports.generate(xml.toString());
+    return addGeneratedAttachments(doc, generated, { form, model });
+  }
 };
+// Returns array of docs that need saving.
+const updateAllAttachments = async (docs) => (await Promise.all(docs.map(updateAttachments))).filter(Boolean);
 
 module.exports = {
 
@@ -258,7 +252,7 @@ module.exports = {
    * @param {string} docId - The db id of the doc defining the form.
    */
   update: docId => {
-    return db.medic.get(docId, { attachments: true, binary: true })
+    return db.medic.get(docId)
       .then(doc => updateAllAttachments([ doc ]))
       .then(docs => {
         const doc = docs.length && docs[0];
@@ -269,7 +263,6 @@ module.exports = {
         logger.info(`Form with ID "${docId}" does not need to be updated.`);
       });
   },
-
   /**
    * Updates the model and form attachments for all forms if necessary.
    */
@@ -295,7 +288,6 @@ module.exports = {
           }
         });
       });
-
   },
 
   /**
