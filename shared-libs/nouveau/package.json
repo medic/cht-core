@@ -1,0 +1,10 @@
+{
+  "name": "@medic/nouveau",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}

@@ -425,9 +425,11 @@ describe('Users API', () => {
         user: 'org.couchdb.user:offline'
       })));
       await utils.saveDocs(docs);
-      const resp = await utils.requestOnTestDb('/_design/medic/_view/docs_by_replication_key?key="_all"');
-      docsForAll = resp.rows.length + 2; // _design/medic-client + org.couchdb.user:doc
-      expectedNbrDocs += resp.rows.length;
+      const resp = await utils.requestOnTestDb(
+        '/_design/medic/_nouveau/docs_by_replication_key?limit=100000&q=key:_all'
+      );
+      docsForAll = resp.hits.length + 2; // _design/medic-client + org.couchdb.user:doc
+      expectedNbrDocs += resp.hits.length;
     });
 
     after(async () => {

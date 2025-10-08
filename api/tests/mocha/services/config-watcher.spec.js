@@ -55,8 +55,8 @@ describe('Configuration', () => {
           .expect(viewMapUtils.loadViewMaps.args[0])
           .to.deep.equal([
             { _id: '_design/medic' },
-            'docs_by_replication_key',
-            'contacts_by_depth',
+            ['contacts_by_depth'],
+            ['docs_by_replication_key'],
           ]);
         chai.expect(translations.getTranslationDocs.callCount).to.equal(1);
 
