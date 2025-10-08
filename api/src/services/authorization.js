@@ -41,15 +41,12 @@ const DEFAULT_DDOCS = [
 
 /**
  * @typedef {{
- *   id: string,
- *   fields: {
- *     key: string|string[],
- *     type?: string,
- *     submitter?: string,
- *     subject?: string,
- *     private?: boolean,
- *     needed_signoff?: boolean,
- *   }
+ *   key: string|string[],
+ *   type?: string,
+ *   submitter?: string,
+ *   subject?: string,
+ *   private?: boolean,
+ *   needed_signoff?: boolean,
  * }} DocByReplicationKey
  */
 
@@ -186,8 +183,8 @@ const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
 /**
  * Returns whether an authenticated user has access to a document
  * @param   {String}   docId - CouchDB document ID
- * @param   {AuthorizationContext}   authorizationContext
- * @param   {DocByReplicationKey}   docsByReplicationKey - result of `medic/_nouveau/docs_by_replication_key` index
+ * @param   {AuthorizationContext} authorizationContext
+ * @param   {DocByReplicationKey} docsByReplicationKey - result of `medic/_nouveau/docs_by_replication_key` index
  * @param   {Array}    contactsByDepth - results of `medic/contacts_by_depth` view against doc
  * @returns {Boolean}
  */
@@ -197,8 +194,7 @@ const allowedDoc = (docId, authorizationContext, { docsByReplicationKey, contact
   }
 
   const replicationKeys = Array.isArray(docsByReplicationKey?.key) ?
-    docsByReplicationKey?.key : [docsByReplicationKey?.key];
-
+    docsByReplicationKey.key : [docsByReplicationKey?.key];
   if (replicationKeys.includes(ALL_KEY)) {
     return true;
   }
@@ -240,9 +236,9 @@ const allowedContact = (docId, docContactsByDepth, authorizationContext) => {
 };
 
 /**
- * Returns whether an authenticated user has access to a document
+ * Returns whether an authenticated user has access to a report document
  * @param {AuthorizationContext} authorizationContext
- * @param {DocByReplicationKey}   docsByReplicationKey - result of `medic/_nouveau/docs_by_replication_key` index
+ * @param {DocByReplicationKey} docsByReplicationKey - result of `medic/_nouveau/docs_by_replication_key` index
  *
  * @returns {Boolean}
  */
@@ -422,16 +418,12 @@ const addPrimaryContactsSubjects = async (authCtx, contacts) => {
 };
 
 const getReplicationKeys = (viewResults) => {
-  const replicationKeys = [];
   if (!viewResults || !viewResults.docsByReplicationKey) {
-    return replicationKeys;
+    return [];
   }
 
-  if (Array.isArray(viewResults.docsByReplicationKey.key)) {
-    replicationKeys.push(...viewResults.docsByReplicationKey.key);
-  } else {
-    replicationKeys.push(viewResults.docsByReplicationKey.key);
-  }
+  const replicationKeys = Array.isArray(viewResults.docsByReplicationKey.key) ?
+    viewResults.docsByReplicationKey.key : [viewResults.docsByReplicationKey.key];
   replicationKeys.push(viewResults.docsByReplicationKey.submitter);
 
   return replicationKeys.filter(key => !!key);
@@ -602,7 +594,7 @@ const isAllowedDepth = (authorizationContext, docByReplicationKey) => {
     return true;
   }
 
-  if (docByReplicationKey?.type !== 'data_record') {
+  if (docByReplicationKey.type !== 'data_record') {
     // allow everything that's not a data_record through (f.e. targets)
     return true;
   }
@@ -628,7 +620,7 @@ const sortedIncludes = (sortedArray, element) => _.sortedIndexOf(sortedArray, St
 /**
  * Returns a list of document ids that the user is allowed to see and edit
  * @param authorizationContext
- * @returns {Promise<DocByReplicationKey[]>}
+ * @returns {Promise<{ id: string, fields: DocByReplicationKey }[]>}
  */
 const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
   const allKeys = [...authorizationContext.subjectIds];
@@ -660,7 +652,7 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
 /**
  * Returns a list of document ids that the user is allowed to see and edit
  * @param {AuthorizationContext} authorizationContext
- * @returns {Promise<string[]>}
+ * @returns {Promise<{ id: string, fields: DocByReplicationKey }[]>}
  */
 const getDocsByReplicationKey = async (authorizationContext) => {
   return getDocsByReplicationKeyNouveau(authorizationContext).then(hits => {
@@ -691,7 +683,7 @@ const getDocsByReplicationKey = async (authorizationContext) => {
 /**
  * Returns a list of document ids that the user is allowed to see and edit
  * @param {AuthorizationContext} authCtx
- * @param {DocByReplicationKey[]} docsByReplicationKey
+ * @param {{ id: string, fields: DocByReplicationKey }[]} docsByReplicationKey
  * @param {boolean} includeTasks - whether task documents should be included
  * @returns {string[]}
  */

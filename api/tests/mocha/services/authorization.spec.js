@@ -1522,7 +1522,7 @@ describe('Authorization service', () => {
       it('returns true for reports with unknown subject and allowed submitter', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', 'submitter' ];
         viewResults = {
-          docsByReplicationKey: { key: false, submitter: 'submitter', type: 'data_record' },
+          docsByReplicationKey: { key: '', submitter: 'submitter', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -1531,7 +1531,7 @@ describe('Authorization service', () => {
       it('returns false for reports with unknown subject and denied submitter', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
         viewResults = {
-          docsByReplicationKey: { key: false, submitter: 'submitter', type: 'data_record' },
+          docsByReplicationKey: { key: '', submitter: 'submitter', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
@@ -1540,7 +1540,7 @@ describe('Authorization service', () => {
       it('returns false for reports with denied subject and unknown submitter', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
         viewResults = {
-          docsByReplicationKey: {key: 'subject2', type: 'data_record' },
+          docsByReplicationKey: { key: 'subject2', type: 'data_record' },
           contactsByDepth: []
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
@@ -1750,7 +1750,7 @@ describe('Authorization service', () => {
       it('returns false for reports with unknown subject and denied submitter', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
         viewResults = {
-          docsByReplicationKey: { key: false, submitter: 'submitter', type: 'data_record' },
+          docsByReplicationKey: { key: '', submitter: 'submitter', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);

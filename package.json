@@ -64,7 +64,7 @@
     "build": "./scripts/build/build-ci.sh",
     "ci-compile": "node scripts/ci/check-versions.js && node scripts/build/cli npmCiModules && npm run lint && npm run unit-nginx && npm run unit-haproxy && npm run unit-haproxy-healthcheck && npm run unit-cht-deploy && npm run build && npm run integration-api && npm run unit",
     "ci-integration-all": "mocha --config tests/integration/.mocharc-all.js",
-    "ci-integration-replication": "mocha --config tests/integration/.mocharc-custom.js",
+    "ci-integration-replication": "mocha --config tests/integration/.mocharc-replication.js",
     "ci-integration-all-k3d": "mocha --config tests/integration/.mocharc-k3d.js",
     "ci-integration-sentinel": "mocha --config tests/integration/.mocharc-sentinel.js",
     "ci-integration-sentinel-k3d": "mocha --config tests/integration/.mocharc-sentinel-k3d.js",

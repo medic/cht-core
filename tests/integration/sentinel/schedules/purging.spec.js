@@ -439,8 +439,6 @@ describe('Server side purge', () => {
     const user1Docs = getDocIds(responseDocsUser1);
     const user2Docs = getDocIds(responseDocsUser2);
 
-    console.warn(user1Docs);
-
     chai.expect(user1Docs).to.include.members([
       'clinic1', 'contact1',
       'report2', 'report5', 'report6', 'report11',
