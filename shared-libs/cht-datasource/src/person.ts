@@ -129,6 +129,7 @@ export namespace v1 {
     assertDataContext(context);
     const fn = adapt(context, Local.Person.v1.create, Remote.Person.v1.create);
     /**
+     * Creates a new person record.
      * @param input input fields for creating a person
      * @returns a person doc
      * @throws InvalidArgumentError if the input does not contain required fields
