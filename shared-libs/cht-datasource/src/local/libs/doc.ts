@@ -180,7 +180,7 @@ export const fetchAndFilterUuids = (
 };
 
 /** @internal */
-const isPouchDBNotFoundError = (error: unknown): error is { status: number, name: string } => {
+const isPouchDBNotFoundError = (error: unknown): error is { status: 404, name: string } => {
   return (
     typeof error === 'object' && error !== null &&
     'status' in error && (error as { status: number }).status === 404
