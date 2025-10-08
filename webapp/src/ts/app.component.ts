@@ -54,6 +54,7 @@ import { NgIf } from '@angular/common';
 import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-policy.component';
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
+import { TasksNotificationService } from '@mm-services/task-notifications.service';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -156,6 +157,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private browserDetectorService: BrowserDetectorService,
     private userSettingsService: UserSettingsService,
     private formService: FormService,
+    private taskNotificationService: TasksNotificationService
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
@@ -332,6 +334,14 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.requestPersistentStorage();
     this.startWealthQuintiles();
     this.initAnalyticsModules();
+    this.initAndroidTaskNotifications();
+  }
+
+  private initAndroidTaskNotifications() {
+    //this.taskNotificationService.initOnAndroid();
+    if (typeof window.medicmobile_android?.updateTaskNotificationStore === 'function') {
+      this.taskNotificationService.initOnAndroid();
+    }
   }
 
   private async initUser() {
