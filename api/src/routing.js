@@ -412,7 +412,7 @@ app.get('/api/deploy-info', async (req, res) => {
 
 app.get('/api/v1/monitoring', deprecation.deprecate('/api/v2/monitoring'), monitoring.getV1);
 app.get('/api/v2/monitoring', monitoring.getV2);
-app.get('/api/v1/impact', impact.getV1);
+app.get('/api/v1/impact', impact.v1.get);
 
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);

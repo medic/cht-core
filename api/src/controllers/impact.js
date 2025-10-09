@@ -10,10 +10,16 @@ const checkUserPermissions = async (req) => {
   }
 };
 module.exports = {
-  getV1: serverUtils.doOrError(async(req, res) => {
-    await checkUserPermissions(req); 
-    return service.jsonV1()
-      .then(body => res.json(body))
-      .catch(err => serverUtils.error(err, req, res));
-  }),
+  v1: {
+    get: serverUtils.doOrError(async(req, res) => {
+      await checkUserPermissions(req);
+      try{
+        const impact= await service.jsonV1();
+        res.json(impact);
+      }
+      catch(err){
+        serverUtils.error(err, req, res);
+      }      
+    })
+  }
 };
