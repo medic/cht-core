@@ -13,11 +13,10 @@ module.exports = {
   v1: {
     get: serverUtils.doOrError(async(req, res) => {
       await checkUserPermissions(req);
-      try{
+      try {
         const impact= await service.jsonV1();
         res.json(impact);
-      }
-      catch(err){
+      } catch(err){
         serverUtils.error(err, req, res);
       }      
     })
