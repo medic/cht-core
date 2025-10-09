@@ -13,7 +13,7 @@ const getBrowser = (userAgent) => {
 };
 
 module.exports = async () => {
-  const { rows } = await db.medicUsersMeta.query('users-meta/device_by_user', { group: true });
+  const { rows } = await db.medicUsersMeta.query('users-meta/device_by_user', { group_level: 2 });
   return rows.map(doc => {
     const [user, deviceId] = doc.key;
     const date = doc.value.date;
