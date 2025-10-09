@@ -1,6 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
+import * as moment from 'moment';
 
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TranslateService } from '@mm-services/translate.service';
@@ -11,11 +12,10 @@ import { AuthService } from '@mm-services/auth.service';
 const DEFAULT_MAX_NOTIFICATIONS = 8;
 
 export interface Notification {
-  _id: string,
-  readyAt: number,
   title: string,
   contentText: string,
-  dueDate: string,
+  endDate: number,
+  readyAt: number
 }
 
 @Injectable({
@@ -45,6 +45,7 @@ export class TasksNotificationService implements OnDestroy {
     }
     this.debouncedReload = _debounce(this.updateAndroidStore.bind(this), 1000, { maxWait: 10 * 1000 });
     this.subscribeToRulesEngine();
+    this.updateAndroidStore();
   }
 
   async get(): Promise<Notification[]> {
@@ -70,29 +71,30 @@ export class TasksNotificationService implements OnDestroy {
 
   private async updateAndroidStore(): Promise<void> {
     const notifications = await this.fetchNotifications();
-    console.info('__________updating android notification store with________________', notifications);
+    console.log('updateAndroidStore-------------', notifications);
     window.medicmobile_android?.updateTaskNotificationStore(JSON.stringify(notifications));
   }
 
   private async fetchNotifications(): Promise<Notification[]> {
     try {
+      const today = moment().format('YYYY-MM-DD');
       const taskDocs = await this.rulesEngineService.fetchTaskDocsForAllContacts();
       const notifications: Notification[] = [];
 
       taskDocs.forEach(task => {
-        const readyAt = this.getReadyStateTimestamp(task.stateHistory);
         const dueDate = task.emission.dueDate;
-        notifications.push({
-          _id: task._id,
-          readyAt,
-          title: task.emission.title,
-          contentText: this.translateContentText(
-            task.emission.title,
-            task.emission.contact.name,
-            task.emission.dueDate
-          ),
-          dueDate,
-        });
+        if (dueDate <= today) {
+          notifications.push({
+            readyAt: this.getReadyStateTimestamp(task.stateHistory),
+            title: task.emission.title,
+            contentText: this.translateContentText(
+              task.emission.title,
+              task.emission.contact.name,
+              task.emission.dueDate
+            ),
+            endDate: new Date(task.emission.endDate).getTime()
+          }); 
+        }
       });
 
       return notifications
