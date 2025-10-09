@@ -17,7 +17,7 @@ describe('impact', () => {
       });
     });
 
-    it('when extra cotnact is added, person count is increased', async () => {
+    it('when extra contact is added, person count is increased', async () => {
       const doc = { type: 'contact', contact_type: 'person', _id: 'p1' };
       await utils.saveDoc(doc);
 
