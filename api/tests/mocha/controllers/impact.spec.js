@@ -36,7 +36,7 @@ describe('Impact controller', () => {
     it('returns successfully for online user', () => {
       isOnlineOnly.returns(true);
       sinon.stub(service, 'jsonV1').resolves({ totalReports: 10 });
-      return controller.getV1(req, res).then(() => {
+      return controller.v1.get(req, res).then(() => {
         chai.expect(service.jsonV1.called).to.equal(true);
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0][0]).to.deep.equal({
@@ -48,7 +48,7 @@ describe('Impact controller', () => {
     it('offline user does not get to endpoint', () => {
       isOnlineOnly.returns(false);
       sinon.stub(service, 'jsonV1').resolves({ totalReports: 10 });
-      return controller.getV1(req, res).then(() => {
+      return controller.v1.get(req, res).then(() => {
         chai.expect(service.jsonV1.called).to.equal(false);
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(res.json.callCount).to.equal(0);
@@ -57,7 +57,7 @@ describe('Impact controller', () => {
 
     it('handles promise rejection gracefully', () => {
       sinon.stub(service, 'jsonV1').rejects(new Error('something missing'));
-      return controller.getV1(req, res).then(() => {
+      return controller.v1.get(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(res.json.callCount).to.equal(0);
       });
