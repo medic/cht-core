@@ -12,9 +12,10 @@ function(doc) {
       var string = number.toString();
       return string.length === 2 ? string : '0' + string;
     };
+    const date = doc.metadata.year + '-' + pad(doc.metadata.month) + '-' + pad(doc.metadata.day);
 
-    emit([doc.metadata.user, doc.metadata.deviceId], {
-      date: doc.metadata.year + '-' + pad(doc.metadata.month) + '-' + pad(doc.metadata.day),
+    emit([doc.metadata.user, doc.metadata.deviceId, date], {
+      date: date,
       id: doc._id,
       device: {
         userAgent: doc.device && doc.device.userAgent,
