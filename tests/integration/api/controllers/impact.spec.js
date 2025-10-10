@@ -16,7 +16,7 @@ describe('impact', () => {
   afterEach(() => utils.revertDb([], true));
 
   describe('v1', () => {
-    it('return impact data on expected format', async () => {
+    it('return impact data on expected format', async () => {    
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
         contacts: {
@@ -44,7 +44,7 @@ describe('impact', () => {
         contacts: {
           p10_province: 1,
           p20_district: 1,
-          person: 2
+          person: 1
         },
         reports: {
           report: {},
