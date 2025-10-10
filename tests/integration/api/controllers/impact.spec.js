@@ -2,6 +2,7 @@ const chai = require('chai');
 const utils = require('@utils');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const placeFactory = require('@factories/cht/contacts/place');
+const dataFactory = require('@factories/cht/generate');
 
 describe('impact', () => {
 
@@ -16,13 +17,13 @@ describe('impact', () => {
   afterEach(() => utils.revertDb([], true));
 
   describe('v1', () => {
-    it('return impact data on expected format', async () => {    
+    it('return impact data on expected format', async () => {
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
         contacts: {
           person: 1
-        },        
-        users: 1,
+        },
+        users: 0,
         reports: {
           report: {},
           total: 0
@@ -30,21 +31,44 @@ describe('impact', () => {
       });
     });
 
+    it('adding users adds user count on api', async () => {
+      const docs = dataFactory.createHierarchy({ name: 'impact', user: true, nbrClinics: 1, nbrPersons: 1 });
+      await utils.saveDocs([...docs.places, ...docs.persons]);
+      await utils.createUsers([docs.user]);
+
+      const result = await utils.request({ path: '/api/v1/impact' });
+      chai.expect(result).to.deep.equal({
+        contacts: {
+          clinic: 1,
+          district_hospital: 1,
+          health_center: 1,
+          person: 3
+        },
+        users: 1,
+        reports: {
+          report: {
+          },
+          total: 0
+        }
+      });
+      await utils.deleteUsers([docs.user]);
+    });
+
     it('all contact types are aggregated and returned', async () => {
       const places = [
-        utils.deepFreeze(placeFactory.place().build({ contact_type: 'person' })),
-        utils.deepFreeze(placeFactory.place().build({ contact_type: 'p10_province' })),
-        utils.deepFreeze(placeFactory.place().build({ contact_type: 'p20_district' }))
+        placeFactory.place().build({ type: 'contact', contact_type: 'person' }),
+        placeFactory.place().build({ type: 'contact', contact_type: 'p10_province' }),
+        placeFactory.place().build({ type: 'contact', contact_type: 'p20_district' })
       ];
       await utils.saveDocs(places);
 
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
-        users: 1,
+        users: 0,
         contacts: {
           p10_province: 1,
           p20_district: 1,
-          person: 1
+          person: 2
         },
         reports: {
           report: {},
@@ -62,7 +86,7 @@ describe('impact', () => {
       await utils.saveDocs(reports);
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
-        users: 1,
+        users: 0,
         contacts: {
           person: 1
         },
@@ -86,7 +110,7 @@ describe('impact', () => {
 
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
-        users: 1,
+        users: 0,
         contacts: {
           person: 1
         },
