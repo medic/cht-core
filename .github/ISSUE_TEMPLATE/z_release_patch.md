@@ -19,16 +19,17 @@ When development is ready to begin one of the engineers should be nominated as a
 
 - [ ] Set the version number in `package.json` and `package-lock.json` and submit a PR to the release branch. The easiest way to do this is to use `npm --no-git-tag-version version patch`.
 - [ ] Ensure that issues from merged commits are closed and mapped to a milestone.
-- [ ] Write an update in the #product-team Slack channel summarising development and identifying any blockers (the [milestone-status](https://github.com/medic/support-scripts/tree/master/milestone-status) script can be used to get a breakdown of the issues). The Release Engineer is to update this every week until the version is released.
+- [ ] Write an update in the #stewardship-team Slack channel summarising development and identifying any blockers (the [milestone-status](https://github.com/medic/support-scripts/tree/master/milestone-status) script can be used to get a breakdown of the issues). The Release Engineer is to update this every week until the version is released.
 
 # Releasing - Release Engineer
 
 Once all issues have been merged into `master` then the release process can start:
 
 - [ ] Build a beta named `<major>.<minor>.<patch>-beta.1` by pushing a lightweight git tag (e.g. `git tag <major>.<minor>.<patch>-beta.1`).
-- [ ] Once the CI completes successfully notify the team by writing a message in the #development Slack channel:
+- [ ] Once the CI completes successfully notify the community by creating a post titled `<major>.<minor>.<patch> Beta Releases` in the [development](https://forum.communityhealthtoolkit.org/c/development/7) category of the CHT forum using this template:
 ```
-@channel, I’ve just created the `<major>.<minor>.<patch>-beta.1` tag.
+Hi Everyone
+I’ve just created the `<major>.<minor>.<patch>-beta.1` tag.
 Please let me know if there’s any final update we need to make.
 If all is good, then in 24h, I will start the release. Thanks!
 ```
@@ -38,7 +39,8 @@ If all is good, then in 24h, I will start the release. Thanks!
   - [ ] Use [this script](https://github.com/medic/cht-core/blob/master/scripts/release-notes/index.js) to export the issues into our release note format.
   - [ ] Collect known migration steps, descriptions, screenshots, videos, data, and anything else to help communicate particularly important changes. This information should already be on the issue, but if not, prompt the change author to provide it.
   - [ ] Document any required or recommended upgrades to our other products (eg: cht-conf, cht-gateway, cht-android).
-- [ ] Create a [new release](https://github.com/medic/cht-core/releases/new) in GitHub, with the naming convention `<major>.<minor>.<patch>`, from the release branch created above as the target branch. Click on the "Choose a tag" dropdown and create a tag for the release with the naming convention `<major>.<minor>.<patch>`. Ensure the release notes PR from above are merged. Add a link to the release notes in the description of the release.
+  - [ ] Ensure that the release notes PR is merged before moving to next step.
+- [ ] Create a [new release](https://github.com/medic/cht-core/releases/new) in GitHub, with the naming convention `<major>.<minor>.<patch>`, from the release branch created above as the target branch. Click on the "Choose a tag" dropdown and create a tag for the release with the naming convention `<major>.<minor>.<patch>`. Add a link to the release notes page in the description of the release.
 - [ ] Once you publish the release, confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
 - [ ] Upgrade the [demo](https://demo-cht.dev.medicmobile.org/) instance to the newly released version.
 - [ ] Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org/), under the "Product - Releases" category using this template:

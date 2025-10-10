@@ -25,14 +25,14 @@ When development is ready to begin one of the engineers should be nominated as a
 
 Once the PR has been merged into `master`, and the `master` branch has the new version number, then the release process can start:
 
-- [ ] Create a new release branch from `master` named `<major>.<minor>.x` in `cht-core`. Post a message to #development Slack channel using this template:
+- [ ] Create a new release branch from `master` named `<major>.<minor>.x` in `cht-core`. Notify the community by creating a post titled `<major>.<minor>.<patch> Beta Releases` in the [development](https://forum.communityhealthtoolkit.org/c/development/7) category of the CHT forum using this template:
 ```
-@channel I've just created the `<major>.<minor>.x` release branch. Please be aware that any further changes intended for this release will have to be merged to `master` then backported. Thanks!
+I've just created the `<major>.<minor>.x` release branch. Please be aware that any further changes intended for this release will have to be merged to `master` then backported. Thanks!
 ```
 - [ ] Build a beta named `<major>.<minor>.<patch>-beta.1` by creating a lightweight git tag (e.g. `git tag <major>.<minor>.<patch>-beta.1`) and then push the created tag.
-- [ ] Once the CI completes successfully notify the team by writing a message in the #development Slack channel:
+- [ ] Once the CI completes successfully notify the community by adding a comment in the forum post created above using this template:
 ```
-@channel, I’ve just created the `<major>.<minor>.<patch>-beta.1` tag. 
+I’ve just created the `<major>.<minor>.<patch>-beta.1` tag. 
 Please let me know if there’s any final update we need to make. 
 If all is good, then in 24h, I will start the release. Thanks!
 ```
@@ -45,7 +45,8 @@ If all is good, then in 24h, I will start the release. Thanks!
   - [ ] Collect known migration steps, descriptions, screenshots, videos, data, and anything else to help communicate particularly important changes. This information should already be on the issue, but if not, prompt the change author to provide it.
   - [ ] Document any required or recommended upgrades to our other products (eg: cht-conf, cht-gateway, cht-android).
   - [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions) and update the EOL date of the previous release. Update the status of any releases that are past their End Of Life date. Also add a link in the `Release Notes` section to the new release page.
-- [ ] Create a [new release](https://github.com/medic/cht-core/releases/new) in GitHub, with the naming convention `<major>.<minor>.<patch>`, from the release branch created above as the target branch. Click on the "Choose a tag" dropdown and create a tag for the release with the naming convention `<major>.<minor>.<patch>`. Ensure the release notes PR from above are merged. Add a link to the release notes in the description of the release.
+  - [ ] Ensure that the release notes PR is merged before moving to next step.
+- [ ] Create a [new release](https://github.com/medic/cht-core/releases/new) in GitHub, with the naming convention `<major>.<minor>.<patch>`, from the release branch created above as the target branch. Click on the "Choose a tag" dropdown and create a tag for the release with the naming convention `<major>.<minor>.<patch>`. Add a link to the release notes in the description of the release.
 - [ ] Once you publish the release, confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
 - [ ] Upgrade the [demo](https://demo-cht.dev.medicmobile.org/) instance to the newly released version.
 - [ ] Use cht-conf to upload the configuration from the `cht-core/config/demo` folder to the `demo-cht.dev` server.
@@ -73,5 +74,4 @@ We’ve also implemented loads of other improvements and fixed a heap of bugs.
 
 ```
 - [ ] Go over the list of commits and individually notify contributing / interested community members about the release. 
-- [ ] Add one last update to the #development Slack channel and use the thread to lead an internal release retrospective covering what went well and areas to improve for next time.
 - [ ] Mark this issue "done" and close the Milestone.
