@@ -116,13 +116,15 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
       return;
     }
 
+    const moduleId = this.activeModule? this.activeModule: this.getCurrentModuleId();
+
     // Counting every time the user opens the sidebar filter in analytics_targets_aggregrate tab.
-    if (this.getCurrentModuleId() === AGGREGATE_TARGETS_ID) {
+    if (moduleId === AGGREGATE_TARGETS_ID) {
       this.telemetryService.record('sidebar_filter:analytics:target_aggregates:open');
     }
 
-    if (this.getCurrentModuleId() === TARGETS_ID) {
-      this.telemetryService.record('sidebar_filter:analytics:target:open');
+    if (moduleId === TARGETS_ID) {
+      this.telemetryService.record('sidebar_filter:analytics:targets:open');
     }
   }
 }

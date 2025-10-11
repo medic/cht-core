@@ -110,6 +110,15 @@ describe('Analytics Filter Component', () => {
     expect(telemetryService.record.args[0]).to.deep.equal(['sidebar_filter:analytics:target_aggregates:open']);
   });
 
+  it('should collect telemetry when open sidebar filter', () => {
+    sinon.resetHistory();
+    component.activeModule = 'targets';
+    component.openSidebar();
+
+    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({ isOpen: true });
+    expect(telemetryService.record.args[0]).to.deep.equal(['sidebar_filter:analytics:targets:open']);
+  });
+
   it('should not display filter button if user is admin', fakeAsync(() => {
     sinon.resetHistory();
     sessionService.isAdmin.returns(true);

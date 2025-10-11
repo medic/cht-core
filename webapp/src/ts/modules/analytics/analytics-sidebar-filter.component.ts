@@ -12,6 +12,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatAccordion } from '@angular/material/expansion';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Component({
   selector: 'mm-analytics-sidebar-filter',
@@ -22,6 +23,7 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
 
   @Input() userFacilities: Place.v1.Place[] = [];
   @Input() showFacilityFilter = true;
+  @Input() targetModuleId: string = 'target-aggregates';
   @Output() facilitySelectionChanged = new EventEmitter<string>();
   @Output() reportingPeriodSelectionChanged = new EventEmitter<string>();
   private readonly globalActions;
@@ -41,6 +43,7 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
     private  readonly store: Store,
     private readonly contactTypesService: ContactTypesService,
     private readonly settingsService: SettingsService,
+    private readonly telemetryService: TelemetryService
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -97,10 +100,16 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
   fetchAggregateTargetsByFacility(facility) {
     this.selectedFacility = facility;
     this.facilitySelectionChanged.emit(this.selectedFacility);
+    this.collectFilterSelectionTelemetry('facility');
   }
 
   fetchAggregateTargetsByReportingPeriod() {
     this.reportingPeriodSelectionChanged.emit(this.selectedReportingPeriod);
+    this.collectFilterSelectionTelemetry('reporting-period');
+  }
+
+  collectFilterSelectionTelemetry(filter) {
+    this.telemetryService.record(`sidebar_filter:analytics:${this.targetModuleId}:${filter}:select`);
   }
 }
 

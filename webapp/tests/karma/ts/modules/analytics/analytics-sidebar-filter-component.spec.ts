@@ -13,6 +13,7 @@ import {
 } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 
 describe('Analytics Sidebar Filter Component', () => {
@@ -20,6 +21,7 @@ describe('Analytics Sidebar Filter Component', () => {
   let fixture: ComponentFixture<AnalyticsSidebarFilterComponent>;
   let contactTypesService;
   let settingsService;
+  let telemetryService;
   let globalActions;
   let store: MockStore;
 
@@ -32,6 +34,7 @@ describe('Analytics Sidebar Filter Component', () => {
         .stub()
         .resolves({ contact_types: [{ id: 'district_hospital', name_key: 'District Hospital', }] })
     };
+    telemetryService = { record: sinon.stub() };
     globalActions = {
       setSidebarFilter: sinon.stub(GlobalActions.prototype, 'setSidebarFilter'),
     };
@@ -53,6 +56,7 @@ describe('Analytics Sidebar Filter Component', () => {
           provideMockStore({ selectors: mockedSelectors }),
           { provide: ContactTypesService, useValue: contactTypesService },
           { provide: SettingsService, useValue: settingsService },
+          { provide: TelemetryService, useValue: telemetryService },
         ]
       })
       .compileComponents()
@@ -202,6 +206,8 @@ describe('Analytics Sidebar Filter Component', () => {
     expect(component.selectedFacility).to.deep.equal(facility);
     expect(spyFacility.callCount).to.equal(1);
     expect(spyFacility.firstCall.args[0]).to.deep.equal(facility);
+    expect(telemetryService.record.args[0])
+      .to.deep.equal(['sidebar_filter:analytics:target-aggregates:facility:select']);
   });
 
   it('should emit default current reporting period when fetchAggregateTargetsByReportingPeriod is called', () => {
@@ -212,6 +218,8 @@ describe('Analytics Sidebar Filter Component', () => {
 
     expect(spyReportingPeriod.callCount).to.equal(1);
     expect(spyReportingPeriod.firstCall.args[0]).to.equal(ReportingPeriod.CURRENT);
+    expect(telemetryService.record.args[0])
+      .to.deep.equal(['sidebar_filter:analytics:target-aggregates:reporting-period:select']);
   });
 
   it('should emit previous reporting period when toggled', () => {
@@ -222,5 +230,29 @@ describe('Analytics Sidebar Filter Component', () => {
 
     expect(spyReportingPeriod.callCount).to.equal(1);
     expect(spyReportingPeriod.firstCall.args[0]).to.equal(ReportingPeriod.PREVIOUS);
+  });
+
+  it('should collect telemetry when fetchAggregateTargetsByFacility is called', () => {
+    const facility = {
+      _id: 'place_1',
+      _rev: '1-abc',
+      type: 'district_hospital',
+    };
+    component.targetModuleId = 'targets';
+
+    component.fetchAggregateTargetsByFacility(facility);
+
+    expect(component.selectedFacility).to.deep.equal(facility);
+    expect(telemetryService.record.args[0])
+      .to.deep.equal(['sidebar_filter:analytics:targets:facility:select']);
+  });
+
+  it('should collect telemetry when fetchAggregateTargetsByReportingPeriod is called', () => {
+    component.targetModuleId = 'targets';
+    component.selectedReportingPeriod = ReportingPeriod.CURRENT;
+    component.fetchAggregateTargetsByReportingPeriod();
+
+    expect(telemetryService.record.args[0])
+      .to.deep.equal(['sidebar_filter:analytics:targets:reporting-period:select']);
   });
 });
