@@ -52,7 +52,7 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = ({ medicDb, settings }: LocalDataContext) => {
-    const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type', false);
+    const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
 
     return async (
       placeType: ContactTypeQualifier,

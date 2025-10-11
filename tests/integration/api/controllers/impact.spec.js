@@ -1,4 +1,4 @@
-const chai = require('chai');
+const chai = require('chai').use(require('deep-equal-in-any-order'));
 const utils = require('@utils');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const placeFactory = require('@factories/cht/contacts/place');
@@ -21,11 +21,14 @@ describe('impact', () => {
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
         contacts: {
-          person: 1
+          total: 1,
+          by_type: [
+            { type: 'person', count: 1 }
+          ]
         },
-        users: 0,
+        users: { total: 0 },
         reports: {
-          report: {},
+          by_form: [],
           total: 0
         }
       });
@@ -39,15 +42,17 @@ describe('impact', () => {
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
         contacts: {
-          clinic: 1,
-          district_hospital: 1,
-          health_center: 1,
-          person: 3
+          total: 6,
+          by_type: [
+            { type: 'clinic', count: 1 },
+            { type: 'district_hospital', count: 1 },
+            { type: 'health_center', count: 1 },
+            { type: 'person', count: 3 }
+          ]
         },
-        users: 1,
+        users: { total: 1 },
         reports: {
-          report: {
-          },
+          by_form: [],
           total: 0
         }
       });
@@ -64,15 +69,19 @@ describe('impact', () => {
 
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
-        users: 0,
-        contacts: {
-          p10_province: 1,
-          p20_district: 1,
-          person: 2
+        users: { total: 0 },
+        contacts:
+        {
+          total: 4,
+          by_type: [
+            { type: 'p10_province', count: 1 },
+            { type: 'p20_district', count: 1 },
+            { type: 'person', count: 2 }
+          ]
         },
         reports: {
-          report: {},
-          total: 0
+          total: 0,
+          by_form: []
         }
       });
     });
@@ -86,41 +95,47 @@ describe('impact', () => {
       await utils.saveDocs(reports);
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
-        users: 0,
+        users: { total: 0 },
         contacts: {
-          person: 1
+          total: 1,
+          by_type: [
+            { type: 'person', count: 1 }
+          ]
         },
         reports: {
-          report: {
-            L: 1,
-            pregnancy: 2
-          },
-          total: reports.length
+          total: reports.length,
+          by_form: [
+            { form: 'L', count: 1 },
+            { form: 'pregnancy', count: 2 }
+          ]
         }
       });
     });
 
     it('unicode reports are also returned correctly', async () => {
       const reports = [
-        ...createReports(2, 'ल'),
-        ...createReports(1, 'pregnancy'),
-        ...createReports(1, 'न')
+        ...createReports(3, 'ल'),
+        ...createReports(2, 'pregnancy')
       ];
       await utils.saveDocs(reports);
 
       const result = await utils.request({ path: '/api/v1/impact' });
-      chai.expect(result).to.deep.equal({
-        users: 0,
+      chai.expect(result).to.deep.equalInAnyOrder({
+        users: {
+          total: 0
+        },
         contacts: {
-          person: 1
+          total: 1,
+          by_type: [
+            { type: 'person', count: 1 }
+          ]
         },
         reports: {
-          report: {
-            pregnancy: 1,
-            ल: 2,
-            न: 1
-          },
-          total: reports.length
+          total: reports.length,
+          by_form: [
+            { form: 'ल', count: 3 },
+            { form: 'pregnancy', count: 2 }
+          ]
         }
       });
     });

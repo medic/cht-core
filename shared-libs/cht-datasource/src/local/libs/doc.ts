@@ -62,13 +62,12 @@ export const queryDocsByRange = (
 /** @internal */
 export const queryDocsByKey = (
   db: PouchDB.Database<Doc>,
-  view: string,
-  reduce = true
+  view: string
 ) => async (
   key: unknown,
   limit: number,
   skip: number
-): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, key, limit, skip, reduce: reduce });
+): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, key, limit, skip, reduce: false });
 
 const queryDocUuids = (
   db: PouchDB.Database<Doc>,
@@ -102,13 +101,12 @@ export const queryDocUuidsByRange = (
 /** @internal */
 export const queryDocUuidsByKey = (
   db: PouchDB.Database<Doc>,
-  view: string,
-  reduce = true
+  view: string
 ) => async (
   key: unknown,
   limit: number,
   skip: number
-): Promise<string[]> => queryDocUuids(db, view, { include_docs: false, reduce: reduce, key, limit, skip });
+): Promise<string[]> => queryDocUuids(db, view, { include_docs: false, reduce: false, key, limit, skip });
 
 /**
  * Resolves a page containing an array of T using the getFunction to retrieve documents from the database
@@ -135,13 +133,13 @@ export const fetchAndFilter = <T>(
     const totalDocs = [...currentDocs, ...newDocs].slice(0, limit);
 
     if (noMoreResults) {
-      return {data: totalDocs, cursor: null};
+      return { data: totalDocs, cursor: null };
     }
 
     if (totalDocs.length === limit) {
       const nextSkip = currentSkip + currentLimit - overFetchCount;
 
-      return {data: totalDocs, cursor: nextSkip.toString()};
+      return { data: totalDocs, cursor: nextSkip.toString() };
     }
 
     // Re-fetch twice as many docs as we need to limit number of recursions
@@ -215,7 +213,7 @@ export const queryNouveauIndex = (
   const fetch = getAuthenticatedFetch(db, viewName);
   const recursionInner = async (
     params: QueryParams,
-    currentResults: NouveauHit[]= [],
+    currentResults: NouveauHit[] = [],
     bookmark: Nullable<string> = null
   ): Promise<Page<NouveauHit>> => {
     const response = await fetch({
