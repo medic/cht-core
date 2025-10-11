@@ -13,6 +13,7 @@ import {
 } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 
 describe('Analytics Sidebar Filter Component', () => {
@@ -20,6 +21,7 @@ describe('Analytics Sidebar Filter Component', () => {
   let fixture: ComponentFixture<AnalyticsSidebarFilterComponent>;
   let contactTypesService;
   let settingsService;
+  let telemetryService;
   let globalActions;
   let store: MockStore;
 
@@ -32,6 +34,7 @@ describe('Analytics Sidebar Filter Component', () => {
         .stub()
         .resolves({ contact_types: [{ id: 'district_hospital', name_key: 'District Hospital', }] })
     };
+    telemetryService = { record: sinon.stub() };
     globalActions = {
       setSidebarFilter: sinon.stub(GlobalActions.prototype, 'setSidebarFilter'),
     };
@@ -53,6 +56,7 @@ describe('Analytics Sidebar Filter Component', () => {
           provideMockStore({ selectors: mockedSelectors }),
           { provide: ContactTypesService, useValue: contactTypesService },
           { provide: SettingsService, useValue: settingsService },
+          { provide: TelemetryService, useValue: telemetryService },
         ]
       })
       .compileComponents()
