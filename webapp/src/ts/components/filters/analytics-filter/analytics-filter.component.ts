@@ -111,9 +111,18 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
   openSidebar() {
     this.isOpen = !this.isOpen;
     this.globalActions.setSidebarFilter({ isOpen: this.isOpen });
-    if (this.isOpen) {
-      // Counting every time the user opens the sidebar filter in analytics_targets_aggregrate tab.
+
+    if (!this.isOpen) {
+      return;
+    }
+
+    // Counting every time the user opens the sidebar filter in analytics_targets_aggregrate tab.
+    if (this.getCurrentModuleId() === AGGREGATE_TARGETS_ID) {
       this.telemetryService.record('sidebar_filter:analytics:target_aggregates:open');
+    }
+
+    if (this.getCurrentModuleId() === TARGETS_ID) {
+      this.telemetryService.record('sidebar_filter:analytics:target:open');
     }
   }
 }
