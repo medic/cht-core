@@ -36,7 +36,7 @@ describe('Analytics Filter Component', () => {
       setSidebarFilter: sinon.stub(GlobalActions.prototype, 'setSidebarFilter'),
     };
     route = {
-      snapshot: { queryParams: { query: '' }, firstChild: { data: { moduleId: 'some-module' } } },
+      snapshot: { queryParams: { query: '' }, firstChild: { data: { moduleId: 'target-aggregates' } } },
       url: of([])
     };
     routerEventSubject = new Subject();
