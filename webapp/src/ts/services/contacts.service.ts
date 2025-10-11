@@ -30,7 +30,7 @@ export class ContactsService {
             get: (callback) => {
               return this.dbService
                 .get()
-                .query('medic-client/contacts_by_type', { include_docs: true, key: [type.id] })
+                .query('medic-client/contacts_by_type', { include_docs: true, reduce: false, key: [type.id] })
                 .then((result) => {
                   callback(null, result.rows.map(row => row.doc));
                 })
