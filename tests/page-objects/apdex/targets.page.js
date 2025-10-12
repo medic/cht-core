@@ -1,12 +1,12 @@
-const Page = require('@page-objects/apdex/page');
-const TARGETS = 'targets';
+// const Page = require('@page-objects/apdex/page');
+// const TARGETS = 'targets';
 
-class TargetsPage extends Page {
+// class TargetsPage extends Page {
 
-  async loadTargets() {
-    await super.loadPage(TARGETS);
-  }
+//   async loadTargets() {
+//     await super.loadPage(TARGETS);
+//   }
 
-}
+// }
 
-module.exports = new TargetsPage();
+// module.exports = new TargetsPage();
