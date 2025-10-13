@@ -15,12 +15,22 @@ describe('Messages Overview', () => {
     useRealNames: true,
   });
 
-  const seedIncomingSms = async (from, text, id = 'visual-a') => {
-    await utils.request({
-      method: 'POST',
-      path: '/api/sms',
-      body: { messages: [ { from, content: text, id } ] }
-    });
+  const seedIncomingSms = async (contact, text, id = 'visual-a') => {
+    const smsRecord = {
+      type: 'data_record',
+      from: contact.phone,
+      contact: {
+        _id: contact._id,
+        parent: contact.parent
+      },
+      sms_message: {
+        message: text,
+        from: contact.phone
+      },
+      reported_date: new Date().valueOf()
+    };
+    
+    await utils.saveDoc(smsRecord);
   };
 
   const conversations = [
