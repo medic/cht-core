@@ -45,7 +45,7 @@ describe('Messages Overview', () => {
     let messageCounter = 1;
     for (const conv of conversations) {
       for (const message of conv.messages) {
-        await seedIncomingSms(conv.phone, message, `visual-${messageCounter}`);
+        await seedIncomingSms(conv.contact, message, `visual-${messageCounter}`);
         messageCounter++;
         await browser.pause(100);
       }
