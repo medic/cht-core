@@ -41,7 +41,23 @@ describe('Messages Overview', () => {
     await utils.createUsers([docs.user]);
     await loginPage.cookieLogin();
     await commonPage.waitForPageLoaded();
+ const sampleMessages = [
+      ['Yes, the child is feeling much better', 'Here is the update you requested', 'Thanks for checking'],
+      ['Helen missed her appointment today', 'She will reschedule for next week', 'Should I follow up with her?'],
+      ['The antenatal care training went well', 'All CHWs attended the session', 'Feedback was very positive'],
+      ['Fiona has just arrived for her visit', 'Appointment running on schedule', 'All vital signs normal'],
+      ['Please don\'t forget about the supplies', 'Inventory check due tomorrow', 'Need to order more vaccines'],
+      ['Hi Janet, a pregnancy for Beatrice Bass has been registered', 'You will receive ANC notifications for this patient', 'Please follow up to identify the patient']
+    ];
+
+const contactsWithPhones = docs.persons.filter(person => person.phone && person.phone.trim() !== '').slice(0, 6);
     
+    conversations = contactsWithPhones.map((contact, index) => ({
+      phone: contact.phone,
+      contactName: contact.name,
+      contact: contact,
+      messages: sampleMessages[index] || sampleMessages[0]
+    }));
     let messageCounter = 1;
     for (const conv of conversations) {
       for (const message of conv.messages) {
