@@ -72,6 +72,7 @@ const contactsWithPhones = docs.persons.filter(person => person.phone && person.
   });
 
   it('shows conversations list', async () => {
+    await browser.pause(500);
     await generateScreenshot('messages', 'list');
   });
 
