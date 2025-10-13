@@ -33,7 +33,7 @@ I’ve just created the `<major>.<minor>.<patch>-beta.1` tag.
 Please let me know if there’s any final update we need to make. 
 If all is good, then in 24h, I will start the release. Thanks!
 ```
-- [ ] The beta tag will automatically trigger the scalability build. Once it passes, download the scalability results on S3 at medic-e2e/scalability/$TAG_NAME. If you do not have access to the scalability results ask someone in the #product-team who has access. Add the release `.json` file to `cht-core/tests/scalability/previous_results`. More info in the  [scalability documentation](https://github.com/medic/cht-core/blob/master/tests/scalability/README.md).
+- [ ] The beta tag will automatically trigger the scalability build. Once it passes, check for the scalability results [here](https://github.com/medic/scalability-results/tree/main/results). More info in the  [scalability documentation](https://github.com/medic/cht-core/blob/master/tests/scalability/README.md).
 - [ ] Go to the [Issues tab](https://github.com/medic/cht-core/issues) and filter the issues with `is:issue label:"Affects: 4.x.x" ` , replace `4.x.x` with the previous version number. Add any open "known issues" from the prior release that were not fixed in this release. Done by adding the correct `Affects: 4.x.x` label.  
 - [ ] Add release notes to the [Core Framework Releases](https://docs.communityhealthtoolkit.org/core/releases/) page:
   - [ ] Create a new document for the release in the [releases folder](https://github.com/medic/cht-docs/tree/main/content/en/core/releases).
