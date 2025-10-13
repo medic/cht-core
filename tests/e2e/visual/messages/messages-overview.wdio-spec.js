@@ -33,62 +33,7 @@ describe('Messages Overview', () => {
     await utils.saveDoc(smsRecord);
   };
 
-  const conversations = [
-    {
-      phone: '+15551230001',
-      contactName: 'CHW Jane',
-      messages: [
-        'Yes, the child is feeling much better',
-        'Here is the update you requested',
-        'Thanks for checking'
-      ]
-    },
-    {
-      phone: '+15551230002', 
-      contactName: 'CHW Alfonso',
-      messages: [
-        'Helen missed her appointment today',
-        'She will reschedule for next week',
-        'Should I follow up with her?'
-      ]
-    },
-    {
-      phone: '+15551230003',
-      contactName: 'Manager Ann',
-      messages: [
-        'The antenatal care training went well',
-        'All CHWs attended the session',
-        'Feedback was very positive'
-      ]
-    },
-    {
-      phone: '+15551230004',
-      contactName: 'Nurse Mary',
-      messages: [
-        'Fiona has just arrived for her visit',
-        'Appointment running on schedule',
-        'All vital signs normal'
-      ]
-    },
-    {
-      phone: '+15551230005',
-      contactName: 'Julie Johnson',
-      messages: [
-        'Please don\'t forget about the supplies',
-        'Inventory check due tomorrow',
-        'Need to order more vaccines'
-      ]
-    },
-    {
-      phone: '+15551230006',
-      contactName: 'Janet Mwangi',
-      messages: [
-        'Hi Janet, a pregnancy for Beatrice Bass has been registered',
-        'You will receive ANC notifications for this patient',
-        'Please follow up to identify the patient'
-      ]
-    }
-  ];
+  let conversations = [];
 
   before(async () => {
     await resizeWindowForScreenshots();
