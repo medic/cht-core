@@ -8,7 +8,7 @@ const modalPage = require('@page-objects/default/common/modal.wdio.page');
 
 describe('Messages Overview', () => {
   const docs = dataFactory.createHierarchy({
-    name: 'Visual Messaging User',
+    name: 'Kiambu',
     user: true,
     nbrClinics: 5,
     nbrPersons: 8,
