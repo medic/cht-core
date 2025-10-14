@@ -8,7 +8,7 @@ const getReportsCountByForm = async () => {
       group: true,
     });
     const reports = {
-      total: 0,
+      count: 0,
       by_form: [],
     };
     for (const row of result.rows) {
@@ -18,12 +18,12 @@ const getReportsCountByForm = async () => {
         form,
         count,
       });
-      reports.total += count;
+      reports.count += count;
     }
     return reports;
   } catch (err) {
     logger.error('Error fetching reports count:', err);
-    return { total: 0, by_form: [] };
+    return { count: 0, by_form: [] };
   }
 };
 
@@ -35,7 +35,7 @@ const getContactsByType = async () => {
     });
 
     const contacts = {
-      total: 0,
+      count: 0,
       by_type: [],
     };
 
@@ -48,20 +48,20 @@ const getContactsByType = async () => {
         count,
       });
 
-      contacts.total += count;
+      contacts.count += count;
     }
 
     return contacts;
   } catch (err) {
     logger.error('Error fetching contacts by type:', err);
-    return { total: 0, by_type: [] };
+    return { count: 0, by_type: [] };
   }
 };
 
 const getUserCount = async () => {
   const info = await db.users.info();
   const count = info?.doc_count || 0;
-  return {total: Math.max(count - 2, 0)}; // deduct count of _auth and _users
+  return {count: Math.max(count - 2, 0)}; // deduct count of _auth and _users
 };
 
 const jsonV1 = async () => {

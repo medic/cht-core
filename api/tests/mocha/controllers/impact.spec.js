@@ -28,26 +28,39 @@ describe('Impact controller', () => {
   describe('v1', () => {
     beforeEach(() => {
       req = { query: {} };
-      res = { json: sinon.stub() };      
+      res = { json: sinon.stub() };
     });
 
     afterEach(() => sinon.restore());
 
     it('returns successfully for online user', () => {
       isOnlineOnly.returns(true);
-      sinon.stub(service, 'jsonV1').resolves({ totalReports: 10 });
+      const impactServiceOutput = {
+        reports: {
+          count: 10,
+          by_form: [
+            { form: 'L', count: 3 },
+            { form: 'G', count: 7 }
+          ]
+        }
+      };
+      sinon.stub(service, 'jsonV1').resolves(impactServiceOutput);
       return controller.v1.get(req, res).then(() => {
         chai.expect(service.jsonV1.called).to.equal(true);
         chai.expect(res.json.callCount).to.equal(1);
-        chai.expect(res.json.args[0][0]).to.deep.equal({
-          totalReports: 10
-        });
+        chai.expect(res.json.args[0][0]).to.deep.equal(impactServiceOutput);
       });
     });
 
     it('offline user does not get to endpoint', () => {
       isOnlineOnly.returns(false);
-      sinon.stub(service, 'jsonV1').resolves({ totalReports: 10 });
+      const impactServiceOutput = {
+        reports: {
+          count: 0,
+          by_form: []
+        }
+      };
+      sinon.stub(service, 'jsonV1').resolves(impactServiceOutput);
       return controller.v1.get(req, res).then(() => {
         chai.expect(service.jsonV1.called).to.equal(false);
         chai.expect(serverUtils.error.callCount).to.equal(1);

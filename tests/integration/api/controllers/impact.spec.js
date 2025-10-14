@@ -21,15 +21,15 @@ describe('impact', () => {
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
         contacts: {
-          total: 1,
+          count: 1,
           by_type: [
             { type: 'person', count: 1 }
           ]
         },
-        users: { total: 0 },
+        users: { count: 0 },
         reports: {
           by_form: [],
-          total: 0
+          count: 0
         }
       });
     });
@@ -42,7 +42,7 @@ describe('impact', () => {
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
         contacts: {
-          total: 6,
+          count: 6,
           by_type: [
             { type: 'clinic', count: 1 },
             { type: 'district_hospital', count: 1 },
@@ -50,10 +50,10 @@ describe('impact', () => {
             { type: 'person', count: 3 }
           ]
         },
-        users: { total: 1 },
+        users: { count: 1 },
         reports: {
           by_form: [],
-          total: 0
+          count: 0
         }
       });
       await utils.deleteUsers([docs.user]);
@@ -69,10 +69,10 @@ describe('impact', () => {
 
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
-        users: { total: 0 },
+        users: { count: 0 },
         contacts:
         {
-          total: 4,
+          count: 4,
           by_type: [
             { type: 'p10_province', count: 1 },
             { type: 'p20_district', count: 1 },
@@ -80,7 +80,7 @@ describe('impact', () => {
           ]
         },
         reports: {
-          total: 0,
+          count: 0,
           by_form: []
         }
       });
@@ -95,15 +95,15 @@ describe('impact', () => {
       await utils.saveDocs(reports);
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
-        users: { total: 0 },
+        users: { count: 0 },
         contacts: {
-          total: 1,
+          count: 1,
           by_type: [
             { type: 'person', count: 1 }
           ]
         },
         reports: {
-          total: reports.length,
+          count: reports.length,
           by_form: [
             { form: 'L', count: 1 },
             { form: 'pregnancy', count: 2 }
@@ -122,16 +122,16 @@ describe('impact', () => {
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equalInAnyOrder({
         users: {
-          total: 0
+          count: 0
         },
         contacts: {
-          total: 1,
+          count: 1,
           by_type: [
             { type: 'person', count: 1 }
           ]
         },
         reports: {
-          total: reports.length,
+          count: reports.length,
           by_form: [
             { form: 'ल', count: 3 },
             { form: 'pregnancy', count: 2 }
