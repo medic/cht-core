@@ -79,9 +79,9 @@ export class TasksNotificationService implements OnDestroy {
     try {
       const today = moment().format('YYYY-MM-DD');
       const taskDocs = await this.rulesEngineService.fetchTaskDocsForAllContacts();
-      const notifications: Notification[] = [];
+      let notifications: Notification[] = [];
 
-      taskDocs.forEach(task => {
+      for (const task of taskDocs) {
         const dueDate = task.emission.dueDate;
         if (dueDate <= today) {
           notifications.push({
@@ -94,13 +94,11 @@ export class TasksNotificationService implements OnDestroy {
               task.emission.dueDate
             ),
             endDate: new Date(task.emission.endDate).getTime()
-          }); 
+          });
         }
-      });
-
-      return notifications
-        .sort((a, b) => b.readyAt - a.readyAt)
-        .slice(0, await this.getMaxNotificationSettings());
+      }
+      notifications = notifications.sort((a, b) => b.readyAt - a.readyAt);
+      return notifications.slice(0, await this.getMaxNotificationSettings());
 
     } catch (exception) {
       console.error('fetchNotifications(): Error fetching tasks', exception);
