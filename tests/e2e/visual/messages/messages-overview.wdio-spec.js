@@ -15,7 +15,7 @@ describe('Messages Overview', () => {
     useRealNames: true,
   });
 
-  const seedIncomingSms = async (contact, text, id = 'visual-a') => {
+  const seedIncomingSms = async (contact, text) => {
     const smsRecord = {
       type: 'data_record',
       from: contact.phone,
