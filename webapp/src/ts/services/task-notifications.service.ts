@@ -12,6 +12,7 @@ import { AuthService } from '@mm-services/auth.service';
 const DEFAULT_MAX_NOTIFICATIONS = 8;
 
 export interface Notification {
+  _id: string,
   title: string,
   contentText: string,
   endDate: number,
@@ -40,7 +41,7 @@ export class TasksNotificationService implements OnDestroy {
   }
 
   async initOnAndroid() {
-    if (!this.isEnabled()) {
+    if (!await this.isEnabled()) {
       return;
     }
     this.debouncedReload = _debounce(this.updateAndroidStore.bind(this), 1000, { maxWait: 10 * 1000 });
@@ -49,7 +50,7 @@ export class TasksNotificationService implements OnDestroy {
   }
 
   async get(): Promise<Notification[]> {
-    if (!this.isEnabled()) {
+    if (!await this.isEnabled()) {
       return [];
     }
     return await this.fetchNotifications();
@@ -71,7 +72,6 @@ export class TasksNotificationService implements OnDestroy {
 
   private async updateAndroidStore(): Promise<void> {
     const notifications = await this.fetchNotifications();
-    console.log('updateAndroidStore-------------', notifications);
     window.medicmobile_android?.updateTaskNotificationStore(JSON.stringify(notifications));
   }
 
@@ -85,6 +85,7 @@ export class TasksNotificationService implements OnDestroy {
         const dueDate = task.emission.dueDate;
         if (dueDate <= today) {
           notifications.push({
+            _id: task._id,
             readyAt: this.getReadyStateTimestamp(task.stateHistory),
             title: task.emission.title,
             contentText: this.translateContentText(
