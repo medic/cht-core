@@ -157,7 +157,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private browserDetectorService: BrowserDetectorService,
     private userSettingsService: UserSettingsService,
     private formService: FormService,
-    private taskNotificationService: TasksNotificationService
+    private readonly taskNotificationService: TasksNotificationService
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
