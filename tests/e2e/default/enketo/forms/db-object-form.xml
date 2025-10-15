@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:cht="https://communityhealthtoolkit.org" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
   <h:head>
     <h:title>DB Object Form</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/db-object-form/people/person_test_all:label">
-            <value>Select a person from all</value>
-          </text>
-          <text id="/db-object-form/people/person_test_same_parent:label">
+          <text id="/data/people/person_test_same_parent:label">
             <value>Select a person from the same parent</value>
+          </text>
+          <text id="/data/people/person_test_all:label">
+            <value>Select a person from all</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <db-object-form delimiter="#" id="db-object-form" prefix="J1!db-object-form!" version="2024-09-05 00:00:00">
+        <data id="db-object-form" version="2024-09-05 00:00:00" prefix="J1!db-object-form!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -47,42 +47,43 @@
           <meta tag="hidden">
             <instanceID/>
           </meta>
-        </db-object-form>
+        </data>
       </instance>
       <instance id="contact-summary"/>
-      <bind nodeset="/db-object-form/inputs" relevant="false()"/>
-      <bind nodeset="/db-object-form/inputs/user/contact_id" type="string"/>
-      <bind nodeset="/db-object-form/inputs/user/name" type="string"/>
-      <bind nodeset="/db-object-form/inputs/user/sex" type="string"/>
-      <bind calculate="../../user/contact_id" nodeset="/db-object-form/inputs/user_contact/_id" type="string"/>
-      <bind nodeset="/db-object-form/inputs/user_contact/name" type="string"/>
-      <bind nodeset="/db-object-form/inputs/user_contact/sex" type="string"/>
-      <bind calculate="../../../inputs/user/contact_id" nodeset="/db-object-form/people/user_contact/_id" type="string"/>
-      <bind nodeset="/db-object-form/people/user_contact/name" type="string"/>
-      <bind nodeset="/db-object-form/people/user_contact/sex" type="string"/>
-      <bind nodeset="/db-object-form/people/person_test_same_parent" type="string"/>
-      <bind nodeset="/db-object-form/people/person_test_all" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/db-object-form/meta/instanceID" readonly="true()" type="string"/>
+      <instance id="user-contact-summary"/>
+      <bind nodeset="/data/inputs" relevant="false()"/>
+      <bind nodeset="/data/inputs/user/contact_id" type="string"/>
+      <bind nodeset="/data/inputs/user/name" type="string"/>
+      <bind nodeset="/data/inputs/user/sex" type="string"/>
+      <bind nodeset="/data/inputs/user_contact/_id" type="string" calculate="../../user/contact_id"/>
+      <bind nodeset="/data/inputs/user_contact/name" type="string"/>
+      <bind nodeset="/data/inputs/user_contact/sex" type="string"/>
+      <bind nodeset="/data/people/user_contact/_id" type="string" calculate="../../../inputs/user/contact_id"/>
+      <bind nodeset="/data/people/user_contact/name" type="string"/>
+      <bind nodeset="/data/people/user_contact/sex" type="string"/>
+      <bind nodeset="/data/people/person_test_same_parent" type="string"/>
+      <bind nodeset="/data/people/person_test_all" type="string"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
   <h:body class="pages">
-    <group ref="/db-object-form/inputs">
-      <group ref="/db-object-form/inputs/user">
-        <input appearance="hidden select-contact type-person" ref="/db-object-form/inputs/user/contact_id"/>
+    <group ref="/data/inputs">
+      <group ref="/data/inputs/user">
+        <input ref="/data/inputs/user/contact_id" appearance="hidden select-contact type-person"></input>
       </group>
-      <group ref="/db-object-form/inputs/user_contact">
-        <input appearance="hidden select-contact type-person" ref="/db-object-form/inputs/user_contact/_id"/>
+      <group ref="/data/inputs/user_contact">
+        <input ref="/data/inputs/user_contact/_id" appearance="hidden select-contact type-person"></input>
       </group>
     </group>
-    <group appearance="field-list" ref="/db-object-form/people">
-      <group ref="/db-object-form/people/user_contact">
-        <input appearance="hidden select-contact type-person" ref="/db-object-form/people/user_contact/_id"/>
+    <group appearance="field-list" ref="/data/people">
+      <group ref="/data/people/user_contact">
+        <input ref="/data/people/user_contact/_id" appearance="hidden select-contact type-person"></input>
       </group>
-      <input appearance="select-contact type-person descendant-of-current-contact" ref="/db-object-form/people/person_test_same_parent">
-        <label ref="jr:itext('/db-object-form/people/person_test_same_parent:label')"/>
+      <input ref="/data/people/person_test_same_parent" appearance="select-contact type-person descendant-of-current-contact">
+        <label ref="jr:itext('/data/people/person_test_same_parent:label')"/>
       </input>
-      <input appearance="select-contact type-person" ref="/db-object-form/people/person_test_all">
-        <label ref="jr:itext('/db-object-form/people/person_test_all:label')"/>
+      <input ref="/data/people/person_test_all" appearance="select-contact type-person">
+        <label ref="jr:itext('/data/people/person_test_all:label')"/>
       </input>
     </group>
   </h:body>
