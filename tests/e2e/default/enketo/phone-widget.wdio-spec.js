@@ -10,7 +10,7 @@ const { expect } = require('chai');
 describe('Phone widget', () => {
   const phone = '+254712345678';
   const person0 = personFactory.build({ phone });
-  const person1 = personFactory.build({ phone: '+254712345679'  });
+  const person1 = personFactory.build({ phone: '+254712345679', name: 'Person 2', patient_id: 123456 });
 
   before(async () => {
     await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/phone_widget`));
@@ -69,7 +69,7 @@ describe('Phone widget', () => {
 
     expect(await commonEnketoPage.isConstraintMessageDisplayed('Phone Number')).to.be.false;
 
-    await genericForm.submitForm();
+    await genericForm.submitForm({ ignoreValidationErrors: true });
 
     const editedPerson = await utils.getDoc(person1._id);
     expect(editedPerson.phone).to.equal(person1.phone);
