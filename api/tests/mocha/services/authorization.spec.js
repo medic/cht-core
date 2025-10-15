@@ -1537,7 +1537,7 @@ describe('Authorization service', () => {
       it('returns false for reports with unknown subject and denied submitter', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
         viewResults = {
-          docsByReplicationKey: { key: '', submitter: 'submitter', type: 'data_record' },
+          docsByReplicationKey: { key: [''], submitter: 'submitter', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
@@ -1546,7 +1546,7 @@ describe('Authorization service', () => {
       it('returns false for reports with denied subject and unknown submitter', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
         viewResults = {
-          docsByReplicationKey: { key: 'subject2', type: 'data_record' },
+          docsByReplicationKey: { key: ['subject2'], type: 'data_record' },
           contactsByDepth: []
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
@@ -1555,7 +1555,7 @@ describe('Authorization service', () => {
       it('returns false for reports with denied subject and allowed submitter', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
         viewResults = {
-          docsByReplicationKey: { key: 'subject2', submitter: 'contact', type: 'data_record', subject: 'subject2' },
+          docsByReplicationKey: { key: ['subject2'], submitter: 'contact', type: 'data_record', subject: 'subject2' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
@@ -1564,7 +1564,7 @@ describe('Authorization service', () => {
       it('returns true for reports with allowed subject and unknown submitter', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
         viewResults = {
-          docsByReplicationKey: { key: 'subject', type: 'data_record' },
+          docsByReplicationKey: { key: ['subject'], type: 'data_record' },
           contactsByDepth: false,
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -1573,7 +1573,7 @@ describe('Authorization service', () => {
       it('returns true for reports with allowed subject, denied submitter and not sensitive', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
         viewResults = {
-          docsByReplicationKey: { key: 'subject', submitter: 'submitter', type: 'data_record' },
+          docsByReplicationKey: { key: ['subject'], submitter: 'submitter', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -1582,7 +1582,7 @@ describe('Authorization service', () => {
       it('returns true for reports with allowed subject, allowed submitter and not sensitive', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
         viewResults = {
-          docsByReplicationKey: { key: 'subject', submitter: 'contact', type: 'data_record' },
+          docsByReplicationKey: { key: ['subject'], submitter: 'contact', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -1592,7 +1592,7 @@ describe('Authorization service', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact_id ];
         viewResults = {
           docsByReplicationKey: {
-            key: userCtx.contact_id,
+            key: [userCtx.contact_id],
             subject: userCtx.contact_id,
             submitter: 'submitter', type: 'data_record', private: true
           },
@@ -1603,7 +1603,7 @@ describe('Authorization service', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact.patient_id ];
         viewResults = {
           docsByReplicationKey: {
-            key: userCtx.contact.patient_id,
+            key: [userCtx.contact.patient_id],
             subject: userCtx.contact.patient_id,
             submitter: 'submitter', type: 'data_record', private: true
           },
@@ -1614,7 +1614,7 @@ describe('Authorization service', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', ...userCtx.facility_id ];
         viewResults = {
           docsByReplicationKey: {
-            key: userCtx.facility_id,
+            key: [userCtx.facility_id],
             subject: userCtx.facility_id,
             submitter: 'submitter', type: 'data_record', private: true
           },
@@ -1625,7 +1625,7 @@ describe('Authorization service', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.facility[0].place_id ];
         viewResults = {
           docsByReplicationKey: {
-            key: userCtx.facility[0].place_id,
+            key: [userCtx.facility[0].place_id],
             subject: userCtx.facility[0].place_id,
             submitter: 'submitter', type: 'data_record', private: true
           },
@@ -1637,21 +1637,21 @@ describe('Authorization service', () => {
       it('returns true for reports with allowed subject, allowed submitter and about user`s contact or place', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact_id ];
         viewResults = {
-          docsByReplicationKey: { key: userCtx.contact_id, submitter: 'contact', type: 'data_record' },
+          docsByReplicationKey: { key: [userCtx.contact_id], submitter: 'contact', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
 
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact.patient_id ];
         viewResults = {
-          docsByReplicationKey: { key: userCtx.contact.patient_id, submitter: 'contact', type: 'data_record' },
+          docsByReplicationKey: { key: [userCtx.contact.patient_id], submitter: 'contact', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
 
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', ...userCtx.facility_id ];
         viewResults = {
-          docsByReplicationKey: { key: facility, submitter: 'contact', type: 'data_record' },
+          docsByReplicationKey: { key: [facility], submitter: 'contact', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -1659,7 +1659,7 @@ describe('Authorization service', () => {
         const facilityShortcode = userCtx.facility[0].place_id;
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', facilityShortcode ];
         viewResults = {
-          docsByReplicationKey: { key: facilityShortcode, submitter: 'contact', type: 'data_record' },
+          docsByReplicationKey: { key: [facilityShortcode], submitter: 'contact', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -1672,20 +1672,20 @@ describe('Authorization service', () => {
 
         viewResults = {
           // depth 0
-          docsByReplicationKey: { key: facility, submitter: 'contact_id', type: 'data_record' },
+          docsByReplicationKey: { key: [facility], submitter: 'contact_id', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
 
         viewResults = {
           // depth 1
-          docsByReplicationKey: { key: 'place', submitter: 'submitter', type: 'data_record' },
+          docsByReplicationKey: { key: ['place'], submitter: 'submitter', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
 
         viewResults = {
-          docsByReplicationKey: { key: 'chw', submitter: 'submitter', type: 'data_record' }, // depth 2
+          docsByReplicationKey: { key: ['chw'], submitter: 'submitter', type: 'data_record' }, // depth 2
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -1697,7 +1697,7 @@ describe('Authorization service', () => {
         feed.subjectsDepth = { facility_id: 0, contact_id: 1, place: 1, chw: 2, patient: 3 };
 
         viewResults = {
-          docsByReplicationKey: { key: 'patient', submitter: 'submitter', type: 'data_record' }, // depth 3
+          docsByReplicationKey: { key: ['patient'], submitter: 'submitter', type: 'data_record' }, // depth 3
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
@@ -1709,7 +1709,7 @@ describe('Authorization service', () => {
         feed.subjectsDepth = { facility_id: 0, contact_id: 1, place: 1, chw: 2, patient: 3 };
 
         viewResults = {
-          docsByReplicationKey: { key: 'patient', submitter: 'contact_id', type: 'data_record' }, // depth 3
+          docsByReplicationKey: { key: ['patient'], submitter: 'contact_id', type: 'data_record' }, // depth 3
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -1732,6 +1732,7 @@ describe('Authorization service', () => {
     describe('allowedReport multi-facility', () => {
       let facility1;
       let facility2;
+
       beforeEach(() => {
         facility1 = userCtxMultiFacility.facility_id[0];
         facility2 = userCtxMultiFacility.facility_id[2];
@@ -1756,7 +1757,7 @@ describe('Authorization service', () => {
       it('returns false for reports with unknown subject and denied submitter', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
         viewResults = {
-          docsByReplicationKey: { key: '', submitter: 'submitter', type: 'data_record' },
+          docsByReplicationKey: { key: [''], submitter: 'submitter', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
@@ -1765,7 +1766,7 @@ describe('Authorization service', () => {
       it('returns false for reports with denied subject and unknown submitter', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
         viewResults = {
-          docsByReplicationKey: { key: 'subject2', type: 'data_record' },
+          docsByReplicationKey: { key: ['subject2'], type: 'data_record' },
           contactsByDepth: []
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
@@ -1774,7 +1775,7 @@ describe('Authorization service', () => {
       it('returns false for reports with denied subject and allowed submitter', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
         viewResults = {
-          docsByReplicationKey: { key: 'subject2', submitter: 'contact', type: 'data_record', subject: 'subject2' },
+          docsByReplicationKey: { key: ['subject2'], submitter: 'contact', type: 'data_record', subject: 'subject2' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
@@ -1783,7 +1784,7 @@ describe('Authorization service', () => {
       it('returns true for reports with allowed subject and unknown submitter', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
         viewResults = {
-          docsByReplicationKey: { key: 'subject', type: 'data_record', subject: 'subject' },
+          docsByReplicationKey: { key: ['subject'], type: 'data_record', subject: 'subject' },
           contactsByDepth: false,
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -1792,7 +1793,7 @@ describe('Authorization service', () => {
       it('returns true for reports with allowed subject, denied submitter and not sensitive', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
         viewResults = {
-          docsByReplicationKey: { key: 'subject', submitter: 'submitter', type: 'data_record' },
+          docsByReplicationKey: { key: ['subject'], submitter: 'submitter', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -1801,7 +1802,7 @@ describe('Authorization service', () => {
       it('returns true for reports with allowed subject, allowed submitter and not sensitive', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact' ];
         viewResults = {
-          docsByReplicationKey: { key: 'subject', submitter: 'contact', type: 'data_record' },
+          docsByReplicationKey: { key: ['subject'], submitter: 'contact', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -1811,7 +1812,7 @@ describe('Authorization service', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact_id ];
         viewResults = {
           docsByReplicationKey: {
-            key: userCtx.contact_id,
+            key: [ userCtx.contact_id],
             submitter: 'submitter',
             subject: userCtx.contact_id,
             type: 'data_record',
@@ -1824,7 +1825,7 @@ describe('Authorization service', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', userCtx.contact.patient_id ];
         viewResults = {
           docsByReplicationKey: {
-            key: userCtx.contact.patient_id,
+            key: [userCtx.contact.patient_id],
             subject: userCtx.contact.patient_id,
             submitter: 'submitter',
             type: 'data_record',
@@ -1837,7 +1838,7 @@ describe('Authorization service', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', ...userCtx.facility_id ];
         viewResults = {
           docsByReplicationKey: {
-            key: userCtx.facility_id[0],
+            key: [userCtx.facility_id[0]],
             subject: userCtx.facility_id[0],
             submitter: 'submitter',
             type: 'data_record',
@@ -1852,7 +1853,7 @@ describe('Authorization service', () => {
         feed.subjectIds = [ 'subject1', 'contact1', 'subject', 'contact', facility1sh, facility2sh ];
         viewResults = {
           docsByReplicationKey: {
-            key: facility1sh,
+            key: [facility1sh],
             subject: facility1sh,
             submitter: 'submitter',
             type: 'data_record',
@@ -1864,7 +1865,7 @@ describe('Authorization service', () => {
 
         viewResults = {
           docsByReplicationKey: {
-            key: facility2sh,
+            key: [facility2sh],
             subject: facility2sh,
             submitter: 'submitter',
             type: 'data_record',
@@ -1935,13 +1936,13 @@ describe('Authorization service', () => {
 
         viewResults = {
           // depth 1
-          docsByReplicationKey: { key: 'place', submitter: 'submitter', type: 'data_record' },
+          docsByReplicationKey: { key: ['place'], submitter: 'submitter', type: 'data_record' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
 
         viewResults = {
-          docsByReplicationKey: { key: 'chw', submitter: 'submitter', type: 'data_record' }, // depth 2
+          docsByReplicationKey: { key: ['chw'], submitter: 'submitter', type: 'data_record' }, // depth 2
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -1953,7 +1954,7 @@ describe('Authorization service', () => {
         feed.subjectsDepth = { [facility1]: 0, [facility2]: 0, contact_id: 1, place: 1, chw: 2, patient: 3 };
 
         viewResults = {
-          docsByReplicationKey: { key: 'patient', submitter: 'submitter', type: 'data_record' }, // depth 3
+          docsByReplicationKey: { key: ['patient'], submitter: 'submitter', type: 'data_record' }, // depth 3
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
@@ -1965,7 +1966,7 @@ describe('Authorization service', () => {
         feed.subjectsDepth = { [facility1]: 0, [facility2]: 0, contact_id: 1, place: 1, chw: 2, patient: 3 };
 
         viewResults = {
-          docsByReplicationKey: { key: 'patient', submitter: 'contact_id', type: 'data_record' }, // depth 3
+          docsByReplicationKey: { key: ['patient'], submitter: 'contact_id', type: 'data_record' }, // depth 3
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -1993,10 +1994,26 @@ describe('Authorization service', () => {
     });
 
     describe('other types of docs', () => {
+      beforeEach(() => {
+        viewResults = {
+          docsByReplicationKey: [{ fields: { key: 'a',} }],
+          contactsByDepth: [{ key: ['parent1'], value: { shortcode: 'patient_id' } }],
+        };
+        const facility = userCtx.facility_id[0];
+        feed = { userCtx, contactsByDepthKeys: [[facility]], subjectIds };
+        keysByDepth = {
+          0: [[facility, 0]],
+          1: [[facility, 0], [facility, 1]],
+          2: [[facility, 0], [facility, 1], [facility, 2]],
+          3: [[facility, 0], [facility, 1], [facility, 2], [facility, 3]]
+        };
+        contact = 'contact';
+      });
+
       it('should return true for own task', () => {
         feed.subjectIds = [ 'facility_id', 'contact_id', 'org.couchdb.user:user' ];
         viewResults = {
-          docsByReplicationKey: { key: 'org.couchdb.user:user', type: 'task' },
+          docsByReplicationKey: { key: ['org.couchdb.user:user'], type: 'task' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
@@ -2005,7 +2022,7 @@ describe('Authorization service', () => {
       it('should return false for unowned task', () => {
         feed.subjectIds = [ 'facility_id', 'contact_id', 'org.couchdb.user:user' ];
         viewResults = {
-          docsByReplicationKey: { key: 'org.couchdb.user:otheruser', type: 'task' },
+          docsByReplicationKey: { key: ['org.couchdb.user:otheruser'], type: 'task' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
@@ -2014,19 +2031,19 @@ describe('Authorization service', () => {
       it('should return true for known contacts targets', () => {
         feed.subjectIds = [ 'facility_id', 'contact_id', 'org.couchdb.user:user', 'chw1', 'chw2' ];
         viewResults = {
-          docsByReplicationKey: { key: 'contact_id', type: 'target' },
+          docsByReplicationKey: { key: ['contact_id'], type: 'target' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
 
         viewResults = {
-          docsByReplicationKey: { key: 'chw1', type: 'target' },
+          docsByReplicationKey: { key: ['chw1'], type: 'target' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
 
         viewResults = {
-          docsByReplicationKey: { key: 'chw2', type: 'target' },
+          docsByReplicationKey: { key: ['chw2'], type: 'target' },
           contactsByDepth: [],
         };
         const ctx = Object.assign(
@@ -2039,13 +2056,13 @@ describe('Authorization service', () => {
       it('should return false for unknown contacts targets', () => {
         feed.subjectIds = [ 'facility_id', 'contact_id', 'org.couchdb.user:user', 'chw1', 'chw2' ];
         viewResults = {
-          docsByReplicationKey: { key: 'omg1', type: 'target' },
+          docsByReplicationKey: { key: ['omg1'], type: 'target' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
 
         viewResults = {
-          docsByReplicationKey: { key: 'omg2', type: 'target' },
+          docsByReplicationKey: { key: ['omg2'], type: 'target' },
           contactsByDepth: [],
         };
         const ctx = Object.assign(
@@ -2554,26 +2571,26 @@ describe('Authorization service', () => {
       };
 
       const docs = [
-        { id: 4, viewResults: { docsByReplicationKey: { key: '_all' } } },
+        { id: 4, viewResults: { docsByReplicationKey: { key: ['_all'] } } },
         { id: 5, viewResults: {} },
         {
           id: 2,
           viewResults: {
-            docsByReplicationKey: { key: 'something' },
+            docsByReplicationKey: { key: ['something'] },
             contactsByDepth: [{ key: [1], value: { id: 2, shortcode: 'subject1' } }],
           },
         },
         {
           id: 3,
           viewResults: {
-            docsByReplicationKey: { key: 'something' },
+            docsByReplicationKey: { key: ['something'] },
             contactsByDepth: [{ key: [1], value: { id: 3, shortcode: 'subject2' } }],
           },
         },
         {
           id: 1,
           viewResults: {
-            docsByReplicationKey: { key: 'subject2', submitter: 'a' },
+            docsByReplicationKey: { key: ['subject2'], submitter: 'a' },
             contactsByDepth: false,
           },
         },
@@ -2584,25 +2601,25 @@ describe('Authorization service', () => {
 
       results.length.should.equal(4);
       results.should.deep.equal([
-        { id: 4, viewResults: { docsByReplicationKey: { key: '_all' } } },
+        { id: 4, viewResults: { docsByReplicationKey: { key: ['_all'] } } },
         {
           id: 2,
           viewResults: {
-            docsByReplicationKey: { key: 'something' },
+            docsByReplicationKey: { key: ['something'] },
             contactsByDepth: [{ key: [1], value: { id: 2, shortcode: 'subject1' } }],
           },
         },
         {
           id: 3,
           viewResults: {
-            docsByReplicationKey: { key: 'something' },
+            docsByReplicationKey: { key: ['something'] },
             contactsByDepth: [{ key: [1], value: { id: 3, shortcode: 'subject2' } }],
           },
         },
         {
           id: 1,
           viewResults: {
-            docsByReplicationKey: { key: 'subject2', submitter: 'a' },
+            docsByReplicationKey: { key: ['subject2'], submitter: 'a' },
             contactsByDepth: false,
           },
         },
@@ -3163,7 +3180,7 @@ describe('Authorization service', () => {
               { key: ['p1'], value: { shortcode: 'contact1' } },
               { key: ['facility_id'], value: { shortcode: 'contact1' } },
             ],
-            docsByReplicationKey: { key: 'c1',  type: 'contact'  }
+            docsByReplicationKey: { key: ['c1'],  type: 'contact'  }
           },
         },
         { // denied
@@ -3174,7 +3191,7 @@ describe('Authorization service', () => {
               { key: ['p2'], value: { shortcode: 'contact2' } },
               { key: ['p3'], value: { shortcode: 'contact2' } },
             ],
-            docsByReplicationKey: { key: 'c2',  type: 'contact'  }
+            docsByReplicationKey: { key: ['c2'],  type: 'contact'  }
           },
         },
         { // allowed
@@ -3184,7 +3201,7 @@ describe('Authorization service', () => {
           },
           viewResults: {
             contactsByDepth: [],
-            docsByReplicationKey: { key: 'patient1',  submitter: 'c1', type: 'data_record'  }
+            docsByReplicationKey: { key: ['patient1'],  submitter: 'c1', type: 'data_record'  }
           }
         },
         { // denied
@@ -3194,7 +3211,7 @@ describe('Authorization service', () => {
           },
           viewResults: {
             contactsByDepth: [],
-            docsByReplicationKey: { key: 'patient2',  submitter: 'c2', type: 'data_record'  }
+            docsByReplicationKey: { key: ['patient2'],  submitter: 'c2', type: 'data_record'  }
           }
         },
       ];
@@ -3241,14 +3258,14 @@ describe('Authorization service', () => {
         { key: ['p3'], value: { shortcode: 'patient2' } },
       ]);
       const docsByReplicationKey = sinon.stub();
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns({ key: 'c1',  type: 'contact'  });
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns({ key: ['c1'],  type: 'contact'  });
       docsByReplicationKey
         .withArgs(sinon.match({ _id: 'patient1doc' }))
         .returns({ key: 'patient1doc', type: 'contact' });
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'c2' })).returns({ key: 'c2', type: 'contact' });
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'c2' })).returns({ key: ['c2'], type: 'contact' });
       docsByReplicationKey
         .withArgs(sinon.match({ _id: 'patient2doc' }))
-        .returns({ key: 'patient2doc', type: 'contact' });
+        .returns({ key: ['patient2doc'], type: 'contact' });
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
@@ -3917,7 +3934,7 @@ describe('Authorization service', () => {
               { key: ['place', 1], value: { _id: contact1._id, shortcode: contact1.patient_id } },
               { key: ['contact', 0], value: { _id: contact1._id, shortcode: contact1.patient_id } },
             ],
-            docsByReplicationKey: { key: 'contact', type: 'contact' },
+            docsByReplicationKey: { key: ['contact'], type: 'contact' },
           }
         }
       ];
@@ -3935,7 +3952,7 @@ describe('Authorization service', () => {
 
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.docsByReplicationKey);
-      docsByReplicationKey.withArgs(weirdDoc).returns({ key: 'place', type: 'contact' });
+      docsByReplicationKey.withArgs(weirdDoc).returns({ key: ['place'], type: 'contact' });
       viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
 
       config.get.returns([

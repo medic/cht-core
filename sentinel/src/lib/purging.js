@@ -206,25 +206,15 @@ const assignContactToGroups = (row, groups, subjectIds) => {
   subjectIds.push(...group.subjectIds);
 };
 
-const isRelevantRecordEmission = (hit, groups, subjectIds) => {
-  if (groups[hit.id]) { // groups keys are contact ids, we already know everything about contacts
-    return false;
-  }
+const isRelevantRecordEmission = (hit, subjectIds) => {
+  // reports with `needs_signoff` will emit for every contact from their submitter lineage,
+  // but we only want to process them once, either associated to their subject, or to their submitter
+  // when they have no subject or have an invalid subject.
+  // if the report has a subject, but it's not the same as the emission key, we hit the emit
+  // for the submitter or submitter lineage via the `needs_signoff` path. Skip.
+  return !(hit.fields.needs_signoff && !subjectIds.includes(hit.fields.subject));
 
-  if (hit.fields.type !== 'data_record') {
-    return false;
-  }
 
-  if (hit.fields.needs_signoff && !subjectIds.includes(hit.fields.subject)) {
-    // reports with `needs_signoff` will emit for every contact from their submitter lineage,
-    // but we only want to process them once, either associated to their subject, or to their submitter
-    // when they have no subject or have an invalid subject.
-    // if the report has a subject, but it's not the same as the emission key, we hit the emit
-    // for the submitter or submitter lineage via the `needs_signoff` path. Skip.
-    return false;
-  }
-
-  return true;
 };
 
 const getRecordGroupInfo = (row, subjectIds) => {
@@ -260,7 +250,7 @@ const getRecordsForContacts = async (groups, subjectIds) => {
 
   do {
     const opts = {
-      q: `key:(${subjectIds.map(nouveau.escapeKeys).join(' OR ')})`,
+      q: `key:(${subjectIds.map(nouveau.escapeKeys).join(' OR ')}) AND type:data_record`,
       limit: nouveau.RESULTS_LIMIT,
     };
     if (bookmark) {
@@ -274,7 +264,7 @@ const getRecordsForContacts = async (groups, subjectIds) => {
     bookmark = result.bookmark;
     requestNext = result.hits.length === nouveau.RESULTS_LIMIT;
 
-    relevantRows.push(...result.hits.filter(hit => isRelevantRecordEmission(hit, groups, subjectIds)));
+    relevantRows.push(...result.hits.filter(hit => isRelevantRecordEmission(hit, subjectIds)));
     if (relevantRows.length >= MAX_BATCH_SIZE) {
       return Promise.reject({
         code: MAX_BATCH_SIZE_REACHED,

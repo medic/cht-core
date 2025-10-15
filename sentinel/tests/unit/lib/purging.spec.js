@@ -621,8 +621,9 @@ describe('ServerSidePurge', () => {
         id: `id${idx}`,
         fields: {
           key: `key${idx}`,
-          subject: `key${idx}`,
-          type: idx % fiveK === 0 ? 'data_record' : 'othertype'
+          subject: 'irrelevant',
+          type: 'data_record',
+          needs_signoff: idx % fiveK !== 0
         },
       }));
 
@@ -813,16 +814,12 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(request, 'post');
       request.post.onCall(0).resolves({ hits: [
-        { id: 'first', fields: { key: 'first',  type: 'district_hospital' }},
-        { id: 'f1', fields: { key: 'f1',  type: 'clinic' }},
         { id: 'f1-r1', fields: { key: 's1',  type: 'data_record', subject: 's1' } },
         { id: 'f1-m1', fields: { key: 'f1',  type: 'data_record', subject: 'f1' } },
         { id: 'f1-r2', fields: { key: 's1',  type: 'data_record', subject: 's1' } },
         { id: 'f1-m2', fields: { key: 'f1',  type: 'data_record', subject: 'f1' } },
-        { id: 'f2', fields: { key: 'f2',  type: 'person' }},
         { id: 'f2-r1', fields: { key: 'f2',  type: 'data_record', subject: 'f2' } },
         { id: 'f2-r2', fields: { key: 'f2',  type: 'data_record', subject: 'f2' } },
-        { id: 'f4', fields: { key: 'f4',  type: 'clinic' }},
         { id: 'f4-m1', fields: { key: 'f4',  type: 'data_record', subject: 'f4' } },
         { id: 'f4-m2', fields: { key: 'f4',  type: 'data_record', subject: 'f4' } },
       ] });
@@ -844,7 +841,7 @@ describe('ServerSidePurge', () => {
         chai.expect(request.post.args[0]).to.deep.equal([{
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
-            q: 'key:(first OR f1 OR s1 OR f2 OR f4 OR s4)',
+            q: 'key:(first OR f1 OR s1 OR f2 OR f4 OR s4) AND type:data_record',
             limit: 200000
           },
         } ]);
@@ -982,11 +979,8 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(request, 'post');
       request.post.onCall(0).resolves({ hits: [
-        { id: 'first', fields: { key: 'first', type: 'district_hospital' }},
-        { id: 'f1', fields: { key: 'f1', type: 'clinic' }},
         { id: 'f1-r1', fields: { key: 's1', type: 'data_record', subject: 's1' } },
         { id: 'f1-m1', fields: { key: 'f1', type: 'data_record', subject: 'f1', submitter: 'f1' } },
-        { id: 'f2', fields: { key: 'f2', type: 'person' }},
         { id: 'f2-r1', fields: { key: 'f2', type: 'data_record', subject: 'f2', submitter: 'f2' } },
         { id: 'f2-r2', fields: { key: 'f2', type: 'data_record', subject: 'f2', submitter: 'f2' } },
         { id: 'f2-r3', fields: { key: 's2', type: 'data_record', subject: 's2', submitter: 'f2' } },
@@ -1007,7 +1001,7 @@ describe('ServerSidePurge', () => {
         chai.expect(request.post.args[0]).to.deep.equal([{
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
-            q: 'key:(first OR f1 OR s1 OR f2 OR s2)',
+            q: 'key:(first OR f1 OR s1 OR f2 OR s2) AND type:data_record',
             limit: 200000
           },
         }]);
@@ -1084,14 +1078,11 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(request, 'post');
       request.post.onCall(0).resolves({ hits: [
-        { id: 'first', fields: { key: 'first',  type: 'district_hospital' } },
-        { id: 'f1', fields: { key: 'f1',  type: 'clinic' } },
         {
           id: 'f1-r1',
           fields: { key: 's1',  type: 'data_record', subject: 's1', needs_signoff: true, submitter: 'f1' }
         },
         { id: 'f1-m1', fields: { key: 'f1',  type: 'data_record', subject: 'f1', submitter: 'f1' } },
-        { id: 'f2', fields: { key: 'f2',  type: 'person' } },
         {
           id: 'f2-r1',
           fields: { key: 'f2', type: 'data_record', subject: 'random', needs_signoff: true, submitter: 'f2' }
@@ -1122,7 +1113,7 @@ describe('ServerSidePurge', () => {
         chai.expect(request.post.args[0]).to.deep.equal([{
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
-            q: 'key:(first OR f1 OR s1 OR f2)',
+            q: 'key:(first OR f1 OR s1 OR f2) AND type:data_record',
             limit: 200000
           },
         }]);
@@ -1189,11 +1180,8 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(request, 'post');
       request.post.onCall(0).resolves({ hits: [
-        { id: 'first', fields: { key: 'first', } },
-        { id: 'f1', fields: { key: 'f1', } },
         { id: 'f1-r1', fields: { key: 's1', subject: 's1', type: 'data_record' } },
         { id: 'f1-m1', fields: { key: 'f1', subject: 'f1', type: 'data_record' } },
-        { id: 'f2', fields: { key: 'f2', } },
         { id: 'f2-r1', fields: { key: 'f2', subject: 'f2', type: 'data_record' } },
         { id: 'f2-r2', fields: { key: 'f2', subject: 'f2', type: 'data_record' } },
         { id: 'f2-m1', fields: { key: 'f2', subject: 'f2', type: 'data_record' } },
@@ -1296,11 +1284,8 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(request, 'post');
       request.post.onCall(0).resolves({ hits: [
-        { id: 'first', fields: { key: 'first',  type: 'district_hospital' } },
-        { id: 'f1', fields: { key: 'f1',  type: 'clinic' } },
         { id: 'f1-r1', fields: { key: 's1',  type: 'data_record', subject: 's1' } },
         { id: 'f1-m1', fields: { key: 'f1',  type: 'data_record', subject: 'f1' } },
-        { id: 'f2', fields: { key: 'f2',  type: 'clinic' }},
       ] });
       request.post.onCall(1).resolves({ hits: [] });
       sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
@@ -1382,11 +1367,8 @@ describe('ServerSidePurge', () => {
 
       sinon.stub(request, 'post');
       request.post.onCall(0).resolves({ hits: [
-        { id: 'first', fields: { key: 'first',  type: 'district_hospital' }},
-        { id: 'f1', fields: { key: 'f1',  type: 'clinic' }},
         { id: 'f1-r1', fields: { key: 's1',  type: 'data_record', subject: 's1' } },
         { id: 'f1-m1', fields: { key: 'f1',  type: 'data_record', subject: 'f1' } },
-        { id: 'f2', fields: { key: 'f2',  type: 'clinic' }},
       ] });
       request.post.onCall(1).resolves({ hits: [] });
       sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
@@ -1420,84 +1402,6 @@ describe('ServerSidePurge', () => {
       });
     });
 
-    it('should skip any other types than data_records', () => {
-      sinon.stub(db, 'queryMedic');
-      db.queryMedic.onCall(0).resolves({ rows: [
-        { id: 'first', key: 'district_hospital', doc: { _id: 'first', type: 'district_hospital' } },
-        { id: 'f1', key: 'clinic', doc: { _id: 'f1', type: 'clinic', place_id: 's1' } },
-        { id: 'f2', key: 'person', doc: { _id: 'f2', type: 'person' } },
-      ]});
-
-      db.queryMedic.onCall(1).resolves({ rows: [
-        { id: 'f2', key: 'person', doc: { _id: 'f2', type: 'person' } },
-      ]});
-
-      sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
-      const purgeDbChanges = sinon.stub().resolves({ results: [] });
-      sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
-
-      sinon.stub(request, 'post');
-      request.post.onCall(0).resolves({ hits: [
-        { id: 'first', fields: { key: 'first',  type: 'district_hospital' } },
-        { id: 'f1', fields: { key: 'f1',  type: 'clinic' } },
-        { id: 'target~one', fields: { key: 's1',  type: 'target' } },
-        { id: 'random~two', fields: { key: 'f2',  type: 'random2' } },
-        { id: 'f1-r1', fields: { key: 's1',  type: 'data_record', subject: 's1' } },
-        { id: 'f1-m1', fields: { key: 'f1',  type: 'data_record', subject: 'f1' } },
-        { id: 'f2', fields: { key: 'f2',  type: 'person' } },
-        { id: 'target~two', fields: { key: 'f2',  type: 'target' } },
-        { id: 'random~one', fields: { key: 'f2',  type: 'random' } },
-      ] });
-      sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
-        { id: 'f1-r1', key: 's1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
-        { id: 'f1-m1', key: 'f1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
-      ]});
-
-      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
-        chai.expect(db.queryMedic.callCount).to.equal(2);
-        chai.expect(request.post.callCount).to.equal(1);
-        chai.expect(request.post.args[0]).to.deep.equal([{
-          uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
-          body: {
-            q: 'key:(first OR f1 OR s1 OR f2)',
-            limit: 200000
-          },
-        }]);
-        chai.expect(purgeDbChanges.callCount).to.equal(2);
-        chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
-          doc_ids: [
-            'purged:first',
-            'purged:f1', 'purged:f1-m1',  'purged:f1-r1',
-            'purged:f2',
-          ],
-          batch_size: 6,
-          seq_interval: 5
-        }]);
-
-        chai.expect(purgeFn.callCount).to.equal(6);
-        chai.expect(purgeFn.args[0]).to.shallowDeepEqual([
-          { roles: roles.a },
-          { _id: 'first', type: 'district_hospital' },
-          [],
-          []
-        ]);
-
-        chai.expect(purgeFn.args[2]).to.shallowDeepEqual([
-          { roles: roles.a },
-          { _id: 'f1', type: 'clinic', place_id: 's1' },
-          [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' }],
-          [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }]
-        ]);
-
-        chai.expect(purgeFn.args[4]).to.shallowDeepEqual([
-          { roles: roles.a },
-          { _id: 'f2', type: 'person' },
-          [],
-          []
-        ]);
-      });
-    });
-
     it('should throw contacts_by_type errors', () => {
       sinon.stub(db, 'queryMedic').rejects({ some: 'err' });
       sinon.stub(db, 'get').resolves({});
@@ -1527,7 +1431,7 @@ describe('ServerSidePurge', () => {
       sinon.stub(db, 'queryMedic').resolves({ rows: [
         { id: 'first', key: 'district_hospital', doc: { _id: 'first' } },
       ]});
-      sinon.stub(request, 'post').resolves({ hits: [{ id: 'first', doc: { _id: 'first' } }] });
+      sinon.stub(request, 'post').resolves({ hits: [] });
       const purgeDbChanges = sinon.stub().rejects({ some: 'err' });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
 
@@ -1542,7 +1446,7 @@ describe('ServerSidePurge', () => {
       sinon.stub(db, 'queryMedic').resolves({ rows: [
         { id: 'first', key: 'district_hospital', doc: { _id: 'first' } },
       ] });
-      sinon.stub(request, 'post').resolves({ hits: [{ id: 'first', doc: { _id: 'first' } }] });
+      sinon.stub(request, 'post').resolves({ hits: [] });
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
       purgeFn.throws(new Error('error'));
@@ -1559,7 +1463,7 @@ describe('ServerSidePurge', () => {
       sinon.stub(db, 'queryMedic').resolves({ rows: [
         { id: 'first', key: 'district_hospital', doc: { _id: 'first' } },
       ]});
-      sinon.stub(request, 'post').resolves({ hits: [{ id: 'first', doc: { _id: 'first' } }] });
+      sinon.stub(request, 'post').resolves({ hits: [] });
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub().rejects({ some: 'err' }) });
       purgeFn.returns(['first']);
@@ -2561,7 +2465,7 @@ describe('ServerSidePurge', () => {
       sinon.stub(db, 'queryMedic').resolves(
         { rows: [{ id: 'first', key: 'district_hospital', doc: { _id: 'first' } }]}
       );
-      sinon.stub(request, 'post').resolves({ hits: [{ id: 'first', doc: { _id: 'first' } }] });
+      sinon.stub(request, 'post').resolves({ hits: [] });
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
       sinon.stub(config, 'get').returns({ can_export_messages: [ 1 ]});
@@ -2588,7 +2492,7 @@ describe('ServerSidePurge', () => {
       sinon.stub(db, 'queryMedic').resolves(
         { rows: [{ id: 'first', key: 'district_hospital', doc: { _id: 'first' } }]}
       );
-      sinon.stub(request, 'post').resolves({ hits: [{ id: 'first', doc: { _id: 'first' } }] });
+      sinon.stub(request, 'post').resolves({ hits: [] });
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
       sinon.stub(config, 'get').returns({ can_export_messages: [ 1 ]});

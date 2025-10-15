@@ -246,8 +246,7 @@ const allowedReport = (authorizationContext, docsByReplicationKey) => {
     return false;
   }
 
-  const replicationKeys = Array.isArray(docsByReplicationKey.key) ?
-    docsByReplicationKey.key : [docsByReplicationKey.key];
+  const replicationKeys = docsByReplicationKey?.key || [];
 
   // it's a report, task or target
   const allowedDepth = isAllowedDepth(authorizationContext, docsByReplicationKey);
