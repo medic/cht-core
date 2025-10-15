@@ -69,7 +69,7 @@ describe('Phone widget', () => {
 
     expect(await commonEnketoPage.isConstraintMessageDisplayed('Phone Number')).to.be.false;
 
-    await genericForm.submitForm({ ignoreValidationErrors: true });
+    await genericForm.submitForm();
 
     const editedPerson = await utils.getDoc(person1._id);
     expect(editedPerson.phone).to.equal(person1.phone);
