@@ -1,6 +1,7 @@
-const chai = require('chai').use(require('chai-as-promised'));
+const chai = require('chai').use(require('chai-as-promised')).use(require('chai-exclude'));
 const expect = chai.expect;
 const sinon = require('sinon');
+const undici = require('undici');
 const rewire = require('rewire');
 
 chai.config.truncateThreshold = 0;
@@ -41,6 +42,8 @@ describe('couch-request', () => {
 
     sinon.stub(require('os'), 'platform').returns('test-platform');
     sinon.stub(require('os'), 'arch').returns('test-arch');
+
+    sinon.stub(undici, 'Agent');
 
     couchRequest = rewire('../src/couch-request');
   });
@@ -113,8 +116,11 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/test',
+        dispatcher: {},
       }
     ]);
+
+    expect(undici.Agent.args).to.deep.equal([[{ headersTimeout: 0, connectTimeout: 0, bodyTimeout: 0 }]]);
 
     expect(audit.fetchCallback.args).to.deep.equal([[
       'http://test.com:5984/medic/test',
@@ -127,6 +133,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/test',
+        dispatcher: {},
       },
       {
         ...response,
@@ -155,6 +162,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/omg',
+        dispatcher: {},
       }
     ]);
   });
@@ -178,6 +186,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/doc/attachment',
+        dispatcher: {},
       }
     ]);
   });
@@ -200,6 +209,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://www.textit.com/api/v2/broadcasts.json',
+        dispatcher: {},
       }
     ]);
   });
@@ -222,6 +232,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://www.textit.com/api/v2/broadcasts.json',
+        dispatcher: {},
       }
     ]);
   });
@@ -250,6 +261,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic?number=2&string=yes&array=%5B%22one%22%2C%22two%22%5D&boolean=true',
+        dispatcher: {},
       }
     ]);
   });
@@ -273,6 +285,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/oops',
+        dispatcher: {},
       }
     ]);
   });
@@ -296,6 +309,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/medic/omg',
+        dispatcher: {},
       }
     ]);
   });
@@ -313,6 +327,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/a',
+        dispatcher: {},
       }
     ]);
   });
@@ -335,6 +350,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://marvel.net:5984/a',
+        dispatcher: {},
       }
     ]);
   });
@@ -377,6 +393,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/a',
+        dispatcher: {},
       }
     ]);
   });
@@ -399,6 +416,7 @@ describe('couch-request', () => {
         body: JSON.stringify({ foo: 'bar' }),
         servername: 'test.com',
         uri: 'http://test.com:5984/b',
+        dispatcher: {},
       }
     ]);
   });
@@ -421,6 +439,7 @@ describe('couch-request', () => {
         body: 'foo=bar&bar=baz',
         servername: 'test.com',
         uri: 'http://test.com:5984/b',
+        dispatcher: {},
       }
     ]);
   });
@@ -444,6 +463,7 @@ describe('couch-request', () => {
         body: 'foo=bar&bar=baz',
         servername: 'test.com',
         uri: 'http://test.com:5984/b',
+        dispatcher: {},
       }
     ]);
   });
@@ -464,6 +484,7 @@ describe('couch-request', () => {
         body: 'some random text',
         servername: 'test.com',
         uri: 'http://test.com:5984/b',
+        dispatcher: {},
       }
     ]);
   });
@@ -486,6 +507,7 @@ describe('couch-request', () => {
         body: 'some random text',
         servername: 'test.com',
         uri: 'http://test.com:5984/b',
+        dispatcher: {},
       }
     ]);
   });
@@ -540,6 +562,7 @@ describe('couch-request', () => {
         servername: 'test.com',
         uri: 'http://test.com:5984/b',
         signal: AbortSignal.timeout(5000),
+        dispatcher: {},
       }
     ]);
   });
@@ -564,6 +587,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/b',
+        dispatcher: {},
       }
     ]);
   });
@@ -587,6 +611,7 @@ describe('couch-request', () => {
           'content-type': 'application/json',
         },
         uri: 'http://test.com:5984/b',
+        dispatcher: {},
       }
     ]);
   });
@@ -713,6 +738,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/test',
+        dispatcher: {},
       }
     ]]);
   });
@@ -738,6 +764,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/test',
+        dispatcher: {},
       }
     ]]);
   });
@@ -762,6 +789,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/test',
+        dispatcher: {},
       }
     ]]);
 
@@ -776,6 +804,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/test',
+        dispatcher: {},
       },
       {
         ...response,
@@ -807,6 +836,7 @@ describe('couch-request', () => {
         },
         servername: 'test.com',
         uri: 'http://test.com:5984/b',
+        dispatcher: {},
       }
     ]]);
   });

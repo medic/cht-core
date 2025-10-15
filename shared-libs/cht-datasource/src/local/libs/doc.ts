@@ -180,12 +180,24 @@ export const fetchAndFilterUuids = (
 };
 
 /** @internal */
+const isPouchDBNotFoundError = (error: unknown): error is { status: 404, name: string } => {
+  return (
+    typeof error === 'object' && error !== null &&
+    'status' in error && (error as { status: number }).status === 404
+  );
+};
+
+/** @internal */
 export const ddocExists = async (db: PouchDB.Database<Doc>, ddocId: string): Promise<boolean> => {
   try {
     await db.get(ddocId);
     return true;
   } catch (err) {
-    logger.debug(err);
+    if (isPouchDBNotFoundError(err)) {
+      return false;
+    }
+
+    logger.error(`Unexpected error while checking ddoc ${ddocId}:`, err);
     return false;
   }
 };
