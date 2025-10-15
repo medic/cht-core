@@ -70,7 +70,7 @@ describe('Search Reports', () => {
 
     await reportsPage.openReport(hospitalReport.id);
     await reportsPage.clickOnCaseId();
-    await commonPage.waitForPageLoaded();
+    await commonPage.waitForLoaders();
     expect((await reportsPage.reportsListDetails()).length).to.equal(2);
     expect(await reportsPage.leftPanelSelectors.reportByUUID(hospitalReport.id).isDisplayed()).to.be.true;
     expect(await reportsPage.leftPanelSelectors.reportByUUID(healthCenterReport.id).isDisplayed()).to.be.true;
