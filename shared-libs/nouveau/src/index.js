@@ -13,7 +13,9 @@ const specialChars = [
   String.raw`\*`,
   String.raw`\?`,
   ':',
-  String.raw`\-`
+  String.raw`\-`,
+  String.raw`\[`,
+  String.raw`\]`,
 ];
 const charSet = specialChars.join('');
 const pattern = new RegExp(`([${charSet}])`, 'g');

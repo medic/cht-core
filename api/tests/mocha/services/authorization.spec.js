@@ -619,21 +619,21 @@ describe('Authorization service', () => {
         .then(result => {
           result.length.should.equal(12);
           result.should.deep.equal([
-            { id: 'r1', fields: { key: 'sbj1', subject: 'sbj1', submitter: 'c1' } },
-            { id: 'r2', fields: { key: 'sbj3', subject: 'sbj3', } },
-            { id: 'r3', fields: { key: 'sbj2', subject: 'sbj2', submitter: 'nurse'} },
-            { id: 'r4', fields: { key: '', subject: '', submitter: 'c2' } },
-            { id: 'r5', fields: { key: 'facility_id', subject: 'facility_id',} },
-            { id: 'r6', fields: { key: 'contact_id', subject: 'contact_id',} },
-            { id: 'r9', fields: { key: 'facility_id', subject: 'facility_id', submitter: 'c3' } },
-            { id: 'r10', fields: { key: 'contact_id', subject: 'contact_id', submitter: 'c4' } },
-            { id: 'r11', fields: { key: 'sbj3', subject: 'sbj3', } },
-            { id: 'r12', fields: { key: 'sbj4', subject: 'sbj4', submitter: 'someone' } },
-            { id: 'r13', fields: { key: '', subject: '', submitter: 'someone else' } },
+            { id: 'r1', fields: { key: ['sbj1'], subject: 'sbj1', submitter: 'c1' } },
+            { id: 'r2', fields: { key: ['sbj3'], subject: 'sbj3', } },
+            { id: 'r3', fields: { key: ['sbj2'], subject: 'sbj2', submitter: 'nurse'} },
+            { id: 'r4', fields: { key: [''], subject: '', submitter: 'c2' } },
+            { id: 'r5', fields: { key: ['facility_id'], subject: 'facility_id',} },
+            { id: 'r6', fields: { key: ['contact_id'], subject: 'contact_id',} },
+            { id: 'r9', fields: { key: ['facility_id'], subject: 'facility_id', submitter: 'c3' } },
+            { id: 'r10', fields: { key: ['contact_id'], subject: 'contact_id', submitter: 'c4' } },
+            { id: 'r11', fields: { key: ['sbj3'], subject: 'sbj3', } },
+            { id: 'r12', fields: { key: ['sbj4'], subject: 'sbj4', submitter: 'someone' } },
+            { id: 'r13', fields: { key: [''], subject: '', submitter: 'someone else' } },
             {
               id: 'r14',
               fields: {
-                key: 'contact_id', subject: 'contact_id', submitter: 'c-unknown', private: false
+                key: ['contact_id'], subject: 'contact_id', submitter: 'c-unknown', private: false
               }
             }, // not sensitive
           ]);
@@ -675,22 +675,22 @@ describe('Authorization service', () => {
         .getDocsByReplicationKey(ctx)
         .then(result => {
           result.should.have.deep.members([
-            { id: 'r1', fields: { key: 'sbj1', subject: 'sbj1', submitter: 'c1' } },
-            { id: 'r2', fields: { key: 'sbj3', subject: 'sbj3', } },
-            { id: 'r3', fields: { key: 'sbj2', subject: 'sbj2', submitter: 'nurse'} },
-            { id: 'r4', fields: { key: '', subject: '', submitter: 'c2' } },
-            { id: 'r5', fields: { key: 'f1', subject: 'f1',} },
-            { id: 'r55', fields: { key: 'f2', subject: 'f2',} },
-            { id: 'r6', fields: { key: 'contact_id', subject: 'contact_id',} },
-            { id: 'r9', fields: { key: 'f1', subject: 'f1', submitter: 'c3' } },
-            { id: 'r99', fields: { key: 'f2', subject: 'f2', submitter: 'c3' } },
-            { id: 'r10', fields: { key: 'contact_id', subject: 'contact_id', submitter: 'c4' } },
-            { id: 'r11', fields: { key: 'sbj3', subject: 'sbj3', } },
-            { id: 'r12', fields: { key: 'sbj4', subject: 'sbj4', submitter: 'someone' } },
-            { id: 'r13', fields: { key: '', subject: '', submitter: 'someone else' } },
+            { id: 'r1', fields: { key: ['sbj1'], subject: 'sbj1', submitter: 'c1' } },
+            { id: 'r2', fields: { key: ['sbj3'], subject: 'sbj3', } },
+            { id: 'r3', fields: { key: ['sbj2'], subject: 'sbj2', submitter: 'nurse'} },
+            { id: 'r4', fields: { key: [''], subject: '', submitter: 'c2' } },
+            { id: 'r5', fields: { key: ['f1'], subject: 'f1',} },
+            { id: 'r55', fields: { key: ['f2'], subject: 'f2',} },
+            { id: 'r6', fields: { key: ['contact_id'], subject: 'contact_id',} },
+            { id: 'r9', fields: { key: ['f1'], subject: 'f1', submitter: 'c3' } },
+            { id: 'r99', fields: { key: ['f2'], subject: 'f2', submitter: 'c3' } },
+            { id: 'r10', fields: { key: ['contact_id'], subject: 'contact_id', submitter: 'c4' } },
+            { id: 'r11', fields: { key: ['sbj3'], subject: 'sbj3', } },
+            { id: 'r12', fields: { key: ['sbj4'], subject: 'sbj4', submitter: 'someone' } },
+            { id: 'r13', fields: { key: [''], subject: '', submitter: 'someone else' } },
             {
               id: 'r14',
-              fields: { key: 'contact_id', subject: 'contact_id', submitter: 'c-unknown', private: false }
+              fields: { key: ['contact_id'], subject: 'contact_id', submitter: 'c-unknown', private: false }
             }, // not sensitive
           ]);
         });
@@ -719,12 +719,12 @@ describe('Authorization service', () => {
         })
         .then(result => {
           result.should.deep.equal([
-            { id: 'r1', fields: { key: 'subject', submitter: null, type: 'data_record' } },
-            { id: 'r2', fields: { key: 'contact', type: 'data_record' } },
-            { id: 'r3', fields: { key: 'parent', type: 'task' } },
-            { id: 'r4', fields: { key: 'contact', type: 'target' } },
-            { id: 'r5', fields: { key: 'parent', type: 'contact' } },
-            { id: 'r6', fields: { key: 'subject', type: 'data_record', submitter: 'some_person' } },
+            { id: 'r1', fields: { key: ['subject'], submitter: null, type: 'data_record' } },
+            { id: 'r2', fields: { key: ['contact'], type: 'data_record' } },
+            { id: 'r3', fields: { key: ['parent'], type: 'task' } },
+            { id: 'r4', fields: { key: ['contact'], type: 'target' } },
+            { id: 'r5', fields: { key: ['parent'], type: 'contact' } },
+            { id: 'r6', fields: { key: ['subject'], type: 'data_record', submitter: 'some_person' } },
           ]);
         });
     });
@@ -768,18 +768,24 @@ describe('Authorization service', () => {
         })
         .then(result => {
           result.should.have.deep.members([
-            { id: 'r2', fields: { key: 'contact', subject: 'contact', type: 'data_record' } }, // depth 1
-            { id: 'r3', fields: { key: 'parent', subject: 'parent', type: 'task' } }, // not a report, but depth 0
-            { id: 'r4', fields: { key: 'contact', subject: 'contact', type: 'target' } },  // not a report, but depth 1
-            { id: 'r5', fields: { key: 'parent', subject: 'parent', type: 'contact' } },  // not a report, but depth 0
+            { id: 'r2', fields: { key: ['contact'], subject: 'contact', type: 'data_record' } }, // depth 1
+            { id: 'r3', fields: { key: ['parent'], subject: 'parent', type: 'task' } }, // not a report, but depth 0
+            {
+              id: 'r4',
+              fields: { key: ['contact'], subject: 'contact', type: 'target' }
+            },  // not a report, but depth 1
+            { id: 'r5', fields: { key: ['parent'], subject: 'parent', type: 'contact' } },  // not a report, but depth 0
             {
               id: 'r7',
-              fields: { key: 'contact', subject: 'contact', type: 'data_record', submitter: 'some_person' }
+              fields: { key: ['contact'], subject: 'contact', type: 'data_record', submitter: 'some_person' }
             }, // depth 1
-            { id: 'r8', fields: { key: 'subject', subject: 'subject', type: 'target' } },  // not a report, but depth 2
+            {
+              id: 'r8',
+              fields: { key: ['subject'], subject: 'subject', type: 'target' }
+            },  // not a report, but depth 2
             {
               id: 'r9',
-              fields: { key: 'subject', subject: 'subject', type: 'data_record', submitter: 'contact_id' }
+              fields: { key: ['subject'], subject: 'subject', type: 'data_record', submitter: 'contact_id' }
             }, // depth 2, self
           ]);
         });
@@ -830,11 +836,11 @@ describe('Authorization service', () => {
             }, // depth 1
             {
               id: 'r3',
-              fields: { key: 'contact', subject: 'contact', submitter: 'contact', type: 'data_record' }
+              fields: { key: ['contact'], subject: 'contact', submitter: 'contact', type: 'data_record' }
             }, // depth 1
             {
               id: 'r5',
-              fields: { key: 'place', subject: 'place', submitter: 'contact', type: 'data_record' }
+              fields: { key: ['place'], subject: 'place', submitter: 'contact', type: 'data_record' }
             }, // depth 1
           ]);
         });
@@ -901,11 +907,11 @@ describe('Authorization service', () => {
             }, // depth 1
             {
               id: 'r3',
-              fields: { key: 'contact', subject: 'contact', submitter: 'contact', type: 'data_record' }
+              fields: { key: ['contact'], subject: 'contact', submitter: 'contact', type: 'data_record' }
             }, // depth 1
             {
               id: 'r5',
-              fields: { key: 'place', subject: 'place', submitter: 'contact', type: 'data_record' }
+              fields: { key: ['place'], subject: 'place', submitter: 'contact', type: 'data_record' }
             }, // depth 1
           ]);
         });
@@ -2455,14 +2461,14 @@ describe('Authorization service', () => {
         {
           id: 8,
           viewResults: {
-            docsByReplicationKey: { key: 'subject2', submitter: 'a' },
+            docsByReplicationKey: { key: ['subject2'], submitter: 'a' },
             contactsByDepth: false,
           },
         },
         {
           id: 4,
           viewResults: {
-            docsByReplicationKey: { key: 1, submitter: 'b' },
+            docsByReplicationKey: { key: [1], submitter: 'b' },
             contactsByDepth: false,
           },
         },
@@ -2470,15 +2476,15 @@ describe('Authorization service', () => {
         {
           id: 2,
           viewResults: {
-            docsByReplicationKey: { key: 'something' },
+            docsByReplicationKey: { key: ['something'] },
             contactsByDepth: [{ key: [2, 0], value: { id: 2, shortcode: 'subject2' } }, { key: ['a'], value: {} }],
           },
         },
-        { id: 3, viewResults: { docsByReplicationKey: { key: '_all' } } },
+        { id: 3, viewResults: { docsByReplicationKey: { key: ['_all'] } } },
         {
           id: 1,
           viewResults: {
-            docsByReplicationKey: { key: 'something' },
+            docsByReplicationKey: { key: ['something'] },
             contactsByDepth: [{ key: [1], value: { id: 1, shortcode: 'subject1' } }, { key: ['a'], value: {} }],
           },
         },
@@ -2486,7 +2492,7 @@ describe('Authorization service', () => {
         {
           id: 11,
           viewResults: {
-            docsByReplicationKey: { key: 'subject2', submitter: 'a' },
+            docsByReplicationKey: { key: ['subject2'], submitter: 'a' },
             contactsByDepth: false,
           },
         },
@@ -2500,15 +2506,15 @@ describe('Authorization service', () => {
         {
           id: 2,
           viewResults: {
-            docsByReplicationKey: { key: 'something' },
+            docsByReplicationKey: { key: ['something'] },
             contactsByDepth: [{ key: [2, 0], value: { id: 2, shortcode: 'subject2' } }, { key: ['a'], value: { } }],
           },
         },
-        { id: 3, viewResults: { docsByReplicationKey: { key: '_all' }} },
+        { id: 3, viewResults: { docsByReplicationKey: { key: ['_all'] }} },
         {
           id: 1,
           viewResults: {
-            docsByReplicationKey: { key: 'something' },
+            docsByReplicationKey: { key: ['something'] },
             contactsByDepth: [{ key: [1], value: { id: 1, shortcode: 'subject1' } }, { key: ['a'], value: { } }],
           },
         },
@@ -2516,21 +2522,21 @@ describe('Authorization service', () => {
         {
           id: 11,
           viewResults: {
-            docsByReplicationKey: { key: 'subject2', submitter: 'a' },
+            docsByReplicationKey: { key: ['subject2'], submitter: 'a' },
             contactsByDepth: false,
           },
         },
         {
           id: 8,
           viewResults: {
-            docsByReplicationKey: { key: 'subject2', submitter: 'a' },
+            docsByReplicationKey: { key: ['subject2'], submitter: 'a' },
             contactsByDepth: false,
           },
         },
         {
           id: 4,
           viewResults: {
-            docsByReplicationKey: { key: 1, submitter: 'b' },
+            docsByReplicationKey: { key: [1], submitter: 'b' },
             contactsByDepth: false,
           },
         },
