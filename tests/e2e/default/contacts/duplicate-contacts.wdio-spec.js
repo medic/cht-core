@@ -11,8 +11,7 @@ const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page'
 const { getTelemetryDbName, destroyDbInBrowser, getTelemetryFromBrowser } = require('@utils/telemetry');
 const { USERNAME } = require('@constants');
 
-// skipped due to https://github.com/medic/cht-core/issues/10382
-describe.skip('Duplicate contact detection', () => {
+describe('Duplicate contact detection', () => {
   const CREATED_ON = '4 Apr, 2025';
   const TELEMETRY_DB_NAME= getTelemetryDbName(USERNAME, new Date());
   const CREATE_PERSON_FORM_ID = 'form:contact:person:create';
