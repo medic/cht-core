@@ -92,20 +92,24 @@ module.exports = {
 
     const fn = new Function('return ' + fnString)();
 
-    //support multiple hits
+    // support multiple indexed fields
     const viewMapFn = (...args) => {
-      const hits = {};
-      const index = (type, key, value) => {
-        if (hits[key]) {
-          hits[key] = Array.isArray(hits[key]) ? hits[key] : [ hits[key] ];
-          hits[key].push(value);
+      const hit = {};
+      const index = (type, key, value, opts) => {
+        if ((type !== 'stored' && !opts?.store) || value === null || value === undefined) {
+          return;
+        }
+
+        if (hit[key]) {
+          hit[key] = Array.isArray(hit[key]) ? hit[key] : [ hit[key] ];
+          hit[key].push(value);
         } else {
-          hits[key] = value;
+          hit[key] = value;
         }
       };
 
       fn.apply({ index: index }, args);
-      return hits;
+      return hit;
     };
     nouveauViewMapFns[ddocId][viewName] = viewMapFn;
     return viewMapFn;

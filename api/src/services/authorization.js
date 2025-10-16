@@ -420,8 +420,7 @@ const getReplicationKeys = (viewResults) => {
     return [];
   }
 
-  const replicationKeys = Array.isArray(viewResults.docsByReplicationKey.key) ?
-    viewResults.docsByReplicationKey.key : [viewResults.docsByReplicationKey.key];
+  const replicationKeys = [...viewResults.docsByReplicationKey.key];
   replicationKeys.push(viewResults.docsByReplicationKey.submitter);
 
   return replicationKeys.filter(key => !!key);
@@ -711,9 +710,13 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = tru
  * @returns {{contactsByDepth: [], docsByReplicationKey: [], couchDbUser: boolean}}
  */
 const getViewResults = (doc) => {
+  const docsByReplicationKey = viewMapUtils.getNouveauViewMapFn('medic', 'docs_by_replication_key')(doc) || {};
   return {
     contactsByDepth: viewMapUtils.getViewMapFn('medic', 'contacts_by_depth')(doc),
-    docsByReplicationKey: viewMapUtils.getNouveauViewMapFn('medic', 'docs_by_replication_key')(doc),
+    docsByReplicationKey: {
+      ...docsByReplicationKey,
+      key: Array.isArray(docsByReplicationKey.key) ? docsByReplicationKey.key : [docsByReplicationKey.key],
+    },
     couchDbUser: couchDbUser(doc)
   };
 };

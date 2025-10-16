@@ -973,8 +973,8 @@ describe('Authorization service', () => {
 
   describe('getViewResults', () => {
     it('initializes view map functions if needed and returns view results', () => {
-      const contactsByDepthStub = sinon.stub().returns('contactsByDepthStubResult');
-      const docsBydocsByReplicationKeytub = sinon.stub().returns('docsByReplicationKeyStubResult');
+      const contactsByDepthStub = sinon.stub().returns(['contactsByDepthStubResult']);
+      const docsBydocsByReplicationKeytub = sinon.stub().returns({ docsByReplicationKeyStubResult: true });
       const doc = { _id: 1, _rev: 1 };
       viewMapUtils.getViewMapFn
         .withArgs('medic', 'contacts_by_depth')
@@ -992,8 +992,8 @@ describe('Authorization service', () => {
       contactsByDepthStub.callCount.should.equal(1);
       contactsByDepthStub.args[0][0].should.deep.equal(doc);
       result.should.deep.equal({
-        docsByReplicationKey: 'docsByReplicationKeyStubResult',
-        contactsByDepth: 'contactsByDepthStubResult',
+        docsByReplicationKey: { docsByReplicationKeyStubResult: true, key: [undefined] },
+        contactsByDepth: ['contactsByDepthStubResult'],
         couchDbUser: false
       });
     });
@@ -2710,7 +2710,7 @@ describe('Authorization service', () => {
               { key: ['p1'], value: { shortcode: '123456' }  },
               { key: ['facility_id'], value: { shortcode: '123456' }  },
             ],
-            docsByReplicationKey: {key: 'c1', type: 'contact' },
+            docsByReplicationKey: { key: ['c1'], type: 'contact' },
           }
         },
         {
@@ -2721,7 +2721,7 @@ describe('Authorization service', () => {
               { key: ['p3'], value: { shortcode: 'place1' } },
               { key: ['p4'], value: { shortcode: 'place1' } },
             ],
-            docsByReplicationKey: { key: 'c2', type: 'contact' },
+            docsByReplicationKey: { key: ['c2'], type: 'contact' },
           }
         },
         {
@@ -2732,7 +2732,7 @@ describe('Authorization service', () => {
               { key: ['p1'], value: { _id: 'p1' } },
               { key: ['facility_id'], value: { _id: 'facility_id' } },
             ],
-            docsByReplicationKey: { key: 'c3', type: 'contact' }
+            docsByReplicationKey: { key: ['c3'], type: 'contact' }
           },
         },
         {
@@ -2743,7 +2743,7 @@ describe('Authorization service', () => {
               { key: ['p3'], value: { _id: 'p3' } },
               { key: ['p4'], value: { _id: 'p4' } },
             ],
-            docsByReplicationKey: { key: 'c4', type: 'contact' },
+            docsByReplicationKey: { key: ['c4'], type: 'contact' },
           },
         },
         {
@@ -2754,7 +2754,7 @@ describe('Authorization service', () => {
               { key: ['p2'], value: { shortcode: 'place5' }},
               { key: ['facility_id'], value: { shortcode: 'place5' } },
             ],
-            docsByReplicationKey: { key: 'c5', type: 'contact' },
+            docsByReplicationKey: { key: ['c5'], type: 'contact' },
           },
         },
       ];
@@ -2844,7 +2844,7 @@ describe('Authorization service', () => {
           },
           viewResults: {
             contactsByDepth: [],
-            docsByReplicationKey: { key: 'patient1',  submitter: 'c1' }
+            docsByReplicationKey: { key: ['patient1'],  submitter: 'c1' }
           }
         },
         { // denied
@@ -2854,7 +2854,7 @@ describe('Authorization service', () => {
           },
           viewResults: {
             contactsByDepth: [],
-            docsByReplicationKey: { key: 'patient2',  submitter: 'c2', type: 'data_record'  }
+            docsByReplicationKey: { key: ['patient2'],  submitter: 'c2', type: 'data_record'  }
           }
         },
         { // allowed
@@ -2864,7 +2864,7 @@ describe('Authorization service', () => {
           },
           viewResults: {
             contactsByDepth: [],
-            docsByReplicationKey: { key: 'patient1',  submitter: 'c2', type: 'data_record'  }
+            docsByReplicationKey: { key: ['patient1'],  submitter: 'c2', type: 'data_record'  }
           }
         },
         { // allowed
@@ -2874,7 +2874,7 @@ describe('Authorization service', () => {
           },
           viewResults: {
             contactsByDepth: [],
-            docsByReplicationKey: { key: 'patient3doc',  submitter: 'c1', type: 'data_record' }
+            docsByReplicationKey: { key: ['patient3doc'],  submitter: 'c1', type: 'data_record' }
           }
         },
         { // denied
@@ -2884,7 +2884,7 @@ describe('Authorization service', () => {
           },
           viewResults: {
             contactsByDepth: [],
-            docsByReplicationKey: { key: 'patient4doc',  submitter: 'c3', type: 'data_record'  }
+            docsByReplicationKey: { key: ['patient4doc'],  submitter: 'c3', type: 'data_record'  }
           }
         },
       ];
@@ -3314,7 +3314,7 @@ describe('Authorization service', () => {
           },
           viewResults: {
             contactsByDepth: [],
-            docsByReplicationKey: { key: '_unassigned',  type: 'data_record' }
+            docsByReplicationKey: { key: ['_unassigned'],  type: 'data_record' }
           },
         },
       ];
@@ -3337,7 +3337,7 @@ describe('Authorization service', () => {
           },
           viewResults: {
             contactsByDepth: [],
-            docsByReplicationKey: { key: '_unassigned',  type: 'data_record'  }
+            docsByReplicationKey: { key: ['_unassigned'],  type: 'data_record'  }
           },
         },
       ];
@@ -3359,7 +3359,7 @@ describe('Authorization service', () => {
           },
           viewResults: {
             contactsByDepth: [],
-            docsByReplicationKey: { key: 'patient1',  submitter: 'c1'  }
+            docsByReplicationKey: { key: ['patient1'],  submitter: 'c1'  }
           }
         },
       ];
@@ -3584,7 +3584,7 @@ describe('Authorization service', () => {
               { key: ['facility_id'], value: { _id: c1._id, shortcode: c1.patient_id } },
               { key: ['facility_id', 2], value: { _id: c1._id, shortcode: c1.patient_id } }
             ],
-            docsByReplicationKey: { key: 'c1', type: 'contact' }
+            docsByReplicationKey: { key: ['c1'], type: 'contact' }
           }
         },
         {
@@ -3598,7 +3598,7 @@ describe('Authorization service', () => {
               { key: ['p4'], value: { _id: c2._id, shortcode: c2.place_id } },
               { key: ['p4', 2], value: { _id: c2._id, shortcode: c2.place_id } },
             ],
-            docsByReplicationKey: { key: 'c2', type: 'contact' }
+            docsByReplicationKey: { key: ['c2'], type: 'contact' }
           }
         },
       ];
@@ -3623,8 +3623,8 @@ describe('Authorization service', () => {
         { key: ['p4', 2], value: { _id: c2._id, shortcode: c2.place_id } },
       ]);
       const docsByReplicationKey = sinon.stub();
-      docsByReplicationKey.withArgs(c1).returns([{ fields: { key: 'c1', type: 'contact' }}]);
-      docsByReplicationKey.withArgs(c2).returns([{ fields: { key: 'c2', type: 'contact' }}]);
+      docsByReplicationKey.withArgs(c1).returns({ key: 'c1', type: 'contact' });
+      docsByReplicationKey.withArgs(c2).returns({ key: 'c2', type: 'contact' });
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
@@ -3766,7 +3766,7 @@ describe('Authorization service', () => {
               { key: ['place', 1], value: { _id: contact1._id, shortcode: contact1.patient_id } },
               { key: ['contact', 0], value: { _id: contact1._id, shortcode: contact1.patient_id } },
             ],
-            docsByReplicationKey: { key: 'contact', type: 'contact' },
+            docsByReplicationKey: { key: ['contact'], type: 'contact' },
           }
         }
       ];
@@ -3994,12 +3994,12 @@ describe('Authorization service', () => {
         getReplicationKeys(false).should.deep.equal([]);
         getReplicationKeys({}).should.deep.equal([]);
         getReplicationKeys({ a: 1 }).should.deep.equal([]);
-        getReplicationKeys({ docsByReplicationKey: [] }).should.deep.equal([]);
+        getReplicationKeys({ docsByReplicationKey: { key: [] } }).should.deep.equal([]);
       });
 
       it('should return all emitted keys and values', () => {
-        getReplicationKeys({ docsByReplicationKey: { key: 'patient_id' } }).should.deep.equal(['patient_id']);
-        getReplicationKeys({ docsByReplicationKey: { key: 'patient', submitter: 'contact' } })
+        getReplicationKeys({ docsByReplicationKey: { key: ['patient_id'] } }).should.deep.equal(['patient_id']);
+        getReplicationKeys({ docsByReplicationKey: { key: ['patient'], submitter: 'contact' } })
           .should.deep.equal(['patient', 'contact']);
         const manyKeys = {
           key: ['patient1', 'patient2', 'patient3'],
