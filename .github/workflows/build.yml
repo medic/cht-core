@@ -94,7 +94,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cmd: ['test-config-default', 'test-config-covid-19']
+        cmd: ['test-config-covid-19', 'test-config-default', 'test-config-demo']
 
     steps:
     - uses: actions/checkout@v4
