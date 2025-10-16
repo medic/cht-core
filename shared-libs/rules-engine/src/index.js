@@ -23,7 +23,7 @@ module.exports = db => {
      * @param {Boolean} settings.enableTasks Flag to enable tasks
      * @param {Boolean} settings.enableTargets Flag to enable targets
      * @param {Boolean} [settings.rulesAreDeclarative=false] Flag to indicate the content of settings.rules. When true, 
-     * rules is processed as native JavaScript. When false, nools is used.
+     * rules is processed as native JavaScript. When false, an error is thrown.
      * @param {RulesEmitter} [settings.customEmitter] Optional custom RulesEmitter object
      * @param {Object} settings.contact User's hydrated contact document
      * @param {Object} settings.user User's settings document
@@ -33,7 +33,7 @@ module.exports = db => {
     /**
      * @returns {Boolean} True if the rules engine is enabled and ready for use
      */
-    isEnabled: () => rulesEmitter.isEnabled() && rulesEmitter.isLatestNoolsSchema(),
+    isEnabled: () => rulesEmitter.isEnabled(),
 
     /**
      * Refreshes all rules documents for a set of contacts.
@@ -90,7 +90,7 @@ module.exports = db => {
      * @param {Boolean} settings.enableTasks Flag to enable tasks
      * @param {Boolean} settings.enableTargets Flag to enable targets
      * @param {Boolean} [settings.rulesAreDeclarative=false] Flag to indicate the content of settings.rules. When true, 
-     * rules is native JavaScript. When false, nools is used
+     * rules is native JavaScript. When false, an error is thrown.
      * @param {RulesEmitter} [settings.customEmitter] Optional custom RulesEmitter object
      * @param {Object} settings.contact User's hydrated contact document
      * @param {Object} settings.user User's user-settings document
