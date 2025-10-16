@@ -221,26 +221,18 @@ export const byContactUuid = (contactUuid: string): ContactUuidQualifier => {
   return qualifier;
 };
 
+// https://stackoverflow.com/a/50375286
+type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+
 /**
  * Combines multiple qualifiers into a single object.
  * @returns the combined qualifier
  * @throws Error if any of the qualifiers contain intersecting property names
  */
-export const and = <
-  A,
-  B,
-  C = Nullable<object>,
-  D = Nullable<object>
->(
+export const and = <A, B, C extends object[]>(
   qualifierA: A,
   qualifierB: B,
-  qualifierC?: C,
-  qualifierD?: D
-): A & B & Partial<C> & Partial<D> => {
-  return {
-    ...qualifierA,
-    ...qualifierB,
-    ...(qualifierC ?? {}),
-    ...(qualifierD ?? {}),
-  };
+  ...rest: C
+): A & B & UnionToIntersection<C[number]> => {
+  return Object.assign({}, qualifierA, qualifierB, ...rest);
 };
