@@ -99,7 +99,8 @@ const parseDuration = (format) => {
 const getPlaceIds = (keys, startDocId) => {
   const query = {
     keys,
-    limit: BATCH_SIZE
+    limit: BATCH_SIZE,
+    reduce: false
   };
 
   if (startDocId) {
