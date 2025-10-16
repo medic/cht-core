@@ -33,11 +33,10 @@ import * as Contact from './contact';
 import * as Person from './person';
 import * as Place from './place';
 import * as Qualifier from './qualifier';
+import { and } from './qualifier';
 import * as Report from './report';
-import {
-  DEFAULT_DOCS_PAGE_LIMIT,
-  DEFAULT_IDS_PAGE_LIMIT,
-} from './libs/constants';
+import * as TargetInterval from './target-interval';
+import { DEFAULT_DOCS_PAGE_LIMIT, DEFAULT_IDS_PAGE_LIMIT, } from './libs/constants';
 
 export { Nullable, NonEmptyArray } from './libs/core';
 export { DataContext } from './libs/data-context';
@@ -49,6 +48,7 @@ export * as Person from './person';
 export * as Place from './place';
 export * as Qualifier from './qualifier';
 export * as Report from './report';
+export * as TargetInterval from './target-interval';
 
 /**
  * Returns the source for CHT data.
@@ -321,6 +321,33 @@ export const getDatasource = (ctx: DataContext) => {
           qualifier: string,
         ) => ctx.bind(Report.v1.getUuids)(Qualifier.byFreetext(qualifier)),
       },
+      targetInterval: {
+        /**
+         * Returns a target interval by UUID.
+         * @param uuid the UUID of the target interval to retrieve
+         * @returns the target interval or `null` if no target interval is found for the UUID
+         * @throws InvalidArgumentError if no UUID is provided
+         */
+        getByUuid: (uuid: string) => ctx.bind(TargetInterval.v1.get)(Qualifier.byUuid(uuid)),
+
+        /**
+         * Returns the target interval for the given username and reporting period.
+         * @param reportingPeriod the reporting period for the target interval
+         * @param contactUuid the contact UUID of the user for the target interval
+         * @param username the username (without the "org.couchdb.user:" prefix) of the user for the target interval
+         * @returns the target interval or `null` if no target interval is found
+         * @throws InvalidArgumentError if no reporting period, contact UUID, and/or username is provided
+         */
+        getByReportingPeriodContactUuidUsername: (
+          reportingPeriod: string,
+          contactUuid: string,
+          username: string
+        ) => ctx.bind(TargetInterval.v1.get)(and(
+          Qualifier.byReportingPeriod(reportingPeriod),
+          Qualifier.byContactUuid(contactUuid),
+          Qualifier.byUsername(username)
+        ))
+      }
     },
   };
 };
