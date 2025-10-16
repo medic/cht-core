@@ -394,19 +394,6 @@ angular.module('adminApp').config(function(
         }
       }
     })
-    // .state('targets', {
-    //   url: '/targets',
-    //   controller: 'TargetsCtrl',
-    //   templateUrl: 'templates/targets.html'
-    // })
-    // .state('targets-edit', {
-    //   url: '/targets/edit/:id',
-    //   controller: 'TargetsEditCtrl',
-    //   templateUrl: 'templates/targets_edit.html',
-    //   params: {
-    //     id: null
-    //   },
-    // })
     .state('upgrade', {
       url: '/upgrade',
       controller: 'UpgradeCtrl',
