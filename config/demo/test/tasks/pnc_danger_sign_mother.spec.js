@@ -3,7 +3,6 @@ const expect = chai.expect;
 chai.use(require('chai-like'));
 chai.use(require('chai-things'));
 
-//const { Forms } = require('../../nools-extras');
 const TestRunner = require('cht-conf-test-harness');
 
 const { deliveryReportScenarios, pncDangerSignFollowUpScenarios, pregnancyHomeVisitScenarios } = require('../form-inputs');
@@ -17,12 +16,11 @@ describe('PNC danger sign follow up for mother tests', () => {
   beforeEach(async () => {
     await harness.clear();
     await harness.setNow(now);
-    return await harness.loadForm('delivery');
   });
   afterEach(() => { expect(harness.consoleErrors).to.be.empty; });
 
   it('PNC danger sign follow up for mother from delivery', async () => {
-    const actionFormResult = await harness.fillForm(...deliveryReportScenarios.motherDangerSign);
+    const actionFormResult = await harness.fillForm('delivery', ...deliveryReportScenarios.motherDangerSign);
     expect(actionFormResult.errors).to.be.empty;
 
     // Confirm a task appears immediately
@@ -30,7 +28,7 @@ describe('PNC danger sign follow up for mother tests', () => {
     const tasksAfterDelivery = await harness.getTasks({ title: 'task.pnc.danger_sign_followup_mother.title' });
     expect(tasksAfterDelivery).to.have.property('length', 1); //also follow up
 
-    // Complete the task and confirm the task disappears 
+    // Complete the task and confirm the task disappears
     await harness.flush(1);
     await harness.loadAction(tasksAfterDelivery[0]);
     const followupFormResult = await harness.fillForm(...pncDangerSignFollowUpScenarios.mother.cured);
@@ -41,19 +39,18 @@ describe('PNC danger sign follow up for mother tests', () => {
   });
 
   it('PNC danger sign follow up from PNC danger sign follow up', async () => {
-    const actionFormResult = await harness.fillForm(...deliveryReportScenarios.motherDangerSign);
+    const actionFormResult = await harness.fillForm('delivery', ...deliveryReportScenarios.motherDangerSign);
     expect(actionFormResult.errors).to.be.empty;
     // Confirm a task appears immediately
-    //await harness.flush(1);
     const tasksAfterDangerSignFollowUp = await harness.getTasks({ title: 'task.pnc.danger_sign_followup_mother.title' });
     expect(tasksAfterDangerSignFollowUp).to.have.property('length', 1);
 
     await harness.flush(1);
-    // Complete the task and confirm the task disappears 
+    // Complete the task and confirm the task disappears
 
     await harness.loadAction(tasksAfterDangerSignFollowUp[0]);
     let followupFormResult = await harness.fillForm(...pncDangerSignFollowUpScenarios.mother.danger);
-    
+
     const tasksAfterDangerSignFollowUp2 = await harness.getTasks({ title: 'task.pnc.danger_sign_followup_mother.title' });
     expect(tasksAfterDangerSignFollowUp2).to.have.property('length', 1);
 
@@ -65,21 +62,19 @@ describe('PNC danger sign follow up for mother tests', () => {
     expect(tasksAfterDangerSignFollowUp3).to.have.property('length', 0);
 
   });
-  
+
   it('PNC danger sign follow up should not show if tasks were cleared', async () => {
-    const actionFormResult = await harness.fillForm(...deliveryReportScenarios.motherDangerSign);
+    const actionFormResult = await harness.fillForm('delivery', ...deliveryReportScenarios.motherDangerSign);
     expect(actionFormResult.errors).to.be.empty;
 
     // Confirm a task appears immediately
-    //await harness.flush(1);
     const tasksAfterDelivery = await harness.getTasks({ title: 'task.pnc.danger_sign_followup_mother.title' });
     expect(tasksAfterDelivery).to.have.property('length', 1); //also follow up
 
 
-    // Clear task and confirm the task disappears 
+    // Clear task and confirm the task disappears
     await harness.flush(1);
-    await harness.loadForm('pregnancy_home_visit');
-    const followupFormResult = await harness.fillForm(...pregnancyHomeVisitScenarios.clearAll);
+    const followupFormResult = await harness.fillForm('pregnancy_home_visit', ...pregnancyHomeVisitScenarios.clearAll);
     expect(followupFormResult.errors).to.be.empty;
     const tasksAfterClearing = await harness.getTasks();
     expect(tasksAfterClearing).to.be.empty;
