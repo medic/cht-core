@@ -65,7 +65,7 @@ describe('Target Interval API', () => {
         path: `${endpoint}/${targetInterval._id}`,
       };
       const result = await utils.request(opts);
-      expect(result).excluding([ '_rev' ]).to.deep.equal(result);
+      expect(result).excluding([ '_rev' ]).to.deep.equal(targetInterval);
     });
 
     it('throws 404 error when no target interval is found for the UUID', async () => {

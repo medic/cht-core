@@ -73,7 +73,7 @@ describe('cht-datasource Target Interval', () => {
           .excluding(['_rev'])
           .to
           .deep
-          .equal(result);
+          .equal(targetInterval);
       });
 
       it('returns null when no target interval is found for the UUID', async () => {
