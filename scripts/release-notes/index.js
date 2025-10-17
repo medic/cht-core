@@ -296,9 +296,6 @@ sidebar:
   exclude: true
 description: 
   Released ${currentDate}
-aliases:
-  -    /core/releases/${MILESTONE_NAME}
-  -    /releases/${MILESTONE_NAME}
 ---
 
 ## Known issues
