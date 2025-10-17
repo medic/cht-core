@@ -1,45 +1,51 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
   <h:head>
     <h:title>Edit Person</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/data/init/change_parent/false:label">
-            <value>No</value>
-          </text>
-          <text id="/data/init/change_parent/true:label">
+          <text id="yes_no-0">
             <value>Yes</value>
           </text>
-          <text id="/data/init/change_parent:label">
-            <value>Would you like to move them to another place?</value>
+          <text id="yes_no-1">
+            <value>No</value>
           </text>
-          <text id="/data/init/edited_place_type/clinic:label">
-            <value>Household</value>
+          <text id="male_female-0">
+            <value>Female</value>
           </text>
-          <text id="/data/init/edited_place_type/district_hospital:label">
+          <text id="male_female-1">
+            <value>Male</value>
+          </text>
+          <text id="boy_girl-0">
+            <value>Girl</value>
+          </text>
+          <text id="boy_girl-1">
+            <value>Boy</value>
+          </text>
+          <text id="select_dob_method-0">
+            <value>Date unknown</value>
+          </text>
+          <text id="roles-0">
+            <value>CHW</value>
+          </text>
+          <text id="roles-1">
+            <value>CHW Supervisor</value>
+          </text>
+          <text id="roles-2">
+            <value>Patient</value>
+          </text>
+          <text id="roles-3">
+            <value>Other</value>
+          </text>
+          <text id="place_type-0">
             <value>Health Facility</value>
           </text>
-          <text id="/data/init/edited_place_type/health_center:label">
+          <text id="place_type-1">
             <value>Area</value>
           </text>
-          <text id="/data/init/edited_place_type:label">
-            <value>Search for place by</value>
-          </text>
-          <text id="/data/init/id_clinic:label">
-            <value>Select household</value>
-          </text>
-          <text id="/data/init/id_district_hospital:label">
-            <value>Select health facillity</value>
-          </text>
-          <text id="/data/init/id_health_center:label">
-            <value>Select area</value>
-          </text>
-          <text id="/data/init/note_place:label">
-            <value><output value=" /data/init/person_name "/>&amp;nbsp;currently belongs to **<output value=" /data/init/person_place_name "/>**</value>
-          </text>
-          <text id="/data/init/person_parent:label">
-            <value>Current place</value>
+          <text id="place_type-2">
+            <value>Household</value>
           </text>
           <text id="/data/inputs/user/contact_id:label">
             <value>Contact ID of the logged in user</value>
@@ -50,52 +56,29 @@
           <text id="/data/inputs/user/name:label">
             <value>Name of the logged in user</value>
           </text>
-          <text id="/data/person/address:label">
-            <value>Address</value>
+          <text id="/data/init/person_parent:label">
+            <value>Current place</value>
           </text>
-          <text id="/data/person/date_of_birth:label">
-            <value>Date of birth</value>
+          <text id="/data/init/note_place:label">
+            <value><output value=" /data/init/person_name "/>&amp;nbsp;currently belongs to **<output value=" /data/init/person_place_name "/>**</value>
           </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>Method to select date of birth</value>
+          <text id="/data/init/change_parent:label">
+            <value>Would you like to move them to another place?</value>
           </text>
-          <text id="/data/person/ephemeral_dob/age_label:label">
-            <value>**Age**</value>
+          <text id="/data/init/edited_place_type:label">
+            <value>Search for place by</value>
           </text>
-          <text id="/data/person/ephemeral_dob/age_months:jr:constraintMsg">
-            <value>Months must between 0 and 11</value>
+          <text id="/data/init/id_district_hospital:label">
+            <value>Select health facillity</value>
           </text>
-          <text id="/data/person/ephemeral_dob/age_months:label">
-            <value>Months</value>
+          <text id="/data/init/id_health_center:label">
+            <value>Select area</value>
           </text>
-          <text id="/data/person/ephemeral_dob/age_years:jr:constraintMsg">
-            <value>Age must be between 0 and 130</value>
+          <text id="/data/init/id_clinic:label">
+            <value>Select household</value>
           </text>
-          <text id="/data/person/ephemeral_dob/age_years:label">
-            <value>Years</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_calendar:hint">
-            <value>Date of Birth</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
-            <value>Date must be before today</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_calendar:label">
-            <value>Age</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_debug:label">
-            <value>Months: <output value=" /data/person/ephemeral_dob/ephemeral_months "/>
-Year: <output value=" /data/person/ephemeral_dob/ephemeral_years "/>
-DOB Approx: <output value=" /data/person/ephemeral_dob/dob_approx "/>
-DOB Calendar: <output value=" /data/person/ephemeral_dob/dob_calendar "/>
-DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
-          <text id="/data/person/ephemeral_dob/dob_method/approx:label">
-            <value>Date unknown</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_method:label">
-          </text>
-          <text id="/data/person/external_id:label">
-            <value>External ID</value>
+          <text id="/data/person:label">
+            <value>Edit person</value>
           </text>
           <text id="/data/person/first_name:label">
             <value>First name</value>
@@ -103,8 +86,43 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/last_name:label">
             <value>Last name</value>
           </text>
-          <text id="/data/person/notes:label">
-            <value>Notes</value>
+          <text id="/data/person/date_of_birth:label">
+            <value>Date of birth</value>
+          </text>
+          <text id="/data/person/date_of_birth_method:label">
+            <value>Method to select date of birth</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
+            <value>Date must be before today</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_calendar:label">
+            <value>Age</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_calendar:hint">
+            <value>Date of Birth</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_label:label">
+            <value>**Age**</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_years:jr:constraintMsg">
+            <value>Age must be between 0 and 130</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_years:label">
+            <value>Years</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_months:jr:constraintMsg">
+            <value>Months must between 0 and 11</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_months:label">
+            <value>Months</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_method:label"></text>
+          <text id="/data/person/ephemeral_dob/dob_debug:label">
+            <value> Months: <output value=" /data/person/ephemeral_dob/ephemeral_months "/>
+Year: <output value=" /data/person/ephemeral_dob/ephemeral_years "/>
+DOB Approx: <output value=" /data/person/ephemeral_dob/dob_approx "/>
+DOB Calendar: <output value=" /data/person/ephemeral_dob/dob_calendar "/>
+DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           </text>
           <text id="/data/person/phone:jr:constraintMsg">
             <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +13125551211</value>
@@ -118,17 +136,11 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/phone_alternate:label">
             <value>Alternate phone number</value>
           </text>
-          <text id="/data/person/role/chw:label">
-            <value>CHW</value>
+          <text id="/data/person/sex:label">
+            <value>Sex</value>
           </text>
-          <text id="/data/person/role/chw_supervisor:label">
-            <value>CHW Supervisor</value>
-          </text>
-          <text id="/data/person/role/other:label">
-            <value>Other</value>
-          </text>
-          <text id="/data/person/role/patient:label">
-            <value>Patient</value>
+          <text id="/data/person/address:label">
+            <value>Address</value>
           </text>
           <text id="/data/person/role:label">
             <value>Role</value>
@@ -136,201 +148,55 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/role_other:label">
             <value>Specify other</value>
           </text>
-          <text id="/data/person/sex/female:label">
-            <value>Female</value>
-          </text>
-          <text id="/data/person/sex/male:label">
-            <value>Male</value>
-          </text>
-          <text id="/data/person/sex:label">
-            <value>Sex</value>
-          </text>
-          <text id="/data/person:label">
-            <value>Edit person</value>
-          </text>
-        </translation>
-        <translation lang="fr">
-          <text id="/data/init/change_parent/false:label">
-            <value>Non</value>
-          </text>
-          <text id="/data/init/change_parent/true:label">
-            <value>Oui</value>
-          </text>
-          <text id="/data/init/change_parent:label">
-            <value>Voulez-vous déplacer cette personne vers une autre place ?</value>
-          </text>
-          <text id="/data/init/edited_place_type/clinic:label">
-            <value>Zone</value>
-          </text>
-          <text id="/data/init/edited_place_type/district_hospital:label">
-            <value>District</value>
-          </text>
-          <text id="/data/init/edited_place_type/health_center:label">
-            <value>Centre de santé</value>
-          </text>
-          <text id="/data/init/edited_place_type:label">
-            <value>Rechercher par type de place</value>
-          </text>
-          <text id="/data/init/id_clinic:label">
-            <value>Choisissez la zone</value>
-          </text>
-          <text id="/data/init/id_district_hospital:label">
-            <value>Choisissez le district</value>
-          </text>
-          <text id="/data/init/id_health_center:label">
-            <value>Choisissez le centre de santé</value>
-          </text>
-          <text id="/data/init/note_place:label">
-            <value><output value=" /data/init/person_name "/>&amp;nbsp;appartient à **<output value=" /data/init/person_place_name "/>**</value>
-          </text>
-          <text id="/data/init/person_parent:label">
-            <value>Place actuelle</value>
-          </text>
-          <text id="/data/inputs/user/contact_id:label">
-            <value>Identifiant de l'utilisateur</value>
-          </text>
-          <text id="/data/inputs/user/facility_id:label">
-            <value>Identifiant du centre</value>
-          </text>
-          <text id="/data/inputs/user/name:label">
-            <value>Nom</value>
-          </text>
-          <text id="/data/person/address:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/date_of_birth:label">
-            <value>Date de naissance</value>
-          </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_label:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_months:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_months:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_years:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_years:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_calendar:hint">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_calendar:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_method/approx:label">
-            <value>Date de naissance inconnue</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/external_id:label">
-            <value>Identifiant externe</value>
-          </text>
-          <text id="/data/person/first_name:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/last_name:label">
-            <value>-</value>
+            <value>External ID</value>
           </text>
           <text id="/data/person/notes:label">
             <value>Notes</value>
           </text>
-          <text id="/data/person/phone:jr:constraintMsg">
-            <value>Veuillez entrer un numéro local valide ou utiliser le format international standard, qui comprend un signe plus (+) et le code du pays. Par exemple: +13125551211</value>
-          </text>
-          <text id="/data/person/phone:label">
-            <value>Téléphone</value>
-          </text>
-          <text id="/data/person/phone_alternate:jr:constraintMsg">
-            <value>Veuillez entrer un numéro local valide ou utiliser le format international standard, qui comprend un signe plus (+) et le code du pays. Par exemple: +13125551211</value>
-          </text>
-          <text id="/data/person/phone_alternate:label">
-            <value>Téléphone alternatif</value>
-          </text>
-          <text id="/data/person/role/chw:label">
-            <value>ASC</value>
-          </text>
-          <text id="/data/person/role/chw_supervisor:label">
-            <value>Superviseur ASC</value>
-          </text>
-          <text id="/data/person/role/other:label">
-            <value>Autre</value>
-          </text>
-          <text id="/data/person/role/patient:label">
-            <value>Patient</value>
-          </text>
-          <text id="/data/person/role:label">
-            <value>Rôle</value>
-          </text>
-          <text id="/data/person/role_other:label">
-            <value>Autre rôle</value>
-          </text>
-          <text id="/data/person/sex/female:label">
-            <value>Femme</value>
-          </text>
-          <text id="/data/person/sex/male:label">
-            <value>Homme</value>
-          </text>
-          <text id="/data/person/sex:label">
-            <value>Sexe</value>
-          </text>
-          <text id="/data/person:label">
-            <value>Modifier personne</value>
-          </text>
         </translation>
         <translation lang="hi">
-          <text id="/data/init/change_parent/false:label">
-            <value>नहीं</value>
-          </text>
-          <text id="/data/init/change_parent/true:label">
+          <text id="yes_no-0">
             <value>हाँ</value>
           </text>
-          <text id="/data/init/change_parent:label">
-            <value>क्या आप इस व्यक्ति को दूसरे स्थान पर ले जाना चाहेंगे?</value>
+          <text id="yes_no-1">
+            <value>नहीं</value>
           </text>
-          <text id="/data/init/edited_place_type/clinic:label">
-            <value>क्षेत्र</value>
+          <text id="male_female-0">
+            <value>स्त्री</value>
           </text>
-          <text id="/data/init/edited_place_type/district_hospital:label">
+          <text id="male_female-1">
+            <value>पुरूष</value>
+          </text>
+          <text id="boy_girl-0">
+            <value>लड़की</value>
+          </text>
+          <text id="boy_girl-1">
+            <value>लड़का</value>
+          </text>
+          <text id="select_dob_method-0">
+            <value>जन्म की तारीख का पता नहीं</value>
+          </text>
+          <text id="roles-0">
+            <value>सामुदायिक स्वास्थ्य कर्मी</value>
+          </text>
+          <text id="roles-1">
+            <value>सामुदायिक स्वास्थ्य कर्मी के मैनेजर</value>
+          </text>
+          <text id="roles-2">
+            <value>मरीज़</value>
+          </text>
+          <text id="roles-3">
+            <value>अन्य</value>
+          </text>
+          <text id="place_type-0">
             <value>ज़िला</value>
           </text>
-          <text id="/data/init/edited_place_type/health_center:label">
+          <text id="place_type-1">
             <value>स्वास्थ्य केंद्र</value>
           </text>
-          <text id="/data/init/edited_place_type:label">
-            <value>जगह की खोज</value>
-          </text>
-          <text id="/data/init/id_clinic:label">
-            <value>अस्पताल चुनें</value>
-          </text>
-          <text id="/data/init/id_district_hospital:label">
-            <value>जिला अस्पताल चुनें</value>
-          </text>
-          <text id="/data/init/id_health_center:label">
-            <value>स्वास्थ्य केंद्र चुनें</value>
-          </text>
-          <text id="/data/init/note_place:label">
-            <value><output value=" /data/init/person_name "/>&amp;nbsp;अब **<output value=" /data/init/person_place_name "/>** में है</value>
-          </text>
-          <text id="/data/init/person_parent:label">
-            <value>-</value>
+          <text id="place_type-2">
+            <value>क्षेत्र</value>
           </text>
           <text id="/data/inputs/user/contact_id:label">
             <value>Contact ID of the logged in user</value>
@@ -341,62 +207,29 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/inputs/user/name:label">
             <value>लॉग इन यूज़र का नाम</value>
           </text>
-          <text id="/data/person/address:label">
-            <value>-</value>
+          <text id="/data/init/note_place:label">
+            <value><output value=" /data/init/person_name "/>&amp;nbsp;अब **<output value=" /data/init/person_place_name "/>** में है</value>
+          </text>
+          <text id="/data/init/change_parent:label">
+            <value>क्या आप इस व्यक्ति को दूसरे स्थान पर ले जाना चाहेंगे?</value>
+          </text>
+          <text id="/data/init/edited_place_type:label">
+            <value>जगह की खोज</value>
+          </text>
+          <text id="/data/init/id_district_hospital:label">
+            <value>जिला अस्पताल चुनें</value>
+          </text>
+          <text id="/data/init/id_health_center:label">
+            <value>स्वास्थ्य केंद्र चुनें</value>
+          </text>
+          <text id="/data/init/id_clinic:label">
+            <value>अस्पताल चुनें</value>
+          </text>
+          <text id="/data/person:label">
+            <value>व्यक्ति बदलें</value>
           </text>
           <text id="/data/person/date_of_birth:label">
             <value>जन्म की तारीख</value>
-          </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_label:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_months:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_months:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_years:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_years:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_calendar:hint">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_calendar:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_method/approx:label">
-            <value>जन्म की तारीख का पता नहीं</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/external_id:label">
-            <value>बाहरी ID</value>
-          </text>
-          <text id="/data/person/first_name:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/last_name:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/notes:label">
-            <value>नोट्स</value>
           </text>
           <text id="/data/person/phone:jr:constraintMsg">
             <value>कृपया एक सही स्थानीय नंबर दर्ज करें, या मानक अंतरराष्ट्रीय प्रारूप का उपयोग करें, जिसमें एक प्लस साइन (+) और देश कोड शामिल है। उदाहरण के लिए: +13125551211</value>
@@ -410,17 +243,8 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/phone_alternate:label">
             <value>अन्य फोन नंबर</value>
           </text>
-          <text id="/data/person/role/chw:label">
-            <value>सामुदायिक स्वास्थ्य कर्मी</value>
-          </text>
-          <text id="/data/person/role/chw_supervisor:label">
-            <value>सामुदायिक स्वास्थ्य कर्मी के मैनेजर</value>
-          </text>
-          <text id="/data/person/role/other:label">
-            <value>अन्य</value>
-          </text>
-          <text id="/data/person/role/patient:label">
-            <value>मरीज़</value>
+          <text id="/data/person/sex:label">
+            <value>लिंग</value>
           </text>
           <text id="/data/person/role:label">
             <value>भूमिका</value>
@@ -428,55 +252,103 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/role_other:label">
             <value>अन्य का उल्‍लेख करें</value>
           </text>
-          <text id="/data/person/sex/female:label">
-            <value>स्त्री</value>
+          <text id="/data/person/external_id:label">
+            <value>बाहरी ID</value>
           </text>
-          <text id="/data/person/sex/male:label">
-            <value>पुरूष</value>
-          </text>
-          <text id="/data/person/sex:label">
-            <value>लिंग</value>
-          </text>
-          <text id="/data/person:label">
-            <value>व्यक्ति बदलें</value>
-          </text>
-        </translation>
-        <translation lang="id">
-          <text id="/data/init/change_parent/false:label">
-            <value>Tidak</value>
-          </text>
-          <text id="/data/init/change_parent/true:label">
-            <value>Iya</value>
-          </text>
-          <text id="/data/init/change_parent:label">
-            <value>Apakah Anda ingin memindahkan mereka ke tempat lain?</value>
-          </text>
-          <text id="/data/init/edited_place_type/clinic:label">
-            <value>Daerah</value>
-          </text>
-          <text id="/data/init/edited_place_type/district_hospital:label">
-            <value>Kabupaten</value>
-          </text>
-          <text id="/data/init/edited_place_type/health_center:label">
-            <value>Fasilitas Kesehatan</value>
-          </text>
-          <text id="/data/init/edited_place_type:label">
-            <value>Cari tempat oleh</value>
-          </text>
-          <text id="/data/init/id_clinic:label">
-            <value>Pilih Klinik</value>
-          </text>
-          <text id="/data/init/id_district_hospital:label">
-            <value>Pilih Rumah Sakit kabupaten</value>
-          </text>
-          <text id="/data/init/id_health_center:label">
-            <value>Pilih Fasilitas Kesehatan</value>
-          </text>
-          <text id="/data/init/note_place:label">
-            <value><output value=" /data/init/person_name "/>&amp;nbsp;milik **<output value=" /data/init/person_place_name "/>**</value>
+          <text id="/data/person/notes:label">
+            <value>नोट्स</value>
           </text>
           <text id="/data/init/person_parent:label">
             <value>-</value>
+          </text>
+          <text id="/data/person/first_name:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/last_name:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/date_of_birth_method:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_calendar:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_calendar:hint">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_label:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_years:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_years:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_months:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_months:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_method:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_debug:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/address:label">
+            <value>-</value>
+          </text>
+        </translation>
+        <translation lang="id">
+          <text id="yes_no-0">
+            <value>Iya</value>
+          </text>
+          <text id="yes_no-1">
+            <value>Tidak</value>
+          </text>
+          <text id="male_female-0">
+            <value>Wanita</value>
+          </text>
+          <text id="male_female-1">
+            <value>Pria</value>
+          </text>
+          <text id="boy_girl-0">
+            <value>Gadis</value>
+          </text>
+          <text id="boy_girl-1">
+            <value>Anak laki-laki</value>
+          </text>
+          <text id="select_dob_method-0">
+            <value>Tanggal tidak diketahui lahir</value>
+          </text>
+          <text id="roles-0">
+            <value>Kader</value>
+          </text>
+          <text id="roles-1">
+            <value>Kader Pengawas</value>
+          </text>
+          <text id="roles-2">
+            <value>Pasien</value>
+          </text>
+          <text id="roles-3">
+            <value>Lain</value>
+          </text>
+          <text id="place_type-0">
+            <value>Kabupaten</value>
+          </text>
+          <text id="place_type-1">
+            <value>Fasilitas Kesehatan</value>
+          </text>
+          <text id="place_type-2">
+            <value>Daerah</value>
           </text>
           <text id="/data/inputs/user/contact_id:label">
             <value>Contact ID of the logged in user</value>
@@ -487,86 +359,38 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/inputs/user/name:label">
             <value>Nama dari login user</value>
           </text>
-          <text id="/data/person/address:label">
-            <value>-</value>
+          <text id="/data/init/note_place:label">
+            <value><output value=" /data/init/person_name "/>&amp;nbsp;milik **<output value=" /data/init/person_place_name "/>**</value>
+          </text>
+          <text id="/data/init/change_parent:label">
+            <value>Apakah Anda ingin memindahkan mereka ke tempat lain?</value>
+          </text>
+          <text id="/data/init/edited_place_type:label">
+            <value>Cari tempat oleh</value>
+          </text>
+          <text id="/data/init/id_district_hospital:label">
+            <value>Pilih Rumah Sakit kabupaten</value>
+          </text>
+          <text id="/data/init/id_health_center:label">
+            <value>Pilih Fasilitas Kesehatan</value>
+          </text>
+          <text id="/data/init/id_clinic:label">
+            <value>Pilih Klinik</value>
+          </text>
+          <text id="/data/person:label">
+            <value>Mengedit Orang</value>
           </text>
           <text id="/data/person/date_of_birth:label">
             <value>Tanggal Lahir</value>
           </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_label:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_months:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_months:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_years:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_years:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_calendar:hint">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_calendar:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_method/approx:label">
-            <value>Tanggal tidak diketahui lahir</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/external_id:label">
-            <value>Eksternal ID</value>
-          </text>
-          <text id="/data/person/first_name:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/last_name:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/notes:label">
-            <value>Catatan</value>
-          </text>
-          <text id="/data/person/phone:jr:constraintMsg">
-            <value>-</value>
-          </text>
           <text id="/data/person/phone:label">
             <value>Nomor Telepon</value>
-          </text>
-          <text id="/data/person/phone_alternate:jr:constraintMsg">
-            <value>-</value>
           </text>
           <text id="/data/person/phone_alternate:label">
             <value>Nomor Telepon Alternatif</value>
           </text>
-          <text id="/data/person/role/chw:label">
-            <value>Kader</value>
-          </text>
-          <text id="/data/person/role/chw_supervisor:label">
-            <value>Kader Pengawas</value>
-          </text>
-          <text id="/data/person/role/other:label">
-            <value>Lain</value>
-          </text>
-          <text id="/data/person/role/patient:label">
-            <value>Pasien</value>
+          <text id="/data/person/sex:label">
+            <value>Jenis kelamin</value>
           </text>
           <text id="/data/person/role:label">
             <value>Peran</value>
@@ -574,90 +398,25 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/role_other:label">
             <value>Tentukan lainnya</value>
           </text>
-          <text id="/data/person/sex/female:label">
-            <value>Wanita</value>
+          <text id="/data/person/external_id:label">
+            <value>Eksternal ID</value>
           </text>
-          <text id="/data/person/sex/male:label">
-            <value>Pria</value>
-          </text>
-          <text id="/data/person/sex:label">
-            <value>Jenis kelamin</value>
-          </text>
-          <text id="/data/person:label">
-            <value>Mengedit Orang</value>
-          </text>
-        </translation>
-        <translation lang="ne">
-          <text id="/data/init/change_parent/false:label">
-            <value>होइन</value>
-          </text>
-          <text id="/data/init/change_parent/true:label">
-            <value>हो</value>
-          </text>
-          <text id="/data/init/change_parent:label">
-            <value>के तपाई यस व्यक्तिलाई कुनै अन्य स्थानमा लैजान चाहनुहुन्छ?</value>
-          </text>
-          <text id="/data/init/edited_place_type/clinic:label">
-            <value>क्षेत्र</value>
-          </text>
-          <text id="/data/init/edited_place_type/district_hospital:label">
-            <value>जिल्ला</value>
-          </text>
-          <text id="/data/init/edited_place_type/health_center:label">
-            <value>स्वास्थ्य केन्द्र</value>
-          </text>
-          <text id="/data/init/edited_place_type:label">
-            <value>स्थान को खोजी</value>
-          </text>
-          <text id="/data/init/id_clinic:label">
-            <value>क्लिनिक रोज्नुहोस्</value>
-          </text>
-          <text id="/data/init/id_district_hospital:label">
-            <value>जिल्ला अस्पताल रोज्नुहोस्</value>
-          </text>
-          <text id="/data/init/id_health_center:label">
-            <value>स्वास्थ्य संस्था रोज्नुहोस्</value>
-          </text>
-          <text id="/data/init/note_place:label">
-            <value><output value=" /data/init/person_name "/>&amp;nbsp; हाल यो **<output value=" /data/init/person_place_name "/>**सँग छ</value>
+          <text id="/data/person/notes:label">
+            <value>Catatan</value>
           </text>
           <text id="/data/init/person_parent:label">
             <value>-</value>
           </text>
-          <text id="/data/inputs/user/contact_id:label">
-            <value>लग इन गरेको प्रयोगकर्ताको सम्पर्क ID</value>
-          </text>
-          <text id="/data/inputs/user/facility_id:label">
-            <value>लग इन गरेको प्रयोगकर्ताको स्थानको ID</value>
-          </text>
-          <text id="/data/inputs/user/name:label">
-            <value>लग इन गरेको प्रयोगकर्ताको नाम</value>
-          </text>
-          <text id="/data/person/address:label">
+          <text id="/data/person/first_name:label">
             <value>-</value>
           </text>
-          <text id="/data/person/date_of_birth:label">
-            <value>जन्म मिती</value>
+          <text id="/data/person/last_name:label">
+            <value>-</value>
           </text>
           <text id="/data/person/date_of_birth_method:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/age_label:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_months:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_months:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_years:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_years:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_calendar:hint">
+          <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
@@ -666,109 +425,82 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob/dob_calendar:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_debug:label">
+          <text id="/data/person/ephemeral_dob/dob_calendar:hint">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_method/approx:label">
-            <value>जन्म मिती थाहा नभएको</value>
+          <text id="/data/person/ephemeral_dob/age_label:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_years:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_years:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_months:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_months:label">
+            <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_method:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob:label">
+          <text id="/data/person/ephemeral_dob/dob_debug:label">
             <value>-</value>
-          </text>
-          <text id="/data/person/external_id:label">
-            <value>बहिरी ID</value>
-          </text>
-          <text id="/data/person/first_name:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/last_name:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/notes:label">
-            <value>टिप्पणी</value>
           </text>
           <text id="/data/person/phone:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/data/person/phone:label">
-            <value>फोन नम्बर</value>
-          </text>
           <text id="/data/person/phone_alternate:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/data/person/phone_alternate:label">
-            <value>अन्य फोन नम्बर</value>
-          </text>
-          <text id="/data/person/role/chw:label">
-            <value>महिला स्वास्थ्य स्वयम् सेविका</value>
-          </text>
-          <text id="/data/person/role/chw_supervisor:label">
-            <value>महिला स्वास्थ्य स्वयम् सेविकाको सुपरभाइजर</value>
-          </text>
-          <text id="/data/person/role/other:label">
-            <value>अन्य</value>
-          </text>
-          <text id="/data/person/role/patient:label">
-            <value>बिरामी</value>
-          </text>
-          <text id="/data/person/role:label">
-            <value>भूमिका</value>
-          </text>
-          <text id="/data/person/role_other:label">
-            <value>अन्य उल्लेख गर्नुहोस्</value>
-          </text>
-          <text id="/data/person/sex/female:label">
-            <value>महिला</value>
-          </text>
-          <text id="/data/person/sex/male:label">
-            <value>पुरुष</value>
-          </text>
-          <text id="/data/person/sex:label">
-            <value>लिंग</value>
-          </text>
-          <text id="/data/person:label">
-            <value>ब्यक्ति सम्पादन</value>
+          <text id="/data/person/address:label">
+            <value>-</value>
           </text>
         </translation>
         <translation lang="sw">
-          <text id="/data/init/change_parent/false:label">
-            <value>Siyo</value>
-          </text>
-          <text id="/data/init/change_parent/true:label">
+          <text id="yes_no-0">
             <value>Ndiyo</value>
           </text>
-          <text id="/data/init/change_parent:label">
-            <value>Ungependa kuwahamisha mahali pengine?</value>
+          <text id="yes_no-1">
+            <value>Siyo</value>
           </text>
-          <text id="/data/init/edited_place_type/clinic:label">
-            <value>Eneo</value>
+          <text id="male_female-0">
+            <value>mwanamke</value>
           </text>
-          <text id="/data/init/edited_place_type/district_hospital:label">
+          <text id="male_female-1">
+            <value>mwaamume</value>
+          </text>
+          <text id="boy_girl-0">
+            <value>Msichana</value>
+          </text>
+          <text id="boy_girl-1">
+            <value>Kijana</value>
+          </text>
+          <text id="select_dob_method-0">
+            <value>Tarehe haijulikani</value>
+          </text>
+          <text id="roles-0">
+            <value>Mhudumu wa afya</value>
+          </text>
+          <text id="roles-1">
+            <value>Mkuu wa wahudumu wa afya</value>
+          </text>
+          <text id="roles-2">
+            <value>Mgonjwa</value>
+          </text>
+          <text id="roles-3">
+            <value>Ingine</value>
+          </text>
+          <text id="place_type-0">
             <value>Wilaya</value>
           </text>
-          <text id="/data/init/edited_place_type/health_center:label">
+          <text id="place_type-1">
             <value>kituo cha afya</value>
           </text>
-          <text id="/data/init/edited_place_type:label">
-            <value>Tafuta mahali kwa</value>
-          </text>
-          <text id="/data/init/id_clinic:label">
-            <value>Chagua kliniki</value>
-          </text>
-          <text id="/data/init/id_district_hospital:label">
-            <value>Chagua hospitali ya wilaya</value>
-          </text>
-          <text id="/data/init/id_health_center:label">
-            <value>Chagua kituo cha afya</value>
-          </text>
-          <text id="/data/init/note_place:label">
-            <value><output value=" /data/init/person_name "/>&amp;nbsp;Ni wa **<output value=" /data/init/person_place_name "/>**</value>
-          </text>
-          <text id="/data/init/person_parent:label">
-            <value>-</value>
+          <text id="place_type-2">
+            <value>Eneo</value>
           </text>
           <text id="/data/inputs/user/contact_id:label">
             <value>Mawasiliano ya mtumizi</value>
@@ -779,31 +511,64 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/inputs/user/name:label">
             <value>Jina la mtumizi</value>
           </text>
-          <text id="/data/person/address:label">
-            <value>-</value>
+          <text id="/data/init/note_place:label">
+            <value><output value=" /data/init/person_name "/>&amp;nbsp;Ni wa **<output value=" /data/init/person_place_name "/>**</value>
+          </text>
+          <text id="/data/init/change_parent:label">
+            <value>Ungependa kuwahamisha mahali pengine?</value>
+          </text>
+          <text id="/data/init/edited_place_type:label">
+            <value>Tafuta mahali kwa</value>
+          </text>
+          <text id="/data/init/id_district_hospital:label">
+            <value>Chagua hospitali ya wilaya</value>
+          </text>
+          <text id="/data/init/id_health_center:label">
+            <value>Chagua kituo cha afya</value>
+          </text>
+          <text id="/data/init/id_clinic:label">
+            <value>Chagua kliniki</value>
+          </text>
+          <text id="/data/person:label">
+            <value>Badilisha maelezo ya mtu</value>
           </text>
           <text id="/data/person/date_of_birth:label">
             <value>Tarehe ya Kuzaliwa</value>
           </text>
+          <text id="/data/person/phone:label">
+            <value>Namba ya simu</value>
+          </text>
+          <text id="/data/person/phone_alternate:label">
+            <value>Namba nyingine ya simu</value>
+          </text>
+          <text id="/data/person/sex:label">
+            <value>Jinsia</value>
+          </text>
+          <text id="/data/person/role:label">
+            <value>Kazi</value>
+          </text>
+          <text id="/data/person/role_other:label">
+            <value>Fafanua nyingine</value>
+          </text>
+          <text id="/data/person/external_id:label">
+            <value>Kitambulisho ya nje</value>
+          </text>
+          <text id="/data/person/notes:label">
+            <value>Maelezo</value>
+          </text>
+          <text id="/data/init/person_parent:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/first_name:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/last_name:label">
+            <value>-</value>
+          </text>
           <text id="/data/person/date_of_birth_method:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/age_label:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_months:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_months:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_years:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/age_years:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob/dob_calendar:hint">
+          <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
@@ -812,20 +577,139 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob/dob_calendar:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_debug:label">
+          <text id="/data/person/ephemeral_dob/dob_calendar:hint">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_method/approx:label">
-            <value>Tarehe haijulikani</value>
+          <text id="/data/person/ephemeral_dob/age_label:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_years:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_years:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_months:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_months:label">
+            <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_method:label">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob:label">
+          <text id="/data/person/ephemeral_dob/dob_debug:label">
             <value>-</value>
           </text>
+          <text id="/data/person/phone:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/person/phone_alternate:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/person/address:label">
+            <value>-</value>
+          </text>
+        </translation>
+        <translation lang="ne">
+          <text id="yes_no-0">
+            <value>हो</value>
+          </text>
+          <text id="yes_no-1">
+            <value>होइन</value>
+          </text>
+          <text id="male_female-0">
+            <value>महिला</value>
+          </text>
+          <text id="male_female-1">
+            <value>पुरुष</value>
+          </text>
+          <text id="boy_girl-0">
+            <value>छोरी</value>
+          </text>
+          <text id="boy_girl-1">
+            <value>छोरा</value>
+          </text>
+          <text id="select_dob_method-0">
+            <value>जन्म मिती थाहा नभएको</value>
+          </text>
+          <text id="roles-0">
+            <value>महिला स्वास्थ्य स्वयम् सेविका</value>
+          </text>
+          <text id="roles-1">
+            <value>महिला स्वास्थ्य स्वयम् सेविकाको सुपरभाइजर</value>
+          </text>
+          <text id="roles-2">
+            <value>बिरामी</value>
+          </text>
+          <text id="roles-3">
+            <value>अन्य</value>
+          </text>
+          <text id="place_type-0">
+            <value>जिल्ला</value>
+          </text>
+          <text id="place_type-1">
+            <value>स्वास्थ्य केन्द्र</value>
+          </text>
+          <text id="place_type-2">
+            <value>क्षेत्र</value>
+          </text>
+          <text id="/data/inputs/user/contact_id:label">
+            <value>लग इन गरेको प्रयोगकर्ताको सम्पर्क ID</value>
+          </text>
+          <text id="/data/inputs/user/facility_id:label">
+            <value>लग इन गरेको प्रयोगकर्ताको स्थानको ID</value>
+          </text>
+          <text id="/data/inputs/user/name:label">
+            <value>लग इन गरेको प्रयोगकर्ताको नाम</value>
+          </text>
+          <text id="/data/init/note_place:label">
+            <value><output value=" /data/init/person_name "/>&amp;nbsp; हाल यो **<output value=" /data/init/person_place_name "/>**सँग छ</value>
+          </text>
+          <text id="/data/init/change_parent:label">
+            <value>के तपाई यस व्यक्तिलाई कुनै अन्य स्थानमा लैजान चाहनुहुन्छ?</value>
+          </text>
+          <text id="/data/init/edited_place_type:label">
+            <value>स्थान को खोजी</value>
+          </text>
+          <text id="/data/init/id_district_hospital:label">
+            <value>जिल्ला अस्पताल रोज्नुहोस्</value>
+          </text>
+          <text id="/data/init/id_health_center:label">
+            <value>स्वास्थ्य संस्था रोज्नुहोस्</value>
+          </text>
+          <text id="/data/init/id_clinic:label">
+            <value>क्लिनिक रोज्नुहोस्</value>
+          </text>
+          <text id="/data/person:label">
+            <value>ब्यक्ति सम्पादन</value>
+          </text>
+          <text id="/data/person/date_of_birth:label">
+            <value>जन्म मिती</value>
+          </text>
+          <text id="/data/person/phone:label">
+            <value>फोन नम्बर</value>
+          </text>
+          <text id="/data/person/phone_alternate:label">
+            <value>अन्य फोन नम्बर</value>
+          </text>
+          <text id="/data/person/sex:label">
+            <value>लिंग</value>
+          </text>
+          <text id="/data/person/role:label">
+            <value>भूमिका</value>
+          </text>
+          <text id="/data/person/role_other:label">
+            <value>अन्य उल्लेख गर्नुहोस्</value>
+          </text>
           <text id="/data/person/external_id:label">
-            <value>Kitambulisho ya nje</value>
+            <value>बहिरी ID</value>
+          </text>
+          <text id="/data/person/notes:label">
+            <value>टिप्पणी</value>
+          </text>
+          <text id="/data/init/person_parent:label">
+            <value>-</value>
           </text>
           <text id="/data/person/first_name:label">
             <value>-</value>
@@ -833,55 +717,207 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/last_name:label">
             <value>-</value>
           </text>
-          <text id="/data/person/notes:label">
-            <value>Maelezo</value>
+          <text id="/data/person/date_of_birth_method:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_calendar:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_calendar:hint">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_label:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_years:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_years:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_months:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_months:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_method:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_debug:label">
+            <value>-</value>
           </text>
           <text id="/data/person/phone:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/data/person/phone:label">
-            <value>Namba ya simu</value>
-          </text>
           <text id="/data/person/phone_alternate:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/data/person/phone_alternate:label">
-            <value>Namba nyingine ya simu</value>
+          <text id="/data/person/address:label">
+            <value>-</value>
           </text>
-          <text id="/data/person/role/chw:label">
-            <value>Mhudumu wa afya</value>
+        </translation>
+        <translation lang="fr">
+          <text id="yes_no-0">
+            <value>Oui</value>
           </text>
-          <text id="/data/person/role/chw_supervisor:label">
-            <value>Mkuu wa wahudumu wa afya</value>
+          <text id="yes_no-1">
+            <value>Non</value>
           </text>
-          <text id="/data/person/role/other:label">
-            <value>Ingine</value>
+          <text id="male_female-0">
+            <value>Femme</value>
           </text>
-          <text id="/data/person/role/patient:label">
-            <value>Mgonjwa</value>
+          <text id="male_female-1">
+            <value>Homme</value>
           </text>
-          <text id="/data/person/role:label">
-            <value>Kazi</value>
+          <text id="boy_girl-0">
+            <value>Fille</value>
           </text>
-          <text id="/data/person/role_other:label">
-            <value>Fafanua nyingine</value>
+          <text id="boy_girl-1">
+            <value>Garçon</value>
           </text>
-          <text id="/data/person/sex/female:label">
-            <value>mwanamke</value>
+          <text id="select_dob_method-0">
+            <value>Date de naissance inconnue</value>
           </text>
-          <text id="/data/person/sex/male:label">
-            <value>mwaamume</value>
+          <text id="roles-0">
+            <value>ASC</value>
           </text>
-          <text id="/data/person/sex:label">
-            <value>Jinsia</value>
+          <text id="roles-1">
+            <value>Superviseur ASC</value>
+          </text>
+          <text id="roles-2">
+            <value>Patient</value>
+          </text>
+          <text id="roles-3">
+            <value>Autre</value>
+          </text>
+          <text id="place_type-0">
+            <value>District</value>
+          </text>
+          <text id="place_type-1">
+            <value>Centre de santé</value>
+          </text>
+          <text id="place_type-2">
+            <value>Zone</value>
+          </text>
+          <text id="/data/inputs/user/contact_id:label">
+            <value>Identifiant de l'utilisateur</value>
+          </text>
+          <text id="/data/inputs/user/facility_id:label">
+            <value>Identifiant du centre</value>
+          </text>
+          <text id="/data/inputs/user/name:label">
+            <value>Nom</value>
+          </text>
+          <text id="/data/init/person_parent:label">
+            <value>Place actuelle</value>
+          </text>
+          <text id="/data/init/note_place:label">
+            <value><output value=" /data/init/person_name "/>&amp;nbsp;appartient à **<output value=" /data/init/person_place_name "/>**</value>
+          </text>
+          <text id="/data/init/change_parent:label">
+            <value>Voulez-vous déplacer cette personne vers une autre place ?</value>
+          </text>
+          <text id="/data/init/edited_place_type:label">
+            <value>Rechercher par type de place</value>
+          </text>
+          <text id="/data/init/id_district_hospital:label">
+            <value>Choisissez le district</value>
+          </text>
+          <text id="/data/init/id_health_center:label">
+            <value>Choisissez le centre de santé</value>
+          </text>
+          <text id="/data/init/id_clinic:label">
+            <value>Choisissez la zone</value>
           </text>
           <text id="/data/person:label">
-            <value>Badilisha maelezo ya mtu</value>
+            <value>Modifier personne</value>
+          </text>
+          <text id="/data/person/date_of_birth:label">
+            <value>Date de naissance</value>
+          </text>
+          <text id="/data/person/phone:jr:constraintMsg">
+            <value>Veuillez entrer un numéro local valide ou utiliser le format international standard, qui comprend un signe plus (+) et le code du pays. Par exemple: +13125551211</value>
+          </text>
+          <text id="/data/person/phone:label">
+            <value>Téléphone</value>
+          </text>
+          <text id="/data/person/phone_alternate:jr:constraintMsg">
+            <value>Veuillez entrer un numéro local valide ou utiliser le format international standard, qui comprend un signe plus (+) et le code du pays. Par exemple: +13125551211</value>
+          </text>
+          <text id="/data/person/phone_alternate:label">
+            <value>Téléphone alternatif</value>
+          </text>
+          <text id="/data/person/sex:label">
+            <value>Sexe</value>
+          </text>
+          <text id="/data/person/role:label">
+            <value>Rôle</value>
+          </text>
+          <text id="/data/person/role_other:label">
+            <value>Autre rôle</value>
+          </text>
+          <text id="/data/person/external_id:label">
+            <value>Identifiant externe</value>
+          </text>
+          <text id="/data/person/notes:label">
+            <value>Notes</value>
+          </text>
+          <text id="/data/person/first_name:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/last_name:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/date_of_birth_method:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_calendar:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_calendar:hint">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_label:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_years:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_years:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_months:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/age_months:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_method:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/ephemeral_dob/dob_debug:label">
+            <value>-</value>
+          </text>
+          <text id="/data/person/address:label">
+            <value>-</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:person:edit" prefix="J1!contact:person:edit!" delimiter="#" version="2025-05-01 22-59">
+        <data id="contact:person:edit" version="2025-05-01 22-59" prefix="J1!contact:person:edit!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -954,6 +990,86 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           </meta>
         </data>
       </instance>
+      <instance id="yes_no">
+        <root>
+          <item>
+            <itextId>yes_no-0</itextId>
+            <name>true</name>
+          </item>
+          <item>
+            <itextId>yes_no-1</itextId>
+            <name>false</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="male_female">
+        <root>
+          <item>
+            <itextId>male_female-0</itextId>
+            <name>female</name>
+          </item>
+          <item>
+            <itextId>male_female-1</itextId>
+            <name>male</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="boy_girl">
+        <root>
+          <item>
+            <itextId>boy_girl-0</itextId>
+            <name>female</name>
+          </item>
+          <item>
+            <itextId>boy_girl-1</itextId>
+            <name>male</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_dob_method">
+        <root>
+          <item>
+            <itextId>select_dob_method-0</itextId>
+            <name>approx</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="roles">
+        <root>
+          <item>
+            <itextId>roles-0</itextId>
+            <name>chw</name>
+          </item>
+          <item>
+            <itextId>roles-1</itextId>
+            <name>chw_supervisor</name>
+          </item>
+          <item>
+            <itextId>roles-2</itextId>
+            <name>patient</name>
+          </item>
+          <item>
+            <itextId>roles-3</itextId>
+            <name>other</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="place_type">
+        <root>
+          <item>
+            <itextId>place_type-0</itextId>
+            <name>district_hospital</name>
+          </item>
+          <item>
+            <itextId>place_type-1</itextId>
+            <name>health_center</name>
+          </item>
+          <item>
+            <itextId>place_type-2</itextId>
+            <name>clinic</name>
+          </item>
+        </root>
+      </instance>
       <bind nodeset="/data/inputs" relevant="false()"/>
       <bind nodeset="/data/inputs/user/contact_id" type="string"/>
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
@@ -964,8 +1080,8 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/init/type" type="string"/>
       <bind nodeset="/data/init/name" type="string"/>
       <bind nodeset="/data/init/note_place" readonly="true()" type="string"/>
-      <bind nodeset="/data/init/change_parent" type="select1" required="true()"/>
-      <bind nodeset="/data/init/edited_place_type" type="select1" required="true()" relevant="selected( /data/init/change_parent , 'true')"/>
+      <bind nodeset="/data/init/change_parent" type="string" required="true()"/>
+      <bind nodeset="/data/init/edited_place_type" type="string" required="true()" relevant="selected( /data/init/change_parent , 'true')"/>
       <bind nodeset="/data/init/id_district_hospital" type="string" required="true()" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'district_hospital')"/>
       <bind nodeset="/data/init/id_health_center" type="string" required="true()" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'health_center')"/>
       <bind nodeset="/data/init/id_clinic" type="string" required="true()" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'clinic')"/>
@@ -975,26 +1091,24 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/person/first_name" type="string" required="true()"/>
       <bind nodeset="/data/person/last_name" type="string" required="true()"/>
       <bind nodeset="/data/person/name" type="string" calculate="concat( /data/person/first_name , ' ',  /data/person/last_name )"/>
-      <bind nodeset="/data/person/date_of_birth" type="string" calculate="../ephemeral_dob/dob_iso" required="true()"/>
+      <bind nodeset="/data/person/date_of_birth" type="string" required="true()" calculate="../ephemeral_dob/dob_iso"/>
       <bind nodeset="/data/person/date_of_birth_method" type="string" calculate="../ephemeral_dob/dob_method"/>
-      <bind nodeset="/data/person/ephemeral_dob/dob_calendar" type="date" required="true()" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg')" relevant="not(selected(../dob_method,'approx'))" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))"/>
+      <bind nodeset="/data/person/ephemeral_dob/dob_calendar" type="date" required="true()" relevant="not(selected(../dob_method,'approx'))" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg')"/>
       <bind nodeset="/data/person/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected(../dob_method,'approx')"/>
-      <bind nodeset="/data/person/ephemeral_dob/age_years" type="int" required="true()" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/age_years:jr:constraintMsg')" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 130"/>
-      <bind nodeset="/data/person/ephemeral_dob/age_months" type="int" constraint=". &gt;= 0 and . &lt;= 11" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/age_months:jr:constraintMsg')" relevant="selected(../dob_method,'approx')"/>
-      <bind nodeset="/data/person/ephemeral_dob/dob_method" type="select"/>
+      <bind nodeset="/data/person/ephemeral_dob/age_years" type="int" required="true()" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 130" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/age_years:jr:constraintMsg')"/>
+      <bind nodeset="/data/person/ephemeral_dob/age_months" type="int" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 11" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/age_months:jr:constraintMsg')"/>
+      <bind nodeset="/data/person/ephemeral_dob/dob_method" type="string"/>
       <bind nodeset="/data/person/ephemeral_dob/ephemeral_months" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0) &lt; 0, format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0) + 12, format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0))"/>
       <bind nodeset="/data/person/ephemeral_dob/ephemeral_years" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0) &lt; 0, format-date-time(today(),&quot;%Y&quot;) - ../age_years - 1, format-date-time(today(),&quot;%Y&quot;) -../age_years)"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_approx" type="string" calculate="concat(string( /data/person/ephemeral_dob/ephemeral_years ),'-',if( /data/person/ephemeral_dob/ephemeral_months &lt;10, concat('0',string( /data/person/ephemeral_dob/ephemeral_months )),  /data/person/ephemeral_dob/ephemeral_months ),'-',string(format-date-time(today(), &quot;%d&quot;)))"/>
-      <bind nodeset="/data/person/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')), 
-../dob_calendar,
-../dob_approx)"/>
+      <bind nodeset="/data/person/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')), &#10;../dob_calendar,&#10;../dob_approx)"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
       <bind nodeset="/data/person/phone" type="tel" constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')"/>
       <bind nodeset="/data/person/phone_alternate" type="tel" constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')"/>
-      <bind nodeset="/data/person/sex" type="select1"/>
+      <bind nodeset="/data/person/sex" type="string"/>
       <bind nodeset="/data/person/address" type="string"/>
-      <bind nodeset="/data/person/role" type="select1" required="true()"/>
+      <bind nodeset="/data/person/role" type="string" required="true()"/>
       <bind nodeset="/data/person/role_other" type="string" required="true()" relevant="selected(  /data/person/role ,'other')"/>
       <bind nodeset="/data/person/external_id" type="string"/>
       <bind nodeset="/data/person/notes" type="string"/>
@@ -1004,7 +1118,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/person/meta/last_edited_by" type="string" calculate="../../../inputs/user/name"/>
       <bind nodeset="/data/person/meta/last_edited_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
       <bind nodeset="/data/person/meta/last_edited_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
-      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
   <h:body class="pages">
@@ -1022,47 +1136,35 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       </group>
     </group>
     <group appearance="field-list" ref="/data/init">
-      <input appearance="select-contact hidden" ref="/data/init/person_parent">
+      <input ref="/data/init/person_parent" appearance="select-contact hidden">
         <label ref="jr:itext('/data/init/person_parent:label')"/>
       </input>
-      <input appearance="hidden" ref="/data/init/type"/>
-      <input appearance="hidden" ref="/data/init/name"/>
+      <input ref="/data/init/type" appearance="hidden"></input>
+      <input ref="/data/init/name" appearance="hidden"></input>
       <input ref="/data/init/note_place">
         <label ref="jr:itext('/data/init/note_place:label')"/>
       </input>
-      <select1 appearance="columns-pack" ref="/data/init/change_parent">
+      <select1 ref="/data/init/change_parent" appearance="columns-pack">
         <label ref="jr:itext('/data/init/change_parent:label')"/>
-        <item>
-          <label ref="jr:itext('/data/init/change_parent/true:label')"/>
-          <value>true</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/change_parent/false:label')"/>
-          <value>false</value>
-        </item>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <select1 appearance="columns-pack" ref="/data/init/edited_place_type">
+      <select1 ref="/data/init/edited_place_type" appearance="columns-pack">
         <label ref="jr:itext('/data/init/edited_place_type:label')"/>
-        <item>
-          <label ref="jr:itext('/data/init/edited_place_type/district_hospital:label')"/>
-          <value>district_hospital</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/edited_place_type/health_center:label')"/>
-          <value>health_center</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/edited_place_type/clinic:label')"/>
-          <value>clinic</value>
-        </item>
+        <itemset nodeset="instance('place_type')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <input appearance="select-contact type-district_hospital bind-id-only" ref="/data/init/id_district_hospital">
+      <input ref="/data/init/id_district_hospital" appearance="select-contact type-district_hospital bind-id-only">
         <label ref="jr:itext('/data/init/id_district_hospital:label')"/>
       </input>
-      <input appearance="select-contact type-health_center bind-id-only" ref="/data/init/id_health_center">
+      <input ref="/data/init/id_health_center" appearance="select-contact type-health_center bind-id-only">
         <label ref="jr:itext('/data/init/id_health_center:label')"/>
       </input>
-      <input appearance="select-contact type-clinic bind-id-only" ref="/data/init/id_clinic">
+      <input ref="/data/init/id_clinic" appearance="select-contact type-clinic bind-id-only">
         <label ref="jr:itext('/data/init/id_clinic:label')"/>
       </input>
     </group>
@@ -1088,12 +1190,12 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
         <input ref="/data/person/ephemeral_dob/age_months">
           <label ref="jr:itext('/data/person/ephemeral_dob/age_months:label')"/>
         </input>
-        <select appearance="columns" ref="/data/person/ephemeral_dob/dob_method">
+        <select ref="/data/person/ephemeral_dob/dob_method" appearance="columns">
           <label ref="jr:itext('/data/person/ephemeral_dob/dob_method:label')"/>
-          <item>
-            <label ref="jr:itext('/data/person/ephemeral_dob/dob_method/approx:label')"/>
-            <value>approx</value>
-          </item>
+          <itemset nodeset="instance('select_dob_method')/root/item">
+            <value ref="name"/>
+            <label ref="jr:itext(itextId)"/>
+          </itemset>
         </select>
         <input ref="/data/person/ephemeral_dob/dob_debug">
           <label ref="jr:itext('/data/person/ephemeral_dob/dob_debug:label')"/>
@@ -1105,38 +1207,22 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <input ref="/data/person/phone_alternate">
         <label ref="jr:itext('/data/person/phone_alternate:label')"/>
       </input>
-      <select1 appearance="columns" ref="/data/person/sex">
+      <select1 ref="/data/person/sex" appearance="columns">
         <label ref="jr:itext('/data/person/sex:label')"/>
-        <item>
-          <label ref="jr:itext('/data/person/sex/female:label')"/>
-          <value>female</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/person/sex/male:label')"/>
-          <value>male</value>
-        </item>
+        <itemset nodeset="instance('male_female')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
       <input ref="/data/person/address">
         <label ref="jr:itext('/data/person/address:label')"/>
       </input>
       <select1 ref="/data/person/role">
         <label ref="jr:itext('/data/person/role:label')"/>
-        <item>
-          <label ref="jr:itext('/data/person/role/chw:label')"/>
-          <value>chw</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/person/role/chw_supervisor:label')"/>
-          <value>chw_supervisor</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/person/role/patient:label')"/>
-          <value>patient</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/person/role/other:label')"/>
-          <value>other</value>
-        </item>
+        <itemset nodeset="instance('roles')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
       <input ref="/data/person/role_other">
         <label ref="jr:itext('/data/person/role_other:label')"/>
@@ -1144,10 +1230,10 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <input ref="/data/person/external_id">
         <label ref="jr:itext('/data/person/external_id:label')"/>
       </input>
-      <input appearance="multiline" ref="/data/person/notes">
+      <input ref="/data/person/notes" appearance="multiline">
         <label ref="jr:itext('/data/person/notes:label')"/>
       </input>
-      <group appearance="hidden" ref="/data/person/meta"/>
+      <group appearance="hidden" ref="/data/person/meta"></group>
     </group>
   </h:body>
 </h:html>

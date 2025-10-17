@@ -1,173 +1,113 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
   <h:head>
     <h:title>Pregnancy danger sign</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/pregnancy_danger_sign/danger_signs/breaking_water/no:label">
-            <value>No</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/breaking_water/yes:label">
+          <text id="yes_no-0">
             <value>Yes</value>
           </text>
-          <text id="/pregnancy_danger_sign/danger_signs/breaking_water:label">
-            <value>Breaking of water</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/breathlessness/no:label">
+          <text id="yes_no-1">
             <value>No</value>
           </text>
-          <text id="/pregnancy_danger_sign/danger_signs/breathlessness/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/breathlessness:label">
-            <value>Breathlessness</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/congratulate_no_ds_note:label">
-            <value>Great news! Please closely monitor her until her next scheduled pregnancy visit.</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/custom_translations/custom_woman_label_translator/woman:label">
+          <text id="translate_woman_label-0">
             <value>the woman</value>
           </text>
-          <text id="/pregnancy_danger_sign/danger_signs/custom_translations/custom_woman_start_label_translator/woman-start:label">
+          <text id="translate_woman_start_label-0">
             <value>The woman</value>
           </text>
-          <text id="/pregnancy_danger_sign/danger_signs/danger_signs_note:label">
-            <value>Ask <output value=" /pregnancy_danger_sign/patient_short_name "/> to monitor these danger signs throughout the pregnancy.</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/danger_signs_question_note:label">
-            <value>Does <output value=" /pregnancy_danger_sign/patient_short_name "/> currently have any of these danger signs?</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/easily_tired/no:label">
-            <value>No</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/easily_tired/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/easily_tired:label">
-            <value>Getting tired easily</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/face_hand_swelling/no:label">
-            <value>No</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/face_hand_swelling/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/face_hand_swelling:label">
-            <value>Swelling of face and hands</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/fever/no:label">
-            <value>No</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/fever/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/fever:label">
-            <value>Fever</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/fits/no:label">
-            <value>No</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/fits/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/fits:label">
-            <value>Fits</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/reduced_or_no_fetal_movements/no:label">
-            <value>No</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/reduced_or_no_fetal_movements/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/reduced_or_no_fetal_movements:label">
-            <value>Reduced or no fetal movements</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/refer_patient_note_1:label">
-            <value>&lt;span style="color:red"&gt;Please refer to the health facility immediately. Accompany her if possible.&lt;/span&gt;</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/refer_patient_note_2:label">
-            <value>&lt;span style="color:red"&gt;Please complete the follow-up task within 3 days.&lt;/span&gt;</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/severe_abdominal_pain/no:label">
-            <value>No</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/severe_abdominal_pain/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/severe_abdominal_pain:label">
-            <value>Severe abdominal pain</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/severe_headache/no:label">
-            <value>No</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/severe_headache/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/severe_headache:label">
-            <value>Severe headache</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/vaginal_bleeding/no:label">
-            <value>No</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/vaginal_bleeding/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/vaginal_bleeding:label">
-            <value>Vaginal bleeding</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/very_pale/no:label">
-            <value>No</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/very_pale/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs/very_pale:label">
-            <value>Very pale</value>
-          </text>
-          <text id="/pregnancy_danger_sign/danger_signs:label">
-            <value>Danger Sign Check</value>
-          </text>
-          <text id="/pregnancy_danger_sign/inputs/contact/_id:label">
-            <value>What is the patient's name?</value>
-          </text>
-          <text id="/pregnancy_danger_sign/inputs/contact/date_of_birth:label">
-            <value>Date of Birth</value>
-          </text>
-          <text id="/pregnancy_danger_sign/inputs/contact/name:label">
-            <value>Name</value>
-          </text>
-          <text id="/pregnancy_danger_sign/inputs/contact/parent/_id:label">
-            <value>Parent ID</value>
-          </text>
-          <text id="/pregnancy_danger_sign/inputs/contact/parent/parent/contact/chw_name:label">
-            <value>CHW name</value>
-          </text>
-          <text id="/pregnancy_danger_sign/inputs/contact/parent/parent/contact/phone:label">
-            <value>CHW phone</value>
-          </text>
-          <text id="/pregnancy_danger_sign/inputs/contact/patient_id:label">
-            <value>Patient ID</value>
-          </text>
-          <text id="/pregnancy_danger_sign/inputs/contact/sex:label">
-            <value>Sex</value>
-          </text>
-          <text id="/pregnancy_danger_sign/inputs/contact/short_name:label">
-            <value>Short Name</value>
-          </text>
-          <text id="/pregnancy_danger_sign/inputs/contact:label">
-            <value>Contact</value>
-          </text>
-          <text id="/pregnancy_danger_sign/inputs/source:label">
+          <text id="/data/inputs/source:label">
             <value>Source</value>
           </text>
-          <text id="/pregnancy_danger_sign/inputs/source_id:label">
+          <text id="/data/inputs/source_id:label">
             <value>Source ID</value>
+          </text>
+          <text id="/data/inputs/contact:label">
+            <value>Contact</value>
+          </text>
+          <text id="/data/inputs/contact/_id:label">
+            <value>What is the patient's name?</value>
+          </text>
+          <text id="/data/inputs/contact/name:label">
+            <value>Name</value>
+          </text>
+          <text id="/data/inputs/contact/short_name:label">
+            <value>Short Name</value>
+          </text>
+          <text id="/data/inputs/contact/patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/data/inputs/contact/date_of_birth:label">
+            <value>Date of Birth</value>
+          </text>
+          <text id="/data/inputs/contact/sex:label">
+            <value>Sex</value>
+          </text>
+          <text id="/data/inputs/contact/parent/_id:label">
+            <value>Parent ID</value>
+          </text>
+          <text id="/data/inputs/contact/parent/parent/contact/chw_name:label">
+            <value>CHW name</value>
+          </text>
+          <text id="/data/inputs/contact/parent/parent/contact/phone:label">
+            <value>CHW phone</value>
+          </text>
+          <text id="/data/danger_signs:label">
+            <value>Danger Sign Check</value>
+          </text>
+          <text id="/data/danger_signs/danger_signs_note:label">
+            <value> Ask <output value=" /data/patient_short_name "/> to monitor these danger signs throughout the pregnancy.</value>
+          </text>
+          <text id="/data/danger_signs/danger_signs_question_note:label">
+            <value> Does <output value=" /data/patient_short_name "/> currently have any of these danger signs?</value>
+          </text>
+          <text id="/data/danger_signs/vaginal_bleeding:label">
+            <value>Vaginal bleeding</value>
+          </text>
+          <text id="/data/danger_signs/fits:label">
+            <value>Fits</value>
+          </text>
+          <text id="/data/danger_signs/severe_abdominal_pain:label">
+            <value>Severe abdominal pain</value>
+          </text>
+          <text id="/data/danger_signs/severe_headache:label">
+            <value>Severe headache</value>
+          </text>
+          <text id="/data/danger_signs/very_pale:label">
+            <value>Very pale</value>
+          </text>
+          <text id="/data/danger_signs/fever:label">
+            <value>Fever</value>
+          </text>
+          <text id="/data/danger_signs/reduced_or_no_fetal_movements:label">
+            <value>Reduced or no fetal movements</value>
+          </text>
+          <text id="/data/danger_signs/breaking_water:label">
+            <value>Breaking of water</value>
+          </text>
+          <text id="/data/danger_signs/easily_tired:label">
+            <value>Getting tired easily</value>
+          </text>
+          <text id="/data/danger_signs/face_hand_swelling:label">
+            <value>Swelling of face and hands</value>
+          </text>
+          <text id="/data/danger_signs/breathlessness:label">
+            <value>Breathlessness</value>
+          </text>
+          <text id="/data/danger_signs/congratulate_no_ds_note:label">
+            <value>Great news! Please closely monitor her until her next scheduled pregnancy visit.</value>
+          </text>
+          <text id="/data/danger_signs/refer_patient_note_1:label">
+            <value>&lt;span style="color:red"&gt;Please refer to the health facility immediately. Accompany her if possible.&lt;/span&gt;</value>
+          </text>
+          <text id="/data/danger_signs/refer_patient_note_2:label">
+            <value>&lt;span style="color:red"&gt;Please complete the follow-up task within 3 days.&lt;/span&gt;</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <pregnancy_danger_sign id="pregnancy_danger_sign" prefix="J1!pregnancy_danger_sign!" delimiter="#" version="2022-09-26 11:20:33">
+        <data id="pregnancy_danger_sign" version="2022-09-26 11:20:33" prefix="J1!pregnancy_danger_sign!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -256,264 +196,226 @@
           <meta tag="hidden">
             <instanceID/>
           </meta>
-        </pregnancy_danger_sign>
+        </data>
       </instance>
       <instance id="contact-summary"/>
       <instance id="user-contact-summary"/>
-      <bind nodeset="/pregnancy_danger_sign/inputs" relevant="./source = 'user'"/>
-      <bind nodeset="/pregnancy_danger_sign/inputs/source" type="string"/>
-      <bind nodeset="/pregnancy_danger_sign/inputs/source_id" type="string"/>
-      <bind nodeset="/pregnancy_danger_sign/inputs/contact/_id" type="db:person"/>
-      <bind nodeset="/pregnancy_danger_sign/inputs/contact/name" type="string"/>
-      <bind nodeset="/pregnancy_danger_sign/inputs/contact/short_name" type="string"/>
-      <bind nodeset="/pregnancy_danger_sign/inputs/contact/patient_id" type="string"/>
-      <bind nodeset="/pregnancy_danger_sign/inputs/contact/date_of_birth" type="string"/>
-      <bind nodeset="/pregnancy_danger_sign/inputs/contact/sex" type="string"/>
-      <bind nodeset="/pregnancy_danger_sign/inputs/contact/parent/_id" type="string"/>
-      <bind nodeset="/pregnancy_danger_sign/inputs/contact/parent/parent/contact/chw_name" type="string"/>
-      <bind nodeset="/pregnancy_danger_sign/inputs/contact/parent/parent/contact/phone" type="string"/>
-      <bind nodeset="/pregnancy_danger_sign/patient_age_in_years" type="string" calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )"/>
-      <bind nodeset="/pregnancy_danger_sign/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
-      <bind nodeset="/pregnancy_danger_sign/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
-      <bind nodeset="/pregnancy_danger_sign/patient_name" type="string" calculate="../inputs/contact/name"/>
-      <bind nodeset="/pregnancy_danger_sign/patient_short_name" type="string" calculate="coalesce(../inputs/contact/short_name, ../danger_signs/custom_translations/custom_woman_label)"/>
-      <bind nodeset="/pregnancy_danger_sign/patient_short_name_start" type="string" calculate="coalesce(../inputs/contact/short_name, ../danger_signs/custom_translations/custom_woman_start_label)"/>
-      <bind nodeset="/pregnancy_danger_sign/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(decimal-date-time(today()) + 3)"/>
-      <bind nodeset="/pregnancy_danger_sign/t_danger_signs_referral_follow_up" type="string" calculate="../danger_signs/r_danger_sign_present"/>
-      <bind nodeset="/pregnancy_danger_sign/pregnancy_uuid_ctx" type="string" calculate="if(instance('contact-summary')/context/pregnancy_uuid != '', instance('contact-summary')/context/pregnancy_uuid, .)"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/danger_signs_note" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/danger_signs_question_note" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/vaginal_bleeding" type="select1" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/fits" type="select1" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/severe_abdominal_pain" type="select1" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/severe_headache" type="select1" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/very_pale" type="select1" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/fever" type="select1" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/reduced_or_no_fetal_movements" type="select1" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/breaking_water" type="select1" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/easily_tired" type="select1" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/face_hand_swelling" type="select1" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/breathlessness" type="select1" required="true()"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/r_danger_sign_present" type="string" calculate="if(selected(../vaginal_bleeding, 'yes')
-or selected(../fits, 'yes')
-or selected(../severe_abdominal_pain, 'yes')
-or selected(../severe_headache, 'yes')
-or selected(../very_pale, 'yes')
-or selected(../fever, 'yes')
-or selected(../reduced_or_no_fetal_movements, 'yes')
-or selected(../breaking_water, 'yes')
-or selected(../easily_tired, 'yes')
-or selected(../face_hand_swelling, 'yes')
-or selected(../breathlessness, 'yes'), 
-'yes',
-if(selected(../vaginal_bleeding, 'no')
-and selected(../fits, 'no')
-and selected(../severe_abdominal_pain, 'no')
-and selected(../severe_headache, 'no')
-and selected(../very_pale, 'no')
-and selected(../fever, 'no')
-and selected(../reduced_or_no_fetal_movements, 'no')
-and selected(../breaking_water, 'no')
-and selected(../easily_tired, 'no')
-and selected(../face_hand_swelling, 'no')
-and selected(../breathlessness, 'no'), 'no', ''))"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/congratulate_no_ds_note" readonly="true()" type="string" relevant="../r_danger_sign_present = 'no'"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/refer_patient_note_1" readonly="true()" type="string" relevant="../r_danger_sign_present = 'yes'"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/refer_patient_note_2" readonly="true()" type="string" relevant="../r_danger_sign_present = 'yes'"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/custom_translations/custom_woman_label_translator" type="select1" calculate="&quot;woman&quot;"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/custom_translations/custom_woman_label" type="string" calculate="jr:choice-name( /pregnancy_danger_sign/danger_signs/custom_translations/custom_woman_label_translator ,' /pregnancy_danger_sign/danger_signs/custom_translations/custom_woman_label_translator ')"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/custom_translations/custom_woman_start_label_translator" type="select1" calculate="&quot;woman-start&quot;"/>
-      <bind nodeset="/pregnancy_danger_sign/danger_signs/custom_translations/custom_woman_start_label" type="string" calculate="jr:choice-name( /pregnancy_danger_sign/danger_signs/custom_translations/custom_woman_start_label_translator ,' /pregnancy_danger_sign/danger_signs/custom_translations/custom_woman_start_label_translator ')"/>
-      <bind nodeset="/pregnancy_danger_sign/data/__vaginal_bleeding" type="string" calculate=" /pregnancy_danger_sign/danger_signs/vaginal_bleeding "/>
-      <bind nodeset="/pregnancy_danger_sign/data/__fits" type="string" calculate=" /pregnancy_danger_sign/danger_signs/fits "/>
-      <bind nodeset="/pregnancy_danger_sign/data/__severe_abdominal_pain" type="string" calculate=" /pregnancy_danger_sign/danger_signs/severe_abdominal_pain "/>
-      <bind nodeset="/pregnancy_danger_sign/data/__severe_headache" type="string" calculate=" /pregnancy_danger_sign/danger_signs/severe_headache "/>
-      <bind nodeset="/pregnancy_danger_sign/data/__very_pale" type="string" calculate=" /pregnancy_danger_sign/danger_signs/very_pale "/>
-      <bind nodeset="/pregnancy_danger_sign/data/__fever" type="string" calculate=" /pregnancy_danger_sign/danger_signs/fever "/>
-      <bind nodeset="/pregnancy_danger_sign/data/__reduced_or_no_fetal_movements" type="string" calculate=" /pregnancy_danger_sign/danger_signs/reduced_or_no_fetal_movements "/>
-      <bind nodeset="/pregnancy_danger_sign/data/__breaking_water" type="string" calculate=" /pregnancy_danger_sign/danger_signs/breaking_water "/>
-      <bind nodeset="/pregnancy_danger_sign/data/__easily_tired" type="string" calculate=" /pregnancy_danger_sign/danger_signs/easily_tired "/>
-      <bind nodeset="/pregnancy_danger_sign/data/__face_hand_swelling" type="string" calculate=" /pregnancy_danger_sign/danger_signs/face_hand_swelling "/>
-      <bind nodeset="/pregnancy_danger_sign/data/__breathlessness" type="string" calculate=" /pregnancy_danger_sign/danger_signs/breathlessness "/>
-      <bind nodeset="/pregnancy_danger_sign/data/__has_danger_sign" type="string" calculate=" /pregnancy_danger_sign/danger_signs/r_danger_sign_present "/>
-      <bind nodeset="/pregnancy_danger_sign/data/meta/__patient_uuid" type="string" calculate="../../../inputs/contact/_id"/>
-      <bind nodeset="/pregnancy_danger_sign/data/meta/__patient_id" type="string" calculate="../../../inputs/contact/patient_id"/>
-      <bind nodeset="/pregnancy_danger_sign/data/meta/__household_uuid" type="string" calculate="../../../inputs/contact/parent/_id"/>
-      <bind nodeset="/pregnancy_danger_sign/data/meta/__source" type="string" calculate="../../../inputs/source"/>
-      <bind nodeset="/pregnancy_danger_sign/data/meta/__source_id" type="string" calculate="../../../inputs/source_id"/>
-      <bind nodeset="/pregnancy_danger_sign/data/meta/__pregnancy_uuid" type="string" calculate=" /pregnancy_danger_sign/pregnancy_uuid_ctx "/>
-      <bind nodeset="/pregnancy_danger_sign/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+      <instance id="yes_no">
+        <root>
+          <item>
+            <itextId>yes_no-0</itextId>
+            <name>yes</name>
+          </item>
+          <item>
+            <itextId>yes_no-1</itextId>
+            <name>no</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="translate_woman_label">
+        <root>
+          <item>
+            <itextId>translate_woman_label-0</itextId>
+            <name>woman</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="translate_woman_start_label">
+        <root>
+          <item>
+            <itextId>translate_woman_start_label-0</itextId>
+            <name>woman-start</name>
+          </item>
+        </root>
+      </instance>
+      <bind nodeset="/data/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/data/inputs/source" type="string"/>
+      <bind nodeset="/data/inputs/source_id" type="string"/>
+      <bind nodeset="/data/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/data/inputs/contact/name" type="string"/>
+      <bind nodeset="/data/inputs/contact/short_name" type="string"/>
+      <bind nodeset="/data/inputs/contact/patient_id" type="string"/>
+      <bind nodeset="/data/inputs/contact/date_of_birth" type="string"/>
+      <bind nodeset="/data/inputs/contact/sex" type="string"/>
+      <bind nodeset="/data/inputs/contact/parent/_id" type="string"/>
+      <bind nodeset="/data/inputs/contact/parent/parent/contact/chw_name" type="string"/>
+      <bind nodeset="/data/inputs/contact/parent/parent/contact/phone" type="string"/>
+      <bind nodeset="/data/patient_age_in_years" type="string" calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )"/>
+      <bind nodeset="/data/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/data/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
+      <bind nodeset="/data/patient_name" type="string" calculate="../inputs/contact/name"/>
+      <bind nodeset="/data/patient_short_name" type="string" calculate="coalesce(../inputs/contact/short_name, ../danger_signs/custom_translations/custom_woman_label)"/>
+      <bind nodeset="/data/patient_short_name_start" type="string" calculate="coalesce(../inputs/contact/short_name, ../danger_signs/custom_translations/custom_woman_start_label)"/>
+      <bind nodeset="/data/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(decimal-date-time(today()) + 3)"/>
+      <bind nodeset="/data/t_danger_signs_referral_follow_up" type="string" calculate="../danger_signs/r_danger_sign_present"/>
+      <bind nodeset="/data/pregnancy_uuid_ctx" type="string" calculate="if(instance('contact-summary')/context/pregnancy_uuid != '', instance('contact-summary')/context/pregnancy_uuid, .)"/>
+      <bind nodeset="/data/danger_signs/danger_signs_note" readonly="true()" type="string"/>
+      <bind nodeset="/data/danger_signs/danger_signs_question_note" readonly="true()" type="string"/>
+      <bind nodeset="/data/danger_signs/vaginal_bleeding" type="string" required="true()"/>
+      <bind nodeset="/data/danger_signs/fits" type="string" required="true()"/>
+      <bind nodeset="/data/danger_signs/severe_abdominal_pain" type="string" required="true()"/>
+      <bind nodeset="/data/danger_signs/severe_headache" type="string" required="true()"/>
+      <bind nodeset="/data/danger_signs/very_pale" type="string" required="true()"/>
+      <bind nodeset="/data/danger_signs/fever" type="string" required="true()"/>
+      <bind nodeset="/data/danger_signs/reduced_or_no_fetal_movements" type="string" required="true()"/>
+      <bind nodeset="/data/danger_signs/breaking_water" type="string" required="true()"/>
+      <bind nodeset="/data/danger_signs/easily_tired" type="string" required="true()"/>
+      <bind nodeset="/data/danger_signs/face_hand_swelling" type="string" required="true()"/>
+      <bind nodeset="/data/danger_signs/breathlessness" type="string" required="true()"/>
+      <bind nodeset="/data/danger_signs/r_danger_sign_present" type="string" calculate="if(selected(../vaginal_bleeding, 'yes')&#10;or selected(../fits, 'yes')&#10;or selected(../severe_abdominal_pain, 'yes')&#10;or selected(../severe_headache, 'yes')&#10;or selected(../very_pale, 'yes')&#10;or selected(../fever, 'yes')&#10;or selected(../reduced_or_no_fetal_movements, 'yes')&#10;or selected(../breaking_water, 'yes')&#10;or selected(../easily_tired, 'yes')&#10;or selected(../face_hand_swelling, 'yes')&#10;or selected(../breathlessness, 'yes'), &#10;'yes',&#10;if(selected(../vaginal_bleeding, 'no')&#10;and selected(../fits, 'no')&#10;and selected(../severe_abdominal_pain, 'no')&#10;and selected(../severe_headache, 'no')&#10;and selected(../very_pale, 'no')&#10;and selected(../fever, 'no')&#10;and selected(../reduced_or_no_fetal_movements, 'no')&#10;and selected(../breaking_water, 'no')&#10;and selected(../easily_tired, 'no')&#10;and selected(../face_hand_swelling, 'no')&#10;and selected(../breathlessness, 'no'), 'no', ''))"/>
+      <bind nodeset="/data/danger_signs/congratulate_no_ds_note" readonly="true()" type="string" relevant="../r_danger_sign_present = 'no'"/>
+      <bind nodeset="/data/danger_signs/refer_patient_note_1" readonly="true()" type="string" relevant="../r_danger_sign_present = 'yes'"/>
+      <bind nodeset="/data/danger_signs/refer_patient_note_2" readonly="true()" type="string" relevant="../r_danger_sign_present = 'yes'"/>
+      <bind nodeset="/data/danger_signs/custom_translations/custom_woman_label_translator" type="string" calculate="&quot;woman&quot;"/>
+      <bind nodeset="/data/danger_signs/custom_translations/custom_woman_label" type="string" calculate="jr:choice-name( /data/danger_signs/custom_translations/custom_woman_label_translator ,' /data/danger_signs/custom_translations/custom_woman_label_translator ')"/>
+      <bind nodeset="/data/danger_signs/custom_translations/custom_woman_start_label_translator" type="string" calculate="&quot;woman-start&quot;"/>
+      <bind nodeset="/data/danger_signs/custom_translations/custom_woman_start_label" type="string" calculate="jr:choice-name( /data/danger_signs/custom_translations/custom_woman_start_label_translator ,' /data/danger_signs/custom_translations/custom_woman_start_label_translator ')"/>
+      <bind nodeset="/data/data/__vaginal_bleeding" type="string" calculate=" /data/danger_signs/vaginal_bleeding "/>
+      <bind nodeset="/data/data/__fits" type="string" calculate=" /data/danger_signs/fits "/>
+      <bind nodeset="/data/data/__severe_abdominal_pain" type="string" calculate=" /data/danger_signs/severe_abdominal_pain "/>
+      <bind nodeset="/data/data/__severe_headache" type="string" calculate=" /data/danger_signs/severe_headache "/>
+      <bind nodeset="/data/data/__very_pale" type="string" calculate=" /data/danger_signs/very_pale "/>
+      <bind nodeset="/data/data/__fever" type="string" calculate=" /data/danger_signs/fever "/>
+      <bind nodeset="/data/data/__reduced_or_no_fetal_movements" type="string" calculate=" /data/danger_signs/reduced_or_no_fetal_movements "/>
+      <bind nodeset="/data/data/__breaking_water" type="string" calculate=" /data/danger_signs/breaking_water "/>
+      <bind nodeset="/data/data/__easily_tired" type="string" calculate=" /data/danger_signs/easily_tired "/>
+      <bind nodeset="/data/data/__face_hand_swelling" type="string" calculate=" /data/danger_signs/face_hand_swelling "/>
+      <bind nodeset="/data/data/__breathlessness" type="string" calculate=" /data/danger_signs/breathlessness "/>
+      <bind nodeset="/data/data/__has_danger_sign" type="string" calculate=" /data/danger_signs/r_danger_sign_present "/>
+      <bind nodeset="/data/data/meta/__patient_uuid" type="string" calculate="../../../inputs/contact/_id"/>
+      <bind nodeset="/data/data/meta/__patient_id" type="string" calculate="../../../inputs/contact/patient_id"/>
+      <bind nodeset="/data/data/meta/__household_uuid" type="string" calculate="../../../inputs/contact/parent/_id"/>
+      <bind nodeset="/data/data/meta/__source" type="string" calculate="../../../inputs/source"/>
+      <bind nodeset="/data/data/meta/__source_id" type="string" calculate="../../../inputs/source_id"/>
+      <bind nodeset="/data/data/meta/__pregnancy_uuid" type="string" calculate=" /data/pregnancy_uuid_ctx "/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
   <h:body class="pages">
-    <group appearance="field-list" ref="/pregnancy_danger_sign/inputs">
-      <group ref="/pregnancy_danger_sign/inputs/contact">
-        <label ref="jr:itext('/pregnancy_danger_sign/inputs/contact:label')"/>
-        <input appearance="db-object" ref="/pregnancy_danger_sign/inputs/contact/_id">
-          <label ref="jr:itext('/pregnancy_danger_sign/inputs/contact/_id:label')"/>
+    <group appearance="field-list" ref="/data/inputs">
+      <group ref="/data/inputs/contact">
+        <label ref="jr:itext('/data/inputs/contact:label')"/>
+        <input ref="/data/inputs/contact/_id" appearance="db-object">
+          <label ref="jr:itext('/data/inputs/contact/_id:label')"/>
         </input>
-        <group ref="/pregnancy_danger_sign/inputs/contact/parent">
-          <group ref="/pregnancy_danger_sign/inputs/contact/parent/parent">
-            <group ref="/pregnancy_danger_sign/inputs/contact/parent/parent/contact"/>
+        <group ref="/data/inputs/contact/parent">
+          <group ref="/data/inputs/contact/parent/parent">
+            <group ref="/data/inputs/contact/parent/parent/contact"></group>
           </group>
         </group>
       </group>
     </group>
-    <group appearance="field-list" ref="/pregnancy_danger_sign/danger_signs">
-      <label ref="jr:itext('/pregnancy_danger_sign/danger_signs:label')"/>
-      <input ref="/pregnancy_danger_sign/danger_signs/danger_signs_note">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/danger_signs_note:label')"/>
+    <group appearance="field-list" ref="/data/danger_signs">
+      <label ref="jr:itext('/data/danger_signs:label')"/>
+      <input ref="/data/danger_signs/danger_signs_note">
+        <label ref="jr:itext('/data/danger_signs/danger_signs_note:label')"/>
       </input>
-      <input ref="/pregnancy_danger_sign/danger_signs/danger_signs_question_note">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/danger_signs_question_note:label')"/>
+      <input ref="/data/danger_signs/danger_signs_question_note">
+        <label ref="jr:itext('/data/danger_signs/danger_signs_question_note:label')"/>
       </input>
-      <select1 ref="/pregnancy_danger_sign/danger_signs/vaginal_bleeding">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/vaginal_bleeding:label')"/>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/vaginal_bleeding/yes:label')"/>
-          <value>yes</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/vaginal_bleeding/no:label')"/>
-          <value>no</value>
-        </item>
+      <select1 ref="/data/danger_signs/vaginal_bleeding">
+        <label ref="jr:itext('/data/danger_signs/vaginal_bleeding:label')"/>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <select1 ref="/pregnancy_danger_sign/danger_signs/fits">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/fits:label')"/>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/fits/yes:label')"/>
-          <value>yes</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/fits/no:label')"/>
-          <value>no</value>
-        </item>
+      <select1 ref="/data/danger_signs/fits">
+        <label ref="jr:itext('/data/danger_signs/fits:label')"/>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <select1 ref="/pregnancy_danger_sign/danger_signs/severe_abdominal_pain">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/severe_abdominal_pain:label')"/>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/severe_abdominal_pain/yes:label')"/>
-          <value>yes</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/severe_abdominal_pain/no:label')"/>
-          <value>no</value>
-        </item>
+      <select1 ref="/data/danger_signs/severe_abdominal_pain">
+        <label ref="jr:itext('/data/danger_signs/severe_abdominal_pain:label')"/>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <select1 ref="/pregnancy_danger_sign/danger_signs/severe_headache">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/severe_headache:label')"/>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/severe_headache/yes:label')"/>
-          <value>yes</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/severe_headache/no:label')"/>
-          <value>no</value>
-        </item>
+      <select1 ref="/data/danger_signs/severe_headache">
+        <label ref="jr:itext('/data/danger_signs/severe_headache:label')"/>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <select1 ref="/pregnancy_danger_sign/danger_signs/very_pale">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/very_pale:label')"/>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/very_pale/yes:label')"/>
-          <value>yes</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/very_pale/no:label')"/>
-          <value>no</value>
-        </item>
+      <select1 ref="/data/danger_signs/very_pale">
+        <label ref="jr:itext('/data/danger_signs/very_pale:label')"/>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <select1 ref="/pregnancy_danger_sign/danger_signs/fever">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/fever:label')"/>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/fever/yes:label')"/>
-          <value>yes</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/fever/no:label')"/>
-          <value>no</value>
-        </item>
+      <select1 ref="/data/danger_signs/fever">
+        <label ref="jr:itext('/data/danger_signs/fever:label')"/>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <select1 ref="/pregnancy_danger_sign/danger_signs/reduced_or_no_fetal_movements">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/reduced_or_no_fetal_movements:label')"/>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/reduced_or_no_fetal_movements/yes:label')"/>
-          <value>yes</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/reduced_or_no_fetal_movements/no:label')"/>
-          <value>no</value>
-        </item>
+      <select1 ref="/data/danger_signs/reduced_or_no_fetal_movements">
+        <label ref="jr:itext('/data/danger_signs/reduced_or_no_fetal_movements:label')"/>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <select1 ref="/pregnancy_danger_sign/danger_signs/breaking_water">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/breaking_water:label')"/>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/breaking_water/yes:label')"/>
-          <value>yes</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/breaking_water/no:label')"/>
-          <value>no</value>
-        </item>
+      <select1 ref="/data/danger_signs/breaking_water">
+        <label ref="jr:itext('/data/danger_signs/breaking_water:label')"/>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <select1 ref="/pregnancy_danger_sign/danger_signs/easily_tired">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/easily_tired:label')"/>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/easily_tired/yes:label')"/>
-          <value>yes</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/easily_tired/no:label')"/>
-          <value>no</value>
-        </item>
+      <select1 ref="/data/danger_signs/easily_tired">
+        <label ref="jr:itext('/data/danger_signs/easily_tired:label')"/>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <select1 ref="/pregnancy_danger_sign/danger_signs/face_hand_swelling">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/face_hand_swelling:label')"/>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/face_hand_swelling/yes:label')"/>
-          <value>yes</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/face_hand_swelling/no:label')"/>
-          <value>no</value>
-        </item>
+      <select1 ref="/data/danger_signs/face_hand_swelling">
+        <label ref="jr:itext('/data/danger_signs/face_hand_swelling:label')"/>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <select1 ref="/pregnancy_danger_sign/danger_signs/breathlessness">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/breathlessness:label')"/>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/breathlessness/yes:label')"/>
-          <value>yes</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/breathlessness/no:label')"/>
-          <value>no</value>
-        </item>
+      <select1 ref="/data/danger_signs/breathlessness">
+        <label ref="jr:itext('/data/danger_signs/breathlessness:label')"/>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <input ref="/pregnancy_danger_sign/danger_signs/congratulate_no_ds_note">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/congratulate_no_ds_note:label')"/>
+      <input ref="/data/danger_signs/congratulate_no_ds_note">
+        <label ref="jr:itext('/data/danger_signs/congratulate_no_ds_note:label')"/>
       </input>
-      <input ref="/pregnancy_danger_sign/danger_signs/refer_patient_note_1">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/refer_patient_note_1:label')"/>
+      <input ref="/data/danger_signs/refer_patient_note_1">
+        <label ref="jr:itext('/data/danger_signs/refer_patient_note_1:label')"/>
       </input>
-      <input ref="/pregnancy_danger_sign/danger_signs/refer_patient_note_2">
-        <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/refer_patient_note_2:label')"/>
+      <input ref="/data/danger_signs/refer_patient_note_2">
+        <label ref="jr:itext('/data/danger_signs/refer_patient_note_2:label')"/>
       </input>
-      <group appearance="hidden" ref="/pregnancy_danger_sign/danger_signs/custom_translations">
-        <select1 ref="/pregnancy_danger_sign/danger_signs/custom_translations/custom_woman_label_translator">
-          <item>
-            <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/custom_translations/custom_woman_label_translator/woman:label')"/>
-            <value>woman</value>
-          </item>
+      <group appearance="hidden" ref="/data/danger_signs/custom_translations">
+        <select1 ref="/data/danger_signs/custom_translations/custom_woman_label_translator">
+          <itemset nodeset="instance('translate_woman_label')/root/item">
+            <value ref="name"/>
+            <label ref="jr:itext(itextId)"/>
+          </itemset>
         </select1>
-        <select1 ref="/pregnancy_danger_sign/danger_signs/custom_translations/custom_woman_start_label_translator">
-          <item>
-            <label ref="jr:itext('/pregnancy_danger_sign/danger_signs/custom_translations/custom_woman_start_label_translator/woman-start:label')"/>
-            <value>woman-start</value>
-          </item>
+        <select1 ref="/data/danger_signs/custom_translations/custom_woman_start_label_translator">
+          <itemset nodeset="instance('translate_woman_start_label')/root/item">
+            <value ref="name"/>
+            <label ref="jr:itext(itextId)"/>
+          </itemset>
         </select1>
       </group>
     </group>
-    <group appearance="hidden" ref="/pregnancy_danger_sign/data">
-      <group ref="/pregnancy_danger_sign/data/meta"/>
+    <group appearance="hidden" ref="/data/data">
+      <group ref="/data/data/meta"></group>
     </group>
   </h:body>
 </h:html>
