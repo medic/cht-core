@@ -1,4 +1,4 @@
-function (doc) {
+function(doc) {
   if (doc._id === 'resources' ||
       doc._id === 'branding' ||
       doc._id === 'partners' ||
@@ -8,9 +8,17 @@ function (doc) {
       doc._id === 'privacy-policies' ||
       doc.type === 'form' ||
       doc.type === 'translations') {
-    return emit('_all', {});
+    index('string', 'key', '_all', { store: true });
+    return;
   }
-  var getSubject = function() {
+
+  var indexMaybe = (fieldName, value) => {
+    if (value) {
+      index('string', fieldName, value.toString(), { store: true });
+    }
+  }
+
+  var getSubject = () => {
     if (doc.form) {
       // report
       if (doc.contact && doc.errors && doc.errors.length) {
@@ -41,40 +49,42 @@ function (doc) {
              doc.tasks[0].messages[0].contact._id;
     }
   };
-  var value = { type: doc.type };
+
+  indexMaybe( 'type', doc.type);
   switch (doc.type) {
-    case 'data_record':
-      value.subject = getSubject() || '_unassigned';
-      if (doc.form && doc.contact) {
-        value.submitter = doc.contact._id;
-      }
-      if (doc.fields && doc.fields.private) {
-        value.private = true;
-      }
-      emit(value.subject, value);
-      if (doc.fields &&
-          doc.fields.needs_signoff &&
-          doc.contact
-      ) {
-        value.needs_signoff = true;
-        var contact = doc.contact;
-        while (contact) {
-          if (contact._id && contact._id !== value.subject) {
-            emit(contact._id, value);
-          }
-          contact = contact.parent;
+  case 'data_record':
+    var subject = getSubject() || '_unassigned';
+    indexMaybe('subject', subject);
+    indexMaybe('key', subject);
+    if (doc.form && doc.contact) {
+      indexMaybe('submitter', doc.contact._id);
+    }
+    if (doc.fields && doc.fields.private) {
+      indexMaybe('private', 'true');
+    }
+    if (doc.fields &&
+        doc.fields.needs_signoff &&
+        doc.contact
+    ) {
+      indexMaybe('needs_signoff', 'true');
+      var contact = doc.contact;
+      while (contact) {
+        if (contact._id && contact._id !== subject) {
+          indexMaybe('key', contact._id);
         }
+        contact = contact.parent;
       }
-      return;
-    case 'task':
-      return emit(doc.user, value);
-    case 'target':
-      return emit(doc.owner, value);
-    case 'contact':
-    case 'clinic':
-    case 'district_hospital':
-    case 'health_center':
-    case 'person':
-      return emit(doc._id, value);
+    }
+    return;
+  case 'task':
+    return indexMaybe('key', doc.user);
+  case 'target':
+    return indexMaybe('key', doc.owner);
+  case 'contact':
+  case 'clinic':
+  case 'district_hospital':
+  case 'health_center':
+  case 'person':
+    return indexMaybe('key', doc._id);
   }
 }
