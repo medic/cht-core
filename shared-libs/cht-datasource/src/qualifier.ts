@@ -1,4 +1,4 @@
-import { hasField, isRecord, isString, Nullable } from './libs/core';
+import { hasField, isRecord, isString } from './libs/core';
 import { InvalidArgumentError } from './libs/error';
 
 /**
@@ -116,11 +116,6 @@ export const isKeyedFreetextQualifier = (qualifier: FreetextQualifier): boolean 
 
   return false;
 };
-
-// /**
-//  * Identifies a specific reporting period (e.g. a calendar month) with the format YYYY-MM.
-//  */
-// export type ReportingPeriod = string & { __brand: 'ReportingPeriod' };
 
 /**
  * A qualifier that identifies entities based on a reporting period (e.g. a calendar month). The reporting period
