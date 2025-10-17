@@ -22,16 +22,36 @@ describe('Death related targets tests', () => {
     await harness.setNow('2000-04-30');//DOD: 2000-04-25
     harness.subject = babyDeceasedAtAge1Day;
     const deathsThisMonth = await harness.getTargets({ type: 'deaths-this-month' });
-    expect(deathsThisMonth).to.have.property('length', 1);
-    expect(deathsThisMonth[0]).to.nested.include({ 'value.pass': 1, 'value.total': 1 });
+    expect(deathsThisMonth).to.deep.equal([{
+      goal: 0,
+      icon: 'icon-death-general',
+      id: 'deaths-this-month',
+      subtitle_translation_key: 'targets.this_month.subtitle',
+      translation_key: 'targets.death_reporting.deaths.title',
+      type: 'count',
+      value: {
+        pass: 1,
+        total: 1
+      }
+    }]);
   });
 
   it('death this month target test next month', async () => {
     await harness.setNow('2000-05-30');//DOD: 2000-04-25
     harness.subject = babyDeceasedAtAge1Day;
     const deathsThisMonth = await harness.getTargets({ type: 'deaths-this-month' });
-    expect(deathsThisMonth).to.have.property('length', 1);
-    expect(deathsThisMonth[0]).to.nested.not.include({ 'value.pass': 1, 'value.total': 1 });
+    expect(deathsThisMonth).to.deep.equal([{
+      goal: 0,
+      icon: 'icon-death-general',
+      id: 'deaths-this-month',
+      subtitle_translation_key: 'targets.this_month.subtitle',
+      translation_key: 'targets.death_reporting.deaths.title',
+      type: 'count',
+      value: {
+        pass: 0,
+        total: 0
+      }
+    }]);
   });
 
 });
