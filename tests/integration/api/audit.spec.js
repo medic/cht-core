@@ -43,6 +43,11 @@ describe('auditing', () => {
     await utils.createUsers([docs.user]);
   });
 
+  after(async () => {
+    await utils.deleteUsers([docs.user]);
+    await utils.revertDb([], true);
+  });
+
   it('should audit created docs', async () => {
     const audit = await getAudit(docIds);
     docIds.forEach((id) => checkAudit(audit[id]));
@@ -111,8 +116,8 @@ describe('auditing', () => {
 
       expect(auditAfter.audit.history.length).to.equal(auditBefore.audit.history.length + 1);
     });
-  }); 
-  
+  });
+
   describe('for offline users', () => {
     const auth = { username: docs.user.username, password: docs.user.password };
     it('should ignore GET', async () => {
