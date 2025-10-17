@@ -33,6 +33,13 @@ interface DebounceActive {
   };
 }
 
+interface TaskDoc {
+  _id: string;
+  emission?: any;
+  owner: string;
+  stateHistory: Array<{ state: string, timestamp: number }>;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -327,7 +334,7 @@ export class RulesEngineService implements OnDestroy {
     return this.rulesEngineCore.updateEmissionsFor(_uniq(contactsWithUpdatedTasks));
   }
 
-  private hydrateTaskDocs(taskDocs: { _id: string; emission?: any; owner: string }[] = []) {
+  private hydrateTaskDocs(taskDocs: Array<TaskDoc> = []) {
     taskDocs.forEach(taskDoc => {
       const { emission } = taskDoc;
       if (!emission) {
