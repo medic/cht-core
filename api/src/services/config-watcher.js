@@ -60,8 +60,8 @@ const loadViewMaps = () => {
     .then(ddoc => {
       viewMapUtils.loadViewMaps(
         ddoc,
-        'docs_by_replication_key',
-        'contacts_by_depth'
+        ['contacts_by_depth'],
+        ['docs_by_replication_key']
       );
     })
     .catch(err => {
