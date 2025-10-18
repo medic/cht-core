@@ -144,20 +144,20 @@ describe('Replication Helper Views Lib', () => {
                        '  \n \n \n \n ' +
                        '  switch (operator) { '+
                        '    case \'+\': ' +
-                       '      return index("string", "result", a + b);' +
+                       '      return index("string", "result", a + b, { store: true });' +
                        '    case \'-\': ' +
-                       '      return index("string", "result", a - b);' +
+                       '      return index("string", "result", a - b, { store: true });' +
                        '    case \'*\':' +
-                       '      return index("string", "result", a * b);' +
+                       '      return index("string", "result", a * b, { store: true });' +
                        '    case \'/\':' +
-                       '      return index("string", "result", a / b);' +
+                       '      return index("string", "result", a / b, { store: true });' +
                        '  }' +
                        '}';
       const ddoc = {
         _id: '_design/ddoc',
         nouveau: {
           viewName: { index: fnString },
-          viewName2: { index: ' function(a){ return index("string", "res", a + 2) } '}}
+          viewName2: { index: ' function(a){ return index("string", "res", a + 2, { store: true }) } '}}
       };
       lib.loadViewMaps(ddoc, [], ['viewName', 'viewName2']);
       const fn = lib.getNouveauViewMapFn('ddoc', 'viewName');
@@ -174,9 +174,9 @@ describe('Replication Helper Views Lib', () => {
 
     it('supports multiple indexes', () => {
       const fnString = 'function(a) { ' +
-                       'index("string", "val", a + 1); ' +
-                       'index("string", "val", a + 2); ' +
-                       'index("string", "val", a + 3); }';
+                       'index("string", "val", a + 1, { store: true }); ' +
+                       'index("string", "val", a + 2, { store: true }); ' +
+                       'index("string", "val", a + 3, { store: true }); }';
       const ddoc = {
         _id: '_design/ddoc',
         nouveau: {
@@ -192,9 +192,9 @@ describe('Replication Helper Views Lib', () => {
     it('should index multiple keys', () => {
       const fnString = `
       function(a) { 
-        index("string", "+2", a + 2); 
-        index("string", "+3", a + 3); 
-        index("string", "+4", a + 4); 
+        index("string", "+2", a + 2, { store: true }); 
+        index("string", "+3", a + 3, { store: true }); 
+        index("string", "+4", a + 4, { store: true }); 
       };
       `;
       const ddoc = {
@@ -207,6 +207,25 @@ describe('Replication Helper Views Lib', () => {
       const fn = lib.getNouveauViewMapFn('ddoc', 'viewName');
       fn(1).should.deep.equal({ '+2': 3, '+3': 4, '+4': 5 });
       fn(2).should.deep.equal({ '+2': 4, '+3': 5, '+4': 6 });
+    });
+
+    it('should not store some indexes', () => {
+      const fnString = `
+      function(doc) {
+        index('string', 'val_1', doc.val, { store: true });
+        index('stored', 'val_2', doc.val);
+        index('string', 'val_3', doc.val);
+      }
+      `;
+      const ddoc = {
+        _id: '_design/ddoc',
+        nouveau: {
+          viewName: { index: fnString }
+        }
+      };
+      lib.loadViewMaps(ddoc, [], ['viewName']);
+      const fn = lib.getNouveauViewMapFn('ddoc', 'viewName');
+      fn({ val: 'one' }).should.deep.equal({ val_1: 'one', val_2: 'one' });
     });
 
     it('throws error when requested a view that does not exist ', () => {
@@ -222,7 +241,11 @@ describe('Replication Helper Views Lib', () => {
     });
 
     it('caches results', () => {
-      const fnString = 'function(a) { index("string", "val", a + 1); index("string", "val", a + 2); }';
+      const fnString = `
+      function(a) { 
+        index("string", "val", a + 1, { store: true }); 
+        index("string", "val", a + 2, { store: true }); 
+      }`;
       const ddoc = {
         _id: '_design/ddoc',
         nouveau: {
@@ -258,7 +281,7 @@ describe('Replication Helper Views Lib', () => {
   describe('hot reloading', () => {
     it('returns correct functions when views are reloaded', () => {
       let fnStringView1 = 'function(a) { return emit(a); }';
-      let fnStringView2 = 'function(a) { return index("string", "key", a + 2); }';
+      let fnStringView2 = 'function(a) { return index("string", "key", a + 2, { store: true }); }';
       let ddoc = {
         _id: '_design/ddoc',
         views: {
@@ -276,7 +299,7 @@ describe('Replication Helper Views Lib', () => {
       lib.getNouveauViewMapFn('ddoc', 'view2')(1).should.deep.equal({ key: 3 });
 
       fnStringView1 = 'function(a) { return emit(4); }';
-      fnStringView2 = 'function(a) { return index("string", "key", "Jason"); }';
+      fnStringView2 = 'function(a) { return index("string", "key", "Jason", { store: true }); }';
       ddoc = {
         _id: 'ddoc',
         views: {

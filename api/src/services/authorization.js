@@ -193,9 +193,8 @@ const allowedDoc = (docId, authorizationContext, { docsByReplicationKey, contact
     return true;
   }
 
-  const replicationKeys = Array.isArray(docsByReplicationKey?.key) ?
-    docsByReplicationKey.key : [docsByReplicationKey?.key];
-  if (replicationKeys.includes(ALL_KEY)) {
+  const replicationKeys = docsByReplicationKey?.key;
+  if (replicationKeys?.includes(ALL_KEY)) {
     return true;
   }
 
@@ -247,8 +246,7 @@ const allowedReport = (authorizationContext, docsByReplicationKey) => {
     return false;
   }
 
-  const replicationKeys = Array.isArray(docsByReplicationKey.key) ?
-    docsByReplicationKey.key : [docsByReplicationKey.key];
+  const replicationKeys = docsByReplicationKey?.key || [];
 
   // it's a report, task or target
   const allowedDepth = isAllowedDepth(authorizationContext, docsByReplicationKey);
@@ -422,8 +420,7 @@ const getReplicationKeys = (viewResults) => {
     return [];
   }
 
-  const replicationKeys = Array.isArray(viewResults.docsByReplicationKey.key) ?
-    viewResults.docsByReplicationKey.key : [viewResults.docsByReplicationKey.key];
+  const replicationKeys = [...viewResults.docsByReplicationKey.key];
   replicationKeys.push(viewResults.docsByReplicationKey.submitter);
 
   return replicationKeys.filter(key => !!key);
@@ -642,7 +639,10 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
 
     hits.push(...response.hits.map(hit => ({
       id: hit.id,
-      fields: hit.fields,
+      fields: {
+        ...hit.fields,
+        key: Array.isArray(hit.fields.key) ? hit.fields.key : [hit.fields.key],
+      },
     })));
   }
 
@@ -710,9 +710,13 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = tru
  * @returns {{contactsByDepth: [], docsByReplicationKey: [], couchDbUser: boolean}}
  */
 const getViewResults = (doc) => {
+  const docsByReplicationKey = viewMapUtils.getNouveauViewMapFn('medic', 'docs_by_replication_key')(doc) || {};
   return {
     contactsByDepth: viewMapUtils.getViewMapFn('medic', 'contacts_by_depth')(doc),
-    docsByReplicationKey: viewMapUtils.getNouveauViewMapFn('medic', 'docs_by_replication_key')(doc),
+    docsByReplicationKey: {
+      ...docsByReplicationKey,
+      key: Array.isArray(docsByReplicationKey.key) ? docsByReplicationKey.key : [docsByReplicationKey.key],
+    },
     couchDbUser: couchDbUser(doc)
   };
 };

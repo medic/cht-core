@@ -12,17 +12,27 @@ function(doc) {
     return;
   }
 
-  var indexMaybe = (fieldName, value) => {
-    if (value) {
-      index('string', fieldName, value.toString(), { store: true });
+  const indexableFields = ['key', 'type'];
+
+  const indexMaybe = (fieldName, value) => {
+    if (value === undefined) {
+      return;
+    }
+    // ensure we index strings, not booleans or other types
+    value = value.toString();
+
+    if (indexableFields.includes(fieldName)) {
+      index('string', fieldName, value, { store: true });
+    } else {
+      index('stored', fieldName, value);
     }
   }
 
-  var getSubject = () => {
+  const getSubject = () => {
     if (doc.form) {
       // report
       if (doc.contact && doc.errors && doc.errors.length) {
-        for (var i = 0; i < doc.errors.length; i++) {
+        for (let i = 0; i < doc.errors.length; i++) {
           // invalid or no patient found, fall back to using contact. #3437
           if (doc.errors[i].code === 'registration_not_found' ||
               doc.errors[i].code === 'invalid_patient_id') {
@@ -52,22 +62,22 @@ function(doc) {
 
   indexMaybe( 'type', doc.type);
   switch (doc.type) {
-  case 'data_record':
-    var subject = getSubject() || '_unassigned';
+  case 'data_record': {
+    const subject = getSubject() || '_unassigned';
     indexMaybe('subject', subject);
     indexMaybe('key', subject);
     if (doc.form && doc.contact) {
       indexMaybe('submitter', doc.contact._id);
     }
     if (doc.fields && doc.fields.private) {
-      indexMaybe('private', 'true');
+      indexMaybe('private', true);
     }
     if (doc.fields &&
         doc.fields.needs_signoff &&
         doc.contact
     ) {
-      indexMaybe('needs_signoff', 'true');
-      var contact = doc.contact;
+      indexMaybe('needs_signoff', true);
+      let contact = doc.contact;
       while (contact) {
         if (contact._id && contact._id !== subject) {
           indexMaybe('key', contact._id);
@@ -76,6 +86,7 @@ function(doc) {
       }
     }
     return;
+  }
   case 'task':
     return indexMaybe('key', doc.user);
   case 'target':
