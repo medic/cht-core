@@ -72,7 +72,9 @@ describe('Messages Overview', () => {
     await utils.createUsers([docs.user]);
     await loginPage.cookieLogin();
     await commonPage.waitForPageLoaded();
-    await seedSmsMessages();
+  });
+  
+  beforeEach(async () => {
     await commonPage.goToMessages();
     await commonPage.waitForLoaders();
   });
