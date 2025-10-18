@@ -87,7 +87,7 @@ describe('Messages Overview', () => {
       await modalPage.cancel();
     }
     const mainConversation = conversations[0];
-    await messagesPage.openMessage(mainConversation.phone);
+    await messagesPage.openMessage(mainConversation.contact._id);
     await browser.pause(500);
     await generateScreenshot('messages', 'conversation');
   });
