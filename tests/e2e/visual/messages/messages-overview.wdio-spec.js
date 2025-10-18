@@ -68,7 +68,7 @@ describe('Messages Overview', () => {
 
   before(async () => {
     await resizeWindowForScreenshots();
-    await utils.saveDocs([...docs.places, ...docs.clinics, ...docs.persons, ...docs.reports]);
+    await utils.saveDocs([...docs.places, ...docs.clinics, ...docs.persons, ...docs.reports, ...smsMessages]);
     await utils.createUsers([docs.user]);
     await loginPage.cookieLogin();
     await commonPage.waitForPageLoaded();
