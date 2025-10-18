@@ -34,26 +34,37 @@ describe('Messages Overview', () => {
     messages: sampleMessages[index] || sampleMessages[0]
   }));
 
-  const seedSmsMessages = async () => {
+  const createSmsMessages = () => {
+    const smsDocs = [];
     let messageCounter = 1;
+    
     for (const conv of conversations) {
       for (const message of conv.messages) {
-        await utils.request({
-          method: 'POST',
-          path: '/api/sms',
-          body: {
-            messages: [{
-              from: conv.phone,
-              content: message,
-              id: `visual-${messageCounter}`
-            }]
-          }
-        });
+        const smsDoc = {
+          type: 'data_record',
+          from: conv.phone,
+          form: undefined,
+          errors: [],
+          tasks: [],
+          fields: {},
+          reported_date: Date.now() - (messageCounter * 1000),
+          sms_message: {
+            message: message,
+            from: conv.phone,
+            sent_timestamp: Date.now() - (messageCounter * 1000)
+          },
+          contact: conv.contact,
+          read: []
+        };
+        smsDocs.push(smsDoc);
         messageCounter++;
-        await browser.pause(100);
       }
     }
+    
+    return smsDocs;
   };
+
+  const smsMessages = createSmsMessages();
 
   before(async () => {
     await resizeWindowForScreenshots();
