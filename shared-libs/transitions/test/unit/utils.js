@@ -27,7 +27,7 @@ describe('utils', () => {
     const result = [{_id: 'someRowId'}];
 
     db.medic.query
-      .withArgs('medic/reports_by_form_and_parent', {
+      .withArgs('medic-admin/reports_by_form_and_parent', {
         startkey: [formName, clinicId],
         endkey: [formName, clinicId],
         include_docs: true,

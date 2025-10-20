@@ -80,7 +80,7 @@ const getReportsWithSameParentAndForm = (options={}) => {
     return Promise.reject('Missing required argument `parentId` for match query.');
   }
 
-  return db.medic.query('medic/reports_by_form_and_parent', {
+  return db.medic.query('medic-admin/reports_by_form_and_parent', {
     startkey: [formName, parentId],
     endkey: [formName, parentId],
     include_docs: true,

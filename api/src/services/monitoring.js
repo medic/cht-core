@@ -250,7 +250,7 @@ const getFeedbackCount = () => {
 };
 
 const getOutgoingMessageStatusCounts = () => {
-  return db.medic.query('medic-admin/message_queue', { reduce: true, group_level: 1 })
+  return db.medic.query('medic-sms/message_queue', { reduce: true, group_level: 1 })
     .then(counts => {
       const result = fromEntries(MESSAGE_QUEUE_STATUS_KEYS, 0);
       counts.rows.forEach(row => {
@@ -275,7 +275,7 @@ const getWeeklyOutgoingMessageStatusCounts = () => {
   }));
 
   const query = (options) => db.medic
-    .query('medic-admin/message_queue', options)
+    .query('medic-sms/message_queue', options)
     .catch(err => {
       logger.error(`Error fetching weekly outgoing message status counts ${options.start_key}: %o`, err);
       return { rows: [{ value: -1 }] };

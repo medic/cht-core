@@ -82,42 +82,42 @@ describe('MessageQueue service', function() {
   describe('query', () => {
     it('should query the message_queue view with correct params', () => {
       query
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false })).resolves({ rows: [] })
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 0 }] });
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: false })).resolves({ rows: [] })
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 0 }] });
 
       return service.query('tab', 10, 5, false).then(result => {
         chai.expect(result).to.deep.equal({ messages: [], total: 0 });
         chai.expect(query.callCount).to.equal(2);
         chai.expect(query.args[0])
-          .to.deep.equal(['medic-admin/message_queue', { limit: 5, skip: 10, reduce: false, include_docs: true }]);
-        chai.expect(query.args[1]).to.deep.equal(['medic-admin/message_queue', { reduce: true, group_level: 1 }]);
+          .to.deep.equal(['medic-sms/message_queue', { limit: 5, skip: 10, reduce: false, include_docs: true }]);
+        chai.expect(query.args[1]).to.deep.equal(['medic-sms/message_queue', { reduce: true, group_level: 1 }]);
       });
     });
 
     it('should query the message_queue view with correct default params', () => {
       query
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false })).resolves({ rows: [] })
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 0 }] });
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: false })).resolves({ rows: [] })
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 0 }] });
 
       return service.query('tab').then(result => {
         chai.expect(result).to.deep.equal({ messages: [], total: 0 });
         chai.expect(query.callCount).to.equal(2);
         chai.expect(query.args[0])
-          .to.deep.equal(['medic-admin/message_queue', { limit: 25, skip: 0, reduce: false, include_docs: true }]);
-        chai.expect(query.args[1]).to.deep.equal(['medic-admin/message_queue', { reduce: true, group_level: 1 }]);
+          .to.deep.equal(['medic-sms/message_queue', { limit: 25, skip: 0, reduce: false, include_docs: true }]);
+        chai.expect(query.args[1]).to.deep.equal(['medic-sms/message_queue', { reduce: true, group_level: 1 }]);
       });
     });
 
     it('should query the message queue view with correct params for scheduled tab', () => {
       query
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false })).resolves({ rows: [] })
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 0 }] });
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: false })).resolves({ rows: [] })
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 0 }] });
 
       return service.query('scheduled').then(result => {
         chai.expect(result).to.deep.equal({ messages: [], total: 0 });
         chai.expect(query.callCount).to.equal(2);
         chai.expect(query.args[0]).to.deep.equal([
-          'medic-admin/message_queue',
+          'medic-sms/message_queue',
           {
             limit: 25,
             skip: 0,
@@ -128,7 +128,7 @@ describe('MessageQueue service', function() {
           }
         ]);
         chai.expect(query.args[1]).to.deep.equal([
-          'medic-admin/message_queue',
+          'medic-sms/message_queue',
           { reduce: true, group_level: 1, start_key: ['scheduled', 0], end_key: ['scheduled', {}] }
         ]);
       });
@@ -136,14 +136,14 @@ describe('MessageQueue service', function() {
 
     it('should query the message queue view with correct params for due tab', () => {
       query
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false })).resolves({ rows: [] })
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 0 }] });
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: false })).resolves({ rows: [] })
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 0 }] });
 
       return service.query('due').then(result => {
         chai.expect(result).to.deep.equal({ messages: [], total: 0 });
         chai.expect(query.callCount).to.equal(2);
         chai.expect(query.args[0]).to.deep.equal([
-          'medic-admin/message_queue',
+          'medic-sms/message_queue',
           {
             limit: 25,
             skip: 0,
@@ -154,7 +154,7 @@ describe('MessageQueue service', function() {
           }
         ]);
         chai.expect(query.args[1]).to.deep.equal([
-          'medic-admin/message_queue',
+          'medic-sms/message_queue',
           { reduce: true, group_level: 1, start_key: ['due', {}], end_key: ['due', 0], descending: true }
         ]);
       });
@@ -163,14 +163,14 @@ describe('MessageQueue service', function() {
     it('should query the message queue view with correct params for muted (ascending) tab', () => {
       clock.tick(150000);
       query
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false })).resolves({ rows: [] })
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 0 }] });
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: false })).resolves({ rows: [] })
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 0 }] });
 
       return service.query('muted').then(result => {
         chai.expect(result).to.deep.equal({ messages: [], total: 0 });
         chai.expect(query.callCount).to.equal(2);
         chai.expect(query.args[0]).to.deep.equal([
-          'medic-admin/message_queue',
+          'medic-sms/message_queue',
           {
             limit: 25,
             skip: 0,
@@ -181,7 +181,7 @@ describe('MessageQueue service', function() {
           }
         ]);
         chai.expect(query.args[1]).to.deep.equal([
-          'medic-admin/message_queue',
+          'medic-sms/message_queue',
           { reduce: true, group_level: 1, start_key: ['muted', 150000], end_key: ['muted', {}] }
         ]);
       });
@@ -190,14 +190,14 @@ describe('MessageQueue service', function() {
     it('should query the message queue view with correct params for muted (descending) tab', () => {
       clock.tick(150000);
       query
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false })).resolves({ rows: [] })
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 22 }] });
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: false })).resolves({ rows: [] })
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 22 }] });
 
       return service.query('muted', undefined, undefined, true).then(result => {
         chai.expect(result).to.deep.equal({ messages: [], total: 22 });
         chai.expect(query.callCount).to.equal(2);
         chai.expect(query.args[0]).to.deep.equal([
-          'medic-admin/message_queue',
+          'medic-sms/message_queue',
           {
             limit: 25,
             skip: 0,
@@ -209,7 +209,7 @@ describe('MessageQueue service', function() {
           }
         ]);
         chai.expect(query.args[1]).to.deep.equal([
-          'medic-admin/message_queue',
+          'medic-sms/message_queue',
           { reduce: true, group_level: 1, start_key: ['muted', 150000], end_key: ['muted', 0], descending: true }
         ]);
       });
@@ -217,10 +217,10 @@ describe('MessageQueue service', function() {
 
     it('should handle empty results', () => {
       query
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: true }))
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: true }))
         .resolves({ rows: [] });
       query
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: false }))
         .resolves({ rows: [] });
 
       return service.query('due').then(result => {
@@ -278,9 +278,9 @@ describe('MessageQueue service', function() {
         }
       ];
 
-      query.withArgs('medic-admin/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 2 }] });
+      query.withArgs('medic-sms/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 2 }] });
       query
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: false }))
         .resolves({ rows: messages });
 
       query.withArgs('medic-client/contacts_by_phone').resolves({
@@ -401,9 +401,9 @@ describe('MessageQueue service', function() {
 
       translate.instant.callsFake(t => t);
 
-      query.withArgs('medic-admin/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 8 }] });
+      query.withArgs('medic-sms/message_queue', sinon.match({ reduce: true })).resolves({ rows: [{ value: 8 }] });
       query
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: false }))
         .resolves({ rows: messages });
 
       query
@@ -552,9 +552,9 @@ describe('MessageQueue service', function() {
       translate.instant.callsFake(t => t);
 
       query
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: true }))
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: true }))
         .resolves({ rows: [{ value: 22 }] })
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: false }))
         .resolves({ rows: messages });
 
       query
@@ -699,9 +699,9 @@ describe('MessageQueue service', function() {
       translate.instant.callsFake(t => t);
 
       query
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: true }))
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: true }))
         .resolves({ rows: [{ value: 22 }] })
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: false }))
         .resolves({ rows: messages });
 
       query
@@ -1037,9 +1037,9 @@ describe('MessageQueue service', function() {
       translate.instant.callsFake(t => t);
 
       query
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: true }))
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: true }))
         .resolves({ rows: [{ value: 22 }] })
-        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
+        .withArgs('medic-sms/message_queue', sinon.match({ reduce: false }))
         .resolves({ rows: messages });
 
       query

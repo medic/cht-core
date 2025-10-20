@@ -217,7 +217,7 @@ const setUpMocks = () => {
   sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq')
     .resolves({ processed_seq: '50-xyz' });
   const medicQuery = sinon.stub(db.medic, 'query');
-  medicQuery.withArgs('medic-admin/message_queue')
+  medicQuery.withArgs('medic-sms/message_queue')
     .resolves({ rows: [] })
     .onCall(0).resolves({ rows: [
       { key: [ 'scheduled' ], value: 15 },
@@ -226,11 +226,11 @@ const setUpMocks = () => {
       { key: [ 'delivered' ], value: 10 },
     ] });
   medicQuery
-    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['due'])}))
+    .withArgs('medic-sms/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['due'])}))
     .resolves({ rows: [{ key: undefined, value: 20 }] })
-    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['delivered'])}))
+    .withArgs('medic-sms/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['delivered'])}))
     .resolves({ rows: [{ key: undefined, value: 15 }] })
-    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['failed'])}))
+    .withArgs('medic-sms/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['failed'])}))
     .resolves({ rows: [{ key: undefined, value: 5 }] });
 
   medicQuery.withArgs('medic-conflicts/conflicts')
