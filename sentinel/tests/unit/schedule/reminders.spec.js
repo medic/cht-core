@@ -696,7 +696,7 @@ describe('reminders', () => {
 
         assert.equal(db.medic.query.callCount, 1);
         assert.deepEqual(db.medic.query.args[0], [
-          'medic-admin/reports_by_form_and_parent',
+          'medic/reports_by_form_and_parent',
           {
             keys: [['vform', 'doc1'], ['vform', 'doc2'], ['vform', 'doc3']],
             group: true
