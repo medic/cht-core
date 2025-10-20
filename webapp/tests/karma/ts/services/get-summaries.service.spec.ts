@@ -47,45 +47,7 @@ describe('GetSummaries service', () => {
     });
   });
 
-  describe('online users', () => {
-
-    beforeEach(() => isOnlineOnly.returns(true));
-
-    it('queries the view and returns', () => {
-      query.resolves({
-        rows: [
-          {
-            id: 'a',
-            value: { reported_date: 1 }
-          },
-          {
-            id: 'b',
-            value: { reported_date: 2 }
-          },
-        ] });
-      return service.get([ 'a', 'b' ]).then(actual => {
-        expect(query.callCount).to.equal(1);
-        expect(query.args[0][0]).to.equal('medic/doc_summaries_by_id');
-        expect(query.args[0][1]).to.deep.equal({ keys: [ 'a', 'b' ] });
-        expect(allDocs.callCount).to.equal(0);
-        expect(actual).to.deep.equal([
-          {
-            _id: 'a',
-            reported_date: 1
-          },
-          {
-            _id: 'b',
-            reported_date: 2
-          },
-        ]);
-      });
-    });
-
-  });
-
   describe('restricted users', () => {
-
-    beforeEach(() => isOnlineOnly.returns(false));
 
     it('queries allDocs and summarises reports', () => {
       allDocs.resolves({

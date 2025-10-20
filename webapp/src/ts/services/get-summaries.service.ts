@@ -62,10 +62,6 @@ export class GetSummariesService {
     return subject;
   }
 
-  // WARNING: This is a copy of the medic/doc_summaries_by_id view
-  // with some minor modifications and needs to be kept in sync until
-  // this workaround is no longer needed.
-  // https://github.com/medic/medic/issues/4666
   private summarise(doc) {
     if (!doc) {
       // happens when the doc with the requested id wasn't found in the DB
@@ -105,28 +101,12 @@ export class GetSummariesService {
     }
   }
 
-  private getRemote(ids) {
-    return this.dbService
-      .get()
-      .query('medic/doc_summaries_by_id', { keys: ids })
-      .then(response => {
-        return response.rows.map(row => {
-          row.value._id = row.id;
-          return row.value;
-        });
-      });
-  }
-
   async get(ids?) {
     if (!ids?.length) {
       return Promise.resolve([]);
     }
 
-    if (this.sessionService.isOnlineOnly()) {
-      return this.getRemote(ids);
-    }
-
-    const result = await this.dbService
+r   const result = await this.dbService
       .get()
       .allDocs({ keys: ids, include_docs: true });
 
