@@ -707,6 +707,7 @@
                 <visited_date_ask_multiple/>
                 <visited_date/>
               </visited_dates>
+              <visited_dates_count/>
             </anc_visits_hf_past>
             <risk_factors>
               <previous_risk_factors_note tag="hidden"/>
@@ -1304,6 +1305,7 @@
       <bind nodeset="/data/data/meta/__source_id" type="string" calculate="../../../inputs/source_id"/>
       <bind nodeset="/data/data/meta/__pregnancy_uuid" type="string" calculate=" /data/context_vars/pregnancy_uuid_ctx "/>
       <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+      <bind nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_count" type="string" readonly="true()" calculate=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count "/>
     </model>
   </h:head>
   <h:body class="pages">
@@ -1479,7 +1481,7 @@
           <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_multiple_note_section:label')"/>
         </input>
         <group ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates">
-          <repeat nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates" jr:count=" /data/anc_visits_hf/anc_visits_hf_past/visited_hf_count ">
+          <repeat nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates" jr:count="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_count">
             <select1 ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date_ask_multiple">
               <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date_ask_multiple:label')"/>
               <itemset nodeset="instance('knows_date')/root/item">

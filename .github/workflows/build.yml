@@ -180,7 +180,7 @@ jobs:
         if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
       - run: mkdir tests/logs
-      - run: npm install -g git+https://github.com/medic/cht-conf.git#eb9e6cd11efe38dc6d3281247787d9fb7c304d30
+      - run: npm install -g git+https://github.com/medic/cht-conf.git#7c285cc19f0a193bd809a99c141b095101abd7e7
       - run: npm ci
 
       - uses: nolar/setup-k3d-k3s@v1
@@ -298,7 +298,7 @@ jobs:
     - name: Create logs directory
       run: mkdir tests/logs
     - name: Install cht-conf
-      run:  npm install -g git+https://github.com/medic/cht-conf.git#eb9e6cd11efe38dc6d3281247787d9fb7c304d30
+      run:  npm install -g git+https://github.com/medic/cht-conf.git#7c285cc19f0a193bd809a99c141b095101abd7e7
     - run: npm ci
     - name: Fetch allure history
       uses: actions/checkout@v4
