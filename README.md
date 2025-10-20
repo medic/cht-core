@@ -26,6 +26,11 @@ If you wish to evaluate the Core Framework, _or_ you are a developer looking to 
 
 You will need to also familiarise yourself with [cht-conf](https://github.com/medic/cht-conf), a tool to manage and configure your apps built using the Core Framework. A brief guide for modifying the config is available [alongside the config](./config/default/GUIDE.md). A more detailed guide is available in [cht-docs](https://docs.communityhealthtoolkit.org/apps/).
 
+Note on Local Setup:
+When running the CHT Core Framework locally using Docker, do not use localhost in your application URL.
+Instead, after running the setup script, use the exact URL printed in your terminal. 
+Using the generated URL helps avoid authentication and connection issues during development.
+
 ### Supported Browsers
 
 Currently, the latest versions of Chrome, Chrome for Android and Firefox are functionally supported. We do not support Safari (unreliable implementations of necessary web APIs) and the generic android browser (unreliable implementations in general). Our webapp code, which includes any code written as configuration, is still ES5. Our exact support matrix (including older app versions) can be found [in our docs](https://docs.communityhealthtoolkit.org/core/overview/supported-software/).
