@@ -240,11 +240,44 @@ const hydrateRecords = async (recordRows) => {
 };
 
 const getRecordsForContacts = async (groups, subjectIds) => {
-  if (!subjectIds.length) {
+  const results = [];
+  const subjectsCopy = [...subjectIds];
+  do {
+    const batch = subjectsCopy.splice(0, nouveau.BATCH_LIMIT);
+    const batchResults = await getRecordsForContactsBatch(batch);
+    results.push(...batchResults);
+  } while (subjectsCopy.length && results.length < MAX_BATCH_SIZE);
+
+  logger.info(`Found ${results.length} records`);
+  if (results.length >= MAX_BATCH_SIZE) {
+    throw Object.assign(
+      new Error(`Purging skipped. Too many records for contacts: ${Object.keys(groups).join(', ')}`),
+      {
+        code: MAX_BATCH_SIZE_REACHED,
+        contactIds: Object.keys(groups),
+      }
+    );
+  }
+
+  if (!results.length) {
     return;
   }
 
-  const relevantRows = [];
+  if (results.length < MIN_BATCH_SIZE) {
+    increaseBatchSize();
+  }
+
+  const hydratedRecords = await hydrateRecords(results);
+  const recordsByKey = getRecordsByKey(hydratedRecords, subjectIds);
+  assignRecordsToGroups(recordsByKey, groups);
+};
+
+const getRecordsForContactsBatch = async (subjectIds) => {
+  const results = [];
+  if (!subjectIds.length) {
+    return results;
+  }
+
   let bookmark = '';
   let requestNext;
 
@@ -262,30 +295,11 @@ const getRecordsForContacts = async (groups, subjectIds) => {
     });
 
     bookmark = result.bookmark;
-    requestNext = result.hits.length === nouveau.RESULTS_LIMIT;
-
-    relevantRows.push(...result.hits.filter(hit => isRelevantRecordEmission(hit, subjectIds)));
-    if (relevantRows.length >= MAX_BATCH_SIZE) {
-      return Promise.reject({
-        code: MAX_BATCH_SIZE_REACHED,
-        contactIds: Object.keys(groups),
-        message: `Purging skipped. Too many records for contacts: ${Object.keys(groups).join(', ')}`,
-      });
-    }
+    results.push(...result.hits.filter(hit => isRelevantRecordEmission(hit, subjectIds)));
+    requestNext = bookmark && result.hits.length >= nouveau.RESULTS_LIMIT && results.length < MAX_BATCH_SIZE;
   } while (requestNext);
 
-  if (relevantRows.length < MIN_BATCH_SIZE) {
-    increaseBatchSize();
-  }
-
-  logger.info(`Found ${relevantRows.length} records`);
-  if (!relevantRows.length) {
-    return;
-  }
-
-  const hydratedRows = await hydrateRecords(relevantRows);
-  const recordsByKey = getRecordsByKey(hydratedRows, subjectIds);
-  assignRecordsToGroups(recordsByKey, groups);
+  return results;
 };
 
 const getRecordsByKey = (rows, subjectIds) => {
