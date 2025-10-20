@@ -22,7 +22,7 @@ const waitForApi = () => new Promise(resolve => {
   const waitLoop = () => {
     request({ url, json: true }, (err, response, body) => {
       if (err) {
-        logger.info('Waiting for API to be ready...');
+        logger.warn('Waiting for API to be ready...: %o', err);
         return setTimeout(() => waitLoop(), 10 * 1000);
       }
 
