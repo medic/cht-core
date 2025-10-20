@@ -1,6 +1,6 @@
 const { createLogger, format, transports } = require('winston');
-const env = process.env.NODE_ENV || 'development';
-const logLevel = process.env.LOG_LEVEL || (env === 'development' ? 'debug' : 'info');
+// LOG_LEVEL controls logging globally. Defaults to 'info' if not explicitly set.
+const logLevel = process.env.LOG_LEVEL || 'info';
 
 
 const cleanUpErrorsFromSymbolProperties = (info) => {
