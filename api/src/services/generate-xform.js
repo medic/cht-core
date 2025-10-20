@@ -228,7 +228,7 @@ const getAttachment = async (doc, name) => {
     return await db.medic.getAttachment(doc._id, name, { rev: doc._rev });
   } catch (error) {
     if (error.status === 404) {
-      logger.error(error);
+logger.error(`Attachment ${name} not found for doc ${docId}`);
       return null;
     }
     throw error;
