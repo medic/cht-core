@@ -19,7 +19,6 @@ const VIEW_INDEXES_TO_MONITOR = {
     'medic-admin',
     'medic-client',
     'medic-conflicts',
-    'medic-scripts',
     'medic-sms',
   ],
   sentinel: ['sentinel'],

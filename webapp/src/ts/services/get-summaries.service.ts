@@ -106,7 +106,7 @@ export class GetSummariesService {
       return Promise.resolve([]);
     }
 
-   const result = await this.dbService
+    const result = await this.dbService
       .get()
       .allDocs({ keys: ids, include_docs: true });
 
