@@ -26,20 +26,40 @@ const catchDbNotFoundError = (err, purgeDb) => {
     throw err;
   }
 };
-const getPurgedIdsFromChanges = result => {
-  const purgedIds = [];
-  if (!result || !result.results) {
-    return purgedIds;
+
+/**
+ *
+ * @param {AuthorizationContext} userCtx
+ * @param {PouchDB} purgeDb
+ * @returns {Promise<{ allIds: string[], purgedIds: string[] }>}
+ */
+const getPurgedIdsFromContacts = async (userCtx, purgeDb) => {
+  let purgeIds = [];
+
+  if (!userCtx?.subjectIds) {
+    return purgeIds;
   }
 
-  result.results.forEach(change => {
-    if (!change.deleted) {
-      purgedIds.push(purgingUtils.extractId(change.id));
+  const purgedDocIds = userCtx.subjectIds.map(purgingUtils.getPurgedContactId);
+  const results = await purgeDb.allDocs({ doc_ids: purgedDocIds, include_docs: true });
+  results.rows.forEach(row => {
+    if (row.doc?.ids) {
+      purgeIds = { ...purgeIds, ...row.doc.ids };
     }
   });
-  return purgedIds;
+  const allIds = Object.keys(purgeIds);
+  const purgedIds = Object.entries(purgeIds).map(([id, purged]) => purged ? id : null).filter(Boolean);
+
+  return { allIds, purgedIds };
 };
 
+/**
+ * Returns the ids of the documents that have been purged for the user
+ * @param {AuthorizationContext} userCtx
+ * @param {string[]} docIds
+ * @param {boolean} useCache
+ * @returns {Promise<string[]>}
+ */
 const getPurgedIds = async (userCtx, docIds, useCache = true) => {
   let purgeIds = [];
   if (!docIds?.length || !userCtx.roles?.length) {
@@ -53,16 +73,21 @@ const getPurgedIds = async (userCtx, docIds, useCache = true) => {
     }
   }
 
-  const ids = docIds.map(purgingUtils.getPurgedId);
   let purgeDb;
 
   try {
     purgeDb = await getPurgeDb(userCtx.roles);
-    // requesting _changes instead of _all_docs because it's roughly twice faster
-    const changesResult = await purgeDb.changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length });
-    purgeIds = getPurgedIdsFromChanges(changesResult);
+    const purgedIdsFromContacts = await getPurgedIdsFromContacts(userCtx, purgeDb);
+
+    purgeIds = purgedIdsFromContacts.purgedIds;
+    const unknownPurgedIds = _.difference(docIds, purgedIdsFromContacts.allIds);
+
+    const results = await purgeDb.allDocs({ doc_ids: unknownPurgedIds.map(purgingUtils.getPurgedId) });
+    purgeIds.push(results.rows.map(row => purgingUtils.extractId(row.id)));
+
     useCache && await purgedDocsCache.set(userCtx.name, purgeIds);
     db.close(purgeDb);
+
   } catch (err) {
     catchDbNotFoundError(err, purgeDb);
   }

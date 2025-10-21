@@ -14,7 +14,7 @@ const moment = require('moment');
 const TASK_EXPIRATION_PERIOD = 60; // days
 const TARGET_EXPIRATION_PERIOD = 6; // months
 
-const MAX_CONTACT_BATCH_SIZE = nouveau.BATCH_LIMIT;
+const MAX_CONTACT_BATCH_SIZE = nouveau.BATCH_LIMIT / 2;
 const MAX_BATCH_SIZE = 20 * 1000;
 const MIN_BATCH_SIZE = 5 * 1000;
 const MAX_BATCH_SIZE_REACHED = 'max_size_reached';
@@ -104,7 +104,7 @@ const getRoles = () => {
 //   }
 // }
 
-const getAlreadyPurgedDocs = (roleHashes, ids) => {
+const getAlreadyPurgedDocs = (roleHashes, ids, groupIds) => {
   const purged = {};
   roleHashes.forEach(hash => purged[hash] = {});
 
@@ -113,6 +113,7 @@ const getAlreadyPurgedDocs = (roleHashes, ids) => {
   }
 
   const purgeIds = ids.map(id => serverSidePurgeUtils.getPurgedId(id));
+  purgeIds.push(...groupIds.map(id => serverSidePurgeUtils.getPurgedContactId(id)));
   const changesOpts = {
     doc_ids: purgeIds,
     batch_size: purgeIds.length + 1,
@@ -158,13 +159,28 @@ const getPurgeFn = () => {
   return purgeFn;
 };
 
-const updatePurgedDocs = (rolesHashes, ids, alreadyPurged, toPurge) => {
+const updatePurgedDocs = (rolesHashes, groups, ids, alreadyPurged, toPurge) => {
   const docs = {};
 
-  ids.forEach(id => {
-    rolesHashes.forEach(hash => {
-      docs[hash] = docs[hash] || [];
+  rolesHashes.forEach(hash => {
+    docs[hash] = [];
 
+    Object.values(groups).forEach(group => {
+      const contactId = group.contact._id;
+      const purgedContactDocId = serverSidePurgeUtils.getPurgedContactId(contactId);
+
+      const purgedContactDoc = {
+        _id: purgedContactDocId,
+        ids: Object.fromEntries(group.ids.map(id => [id, alreadyPurged[hash][id]])),
+      };
+
+      if (alreadyPurged[hash][purgedContactDocId]) {
+        purgedContactDoc._rev = alreadyPurged[hash][purgedContactDocId];
+      }
+      docs[hash].push(purgedContactDoc);
+    });
+
+    ids.forEach(id => {
       const isPurged = alreadyPurged[hash][id];
       const shouldPurge = toPurge[hash][id];
 
@@ -415,11 +431,11 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
     .then(() => getRecordsForContacts(groups, subjectIds))
     .then(() => {
       docIds = getIdsFromGroups(groups);
-      return getAlreadyPurgedDocs(rolesHashes, docIds);
+      return getAlreadyPurgedDocs(rolesHashes, docIds, Object.keys(groups));
     })
     .then(alreadyPurged => {
       const toPurge = getDocsToPurge(purgeFn, groups, roles);
-      return updatePurgedDocs(rolesHashes, docIds, alreadyPurged, toPurge);
+      return updatePurgedDocs(rolesHashes, groups, docIds, alreadyPurged, toPurge);
     })
     .then(() => ({ nextKey, nextKeyDocId, nextBatch }))
     .catch(err => {
