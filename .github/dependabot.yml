@@ -66,3 +66,4 @@ updates:
       - dependency-name: "jquery" # https://github.com/medic/cht-core/issues/8755
       - dependency-name: "select2" # https://github.com/medic/cht-core/issues/8755
       - dependency-name: "signature_pad" # https://github.com/medic/cht-core/issues/8755
+      - dependency-name: "@angular*" #https://github.com/medic/cht-core/issues/10029
