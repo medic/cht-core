@@ -12,7 +12,7 @@ function(doc) {
     return;
   }
 
-  const indexableFields = ['key', 'type'];
+  const indexableFields = ['key', 'type', 'subject'];
 
   const indexMaybe = (fieldName, value) => {
     if (value === undefined) {
