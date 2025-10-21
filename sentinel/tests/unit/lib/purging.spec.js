@@ -500,8 +500,9 @@ describe('ServerSidePurge', () => {
       }));
 
       sinon.stub(request, 'post');
-      request.post.onCall(0).resolves({ hits: reports });
-      request.post.onCall(1).resolves({ hits: reports });
+      request.post.onCall(0).resolves({ hits: reports.slice(0, 20000), bookmark: 'next' });
+      request.post.onCall(1).resolves({ hits: reports.slice(0, 20000), bookmark: 'next' });
+
       request.post.onCall(2).resolves({ hits: reports.slice(0, 8000) });
       request.post.onCall(3).resolves({ hits: reports.slice(8000, 16000) });
       request.post.onCall(4).resolves({ hits: reports.slice(16000, 24000) });
@@ -554,24 +555,41 @@ describe('ServerSidePurge', () => {
       }));
 
       sinon.stub(request, 'post');
-      request.post.onCall(0).resolves({ hits: reports }); // decrease
-      request.post.onCall(1).resolves({ hits: reports }); // decrease
+      // size: 1000, contacts 0->999, keys 2000
+      request.post.onCall(0).resolves({ hits: reports.slice(0, 20000), bookmark: 'n' }); //decrease
+      // size: 500, contacts 0->499, keys 1000, decrease
+      request.post.onCall(1).resolves({ hits: reports.slice(0, 20000), bookmark: 'v' }); // decrease
+      // size: 250, contacts 0->249, keys 500
       request.post.onCall(2).resolves({ hits: reports.slice(0, 8000) }); // keep
+      // size: 250, contacts 250->499, keys 500
       request.post.onCall(3).resolves({ hits: reports.slice(8000, 16000) }); // keep
+      // size: 250, contacts 500->759, keys 500
       request.post.onCall(4).resolves({ hits: reports.slice(16000, 20000) }); // increase
+      // size: 500, contacts 750->1249, keys 1000
       request.post.onCall(5).resolves({ hits: reports.slice(20000, 22000) }); // increase
-      request.post.onCall(6).resolves({ hits: reports.slice(22000, 23000) }); // increase
-      request.post.onCall(7).resolves({ hits: reports.slice(23000, 48000) }); // decrease
-      request.post.onCall(8).resolves({ hits: reports.slice(23000, 48000) }); // decrease
-      request.post.onCall(9).resolves({ hits: reports.slice(23000, 48000) }); // decrease
-      request.post.onCall(10).resolves({ hits: reports.slice(23000, 48000) }); // decrease
-      request.post.onCall(11).resolves({ hits: reports.slice(23000, 28000) }); // keep
-      request.post.onCall(12).resolves({ hits: reports.slice(28000, 35000) }); // keep
-      request.post.onCall(13).resolves({ hits: reports.slice(35000, 45000) }); // keep
-      request.post.onCall(14).resolves({ hits: reports.slice(45000, 46000) }); // increase
-      request.post.onCall(15).resolves({ hits: reports.slice(46000, 47000) }); // increase
-      request.post.onCall(16).resolves({ hits: reports.slice(47000, 48000) }); // increase
-      request.post.onCall(17).resolves({ hits: [] });
+      // size: 1000, contacts 1250->2249, keys 2000
+      request.post.onCall(6).resolves({ hits: reports.slice(22000, 21500) });
+      request.post.onCall(7).resolves({ hits: reports.slice(21500, 23000) }); // increase
+      // size: 1000, contacts 2250->2499, keys 500
+      request.post.onCall(8).resolves({ hits: reports.slice(23000, 43000), bookmark: 's'}); // decrease
+      // size: 500, contacts 2250->2499, keys 500
+      request.post.onCall(9).resolves({ hits: reports.slice(23000, 43000), bookmark: 'v' }); // decrease
+      // size: 250, contacts 2250->2375, keys 500
+      request.post.onCall(10).resolves({ hits: reports.slice(23000, 43000), bookmark: 's' }); // decrease
+      // size: 125, contacts 2250->2312, keys 250
+      request.post.onCall(11).resolves({ hits: reports.slice(23000, 43000), bookmark: 's' }); // decrease
+      // size: 62, contacts 2250->2311, keys 124
+      request.post.onCall(12).resolves({ hits: reports.slice(23000, 28000) }); // keep
+      // size: 62, contacts 2322->2373, keys 124
+      request.post.onCall(13).resolves({ hits: reports.slice(28000, 35000) }); // keep
+      // size: 62, contacts 2374->2435, keys 124
+      request.post.onCall(14).resolves({ hits: reports.slice(35000, 45000) }); // keep
+      // size: 62, contacts 2437->2497, keys 124
+      request.post.onCall(15).resolves({ hits: reports.slice(45000, 46000) }); // increase
+      // size: 124, contacts 2497->2499, keys 4
+      request.post.onCall(16).resolves({ hits: reports.slice(46000, 47000) }); // increase
+      request.post.onCall(17).resolves({ hits: reports.slice(47000, 48000) }); // increase
+      request.post.onCall(18).resolves({ hits: [] });
 
       sinon.stub(db.medic, 'allDocs')
         .callsFake(({ keys }) => Promise.resolve({ rows: keys.map((key) => ({ doc: { _id: key } }))}));
@@ -600,7 +618,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.queryMedic.args[15]).to.deep.equal(getContactsByTypeArgs({ limit: 125, id: 2497 })); // increase
         chai.expect(db.queryMedic.args[16]).to.deep.equal(getContactsByTypeArgs({ limit: 249, id: 2499 })); // increase
 
-        chai.expect(request.post.callCount).to.equal(16);
+        chai.expect(request.post.callCount).to.equal(17);
         chai.expect(service.__get__('contactsBatchSize')).to.equal(248);
       });
     });
@@ -618,7 +636,7 @@ describe('ServerSidePurge', () => {
 
       // 1 in 5000 records is relevant
       const fiveK = 5000;
-      const reports = Array.from({ length: 320000 }).map((_, idx) => ({
+      const reports = Array.from({ length: 430000 }).map((_, idx) => ({
         id: `id${idx}`,
         fields: {
           key: `key${idx}`,
@@ -629,9 +647,13 @@ describe('ServerSidePurge', () => {
       }));
 
       sinon.stub(request, 'post');
-      request.post.onCall(0).resolves({ hits: reports.slice(0, 200000), bookmark: 'getnext' });
-      request.post.onCall(1).resolves({ hits: reports.slice(200000, 400000) });
-      request.post.onCall(2).resolves({ hits: reports.slice(0, 20000) });
+      request.post.onCall(0).resolves({ hits: reports.slice(0, 200000), bookmark: '1' });
+      request.post.onCall(1).resolves({ hits: reports.slice(200000, 220000) });
+
+      request.post.onCall(2).resolves({ hits: reports.slice(220000, 420000), bookmark: '2' });
+      request.post.onCall(3).resolves({ hits: reports.slice(420000, 430000) });
+
+      request.post.onCall(4).resolves({ hits: reports.slice(0, 20000) });
 
       sinon.stub(db.medic, 'allDocs')
         .callsFake(({ keys }) => Promise.resolve({ rows: keys.map((key) => ({ doc: { _id: key } }))}));
@@ -641,7 +663,7 @@ describe('ServerSidePurge', () => {
 
       return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(db.queryMedic.callCount).to.equal(3);
-        chai.expect(request.post.callCount).to.equal(3);
+        chai.expect(request.post.callCount).to.equal(5);
 
         chai.expect(request.post.args[0]).excludingEvery('q').to.deep.equal([{
           body: { limit: 200000 },
@@ -650,7 +672,7 @@ describe('ServerSidePurge', () => {
         chai.expect(request.post.args[1]).excludingEvery('q').to.deep.equal([{
           body: {
             limit: 200000,
-            bookmark: 'getnext',
+            bookmark: '1',
           },
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`
         }]);
@@ -659,6 +681,16 @@ describe('ServerSidePurge', () => {
           body: { limit: 200000, },
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`
         }]);
+        chai.expect(request.post.args[3]).excludingEvery('q').to.deep.equal([{
+          body: { limit: 200000, bookmark: '2' },
+          uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`
+        }]);
+
+        chai.expect(request.post.args[4]).excludingEvery('q').to.deep.equal([{
+          body: { limit: 200000, },
+          uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`
+        }]);
+
         chai.expect(db.medic.allDocs.callCount).to.equal(2);
 
         const getRelevantRecordsIds = (length) => Array
