@@ -3,7 +3,6 @@ const expect = chai.expect;
 chai.use(require('chai-like'));
 chai.use(require('chai-things'));
 
-//const { Forms } = require('../../nools-extras');
 const TestRunner = require('cht-conf-test-harness');
 
 const { pncDangerSignFollowUpScenarios } = require('../form-inputs');
@@ -19,9 +18,6 @@ describe('PNC danger sign follow up for baby tests', () => {
   beforeEach(async () => {
     await harness.clear();
     await harness.setNow(now);
-    //clock = sinon.useFakeTimers(moment('1999-10-10').add(day, 'days').toDate());
-    //await harness.flush(1);
-    return await harness.loadForm('pnc_danger_sign_follow_up_baby');
   });
   afterEach(() => { expect(harness.consoleErrors).to.be.empty; });
 

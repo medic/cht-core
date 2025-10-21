@@ -264,7 +264,8 @@ describe('local doc lib', () => {
         include_docs: true,
         key: contactType,
         limit,
-        skip
+        skip,
+        reduce: false
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0], [doc1], [doc2]]);
     });
@@ -277,7 +278,7 @@ describe('local doc lib', () => {
 
       expect(result).to.deep.equal([]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
-        include_docs: true, key: contactType, limit, skip
+        include_docs: true, key: contactType, limit, skip, reduce: false
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([]);
     });
@@ -299,7 +300,8 @@ describe('local doc lib', () => {
         include_docs: true,
         key: contactType,
         limit,
-        skip
+        skip,
+        reduce: false
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0]]);
     });
@@ -379,7 +381,8 @@ describe('local doc lib', () => {
         include_docs: false,
         key: contactType,
         limit,
-        skip
+        skip,
+        reduce: false
       })).to.be.true;
     });
 
@@ -390,7 +393,7 @@ describe('local doc lib', () => {
 
       expect(result).to.deep.equal([]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
-        include_docs: false, key: contactType, limit, skip
+        include_docs: false, key: contactType, limit, skip, reduce: false
       })).to.be.true;
     });
   });

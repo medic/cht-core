@@ -67,6 +67,7 @@ const submitForm = async ({ waitForPageLoaded = true, ignoreValidationErrors = f
   }
   await submitButton().click();
   if (waitForPageLoaded) {
+    await formTitle().waitForDisplayed({ reverse: true });
     await commonPage.waitForPageLoaded();
   }
 };

@@ -170,10 +170,14 @@ const waitForLoaderToDisappear = async (element) => {
 };
 
 const waitForLoaders = async () => {
-  await browser.waitUntil(async () => {
-    const visibleLoaders = await getVisibleLoaders();
-    return !visibleLoaders.length;
-  }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
+  // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
+  // get all loaders.
+  do {
+    await browser.waitUntil(async () => {
+      const visibleLoaders = await getVisibleLoaders();
+      return !visibleLoaders.length;
+    }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
+  } while ((await getVisibleLoaders()).length > 0);
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
@@ -184,11 +188,8 @@ const waitForPageLoaded = async () => {
   // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
   // so waiting for the main page to load.
   await waitForAngularLoaded();
-  // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
-  // get all loaders.
-  do {
-    await waitForLoaders();
-  } while ((await getVisibleLoaders()).length > 0);
+
+  await waitForLoaders();
 };
 
 const clickFastActionById = async (id) => {
