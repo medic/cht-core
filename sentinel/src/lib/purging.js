@@ -119,6 +119,7 @@ const getAlreadyPurgedDocs = (roleHashes, ids) => {
       results.forEach((result, idx) => {
         const hash = roleHashes[idx];
         result.rows.forEach(row => {
+        for (const row of result.rows) {
           if (row.value && !row.value.deleted) {
             purged[hash][serverSidePurgeUtils.extractId(row.id)] = row.value.rev;
           }
