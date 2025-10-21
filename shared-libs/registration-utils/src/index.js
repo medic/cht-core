@@ -70,7 +70,7 @@ exports.getSubjectIds = (doc) => {
     });
   }
 
-  return uniq(subjectIds);
+  return uniq(subjectIds).filter(Boolean);
 };
 
 exports.getSubjectId = report => {
