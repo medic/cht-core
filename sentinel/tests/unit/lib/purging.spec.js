@@ -405,6 +405,7 @@ describe('ServerSidePurge', () => {
         start_key: JSON.stringify(key || (id ? `key${id}` : '')),
         startkey_docid: id,
         include_docs: true,
+        reduce: false
       },
     ]);
 

@@ -389,6 +389,7 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
   // it's required that we increase the limit to at least 2, in order to get one new contact to process.
   const limit = startKeyDocId !== '' ? contactsBatchSize + 1 : contactsBatchSize;
   const queryString = {
+    reduce: false,
     limit: limit,
     start_key: JSON.stringify(startKey),
     startkey_docid: startKeyDocId,

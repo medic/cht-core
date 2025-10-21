@@ -69,7 +69,9 @@
     "ci-webdriver-default": "wdio run ./tests/e2e/default/wdio.conf.js",
     "ci-webdriver-default-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js",
     "publish-for-testing": "./scripts/build/build-service-images.sh && mkdir -p images && node scripts/build/cli publishServiceImages && node ./scripts/build/ddoc-compile.js staging && node ./scripts/build/push-ddoc-to-staging.js",
+    "test-config-covid-19": "cd config/covid-19 && npm run test",
     "test-config-default": "cd config/default && npm run test",
+    "test-config-demo": "cd config/demo && npm run test",
     "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js"
   },
   "devDependencies": {
@@ -232,7 +234,7 @@
     "url": "^0.11.1",
     "url-join": "^4.0.1",
     "uuid": "^10.0.0",
-    "winston": "^3.17.0",
+    "winston": "^3.18.3",
     "workbox-build": "^7.3.0",
     "xmlbuilder": "^15.1.1"
   },
