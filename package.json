@@ -162,7 +162,7 @@
     "karma-spec-reporter": "^0.0.36",
     "less": "^4.2.2",
     "loose-envify": "^1.4.0",
-    "mocha": "^11.7.1",
+    "mocha": "^11.7.4",
     "module-alias": "^2.2.3",
     "nodemon": "^3.1.10",
     "nyc": "^17.1.0",
