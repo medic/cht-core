@@ -45,8 +45,8 @@ const DEFAULT_DDOCS = [
  *   type?: string,
  *   submitter?: string,
  *   subject?: string,
- *   private?: boolean,
- *   needed_signoff?: boolean,
+ *   private?: string,
+ *   needed_signoff?: string,
  * }} DocByReplicationKey
  */
 

@@ -213,8 +213,6 @@ const isRelevantRecordEmission = (hit, subjectIds) => {
   // if the report has a subject, but it's not the same as the emission key, we hit the emit
   // for the submitter or submitter lineage via the `needs_signoff` path. Skip.
   return !(hit.fields.needs_signoff && !subjectIds.includes(hit.fields.subject));
-
-
 };
 
 const getRecordGroupInfo = (row, subjectIds) => {
