@@ -562,7 +562,7 @@
         </translation>
       </itext>
       <instance>
-        <data id="delivery" version="2025-09-05  13-33" prefix="J1!delivery!" delimiter="#">
+        <data id="delivery" version="2025-10-22  10-35" prefix="J1!delivery!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -1186,7 +1186,7 @@
       <bind nodeset="/data/baby_death/baby_death_repeat/baby_death_profile/parent/parent/_id" type="string" calculate=" /data/area_id "/>
       <bind nodeset="/data/baby_death/baby_death_repeat/baby_death_profile/parent/parent/parent/_id" type="string" calculate=" /data/facility_id "/>
       <bind nodeset="/data/baby_death/baby_death_repeat/baby_death_profile/created_by_doc" type="string" calculate="."/>
-      <bind nodeset="/data/baby_death/baby_death_repeat/baby_death_profile_doc" type="string" calculate=" ../baby_death_profile "/>
+      <bind nodeset="/data/baby_death/baby_death_repeat/baby_death_profile_doc" type="string" calculate="."/>
       <bind nodeset="/data/babys_condition" relevant="../delivery_outcome/babies_alive_num &gt; 0"/>
       <bind nodeset="/data/babys_condition/baby_repeat_note" readonly="true()" type="string" relevant="../../delivery_outcome/babies_alive_num &gt; 1"/>
       <bind nodeset="/data/babys_condition/baby_repeat/baby_details/baby_n" readonly="true()" type="string"/>
@@ -1234,7 +1234,7 @@
       <bind nodeset="/data/babys_condition/baby_repeat/baby_details/baby_profile/parent/parent/parent/_id" type="string" calculate=" /data/facility_id "/>
       <bind nodeset="/data/babys_condition/baby_repeat/baby_details/baby_profile/type" type="string" calculate="&quot;person&quot;"/>
       <bind nodeset="/data/babys_condition/baby_repeat/baby_details/baby_profile/created_by_doc" type="string" calculate="."/>
-      <bind nodeset="/data/babys_condition/baby_repeat/baby_details/child_doc" type="string" calculate="&quot;&quot;"/>
+      <bind nodeset="/data/babys_condition/baby_repeat/baby_details/child_doc" type="string" calculate=" ../baby_profile "/>
       <bind nodeset="/data/babys_condition/r_baby_danger_sign_present_joined" type="string" calculate="join(', ',  /data/babys_condition/baby_repeat/baby_details/r_baby_danger_sign_present )"/>
       <bind nodeset="/data/babys_condition/r_baby_danger_sign_present_any" type="string" calculate="if(contains(../r_baby_danger_sign_present_joined, 'yes'), 'yes', 'no')"/>
       <bind nodeset="/data/safe_postnatal_practices" relevant="../delivery_outcome/babies_alive_num &gt; 0"/>
