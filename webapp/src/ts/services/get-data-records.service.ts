@@ -16,7 +16,7 @@ import { HydrateContactNamesService } from '@mm-services/hydrate-contact-names.s
  *      lineage: [ 'Dunedin' ]
  *    }
  * The summary will contain different data based on the doc type,
- * as defined in the doc_summaries_by_id view.
+ * as defined in the the summaries service
  *
  * If options.include_docs is true, returns the full doc.
  */

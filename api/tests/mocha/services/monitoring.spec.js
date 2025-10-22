@@ -69,7 +69,6 @@ const VIEW_INDEXES_BY_DB = {
     'medic-admin',
     'medic-client',
     'medic-conflicts',
-    'medic-scripts',
     'medic-sms',
   ],
   [`${environment.db}-sentinel`]: ['sentinel'],
@@ -111,15 +110,6 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       sizes: {
         active: 6,
         file: 7
-      }
-    }
-  },
-  'medic-scripts': {
-    name: 'medic-scripts',
-    view_index: {
-      sizes: {
-        active: 1,
-        file: 1
       }
     }
   },
@@ -217,7 +207,7 @@ const setUpMocks = () => {
   sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq')
     .resolves({ processed_seq: '50-xyz' });
   const medicQuery = sinon.stub(db.medic, 'query');
-  medicQuery.withArgs('medic-admin/message_queue')
+  medicQuery.withArgs('medic-sms/message_queue')
     .resolves({ rows: [] })
     .onCall(0).resolves({ rows: [
       { key: [ 'scheduled' ], value: 15 },
@@ -226,11 +216,11 @@ const setUpMocks = () => {
       { key: [ 'delivered' ], value: 10 },
     ] });
   medicQuery
-    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['due'])}))
+    .withArgs('medic-sms/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['due'])}))
     .resolves({ rows: [{ key: undefined, value: 20 }] })
-    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['delivered'])}))
+    .withArgs('medic-sms/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['delivered'])}))
     .resolves({ rows: [{ key: undefined, value: 15 }] })
-    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['failed'])}))
+    .withArgs('medic-sms/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['failed'])}))
     .resolves({ rows: [{ key: undefined, value: 5 }] });
 
   medicQuery.withArgs('medic-conflicts/conflicts')
@@ -318,7 +308,7 @@ describe('Monitoring service', () => {
         medic: {
           doc_count: 20,
           doc_del_count: 10,
-          fragmentation: 1.074747453489672,
+          fragmentation: 1.074747464888782,
           name: 'mydb',
           update_sequence: 100,
           sizes: {
@@ -410,7 +400,6 @@ describe('Monitoring service', () => {
           json: true,
           url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
@@ -450,7 +439,7 @@ describe('Monitoring service', () => {
         medic: {
           doc_count: 20,
           doc_del_count: 10,
-          fragmentation: 1.074747453489672,
+          fragmentation: 1.074747464888782,
           name: 'mydb',
           update_sequence: 100,
           sizes: {
@@ -569,7 +558,6 @@ describe('Monitoring service', () => {
           json: true,
           url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
@@ -689,7 +677,6 @@ describe('Monitoring service', () => {
           json: true,
           url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
@@ -824,7 +811,6 @@ describe('Monitoring service', () => {
           json: true,
           url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-scripts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],

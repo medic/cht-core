@@ -312,8 +312,8 @@ angular.module('services').factory('MessageQueue',
         return $q
           .all([
             Settings(),
-            DB({ remote: true }).query('medic-admin/message_queue', params.list),
-            DB({ remote: true }).query('medic-admin/message_queue', params.count)
+            DB({ remote: true }).query('medic-sms/message_queue', params.list),
+            DB({ remote: true }).query('medic-sms/message_queue', params.count)
           ])
           .then(([settings, messagesList, messagesCount]) => {
             const messages = messagesList.rows.map((row) => {
