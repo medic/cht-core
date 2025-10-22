@@ -23,7 +23,6 @@ describe('local doc lib', () => {
   let db: PouchDB.Database<Doc.Doc>;
   let isDoc: SinonStub;
   let error: SinonStub;
-  let debug: SinonStub;
 
   beforeEach(() => {
     dbGet = sinon.stub();
@@ -36,7 +35,6 @@ describe('local doc lib', () => {
     } as unknown as PouchDB.Database<Doc.Doc>;
     isDoc = sinon.stub(Doc, 'isDoc');
     error = sinon.stub(logger, 'error');
-    debug = sinon.stub(logger, 'debug');
   });
 
   afterEach(() => sinon.restore());
@@ -266,7 +264,8 @@ describe('local doc lib', () => {
         include_docs: true,
         key: contactType,
         limit,
-        skip
+        skip,
+        reduce: false
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0], [doc1], [doc2]]);
     });
@@ -279,7 +278,7 @@ describe('local doc lib', () => {
 
       expect(result).to.deep.equal([]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
-        include_docs: true, key: contactType, limit, skip
+        include_docs: true, key: contactType, limit, skip, reduce: false
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([]);
     });
@@ -301,7 +300,8 @@ describe('local doc lib', () => {
         include_docs: true,
         key: contactType,
         limit,
-        skip
+        skip,
+        reduce: false
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0]]);
     });
@@ -381,7 +381,8 @@ describe('local doc lib', () => {
         include_docs: false,
         key: contactType,
         limit,
-        skip
+        skip,
+        reduce: false
       })).to.be.true;
     });
 
@@ -392,7 +393,7 @@ describe('local doc lib', () => {
 
       expect(result).to.deep.equal([]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
-        include_docs: false, key: contactType, limit, skip
+        include_docs: false, key: contactType, limit, skip, reduce: false
       })).to.be.true;
     });
   });
@@ -606,14 +607,14 @@ describe('local doc lib', () => {
       // Assert
       expect(result).to.be.true;
       expect(dbGet.calledOnceWithExactly(ddocId)).to.be.true;
-      expect(debug.called).to.be.false;
+      expect(error.notCalled).to.be.true;
     });
 
     it('should return false when the document does not exist', async () => {
       // Arrange
       const ddocId = '_design/non-existent-doc';
-      const error = { status: 404, message: 'not_found' };
-      dbGet.withArgs(ddocId).rejects(error);
+      const errorObject = { status: 404, message: 'not_found' };
+      dbGet.withArgs(ddocId).rejects(errorObject);
 
       // Act
       const result = await ddocExists(db, ddocId);
@@ -621,14 +622,14 @@ describe('local doc lib', () => {
       // Assert
       expect(result).to.be.false;
       expect(dbGet.calledOnceWithExactly(ddocId)).to.be.true;
-      expect(debug.calledOnceWithExactly(error)).to.be.true;
+      expect(error.notCalled).to.be.true;
     });
 
     it('should return false when an error occurs during get operation', async () => {
       // Arrange
       const ddocId = '_design/some-doc';
-      const error = new Error('Connection error');
-      dbGet.withArgs(ddocId).rejects(error);
+      const errorObject = new Error('Connection error');
+      dbGet.withArgs(ddocId).rejects(errorObject);
 
       // Act
       const result = await ddocExists(db, ddocId);
@@ -636,7 +637,7 @@ describe('local doc lib', () => {
       // Assert
       expect(result).to.be.false;
       expect(dbGet.calledOnce).to.be.true;
-      expect(debug.calledOnceWithExactly(error)).to.be.true;
+      expect(error.calledOnceWithExactly(`Unexpected error while checking ddoc ${ddocId}:`, errorObject)).to.be.true;
     });
 
     it('should work with different document IDs', async () => {
@@ -652,7 +653,7 @@ describe('local doc lib', () => {
       expect(await ddocExists(db, nonExistingDdocId)).to.be.false;
 
       expect(dbGet.calledTwice).to.be.true;
-      expect(debug.calledOnce).to.be.true;
+      expect(error.notCalled).to.be.true;
     });
   });
 
