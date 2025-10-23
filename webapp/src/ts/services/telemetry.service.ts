@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
-import { IndexedDbService } from '@mm-services/indexed-db.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +21,6 @@ export class TelemetryService {
     private dbService:DbService,
     private sessionService:SessionService,
     private ngZone:NgZone,
-    private indexedDbService:IndexedDbService,
     @Inject(DOCUMENT) private document:Document,
   ) {
     this.windowRef = this.document.defaultView;
@@ -220,7 +218,6 @@ export class TelemetryService {
       currentDB = this.generateTelemetryDBName(today);
     }
 
-    await this.indexedDbService.saveDatabaseName(currentDB); // Firefox support.
     return this.windowRef.PouchDB(currentDB); // Avoid angular-pouch as digest isn't necessary here
   }
 
@@ -250,7 +247,6 @@ export class TelemetryService {
         const db = this.windowRef.PouchDB(dbName);
         await this.aggregate(db, dbName);
         await db.destroy();
-        await this.indexedDbService.deleteDatabaseName(dbName); // Firefox support.
       } catch (error) {
         console.error('Error when aggregating the telemetry records', error);
       } finally {
@@ -320,7 +316,8 @@ export class TelemetryService {
 
     try {
       const today = this.getToday();
-      const databaseNames = await this.indexedDbService.getDatabaseNames();
+      const databases = await this.windowRef.indexedDB.databases();
+      const databaseNames = databases?.map(db => db.name) || [];
       const telemetryDBs = await this.getTelemetryDBs(databaseNames);
       await this.submitIfNeeded(today, telemetryDBs);
       const currentDB = await this.getCurrentTelemetryDB(today, telemetryDBs);

@@ -45,7 +45,7 @@ const medicPouchProvider = db => {
     allTaskData: userSettingsDoc => {
       const userSettingsId = userSettingsDoc?._id;
       return Promise.all([
-        docsOf(dbQuery('medic-client/contacts_by_type', { include_docs: true })),
+        docsOf(dbQuery('medic-client/contacts_by_type', { include_docs: true, reduce: false })),
         docsOf(dbQuery('medic-client/reports_by_subject', { include_docs: true })),
         self.allTasks('requester'),
       ])
