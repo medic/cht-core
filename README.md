@@ -18,6 +18,15 @@ For more information about Medic's architecture and how the pieces fit together,
 For more information about the format of docs in the database, see [Database Schema](https://docs.communityhealthtoolkit.org/core/overview/db-schema/).
 For more information about the SMS exchange protocol between webapp and gateway, see [Message States](https://docs.communityhealthtoolkit.org/apps/guides/messaging/sms-states/).
 
+## Key Features 
+
+ Scalable Digital Health Apps : Quickly build full-featured, scalable apps for community health workers.
+ Team-Based Healthcare : Supports SMS and mobile apps for data submission, with web interfaces for viewing and exporting.
+ Mobile-First Design : Fully responsive web apps optimized for mobile devices.
+ Localization Support : Works with any written language for global accessibility.
+ Flexible Deployment : Install locally or in the cloud using Docker containers.
+ Comprehensive Architecture : Handles complex health system roles, reporting, and workflows.
+
 ## Using the Core Framework
 
 If you are a developer looking to contribute to the Core Framework itself, you should follow the [development setup instructions](./DEVELOPMENT.md).
@@ -25,6 +34,7 @@ If you are a developer looking to contribute to the Core Framework itself, you s
 If you wish to evaluate the Core Framework, _or_ you are a developer looking to create or modify applications built with the Core Framework, you can instead follow the [easy deployment](https://docs.communityhealthtoolkit.org/apps/tutorials/local-setup/) instructions, which will get the latest stable release running locally via Docker.
 
 You will need to also familiarise yourself with [cht-conf](https://github.com/medic/cht-conf), a tool to manage and configure your apps built using the Core Framework. A brief guide for modifying the config is available [alongside the config](./config/default/GUIDE.md). A more detailed guide is available in [cht-docs](https://docs.communityhealthtoolkit.org/apps/).
+
 
 ### Supported Browsers
 
