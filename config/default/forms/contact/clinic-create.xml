@@ -159,12 +159,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/clinic/notes:label">
             <value>Notes</value>
           </text>
-          <text id="/data/repeat:label">
-            <value>Add household members</value>
-          </text>
-          <text id="/data/repeat/child/name:label">
-            <value>Full Name</value>
-          </text>
         </translation>
         <translation lang="hi">
           <text id="yes_no-0">
@@ -285,9 +279,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/clinic/notes:label">
             <value>नोट्स</value>
           </text>
-          <text id="/data/repeat/child/name:label">
-            <value>नाम</value>
-          </text>
           <text id="select_dob_method-0">
             <value>-</value>
           </text>
@@ -325,12 +316,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/contact/meta:label">
-            <value>-</value>
-          </text>
-          <text id="/data/repeat:label">
-            <value>-</value>
-          </text>
-          <text id="/data/repeat/child/meta:label">
             <value>-</value>
           </text>
         </translation>
@@ -453,9 +438,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/clinic/notes:label">
             <value>Catatan</value>
           </text>
-          <text id="/data/repeat/child/name:label">
-            <value>Nama</value>
-          </text>
           <text id="select_dob_method-0">
             <value>-</value>
           </text>
@@ -493,12 +475,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/contact/meta:label">
-            <value>-</value>
-          </text>
-          <text id="/data/repeat:label">
-            <value>-</value>
-          </text>
-          <text id="/data/repeat/child/meta:label">
             <value>-</value>
           </text>
         </translation>
@@ -621,9 +597,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/clinic/notes:label">
             <value>Maelezo</value>
           </text>
-          <text id="/data/repeat/child/name:label">
-            <value>Jina</value>
-          </text>
           <text id="select_dob_method-0">
             <value>-</value>
           </text>
@@ -661,12 +634,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/contact/meta:label">
-            <value>-</value>
-          </text>
-          <text id="/data/repeat:label">
-            <value>-</value>
-          </text>
-          <text id="/data/repeat/child/meta:label">
             <value>-</value>
           </text>
         </translation>
@@ -789,9 +756,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/clinic/notes:label">
             <value>टिप्पणि</value>
           </text>
-          <text id="/data/repeat/child/name:label">
-            <value>नाम</value>
-          </text>
           <text id="select_dob_method-0">
             <value>-</value>
           </text>
@@ -829,12 +793,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/contact/meta:label">
-            <value>-</value>
-          </text>
-          <text id="/data/repeat:label">
-            <value>-</value>
-          </text>
-          <text id="/data/repeat/child/meta:label">
             <value>-</value>
           </text>
         </translation>
@@ -957,9 +915,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/clinic/notes:label">
             <value>Notes</value>
           </text>
-          <text id="/data/repeat/child/name:label">
-            <value>Nom</value>
-          </text>
           <text id="select_dob_method-0">
             <value>-</value>
           </text>
@@ -999,16 +954,10 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/contact/meta:label">
             <value>-</value>
           </text>
-          <text id="/data/repeat:label">
-            <value>-</value>
-          </text>
-          <text id="/data/repeat/child/meta:label">
-            <value>-</value>
-          </text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:clinic:create" version="2025-09-09  8-22" prefix="J1!contact:clinic:create!" delimiter="#">
+        <data id="contact:clinic:create" version="2025-05-01 22-44" prefix="J1!contact:clinic:create!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -1086,18 +1035,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
               <created_by_place_uuid/>
             </meta>
           </contact>
-          <repeat>
-            <child jr:template="">
-              <parent>PARENT</parent>
-              <type>person</type>
-              <name/>
-              <meta tag="hidden">
-                <created_by/>
-                <created_by_person_uuid/>
-                <created_by_place_uuid/>
-              </meta>
-            </child>
-          </repeat>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -1284,12 +1221,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
       <bind nodeset="/data/clinic/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
       <bind nodeset="/data/clinic/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
       <bind nodeset="/data/clinic/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
-      <bind nodeset="/data/repeat/child/parent" type="string"/>
-      <bind nodeset="/data/repeat/child/type" type="string"/>
-      <bind nodeset="/data/repeat/child/name" type="string" required="true()"/>
-      <bind nodeset="/data/repeat/child/meta/created_by" type="string" calculate="../../../../inputs/user/name"/>
-      <bind nodeset="/data/repeat/child/meta/created_by_person_uuid" type="string" calculate="../../../../inputs/user/contact_id"/>
-      <bind nodeset="/data/repeat/child/meta/created_by_place_uuid" type="string" calculate="../../../../inputs/user/facility_id"/>
       <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
@@ -1417,18 +1348,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
         <label ref="jr:itext('/data/clinic/notes:label')"/>
       </input>
       <group appearance="hidden" ref="/data/clinic/meta"></group>
-    </group>
-    <group ref="/data/repeat">
-      <label ref="jr:itext('/data/repeat:label')"/>
-      <group ref="/data/repeat/child">
-        <label/>
-        <repeat nodeset="/data/repeat/child" appearance="field-list">
-          <input ref="/data/repeat/child/name">
-            <label ref="jr:itext('/data/repeat/child/name:label')"/>
-          </input>
-          <group appearance="hidden" ref="/data/repeat/child/meta"></group>
-        </repeat>
-      </group>
     </group>
   </h:body>
 </h:html>
