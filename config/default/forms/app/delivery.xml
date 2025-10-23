@@ -646,9 +646,9 @@
                   <death_information/>
                 </death_details>
               </fields>
-              <created_by_doc db-doc-ref="/delivery"/>
+              <created_by_doc db-doc-ref="/data"/>
             </death_report>
-            <woman_death_report_doc db-doc-ref=" /data/death_info_woman/death_report "/>
+            <woman_death_report_doc db-doc-ref="/data/death_info_woman/death_report"/>
           </death_info_woman>
           <delivery_outcome>
             <babies_delivered/>
@@ -686,9 +686,9 @@
                     </parent>
                   </parent>
                 </parent>
-                <created_by_doc db-doc-ref="/delivery"/>
+                <created_by_doc db-doc-ref="/data"/>
               </baby_death_profile>
-              <baby_death_profile_doc db-doc-ref=" ../baby_death_profile "/>
+              <baby_death_profile_doc db-doc-ref="/data/baby_death/baby_death_repeat/baby_death_profile"/>
             </baby_death_repeat>
             <baby_death_repeat_count/>
           </baby_death>
@@ -751,9 +751,9 @@
                     </parent>
                   </parent>
                   <type tag="hidden"/>
-                  <created_by_doc tag="hidden" db-doc-ref="/delivery"/>
+                  <created_by_doc tag="hidden" db-doc-ref="/data"/>
                 </baby_profile>
-                <child_doc tag="hidden" db-doc-ref=" ../baby_profile "/>
+                <child_doc tag="hidden" db-doc-ref="/data/babys_condition/baby_repeat/baby_details/baby_profile"/>
               </baby_details>
             </baby_repeat>
             <r_baby_danger_sign_present_joined/>

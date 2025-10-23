@@ -277,9 +277,9 @@ Please contact your administrator if you do not receive a login link.</value>
               <created_by_person_uuid/>
               <created_by_place_uuid/>
             </meta>
-            <created_by_doc db-doc-ref="/replace_user"/>
+            <created_by_doc db-doc-ref="/data"/>
           </new_contact>
-          <replacement_contact_id db-doc-ref=" /data/new_contact "/>
+          <replacement_contact_id db-doc-ref="/data/new_contact"/>
           <new_contact_name/>
           <new_contact_phone/>
           <outro>
