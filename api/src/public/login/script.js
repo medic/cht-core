@@ -12,8 +12,6 @@ const {
 let selectedLocale;
 let translations;
 
-console.log('script.js loaded5');
-
 const PASSWORD_INPUT_ID = 'password';
 
 const setTokenState = className => {
@@ -244,8 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (isSafariBrowser()) {
     showUnsupportedBrowserBanner('login.unsupported_browser.safari');
     document.getElementById('login-fields')?.classList.add('hidden');
-  } else {
-    checkUnsupportedBrowser();
+    return;
   }
 
   document.getElementById('locale')?.addEventListener('click', handleLocaleSelection, false);
@@ -272,6 +269,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const ssoLoginButton = document.getElementById('login-sso');
   ssoLoginButton.addEventListener('click', requestSSOLogin, false);
+
+  checkUnsupportedBrowser();
 
 });
 
