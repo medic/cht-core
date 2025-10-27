@@ -12,6 +12,8 @@ const {
 let selectedLocale;
 let translations;
 
+console.log('script.js loaded5');
+
 const PASSWORD_INPUT_ID = 'password';
 
 const setTokenState = className => {
@@ -175,6 +177,11 @@ const isUsingSupportedBrowser = () => {
   });
 };
 
+const isSafariBrowser = () => {
+  const ua = navigator.userAgent.toLowerCase();
+  return /safari/.test(ua) && !/chrome|crios|fxios|android/.test(ua);
+};
+
 const isUsingChtAndroid = () => typeof window.medicmobile_android !== 'undefined';
 
 const getAndroidAppVersion = () => {
@@ -216,11 +223,30 @@ const checkUnsupportedBrowser = () => {
   }
 };
 
+const showUnsupportedBrowserBanner = (key) => {
+  const banner = document.getElementById('unsupported-browser');
+  const bannerUpdate = document.getElementById('unsupported-browser-update');
+  if (!banner || !bannerUpdate) {
+    return;
+  }
+
+  const message = translations?.[selectedLocale]?.[key] || 'Browser not supported.';
+  bannerUpdate.setAttribute('translate', key);
+  bannerUpdate.innerHTML = `<br>${message}`;
+  banner.classList.remove('hidden');
+};
+
 document.addEventListener('DOMContentLoaded', function() {
   translations = parseTranslations();
   selectedLocale = getLocale(translations);
-
   translate();
+
+  if (isSafariBrowser()) {
+    showUnsupportedBrowserBanner('login.unsupported_browser.safari');
+    document.getElementById('login-fields')?.classList.add('hidden');
+  } else {
+    checkUnsupportedBrowser();
+  }
 
   document.getElementById('locale')?.addEventListener('click', handleLocaleSelection, false);
   const passwordToggle = document.getElementById('password-toggle');
@@ -247,7 +273,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const ssoLoginButton = document.getElementById('login-sso');
   ssoLoginButton.addEventListener('click', requestSSOLogin, false);
 
-  checkUnsupportedBrowser();
 });
 
 window.addEventListener('pageshow', (event) => {
