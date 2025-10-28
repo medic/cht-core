@@ -60,8 +60,6 @@ module.exports = {
     };
   },
 
-  isLatestNoolsSchema: () => true,
-
   shutdown: () => {
     processDocsByContact = undefined;
   },
