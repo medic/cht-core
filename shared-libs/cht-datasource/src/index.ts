@@ -38,7 +38,7 @@ import {
   DEFAULT_DOCS_PAGE_LIMIT,
   DEFAULT_IDS_PAGE_LIMIT,
 } from './libs/constants';
-import { PersonInput } from './input';
+import { PersonInput, PlaceInput } from './input';
 
 export { Nullable, NonEmptyArray } from './libs/core';
 export { DataContext } from './libs/data-context';
@@ -238,7 +238,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created place.
          * @throws InvalidArgumentError if the type of input is not valid for creating a place.
          */
-        create: (input: unknown) => ctx.bind(Place.v1.create)(input),
+        create: (input: PlaceInput) => ctx.bind(Place.v1.create)(input),
 
         /**
          * Updates a place.

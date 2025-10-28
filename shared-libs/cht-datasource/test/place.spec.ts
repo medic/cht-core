@@ -314,16 +314,6 @@ describe('place', () => {
     });
 
     describe('create', () => {
-      it('throws error for invalid input, here with a missing type', async () => {
-        const input = {
-          name: 'place-1',
-          parent: 'p1'
-        };
-        isPlaceInput.returns(false);
-        await expect(Place.v1.create(dataContext)(input as Input.PlaceInput))
-          .to.be.rejectedWith(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}].`);
-      });
-
       it('returns place doc for valid input', async () => {
         const createPlaceDoc = sinon.stub();
         adapt.returns(createPlaceDoc);

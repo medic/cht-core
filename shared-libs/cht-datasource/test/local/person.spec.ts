@@ -1,4 +1,4 @@
-import sinon, { SinonStub } from 'sinon';
+import sinon, { SinonFakeTimers, SinonStub } from 'sinon';
 import contactTypeUtils from '@medic/contact-types-utils';
 import logger from '@medic/logger';
 import { Doc } from '../../src/libs/doc';
@@ -287,11 +287,19 @@ describe('local person', () => {
     describe('createPerson', () => {
       let getDocByIdOuter: SinonStub;
       let getDocByIdInner: SinonStub;
+      let clock: SinonFakeTimers;
 
       beforeEach(() => {
+        // Freeze time at a fixed point for deterministic behavior
+        clock = sinon.useFakeTimers(new Date('2024-01-01T00:00:00Z'));
+      
         getDocByIdInner = sinon.stub();
         getDocByIdOuter = sinon.stub(LocalDoc, 'getDocById').returns(getDocByIdInner);
         createDocOuter.returns(createDocInner);
+      });
+
+      afterEach(() => {
+        clock.restore();
       });
 
       it('throws error if input type is not a part of settings contact_types and also not `person`', async () => {
@@ -359,7 +367,7 @@ describe('local person', () => {
           const input = {
             name: 'user-1',
             type: 'person',
-            parent: 'p1'
+            parent: 'p1',
           };
           const parentDocReturned = {
             _id: 'p1', parent: { _id: 'p2' }

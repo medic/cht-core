@@ -9,7 +9,7 @@ import * as Remote from './remote';
 import { getPagedGenerator, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
-import { validatePlaceInput } from './input';
+import { PlaceInput } from './input';
 import { InvalidArgumentError } from './libs/error';
 
 /** */
@@ -134,9 +134,8 @@ export namespace v1 {
      * @returns the created place doc.
      * @throws InvalidArgumentError if input is not of valid type.
      */
-    const curriedFn = async (input: unknown): Promise<Place> => {
-      const placeInput = validatePlaceInput(input);
-      return fn(placeInput);
+    const curriedFn = async (input: PlaceInput): Promise<Place> => {
+      return fn(input);
     };
     return curriedFn;
   };

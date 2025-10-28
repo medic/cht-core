@@ -14,7 +14,7 @@ import {
   ensureImmutability,
   validateCursor
 } from './libs/core';
-import { PlaceInput } from '../input';
+import { PlaceInput, validatePlaceInput } from '../input';
 import { fetchHydratedDoc } from './libs/lineage';
 
 /** @internal */
@@ -203,7 +203,7 @@ export namespace v1 {
       input: PlaceInput
     ): Promise<Place.v1.Place> => {
 
-
+      input = validatePlaceInput(input);
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a place.');
       }
