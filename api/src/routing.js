@@ -140,7 +140,7 @@ app.use(prometheusMiddleware({
     1200, 1800, 3600
   ],
   additionalLabels: ['userRoles'],
-  extractAdditionalLabelValuesFn: (req, res) => {
+  extractAdditionalLabelValuesFn: (req) => {
     const userRoles = req.userCtx?.roles || [];
     const presentableRoles = [...userRoles]
       .sort()
