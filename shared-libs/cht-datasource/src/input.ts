@@ -22,12 +22,8 @@ type ContactInput = DataObject & Readonly<{
  * @throws Error if name is not provided or is empty
  * @throws Error if reported_date is not in a valid format.
  * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+ * @internal
  */
-export const validateContactInput = (data: unknown): ContactInput => {
-  return validateContactInputNonAssertive(data) as ContactInput;
-};
-
-/** @internal*/
 export const validateContactInputNonAssertive = (data: unknown): Record<string, unknown> => {
   if (!isRecord(data)) {
     throw new InvalidArgumentError('Invalid "data": expected an object.');
