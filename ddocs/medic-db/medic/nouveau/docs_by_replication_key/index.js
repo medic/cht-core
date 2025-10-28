@@ -13,6 +13,7 @@ function(doc) {
   }
 
   const indexableFields = ['key', 'type', 'subject'];
+  const isTruthy = (value) => value === true || value === 'true';
 
   const indexMaybe = (fieldName, value) => {
     if (value === undefined) {
@@ -69,14 +70,11 @@ function(doc) {
     if (doc.form && doc.contact) {
       indexMaybe('submitter', doc.contact._id);
     }
-    if (doc.fields && doc.fields.private) {
-      indexMaybe('private', true);
+    if (doc.fields && isTruthy(doc.fields.private)) {
+      indexMaybe('private', 'true');
     }
-    if (doc.fields &&
-        doc.fields.needs_signoff &&
-        doc.contact
-    ) {
-      indexMaybe('needs_signoff', true);
+    if (doc.fields && isTruthy(doc.fields.needs_signoff) && doc.contact) {
+      indexMaybe('needs_signoff', 'true');
       let contact = doc.contact;
       while (contact) {
         if (contact._id && contact._id !== subject) {
