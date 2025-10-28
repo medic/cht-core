@@ -9,7 +9,7 @@ import { RemoteDataContext } from './remote/libs/data-context';
 import { getPagedGenerator, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
-import { PersonInput, validatePersonInput } from './input';
+import { PersonInput } from './input';
 import { InvalidArgumentError } from './libs/error';
 
 /** */
@@ -143,8 +143,7 @@ export namespace v1 {
      * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
      */
     const curriedFn = async (input: PersonInput): Promise<Person> => {
-      const personInput = validatePersonInput(input);
-      return fn(personInput);
+      return fn(input);
     };
     return curriedFn;
   };

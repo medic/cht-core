@@ -312,16 +312,6 @@ describe('person', () => {
     });
 
     describe('createPerson', () => {
-      it('throws error for invalid input', async () => {
-        const input = {
-          name: 'person-1',
-          parent: 'p1'
-        };
-        isPersonInput.returns(false);
-        await expect(Person.v1.create(dataContext)(input as Input.PersonInput))
-          .to.be.rejectedWith(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}]`);
-      });
-
       it('returns person doc for valid input', async () => {
         const createPersonDoc = sinon.stub();
         adapt.returns(createPersonDoc);

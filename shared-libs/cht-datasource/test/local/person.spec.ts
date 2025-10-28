@@ -8,6 +8,7 @@ import * as Lineage from '../../src/local/libs/lineage';
 import { expect } from 'chai';
 import { LocalDataContext } from '../../src/local/libs/data-context';
 import { PersonInput } from '../../src/input';
+import { convertToUnixTimestamp } from '../../src/libs/core';
 
 describe('local person', () => {
   let localContext: LocalDataContext;
@@ -331,7 +332,7 @@ describe('local person', () => {
         };
         getDocByIdInner.resolves(parentDocReturned);
         const expected_input = {
-          ...input,
+          ...input, reported_date: convertToUnixTimestamp(input.reported_date),
           type: 'contact', contact_type: 'animal', parent: parentDocReturned
         };
         createDocInner.resolves(expected_input);
@@ -369,7 +370,10 @@ describe('local person', () => {
           const person = await Person.v1.create(localContext)(input);
           expect(getDocByIdInner.calledOnce).to.be.true;
           expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
-          expect(createDocInner.calledOnceWithExactly({ ...input, parent: parentDocReturned })).to.be.true;
+          expect(createDocInner.calledOnceWithExactly({
+            ...input, reported_date: convertToUnixTimestamp(input_reported_date),
+            parent: parentDocReturned
+          })).to.be.true;
         }
       );
 
@@ -424,9 +428,10 @@ describe('local person', () => {
           const input = {
             name: 'user-1',
             type: 'person',
-            parent: 'p1'
+            parent: 'p1',
+            reported_date: Date.now()
           };
-          const updatedInput = { ...input, type: 'contact', contact_type: 'person' };
+          const updatedInput = { ...input, type: 'contact', contact_type: 'person'};
           await expect(Person.v1.create(localContext)(input))
             .to.be.rejectedWith(`Invalid type of person, cannot have parent for [${JSON.stringify(updatedInput)}].`);
           expect(getDocByIdInner.called).to.be.false;
@@ -447,7 +452,8 @@ describe('local person', () => {
           const input = {
             name: 'user-1',
             type: 'person',
-            parent: 'p1'
+            parent: 'p1',
+            reported_date: Date.now()
           };
           const returnedParentDoc = {
             _id: 'p1',

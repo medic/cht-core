@@ -8,7 +8,7 @@ import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
 import { InvalidArgumentError } from '../libs/error';
 import { addParentToInput, ensureHasRequiredFields, ensureImmutability, validateCursor } from './libs/core';
-import { PersonInput } from '../input';
+import { PersonInput, validatePersonInput } from '../input';
 import { fetchHydratedDoc } from './libs/lineage';
 
 /** @internal */
@@ -156,6 +156,7 @@ export namespace v1 {
     };
 
     return async (input: PersonInput): Promise<Person.v1.Person> => {
+      input = validatePersonInput(input);
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a person.');
       }
