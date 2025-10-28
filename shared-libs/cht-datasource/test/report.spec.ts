@@ -327,19 +327,6 @@ describe('report', () => {
     });
 
     describe('create', () => {
-      it('throws error for invalid input', async () => {
-        const input = {
-          name: 'person-1',
-          type: 'data_record',
-          form: 'yes',
-        };
-        validateReportInput.throws(
-          `Missing or empty required field (contact) in [${JSON.stringify(input)}].`
-        );
-        await expect(Report.v1.create(dataContext)(input))
-          .to.be.rejectedWith(`Missing or empty required field (contact) in [${JSON.stringify(input)}].`);
-      });
-
       it('returns person doc for valid input', async () => {
         const createReportDoc = sinon.stub();
         adapt.returns(createReportDoc);

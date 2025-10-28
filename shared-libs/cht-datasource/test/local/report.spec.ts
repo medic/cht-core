@@ -7,6 +7,7 @@ import * as Report from '../../src/local/report';
 import { expect } from 'chai';
 import { END_OF_ALPHABET_MARKER } from '../../src/libs/constants';
 import * as Lineage from '../../src/local/libs/lineage';
+import { convertToUnixTimestamp } from '../../src/libs/core';
 
 describe('local report', () => {
   let localContext: LocalDataContext;
@@ -498,7 +499,7 @@ describe('local report', () => {
         queryDocUuidsByKeyInner.resolves([ 'form:pregnancy_danger_sign' ]);
         getDocByIdInner.resolves(returnedContactDoc);
         const updatedInput = {
-          ...input, contact: {
+          ...input, reported_date: convertToUnixTimestamp(input.reported_date), contact: {
             _id: input.contact, parent: returnedContactDoc.parent
           }
         };

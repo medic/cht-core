@@ -18,7 +18,7 @@ import {
   assertLimit,
   assertUuidQualifier
 } from './libs/parameter-validators';
-import { validateReportInput } from './input';
+import { ReportInput } from './input';
 import { InvalidArgumentError } from './libs/error';
 import * as Contact from './contact';
 
@@ -146,9 +146,8 @@ export namespace v1 {
      * @returns the created report doc.
      * @throws InvalidArgumentError if input is not of valid type.
      */
-    const curriedFn = async (input: unknown): Promise<Report> => {
-      const reportInput = validateReportInput(input);
-      return fn(reportInput);
+    const curriedFn = async (input: ReportInput): Promise<Report> => {
+      return fn(input);
     };
     return curriedFn;
   };

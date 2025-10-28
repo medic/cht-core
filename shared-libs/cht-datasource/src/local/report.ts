@@ -21,7 +21,7 @@ import {
 } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 import { InvalidArgumentError } from '../libs/error';
-import { ReportInput } from '../input';
+import { ReportInput, validateReportInput } from '../input';
 import { fetchHydratedDoc } from './libs/lineage';
 
 /** @internal */
@@ -134,6 +134,7 @@ export namespace v1 {
     };
 
     return async (input: ReportInput): Promise<Report.v1.Report> => {
+      input = validateReportInput(input);
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a report.');
       }

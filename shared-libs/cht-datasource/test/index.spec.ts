@@ -10,7 +10,7 @@ import * as Report from '../src/report';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { Page } from '../src/libs/core';
-import { PersonInput, PlaceInput } from '../src/input';
+import { PersonInput, PlaceInput, ReportInput } from '../src/input';
 
 describe('CHT Script API - getDatasource', () => {
   let dataContext: DataContext;
@@ -565,7 +565,7 @@ describe('CHT Script API - getDatasource', () => {
         dataContextBind.returns(reportCreate);
         const validatedReportInput = sinon.stub(Index.Input, 'validateReportInput').returns(expectedReport);
 
-        const returnedReport = await report.create(validatedReportInput);
+        const returnedReport = await report.create(validatedReportInput as unknown as ReportInput);
 
         expect(returnedReport).to.equal(expectedReport);
         expect(dataContextBind.calledOnceWithExactly(Report.v1.create)).to.be.true;
