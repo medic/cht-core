@@ -234,37 +234,66 @@ const showUnsupportedBrowserBanner = (key) => {
   banner.classList.remove('hidden');
 };
 
+const handleLoginButton = () => {
+  const loginButton = document.getElementById('login');
+  if (loginButton) {
+    loginButton.addEventListener('click', submit, false);
+  }
+};
+
+const handleUserInputFocus = () => {
+  const userInput = document.getElementById('user');
+  if (userInput) {
+    userInput.addEventListener('keydown', focusOnPassword, false);
+    userInput.focus();
+  }
+};
+
+const handlePasswordInputFocus = () => {
+  const passwordInput = document.getElementById(PASSWORD_INPUT_ID);
+  if (passwordInput) {
+    passwordInput.addEventListener('keydown', focusOnSubmit, false);
+  }
+};
+
+const handlePasswordToggle = () => {
+  const passwordToggle = document.getElementById('password-toggle');
+  if (passwordToggle) {
+    passwordToggle.addEventListener('click', () => togglePassword(PASSWORD_INPUT_ID), false);
+  }
+};
+
+const handleServiceWorker = () => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js');
+  }
+};
+
+const checkBrowser = () => {
+  if (isSafariBrowser()) {
+    showUnsupportedBrowserBanner('login.unsupported_browser.safari');
+    document.getElementById('login-fields')?.classList.add('hidden');
+  }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
   translations = parseTranslations();
   selectedLocale = getLocale(translations);
   translate();
 
-  if (isSafariBrowser()) {
-    showUnsupportedBrowserBanner('login.unsupported_browser.safari');
-    document.getElementById('login-fields')?.classList.add('hidden');
-    return;
-  }
+  checkBrowser();
 
   document.getElementById('locale')?.addEventListener('click', handleLocaleSelection, false);
-  const passwordToggle = document.getElementById('password-toggle');
-  if (passwordToggle) {
-    passwordToggle.addEventListener('click', () => togglePassword(PASSWORD_INPUT_ID), false);
-  }
+  handlePasswordToggle();
 
   if (document.getElementById('tokenLogin')) {
     requestTokenLogin();
   } else {
     checkSession();
-    document.getElementById('login')?.addEventListener('click', submit, false);
-
-    const user = document.getElementById('user');
-    user.addEventListener('keydown', focusOnPassword, false);
-    user.focus();
-
-    document.getElementById(PASSWORD_INPUT_ID)?.addEventListener('keydown', focusOnSubmit, false);
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js');
-    }
+    handleLoginButton();
+    handleUserInputFocus();
+    handlePasswordInputFocus();
+    handleServiceWorker();
   }
 
   const ssoLoginButton = document.getElementById('login-sso');
