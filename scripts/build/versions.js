@@ -10,7 +10,7 @@ const {
   INTERNAL_CONTRIBUTOR,
 } = process.env;
 
-const escapeBranchName = (branch) => branch?.replace(/[/|_]/g, '-');
+const escapeBranchName = (branch) => branch?.replace(/[^A-Za-z0-9.-]/g, '-');
 
 const getBranchVersion = (release) => {
   const branch = BRANCH === 'master' ? 'alpha' : escapeBranchName(BRANCH);

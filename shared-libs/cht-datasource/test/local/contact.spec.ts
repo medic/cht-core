@@ -692,7 +692,7 @@ describe('local contact', () => {
         ).to.deep.equal([ localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext' ]);
         expect(
           queryDocUuidsByKeyOuter.getCall(2).args
-        ).to.deep.equal([ localContext.medicDb, 'medic-client/contacts_by_type' ]);
+        ).to.deep.equal([ localContext.medicDb, 'medic-client/contacts_by_type']);
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
