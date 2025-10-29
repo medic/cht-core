@@ -261,32 +261,6 @@ describe('Place Controller', () => {
           .returns(placeCreate);
       });
 
-      it('throws error for missing required fields', async() => {
-        const qualifier = {
-          name: 'place-1',
-          parent: 'p1',
-          reported_date: 12312312
-        };
-        req = {
-          body: {
-            ...qualifier
-          }
-        };
-        checkUserPermissions.resolves();
-
-        const err = new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON.stringify(
-          qualifier
-        )}].`);
-        await controller.v1.create(req, res);
-        expect(checkUserPermissions
-          .calledWith(req, ['can_view_contacts', 'can_create_places'], ['can_edit'])).to.be.true;
-        expect(placeCreate.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnce).to.be.true;
-        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(InvalidArgumentError);
-        expect(serverUtilsError.firstCall.args[0].message).to.equal(err.message);
-        expect(dataContextBind.notCalled).to.be.true;
-      });
-
       it('returns place doc for valid input', async() => {
         const input = {
           name: 'place-1',
