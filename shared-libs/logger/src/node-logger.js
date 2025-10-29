@@ -1,5 +1,7 @@
 const { createLogger, format, transports } = require('winston');
-const env = process.env.NODE_ENV || 'development';
+// LOG_LEVEL controls logging globally. Defaults to 'info' if not explicitly set.
+const logLevel = process.env.LOG_LEVEL || 'info';
+
 
 const cleanUpErrorsFromSymbolProperties = (info) => {
   if (!info) {
@@ -61,7 +63,7 @@ module.exports.create = (dateFormat) => createLogger({
   transports: [
     new transports.Console({
       // change level if in dev environment versus production
-      level: env === 'development' ? 'debug' : 'info',
+      level: logLevel,
       format: format.combine(
         // https://github.com/winstonjs/winston/issues/1345
         format(info => {
