@@ -1,6 +1,7 @@
 import { convertToUnixTimestamp, DataObject, hasField, hasFields, isRecord } from './libs/core';
 import { InvalidArgumentError } from './libs/error';
 
+const ISO_8601_DATE_PATTERN = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z)$/;
 /**
  * An input for a contact
  */
@@ -139,8 +140,7 @@ const isValidReportedDate = (value: unknown): boolean => {
   }
 
   if (typeof value === 'string') {
-    const isoRegex = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z)$/;
-    return isoRegex.test(value);
+    return ISO_8601_DATE_PATTERN.test(value);
   }
 
   return false;
