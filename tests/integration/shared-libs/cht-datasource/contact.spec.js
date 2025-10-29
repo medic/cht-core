@@ -177,13 +177,14 @@ describe('cht-datasource Contact', () => {
       const placeFreetext = 'clinic';
       const invalidLimit = 'invalidLimit';
       const invalidCursor = 'invalidCursor';
+      const emptyNouveauCursor = 'W10=';
 
       it('returns a page of people type contact ids for no limit and cursor passed', async () => {
         const responsePage = await getUuidsPage(Qualifier.byContactType(personType));
         const responsePeople = responsePage.data;
         const responseCursor = responsePage.cursor;
 
-        expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeopleIds);
+        expect(responsePeople).to.deep.equalInAnyOrder(expectedPeopleIds);
         expect(responseCursor).to.be.equal(null);
       });
 
@@ -192,8 +193,7 @@ describe('cht-datasource Contact', () => {
         const responsePlaces = responsePage.data;
         const responseCursor = responsePage.cursor;
 
-        expect(responsePlaces).excludingEvery([ '_rev', 'reported_date' ])
-          .to.deep.equalInAnyOrder(expectedPlacesIds);
+        expect(responsePlaces).to.deep.equalInAnyOrder(expectedPlacesIds);
         expect(responseCursor).to.be.equal(null);
       });
 
@@ -203,8 +203,8 @@ describe('cht-datasource Contact', () => {
         const responsePeople = responsePage.data;
         const responseCursor = responsePage.cursor;
 
-        expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedContactIds);
-        expect(responseCursor).to.be.equal(null);
+        expect(responsePeople).to.deep.equalInAnyOrder(expectedContactIds);
+        expect(responseCursor).to.not.equal(emptyNouveauCursor);
       });
 
       it('returns a page of people type contact ids and freetext for no limit and cursor passed', async () => {
@@ -215,8 +215,8 @@ describe('cht-datasource Contact', () => {
         const responsePeople = responsePage.data;
         const responseCursor = responsePage.cursor;
 
-        expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedContactIds);
-        expect(responseCursor).to.be.equal(null);
+        expect(responsePeople).to.deep.equalInAnyOrder(expectedContactIds);
+        expect(responseCursor).to.not.equal(emptyNouveauCursor);
       });
 
       it('returns a page of place type contact with freetext for no limit and cursor passed', async () => {
@@ -228,9 +228,8 @@ describe('cht-datasource Contact', () => {
         const responseCursor = responsePage.cursor;
         const expectedContactIds = [ place0._id, clinic1._id, clinic2._id ];
 
-        expect(responsePlaces).excludingEvery([ '_rev', 'reported_date' ])
-          .to.deep.equalInAnyOrder(expectedContactIds);
-        expect(responseCursor).to.be.equal(null);
+        expect(responsePlaces).to.deep.equalInAnyOrder(expectedContactIds);
+        expect(responseCursor).to.not.equal(emptyNouveauCursor);
       });
 
       it('returns a page of people type contact ids' +
@@ -240,7 +239,7 @@ describe('cht-datasource Contact', () => {
 
         const allData = [ ...firstPage.data, ...secondPage.data ];
 
-        expect(allData).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeopleIds);
+        expect(allData).to.deep.equalInAnyOrder(expectedPeopleIds);
         expect(firstPage.data.length).to.be.equal(4);
         expect(secondPage.data.length).to.be.equal(3);
         expect(firstPage.cursor).to.be.equal('4');
@@ -273,8 +272,8 @@ describe('cht-datasource Contact', () => {
         expect(allData).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedContactIds);
         expect(firstPage.data.length).to.be.equal(3);
         expect(secondPage.data.length).to.be.equal(3);
-        expect(firstPage.cursor).to.be.equal('3');
-        expect(secondPage.cursor).to.be.equal('6');
+        expect(firstPage.cursor).to.not.equal(emptyNouveauCursor);
+        expect(secondPage.cursor).to.not.equal(emptyNouveauCursor);
       });
 
       it('returns a page of people type contact ids with freetext' +
@@ -293,8 +292,8 @@ describe('cht-datasource Contact', () => {
         expect(allData).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedContactIds);
         expect(firstPage.data.length).to.be.equal(2);
         expect(secondPage.data.length).to.be.equal(1);
-        expect(firstPage.cursor).to.be.equal('2');
-        expect(secondPage.cursor).to.be.equal(null);
+        expect(firstPage.cursor).to.not.equal(emptyNouveauCursor);
+        expect(secondPage.cursor).to.not.equal(emptyNouveauCursor);
       });
 
       it('returns a page of place type contact ids' +
@@ -309,11 +308,11 @@ describe('cht-datasource Contact', () => {
 
         const allData = [ ...firstPage.data, ...secondPage.data ];
 
-        expect(allData).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedContactIds);
+        expect(allData).to.deep.equalInAnyOrder(expectedContactIds);
         expect(firstPage.data.length).to.be.equal(2);
         expect(secondPage.data.length).to.be.equal(1);
-        expect(firstPage.cursor).to.be.equal('2');
-        expect(secondPage.cursor).to.be.equal(null);
+        expect(firstPage.cursor).to.not.equal(emptyNouveauCursor);
+        expect(secondPage.cursor).to.not.equal(emptyNouveauCursor);
       });
 
       it('returns a page of unique contact ids for when multiple fields match the same freetext', async () => {
@@ -322,9 +321,8 @@ describe('cht-datasource Contact', () => {
         const responseIds = responsePage.data;
         const responseCursor = responsePage.cursor;
 
-        expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
-          .to.deep.equalInAnyOrder(expectedContactIds);
-        expect(responseCursor).to.be.equal(null);
+        expect(responseIds).to.deep.equalInAnyOrder(expectedContactIds);
+        expect(responseCursor).to.not.equal(emptyNouveauCursor);
       });
 
       it(
@@ -337,11 +335,9 @@ describe('cht-datasource Contact', () => {
           const responseIds = responsePage.data;
           const responseCursor = responsePage.cursor;
 
-          expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
-            .to.deep.equalInAnyOrder(expectedContactIds);
-          expect(responseCursor).to.be.equal(null);
-        }
-      );
+          expect(responseIds).to.deep.equalInAnyOrder(expectedContactIds);
+          expect(responseCursor).to.not.equal(emptyNouveauCursor);
+        });
 
       it(
         'returns a page of unique contact ids for when multiple fields match the same freetext with lower limit',
@@ -352,7 +348,7 @@ describe('cht-datasource Contact', () => {
           const responseCursor = responsePage.cursor;
 
           expect(responseIds.length).to.be.equal(2);
-          expect(responseCursor).to.be.equal('2');
+          expect(responseCursor).to.not.equal(emptyNouveauCursor);
           expect(responseIds).to.satisfy(subsetArray => {
             return subsetArray.every(item => expectedContactIds.includes(item));
           });
@@ -377,11 +373,10 @@ describe('cht-datasource Contact', () => {
             ...Qualifier.byFreetext(placeFreetext),
           }, invalidCursor, twoLimit)
         ).to.be.rejectedWith(
-          {
-            code: 400,
-            error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
-          }
+          `Internal Server Error`
         );
+        // Nouveau just throws 500 - Internal Server Error whenever there is an invalid param.
+        // So there is no way to know which input was actually wrong.
       });
     });
 

@@ -33,7 +33,7 @@ describe('user contact summary in forms', () => {
     );
     await chtConfUtils.initializeConfigDir();
     const contactSummaryFile = path.join(__dirname, 'config/users-contact-summary.js');
-    const { contactSummary } = await chtConfUtils.compileNoolsConfig({ contactSummary: contactSummaryFile });
+    const { contactSummary } = await chtConfUtils.compileConfig({ contactSummary: contactSummaryFile });
     await utils.updateSettings({ contact_summary: contactSummary }, { ignoreReload: true });
     await loginPage.login(districtHospitalUser);
   });

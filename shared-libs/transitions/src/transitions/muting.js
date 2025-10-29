@@ -8,6 +8,8 @@ const messages = require('../lib/messages');
 const mutingUtils = require('../lib/muting_utils');
 const contactTypesUtils = require('@medic/contact-types-utils');
 const transitions = require('./index');
+const dataContext = require('../data-context');
+const { Report, Qualifier } = require('@medic/cht-datasource');
 
 const TRANSITION_NAME = 'muting';
 const CONFIG_NAME = 'muting';
@@ -107,11 +109,12 @@ const replayClientMutingEvents = (reportIds = []) => {
     return Promise.resolve();
   }
 
+  const getReportWithLineage = dataContext.bind(Report.v1.getWithLineage);
   let promiseChain = Promise.resolve();
   reportIds.forEach(reportId => {
     promiseChain = promiseChain
-      .then(() => mutingUtils.lineage.fetchHydratedDocs([reportId]))
-      .then(([hydratedDoc]) => {
+      .then(() => getReportWithLineage(Qualifier.byUuid(reportId)))
+      .then(hydratedDoc => {
         if (!isRelevantReport(hydratedDoc, {})) {
           return;
         }

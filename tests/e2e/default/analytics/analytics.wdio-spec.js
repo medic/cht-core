@@ -34,7 +34,7 @@ describe('Targets', () => {
     await chtConfUtils.initializeConfigDir();
     const targetFilePath = path.join(__dirname, `config/${targetsFileName}`);
 
-    return chtConfUtils.compileNoolsConfig({ targets: targetFilePath });
+    return chtConfUtils.compileConfig({ targets: targetFilePath });
   };
 
   before(async () => {
