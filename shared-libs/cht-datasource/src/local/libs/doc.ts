@@ -1,6 +1,9 @@
 import logger from '@medic/logger';
-import { hasField, Nullable, Page } from '../../libs/core';
+import { hasField, NouveauHit, NouveauResponse, Nullable, Page } from '../../libs/core';
 import { Doc, isDoc } from '../../libs/doc';
+import { QueryParams } from './core';
+import { getAuthenticatedFetch, getRequestBody } from './request-utils';
+import { DEFAULT_IDS_PAGE_LIMIT } from '../../libs/constants';
 import { InvalidArgumentError } from '../../libs/error';
 
 /** @internal */
@@ -66,7 +69,7 @@ export const queryDocsByKey = (
   key: unknown,
   limit: number,
   skip: number
-): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, key, limit, skip });
+): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, key, limit, skip, reduce: false });
 
 const queryDocUuids = (
   db: PouchDB.Database<Doc>,
@@ -105,11 +108,11 @@ export const queryDocUuidsByKey = (
   key: unknown,
   limit: number,
   skip: number
-): Promise<string[]> => queryDocUuids(db, view, { include_docs: false, key, limit, skip });
+): Promise<string[]> => queryDocUuids(db, view, { include_docs: false, reduce: false, key, limit, skip });
 
 /**
  * Resolves a page containing an array of T using the getFunction to retrieve documents from the database
- * and the filterFunction to validate the returned documents are all of type T.
+ * and the filterFunction to validate the returned documents are all type T.
  * The length of the page's data array is guaranteed to equal limit unless there is no more data to retrieve
  * from the database. This function will try to minimize the number of getFunction calls required to find
  * the necessary data by over-fetching during followup calls if some retrieved docs are rejected by the filterFunction.
@@ -201,5 +204,83 @@ export const updateDoc = (db: PouchDB.Database) => async (data: Record<string, u
   if (!ok) {
     throw new Error('Error updating document.');
   }
+  
   return getDocById(db as PouchDB.Database<Doc>)(id);
+};
+
+const isPouchDBNotFoundError = (error: unknown): error is { status: 404, name: string } => {
+  return (
+    typeof error === 'object' && error !== null &&
+    'status' in error && (error as { status: number }).status === 404
+  );
+};
+
+/** @internal */
+export const ddocExists = async (db: PouchDB.Database<Doc>, ddocId: string): Promise<boolean> => {
+  try {
+    await db.get(ddocId);
+    return true;
+  } catch (err) {
+    if (isPouchDBNotFoundError(err)) {
+      return false;
+    }
+
+    logger.error(`Unexpected error while checking ddoc ${ddocId}:`, err);
+    return false;
+  }
+};
+
+/**
+ * Similar to {@link fetchAndFilter} but by requesting nouveau endpoint
+ * @internal
+ */
+export const queryNouveauIndex = (
+  db: PouchDB.Database<Doc>,
+  viewName: string,
+): typeof recursionInner => {
+  const fetch = getAuthenticatedFetch(db, viewName);
+  const recursionInner = async (
+    params: QueryParams,
+    currentResults: NouveauHit[] = [],
+    bookmark: Nullable<string> = null
+  ): Promise<Page<NouveauHit>> => {
+    const response = await fetch({
+      method: 'POST',
+      body: getRequestBody(viewName, params, bookmark)
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    const responseData = await response.json() as NouveauResponse;
+    const newResults = responseData.hits;
+
+    const results = [...currentResults, ...newResults];
+    // Keep querying until we have all the results
+    if (newResults.length === DEFAULT_IDS_PAGE_LIMIT) {
+      return recursionInner(params, results, responseData.bookmark);
+    }
+    return {
+      data: results,
+      cursor: responseData.bookmark
+    };
+  };
+  return recursionInner;
+};
+
+/** @internal */
+export const queryNouveauIndexUuids = (
+  db: PouchDB.Database<Doc>,
+  viewName: string,
+) => {
+  return async (params: QueryParams): Promise<Page<string>> => {
+    const res = await queryNouveauIndex(db, viewName)(params);
+    const resWithIds = res.data.map(doc => doc.id);
+
+    return {
+      data: resWithIds,
+      cursor: res.cursor
+    };
+  };
 };

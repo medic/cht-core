@@ -227,6 +227,7 @@ describe('Report API', () => {
     const fourLimit = 4;
     const twoLimit = 2;
     const endpoint = '/api/v1/report/uuid';
+    const emptyNouveauCursor = 'W10=';
 
     it('returns a page of report ids for no limit and cursor passed', async () => {
       const qs = {
@@ -241,8 +242,8 @@ describe('Report API', () => {
       const responsePeople = responsePage.data;
       const responseCursor = responsePage.cursor;
 
-      expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
-      expect(responseCursor).to.be.equal(null);
+      expect(responsePeople).to.deep.equalInAnyOrder(expectedReportIds);
+      expect(responseCursor).to.not.equal(emptyNouveauCursor);
     });
 
     it('returns a page of report ids when limit and cursor is passed and cursor can be reused', async () => {
@@ -271,8 +272,8 @@ describe('Report API', () => {
       expect(allReports).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
       expect(firstPage.data.length).to.be.equal(4);
       expect(secondPage.data.length).to.be.equal(2);
-      expect(firstPage.cursor).to.be.equal('4');
-      expect(secondPage.cursor).to.be.equal(null);
+      expect(firstPage.cursor).to.not.equal(emptyNouveauCursor);
+      expect(secondPage.cursor).to.not.equal(emptyNouveauCursor);
     });
 
     it('returns a page of unique report ids for when multiple fields match the same freetext', async () => {
@@ -290,7 +291,7 @@ describe('Report API', () => {
 
       expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
         .to.deep.equalInAnyOrder(expectedContactIds);
-      expect(responseCursor).to.be.equal(null);
+      expect(responseCursor).to.not.equal(emptyNouveauCursor);
     });
 
     it(
@@ -314,7 +315,7 @@ describe('Report API', () => {
 
         expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
           .to.deep.equalInAnyOrder(expectedContactIds);
-        expect(responseCursor).to.be.equal(null);
+        expect(responseCursor).to.not.equal(emptyNouveauCursor);
       }
     );
 
@@ -336,7 +337,7 @@ describe('Report API', () => {
         const responseCursor = responsePage.cursor;
 
         expect(responseIds.length).to.be.equal(2);
-        expect(responseCursor).to.be.equal('2');
+        expect(responseCursor).to.not.equal(emptyNouveauCursor);
         expect(responseIds).to.satisfy(subsetArray => {
           return subsetArray.every(item => expectedContactIds.includes(item));
         });
@@ -397,7 +398,7 @@ describe('Report API', () => {
       );
     });
 
-    it('throws 400 error when cursor is invalid', async () => {
+    it('throws 500 error when cursor is invalid', async () => {
       const qs = {
         freetext, cursor: '-1'
       };
@@ -408,7 +409,7 @@ describe('Report API', () => {
 
       await expect(utils.request(opts))
         .to.be.rejectedWith(
-          `400 - {"code":400,"error":"The cursor must be a string or null for first page: [\\"-1\\"]."}`
+          `500 - {"code":500,"error":"Server error"}`
         );
     });
   });

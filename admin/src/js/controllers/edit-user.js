@@ -38,8 +38,8 @@ angular
     'use strict';
     'ngInject';
 
+    const datasource = DataContext.getDatasource();
     $scope.cancel = () => $uibModalInstance.dismiss();
-    const chtDatasource = DataContext.getDataSource();
     const getContact = DataContext.bind(CHT.Contact.v1.get);
 
     const getRoles = roles => {
@@ -60,7 +60,7 @@ angular
     };
 
     const validateSkipPasswordPermission = () => {
-      $scope.skipPasswordChange = chtDatasource.v1.hasPermissions(
+      $scope.skipPasswordChange = datasource.v1.hasPermissions(
         ['can_skip_password_change'], $scope.editUserModel.roles, $scope.permissions
       );
     };
@@ -327,7 +327,7 @@ angular
         return true;
       }
 
-      const userHasPermission = chtDatasource.v1.hasPermissions(
+      const userHasPermission = datasource.v1.hasPermissions(
         ['can_have_multiple_places'], $scope.editUserModel.roles, $scope.permissions
       );
 

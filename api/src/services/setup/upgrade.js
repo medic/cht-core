@@ -1,6 +1,7 @@
 const viewIndexerProgress = require('./view-indexer-progress');
 const upgradeLog = require('./upgrade-log');
 const upgradeSteps = require('./upgrade-steps');
+const upgradeUtils = require('./utils');
 const logger = require('@medic/logger');
 
 /**
@@ -78,7 +79,10 @@ const upgradeInProgress = () => {
   return upgradeLog.get();
 };
 
+const canUpgrade = () => upgradeUtils.isDockerUpgradeServiceRunning();
+
 module.exports = {
+  canUpgrade,
   upgrade,
   complete,
   abort,

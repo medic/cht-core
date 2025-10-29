@@ -144,17 +144,22 @@ export const getPagedGenerator = async function* <S, T>(
   fetchFunctionArgs: S
 ): AsyncGenerator<T, null> {
   const limit = 100;
-  let cursor: Nullable<string> = null;
+  let cursor: Nullable<string> =  null;
+  let docs: Page<T>;
+  const getDocsDataLength = (docs: Page<T>) => docs.data.length;
 
   do {
-    const docs = await fetchFunction(fetchFunctionArgs, cursor, limit);
+    docs = await fetchFunction(fetchFunctionArgs, cursor, limit);
 
     for (const doc of docs.data) {
       yield doc;
     }
 
     cursor = docs.cursor;
-  } while (cursor);
+    // 1. W10= is the base64 representation of an empty array which is returned by Nouveau which will evaluate to '[]'
+    // 2. This check was changed because in online mode(querying Nouveau) the cursor returned can be not W10= so to
+    //    prevent infinite querying the check for existence of docs was required
+  } while (getDocsDataLength(docs) > 0 && cursor && atob(cursor) !== '[]');
 
   return null;
 };
@@ -185,3 +190,28 @@ export const convertToUnixTimestamp = (date: string | number): number => {
 
   return parsedDate.getTime();
 };
+
+/** @internal */
+export interface NouveauHit {
+  order: {
+    value: string | number;
+    '@type': string;
+  }[];
+  id: string;
+  fields: {
+    sort_order: string;
+    [key: string]: unknown;  // For any other fields that might be present
+  };
+  doc?: unknown;  // Optional document data
+}
+
+/** @internal */
+export interface NouveauResponse {
+  update_latency: number;
+  total_hits_relation: string;
+  total_hits: number;
+  ranges: null;
+  hits: NouveauHit[];
+  counts: null;
+  bookmark: string;
+}

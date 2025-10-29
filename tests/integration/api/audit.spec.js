@@ -43,6 +43,11 @@ describe('auditing', () => {
     await utils.createUsers([docs.user]);
   });
 
+  after(async () => {
+    await utils.deleteUsers([docs.user]);
+    await utils.revertDb([], true);
+  });
+
   it('should audit created docs', async () => {
     const audit = await getAudit(docIds);
     docIds.forEach((id) => checkAudit(audit[id]));
@@ -111,8 +116,8 @@ describe('auditing', () => {
 
       expect(auditAfter.audit.history.length).to.equal(auditBefore.audit.history.length + 1);
     });
-  }); 
-  
+  });
+
   describe('for offline users', () => {
     const auth = { username: docs.user.username, password: docs.user.password };
     it('should ignore GET', async () => {
@@ -214,7 +219,13 @@ describe('auditing', () => {
     });
 
     it('should only store 10 history entries', async () => {
-      const docId = 'migration-log';
+      const docId = docs.reports[1]._id;
+
+      for (let i = 0; i < 26; i++) {
+        const doc = await utils.db.get(docId);
+        await utils.db.put(doc);
+      }
+
       const MAX_HISTORY_LIMIT = 10;
       const doc = await utils.db.get(docId);
       const revCount = parseInt(doc._rev.split('-')[0]);

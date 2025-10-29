@@ -46,6 +46,7 @@ const SERVICES = {
   api: 'api',
   sentinel: 'sentinel',
   'haproxy-healthcheck': 'healthcheck',
+  'couchdb-nouveau': 'couchdb-nouveau',
 };
 const CONTAINER_NAMES = {};
 const originalTranslations = {};
@@ -1222,6 +1223,7 @@ const startServices = async () => {
   env.DB1_DATA = makeTempDir('ci-dbdata');
   env.DB2_DATA = makeTempDir('ci-dbdata');
   env.DB3_DATA = makeTempDir('ci-dbdata');
+  env.COUCHDB_NOUVEAU_DATA = makeTempDir('ci-nouveaudata');
 
   await dockerComposeCmd('up -d');
   const services = await dockerComposeCmd('ps -q');
@@ -1647,7 +1649,7 @@ const logFeedbackDocs = async (test) => {
 
 const isMinimumChromeVersion = process.env.CHROME_VERSION === MINIMUM_BROWSER_VERSION;
 
-const escapeBranchName = (branch) => branch?.replace(/[/|_]/g, '-');
+const escapeBranchName = (branch) => branch?.replace(/[^A-Za-z0-9.-]/g, '-');
 
 const toggleSentinelTransitions = () => sendSignal('sentinel', 'USR1');
 const runSentinelTasks = () => sendSignal('sentinel', 'USR2');

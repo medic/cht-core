@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
-import { IndexedDbService } from '@mm-services/indexed-db.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,14 +15,12 @@ export class TelemetryService {
   // Intentionally scoped to the whole browser (for this domain). We can then tell if multiple users use the same device
   private readonly DEVICE_ID_KEY = 'medic-telemetry-device-id';
   private isAggregationRunning = false;
-  private hasTransitionFinished = false;
   private windowRef;
 
   constructor(
     private dbService:DbService,
     private sessionService:SessionService,
     private ngZone:NgZone,
-    private indexedDbService:IndexedDbService,
     @Inject(DOCUMENT) private document:Document,
   ) {
     this.windowRef = this.document.defaultView;
@@ -221,7 +218,6 @@ export class TelemetryService {
       currentDB = this.generateTelemetryDBName(today);
     }
 
-    await this.indexedDbService.saveDatabaseName(currentDB); // Firefox support.
     return this.windowRef.PouchDB(currentDB); // Avoid angular-pouch as digest isn't necessary here
   }
 
@@ -251,7 +247,6 @@ export class TelemetryService {
         const db = this.windowRef.PouchDB(dbName);
         await this.aggregate(db, dbName);
         await db.destroy();
-        await this.indexedDbService.deleteDatabaseName(dbName); // Firefox support.
       } catch (error) {
         console.error('Error when aggregating the telemetry records', error);
       } finally {
@@ -321,8 +316,8 @@ export class TelemetryService {
 
     try {
       const today = this.getToday();
-      const databaseNames = await this.indexedDbService.getDatabaseNames();
-      await this.deleteDeprecatedTelemetryDB(databaseNames);
+      const databases = await this.windowRef.indexedDB.databases();
+      const databaseNames = databases?.map(db => db.name) || [];
       const telemetryDBs = await this.getTelemetryDBs(databaseNames);
       await this.submitIfNeeded(today, telemetryDBs);
       const currentDB = await this.getCurrentTelemetryDB(today, telemetryDBs);
@@ -332,41 +327,6 @@ export class TelemetryService {
     } catch (error) {
       console.error('Error in telemetry service', error);
     }
-  }
-
-  /**
-   * ToDo: Remove this function in a future release: https://github.com/medic/cht-core/issues/8657
-   * The way telemetry was stored in the client side changed (https://github.com/medic/cht-core/pull/8555),
-   * this function contains all the transition code where it deletes the old Telemetry DB from the DB.
-   * It was decided to not aggregate the DB content.
-   * @private
-   */
-  private async deleteDeprecatedTelemetryDB(databaseNames) { //NOSONAR
-    if (this.hasTransitionFinished) {
-      return;
-    }
-
-    databaseNames?.forEach(dbName => {
-      const nameNoPrefix = dbName?.replace(this.POUCH_PREFIX, '') || '';
-
-      // Skips new Telemetry DB, then matches malformed or the old deprecated Telemetry DB.
-      if (!this.isValidTelemetryDBName(nameNoPrefix)
-        && nameNoPrefix.includes(this.TELEMETRY_PREFIX)
-        && nameNoPrefix.includes(this.sessionService.userCtx().name)) {
-        console.warn(`Invalid telemetry database name, deleting database. Name: ${nameNoPrefix}`);
-        this.windowRef?.indexedDB.deleteDatabase(dbName);
-      }
-    });
-
-    Object
-      .keys(this.windowRef?.localStorage)
-      .forEach(key => {
-        if (key.includes('telemetry-date') || key.includes('telemetry-db')) {
-          this.windowRef?.localStorage.removeItem(key);
-        }
-      });
-
-    this.hasTransitionFinished = true;
   }
 }
 

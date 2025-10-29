@@ -24,6 +24,11 @@ describe('CHT Datasource Service', () => {
     expect(chtApi.v1.getExtensionLib).to.be.a('function');
   });
 
+  it('bind', async () => {
+    const result = await service.bind(sinon.stub())();
+    expect(result).to.be.undefined;
+  });
+
   describe('addExtensionLib', () => {
     it('adds new function to extension library', () => {
       const extensionFn = `module.exports = () => 'hello world'`;

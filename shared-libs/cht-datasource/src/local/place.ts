@@ -254,10 +254,7 @@ export namespace v1 {
     if (hasField(originalDoc, { type: 'object', name: 'contact', ensureTruthyValue: true })) {
       return false;
     }
-    if (!('contact' in placeInput)) {
-      return false;
-    }
-    return true;
+    return 'contact' in placeInput;
   };
   const maybeAppendContact =
     async (

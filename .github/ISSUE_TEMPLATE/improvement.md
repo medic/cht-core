@@ -1,5 +1,5 @@
 ---
-name: Improvement
+name: 🤩 Improvement
 about: Suggest something to make an existing feature better
 title: ''
 labels: 'Type: Improvement'

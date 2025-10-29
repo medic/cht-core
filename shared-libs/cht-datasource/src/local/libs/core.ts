@@ -126,3 +126,14 @@ export const checkFieldWithLineage = (
     throw new InvalidArgumentError(`${lineageType} lineage does not match with the lineage of the doc in the db`);
   }
 };
+/** @internal */
+export type QueryKey = string | string[];
+
+/** @internal */
+export interface QueryParams {
+  key?: QueryKey;
+  startKey?: QueryKey;
+  endKey?: QueryKey;
+  limit?: number;
+  cursor?: Nullable<string>;
+}

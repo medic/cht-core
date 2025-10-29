@@ -1,43 +1,137 @@
 #!/usr/bin/env bash
 
-# Helper script to get a docker-compose instance up and running.
-#
-# Uses docker-compose-developer.yml docker compose file to
-#
-#   * See if a .env file is available
-#   * Using info from .env, be aware of ports and storage names
-#   * make sure as much of the services in medic-os are up and running correctly
-#   * install valid certificate
-#   * show users status of instance
-#
-# See https://github.com/medic/cht-core/issues/7218 for more info
+set -eu
 
-# shellcheck disable=SC1091
-. "$(dirname "$0")"/simple_curses.sh
+projectFile=
+projectName=
+homeDir=
+green='\033[0;32m'   #'0;32' is Green's ANSI color code
+red='\033[0;31m'   #'0;31' is Red's ANSI color code
+noColor='\033[0m'
+stagingUrl='https://staging.dev.medicmobile.org/_couch/builds_4'
 
-# todo maybe check to see if docker is running? avoid this error:
-# Error response from daemon: dial unix docker.raw.sock: connect: connection refused
+get_existing_projects() {
+  find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//"
+}
 
-# todo MacOS doesn't print simple curses screens at  full width and is stuck at ~80 chars wide?
-# ticket filed and work around found: https://github.com/metal3d/bashsimplecurses/issues/51#issuecomment-905914780
+init_env_file() {
+  httpPort=10080
+  httpsPort=10443
+
+  projects=$(get_existing_projects)
+  for file in $projects; do
+    tmpHttpPort=$(tr <"$file.env" '\n' ' ' | sed "s/^.*NGINX_HTTP_PORT=\([0-9]\{3,5\}\).*$/\1/")
+    if [ "$tmpHttpPort" -ge "$httpPort" ]; then
+      httpPort=$((tmpHttpPort + 1))
+    fi
+
+    tmpHttpsPort=$(tr <"$file.env" '\n' ' ' | sed "s/^.*NGINX_HTTPS_PORT=\([0-9]\{3,5\}\).*$/\1/")
+    if [ "$tmpHttpsPort" -ge "$httpsPort" ]; then
+      httpsPort=$((tmpHttpsPort + 1))
+    fi
+  done
+
+  touch "./$projectFile"
+  cat >"./$projectFile" <<EOL
+NGINX_HTTP_PORT=$httpPort
+NGINX_HTTPS_PORT=$httpsPort
+COUCHDB_USER=medic
+COUCHDB_PASSWORD=password
+CHT_COMPOSE_PROJECT_NAME=$projectName
+DOCKER_CONFIG_PATH=$homeDir
+COUCHDB_SECRET=$(openssl rand -hex 16)
+COUCHDB_UUID=$(openssl rand -hex 16)
+COUCHDB_DATA=$homeDir/couch
+CHT_COMPOSE_PATH=$homeDir/compose
+CHT_NETWORK=$projectName-cht-net
+EOL
+}
+
+get_compose_download_url() {
+  preferredRelease=$1
+  if [ -z "$preferredRelease" ]; then
+    preferredRelease=$(get_latest_version_string)
+  fi
+  echo "${stagingUrl}/medic:medic:${preferredRelease}"
+}
+
+get_all_known_versions() {
+  curl -s "${stagingUrl}"/_design/builds/_view/releases\?descending=true |  tr -d \\n | grep -o "medic\:medic\:[A-Za-z0-9\.\_\/\-]*" | cut -f3 -d: | sort
+}
+
+get_latest_version_string() {
+  curl -s "${stagingUrl}"/_design/builds/_view/releases\?limit=1\&descending=true |  tr -d \\n | grep -o 'medic\:medic\:[0-9\.]*' | cut -f3 -d:
+}
+
+create_compose_files() {
+  preferredRelease=$1
+  echo
+  echo "Downloading compose files ..." | tr -d '\n'
+  stagingUrlBase=$(get_compose_download_url "$preferredRelease")
+  mkdir -p "$homeDir/couch"
+  mkdir -p "$homeDir/compose"
+  curl -s -o "$homeDir/upgrade-service.yml" \
+    https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
+  curl -s -o "$homeDir/compose/cht-core.yml" "${stagingUrlBase}"/docker-compose/cht-core.yml
+  curl -s -o "$homeDir/compose/cht-couchdb.yml" "${stagingUrlBase}"/docker-compose/cht-couchdb.yml
+
+  echo -e "${green} done${noColor} "
+}
+
+get_home_dir() {
+  echo "$HOME/.medic/cht-docker/$1-dir"
+}
+
+show_help_intro() {
+    echo ""
+    echo "Helper script to start a CHT 4.x instance in docker."
+    echo ""
+    echo "Start new project:"
+    echo "    ./cht-docker-compose.sh"
+}
+
+show_help() {
+    echo ""
+    echo "Start existing project"
+    echo "    ./cht-docker-compose.sh ENV-FILE.env"
+    echo ""
+    echo "Stop and keep project:"
+    echo "    ./cht-docker-compose.sh ENV-FILE.env stop"
+    echo ""
+    echo "Stop and destroy all project data:"
+    echo "    ./cht-docker-compose.sh ENV-FILE.env destroy"
+    echo ""
+    echo "https://docs.communityhealthtoolkit.org/hosting/4.x/app-developer/"
+    echo ""
+}
 
 get_lan_ip() {
-  ipInstalled=$(required_apps_installed "ip")
-  if [ -n "$ipInstalled" ]; then
-    lanAddress=127.0.0.1
-  else
-    # todo - some of these calls fail wien there's no network connectivity - output stuff it shouldn't:
+  # init empty lan address
+  lanAddress=""
+
+  # "system_profiler" exists only on MacOS, if it's not here, then run linux style command for
+  # getting localhost's IP.  Otherwise use MacOS style command
+  # HOWEVER!! "ip" doesn't exist on windows git BASH, so check for that before going into the first if (and
+  # skip it on the second elif because windows won't have "system_profiler"
+  if [ -n "$(required_apps_installed "system_profiler")" ];then
+    # todo - some of these calls fail when there's no network connectivity - output stuff it shouldn't:
     #       Device "" does not exist.
     routerIP=$(ip r | grep default | head -n1 | awk '{print $3}')
-    subnet=$(echo "$routerIP" | cut -d'.' -f1,2,3)
+    subnet=$(echo "$routerIP" | cut -d'.' -f1,2,3 )
     if [ -z "$subnet" ]; then
       subnet=127.0.0
     fi
     lanInterface=$(ip r | grep "$subnet" | grep default | head -n1 | cut -d' ' -f 5)
     lanAddress=$(ip a s "$lanInterface" | awk '/inet /{gsub(/\/.*/,"");print $2}' | head -n1)
-    if [ -z "$lanAddress" ]; then
-      lanAddress=127.0.0.1
-    fi
+  elif [ "$(required_apps_installed "system_profiler")" ];then
+    subnet=$(netstat -rn| grep default | awk '{print $2}'|grep -Ev '^[a-f]' |cut -f1,2,3 -d'.')
+    ifconfig_line=$(ifconfig|grep inet|grep "$subnet" | cut -d' ' -f 2)
+    lanAddress=$ifconfig_line
+  fi
+
+  # always fall back to localhost if lanAddress wasn't set
+  if [ -z "$lanAddress" ]; then
+    lanAddress=127.0.0.1
   fi
   echo "$lanAddress"
 }
@@ -45,7 +139,7 @@ get_lan_ip() {
 get_local_ip_url(){
   lanIp=$1
   cookedLanAddress=$(echo "$lanIp" | tr . -)
-  url="https://${cookedLanAddress}.local-ip.medicmobile.org:${CHT_HTTPS}"
+  url="https://${cookedLanAddress}.local-ip.medicmobile.org:${NGINX_HTTPS_PORT}"
   echo "$url"
 }
 
@@ -71,211 +165,65 @@ docker_not_installed(){
   fi
 }
 
-port_open(){
-  ip=$1
-  port=$2
-  # todo - macos prints this on screen. nothing should be shown (like on ubuntu)
-  # Connection to 127.0.0.1 port 8443 [tcp/pcsync-https] succeeded!
-  nc -z "$ip" "$port"
-  echo $?
+get_nginx_container_id() {
+  docker ps --all --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet  2>/dev/null
 }
 
-has_self_signed_cert() {
-  # todo - when there's no connectivity, this fails w/ DNS
-  # curl: (6) Could not resolve host: 127-0-0-1.local-ip.medicmobile.org
+is_nginx_running() {
+  containerId=$1
 
-  # todo - macos returns this error some times
-  # curl: (35) LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to 127-0-0-1.local-ip.medicmobile.org:8443
-  url=$1
-  curl --insecure -vvI "$url" 2>&1 | grep -c "self signed certificate"
-}
+  # first check if container has State.Running == "true"
+  containerStarted=$(docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null)
 
-cht_healthy(){
-  chtIp=$1
-  chtPort=$2
-  chtUrl=$3
-  portIsOpen=$(port_open "$chtIp" "$chtPort")
-  if [ "$portIsOpen" = "0" ]; then
-    # todo - when there's no connectivity or DNS server is messing with resolution,
-    #  this fails w/ DNS like one of these two:
-    # curl: (6) Could not resolve host: 127-0-0-1.local-ip.medicmobile.org
-    # curl: (6) Could not resolve host: 192-168-217-207.local-ip.medicmobile.org
+  if [[ "$containerStarted" == "true" ]]; then
 
-    # todo - macos returns this error some times
-    # curl: (35) LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to 127-0-0-1.local-ip.medicmobile.org:8443
-    http_code=$(curl -k --silent --show-error --head "$chtUrl" --write-out '%{http_code}' | tail -n1)
-
-    if [ "$http_code" = "404" ]; then
-      add_missing_5xx_file
-    fi
-    if [ "$http_code" != "200" ]; then
-      echo "CHT is returning $http_code instead of 200."
-    fi
-  else
-    echo "Port $chtPort is not open on $chtIp"
-  fi
-}
-
-validate_env_file(){
-  envFile=$1
-  if [ ! -f "$envFile" ] || [[ ! "$(file "$envFile")" == *"ASCII text"* ]]; then
-    echo "File not found or not a text file: $envFile"
-    echo ""
-    echo " Start CHT with: ./cht-docker-compose.sh -d up -e ../PATH_TO_CONFIG/.env_docker"
-    echo " Stop CHT with: ./cht-docker-compose.sh -d down -e ../PATH_TO_CONFIG/.env_docker"
-  else
-    # TODO- maybe grep for env vars we're expecting? Blindly including
-    # is a bit promiscuous
-    # shellcheck disable=SC1090
-    . "${envFile}"
-    if [ -z "$COMPOSE_PROJECT_NAME" ] || [ -z "$CHT_HTTP" ] || [ -z "$CHT_HTTPS" ]; then
-      echo "Missing env value in file: COMPOSE_PROJECT_NAME, CHT_HTTP or CHT_HTTPS"
-    elif [[ "$COMPOSE_PROJECT_NAME" =~ [A-Z] ]];then
-      echo "COMPOSE_PROJECT_NAME can not have upper case: $COMPOSE_PROJECT_NAME"
+    # now confirm that nginx returns a 301 http code to curl, meaning it's ready to serve requests
+    # and also ready to have the TLS cert installed
+    http_code=$(docker exec "$containerId" bash -c "curl -o /dev/null -s -w \"%{http_code}\" http://localhost")
+    if [[ "$http_code" == "301" ]]; then
+      echo "true"
+      return 0
     fi
   fi
+  echo "false"
 }
 
-get_running_container_count(){
-  docker ps -qf "name=^${COMPOSE_PROJECT_NAME}[-_]+.*[-_]+[0-9]" | wc -l
-}
-
-get_global_running_container_count(){
-  docker ps --format '{{.Names}}' | wc -l
-}
-
-volume_exists(){
-  project=$1
-  volume="${project}_medic-data"
-  if [ "$( docker volume inspect "${volume}" 2>&1  | wc -l )" -eq 2 ]; then
-    echo "0"
+service_has_image_downloaded(){
+  service=$1
+  if [ "$service" == "cht-upgrade-service" ]; then
+    compose_path="${homeDir}/upgrade-service.yml"
+  elif [ "$service" == "couchdb" ]; then
+    compose_path="${homeDir}/compose/cht-couchdb.yml"
   else
-    echo "1"
+    compose_path="${homeDir}/compose/cht-core.yml"
+  fi
+  image=$(grep "${service}:" "${compose_path}" | grep image | cut -f2,3 -d":" | xargs)
+
+  imageDownloadName=$(docker image ls  --format '{{.Repository}}:{{.Tag}}' -f "reference=${image}" 2>/dev/null)
+  if [ "$imageDownloadName" ];then
+    echo "${imageDownloadName}"
+  else
+    echo "NA"
   fi
 }
 
-get_images_count(){
-  images="$1"
-  result=0
-  IFS=' ' read -ra imagesArray <<< "$images"
-  for image in "${imagesArray[@]}"
-  do
-    if [ "$( docker image ls --format '{{.Repository}}:{{.Tag}}' | grep -c "${image}" )" -eq 1 ]; then
-        (( result++ ))
-    fi
-  done
-  echo "$result"
-}
-
-pull_images(){
-  images="$1"
-  IFS=' ' read -ra imagesArray <<< "$images"
-  for image in "${imagesArray[@]}"
-  do
-    docker image pull "${image}" >/dev/null 2>&1
-  done
-}
-
-get_docker_compose_yml_path(){
-  if [ -f docker-compose-developer.yml ]; then
-    echo "docker-compose-developer.yml"
-  elif [ -f docker-compose-developer-3.x-only.yml ]; then
-    echo "docker-compose-developer-3.x-only.yml"
-  elif [ -f ../../docker-compose-developer.yml ]; then
-    echo "../../docker-compose-developer.yml"
+service_has_container(){
+  service=$1
+  container_name=$(docker ps -af "name=^${projectName}[-_]+.*[-_]+[0-9]" --format '{{.Names}}' | grep "${service}" 2>/dev/null)
+  if [ "$container_name" ];then
+    echo "${container_name}"
   else
-    return 0
+    echo "NA"
   fi
 }
 
-docker_up_or_restart(){
-  envFile=$1
-  composeFile=$2
-  # some times this function called too quickly after a docker change, so
-  # we sleep 3 secs here to let the docker container/volume stabilize
-  sleep 3
-
-  # haproxy never starts on first "up" call, so you know, call it twice ;)
-  docker compose --env-file "${envFile}" -f "${composeFile}" down >/dev/null 2>&1
-  docker compose --env-file "${envFile}" -f "${composeFile}" up -d >/dev/null 2>&1
-  docker compose --env-file "${envFile}" -f "${composeFile}" up -d >/dev/null 2>&1
-}
-
-install_local_ip_cert(){
-  medicOs=$(get_container_name "medic-os")
-
-  docker exec -it "${medicOs}" bash -c "echo '<html><head><title>Error</title></head><body><h1>Error</h1><p>Server Error - check error logs</p></body>' > /srv/storage/medic-core/nginx/data/html/50x.html" >/dev/null 2>&1
-  docker exec -it "${medicOs}" bash -c "apt update" >/dev/null 2>&1
-  docker exec -it "${medicOs}" bash -c "apt install -y libssl1.0.0 openssl libgnutls30  ca-certificates curl libcurl3-gnutls" >/dev/null 2>&1
-  docker exec -it "${medicOs}" bash -c "curl -s -o server.pem https://local-ip.medicmobile.org/cert" >/dev/null 2>&1
-  docker exec -it "${medicOs}" bash -c "curl -s -o chain.pem https://local-ip.medicmobile.org/chain" >/dev/null 2>&1
-  docker exec -it "${medicOs}" bash -c "curl -s -o /srv/settings/medic-core/nginx/private/default.key https://local-ip.medicmobile.org/key" >/dev/null 2>&1
-  docker exec -it "${medicOs}" bash -c "cat server.pem chain.pem > /srv/settings/medic-core/nginx/private/default.crt" >/dev/null 2>&1
-  docker exec -it "${medicOs}" bash -c "/boot/svc-restart medic-core nginx" >/dev/null 2>&1
-}
-
-add_missing_5xx_file(){
-  medicOs=$(get_container_name "medic-os")
-  docker exec -it "${medicOs}" bash -c "mkdir -p /srv/storage/medic-core/nginx/data/html" >/dev/null 2>&1
-  docker exec -it "${medicOs}" bash -c "echo '<html><head><title>Error</title></head><body><h1>Error</h1><p>Server Error - check error logs</p></body>' > /srv/storage/medic-core/nginx/data/html/50x.html" >/dev/null 2>&1
-  docker exec -it "${medicOs}" bash -c "/boot/svc-restart medic-core nginx" >/dev/null 2>&1
-  echo "Adding missing 5xx files!"
-}
-
-# thanks https://github.com/medic/nginx-local-ip/blob/main/entrypoint.sh#L44 !
-local_ip_cert_expired(){
-  medicOs=$(get_container_name "medic-os")
-  cert_expire_date=$(docker exec -i "${medicOs}" bash -c "/usr/bin/openssl x509 -enddate -noout -in /srv/settings/medic-core/nginx/private/default.crt | grep -oP 'notAfter=\K.+'")
-
-  # "system_profiler" exists only on MacOS, if it's not here, then run linux style command for
-  # load avg.  Otherwise use MacOS style command
-  if [ -n "$(required_apps_installed "system_profiler")" ];then
-    cert_expire_date_ISO=$(date -d "$cert_expire_date" '+%Y-%m-%d')
+container_status(){
+  contianer=$1
+  status=$(docker inspect --format="{{.State.Status}}" "$contianer" 2>/dev/null)
+  if [ "$status" ];then
+    echo "${status}"
   else
-    cert_expire_date_ISO=$(date -v "$cert_expire_date" '+%Y-%m-%d')
-  fi
-
-
-  today_ISO=$(date '+%Y-%m-%d')
-  if [[ "$cert_expire_date_ISO" < "$today_ISO" ]]; then
-    echo "1"
-  else
-    echo "0"
-  fi
-}
-
-docker_down(){
-  envFile=$1
-  composeFile=$2
-  docker compose --env-file "${envFile}" -f "${composeFile}" down >/dev/null 2>&1
-}
-
-docker_destroy(){
-  all_containers=$(get_all_project_containers)
-  IFS=' ' read -ra containersArray <<<"$all_containers"
-  for container in "${containersArray[@]}"; do
-    docker rm -f "${container}" >/dev/null 2>&1
-  done
-  # todo - for some reason volume and network don't get deleted here :(
-  docker volume rm "${project}"_medic-data >/dev/null 2>&1
-  docker network rm "${project}"_medic-net >/dev/null 2>&1
-}
-
-get_cht_version(){
-  url=$1
-  urlWithPassAndPath="https://medic:password@$(echo "$url" | cut -c 9-9999)/medic/_design/medic "
-  # todo - as of 20.04, ubuntu still doesn't actually ship with JQ default :(
-  # todo - or maybe just download it for them per https://unix.stackexchange.com/a/649872 ?
-  #         but would this work on macos? oh - looks like yes!?
-  # "The binaries should just run, but on OS X and Linux you may need to make them executable first using chmod +x jq."
-  # - https://stedolan.github.io/jq/download/
-  if [ -n "$(required_apps_installed "jq")" ];then
-    echo "NA (jq not installed)"
-  else
-    url=$1
-    urlWithPassAndPath="https://medic:password@$(echo "$url" | cut -c 9-9999)/medic/_design/medic "
-    version=$(curl -sk "$urlWithPassAndPath"|jq .build_info.base_version | tr -d '"')
-    echo "$version"
+    echo "NA"
   fi
 }
 
@@ -291,328 +239,301 @@ get_load_avg() {
   fi
 }
 
-get_container_process_count(){
-  container=$1
-  status=$(docker inspect --format="{{.State.Running}}" "$container" 2> /dev/null)
-  if [ "$status" = "true" ]; then
-    docker top "${container}" | tail -n +2 | wc -l
-  else
-    echo "0"
-  fi
+get_running_container_count(){
+  docker ps -qf "name=^${projectName}[-_]+.*[-_]+[0-9]" | wc -l
 }
 
-log_iteration(){
-  counter=$1
-  reboot_count=$2
-  last_msg=$(echo "$3" | tr -d '"')
-  docker_call=$4
-  line_head="$(date) pid=\"$$\" count=\"${counter}\""
-  load_now=$(get_load_avg | cut -d" " -f 1)
+get_global_running_container_count(){
+  docker ps --format '{{.Names}}' | wc -l
+}
 
-  # output the log in the same directory as the env file
-  log_location=$(dirname "$envFile")
-  logname="${log_location}/cht-docker-compose.log"
-
-  full_url=$(get_local_ip_url "$lanAddress")
-  portIsOpen=$(port_open "$lanAddress" "$CHT_HTTPS")
-  if [ "$portIsOpen" = "0" ]; then
-    port_status='open'
-    http_code=$(curl -k --silent --show-error --head "$full_url" --write-out '%{http_code}' | tail -n1)
-    ssl_verify=$(curl -k --silent --show-error --head "$full_url" --write-out '%{ssl_verify_result}' | tail -n1)
-    if [ "$ssl_verify" = "0" ]; then
-      ssl_verify=yes
-    else
-      ssl_verify=no
-    fi
-  else
-    port_status='closed'
-    http_code='NA'
-    ssl_verify='no'
-  fi
-
-  if [ "$counter" -eq 0 ]; then
-
-    echo "$(date) pid=\"$$\" \
-item=\"end\" \
-project_name=\"$COMPOSE_PROJECT_NAME\" \
-" >& 1 >> "$logname"
-    return 0
-
-  fi
-
-  if [ "$counter" -eq 1 ]; then
-
-    echo "${line_head} \
-item=\"start\" \
-URL=\"$full_url\" \
-IP=\"$lanAddress\" \
-port_https=\"$CHT_HTTPS\" \
-port_http=\"$CHT_HTTP\" \
-project_name=\"$COMPOSE_PROJECT_NAME\" \
-total_containers=\"$(get_global_running_container_count)\"\
-" >& 1 >> "$logname"
-  fi
-
-  # thanks https://gist.github.com/somada141/dce96cddb1f93161ee3f
-  all_containers=$(get_all_project_containers)
-  container_stat=''
-  IFS=' ' read -ra containersArray <<<"$all_containers"
-  for container in "${containersArray[@]}"; do
-    RUNNING=$(docker inspect --format="{{.State.Running}}" "${container}" 2> /dev/null)
-    if [ "$RUNNING" == "true" ]; then
-      logs=$(docker logs -n1 "${container}")
-      logs=$(echo "$logs" | tr -d '"')
-      
-      else
-      RUNNING="false"
-      logs="NA"
-    fi
-
-    echo "${line_head} item=\"docker_logs\" container=\"${container}\" processes=\"$(get_container_process_count "${container}")\" last_log=\"$logs\"" >& 1 >> "$logname"
-    container_stat="${container}=\"${RUNNING}\" ${container_stat}"
+get_system_and_docker_info(){
+  projectURL=$(get_local_ip_url "$(get_lan_ip)")
+  info='Service Status Container Image'
+  services="cht-upgrade-service haproxy healthcheck api sentinel nginx couchdb"
+  IFS=' ' read -ra servicesArray <<<"$services"
+  for service in "${servicesArray[@]}"; do
+    image=$(service_has_image_downloaded "${service}")
+    container=$(service_has_container "${service}")
+    status=$(container_status "${container}")
+    info="${info}"$'\n'"${service} ${status} ${container} ${image}"
   done
-
-  echo "${line_head} \
-item=\"status\" \
-CHT_count=\"$(get_running_container_count)\" \
-port_stat=\"$port_status\" \
-http_code=\"$http_code\" \
-ssl_verify=\"$ssl_verify\" \
-reboot_count=\"$reboot_count\" \
-docker_call=\"$docker_call\" \
-last_msg=\"$last_msg\" \
-load_now=\"$load_now\" \
-$container_stat\
-" >& 1 >> "$logname"
-
+  echo
+  echo "---DEBUG INFO---"
+  echo "Load: $(get_load_avg)"
+  echo "CHT Containers: $(get_running_container_count)"
+  echo "Global Containers: $(get_global_running_container_count)"
+  echo "URL: $projectURL"
+  echo
+  echo $"$info" | column -t
 }
 
-get_all_project_containers(){
-  docker ps -aqf "name=^${COMPOSE_PROJECT_NAME}[-_]+.*[-_]+[0-9]"  | tr '\n' ' '
+update_nginx_local_ip_tls_cert(){
+  nginxContainerId=$1
+  rm -f /tmp/local-ip-fullchain /tmp/local-ip-key
+  curl  --retry 3 --fail --silent --show-error -o /tmp/local-ip-fullchain https://local-ip.medicmobile.org/fullchain
+  curl  --retry 3 --fail --silent --show-error -o /tmp/local-ip-key https://local-ip.medicmobile.org/key
+  docker cp /tmp/local-ip-fullchain "${nginxContainerId}":/etc/nginx/private/cert.pem  1>/dev/null
+  docker cp /tmp/local-ip-key "${nginxContainerId}":/etc/nginx/private/key.pem  1>/dev/null
+  docker exec "$nginxContainerId" bash -c "nginx -s reload"  2>/dev/null
 }
 
-get_container_name(){
-  container_type=$1
-  docker ps -aqf "name=^${COMPOSE_PROJECT_NAME}[-_]+${container_type}[-_]+[0-9]"
-}
-
-counter=1
-tls_reinstalls=0
-main (){
-
-  # very first thing check we have valid env file, exit if not
-  validEnv=$(validate_env_file "$envFile")
-  if [ -n "$validEnv" ]; then
-    window "CHT Docker Helper - WARNING - Missing or invalid .env File  -  (USE WITH CHT 3.x ONLY!)" "red" "100%"
-    append "$validEnv"
-    endwin
-    set -e
-    return 0
-  else
-    # shellcheck disable=SC1090
-    . "${envFile}"
-  fi
-
-  # after valid env file is loaded, let's set all our constants
-  declare -r APP_STRING="grep;head;cut;tr;nc;curl;file;wc;awk;tail;dirname"
-  declare -r MAX_REBOOTS=5
-  declare -r DEFAULT_SLEEP=$((60 * $((reboot_count + 1))))
-  declare -r ALL_IMAGES="medicmobile/medic-os:cht-3.9.0-rc.2 medicmobile/haproxy:rc-1.17"
-
-  # with constants set, let's ensure all the apps are present, exit if not
-  appStatus=$(required_apps_installed "$APP_STRING")
-  dockerStatus=$(docker_not_installed)
-  allStatus="${appStatus}${dockerStatus}"
-  if [ -n "$allStatus" ]; then
-    window "WARNING: Missing Apps  -  (USE WITH CHT 3.x ONLY!)" "red" "100%"
-    append "Install before proceeding:"
-    append "$appStatus"
-    endwin
-    log_iteration 0
-    set -e
-    return 0
-  fi
-
-  # do all the various checks of stuffs
-  volumeCount=$(volume_exists "$COMPOSE_PROJECT_NAME")
-  containerCount=$(get_running_container_count)
-  imageCount=$(get_images_count "$ALL_IMAGES")
-  globalContainerCount=$(get_global_running_container_count)
-  lanAddress=$(get_lan_ip)
-  chtUrl=$(get_local_ip_url "$lanAddress")
-  health=$(cht_healthy "$lanAddress" "$CHT_HTTPS" "$chtUrl")
-  dockerComposePath=$(get_docker_compose_yml_path)
-  loadAvg=$(get_load_avg)
-  chtVersion="NA"
-
-  log_iteration "$counter" "$reboot_count" "${last_action}" "$docker_action"
-  (( counter++ ))
-
-  # if we're exiting, call down or destroy and quit proper
-  if [ "$exitNext" = "destroy" ] || [ "$exitNext" = "down" ] || [ "$exitNext" = "happy" ]; then
-    if [ "$exitNext" = "destroy" ]; then
-      docker_destroy
-    elif [ "$exitNext" = "down" ]; then
-      docker_down "$envFile" "$dockerComposePath"
+validate_tls(){
+  url=$1
+  attempt=$2
+  max_retries=3
+  # by default curl validates TLS.  If we get back  60 then TLS isn't valid:
+  # exitcode: https://everything.curl.dev/usingcurl/verbose/writeout.html
+  # 60: https://everything.curl.dev/cmdline/exitcode.html
+  status=$(curl --retry 3 --write-out "%{exitcode}" -qs  "$url" -o /dev/null)
+  if [ "$status" != "0" ]; then
+    if [ "$attempt" -gt $max_retries ]; then
+      echo "false: status is $status"
+    else
+      duration_seconds=$((2 ** attempt))
+      sleep $duration_seconds
+      validate_tls "$url" $((attempt+1))
     fi
-    log_iteration 0
-    set -e
-    exit 0
   fi
-
-  # if we're not healthy, report self signed as zero, otherwise if
-  # we are healthy, check for self_signed cert and version
-  if [ -n "$health" ]; then
-    self_signed=0
-  else
-    chtVersion=$(get_cht_version "$chtUrl")
-    self_signed=$(has_self_signed_cert "$chtUrl")
-    expired_cert=$(local_ip_cert_expired)
-  fi
-
-  # derive overall healthy
-  if [ -z "$appStatus" ] && [ -z "$health" ] && [ "$self_signed" = "0" ] && [ "$expired_cert" = "0" ]; then
-    overAllHealth="Good"
-  elif [[ "$sleepFor" -gt 0 ]]; then
-    overAllHealth="Booting..."
-  else
-    overAllHealth="!= Bad =!"
-  fi
-
-  # display only action so this paints on bash screen. next loop we'll quit and show nothing new
-  if [ "$docker_action" = "destroy" ] || [ "$docker_action" = "down" ]; then
-    window "${docker_action}ing ${COMPOSE_PROJECT_NAME}   -  (USE WITH CHT 3.x ONLY!)" "red" "100%"
-    append "Please wait... "
-    endwin
-    exitNext=$docker_action
-    return 0
-  elif [ -z "$docker_action" ] || [ "$docker_action" != "up" ] || [ "$docker_action" = "" ]; then
-    log_iteration 0
-    set -e
-    exit 0
-  fi
-
-  window "CHT Docker Helper: ${COMPOSE_PROJECT_NAME}  -  (USE WITH CHT 3.x ONLY!)" "green" "100%"
-  append_tabbed "CHT Health - Version|${overAllHealth} - ${chtVersion}" 2 "|"
-  append_tabbed "CHT URL|${chtUrl}" 2 "|"
-  append_tabbed "FAUXTON URL|${chtUrl}/_utils/" 2 "|"
-  append_tabbed "" 2 "|"
-  append_tabbed "Project Containers|${containerCount} of 2" 2 "|"
-  append_tabbed "Global Containers / Medic Images|${globalContainerCount} / ${imageCount}" 2 "|"
-  append_tabbed "Global load Average|${loadAvg}" 2 "|"
-  append_tabbed "" 2 "|"
-  append_tabbed "Last Action|${last_action}" 2 "|"
-  endwin
-
-  if [ -z "$dockerComposePath" ]; then
-    window "WARNING: Missing Compose File   -  (USE WITH CHT 3.x ONLY!)" "red" "100%"
-    append "Download before proceeding: "
-    append "wget https://github.com/medic/cht-core/blob/master/docker-compose-developer.yml"
-    endwin
-    endwin
-    log_iteration 0
-    set -e
-    return 0
-  fi
-
-  if [[ "$imageCount" -lt 2 ]] && [[ "$sleepFor" = 0 ]]; then
-    sleepFor=$DEFAULT_SLEEP
-    last_action="Downloading Docker Hub images"
-    pull_images "$ALL_IMAGES" &
-    (( reboot_count++ ))
-
-    # todo - figure a way to catch the images being successfully downloaded and reset sleepFor=0?
-  fi
-
-  if [[ "$volumeCount" = 0 ]] && [[ "$reboot_count" = 0 ]]; then
-    sleepFor=$DEFAULT_SLEEP
-    last_action="First run of \"up\""
-    docker_up_or_restart "$envFile" "$dockerComposePath" &
-    (( reboot_count++ ))
-  fi
-
-  if [[ "$containerCount" != 2 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]] && [[ "$sleepFor" = 0 ]]; then
-    sleepFor=$DEFAULT_SLEEP
-    last_action="Running \"down\" then \"up\""
-    docker_up_or_restart "$envFile" "$dockerComposePath" &
-    (( reboot_count++ ))
-  fi
-
-  if [ -n "$health" ] && [[ "$sleepFor" = 0 ]] && [[ "$reboot_count" != "$MAX_REBOOTS" ]]; then
-    sleepFor=$DEFAULT_SLEEP
-    last_action="Running \"down\" then \"up\""
-    docker_up_or_restart "$envFile" "$dockerComposePath"  &
-    (( reboot_count++ ))
-  fi
-
-  if [[ "$sleepFor" -gt 0 ]] && [ -n "$health" ]; then
-    window "Attempt number $reboot_count / $MAX_REBOOTS to boot $COMPOSE_PROJECT_NAME" "yellow" "100%"
-    append "Waiting $sleepFor..."
-    endwin
-    (( sleepFor-- ))
-  fi
-
-  if [[ "$reboot_count" = "$MAX_REBOOTS" ]] && [[ "$sleepFor" = 0 ]]; then
-    window "Reboot max met: $MAX_REBOOTS reboots" "red" "100%"
-    append "Please try running docker helper script again"
-    endwin
-    log_iteration 0
-    set -e
-    return 0
-  fi
-
-  # show health status
-  if [ -n "$health" ]; then
-    window "WARNING: CHT Not running" "red" "100%"
-    append "$health"
-    endwin
-    return 0
-  fi
-
-  # check for self signed cert, install if so
-  if [ "$self_signed" = "1" ]; then
-    window "WARNING: CHT has self signed certificate" "red" "100%"
-    append "Installing local-ip.medicmobile.org certificate to fix..."
-    last_action="Installing local-ip.medicmobile.org certificate..."
-    endwin
-    install_local_ip_cert &
-    return 0
-  fi
-
-  # check for expired cert, reinstall if so
-  expired_cert=$(local_ip_cert_expired)
-  if [[ "$expired_cert" = "1" ]] && [[ $tls_reinstalls = 0 ]]; then
-    window "WARNING: CHT has expired certificate" "red" "100%"
-    append "Re-installing local-ip.medicmobile.org certificate to fix..."
-    last_action="Re-installing expired local-ip.medicmobile.org certificate..."
-    endwin
-    (( tls_reinstalls++ ))
-    install_local_ip_cert&
-    return 0
-  elif [[ "$expired_cert" = "1" ]]; then
-    window "local-ip.medicmobile.org certificate renewed, but still expired" "red" "100%"
-    append "HTTPS calls will fail. Try running this script tomorrow"
-    append "when hopefully local-ip.medicmobile.org has renewed their certificate."
-    endwin
-    log_iteration 0
-    set -e
-    return 0
-  fi
-
-  # if we're here, we're happy! Show happy sign and exit next iteration via exitNext
-  script_path1=$(dirname "$0")
-  last_action=" :) "
-  window "Successfully started ${COMPOSE_PROJECT_NAME} " "green" "100%"
-  append "login: medic"
-  append "password: password"
-  append ""
-  append "To stop the CHT run: ${script_path1}/cht-docker-compose.sh -d down -e ${envFile}"
-  append ""
-  append ""
-  append "Have a great day!"
-  endwin
-  exitNext="happy"
-
 }
 
-main_loop -t .5 "$@"
+if [ "$(docker_not_installed)" ];then
+  echo ""
+  echo -e "${red}\"docker\" or \"docker compose\" is not installed or could not be found. Please install and try again!${noColor}"
+  show_help
+  exit 0
+fi
+
+# can pass a project .env file as argument
+if [[ -n "${1-}" ]]; then
+  if [[ "$1" == "--help" ]] || [[  "$1" == "-h" ]]; then
+    show_help_intro
+    show_help
+    exit 0
+  elif [[ -f "$1" ]]; then
+    projectFile=$1
+    projectName=$(echo "$projectFile" | sed "s/\.\///" | sed "s/\.env//")
+    homeDir=$(get_home_dir "$projectName")
+  else
+    echo ""
+    echo -e "${red}File \"$1\" doesnt exist - be sure to include \".env\" at the end!${noColor}"
+    show_help
+    exit 0
+  fi
+fi
+
+if [[ -n "${2-}" && -n $projectName ]]; then
+  containerIds=$(docker ps --all --filter "name=${projectName}" --quiet)
+  case $2 in
+  "stop")
+    echo "Stopping project \"${projectName}\"..." | tr -d '\n'
+    # shellcheck disable=SC2086
+    docker kill $containerIds 1>/dev/null
+    echo -e "${green} done${noColor} "
+    exit 0
+    ;;
+  "destroy")
+    echo "Destroying project \"${projectName}\"."
+
+    if [[ -n $containerIds ]]; then
+      echo "Removing project's docker containers..." | tr -d '\n'
+      # shellcheck disable=SC2086
+      docker kill $containerIds 1>/dev/null
+      # shellcheck disable=SC2086
+      docker rm $containerIds 1>/dev/null
+      echo -e "${green} done${noColor} "
+    else
+      echo "No docker container found, skipping."
+    fi
+
+    networks=$(docker network ls --filter "name=${projectName}" --quiet)
+    if [[ -n $networks ]]; then
+      echo "Removing project's docker networks..." | tr -d '\n'
+      # shellcheck disable=SC2086
+      docker network rm $networks 1>/dev/null
+      echo -e "${green} done${noColor} "
+    else
+      echo "No docker network found, skipping."
+    fi
+
+    volumes=$(docker volume ls --filter "name=${projectName}" --quiet)
+    if [[ -n $volumes ]]; then
+      echo "Removing project's docker volumes..." | tr -d '\n'
+      # shellcheck disable=SC2086
+      docker volume rm $volumes 1>/dev/null
+      echo -e "${green} done${noColor} "
+    else
+      echo "No docker container volume, skipping."
+    fi
+
+    if [[ -d $homeDir ]]; then
+      echo "Removing project files which needs sudo..."
+      sudo rm -rf "$homeDir"
+      echo -e "${green} done${noColor} "
+    else
+      echo "No project-specific found, skipping."
+    fi
+
+    if [[ -f "${projectName}.env" ]]; then
+      echo "Removing .env file in this directory..." | tr -d '\n'
+      rm "${projectName}".env
+      echo -e "${green} done${noColor} "
+    else
+      echo "No .env file found, skipping."
+    fi
+
+
+    echo "Project \"${projectName}\" successfully removed from your computer."
+    exit 0
+    ;;
+  esac
+fi
+
+if [[ -z "$projectName" ]]; then
+  projects=$(get_existing_projects)
+
+  if [[ -z "$projects" ]]; then
+    echo 'No project found, follow the prompts to create a project .env file.'
+  fi
+
+  echo
+  # thanks for the pr vs rp!! https://unix.stackexchange.com/a/677805
+  read -rp "Would you like to initialize a new project [y/N]? " yn
+  case $yn in
+  [Yy]*)
+    while [[ -z "$projectName" ]]; do
+      preferredRelease=$(get_latest_version_string)
+      echo
+      read -rp "Do you want to run the latest CHT Core version (${preferredRelease}) [Y/n]? " runLatest
+      case $runLatest in
+      [nN]*)
+        allKnownVersions=$(get_all_known_versions)
+        optionCount=$(wc -l <<< "$allKnownVersions")
+        echo
+        echo "Select a version by entering 1 through ${optionCount} or 'ctrl + c' to quit: "
+        while true; do
+          select preferredRelease in $allKnownVersions; do
+            if [[ "$REPLY" =~ ^[0-9]+$ && "$REPLY" -gt 0 && "$REPLY" -lt $optionCount ]]; then
+              echo
+              echo "Selected version ${preferredRelease}";
+              break 2;
+            else
+              echo "Invalid choice. Enter 1 through ${optionCount} or 'ctrl + c' to quit"
+            fi
+          done
+        done
+      esac
+      echo
+      read -rp "How do you want to name the project? " projectName
+
+      projectName="${projectName//[^[:alnum:]]/_}"
+      projectName=$(echo "$projectName" | tr '[:upper:]' '[:lower:]')
+      projectFile="$projectName.env"
+      homeDir=$(get_home_dir "$projectName")
+      if test -f "./$projectFile"; then
+        echo "./$projectFile already exists"
+        projectName=
+        projectFile=
+        homeDir=
+      fi
+    done
+
+    init_env_file
+    create_compose_files "$preferredRelease"
+    projects=$(get_existing_projects)
+    ;;
+  esac
+
+  envCount=$(find . -name "*.env" -type f | wc -l)
+  if [ "$envCount" -gt 0 ]; then
+    while [[ -z "$projectName" ]]; do
+      echo
+      echo "Which project do you want to use? (ctrl + c to quit) "
+      select project in $projects; do
+        projectName=$project
+        projectFile="$projectName.env"
+        homeDir=$(get_home_dir "$projectName")
+        break
+      done
+    done
+  else
+    echo ""
+    echo -e "${red}No projects found, please initialize a new one.${noColor}"
+    show_help
+    exit 1
+  fi
+fi
+
+# shellcheck disable=SC1090
+source "./$projectFile"
+
+projectURL=$(get_local_ip_url "$(get_lan_ip)")
+if [[ -n ${DEBUG+x} ]];then get_system_and_docker_info; fi
+
+echo "";echo "homedir: $homeDir"
+docker compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml" up --detach
+if [[ -n ${DEBUG+x} ]];then get_system_and_docker_info; fi
+
+set +e
+echo "Starting project \"${projectName}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
+
+nginxContainerId=$(get_nginx_container_id)
+running=$(is_nginx_running "$nginxContainerId")
+i=0
+
+if [[ -n ${DEBUG+x} ]];then get_system_and_docker_info; fi
+while [[ "$running" != "true" ]]; do
+  if [[ $i -gt 300 ]]; then
+    echo ""
+    echo ""
+    echo -e "${red}Failed to start - check docker logs for errors and try again.${noColor}"
+		echo ""
+		get_system_and_docker_info
+    echo ""
+    exit 1
+  fi
+
+  if [[ -n ${DEBUG+x} ]];then
+    clear;get_system_and_docker_info
+  else
+  	echo '.' | tr -d '\n'
+	fi
+	((i++))
+	sleep 1
+
+  if [[ $nginxContainerId = "" ]]; then
+    nginxContainerId=$(get_nginx_container_id)
+  fi
+
+  running=$(is_nginx_running "$nginxContainerId")
+done
+
+# output a new line with echo and then update certs every time we run to ensure they're current
+echo;update_nginx_local_ip_tls_cert "$nginxContainerId"
+if [ "$(validate_tls "$projectURL" 0)" ];then
+  echo ""
+  echo -e "${red}Failed to install local-ip TLS certificate. Check for errors above and try again${noColor}"
+  get_system_and_docker_info
+  exit 0
+fi
+
+echo ""
+echo ""
+echo " -------------------------------------------------------- "
+echo ""
+echo "  Success! \"${projectName}\" is set up:"
+echo ""
+echo "    ${projectURL}/ (CHT)"
+echo "    ${projectURL}/_utils/ (Fauxton)"
+echo ""
+echo "    Login: ${COUCHDB_USER}"
+echo "    Password: ${COUCHDB_PASSWORD}"
+echo ""
+echo " -------------------------------------------------------- "
+show_help
+echo ""
+echo -e "${green} Have a great day!${noColor} "
+echo ""
+
+if [[ -n ${DEBUG+x} ]];then get_system_and_docker_info; fi
+set -e

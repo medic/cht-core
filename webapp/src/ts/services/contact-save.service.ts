@@ -2,22 +2,25 @@ import { v4 as uuidV4 } from 'uuid';
 import { Injectable, NgZone } from '@angular/core';
 import { defaults as _defaults, isObject as _isObject } from 'lodash-es';
 
-import { DbService } from '@mm-services/db.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ContactSaveService {
   private readonly CONTACT_FIELD_NAMES = [ 'parent', 'contact' ];
+  private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   constructor(
-    private dbService:DbService,
     private enketoTranslationService:EnketoTranslationService,
     private extractLineageService:ExtractLineageService,
     private ngZone:NgZone,
+    chtDatasourceService: CHTDatasourceService,
   ) {
+    this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
   }
 
   private prepareSubmittedDocsForSave(original, submitted, typeFields) {
@@ -100,17 +103,13 @@ export class ContactSaveService {
     return preparedSibling;
   }
 
-  private getContact(doc, fieldName, contactId) {
-    return this.dbService
-      .get()
-      .get(contactId)
-      .then((dbFieldValue) => {
-        // In a correctly configured form one of these will be the
-        // parent. This must happen before we attempt to run
-        // ExtractLineage on any siblings or repeats, otherwise they
-        // will extract an incomplete lineage
-        doc[fieldName] = this.extractIfRequired(fieldName, dbFieldValue);
-      });
+  private async getContact(doc, fieldName, contactId) {
+    const dbFieldValue = await this.getContactFromDatasource(Qualifier.byUuid(contactId));
+    // In a correctly configured form one of these will be the
+    // parent. This must happen before we attempt to run
+    // ExtractLineage on any siblings or repeats, otherwise they
+    // will extract an incomplete lineage
+    doc[fieldName] = this.extractIfRequired(fieldName, dbFieldValue);
   }
 
   // Mutates the passed doc to attach prepared siblings, and returns all
@@ -148,7 +147,7 @@ export class ContactSaveService {
 
   async save(form, docId, typeFields, xmlVersion) {
     return this.ngZone.runOutsideAngular(async () => {
-      const original = docId ? await this.dbService.get().get(docId) : null;
+      const original = docId ? await this.getContactFromDatasource(Qualifier.byUuid(docId)) : null;
       const submitted = this.enketoTranslationService.contactRecordToJs(form.getDataStr({ irrelevant: false }));
       const docData = await this.prepareSubmittedDocsForSave(original, submitted, typeFields);
       if (xmlVersion) {

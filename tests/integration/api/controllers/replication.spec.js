@@ -810,7 +810,7 @@ describe('replication', () => {
           _id: 'health_center_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'health_center_patient', needs_signoff: ''},
+          fields: { patient_id: 'health_center_patient', needs_signoff: '' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
@@ -856,7 +856,7 @@ describe('replication', () => {
           _id: 'clinic_report_2',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'clinic_patient', needs_signoff: 'something' },
+          fields: { patient_id: 'clinic_patient', needs_signoff: 'true' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
@@ -869,7 +869,7 @@ describe('replication', () => {
           _id: 'health_center_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'health_center_patient', needs_signoff: 'YES!'},
+          fields: { patient_id: 'health_center_patient', needs_signoff: true },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
@@ -880,7 +880,7 @@ describe('replication', () => {
           _id: 'bob_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'fixture:user:bob', needs_signoff: {} },
+          fields: { patient_id: 'fixture:user:bob', needs_signoff: 'true' },
           form: 'f',
           contact: {
             _id: 'fixture:user:bob',
@@ -932,7 +932,7 @@ describe('replication', () => {
           _id: 'clinic_report_2',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'clinic_patient', needs_signoff: 'something' },
+          fields: { patient_id: 'clinic_patient', needs_signoff: 'true' },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw',
@@ -945,7 +945,7 @@ describe('replication', () => {
           _id: 'health_center_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'health_center_patient', needs_signoff: 'YES!'},
+          fields: { patient_id: 'health_center_patient', needs_signoff: true },
           form: 'f',
           contact: {
             _id: 'fixture:user:chw-boss',
@@ -956,7 +956,7 @@ describe('replication', () => {
           _id: 'bob_report',
           type: 'data_record',
           reported_date: 1,
-          fields: { patient_id: 'fixture:user:bob', needs_signoff: {} },
+          fields: { patient_id: 'fixture:user:bob', needs_signoff: true },
           form: 'f',
           contact: {
             _id: 'fixture:user:bob',

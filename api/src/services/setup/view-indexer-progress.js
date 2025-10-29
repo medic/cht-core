@@ -44,14 +44,17 @@ const updateRunningTasks = (indexers, activeTasks = []) => {
   activeTasks.forEach(task => {
     const dbName = getDatabaseName(task);
     const ddocName = getDdocName(task);
+    const indexerType = task.type;
     let indexer = indexers.find(indexer => {
-      return indexer.ddoc === ddocName && indexer.database === dbName;
+      return indexer.ddoc === ddocName && indexer.database === dbName && indexer.type === indexerType;
     });
+
     if (!indexer) {
       indexer = {
         database: dbName,
         ddoc: ddocName,
         tasks: {},
+        type: indexerType,
       };
       indexers.push(indexer);
     }
@@ -79,7 +82,7 @@ const logIndexersProgress = (indexers) => {
       .padStart(Math.floor((filledBarLength + progress.length) / 2), '|')
       .padEnd(filledBarLength, '|')
       .padEnd(barLength, '_');
-    const ddocName = `${indexer.database}/${indexer.ddoc}`.padEnd(DDOC_NAME_PAD, ' ');
+    const ddocName = `${indexer.database}/${indexer.ddoc} (${indexer.type})`.padEnd(DDOC_NAME_PAD, ' ');
 
     logger.info(`${ddocName}[${bar}]`);
   };
@@ -87,9 +90,13 @@ const logIndexersProgress = (indexers) => {
 };
 
 const getIndexers = async (indexers = []) => {
+  const INDEXER_TYPES = ['indexer', 'search_indexer'];
+
   try {
     const activeTasks = await db.activeTasks();
-    const tasks = activeTasks.filter(task => task.type === 'indexer' && DDOC_PREFIX.test(String(task.design_document)));
+    const tasks = activeTasks.filter(task => {
+      return INDEXER_TYPES.includes(task.type) && DDOC_PREFIX.test(String(task.design_document));
+    });
     // We assume all previous tasks have finished.
     indexers.forEach(setTasksToComplete);
     updateRunningTasks(indexers, tasks);

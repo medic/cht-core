@@ -29,7 +29,7 @@ describe('EditUserCtrl controller', () => {
     const dataSource = { v1: { hasPermissions } };
     const dataContext = {
       bind: sinon.stub(),
-      getDataSource: sinon.stub().returns(dataSource)
+      getDatasource: sinon.stub().returns(dataSource)
     };
     dataContext.bind.returns(getContact);
     dbAllDocs = sinon.stub();

@@ -555,7 +555,7 @@ describe('CHT Script API - getDatasource', () => {
         expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
       });
 
-      it('createReport', async () => {
+      it('create', async () => {
         const reportInput = { form: 'apoorva', type: 'report', contact: 'c1' };
         const expectedReport = {
           ...reportInput,
@@ -572,6 +572,21 @@ describe('CHT Script API - getDatasource', () => {
         expect(reportCreate.calledOnceWithExactly(validatedReportInput)).to.be.true;
       });
 
+      it('update', async () => {
+        const reportInput = { name: 'apoorva', type: 'report', contact: 'c1' };
+        const expectedReport = {
+          ...reportInput,
+          reported_date: 12312312
+        };
+        const reportUpdate = sinon.stub().resolves(expectedReport);
+        dataContextBind.returns(reportUpdate);
+
+        const returnedPlace = await report.update(reportInput);
+
+        expect(returnedPlace).to.equal(expectedReport);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.update)).to.be.true;
+        expect(reportUpdate.calledOnceWithExactly(reportInput)).to.be.true;
+      });
     });
   });
 });
