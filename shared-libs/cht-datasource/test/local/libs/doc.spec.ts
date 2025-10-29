@@ -696,6 +696,22 @@ describe('local doc lib', () => {
       expect(dbGet.called).to.be.false;
       expect(dbPut.called).to.be.false;
     });
+
+    it('case when database returns false for ok', async () => {
+      const updateDocQualifier = {
+        _id: '1-id',
+        _rev: '2-rev',
+        name: 'apoorva',
+        type: 'person'
+      };
+
+      dbPut.resolves({ id: '1-id', ok: false });
+
+      await expect(updateDoc(db)(updateDocQualifier)).to.be.rejectedWith('Error updating document.');
+
+      expect(dbPut.calledOnceWithExactly(updateDocQualifier)).to.be.true;
+      expect(dbGet.notCalled).to.be.true;
+    });
   });
 
   describe('ddocExists', () => {

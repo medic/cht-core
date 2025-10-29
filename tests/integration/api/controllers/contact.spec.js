@@ -433,7 +433,8 @@ describe('Contact API', () => {
         expect(secondPage.data.length).to.be.equal(3);
         expect(firstPage.cursor).to.not.equal(emptyNouveauCursor);
         expect(secondPage.cursor).to.not.equal(emptyNouveauCursor);
-      });
+      }
+    );
 
     it(
       'returns a page of people type contact ids with freetext when limit and cursor is passed ' +
@@ -465,8 +466,8 @@ describe('Contact API', () => {
         expect(allData).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedContactIds);
         expect(firstPage.data.length).to.be.equal(2);
         expect(secondPage.data.length).to.be.equal(1);
-        expect(firstPage.cursor).to.be.equal('2');
-        expect(secondPage.cursor).to.be.equal(null);
+        expect(firstPage.cursor).to.not.equal('W10=');
+        expect(secondPage.cursor).to.not.equal('W10=');
       }
     );
 
@@ -501,7 +502,8 @@ describe('Contact API', () => {
         expect(secondPage.data.length).to.be.equal(1);
         expect(firstPage.cursor).to.not.equal('W10=');
         expect(secondPage.cursor).to.not.equal('W10=');
-      });
+      }
+    );
 
     it('returns a page of unique contact ids for when multiple fields match the same freetext', async () => {
       const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
@@ -540,7 +542,8 @@ describe('Contact API', () => {
 
         expect(responseIds).to.deep.equalInAnyOrder(expectedContactIds);
         expect(responseCursor).to.not.equal('W10=');
-      });
+      }
+    );
 
     it(
       'returns a page of unique contact ids for when multiple fields match the same freetext with lower limit',

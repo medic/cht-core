@@ -191,6 +191,7 @@ export const convertToUnixTimestamp = (date: string | number): number => {
   return parsedDate.getTime();
 };
 
+/** @internal */
 export interface NouveauHit {
   order: {
     value: string | number;

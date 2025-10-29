@@ -206,7 +206,7 @@ export const updateDoc = (db: PouchDB.Database) => async (data: Record<string, u
   }
   
   return getDocById(db as PouchDB.Database<Doc>)(id);
-}
+};
 
 const isPouchDBNotFoundError = (error: unknown): error is { status: 404, name: string } => {
   return (

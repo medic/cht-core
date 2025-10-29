@@ -216,6 +216,35 @@ describe('remote context lib', () => {
       ]);
     });
 
+    it('throws an error when the server responds with non-400 error status', async () => {
+      const path = 'path';
+      const qualifier = { name: 'city-1', type: 'place' };
+      fetchResponse.ok = false;
+      fetchResponse.status = 500;
+      fetchResponse.statusText = 'Internal Server Error';
+
+      await expect(postResource(context, path)(qualifier)).to.be.rejectedWith(fetchResponse.statusText);
+
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(qualifier)
+        }
+      )).to.be.true;
+
+      expect(fetchResponse.text.notCalled).to.be.true;
+      expect(fetchResponse.json.notCalled).to.be.true;
+      expect(loggerError.calledOnce).to.be.true;
+      expect(loggerError.args[0]).to.deep.equal([
+        `Failed to POST ${JSON.stringify(qualifier)} to ${context.url}/${path}.`,
+        new Error(fetchResponse.statusText)
+      ]);
+    });
+
     it('creates a resource for valid req body and path', async () => {
       const path = 'path';
       const qualifier = {
@@ -283,6 +312,35 @@ describe('remote context lib', () => {
       expect(loggerError.args[0]).to.deep.equal([
         `Failed to PUT ${JSON.stringify(input)} to ${context.url}/${path}.`,
         expectedError
+      ]);
+    });
+
+    it('throws an error when the server responds with non-400 error status', async () => {
+      const path = 'path';
+      const qualifier = { name: 'city-1', type: 'place' };
+      fetchResponse.ok = false;
+      fetchResponse.status = 502;
+      fetchResponse.statusText = 'Bad Gateway';
+
+      await expect(putResource(context, path)(qualifier)).to.be.rejectedWith(fetchResponse.statusText);
+
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(qualifier)
+        }
+      )).to.be.true;
+
+      expect(fetchResponse.text.notCalled).to.be.true;
+      expect(fetchResponse.json.notCalled).to.be.true;
+      expect(loggerError.calledOnce).to.be.true;
+      expect(loggerError.args[0]).to.deep.equal([
+        `Failed to PUT ${JSON.stringify(qualifier)} to ${context.url}/${path}.`,
+        new Error(fetchResponse.statusText)
       ]);
     });
 

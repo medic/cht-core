@@ -246,7 +246,8 @@ describe('cht-datasource Report', () => {
 
           expect(responseIds).to.deep.equalInAnyOrder(expectedContactIds);
           expect(responseCursor).to.not.equal(emptyNouveauCursor);
-        });
+        }
+      );
 
       it(
         'returns a page of unique report ids for when multiple fields match the same freetext with lower limit',

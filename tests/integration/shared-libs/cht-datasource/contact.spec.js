@@ -337,7 +337,8 @@ describe('cht-datasource Contact', () => {
 
           expect(responseIds).to.deep.equalInAnyOrder(expectedContactIds);
           expect(responseCursor).to.not.equal(emptyNouveauCursor);
-        });
+        }
+      );
 
       it(
         'returns a page of unique contact ids for when multiple fields match the same freetext with lower limit',
