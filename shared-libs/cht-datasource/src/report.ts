@@ -145,6 +145,12 @@ export namespace v1 {
      * @param input input to create the report doc.
      * @returns the created report doc.
      * @throws InvalidArgumentError if input is not of valid type.
+     * @throws Error if data is not an object
+     * @throws Error if type is not provided or is empty
+     * @throws Error if form is not provided or is empty
+     * @throws Error if contact is not provided or is empty
+     * @throws Error if reported_date is not in a valid format.
+     * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
      */
     const curriedFn = async (input: ReportInput): Promise<Report> => {
       return fn(input);

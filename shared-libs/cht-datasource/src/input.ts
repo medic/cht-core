@@ -86,13 +86,7 @@ export type ReportInput = Readonly<{
  * Builds an input object for creation and update of a report with
  * the given fields.
  * @param data object containing the fields for a report
- * @returns the report input
- * @throws Error if data is not an object
- * @throws Error if type is not provided or is empty
- * @throws Error if form is not provided or is empty
- * @throws Error if contact is not provided or is empty
- * @throws Error if reported_date is not in a valid format.
- * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+ * @returns the validated report input
  */
 export const validateReportInput = (data: unknown): ReportInput => {
   if (!isRecord(data)) {
