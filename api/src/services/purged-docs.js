@@ -29,75 +29,91 @@ const catchDbNotFoundError = (err, purgeDb) => {
 
 /**
  *
- * @param {AuthorizationContext} userCtx
+ * @param {string[]} groupIds
  * @param {PouchDB} purgeDb
  * @returns {Promise<{ allIds: string[], purgedIds: string[] }>}
  */
-const getPurgedIdsFromContacts = async (userCtx, purgeDb) => {
-  let purgeIds = [];
+const getGroupPurgedIds = async (groupIds, purgeDb) => {
+  const purgedIds = [];
+  const allIds = [];
 
-  if (!userCtx?.subjectIds) {
-    return purgeIds;
+  if (!groupIds) {
+    return { allIds, purgedIds };
   }
 
-  const purgedDocIds = userCtx.subjectIds.map(purgingUtils.getPurgedContactId);
-  const results = await purgeDb.allDocs({ doc_ids: purgedDocIds, include_docs: true });
-  results.rows.forEach(row => {
-    if (row.doc?.ids) {
-      purgeIds = { ...purgeIds, ...row.doc.ids };
+  const results = await purgeDb.allDocs({ keys: groupIds.map(purgingUtils.getPurgedGroupId), include_docs: true });
+  for (const row of results.rows) {
+    if (!row.doc) {
+      continue;
     }
-  });
-  const allIds = Object.keys(purgeIds);
-  const purgedIds = Object.entries(purgeIds).map(([id, purged]) => purged ? id : null).filter(Boolean);
+    const contactId = purgingUtils.extractId(row.id);
+    if (row.doc.purged_contact) {
+      purgedIds.push(contactId);
+    }
+    purgedIds.push(...Object.keys(row.doc.ids).filter(id => !!row.doc.ids[id]));
+    allIds.push(...Object.keys(row.doc.ids), contactId);
+  }
 
   return { allIds, purgedIds };
 };
 
+const getIndividualPurgedIds = async (purgeDb, docIds) => {
+  const results = await purgeDb.allDocs({ keys: docIds.map(purgingUtils.getPurgedId) });
+  return results.rows.map(row => purgingUtils.extractId(row.id)).filter(Boolean);
+};
+
 /**
  * Returns the ids of the documents that have been purged for the user
- * @param {AuthorizationContext} userCtx
+ * @param {userCtx} userCtx
  * @param {string[]} docIds
  * @param {boolean} useCache
+ * @param {string[]} groupIds
  * @returns {Promise<string[]>}
  */
-const getPurgedIds = async (userCtx, docIds, useCache = true) => {
-  let purgeIds = [];
+const getPurgedIds = async (userCtx, docIds, useCache = true, groupIds = []) => {
   if (!docIds?.length || !userCtx.roles?.length) {
-    return Promise.resolve(purgeIds);
+    return [];
   }
 
   if (useCache) {
     const cachedIds = await purgedDocsCache.get(userCtx.name);
     if (cachedIds) {
-      return Promise.resolve(cachedIds);
+      return cachedIds;
     }
   }
 
   let purgeDb;
+  const purgedIds = [];
 
   try {
     purgeDb = await getPurgeDb(userCtx.roles);
-    const purgedIdsFromContacts = await getPurgedIdsFromContacts(userCtx, purgeDb);
 
-    purgeIds = purgedIdsFromContacts.purgedIds;
-    const unknownPurgedIds = _.difference(docIds, purgedIdsFromContacts.allIds);
+    if (groupIds.length) {
+      const groupPurgedIds = await getGroupPurgedIds(groupIds, purgeDb);
+      purgedIds.push(...groupPurgedIds.purgedIds);
+      docIds = _.difference(docIds, groupPurgedIds.allIds);
+    }
 
-    const results = await purgeDb.allDocs({ doc_ids: unknownPurgedIds.map(purgingUtils.getPurgedId) });
-    purgeIds.push(results.rows.map(row => purgingUtils.extractId(row.id)));
+    purgedIds.push(...(await getIndividualPurgedIds(purgeDb, docIds)));
 
-    useCache && await purgedDocsCache.set(userCtx.name, purgeIds);
+    useCache && await purgedDocsCache.set(userCtx.name, purgedIds);
     db.close(purgeDb);
-
   } catch (err) {
     catchDbNotFoundError(err, purgeDb);
   }
 
-  return purgeIds;
+  return purgedIds;
 };
 
-const getUnPurgedIds = (userCtx, docIds) => {
-  docIds.sort();
-  return getPurgedIds(userCtx, docIds).then(purgedIds => _.difference(docIds, purgedIds));
+/**
+ * Returns the ids of the documents that have not been purged for the user
+ * @param {AuthorizationContext} authContext
+ * @param docIds
+ * @returns {Promise<*>}
+ */
+const getUnPurgedIds = async (authContext, docIds) => {
+  const purgedIds = await getPurgedIds(authContext.userCtx, docIds, true, authContext.subjectIds);
+  return _.difference(docIds, purgedIds);
 };
 
 const listen = () => {

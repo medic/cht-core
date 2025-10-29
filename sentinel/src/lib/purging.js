@@ -10,7 +10,6 @@ const dataContext = require('../data-context');
 const request = require('@medic/couch-request');
 const nouveau = require('@medic/nouveau');
 const moment = require('moment');
-const _ = require('lodash');
 
 const TASK_EXPIRATION_PERIOD = 60; // days
 const TARGET_EXPIRATION_PERIOD = 6; // months
@@ -93,12 +92,20 @@ const getRoles = () => {
 
 // provided a list of roles hashes and doc ids, will return the list of existent purged docs per role hash:
 // {
-//   hash1: [id1, id2, id3, id4, id5, id6],
-//   hash2: [id7, id8, id9]
+//   hash1: {
+//     id1: rev1,
+//     id2: rev2,
+//     id2: rev2,
+//   },
+//   hash2: {
+//     id1: rev1,
+//     id2: rev2,
+//     id2: rev2,
+//   },
 // }
 
 const getAlreadyPurgedDocs = async (roleHashes, groups, ids) => {
-  const purgedDocsByHash = Object.fromEntries(roleHashes.map(hash => [hash, []]));
+  const purgedDocsByHash = Object.fromEntries(roleHashes.map(hash => [hash, {}]));
 
   if (!ids || !ids.length) {
     return purgedDocsByHash;
@@ -108,22 +115,23 @@ const getAlreadyPurgedDocs = async (roleHashes, groups, ids) => {
     const knownIds = [];
 
     const purgeDb = getPurgeDb(hash);
-    const purgeGroupIds = Object.values(groups).map(group => serverSidePurgeUtils.getPurgedGroupId(group.contact._id));
-    const purgeGroups = await purgeDb.allDocs({ include_docs: true, keys: purgeGroupIds });
-    for (const { doc } of purgeGroups.rows) {
-      if (!doc) {
-        continue;
-      }
-      const isContactPurged = !!doc.contact_purged;
-      if (isContactPurged) {
-        purgedDocsByHash[hash].push(serverSidePurgeUtils.extractId(doc._id));
-      }
-      purgedDocsByHash[hash].push(...(Object.keys(doc.ids).filter(id => !!doc.ids[id])));
+    if (Object.keys(groups).length) {
+      const purgeGroupIds = Object
+        .values(groups)
+        .map(group => serverSidePurgeUtils.getPurgedGroupId(group.contact._id));
+      const purgeGroups = await purgeDb.allDocs({ include_docs: true, keys: purgeGroupIds });
 
-      knownIds.push(...Object.keys(doc.ids), serverSidePurgeUtils.extractId(doc._id));
+      for (const { doc } of purgeGroups.rows) {
+        if (!doc) {
+          continue;
+        }
+        purgedDocsByHash[hash][serverSidePurgeUtils.extractId(doc._id)] = doc._rev;
+        Object.assign(purgedDocsByHash[hash], doc.ids);
+        knownIds.push(...Object.keys(doc.ids), serverSidePurgeUtils.extractId(doc._id));
+      }
     }
 
-    const unknownIds = _.difference(ids, knownIds);
+    const unknownIds = [...ids];
     if (!unknownIds.length) {
       continue;
     }
@@ -131,7 +139,7 @@ const getAlreadyPurgedDocs = async (roleHashes, groups, ids) => {
     const purgedDocs = await purgeDb.allDocs({ keys: unknownIds.map(id => serverSidePurgeUtils.getPurgedId(id)) });
     for (const row of purgedDocs.rows) {
       if (row.id && !row.value?.deleted) {
-        purgedDocsByHash[hash].push(serverSidePurgeUtils.extractId(row.id));
+        purgedDocsByHash[hash][serverSidePurgeUtils.extractId(row.id)] = row.value.rev;
       }
     }
   }
@@ -161,46 +169,79 @@ const getPurgeFn = () => {
   return purgeFn;
 };
 
+const getPurgedGroup = (group, alreadyPurged, toPurge) => {
+  const contactId = group.contact._id;
+  const purgedContactDocId = serverSidePurgeUtils.getPurgedGroupId(contactId);
+
+  const doc = {
+    _id: purgedContactDocId,
+    _rev: alreadyPurged[contactId],
+  };
+
+  if (!group.ids.length) {
+    return { _deleted: true, ...doc };
+  }
+
+  return {
+    ...doc,
+    purged_contact: toPurge[contactId] || false,
+    ids: Object.fromEntries(group.ids.map(id => [id,  (toPurge[id] && alreadyPurged[id]) || false])),
+  };
+};
+
+const getPurgeUpdates = (ids, alreadyPurged, toPurge) => {
+  const docs = [];
+  for (const id of ids) {
+
+    // do nothing if purge state is unchanged
+    if (!!alreadyPurged[id] !== !!toPurge[id]) {
+      docs.push({
+        _id: serverSidePurgeUtils.getPurgedId(id),
+        _rev: alreadyPurged[id] || undefined,
+        _deleted: !toPurge[id]
+      });
+    }
+  }
+
+  return docs;
+};
+
 const updatePurgedDocs = async (rolesHashes, groups, ids, alreadyPurged, toPurge) => {
   for (const hash of rolesHashes) {
-    const docs = [];
-
-    Object.values(groups).forEach(group => {
-      const contactId = group.contact._id;
-      const purgedContactDocId = serverSidePurgeUtils.getPurgedGroupId(contactId);
-
-      const purgedContactDoc = {
-        _id: purgedContactDocId,
-        purged_contact: alreadyPurged[hash][contactId],
-        ids: Object.fromEntries(group.ids.map(id => [id, alreadyPurged[hash][id]])),
-      };
-
-      docs.push(purgedContactDoc);
-    });
-
-    ids.forEach(id => {
-      const isPurged = alreadyPurged[hash][id];
-      const shouldPurge = toPurge[hash][id];
-
-      // do nothing if purge state is unchanged
-      if (!!isPurged === !!shouldPurge) {
-        return;
-      }
-
-      if (isPurged) {
-        docs.push({ _id: serverSidePurgeUtils.getPurgedId(id), _deleted: true });
-      } else {
-        docs.push({ _id: serverSidePurgeUtils.getPurgedId(id) });
-      }
-    });
+    const docs = getPurgeUpdates(ids, alreadyPurged[hash], toPurge[hash]);
 
     if (docs.length) {
-      await getPurgeDb(hash).bulkDocs({ docs: docs, new_edits: true });
+      const results =  await bulkDocs(getPurgeDb(hash), docs);
+      for (const result of results) {
+        alreadyPurged[hash][serverSidePurgeUtils.extractId(result.id)] = result.rev;
+      }
     }
+
+    const groupDocs = Object.values(groups).map(group => getPurgedGroup(group, alreadyPurged[hash], toPurge[hash]));
+    await bulkDocs(getPurgeDb(hash), groupDocs);
   }
 };
 
 const validPurgeResults = (result) => result && Array.isArray(result);
+const bulkDocs = async (dbInstance, docs) => {
+  docs = docs.filter(doc => !!doc && (doc._rev || !doc._deleted)).map(doc => {
+    if (!doc._deleted) {
+      delete doc._deleted;
+    }
+    if (!doc._rev) {
+      delete doc._rev;
+    }
+
+    return doc;
+  });
+
+  const results = await dbInstance.bulkDocs({ docs });
+  const conflicts = results.filter(result => result.error === 'conflict');
+  if (conflicts.length) {
+    throw new Error(`Conflicts while purging: ${conflicts.map(result => result.id).join(', ')}`);
+  }
+  return results;
+};
 
 const assignContactToGroups = (row, groups, subjectIds) => {
   groups[row.id] = {
@@ -316,7 +357,7 @@ const getIdsFromGroups = (groups) => {
   Object.values(groups).forEach(group => {
     group.ids.push(...group.messages.map(message => message._id));
     group.ids.push(...group.reports.map(message => message._id));
-    ids.push(...group.ids, group.contact._id);
+    ids.push(...group.ids);
   });
   return ids;
 };
@@ -583,7 +624,7 @@ const batchedPurge = (getBatch, getIdsToPurge, roles, startKeyDocId) => {
         rows.push(row);
       });
 
-      return getAlreadyPurgedDocs(rolesHashes, docIds);
+      return getAlreadyPurgedDocs(rolesHashes, {}, docIds);
     })
     .then(alreadyPurged => {
       const toPurge = getIdsToPurge(rolesHashes, rows);
