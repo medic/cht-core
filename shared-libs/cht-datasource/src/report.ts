@@ -145,7 +145,7 @@ export namespace v1 {
      * @param input input to create the report doc.
      * @returns the created report doc.
      * @throws InvalidArgumentError if input is not of valid type.
-     * @throws Error if data is not an object
+     * @throws Error if input is not an object
      * @throws Error if type is not provided or is empty
      * @throws Error if form is not provided or is empty
      * @throws Error if contact is not provided or is empty

@@ -135,7 +135,7 @@ export namespace v1 {
      * @throws InvalidArgumentError if the input does not contain required fields
      * @throws InvalidArgumentError if the input's parent field is not one of the allowed parents in the config
      * @throws InvalidArgumentError if the required fields do not have the expected type
-     * @throws Error if data is not an object
+     * @throws Error if input is not an object
      * @throws Error if type is not provided or is empty
      * @throws Error if name is not provided or is empty
      * @throws Error if parent is not provided or is empty
