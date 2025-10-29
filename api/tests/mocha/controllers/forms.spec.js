@@ -10,6 +10,7 @@ const mockFormsInDb = (...docs) => {
   sinon.stub(db.medic, 'allDocs').resolves({
     rows: docs.map(doc => ({ doc: { ...doc, type: 'form' } })),
   });
+  sinon.stub(db.medic, 'getAttachment').resolves( 'foo');
 };
 
 const res = {
@@ -60,7 +61,6 @@ describe('forms controller', () => {
         _attachments: {
           xml: {
             content_type: 'xml',
-            data: 'foo',
           },
         },
       });
@@ -72,7 +72,7 @@ describe('forms controller', () => {
         chai
           .expect(writeHead.args[0][1])
           .to.deep.equal({ 'Content-Type': 'xml' });
-        chai.expect(end.args[0][0]).to.equal('foo');
+        chai.expect(end.args[0][0].toString()).to.equal('foo');
       });
     });
   });
