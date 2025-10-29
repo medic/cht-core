@@ -216,6 +216,35 @@ export const byContactUuid = (contactUuid: string): ContactUuidQualifier => {
   return qualifier;
 };
 
+/**
+ * A qualifier that identifies entities based their association with the identified contacts.
+ */
+export interface ContactUuidsQualifier {
+  readonly contactUuids: [string, ...string[]]
+}
+
+/**
+ * Returns `true` if the given qualifier is a {@link ContactUuidsQualifier} otherwise `false`.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link ContactUuidsQualifier}, otherwise `false`.
+ */
+export const isContactUuidsQualifier = (qualifier: unknown): qualifier is ContactUuidsQualifier => {
+  return isRecord(qualifier) &&
+    hasField(qualifier, { name: 'contactUuids', type: 'string' }) &&
+    qualifier.contactUuids.length > 0 &&
+    (qualifier as unknown as ContactUuidsQualifier)
+      .contactUuids
+      .every(contactUuid => contactUuid.length > 0);
+};
+
+export const byContactUuids = (contactUuids: [string, ...string[]]): ContactUuidsQualifier => {
+  const qualifier = { contactUuids };
+  if (!isContactUuidQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid contact UUIDs [${contactUuids}].`);
+  }
+  return qualifier;
+}
+
 // https://stackoverflow.com/a/50375286
 type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
 
