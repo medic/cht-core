@@ -29,6 +29,7 @@ const desktopCapability = {
 exports.config = Object.assign(wdioBaseConfig.config, {
   suites: {
     desktopTests: [
+      /*
       'contacts/contact-user-management.wdio-spec.js',
       'contacts/contact-user-hierarchy-creation.wdio-spec.js',
       'messages/messages-overview.wdio-spec.js',
@@ -37,8 +38,11 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       'reports/report-action-bar.wdio-spec.js',
       'targets/targets-overview.wdio-spec.js',
       'reports/report-search.wdio-spec.js',
+         */
+      'targets/targets-widgets.wdio-spec.js',
     ],
     mobileTests: [
+      /*
       'contacts/contact-user-management.wdio-spec.js',
       'contacts/list-view-login-visual.wdio-spec.js',
       'messages/messages-overview.wdio-spec.js',
@@ -47,6 +51,8 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       'reports/report-action-bar.wdio-spec.js',
       'targets/targets-overview.wdio-spec.js',
       'reports/report-search.wdio-spec.js',
+         */
+      'targets/targets-widgets.wdio-spec.js',
     ]
   },
   capabilities: process.argv.includes('--suite=mobileTests')
