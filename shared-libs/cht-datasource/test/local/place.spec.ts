@@ -243,8 +243,9 @@ describe('local place', () => {
 
           expect(settingsGetAll.calledOnce).to.be.true;
           expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;
-          expect(queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type'))
-            .to.be.true;
+          expect(queryDocsByKeyOuter.calledOnceWithExactly(
+            localContext.medicDb, 'medic-client/contacts_by_type'
+          )).to.be.true;
           expect(queryDocsByKeyInner.notCalled).to.be.true;
           expect(fetchAndFilterInner.notCalled).to.be.true;
           expect(fetchAndFilterOuter.notCalled).to.be.true;
