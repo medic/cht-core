@@ -135,7 +135,7 @@ export const isReportInput = (input: unknown): input is ReportInput => {
 /** @internal */
 const isValidReportedDate = (value: unknown): boolean => {
   if (typeof value === 'number') {
-    return Number.isFinite(value);
+    return Number.isInteger(value);
   }
 
   if (typeof value === 'string') {
