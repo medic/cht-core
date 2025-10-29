@@ -48,6 +48,7 @@ export * as Contact from './contact';
 export * as Person from './person';
 export * as Place from './place';
 export * as Qualifier from './qualifier';
+export * as Input from './input';
 export * as Report from './report';
 
 /**
@@ -228,7 +229,23 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns a generator for fetching all places with the given type
          * @throws InvalidArgumentError if no type if provided or if the type is not for a place
          */
-        getByType: (placeType: string) => ctx.bind(Place.v1.getAll)(Qualifier.byContactType(placeType))
+        getByType: (placeType: string) => ctx.bind(Place.v1.getAll)(Qualifier.byContactType(placeType)),
+
+        /**
+         * Creates a place.
+         * @param input the object defining the place properties.
+         * @returns the created place.
+         * @throws InvalidArgumentError if the type of input is not valid for creating a place.
+         */
+        create: (input: unknown) => ctx.bind(Place.v1.create)(input),
+
+        /**
+         * Updates a place.
+         * @param input the object defining the place properties.
+         * @returns the updated place.
+         * @throws InvalidArgumentError if the type of input is not valid for updating a place.
+         */
+        update: (input: unknown) => ctx.bind(Place.v1.update)(input)
       },
       person: {
         /**
@@ -274,6 +291,22 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws InvalidArgumentError if no type is provided or if the type is not for a person
          */
         getByType: (personType: string) => ctx.bind(Person.v1.getAll)(Qualifier.byContactType(personType)),
+
+        /**
+         * Creates a person.
+         * @param input the object defining the person properties.
+         * @returns the created person.
+         * @throws InvalidArgumentError if the type of input is not valid for creating a person.
+         */
+        create: (input: unknown) => ctx.bind(Person.v1.create)(input),
+
+        /**
+         * Updates a person.
+         * @param input the object defining the person properties.
+         * @returns the updated person.
+         * @throws InvalidArgumentError if the type of input is not valid for updating a person.
+         */
+        update: (input: unknown) => ctx.bind(Person.v1.update)(input)
       },
       report: {
         /**
@@ -320,6 +353,22 @@ export const getDatasource = (ctx: DataContext) => {
         getUuidsByFreetext: (
           qualifier: string,
         ) => ctx.bind(Report.v1.getUuids)(Qualifier.byFreetext(qualifier)),
+
+        /**
+         * Creates a report.
+         * @param input the object defining the person properties.
+         * @returns the created report.
+         * @throws InvalidArgumentError if the type of input is not valid for creating a report.
+         */
+        create: (input: unknown) => ctx.bind(Report.v1.create)(input),
+
+        /**
+         * Updates a report.
+         * @param input the object defining the report properties.
+         * @returns the updated report.
+         * @throws InvalidArgumentError if the type of input is not valid for updating a report.
+         */
+        update: (input: unknown) => ctx.bind(Report.v1.update)(input)
       },
     },
   };
