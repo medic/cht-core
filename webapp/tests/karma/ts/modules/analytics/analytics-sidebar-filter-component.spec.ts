@@ -207,7 +207,7 @@ describe('Analytics Sidebar Filter Component', () => {
     expect(spyFacility.callCount).to.equal(1);
     expect(spyFacility.firstCall.args[0]).to.deep.equal(facility);
     expect(telemetryService.record.args[0])
-      .to.deep.equal(['sidebar_filter:analytics:target-aggregates:facility:select']);
+      .to.deep.equal(['sidebar_filter:analytics:target_aggregates:facility:select']);
   });
 
   it('should emit default current reporting period when fetchAggregateTargetsByReportingPeriod is called', () => {
@@ -219,7 +219,7 @@ describe('Analytics Sidebar Filter Component', () => {
     expect(spyReportingPeriod.callCount).to.equal(1);
     expect(spyReportingPeriod.firstCall.args[0]).to.equal(ReportingPeriod.CURRENT);
     expect(telemetryService.record.args[0])
-      .to.deep.equal(['sidebar_filter:analytics:target-aggregates:reporting-period:select']);
+      .to.deep.equal(['sidebar_filter:analytics:target_aggregates:reporting-period:select']);
   });
 
   it('should emit previous reporting period when toggled', () => {
@@ -238,7 +238,7 @@ describe('Analytics Sidebar Filter Component', () => {
       _rev: '1-abc',
       type: 'district_hospital',
     };
-    component.targetModuleId = 'targets';
+    component.telemetryKey = 'targets';
 
     component.fetchAggregateTargetsByFacility(facility);
 
@@ -248,7 +248,7 @@ describe('Analytics Sidebar Filter Component', () => {
   });
 
   it('should collect telemetry when fetchAggregateTargetsByReportingPeriod is called', () => {
-    component.targetModuleId = 'targets';
+    component.telemetryKey = 'targets';
     component.selectedReportingPeriod = ReportingPeriod.CURRENT;
     component.fetchAggregateTargetsByReportingPeriod();
 

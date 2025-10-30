@@ -64,7 +64,7 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
   ngAfterContentChecked() {
     if (!this.activeModule && this.analyticsModules?.length) {
-      this.setActiveModule(this.route.snapshot?.firstChild?.data?.moduleId);
+      this.setActiveModule(this.getCurrentModuleId());
     }
   }
 

@@ -23,7 +23,7 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
 
   @Input() userFacilities: Place.v1.Place[] = [];
   @Input() showFacilityFilter = true;
-  @Input() targetModuleId: string = 'target-aggregates';
+  @Input() telemetryKey: string = 'target_aggregates';
   @Output() facilitySelectionChanged = new EventEmitter<string>();
   @Output() reportingPeriodSelectionChanged = new EventEmitter<string>();
   private readonly globalActions;
@@ -109,7 +109,7 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
   }
 
   private collectFilterSelectionTelemetry(filter) {
-    this.telemetryService.record(`sidebar_filter:analytics:${this.targetModuleId}:${filter}:select`);
+    this.telemetryService.record(`sidebar_filter:analytics:${this.telemetryKey}:${filter}:select`);
   }
 }
 
