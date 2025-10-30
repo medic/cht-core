@@ -175,6 +175,11 @@ const isUsingSupportedBrowser = () => {
   });
 };
 
+const isSafariBrowser = () => {
+  const ua = navigator.userAgent.toLowerCase();
+  return /safari/.test(ua) && !/chrome|crios|fxios|android/.test(ua);
+};
+
 const isUsingChtAndroid = () => typeof window.medicmobile_android !== 'undefined';
 
 const getAndroidAppVersion = () => {
@@ -216,38 +221,86 @@ const checkUnsupportedBrowser = () => {
   }
 };
 
-document.addEventListener('DOMContentLoaded', function() {
-  translations = parseTranslations();
-  selectedLocale = getLocale(translations);
+const showUnsupportedBrowserBanner = (key) => {
+  const banner = document.getElementById('unsupported-browser');
+  const bannerUpdate = document.getElementById('unsupported-browser-update');
+  if (!banner || !bannerUpdate) {
+    return;
+  }
 
-  translate();
+  const message = translations?.[selectedLocale]?.[key] || 'Browser not supported.';
+  bannerUpdate.setAttribute('translate', key);
+  bannerUpdate.innerHTML = `<br>${message}`;
+  banner.classList.remove('hidden');
+};
 
-  document.getElementById('locale')?.addEventListener('click', handleLocaleSelection, false);
+const handleLoginButton = () => {
+  const loginButton = document.getElementById('login');
+  if (loginButton) {
+    loginButton.addEventListener('click', submit, false);
+  }
+};
+
+const handleUserInputFocus = () => {
+  const userInput = document.getElementById('user');
+  if (userInput) {
+    userInput.addEventListener('keydown', focusOnPassword, false);
+    userInput.focus();
+  }
+};
+
+const handlePasswordInputFocus = () => {
+  const passwordInput = document.getElementById(PASSWORD_INPUT_ID);
+  if (passwordInput) {
+    passwordInput.addEventListener('keydown', focusOnSubmit, false);
+  }
+};
+
+const handlePasswordToggle = () => {
   const passwordToggle = document.getElementById('password-toggle');
   if (passwordToggle) {
     passwordToggle.addEventListener('click', () => togglePassword(PASSWORD_INPUT_ID), false);
   }
+};
+
+const handleServiceWorker = () => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js');
+  }
+};
+
+const checkBrowser = () => {
+  if (isSafariBrowser()) {
+    showUnsupportedBrowserBanner('login.unsupported_browser.safari');
+    document.getElementById('login-fields')?.classList.add('hidden');
+  }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  translations = parseTranslations();
+  selectedLocale = getLocale(translations);
+  translate();
+
+  checkBrowser();
+
+  document.getElementById('locale')?.addEventListener('click', handleLocaleSelection, false);
+  handlePasswordToggle();
 
   if (document.getElementById('tokenLogin')) {
     requestTokenLogin();
   } else {
     checkSession();
-    document.getElementById('login')?.addEventListener('click', submit, false);
-
-    const user = document.getElementById('user');
-    user.addEventListener('keydown', focusOnPassword, false);
-    user.focus();
-
-    document.getElementById(PASSWORD_INPUT_ID)?.addEventListener('keydown', focusOnSubmit, false);
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js');
-    }
+    handleLoginButton();
+    handleUserInputFocus();
+    handlePasswordInputFocus();
+    handleServiceWorker();
   }
 
   const ssoLoginButton = document.getElementById('login-sso');
   ssoLoginButton.addEventListener('click', requestSSOLogin, false);
 
   checkUnsupportedBrowser();
+
 });
 
 window.addEventListener('pageshow', (event) => {
