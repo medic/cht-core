@@ -108,7 +108,7 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
     this.collectFilterSelectionTelemetry('reporting-period');
   }
 
-  collectFilterSelectionTelemetry(filter) {
+  private collectFilterSelectionTelemetry(filter) {
     this.telemetryService.record(`sidebar_filter:analytics:${this.targetModuleId}:${filter}:select`);
   }
 }
