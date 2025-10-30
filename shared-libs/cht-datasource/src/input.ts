@@ -1,17 +1,18 @@
-import { convertToUnixTimestamp, DataObject, hasField, hasFields, isRecord } from './libs/core';
+import { convertToUnixTimestamp, hasField, hasFields, isRecord } from './libs/core';
 import { InvalidArgumentError } from './libs/error';
 
 const ISO_8601_DATE_PATTERN = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z)$/;
 /**
  * An input for a contact
  */
-type ContactInput = DataObject & Readonly<{
-  type: string,
-  name: string,
-  reported_date?: string | number,
-  _id?: string,
-  _rev?: string
-}>;
+interface ContactInput{
+  readonly type: string,
+  readonly name: string,
+  readonly reported_date?: string | number,
+  readonly _id?: string,
+  readonly _rev?: string
+  [key: string]: unknown
+};
 
 /**
  * Builds an input object for creation and update of a contact with
@@ -74,14 +75,15 @@ const checkContactInputFields = (data: unknown): data is Record<string, unknown>
 /**
  * An input for a report
  */
-export type ReportInput = Readonly<{
-  type: string,
-  form: string,
-  reported_date?: string | number,
-  _id?: string,
-  _rev?: string,
-  contact: string
-}>;
+export interface ReportInput {
+  readonly type: string,
+  readonly form: string,
+  readonly reported_date?: string | number,
+  readonly _id?: string,
+  readonly _rev?: string,
+  readonly contact: string,
+  [key: string]: unknown
+};
 
 /**
  * Builds an input object for creation and update of a report with
@@ -149,13 +151,13 @@ const isValidReportedDate = (value: unknown): boolean => {
 /**
  * An input for a person
  */
-export type PersonInput = ContactInput & Readonly<{
-  parent: string;
-  date_of_birth?: Date;
-  phone?: string;
-  patient_id?: string;
-  sex?: string;
-}>;
+export interface PersonInput extends ContactInput {
+  readonly parent: string;
+  readonly date_of_birth?: Date;
+  readonly phone?: string;
+  readonly patient_id?: string;
+  readonly sex?: string;
+};
 
 /**
  * Builds an input object for creation and update of a person with
@@ -187,11 +189,11 @@ export const isPersonInput = (data: unknown): data is PersonInput => {
 /**
  * An input for a place
  */
-export type PlaceInput = ContactInput & Readonly<{
-  parent?: string;
-  contact?: string;
-  place_id?: string;
-}>;
+export interface PlaceInput extends ContactInput{
+  readonly parent?: string;
+  readonly contact?: string;
+  readonly place_id?: string;
+};
 
 /**
  * Builds an input object for creation and update of a place with the given fields

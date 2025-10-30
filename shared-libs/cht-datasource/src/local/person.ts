@@ -109,7 +109,7 @@ export namespace v1 {
       }
       // Check whether parent doc's `contact_type` or `type`(if `contact_type` is absent)
       // matches with any of the allowed parents type.
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+       
       const typeToMatch = (parentDoc as PersonInput).contact_type || (parentDoc as PersonInput).type;
       const parentTypeMatchWithAllowedParents = (contactTypeObject.parents as string[])
         .find(parent => parent === typeToMatch);
