@@ -22,7 +22,7 @@ describe('place', () => {
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isContactTypeQualifier = sinon.stub(Qualifier, 'isContactTypeQualifier');
-    isPlaceInput = sinon.stub(Input, 'isPlaceInput');
+    isPlaceInput = sinon.stub(Input.v1, 'isPlaceInput');
   });
 
   afterEach(() => sinon.restore());

@@ -1,14 +1,15 @@
 import {
-  isContactInput,
+  v1
+} from '../src/input';
+import { expect } from 'chai';
+import sinon from 'sinon';
+const { isContactInput,
   isPersonInput,
   isPlaceInput,
   isReportInput,
   validatePersonInput,
   validatePlaceInput,
-  validateReportInput
-} from '../src/input';
-import { expect } from 'chai';
-import sinon from 'sinon';
+  validateReportInput } = v1;
 
 describe('input', () => {
   let clock: sinon.SinonFakeTimers;
@@ -325,7 +326,7 @@ describe('input', () => {
       };
       expect(() => validatePlaceInput(input))
         .to.throw('Invalid reported_date. Expected format to be ' +
-        '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.');
+          '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.');
     });
 
     it('builds a input to create and update place for valid data', () => {

@@ -9,9 +9,8 @@ import * as Remote from './remote';
 import { getPagedGenerator, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
-import { PlaceInput } from './input';
 import { InvalidArgumentError } from './libs/error';
-
+import * as Input from './input';
 /** */
 export namespace v1 {
   /**
@@ -140,7 +139,7 @@ export namespace v1 {
      * @throws Error if reported_date is not in a valid format.
      * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
      */
-    const curriedFn = async (input: PlaceInput): Promise<Place> => {
+    const curriedFn = async (input: Input.v1.PlaceInput): Promise<Place> => {
       return fn(input);
     };
     return curriedFn;

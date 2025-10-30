@@ -38,7 +38,7 @@ import {
   DEFAULT_DOCS_PAGE_LIMIT,
   DEFAULT_IDS_PAGE_LIMIT,
 } from './libs/constants';
-import { PersonInput, PlaceInput, ReportInput } from './input';
+import * as Input from './input';
 
 export { Nullable, NonEmptyArray } from './libs/core';
 export { DataContext } from './libs/data-context';
@@ -238,7 +238,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created place.
          * @throws InvalidArgumentError if the type of input is not valid for creating a place.
          */
-        create: (input: PlaceInput) => ctx.bind(Place.v1.create)(input),
+        create: (input: Input.v1.PlaceInput) => ctx.bind(Place.v1.create)(input),
 
         /**
          * Updates a place.
@@ -299,7 +299,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created person.
          * @throws InvalidArgumentError if the type of input is not valid for creating a person.
          */
-        create: (input: PersonInput) => ctx.bind(Person.v1.create)(input),
+        create: (input: Input.v1.PersonInput) => ctx.bind(Person.v1.create)(input),
 
         /**
          * Updates a person.
@@ -361,7 +361,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created report.
          * @throws InvalidArgumentError if the type of input is not valid for creating a report.
          */
-        create: (input: ReportInput) => ctx.bind(Report.v1.create)(input),
+        create: (input: Input.v1.ReportInput) => ctx.bind(Report.v1.create)(input),
 
         /**
          * Updates a report.

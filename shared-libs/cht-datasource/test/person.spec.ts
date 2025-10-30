@@ -22,7 +22,7 @@ describe('person', () => {
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isContactTypeQualifier = sinon.stub(Qualifier, 'isContactTypeQualifier');
-    isPersonInput = sinon.stub(Input, 'isPersonInput');
+    isPersonInput = sinon.stub(Input.v1, 'isPersonInput');
   });
 
   afterEach(() => sinon.restore());

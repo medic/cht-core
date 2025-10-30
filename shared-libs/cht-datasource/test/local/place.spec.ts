@@ -7,7 +7,7 @@ import * as LocalDoc from '../../src/local/libs/doc';
 import { expect } from 'chai';
 import { LocalDataContext } from '../../src/local/libs/data-context';
 import * as Lineage from '../../src/local/libs/lineage';
-import { PlaceInput } from '../../src/input';
+import * as Input from '../../src/input';
 import { convertToUnixTimestamp } from '../../src/libs/core';
 
 describe('local place', () => {
@@ -310,7 +310,7 @@ describe('local place', () => {
         });
         isPlace.returns(false);
 
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           name: 'user-1',
           type: 'school',
           parent: 'p1'
@@ -326,7 +326,7 @@ describe('local place', () => {
           contact_types: [ { id: 'hospital', parents: [ 'clinic' ] }, { id: 'clinic' } ]
         });
 
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           name: 'place-1',
           type: 'hospital',
           reported_date: Date.now()
@@ -352,7 +352,7 @@ describe('local place', () => {
         };
 
         getDocByIdInner.resolves(parentReturnedByget);
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           name: 'place-1',
           type: 'hospital',
           parent: 'p1',
@@ -373,7 +373,7 @@ describe('local place', () => {
           contact_types: [ { id: 'hospital' }, { id: 'clinic' }, { id: 'city' } ]
         });
 
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           name: 'place-1',
           type: 'hospital',
           parent: 'town',
@@ -391,7 +391,7 @@ describe('local place', () => {
         createDocOuter.returns(createDocInner);
         isPlace.returns(true);
 
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           type: 'place',
           name: 'user-1',
           _rev: '1234',
@@ -408,7 +408,7 @@ describe('local place', () => {
         });
         isPlace.returns(true);
 
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           name: 'place-x',
           type: 'hospital',
           contact: 'c1'
@@ -445,7 +445,7 @@ describe('local place', () => {
         });
         isPlace.returns(true);
 
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           name: 'place-x',
           type: 'hospital',
           parent: 'p1',
@@ -486,7 +486,7 @@ describe('local place', () => {
         createDocOuter.returns(createDocInner);
         isPlace.returns(true);
 
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           name: 'place-x',
           type: 'place',
           parent: 'p1'

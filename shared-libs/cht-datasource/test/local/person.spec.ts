@@ -7,7 +7,7 @@ import * as LocalDoc from '../../src/local/libs/doc';
 import * as Lineage from '../../src/local/libs/lineage';
 import { expect } from 'chai';
 import { LocalDataContext } from '../../src/local/libs/data-context';
-import { PersonInput } from '../../src/input';
+import * as Input from '../../src/input';
 import { convertToUnixTimestamp } from '../../src/libs/core';
 
 describe('local person', () => {
@@ -309,7 +309,7 @@ describe('local person', () => {
         });
         isPerson.returns(false);
 
-        const personInput: PersonInput = {
+        const personInput: Input.v1.PersonInput = {
           type: 'robot',
           name: 'user-1',
           parent: 'p1'
@@ -485,7 +485,7 @@ describe('local person', () => {
         };
 
         await expect(
-          Person.v1.create(localContext)(input as unknown as PersonInput)
+          Person.v1.create(localContext)(input as unknown as Input.v1.PersonInput)
         ).to.be.rejectedWith('Cannot pass `_rev` when creating a person.');
         expect(createDocInner.called).to.be.false;
       });

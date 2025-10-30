@@ -10,7 +10,7 @@ import * as Report from '../src/report';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { Page } from '../src/libs/core';
-import { PersonInput, PlaceInput, ReportInput } from '../src/input';
+import * as Input from '../src/input';
 
 describe('CHT Script API - getDatasource', () => {
   let dataContext: DataContext;
@@ -136,9 +136,9 @@ describe('CHT Script API - getDatasource', () => {
         };
         const placeCreate = sinon.stub().resolves(expectedPlace);
         dataContextBind.returns(placeCreate);
-        const validatedPlaceInput = sinon.stub(Index.Input, 'validatePlaceInput').returns(expectedPlace);
+        const validatedPlaceInput = sinon.stub(Index.Input.v1, 'validatePlaceInput').returns(expectedPlace);
 
-        const returnedPlace = await place.create(validatedPlaceInput as unknown as PlaceInput);
+        const returnedPlace = await place.create(validatedPlaceInput as unknown as Input.v1.PlaceInput);
 
         expect(returnedPlace).to.equal(expectedPlace);
         expect(dataContextBind.calledOnceWithExactly(Place.v1.create)).to.be.true;
@@ -201,9 +201,9 @@ describe('CHT Script API - getDatasource', () => {
         };
         const personCreate = sinon.stub().resolves(expectedPerson);
         dataContextBind.returns(personCreate);
-        const validatedPersonInput = sinon.stub(Index.Input, 'validatePersonInput').returns(expectedPerson);
+        const validatedPersonInput = sinon.stub(Index.Input.v1, 'validatePersonInput').returns(expectedPerson);
 
-        const returnedPerson = await person.create(validatedPersonInput as unknown as PersonInput);
+        const returnedPerson = await person.create(validatedPersonInput as unknown as Input.v1.PersonInput);
 
         expect(returnedPerson).to.equal(expectedPerson);
         expect(dataContextBind.calledOnceWithExactly(Person.v1.create)).to.be.true;
@@ -563,9 +563,9 @@ describe('CHT Script API - getDatasource', () => {
         };
         const reportCreate = sinon.stub().resolves(expectedReport);
         dataContextBind.returns(reportCreate);
-        const validatedReportInput = sinon.stub(Index.Input, 'validateReportInput').returns(expectedReport);
+        const validatedReportInput = sinon.stub(Index.Input.v1, 'validateReportInput').returns(expectedReport);
 
-        const returnedReport = await report.create(validatedReportInput as unknown as ReportInput);
+        const returnedReport = await report.create(validatedReportInput as unknown as Input.v1.ReportInput);
 
         expect(returnedReport).to.equal(expectedReport);
         expect(dataContextBind.calledOnceWithExactly(Report.v1.create)).to.be.true;

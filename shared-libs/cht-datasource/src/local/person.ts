@@ -8,7 +8,7 @@ import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
 import { InvalidArgumentError } from '../libs/error';
 import { addParentToInput, ensureHasRequiredFields, ensureImmutability, validateCursor } from './libs/core';
-import { PersonInput, validatePersonInput } from '../input';
+import * as Input from '../input';
 import { fetchHydratedDoc } from './libs/lineage';
 
 /** @internal */
@@ -110,7 +110,8 @@ export namespace v1 {
       // Check whether parent doc's `contact_type` or `type`(if `contact_type` is absent)
       // matches with any of the allowed parents type.
        
-      const typeToMatch = (parentDoc as PersonInput).contact_type || (parentDoc as PersonInput).type;
+      const typeToMatch = (parentDoc as Input.v1.PersonInput).contact_type 
+      || (parentDoc as Input.v1.PersonInput).type;
       const parentTypeMatchWithAllowedParents = (contactTypeObject.parents as string[])
         .find(parent => parent === typeToMatch);
 
@@ -137,7 +138,7 @@ export namespace v1 {
 
     const appendParent = async (
       typeFoundInSettingsContactTypes: Record<string, unknown> | undefined,
-      input: PersonInput
+      input: Input.v1.PersonInput
     ) => {
       let parentDoc: Nullable<Doc> = null;
       if (typeFoundInSettingsContactTypes) {
@@ -155,8 +156,8 @@ export namespace v1 {
       return input;
     };
 
-    return async (input: PersonInput): Promise<Person.v1.Person> => {
-      input = validatePersonInput(input);
+    return async (input: Input.v1.PersonInput): Promise<Person.v1.Person> => {
+      input = Input.v1.validatePersonInput(input);
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a person.');
       }
@@ -175,7 +176,7 @@ export namespace v1 {
           ...input,
           contact_type: input.type,
           type: 'contact'
-        } as unknown as PersonInput;
+        } as unknown as Input.v1.PersonInput;
       }
 
       input = await appendParent(typeFoundInSettingsContactTypes, input);

@@ -18,7 +18,7 @@ import {
   assertLimit,
   assertUuidQualifier
 } from './libs/parameter-validators';
-import { ReportInput } from './input';
+import * as Input from './input';
 import { InvalidArgumentError } from './libs/error';
 import * as Contact from './contact';
 
@@ -152,7 +152,7 @@ export namespace v1 {
      * @throws Error if reported_date is not in a valid format.
      * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
      */
-    const curriedFn = async (input: ReportInput): Promise<Report> => {
+    const curriedFn = async (input: Input.v1.ReportInput): Promise<Report> => {
       return fn(input);
     };
     return curriedFn;

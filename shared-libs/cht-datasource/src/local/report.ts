@@ -23,7 +23,7 @@ import {
 } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 import { InvalidArgumentError } from '../libs/error';
-import { ReportInput, validateReportInput } from '../input';
+import * as Input from '../input';
 import { fetchHydratedDoc } from './libs/lineage';
 
 /** @internal */
@@ -155,8 +155,8 @@ export namespace v1 {
     const createReportDoc = createDoc(medicDb);
     const getReportDoc = getDocById(medicDb);
     const appendContact = async (
-      input: ReportInput
-    ): Promise<ReportInput> => {
+      input: Input.v1.ReportInput
+    ): Promise<Input.v1.ReportInput> => {
       const contactDehydratedLineage = await getReportDoc(input.contact);
       if (contactDehydratedLineage === null) {
         throw new InvalidArgumentError(
@@ -167,8 +167,8 @@ export namespace v1 {
       return input;
     };
 
-    return async (input: ReportInput): Promise<Report.v1.Report> => {
-      input = validateReportInput(input);
+    return async (input: Input.v1.ReportInput): Promise<Report.v1.Report> => {
+      input = Input.v1.validateReportInput(input);
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a report.');
       }

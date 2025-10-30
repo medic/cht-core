@@ -22,7 +22,7 @@ describe('report', () => {
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isFreetextQualifier = sinon.stub(Qualifier, 'isFreetextQualifier');
     isRecord = sinon.stub(Core, 'isRecord');
-    validateReportInput = sinon.stub(Input, 'validateReportInput');
+    validateReportInput = sinon.stub(Input.v1, 'validateReportInput');
   });
 
   afterEach(() => sinon.restore());

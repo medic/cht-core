@@ -214,7 +214,7 @@ describe('cht-datasource Person', () => {
     describe('create', async () => {
       const createPerson = Person.v1.create(dataContext);
       it('creates a person for a valid person input', async () => {
-        const personInput = Input.validatePersonInput({
+        const personInput = Input.v1.validatePersonInput({
           name: 'apoorva',
           type: 'person',
           parent: place0._id
@@ -228,7 +228,7 @@ describe('cht-datasource Person', () => {
       });
 
       it('throws error for parent type not among allowed parents in settings.contact_types', async () => {
-        const personInput = Input.validatePersonInput({
+        const personInput = Input.v1.validatePersonInput({
           name: 'apoorva',
           type: 'person',
           parent: contact0._id,
@@ -251,7 +251,7 @@ describe('cht-datasource Person', () => {
     });
 
     describe('update', async () => {
-      const personInput = Input.validatePersonInput({
+      const personInput = Input.v1.validatePersonInput({
         name: 'apoorva',
         type: 'person',
         hobby: 'guitar',
