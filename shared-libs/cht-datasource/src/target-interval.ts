@@ -1,9 +1,9 @@
-import { DataObject, Nullable } from './libs/core';
+import { DataObject, getPagedGenerator, Nullable, Page } from './libs/core';
 import { Doc } from './libs/doc';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import {
   byUuid,
-  ContactUuidQualifier, isContactUuidQualifier, isReportingPeriodQualifier, isUsernameQualifier,
+  ContactUuidQualifier, ContactUuidsQualifier, isContactUuidQualifier, isReportingPeriodQualifier, isUsernameQualifier,
   isUuidQualifier,
   ReportingPeriodQualifier,
   UsernameQualifier,
@@ -12,6 +12,8 @@ import {
 import * as Local from './local';
 import * as Remote from './remote';
 import { InvalidArgumentError } from './libs/error';
+import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
+import { assertCursor, assertLimit, assertTargetIntervalQualifier, assertTypeQualifier } from './libs/parameter-validators';
 
 const getTargetIntervalUuid = (
   identifier: (ReportingPeriodQualifier & ContactUuidQualifier & UsernameQualifier) | UuidQualifier
@@ -83,5 +85,66 @@ export namespace v1 {
       return fn(identifier);
     };
     return curredFn;
+  };
+
+  /**
+   * Returns a function for retrieving a paged array of target intervals from the given data context.
+   * @param context the current data context
+   * @returns a function for retrieving a paged array of target intervals
+   * @throws Error if a data context is not provided
+   * @see {@link getAll} which provides the same data, but without having to manually account for paging
+   */
+  export const getPage = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.TargetInterval.v1.getPage, Remote.TargetInterval.v1.getPage);
+
+    /**
+     * Returns an array of target intervals for the provided page specifications.
+     * @param qualifier the limiter defining which target intervals to return
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of identifiers to return. Default is 100.
+     * @returns a page of target intervals for the provided specification
+     * @throws InvalidArrgumentError if no qualifier is provided or if the qualifier is invalid
+     * @throws InvalidArgumentError if the provided `limit` value is `<=0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    const curriedFn = async (
+      qualifier: ReportingPeriodQualifier & ContactUuidsQualifier,
+      cursor: Nullable<string> = null,
+      limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
+    ): Promise<Page<TargetInterval>> => {
+      assertTargetIntervalQualifier(qualifier);
+      assertCursor(cursor);
+      assertLimit(limit);
+      
+      return fn(qualifier, cursor, Number(limit));
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Returns a function for getting a generator that fetches target intervals from the given data context.
+   * @param context the current data context
+   * @returns a function for getting a generator that fetches target intervals
+   * @throws Error if a data context is not provided
+   */
+  export const getAll = (context: DataContext): typeof curriedGen => {
+    /**
+     * Returns a generator for fetching all target intervals that match the given qualifier
+     * @param qualifier the limiter defining which target intervals to return
+     * @returns a generator for fetching all target intervals that match the given qualifier
+     * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
+     */
+    const curriedGen = (
+      qualifier: ReportingPeriodQualifier & ContactUuidsQualifier,
+    ): AsyncGenerator<TargetInterval, null> => {
+      assertDataContext(context);
+      assertTargetIntervalQualifier(qualifier);
+      
+      const getPage = context.bind(v1.getPage);
+      return getPagedGenerator(getPage, qualifier);
+    };
+    return curriedGen;
   };
 }
