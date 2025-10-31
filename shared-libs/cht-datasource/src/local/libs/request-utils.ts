@@ -2,6 +2,7 @@ import { isContactsByTypeFreetext, SORT_BY_VIEW } from './constants';
 import { QueryKey, QueryParams } from './core';
 import { Nullable } from '../../libs/core';
 import { Doc } from '../../libs/doc';
+import { escapeKeys } from '@medic/nouveau';
 
 const getNouveauPath = (view: string): string => {
   const indexName = isContactsByTypeFreetext(view) ? 'contacts_by_freetext' : view;
@@ -52,8 +53,7 @@ const getLuceneQueryString = (
   return getQuery(getFirstItem(key), getFirstItem(startKey));
 };
 
-const NOUVEAU_SPECIAL_CHARS_REGEX = /[+\-&|!(){}[\]^"~*?:\\/]/g;
-const getEscapedKey = (key: string) => key.replace(NOUVEAU_SPECIAL_CHARS_REGEX, '\\$&');
+const getEscapedKey = (key: string) => escapeKeys(key);
 
 const getQuery = (key?: Nullable<string>, startKey?: Nullable<string>): string => {
   if (key) {
