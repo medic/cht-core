@@ -1,7 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
-import * as moment from 'moment';
 
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TranslateService } from '@mm-services/translate.service';
@@ -16,6 +15,7 @@ export interface Notification {
   title: string,
   contentText: string,
   endDate: number,
+  dueDate: number,
   readyAt: number
 }
 
@@ -72,33 +72,31 @@ export class TasksNotificationService implements OnDestroy {
 
   private async updateAndroidStore(): Promise<void> {
     const notifications = await this.fetchNotifications();
-    window.medicmobile_android?.updateTaskNotificationStore(JSON.stringify(notifications));
+    const maxNotifications = await this.getMaxNotificationSettings();
+    window.medicmobile_android?.updateTaskNotificationStore(JSON.stringify(notifications), maxNotifications);
   }
 
   private async fetchNotifications(): Promise<Notification[]> {
     try {
-      const today = moment().format('YYYY-MM-DD');
       const taskDocs = await this.rulesEngineService.fetchTaskDocsForAllContacts();
       let notifications: Notification[] = [];
 
       for (const task of taskDocs) {
-        const dueDate = task.emission.dueDate;
-        if (dueDate <= today) {
-          notifications.push({
-            _id: task._id,
-            readyAt: this.getReadyStateTimestamp(task.stateHistory),
-            title: task.emission.title,
-            contentText: this.translateContentText(
-              task.emission.title,
-              task.emission.contact.name,
-              task.emission.dueDate
-            ),
-            endDate: new Date(task.emission.endDate).getTime()
-          });
-        }
+        notifications.push({
+          _id: task._id,
+          readyAt: this.getReadyStateTimestamp(task.stateHistory),
+          title: task.emission.title,
+          contentText: this.translateContentText(
+            task.emission.title,
+            task.emission.contact.name,
+            task.emission.dueDate
+          ),
+          endDate: new Date(task.emission.endDate).getTime(),
+          dueDate: new Date(task.emission.dueDate).getTime()
+        });
       }
       notifications = notifications.sort((a, b) => b.readyAt - a.readyAt);
-      return notifications.slice(0, await this.getMaxNotificationSettings());
+      return notifications.slice(0, 100);
 
     } catch (exception) {
       console.error('fetchNotifications(): Error fetching tasks', exception);

@@ -10,8 +10,6 @@ import { FormatDateService } from '@mm-services/format-date.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { AuthService } from '@mm-services/auth.service';
 
-const DAY_IN_MS = 24 * 60 * 60 * 1000;
-
 describe('TasksNotificationService', () => {
   let service;
   let consoleErrorMock;
@@ -67,6 +65,26 @@ describe('TasksNotificationService', () => {
           {
             state: 'Ready',
             timestamp: moment().add(100, 'milliseconds').valueOf()
+          }
+        ],
+      },
+      {
+        _id: 'task3',
+        state: 'Ready',
+        emission: {
+          title: 'Task 2 Due tomorrow',
+          contact: { name: 'Owl Phil3', _id: 'contact2' },
+          dueDate: moment().add(1, 'days').format('YYYY-MM-DD'),
+          endDate: moment().add(2, 'days').format('YYYY-MM-DD')
+        },
+        stateHistory: [
+          {
+            state: 'Draft',
+            timestamp: moment().subtract(100, 'milliseconds').valueOf()
+          },
+          {
+            state: 'Ready',
+            timestamp: moment().add(200, 'milliseconds').valueOf()
           }
         ],
       }
@@ -131,11 +149,12 @@ describe('TasksNotificationService', () => {
 
   it('should fetch notifications', async () => {
     const notifications = await service.fetchNotifications();
-    expect(notifications).to.be.an('array').that.has.lengthOf(2);
-    expect(notifications[0]._id).to.equal('task2');
-    expect(notifications[1]._id).to.equal('task1');
+    expect(notifications).to.be.an('array').that.has.lengthOf(3);
+    expect(notifications[0]._id).to.equal('task3');
+    expect(notifications[1]._id).to.equal('task2');
+    expect(notifications[2]._id).to.equal('task1');
     expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);
-    expect(translateService.instant.callCount).to.equal(2);
+    expect(translateService.instant.callCount).to.equal(3);
     expect(consoleErrorMock.callCount).to.equal(0);
 
     notifications.forEach((notification) => {
@@ -146,47 +165,10 @@ describe('TasksNotificationService', () => {
         readyAt: task.stateHistory[1].timestamp,
         title: task.emission.title,
         contentText: 'android.notification.tasks.contentText',
-        endDate: +new Date(task.emission.endDate)
+        endDate: +new Date(task.emission.endDate),
+        dueDate: +new Date(task.emission.dueDate)
       });
     });
-  });
-
-  it('should return max number of notifications', async () => {
-    settingsService.get.resolves({
-      tasks: {
-        max_task_notifications: 1
-      }
-    });
-    const notifications = await service.fetchNotifications();
-    expect(notifications).to.be.an('array').that.has.lengthOf(1);
-    expect(notifications[0]._id).to.equal('task2');
-  });
-
-  it('should return task notification due today on a new day', async () => {
-    const taskDueTomorrow = {
-      _id: 'task_tomorrow',
-      state: 'Ready',
-      emission: {
-        title: 'Task 3',
-        contact: { name: 'Future Owl', _id: 'contact_future' },
-        dueDate: moment().add(1, 'day').format('YYYY-MM-DD')
-      },
-      stateHistory: [
-        {
-          state: 'Ready',
-          timestamp: moment().subtract(1, 'day').valueOf(),
-        }
-      ]
-    };
-
-    rulesEngine.fetchTaskDocsForAllContacts.resolves([...tasks, taskDueTomorrow]);
-    const notifications = await service.fetchNotifications();
-    expect(notifications).to.be.an('array').that.has.lengthOf(2);
-
-    clock.tick(DAY_IN_MS);
-
-    const updatedNotifications = await service.fetchNotifications();
-    expect(updatedNotifications).to.be.an('array').that.has.lengthOf(3);
   });
 
   it('should fetch notifications with no tasks ready', async () => {
@@ -223,14 +205,15 @@ describe('TasksNotificationService', () => {
     expect(consoleErrorMock.callCount).to.equal(0);
   });
 
-  it('should not fetch notifications for future tasks', async () => {
+  it('should fetch notifications for future tasks', async () => {
     const futureTask = {
       _id: 'task_future',
       state: 'Ready',
       emission: {
         title: 'Future Task',
         contact: { name: 'Owl Phil Future', _id: 'contact_future' },
-        dueDate: moment().add(1, 'days').format('YYYY-MM-DD')
+        dueDate: moment().add(1, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(2, 'days').format('YYYY-MM-DD')
       },
       stateHistory: [
         {
@@ -242,9 +225,9 @@ describe('TasksNotificationService', () => {
     rulesEngine.fetchTaskDocsForAllContacts.resolves([futureTask]);
 
     const notifications = await service.fetchNotifications();
-    expect(notifications).to.be.an('array').that.has.lengthOf(0);
+    expect(notifications).to.be.an('array').that.has.lengthOf(1);
     expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);
-    expect(translateService.instant.callCount).to.equal(0);
+    expect(translateService.instant.callCount).to.equal(1);
     expect(consoleErrorMock.callCount).to.equal(0);
   });
 
@@ -266,10 +249,10 @@ describe('TasksNotificationService', () => {
 
   it('should get() notifications', async () => {
     const notifications = await service.get();
-    expect(notifications).to.be.an('array').that.has.lengthOf(2);
+    expect(notifications).to.be.an('array').that.has.lengthOf(3);
     expect(authService.has.calledOnceWith('can_get_task_notifications')).to.be.true;
     expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);
-    expect(translateService.instant.callCount).to.equal(2);
+    expect(translateService.instant.callCount).to.equal(3);
     expect(consoleErrorMock.callCount).to.equal(0);
     notifications.forEach((notification) => {
       const task = getTask(notification._id);
@@ -279,7 +262,8 @@ describe('TasksNotificationService', () => {
         readyAt: task.stateHistory[1].timestamp,
         title: task.emission.title,
         contentText: 'android.notification.tasks.contentText',
-        endDate: +new Date(task.emission.endDate)
+        endDate: +new Date(task.emission.endDate),
+        dueDate: +new Date(task.emission.dueDate)
       });
     });
   });
