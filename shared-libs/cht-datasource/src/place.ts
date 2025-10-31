@@ -9,9 +9,8 @@ import * as Remote from './remote';
 import { getPagedGenerator, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
-import { validatePlaceInput } from './input';
 import { InvalidArgumentError } from './libs/error';
-
+import * as Input from './input';
 /** */
 export namespace v1 {
   /**
@@ -132,11 +131,16 @@ export namespace v1 {
      * Returns a place doc.
      * @param input input to create the place doc.
      * @returns the created place doc.
-     * @throws InvalidArgumentError if input is not of valid type.
+     * @throws Error if input is not an object
+     * @throws Error if type is not provided or is empty
+     * @throws Error if name is not provided or is empty
+     * @throws Error if parent is not provided or is empty
+     * @throws Error if contact is present and empty.
+     * @throws Error if reported_date is not in a valid format.
+     * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
      */
-    const curriedFn = async (input: unknown): Promise<Place> => {
-      const placeInput = validatePlaceInput(input);
-      return fn(placeInput);
+    const curriedFn = async (input: Input.v1.PlaceInput): Promise<Place> => {
+      return fn(input);
     };
     return curriedFn;
   };

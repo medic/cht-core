@@ -22,7 +22,7 @@ describe('report', () => {
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isFreetextQualifier = sinon.stub(Qualifier, 'isFreetextQualifier');
     isRecord = sinon.stub(Core, 'isRecord');
-    validateReportInput = sinon.stub(Input, 'validateReportInput');
+    validateReportInput = sinon.stub(Input.v1, 'validateReportInput');
   });
 
   afterEach(() => sinon.restore());
@@ -327,19 +327,6 @@ describe('report', () => {
     });
 
     describe('create', () => {
-      it('throws error for invalid input', async () => {
-        const input = {
-          name: 'person-1',
-          type: 'data_record',
-          form: 'yes',
-        };
-        validateReportInput.throws(
-          `Missing or empty required field (contact) in [${JSON.stringify(input)}].`
-        );
-        await expect(Report.v1.create(dataContext)(input))
-          .to.be.rejectedWith(`Missing or empty required field (contact) in [${JSON.stringify(input)}].`);
-      });
-
       it('returns person doc for valid input', async () => {
         const createReportDoc = sinon.stub();
         adapt.returns(createReportDoc);

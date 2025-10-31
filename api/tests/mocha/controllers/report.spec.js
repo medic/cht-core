@@ -350,32 +350,6 @@ describe('Report Controller Tests', () => {
           .returns(createReport);
       });
 
-      it('throws error for missing required types, here `contact`', async () => {
-        checkUserPermissions.resolves();
-        const input = {
-          type: 'report',
-          reported_date: 12312312
-        };
-        req = {
-          body: {
-            ...input
-          }
-        };
-
-        const error = new InvalidArgumentError(`Missing or empty required field (contact) in [${
-          JSON.stringify(input)
-        }].`);
-
-        await controller.v1.create(req, res);
-        expect(checkUserPermissions
-          .calledOnceWithExactly(req, ['can_view_reports', 'can_create_records'])).to.be.true;
-        expect(createReport.called).to.be.false;
-        expect(serverUtilsError.calledOnce).to.be.true;
-        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(InvalidArgumentError);
-        expect(serverUtilsError.firstCall.args[0].message).to.equal(error.message);
-        expect(dataContextBind.notCalled).to.be.true;
-      });
-
       it('returns a report doc on valid report input', async () => {
         checkUserPermissions.resolves();
         const input = {

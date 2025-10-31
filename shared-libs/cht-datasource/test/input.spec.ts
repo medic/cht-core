@@ -1,15 +1,15 @@
 import {
-  isContactInput,
-  isPersonInput,
-  isPlaceInput,
-  isReportInput,
-  validateContactInput,
-  validatePersonInput,
-  validatePlaceInput,
-  validateReportInput
+  v1
 } from '../src/input';
 import { expect } from 'chai';
 import sinon from 'sinon';
+const { isContactInput,
+  isPersonInput,
+  isPlaceInput,
+  isReportInput,
+  validatePersonInput,
+  validatePlaceInput,
+  validateReportInput } = v1;
 
 describe('input', () => {
   let clock: sinon.SinonFakeTimers;
@@ -21,52 +21,6 @@ describe('input', () => {
 
   after(() => {
     clock.restore();
-  });
-  describe('validateContactInput', () => {
-    it('builds a input for creation and update of a contact with the required fields.', () => {
-      expect(validateContactInput({
-        name: 'A', type: 'person'
-      })).to.deep.equal({
-        name: 'A', type: 'person', reported_date: 1672531283000
-      });
-    });
-
-    it('builds a input for creation and update of a contact with the optional reported_date field.', () => {
-      expect(validateContactInput({
-        name: 'A', type: 'person', reported_date: '2025-06-03T12:45:30Z'
-      })).to.deep.equal({
-        name: 'A', type: 'person', reported_date: 1748954730000
-      });
-    });
-
-    it('throws error for invalid reported_date field.', () => {
-      expect(() => validateContactInput({
-        name: 'A', type: 'person', reported_date: '2025-06'
-      })).to.throw('Invalid reported_date. Expected format to be ' +
-        '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.');
-    });
-
-    it('throws error for missing or empty required fields.', () => {
-      [
-        {
-          name: 'A'
-        },
-        {
-          name: '', type: 'person'
-        },
-        {
-          type: 'person', reported_date: '2025-06-03T12:45:30Z'
-        }
-      ].forEach((input) => expect(() => validateContactInput(input))
-        .to.throw(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}].`));
-
-    });
-
-    it('throws error for invalid data object type.', () => {
-      const input = 'my contact input';
-      expect(() => validateContactInput(input))
-        .to.throw('Invalid "data": expected an object.');
-    });
   });
 
   describe('isContactInput', () => {
@@ -372,7 +326,7 @@ describe('input', () => {
       };
       expect(() => validatePlaceInput(input))
         .to.throw('Invalid reported_date. Expected format to be ' +
-        '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.');
+          '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.');
     });
 
     it('builds a input to create and update place for valid data', () => {

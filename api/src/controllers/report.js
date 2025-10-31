@@ -1,6 +1,6 @@
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
-const { Report, Qualifier, Input } = require('@medic/cht-datasource');
+const { Report, Qualifier } = require('@medic/cht-datasource');
 const auth = require('../auth');
 
 const getReport = ({ with_lineage }) => ctx.bind(with_lineage === 'true' ? Report.v1.getWithLineage : Report.v1.get);
@@ -34,9 +34,7 @@ module.exports = {
 
     create: serverUtils.doOrError(async (req, res) => {
       await auth.checkUserPermissions(req, [ 'can_view_reports', 'can_create_records' ]);
-
-      const input = Input.validateReportInput(req.body);
-      const reportDoc = await create()(input);
+      const reportDoc = await create()(req.body);
       return res.json(reportDoc);
     }),
 

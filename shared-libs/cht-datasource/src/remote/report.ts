@@ -2,7 +2,7 @@ import { getResource, getResources, postResource, putResource, RemoteDataContext
 import { FreetextQualifier, UuidQualifier } from '../qualifier';
 import * as Report from '../report';
 import { Nullable, Page } from '../libs/core';
-import { ReportInput } from '../input';
+import * as Input from '../input';
 
 /** @internal */
 export namespace v1 {
@@ -35,7 +35,7 @@ export namespace v1 {
 
   /** @internal */
   export const create = (remoteContext: RemoteDataContext) => (
-    input: ReportInput
+    input: Input.v1.ReportInput
   ): Promise<Report.v1.Report> => createReport(remoteContext)(input);
 
   /** @internal */
