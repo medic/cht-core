@@ -229,17 +229,23 @@ export interface ContactUuidsQualifier {
  * @returns `true` if the given qualifier is a {@link ContactUuidsQualifier}, otherwise `false`.
  */
 export const isContactUuidsQualifier = (qualifier: unknown): qualifier is ContactUuidsQualifier => {
-  return isRecord(qualifier) &&
-    hasField(qualifier, { name: 'contactUuids', type: 'string' }) &&
-    qualifier.contactUuids.length > 0 &&
-    (qualifier as unknown as ContactUuidsQualifier)
-      .contactUuids
-      .every(contactUuid => contactUuid.length > 0);
+  let valid = isRecord(qualifier) &&
+    hasField(qualifier, { name: 'contactUuids', type: 'object' }) &&
+    qualifier.contactUuids.length > 0;
+  
+  if (!valid)
+    return false;
+  
+  const validUuids = (qualifier as unknown as ContactUuidsQualifier)
+    .contactUuids
+    .every((contactUuid: string) => contactUuid.length > 0 && byContactUuid(contactUuid).contactUuid !== undefined);
+  
+  return validUuids;
 };
 
 export const byContactUuids = (contactUuids: [string, ...string[]]): ContactUuidsQualifier => {
   const qualifier = { contactUuids };
-  if (!isContactUuidQualifier(qualifier)) {
+  if (!isContactUuidsQualifier(qualifier)) {
     throw new InvalidArgumentError(`Invalid contact UUIDs [${contactUuids}].`);
   }
   return qualifier;
