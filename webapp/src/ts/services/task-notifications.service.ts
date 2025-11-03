@@ -1,6 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
+import * as moment from 'moment';
 
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TranslateService } from '@mm-services/translate.service';
@@ -91,8 +92,8 @@ export class TasksNotificationService implements OnDestroy {
             task.emission.contact.name,
             task.emission.dueDate
           ),
-          endDate: new Date(task.emission.endDate).getTime(),
-          dueDate: new Date(task.emission.dueDate).getTime()
+          endDate: moment(task.emission.endDate).valueOf(),
+          dueDate: moment(task.emission.dueDate).valueOf()
         });
       }
       notifications = notifications.sort((a, b) => b.readyAt - a.readyAt);

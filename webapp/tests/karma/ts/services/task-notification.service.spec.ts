@@ -165,8 +165,8 @@ describe('TasksNotificationService', () => {
         readyAt: task.stateHistory[1].timestamp,
         title: task.emission.title,
         contentText: 'android.notification.tasks.contentText',
-        endDate: +new Date(task.emission.endDate),
-        dueDate: +new Date(task.emission.dueDate)
+        endDate: moment(task.emission.endDate).valueOf(),
+        dueDate: moment(task.emission.dueDate).valueOf()
       });
     });
   });
@@ -262,8 +262,8 @@ describe('TasksNotificationService', () => {
         readyAt: task.stateHistory[1].timestamp,
         title: task.emission.title,
         contentText: 'android.notification.tasks.contentText',
-        endDate: +new Date(task.emission.endDate),
-        dueDate: +new Date(task.emission.dueDate)
+        endDate: moment(task.emission.endDate).valueOf(),
+        dueDate: moment(task.emission.dueDate).valueOf()
       });
     });
   });
