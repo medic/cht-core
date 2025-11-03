@@ -476,8 +476,15 @@ export class RulesEngineService implements OnDestroy {
     // Previous month: use target interval from cht-datasource
     try {
       const settings = await this.settingsService.get();
-      const targetInterval = await this.fetchTargetDocumentsForPeriod(settings, reportingPeriod);
-      return this.processTargetDocuments(targetInterval, settings);
+      const result = await this.fetchTargetDocumentsForPeriod(settings, reportingPeriod);
+
+      // If result is undefined, it means prerequisites weren't met (no username/contact)
+      if (result === undefined) {
+        return [];
+      }
+
+      // If result is null, the query succeeded but no target interval was found
+      return this.processTargetDocuments(result, settings);
     } catch (error) {
       console.error('Error fetching previous month targets:', error);
       return [];
@@ -534,31 +541,27 @@ export class RulesEngineService implements OnDestroy {
 
   /**
    * Fetch target interval for a specific reporting period using cht-datasource
+   * @returns the target interval, null if not found, or undefined if prerequisites aren't met
    */
   private async fetchTargetDocumentsForPeriod(
     settings: any,
     reportingPeriod: ReportingPeriod
-  ): Promise<TargetInterval.v1.TargetInterval | null> {
+  ): Promise<TargetInterval.v1.TargetInterval | null | undefined> {
     const intervalTag = this.getTargetIntervalTag(settings, reportingPeriod);
     const userContact = await this.userContactService.get();
     const username = this.sessionService.userCtx()?.name;
 
     if (!userContact?._id || !username) {
-      return null;
+      return undefined;
     }
 
-    try {
-      return await this.getTargetInterval(
-        Qualifier.and(
-          Qualifier.byReportingPeriod(intervalTag),
-          Qualifier.byContactUuid(userContact._id),
-          Qualifier.byUsername(username)
-        )
-      );
-    } catch (error) {
-      console.error('Error fetching target interval for period:', error);
-      return null;
-    }
+    return await this.getTargetInterval(
+      Qualifier.and(
+        Qualifier.byReportingPeriod(intervalTag),
+        Qualifier.byContactUuid(userContact._id),
+        Qualifier.byUsername(username)
+      )
+    );
   }
 
   /**
@@ -571,33 +574,37 @@ export class RulesEngineService implements OnDestroy {
     const targetsConfig = settings?.tasks?.targets?.items || [];
     const processedTargets: Target[] = [];
 
-    if (targetInterval?.targets) {
-      targetInterval.targets.forEach(targetValue => {
-        const targetConfig = targetsConfig.find(config => config.id === targetValue.id);
-        if (targetConfig) {
-          processedTargets.push({
-            ...targetConfig,
-            ...targetValue,
-            visible: targetConfig.visible !== false
-          });
+    targetsConfig.forEach(targetConfig => {
+      if (targetConfig.visible === false) {
+        return;
+      }
+
+      // Find matching target value from the interval doc
+      const targetValue = targetInterval?.targets?.find(t => t.id === targetConfig.id);
+
+      if (targetValue) {
+        // Target has data in the interval
+        processedTargets.push({
+          ...targetConfig,
+          ...targetValue,
+          visible: true
+        });
+      } else {
+        // No data for this target - add zero values
+        const zeroValue: any = {
+          pass: 0,
+          total: 0
+        };
+        if (targetConfig.type === 'percent') {
+          zeroValue.percent = 0;
         }
-      });
-    } else {
-      // No target interval found - return target configurations with zero values
-      targetsConfig.forEach(targetConfig => {
-        if (targetConfig.visible !== false) {
-          processedTargets.push({
-            ...targetConfig,
-            value: {
-              pass: 0,
-              total: 0,
-              percent: targetConfig.type === 'percent' ? 0 : undefined
-            },
-            visible: true
-          });
-        }
-      });
-    }
+        processedTargets.push({
+          ...targetConfig,
+          value: zeroValue,
+          visible: true
+        });
+      }
+    });
 
     return processedTargets;
   }
