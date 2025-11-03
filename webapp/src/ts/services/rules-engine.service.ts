@@ -21,7 +21,8 @@ import { CalendarIntervalService } from '@mm-services/calendar-interval.service'
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
-import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
+import { TargetInterval, Qualifier } from '@medic/cht-datasource';
 
 interface DebounceActive {
   [key: string]: {
@@ -62,6 +63,7 @@ export class RulesEngineService implements OnDestroy {
   private uhcMonthStartDate;
   private debounceActive: DebounceActive = {};
   private observable = new Subject();
+  private readonly getTargetInterval: ReturnType<typeof TargetInterval.v1.get>;
 
   constructor(
     private translateService:TranslateService,
@@ -80,11 +82,11 @@ export class RulesEngineService implements OnDestroy {
     private rulesEngineCoreFactoryService:RulesEngineCoreFactoryService,
     private calendarIntervalService:CalendarIntervalService,
     private ngZone:NgZone,
-    private chtDatasourceService:CHTDatasourceService,
-    private dbService:DbService
+    private chtDatasourceService:CHTDatasourceService
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
+    this.getTargetInterval = chtDatasourceService.bind(TargetInterval.v1.get);
   }
 
   ngOnDestroy(): void {
@@ -471,11 +473,11 @@ export class RulesEngineService implements OnDestroy {
       return this._fetchCurrentTargets();
     }
 
-    // Previous month: use target documents
+    // Previous month: use target interval from cht-datasource
     try {
       const settings = await this.settingsService.get();
-      const targetDocs = await this.fetchTargetDocumentsForPeriod(settings, reportingPeriod);
-      return this.processTargetDocuments(targetDocs, settings);
+      const targetInterval = await this.fetchTargetDocumentsForPeriod(settings, reportingPeriod);
+      return this.processTargetDocuments(targetInterval, settings);
     } catch (error) {
       console.error('Error fetching previous month targets:', error);
       return [];
@@ -531,61 +533,57 @@ export class RulesEngineService implements OnDestroy {
   }
 
   /**
-   * Fetch target documents for a specific reporting period
-   * Uses existing target document storage system
+   * Fetch target interval for a specific reporting period using cht-datasource
    */
-  private async fetchTargetDocumentsForPeriod(settings: any, reportingPeriod: ReportingPeriod): Promise<any[]> {
+  private async fetchTargetDocumentsForPeriod(
+    settings: any,
+    reportingPeriod: ReportingPeriod
+  ): Promise<TargetInterval.v1.TargetInterval | null> {
     const intervalTag = this.getTargetIntervalTag(settings, reportingPeriod);
     const userContact = await this.userContactService.get();
-    
-    if (!userContact?._id) {
-      return [];
+    const username = this.sessionService.userCtx()?.name;
+
+    if (!userContact?._id || !username) {
+      return null;
     }
 
-    // Query target documents using interval-based approach
-    // Pattern: target~<interval_tag>~<contact_uuid>~<user_id>
-    const opts = {
-      start_key: `target~${intervalTag}~${userContact._id}~`,
-      end_key: `target~${intervalTag}~${userContact._id}~\ufff0`,
-      include_docs: true,
-    };
-
     try {
-      const results = await this.dbService.get().allDocs(opts);
-      return results.rows.map(row => row.doc).filter(doc => doc && doc.targets);
+      return await this.getTargetInterval(
+        Qualifier.and(
+          Qualifier.byReportingPeriod(intervalTag),
+          Qualifier.byContactUuid(userContact._id),
+          Qualifier.byUsername(username)
+        )
+      );
     } catch (error) {
-      console.error('Error fetching target documents for period:', error);
-      return [];
+      console.error('Error fetching target interval for period:', error);
+      return null;
     }
   }
 
   /**
-   * Process target documents into target format expected by UI
+   * Process target interval into target format expected by UI
    */
-  private processTargetDocuments(targetDocs: any[], settings: any): Target[] {
+  private processTargetDocuments(
+    targetInterval: TargetInterval.v1.TargetInterval | null,
+    settings: any
+  ): Target[] {
     const targetsConfig = settings?.tasks?.targets?.items || [];
     const processedTargets: Target[] = [];
 
-    if (targetDocs.length > 0) {
-      // Get the most recent target document (there should typically be one per period)
-      const latestTargetDoc = targetDocs.sort((a, b) => {
-        return new Date(b.reporting_period || 0).getTime() - new Date(a.reporting_period || 0).getTime();
-      })[0];
-
-      if (latestTargetDoc?.targets) {
-        latestTargetDoc.targets.forEach(targetValue => {
-          const targetConfig = targetsConfig.find(config => config.id === targetValue.id);
-          if (targetConfig) {
-            processedTargets.push({
-              ...targetConfig,
-              ...targetValue,
-              visible: targetConfig.visible !== false
-            });
-          }
-        });
-      }
+    if (targetInterval?.targets) {
+      targetInterval.targets.forEach(targetValue => {
+        const targetConfig = targetsConfig.find(config => config.id === targetValue.id);
+        if (targetConfig) {
+          processedTargets.push({
+            ...targetConfig,
+            ...targetValue,
+            visible: targetConfig.visible !== false
+          });
+        }
+      });
     } else {
-      // No target documents found - return target configurations with zero values
+      // No target interval found - return target configurations with zero values
       targetsConfig.forEach(targetConfig => {
         if (targetConfig.visible !== false) {
           processedTargets.push({
