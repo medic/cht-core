@@ -440,9 +440,10 @@ describe('local person', () => {
             parent: 'p1',
             reported_date: Date.now()
           };
-          const updatedInput = { ...input, type: 'contact', contact_type: 'person'};
           await expect(Person.v1.create(localContext)(input))
-            .to.be.rejectedWith(`Invalid type of person, cannot have parent for [${JSON.stringify(updatedInput)}].`);
+            .to.be.rejectedWith(`Invalid type of person, cannot have parent for ${
+              JSON.stringify(input.type)
+            } type`);
           expect(getDocByIdInner.called).to.be.false;
         }
       );
@@ -470,9 +471,10 @@ describe('local person', () => {
             type: 'contact'
           };
           getDocByIdInner.resolves(returnedParentDoc);
-          const updatedInput = { ...input, type: 'contact', contact_type: 'person' };
           await expect(Person.v1.create(localContext)(input))
-            .to.be.rejectedWith(`Invalid parent type for [${JSON.stringify(updatedInput)}].`);
+            .to.be.rejectedWith(`Parent of type ${
+              JSON.stringify(returnedParentDoc.contact_type)
+            } is not allowed for ${JSON.stringify(input.type)} type`);
         }
       );
 

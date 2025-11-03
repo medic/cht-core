@@ -325,7 +325,7 @@ describe('cht-datasource Report', () => {
         const action = () => Report.v1.create(dataContext)(Input.v1.validateReportInput(input));
         expect(action).to.throw(
           InvalidArgumentError,
-          `Missing or empty required field (contact) in [${JSON.stringify(input)}].`
+          `Missing or empty required field (contact)`
         );
       });
 

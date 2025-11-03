@@ -114,7 +114,7 @@ describe('input', () => {
         { form: '', contact: 'c1' }
       ].forEach((input) => {
         expect(() => validateReportInput(input))
-          .to.throw(`Missing or empty required field (form) in [${JSON.stringify(input)}].`);
+          .to.throw(`Missing or empty required field (form)`);
       });
     });
 
@@ -124,7 +124,7 @@ describe('input', () => {
         { type: 'data_record', form: 'myform', contact: '' }
       ].forEach((input) => {
         expect(() => validateReportInput(input))
-          .to.throw(`Missing or empty required field (contact) in [${JSON.stringify(input)}].`);
+          .to.throw(`Missing or empty required field (contact)`);
       });
     });
   });
@@ -192,12 +192,8 @@ describe('input', () => {
         type: 'person',
       };
 
-      const expected_data = {
-        ...data, reported_date: 1672531283000
-      };
-
       expect(() => validatePersonInput(data)).to
-        .throw(`Missing or empty required field (parent) [${JSON.stringify(expected_data)}].`);
+        .throw(`Missing or empty required field (parent)`);
     });
 
     it('throws an error if parent is an empty string', () => {
@@ -207,12 +203,8 @@ describe('input', () => {
         parent: ''
       };
 
-      const expected_data = {
-        ...data, reported_date: 1672531283000
-      };
-
       expect(() => validatePersonInput(data)).to
-        .throw(`Missing or empty required field (parent) [${JSON.stringify(expected_data)}].`);
+        .throw(`Missing or empty required field (parent)`);
     });
 
     it('builds input for valid objects', () => {
@@ -284,9 +276,8 @@ describe('input', () => {
         parent: ''
       };
 
-      const expected_input = { ...input, reported_date: 1672531283000 };
       expect(() => validatePlaceInput(input))
-        .to.throw(`Missing or empty required field (parent) for [${JSON.stringify(expected_input)}].`);
+        .to.throw(`Missing or empty required field (parent)`);
     });
 
     it('throws error for empty contact', () => {
@@ -296,9 +287,8 @@ describe('input', () => {
         contact: ''
       };
 
-      const expected_input = { ...input, reported_date: 1672531283000 };
       expect(() => validatePlaceInput(input))
-        .to.throw(`Missing or empty required field (contact) for [${JSON.stringify(expected_input)}].`);
+        .to.throw(`Missing or empty required field (contact)`);
     });
 
     it('throws error for missing required fields', () => {
@@ -314,7 +304,7 @@ describe('input', () => {
         }
       ].forEach((input) => {
         expect(() => validatePlaceInput(input))
-          .to.throw(`Missing or empty required fields (name, type) for [${JSON.stringify(input)}].`);
+          .to.throw(`Missing or empty required fields (name, type)`);
       });
     });
 

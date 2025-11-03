@@ -50,7 +50,7 @@ export namespace v1 {
     input.reported_date = convertToUnixTimestamp(input.reported_date as string | number);
     if (!checkContactInputFields(input)) {
       throw new InvalidArgumentError(
-        `Missing or empty required fields (name, type) for [${JSON.stringify(data)}].`
+        `Missing or empty required fields (name, type)`
       );
     }
     return input;
@@ -118,10 +118,10 @@ export namespace v1 {
     }
     input.reported_date = convertToUnixTimestamp(input.reported_date as string | number);
     if (!hasField(input, { name: 'contact', type: 'string', ensureTruthyValue: true })) {
-      throw new InvalidArgumentError(`Missing or empty required field (contact) in [${JSON.stringify(data)}].`);
+      throw new InvalidArgumentError(`Missing or empty required field (contact)`);
     }
     if (!isReportInput(input)) {
-      throw new InvalidArgumentError(`Missing or empty required field (form) in [${JSON.stringify(data)}].`);
+      throw new InvalidArgumentError(`Missing or empty required field (form)`);
     }
     return input;
   };
@@ -182,7 +182,7 @@ export namespace v1 {
     const input = validateContactInputNonAssertive(data);
 
     if (!hasField(input, { name: 'parent', type: 'string', ensureTruthyValue: true })) {
-      throw new InvalidArgumentError(`Missing or empty required field (parent) [${JSON.stringify(input)}].`);
+      throw new InvalidArgumentError(`Missing or empty required field (parent)`);
     }
 
     return input as unknown as PersonInput;
@@ -217,13 +217,13 @@ export namespace v1 {
 
     if (!isValidPlaceContact(input)) {
       throw new InvalidArgumentError(
-        `Missing or empty required field (contact) for [${JSON.stringify(input)}].`
+        `Missing or empty required field (contact)`
       );
     }
 
     if (!isValidPlaceParent(input)) {
       throw new InvalidArgumentError(
-        `Missing or empty required field (parent) for [${JSON.stringify(input)}].`
+        `Missing or empty required field (parent)`
       );
     }
 

@@ -454,7 +454,7 @@ describe('Report API', () => {
       await expect(utils.request(opts))
         .to.be.rejectedWith(`400 - ${JSON.stringify({
           code: 400,
-          error: `Missing or empty required field (contact) in [${JSON.stringify(input)}].`
+          error: `Missing or empty required field (contact)`
         })}`);
     });
   });

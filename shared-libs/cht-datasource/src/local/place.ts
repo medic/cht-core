@@ -120,7 +120,7 @@ export namespace v1 {
     ): Promise<Doc> => {
       if (!hasField(input, { name: 'parent', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError(
-          `Missing or empty required field (parent) for [${JSON.stringify(input)}].`
+          `Missing or empty required field (parent)`
         );
       }
       const parentDoc = await getPlaceDoc(input.parent);
@@ -140,7 +140,9 @@ export namespace v1 {
 
       if (!(parentTypeMatchWithAllowedParents)) {
         throw new InvalidArgumentError(
-          `Invalid parent type for [${JSON.stringify(input)}].`
+          `Parent of type ${JSON.stringify(typeToMatch)} is not allowed for ${JSON.stringify(
+            input.contact_type
+          )} type`
         );
       }
       return parentDoc;

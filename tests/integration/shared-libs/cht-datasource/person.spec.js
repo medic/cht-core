@@ -237,15 +237,7 @@ describe('cht-datasource Person', () => {
         await expect(createPerson(personInput))
           .to.be.rejectedWith({
             code: 400,
-            error: `Invalid parent type for [${JSON.stringify(
-              {
-                name: 'apoorva',
-                type: 'contact',
-                parent: contact0._id,
-                reported_date: 12312312,
-                contact_type: 'person'
-              }
-            )}].`
+            error: `Parent of type "person" is not allowed for ${JSON.stringify(personInput.type)} type`
           });
       });
     });

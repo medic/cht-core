@@ -331,11 +331,9 @@ describe('local place', () => {
           type: 'hospital',
           reported_date: Date.now()
         };
-        const updatedPlaceInput = {
-          ...placeInput, type: 'contact', contact_type: 'hospital'
-        };
+
         await expect(Place.v1.create(localContext)(placeInput))
-          .to.be.rejectedWith(`Missing or empty required field (parent) for [${JSON.stringify(updatedPlaceInput)}].`);
+          .to.be.rejectedWith(`Missing or empty required field (parent)`);
         expect(createDocInner.called).to.be.false;
       });
 
@@ -358,11 +356,11 @@ describe('local place', () => {
           parent: 'p1',
           reported_date: Date.now()
         };
-        const updatedPlaceInput = {
-          ...placeInput, type: 'contact', contact_type: placeInput.type
-        };
+
         await expect(Place.v1.create(localContext)(placeInput))
-          .to.be.rejectedWith(`Invalid parent type for [${JSON.stringify(updatedPlaceInput)}].`);
+          .to.be.rejectedWith(`Parent of type ${
+            JSON.stringify(parentReturnedByget.contact_type)
+          } is not allowed for ${JSON.stringify(placeInput.type)} type`);
         expect(createDocInner.called).to.be.false;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });

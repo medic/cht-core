@@ -117,7 +117,9 @@ export namespace v1 {
 
       if (!(parentTypeMatchWithAllowedParents)) {
         throw new InvalidArgumentError(
-          `Invalid parent type for [${JSON.stringify(input)}].`
+          `Parent of type ${JSON.stringify(typeToMatch)} is not allowed for ${JSON.stringify(
+            input.contact_type
+          )} type`
         );
       }
       return parentDoc;
@@ -129,7 +131,9 @@ export namespace v1 {
     ): Promise<Nullable<Doc>> => {
       if (!hasField(contactTypeObject, { name: 'parents', type: 'object' })) {
         throw new InvalidArgumentError(
-          `Invalid type of person, cannot have parent for [${JSON.stringify(input)}].`
+          `Invalid type of person, cannot have parent for ${
+            JSON.stringify(input.contact_type)
+          } type`
         );
       } else {
         return await ensureHasValidParentFieldAndReturnParentDoc(input, contactTypeObject);

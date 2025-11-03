@@ -287,13 +287,7 @@ describe('Person API', () => {
       };
       const expectedError = `400 - ${JSON.stringify({
         code: 400,
-        error: `Invalid parent type for [${JSON.stringify({
-          name: 'apoorva',
-          type: 'contact',
-          reported_date: 12312312,
-          parent: contact0._id,
-          contact_type: 'person',
-        })}].`,
+        error: `Parent of type "person" is not allowed for ${JSON.stringify(personInput.type)} type`,
       })}`;
 
       await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
@@ -315,7 +309,7 @@ describe('Person API', () => {
       };
       const expectedError = `400 - ${JSON.stringify({
         code: 400,
-        error: `Missing or empty required field (parent) [${JSON.stringify(personInput)}].`
+        error: `Missing or empty required field (parent)`
       })}`;
 
       await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
