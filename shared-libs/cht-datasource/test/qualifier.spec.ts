@@ -2,12 +2,14 @@ import {
   and,
   byContactType,
   byContactUuid,
+  byContactUuids,
   byFreetext,
   byReportingPeriod,
   byUsername,
   byUuid, FreetextQualifier,
   isContactTypeQualifier,
   isContactUuidQualifier,
+  isContactUuidsQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
   isReportingPeriodQualifier,
@@ -218,6 +220,12 @@ describe('qualifier', () => {
     });
   });
 
+  describe('byContactUuids', () => {
+    it('builds a qualifier for searching by contact UUID', () => {
+      expect(byContactUuids(['abc-123', 'abc-200'])).to.deep.equal({ contactUuids: ['abc-123', 'abc-200'] });
+    });
+  });
+
   describe('isContactUuidQualifier', () => {
     [
       [ null, false ],
@@ -228,6 +236,20 @@ describe('qualifier', () => {
     ].forEach(([ qualifier, expected ]) => {
       it(`evaluates ${JSON.stringify(qualifier)}`, () => {
         expect(isContactUuidQualifier(qualifier)).to.equal(expected);
+      });
+    });
+  });
+
+    describe('isContactUuidsQualifier', () => {
+    [
+      [ null, false ],
+      [ 'abc-123', false ],
+      [ { contactUuids: '' }, false ],
+      [ { contactUuids: ['def-456'] }, true ],
+      [ { contactUuids: { } }, false ]
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isContactUuidsQualifier(qualifier)).to.equal(expected);
       });
     });
   });
