@@ -130,6 +130,8 @@ export namespace v1 {
    * @throws Error if a data context is not provided
    */
   export const getAll = (context: DataContext): typeof curriedGen => {
+    assertDataContext(context);
+    
     /**
      * Returns a generator for fetching all target intervals that match the given qualifier
      * @param qualifier the limiter defining which target intervals to return
@@ -139,7 +141,6 @@ export namespace v1 {
     const curriedGen = (
       qualifier: ReportingPeriodQualifier & ContactUuidsQualifier,
     ): AsyncGenerator<TargetInterval, null> => {
-      assertDataContext(context);
       assertTargetIntervalQualifier(qualifier);
       
       const getPage = context.bind(v1.getPage);
