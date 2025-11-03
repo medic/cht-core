@@ -23,9 +23,9 @@ export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is C
 };
 
 /** @internal */
-export const assertTargetIntervalQualifier: (qualifier: unknown) => asserts qualifier is (ReportingPeriodQualifier & ContactUuidsQualifier) = (
-  qualifier: unknown
-) => {
+export const assertTargetIntervalQualifier: (qualifier: unknown) => asserts qualifier is (
+  ReportingPeriodQualifier & ContactUuidsQualifier
+) = (qualifier: unknown) => {
   if (!(isContactUuidsQualifier(qualifier) && isReportingPeriodQualifier(qualifier))) {
     throw new InvalidArgumentError(`Invalid target intervals qualifier [${JSON.stringify(qualifier)}].`);
   }

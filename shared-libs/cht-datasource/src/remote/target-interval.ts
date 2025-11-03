@@ -14,6 +14,7 @@ export namespace v1 {
     ): Promise<Nullable<TargetInterval.v1.TargetInterval>> => getTargetInterval(identifier.uuid);
   };
   
+  /** @internal */
   export const getPage = (remoteContext: RemoteDataContext) => (
     qualifier: ReportingPeriodQualifier & ContactUuidsQualifier,
     cursor: Nullable<string>,

@@ -5,7 +5,7 @@ const serverUtils = require('../server-utils');
 const { PermissionError } = require('../errors');
 
 const getTargetInterval = ctx.bind(TargetInterval.v1.get);
-const getTargetIntervals = ctx.bind(TargetInterval.v1.getAll);
+const getTargetIntervals = ctx.bind(TargetInterval.v1.getPage);
 
 const checkUserPermissions = async (req) => {
   const userCtx = await auth.getUserCtx(req);
@@ -32,7 +32,7 @@ module.exports = {
 
       const reportingPeriod = Qualifier.byReportingPeriod(req.query.reporting_period);
       const contactUuids = Qualifier.byContactUuids(req.query.contact_uuids);
-      const docs = await getTargetIntervals()(
+      const docs = await getTargetIntervals(
         {...reportingPeriod, ...contactUuids}, 
         req.query.cursor, 
         req.query.limit 

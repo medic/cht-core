@@ -154,7 +154,7 @@ describe('target-interval', () => {
         isContactUuidsQualifier.returns(true);
         const qualifier = Qualifier.and(
           Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']), 
-          Qualifier.byReportingPeriod("2025-01")
+          Qualifier.byReportingPeriod('2025-01')
         );
         getPage.resolves(targetIntervals);
 
@@ -184,15 +184,27 @@ describe('target-interval', () => {
         
         const invalidQualifier = {
           contactUuids: (['invalid', 'invalid']), 
-          reportingPeriod: "2025-01"
+          reportingPeriod: '2025-01'
         };
 
-        await expect(TargetInterval.v1.getPage(dataContext)(invalidQualifier as (Qualifier.ReportingPeriodQualifier & Qualifier.ContactUuidsQualifier), null, 10))
+        await expect(
+          TargetInterval.v1.getPage(dataContext)(
+            invalidQualifier as (Qualifier.ReportingPeriodQualifier & Qualifier.ContactUuidsQualifier), 
+            null, 
+            10
+          )
+        )
           .to.be.rejectedWith(`Invalid target intervals qualifier [${JSON.stringify(invalidQualifier)}].`);
 
           
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.TargetInterval.v1.getPage, Remote.TargetInterval.v1.getPage)).to.be.true;
+        expect(
+          adapt.calledOnceWithExactly(
+            dataContext, 
+            Local.TargetInterval.v1.getPage, 
+            Remote.TargetInterval.v1.getPage
+          )
+        ).to.be.true;
         expect(isContactUuidsQualifier.calledOnceWithExactly(invalidQualifier)).to.be.true;
         expect(getPage.notCalled).to.be.true;
       });
@@ -214,7 +226,7 @@ describe('target-interval', () => {
             getTarget(
               Qualifier.and(
                 Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']), 
-                Qualifier.byReportingPeriod("2025-01")
+                Qualifier.byReportingPeriod('2025-01')
               ), 
               '1', 
               l as number
@@ -230,7 +242,7 @@ describe('target-interval', () => {
       });
 
       [
-       {},
+        {},
         '',
         1,
         false,
@@ -243,7 +255,7 @@ describe('target-interval', () => {
             getTarget(
               Qualifier.and(
                 Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']), 
-                Qualifier.byReportingPeriod("2025-01")
+                Qualifier.byReportingPeriod('2025-01')
               ), 
               c as unknown as string, 
               10

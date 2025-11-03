@@ -240,7 +240,7 @@ describe('qualifier', () => {
     });
   });
 
-    describe('isContactUuidsQualifier', () => {
+  describe('isContactUuidsQualifier', () => {
     [
       [ null, false ],
       [ 'abc-123', false ],

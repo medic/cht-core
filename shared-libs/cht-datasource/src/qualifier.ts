@@ -229,12 +229,13 @@ export interface ContactUuidsQualifier {
  * @returns `true` if the given qualifier is a {@link ContactUuidsQualifier}, otherwise `false`.
  */
 export const isContactUuidsQualifier = (qualifier: unknown): qualifier is ContactUuidsQualifier => {
-  let valid = isRecord(qualifier) &&
+  const valid = isRecord(qualifier) &&
     hasField(qualifier, { name: 'contactUuids', type: 'object' }) &&
     qualifier.contactUuids.length > 0;
   
-  if (!valid)
+  if (!valid) {
     return false;
+  }
   
   const validList = (qualifier as unknown as ContactUuidsQualifier)
     .contactUuids
@@ -243,13 +244,19 @@ export const isContactUuidsQualifier = (qualifier: unknown): qualifier is Contac
   return validList;
 };
 
+/**
+ * Builds a qualifier that identifies a target interval by a list of UUIDs.
+ * @param uuids the UUIDs of the entities
+ * @returns the qualifier
+ * @throws InvalidArgumentError if one the UUIDs is invalid
+ */
 export const byContactUuids = (contactUuids: [string, ...string[]]): ContactUuidsQualifier => {
   const qualifier = { contactUuids };
   if (!isContactUuidsQualifier(qualifier)) {
     throw new InvalidArgumentError(`Invalid contact UUIDs [${contactUuids}].`);
   }
   return qualifier;
-}
+};
 
 // https://stackoverflow.com/a/50375286
 type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends (k: infer I) => void ? I : never;

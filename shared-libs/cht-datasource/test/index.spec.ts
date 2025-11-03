@@ -535,16 +535,16 @@ describe('CHT Script API - getDatasource', () => {
         const returnedTarget = await targetInterval.getPageByReportingPeriodContactUuids(
           qualifier.reportingPeriod,
           qualifier.contactUuids,
-          "1",
+          '1',
           10
         );
 
         expect(returnedTarget).to.equal(expectedTargetInterval);
         expect(dataContextBind.calledOnceWithExactly(TargetInterval.v1.getPage)).to.be.true;
-        expect(reportGet.calledOnceWithExactly(qualifier, "1", 10)).to.be.true; 
+        expect(reportGet.calledOnceWithExactly(qualifier, '1', 10)).to.be.true; 
       });
       
-      it('getByReportingPeriodContactUuids', async () => {
+      it('getByReportingPeriodContactUuids', () => {
         const expectedTargetInterval = {};
         const reportGet = sinon.stub().resolves(expectedTargetInterval);
         dataContextBind.returns(reportGet);
@@ -553,7 +553,7 @@ describe('CHT Script API - getDatasource', () => {
           Qualifier.byContactUuids(['my-first-contact-uuid', 'my-second-contact-uuid'])
         );
         
-        const returnedTarget = await targetInterval.getByReportingPeriodContactUuids(
+        const returnedTarget = targetInterval.getByReportingPeriodContactUuids(
           qualifier.reportingPeriod,
           qualifier.contactUuids
         );

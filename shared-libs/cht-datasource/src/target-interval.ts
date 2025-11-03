@@ -3,7 +3,9 @@ import { Doc } from './libs/doc';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import {
   byUuid,
-  ContactUuidQualifier, ContactUuidsQualifier, isContactUuidQualifier, isReportingPeriodQualifier, isUsernameQualifier,
+  ContactUuidQualifier, ContactUuidsQualifier, isContactUuidQualifier, 
+  isReportingPeriodQualifier, 
+  isUsernameQualifier,
   isUuidQualifier,
   ReportingPeriodQualifier,
   UsernameQualifier,
@@ -13,7 +15,7 @@ import * as Local from './local';
 import * as Remote from './remote';
 import { InvalidArgumentError } from './libs/error';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertLimit, assertTargetIntervalQualifier, assertTypeQualifier } from './libs/parameter-validators';
+import { assertCursor, assertLimit, assertTargetIntervalQualifier } from './libs/parameter-validators';
 
 const getTargetIntervalUuid = (
   identifier: (ReportingPeriodQualifier & ContactUuidQualifier & UsernameQualifier) | UuidQualifier
