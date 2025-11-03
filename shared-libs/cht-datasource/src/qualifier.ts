@@ -236,11 +236,11 @@ export const isContactUuidsQualifier = (qualifier: unknown): qualifier is Contac
   if (!valid)
     return false;
   
-  const validUuids = (qualifier as unknown as ContactUuidsQualifier)
+  const validList = (qualifier as unknown as ContactUuidsQualifier)
     .contactUuids
-    .every((contactUuid: string) => contactUuid.length > 0 && byContactUuid(contactUuid).contactUuid !== undefined);
+    .every((contactUuid: string) => contactUuid.length > 0 && isContactUuidQualifier({contactUuid}));
   
-  return validUuids;
+  return validList;
 };
 
 export const byContactUuids = (contactUuids: [string, ...string[]]): ContactUuidsQualifier => {
