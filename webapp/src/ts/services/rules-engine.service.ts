@@ -476,15 +476,14 @@ export class RulesEngineService implements OnDestroy {
     // Previous month: use target interval from cht-datasource
     try {
       const settings = await this.settingsService.get();
-      const result = await this.fetchTargetDocumentsForPeriod(settings, reportingPeriod);
+      const targetInterval = await this.fetchTargetDocumentsForPeriod(settings, reportingPeriod);
 
-      // If result is undefined, it means prerequisites weren't met (no username/contact)
-      if (result === undefined) {
+      // If no target interval found (null), return empty array
+      if (!targetInterval) {
         return [];
       }
 
-      // If result is null, the query succeeded but no target interval was found
-      return this.processTargetDocuments(result, settings);
+      return this.processTargetDocuments(targetInterval, settings);
     } catch (error) {
       console.error('Error fetching previous month targets:', error);
       return [];
@@ -541,18 +540,18 @@ export class RulesEngineService implements OnDestroy {
 
   /**
    * Fetch target interval for a specific reporting period using cht-datasource
-   * @returns the target interval, null if not found, or undefined if prerequisites aren't met
+   * @returns the target interval, or null if not found or prerequisites aren't met
    */
   private async fetchTargetDocumentsForPeriod(
     settings: any,
     reportingPeriod: ReportingPeriod
-  ): Promise<TargetInterval.v1.TargetInterval | null | undefined> {
+  ): Promise<TargetInterval.v1.TargetInterval | null> {
     const intervalTag = this.getTargetIntervalTag(settings, reportingPeriod);
     const userContact = await this.userContactService.get();
     const username = this.sessionService.userCtx()?.name;
 
     if (!userContact?._id || !username) {
-      return undefined;
+      return null;
     }
 
     return await this.getTargetInterval(
@@ -566,41 +565,25 @@ export class RulesEngineService implements OnDestroy {
 
   /**
    * Process target interval into target format expected by UI
+   * Only returns targets that exist in the target interval document.
    */
   private processTargetDocuments(
-    targetInterval: TargetInterval.v1.TargetInterval | null,
+    targetInterval: TargetInterval.v1.TargetInterval,
     settings: any
   ): Target[] {
     const targetsConfig = settings?.tasks?.targets?.items || [];
     const processedTargets: Target[] = [];
 
-    targetsConfig.forEach(targetConfig => {
-      if (targetConfig.visible === false) {
-        return;
-      }
+    if (!targetInterval?.targets) {
+      return processedTargets;
+    }
 
-      // Find matching target value from the interval doc
-      const targetValue = targetInterval?.targets?.find(t => t.id === targetConfig.id);
-
-      if (targetValue) {
-        // Target has data in the interval
+    targetInterval.targets.forEach(targetValue => {
+      const targetConfig = targetsConfig.find(config => config.id === targetValue.id);
+      if (targetConfig && targetConfig.visible !== false) {
         processedTargets.push({
           ...targetConfig,
           ...targetValue,
-          visible: true
-        });
-      } else {
-        // No data for this target - add zero values
-        const zeroValue: any = {
-          pass: 0,
-          total: 0
-        };
-        if (targetConfig.type === 'percent') {
-          zeroValue.percent = 0;
-        }
-        processedTargets.push({
-          ...targetConfig,
-          value: zeroValue,
           visible: true
         });
       }

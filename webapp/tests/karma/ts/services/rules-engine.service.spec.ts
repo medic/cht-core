@@ -1078,19 +1078,14 @@ describe('RulesEngineService', () => {
       expect(actual).to.deep.eq([]);
     });
 
-    it('should return zero values when target interval is not found', async () => {
+    it('should return empty array when target interval is not found', async () => {
       getTargetInterval.resolves(null);
       service = TestBed.inject(RulesEngineService);
 
       const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
 
       expect(getTargetInterval.calledOnce).to.be.true;
-      expect(actual.length).to.eq(1);
-      expect(actual[0]).to.include({
-        id: 'target',
-        visible: true
-      });
-      expect(actual[0].value).to.deep.eq({ pass: 0, total: 0 });
+      expect(actual).to.deep.eq([]);
     });
 
     it('should handle errors and return empty array', async () => {
@@ -1159,12 +1154,10 @@ describe('RulesEngineService', () => {
 
       const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
 
-      expect(actual.length).to.eq(2);
+      // Only returns targets that exist in the interval doc
+      expect(actual.length).to.eq(1);
       expect(actual[0]).to.include({ id: 'target' });
       expect(actual[0].value).to.deep.eq({ pass: 3, total: 7 });
-      // Second target not in interval doc, should have zero values
-      expect(actual[1]).to.include({ id: 'another-target' });
-      expect(actual[1].value).to.deep.eq({ pass: 0, total: 0, percent: 0 });
     });
   });
 });
