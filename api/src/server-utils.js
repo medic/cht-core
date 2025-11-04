@@ -6,7 +6,7 @@ const logger = require('@medic/logger');
 const MEDIC_BASIC_AUTH = 'Basic realm="Medic Web Services"';
 const REQUEST_ID_HEADER = 'X-Request-Id';
 const cookie = require('./services/cookie');
-const {InvalidArgumentError} = require('@medic/cht-datasource');
+const {InvalidArgumentError, NotFoundError, ConflictError} = require('@medic/cht-datasource');
 
 const wantsJSON = req => req.accepts(['text', 'json']) === 'json';
 
@@ -65,6 +65,12 @@ module.exports = {
     let code = err.code || err.statusCode || err.status || 500;
     if (err instanceof InvalidArgumentError) {
       code = 400;
+    }
+    if (err instanceof NotFoundError) {
+      code = 404;
+    }
+    if (err instanceof ConflictError) {
+      code = 409;
     }
     if (!Number.isInteger(code)) {
       logger.warn(`Non-numeric error code: ${code}`);

@@ -206,7 +206,7 @@ describe('cht-datasource Place', () => {
             ...Qualifier.byContactType(placeType),
           }, invalidCursor, limit)
         ).to.be.rejectedWith(
-          `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          '{"code":400,"error":"The cursor must be a string or null for first page: [\\"invalidCursor\\"]."}'
         );
       });
     });
@@ -222,6 +222,199 @@ describe('cht-datasource Place', () => {
         }
 
         expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPlaces);
+      });
+    });
+
+    describe('create', () => {
+      const createPlace = Place.v1.create(dataContext);
+
+      it('creates place with minimal data', async () => {
+        const place = await createPlace({
+          type: placeType,
+          name: 'Test Clinic Created',
+          parent: { _id: place1._id }
+        });
+
+        expect(place).to.have.property('_id');
+        expect(place).to.have.property('_rev');
+        expect(place).to.have.property('reported_date');
+        expect(place.type).to.equal(placeType);
+        expect(place.name).to.equal('Test Clinic Created');
+      });
+
+      it('creates place with parent', async () => {
+        const place = await createPlace({
+          type: placeType,
+          name: 'Clinic with Parent',
+          parent: { _id: place1._id }
+        });
+
+        expect(place).to.have.property('_id');
+        expect(place.parent).to.have.property('_id', place1._id);
+      });
+
+      it('creates place with contact', async () => {
+        const place = await createPlace({
+          type: placeType,
+          name: 'Clinic with Contact',
+          contact: { _id: contact0._id },
+          parent: { _id: place1._id }
+        });
+
+        expect(place).to.have.property('_id');
+        expect(place.contact).to.have.property('_id', contact0._id);
+      });
+
+      it('auto-generates _id and reported_date', async () => {
+        const beforeTimestamp = Date.now();
+        const place = await createPlace({
+          type: placeType,
+          name: 'Auto Fields Clinic',
+          parent: { _id: place1._id }
+        });
+        const afterTimestamp = Date.now();
+
+        expect(place).to.have.property('_id');
+        expect(place._id).to.be.a('string');
+        expect(place).to.have.property('reported_date');
+        expect(place.reported_date).to.be.at.least(beforeTimestamp);
+        expect(place.reported_date).to.be.at.most(afterTimestamp);
+      });
+
+      it('validates place type', async () => {
+        await expect(createPlace({
+          type: 'invalid-place-type',
+          name: 'Invalid Type'
+        })).to.be.rejectedWith('Invalid place type');
+      });
+
+      it('throws error when _rev is provided', async () => {
+        await expect(createPlace({
+          type: placeType,
+          name: 'Place with Rev',
+          _rev: '1-abc',
+          parent: { _id: place1._id }
+        })).to.be.rejectedWith('_rev is not allowed for create operations');
+      });
+
+      it('throws error when parent document does not exist', async () => {
+        await expect(createPlace({
+          type: placeType,
+          name: 'Place with Invalid Parent',
+          parent: { _id: 'non-existent-uuid' }
+        })).to.be.rejected;
+      });
+
+      it('returns created place with full data', async () => {
+        const place = await createPlace({
+          type: placeType,
+          name: 'Full Data Clinic',
+          contact: { _id: contact0._id },
+          parent: { _id: place1._id }
+        });
+
+        expect(place).to.have.property('_id');
+        expect(place).to.have.property('_rev');
+        expect(place).to.have.property('reported_date');
+        expect(place.type).to.equal(placeType);
+        expect(place.name).to.equal('Full Data Clinic');
+        expect(place.contact).to.have.property('_id', contact0._id);
+      });
+    });
+
+    describe('update', () => {
+      const createPlace = Place.v1.create(dataContext);
+      const updatePlace = Place.v1.update(dataContext);
+      let createdPlace;
+
+      beforeEach(async () => {
+        createdPlace = await createPlace({
+          type: placeType,
+          name: 'Place to Update',
+          contact: { _id: contact0._id },
+          parent: { _id: place1._id }
+        });
+      });
+
+      it('updates place successfully', async () => {
+        const updated = await updatePlace({
+          ...createdPlace,
+          name: 'Updated Place Name',
+          notes: 'Additional notes'
+        });
+
+        expect(updated._id).to.equal(createdPlace._id);
+        expect(updated._rev).to.not.equal(createdPlace._rev);
+        expect(updated.name).to.equal('Updated Place Name');
+        expect(updated.notes).to.equal('Additional notes');
+      });
+
+      it('maintains immutable fields', async () => {
+        const updated = await updatePlace({
+          ...createdPlace,
+          name: 'Updated Name'
+        });
+
+        expect(updated.type).to.equal(createdPlace.type);
+        expect(updated.reported_date).to.equal(createdPlace.reported_date);
+      });
+
+      it('throws error when _id is missing', async () => {
+        const placeWithoutId = { ...createdPlace };
+        delete placeWithoutId._id;
+
+        await expect(updatePlace(placeWithoutId))
+          .to.be.rejectedWith('Resource not found: undefined');
+      });
+
+      it('throws error when _rev is missing', async () => {
+        const placeWithoutRev = { ...createdPlace };
+        delete placeWithoutRev._rev;
+
+        await expect(updatePlace(placeWithoutRev))
+          .to.be.rejectedWith('_rev is required for update operations');
+      });
+
+      it('throws error when document does not exist', async () => {
+        await expect(updatePlace({
+          _id: 'non-existent-uuid',
+          _rev: '1-abc',
+          type: placeType,
+          name: 'Updated Name'
+        })).to.be.rejected;
+      });
+
+      it('throws error when trying to change type', async () => {
+        await expect(updatePlace({
+          ...createdPlace,
+          type: 'health_center'
+        })).to.be.rejected;
+      });
+
+      it('throws error when trying to change reported_date', async () => {
+        await expect(updatePlace({
+          ...createdPlace,
+          reported_date: createdPlace.reported_date + 1000
+        })).to.be.rejected;
+      });
+
+      it('throws error when trying to change contact', async () => {
+        await expect(updatePlace({
+          ...createdPlace,
+          contact: { _id: contact1._id }
+        })).to.be.rejected;
+      });
+
+      it('returns updated place with new _rev', async () => {
+        const updated = await updatePlace({
+          ...createdPlace,
+          name: 'Updated Name'
+        });
+
+        expect(updated).to.have.property('_id', createdPlace._id);
+        expect(updated).to.have.property('_rev');
+        expect(updated._rev).to.not.equal(createdPlace._rev);
+        expect(updated.name).to.equal('Updated Name');
       });
     });
   });

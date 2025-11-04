@@ -3,9 +3,13 @@ import {
   ContactTypeQualifier,
   FreetextQualifier,
   UuidQualifier,
+  ContactQualifier,
+  ReportQualifier,
   isContactTypeQualifier,
   isFreetextQualifier,
   isUuidQualifier,
+  isContactQualifier,
+  isReportQualifier,
 } from '../qualifier';
 import { Nullable } from './core';
 
@@ -77,4 +81,22 @@ export const isContactTypeAndFreetextType = (
   qualifier: ContactTypeQualifier | FreetextQualifier
 ): qualifier is ContactTypeQualifier & FreetextQualifier => {
   return isContactType(qualifier) && isFreetextType(qualifier);
+};
+
+/** @internal */
+export const assertContactQualifier: (qualifier: unknown) => asserts qualifier is ContactQualifier = (
+  qualifier: unknown
+) => {
+  if (!isContactQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid contact qualifier [${JSON.stringify(qualifier)}].`);
+  }
+};
+
+/** @internal */
+export const assertReportQualifier: (qualifier: unknown) => asserts qualifier is ReportQualifier = (
+  qualifier: unknown
+) => {
+  if (!isReportQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid report qualifier [${JSON.stringify(qualifier)}].`);
+  }
 };

@@ -269,4 +269,442 @@ describe('Place API', () => {
         );
     });
   });
+
+  describe('POST /api/v1/place', () => {
+    const endpoint = '/api/v1/place';
+
+    it('creates place with minimal required fields', async () => {
+      const placeData = {
+        type: 'clinic',
+        name: 'Test Clinic Created',
+        parent: { _id: place1._id }
+      };
+
+      const response = await utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: placeData
+      });
+
+      expect(response).to.have.property('_id');
+      expect(response).to.have.property('_rev');
+      expect(response).to.have.property('reported_date');
+      expect(response.type).to.equal('clinic');
+      expect(response.name).to.equal('Test Clinic Created');
+    });
+
+    it('creates place with all optional fields', async () => {
+      const placeData = {
+        type: 'clinic',
+        name: 'Test Clinic with Fields',
+        reported_date: 1234567890,
+        contact: { _id: contact0._id },
+        notes: 'Test notes',
+        parent: { _id: place1._id }
+      };
+
+      const response = await utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: placeData
+      });
+
+      expect(response).to.have.property('_id');
+      expect(response).to.have.property('_rev');
+      expect(response.type).to.equal('clinic');
+      expect(response.name).to.equal('Test Clinic with Fields');
+      expect(response.reported_date).to.equal(1234567890);
+      expect(response.notes).to.equal('Test notes');
+    });
+
+    it('creates place with parent (child place type)', async () => {
+      const placeData = {
+        type: 'clinic',
+        name: 'Child Clinic',
+        parent: { _id: place1._id }
+      };
+
+      const response = await utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: placeData
+      });
+
+      expect(response).to.have.property('_id');
+      expect(response).to.have.property('_rev');
+      expect(response.parent).to.have.property('_id', place1._id);
+    });
+
+    it('creates place with contact field', async () => {
+      const placeData = {
+        type: 'clinic',
+        name: 'Clinic with Contact',
+        contact: { _id: contact0._id },
+        parent: { _id: place1._id }
+      };
+
+      const response = await utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: placeData
+      });
+
+      expect(response).to.have.property('_id');
+      expect(response).to.have.property('_rev');
+      expect(response.contact).to.have.property('_id', contact0._id);
+    });
+
+    it('auto-generates _id when not provided', async () => {
+      const placeData = {
+        type: 'clinic',
+        name: 'Auto ID Clinic',
+        parent: { _id: place1._id }
+      };
+
+      const response = await utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: placeData
+      });
+
+      expect(response).to.have.property('_id');
+      expect(response._id).to.be.a('string');
+      expect(response._id.length).to.be.greaterThan(0);
+    });
+
+    it('auto-generates reported_date when not provided', async () => {
+      const placeData = {
+        type: 'clinic',
+        name: 'Auto Date Clinic',
+        parent: { _id: place1._id }
+      };
+
+      const beforeTimestamp = Date.now();
+      const response = await utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: placeData
+      });
+      const afterTimestamp = Date.now();
+
+      expect(response).to.have.property('reported_date');
+      expect(response.reported_date).to.be.a('number');
+      expect(response.reported_date).to.be.at.least(beforeTimestamp);
+      expect(response.reported_date).to.be.at.most(afterTimestamp);
+    });
+
+    it('accepts ISO 8601 date string for reported_date', async () => {
+      const isoDate = '2025-01-15T10:30:00.000Z';
+      const placeData = {
+        type: 'clinic',
+        name: 'ISO Date Clinic',
+        reported_date: isoDate,
+        parent: { _id: place1._id }
+      };
+
+      const response = await utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: placeData
+      });
+
+      expect(response.reported_date).to.equal(new Date(isoDate).getTime());
+    });
+
+    it('returns 400 when type is missing', async () => {
+      const placeData = {
+        name: 'No Type Clinic'
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: placeData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when name is missing', async () => {
+      const placeData = {
+        type: 'clinic'
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: placeData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when type is invalid', async () => {
+      const placeData = {
+        type: 'invalid-place-type',
+        name: 'Invalid Type Clinic'
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: placeData
+      })).to.be.rejectedWith('400 - {"code":400,"error":"Invalid place type [invalid-place-type]."}');
+    });
+
+    it('returns 400 when _rev is provided for create', async () => {
+      const placeData = {
+        type: 'clinic',
+        name: 'Clinic with Rev',
+        _rev: '1-abc',
+        parent: { _id: place1._id }
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: placeData
+      })).to.be.rejectedWith('400 - {"code":400,"error":"_rev is not allowed for create operations."}');
+    });
+
+    it('returns 400 when reported_date is invalid format', async () => {
+      const placeData = {
+        type: 'clinic',
+        name: 'Invalid Date Clinic',
+        reported_date: 'invalid-date'
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: placeData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 403 when user does not have can_create_places permission', async () => {
+      const placeData = {
+        type: 'clinic',
+        name: 'Test Clinic'
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: placeData,
+        auth: { username: userNoPerms.username, password: userNoPerms.password }
+      })).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    });
+
+    it('returns 403 when user is not an online user', async () => {
+      const placeData = {
+        type: 'clinic',
+        name: 'Test Clinic'
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: placeData,
+        auth: { username: offlineUser.username, password: offlineUser.password }
+      })).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    });
+  });
+
+  describe('PUT /api/v1/place/:uuid', () => {
+    let createdPlace;
+
+    beforeEach(async () => {
+      // Create a place to update
+      createdPlace = await utils.request({
+        path: '/api/v1/place',
+        method: 'POST',
+        body: {
+          type: 'clinic',
+          name: 'Place to Update',
+          contact: { _id: contact0._id },
+          parent: { _id: place1._id }
+        }
+      });
+    });
+
+    it('updates place successfully with mutable fields', async () => {
+      const updatedData = {
+        ...createdPlace,
+        name: 'Updated Place Name',
+        notes: 'Updated notes'
+      };
+
+      const response = await utils.request({
+        path: `/api/v1/place/${createdPlace._id}`,
+        method: 'PUT',
+        body: updatedData
+      });
+
+      expect(response._id).to.equal(createdPlace._id);
+      expect(response._rev).to.not.equal(createdPlace._rev);
+      expect(response.name).to.equal('Updated Place Name');
+      expect(response.notes).to.equal('Updated notes');
+    });
+
+    it('updates place maintaining immutable fields', async () => {
+      const updatedData = {
+        ...createdPlace,
+        name: 'Updated Name',
+        type: createdPlace.type,
+        reported_date: createdPlace.reported_date,
+        contact: createdPlace.contact
+      };
+
+      const response = await utils.request({
+        path: `/api/v1/place/${createdPlace._id}`,
+        method: 'PUT',
+        body: updatedData
+      });
+
+      expect(response._id).to.equal(createdPlace._id);
+      expect(response.type).to.equal(createdPlace.type);
+      expect(response.reported_date).to.equal(createdPlace.reported_date);
+    });
+
+    it('returns 404 when UUID is missing in URL path', async () => {
+      const updatedData = {
+        _id: createdPlace._id,
+        _rev: createdPlace._rev,
+        type: 'clinic',
+        name: 'Updated Name',
+        parent: createdPlace.parent
+      };
+
+      await expect(utils.request({
+        path: '/api/v1/place',
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('404');
+    });
+
+    it('returns 400 when _rev is missing in body', async () => {
+      const updatedData = {
+        _id: createdPlace._id,
+        type: 'clinic',
+        name: 'Updated Name',
+        parent: createdPlace.parent
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/place/${createdPlace._id}`,
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('400 - {"code":400,"error":"_rev is required for update operations."}');
+    });
+
+    it('returns 404 when place does not exist', async () => {
+      const updatedData = {
+        _id: 'non-existent-uuid',
+        _rev: '1-abc',
+        type: 'clinic',
+        name: 'Updated Name',
+        parent: { _id: place1._id }
+      };
+
+      await expect(utils.request({
+        path: '/api/v1/place/non-existent-uuid',
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('404');
+    });
+
+    it('returns 400 when type is invalid', async () => {
+      const updatedData = {
+        ...createdPlace,
+        type: 'invalid-type',
+        name: 'Updated Name'
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/place/${createdPlace._id}`,
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when trying to change type (immutable field)', async () => {
+      const updatedData = {
+        ...createdPlace,
+        type: 'health_center',
+        name: 'Updated Name'
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/place/${createdPlace._id}`,
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when trying to change reported_date (immutable field)', async () => {
+      const updatedData = {
+        ...createdPlace,
+        reported_date: createdPlace.reported_date + 1000,
+        name: 'Updated Name'
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/place/${createdPlace._id}`,
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when trying to change contact (immutable field)', async () => {
+      const updatedData = {
+        ...createdPlace,
+        contact: { _id: contact1._id },
+        name: 'Updated Name'
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/place/${createdPlace._id}`,
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 409 on _rev conflict', async () => {
+      const updatedData = {
+        ...createdPlace,
+        _rev: '99-wrong-rev',
+        name: 'Updated Name'
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/place/${createdPlace._id}`,
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('409');
+    });
+
+    it('returns 403 when user does not have can_edit_places permission', async () => {
+      const updatedData = {
+        ...createdPlace,
+        name: 'Updated Name'
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/place/${createdPlace._id}`,
+        method: 'PUT',
+        body: updatedData,
+        auth: { username: userNoPerms.username, password: userNoPerms.password }
+      })).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    });
+
+    it('returns 403 when user is not an online user', async () => {
+      const updatedData = {
+        ...createdPlace,
+        name: 'Updated Name'
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/place/${createdPlace._id}`,
+        method: 'PUT',
+        body: updatedData,
+        auth: { username: offlineUser.username, password: offlineUser.password }
+      })).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    });
+  });
 });

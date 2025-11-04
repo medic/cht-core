@@ -289,5 +289,295 @@ describe('cht-datasource Report', () => {
         expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
       });
     });
+
+    describe('create', async () => {
+      const createReport = Report.v1.create(dataContext);
+      const reportType = 'data_record';
+
+      it('creates report with all required fields', async () => {
+        const report = await createReport({
+          type: reportType,
+          form: 'pregnancy_home_visit',
+          reported_date: Date.now(),
+          contact: { _id: contact0._id }
+        });
+
+        expect(report).to.have.property('_id');
+        expect(report).to.have.property('_rev');
+        expect(report).to.have.property('reported_date');
+        expect(report.type).to.equal(reportType);
+        expect(report.form).to.equal('pregnancy_home_visit');
+        expect(report.contact).to.have.property('_id', contact0._id);
+      });
+
+      it('creates report with patient reference', async () => {
+        const report = await createReport({
+          type: reportType,
+          form: 'pregnancy_home_visit',
+          reported_date: Date.now(),
+          contact: { _id: contact0._id },
+          patient: { _id: patient._id }
+        });
+
+        expect(report).to.have.property('_id');
+        expect(report.patient).to.have.property('_id', patient._id);
+      });
+
+      it('creates report with place reference', async () => {
+        const report = await createReport({
+          type: reportType,
+          form: 'pregnancy_home_visit',
+          reported_date: Date.now(),
+          contact: { _id: contact0._id },
+          place: { _id: place0._id }
+        });
+
+        expect(report).to.have.property('_id');
+        expect(report.place).to.have.property('_id', place0._id);
+      });
+
+      it('creates report with custom fields', async () => {
+        const report = await createReport({
+          type: reportType,
+          form: 'pregnancy_home_visit',
+          reported_date: Date.now(),
+          contact: { _id: contact0._id },
+          fields: {
+            patient_name: 'John Doe',
+            symptoms: 'fever'
+          }
+        });
+
+        expect(report).to.have.property('_id');
+        expect(report.fields).to.deep.equal({
+          patient_name: 'John Doe',
+          symptoms: 'fever'
+        });
+      });
+
+      it('auto-generates _id when not provided', async () => {
+        const report = await createReport({
+          type: reportType,
+          form: 'pregnancy_home_visit',
+          reported_date: Date.now(),
+          contact: { _id: contact0._id }
+        });
+
+        expect(report).to.have.property('_id');
+        expect(report._id).to.be.a('string');
+        expect(report._id.length).to.be.greaterThan(0);
+      });
+
+      it('creates report with provided reported_date', async () => {
+        const timestamp = Date.now();
+        const report = await createReport({
+          type: reportType,
+          form: 'pregnancy_home_visit',
+          contact: { _id: contact0._id },
+          reported_date: timestamp
+        });
+
+        expect(report).to.have.property('reported_date');
+        expect(report.reported_date).to.equal(timestamp);
+      });
+
+      it('validates report type', async () => {
+        await expect(createReport({
+          type: 'invalid-type',
+          form: 'pregnancy_home_visit',
+          reported_date: Date.now(),
+          contact: { _id: contact0._id }
+        })).to.be.rejectedWith('Invalid report type');
+      });
+
+      it('validates form exists', async () => {
+        await expect(createReport({
+          type: reportType,
+          form: 'non-existent-form',
+          reported_date: Date.now(),
+          contact: { _id: contact0._id }
+        })).to.be.rejectedWith('Invalid form');
+      });
+
+      it('throws error when _rev is provided', async () => {
+        await expect(createReport({
+          type: reportType,
+          form: 'pregnancy_home_visit',
+          reported_date: Date.now(),
+          contact: { _id: contact0._id },
+          _rev: '1-abc'
+        })).to.be.rejectedWith('_rev is not allowed for create operations');
+      });
+
+      it('throws error when contact document does not exist', async () => {
+        await expect(createReport({
+          type: reportType,
+          form: 'pregnancy_home_visit',
+          reported_date: Date.now(),
+          contact: { _id: 'non-existent-uuid' }
+        })).to.be.rejected;
+      });
+
+      it('throws error when patient document does not exist', async () => {
+        await expect(createReport({
+          type: reportType,
+          form: 'pregnancy_home_visit',
+          reported_date: Date.now(),
+          contact: { _id: contact0._id },
+          patient: { _id: 'non-existent-uuid' }
+        })).to.be.rejected;
+      });
+
+      it('throws error when place document does not exist', async () => {
+        await expect(createReport({
+          type: reportType,
+          form: 'pregnancy_home_visit',
+          reported_date: Date.now(),
+          contact: { _id: contact0._id },
+          place: { _id: 'non-existent-uuid' }
+        })).to.be.rejected;
+      });
+
+      it('returns created report with full data', async () => {
+        const report = await createReport({
+          type: reportType,
+          form: 'pregnancy_home_visit',
+          reported_date: Date.now(),
+          contact: { _id: contact0._id },
+          patient: { _id: patient._id },
+          place: { _id: place0._id },
+          fields: {
+            note: 'Test note'
+          }
+        });
+
+        expect(report).to.have.property('_id');
+        expect(report).to.have.property('_rev');
+        expect(report).to.have.property('reported_date');
+        expect(report.type).to.equal(reportType);
+        expect(report.form).to.equal('pregnancy_home_visit');
+        expect(report.contact).to.have.property('_id', contact0._id);
+        expect(report.patient).to.have.property('_id', patient._id);
+        expect(report.place).to.have.property('_id', place0._id);
+        expect(report.fields).to.have.property('note', 'Test note');
+      });
+    });
+
+    describe('update', async () => {
+      const createReport = Report.v1.create(dataContext);
+      const updateReport = Report.v1.update(dataContext);
+      const reportType = 'data_record';
+      let createdReport;
+
+      beforeEach(async () => {
+        createdReport = await createReport({
+          type: reportType,
+          form: 'pregnancy_home_visit',
+          reported_date: Date.now(),
+          contact: { _id: contact0._id },
+          fields: {
+            patient_name: 'Original Name'
+          }
+        });
+      });
+
+      it('updates report successfully', async () => {
+        const updated = await updateReport({
+          ...createdReport,
+          fields: {
+            patient_name: 'Updated Name',
+            symptoms: 'cough'
+          }
+        });
+
+        expect(updated._id).to.equal(createdReport._id);
+        expect(updated._rev).to.not.equal(createdReport._rev);
+        expect(updated.fields.patient_name).to.equal('Updated Name');
+        expect(updated.fields.symptoms).to.equal('cough');
+      });
+
+      it('maintains immutable fields', async () => {
+        const updated = await updateReport({
+          ...createdReport,
+          fields: {
+            patient_name: 'Updated Name'
+          }
+        });
+
+        expect(updated.type).to.equal(createdReport.type);
+        expect(updated.form).to.equal(createdReport.form);
+        expect(updated.reported_date).to.equal(createdReport.reported_date);
+        expect(updated.contact._id).to.equal(createdReport.contact._id);
+      });
+
+      it('throws error when _id is missing', async () => {
+        const reportWithoutId = { ...createdReport };
+        delete reportWithoutId._id;
+
+        await expect(updateReport(reportWithoutId))
+          .to.be.rejectedWith('Resource not found: undefined');
+      });
+
+      it('throws error when _rev is missing', async () => {
+        const reportWithoutRev = { ...createdReport };
+        delete reportWithoutRev._rev;
+
+        await expect(updateReport(reportWithoutRev))
+          .to.be.rejectedWith('_rev is required for update operations');
+      });
+
+      it('throws error when document does not exist', async () => {
+        await expect(updateReport({
+          _id: 'non-existent-uuid',
+          _rev: '1-abc',
+          type: reportType,
+          form: 'report0',
+          reported_date: Date.now(),
+          contact: { _id: contact0._id }
+        })).to.be.rejected;
+      });
+
+      it('throws error when trying to change type', async () => {
+        await expect(updateReport({
+          ...createdReport,
+          type: 'different-type'
+        })).to.be.rejected;
+      });
+
+      it('throws error when trying to change form', async () => {
+        await expect(updateReport({
+          ...createdReport,
+          form: 'report1'
+        })).to.be.rejected;
+      });
+
+      it('throws error when trying to change reported_date', async () => {
+        await expect(updateReport({
+          ...createdReport,
+          reported_date: createdReport.reported_date + 1000
+        })).to.be.rejected;
+      });
+
+      it('throws error when trying to change contact', async () => {
+        await expect(updateReport({
+          ...createdReport,
+          contact: { _id: contact1._id }
+        })).to.be.rejected;
+      });
+
+      it('returns updated report with new _rev', async () => {
+        const updated = await updateReport({
+          ...createdReport,
+          fields: {
+            patient_name: 'Updated Name'
+          }
+        });
+
+        expect(updated).to.have.property('_id', createdReport._id);
+        expect(updated).to.have.property('_rev');
+        expect(updated._rev).to.not.equal(createdReport._rev);
+        expect(updated.fields.patient_name).to.equal('Updated Name');
+      });
+    });
   });
 });

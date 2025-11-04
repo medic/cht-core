@@ -83,3 +83,78 @@ export const getResources = (context: RemoteDataContext, path: string) => async 
     throw error;
   }
 };
+
+/**
+ * Creates a new resource using POST request.
+ * @param context the remote data context
+ * @param path the API path
+ * @returns a function that creates a resource
+ * @internal
+ */
+export const postResource = (context: RemoteDataContext, path: string) => async <T>(
+  data: Record<string, unknown>
+): Promise<T> => {
+  try {
+    const response = await fetch(`${context.url}/${path}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (response.status === 400) {
+      const errorMessage = await response.text();
+      throw new InvalidArgumentError(errorMessage);
+    } else if (response.status === 409) {
+      const errorMessage = await response.text();
+      throw new Error(`Conflict: ${errorMessage}`);
+    } else if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return (await response.json()) as T;
+  } catch (error) {
+    logger.error(`Failed to create resource at ${context.url}/${path}`, error);
+    throw error;
+  }
+};
+
+/**
+ * Updates an existing resource using PUT request.
+ * @param context the remote data context
+ * @param path the API path
+ * @returns a function that updates a resource
+ * @internal
+ */
+export const putResource = (context: RemoteDataContext, path: string) => async <T>(
+  identifier: string,
+  data: Record<string, unknown>
+): Promise<T> => {
+  try {
+    const response = await fetch(`${context.url}/${path}/${identifier}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (response.status === 400) {
+      const errorMessage = await response.text();
+      throw new InvalidArgumentError(errorMessage);
+    } else if (response.status === 404) {
+      throw new Error(`Resource not found: ${identifier}`);
+    } else if (response.status === 409) {
+      const errorMessage = await response.text();
+      throw new Error(`Conflict: ${errorMessage}`);
+    } else if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return (await response.json()) as T;
+  } catch (error) {
+    logger.error(`Failed to update resource ${identifier} at ${context.url}/${path}`, error);
+    throw error;
+  }
+};

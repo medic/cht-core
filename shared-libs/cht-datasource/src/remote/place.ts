@@ -1,7 +1,7 @@
 import { Nullable, Page } from '../libs/core';
-import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
+import { ContactTypeQualifier, UuidQualifier, ContactQualifier } from '../qualifier';
 import * as Place from '../place';
-import { getResource, getResources, RemoteDataContext } from './libs/data-context';
+import { getResource, getResources, postResource, putResource, RemoteDataContext } from './libs/data-context';
 
 /** @internal */
 export namespace v1 {
@@ -34,5 +34,23 @@ export namespace v1 {
       ...(cursor ? { cursor } : {})
     };
     return getPlaces(remoteContext)(queryParams);
+  };
+
+  /** @internal */
+  export const create = (remoteContext: RemoteDataContext) => (
+    qualifier: ContactQualifier
+  ): Promise<Place.v1.Place> => {
+    const createPlace = postResource(remoteContext, 'api/v1/place');
+    return createPlace<Place.v1.Place>(qualifier as Record<string, unknown>);
+  };
+
+  /** @internal */
+  export const update = (remoteContext: RemoteDataContext) => (
+    qualifier: ContactQualifier
+  ): Promise<Place.v1.Place> => {
+    // No validation here - API server will call local implementation which validates
+    const updatePlace = putResource(remoteContext, 'api/v1/place');
+    const id = qualifier._id!;
+    return updatePlace<Place.v1.Place>(id, qualifier as Record<string, unknown>);
   };
 }

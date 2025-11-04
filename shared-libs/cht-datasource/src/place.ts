@@ -1,14 +1,20 @@
 import * as Contact from './contact';
 import * as Person from './person';
 import { LocalDataContext } from './local/libs/data-context';
-import { ContactTypeQualifier, UuidQualifier } from './qualifier';
+import { ContactTypeQualifier, UuidQualifier, ContactQualifier } from './qualifier';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
 import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import {
+  assertCursor,
+  assertLimit,
+  assertTypeQualifier,
+  assertUuidQualifier,
+  assertContactQualifier
+} from './libs/parameter-validators';
 
 /** */
 export namespace v1 {
@@ -115,5 +121,51 @@ export namespace v1 {
       return getPagedGenerator(getPage, placeType);
     };
     return curriedGen;
+  };
+
+  /**
+   * Returns a function for creating a place from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a place
+   * @throws Error if a data context is not provided
+   */
+  export const create = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Place.v1.create, Remote.Place.v1.create);
+
+    /**
+     * Returns the created place for the given qualifier.
+     * @param qualifier data for the place to be created
+     * @returns the created place
+     * @throws Error if the qualifier is invalid
+     */
+    const curriedFn = async (qualifier: ContactQualifier): Promise<Place> => {
+      assertContactQualifier(qualifier);
+      return fn(qualifier);
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Returns a function for updating a place from the given data context.
+   * @param context the current data context
+   * @returns a function for updating a place
+   * @throws Error if a data context is not provided
+   */
+  export const update = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Place.v1.update, Remote.Place.v1.update);
+
+    /**
+     * Returns the updated place for the given qualifier.
+     * @param qualifier data for the place to be updated
+     * @returns the updated place
+     * @throws Error if the qualifier is invalid
+     */
+    const curriedFn = async (qualifier: ContactQualifier): Promise<Place> => {
+      assertContactQualifier(qualifier);
+      return fn(qualifier);
+    };
+    return curriedFn;
   };
 }

@@ -118,6 +118,54 @@ export const isKeyedFreetextQualifier = (qualifier: FreetextQualifier): boolean 
 };
 
 /**
+ * A qualifier for a contact (person or place).
+ */
+export type ContactQualifier = Readonly<{
+  type: string;
+  name: string;
+  reported_date?: string | number;
+  _id?: string;
+  _rev?: string;
+  [key: string]: unknown;
+}>;
+
+/**
+ * Returns `true` if the given qualifier is a {@link ContactQualifier}, otherwise `false`.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link ContactQualifier}, otherwise `false`
+ */
+export const isContactQualifier = (qualifier: unknown): qualifier is ContactQualifier => {
+  return isRecord(qualifier) &&
+    hasField(qualifier, { name: 'type', type: 'string' }) &&
+    hasField(qualifier, { name: 'name', type: 'string' });
+};
+
+/**
+ * A qualifier for a report.
+ */
+export type ReportQualifier = Readonly<{
+  type: string;
+  form: string;
+  reported_date: string | number;
+  contact?: string | Record<string, unknown>;
+  _id?: string;
+  _rev?: string;
+  [key: string]: unknown;
+}>;
+
+/**
+ * Returns `true` if the given qualifier is a {@link ReportQualifier}, otherwise `false`.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link ReportQualifier}, otherwise `false`
+ */
+export const isReportQualifier = (qualifier: unknown): qualifier is ReportQualifier => {
+  return isRecord(qualifier) &&
+    hasField(qualifier, { name: 'type', type: 'string' }) &&
+    hasField(qualifier, { name: 'form', type: 'string' }) &&
+    'reported_date' in qualifier;
+};
+
+/**
  * Combines multiple qualifiers into a single object.
  * @returns the combined qualifier
  * @throws Error if any of the qualifiers contain intersecting property names

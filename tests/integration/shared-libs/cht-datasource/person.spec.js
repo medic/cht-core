@@ -189,7 +189,7 @@ describe('cht-datasource Person', () => {
             ...Qualifier.byContactType(personType),
           }, invalidCursor, limit)
         ).to.be.rejectedWith(
-          `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          '{"code":400,"error":"The cursor must be a string or null for first page: [\\"invalidCursor\\"]."}'
         );
       });
     });
@@ -205,6 +205,203 @@ describe('cht-datasource Person', () => {
         }
 
         expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeople);
+      });
+    });
+
+    describe('create', () => {
+      const createPerson = Person.v1.create(dataContext);
+
+      it('creates person with minimal data', async () => {
+        const person = await createPerson({
+          type: personType,
+          name: 'Test Person Created',
+          parent: { _id: place0._id }
+        });
+
+        expect(person).to.have.property('_id');
+        expect(person).to.have.property('_rev');
+        expect(person).to.have.property('reported_date');
+        expect(person.type).to.equal(personType);
+        expect(person.name).to.equal('Test Person Created');
+      });
+
+      it('creates person with reported_date', async () => {
+        const timestamp = 1234567890;
+        const person = await createPerson({
+          type: personType,
+          name: 'Person with Date',
+          reported_date: timestamp,
+          parent: { _id: place0._id }
+        });
+
+        expect(person).to.have.property('_id');
+        expect(person.reported_date).to.equal(timestamp);
+      });
+
+      it('creates person with parent', async () => {
+        const person = await createPerson({
+          type: personType,
+          name: 'Person with Parent',
+          parent: { _id: place0._id }
+        });
+
+        expect(person).to.have.property('_id');
+        expect(person.parent).to.have.property('_id', place0._id);
+      });
+
+      it('auto-generates _id when not provided', async () => {
+        const person = await createPerson({
+          type: personType,
+          name: 'Auto ID Person',
+          parent: { _id: place0._id }
+        });
+
+        expect(person).to.have.property('_id');
+        expect(person._id).to.be.a('string');
+        expect(person._id.length).to.be.greaterThan(0);
+      });
+
+      it('auto-generates reported_date when not provided', async () => {
+        const beforeTimestamp = Date.now();
+        const person = await createPerson({
+          type: personType,
+          name: 'Auto Date Person',
+          parent: { _id: place0._id }
+        });
+        const afterTimestamp = Date.now();
+
+        expect(person).to.have.property('reported_date');
+        expect(person.reported_date).to.be.at.least(beforeTimestamp);
+        expect(person.reported_date).to.be.at.most(afterTimestamp);
+      });
+
+      it('validates person type', async () => {
+        await expect(createPerson({
+          type: 'invalid-type',
+          name: 'Invalid Type'
+        })).to.be.rejectedWith('Invalid person type');
+      });
+
+      it('throws error when _rev is provided', async () => {
+        await expect(createPerson({
+          type: personType,
+          name: 'Person with Rev',
+          _rev: '1-abc',
+          parent: { _id: place0._id }
+        })).to.be.rejectedWith('_rev is not allowed for create operations');
+      });
+
+      it('throws error when parent document does not exist', async () => {
+        await expect(createPerson({
+          type: personType,
+          name: 'Person with Invalid Parent',
+          parent: { _id: 'non-existent-uuid' }
+        })).to.be.rejected;
+      });
+
+      it('returns created person with full data', async () => {
+        const person = await createPerson({
+          type: personType,
+          name: 'Full Data Person',
+          phone: '1234567890',
+          parent: { _id: place0._id }
+        });
+
+        expect(person).to.have.property('_id');
+        expect(person).to.have.property('_rev');
+        expect(person).to.have.property('reported_date');
+        expect(person.type).to.equal(personType);
+        expect(person.name).to.equal('Full Data Person');
+        expect(person.phone).to.equal('1234567890');
+      });
+    });
+
+    describe('update', () => {
+      const createPerson = Person.v1.create(dataContext);
+      const updatePerson = Person.v1.update(dataContext);
+      let createdPerson;
+
+      beforeEach(async () => {
+        createdPerson = await createPerson({
+          type: personType,
+          name: 'Person to Update',
+          phone: '1234567890',
+          parent: { _id: place0._id }
+        });
+      });
+
+      it('updates person successfully', async () => {
+        const updated = await updatePerson({
+          ...createdPerson,
+          name: 'Updated Person Name',
+          phone: '0987654321'
+        });
+
+        expect(updated._id).to.equal(createdPerson._id);
+        expect(updated._rev).to.not.equal(createdPerson._rev);
+        expect(updated.name).to.equal('Updated Person Name');
+        expect(updated.phone).to.equal('0987654321');
+      });
+
+      it('maintains immutable fields', async () => {
+        const updated = await updatePerson({
+          ...createdPerson,
+          name: 'Updated Name'
+        });
+
+        expect(updated.type).to.equal(createdPerson.type);
+        expect(updated.reported_date).to.equal(createdPerson.reported_date);
+      });
+
+      it('throws error when _id is missing', async () => {
+        const personWithoutId = { ...createdPerson };
+        delete personWithoutId._id;
+
+        await expect(updatePerson(personWithoutId))
+          .to.be.rejectedWith('Resource not found: undefined');
+      });
+
+      it('throws error when _rev is missing', async () => {
+        const personWithoutRev = { ...createdPerson };
+        delete personWithoutRev._rev;
+
+        await expect(updatePerson(personWithoutRev))
+          .to.be.rejectedWith('_rev is required for update operations');
+      });
+
+      it('throws error when document does not exist', async () => {
+        await expect(updatePerson({
+          _id: 'non-existent-uuid',
+          _rev: '1-abc',
+          type: personType,
+          name: 'Updated Name'
+        })).to.be.rejected;
+      });
+
+      it('throws error when trying to change type', async () => {
+        await expect(updatePerson({
+          ...createdPerson,
+          type: 'different-type'
+        })).to.be.rejected;
+      });
+
+      it('throws error when trying to change reported_date', async () => {
+        await expect(updatePerson({
+          ...createdPerson,
+          reported_date: createdPerson.reported_date + 1000
+        })).to.be.rejected;
+      });
+
+      it('returns updated person with new _rev', async () => {
+        const updated = await updatePerson({
+          ...createdPerson,
+          name: 'Updated Name'
+        });
+
+        expect(updated).to.have.property('_id', createdPerson._id);
+        expect(updated).to.have.property('_rev');
+        expect(updated._rev).to.not.equal(createdPerson._rev);
+        expect(updated.name).to.equal('Updated Name');
       });
     });
   });

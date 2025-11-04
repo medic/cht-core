@@ -11,10 +11,19 @@ const getPlace = ({ with_lineage }) => ctx.bind(
 );
 
 const getPageByType = () => ctx.bind(Place.v1.getPage);
+const createPlace = () => ctx.bind(Place.v1.create);
+const updatePlace = () => ctx.bind(Place.v1.update);
 
 const checkUserPermissions = async (req) => {
   const userCtx = await auth.getUserCtx(req);
   if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, 'can_view_contacts')) {
+    throw new PermissionError('Insufficient privileges');
+  }
+};
+
+const checkUserPermissionsForEdit = async (req) => {
+  const userCtx = await auth.getUserCtx(req);
+  if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, 'can_edit')) {
     throw new PermissionError('Insufficient privileges');
   }
 };
@@ -38,6 +47,24 @@ module.exports = {
       const docs = await getPageByType()( placeType, req.query.cursor, req.query.limit );
 
       return res.json(docs);
-    })
+    }),
+    create: serverUtils.doOrError(async (req, res) => {
+      await checkUserPermissionsForEdit(req);
+
+      const place = await createPlace()(req.body);
+
+      return res.json(place);
+    }),
+    update: serverUtils.doOrError(async (req, res) => {
+      await checkUserPermissionsForEdit(req);
+
+      const { uuid } = req.params;
+      const place = await updatePlace()({
+        ...req.body,
+        _id: uuid,
+      });
+
+      return res.json(place);
+    }),
   }
 };

@@ -409,4 +409,520 @@ describe('Report API', () => {
         );
     });
   });
+
+  describe('POST /api/v1/report', () => {
+    const endpoint = '/api/v1/report';
+
+    it('creates report with all required fields', async () => {
+      const reportData = {
+        type: 'data_record',
+        form: 'pregnancy_home_visit',
+        reported_date: Date.now(),
+        contact: { _id: contact0._id }
+      };
+
+      const response = await utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData
+      });
+
+      expect(response).to.have.property('_id');
+      expect(response).to.have.property('_rev');
+      expect(response.type).to.equal('data_record');
+      expect(response.form).to.equal('pregnancy_home_visit');
+      expect(response).to.have.property('reported_date');
+      expect(response.contact).to.have.property('_id', contact0._id);
+    });
+
+    it('creates report with custom fields', async () => {
+      const reportData = {
+        type: 'data_record',
+        form: 'pregnancy_home_visit',
+        reported_date: Date.now(),
+        contact: { _id: contact0._id },
+        fields: {
+          patient_name: 'Test Patient',
+          symptoms: 'fever, cough'
+        }
+      };
+
+      const response = await utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData
+      });
+
+      expect(response).to.have.property('_id');
+      expect(response).to.have.property('_rev');
+      expect(response.fields).to.have.property('patient_name', 'Test Patient');
+      expect(response.fields).to.have.property('symptoms', 'fever, cough');
+    });
+
+    it('creates report with contact as UUID string', async () => {
+      const reportData = {
+        type: 'data_record',
+        form: 'pregnancy_home_visit',
+        reported_date: Date.now(),
+        contact: { _id: contact0._id }
+      };
+
+      const response = await utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData
+      });
+
+      expect(response).to.have.property('_id');
+      expect(response.contact).to.have.property('_id', contact0._id);
+    });
+
+    it('auto-generates _id when not provided', async () => {
+      const reportData = {
+        type: 'data_record',
+        form: 'pregnancy_home_visit',
+        reported_date: Date.now(),
+        contact: { _id: contact0._id }
+      };
+
+      const response = await utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData
+      });
+
+      expect(response).to.have.property('_id');
+      expect(response._id).to.be.a('string');
+      expect(response._id.length).to.be.greaterThan(0);
+    });
+
+    it('accepts ISO 8601 date string for reported_date', async () => {
+      const isoDate = '2025-01-15T10:30:00.000Z';
+      const reportData = {
+        type: 'data_record',
+        form: 'pregnancy_home_visit',
+        reported_date: isoDate,
+        contact: { _id: contact0._id }
+      };
+
+      const response = await utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData
+      });
+
+      expect(response.reported_date).to.equal(new Date(isoDate).getTime());
+    });
+
+    it('accepts Unix timestamp for reported_date', async () => {
+      const timestamp = 1609459200000;
+      const reportData = {
+        type: 'data_record',
+        form: 'pregnancy_home_visit',
+        reported_date: timestamp,
+        contact: { _id: contact0._id }
+      };
+
+      const response = await utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData
+      });
+
+      expect(response.reported_date).to.equal(timestamp);
+    });
+
+    it('returns 400 when type is missing', async () => {
+      const reportData = {
+        form: 'report0',
+        reported_date: Date.now(),
+        contact: { _id: contact0._id }
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when type is not data_record', async () => {
+      const reportData = {
+        type: 'invalid_type',
+        form: 'report0',
+        reported_date: Date.now(),
+        contact: { _id: contact0._id }
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when form is missing', async () => {
+      const reportData = {
+        type: 'data_record',
+        reported_date: Date.now(),
+        contact: { _id: contact0._id }
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when form is invalid/does not exist', async () => {
+      const reportData = {
+        type: 'data_record',
+        form: 'non-existent-form',
+        reported_date: Date.now(),
+        contact: { _id: contact0._id }
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when reported_date is missing', async () => {
+      const reportData = {
+        type: 'data_record',
+        form: 'report0',
+        contact: { _id: contact0._id }
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when reported_date is invalid format', async () => {
+      const reportData = {
+        type: 'data_record',
+        form: 'report0',
+        reported_date: 'invalid-date',
+        contact: { _id: contact0._id }
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when contact is missing', async () => {
+      const reportData = {
+        type: 'data_record',
+        form: 'report0',
+        reported_date: Date.now()
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when contact UUID does not exist', async () => {
+      const reportData = {
+        type: 'data_record',
+        form: 'report0',
+        reported_date: Date.now(),
+        contact: { _id: 'non-existent-contact-uuid' }
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when _rev is provided for create', async () => {
+      const reportData = {
+        type: 'data_record',
+        form: 'pregnancy_home_visit',
+        reported_date: Date.now(),
+        contact: { _id: contact0._id },
+        _rev: '1-abc'
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData
+      })).to.be.rejectedWith('400 - {"code":400,"error":"_rev is not allowed for create operations."}');
+    });
+
+    it('returns 403 when user does not have can_create_reports permission', async () => {
+      const reportData = {
+        type: 'data_record',
+        form: 'report0',
+        reported_date: Date.now(),
+        contact: { _id: contact0._id }
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData,
+        auth: { username: userNoPerms.username, password: userNoPerms.password }
+      })).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    });
+
+    it('returns 403 when user is not an online user', async () => {
+      const reportData = {
+        type: 'data_record',
+        form: 'report0',
+        reported_date: Date.now(),
+        contact: { _id: contact0._id }
+      };
+
+      await expect(utils.request({
+        path: endpoint,
+        method: 'POST',
+        body: reportData,
+        auth: { username: offlineUser.username, password: offlineUser.password }
+      })).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    });
+  });
+
+  describe('PUT /api/v1/report/:uuid', () => {
+    let createdReport;
+
+    beforeEach(async () => {
+      // Create a report to update
+      createdReport = await utils.request({
+        path: '/api/v1/report',
+        method: 'POST',
+        body: {
+          type: 'data_record',
+          form: 'pregnancy_home_visit',
+          reported_date: Date.now(),
+          contact: { _id: contact0._id },
+          fields: {
+            patient_name: 'Original Name'
+          }
+        }
+      });
+    });
+
+    it('updates report successfully with mutable fields', async () => {
+      const updatedData = {
+        ...createdReport,
+        fields: {
+          patient_name: 'Updated Name',
+          notes: 'Additional notes'
+        }
+      };
+
+      const response = await utils.request({
+        path: `/api/v1/report/${createdReport._id}`,
+        method: 'PUT',
+        body: updatedData
+      });
+
+      expect(response._id).to.equal(createdReport._id);
+      expect(response._rev).to.not.equal(createdReport._rev);
+      expect(response.fields.patient_name).to.equal('Updated Name');
+      expect(response.fields.notes).to.equal('Additional notes');
+    });
+
+    it('updates report maintaining immutable fields', async () => {
+      const updatedData = {
+        ...createdReport,
+        fields: {
+          patient_name: 'Updated Name'
+        },
+        type: createdReport.type,
+        form: createdReport.form,
+        reported_date: createdReport.reported_date,
+        contact: createdReport.contact
+      };
+
+      const response = await utils.request({
+        path: `/api/v1/report/${createdReport._id}`,
+        method: 'PUT',
+        body: updatedData
+      });
+
+      expect(response._id).to.equal(createdReport._id);
+      expect(response.type).to.equal(createdReport.type);
+      expect(response.form).to.equal(createdReport.form);
+      expect(response.reported_date).to.equal(createdReport.reported_date);
+    });
+
+    it('returns 404 when UUID is missing in URL path', async () => {
+      const updatedData = {
+        _id: createdReport._id,
+        _rev: createdReport._rev,
+        type: 'data_record',
+        form: 'pregnancy_home_visit',
+        reported_date: createdReport.reported_date,
+        contact: createdReport.contact
+      };
+
+      await expect(utils.request({
+        path: '/api/v1/report',
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('404');
+    });
+
+    it('returns 400 when _rev is missing in body', async () => {
+      const updatedData = {
+        _id: createdReport._id,
+        type: 'data_record',
+        form: 'pregnancy_home_visit',
+        reported_date: createdReport.reported_date,
+        contact: createdReport.contact
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/report/${createdReport._id}`,
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('400 - {"code":400,"error":"_rev is required for update operations."}');
+    });
+
+    it('returns 404 when report does not exist', async () => {
+      const updatedData = {
+        _id: 'non-existent-uuid',
+        _rev: '1-abc',
+        type: 'data_record',
+        form: 'pregnancy_home_visit',
+        reported_date: Date.now(),
+        contact: { _id: contact0._id }
+      };
+
+      await expect(utils.request({
+        path: '/api/v1/report/non-existent-uuid',
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('404');
+    });
+
+    it('returns 400 when trying to change type (immutable field)', async () => {
+      const updatedData = {
+        ...createdReport,
+        type: 'different_type'
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/report/${createdReport._id}`,
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when trying to change form (immutable field)', async () => {
+      const updatedData = {
+        ...createdReport,
+        form: 'report1'
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/report/${createdReport._id}`,
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when trying to change reported_date (immutable field)', async () => {
+      const updatedData = {
+        ...createdReport,
+        reported_date: createdReport.reported_date + 1000
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/report/${createdReport._id}`,
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when trying to change contact (immutable field)', async () => {
+      const updatedData = {
+        ...createdReport,
+        contact: { _id: contact1._id }
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/report/${createdReport._id}`,
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 400 when form is invalid', async () => {
+      const updatedData = {
+        ...createdReport,
+        form: 'non-existent-form'
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/report/${createdReport._id}`,
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('400');
+    });
+
+    it('returns 409 on _rev conflict', async () => {
+      const updatedData = {
+        ...createdReport,
+        _rev: '99-wrong-rev',
+        fields: {
+          patient_name: 'Updated Name'
+        }
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/report/${createdReport._id}`,
+        method: 'PUT',
+        body: updatedData
+      })).to.be.rejectedWith('409');
+    });
+
+    it('returns 403 when user does not have can_edit_reports permission', async () => {
+      const updatedData = {
+        ...createdReport,
+        fields: {
+          patient_name: 'Updated Name'
+        }
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/report/${createdReport._id}`,
+        method: 'PUT',
+        body: updatedData,
+        auth: { username: userNoPerms.username, password: userNoPerms.password }
+      })).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    });
+
+    it('returns 403 when user is not an online user', async () => {
+      const updatedData = {
+        ...createdReport,
+        fields: {
+          patient_name: 'Updated Name'
+        }
+      };
+
+      await expect(utils.request({
+        path: `/api/v1/report/${createdReport._id}`,
+        method: 'PUT',
+        body: updatedData,
+        auth: { username: offlineUser.username, password: offlineUser.password }
+      })).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    });
+  });
 });

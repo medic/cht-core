@@ -43,7 +43,7 @@ export { Nullable, NonEmptyArray } from './libs/core';
 export { DataContext } from './libs/data-context';
 export { getLocalDataContext } from './local';
 export { getRemoteDataContext } from './remote';
-export { InvalidArgumentError } from './libs/error';
+export { InvalidArgumentError, NotFoundError, ConflictError } from './libs/error';
 export * as Contact from './contact';
 export * as Person from './person';
 export * as Place from './place';
@@ -228,7 +228,25 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns a generator for fetching all places with the given type
          * @throws InvalidArgumentError if no type if provided or if the type is not for a place
          */
-        getByType: (placeType: string) => ctx.bind(Place.v1.getAll)(Qualifier.byContactType(placeType))
+        getByType: (placeType: string) => ctx.bind(Place.v1.getAll)(Qualifier.byContactType(placeType)),
+
+        /**
+         * Creates a new place.
+         * @param data the place data including type, name, and other optional fields
+         * @returns the created place
+         * @throws InvalidArgumentError if the data is invalid or if required fields are missing
+         * @throws InvalidArgumentError if _rev is provided (not allowed for create operations)
+         */
+        create: (data: Qualifier.ContactQualifier) => ctx.bind(Place.v1.create)(data),
+
+        /**
+         * Updates an existing place.
+         * @param data the place data including _id, _rev, type, name, and other fields
+         * @returns the updated place
+         * @throws InvalidArgumentError if the data is invalid or if required fields are missing
+         * @throws InvalidArgumentError if _id or _rev is not provided
+         */
+        update: (data: Qualifier.ContactQualifier) => ctx.bind(Place.v1.update)(data),
       },
       person: {
         /**
@@ -274,6 +292,24 @@ export const getDatasource = (ctx: DataContext) => {
          * @throws InvalidArgumentError if no type is provided or if the type is not for a person
          */
         getByType: (personType: string) => ctx.bind(Person.v1.getAll)(Qualifier.byContactType(personType)),
+
+        /**
+         * Creates a new person.
+         * @param data the person data including type, name, and other optional fields
+         * @returns the created person
+         * @throws InvalidArgumentError if the data is invalid or if required fields are missing
+         * @throws InvalidArgumentError if _rev is provided (not allowed for create operations)
+         */
+        create: (data: Qualifier.ContactQualifier) => ctx.bind(Person.v1.create)(data),
+
+        /**
+         * Updates an existing person.
+         * @param data the person data including _id, _rev, type, name, and other fields
+         * @returns the updated person
+         * @throws InvalidArgumentError if the data is invalid or if required fields are missing
+         * @throws InvalidArgumentError if _id or _rev is not provided
+         */
+        update: (data: Qualifier.ContactQualifier) => ctx.bind(Person.v1.update)(data),
       },
       report: {
         /**
@@ -320,6 +356,24 @@ export const getDatasource = (ctx: DataContext) => {
         getUuidsByFreetext: (
           qualifier: string,
         ) => ctx.bind(Report.v1.getUuids)(Qualifier.byFreetext(qualifier)),
+
+        /**
+         * Creates a new report.
+         * @param data the report data including type, form, reported_date, and other fields
+         * @returns the created report
+         * @throws InvalidArgumentError if the data is invalid or if required fields are missing
+         * @throws InvalidArgumentError if _rev is provided (not allowed for create operations)
+         */
+        create: (data: Qualifier.ReportQualifier) => ctx.bind(Report.v1.create)(data),
+
+        /**
+         * Updates an existing report.
+         * @param data the report data including _id, _rev, type, form, reported_date, and other fields
+         * @returns the updated report
+         * @throws InvalidArgumentError if the data is invalid or if required fields are missing
+         * @throws InvalidArgumentError if _id or _rev is not provided
+         */
+        update: (data: Qualifier.ReportQualifier) => ctx.bind(Report.v1.update)(data),
       },
     },
   };

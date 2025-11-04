@@ -4,6 +4,7 @@ import { Doc, isDoc } from '../../libs/doc';
 import { QueryParams } from './core';
 import { getAuthenticatedFetch, getRequestBody } from './request-utils';
 import { DEFAULT_IDS_PAGE_LIMIT } from '../../libs/constants';
+import { ConflictError } from '../../libs/error';
 
 /** @internal */
 export const getDocById = (db: PouchDB.Database<Doc>) => async (uuid: string): Promise<Nullable<Doc>> => db
@@ -199,6 +200,77 @@ export const ddocExists = async (db: PouchDB.Database<Doc>, ddocId: string): Pro
 
     logger.error(`Unexpected error while checking ddoc ${ddocId}:`, err);
     return false;
+  }
+};
+
+/**
+ * Creates a new document in the database. Uses db.post() to auto-generate _id if not provided,
+ * or db.put() if _id is provided.
+ * @param db the PouchDB database
+ * @returns a function that creates a document
+ * @internal
+ */
+export const createDoc = (db: PouchDB.Database<Doc>) => async <T extends Doc>(doc: Omit<T, '_rev'>): Promise<T> => {
+  try {
+    let response: PouchDB.Core.Response;
+
+    if ('_id' in doc && doc._id) {
+      // If _id is provided, use put() - will fail with 409 if ID already exists
+      response = await db.put(doc as PouchDB.Core.PutDocument<T>);
+    } else {
+      // If _id is not provided, use post() which auto-generates _id
+      response = await db.post(doc as PouchDB.Core.PostDocument<T>);
+    }
+
+    // Fetch and return the created document
+    const createdDoc = await db.get(response.id) as T;
+    return createdDoc;
+  } catch (err) {
+    logger.error('Failed to create document:', err);
+    throw err;
+  }
+};
+
+/**
+ * Updates an existing document in the database. Requires both _id and _rev.
+ * @param db the PouchDB database
+ * @returns a function that updates a document
+ * @internal
+ */
+export const updateDoc = (db: PouchDB.Database<Doc>) => async <T extends Doc>(doc: T): Promise<T> => {
+  try {
+    if (!doc._id) {
+      throw new Error('Document _id is required for update.');
+    }
+    if (!doc._rev) {
+      throw new Error('Document _rev is required for update.');
+    }
+
+    const response = await db.put(doc as PouchDB.Core.PutDocument<T>);
+
+    // Fetch and return the updated document
+    const updatedDoc = await db.get(response.id) as T;
+    return updatedDoc;
+  } catch (err) {
+    logger.error(`Failed to update document [${doc._id}]:`, err);
+
+    // Check if this is a conflict error (revision mismatch or bad rev format)
+    const error = err as { status?: number; name?: string; message?: string; error?: string; reason?: string };
+
+    // Check for various conflict indicators from PouchDB/CouchDB
+    // Including "Invalid rev format" which indicates a revision conflict
+    const isConflict = error.status === 409 ||
+                       error.name === 'conflict' ||
+                       error.error === 'conflict' ||
+                       error.error === 'bad_request' ||  // PouchDB uses this for bad rev
+                       (error.reason && /conflict|revision|invalid.*rev/i.test(error.reason)) ||
+                       (error.message && /conflict|revision|invalid.*rev/i.test(error.message));
+
+    if (isConflict) {
+      throw new ConflictError(error.message || error.reason || 'Document update conflict');
+    }
+
+    throw err;
   }
 };
 

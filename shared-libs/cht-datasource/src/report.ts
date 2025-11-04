@@ -8,10 +8,16 @@ import {
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { Doc } from './libs/doc';
 import * as Local from './local';
-import { FreetextQualifier, UuidQualifier } from './qualifier';
+import { FreetextQualifier, UuidQualifier, ReportQualifier } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertFreetextQualifier, assertLimit, assertUuidQualifier } from './libs/parameter-validators';
+import {
+  assertCursor,
+  assertFreetextQualifier,
+  assertLimit,
+  assertUuidQualifier,
+  assertReportQualifier
+} from './libs/parameter-validators';
 import * as Contact from './contact';
 
 /** */
@@ -146,5 +152,51 @@ export namespace v1 {
       return await fn(qualifier);
     };
     return curriedFnWithLineage;
+  };
+
+  /**
+   * Returns a function for creating a report from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a report
+   * @throws Error if a data context is not provided
+   */
+  export const create = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Report.v1.create, Remote.Report.v1.create);
+
+    /**
+     * Returns the created report for the given qualifier.
+     * @param qualifier data for the report to be created
+     * @returns the created report
+     * @throws Error if the qualifier is invalid
+     */
+    const curriedFn = async (qualifier: ReportQualifier): Promise<Report> => {
+      assertReportQualifier(qualifier);
+      return fn(qualifier);
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Returns a function for updating a report from the given data context.
+   * @param context the current data context
+   * @returns a function for updating a report
+   * @throws Error if a data context is not provided
+   */
+  export const update = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Report.v1.update, Remote.Report.v1.update);
+
+    /**
+     * Returns the updated report for the given qualifier.
+     * @param qualifier data for the report to be updated
+     * @returns the updated report
+     * @throws Error if the qualifier is invalid
+     */
+    const curriedFn = async (qualifier: ReportQualifier): Promise<Report> => {
+      assertReportQualifier(qualifier);
+      return fn(qualifier);
+    };
+    return curriedFn;
   };
 }

@@ -1,5 +1,5 @@
-import { getResource, RemoteDataContext, getResources } from './libs/data-context';
-import { FreetextQualifier, UuidQualifier } from '../qualifier';
+import { getResource, RemoteDataContext, getResources, postResource, putResource } from './libs/data-context';
+import { FreetextQualifier, UuidQualifier, ReportQualifier } from '../qualifier';
 import * as Report from '../report';
 import { Nullable, Page } from '../libs/core';
 
@@ -34,5 +34,23 @@ export namespace v1 {
   ): Promise<Nullable<Report.v1.ReportWithLineage>> => {
     const queryParams = { with_lineage: 'true' };
     return getReport(remoteContext)(identifier.uuid, queryParams);
+  };
+
+  /** @internal */
+  export const create = (remoteContext: RemoteDataContext) => (
+    qualifier: ReportQualifier
+  ): Promise<Report.v1.Report> => {
+    const createReport = postResource(remoteContext, 'api/v1/report');
+    return createReport<Report.v1.Report>(qualifier as Record<string, unknown>);
+  };
+
+  /** @internal */
+  export const update = (remoteContext: RemoteDataContext) => (
+    qualifier: ReportQualifier
+  ): Promise<Report.v1.Report> => {
+    // No validation here - API server will call local implementation which validates
+    const updateReport = putResource(remoteContext, 'api/v1/report');
+    const id = qualifier._id!;
+    return updateReport<Report.v1.Report>(id, qualifier as Record<string, unknown>);
   };
 }

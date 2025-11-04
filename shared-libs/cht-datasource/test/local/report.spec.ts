@@ -7,6 +7,7 @@ import * as Report from '../../src/local/report';
 import { expect } from 'chai';
 import { END_OF_ALPHABET_MARKER } from '../../src/libs/constants';
 import * as Lineage from '../../src/local/libs/lineage';
+import { NotFoundError } from '../../src/libs/error';
 
 describe('local report', () => {
   let localContext: LocalDataContext.LocalDataContext;
@@ -719,6 +720,515 @@ describe('local report', () => {
           Number(cursor)
         )).to.be.true;
         expect(queryDocUuidsByKeyInner.notCalled).to.be.true;
+      });
+    });
+
+    describe('create', () => {
+      let createDocInner: SinonStub;
+      let createDocOuter: SinonStub;
+      let fetchHydratedDocInner: SinonStub;
+      let fetchHydratedDocOuter: SinonStub;
+      let queryDocUuidsByKeyInner: SinonStub;
+      let queryDocUuidsByKeyOuter: SinonStub;
+
+      beforeEach(() => {
+        createDocInner = sinon.stub();
+        createDocOuter = sinon.stub(LocalDoc, 'createDoc').returns(createDocInner);
+        fetchHydratedDocInner = sinon.stub();
+        fetchHydratedDocOuter = sinon.stub(Lineage, 'fetchHydratedDoc').returns(fetchHydratedDocInner);
+        queryDocUuidsByKeyInner = sinon.stub().resolves(['form:test_form']);
+        queryDocUuidsByKeyOuter = sinon.stub(LocalDoc, 'queryDocUuidsByKey').returns(queryDocUuidsByKeyInner);
+        settingsGetAll.returns(settings);
+      });
+
+      it('creates a report with all required fields', async () => {
+        const hydratedContact = { _id: 'contact-uuid' };
+        const qualifier = {
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+        const createdDoc = {
+          _id: 'generated-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: hydratedContact
+        };
+
+        fetchHydratedDocInner.resolves(hydratedContact);
+        createDocInner.resolves(createdDoc);
+
+        const result = await Report.v1.create(localContext)(qualifier);
+
+        expect(result).to.deep.equal(createdDoc);
+        expect(createDocInner.calledOnce).to.be.true;
+        expect(fetchHydratedDocInner.calledWith('contact-uuid')).to.be.true;
+      });
+
+      it('throws error when form does not exist in database', async () => {
+        queryDocUuidsByKeyInner.resolves(['form:other_form']);
+        const qualifier = {
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+
+        await expect(Report.v1.create(localContext)(qualifier))
+          .to.be.rejectedWith('Invalid form [test_form]. Form does not exist in database.');
+      });
+
+      it('throws error when _rev is provided for create', async () => {
+        const qualifier = {
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid',
+          _rev: '1-abc'
+        };
+
+        await expect(Report.v1.create(localContext)(qualifier))
+          .to.be.rejectedWith('_rev is not allowed for create operations.');
+      });
+
+      it('handles contact as hydrated object', async () => {
+        const hydratedContact = { _id: 'contact-uuid', parent: { _id: 'parent-uuid' } };
+        const qualifier = {
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: hydratedContact
+        };
+        const createdDoc = {
+          _id: 'generated-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: hydratedContact
+        };
+
+        createDocInner.resolves(createdDoc);
+
+        const result = await Report.v1.create(localContext)(qualifier);
+
+        expect(result).to.deep.equal(createdDoc);
+        expect(fetchHydratedDocInner.notCalled).to.be.true;
+      });
+
+      it('throws error when contact is invalid type', async () => {
+        const qualifier = {
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 12345 as unknown as string
+        };
+
+        await expect(Report.v1.create(localContext)(qualifier))
+          .to.be.rejectedWith('contact must be a string UUID or object, received number.');
+      });
+
+      it('throws error when contact UUID does not exist', async () => {
+        fetchHydratedDocInner.resolves(null);
+        const qualifier = {
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'invalid-uuid'
+        };
+
+        await expect(Report.v1.create(localContext)(qualifier))
+          .to.be.rejectedWith('Contact with UUID [invalid-uuid] not found.');
+      });
+
+      it('accepts reported_date as ISO string', async () => {
+        const hydratedContact = { _id: 'contact-uuid' };
+        const qualifier = {
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: '2025-01-15T10:30:00.000Z',
+          contact: 'contact-uuid'
+        };
+        const createdDoc = {
+          _id: 'generated-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: new Date('2025-01-15T10:30:00.000Z').getTime(),
+          contact: hydratedContact
+        };
+
+        fetchHydratedDocInner.resolves(hydratedContact);
+        createDocInner.resolves(createdDoc);
+
+        const result = await Report.v1.create(localContext)(qualifier);
+
+        expect(result).to.deep.equal(createdDoc);
+        expect(createDocInner.calledOnce).to.be.true;
+        expect(createDocInner.firstCall.args[0].reported_date).to.be.a('number');
+      });
+
+      it('converts ISO string with milliseconds to epoch milliseconds', async () => {
+        const hydratedContact = { _id: 'contact-uuid' };
+        const isoDate = '2025-01-15T10:30:00.123Z';
+        const expectedEpoch = new Date(isoDate).getTime();
+        const qualifier = {
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: isoDate,
+          contact: 'contact-uuid'
+        };
+        const createdDoc = {
+          _id: 'generated-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: expectedEpoch,
+          contact: hydratedContact
+        };
+
+        fetchHydratedDocInner.resolves(hydratedContact);
+        createDocInner.resolves(createdDoc);
+
+        const result = await Report.v1.create(localContext)(qualifier);
+
+        expect(result).to.deep.equal(createdDoc);
+        expect(createDocInner.calledOnce).to.be.true;
+        expect(createDocInner.firstCall.args[0]).to.have.property('reported_date', expectedEpoch);
+      });
+
+      it('throws error for invalid reported_date format', async () => {
+        const qualifier = {
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 'invalid-date',
+          contact: 'contact-uuid'
+        };
+
+        await expect(Report.v1.create(localContext)(qualifier))
+          .to.be.rejectedWith('Invalid reported_date [invalid-date]. Must be a valid date string or timestamp.');
+      });
+
+      it('throws error when created document is not a valid report', async () => {
+        const hydratedContact = { _id: 'contact-uuid' };
+        const qualifier = {
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+        const createdDoc = {
+          _id: 'generated-uuid',
+          _rev: '1-abc',
+          type: 'not-data-record',
+          contact: hydratedContact
+        };
+
+        fetchHydratedDocInner.resolves(hydratedContact);
+        createDocInner.resolves(createdDoc);
+
+        await expect(Report.v1.create(localContext)(qualifier))
+          .to.be.rejectedWith('Created document [generated-uuid] is not a valid report.');
+      });
+    });
+
+    describe('update', () => {
+      let updateDocInner: SinonStub;
+      let updateDocOuter: SinonStub;
+      let getDocByIdInner: SinonStub;
+      let getDocByIdOuter: SinonStub;
+      let fetchHydratedDocInner: SinonStub;
+      let fetchHydratedDocOuter: SinonStub;
+      let queryDocUuidsByKeyInner: SinonStub;
+      let queryDocUuidsByKeyOuter: SinonStub;
+
+      beforeEach(() => {
+        updateDocInner = sinon.stub();
+        updateDocOuter = sinon.stub(LocalDoc, 'updateDoc').returns(updateDocInner);
+        getDocByIdInner = sinon.stub();
+        getDocByIdOuter = sinon.stub(LocalDoc, 'getDocById').returns(getDocByIdInner);
+        fetchHydratedDocInner = sinon.stub();
+        fetchHydratedDocOuter = sinon.stub(Lineage, 'fetchHydratedDoc').returns(fetchHydratedDocInner);
+        queryDocUuidsByKeyInner = sinon.stub().resolves(['form:test_form']);
+        queryDocUuidsByKeyOuter = sinon.stub(LocalDoc, 'queryDocUuidsByKey').returns(queryDocUuidsByKeyInner);
+        settingsGetAll.returns(settings);
+      });
+
+      it('updates a report successfully', async () => {
+        const hydratedContact = { _id: 'contact-uuid' };
+        const existingDoc = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid',
+          field: 'old_value'
+        };
+        const qualifier = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid',
+          field: 'new_value'
+        };
+        const updatedDoc = { ...qualifier, _rev: '2-def', contact: hydratedContact };
+
+        getDocByIdInner.resolves(existingDoc);
+        fetchHydratedDocInner.resolves(hydratedContact);
+        updateDocInner.resolves(updatedDoc);
+
+        const result = await Report.v1.update(localContext)(qualifier);
+
+        expect(result).to.deep.equal(updatedDoc);
+        expect(getDocByIdInner.calledOnceWithExactly('report-uuid')).to.be.true;
+        expect(updateDocInner.calledOnce).to.be.true;
+      });
+
+      it('throws error when _id is not provided', async () => {
+        const qualifier = {
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+
+        await expect(Report.v1.update(localContext)(qualifier as any))
+          .to.be.rejectedWith('_id is required for update operations.');
+      });
+
+      it('throws error when _rev is not provided', async () => {
+        const qualifier = {
+          _id: 'report-uuid',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+
+        await expect(Report.v1.update(localContext)(qualifier as any))
+          .to.be.rejectedWith('_rev is required for update operations.');
+      });
+
+      it('throws NotFoundError when document does not exist', async () => {
+        getDocByIdInner.resolves(null);
+        const qualifier = {
+          _id: 'non-existent-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+
+        await expect(Report.v1.update(localContext)(qualifier))
+          .to.be.rejectedWith(NotFoundError, 'Document [non-existent-uuid] not found.');
+      });
+
+      it('throws error when form does not exist in database', async () => {
+        queryDocUuidsByKeyInner.resolves(['form:other_form']);
+        const qualifier = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+
+        await expect(Report.v1.update(localContext)(qualifier))
+          .to.be.rejectedWith('Invalid form [test_form]. Form does not exist in database.');
+      });
+
+      it('throws error when trying to change type', async () => {
+        const existingDoc = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+        const qualifier = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'different_type',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+
+        getDocByIdInner.resolves(existingDoc);
+
+        await expect(Report.v1.update(localContext)(qualifier))
+          .to.be.rejectedWith('Field [type] is immutable and cannot be changed.');
+      });
+
+      it('throws error when trying to change form', async () => {
+        const existingDoc = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+        const qualifier = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'different_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+
+        getDocByIdInner.resolves(existingDoc);
+        queryDocUuidsByKeyInner.resolves(['form:test_form', 'form:different_form']);
+
+        await expect(Report.v1.update(localContext)(qualifier))
+          .to.be.rejectedWith('Field [form] is immutable and cannot be changed.');
+      });
+
+      it('throws error when trying to change reported_date', async () => {
+        const existingDoc = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+        const qualifier = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 67890,
+          contact: 'contact-uuid'
+        };
+
+        getDocByIdInner.resolves(existingDoc);
+
+        await expect(Report.v1.update(localContext)(qualifier))
+          .to.be.rejectedWith('Field [reported_date] is immutable and cannot be changed.');
+      });
+
+      it('throws error when trying to change contact UUID', async () => {
+        const existingDoc = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+        const qualifier = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'different-contact-uuid'
+        };
+
+        getDocByIdInner.resolves(existingDoc);
+
+        await expect(Report.v1.update(localContext)(qualifier))
+          .to.be.rejectedWith('Field [contact] is immutable and cannot be changed.');
+      });
+
+      it('handles contact as hydrated object matching existing', async () => {
+        const hydratedContact = { _id: 'contact-uuid', parent: { _id: 'parent-uuid' } };
+        const existingDoc = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid',
+          field: 'old_value'
+        };
+        const qualifier = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: hydratedContact,
+          field: 'new_value'
+        };
+        const updatedDoc = { ...qualifier, _rev: '2-def' };
+
+        getDocByIdInner.resolves(existingDoc);
+        updateDocInner.resolves(updatedDoc);
+
+        const result = await Report.v1.update(localContext)(qualifier);
+
+        expect(result).to.deep.equal(updatedDoc);
+        expect(fetchHydratedDocInner.notCalled).to.be.true;
+      });
+
+      it('throws error when contact is invalid type', async () => {
+        const existingDoc = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+        const qualifier = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 12345 as unknown as string
+        };
+
+        getDocByIdInner.resolves(existingDoc);
+
+        await expect(Report.v1.update(localContext)(qualifier))
+          .to.be.rejectedWith('contact must be a string UUID or object, received number.');
+      });
+
+      it('throws error when updated document is not a valid report', async () => {
+        const hydratedContact = { _id: 'contact-uuid' };
+        const existingDoc = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+        const qualifier = {
+          _id: 'report-uuid',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'test_form',
+          reported_date: 12345,
+          contact: 'contact-uuid'
+        };
+        const updatedDoc = {
+          _id: 'report-uuid',
+          _rev: '2-def',
+          type: 'not-data-record',
+          contact: hydratedContact
+        };
+
+        getDocByIdInner.resolves(existingDoc);
+        fetchHydratedDocInner.resolves(hydratedContact);
+        updateDocInner.resolves(updatedDoc);
+
+        await expect(Report.v1.update(localContext)(qualifier))
+          .to.be.rejectedWith('Updated document [report-uuid] is not a valid report.');
       });
     });
   });

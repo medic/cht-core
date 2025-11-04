@@ -1,4 +1,4 @@
-import { ContactTypeQualifier, UuidQualifier } from './qualifier';
+import { ContactTypeQualifier, UuidQualifier, ContactQualifier } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Contact from './contact';
 import * as Remote from './remote';
@@ -8,7 +8,13 @@ import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import {
+  assertCursor,
+  assertLimit,
+  assertTypeQualifier,
+  assertUuidQualifier,
+  assertContactQualifier
+} from './libs/parameter-validators';
 
 /** */
 export namespace v1 {
@@ -115,5 +121,51 @@ export namespace v1 {
       return getPagedGenerator(getPage, personType);
     };
     return curriedGen;
+  };
+
+  /**
+   * Returns a function for creating a person from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a person
+   * @throws Error if a data context is not provided
+   */
+  export const create = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Person.v1.create, Remote.Person.v1.create);
+
+    /**
+     * Returns the created person for the given qualifier.
+     * @param qualifier data for the person to be created
+     * @returns the created person
+     * @throws Error if the qualifier is invalid
+     */
+    const curriedFn = async (qualifier: ContactQualifier): Promise<Person> => {
+      assertContactQualifier(qualifier);
+      return fn(qualifier);
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Returns a function for updating a person from the given data context.
+   * @param context the current data context
+   * @returns a function for updating a person
+   * @throws Error if a data context is not provided
+   */
+  export const update = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Person.v1.update, Remote.Person.v1.update);
+
+    /**
+     * Returns the updated person for the given qualifier.
+     * @param qualifier data for the person to be updated
+     * @returns the updated person
+     * @throws Error if the qualifier is invalid
+     */
+    const curriedFn = async (qualifier: ContactQualifier): Promise<Person> => {
+      assertContactQualifier(qualifier);
+      return fn(qualifier);
+    };
+    return curriedFn;
   };
 }

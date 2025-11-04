@@ -55,7 +55,7 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => place = v1.place);
 
       it('contains expected keys', () => {
-        expect(place).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType']);
+        expect(place).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType', 'create', 'update']);
       });
 
       it('getByUuid', async () => {
@@ -133,7 +133,7 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => person = v1.person);
 
       it('contains expected keys', () => {
-        expect(person).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType']);
+        expect(person).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType', 'create', 'update']);
       });
 
       it('getByUuid', async () => {
@@ -401,7 +401,7 @@ describe('CHT Script API - getDatasource', () => {
 
       it('contains expected keys', () => {
         expect(report).to.have.all.keys([
-          'getUuidsByFreetext', 'getUuidsPageByFreetext', 'getByUuid', 'getByUuidWithLineage'
+          'getUuidsByFreetext', 'getUuidsPageByFreetext', 'getByUuid', 'getByUuidWithLineage', 'create', 'update'
         ]);
       });
 
