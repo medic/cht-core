@@ -1,4 +1,4 @@
-import sinon, { SinonStub } from 'sinon';
+import sinon, { SinonFakeTimers, SinonStub } from 'sinon';
 import contactTypeUtils from '@medic/contact-types-utils';
 import logger from '@medic/logger';
 import { Doc } from '../../src/libs/doc';
@@ -7,7 +7,8 @@ import * as LocalDoc from '../../src/local/libs/doc';
 import * as Lineage from '../../src/local/libs/lineage';
 import { expect } from 'chai';
 import { LocalDataContext } from '../../src/local/libs/data-context';
-import { PersonInput } from '../../src/input';
+import * as Input from '../../src/input';
+import { convertToUnixTimestamp } from '../../src/libs/core';
 
 describe('local person', () => {
   let localContext: LocalDataContext;
@@ -287,11 +288,19 @@ describe('local person', () => {
     describe('createPerson', () => {
       let getDocByIdOuter: SinonStub;
       let getDocByIdInner: SinonStub;
+      let clock: SinonFakeTimers;
 
       beforeEach(() => {
+        // Freeze time at a fixed point for deterministic behavior
+        clock = sinon.useFakeTimers(new Date('2024-01-01T00:00:00Z'));
+      
         getDocByIdInner = sinon.stub();
         getDocByIdOuter = sinon.stub(LocalDoc, 'getDocById').returns(getDocByIdInner);
         createDocOuter.returns(createDocInner);
+      });
+
+      afterEach(() => {
+        clock.restore();
       });
 
       it('throws error if input type is not a part of settings contact_types and also not `person`', async () => {
@@ -300,7 +309,7 @@ describe('local person', () => {
         });
         isPerson.returns(false);
 
-        const personInput: PersonInput = {
+        const personInput: Input.v1.PersonInput = {
           type: 'robot',
           name: 'user-1',
           parent: 'p1'
@@ -332,7 +341,7 @@ describe('local person', () => {
         };
         getDocByIdInner.resolves(parentDocReturned);
         const expected_input = {
-          ...input,
+          ...input, reported_date: convertToUnixTimestamp(input.reported_date),
           type: 'contact', contact_type: 'animal', parent: parentDocReturned
         };
         createDocInner.resolves(expected_input);
@@ -359,7 +368,7 @@ describe('local person', () => {
           const input = {
             name: 'user-1',
             type: 'person',
-            parent: 'p1'
+            parent: 'p1',
           };
           const parentDocReturned = {
             _id: 'p1', parent: { _id: 'p2' }
@@ -370,7 +379,10 @@ describe('local person', () => {
           const person = await Person.v1.create(localContext)(input);
           expect(getDocByIdInner.calledOnce).to.be.true;
           expect(Person.v1.isPerson(localContext.settings)(person)).to.be.true;
-          expect(createDocInner.calledOnceWithExactly({ ...input, parent: parentDocReturned })).to.be.true;
+          expect(createDocInner.calledOnceWithExactly({
+            ...input, reported_date: convertToUnixTimestamp(input_reported_date),
+            parent: parentDocReturned
+          })).to.be.true;
         }
       );
 
@@ -425,11 +437,13 @@ describe('local person', () => {
           const input = {
             name: 'user-1',
             type: 'person',
-            parent: 'p1'
+            parent: 'p1',
+            reported_date: Date.now()
           };
-          const updatedInput = { ...input, type: 'contact', contact_type: 'person' };
           await expect(Person.v1.create(localContext)(input))
-            .to.be.rejectedWith(`Invalid type of person, cannot have parent for [${JSON.stringify(updatedInput)}].`);
+            .to.be.rejectedWith(`Invalid type of person, cannot have parent for ${
+              JSON.stringify(input.type)
+            } type`);
           expect(getDocByIdInner.called).to.be.false;
         }
       );
@@ -448,7 +462,8 @@ describe('local person', () => {
           const input = {
             name: 'user-1',
             type: 'person',
-            parent: 'p1'
+            parent: 'p1',
+            reported_date: Date.now()
           };
           const returnedParentDoc = {
             _id: 'p1',
@@ -456,9 +471,10 @@ describe('local person', () => {
             type: 'contact'
           };
           getDocByIdInner.resolves(returnedParentDoc);
-          const updatedInput = { ...input, type: 'contact', contact_type: 'person' };
           await expect(Person.v1.create(localContext)(input))
-            .to.be.rejectedWith(`Invalid parent type for [${JSON.stringify(updatedInput)}].`);
+            .to.be.rejectedWith(`Parent of type ${
+              JSON.stringify(returnedParentDoc.contact_type)
+            } is not allowed for ${JSON.stringify(input.type)} type`);
         }
       );
 
@@ -471,7 +487,7 @@ describe('local person', () => {
         };
 
         await expect(
-          Person.v1.create(localContext)(input as unknown as PersonInput)
+          Person.v1.create(localContext)(input as unknown as Input.v1.PersonInput)
         ).to.be.rejectedWith('Cannot pass `_rev` when creating a person.');
         expect(createDocInner.called).to.be.false;
       });

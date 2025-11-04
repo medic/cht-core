@@ -1,4 +1,4 @@
-const { Place, Qualifier, Input } = require('@medic/cht-datasource');
+const { Place, Qualifier } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
@@ -38,9 +38,7 @@ module.exports = {
 
     create: serverUtils.doOrError(async (req, res) => {
       await auth.checkUserPermissions(req, [ 'can_view_contacts', 'can_create_places' ], [ 'can_edit' ]);
-
-      const placeInput = Input.validatePlaceInput(req.body);
-      const placeDoc = await create()(placeInput);
+      const placeDoc = await create()(req.body);
       return res.json(placeDoc);
     }),
 

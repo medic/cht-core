@@ -214,7 +214,7 @@ describe('cht-datasource Person', () => {
     describe('create', async () => {
       const createPerson = Person.v1.create(dataContext);
       it('creates a person for a valid person input', async () => {
-        const personInput = Input.validatePersonInput({
+        const personInput = Input.v1.validatePersonInput({
           name: 'apoorva',
           type: 'person',
           parent: place0._id
@@ -228,7 +228,7 @@ describe('cht-datasource Person', () => {
       });
 
       it('throws error for parent type not among allowed parents in settings.contact_types', async () => {
-        const personInput = Input.validatePersonInput({
+        const personInput = Input.v1.validatePersonInput({
           name: 'apoorva',
           type: 'person',
           parent: contact0._id,
@@ -237,21 +237,13 @@ describe('cht-datasource Person', () => {
         await expect(createPerson(personInput))
           .to.be.rejectedWith({
             code: 400,
-            error: `Invalid parent type for [${JSON.stringify(
-              {
-                name: 'apoorva',
-                type: 'contact',
-                parent: contact0._id,
-                reported_date: 12312312,
-                contact_type: 'person'
-              }
-            )}].`
+            error: `Parent of type "person" is not allowed for ${JSON.stringify(personInput.type)} type`
           });
       });
     });
 
     describe('update', async () => {
-      const personInput = Input.validatePersonInput({
+      const personInput = Input.v1.validatePersonInput({
         name: 'apoorva',
         type: 'person',
         hobby: 'guitar',

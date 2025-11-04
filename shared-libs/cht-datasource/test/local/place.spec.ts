@@ -1,4 +1,4 @@
-import sinon, { SinonStub } from 'sinon';
+import sinon, { SinonFakeTimers, SinonStub } from 'sinon';
 import contactTypeUtils from '@medic/contact-types-utils';
 import logger from '@medic/logger';
 import { Doc } from '../../src/libs/doc';
@@ -7,7 +7,8 @@ import * as LocalDoc from '../../src/local/libs/doc';
 import { expect } from 'chai';
 import { LocalDataContext } from '../../src/local/libs/data-context';
 import * as Lineage from '../../src/local/libs/lineage';
-import { PlaceInput } from '../../src/input';
+import * as Input from '../../src/input';
+import { convertToUnixTimestamp } from '../../src/libs/core';
 
 describe('local place', () => {
   let localContext: LocalDataContext;
@@ -291,10 +292,15 @@ describe('local place', () => {
     describe('create', () => {
       let getDocByIdOuter: SinonStub;
       let getDocByIdInner: SinonStub;
-
+      let clock: SinonFakeTimers;
       beforeEach(() => {
+        clock = sinon.useFakeTimers(new Date('2024-01-01T00:00:00Z'));
         getDocByIdInner = sinon.stub();
         getDocByIdOuter = sinon.stub(LocalDoc, 'getDocById').returns(getDocByIdInner);
+      });
+
+      afterEach(() => {
+        clock.restore();
       });
 
       it('throws error if input contact_type is not a part of settings contact_types', async () => {
@@ -304,7 +310,7 @@ describe('local place', () => {
         });
         isPlace.returns(false);
 
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           name: 'user-1',
           type: 'school',
           parent: 'p1'
@@ -320,15 +326,14 @@ describe('local place', () => {
           contact_types: [ { id: 'hospital', parents: [ 'clinic' ] }, { id: 'clinic' } ]
         });
 
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           name: 'place-1',
           type: 'hospital',
+          reported_date: Date.now()
         };
-        const updatedPlaceInput = {
-          ...placeInput, type: 'contact', contact_type: 'hospital'
-        };
+
         await expect(Place.v1.create(localContext)(placeInput))
-          .to.be.rejectedWith(`Missing or empty required field (parent) for [${JSON.stringify(updatedPlaceInput)}].`);
+          .to.be.rejectedWith(`Missing or empty required field (parent)`);
         expect(createDocInner.called).to.be.false;
       });
 
@@ -345,16 +350,17 @@ describe('local place', () => {
         };
 
         getDocByIdInner.resolves(parentReturnedByget);
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           name: 'place-1',
           type: 'hospital',
-          parent: 'p1'
+          parent: 'p1',
+          reported_date: Date.now()
         };
-        const updatedPlaceInput = {
-          ...placeInput, type: 'contact', contact_type: placeInput.type
-        };
+
         await expect(Place.v1.create(localContext)(placeInput))
-          .to.be.rejectedWith(`Invalid parent type for [${JSON.stringify(updatedPlaceInput)}].`);
+          .to.be.rejectedWith(`Parent of type ${
+            JSON.stringify(parentReturnedByget.contact_type)
+          } is not allowed for ${JSON.stringify(placeInput.type)} type`);
         expect(createDocInner.called).to.be.false;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
@@ -365,10 +371,11 @@ describe('local place', () => {
           contact_types: [ { id: 'hospital' }, { id: 'clinic' }, { id: 'city' } ]
         });
 
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           name: 'place-1',
           type: 'hospital',
-          parent: 'town'
+          parent: 'town',
+          reported_date: Date.now()
         };
         const updatedPlaceInput = {
           ...placeInput, type: 'contact', contact_type: 'hospital'
@@ -382,7 +389,7 @@ describe('local place', () => {
         createDocOuter.returns(createDocInner);
         isPlace.returns(true);
 
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           type: 'place',
           name: 'user-1',
           _rev: '1234',
@@ -399,7 +406,7 @@ describe('local place', () => {
         });
         isPlace.returns(true);
 
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           name: 'place-x',
           type: 'hospital',
           contact: 'c1'
@@ -424,7 +431,7 @@ describe('local place', () => {
         expect(Place.v1.isPlace(localContext.settings)(placeDoc)).to.be.true;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(createDocInner.calledOnceWithExactly({
-          ...placeInput, type: 'contact',
+          ...placeInput, reported_date: convertToUnixTimestamp(expected_date), type: 'contact',
           contact_type: 'hospital', contact: expectedContactDoc
         })).to.be.true;
       });
@@ -436,10 +443,10 @@ describe('local place', () => {
         });
         isPlace.returns(true);
 
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           name: 'place-x',
           type: 'hospital',
-          parent: 'p1'
+          parent: 'p1',
         };
 
         const expectedParentDoc = {
@@ -451,8 +458,13 @@ describe('local place', () => {
         const expected_id = '1-id';
         const expected_rev = '1-rev';
         const expected_doc = {
-          ...placeInput, reported_date: expected_date, _id: expected_id, _rev: expected_rev, type: 'contact',
-          contact_type: 'hospital', parent: expectedParentDoc
+          ...placeInput,
+          reported_date: convertToUnixTimestamp(expected_date),
+          _id: expected_id,
+          _rev: expected_rev,
+          type: 'contact',
+          contact_type: 'hospital',
+          parent: expectedParentDoc
         };
         createDocInner.resolves(expected_doc);
         const placeDoc = await Place.v1.create(localContext)(placeInput);
@@ -461,7 +473,7 @@ describe('local place', () => {
         expect(Place.v1.isPlace(localContext.settings)(placeDoc)).to.be.true;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(createDocInner.calledOnceWithExactly({
-          ...placeInput, type: 'contact',
+          ...placeInput, reported_date: expected_doc.reported_date, type: 'contact',
           contact_type: 'hospital', parent: {
             _id: placeInput.parent, parent: expectedParentDoc.parent
           }
@@ -472,7 +484,7 @@ describe('local place', () => {
         createDocOuter.returns(createDocInner);
         isPlace.returns(true);
 
-        const placeInput: PlaceInput = {
+        const placeInput: Input.v1.PlaceInput = {
           name: 'place-x',
           type: 'place',
           parent: 'p1'
@@ -487,8 +499,13 @@ describe('local place', () => {
         const expected_id = '1-id';
         const expected_rev = '1-rev';
         const expected_doc = {
-          ...placeInput, reported_date: expected_date, _id: expected_id, _rev: expected_rev, type: 'contact',
-          contact_type: 'hospital', parent: expectedParentDoc
+          ...placeInput,
+          reported_date: convertToUnixTimestamp(expected_date),
+          _id: expected_id,
+          _rev: expected_rev,
+          type: 'contact',
+          contact_type: 'hospital',
+          parent: expectedParentDoc
         };
         createDocInner.resolves(expected_doc);
         const placeDoc = await Place.v1.create(localContext)(placeInput);
@@ -497,7 +514,7 @@ describe('local place', () => {
         expect(Place.v1.isPlace(localContext.settings)(placeDoc)).to.be.true;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(createDocInner.calledOnceWithExactly({
-          ...placeInput, type: 'place', parent: {
+          ...placeInput, reported_date: expected_doc.reported_date, type: 'place', parent: {
             _id: placeInput.parent, parent: expectedParentDoc.parent
           }
         })).to.be.true;
@@ -533,7 +550,7 @@ describe('local place', () => {
           createDocInner.returns(input);
           const placeDoc = await Place.v1.create(localContext)(input);
           expect(placeDoc).to.deep.equal(input);
-          expect(createDocInner.calledOnceWithExactly(input)).to.be.true;
+          expect(createDocInner.calledOnceWithExactly({...input, reported_date: Date.now()})).to.be.true;
         }
       );
 

@@ -8,7 +8,7 @@ import {
   isUuidQualifier,
 } from '../qualifier';
 import { Nullable } from './core';
-import { isPersonInput, isPlaceInput, isReportInput, PersonInput, PlaceInput, ReportInput } from '../input';
+import * as Input from '../input';
 
 /** @internal */
 export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is ContactTypeQualifier = (
@@ -20,28 +20,28 @@ export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is C
 };
 
 /** @internal */
-export const assertPersonInput: (input: unknown) => asserts input is PersonInput = (
+export const assertPersonInput: (input: unknown) => asserts input is Input.v1.PersonInput = (
   input: unknown
 ) => {
-  if (!isPersonInput(input)) {
+  if (!Input.v1.isPersonInput(input)) {
     throw new InvalidArgumentError(`Invalid person type [${JSON.stringify(input)}].`);
   }
 };
 
 /** @internal */
-export const assertPlaceInput: (input: unknown) => asserts input is PlaceInput = (
+export const assertPlaceInput: (input: unknown) => asserts input is Input.v1.PlaceInput = (
   input: unknown
 ) => {
-  if (!isPlaceInput(input)) {
+  if (!Input.v1.isPlaceInput(input)) {
     throw new InvalidArgumentError(`Invalid place type [${JSON.stringify(input)}].`);
   }
 };
 
 /** @internal */
-export const assertReportInput: (input: unknown) => asserts input is ReportInput = (
+export const assertReportInput: (input: unknown) => asserts input is Input.v1.ReportInput = (
   input: unknown
 ) => {
-  if (!isReportInput(input)) {
+  if (!Input.v1.isReportInput(input)) {
     throw new InvalidArgumentError(`Invalid report type [${JSON.stringify(input)}].`);
   }
 };

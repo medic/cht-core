@@ -14,7 +14,7 @@ import {
   ensureImmutability,
   validateCursor
 } from './libs/core';
-import { PlaceInput } from '../input';
+import * as Input from '../input';
 import { fetchHydratedDoc } from './libs/lineage';
 
 /** @internal */
@@ -120,7 +120,7 @@ export namespace v1 {
     ): Promise<Doc> => {
       if (!hasField(input, { name: 'parent', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError(
-          `Missing or empty required field (parent) for [${JSON.stringify(input)}].`
+          `Missing or empty required field (parent)`
         );
       }
       const parentDoc = await getPlaceDoc(input.parent);
@@ -132,14 +132,17 @@ export namespace v1 {
 
       // Check whether parent doc's `contact_type` or `type`(if `contact_type` is absent) 
       // matches with any of the allowed parents type.
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      const typeToMatch = (parentDoc as PlaceInput).contact_type || (parentDoc as PlaceInput).type;
+       
+      const typeToMatch = (parentDoc as Input.v1.PlaceInput).contact_type 
+      || (parentDoc as Input.v1.PlaceInput).type;
       const parentTypeMatchWithAllowedParents = (contactTypeObject.parents as string[])
         .find(parent => parent === typeToMatch);
 
       if (!(parentTypeMatchWithAllowedParents)) {
         throw new InvalidArgumentError(
-          `Invalid parent type for [${JSON.stringify(input)}].`
+          `Parent of type ${JSON.stringify(typeToMatch)} is not allowed for ${JSON.stringify(
+            input.contact_type
+          )} type`
         );
       }
       return parentDoc;
@@ -148,7 +151,7 @@ export namespace v1 {
 
     const getParentDoc = async (
       typeFoundInSettingsContactTypes: Record<string, unknown> | undefined,
-      input: PlaceInput
+      input: Input.v1.PlaceInput
     ): Promise<Nullable<Doc>> => {
       if (typeFoundInSettingsContactTypes) {
         // This will throw error if parent is required and missing.
@@ -171,8 +174,8 @@ export namespace v1 {
 
     const appendParent = async (
       typeFoundInSettingsContactTypes: Record<string, unknown> | undefined,
-      input: PlaceInput
-    ): Promise<PlaceInput> => {
+      input: Input.v1.PlaceInput
+    ): Promise<Input.v1.PlaceInput> => {
       let parentDoc: Nullable<Doc> = null;
       parentDoc = await getParentDoc(typeFoundInSettingsContactTypes, input);
       if (!parentDoc) {
@@ -184,7 +187,7 @@ export namespace v1 {
     };
 
     const appendContact = async (
-      input: PlaceInput
+      input: Input.v1.PlaceInput
     ) => {
       if (!hasField(input, { name: 'contact', type: 'string', ensureTruthyValue: true })) {
         return input;
@@ -200,10 +203,10 @@ export namespace v1 {
       return input;
     };
     return async (
-      input: PlaceInput
+      input: Input.v1.PlaceInput
     ): Promise<Place.v1.Place> => {
 
-
+      input = Input.v1.validatePlaceInput(input);
       if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
         throw new InvalidArgumentError('Cannot pass `_rev` when creating a place.');
       }
@@ -222,7 +225,7 @@ export namespace v1 {
           ...input,
           contact_type: input.type,
           type: 'contact',
-        } as unknown as PlaceInput;
+        } as unknown as Input.v1.PlaceInput;
       }
 
       input = await appendParent(typeFoundInSettingsContactTypes, input);

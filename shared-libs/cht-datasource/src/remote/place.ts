@@ -2,7 +2,7 @@ import { Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Place from '../place';
 import { getResource, getResources, postResource, putResource, RemoteDataContext } from './libs/data-context';
-import { PlaceInput } from '../input';
+import * as Input from '../input';
 
 /** @internal */
 export namespace v1 {
@@ -44,7 +44,7 @@ export namespace v1 {
   /** @internal */
   export const create =
     (remoteContext: RemoteDataContext) => (
-      input: PlaceInput
+      input: Input.v1.PlaceInput
     ): Promise<Place.v1.Place> => createPlace(remoteContext)(input);
 
   /** @internal */

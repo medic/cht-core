@@ -263,31 +263,6 @@ describe('Person Controller', () => {
           .returns(createPerson);
       });
 
-      it('throws error for missing required fields', async() => {
-        const input = {
-          name: 'test-user',
-          parent: 'p1',
-          reported_date: 12312312
-        };
-        req = {
-          body: {
-            ...input
-          }
-        };
-        checkUserPermissions.resolves();
-         
-        const err = new InvalidArgumentError(`Missing or empty required fields (name, type) for [${JSON
-          .stringify(input)}].`);
-        await controller.v1.create(req, res);
-        expect(checkUserPermissions
-          .calledWith(req, ['can_view_contacts', 'can_create_people'], ['can_edit'])).to.be.true;
-        expect(createPerson.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnce).to.be.true;
-        expect(serverUtilsError.firstCall.args[0]).to.be.instanceof(InvalidArgumentError);
-        expect(serverUtilsError.firstCall.args[0].message).to.equal(err.message);
-        expect(dataContextBind.notCalled).to.be.true;
-      });
-
       it('creates a person doc for valid input', async() => {
         const input = {
           name: 'test-user',

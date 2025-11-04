@@ -1,4 +1,4 @@
-const { Person, Qualifier, Input } = require('@medic/cht-datasource');
+const { Person, Qualifier } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
@@ -37,8 +37,7 @@ module.exports = {
     create: serverUtils.doOrError(async (req, res) => {
       await auth.checkUserPermissions(req, [ 'can_view_contacts', 'can_create_people' ], [ 'can_edit' ]);
 
-      const personInput = Input.validatePersonInput(req.body);
-      const personDoc = await createPerson()(personInput);
+      const personDoc = await createPerson()(req.body);
       return res.json(personDoc);
     }),
 

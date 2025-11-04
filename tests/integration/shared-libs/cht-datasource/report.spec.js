@@ -313,7 +313,7 @@ describe('cht-datasource Report', () => {
             _id: contact0._id, parent: contact0.parent
           }
         };
-        const reportDoc = await Report.v1.create(dataContext)(Input.validateReportInput(input));
+        const reportDoc = await Report.v1.create(dataContext)(Input.v1.validateReportInput(input));
         expect(reportDoc).excluding([ '_id', '_rev', 'reported_date', ]).to.deep.equal(updatedInput);
       });
 
@@ -322,10 +322,10 @@ describe('cht-datasource Report', () => {
           form: 'pregnancy_home_visit',
           type: 'data_record',
         };
-        const action = () => Report.v1.create(dataContext)(Input.validateReportInput(input));
+        const action = () => Report.v1.create(dataContext)(Input.v1.validateReportInput(input));
         expect(action).to.throw(
           InvalidArgumentError,
-          `Missing or empty required field (contact) in [${JSON.stringify(input)}].`
+          `Missing or empty required field (contact)`
         );
       });
 
@@ -336,7 +336,7 @@ describe('cht-datasource Report', () => {
           reported_date: '112-9909-123'
         };
 
-        const action = () => Report.v1.create(dataContext)(Input.validateReportInput(input));
+        const action = () => Report.v1.create(dataContext)(Input.v1.validateReportInput(input));
 
         expect(action).to.throw(
           InvalidArgumentError,
