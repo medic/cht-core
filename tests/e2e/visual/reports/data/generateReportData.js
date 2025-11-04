@@ -18,6 +18,7 @@ const reports = [
       },
       reported_date: REPORTED_DATE,
       from: 'Unknown sender',
+      verified: true,
     }),
   reportFactory
     .report()
@@ -62,6 +63,7 @@ const reports = [
       },
       reported_date: REPORTED_DATE,
       from: 'Unknown sender',
+      errors: [ { code: 'sys.missing_fields', fields: [ 'patient_id' ] } ]
     }),
   reportFactory
     .report()
@@ -77,6 +79,7 @@ const reports = [
       },
       reported_date: REPORTED_DATE,
       from: 'Unknown sender',
+      verified: true,
     }),
   reportFactory
     .report()
