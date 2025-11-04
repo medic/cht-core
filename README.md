@@ -32,7 +32,7 @@ Currently, the latest versions of Chrome, Chrome for Android and Firefox are fun
 
 The Core Framework of the [Community Health Toolkit](https://communityhealthtoolkit.org) is powered by people like you. We appreciate your contributions, and are dedicated to supporting the developers who improve the CHT tools whenever possible.
 
-To setup a development environment to contribute to the Core Framework follow the [development instructions]([./DEVELOPMENT.md](https://docs.communityhealthtoolkit.org/community/contributing/code/core/dev-environment/)).
+To setup a development environment to contribute to the Core Framework follow the [development instructions](https://docs.communityhealthtoolkit.org/community/contributing/code/core/dev-environment/).
 
 First time contributor? Issues labeled [Good First Issue](https://github.com/medic/cht-core/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22Good%20first%20issue%22) are a great place to start. Have a look at the [First Time Contributors Guide](https://docs.communityhealthtoolkit.org/community/contributing/first-time-contributors/) to get your started! 
 
