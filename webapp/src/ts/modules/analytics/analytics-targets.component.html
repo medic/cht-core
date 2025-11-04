@@ -48,7 +48,24 @@
             <h2 *ngIf="target.translation_key">{{ target.translation_key | translate }}</h2>
             <h2 *ngIf="!target.translation_key">{{ target.name | translateFrom }}</h2>
             <p *ngIf="target.subtitle_translation_key">
-              {{ target.subtitle_translation_key | translate }}
+
+              <!-- 🔹 Show “Current month” when current filter is selected -->
+  <ng-container *ngIf="reportingPeriodFilter === 'current'; else previousSubtitle">
+    {{ 'targets.this_month.subtitle' | translate }}
+  </ng-container>
+
+  <!-- 🔹 Show “All time” when previous month is selected -->
+  <ng-template #previousSubtitle>
+    {{ 'targets.all_time.subtitle' | translate }}
+    <!-- Inline note: only show when previous period -->
+    <span
+      *ngIf="reportingPeriodFilter === 'previous'"
+      class="data-note-inline"><br>
+      📅 {{ 'Data up to the previous month' | translate }}
+    </span>
+  </ng-template>
+
+              
             </p>
           </div>
         </div>

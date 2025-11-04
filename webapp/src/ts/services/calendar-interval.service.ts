@@ -23,4 +23,15 @@ export class CalendarIntervalService {
   getInterval(startDate:number, timestamp:number) {
     return CalendarInterval.getInterval(startDate, timestamp);
   }
+    /**
+   * Returns the previous reporting period interval based on the start day.
+   * This is used when the sidebar filter selects "previous month".
+   */
+  getPrevious(startDate: number) {
+    const now = Date.now();
+    const previousMonth = new Date(now);
+    previousMonth.setMonth(previousMonth.getMonth() - 1);
+    return CalendarInterval.getInterval(startDate, previousMonth.valueOf());
+  }
+
 }

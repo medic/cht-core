@@ -459,38 +459,42 @@ export class RulesEngineService implements OnDestroy {
       });
   }
 
-  fetchTargets() {
-    return this.ngZone.runOutsideAngular(() => this._fetchTargets());
-  }
+ fetchTargets(reportingPeriod?: 'current' | 'previous') {
+  return this.ngZone.runOutsideAngular(() => this._fetchTargets(reportingPeriod));
+}
 
-  private async _fetchTargets(): Promise<Target[]> {
-    const trackName = this.getTelemetryTrackName('targets');
-    let trackPerformanceQueueing;
-    let trackPerformanceRunning;
+ private async _fetchTargets(reportingPeriod?: 'current' | 'previous'): Promise<Target[]> {
+  const trackName = this.getTelemetryTrackName('targets');
+  let trackPerformanceQueueing;
+  let trackPerformanceRunning;
 
-    await this.initialized;
-    this.telemetryService.record(
-      'rules-engine:targets:dirty-contacts',
-      this.rulesEngineCore.getDirtyContacts().length
-    );
-    this.cancelDebounce(this.FRESHNESS_KEY);
-    await this.waitForDebounce(this.CHANGE_WATCHER_KEY);
+  await this.initialized;
+  this.telemetryService.record('rules-engine:targets:dirty-contacts', this.rulesEngineCore.getDirtyContacts().length);
+  this.cancelDebounce(this.FRESHNESS_KEY);
+  await this.waitForDebounce(this.CHANGE_WATCHER_KEY);
 
-    const relevantInterval = this.calendarIntervalService.getCurrent(this.uhcMonthStartDate);
-    const targets = await this.rulesEngineCore
-      .fetchTargets(relevantInterval)
-      .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
-      .on('running', () => {
-        trackPerformanceRunning = this.performanceService.track();
-        trackPerformanceQueueing?.stop({ name: `${trackName}:queued` });
-      });
+  // 👇 NEW: Determine which interval to use based on reportingPeriod
+  const relevantInterval = 
+    reportingPeriod === 'previous'
+      ? this.calendarIntervalService.getPrevious(this.uhcMonthStartDate)
+      : this.calendarIntervalService.getCurrent(this.uhcMonthStartDate);
 
-    if (!trackPerformanceRunning) {
+  const targets = await this.rulesEngineCore
+    .fetchTargets(relevantInterval)
+    .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
+    .on('running', () => {
       trackPerformanceRunning = this.performanceService.track();
-    }
-    trackPerformanceRunning?.stop({ name: trackName });
-    return targets;
+      trackPerformanceQueueing?.stop({ name: `${trackName}:queued` });
+    });
+
+  if (!trackPerformanceRunning) {
+    trackPerformanceRunning = this.performanceService.track();
   }
+  trackPerformanceRunning?.stop({ name: trackName });
+
+  return targets;
+}
+
 
   async monitorExternalChanges(replicationResult?) {
     await this.initialized;
