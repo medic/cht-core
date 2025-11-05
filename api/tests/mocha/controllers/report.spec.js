@@ -386,7 +386,7 @@ describe('Report Controller Tests', () => {
         checkUserPermissions.resolves();
         const updateInput = {
           type: 'report',
-          reported_date: 12312312, 
+          reported_date: 12312312,
           _id: '1',
           _rev: '2',
           contact: {
@@ -395,6 +395,7 @@ describe('Report Controller Tests', () => {
           form: 'abcd'
         };
         req = {
+          params: { uuid: '1' },
           body: {
             ...updateInput
           }
@@ -450,6 +451,7 @@ describe('Report Controller Tests', () => {
           form: 'abcd'
         };
         req = {
+          params: { uuid: '1' },
           body: {
             ...updateInput
           }

@@ -310,6 +310,7 @@ describe('Person Controller', () => {
           reported_date: 12312312
         };
         req = {
+          params: { uuid: '123' },
           body: {
             ...input
           }
