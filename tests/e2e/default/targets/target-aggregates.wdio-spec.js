@@ -12,6 +12,7 @@ const userSettingsFactory = require('@factories/cht/users/user-settings');
 const personFactory = require('@factories/cht/contacts/person');
 const helperFunctions = require('./utils/aggregates-helper-functions');
 const targetAggregatesConfig = require('./config/target-aggregates');
+const { getTelemetry } = require('@utils/telemetry');
 
 describe('Target aggregates', () => {
   describe('DB admin', () => {
@@ -391,6 +392,9 @@ describe('Target aggregates', () => {
 
         await targetAggregatesPage.openSidebarFilter();
         expect((await targetAggregatesPage.sidebarFilter.optionsContainer()).length).to.equal(2);
+        const username = userWithManyPlaces.name;
+        const telemetry = await getTelemetry('sidebar_filter:analytics:target_aggregates:open', username);
+        expect(telemetry.length).to.equal(1);
 
         await targetAggregatesPage.selectFilterOption('Last month');
         context.period = helperFunctions.getLastMonth();
@@ -398,6 +402,11 @@ describe('Target aggregates', () => {
         await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
 
         await targetAggregatesPage.selectFilterOption(districtHospital2.name);
+        const telemetry2 = await getTelemetry(
+          'sidebar_filter:analytics:target_aggregates:reporting-period:select',
+          username
+        );
+        expect(telemetry2.length).to.equal(1);
         context.contacts = contactsDh2;
         context.place = districtHospital2.name;
         await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);

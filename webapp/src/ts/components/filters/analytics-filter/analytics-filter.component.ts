@@ -50,6 +50,7 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     this.canDisplayFilterButton();
     this.subscribeToRouteChanges();
     this.subscribeToStore();
+    this.telemetryService.record('sidebar_filter:analytics:target_aggregates:component-loaded');
   }
 
   ngAfterContentInit() {
