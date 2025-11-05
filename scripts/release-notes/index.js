@@ -297,6 +297,7 @@ sidebar:
 description: 
   Released ${currentDate}
 ---
+
 ## Highlights
 
 <<< TODO >>>
