@@ -181,7 +181,7 @@ export const convertToUnixTimestamp = (date: string | number): number => {
   }
 
   const parsedDate = new Date(date);
-  if (isNaN(parsedDate.getTime())) {
+  if (Number.isNaN(parsedDate.getTime())) {
     throw new InvalidArgumentError(
       'Invalid reported_date. Expected format to be ' +
       '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'

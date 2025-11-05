@@ -129,15 +129,15 @@ export namespace v1 {
       contactTypeObject: Record<string, unknown>,
       input: Record<string, unknown>
     ): Promise<Nullable<Doc>> => {
-      if (!hasField(contactTypeObject, { name: 'parents', type: 'object' })) {
-        throw new InvalidArgumentError(
-          `Invalid type of person, cannot have parent for ${
-            JSON.stringify(input.contact_type)
-          } type`
-        );
-      } else {
+      if (hasField(contactTypeObject, {name: 'parents', type: 'object'})) {
         return await ensureHasValidParentFieldAndReturnParentDoc(input, contactTypeObject);
       }
+
+      throw new InvalidArgumentError(
+        `Invalid type of person, cannot have parent for ${
+          JSON.stringify(input.contact_type)
+        } type`
+      );
     };
 
     const appendParent = async (
