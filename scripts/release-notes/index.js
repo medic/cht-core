@@ -297,6 +297,9 @@ sidebar:
 description: 
   Released ${currentDate}
 ---
+## Highlights
+
+<<< TODO >>>
 
 ## Known issues
 
@@ -305,9 +308,6 @@ Check the repository for the [latest known issues](https://github.com/medic/cht-
 ## Upgrade notes
 
 ${formatGroups(warnings)}
-## Highlights
-
-<<< TODO >>>
 
 ## And more...
 
