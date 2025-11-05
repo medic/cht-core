@@ -21,6 +21,8 @@ import { CalendarIntervalService } from '@mm-services/calendar-interval.service'
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
+import { TargetInterval, Qualifier } from '@medic/cht-datasource';
 
 interface DebounceActive {
   [key: string]: {
@@ -61,6 +63,7 @@ export class RulesEngineService implements OnDestroy {
   private uhcMonthStartDate;
   private debounceActive: DebounceActive = {};
   private observable = new Subject();
+  private readonly getTargetInterval: ReturnType<typeof TargetInterval.v1.get>;
 
   constructor(
     private translateService:TranslateService,
@@ -83,6 +86,7 @@ export class RulesEngineService implements OnDestroy {
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
+    this.getTargetInterval = chtDatasourceService.bind(TargetInterval.v1.get);
   }
 
   ngOnDestroy(): void {
@@ -459,11 +463,34 @@ export class RulesEngineService implements OnDestroy {
       });
   }
 
-  fetchTargets(reportingPeriod?: 'current' | 'previous') {
+  fetchTargets(reportingPeriod: ReportingPeriod = ReportingPeriod.CURRENT): Promise<Target[]> {
     return this.ngZone.runOutsideAngular(() => this._fetchTargets(reportingPeriod));
   }
 
-  private async _fetchTargets(reportingPeriod?: 'current' | 'previous'): Promise<Target[]> {
+  private async _fetchTargets(reportingPeriod: ReportingPeriod): Promise<Target[]> {
+    // If current month, use existing logic
+    if (reportingPeriod === ReportingPeriod.CURRENT) {
+      return this._fetchCurrentTargets();
+    }
+
+    // Previous month: use target interval from cht-datasource
+    try {
+      const settings = await this.settingsService.get();
+      const targetInterval = await this.fetchTargetDocumentsForPeriod(settings, reportingPeriod);
+
+      // If no target interval found (null), return empty array
+      if (!targetInterval) {
+        return [];
+      }
+
+      return this.processTargetDocuments(targetInterval, settings);
+    } catch (error) {
+      console.error('Error fetching previous month targets:', error);
+      return [];
+    }
+  }
+
+  private async _fetchCurrentTargets(): Promise<Target[]> {
     const trackName = this.getTelemetryTrackName('targets');
     let trackPerformanceQueueing;
     let trackPerformanceRunning;
@@ -494,6 +521,78 @@ export class RulesEngineService implements OnDestroy {
     return targets;
   }
 
+  /**
+   * Get target interval tag for a specific reporting period
+   * Follows same pattern as TargetAggregatesService.getTargetIntervalTag
+   */
+  private getTargetIntervalTag(settings: any, reportingPeriod: ReportingPeriod): string {
+    const INTERVAL_TAG_FORMAT = 'YYYY-MM';
+    const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
+    const currentInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
+    
+    if (reportingPeriod === ReportingPeriod.CURRENT) {
+      return moment(currentInterval.end).format(INTERVAL_TAG_FORMAT);
+    }
+    
+    // Previous month calculation
+    const previousMonthDate = moment(currentInterval.end).subtract(1, 'months');
+    const previousInterval = this.calendarIntervalService.getInterval(uhcMonthStartDate, previousMonthDate.valueOf());
+    return moment(previousInterval.end).format(INTERVAL_TAG_FORMAT);
+  }
+
+  /**
+   * Fetch target interval for a specific reporting period using cht-datasource
+   * @returns the target interval, or null if not found or prerequisites aren't met
+   */
+  private async fetchTargetDocumentsForPeriod(
+    settings: any,
+    reportingPeriod: ReportingPeriod
+  ): Promise<TargetInterval.v1.TargetInterval | null> {
+    const intervalTag = this.getTargetIntervalTag(settings, reportingPeriod);
+    const userContact = await this.userContactService.get();
+    const username = this.sessionService.userCtx()?.name;
+
+    if (!userContact?._id || !username) {
+      return null;
+    }
+
+    return await this.getTargetInterval(
+      Qualifier.and(
+        Qualifier.byReportingPeriod(intervalTag),
+        Qualifier.byContactUuid(userContact._id),
+        Qualifier.byUsername(username)
+      )
+    );
+  }
+
+  /**
+   * Process target interval into target format expected by UI
+   * Only returns targets that exist in the target interval document.
+   */
+  private processTargetDocuments(
+    targetInterval: TargetInterval.v1.TargetInterval,
+    settings: any
+  ): Target[] {
+    const targetsConfig = settings?.tasks?.targets?.items || [];
+    const processedTargets: Target[] = [];
+
+    if (!targetInterval?.targets) {
+      return processedTargets;
+    }
+
+    targetInterval.targets.forEach(targetValue => {
+      const targetConfig = targetsConfig.find(config => config.id === targetValue.id);
+      if (targetConfig && targetConfig.visible !== false) {
+        processedTargets.push({
+          ...targetConfig,
+          ...targetValue,
+          visible: true
+        });
+      }
+    });
+
+    return processedTargets;
+  }
 
   async monitorExternalChanges(replicationResult?) {
     await this.initialized;
