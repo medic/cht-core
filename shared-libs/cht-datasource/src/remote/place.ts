@@ -51,5 +51,8 @@ export namespace v1 {
   export const update =
     (remoteContext: RemoteDataContext) => (
       input: Record<string, unknown>
-    ): Promise<Place.v1.Place> => updatePlace(remoteContext)(input);
+    ): Promise<Place.v1.Place> => {
+      const id = input._id as string;
+      return updatePlace(remoteContext)(id, input);
+    };
 }

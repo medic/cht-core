@@ -294,10 +294,11 @@ describe('remote context lib', () => {
 
       fetchResponse.text.resolves(errorMsg);
       const expectedError = new InvalidArgumentError(errorMsg);
-      await expect(putResource(context, path)(input)).to.be.rejectedWith(errorMsg);
+      const resourceId = '1';
+      await expect(putResource(context, path)(resourceId, input)).to.be.rejectedWith(errorMsg);
 
       expect(fetchStub.calledOnceWithExactly(
-        `${context.url}/${path}`,
+        `${context.url}/${path}/${resourceId}`,
         {
           method: 'PUT',
           headers: {
@@ -310,7 +311,7 @@ describe('remote context lib', () => {
       expect(fetchResponse.text.called).to.be.true;
       expect(fetchResponse.json.notCalled).to.be.true;
       expect(loggerError.args[0]).to.deep.equal([
-        `Failed to PUT ${JSON.stringify(input)} to ${context.url}/${path}.`,
+        `Failed to PUT ${JSON.stringify(input)} to ${context.url}/${path}/${resourceId}.`,
         expectedError
       ]);
     });
@@ -321,11 +322,12 @@ describe('remote context lib', () => {
       fetchResponse.ok = false;
       fetchResponse.status = 502;
       fetchResponse.statusText = 'Bad Gateway';
+      const resourceId = '1';
 
-      await expect(putResource(context, path)(qualifier)).to.be.rejectedWith(fetchResponse.statusText);
+      await expect(putResource(context, path)(resourceId, qualifier)).to.be.rejectedWith(fetchResponse.statusText);
 
       expect(fetchStub.calledOnceWithExactly(
-        `${context.url}/${path}`,
+        `${context.url}/${path}/${resourceId}`,
         {
           method: 'PUT',
           headers: {
@@ -339,7 +341,7 @@ describe('remote context lib', () => {
       expect(fetchResponse.json.notCalled).to.be.true;
       expect(loggerError.calledOnce).to.be.true;
       expect(loggerError.args[0]).to.deep.equal([
-        `Failed to PUT ${JSON.stringify(qualifier)} to ${context.url}/${path}.`,
+        `Failed to PUT ${JSON.stringify(qualifier)} to ${context.url}/${path}/${resourceId}.`,
         new Error(fetchResponse.statusText)
       ]);
     });
@@ -355,12 +357,13 @@ describe('remote context lib', () => {
       fetchResponse.ok = true;
       fetchResponse.status = 200;
       fetchResponse.json.resolves(expected_response);
+      const resourceId = '1';
 
-      const response = await putResource(context, path)(qualifier);
+      const response = await putResource(context, path)(resourceId, qualifier);
 
       expect(response).to.deep.equal(expected_response);
       expect(fetchStub.calledOnceWithExactly(
-        `${context.url}/${path}`,
+        `${context.url}/${path}/${resourceId}`,
         {
           method: 'PUT',
           headers: {

@@ -319,7 +319,7 @@ describe('Place API', () => {
     });
   });
 
-  describe('PUT /api/v1/place', async () => {
+  describe('PUT /api/v1/place/:uuid', async () => {
     it(`updates a place for valid placeInput`, async () => {
       const endpoint = '/api/v1/place';
       const createPlaceInput = {
@@ -340,8 +340,10 @@ describe('Place API', () => {
       const updatePlaceInput = {
         ...createPlaceDoc, name: 'myplace'
       };
+      // Remove _id from body as it will come from URL
+      delete updatePlaceInput._id;
       const updateOpts = {
-        path: endpoint,
+        path: `${endpoint}/${createPlaceDoc._id}`,
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -349,7 +351,7 @@ describe('Place API', () => {
         body: updatePlaceInput
       };
       const updatedPlaceDoc = await utils.request(updateOpts);
-      expect(updatedPlaceDoc).excluding([ '_rev' ]).to.deep.equal(updatePlaceInput);
+      expect(updatedPlaceDoc).excluding([ '_rev' ]).to.deep.equal({ ...updatePlaceInput, _id: createPlaceDoc._id });
     });
 
     it(`throws error on trying to update an immutable field`, async () => {
@@ -372,8 +374,10 @@ describe('Place API', () => {
       const updatePlaceInput = {
         ...createPlaceDoc, reported_date: 222222
       };
+      // Remove _id from body as it will come from URL
+      delete updatePlaceInput._id;
       const updateOpts = {
-        path: endpoint,
+        path: `${endpoint}/${createPlaceDoc._id}`,
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -413,7 +417,7 @@ describe('Place API', () => {
       };
       delete updatePlaceInput._id;
       const updateOpts = {
-        path: endpoint,
+        path: `${endpoint}/${createPlaceDoc._id}`,
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -424,7 +428,9 @@ describe('Place API', () => {
         .to.be.rejectedWith(
           `400 - ${JSON.stringify({
             code: 400,
-            error: `Document for update is not a valid Doc ${JSON.stringify(updatePlaceInput)}`
+            error: `Value ${JSON.stringify(
+              updatePlaceInput.reported_date
+            )} of immutable field 'reported_date' does not match with the original doc`
           })}`
         );
     });
@@ -450,8 +456,10 @@ describe('Place API', () => {
         ...createPlaceDoc, reported_date: 222222
       };
       delete updatePlaceInput._rev;
+      // Remove _id from body as it will come from URL
+      delete updatePlaceInput._id;
       const updateOpts = {
-        path: endpoint,
+        path: `${endpoint}/${createPlaceDoc._id}`,
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -463,7 +471,7 @@ describe('Place API', () => {
           `400 - ${JSON.stringify({
             code: 400,
             error: `Missing or empty required fields (_rev) for [${JSON
-              .stringify(updatePlaceInput)}].`
+              .stringify({ ...updatePlaceInput, _id: createPlaceDoc._id })}].`
           })}`
         );
     });

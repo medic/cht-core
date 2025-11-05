@@ -93,9 +93,10 @@ export const postResource = (context: RemoteDataContext, path: string) => async 
 
 /** @internal */
 export const putResource = (context: RemoteDataContext, path: string) => async <T>(
+  id: string,
   body: Record<string, unknown>,
 ): Promise<T> => {
-  return await requestWithBody(context, path, body, 'PUT');
+  return await requestWithBody(context, `${path}/${id}`, body, 'PUT');
 };
 
 const requestWithBody = async <T>(

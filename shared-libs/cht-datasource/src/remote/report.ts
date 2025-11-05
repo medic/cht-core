@@ -41,7 +41,10 @@ export namespace v1 {
   /** @internal */
   export const update = (remoteContext: RemoteDataContext) => (
     input: Record<string, unknown>
-  ): Promise<Report.v1.Report> => updateReport(remoteContext)(input);
+  ): Promise<Report.v1.Report> => {
+    const id = input._id as string;
+    return updateReport(remoteContext)(id, input);
+  };
 
   /** @internal */
   export const getWithLineage = (remoteContext: RemoteDataContext) => (

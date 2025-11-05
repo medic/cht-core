@@ -141,7 +141,7 @@ describe('remote person', () => {
         const result = await Person.v1.update(remoteContext)(personInput);
         expect(result).to.deep.equal(expected_doc);
         expect(putResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
-        expect(putResourceInner.calledOnceWithExactly(personInput)).to.be.true;
+        expect(putResourceInner.calledOnceWithExactly('1-id', personInput)).to.be.true;
       });
     });
   });

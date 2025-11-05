@@ -150,7 +150,7 @@ describe('remote report', () => {
         const reportDoc = await Report.v1.update(remoteContext)(input);
         expect(reportDoc).to.deep.equal(input);
         expect(putResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
-        expect(putResourceInner.calledOnceWithExactly(input)).to.be.true;
+        expect(putResourceInner.calledOnceWithExactly('1', input)).to.be.true;
       });
 
       it('rejected with an error if report is not found', async () => {

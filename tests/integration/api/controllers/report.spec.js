@@ -459,7 +459,7 @@ describe('Report API', () => {
     });
   });
 
-  describe('PUT /api/v1/report', () => {
+  describe('PUT /api/v1/report/:uuid', () => {
     it('updates doc for a valid update input', async () => {
       const createInput = {
         type: 'data_record',
@@ -481,8 +481,10 @@ describe('Report API', () => {
         ...originalReportDoc,
         form: 'undo_death_report'
       };
+      // Remove _id from body as it will come from URL
+      delete updateInput._id;
       const updateOpts = {
-        path: '/api/v1/report',
+        path: `/api/v1/report/${originalReportDoc._id}`,
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -492,7 +494,7 @@ describe('Report API', () => {
 
       const updatedReportDoc = await utils.request(updateOpts);
       expect(updatedReportDoc).excluding([ '_rev' ])
-        .to.deep.equal(updateInput);
+        .to.deep.equal({ ...updateInput, _id: originalReportDoc._id });
     });
 
     it('throws error on trying to update an immutable field, here contact', async () => {
@@ -516,8 +518,10 @@ describe('Report API', () => {
         ...originalReportDoc,
         contact: contact1
       };
+      // Remove _id from body as it will come from URL
+      delete updateInput._id;
       const updateOpts = {
-        path: '/api/v1/report',
+        path: `/api/v1/report/${originalReportDoc._id}`,
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -548,11 +552,12 @@ describe('Report API', () => {
       const originalReportDoc = await utils.request(createOpts);
       const updateInput = {
         ...originalReportDoc,
-        _id: '12312312',
         form: 'pregnancy_home_visit'
       };
+      // Remove _id from body as it will come from URL
+      delete updateInput._id;
       const updateOpts = {
-        path: '/api/v1/report',
+        path: '/api/v1/report/12312312',
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'

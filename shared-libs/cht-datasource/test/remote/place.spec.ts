@@ -141,7 +141,7 @@ describe('remote place', () => {
         const result = await Place.v1.update(remoteContext)(placeInput);
         expect(result).to.deep.equal(expected_doc);
         expect(putResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/place')).to.be.true;
-        expect(putResourceInner.calledOnceWithExactly(placeInput)).to.be.true;
+        expect(putResourceInner.calledOnceWithExactly('1', placeInput)).to.be.true;
       });
     });
   });

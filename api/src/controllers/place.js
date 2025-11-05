@@ -45,7 +45,12 @@ module.exports = {
     update: serverUtils.doOrError(async (req, res) => {
       await auth.checkUserPermissions(req, [ 'can_view_contacts', 'can_update_places' ], [ 'can_edit' ]);
 
-      const updatedPlaceDoc = await update()(req.body);
+      const { uuid } = req.params;
+      const updatePlaceInput = {
+        ...req.body,
+        _id: uuid,
+      };
+      const updatedPlaceDoc = await update()(updatePlaceInput);
       return res.json(updatedPlaceDoc);
     })
   }

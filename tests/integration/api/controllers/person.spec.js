@@ -316,7 +316,7 @@ describe('Person API', () => {
     });
   });
 
-  describe('PUT /api/v1/person', async () => {
+  describe('PUT /api/v1/person/:uuid', async () => {
     const endpoint = '/api/v1/person';
     const createPersonInput = {
       name: 'apoorva',
@@ -340,8 +340,10 @@ describe('Person API', () => {
           _id: place1._id
         }
       };
+      // Remove _id from body as it will come from URL
+      delete updatePersonInput._id;
       const opts = {
-        path: endpoint,
+        path: `${endpoint}/${createPersonDoc._id}`,
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -361,8 +363,10 @@ describe('Person API', () => {
         ...createPersonDoc,
         name: 'apoorva 2'
       };
+      // Remove _id from body as it will come from URL
+      delete updatePersonInput._id;
       const opts = {
-        path: endpoint,
+        path: `${endpoint}/${createPersonDoc._id}`,
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -371,7 +375,7 @@ describe('Person API', () => {
       };
       const updatePersonDoc = await utils.request(opts);
       expect(updatePersonDoc).excluding([ '_rev' ])
-        .to.deep.equal(updatePersonInput);
+        .to.deep.equal({ ...updatePersonInput, _id: createPersonDoc._id });
     });
 
   });
