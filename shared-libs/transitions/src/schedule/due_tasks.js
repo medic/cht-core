@@ -75,8 +75,11 @@ const updateScheduledTasks = (doc, context, dueDates) => {
         }
       }
 
+      // check that messages.message is not empty
+      const hasValidMessage = task.messages && task.messages[0].message?.trim() !== '';
+
       // update task states to pending when messages exist or to clear if specified in config
-      if (task.messages) {
+      if (hasValidMessage) {
         updatedTasks = true;
         utils.setTaskState(task, 'pending');
       } else if (clearFailing()){

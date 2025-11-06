@@ -1781,7 +1781,7 @@ describe('due tasks', () => {
     });
   });
 
-  it('1. set task to clear when message generation fails and clear_failing_schedules is true', () => {
+  it('change task state to clear when message generation fails and clear_failing_schedules is true', () => {
     config.get.withArgs('clear_failing_schedules').returns(true);
     const doc = {
       scheduled_tasks: [{
@@ -1815,7 +1815,7 @@ describe('due tasks', () => {
     });
   });
 
-  it('2. dont change task state if message generation fails and clear_failing_schedules is false', () => {
+  it('dont change task state if message generation fails and clear_failing_schedules is false', () => {
     config.get.withArgs('clear_failing_schedules').returns(false);
     const id = 'xyz';
     const due = moment();
@@ -1853,7 +1853,7 @@ describe('due tasks', () => {
     });
   });
   
-  it('3. dont change task state if message generation fails and clear_failing_schedules is not set', () => {
+  it('dont change task state if message generation fails and clear_failing_schedules is not set', () => {
     const id = 'xyz';
     const due = moment();
     const doc = {
@@ -1873,7 +1873,6 @@ describe('due tasks', () => {
       ],
     });
 
-    // Simulate missing messages to trigger clear_failing_schedules logic    
     const translate = sinon
       .stub(utils, 'translate')
       .returns('');
@@ -1885,11 +1884,11 @@ describe('due tasks', () => {
       assert.equal(view.callCount, 1);
       assert.equal(hydrate.callCount, 1);
       assert.equal(saveDoc.callCount, 0);
-      assert.equal(setTaskState.callCount, 0);  
+      assert.equal(setTaskState.callCount, 0);
     });
   });
 
-  it('4. state should be changed to pending if there is a message already', () => {
+  it('change state to pending if there is a message already regardless of clear flag', () => {
     const id = 'xyz';
     const due = moment();
     const doc = {
@@ -1920,6 +1919,53 @@ describe('due tasks', () => {
       assert.equal(hydrate.callCount, 1);
       assert.equal(saveDoc.callCount, 1);
       assert.equal(setTaskState.callCount, 1);
+      assert(
+        setTaskState.calledWithMatch(
+          { due: due.toISOString(), state: 'scheduled' },
+          'pending'
+        )
+      );
+    });
+  });
+
+  it('change sate to clear if message content is empty and clear flag is set', () => {
+    config.get.withArgs('clear_failing_schedules').returns(true);
+    const id = 'xyz';
+    const due = moment();
+    const doc = {
+      scheduled_tasks: [
+        {
+          due: due.toISOString(),
+          state: 'scheduled',
+          messages: [{
+            to: '1414',
+            message: ''
+          }]
+        },
+      ],
+    };
+
+    const hydrate = sinon.stub(schedule._lineage, 'hydrateDocs').resolves([doc]);
+    const view = sinon.stub(request, 'get').resolves({
+      rows: [
+        { id, key: ['scheduled', due.valueOf()], doc },
+      ],
+    });
+
+    const setTaskState = sinon.stub(utils, 'setTaskState');
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({});
+
+    return schedule.execute().then(() => {
+      assert.equal(view.callCount, 1);
+      assert.equal(hydrate.callCount, 1);
+      assert.equal(saveDoc.callCount, 1);
+      assert.equal(setTaskState.callCount, 1);       
+      assert(
+        setTaskState.calledWithMatch(
+          { due: due.toISOString(), state: 'scheduled' },
+          'clear'
+        )
+      );
     });
   });
 
