@@ -1,10 +1,11 @@
 const utils = require('@utils');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const { resizeWindowForScreenshots, generateScreenshot } = require('@utils/screenshots');
 const { reports, contact } = require('./data/generateReportData');
 
-describe('Reports Main List functionality test', () => {
+describe('Reports List & Report Details functionality test', () => {
   const docs = [contact, ...reports];
 
   before(async () => {
@@ -17,11 +18,12 @@ describe('Reports Main List functionality test', () => {
     await utils.revertDb([], true);
   });
 
-  it('should test Reports Main list functionality and capture screenshots', async () => {
+  it('should test Reports list functionality, open the first report and capture screenshots', async () => {
     await resizeWindowForScreenshots();
 
     await commonElements.goToReports();
     await commonElements.waitForLoaders();
+    await reportsPage.openFirstReport();
     await browser.pause(1000);
 
     await generateScreenshot('report', 'reports-list');
