@@ -19,6 +19,7 @@ describe('due tasks', () => {
       getAll: sinon
         .stub()
         .returns({}),
+      get: sinon.stub().returns(undefined)      
     });
     sinon.stub(environment, 'couchUrl').value('http://admin:pass@127.0.0.1:5984/medic');
 
@@ -1779,4 +1780,147 @@ describe('due tasks', () => {
       });
     });
   });
+
+  it('1. set task to clear when message generation fails and clear_failing_schedules is true', () => {
+    config.get.withArgs('clear_failing_schedules').returns(true);
+    const doc = {
+      scheduled_tasks: [{
+        due: moment().toISOString(),
+        state: 'scheduled',
+        message_key: 'k1',
+        recipient: 'patient'
+      }],
+    };
+
+    sinon.stub(schedule._lineage, 'hydrateDocs').resolves([doc]);
+    sinon.stub(request, 'get').resolves({
+      rows: [{ id: 'xyz', key: ['scheduled', Date.now()], doc }],
+    });
+
+    const messageUtils = require('@medic/message-utils');
+    // Stub the function on the actual module reference
+    sinon.stub(messageUtils, 'generate').returns([{ error: 'missing patient' }]);
+    sinon.stub(messageUtils, 'hasError').returns(true);
+
+    const setTaskState = sinon.stub(utils, 'setTaskState');
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({});    
+    return schedule.execute().then(() => {
+      assert.equal(setTaskState.callCount, 1);
+      sinon.assert.calledWithMatch(
+        setTaskState,
+        sinon.match.object,
+        'clear'
+      );
+      assert.equal(saveDoc.callCount, 1);
+    });
+  });
+
+  it('2. dont change task state if message generation fails and clear_failing_schedules is false', () => {
+    config.get.withArgs('clear_failing_schedules').returns(false);
+    const id = 'xyz';
+    const due = moment();
+    const doc = {
+      scheduled_tasks: [
+        {
+          due: due.toISOString(),
+          state: 'scheduled',
+          message_key: 'x',
+        },
+      ],
+    };
+
+    const hydrate = sinon.stub(schedule._lineage, 'hydrateDocs').resolves([doc]);    
+    const view = sinon.stub(request, 'get').resolves({
+      rows: [
+        { id, key: ['scheduled', due.valueOf()], doc },
+      ],
+    });
+
+    // Simulate missing messages to trigger clear_failing_schedules logic    
+    const translate = sinon
+      .stub(utils, 'translate')
+      .returns('');
+    translate.hasError=true;
+    const setTaskState = sinon.stub(utils, 'setTaskState');
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({});
+
+    return schedule.execute().then(() => {
+      assert.equal(translate.callCount, 1);
+      assert.equal(view.callCount, 1);
+      assert.equal(hydrate.callCount, 1);
+      assert.equal(saveDoc.callCount, 0);
+      assert.equal(setTaskState.callCount, 0);  
+    });
+  });
+  
+  it('3. dont change task state if message generation fails and clear_failing_schedules is not set', () => {
+    const id = 'xyz';
+    const due = moment();
+    const doc = {
+      scheduled_tasks: [
+        {
+          due: due.toISOString(),
+          state: 'scheduled',
+          message_key: 'x',
+        },
+      ],
+    };
+
+    const hydrate = sinon.stub(schedule._lineage, 'hydrateDocs').resolves([doc]);    
+    const view = sinon.stub(request, 'get').resolves({
+      rows: [
+        { id, key: ['scheduled', due.valueOf()], doc },
+      ],
+    });
+
+    // Simulate missing messages to trigger clear_failing_schedules logic    
+    const translate = sinon
+      .stub(utils, 'translate')
+      .returns('');
+    const setTaskState = sinon.stub(utils, 'setTaskState');
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({});
+
+    return schedule.execute().then(() => {
+      assert.equal(translate.callCount, 1);
+      assert.equal(view.callCount, 1);
+      assert.equal(hydrate.callCount, 1);
+      assert.equal(saveDoc.callCount, 0);
+      assert.equal(setTaskState.callCount, 0);  
+    });
+  });
+
+  it('4. state should be changed to pending if there is a message already', () => {
+    const id = 'xyz';
+    const due = moment();
+    const doc = {
+      scheduled_tasks: [
+        {
+          due: due.toISOString(),
+          state: 'scheduled',
+          messages: [{
+            to: '1414',
+            message: 'send to pending'
+          }]
+        },
+      ],
+    };
+
+    const hydrate = sinon.stub(schedule._lineage, 'hydrateDocs').resolves([doc]);    
+    const view = sinon.stub(request, 'get').resolves({
+      rows: [
+        { id, key: ['scheduled', due.valueOf()], doc },
+      ],
+    });
+    
+    const setTaskState = sinon.stub(utils, 'setTaskState');
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({});
+
+    return schedule.execute().then(() => {
+      assert.equal(view.callCount, 1);
+      assert.equal(hydrate.callCount, 1);
+      assert.equal(saveDoc.callCount, 1);
+      assert.equal(setTaskState.callCount, 1);
+    });
+  });
+
 });

@@ -11,6 +11,8 @@ const lineage = require('@medic/lineage')(Promise, db.medic);
 const messageUtils = require('@medic/message-utils');
 
 const BATCH_SIZE = 1000;
+const clearFailing = () => config.get('clear_failing_schedules') || false;
+
 
 const getTemplateContext = async (doc) => {
   const context = {
@@ -73,10 +75,13 @@ const updateScheduledTasks = (doc, context, dueDates) => {
         }
       }
 
-      // only update task states when messages exist
+      // update task states to pending when messages exist or to clear if specified in config
       if (task.messages) {
         updatedTasks = true;
         utils.setTaskState(task, 'pending');
+      } else if (clearFailing()){
+        updatedTasks = true;
+        utils.setTaskState(task, 'clear');
       }
     }
   });
