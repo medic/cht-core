@@ -209,6 +209,8 @@ const checkUnsupportedBrowser = () => {
     } else if (!isUsingSupportedBrowser()) {
       outdatedComponentKey = 'login.unsupported_browser.outdated_webview_apk';
     }
+  } else if (isSafariBrowser()) {
+    outdatedComponentKey = 'login.unsupported_browser.safari';
   } else if (!isUsingSupportedBrowser()) {
     outdatedComponentKey = 'login.unsupported_browser.outdated_browser';
   }
@@ -218,20 +220,11 @@ const checkUnsupportedBrowser = () => {
     document.getElementById('unsupported-browser-update').innerText =
       translations[selectedLocale][outdatedComponentKey];
     document.getElementById('unsupported-browser')?.classList.remove('hidden');
-  }
-};
 
-const showUnsupportedBrowserBanner = (key) => {
-  const banner = document.getElementById('unsupported-browser');
-  const bannerUpdate = document.getElementById('unsupported-browser-update');
-  if (!banner || !bannerUpdate) {
-    return;
+    if (isSafariBrowser()) {
+      document.getElementById('login-fields')?.classList.add('hidden');
+    }
   }
-
-  const message = translations?.[selectedLocale]?.[key] || 'Browser not supported.';
-  bannerUpdate.setAttribute('translate', key);
-  bannerUpdate.innerHTML = `<br>${message}`;
-  banner.classList.remove('hidden');
 };
 
 const handleLoginButton = () => {
@@ -269,19 +262,12 @@ const handleServiceWorker = () => {
   }
 };
 
-const checkBrowser = () => {
-  if (isSafariBrowser()) {
-    showUnsupportedBrowserBanner('login.unsupported_browser.safari');
-    document.getElementById('login-fields')?.classList.add('hidden');
-  }
-};
-
 document.addEventListener('DOMContentLoaded', function() {
   translations = parseTranslations();
   selectedLocale = getLocale(translations);
   translate();
 
-  checkBrowser();
+  checkUnsupportedBrowser();
 
   document.getElementById('locale')?.addEventListener('click', handleLocaleSelection, false);
   handlePasswordToggle();
@@ -298,8 +284,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const ssoLoginButton = document.getElementById('login-sso');
   ssoLoginButton.addEventListener('click', requestSSOLogin, false);
-
-  checkUnsupportedBrowser();
 
 });
 
