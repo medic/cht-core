@@ -67,7 +67,18 @@ const isTrainingComplete = async (formId) => {
   return (await $(`[data-record-id="${formId}"] .mat-icon-check`)).isExisting();
 };
 
+const isTrainingCardDisplayed = async () => {
+  const form = await trainingCardsForm();
+  const trainingCardsExist = await form.isExisting();
+  if (!trainingCardsExist) {
+    return false;
+  }
+  await waitForTrainingCards();
+  return true;
+};
+
 module.exports = {
+  isTrainingCardDisplayed,
   checkTrainingCardIsNotDisplayed,
   confirmQuitTraining,
   getAllTrainingsText,

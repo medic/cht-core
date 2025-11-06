@@ -1,6 +1,7 @@
 const constants = require('@constants');
 const utils = require('@utils');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
+const trainingCardsPage = require('@page-objects/default/enketo/training-cards.wdio.page');
 
 const loginButton = () => $('#login');
 const updatePasswordButton = () => $('#update-password');
@@ -91,6 +92,13 @@ const cookieLogin = async (options = {}) => {
     await utils.setupUserDoc(username);
   }
   await commonPage.goToBase();
+
+  // Cancel out of any training (e.g. Admin Welcome)
+  if (await trainingCardsPage.isTrainingCardDisplayed()) {
+    await trainingCardsPage.quitTraining();
+    await trainingCardsPage.confirmQuitTraining();
+    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
+  }
 };
 
 const getLanguages = async () => {
