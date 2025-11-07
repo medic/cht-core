@@ -11,7 +11,7 @@ describe('Reports List & Report Details functionality test', () => {
   before(async () => {
     await utils.saveDocs(docs);
     await loginPage.cookieLogin();
-    await browser.pause(3000);
+    await commonElements.waitForLoaders();
   });
 
   after(async () => {
@@ -24,7 +24,7 @@ describe('Reports List & Report Details functionality test', () => {
     await commonElements.goToReports();
     await commonElements.waitForLoaders();
     await reportsPage.openFirstReport();
-    await browser.pause(1000);
+    await commonElements.waitForLoaders();
 
     await generateScreenshot('report', 'reports-list');
   });
