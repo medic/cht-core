@@ -8,8 +8,9 @@
   const purger = require('./purger');
   const initialReplicationLib = require('./initial-replication');
   const offlineDdocs = require('./offline-ddocs');
+  const { USER_ROLES } = require('@medic/constants');
 
-  const ONLINE_ROLE = 'mm-online';
+  const ONLINE_ROLE = USER_ROLES.ONLINE;
 
   const getUserCtx = function() {
     let userCtx;
