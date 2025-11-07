@@ -11,7 +11,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const chtConfUtils = require('@utils/cht-conf');
 const chtDbUtils = require('@utils/cht-db');
-const { getTelemetry } = require('@utils/telemetry');
+const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Targets', () => {
@@ -50,6 +50,7 @@ describe('Targets', () => {
 
   afterEach(async () => {
     await utils.revertSettings(true);
+    await destroyTelemetryDb(chw.username);
   });
 
   it('should display targets from default config', async () => {
@@ -104,6 +105,8 @@ describe('Targets', () => {
 
     const filterLabel = await analyticsPage.filterOptionLabel();
     expect(await filterLabel.getText()).to.equal('This month');
+    const telemetry = await getTelemetry('sidebar_filter:analytics:target_aggregates:open', chw.username);
+    expect(telemetry.length).to.equal(1);
   });
 
   it('should show error message for bad config', async () => {

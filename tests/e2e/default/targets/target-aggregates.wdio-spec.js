@@ -12,7 +12,7 @@ const userSettingsFactory = require('@factories/cht/users/user-settings');
 const personFactory = require('@factories/cht/contacts/person');
 const helperFunctions = require('./utils/aggregates-helper-functions');
 const targetAggregatesConfig = require('./config/target-aggregates');
-const { getTelemetry } = require('@utils/telemetry');
+const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
 
 describe('Target aggregates', () => {
   describe('DB admin', () => {
@@ -347,6 +347,10 @@ describe('Target aggregates', () => {
       beforeEach(async () => {
         await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
         await commonPage.waitForPageLoaded();
+      });
+
+      afterEach(async () => {
+        await destroyTelemetryDb(userWithManyPlaces.name);
       });
 
       it('should disable content', async () => {

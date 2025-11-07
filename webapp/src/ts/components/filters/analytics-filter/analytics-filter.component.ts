@@ -117,7 +117,7 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
       return;
     }
 
-    const moduleId = this.activeModule? this.activeModule: this.getCurrentModuleId();
+    const moduleId = this.activeModule? this.activeModule.id: this.getCurrentModuleId();
 
     // Counting every time the user opens the sidebar filter in analytics_targets_aggregrate tab.
     if (moduleId === AGGREGATE_TARGETS_ID) {
