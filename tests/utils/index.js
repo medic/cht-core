@@ -640,17 +640,6 @@ const revertSettings = async ignoreRefresh => {
   return await watcher.promise;
 };
 
-const seedTestData = (userContactDoc, documents) => {
-  return saveDocs(documents)
-    .then(() => getDoc(constants.USER_CONTACT_ID))
-    .then(existingContactDoc => {
-      if (userContactDoc) {
-        Object.assign(existingContactDoc, userContactDoc);
-        return saveDoc(existingContactDoc);
-      }
-    });
-};
-
 const revertTranslations = async () => {
   const updatedTranslations = Object.keys(originalTranslations);
   if (!updatedTranslations.length) {
@@ -704,14 +693,28 @@ const getDefaultForms = async () => {
 const setUserContactDoc = (attempt = 0) => {
   const {
     USER_CONTACT_ID: docId,
-    DEFAULT_USER_CONTACT_DOC: defaultDoc
+    DEFAULT_USER_CONTACT_DOC: defaultDoc,
+    USERNAME
   } = constants;
 
-  return db
-    .get(docId)
-    .catch(() => ({}))
-    .then(existing => Object.assign(defaultDoc, { _rev: existing?._rev }))
-    .then(newDoc => db.put(newDoc))
+  // Add training doc for default user so not prompted to complete training
+  const defaultUserTrainingDoc = {
+    _id: `training:${USERNAME}:${docId}`,
+    form: 'training:admin_welcome',
+    type: 'data_record',
+    reported_date: Date.now(),
+    contact: { _id: docId },
+  };
+
+  const upsert = async (doc) => {
+    const existing = await db
+      .get(docId)
+      .catch(() => ({}));
+    await db.put({ ...doc, _rev: existing?._rev });
+  };
+
+  return Promise
+    .all([defaultDoc, defaultUserTrainingDoc].map(upsert))
     .catch(err => {
       if (attempt > 3) {
         throw err;
@@ -1685,7 +1688,6 @@ module.exports = {
   deleteAllDocs,
   updateSettings,
   revertSettings,
-  seedTestData,
   revertDb,
   getOrigin,
   getBaseUrl,
