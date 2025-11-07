@@ -2,6 +2,7 @@ const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const { getRemoteDataContext, Place, Qualifier } = require('@medic/cht-datasource');
+const { USER_ROLES } = require('@medic/constants');
 const { expect } = require('chai');
 const userFactory = require('@factories/cht/users/users');
 const {setAuth, removeAuth} = require('./auth');
@@ -61,7 +62,7 @@ describe('cht-datasource Place', () => {
       _id: 'fixture:user:online-no-perms',
       name: 'Online User',
     },
-    roles: ['mm-online']
+    roles: [USER_ROLES.ONLINE]
   }));
   const offlineUser = utils.deepFreeze(userFactory.build({
     username: 'offline-has-perms',
