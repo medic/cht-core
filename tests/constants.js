@@ -25,6 +25,13 @@ module.exports = {
     type: 'person',
     reported_date: 1541679811408,
   },
+  DEFAULT_USER_ADMIN_TRAINING_DOC: {
+    _id: `training:${USERNAME}:${module.exports.USER_CONTACT_ID}`,
+    form: 'training:admin_welcome',
+    type: 'data_record',
+    reported_date: Date.now(),
+    contact: { _id: module.exports.USER_CONTACT_ID },
+  },
   BASE_URL: `${PROTOCOL}${API_HOST}`,
   BASE_URL_AUTH: `${PROTOCOL}${USERNAME}:${PASSWORD}@${API_HOST}`,
 

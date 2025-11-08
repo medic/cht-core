@@ -414,6 +414,7 @@ const deleteDocs = ids => {
 const PROTECTED_DOCS = [
   'service-worker-meta',
   constants.USER_CONTACT_ID,
+  constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id,
   'migration-log',
   'resources',
   'branding',
@@ -692,29 +693,20 @@ const getDefaultForms = async () => {
 
 const setUserContactDoc = (attempt = 0) => {
   const {
-    USER_CONTACT_ID: docId,
-    DEFAULT_USER_CONTACT_DOC: defaultDoc,
-    USERNAME
+    DEFAULT_USER_CONTACT_DOC,
+    DEFAULT_USER_ADMIN_TRAINING_DOC
   } = constants;
-
-  // Add training doc for default user so not prompted to complete training
-  const defaultUserTrainingDoc = {
-    _id: `training:${USERNAME}:${docId}`,
-    form: 'training:admin_welcome',
-    type: 'data_record',
-    reported_date: Date.now(),
-    contact: { _id: docId },
-  };
 
   const upsert = async (doc) => {
     const existing = await db
-      .get(docId)
+      .get(doc._id)
       .catch(() => ({}));
     await db.put({ ...doc, _rev: existing?._rev });
   };
 
+  // Add training doc for default user so not prompted to complete training
   return Promise
-    .all([defaultDoc, defaultUserTrainingDoc].map(upsert))
+    .all([DEFAULT_USER_CONTACT_DOC, DEFAULT_USER_ADMIN_TRAINING_DOC].map(upsert))
     .catch(err => {
       if (attempt > 3) {
         throw err;
