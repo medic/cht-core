@@ -254,6 +254,15 @@ const assignContactToGroups = (row, groups, subjectIds) => {
   subjectIds.push(...groups[row.id].subjectIds);
 };
 
+const isRelevantRecordEmission = (hit, subjectIds) => {
+  // reports with `needs_signoff` will emit for every contact from their submitter lineage,
+  // but we only want to process them once, either associated to their subject, or to their submitter
+  // when they have no subject or have an invalid subject.
+  // if the report has a subject, but it's not the same as the emission key, we hit the emit
+  // for the submitter or submitter lineage via the `needs_signoff` path. Skip.
+  return !(hit.fields.needs_signoff && !subjectIds.includes(hit.fields.subject));
+};
+
 const getRecordGroupInfo = (hit) => {
   if (hit.doc.form) {
     // use subject as a key, as to keep subject to report associations correct
@@ -302,22 +311,33 @@ const getRecordsForContacts = async (groups, subjectIds) => {
 };
 
 const getRecordsForContactsBatch = async (subjectIds) => {
+  const results = [];
   if (!subjectIds.length) {
-    return [];
+    return results;
   }
 
-  const opts = {
-    q: `subject:(${subjectIds.map(nouveau.escapeKeys).join(' OR ')}) AND type:data_record`,
-    include_docs: true,
-    limit: MAX_BATCH_SIZE,
-  };
+  let bookmark = '';
+  let requestNext;
 
-  const result = await request.post({
-    uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
-    body: opts
-  });
+  do {
+    const opts = {
+      q: `subject:(${subjectIds.map(nouveau.escapeKeys).join(' OR ')}) AND type:data_record`,
+      limit: nouveau.RESULTS_LIMIT,
+    };
+    if (bookmark) {
+      opts.bookmark = bookmark;
+    }
+    const result = await request.post({
+      uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
+      body: opts
+    });
 
-  return result.hits;
+    bookmark = result.bookmark;
+    results.push(...result.hits.filter(hit => isRelevantRecordEmission(hit, subjectIds)));
+    requestNext = bookmark && result.hits.length >= nouveau.RESULTS_LIMIT && results.length < MAX_BATCH_SIZE;
+  } while (requestNext);
+
+  return results;
 };
 
 const getRecordsByKey = (hits) => {
