@@ -16,7 +16,6 @@ describe('Training Materials Page', () => {
 
     await utils.deleteDocs([constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id]);
     await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD });
-    await commonPage.goToBase();
     await trainingCardsPage.waitForTrainingCards();
     expect(await trainingCardsPage.getTrainingTitle()).to.equal(trainingTitle);
 
