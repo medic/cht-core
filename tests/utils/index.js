@@ -125,12 +125,19 @@ const parseCookieResponse = (cookieString) => {
   });
 };
 
-const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.build()) => {
-  return getDoc(COUCH_USER_ID_PREFIX + userName)
-    .then(doc => {
-      const finalDoc = Object.assign(doc, userDoc);
-      return saveDoc(finalDoc);
-    });
+const setupUserDoc = async (userName = constants.USERNAME, userDoc = userSettings.build()) => {
+  // Write training doc for default user (to avoid training modal on login)
+  const trainingDoc = (userName === constants.USERNAME)
+    ? { [constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id]: constants.DEFAULT_USER_ADMIN_TRAINING_DOC }
+    : { };
+  const docDict = {
+    [`${COUCH_USER_ID_PREFIX}${userName}`]: userDoc,
+    ...trainingDoc
+  };
+  const docs = (await getDocs(Object.keys(docDict)))
+    .filter(Boolean)
+    .map(doc => Object.assign(doc, docDict[doc._id]));
+  return saveDocs(docs);
 };
 
 const randomIp = () => {
@@ -414,7 +421,6 @@ const deleteDocs = ids => {
 const PROTECTED_DOCS = [
   'service-worker-meta',
   constants.USER_CONTACT_ID,
-  constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id,
   'migration-log',
   'resources',
   'branding',
@@ -693,20 +699,15 @@ const getDefaultForms = async () => {
 
 const setUserContactDoc = (attempt = 0) => {
   const {
-    DEFAULT_USER_CONTACT_DOC,
-    DEFAULT_USER_ADMIN_TRAINING_DOC
+    USER_CONTACT_ID: docId,
+    DEFAULT_USER_CONTACT_DOC: defaultDoc
   } = constants;
 
-  const upsert = async (doc) => {
-    const existing = await db
-      .get(doc._id)
-      .catch(() => ({}));
-    await db.put({ ...doc, _rev: existing?._rev });
-  };
-
-  // Add training doc for default user so not prompted to complete training
-  return Promise
-    .all([DEFAULT_USER_CONTACT_DOC, DEFAULT_USER_ADMIN_TRAINING_DOC].map(upsert))
+  return db
+    .get(docId)
+    .catch(() => ({}))
+    .then(existing => Object.assign(defaultDoc, { _rev: existing?._rev }))
+    .then(newDoc => db.put(newDoc))
     .catch(err => {
       if (attempt > 3) {
         throw err;

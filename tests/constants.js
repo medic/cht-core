@@ -2,6 +2,7 @@ const USERNAME = 'admin';
 const PASSWORD = 'pass';
 const API_HOST = `localhost${process.env.NGINX_HTTPS_PORT ? `:${process.env.NGINX_HTTPS_PORT}` : ''}`;
 const PROTOCOL = 'https://';
+const USER_CONTACT_ID = 'e2e_contact_test_id';
 
 module.exports = {
   IS_CI: !!process.env.CI,
@@ -18,19 +19,19 @@ module.exports = {
   MAIN_DDOC_NAME: 'medic',
 
   // tests create a document with this id to be referenced by org.couchdb.user contact_id
-  USER_CONTACT_ID: 'e2e_contact_test_id',
+  USER_CONTACT_ID,
 
   DEFAULT_USER_CONTACT_DOC: {
-    _id: 'e2e_contact_test_id',
+    _id: USER_CONTACT_ID,
     type: 'person',
     reported_date: 1541679811408,
   },
   DEFAULT_USER_ADMIN_TRAINING_DOC: {
-    _id: `training:${USERNAME}:${module.exports.USER_CONTACT_ID}`,
+    _id: `training:${USERNAME}:1234`,
     form: 'training:admin_welcome',
     type: 'data_record',
-    reported_date: Date.now(),
-    contact: { _id: module.exports.USER_CONTACT_ID },
+    reported_date: 1541679811408,
+    contact: { _id: USER_CONTACT_ID },
   },
   BASE_URL: `${PROTOCOL}${API_HOST}`,
   BASE_URL_AUTH: `${PROTOCOL}${USERNAME}:${PASSWORD}@${API_HOST}`,
