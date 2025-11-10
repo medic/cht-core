@@ -6,6 +6,12 @@ const USER_ROLES = {
   ONLINE: 'mm-online',
 };
 
+// Document IDs
+const DOC_IDS = {
+  SERVICE_WORKER_META: 'service-worker-meta',
+};
+
 module.exports = {
   USER_ROLES,
+  DOC_IDS,
 };
