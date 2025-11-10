@@ -126,18 +126,15 @@ const parseCookieResponse = (cookieString) => {
 };
 
 const setupUserDoc = async (userName = constants.USERNAME, userDoc = userSettings.build()) => {
-  // Write training doc for default user (to avoid training modal on login)
-  const trainingDoc = (userName === constants.USERNAME)
-    ? { [constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id]: constants.DEFAULT_USER_ADMIN_TRAINING_DOC }
-    : { };
-  const docDict = {
-    [`${COUCH_USER_ID_PREFIX}${userName}`]: userDoc,
-    ...trainingDoc
-  };
-  const docs = (await getDocs(Object.keys(docDict)))
-    .filter(Boolean)
-    .map(doc => Object.assign(doc, docDict[doc._id]));
-  return saveDocs(docs);
+  const docsToSetup = [
+    { ...userDoc, _id: `${COUCH_USER_ID_PREFIX}${userName}` },
+    ...(userName === constants.USERNAME ? [constants.DEFAULT_USER_ADMIN_TRAINING_DOC] : [])
+  ];
+  const existingDocs = await getDocs(docsToSetup.map(doc => doc._id));
+  const finalDocs = existingDocs
+    .map(doc => doc || {})
+    .map((doc, i) => ({ ...doc, ...docsToSetup[i] }));
+  await saveDocs(finalDocs);
 };
 
 const randomIp = () => {
