@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const constants = require('@constants');
+const { DOC_IDS } = require('@medic/constants');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -412,7 +413,7 @@ const deleteDocs = ids => {
 };
 
 const PROTECTED_DOCS = [
-  'service-worker-meta',
+  DOC_IDS.SERVICE_WORKER_META,
   constants.USER_CONTACT_ID,
   'migration-log',
   'resources',
