@@ -140,7 +140,7 @@ describe('initial-replication', () => {
     await commonPage.reloadSession();
   });
 
-  it.only('should log user in', async () => {
+  it('should log user in', async () => {
     await loginPage.login(userAllowedDocs.user);
 
     await validateReplication();
