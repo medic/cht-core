@@ -298,6 +298,10 @@ description:
   Released ${currentDate}
 ---
 
+## Highlights
+
+<<< TODO >>>
+
 ## Known issues
 
 Check the repository for the [latest known issues](https://github.com/medic/cht-core/issues?q=is%3Aissue+label%3A%22Affects%3A+${MILESTONE_NAME}%22).
@@ -305,9 +309,6 @@ Check the repository for the [latest known issues](https://github.com/medic/cht-
 ## Upgrade notes
 
 ${formatGroups(warnings)}
-## Highlights
-
-<<< TODO >>>
 
 ## And more...
 
