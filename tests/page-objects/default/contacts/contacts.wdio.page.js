@@ -236,7 +236,7 @@ const addPerson = async (
   await commonEnketoPage.setDateValue('Age', dobValue);
   await commonEnketoPage.setInputValue('External ID', externalIDValue);
   await commonEnketoPage.setTextareaValue('Notes', notesValue);
-  await genericForm.submitForm();
+  await genericForm.submitForm({ waitForPageLoaded: waitForComplete });
   if (waitForSentinel) {
     await sentinelUtils.waitForSentinel();
   }

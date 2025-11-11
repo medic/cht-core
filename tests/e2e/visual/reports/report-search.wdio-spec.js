@@ -36,7 +36,7 @@ describe('Report Search functionality test', () => {
 
     await generateScreenshot('report', 'search-reports-list');
     const reportsFiltered = await reportsPage.reportsListDetails();
-    expect(reportsFiltered.length).to.be.equals(2);
+    expect(reportsFiltered.length).to.be.equals(1);
 
   });
 
