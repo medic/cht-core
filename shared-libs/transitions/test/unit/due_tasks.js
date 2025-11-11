@@ -30,6 +30,7 @@ describe('due tasks', () => {
   afterEach(() => {
     sinon.reset();
     sinon.restore();
+    delete require.cache[require.resolve('../../src/schedule/due_tasks')];
   });
 
   it('due_tasks handles view returning no rows', () => {
@@ -1782,10 +1783,13 @@ describe('due tasks', () => {
   });
 
   it('change task state to clear when message generation fails and clear_failing_schedules is true', () => {
-    config.get.withArgs('clear_failing_schedules').returns(true);
+    config.get.withArgs('sms').returns({
+      clear_failing_schedules: true
+    });
+    const due = moment();
     const doc = {
       scheduled_tasks: [{
-        due: moment().toISOString(),
+        due: due.toISOString(),
         state: 'scheduled',
         message_key: 'k1',
         recipient: 'patient'
@@ -1816,7 +1820,9 @@ describe('due tasks', () => {
   });
 
   it('dont change task state if message generation fails and clear_failing_schedules is false', () => {
-    config.get.withArgs('clear_failing_schedules').returns(false);
+    config.get.withArgs('sms').returns({
+      clear_failing_schedules: false
+    });
     const id = 'xyz';
     const due = moment();
     const doc = {
@@ -1840,7 +1846,6 @@ describe('due tasks', () => {
     const translate = sinon
       .stub(utils, 'translate')
       .returns('');
-    translate.hasError=true;
     const setTaskState = sinon.stub(utils, 'setTaskState');
     const saveDoc = sinon.stub(db.medic, 'put').resolves({});
 
@@ -1888,7 +1893,7 @@ describe('due tasks', () => {
     });
   });
 
-  it('change state to pending if there is a message already regardless of clear flag', () => {
+  it('change state to pending if message already exists and clear_failing_schedules is not set', () => {
     const id = 'xyz';
     const due = moment();
     const doc = {
@@ -1929,7 +1934,9 @@ describe('due tasks', () => {
   });
 
   it('change sate to clear if message content is empty and clear flag is set', () => {
-    config.get.withArgs('clear_failing_schedules').returns(true);
+    config.get.withArgs('sms').returns({
+      clear_failing_schedules: true
+    });
     const id = 'xyz';
     const due = moment();
     const doc = {

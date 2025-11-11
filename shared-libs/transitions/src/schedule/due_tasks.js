@@ -11,8 +11,19 @@ const lineage = require('@medic/lineage')(Promise, db.medic);
 const messageUtils = require('@medic/message-utils');
 
 const BATCH_SIZE = 1000;
-const clearFailing = () => config.get('clear_failing_schedules') || false;
+let _clearFailing;
 
+/**
+ * Returns whether failing schedules should be cleared.
+ * Lazily loads from config once and caches the result for performance.
+ */
+const getClearFailing = () => {
+  if (_clearFailing === undefined) {
+    const smsConfig = config.get('sms') || {};
+    _clearFailing = smsConfig.clear_failing_schedules || false;
+  }
+  return _clearFailing;
+};
 
 const getTemplateContext = async (doc) => {
   const context = {
@@ -76,19 +87,15 @@ const updateScheduledTasks = (doc, context, dueDates) => {
       }
 
       // check that messages.message is not empty
-      const hasValidMessage = task.messages && task.messages[0].message?.trim() !== '';
+      const hasValidMessage = task.messages?.[0].message?.trim().length > 0;
 
-      // update task states to pending when messages exist or to clear if specified in config
-      if (hasValidMessage) {
+      // update task states to pending when messages exist or to clear if specified in config      
+      if (hasValidMessage || getClearFailing()) {
         updatedTasks = true;
-        utils.setTaskState(task, 'pending');
-      } else if (clearFailing()){
-        updatedTasks = true;
-        utils.setTaskState(task, 'clear');
+        utils.setTaskState(task, hasValidMessage? 'pending' : 'clear');
       }
     }
-  });
-
+  }); 
   return updatedTasks;
 };
 
