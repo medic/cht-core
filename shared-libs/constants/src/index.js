@@ -17,8 +17,14 @@ const METADATA_KEYS = {
   BACKGROUND_SEQ: '_local/background-seq',
 };
 
+// HTTP Headers
+const HTTP_HEADERS = {
+  REQUEST_ID: 'X-Request-Id',
+};
+
 module.exports = {
   USER_ROLES,
   DOC_IDS,
   METADATA_KEYS,
+  HTTP_HEADERS,
 };
