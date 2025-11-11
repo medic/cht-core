@@ -212,7 +212,8 @@ export class TelemetryService {
   }
 
   private async getCurrentTelemetryDB(today: TodayMoment, telemetryDBs) {
-    let currentDB = telemetryDBs?.find(db => db.includes(today.formatted));
+    const currentUser = this.sessionService.userCtx().name;
+    let currentDB = telemetryDBs?.find(db => db.includes(today.formatted) && db.endsWith(`-${currentUser}`));
 
     if (!currentDB) {
       currentDB = this.generateTelemetryDBName(today);
@@ -236,9 +237,15 @@ export class TelemetryService {
       return;
     }
 
+    const currentUser = this.sessionService.userCtx().name;
     for (const dbName of telemetryDBs) {
-      if (dbName.includes(today.formatted)) {
+      if (dbName.includes(today.formatted) && dbName.endsWith(`-${currentUser}`)) {
         // Don't submit today's telemetry records
+        continue;
+      }
+
+      // Only aggregate databases that belong to the current user
+      if (!dbName.endsWith(`-${currentUser}`)) {
         continue;
       }
 
