@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const constants = require('@constants');
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, METADATA_KEYS } = require('@medic/constants');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -1032,7 +1032,7 @@ const delayPromise = async (promiseFn, interval) => {
 
 const setTransitionSeqToNow = () => {
   return Promise.all([
-    sentinelDb.get('_local/transitions-seq').catch(() => ({ _id: '_local/transitions-seq' })),
+    sentinelDb.get(METADATA_KEYS.TRANSITIONS_SEQ).catch(() => ({ _id: METADATA_KEYS.TRANSITIONS_SEQ })),
     db.info()
   ]).then(([sentinelMetadata, { update_seq: updateSeq }]) => {
     sentinelMetadata.value = updateSeq;
