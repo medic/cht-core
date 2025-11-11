@@ -105,7 +105,7 @@ describe('Targets', () => {
 
     const filterLabel = await analyticsPage.filterOptionLabel();
     expect(await filterLabel.getText()).to.equal('This month');
-    const telemetry = await getTelemetry('sidebar_filter:analytics:target_aggregates:open', chw.username);
+    const telemetry = await getTelemetry('sidebar_filter:analytics:targets:open', chw.username);
     expect(telemetry.length).to.equal(1);
   });
 

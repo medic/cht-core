@@ -13,6 +13,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const helperFunctions = require('./utils/aggregates-helper-functions');
 const targetAggregatesConfig = require('./config/target-aggregates');
 const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
+const constants = require('@constants');
 
 describe('Target aggregates', () => {
   describe('DB admin', () => {
@@ -350,7 +351,8 @@ describe('Target aggregates', () => {
       });
 
       afterEach(async () => {
-        await destroyTelemetryDb(userWithManyPlaces.name);
+        // Including admin because of https://github.com/medic/cht-core/issues/10452
+        await Promise.all([constants.USERNAME, userWithManyPlaces.name].map(destroyTelemetryDb));
       });
 
       it('should disable content', async () => {
