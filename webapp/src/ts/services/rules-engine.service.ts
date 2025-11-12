@@ -21,6 +21,8 @@ import { CalendarIntervalService } from '@mm-services/calendar-interval.service'
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { Store } from '@ngrx/store';
+import { GlobalActions } from '@mm-actions/global';
 
 interface DebounceActive {
   [key: string]: {
@@ -61,6 +63,7 @@ export class RulesEngineService implements OnDestroy {
   private uhcMonthStartDate;
   private debounceActive: DebounceActive = {};
   private observable = new Subject();
+  private globalActions: GlobalActions;
 
   constructor(
     private translateService:TranslateService,
@@ -79,10 +82,12 @@ export class RulesEngineService implements OnDestroy {
     private rulesEngineCoreFactoryService:RulesEngineCoreFactoryService,
     private calendarIntervalService:CalendarIntervalService,
     private ngZone:NgZone,
-    private chtDatasourceService:CHTDatasourceService
+    private chtDatasourceService:CHTDatasourceService,
+    private store: Store
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
+    this.globalActions = new GlobalActions(this.store);
   }
 
   ngOnDestroy(): void {
@@ -147,6 +152,9 @@ export class RulesEngineService implements OnDestroy {
       },
       debounceRef: rulesDebounceRef
     };
+    // todo
+    // load tasks once, and calculate overdue count, store which tasks are overdue??
+    // setup a task doc listener and check if the new task is overdue or not
     this.debounceActive[this.FRESHNESS_KEY].debounceRef();
 
     trackPerformance?.stop(trackName);
@@ -411,11 +419,20 @@ export class RulesEngineService implements OnDestroy {
       trackPerformanceRunning = this.performanceService.track();
     }
     trackPerformanceRunning.stop({ name: trackName });
-    return this.hydrateTaskDocs(taskDocs);
+    const hydratedTaskDocs = this.hydrateTaskDocs(taskDocs);
+
+    this.updateBubbleCounter(hydratedTaskDocs);
+
+    return hydratedTaskDocs;
   }
 
   fetchTaskDocsFor(contactIds) {
     return this.ngZone.runOutsideAngular(() => this._fetchTaskDocsFor(contactIds));
+  }
+
+  private updateBubbleCounter(taskDocs) {
+    const overdueCount = taskDocs.filter(({ emission }) => emission.overdue).length;
+    this.globalActions.updateBubbleCounter({ task: overdueCount });
   }
 
   private async _fetchTaskDocsFor(contactIds) {
@@ -441,7 +458,10 @@ export class RulesEngineService implements OnDestroy {
       trackPerformanceRunning = this.performanceService.track();
     }
     trackPerformanceRunning?.stop({ name: trackName });
-    return this.hydrateTaskDocs(taskDocs);
+    const hydratedTaskDocs = this.hydrateTaskDocs(taskDocs);
+
+    this.updateBubbleCounter(hydratedTaskDocs);
+    return hydratedTaskDocs;
   }
 
   fetchTasksBreakdown(contactIds?) {

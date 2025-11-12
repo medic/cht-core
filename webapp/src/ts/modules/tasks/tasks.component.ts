@@ -141,18 +141,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     window.location.reload();
   }
 
-  private hydrateEmissions(taskDocs) {
-    return taskDocs.map(taskDoc => {
-      const emission = { ...taskDoc.emission };
-      const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
-      emission.date = new Date(dueDate.valueOf());
-      emission.overdue = dueDate.isBefore(moment());
-      emission.owner = taskDoc.owner;
-
-      return emission;
-    });
-  }
-
   private async refreshTasks() {
     try {
       if (this.tasksLoaded) {
@@ -163,16 +151,16 @@ export class TasksComponent implements OnInit, OnDestroy {
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
       this.hasTasks = taskDocs.length > 0;
 
-      const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
-      const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
+      const emissions = taskDocs.map(taskDoc => taskDoc.emission);
+      const subjects = await this.getLineagesFromTaskDocs(emissions);
       if (subjects?.size) {
         const userLineageLevel = await this.userLineageLevel;
-        hydratedTasks.forEach(task => {
+        emissions.forEach(task => {
           task.lineage = this.getTaskLineage(subjects, task, userLineageLevel);
         });
       }
 
-      this.tasksActions.setTasksList(hydratedTasks);
+      this.tasksActions.setTasksList(emissions);
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);

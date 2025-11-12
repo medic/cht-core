@@ -50,7 +50,7 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
   showPrivacyPolicy = false;
   // replicationStatus;
   currentTab;
-  unreadCount = {};
+  bubbleCount = {};
   permittedTabs: HeaderTab[] = [];
 
   constructor(
@@ -84,9 +84,9 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
     this.subscriptions.add(showPrivacyPolicy);
 
 
-    const unreadCount = this.store.select(Selectors.getUnreadCount)
-      .subscribe(count => this.unreadCount = count);
-    this.subscriptions.add(unreadCount);
+    const bubbleCounterObserver = this.store.select(Selectors.getBubbleCounter)
+      .subscribe(count => this.bubbleCount = count);
+    this.subscriptions.add(bubbleCounterObserver);
   }
 
   private getHeaderTabs() {

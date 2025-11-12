@@ -50,7 +50,7 @@ describe('Reports effects', () => {
       { selector: Selectors.getSelectedReports, value: [] },
       { selector: Selectors.getListReport, value: {} },
       { selector: Selectors.getForms, value: [] },
-      { selector: Selectors.getUnreadCount, value: {} },
+      { selector: Selectors.getBubbleCounter, value: {} },
     ];
 
     stopPerformanceTrackStub = sinon.stub();
@@ -526,11 +526,11 @@ describe('Reports effects', () => {
       expect(markReadService.markAsRead.callCount).to.equal(0);
     });
 
-    it('should mark selected report as read and update unread count', () => {
+    it('should mark selected report as read and update bubble counter', () => {
       const updateReportsList = sinon.stub(ReportsActions.prototype, 'updateReportsList');
-      const updateUnreadCount = sinon.stub(GlobalActions.prototype, 'updateUnreadCount');
+      const updateBubbleCounter = sinon.stub(GlobalActions.prototype, 'updateBubbleCounter');
       store.overrideSelector(Selectors.getListReport, { _id: 'report' });
-      store.overrideSelector(Selectors.getUnreadCount, { report: 5 });
+      store.overrideSelector(Selectors.getBubbleCounter, { report: 5 });
       actions$ = of(ReportActionList.markReportRead('report'));
 
       effects.markRead.subscribe();
@@ -538,21 +538,21 @@ describe('Reports effects', () => {
       expect(markReadService.markAsRead.args[0]).to.deep.equal([[{ _id: 'report', read: true }]]);
       expect(updateReportsList.callCount).to.equal(1);
       expect(updateReportsList.args[0]).to.deep.equal([[{ _id: 'report', read: true }]]);
-      expect(updateUnreadCount.callCount).to.equal(1);
-      expect(updateUnreadCount.args[0][0]).to.deep.equal({ report: 4 });
+      expect(updateBubbleCounter.callCount).to.equal(1);
+      expect(updateBubbleCounter.args[0][0]).to.deep.equal({ report: 4 });
     });
 
-    it('should skip marking as read if already read and not update unread count', () => {
+    it('should skip marking as read if already read and not update bubble counter', () => {
       const updateReportsList = sinon.stub(ReportsActions.prototype, 'updateReportsList');
-      const updateUnreadCount = sinon.stub(GlobalActions.prototype, 'updateUnreadCount');
+      const updateBubbleCounter = sinon.stub(GlobalActions.prototype, 'updateBubbleCounter');
       store.overrideSelector(Selectors.getListReport, { _id: 'report', read: true });
-      store.overrideSelector(Selectors.getUnreadCount, { report: 5 });
+      store.overrideSelector(Selectors.getBubbleCounter, { report: 5 });
       actions$ = of(ReportActionList.markReportRead('report'));
 
       effects.markRead.subscribe();
       expect(markReadService.markAsRead.callCount).to.equal(0);
       expect(updateReportsList.callCount).to.equal(0);
-      expect(updateUnreadCount.callCount).to.equal(0);
+      expect(updateBubbleCounter.callCount).to.equal(0);
     });
 
     it('should catch markread service errors', async () => {
@@ -583,14 +583,14 @@ describe('Reports effects', () => {
       expect(updateReportsList.callCount).to.equal(0);
     });
 
-    it('should not update unread records count if unread count is falsy', () => {
-      const updateUnreadCount = sinon.stub(GlobalActions.prototype, 'updateUnreadCount');
-      store.overrideSelector(Selectors.getUnreadCount, null);
+    it('should not update bubble counter if value is falsy', () => {
+      const updateBubbleCounter = sinon.stub(GlobalActions.prototype, 'updateBubbleCounter');
+      store.overrideSelector(Selectors.getBubbleCounter, null);
       actions$ = of(ReportActionList.markReportRead('report'));
 
       effects.markRead.subscribe();
       expect(markReadService.markAsRead.callCount).to.equal(1);
-      expect(updateUnreadCount.callCount).to.equal(0);
+      expect(updateBubbleCounter.callCount).to.equal(0);
     });
   });
 

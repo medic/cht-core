@@ -32,7 +32,7 @@ const globalState: GlobalState = {
   title: 'the title',
   privacyPolicyAccepted: false,
   showPrivacyPolicy: true,
-  unreadCount: { report: 2 },
+  bubbleCounter: { report: 2 },
   translationsLoaded: false,
   userFacilityIds: ['facility_uuid'],
   userContactId: 'contact_uuid',
@@ -213,8 +213,8 @@ describe('Selectors', () => {
       expect(Selectors.getShowPrivacyPolicy.projector(state.global)).to.equal(clonedState.global.showPrivacyPolicy);
     });
 
-    it('should getUnreadCount', () => {
-      expect(Selectors.getUnreadCount.projector(state.global)).to.deep.equal(clonedState.global.unreadCount);
+    it('should getBubbleCounter', () => {
+      expect(Selectors.getBubbleCounter.projector(state.global)).to.deep.equal(clonedState.global.bubbleCounter);
     });
 
     it('should getTranslationsLoaded', () => {
