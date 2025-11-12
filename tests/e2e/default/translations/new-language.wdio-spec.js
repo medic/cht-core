@@ -6,7 +6,6 @@ const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page'
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
-const { DEFAULT_USER_ADMIN_TRAINING_DOC } = require('@constants');
 
 
 const addTranslations = async (langCode, translations = {}) => {
@@ -32,8 +31,6 @@ describe('Adding new language', () => {
   before(async () => {
     await loginPage.cookieLogin();
     await utils.enableLanguages([NEW_LANG_CODE]);
-    // Remove report so reports.none is shown
-    await utils.deleteDoc(DEFAULT_USER_ADMIN_TRAINING_DOC._id);
   });
 
   after(async () => {

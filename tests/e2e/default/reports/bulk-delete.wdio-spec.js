@@ -4,7 +4,6 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const personFactory = require('@factories/cht/contacts/person');
-const { DEFAULT_USER_ADMIN_TRAINING_DOC } = require('@constants');
 
 describe('Bulk delete reports', () => {
   const docs = [
@@ -44,8 +43,6 @@ describe('Bulk delete reports', () => {
   const savedUuids = [];
   before(async () => {
     await loginPage.cookieLogin();
-    // Remove training report so only test reports are present
-    await utils.deleteDoc(DEFAULT_USER_ADMIN_TRAINING_DOC._id);
     const results = await utils.saveDocs(docs);
     results.forEach(result => savedUuids.push(result.id));
   });

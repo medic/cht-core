@@ -9,7 +9,6 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const smsPregnancyFactory = require('@factories/cht/reports/sms-pregnancy');
-const constants = require('@constants');
 
 describe('Search Reports', () => {
   // NOTE: this is a search word added to reports for searching purposes
@@ -36,8 +35,6 @@ describe('Search Reports', () => {
     await utils.saveDocs([ ...places.values(), districtHospitalPatient, healthCenterPatient ]);
     reportDocs = await utils.saveDocs(reports);
     await loginPage.cookieLogin();
-    // Delete training doc to avoid interference with search results
-    await utils.deleteDoc(constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id);
   });
 
   after(async () =>  await utils.revertDb([/^form:/], true) );

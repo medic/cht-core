@@ -125,16 +125,12 @@ const parseCookieResponse = (cookieString) => {
   });
 };
 
-const setupUserDoc = async (userName = constants.USERNAME, userDoc = userSettings.build()) => {
-  const docsToSetup = [
-    { ...userDoc, _id: `${COUCH_USER_ID_PREFIX}${userName}` },
-    ...(userName === constants.USERNAME ? [constants.DEFAULT_USER_ADMIN_TRAINING_DOC] : [])
-  ];
-  const existingDocs = await getDocs(docsToSetup.map(doc => doc._id));
-  const finalDocs = existingDocs
-    .map(doc => doc || {})
-    .map((doc, i) => ({ ...doc, ...docsToSetup[i] }));
-  await saveDocs(finalDocs);
+const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.build()) => {
+  return getDoc(COUCH_USER_ID_PREFIX + userName)
+    .then(doc => {
+      const finalDoc = Object.assign(doc, userDoc);
+      return saveDoc(finalDoc);
+    });
 };
 
 const randomIp = () => {
@@ -418,6 +414,7 @@ const deleteDocs = ids => {
 const PROTECTED_DOCS = [
   'service-worker-meta',
   constants.USER_CONTACT_ID,
+  constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id,
   'migration-log',
   'resources',
   'branding',
@@ -694,23 +691,20 @@ const getDefaultForms = async () => {
   }
 };
 
-const setUserContactDoc = (attempt = 0) => {
-  const {
-    USER_CONTACT_ID: docId,
-    DEFAULT_USER_CONTACT_DOC: defaultDoc
-  } = constants;
-
-  return db
-    .get(docId)
-    .catch(() => ({}))
-    .then(existing => Object.assign(defaultDoc, { _rev: existing?._rev }))
-    .then(newDoc => db.put(newDoc))
-    .catch(err => {
-      if (attempt > 3) {
-        throw err;
-      }
-      return setUserContactDoc(attempt + 1);
-    });
+const setUserContactDoc = async (attempt = 0) => {
+  const docsToSetup = [constants.DEFAULT_USER_CONTACT_DOC, constants.DEFAULT_USER_ADMIN_TRAINING_DOC];
+  try {
+    const existingDocs = await getDocs(docsToSetup.map(doc => doc._id));
+    const finalDocs = existingDocs
+      .map(doc => doc || {})
+      .map((doc, i) => ({ ...doc, ...docsToSetup[i] }));
+    await saveDocs(finalDocs);
+  } catch (err) {
+    if (attempt > 3) {
+      throw err;
+    }
+    return setUserContactDoc(attempt + 1);
+  }
 };
 
 const deleteMetaDbs = async () => {

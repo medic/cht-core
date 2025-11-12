@@ -63,9 +63,7 @@ describe('Bikram Sambat date display', () => {
       qs: { include_docs: true },
     };
     const response = await utils.requestOnMedicDb(options);
-    return response.rows
-      .map(row => row.doc)
-      .filter(({ _id }) => !_id.startsWith('training:'));
+    return response.rows.map(row => row.doc);
   };
 
   const setExistentReportDates = async (dates) => {
@@ -164,8 +162,8 @@ describe('Bikram Sambat date display', () => {
 
     const reportDetails = await reportsPage.reportsListDetails();
     moment.locale(NEPALI_LOCALE_CODE);
-    expect(reportDetails[1].reported_date).to.equal(moment(date1).fromNow(false));
-    expect(reportDetails[2].reported_date).to.equal(moment(date2).fromNow(false));
+    expect(reportDetails[0].reported_date).to.equal(moment(date1).fromNow(false));
+    expect(reportDetails[1].reported_date).to.equal(moment(date2).fromNow(false));
   });
 
   it('should convert contact summary dates to bikram sambat when language is Nepali', async () => {

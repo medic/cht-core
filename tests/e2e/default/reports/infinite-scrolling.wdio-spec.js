@@ -10,7 +10,7 @@ describe('Infinite scrolling', () => {
       .from({ length: 200 })
       .map(() => smsPregnancy.pregnancy().build());
     await utils.saveDocs(reports);
-    await login.cookieLogin();
+    await login.cookieLogin({ createUser: false });
   });
 
   it('should load multiple pages of reports', async () => {

@@ -29,7 +29,8 @@ module.exports = {
   DEFAULT_USER_ADMIN_TRAINING_DOC: {
     _id: `training:${USERNAME}:1234`,
     form: 'training:admin_welcome',
-    type: 'data_record',
+    // Cheating here so this is not treated as a report. The training logic only cares about the _id.
+    type: 'not_data_record',
     reported_date: 1541679811408,
     contact: { _id: USER_CONTACT_ID },
   },

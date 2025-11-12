@@ -16,7 +16,7 @@ describe('Infinite scrolling', () => {
         type: type,
       }));
     await utils.saveDocs(districtHospitals);
-    await login.cookieLogin();
+    await login.cookieLogin({ createUser: false });
   });
 
   it('should load multiple pages of contacts', async () => {
