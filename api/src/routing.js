@@ -446,6 +446,7 @@ app.get('/api/v1/forms{/}', forms.list);
 app.get('/api/v1/forms/:form', forms.get);
 app.post('/api/v1/forms/validate', textParser, forms.validate);
 
+app.get('/api/v1/target-interval', targetInterval.v1.getAll);
 app.get('/api/v1/target-interval/:uuid', targetInterval.v1.get);
 
 app.get('/api/v1/users', users.list);

@@ -346,8 +346,48 @@ export const getDatasource = (ctx: DataContext) => {
           Qualifier.byReportingPeriod(reportingPeriod),
           Qualifier.byContactUuid(contactUuid),
           Qualifier.byUsername(username)
+        )),
+
+        /**
+         * Returns an array of target intervals for the provided page specifications.
+         * @param reportingPeriod the reporting period for the target intervals
+         * @param contactUuids the contact UUIDs for the target intervals
+         * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+         * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+         * @param limit the maximum number of target intervals to return. Default is 100.
+         * @returns a page of target intervals for the provided specifications
+         * @throws InvalidArgumentError if no reporting period is provided
+         * @throws InvalidArgumentError if no contact UUIDs are provided
+         * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+         * @throws InvalidArgumentError if the provided limit is `<= 0`
+         * @see {@link getByReportingPeriodContactUuids} which provides the same data, but without having to manually 
+         * account for paging
+         */
+        getPageByReportingPeriodContactUuids: (
+          reportingPeriod: string, 
+          contactUuids: [string, ...string[]],
+          cursor: Nullable<string> = null,
+          limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
+        ) => ctx.bind(TargetInterval.v1.getPage)(
+          and(Qualifier.byReportingPeriod(reportingPeriod), Qualifier.byContactUuids(contactUuids)), cursor, limit
+        ),
+
+        /**
+         * Returns a generator for fetching all target intervals in the reporting period for the given contact UUIDs.
+         * @param reportingPeriod the reporting period for the target intervals
+         * @param contactUuids the contact UUIDs for the target intervals
+         * @returns a generator for fetching all target intervals with the given type
+         * @throws InvalidArgumentError if no reporting period is provided
+         * @throws InvalidArgumentError if no contact UUIDs are provided
+         */
+        getByReportingPeriodContactUuids: (
+          reportingPeriod: string, 
+          contactUuids: [string, ...string[]]
+        ) => ctx.bind(TargetInterval.v1.getAll)(and(
+          Qualifier.byReportingPeriod(reportingPeriod),
+          Qualifier.byContactUuids(contactUuids)
         ))
       }
-    },
+    }
   };
 };
