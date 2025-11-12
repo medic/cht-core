@@ -104,11 +104,15 @@ const translations = {
 const ids = reports.map(report => report._id);
 
 describe('Due Tasks', () => {
-  before(() => utils
-    .saveDocs(contacts)
-    .then(() => utils.addTranslations('test', translations))
-    .then(() => utils.updateSettings(settings, { ignoreReload: 'sentinel' })));
-  after(() => utils.revertDb([], true));
+  before(async () => {
+    await utils.saveDocs(contacts);
+    await utils.addTranslations('test', translations);
+    await utils.updateSettings(settings, { ignoreReload: 'sentinel' });
+  });
+
+  after(async () => {
+    await utils.revertDb([], true);
+  });
 
   it('should process scheduled messages correctly as expected with clear_failing_schedules to true.', async () => {
     await sentinelUtils.waitForSentinel();
