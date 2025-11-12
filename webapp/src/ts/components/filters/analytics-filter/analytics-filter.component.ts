@@ -50,7 +50,6 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     this.canDisplayFilterButton();
     this.subscribeToRouteChanges();
     this.subscribeToStore();
-    this.telemetryService.record('sidebar_filter:analytics:target_aggregates:component-loaded');
   }
 
   ngAfterContentInit() {
@@ -119,7 +118,6 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
     const moduleId = this.activeModule? this.activeModule.id: this.getCurrentModuleId();
 
-    // Counting every time the user opens the sidebar filter in analytics_targets_aggregrate tab.
     if (moduleId === AGGREGATE_TARGETS_ID) {
       this.telemetryService.record('sidebar_filter:analytics:target_aggregates:open');
     }
