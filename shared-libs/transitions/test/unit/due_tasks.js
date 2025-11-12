@@ -30,7 +30,6 @@ describe('due tasks', () => {
   afterEach(() => {
     sinon.reset();
     sinon.restore();
-    delete require.cache[require.resolve('../../src/schedule/due_tasks')];
   });
 
   it('due_tasks handles view returning no rows', () => {
