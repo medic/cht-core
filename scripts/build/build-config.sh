@@ -13,6 +13,7 @@ node ./node_modules/.bin/cht \
   upload-app-forms \
   upload-collect-forms \
   upload-contact-forms \
+  upload-training-forms \
   upload-resources \
   upload-custom-translations \
   upload-extension-libs \
