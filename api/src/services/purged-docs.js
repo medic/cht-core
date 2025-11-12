@@ -34,8 +34,8 @@ const catchDbNotFoundError = (err, purgeDb) => {
  * @returns {Promise<{ allIds: string[], purgedIds: string[] }>}
  */
 const getGroupPurgedIds = async (groupIds, purgeDb) => {
-  const purgedIds = [];
-  const allIds = [];
+  let purgedIds = [];
+  let allIds = [];
 
   if (!groupIds) {
     return { allIds, purgedIds };
@@ -50,8 +50,8 @@ const getGroupPurgedIds = async (groupIds, purgeDb) => {
     if (row.doc.purged_contact) {
       purgedIds.push(contactId);
     }
-    purgedIds.push(...Object.keys(row.doc.ids).filter(id => !!row.doc.ids[id]));
-    allIds.push(...Object.keys(row.doc.ids), contactId);
+    purgedIds = purgedIds.concat(Object.keys(row.doc.ids).filter(id => !!row.doc.ids[id]));
+    allIds = allIds.concat(Object.keys(row.doc.ids), contactId);
   }
 
   return { allIds, purgedIds };
@@ -71,10 +71,6 @@ const getIndividualPurgedIds = async (purgeDb, docIds) => {
  * @returns {Promise<string[]>}
  */
 const getPurgedIds = async (userCtx, docIds, useCache = true, groupIds = []) => {
-  if (!docIds?.length || !userCtx.roles?.length) {
-    return [];
-  }
-
   if (useCache) {
     const cachedIds = await purgedDocsCache.get(userCtx.name);
     if (cachedIds) {
@@ -83,18 +79,16 @@ const getPurgedIds = async (userCtx, docIds, useCache = true, groupIds = []) => 
   }
 
   let purgeDb;
-  const purgedIds = [];
+  let purgedIds = [];
 
   try {
     purgeDb = await getPurgeDb(userCtx.roles);
 
-    if (groupIds.length) {
-      const groupPurgedIds = await getGroupPurgedIds(groupIds, purgeDb);
-      purgedIds.push(...groupPurgedIds.purgedIds);
-      docIds = _.difference(docIds, groupPurgedIds.allIds);
-    }
+    const groupPurgedIds = await getGroupPurgedIds(groupIds, purgeDb);
+    purgedIds = groupPurgedIds.purgedIds;
+    docIds = _.difference(docIds, groupPurgedIds.allIds);
 
-    purgedIds.push(...(await getIndividualPurgedIds(purgeDb, docIds)));
+    purgedIds = purgedIds.concat(await getIndividualPurgedIds(purgeDb, docIds));
 
     useCache && await purgedDocsCache.set(userCtx.name, purgedIds);
     db.close(purgeDb);

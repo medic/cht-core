@@ -254,15 +254,6 @@ const assignContactToGroups = (row, groups, subjectIds) => {
   subjectIds.push(...groups[row.id].subjectIds);
 };
 
-const isRelevantRecordEmission = (hit, subjectIds) => {
-  // reports with `needs_signoff` will emit for every contact from their submitter lineage,
-  // but we only want to process them once, either associated to their subject, or to their submitter
-  // when they have no subject or have an invalid subject.
-  // if the report has a subject, but it's not the same as the emission key, we hit the emit
-  // for the submitter or submitter lineage via the `needs_signoff` path. Skip.
-  return !(hit.fields.needs_signoff && !subjectIds.includes(hit.fields.subject));
-};
-
 const getRecordGroupInfo = (hit) => {
   if (hit.doc.form) {
     // use subject as a key, as to keep subject to report associations correct
@@ -311,7 +302,7 @@ const getRecordsForContacts = async (groups, subjectIds) => {
 };
 
 const getRecordsForContactsBatch = async (subjectIds) => {
-  const results = [];
+  let results = [];
   if (!subjectIds.length) {
     return results;
   }
@@ -322,6 +313,7 @@ const getRecordsForContactsBatch = async (subjectIds) => {
   do {
     const opts = {
       q: `subject:(${subjectIds.map(nouveau.escapeKeys).join(' OR ')}) AND type:data_record`,
+      include_docs: true,
       limit: nouveau.RESULTS_LIMIT,
     };
     if (bookmark) {
@@ -333,7 +325,7 @@ const getRecordsForContactsBatch = async (subjectIds) => {
     });
 
     bookmark = result.bookmark;
-    results.push(...result.hits.filter(hit => isRelevantRecordEmission(hit, subjectIds)));
+    results = results.concat(result.hits);
     requestNext = bookmark && result.hits.length >= nouveau.RESULTS_LIMIT && results.length < MAX_BATCH_SIZE;
   } while (requestNext);
 
