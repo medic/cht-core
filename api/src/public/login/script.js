@@ -175,6 +175,11 @@ const isUsingSupportedBrowser = () => {
   });
 };
 
+const isSafariBrowser = () => {
+  const ua = navigator.userAgent.toLowerCase();
+  return /safari/.test(ua) && !/chrome|crios|fxios|android/.test(ua);
+};
+
 const isUsingChtAndroid = () => typeof window.medicmobile_android !== 'undefined';
 
 const getAndroidAppVersion = () => {
@@ -204,6 +209,8 @@ const checkUnsupportedBrowser = () => {
     } else if (!isUsingSupportedBrowser()) {
       outdatedComponentKey = 'login.unsupported_browser.outdated_webview_apk';
     }
+  } else if (isSafariBrowser()) {
+    outdatedComponentKey = 'login.unsupported_browser.safari';
   } else if (!isUsingSupportedBrowser()) {
     outdatedComponentKey = 'login.unsupported_browser.outdated_browser';
   }
@@ -213,41 +220,71 @@ const checkUnsupportedBrowser = () => {
     document.getElementById('unsupported-browser-update').innerText =
       translations[selectedLocale][outdatedComponentKey];
     document.getElementById('unsupported-browser')?.classList.remove('hidden');
+
+    if (isSafariBrowser()) {
+      document.getElementById('login-fields')?.classList.add('hidden');
+    }
+  }
+};
+
+const handleLoginButton = () => {
+  const loginButton = document.getElementById('login');
+  if (loginButton) {
+    loginButton.addEventListener('click', submit, false);
+  }
+};
+
+const handleUserInputFocus = () => {
+  const userInput = document.getElementById('user');
+  if (userInput) {
+    userInput.addEventListener('keydown', focusOnPassword, false);
+    userInput.focus();
+  }
+};
+
+const handlePasswordInputFocus = () => {
+  const passwordInput = document.getElementById(PASSWORD_INPUT_ID);
+  if (passwordInput) {
+    passwordInput.addEventListener('keydown', focusOnSubmit, false);
+  }
+};
+
+const handlePasswordToggle = () => {
+  const passwordToggle = document.getElementById('password-toggle');
+  if (passwordToggle) {
+    passwordToggle.addEventListener('click', () => togglePassword(PASSWORD_INPUT_ID), false);
+  }
+};
+
+const handleServiceWorker = () => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js');
   }
 };
 
 document.addEventListener('DOMContentLoaded', function() {
   translations = parseTranslations();
   selectedLocale = getLocale(translations);
-
   translate();
 
+  checkUnsupportedBrowser();
+
   document.getElementById('locale')?.addEventListener('click', handleLocaleSelection, false);
-  const passwordToggle = document.getElementById('password-toggle');
-  if (passwordToggle) {
-    passwordToggle.addEventListener('click', () => togglePassword(PASSWORD_INPUT_ID), false);
-  }
+  handlePasswordToggle();
 
   if (document.getElementById('tokenLogin')) {
     requestTokenLogin();
   } else {
     checkSession();
-    document.getElementById('login')?.addEventListener('click', submit, false);
-
-    const user = document.getElementById('user');
-    user.addEventListener('keydown', focusOnPassword, false);
-    user.focus();
-
-    document.getElementById(PASSWORD_INPUT_ID)?.addEventListener('keydown', focusOnSubmit, false);
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js');
-    }
+    handleLoginButton();
+    handleUserInputFocus();
+    handlePasswordInputFocus();
+    handleServiceWorker();
   }
 
   const ssoLoginButton = document.getElementById('login-sso');
   ssoLoginButton.addEventListener('click', requestSSOLogin, false);
 
-  checkUnsupportedBrowser();
 });
 
 window.addEventListener('pageshow', (event) => {
