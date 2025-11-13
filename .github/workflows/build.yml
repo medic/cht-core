@@ -400,7 +400,7 @@ jobs:
     steps:
     - name: Install regctl
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: regclient/actions/regctl-installer@main
+      uses: regclient/actions/regctl-installer@df29323daedc1f78ee74b261bd8d849327cb4ff0
 
     - name: Configure AWS credentials
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
