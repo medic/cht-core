@@ -61,8 +61,8 @@ require('./controllers/sms-forms');
 require('./controllers/sms-settings');
 require('./controllers/sms-test');
 require('./controllers/backup');
-require('./controllers/targets');
-require('./controllers/targets-edit');
+// require('./controllers/targets');
+// require('./controllers/targets-edit');
 require('./controllers/upgrade');
 require('./controllers/upgrade-confirm');
 require('./controllers/users');
@@ -393,19 +393,6 @@ angular.module('adminApp').config(function(
           templateUrl: 'templates/authorization_roles.html'
         }
       }
-    })
-    .state('targets', {
-      url: '/targets',
-      controller: 'TargetsCtrl',
-      templateUrl: 'templates/targets.html'
-    })
-    .state('targets-edit', {
-      url: '/targets/edit/:id',
-      controller: 'TargetsEditCtrl',
-      templateUrl: 'templates/targets_edit.html',
-      params: {
-        id: null
-      },
     })
     .state('upgrade', {
       url: '/upgrade',
