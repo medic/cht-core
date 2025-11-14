@@ -497,7 +497,7 @@ export class RulesEngineService implements OnDestroy {
 
     await this.initialized;
     this.telemetryService.record(
-      'rules-engine:targets:dirty-contacts',
+      'rules-engine:targets:dirty-contacts', 
       this.rulesEngineCore.getDirtyContacts().length
     );
     this.cancelDebounce(this.FRESHNESS_KEY);
