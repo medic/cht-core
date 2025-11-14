@@ -415,6 +415,7 @@ const deleteDocs = ids => {
 const PROTECTED_DOCS = [
   DOC_IDS.SERVICE_WORKER_META,
   constants.USER_CONTACT_ID,
+  constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id,
   'migration-log',
   'resources',
   'branding',
@@ -641,17 +642,6 @@ const revertSettings = async ignoreRefresh => {
   return await watcher.promise;
 };
 
-const seedTestData = (userContactDoc, documents) => {
-  return saveDocs(documents)
-    .then(() => getDoc(constants.USER_CONTACT_ID))
-    .then(existingContactDoc => {
-      if (userContactDoc) {
-        Object.assign(existingContactDoc, userContactDoc);
-        return saveDoc(existingContactDoc);
-      }
-    });
-};
-
 const revertTranslations = async () => {
   const updatedTranslations = Object.keys(originalTranslations);
   if (!updatedTranslations.length) {
@@ -702,23 +692,20 @@ const getDefaultForms = async () => {
   }
 };
 
-const setUserContactDoc = (attempt = 0) => {
-  const {
-    USER_CONTACT_ID: docId,
-    DEFAULT_USER_CONTACT_DOC: defaultDoc
-  } = constants;
-
-  return db
-    .get(docId)
-    .catch(() => ({}))
-    .then(existing => Object.assign(defaultDoc, { _rev: existing?._rev }))
-    .then(newDoc => db.put(newDoc))
-    .catch(err => {
-      if (attempt > 3) {
-        throw err;
-      }
-      return setUserContactDoc(attempt + 1);
-    });
+const setUserContactDoc = async (attempt = 0) => {
+  const docsToSetup = [constants.DEFAULT_USER_CONTACT_DOC, constants.DEFAULT_USER_ADMIN_TRAINING_DOC];
+  try {
+    const existingDocs = await getDocs(docsToSetup.map(doc => doc._id));
+    const finalDocs = existingDocs
+      .map(doc => doc || {})
+      .map((doc, i) => ({ ...doc, ...docsToSetup[i] }));
+    await saveDocs(finalDocs);
+  } catch (err) {
+    if (attempt > 3) {
+      throw err;
+    }
+    return setUserContactDoc(attempt + 1);
+  }
 };
 
 const deleteMetaDbs = async () => {
@@ -1686,7 +1673,6 @@ module.exports = {
   deleteAllDocs,
   updateSettings,
   revertSettings,
-  seedTestData,
   revertDb,
   getOrigin,
   getBaseUrl,
