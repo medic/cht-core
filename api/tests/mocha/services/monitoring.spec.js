@@ -9,6 +9,7 @@ const deployInfo = require('../../../src/services/deploy-info');
 const service = require('../../../src/services/monitoring');
 const { getBundledDdocs } = require('../../../src/services/setup/utils');
 const { DATABASES } = require('../../../src/services/setup/databases');
+const { METADATA_KEYS } = require('@medic/constants');
 
 let clock;
 
@@ -204,7 +205,7 @@ const setUpMocks = () => {
   });
   sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` }))
     .resolves(dbInfos);
-  sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq')
+  sinon.stub(db.sentinel, 'get').withArgs(METADATA_KEYS.TRANSITIONS_SEQ)
     .resolves({ processed_seq: '50-xyz' });
   const medicQuery = sinon.stub(db.medic, 'query');
   medicQuery.withArgs('medic-admin/message_queue')
@@ -578,7 +579,7 @@ describe('Monitoring service', () => {
     sinon.stub(deployInfo, 'get').rejects();
     sinon.stub(request, 'get').rejects();
     sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` })).rejects();
-    sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq').rejects();
+    sinon.stub(db.sentinel, 'get').withArgs(METADATA_KEYS.TRANSITIONS_SEQ).rejects();
     sinon.stub(db.medic, 'query').rejects();
     sinon.stub(db.sentinel, 'query').rejects();
     sinon.stub(db.medicUsersMeta, 'query').rejects();
@@ -689,7 +690,7 @@ describe('Monitoring service', () => {
     sinon.stub(deployInfo, 'get').rejects();
     sinon.stub(request, 'get').rejects();
     sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` })).rejects();
-    sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq').rejects();
+    sinon.stub(db.sentinel, 'get').withArgs(METADATA_KEYS.TRANSITIONS_SEQ).rejects();
     sinon.stub(db.medic, 'query').rejects();
     sinon.stub(db.sentinel, 'query').rejects();
     sinon.stub(db.medicUsersMeta, 'query').rejects();
@@ -826,7 +827,7 @@ describe('Monitoring service', () => {
     request.get.rejects();
     sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` }))
       .resolves(dbInfos);
-    sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq')
+    sinon.stub(db.sentinel, 'get').withArgs(METADATA_KEYS.TRANSITIONS_SEQ)
       .resolves({ processed_seq: '50-xyz' });
     sinon.stub(db.medic, 'query')
       .resolves({ rows: [

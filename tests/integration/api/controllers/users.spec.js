@@ -6,6 +6,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const chai = require('chai');
+const { USER_ROLES } = require('@medic/constants');
 
 const getUserId = n => `org.couchdb.user:${n}`;
 const password = 'passwordSUP3RS3CR37!';
@@ -474,7 +475,7 @@ describe('Users API', () => {
       });
     });
 
-    it('auth should check for mm-online role when requesting other user docs', () => {
+    it('auth should check for USER_ROLES.ONLINE role when requesting other user docs', () => {
       const requestOptions = {
         path: '/api/v1/users-info?role=district_admin&facility_id=fixture:offline',
         auth: { username: 'offlineonline', password },
@@ -493,7 +494,7 @@ describe('Users API', () => {
         });
     });
 
-    it('auth should check for mm-online role when requesting with missing params', () => {
+    it('auth should check for USER_ROLES.ONLINE role when requesting with missing params', () => {
       const requestOptions = {
         path: '/api/v1/users-info',
         auth: { username: 'offlineonline', password },
@@ -546,7 +547,7 @@ describe('Users API', () => {
 
     it('should throw error when requesting for online roles', () => {
       const params = {
-        role: JSON.stringify(['national_admin', 'mm-online']),
+        role: JSON.stringify(['national_admin', USER_ROLES.ONLINE]),
         facility_id: 'fixture:offline'
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
@@ -560,7 +561,7 @@ describe('Users API', () => {
 
     it('should throw error for array roles of online user', () => {
       const params = {
-        role: JSON.stringify(['random', 'national_admin', 'mm-online']),
+        role: JSON.stringify(['random', 'national_admin', USER_ROLES.ONLINE]),
         facility_id: 'fixture:offline'
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
@@ -1725,7 +1726,7 @@ describe('Users API', () => {
         contact: {
           name: 'OnlineUser'
         },
-        roles: ['district_admin', 'mm-online']
+        roles: ['district_admin', USER_ROLES.ONLINE]
       }));
 
       await utils.request({ path: '/api/v2/users', method: 'POST', body: users });
@@ -1773,7 +1774,7 @@ describe('Users API', () => {
       const userFactory = ({ contact, place }) => ({
         username: uuid(),
         password: password,
-        roles: ['district_admin', 'mm-online'],
+        roles: ['district_admin', USER_ROLES.ONLINE],
         contact,
         place,
       });
@@ -1933,13 +1934,13 @@ describe('Users API', () => {
       const onlineUserSettingsDoc = await utils.getDoc(onlineResult['user-settings'].id);
 
       expect(onlineUserDoc).to.deep.include({
-        roles: [...onlineUserPayload.roles, 'mm-online'],
+        roles: [...onlineUserPayload.roles, USER_ROLES.ONLINE],
         facility_id: onlineUserPayload.place,
         contact_id: onlineUserPayload.contact,
       });
 
       expect(onlineUserSettingsDoc).to.deep.include({
-        roles: [...onlineUserPayload.roles, 'mm-online'],
+        roles: [...onlineUserPayload.roles, USER_ROLES.ONLINE],
         facility_id: onlineUserPayload.place,
         contact_id: onlineUserPayload.contact,
       });
@@ -2002,7 +2003,7 @@ describe('Users API', () => {
       const onlineUserDoc = await utils.getDoc(result.user.id);
 
       expect(onlineUserDoc).to.deep.include({
-        roles: [...onlineUserPayload.roles, 'mm-online'],
+        roles: [...onlineUserPayload.roles, USER_ROLES.ONLINE],
         facility_id: [onlineUserPayload.place],
         contact_id: onlineUserPayload.contact,
       });

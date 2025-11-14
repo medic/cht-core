@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 
 const environment = require('@medic/environment');
+const { DOC_IDS } = require('@medic/constants');
 
 let lib;
 
@@ -303,10 +304,10 @@ describe('Audit', () => {
   });
 
   it('should skip auditing ignore docs', async () => {
-    const response = getResponse(true, true, false, { ok: true, id: 'service-worker-meta', rev: '1-a' });
-    db.allDocs.resolves({ rows: [{ key: 'service-worker-meta', error: 'not_found' }] });
+    const response = getResponse(true, true, false, { ok: true, id: DOC_IDS.SERVICE_WORKER_META, rev: '1-a' });
+    db.allDocs.resolves({ rows: [{ key: DOC_IDS.SERVICE_WORKER_META, error: 'not_found' }] });
 
-    await lib.fetchCallback('http://localhost/medic/service-worker-meta', { method: 'PUT' }, response);
+    await lib.fetchCallback(`http://localhost/medic/${DOC_IDS.SERVICE_WORKER_META}`, { method: 'PUT' }, response);
 
     expect(db.allDocs.callCount).to.equal(0);
     expect(db.bulkDocs.callCount).to.equal(0);

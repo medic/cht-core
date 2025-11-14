@@ -3,6 +3,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const {expect} = require('chai');
+const { USER_ROLES } = require('@medic/constants');
 
 describe('Contact API', () => {
   // NOTE: this is a common word added to contacts to fetch them
@@ -98,7 +99,7 @@ describe('Contact API', () => {
       _id: 'fixture:user:online-no-perms',
       name: 'Online User',
     },
-    roles: ['mm-online']
+    roles: [USER_ROLES.ONLINE]
   }));
   const offlineUser = utils.deepFreeze(userFactory.build({
     username: 'offline-has-perms',

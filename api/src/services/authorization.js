@@ -7,13 +7,14 @@ const registrationUtils = require('@medic/registration-utils');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 const nouveau = require('@medic/nouveau');
+const { DOC_IDS } = require('@medic/constants');
 
 const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
 const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
 const MEDIC_CLIENT_DDOC = '_design/medic-client';
 const DEFAULT_DDOCS = [
   MEDIC_CLIENT_DDOC,
-  'service-worker-meta',
+  DOC_IDS.SERVICE_WORKER_META,
   'settings',
 ];
 

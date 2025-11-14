@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const chai = require('chai');
 const db = require('../../../src/db');
 const metadata = require('../../../src/lib/metadata');
+const { METADATA_KEYS } = require('@medic/constants');
 
 describe('metadata', () => {
 
@@ -10,29 +11,29 @@ describe('metadata', () => {
   describe('Transition Seq', () => {
 
     it('fetches metadata doc', () => {
-      sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq').resolves({
-        _id: '_local/transitions-seq',
+      sinon.stub(db.sentinel, 'get').withArgs(METADATA_KEYS.TRANSITIONS_SEQ).resolves({
+        _id: METADATA_KEYS.TRANSITIONS_SEQ,
         _rev: '1',
         value: '12'
       });
 
-      return metadata.getTransitionSeq('_local/transitions-seq').then(seq => {
+      return metadata.getTransitionSeq(METADATA_KEYS.TRANSITIONS_SEQ).then(seq => {
         chai.expect(seq).to.equal('12');
       });
     });
 
     it('uses default value if the doc doesnt exist', () => {
-      sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq').rejects({status: 404});
+      sinon.stub(db.sentinel, 'get').withArgs(METADATA_KEYS.TRANSITIONS_SEQ).rejects({status: 404});
 
-      return metadata.getTransitionSeq('_local/transitions-seq').then(seq => {
+      return metadata.getTransitionSeq(METADATA_KEYS.TRANSITIONS_SEQ).then(seq => {
         chai.expect(seq).to.equal('0');
       });
     });
 
     it('but it does throw non 404 errors', () => {
-      sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq').rejects({status: 500});
+      sinon.stub(db.sentinel, 'get').withArgs(METADATA_KEYS.TRANSITIONS_SEQ).rejects({status: 500});
 
-      return metadata.getTransitionSeq('_local/transitions-seq').then(() => {
+      return metadata.getTransitionSeq(METADATA_KEYS.TRANSITIONS_SEQ).then(() => {
         chai.assert.fail();
       }).catch(err => {
         chai.expect(err).to.deep.equal({status: 500});
@@ -42,8 +43,8 @@ describe('metadata', () => {
 
   describe('setValue', () => {
     it('works as expected', () => {
-      sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq').resolves({
-        _id: '_local/transitions-seq',
+      sinon.stub(db.sentinel, 'get').withArgs(METADATA_KEYS.TRANSITIONS_SEQ).resolves({
+        _id: METADATA_KEYS.TRANSITIONS_SEQ,
         _rev: '1',
         value: '12'
       });
@@ -52,7 +53,7 @@ describe('metadata', () => {
         chai.expect(db.sentinel.get.callCount).to.equal(1);
         chai.expect(db.sentinel.put.callCount).to.equal(1);
         chai.expect(db.sentinel.put.args[0][0]).to.deep.equal({
-          _id: '_local/transitions-seq',
+          _id: METADATA_KEYS.TRANSITIONS_SEQ,
           _rev: '1',
           value: '55'
         });
@@ -63,29 +64,29 @@ describe('metadata', () => {
   describe('Background Cleanup Seq', () => {
 
     it('fetches metadata doc', () => {
-      sinon.stub(db.sentinel, 'get').withArgs('_local/background-seq').resolves({
-        _id: '_local/background-seq',
+      sinon.stub(db.sentinel, 'get').withArgs(METADATA_KEYS.BACKGROUND_SEQ).resolves({
+        _id: METADATA_KEYS.BACKGROUND_SEQ,
         _rev: '1',
         value: '12'
       });
 
-      return metadata.getBackgroundCleanupSeq('_local/background-seq').then(seq => {
+      return metadata.getBackgroundCleanupSeq(METADATA_KEYS.BACKGROUND_SEQ).then(seq => {
         chai.expect(seq).to.equal('12');
       });
     });
 
     it('uses default value if the doc doesnt exist', () => {
-      sinon.stub(db.sentinel, 'get').withArgs('_local/background-seq').rejects({status: 404});
+      sinon.stub(db.sentinel, 'get').withArgs(METADATA_KEYS.BACKGROUND_SEQ).rejects({status: 404});
 
-      return metadata.getBackgroundCleanupSeq('_local/background-seq').then(seq => {
+      return metadata.getBackgroundCleanupSeq(METADATA_KEYS.BACKGROUND_SEQ).then(seq => {
         chai.expect(seq).to.equal('0');
       });
     });
 
     it('but it does throw non 404 errors', () => {
-      sinon.stub(db.sentinel, 'get').withArgs('_local/background-seq').rejects({status: 500});
+      sinon.stub(db.sentinel, 'get').withArgs(METADATA_KEYS.BACKGROUND_SEQ).rejects({status: 500});
 
-      return metadata.getBackgroundCleanupSeq('_local/background-seq').then(() => {
+      return metadata.getBackgroundCleanupSeq(METADATA_KEYS.BACKGROUND_SEQ).then(() => {
         chai.assert.fail();
       }).catch(err => {
         chai.expect(err).to.deep.equal({status: 500});
@@ -95,8 +96,8 @@ describe('metadata', () => {
 
   describe('setValue', () => {
     it('works as expected', () => {
-      sinon.stub(db.sentinel, 'get').withArgs('_local/background-seq').resolves({
-        _id: '_local/background-seq',
+      sinon.stub(db.sentinel, 'get').withArgs(METADATA_KEYS.BACKGROUND_SEQ).resolves({
+        _id: METADATA_KEYS.BACKGROUND_SEQ,
         _rev: '1',
         value: '12'
       });
@@ -105,7 +106,7 @@ describe('metadata', () => {
         chai.expect(db.sentinel.get.callCount).to.equal(1);
         chai.expect(db.sentinel.put.callCount).to.equal(1);
         chai.expect(db.sentinel.put.args[0][0]).to.deep.equal({
-          _id: '_local/background-seq',
+          _id: METADATA_KEYS.BACKGROUND_SEQ,
           _rev: '1',
           value: '55'
         });

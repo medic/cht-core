@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const constants = require('@constants');
+const { DOC_IDS, METADATA_KEYS } = require('@medic/constants');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -412,7 +413,7 @@ const deleteDocs = ids => {
 };
 
 const PROTECTED_DOCS = [
-  'service-worker-meta',
+  DOC_IDS.SERVICE_WORKER_META,
   constants.USER_CONTACT_ID,
   constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id,
   'migration-log',
@@ -1018,7 +1019,7 @@ const delayPromise = async (promiseFn, interval) => {
 
 const setTransitionSeqToNow = () => {
   return Promise.all([
-    sentinelDb.get('_local/transitions-seq').catch(() => ({ _id: '_local/transitions-seq' })),
+    sentinelDb.get(METADATA_KEYS.TRANSITIONS_SEQ).catch(() => ({ _id: METADATA_KEYS.TRANSITIONS_SEQ })),
     db.info()
   ]).then(([sentinelMetadata, { update_seq: updateSeq }]) => {
     sentinelMetadata.value = updateSeq;

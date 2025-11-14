@@ -54,6 +54,7 @@ import { NgIf } from '@angular/common';
 import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-policy.component';
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
+import { DOC_IDS } from '@medic/constants';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -396,12 +397,12 @@ export class AppComponent implements OnInit, AfterViewInit {
         return (
           change.id === '_design/medic' ||
           change.id === '_design/medic-client' ||
-          change.id === 'service-worker-meta' ||
+          change.id === DOC_IDS.SERVICE_WORKER_META ||
           change.id === 'settings'
         );
       },
       callback: (change) => {
-        if (change.id === 'service-worker-meta') {
+        if (change.id === DOC_IDS.SERVICE_WORKER_META) {
           this.updateServiceWorker.update(() => this.ngZone.run(() => this.showUpdateReady()));
 
         } else {

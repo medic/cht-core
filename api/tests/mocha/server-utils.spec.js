@@ -1,6 +1,7 @@
 const sinon = require('sinon');
 const chai = require('chai');
 const environment = require('@medic/environment');
+const { HTTP_HEADERS } = require('@medic/constants');
 const serverUtils = require('../../src/server-utils');
 const cookie = require('../../src/services/cookie');
 const {InvalidArgumentError} = require('@medic/cht-datasource');
@@ -284,6 +285,6 @@ describe('Server utils', () => {
   });
 
   it('should export request header', () => {
-    chai.expect(serverUtils.REQUEST_ID_HEADER).to.equal('X-Request-Id');
+    chai.expect(serverUtils.REQUEST_ID_HEADER).to.equal(HTTP_HEADERS.REQUEST_ID);
   });
 });
