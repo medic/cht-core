@@ -2,13 +2,12 @@ import { Injectable } from '@angular/core';
 import * as CalendarInterval from '@medic/calendar-interval';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CalendarIntervalService {
+  constructor() {}
 
-  constructor() { }
-
-  getCurrent(startDate:number) {
+  getCurrent(startDate: number) {
     return CalendarInterval.getCurrent(startDate);
   }
 
@@ -20,19 +19,7 @@ export class CalendarIntervalService {
    * @param startDate {number} interval start day - 1-31
    * @param timestamp {number} date that should be included by the interval
    */
-  getInterval(startDate:number, timestamp:number) {
+  getInterval(startDate: number, timestamp: number) {
     return CalendarInterval.getInterval(startDate, timestamp);
   }
-
-  /**
-   * Returns the previous reporting period interval based on the start day.
-   * This is used when the sidebar filter selects "previous month".
-   */
-  getPrevious(startDate: number) {
-    const now = Date.now();
-    const previousMonth = new Date(now);
-    previousMonth.setMonth(previousMonth.getMonth() - 1);
-    return CalendarInterval.getInterval(startDate, previousMonth.valueOf());
-  }
-
 }
