@@ -4,7 +4,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const { getRemoteDataContext, Place, Qualifier } = require('@medic/cht-datasource');
 const { expect } = require('chai');
 const userFactory = require('@factories/cht/users/users');
-const {setAuth, removeAuth} = require('./auth');
+const { setAuth, removeAuth } = require('./auth');
 
 describe('cht-datasource Place', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
@@ -61,7 +61,7 @@ describe('cht-datasource Place', () => {
       _id: 'fixture:user:online-no-perms',
       name: 'Online User',
     },
-    roles: ['mm-online']
+    roles: [ 'mm-online' ]
   }));
   const offlineUser = utils.deepFreeze(userFactory.build({
     username: 'offline-has-perms',
@@ -70,20 +70,20 @@ describe('cht-datasource Place', () => {
       _id: 'fixture:user:offline-has-perms',
       name: 'Offline User',
     },
-    roles: ['chw']
+    roles: [ 'chw' ]
   }));
   const dataContext = getRemoteDataContext(utils.getOrigin());
-  const expectedPlaces = [place0, clinic1, clinic3];
+  const expectedPlaces = [ place0, clinic1, clinic3 ];
 
   before(async () => {
     setAuth();
-    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic3, healthCenter2]);
-    await utils.createUsers([userNoPerms, offlineUser]);
+    await utils.saveDocs([ contact0, contact1, contact2, place0, place1, place2, clinic1, clinic3, healthCenter2 ]);
+    await utils.createUsers([ userNoPerms, offlineUser ]);
   });
 
   after(async () => {
     await utils.revertDb([], true);
-    await utils.deleteUsers([userNoPerms, offlineUser]);
+    await utils.deleteUsers([ userNoPerms, offlineUser ]);
     removeAuth();
   });
 
@@ -206,7 +206,10 @@ describe('cht-datasource Place', () => {
             ...Qualifier.byContactType(placeType),
           }, invalidCursor, limit)
         ).to.be.rejectedWith(
-          `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          {
+            code: 400,
+            error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          }
         );
       });
     });
@@ -222,6 +225,106 @@ describe('cht-datasource Place', () => {
         }
 
         expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPlaces);
+      });
+    });
+
+    describe('create', () => {
+      it('creates a place for a valid input', async () => {
+        const placeInput = {
+          name: 'place-1',
+          type: 'place',
+          parent: contact0._id,
+          contact: contact1._id
+        };
+        const updatedPlaceInput = {
+          ...placeInput, parent: { _id: contact0._id, parent: contact0.parent },
+          contact: { _id: contact1._id, parent: contact1.parent }
+        };
+        const placeDoc = await Place.v1.create(dataContext)(placeInput);
+        expect(placeDoc).excluding([ '_rev', 'reported_date', '_id' ])
+          .to.deep.equal(updatedPlaceInput);
+      });
+    });
+
+    describe('update', () => {
+      it('updates a place for a valid input', async () => {
+        const placeInput = {
+          name: 'place-1',
+          type: 'clinic',
+          parent: place1._id,
+          contact: contact1._id,
+          weather: 'humid'
+        };
+        const placeDoc = await Place.v1.create(dataContext)(placeInput);
+        const updateInput = {
+          ...placeDoc, extraField: 'value'
+        };
+        delete updateInput.weather;
+
+        const updatedPlaceDoc = await Place.v1.update(dataContext)(updateInput);
+        expect(updatedPlaceDoc).excluding([ '_rev' ]).to.deep.equal(
+          updateInput
+        );
+      });
+
+      it('throws error if the lineage does not match', async () => {
+        const placeInput = {
+          name: 'place-1',
+          type: 'clinic',
+          parent: place1._id,
+          contact: contact1._id,
+          weather: 'humid'
+        };
+        const placeDoc = await Place.v1.create(dataContext)(placeInput);
+        const updateInput = {
+          ...placeDoc, parent: place0
+        };
+
+        await expect(Place.v1.update(dataContext)(updateInput))
+          .to.be.rejectedWith({
+            code: 400,
+            error: `parent lineage does not match with the lineage of the doc in the db`
+          });
+      });
+
+      it('throws error if the update payload contains parent for a place at the top of the hierarchy', async () => {
+        const placeInput = {
+          name: 'place-1',
+          type: 'district_hospital',
+          contact: contact1._id,
+          weather: 'humid'
+        };
+        const placeDoc = await Place.v1.create(dataContext)(placeInput);
+        const updateInput = {
+          ...placeDoc, parent: place0
+        };
+
+        await expect(Place.v1.update(dataContext)(updateInput))
+          .to.be.rejectedWith({
+            code: 400,
+            error: `Places at top of the hierarchy cannot have a parent`
+          });
+      });
+
+      it('throws error if the _id is missing', async () => {
+        const placeInput = {
+          name: 'place-1',
+          type: 'clinic',
+          parent: place1._id,
+          contact: contact1._id,
+          weather: 'humid'
+        };
+        const placeDoc = await Place.v1.create(dataContext)(placeInput);
+        const updateInput = {
+          ...placeDoc
+        };
+        delete updateInput._id;
+
+        await expect(Place.v1.update(dataContext)(updateInput))
+          .to.be.rejectedWith({
+            code: 400,
+            error: `Document for update is not a valid Doc ${JSON.stringify(updateInput)}`
+          });
       });
     });
   });

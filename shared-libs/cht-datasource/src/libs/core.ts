@@ -1,4 +1,5 @@
 import { DataContext } from './data-context';
+import { InvalidArgumentError } from './error';
 
 /**
  * A value that could be `null`.
@@ -70,7 +71,7 @@ export const deepCopy = <T extends DataObject | DataArray | DataPrimitive>(value
   return Object.fromEntries(
     Object
       .entries(value)
-      .map(([key, value]) => [key, deepCopy(value)])
+      .map(([ key, value ]) => [ key, deepCopy(value) ])
   ) as unknown as T;
 };
 
@@ -84,19 +85,28 @@ export const isRecord = (value: unknown): value is Record<string, unknown> => {
   return value !== null && typeof value === 'object';
 };
 
+interface FieldDescriptor<T> {
+  name: keyof T;
+  type: string;
+  ensureTruthyValue?: boolean
+}
+
 /** @internal */
 export const hasField = <T extends Record<string, unknown>>(
   value: T,
-  field: { name: keyof T, type: string }
-): value is T & Record<typeof field.name, string> => {
-  const valueField = value[field.name];
-  return typeof valueField === field.type;
+  { name, type, ensureTruthyValue = false }: FieldDescriptor<T>
+): value is T & Record<typeof name, string> => {
+  const valueField = value[name];
+  if (ensureTruthyValue) {
+    return typeof valueField === type && !!valueField;
+  }
+  return typeof valueField === type;
 };
 
 /** @internal */
-export const hasFields = (
-  value: Record<string, unknown>,
-  fields: NonEmptyArray<{ name: string, type: string }>
+export const hasFields = <T extends Record<string, unknown>>(
+  value: T,
+  fields: NonEmptyArray<FieldDescriptor<T>>,
 ): boolean => fields.every(field => hasField(value, field));
 
 /** @internal */
@@ -162,6 +172,23 @@ export interface NormalizedParent extends DataObject, Identifiable {
 /** @ignore */
 export const isNormalizedParent = (value: unknown): value is NormalizedParent => {
   return isDataObject(value) && isIdentifiable(value) && (!value.parent || isNormalizedParent(value.parent));
+};
+
+/** @internal */
+export const convertToUnixTimestamp = (date: string | number): number => {
+  if (typeof date === 'number') {
+    return date;
+  }
+
+  const parsedDate = new Date(date);
+  if (Number.isNaN(parsedDate.getTime())) {
+    throw new InvalidArgumentError(
+      'Invalid reported_date. Expected format to be ' +
+      '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
+    );
+  }
+
+  return parsedDate.getTime();
 };
 
 /** @internal */
