@@ -3,6 +3,7 @@ import { createSingleValueAction } from '@mm-actions/actionUtils';
 
 export const Actions = {
   setTasksList: createSingleValueAction('SET_TASKS_LIST', 'tasks'),
+  setOverdueTasks: createSingleValueAction('SET_OVERDUE_TASKS', 'tasks'),
   setTasksLoaded: createSingleValueAction('SET_TASKS_LOADED', 'loaded'),
   setSelectedTask: createSingleValueAction('SET_SELECTED_TASK', 'selected'),
   setLastSubmittedTask: createSingleValueAction('SET_LAST_SUBMITTED_TASK', 'task'),
@@ -17,6 +18,10 @@ export class TasksActions {
 
   setTasksList(tasks) {
     return this.store.dispatch(Actions.setTasksList(tasks));
+  }
+
+  setOverdueTasks(tasks) {
+    return this.store.dispatch(Actions.setOverdueTasks(tasks));
   }
 
   setTasksLoaded(loaded) {

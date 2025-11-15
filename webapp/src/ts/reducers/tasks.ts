@@ -3,9 +3,14 @@ import { createReducer, on } from '@ngrx/store';
 import { Actions as GlobalActions } from '@mm-actions/global';
 import { Actions } from '@mm-actions/tasks';
 import moment from 'moment';
+import * as RulesEngineCore from '@medic/rules-engine';
 
 const initialState = {
   tasksList: [] as any[],
+  overdue: {
+    tasks: [] as any[],
+    calculatedAt: null as any,
+  },
   selected: null,
   loaded: false,
   taskGroup: {
@@ -93,6 +98,8 @@ const orderByDueDateAndPriority = (t1, t2) => {
   return compareDates();
 };
 
+const isTaskOverdue = (task) => moment(task.emission.dueDate, 'YYYY-MM-DD').isBefore(moment());
+
 const _tasksReducer = createReducer(
   initialState,
   on(GlobalActions.clearSelected, state => ({ ...state, selected: null })),
@@ -101,6 +108,36 @@ const _tasksReducer = createReducer(
     return {
       ...state,
       tasksList: [...tasks].sort(orderByDueDateAndPriority),
+      overdue: {
+        tasks: tasks.filter(isTaskOverdue),
+        calculatedAt: moment(),
+      }
+    };
+  }),
+
+  on(Actions.setOverdueTasks, (state, { payload: { tasks } }) => {
+    const overdueTasks = state.overdue.tasks;
+    tasks.forEach(task => {
+      const isOverdue = isTaskOverdue(task) && RulesEngineCore.showTask(task);
+      const overdueTaskIndex = state.overdue.tasks.findIndex(overdue => overdue._id === task._id);
+
+      const isCurrentlyOverdue = overdueTaskIndex !== -1;
+
+      if (isCurrentlyOverdue && !isOverdue) {
+        // was overdue, shouldn't be anymore → remove
+        overdueTasks.splice(overdueTaskIndex, 1);
+      } else if (!isCurrentlyOverdue && isOverdue) {
+        // wasn't overdue, should be now → add
+        overdueTasks.push(task);
+      }
+    });
+
+    return {
+      ...state,
+      overdue: {
+        calculatedAt: tasks.length === 1 ? state.overdue.calculatedAt : moment(),
+        tasks: overdueTasks,
+      }
     };
   }),
 

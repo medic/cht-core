@@ -125,6 +125,7 @@ export const Selectors = {
 
   // tasks
   getTasksList: createSelector(getTasksState, (tasksState) => tasksState.tasksList),
+  getOverdueTasks: createSelector(getTasksState, (tasksState) => tasksState.overdue.tasks),
   getTasksLoaded: createSelector(getTasksState, (tasksState) => tasksState.loaded),
   getSelectedTask: createSelector(getTasksState, (tasksState) => tasksState.selected),
   getLastSubmittedTask: createSelector(getTasksState, (tasksState) => tasksState.taskGroup?.lastSubmittedTask),

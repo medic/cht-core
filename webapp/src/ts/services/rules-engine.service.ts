@@ -23,6 +23,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { Store } from '@ngrx/store';
 import { GlobalActions } from '@mm-actions/global';
+import { TasksActions } from '@mm-actions/tasks';
 
 interface DebounceActive {
   [key: string]: {
@@ -63,7 +64,7 @@ export class RulesEngineService implements OnDestroy {
   private uhcMonthStartDate;
   private debounceActive: DebounceActive = {};
   private observable = new Subject();
-  private globalActions: GlobalActions;
+  private taskActions: TasksActions;
 
   constructor(
     private translateService:TranslateService,
@@ -87,7 +88,7 @@ export class RulesEngineService implements OnDestroy {
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
-    this.globalActions = new GlobalActions(this.store);
+    this.taskActions = new TasksActions(this.store);
   }
 
   ngOnDestroy(): void {
@@ -141,7 +142,7 @@ export class RulesEngineService implements OnDestroy {
 
     const rulesDebounceRef = _debounce(() => {
       this.debounceActive[this.FRESHNESS_KEY].active = false;
-      this.refreshEmissions();
+      this.fetchOverdueTasksForAllContacts();
     }, this.ENSURE_FRESHNESS_MILLIS);
 
     this.debounceActive[this.FRESHNESS_KEY] = {
@@ -160,6 +161,11 @@ export class RulesEngineService implements OnDestroy {
     trackPerformance?.stop(trackName);
 
     return true;
+  }
+
+  private async fetchOverdueTasksForAllContacts() {
+    const allTasks = await this.fetchTaskDocsForAllContacts();
+    this.taskActions.setOverdueTasks(allTasks);
   }
 
   private cancelDebounce(entity) {
@@ -419,20 +425,11 @@ export class RulesEngineService implements OnDestroy {
       trackPerformanceRunning = this.performanceService.track();
     }
     trackPerformanceRunning.stop({ name: trackName });
-    const hydratedTaskDocs = this.hydrateTaskDocs(taskDocs);
-
-    this.updateBubbleCounter(hydratedTaskDocs);
-
-    return hydratedTaskDocs;
+    return this.hydrateTaskDocs(taskDocs);
   }
 
   fetchTaskDocsFor(contactIds) {
     return this.ngZone.runOutsideAngular(() => this._fetchTaskDocsFor(contactIds));
-  }
-
-  private updateBubbleCounter(taskDocs) {
-    const overdueCount = taskDocs.filter(({ emission }) => emission.overdue).length;
-    this.globalActions.updateBubbleCounter({ task: overdueCount });
   }
 
   private async _fetchTaskDocsFor(contactIds) {
@@ -458,10 +455,7 @@ export class RulesEngineService implements OnDestroy {
       trackPerformanceRunning = this.performanceService.track();
     }
     trackPerformanceRunning?.stop({ name: trackName });
-    const hydratedTaskDocs = this.hydrateTaskDocs(taskDocs);
-
-    this.updateBubbleCounter(hydratedTaskDocs);
-    return hydratedTaskDocs;
+    return this.hydrateTaskDocs(taskDocs);
   }
 
   fetchTasksBreakdown(contactIds?) {
