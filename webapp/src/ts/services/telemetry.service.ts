@@ -212,10 +212,23 @@ export class TelemetryService {
   }
 
   private async getCurrentTelemetryDB(today: TodayMoment, telemetryDBs) {
-    let currentDB = telemetryDBs?.find(db => db.includes(today.formatted));
+    const currentUser = this.sessionService.userCtx().name;
+    const expectedDBName = this.generateTelemetryDBName(today);
+    
+    // Find the telemetry DB that matches both the current date and the current user
+    let currentDB = telemetryDBs?.find(db => {
+      // Check that the DB name matches the expected format including the user
+      const parts = db.split(this.NAME_DIVIDER);
+      if (parts.length >= 5) { // telemetry-YYYY-MM-DD-username
+        const datePart = `${parts[1]}-${parts[2]}-${parts[3]}`;
+        const userPart = parts.slice(4).join(this.NAME_DIVIDER); // In case username contains dashes
+        return datePart === today.formatted && userPart === currentUser;
+      }
+      return false;
+    });
 
     if (!currentDB) {
-      currentDB = this.generateTelemetryDBName(today);
+      currentDB = expectedDBName;
     }
 
     return this.windowRef.PouchDB(currentDB); // Avoid angular-pouch as digest isn't necessary here
@@ -236,22 +249,37 @@ export class TelemetryService {
       return;
     }
 
-    for (const dbName of telemetryDBs) {
-      if (dbName.includes(today.formatted)) {
-        // Don't submit today's telemetry records
-        continue;
+    const currentUser = this.sessionService.userCtx().name;
+    
+    this.isAggregationRunning = true;
+    try {
+      for (const dbName of telemetryDBs) {
+        // Only process telemetry DBs that belong to the current user
+        const dbNameParts = dbName.split(this.NAME_DIVIDER);
+        if (dbNameParts.length >= 5) { // Ensure the DB name has the expected format: telemetry-YYYY-MM-DD-username
+          const datePart = `${dbNameParts[1]}-${dbNameParts[2]}-${dbNameParts[3]}`;
+          const userPart = dbNameParts.slice(4).join(this.NAME_DIVIDER); // In case username contains dashes
+          
+          if (userPart === currentUser) { // Verify the username matches the current user
+            // Don't submit today's telemetry records
+            if (datePart === today.formatted) {
+              continue;
+            }
+            
+            // Process old telemetry DBs that belong to the current user
+            try {
+              const db = this.windowRef.PouchDB(dbName);
+              await this.aggregate(db, dbName);
+              await db.destroy();
+            } catch (error) {
+              console.error('Error when aggregating the telemetry records', error);
+            }
+          }
+        }
+        // Skip telemetry DBs that belong to other users
       }
-
-      try {
-        this.isAggregationRunning = true;
-        const db = this.windowRef.PouchDB(dbName);
-        await this.aggregate(db, dbName);
-        await db.destroy();
-      } catch (error) {
-        console.error('Error when aggregating the telemetry records', error);
-      } finally {
-        this.isAggregationRunning = false;
-      }
+    } finally {
+      this.isAggregationRunning = false;
     }
   }
 
