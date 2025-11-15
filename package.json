@@ -194,7 +194,7 @@
   "dependencies": {
     "async": "^3.2.6",
     "bikram-sambat": "^1.8.0",
-    "body-parser": "^1.20.3",
+    "body-parser": "^2.2.0",
     "bowser": "^2.12.1",
     "buffer-shims": "^1.0.0",
     "cht-nootils": "^4.2.0",
