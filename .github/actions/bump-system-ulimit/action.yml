@@ -1,0 +1,36 @@
+name: bump-system-ulimit
+author: diana
+description: bump-system-ulimit
+runs:
+  using: "composite"
+  steps:
+    - name: Configure system limits
+      run: |
+        # Set ulimit for system           
+        sudo bash -c 'ulimit -n 200000 && ulimit -u 16384'
+        
+        DOCKER_CONFIG="/etc/docker/daemon.json"          
+        if [ -f "$DOCKER_CONFIG" ]; then
+          EXISTING_CONFIG=$(cat "$DOCKER_CONFIG")
+        else
+          EXISTING_CONFIG="{}"
+        fi
+        
+        echo "$EXISTING_CONFIG" | jq '. + {
+          "default-ulimits": {
+            "nofile": {
+              "Name": "nofile",
+              "Hard": 200000,
+              "Soft": 200000
+            },
+            "nproc": {
+              "Name": "nproc",
+              "Hard": 16384,
+              "Soft": 16384
+            }
+          }
+        }' | sudo tee "$DOCKER_CONFIG" > /dev/null
+        
+        # Restart Docker to apply changes
+        sudo systemctl restart docker            
+      shell:
