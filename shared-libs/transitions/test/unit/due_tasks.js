@@ -1809,11 +1809,7 @@ describe('due tasks', () => {
     const saveDoc = sinon.stub(db.medic, 'put').resolves({});    
     return schedule.execute().then(() => {
       assert.equal(setTaskState.callCount, 1);
-      sinon.assert.calledWithMatch(
-        setTaskState,
-        sinon.match.object,
-        'clear'
-      );
+      assert.equal(setTaskState.calledWithMatch(sinon.match.object, 'clear'), true);      
       assert.equal(saveDoc.callCount, 1);
     });
   });
@@ -1932,7 +1928,7 @@ describe('due tasks', () => {
     });
   });
 
-  it('change sate to clear if message content is empty and clear flag is set', () => {
+  it('change state to clear if message content is empty and clear flag is set', () => {
     config.get.withArgs('sms').returns({
       clear_failing_schedules: true
     });
