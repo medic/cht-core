@@ -60,15 +60,9 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
 
-    # this step is only necessary because of an issue with Docker and Supabase where it cannot set the `ulimit`.
-    # this step sets the `ulimit` higher than the Supabase supavisor container's 100000, to prevent an "Operation not permitted"
-    # error stopping the supavisor from starting.
-    # https://github.com/supabase/cli/issues/4443
-    - name: Configure system limits
-      run: |            
-            # Set ulimit for system (higher than Supabase's 100000)
-            # Run ulimit within a root shell since it's a builtin and cannot be run like `sudo ulimit`
-            sudo bash -c 'ulimit -n 200000 && ulimit -u 16384'
+    - name: Set system ulimit
+      uses: ./.github/actions/bump-system-ulimit
+
     - name: Create logs directory
       run: mkdir tests/logs
     - run: npm ci
@@ -177,6 +171,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - uses: actions/checkout@v4
+
+      - name: Set system ulimit
+        uses: ./.github/actions/bump-system-ulimit
 
       - name: Download docker images artifacts
         uses: actions/download-artifact@v4
@@ -305,6 +302,9 @@ jobs:
       run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
       working-directory: images/
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+
+    - name: Set system ulimit
+      uses: ./.github/actions/bump-system-ulimit
 
     - name: Create logs directory
       run: mkdir tests/logs
@@ -505,6 +505,10 @@ jobs:
           registry-type: public
           mask-password: 'true'
       - uses: actions/checkout@v4
+
+      - name: Set system ulimit
+        uses: ./.github/actions/bump-system-ulimit
+
       - name: Set ENV
         run: |
           echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
