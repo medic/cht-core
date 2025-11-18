@@ -59,6 +59,49 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
+
+    # this step is only necessary because of an issue with Docker and Supabase where it cannot set the `ulimit`.
+    # this step sets the `ulimit` higher than the Supabase supavisor container's 100000, to prevent an "Operation not permitted"
+    # error stopping the supavisor from starting.
+    # https://github.com/supabase/cli/issues/4443
+    - name: Configure system limits
+      run: |            
+            # Set ulimit for system (higher than Supabase's 100000)
+            # Run ulimit within a root shell since it's a builtin and cannot be run like `sudo ulimit`
+            sudo bash -c 'ulimit -n 200000 && ulimit -u 16384'
+            
+            # Configure Docker daemon with merged config
+            DOCKER_CONFIG="/etc/docker/daemon.json"
+            
+            # Read existing config or start with empty object
+            if [ -f "$DOCKER_CONFIG" ]; then
+              EXISTING_CONFIG=$(cat "$DOCKER_CONFIG")
+            else
+              EXISTING_CONFIG="{}"
+            fi
+            
+            # Merge new limits with existing config using jq (higher than Supabase's 100000)
+            echo "$EXISTING_CONFIG" | jq '. + {
+              "default-ulimits": {
+                "nofile": {
+                  "Name": "nofile",
+                  "Hard": 200000,
+                  "Soft": 200000
+                },
+                "nproc": {
+                  "Name": "nproc",
+                  "Hard": 16384,
+                  "Soft": 16384
+                }
+              }
+            }' | sudo tee "$DOCKER_CONFIG" > /dev/null
+            
+            # Restart Docker to apply changes
+            sudo systemctl restart docker
+            
+            # Wait for Docker to be ready
+            timeout 30 sh -c 'until docker info > /dev/null 2>&1; do sleep 1; done'        
+
     - name: Create logs directory
       run: mkdir tests/logs
     - run: npm ci
