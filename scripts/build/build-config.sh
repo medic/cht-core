@@ -15,7 +15,10 @@ node ./node_modules/.bin/cht \
   upload-contact-forms \
   upload-training-forms \
   upload-resources \
-  upload-custom-translations
+  upload-custom-translations \
+  upload-extension-libs \
+  upload-privacy-policies \
+  upload-branding
 
 echo "build-config: done"
 
