@@ -59,6 +59,10 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
+
+    - name: Set system ulimit
+      uses: ./.github/actions/bump-system-ulimit
+
     - name: Create logs directory
       run: mkdir tests/logs
     - run: npm ci
@@ -167,6 +171,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - uses: actions/checkout@v4
+
+      - name: Set system ulimit
+        uses: ./.github/actions/bump-system-ulimit
 
       - name: Download docker images artifacts
         uses: actions/download-artifact@v4
@@ -295,6 +302,9 @@ jobs:
       run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
       working-directory: images/
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+
+    - name: Set system ulimit
+      uses: ./.github/actions/bump-system-ulimit
 
     - name: Create logs directory
       run: mkdir tests/logs
@@ -495,6 +505,10 @@ jobs:
           registry-type: public
           mask-password: 'true'
       - uses: actions/checkout@v4
+
+      - name: Set system ulimit
+        uses: ./.github/actions/bump-system-ulimit
+
       - name: Set ENV
         run: |
           echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
