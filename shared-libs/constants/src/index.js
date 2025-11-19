@@ -22,9 +22,15 @@ const HTTP_HEADERS = {
   REQUEST_ID: 'X-Request-Id',
 };
 
+// Document Types
+const DOC_TYPES = {
+  TRANSLATIONS: 'translations',
+};
+
 module.exports = {
   USER_ROLES,
   DOC_IDS,
   METADATA_KEYS,
   HTTP_HEADERS,
+  DOC_TYPES,
 };
