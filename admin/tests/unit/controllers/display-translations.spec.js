@@ -1,3 +1,5 @@
+const { DOC_TYPES } = require('@medic/constants');
+
 describe('DisplayTranslationsCtrl controller', function() {
   'use strict';
 
@@ -60,7 +62,7 @@ describe('DisplayTranslationsCtrl controller', function() {
     chai.expect(queryStub.firstCall.args).to.deep.equal([
       'medic-client/doc_by_type',
       {
-        key: ['translations'],
+        key: [DOC_TYPES.TRANSLATIONS],
         include_docs: true,
       }
     ]);

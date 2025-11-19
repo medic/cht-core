@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const { glob } = require('glob');
 const path = require('path');
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, DOC_TYPES } = require('@medic/constants');
 
 const utils = require('../../../../../../tests/utils');
 const sentinelUtils = require('../../../../../../tests/utils/sentinel');
@@ -25,7 +25,7 @@ describe('Test utils', () => {
         {id: 'resources', doc: {_id: 'resources'}},
         {id: 'branding', doc: {_id: 'branding'}},
         {id: 'partners', doc: {_id: 'partners'}},
-        {id: '001', doc: {type: 'translations'}},
+        {id: '001', doc: {type: DOC_TYPES.TRANSLATIONS}},
         {id: '002', doc: {type: 'translations-backup'}},
         {id: '003', doc: {type: 'user-settings'}},
         {id: '004', doc: {type: 'info'}},

@@ -1,5 +1,6 @@
 const sinon = require('sinon');
 const chai = require('chai');
+const { DOC_TYPES } = require('@medic/constants');
 
 const db = require('../../../src/db');
 const settingsService = require('../../../src/services/settings');
@@ -24,9 +25,9 @@ describe('remove-enabled-from-translation-docs migration', () => {
     sinon.stub(settingsService, 'get').resolves({ languages: [ { locale: 'en', enabled: true } ] });
     sinon.stub(settingsService, 'update');
     const docs = [
-      { _id: 'messages-en', type: 'translations', code: 'en', name: 'English', enabled: true },
-      { _id: 'messages-es', type: 'translations', code: 'es', name: 'Español', enabled: false },
-      { _id: 'messages-fr', type: 'translations', code: 'fr', name: 'Français' }, // undefined => treated as disabled
+      { _id: 'messages-en', type: DOC_TYPES.TRANSLATIONS, code: 'en', name: 'English', enabled: true },
+      { _id: 'messages-es', type: DOC_TYPES.TRANSLATIONS, code: 'es', name: 'Español', enabled: false },
+      { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, code: 'fr', name: 'Français' }, // undefined => treated as disabled
     ];
     sinon.stub(translations, 'getTranslationDocs').resolves(docs);
     sinon.stub(db.medic, 'bulkDocs');
@@ -38,9 +39,9 @@ describe('remove-enabled-from-translation-docs migration', () => {
     chai.expect(translations.getTranslationDocs.callCount).to.equal(1);
     chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
     chai.expect(db.medic.bulkDocs.firstCall.args[0]).to.deep.equal( [
-      { _id: 'messages-en', type: 'translations', code: 'en', name: 'English' },
-      { _id: 'messages-es', type: 'translations', code: 'es', name: 'Español' },
-      { _id: 'messages-fr', type: 'translations', code: 'fr', name: 'Français' }, // undefined => treated as disabled
+      { _id: 'messages-en', type: DOC_TYPES.TRANSLATIONS, code: 'en', name: 'English' },
+      { _id: 'messages-es', type: DOC_TYPES.TRANSLATIONS, code: 'es', name: 'Español' },
+      { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, code: 'fr', name: 'Français' }, // undefined => treated as disabled
     ]);
   });
 
@@ -49,9 +50,9 @@ describe('remove-enabled-from-translation-docs migration', () => {
     sinon.stub(settingsService, 'get').resolves({});
 
     const docs = [
-      { _id: 'messages-en', type: 'translations', code: 'en', name: 'English', enabled: true },
-      { _id: 'messages-es', type: 'translations', code: 'es', name: 'Español', enabled: false },
-      { _id: 'messages-fr', type: 'translations', code: 'fr', name: 'Français' }, // undefined => treated as disabled
+      { _id: 'messages-en', type: DOC_TYPES.TRANSLATIONS, code: 'en', name: 'English', enabled: true },
+      { _id: 'messages-es', type: DOC_TYPES.TRANSLATIONS, code: 'es', name: 'Español', enabled: false },
+      { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, code: 'fr', name: 'Français' }, // undefined => treated as disabled
     ];
 
     // Stub modules used by migration
@@ -85,7 +86,7 @@ describe('remove-enabled-from-translation-docs migration', () => {
   it('should propagate errors from settings update', async () => {
     sinon.stub(settingsService, 'get').resolves({});
     sinon.stub(translations, 'getTranslationDocs').resolves([
-      { _id: 'messages-en', type: 'translations', code: 'en', name: 'English', enabled: true },
+      { _id: 'messages-en', type: DOC_TYPES.TRANSLATIONS, code: 'en', name: 'English', enabled: true },
     ]);
 
     const updateError = new Error('update failed');
