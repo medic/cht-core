@@ -98,7 +98,7 @@ const orderByDueDateAndPriority = (t1, t2) => {
   return compareDates();
 };
 
-const isTaskOverdue = (task) => moment(task.emission.dueDate, 'YYYY-MM-DD').isBefore(moment());
+const isTaskOverdue = (emission) => moment(emission.dueDate, 'YYYY-MM-DD').isBefore(moment());
 
 const _tasksReducer = createReducer(
   initialState,
@@ -108,17 +108,17 @@ const _tasksReducer = createReducer(
     return {
       ...state,
       tasksList: [...tasks].sort(orderByDueDateAndPriority),
-      overdue: {
+      overdue: tasks.length ? {
         tasks: tasks.filter(isTaskOverdue),
         calculatedAt: moment(),
-      }
+      } : state.overdue
     };
   }),
 
   on(Actions.setOverdueTasks, (state, { payload: { tasks } }) => {
-    const overdueTasks = state.overdue.tasks;
+    const overdueTasks = [...state.overdue.tasks];
     tasks.forEach(task => {
-      const isOverdue = isTaskOverdue(task) && RulesEngineCore.showTask(task);
+      const isOverdue = isTaskOverdue(task.emission) && RulesEngineCore().showTask(task);
       const overdueTaskIndex = state.overdue.tasks.findIndex(overdue => overdue._id === task._id);
 
       const isCurrentlyOverdue = overdueTaskIndex !== -1;

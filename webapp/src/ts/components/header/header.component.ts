@@ -87,6 +87,8 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
     const bubbleCounterObserver = this.store.select(Selectors.getBubbleCounter)
       .subscribe(count => this.bubbleCount = count);
     this.subscriptions.add(bubbleCounterObserver);
+
+
   }
 
   private getHeaderTabs() {

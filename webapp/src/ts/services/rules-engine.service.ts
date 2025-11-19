@@ -22,7 +22,6 @@ import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { Store } from '@ngrx/store';
-import { GlobalActions } from '@mm-actions/global';
 import { TasksActions } from '@mm-actions/tasks';
 
 interface DebounceActive {
@@ -55,7 +54,7 @@ export class RulesEngineCoreFactoryService {
 export class RulesEngineService implements OnDestroy {
   private rulesEngineCore;
   private readonly MAX_LINEAGE_DEPTH = 50;
-  private readonly ENSURE_FRESHNESS_MILLIS = 120 * 1000;
+  private readonly ENSURE_FRESHNESS_MILLIS = 1000;
   private readonly DEBOUNCE_CHANGE_MILLIS = 1000;
   private readonly CHANGE_WATCHER_KEY = 'mark-contacts-dirty';
   private readonly FRESHNESS_KEY = 'freshness';
@@ -140,6 +139,7 @@ export class RulesEngineService implements OnDestroy {
     this.assignMonthStartDate(settingsDoc);
     this.monitorChanges(rulesEngineContext);
 
+    console.warn('rulesDebounceRef');
     const rulesDebounceRef = _debounce(() => {
       this.debounceActive[this.FRESHNESS_KEY].active = false;
       this.fetchOverdueTasksForAllContacts();
@@ -153,9 +153,6 @@ export class RulesEngineService implements OnDestroy {
       },
       debounceRef: rulesDebounceRef
     };
-    // todo
-    // load tasks once, and calculate overdue count, store which tasks are overdue??
-    // setup a task doc listener and check if the new task is overdue or not
     this.debounceActive[this.FRESHNESS_KEY].debounceRef();
 
     trackPerformance?.stop(trackName);
@@ -164,8 +161,11 @@ export class RulesEngineService implements OnDestroy {
   }
 
   private async fetchOverdueTasksForAllContacts() {
+    console.warn('fetchOverdueTasksForAllContacts');
     const allTasks = await this.fetchTaskDocsForAllContacts();
+
     this.taskActions.setOverdueTasks(allTasks);
+    this.monitorTaskChanges();
   }
 
   private cancelDebounce(entity) {
@@ -307,6 +307,19 @@ export class RulesEngineService implements OnDestroy {
       },
     });
     this.subscriptions.add(rulesUpdateSubscription);
+  }
+
+  private monitorTaskChanges() {
+    const taskDocSubscription = this.changesService.subscribe({
+      key: 'task-doc-update',
+      callback: change => {
+        const { doc } = change;
+        if (doc.type === 'task') {
+          this.taskActions.setOverdueTasks([doc]);
+        }
+      }
+    });
+    this.subscriptions.add(taskDocSubscription);
   }
 
   private monitorChanges(rulesEngineContext) {

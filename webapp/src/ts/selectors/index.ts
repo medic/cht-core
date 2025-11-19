@@ -1,6 +1,7 @@
 import { createSelector } from '@ngrx/store';
 import { GlobalState } from '@mm-reducers/global';
 
+const getState = (state) => state;
 const getGlobalState = (state): GlobalState => state.global || {};
 const getServicesState = (state) => state.services || {};
 const getReportsState = (state) => state.reports || {};
@@ -32,7 +33,13 @@ export const Selectors = {
   getTitle: createSelector(getGlobalState, (globalState) => globalState.title),
   getPrivacyPolicyAccepted: createSelector(getGlobalState, (globalState) => globalState.privacyPolicyAccepted),
   getShowPrivacyPolicy: createSelector(getGlobalState, (globalState) => globalState.showPrivacyPolicy),
-  getBubbleCounter: createSelector(getGlobalState, (globalState) => globalState.bubbleCounter),
+  getBubbleCounter: createSelector(getState, (state) => {
+    return {
+      ...(getGlobalState(state).bubbleCounter as any),
+      task: getTasksState(state).overdue.tasks.length || 0,
+    };
+  }),
+
   getTranslationsLoaded: createSelector(getGlobalState, (globalState) => globalState.translationsLoaded),
   getUserFacilityIds: createSelector(getGlobalState, (globalState) => globalState.userFacilityIds),
   getUserContactId: createSelector(getGlobalState, (globalState) => globalState.userContactId),
