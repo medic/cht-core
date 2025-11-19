@@ -59,6 +59,10 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
+
+    - name: Set system ulimit
+      uses: ./.github/actions/bump-system-ulimit
+
     - name: Create logs directory
       run: mkdir tests/logs
     - run: npm ci
@@ -167,6 +171,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - uses: actions/checkout@v4
+
+      - name: Set system ulimit
+        uses: ./.github/actions/bump-system-ulimit
 
       - name: Download docker images artifacts
         uses: actions/download-artifact@v4
@@ -295,6 +302,9 @@ jobs:
       working-directory: images/
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
+    - name: Set system ulimit
+      uses: ./.github/actions/bump-system-ulimit
+
     - name: Create logs directory
       run: mkdir tests/logs
     - name: Install cht-conf
@@ -397,7 +407,7 @@ jobs:
     steps:
     - name: Install regctl
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: regclient/actions/regctl-installer@main
+      uses: regclient/actions/regctl-installer@df29323daedc1f78ee74b261bd8d849327cb4ff0
 
     - name: Configure AWS credentials
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
@@ -492,6 +502,10 @@ jobs:
           registry-type: public
           mask-password: 'true'
       - uses: actions/checkout@v4
+
+      - name: Set system ulimit
+        uses: ./.github/actions/bump-system-ulimit
+
       - name: Set ENV
         run: |
           echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
