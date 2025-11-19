@@ -54,7 +54,7 @@ import { NgIf } from '@angular/common';
 import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-policy.component';
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
-import { DOC_IDS } from '@medic/constants';
+import { DOC_IDS, DOC_TYPES } from '@medic/constants';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -432,7 +432,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   private watchTranslationsChanges() {
     this.changesService.subscribe({
-      key: 'translations',
+      key: DOC_TYPES.TRANSLATIONS,
       filter: change => TranslationDocsMatcherProvider.test(change.id),
       callback: change => {
         const locale = TranslationDocsMatcherProvider.getLocaleCode(change.id);
