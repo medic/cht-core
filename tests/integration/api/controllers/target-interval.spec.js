@@ -178,17 +178,18 @@ describe('Target Interval API', () => {
     it('throws 400 error when reporting period is invalid', async () => {
       const queryParams = {
         contact_uuids: [
-            'target~2025-09~7de6849e-e6e5-4a8d-9b6d-71c9eaa23415~org.couchdb.user:chw',
-            'target~2025-09~c3f6b91e-b095-48ef-a524-705e29fd9f6d~org.couchdb.user:chw'
-          ].join(','),
+          'target~2025-09~7de6849e-e6e5-4a8d-9b6d-71c9eaa23415~org.couchdb.user:chw',
+          'target~2025-09~c3f6b91e-b095-48ef-a524-705e29fd9f6d~org.couchdb.user:chw'
+        ].join(','),
         reporting_period: invalidQualifier.reportingPeriod,
       };
       const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
         path: `/api/v1/target-interval?${queryString}`,
       };
-      await expect(utils.request(opts))
-        .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid reporting period [${invalidQualifier.reportingPeriod}]."}`);
+
+      const message = `400 - {"code":400,"error":"Invalid reporting period [${invalidQualifier.reportingPeriod}]."}`;
+      await expect(utils.request(opts)).to.be.rejectedWith(message);
     });
 
     it('throws 400 error when limit is invalid', async () => {
@@ -210,9 +211,9 @@ describe('Target Interval API', () => {
     it('throws 400 error when cursor is invalid', async () => {
       const queryParams = {
         contact_uuids: [
-            'target~2025-09~7de6849e-e6e5-4a8d-9b6d-71c9eaa23415~org.couchdb.user:chw',
-            'target~2025-09~c3f6b91e-b095-48ef-a524-705e29fd9f6d~org.couchdb.user:chw'
-          ].join(','),
+          'target~2025-09~7de6849e-e6e5-4a8d-9b6d-71c9eaa23415~org.couchdb.user:chw',
+          'target~2025-09~c3f6b91e-b095-48ef-a524-705e29fd9f6d~org.couchdb.user:chw'
+        ].join(','),
         reporting_period: '2025-07',
         cursor: '-1'
       };

@@ -33,8 +33,8 @@ module.exports = {
       const contactUuids = Array.isArray(req.query.contact_uuids) 
         ? req.query.contact_uuids
         : (req.query.contact_uuids ?? '')
-            .split(',')
-            .filter(Boolean);
+          .split(',')
+          .filter(Boolean);
 
       const docs = await getTargetIntervals(
         Qualifier.and(
