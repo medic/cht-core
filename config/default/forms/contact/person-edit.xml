@@ -128,7 +128,6 @@
           <text id="/data/person/ephemeral_dob/age_months:label">
             <value>Months</value>
           </text>
-          <text id="/data/person/ephemeral_dob/dob_method:label"></text>
           <text id="/data/person/ephemeral_dob/dob_debug:label">
             <value> DOB Approx: <output value=" /data/person/ephemeral_dob/dob_approx "/>
 DOB Calendar: <output value=" /data/person/ephemeral_dob/dob_calendar "/>
@@ -1191,8 +1190,8 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
       <input ref="/data/init/person_parent" appearance="select-contact hidden">
         <label ref="jr:itext('/data/init/person_parent:label')"/>
       </input>
-      <input ref="/data/init/type" appearance="hidden"></input>
-      <input ref="/data/init/name" appearance="hidden"></input>
+      <input ref="/data/init/type" appearance="hidden"/>
+      <input ref="/data/init/name" appearance="hidden"/>
       <input ref="/data/init/note_place">
         <label ref="jr:itext('/data/init/note_place:label')"/>
       </input>
@@ -1244,7 +1243,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <label ref="jr:itext('/data/person/ephemeral_dob/age_months:label')"/>
         </input>
         <select ref="/data/person/ephemeral_dob/dob_method" appearance="columns">
-          <label ref="jr:itext('/data/person/ephemeral_dob/dob_method:label')"/>
           <itemset nodeset="instance('select_dob_method')/root/item">
             <value ref="name"/>
             <label ref="jr:itext(itextId)"/>
@@ -1283,7 +1281,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
       <input ref="/data/person/notes" appearance="multiline">
         <label ref="jr:itext('/data/person/notes:label')"/>
       </input>
-      <group appearance="hidden" ref="/data/person/meta"></group>
+      <group appearance="hidden" ref="/data/person/meta"/>
     </group>
   </h:body>
 </h:html>

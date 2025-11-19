@@ -315,8 +315,7 @@
             <value>Diabetes</value>
           </text>
           <text id="/data/anc_visits_hf/risk_factors/extra_risk_note:label">
-            <value>
-              <output value=" /data/context_vars/risk_factor_extra_ctx "/></value>
+            <value><output value=" /data/context_vars/risk_factor_extra_ctx "/></value>
           </text>
           <text id="/data/anc_visits_hf/risk_factors/new_risks:jr:constraintMsg">
             <value>If "None of the above" selected, cannot select any other option.</value>
@@ -490,8 +489,7 @@
             <value>Diabetes</value>
           </text>
           <text id="/data/summary/r_risk_additional:label">
-            <value>
-              <output value=" /data/anc_visits_hf/risk_factors/additional_risk "/></value>
+            <value><output value=" /data/anc_visits_hf/risk_factors/additional_risk "/></value>
           </text>
           <text id="/data/summary/r_danger_signs:label">
             <value>New Danger Signs</value>
@@ -1316,12 +1314,12 @@
         </input>
         <group ref="/data/inputs/contact/parent">
           <group ref="/data/inputs/contact/parent/parent">
-            <group ref="/data/inputs/contact/parent/parent/contact"></group>
+            <group ref="/data/inputs/contact/parent/parent/contact"/>
           </group>
         </group>
       </group>
     </group>
-    <group ref="/data/context_vars"></group>
+    <group ref="/data/context_vars"/>
     <group appearance="field-list" ref="/data/pregnancy_summary">
       <label ref="jr:itext('/data/pregnancy_summary:label')"/>
       <input ref="/data/pregnancy_summary/current_weeks_pregnant">
@@ -1562,7 +1560,7 @@
               <label ref="jr:itext(itextId)"/>
             </itemset>
           </select1>
-          <input ref="/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date"></input>
+          <input ref="/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date"/>
         </group>
         <group appearance="field-list" ref="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note">
           <input ref="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/who_recommends_note">
@@ -1828,7 +1826,7 @@
       <input ref="/data/summary/r_danger_sign_breathlessness" appearance="li">
         <label ref="jr:itext('/data/summary/r_danger_sign_breathlessness:label')"/>
       </input>
-      <input ref="/data/summary/r_space_1"></input>
+      <input ref="/data/summary/r_space_1"/>
       <input ref="/data/summary/r_referrals" appearance="h1 lime">
         <label ref="jr:itext('/data/summary/r_referrals:label')"/>
       </input>
@@ -1899,7 +1897,7 @@
       </group>
     </group>
     <group appearance="hidden" ref="/data/data">
-      <group ref="/data/data/meta"></group>
+      <group ref="/data/data/meta"/>
     </group>
   </h:body>
 </h:html>

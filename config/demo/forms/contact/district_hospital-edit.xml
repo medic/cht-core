@@ -675,14 +675,14 @@
   <h:body>
     <group ref="/data/inputs">
       <group ref="/data/inputs/user">
-        <input ref="/data/inputs/user/contact_id"></input>
-        <input ref="/data/inputs/user/facility_id"></input>
-        <input ref="/data/inputs/user/name"></input>
+        <input ref="/data/inputs/user/contact_id"/>
+        <input ref="/data/inputs/user/facility_id"/>
+        <input ref="/data/inputs/user/name"/>
       </group>
     </group>
     <group appearance="field-list" ref="/data/district_hospital">
       <group ref="/data/district_hospital/contact">
-        <input ref="/data/district_hospital/contact/name" appearance="hidden"></input>
+        <input ref="/data/district_hospital/contact/name" appearance="hidden"/>
         <input ref="/data/district_hospital/contact/_id" appearance="db-object">
           <label ref="jr:itext('/data/district_hospital/contact/_id:label')"/>
           <hint ref="jr:itext('/data/district_hospital/contact/_id:hint')"/>
@@ -704,7 +704,7 @@
       <input ref="/data/district_hospital/notes" appearance="multiline">
         <label ref="jr:itext('/data/district_hospital/notes:label')"/>
       </input>
-      <group appearance="hidden" ref="/data/district_hospital/meta"></group>
+      <group appearance="hidden" ref="/data/district_hospital/meta"/>
     </group>
     <group appearance="field-list hidden" ref="/data/init">
       <select1 ref="/data/init/place_type" appearance="hidden">

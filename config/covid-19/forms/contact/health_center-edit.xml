@@ -651,14 +651,14 @@
   <h:body>
     <group ref="/data/inputs">
       <group ref="/data/inputs/user">
-        <input ref="/data/inputs/user/contact_id"></input>
-        <input ref="/data/inputs/user/facility_id"></input>
-        <input ref="/data/inputs/user/name"></input>
+        <input ref="/data/inputs/user/contact_id"/>
+        <input ref="/data/inputs/user/facility_id"/>
+        <input ref="/data/inputs/user/name"/>
       </group>
     </group>
     <group appearance="field-list" ref="/data/health_center">
       <group ref="/data/health_center/contact">
-        <input ref="/data/health_center/contact/name" appearance="hidden"></input>
+        <input ref="/data/health_center/contact/name" appearance="hidden"/>
         <input ref="/data/health_center/contact/_id" appearance="select-contact type-person">
           <label ref="jr:itext('/data/health_center/contact/_id:label')"/>
           <hint ref="jr:itext('/data/health_center/contact/_id:hint')"/>
@@ -683,7 +683,7 @@
       <input ref="/data/health_center/notes" appearance="multiline">
         <label ref="jr:itext('/data/health_center/notes:label')"/>
       </input>
-      <group appearance="hidden" ref="/data/health_center/meta"></group>
+      <group appearance="hidden" ref="/data/health_center/meta"/>
     </group>
     <group appearance="field-list hidden" ref="/data/init">
       <select1 ref="/data/init/place_type" appearance="hidden">

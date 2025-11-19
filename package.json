@@ -121,7 +121,7 @@
     "chai-like": "^1.1.3",
     "chai-shallow-deep-equal": "^1.4.6",
     "chai-things": "^0.2.0",
-    "cht-conf": "git+https://github.com/medic/cht-conf.git#cea08236c97d90358ee3c6c490f8da4fb101682c",
+    "cht-conf": "git+https://github.com/medic/cht-conf.git#2f236540b54c242fc22f858f0580e0da61c823db",
     "cht-conf-test-harness": "^5.0.3",
     "clean-css-cli": "^5.6.2",
     "couchdb-compile": "^1.11.2",

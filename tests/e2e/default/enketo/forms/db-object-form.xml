@@ -69,15 +69,15 @@
   <h:body class="pages">
     <group ref="/data/inputs">
       <group ref="/data/inputs/user">
-        <input ref="/data/inputs/user/contact_id" appearance="hidden select-contact type-person"></input>
+        <input ref="/data/inputs/user/contact_id" appearance="hidden select-contact type-person"/>
       </group>
       <group ref="/data/inputs/user_contact">
-        <input ref="/data/inputs/user_contact/_id" appearance="hidden select-contact type-person"></input>
+        <input ref="/data/inputs/user_contact/_id" appearance="hidden select-contact type-person"/>
       </group>
     </group>
     <group appearance="field-list" ref="/data/people">
       <group ref="/data/people/user_contact">
-        <input ref="/data/people/user_contact/_id" appearance="hidden select-contact type-person"></input>
+        <input ref="/data/people/user_contact/_id" appearance="hidden select-contact type-person"/>
       </group>
       <input ref="/data/people/person_test_same_parent" appearance="select-contact type-person descendant-of-current-contact">
         <label ref="jr:itext('/data/people/person_test_same_parent:label')"/>

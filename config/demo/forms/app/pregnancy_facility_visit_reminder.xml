@@ -205,7 +205,7 @@
         </input>
         <group ref="/data/inputs/contact/parent">
           <group ref="/data/inputs/contact/parent/parent">
-            <group ref="/data/inputs/contact/parent/parent/contact"></group>
+            <group ref="/data/inputs/contact/parent/parent/contact"/>
           </group>
         </group>
       </group>
@@ -238,7 +238,7 @@
       </group>
     </group>
     <group appearance="hidden" ref="/data/data">
-      <group ref="/data/data/meta"></group>
+      <group ref="/data/data/meta"/>
     </group>
   </h:body>
 </h:html>

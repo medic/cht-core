@@ -407,14 +407,14 @@ Please contact your administrator if you do not receive a login link.</value>
   </h:head>
   <h:body class="pages">
     <group appearance="field-list" ref="/data/inputs">
-      <group ref="/data/inputs/user"></group>
+      <group ref="/data/inputs/user"/>
       <group ref="/data/inputs/contact">
         <input ref="/data/inputs/contact/_id" appearance="select-contact type-person">
           <label ref="jr:itext('/data/inputs/contact/_id:label')"/>
         </input>
         <group appearance="hidden" ref="/data/inputs/contact/parent">
           <group ref="/data/inputs/contact/parent/parent">
-            <group ref="/data/inputs/contact/parent/parent/parent"></group>
+            <group ref="/data/inputs/contact/parent/parent/parent"/>
           </group>
         </group>
       </group>
@@ -435,7 +435,7 @@ Please contact your administrator if you do not receive a login link.</value>
       <label ref="jr:itext('/data/new_contact:label')"/>
       <group appearance="hidden" ref="/data/new_contact/parent">
         <group appearance="hidden" ref="/data/new_contact/parent/parent">
-          <group ref="/data/new_contact/parent/parent/parent"></group>
+          <group ref="/data/new_contact/parent/parent/parent"/>
         </group>
       </group>
       <input ref="/data/new_contact/name">
@@ -497,7 +497,7 @@ Please contact your administrator if you do not receive a login link.</value>
       <input ref="/data/new_contact/external_id">
         <label ref="jr:itext('/data/new_contact/external_id:label')"/>
       </input>
-      <group appearance="hidden" ref="/data/new_contact/meta"></group>
+      <group appearance="hidden" ref="/data/new_contact/meta"/>
     </group>
     <group appearance="field-list summary" ref="/data/outro">
       <input ref="/data/outro/warning_header" appearance="h1 red">

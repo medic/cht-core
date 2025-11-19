@@ -287,7 +287,7 @@ Date of Death: <output value=" /data/death_details/date_of_death "/>&lt;/div&gt;
       <input ref="/data/group_review/r_key_instruction" appearance="h1 blue">
         <label ref="jr:itext('/data/group_review/r_key_instruction:label')"/>
       </input>
-      <input ref="/data/group_review/blank_note"></input>
+      <input ref="/data/group_review/blank_note"/>
       <input ref="/data/group_review/r_referral" appearance="h1 red">
         <label ref="jr:itext('/data/group_review/r_referral:label')"/>
       </input>
@@ -296,7 +296,7 @@ Date of Death: <output value=" /data/death_details/date_of_death "/>&lt;/div&gt;
       </input>
     </group>
     <group appearance="hidden" ref="/data/data">
-      <group ref="/data/data/meta"></group>
+      <group ref="/data/data/meta"/>
     </group>
   </h:body>
 </h:html>

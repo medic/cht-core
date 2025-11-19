@@ -75,8 +75,7 @@
             <value>Select the primary contact</value>
           </text>
           <text id="/data/init/custom_place_name:label">
-            <value>
-              <output value=" /data/init/custom_place_name_label "/></value>
+            <value><output value=" /data/init/custom_place_name_label "/></value>
           </text>
           <text id="/data/init/place_type:label">
             <value>Enter the name of this place</value>
@@ -105,7 +104,6 @@
           <text id="/data/contact/ephemeral_dob/age_months:label">
             <value>Months</value>
           </text>
-          <text id="/data/contact/ephemeral_dob/dob_method:label"></text>
           <text id="/data/contact/ephemeral_dob/dob_approx:label">
             <value>DOB</value>
           </text>
@@ -227,8 +225,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <value>प्राथमिक कॉंटॅक्ट चुनें</value>
           </text>
           <text id="/data/init/custom_place_name:label">
-            <value>
-              <output value=" /data/init/custom_place_name_label "/></value>
+            <value><output value=" /data/init/custom_place_name_label "/></value>
           </text>
           <text id="/data/init/place_type:label">
             <value>इस स्थान का नाम दर्ज करें</value>
@@ -383,8 +380,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <value>Pilih Kontak Utama</value>
           </text>
           <text id="/data/init/custom_place_name:label">
-            <value>
-              <output value=" /data/init/custom_place_name_label "/></value>
+            <value><output value=" /data/init/custom_place_name_label "/></value>
           </text>
           <text id="/data/init/place_type:label">
             <value>Masukkan nama tempat ini</value>
@@ -539,8 +535,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <value>Chagua Mwasiliwa mkuu</value>
           </text>
           <text id="/data/init/custom_place_name:label">
-            <value>
-              <output value=" /data/init/custom_place_name_label "/></value>
+            <value><output value=" /data/init/custom_place_name_label "/></value>
           </text>
           <text id="/data/init/place_type:label">
             <value>Jaza jina la eneo hii</value>
@@ -695,8 +690,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <value>प्राथमिक सम्पर्क व्यक्ति छान्नुहोस्</value>
           </text>
           <text id="/data/init/custom_place_name:label">
-            <value>
-              <output value=" /data/init/custom_place_name_label "/></value>
+            <value><output value=" /data/init/custom_place_name_label "/></value>
           </text>
           <text id="/data/init/place_type:label">
             <value>यस स्थानको नाम लेख्नुहोस्</value>
@@ -851,8 +845,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <value>Choisisser le contact primaire</value>
           </text>
           <text id="/data/init/custom_place_name:label">
-            <value>
-              <output value=" /data/init/custom_place_name_label "/></value>
+            <value><output value=" /data/init/custom_place_name_label "/></value>
           </text>
           <text id="/data/init/place_type:label">
             <value>Nom de l'endroit</value>
@@ -1209,9 +1202,9 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
   <h:body class="pages">
     <group ref="/data/inputs">
       <group ref="/data/inputs/user">
-        <input ref="/data/inputs/user/contact_id"></input>
-        <input ref="/data/inputs/user/facility_id"></input>
-        <input ref="/data/inputs/user/name"></input>
+        <input ref="/data/inputs/user/contact_id"/>
+        <input ref="/data/inputs/user/facility_id"/>
+        <input ref="/data/inputs/user/name"/>
       </group>
     </group>
     <group appearance="field-list" ref="/data/init">
@@ -1225,7 +1218,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
       <input ref="/data/init/select_person" appearance="select-contact type-person">
         <label ref="jr:itext('/data/init/select_person:label')"/>
       </input>
-      <input ref="/data/init/name" appearance="hidden"></input>
+      <input ref="/data/init/name" appearance="hidden"/>
       <select1 ref="/data/init/custom_place_name_label_translator" appearance="hidden">
         <itemset nodeset="instance('translate_name_label')/root/item">
           <value ref="name"/>
@@ -1268,7 +1261,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <label ref="jr:itext('/data/contact/ephemeral_dob/age_months:label')"/>
           </input>
           <select ref="/data/contact/ephemeral_dob/dob_method" appearance="columns">
-            <label ref="jr:itext('/data/contact/ephemeral_dob/dob_method:label')"/>
             <itemset nodeset="instance('select_dob_method')/root/item">
               <value ref="name"/>
               <label ref="jr:itext(itextId)"/>
@@ -1311,7 +1303,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
       <input ref="/data/contact/notes" appearance="multiline">
         <label ref="jr:itext('/data/contact/notes:label')"/>
       </input>
-      <group appearance="hidden" ref="/data/contact/meta"></group>
+      <group appearance="hidden" ref="/data/contact/meta"/>
     </group>
     <group appearance="field-list" ref="/data/district_hospital">
       <select1 ref="/data/district_hospital/is_name_generated" appearance="columns-pack">
@@ -1333,7 +1325,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
       <input ref="/data/district_hospital/notes" appearance="multiline">
         <label ref="jr:itext('/data/district_hospital/notes:label')"/>
       </input>
-      <group appearance="hidden" ref="/data/district_hospital/meta"></group>
+      <group appearance="hidden" ref="/data/district_hospital/meta"/>
     </group>
   </h:body>
 </h:html>

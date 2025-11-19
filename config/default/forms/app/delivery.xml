@@ -341,14 +341,12 @@
           <text id="/data/babys_condition/baby_repeat/baby_details/birth_weight:jr:constraintMsg">
             <value>Should be between 1500 grams and 5000 grams.</value>
           </text>
-          <text id="/data/babys_condition/baby_repeat/baby_details/birth_weight:label"></text>
           <text id="/data/babys_condition/baby_repeat/baby_details/birth_length_know:label">
             <value>Birth length</value>
           </text>
           <text id="/data/babys_condition/baby_repeat/baby_details/birth_length:jr:constraintMsg">
             <value>Should be between 35.6 cms and 70 cms.</value>
           </text>
-          <text id="/data/babys_condition/baby_repeat/baby_details/birth_length:label"></text>
           <text id="/data/babys_condition/baby_repeat/baby_details/vaccines_received:label">
             <value>What vaccines have they received?</value>
           </text>
@@ -1358,7 +1356,7 @@
                 <label ref="jr:itext('/data/inputs/contact/parent/parent/parent/_id:label')"/>
               </input>
             </group>
-            <group ref="/data/inputs/contact/parent/parent/contact"></group>
+            <group ref="/data/inputs/contact/parent/parent/contact"/>
           </group>
         </group>
       </group>
@@ -1444,7 +1442,7 @@
       </input>
       <group ref="/data/death_info_woman/death_report">
         <group ref="/data/death_info_woman/death_report/fields">
-          <group ref="/data/death_info_woman/death_report/fields/death_details"></group>
+          <group ref="/data/death_info_woman/death_report/fields/death_details"/>
         </group>
       </group>
     </group>
@@ -1457,7 +1455,7 @@
           <label ref="jr:itext(itextId)"/>
         </itemset>
       </select1>
-      <input ref="/data/delivery_outcome/babies_delivered_other"></input>
+      <input ref="/data/delivery_outcome/babies_delivered_other"/>
       <select1 ref="/data/delivery_outcome/babies_alive">
         <label ref="jr:itext('/data/delivery_outcome/babies_alive:label')"/>
         <itemset nodeset="instance('babies_alive')/root/item[count &lt;=  /data/delivery_outcome/babies_delivered_num ]">
@@ -1465,7 +1463,7 @@
           <label ref="jr:itext(itextId)"/>
         </itemset>
       </select1>
-      <input ref="/data/delivery_outcome/babies_alive_other"></input>
+      <input ref="/data/delivery_outcome/babies_alive_other"/>
       <input ref="/data/delivery_outcome/delivery_date">
         <label ref="jr:itext('/data/delivery_outcome/delivery_date:label')"/>
       </input>
@@ -1524,7 +1522,7 @@
           <group ref="/data/baby_death/baby_death_repeat/baby_death_profile">
             <group ref="/data/baby_death/baby_death_repeat/baby_death_profile/parent">
               <group ref="/data/baby_death/baby_death_repeat/baby_death_profile/parent/parent">
-                <group ref="/data/baby_death/baby_death_repeat/baby_death_profile/parent/parent/parent"></group>
+                <group ref="/data/baby_death/baby_death_repeat/baby_death_profile/parent/parent/parent"/>
               </group>
             </group>
           </group>
@@ -1569,9 +1567,7 @@
                 <label ref="jr:itext(itextId)"/>
               </itemset>
             </select1>
-            <input ref="/data/babys_condition/baby_repeat/baby_details/birth_weight">
-              <label ref="jr:itext('/data/babys_condition/baby_repeat/baby_details/birth_weight:label')"/>
-            </input>
+            <input ref="/data/babys_condition/baby_repeat/baby_details/birth_weight"/>
             <select1 ref="/data/babys_condition/baby_repeat/baby_details/birth_length_know">
               <label ref="jr:itext('/data/babys_condition/baby_repeat/baby_details/birth_length_know:label')"/>
               <itemset nodeset="instance('knows_length')/root/item">
@@ -1579,9 +1575,7 @@
                 <label ref="jr:itext(itextId)"/>
               </itemset>
             </select1>
-            <input ref="/data/babys_condition/baby_repeat/baby_details/birth_length">
-              <label ref="jr:itext('/data/babys_condition/baby_repeat/baby_details/birth_length:label')"/>
-            </input>
+            <input ref="/data/babys_condition/baby_repeat/baby_details/birth_length"/>
             <select1 ref="/data/babys_condition/baby_repeat/baby_details/vaccines_received">
               <label ref="jr:itext('/data/babys_condition/baby_repeat/baby_details/vaccines_received:label')"/>
               <hint ref="jr:itext('/data/babys_condition/baby_repeat/baby_details/vaccines_received:hint')"/>
@@ -1674,11 +1668,11 @@
               </itemset>
             </select1>
             <group ref="/data/babys_condition/baby_repeat/baby_details/baby_profile">
-              <group ref="/data/babys_condition/baby_repeat/baby_details/baby_profile/measurements"></group>
-              <group ref="/data/babys_condition/baby_repeat/baby_details/baby_profile/danger_signs"></group>
+              <group ref="/data/babys_condition/baby_repeat/baby_details/baby_profile/measurements"/>
+              <group ref="/data/babys_condition/baby_repeat/baby_details/baby_profile/danger_signs"/>
               <group appearance="hidden" ref="/data/babys_condition/baby_repeat/baby_details/baby_profile/parent">
                 <group appearance="hidden" ref="/data/babys_condition/baby_repeat/baby_details/baby_profile/parent/parent">
-                  <group appearance="hidden" ref="/data/babys_condition/baby_repeat/baby_details/baby_profile/parent/parent/parent"></group>
+                  <group appearance="hidden" ref="/data/babys_condition/baby_repeat/baby_details/baby_profile/parent/parent/parent"/>
                 </group>
               </group>
             </group>
@@ -1869,7 +1863,7 @@
       </group>
     </group>
     <group appearance="hidden" ref="/data/data">
-      <group ref="/data/data/meta"></group>
+      <group ref="/data/data/meta"/>
     </group>
   </h:body>
 </h:html>

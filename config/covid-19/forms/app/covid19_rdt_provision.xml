@@ -215,8 +215,7 @@
             <value>RDT Details&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/data/summary/summary_test_name:label">
-            <value>
-              <output value=" /data/summary/rdt_loinc_long_common_name "/></value>
+            <value><output value=" /data/summary/rdt_loinc_long_common_name "/></value>
           </text>
           <text id="/data/summary/summary_test_expire:label">
             <value> Results expire at <output value=" /data/preview_time_expired "/> - be sure to complete the task before this time.</value>
@@ -592,13 +591,13 @@
   </h:head>
   <h:body class="pages">
     <group appearance="field-list" ref="/data/inputs">
-      <group ref="/data/inputs/user"></group>
+      <group ref="/data/inputs/user"/>
       <group appearance="field-list" ref="/data/inputs/contact">
         <input ref="/data/inputs/contact/_id" appearance="select-contact type-person">
           <label ref="jr:itext('/data/inputs/contact/_id:label')"/>
         </input>
         <group ref="/data/inputs/contact/parent">
-          <group ref="/data/inputs/contact/parent/parent"></group>
+          <group ref="/data/inputs/contact/parent/parent"/>
         </group>
       </group>
     </group>
@@ -672,29 +671,29 @@
     </group>
     <group appearance="field-list" ref="/data/provision">
       <group appearance="android-app-launcher field-list" ref="/data/provision/rdtoolkit-provision">
-        <input ref="/data/provision/rdtoolkit-provision/action" appearance="hidden"></input>
+        <input ref="/data/provision/rdtoolkit-provision/action" appearance="hidden"/>
         <input ref="/data/provision/rdtoolkit-provision/note_instructions_provision">
           <label ref="jr:itext('/data/provision/rdtoolkit-provision/note_instructions_provision:label')"/>
         </input>
         <group appearance="android-app-inputs" ref="/data/provision/rdtoolkit-provision/android-app-inputs">
-          <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_session_id" appearance="hidden"></input>
+          <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_session_id" appearance="hidden"/>
           <group appearance="android-app-object" ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle">
-            <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_classifier_mode" appearance="hidden"></input>
-            <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_session_type" appearance="hidden"></input>
-            <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_provision_mode" appearance="hidden"></input>
-            <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_provision_mode_data" appearance="hidden"></input>
-            <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_flavor_one" appearance="hidden"></input>
-            <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_flavor_two" appearance="hidden"></input>
-            <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_cloudworks_dns" appearance="hidden"></input>
+            <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_classifier_mode" appearance="hidden"/>
+            <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_session_type" appearance="hidden"/>
+            <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_provision_mode" appearance="hidden"/>
+            <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_provision_mode_data" appearance="hidden"/>
+            <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_flavor_one" appearance="hidden"/>
+            <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_flavor_two" appearance="hidden"/>
+            <input ref="/data/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_cloudworks_dns" appearance="hidden"/>
           </group>
         </group>
         <group appearance="android-app-outputs" ref="/data/provision/rdtoolkit-provision/android-app-outputs">
           <group appearance="android-app-object" ref="/data/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle">
-            <input ref="/data/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_state" appearance="hidden"></input>
-            <input ref="/data/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_started" appearance="hidden"></input>
-            <input ref="/data/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved" appearance="hidden"></input>
-            <input ref="/data/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_expired" appearance="hidden"></input>
-            <input ref="/data/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_test_profile" appearance="hidden"></input>
+            <input ref="/data/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_state" appearance="hidden"/>
+            <input ref="/data/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_started" appearance="hidden"/>
+            <input ref="/data/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved" appearance="hidden"/>
+            <input ref="/data/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_expired" appearance="hidden"/>
+            <input ref="/data/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_test_profile" appearance="hidden"/>
           </group>
         </group>
         <input ref="/data/provision/rdtoolkit-provision/preview_session_state">

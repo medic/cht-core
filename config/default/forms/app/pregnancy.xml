@@ -453,8 +453,7 @@
             <value>Diabetes</value>
           </text>
           <text id="/data/summary/r_risk_additional:label">
-            <value>
-              <output value=" /data/risk_factors/risk_factors_present/additional_risk "/></value>
+            <value><output value=" /data/risk_factors/risk_factors_present/additional_risk "/></value>
           </text>
           <text id="/data/summary/r_danger_signs:label">
             <value>Danger Signs</value>
@@ -1225,7 +1224,7 @@
         <input ref="/data/inputs/user/contact_id" appearance="select-contact type-person">
           <label ref="jr:itext('/data/inputs/user/contact_id:label')"/>
         </input>
-        <group ref="/data/inputs/user/parent"></group>
+        <group ref="/data/inputs/user/parent"/>
       </group>
       <group ref="/data/inputs/contact">
         <input ref="/data/inputs/contact/_id" appearance="select-contact type-person">
@@ -1233,7 +1232,7 @@
         </input>
         <group ref="/data/inputs/contact/parent">
           <group ref="/data/inputs/contact/parent/parent">
-            <group ref="/data/inputs/contact/parent/parent/contact"></group>
+            <group ref="/data/inputs/contact/parent/parent/contact"/>
           </group>
         </group>
       </group>
@@ -1375,7 +1374,7 @@
               <label ref="jr:itext(itextId)"/>
             </itemset>
           </select1>
-          <input ref="/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date"></input>
+          <input ref="/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date"/>
         </group>
         <group appearance="field-list" ref="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note">
           <input ref="/data/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/who_recommends_note">
@@ -1703,7 +1702,7 @@
       <input ref="/data/summary/r_danger_sign_breathlessness" appearance="li">
         <label ref="jr:itext('/data/summary/r_danger_sign_breathlessness:label')"/>
       </input>
-      <input ref="/data/summary/r_space_1"></input>
+      <input ref="/data/summary/r_space_1"/>
       <input ref="/data/summary/r_referrals" appearance="h1 lime">
         <label ref="jr:itext('/data/summary/r_referrals:label')"/>
       </input>
@@ -1740,7 +1739,7 @@
       <input ref="/data/summary/r_refer_hf_immediately">
         <label ref="jr:itext('/data/summary/r_refer_hf_immediately:label')"/>
       </input>
-      <input ref="/data/summary/r_space_2"></input>
+      <input ref="/data/summary/r_space_2"/>
       <input ref="/data/summary/check-" appearance="h1 green">
         <label ref="jr:itext('/data/summary/check-:label')"/>
       </input>
@@ -1775,7 +1774,7 @@
       </group>
     </group>
     <group appearance="hidden" ref="/data/data">
-      <group ref="/data/data/meta"></group>
+      <group ref="/data/data/meta"/>
     </group>
   </h:body>
 </h:html>

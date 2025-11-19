@@ -314,35 +314,35 @@
           <label ref="jr:itext('/data/inputs/contact/_id:label')"/>
         </input>
         <group ref="/data/inputs/contact/parent">
-          <group ref="/data/inputs/contact/parent/parent"></group>
+          <group ref="/data/inputs/contact/parent/parent"/>
         </group>
       </group>
     </group>
-    <group ref="/data/test-information"></group>
+    <group ref="/data/test-information"/>
     <group appearance="field-list" ref="/data/capture">
       <label ref="jr:itext('/data/capture:label')"/>
       <group appearance="android-app-launcher" ref="/data/capture/rdtoolkit-capture">
-        <input ref="/data/capture/rdtoolkit-capture/action" appearance="hidden"></input>
+        <input ref="/data/capture/rdtoolkit-capture/action" appearance="hidden"/>
         <input ref="/data/capture/rdtoolkit-capture/note_instructions_provision">
           <label ref="jr:itext('/data/capture/rdtoolkit-capture/note_instructions_provision:label')"/>
         </input>
         <group appearance="android-app-inputs" ref="/data/capture/rdtoolkit-capture/android-app-inputs">
-          <input ref="/data/capture/rdtoolkit-capture/android-app-inputs/rdt_session_id" appearance="hidden"></input>
+          <input ref="/data/capture/rdtoolkit-capture/android-app-inputs/rdt_session_id" appearance="hidden"/>
         </group>
         <group appearance="android-app-outputs" ref="/data/capture/rdtoolkit-capture/android-app-outputs">
           <group appearance="android-app-object" ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle">
-            <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state" appearance="hidden"></input>
-            <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started" appearance="hidden"></input>
-            <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved" appearance="hidden"></input>
-            <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired" appearance="hidden"></input>
-            <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_test_profile" appearance="hidden"></input>
+            <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state" appearance="hidden"/>
+            <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started" appearance="hidden"/>
+            <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved" appearance="hidden"/>
+            <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired" appearance="hidden"/>
+            <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_test_profile" appearance="hidden"/>
             <group appearance="android-app-object" ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle">
-              <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read" appearance="hidden"></input>
+              <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read" appearance="hidden"/>
               <group appearance="android-app-object" ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images">
-                <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped" appearance="hidden"></input>
+                <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped" appearance="hidden"/>
               </group>
               <group appearance="android-app-object" ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map">
-                <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2" appearance="hidden"></input>
+                <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2" appearance="hidden"/>
               </group>
             </group>
           </group>
@@ -407,7 +407,7 @@
       <input ref="/data/summary/summary_results" appearance="center">
         <label ref="jr:itext('/data/summary/summary_results:label')"/>
       </input>
-      <input ref="/data/summary/summary_image" appearance="display-base64-image"></input>
+      <input ref="/data/summary/summary_image" appearance="display-base64-image"/>
     </group>
   </h:body>
 </h:html>
