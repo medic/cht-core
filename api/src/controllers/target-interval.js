@@ -30,14 +30,21 @@ module.exports = {
     getAll: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req);
 
-      const reportingPeriod = Qualifier.byReportingPeriod(req.query.reporting_period);
-      const contactUuids = Qualifier.byContactUuids(req.query.contact_uuids);
-      const docs = await getTargetIntervals(
-        {...reportingPeriod, ...contactUuids}, 
-        req.query.cursor, 
-        req.query.limit 
-      );
+      const contactUuids = Array.isArray(req.query.contact_uuids) 
+        ? req.query.contact_uuids
+        : (req.query.contact_uuids ?? '')
+            .split(',')
+            .filter(Boolean);
 
+      const docs = await getTargetIntervals(
+        Qualifier.and(
+          Qualifier.byContactUuids(contactUuids),
+          Qualifier.byReportingPeriod(req.query.reporting_period)
+        ),
+        req.query.cursor,
+        req.query.limit
+      );
+      
       return res.json(docs);
     }),
   },

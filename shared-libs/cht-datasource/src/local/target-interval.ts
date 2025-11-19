@@ -49,47 +49,40 @@ export namespace v1 {
     ): Promise<Page<TargetInterval.v1.TargetInterval>> => {
       
       const skip = validateCursor(cursor);
-      const intervalIds = await fetchTargetIntervalIds(limit, skip)(db, qualifier);
+      const uuids = (await fetchUuids(limit, skip)(db, qualifier)).data;
 
-      return await fetchTargetIntervalDocs(limit, skip)(db, intervalIds.data);
+      return await fetchDocs(limit, skip)(db, uuids);
     };
   };
   
-  const fetchTargetIntervalIds = (limit: number, skip: number) => async (
+  const fetchUuids = (limit: number, skip: number) => async (
     db: PouchDB.Database, 
     qualifier: (ReportingPeriodQualifier & ContactUuidsQualifier)
   ) => {
+    const contactUuidSet = new Set(qualifier.contactUuids);
+    
     const fetchFn = async (
       limit: number,
       skip: number
     ) => {
       const result = await db
-        .allDocs({ include_docs: false, limit, skip, startkey: `target~${qualifier.reportingPeriod}` });
+        .allDocs({ 
+          include_docs: false,
+          limit,
+          skip,
+          startkey: `target~${qualifier.reportingPeriod}~`,
+          endkey: `target~${qualifier.reportingPeriod}~\ufff0`
+        });
       
-      if (result.rows.length === 0) {
-        return [];
-      }
-
-      return result.rows
-        .filter(row => row.doc)
-        .map(row => row.doc as TargetInterval.v1.TargetInterval);
+      return result.rows.map(({ id }) => id);
     };
 
-    const filterFn = (doc: Nullable<Doc>, uuid?: string) => {
-      if (!doc) {
-        if (uuid) {
-          logger.warn(`No target interval found for identifier [${uuid}].`);
-        }
+    const filterFn = (uuid: Nullable<string>) => {
+      if (!uuid) {
         return false;
       }
-
-      for (const contactUuid of qualifier.contactUuids) {
-        if (contactUuid.includes(uuid!)) {
-          return true; 
-        }
-      }
-
-      return false;
+      const [,, contactUuid] = uuid.split('~');
+      return !!contactUuid && contactUuidSet.has(contactUuid);
     };
 
     return fetchAndFilter(
@@ -99,17 +92,17 @@ export namespace v1 {
     )(limit, skip);
   };
 
-  const fetchTargetIntervalDocs = (limit: number, skip: number) => async (
+  const fetchDocs = (limit: number, skip: number) => async (
     db: PouchDB.Database, 
-    targetIntervals: TargetInterval.v1.TargetInterval[]
+    uuids: string[]
   ) => {
     const fetchFn = async (
       limit: number,
       skip: number
     ) => {
       const result = await db
-        .allDocs({ include_docs: true, limit, skip, keys: targetIntervals.map(t => t._id) });
-      
+        .allDocs({ include_docs: true, limit, skip, keys: uuids });
+
       if (result.rows.length === 0) {
         return [];
       }
