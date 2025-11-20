@@ -296,10 +296,11 @@ sidebar:
   exclude: true
 description: 
   Released ${currentDate}
-aliases:
-  -    /core/releases/${MILESTONE_NAME}
-  -    /releases/${MILESTONE_NAME}
 ---
+
+## Highlights
+
+<<< TODO >>>
 
 ## Known issues
 
@@ -308,9 +309,6 @@ Check the repository for the [latest known issues](https://github.com/medic/cht-
 ## Upgrade notes
 
 ${formatGroups(warnings)}
-## Highlights
-
-<<< TODO >>>
 
 ## And more...
 

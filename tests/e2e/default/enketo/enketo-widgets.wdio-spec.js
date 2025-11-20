@@ -26,7 +26,7 @@ describe('Enketo Widgets', () => {
     place: districtHospital._id,
     roles: ['chw'],
     //The "name" value is deliberately <4 characters to violate the inputs constraint in the form
-    contact: {_id: '987 654 321', name: 'Ben', phone: '+50689999999'}
+    contact: {_id: '987-654-321', name: 'Ben', phone: '+50689999999'}
   });
 
   const fillCascadingWidgetsSection = async (country, city, neighborhood, countCities, countNeighborhood) => {
