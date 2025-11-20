@@ -5,6 +5,7 @@ const serverUtils = require('../server-utils');
 const { PermissionError } = require('../errors');
 
 const getTargetInterval = ctx.bind(TargetInterval.v1.get);
+const getTargetIntervals = ctx.bind(TargetInterval.v1.getPage);
 
 const checkUserPermissions = async (req) => {
   const userCtx = await auth.getUserCtx(req);
@@ -25,6 +26,26 @@ module.exports = {
       }
 
       return res.json(targetInterval);
+    }),
+    getAll: serverUtils.doOrError(async (req, res) => {
+      await checkUserPermissions(req);
+
+      const contactUuids = Array.isArray(req.query.contact_uuids) 
+        ? req.query.contact_uuids
+        : (req.query.contact_uuids ?? '')
+          .split(',')
+          .filter(Boolean);
+
+      const docs = await getTargetIntervals(
+        Qualifier.and(
+          Qualifier.byContactUuids(contactUuids),
+          Qualifier.byReportingPeriod(req.query.reporting_period)
+        ),
+        req.query.cursor,
+        req.query.limit
+      );
+      
+      return res.json(docs);
     }),
   },
 };
