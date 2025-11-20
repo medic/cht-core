@@ -1797,7 +1797,7 @@ describe('due tasks', () => {
 
     sinon.stub(schedule._lineage, 'hydrateDocs').resolves([doc]);
     sinon.stub(request, 'get').resolves({
-      rows: [{ id: 'xyz', key: ['scheduled', Date.now()], doc }],
+      rows: [{ id: 'xyz', key: ['scheduled', due], doc }],
     });
 
     const messageUtils = require('@medic/message-utils');
