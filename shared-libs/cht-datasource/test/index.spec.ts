@@ -545,8 +545,11 @@ describe('CHT Script API - getDatasource', () => {
       });
       
       it('getByReportingPeriodContactUuids', () => {
-        const expectedTargetInterval = {};
-        const reportGet = sinon.stub().resolves(expectedTargetInterval);
+        const mockAsyncGenerator = async function* () {
+          await Promise.resolve();
+          yield [];
+        };
+        const reportGet = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(reportGet);
         const qualifier = Qualifier.and(
           Qualifier.byReportingPeriod('2020-01'),
@@ -558,7 +561,7 @@ describe('CHT Script API - getDatasource', () => {
           qualifier.contactUuids
         );
         
-        expect(returnedTarget).to.equal(expectedTargetInterval);
+        expect(returnedTarget).to.deep.equal(mockAsyncGenerator);
         expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(TargetInterval.v1.getAll)).to.be.true;
       });
