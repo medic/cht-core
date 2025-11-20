@@ -168,6 +168,9 @@ const checkSession = function() {
 };
 
 const isUsingSupportedBrowser = () => {
+  if (!window.bowser || !window.bowser.getParser) {
+    return false;
+  }
   const parser = window.bowser.getParser(window.navigator.userAgent);
   return parser.satisfies({
     chrome: '>=90', // Chrome 90 was released on April 14, 2021; for desktop and Android.
@@ -283,7 +286,9 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   const ssoLoginButton = document.getElementById('login-sso');
-  ssoLoginButton.addEventListener('click', requestSSOLogin, false);
+  if (ssoLoginButton) {
+    ssoLoginButton.addEventListener('click', requestSSOLogin, false);
+  }
 
 });
 
