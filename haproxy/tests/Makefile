@@ -14,7 +14,7 @@ test_scripts:
 
 .PHONY: test_with_couch_cluster
 test_with_couch_cluster:
-	docker compose -f $(COMPOSE_CLUSTER) up --build --wait
+	docker compose -f $(COMPOSE_CLUSTER) up --build --wait || { docker logs tests-haproxy-1  && exit 1; }
 	npm run test:integration || { docker compose -f $(COMPOSE_CLUSTER) logs && docker compose -f $(COMPOSE_CLUSTER) down && exit 1; }
 	docker compose -f $(COMPOSE_CLUSTER) down
 
