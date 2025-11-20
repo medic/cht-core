@@ -8,13 +8,10 @@ import { AggregateTarget, TargetAggregatesService } from '@mm-services/target-ag
 import { PerformanceService } from '@mm-services/performance.service';
 import { GlobalActions } from '@mm-actions/global';
 import { UserSettingsService } from '@mm-services/user-settings.service';
-import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
 import { NgIf, NgClass, NgFor } from '@angular/common';
 import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 import { RouterOutlet } from '@angular/router';
-import {
-  AnalyticsTargetAggregatesSidebarFilterComponent
-} from './analytics-target-aggregates-sidebar-filter.component';
+import { AnalyticsSidebarFilterComponent, ReportingPeriod } from './analytics-sidebar-filter.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
@@ -26,7 +23,7 @@ import { TranslatePipe } from '@ngx-translate/core';
     NgFor,
     ContentRowListItemComponent,
     RouterOutlet,
-    AnalyticsTargetAggregatesSidebarFilterComponent,
+    AnalyticsSidebarFilterComponent,
     TranslatePipe,
   ],
 })

@@ -15,7 +15,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
-import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 
 describe('TargetAggregatesService', () => {
   let service: TargetAggregatesService;
