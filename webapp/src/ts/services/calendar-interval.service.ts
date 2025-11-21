@@ -8,7 +8,7 @@ export class CalendarIntervalService {
   
   constructor() { }
   
-  getCurrent(startDate: number) {
+  getCurrent(startDate:number) {
     return CalendarInterval.getCurrent(startDate);
   }
 

@@ -502,6 +502,7 @@ export class RulesEngineService implements OnDestroy {
     );
     this.cancelDebounce(this.FRESHNESS_KEY);
     await this.waitForDebounce(this.CHANGE_WATCHER_KEY);
+    
     const relevantInterval = this.calendarIntervalService.getCurrent(this.uhcMonthStartDate);
     const targets = await this.rulesEngineCore
       .fetchTargets(relevantInterval)
