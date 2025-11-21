@@ -82,12 +82,8 @@
             <h2 *ngIf="!target.translation_key">
               {{ target.name | translateFrom }}
             </h2>
-            <p>
-              {{
-                reportingPeriodFilter === 'current'
-                  ? ('targets.this_month.subtitle' | translate)
-                  : ('targets.all_time.subtitle' | translate)
-              }}
+            <p *ngIf="target.subtitle_translation_key">
+              {{ target.subtitle_translation_key | translate }}
             </p>
           </div>
         </div>
