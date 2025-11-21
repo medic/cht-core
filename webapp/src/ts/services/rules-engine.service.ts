@@ -496,12 +496,13 @@ export class RulesEngineService implements OnDestroy {
     let trackPerformanceRunning;
 
     await this.initialized;
-    this.telemetryService.record('rules-engine:targets:dirty-contacts', this.rulesEngineCore.getDirtyContacts().length);
+    this.telemetryService.record(
+      'rules-engine:targets:dirty-contacts',
+      this.rulesEngineCore.getDirtyContacts().length
+    );
     this.cancelDebounce(this.FRESHNESS_KEY);
     await this.waitForDebounce(this.CHANGE_WATCHER_KEY);
-
     const relevantInterval = this.calendarIntervalService.getCurrent(this.uhcMonthStartDate);
-
     const targets = await this.rulesEngineCore
       .fetchTargets(relevantInterval)
       .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
@@ -514,7 +515,6 @@ export class RulesEngineService implements OnDestroy {
       trackPerformanceRunning = this.performanceService.track();
     }
     trackPerformanceRunning?.stop({ name: trackName });
-
     return targets;
   }
 
