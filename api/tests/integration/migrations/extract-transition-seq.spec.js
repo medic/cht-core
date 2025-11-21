@@ -2,10 +2,12 @@ const { assert } = require('chai');
 
 const utils = require('./utils');
 const db = require('../../../src/db');
-const { SENTINEL_METADATA } = require('@medic/constants');
-
-const TRANSITION_SEQ_DOCUMENT = SENTINEL_METADATA.TRANSITIONS_SEQ;
-const BACKGROUND_CLEANUP_SEQ_DOCUMENT = SENTINEL_METADATA.BACKGROUND_SEQ;
+const {
+  SENTINEL_METADATA: {
+    TRANSITIONS_SEQ: TRANSITION_SEQ_DOCUMENT,
+    BACKGROUND_SEQ: BACKGROUND_CLEANUP_SEQ_DOCUMENT
+  }
+} = require('@medic/constants');
 const METADATA_DOCUMENT = '_local/sentinel-meta-data';
 const OLD_METADATA_DOCUMENT = 'sentinel-meta-data';
 const MIGRATION = 'extract-transition-seq';

@@ -2,11 +2,14 @@ const utils = require('@utils');
 const querystring = require('querystring');
 const constants = require('@constants');
 const _ = require('lodash');
-const { SENTINEL_METADATA } = require('@medic/constants');
+const {
+  SENTINEL_METADATA: {
+    TRANSITIONS_SEQ,
+    BACKGROUND_SEQ
+  }
+} = require('@medic/constants');
 
 const SKIPPED_BY_SENTINEL = /^_design\/|(-info|____tombstone)$/;
-const TRANSITION_SEQ = SENTINEL_METADATA.TRANSITIONS_SEQ;
-const BACKGROUND_SEQ = SENTINEL_METADATA.BACKGROUND_SEQ;
 
 //
 // Waits for a procedure that logs its progress to a metadata document (such as sentinel
@@ -116,7 +119,7 @@ const waitForPurgeLog = seq => {
 
 const getCurrentSeq = () => utils.sentinelDb.info().then(data => data.update_seq);
 const getBacklogCount = () => {
-  return utils.sentinelDb.get(TRANSITION_SEQ)
+  return utils.sentinelDb.get(TRANSITIONS_SEQ)
     .then(metadata => utils.request({ path: '/medic/_changes', qs: { limit: 0, since: metadata.value } }))
     .then(result => result.pending);
 };
@@ -126,13 +129,13 @@ const skipToSeq = async (seq) => {
     const info = await utils.db.info();
     seq = info.update_seq;
   }
-  const backlogDoc = await utils.sentinelDb.get(TRANSITION_SEQ);
+  const backlogDoc = await utils.sentinelDb.get(TRANSITIONS_SEQ);
   backlogDoc.value = seq;
   await utils.sentinelDb.put(backlogDoc);
 };
 
 module.exports = {
-  waitForSentinel: docIds => waitForSeq(TRANSITION_SEQ, docIds),
+  waitForSentinel: docIds => waitForSeq(TRANSITIONS_SEQ, docIds),
   waitForBackgroundCleanup: docIds => waitForSeq(BACKGROUND_SEQ, docIds),
   requestOnSentinelTestDb: requestOnSentinelTestDb,
   getInfoDoc: getInfoDoc,
