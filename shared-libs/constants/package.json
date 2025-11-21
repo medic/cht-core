@@ -3,12 +3,6 @@
   "version": "1.0.0",
   "description": "Shared constants for CHT-Core",
   "main": "src/index.js",
-  "directories": {
-    "test": "test"
-  },
-  "scripts": {
-    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
-  },
   "author": "",
   "license": "Apache-2.0"
 }
