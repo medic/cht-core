@@ -2,18 +2,17 @@ const moment = require('moment');
 const genericForm = require('./generic-form.wdio.page');
 const reportsPage = require('../reports/reports.wdio.page');
 
-const formId = 'delivery';
 const getYNValue = (boolean) => boolean ? 'yes' : 'no';
 
 const selectNoOfBabiesDelivered = async (value) => {
-  const field = await $(`[name="/${formId}/delivery_outcome/babies_delivered_other"]`);
+  const field = await $(`[name="/data/delivery_outcome/babies_delivered_other"]`);
   await field.waitForDisplayed();
   await field.setValue(value);
   await field.parentElement().click();
 };
 
 const populateDeadBabyInformation = async (index, data = { place: 'health_facility', stillbirth: true }) => {
-  const sectionPath = `/${formId}/baby_death`;
+  const sectionPath = `/data/baby_death`;
   const repeatPath = `${sectionPath}/baby_death_repeat`;
 
   const parentSection = await $(`section[name="${sectionPath}"]`);
@@ -31,7 +30,7 @@ const populateDeadBabyInformation = async (index, data = { place: 'health_facili
 };
 
 const populateAliveBabyInformation = async (index, data = { sex: 'male', danger: false }) => {
-  const sectionPath = `/${formId}/babys_condition`;
+  const sectionPath = `/data/babys_condition`;
   const repeatPath = `${sectionPath}/baby_repeat/baby_details`;
 
   const parentSection = await $(`section[name="${sectionPath}"]`);

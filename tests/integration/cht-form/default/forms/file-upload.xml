@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
   <h:head>
     <h:title>File Upload</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/file-upload/files/images/image:label">
-            <value>Upload image</value>
-          </text>
-          <text id="/file-upload/files:label">
+          <text id="/data/files:label">
             <value>Files</value>
+          </text>
+          <text id="/data/files/images/image:label">
+            <value>Upload image</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <file-upload delimiter="#" id="file-upload" prefix="J1!file-upload!" version="2024-06-07 00:00:00">
+        <data id="file-upload" version="2024-06-07 00:00:00" prefix="J1!file-upload!" delimiter="#">
           <files>
             <images jr:template="">
               <image/>
@@ -23,21 +23,21 @@
           <meta tag="hidden">
             <instanceID/>
           </meta>
-        </file-upload>
+        </data>
       </instance>
       <instance id="contact-summary"/>
-      <bind nodeset="/file-upload/files/images/image" type="binary"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/file-upload/meta/instanceID" readonly="true()" type="string"/>
+      <instance id="user-contact-summary"/>
+      <bind nodeset="/data/files/images/image" type="binary"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
   <h:body class="pages">
-    <group appearance="field-list" ref="/file-upload/files">
-      <label ref="jr:itext('/file-upload/files:label')"/>
-      <group ref="/file-upload/files/images">
-        <label ref="jr:itext('/file-upload/files/images:label')"/>
-        <repeat nodeset="/file-upload/files/images">
-          <upload mediatype="image/*" ref="/file-upload/files/images/image">
-            <label ref="jr:itext('/file-upload/files/images/image:label')"/>
+    <group appearance="field-list" ref="/data/files">
+      <label ref="jr:itext('/data/files:label')"/>
+      <group ref="/data/files/images">
+        <repeat nodeset="/data/files/images">
+          <upload ref="/data/files/images/image" mediatype="image/*">
+            <label ref="jr:itext('/data/files/images/image:label')"/>
           </upload>
         </repeat>
       </group>
