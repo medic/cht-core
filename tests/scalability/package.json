@@ -7,6 +7,6 @@
     "minimist": "^1.2.7",
     "pouchdb": "^7.3.1",
     "pouchdb-adapter-memory": "^7.3.1",
-    "rewire": "^6.0.0"
+    "rewire": "^9.0.1"
   }
 }
