@@ -5,9 +5,9 @@ import * as CalendarInterval from '@medic/calendar-interval';
   providedIn: 'root'
 })
 export class CalendarIntervalService {
-  
+
   constructor() { }
-  
+
   getCurrent(startDate:number) {
     return CalendarInterval.getCurrent(startDate);
   }
