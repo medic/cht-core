@@ -27,7 +27,8 @@ describe('remove-enabled-from-translation-docs migration', () => {
     const docs = [
       { _id: 'messages-en', type: DOC_TYPES.TRANSLATIONS, code: 'en', name: 'English', enabled: true },
       { _id: 'messages-es', type: DOC_TYPES.TRANSLATIONS, code: 'es', name: 'Español', enabled: false },
-      { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, code: 'fr', name: 'Français' }, // undefined => treated as disabled
+      // undefined => treated as disabled
+      { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, code: 'fr', name: 'Français' },
     ];
     sinon.stub(translations, 'getTranslationDocs').resolves(docs);
     sinon.stub(db.medic, 'bulkDocs');
@@ -41,7 +42,8 @@ describe('remove-enabled-from-translation-docs migration', () => {
     chai.expect(db.medic.bulkDocs.firstCall.args[0]).to.deep.equal( [
       { _id: 'messages-en', type: DOC_TYPES.TRANSLATIONS, code: 'en', name: 'English' },
       { _id: 'messages-es', type: DOC_TYPES.TRANSLATIONS, code: 'es', name: 'Español' },
-      { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, code: 'fr', name: 'Français' }, // undefined => treated as disabled
+      // undefined => treated as disabled
+      { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, code: 'fr', name: 'Français' },
     ]);
   });
 
@@ -52,7 +54,8 @@ describe('remove-enabled-from-translation-docs migration', () => {
     const docs = [
       { _id: 'messages-en', type: DOC_TYPES.TRANSLATIONS, code: 'en', name: 'English', enabled: true },
       { _id: 'messages-es', type: DOC_TYPES.TRANSLATIONS, code: 'es', name: 'Español', enabled: false },
-      { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, code: 'fr', name: 'Français' }, // undefined => treated as disabled
+      // undefined => treated as disabled
+      { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, code: 'fr', name: 'Français' },
     ];
 
     // Stub modules used by migration
