@@ -96,13 +96,13 @@ const applyPhoneFilters = function(config, phone) {
   return phone;
 };
 
-const getRecipient = function(context, recipient) {
+const getRecipient = function(context, recipient, default_to_sender=true) {
   if (!context) {
     return;
   }
   recipient = recipient && recipient.trim();
   const from = context.from || (context.contact && context.contact.phone);
-  if (!recipient) {
+  if (!recipient && default_to_sender) {
     return from;
   }
   let phone;
@@ -162,11 +162,11 @@ const getRecipient = function(context, recipient) {
     // or a specific phone number
     phone = recipient;
   }
-  return phone || from || recipient;
+  return phone || (default_to_sender && from) || recipient;
 };
 
 const getPhone = function(config, context, recipient) {
-  let phone = getRecipient(context, recipient);
+  let phone = getRecipient(context, recipient, config?.sms?.default_to_sender ?? true);
   phone = applyPhoneReplacement(config, phone);
   return applyPhoneFilters(config, phone);
 };

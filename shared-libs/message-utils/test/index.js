@@ -601,6 +601,17 @@ describe('messageUtils', () => {
       utils._getRecipient({from: 'foo'}, 'a-recipient')
         .should.equal('foo');
     });
+
+    it('returns doc.from if the recipient cannot be resolved and default_to_sender is set to true', () => {
+      utils._getRecipient({from: 'foo'}, 'a-recipient', true)
+        .should.equal('foo');
+    });
+
+    it('returns a-recipient in text if the recipient cannot be resolved and default_to_sender is false.', () => {
+      utils._getRecipient({from: 'foo'}, 'a-recipient', false)
+        .should.equal('a-recipient');
+    });
+
   });
 
   describe('extendedTemplateContext', () => {
