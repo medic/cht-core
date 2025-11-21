@@ -1,11 +1,12 @@
 const environment = require('@medic/environment');
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
+const { DOC_IDS } = require('@medic/constants');
 
 const MAX_HISTORY_LIMIT = 10;
 
 const ignore = [
-  'service-worker-meta'
+  DOC_IDS.SERVICE_WORKER_META
 ];
 
 const db = new PouchDB(`${environment.couchUrl}-audit`);

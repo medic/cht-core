@@ -2,6 +2,7 @@ const reportFactory = require('@factories/cht/reports/generic-report');
 const utils = require('@utils');
 const userFactory = require('@factories/cht/users/users');
 const {getRemoteDataContext, Report, Qualifier} = require('@medic/cht-datasource');
+const { USER_ROLES } = require('@medic/constants');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const {expect} = require('chai');
@@ -106,7 +107,7 @@ describe('cht-datasource Report', () => {
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms', place: place1._id, contact: {
       _id: 'fixture:user:online-no-perms', name: 'Online User',
-    }, roles: [ 'mm-online' ]
+    }, roles: [ USER_ROLES.ONLINE ]
   }));
   const offlineUser = utils.deepFreeze(userFactory.build({
     username: 'offline-has-perms', place: place0._id, contact: {

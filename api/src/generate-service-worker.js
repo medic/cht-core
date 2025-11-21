@@ -8,8 +8,9 @@ const db = require('./db');
 const logger = require('@medic/logger');
 const loginController = require('./controllers/login');
 const extensionLibs = require('./services/extension-libs');
+const { DOC_IDS } = require('@medic/constants');
 
-const SWMETA_DOC_ID = 'service-worker-meta';
+const SWMETA_DOC_ID = DOC_IDS.SERVICE_WORKER_META;
 
 const staticDirectoryPath = resources.staticPath;
 const webappDirectoryPath = resources.webappPath;

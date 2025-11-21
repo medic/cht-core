@@ -1,8 +1,11 @@
 // Manages accessing and writing of single value metadata documents
 const db = require('../db');
-
-const TRANSITION_SEQ_DOCUMENT = '_local/transitions-seq';
-const BACKGROUND_CLEANUP_SEQ_DOCUMENT = '_local/background-seq';
+const {
+  SENTINEL_METADATA: {
+    TRANSITIONS_SEQ: TRANSITION_SEQ_DOCUMENT,
+    BACKGROUND_SEQ: BACKGROUND_CLEANUP_SEQ_DOCUMENT
+  }
+} = require('@medic/constants');
 
 const getValue = (docId, defaultValue) =>  {
   return db.sentinel

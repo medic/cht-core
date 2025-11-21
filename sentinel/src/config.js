@@ -2,6 +2,7 @@ const _ = require('lodash');
 const db = require('./db');
 const logger = require('@medic/logger');
 const translationUtils = require('@medic/translation-utils');
+const { DOC_TYPES } = require('@medic/constants');
 const translations = {};
 
 const DEFAULT_CONFIG = {
@@ -19,7 +20,7 @@ let transitionsLib;
 
 const loadTranslations = () => {
   const options = {
-    key: ['translations'],
+    key: [DOC_TYPES.TRANSLATIONS],
     include_docs: true,
   };
   return db.medic

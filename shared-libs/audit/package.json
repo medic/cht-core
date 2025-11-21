@@ -9,6 +9,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
+    "@medic/constants": "file:../constants",
     "@medic/environment": "file:../environment"
   }
 }

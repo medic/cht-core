@@ -3,6 +3,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const { glob } = require('glob');
 const path = require('path');
+const { DOC_IDS, DOC_TYPES } = require('@medic/constants');
 
 const utils = require('../../../../../../tests/utils');
 const sentinelUtils = require('../../../../../../tests/utils/sentinel');
@@ -19,12 +20,12 @@ describe('Test utils', () => {
       sinon.stub(sentinelUtils, 'skipToSeq');
       sinon.stub(utils.db, 'allDocs').resolves({rows: [
         {id: '_design/cats', doc: {_id: '_design/cats'}},
-        {id: 'service-worker-meta', doc: {_id: 'service-worker-meta'}},
+        {id: DOC_IDS.SERVICE_WORKER_META, doc: {_id: DOC_IDS.SERVICE_WORKER_META}},
         {id: 'migration-log', doc: {_id: 'migration-log'}},
         {id: 'resources', doc: {_id: 'resources'}},
         {id: 'branding', doc: {_id: 'branding'}},
         {id: 'partners', doc: {_id: 'partners'}},
-        {id: '001', doc: {type: 'translations'}},
+        {id: '001', doc: {type: DOC_TYPES.TRANSLATIONS}},
         {id: '002', doc: {type: 'translations-backup'}},
         {id: '003', doc: {type: 'user-settings'}},
         {id: '004', doc: {type: 'info'}},
