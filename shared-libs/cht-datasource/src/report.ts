@@ -1,6 +1,7 @@
 import {
   DataObject,
   getPagedGenerator,
+  isRecord,
   NormalizedParent,
   Nullable,
   Page
@@ -11,7 +12,14 @@ import * as Local from './local';
 import { FreetextQualifier, UuidQualifier } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertFreetextQualifier, assertLimit, assertUuidQualifier } from './libs/parameter-validators';
+import {
+  assertCursor,
+  assertFreetextQualifier,
+  assertLimit,
+  assertUuidQualifier
+} from './libs/parameter-validators';
+import * as Input from './input';
+import { InvalidArgumentError } from './libs/error';
 import * as Contact from './contact';
 
 /** */
@@ -121,6 +129,60 @@ export namespace v1 {
       return getPagedGenerator(getPage, qualifier);
     };
     return curriedGen;
+  };
+
+  /**
+   * Returns a function for creating a report from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a report.
+   * @throws Error if a data context is not provided
+   */
+  export const create = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Report.v1.create, Remote.Report.v1.create);
+    /**
+     * Returns a report doc.
+     * @param input input to create the report doc.
+     * @returns the created report doc.
+     * @throws InvalidArgumentError if input is not of valid type.
+     * @throws Error if input is not an object
+     * @throws Error if type is not provided or is empty
+     * @throws Error if form is not provided or is empty
+     * @throws Error if contact is not provided or is empty
+     * @throws Error if reported_date is not in a valid format.
+     * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+     */
+    const curriedFn = async (input: Input.v1.ReportInput): Promise<Report> => {
+      return fn(input);
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Returns a function to update a report from the given data context.
+   * @param context the current data context
+   * @returns a function for updating a report.
+   * @throws Error if a data context is not provided
+   */
+  export const update = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Report.v1.update, Remote.Report.v1.update);
+
+    /**
+     * Returns the updated Report Doc for the provided updateInput
+     * @param updateInput the Doc containing updated fields
+     * @returns updated report Doc
+     * @throws InvalidArgumentError if updateInput has changes in immutable fields
+     * @throws InvalidArgumentError if updateInput does not contain required fields
+     * @throws InvalidArgumentError if updateInput fields are not of expected type
+     */
+    const curriedFn = async (updateInput: unknown): Promise<Report> => {
+      if (!isRecord(updateInput)) {
+        throw new InvalidArgumentError('Invalid report update input');
+      }
+      return fn(updateInput);
+    };
+    return curriedFn;
   };
 
   /**

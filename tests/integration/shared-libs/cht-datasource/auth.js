@@ -9,7 +9,16 @@ const initialFetch = global.fetch;
 const setAuth = () => {
   const headers = new Headers();
   headers.set('Authorization', 'Basic ' + Buffer.from(`${USERNAME}:${PASSWORD}`).toString('base64'));
-  global.fetch = (url, options) => initialFetch(url, { headers, ...options, });
+  global.fetch = (url, options) => {
+    if (options && options.headers) {
+      const userHeaders = new Headers(options.headers);
+      for (const [ key, value ] of userHeaders.entries()) {
+        // User headers override pre-set headers
+        headers.set(key, value);
+      }
+    }
+    return initialFetch(url, { ...options, headers });
+  };
 };
 
 const removeAuth = () => {

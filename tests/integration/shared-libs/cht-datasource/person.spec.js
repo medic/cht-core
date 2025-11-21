@@ -1,10 +1,10 @@
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { getRemoteDataContext, Person, Qualifier } = require('@medic/cht-datasource');
+const { getRemoteDataContext, Person, Qualifier, Input } = require('@medic/cht-datasource');
 const { expect } = require('chai');
 const userFactory = require('@factories/cht/users/users');
-const {setAuth, removeAuth} = require('./auth');
+const { setAuth, removeAuth } = require('./auth');
 
 describe('cht-datasource Person', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
@@ -36,7 +36,7 @@ describe('cht-datasource Person', () => {
       _id: 'fixture:user:online-no-perms',
       name: 'Online User',
     },
-    roles: ['mm-online']
+    roles: [ 'mm-online' ]
   }));
   const offlineUser = utils.deepFreeze(userFactory.build({
     username: 'offline-has-perms',
@@ -45,9 +45,9 @@ describe('cht-datasource Person', () => {
       _id: 'fixture:user:offline-has-perms',
       name: 'Offline User',
     },
-    roles: ['chw']
+    roles: [ 'chw' ]
   }));
-  const allDocItems = [contact0, contact1, contact2, place0, place1, place2, patient];
+  const allDocItems = [ contact0, contact1, contact2, place0, place1, place2, patient ];
   const dataContext = getRemoteDataContext(utils.getOrigin());
   const personType = 'person';
   const e2eTestUser = {
@@ -89,12 +89,12 @@ describe('cht-datasource Person', () => {
   before(async () => {
     setAuth();
     await utils.saveDocs(allDocItems);
-    await utils.createUsers([userNoPerms, offlineUser]);
+    await utils.createUsers([ userNoPerms, offlineUser ]);
   });
 
   after(async () => {
     await utils.revertDb([], true);
-    await utils.deleteUsers([userNoPerms, offlineUser]);
+    await utils.deleteUsers([ userNoPerms, offlineUser ]);
     removeAuth();
   });
 
@@ -177,9 +177,9 @@ describe('cht-datasource Person', () => {
 
       it('throws error when limit is invalid', async () => {
         await expect(
-          getPage({...Qualifier.byContactType(personType)}, cursor, invalidLimit)
+          getPage({ ...Qualifier.byContactType(personType) }, cursor, invalidLimit)
         ).to.be.rejectedWith(
-          `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`
+          { code: 400, error: `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].` }
         );
       });
 
@@ -189,7 +189,10 @@ describe('cht-datasource Person', () => {
             ...Qualifier.byContactType(personType),
           }, invalidCursor, limit)
         ).to.be.rejectedWith(
-          `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          {
+            code: 400,
+            error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          }
         );
       });
     });
@@ -205,6 +208,59 @@ describe('cht-datasource Person', () => {
         }
 
         expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeople);
+      });
+    });
+
+    describe('create', async () => {
+      const createPerson = Person.v1.create(dataContext);
+      it('creates a person for a valid person input', async () => {
+        const personInput = Input.v1.validatePersonInput({
+          name: 'apoorva',
+          type: 'person',
+          parent: place0._id
+        });
+        const person = await createPerson(personInput);
+        expect(person).excluding([ '_rev', 'reported_date', '_id' ])
+          .to.deep.equal({
+            ...personInput, contact_type: 'person', type: 'contact',
+            parent: { _id: place0._id, parent: place0.parent }
+          });
+      });
+
+      it('throws error for parent type not among allowed parents in settings.contact_types', async () => {
+        const personInput = Input.v1.validatePersonInput({
+          name: 'apoorva',
+          type: 'person',
+          parent: contact0._id,
+          reported_date: 12312312
+        });
+        await expect(createPerson(personInput))
+          .to.be.rejectedWith({
+            code: 400,
+            error: `Parent of type "person" is not allowed for ${JSON.stringify(personInput.type)} type`
+          });
+      });
+    });
+
+    describe('update', async () => {
+      const personInput = Input.v1.validatePersonInput({
+        name: 'apoorva',
+        type: 'person',
+        hobby: 'guitar',
+        parent: place0._id
+      });
+      const createPersonDoc = await Person.v1.create(dataContext)(personInput);
+      const updatePerson = Person.v1.update(dataContext);
+
+      it('update person doc for valid update input', async () => {
+        const updatePersonDoc = {
+          ...createPersonDoc,
+          name: 'peter'
+        };
+        delete updatePersonDoc.hobby;
+        const updatedPerson = await updatePerson(updatePersonDoc);
+        expect(updatedPerson).excluding([ '_rev' ])
+          .to.deep.equal(updatePersonDoc);
       });
     });
   });

@@ -8,7 +8,8 @@ import {
   isIdentifiable,
   isNonEmptyArray,
   isNotNull,
-  NonEmptyArray, NormalizedParent,
+  NonEmptyArray,
+  NormalizedParent,
   Nullable
 } from '../../libs/core';
 import { Doc } from '../../libs/doc';
@@ -23,7 +24,7 @@ import lineageFactory from '@medic/lineage';
  */
 export const getLineageDocsById = (medicDb: PouchDB.Database<Doc>): (id: string) => Promise<Nullable<Doc>[]> => {
   const fn = queryDocsByRange(medicDb, 'medic-client/docs_by_id_lineage');
-  return (id: string) => fn([id], [id, {}]);
+  return (id: string) => fn([ id ], [ id, {} ]);
 };
 
 /** @internal */
@@ -89,7 +90,7 @@ export const hydrateLineage = (
       );
       return { _id: parentId };
     });
-  const hierarchy: NonEmptyArray<DataObject> = [contact, ...fullLineage];
+  const hierarchy: NonEmptyArray<DataObject> = [ contact, ...fullLineage ];
   return mergeLineage(hierarchy.slice(0, -1), getLastElement(hierarchy)) as Contact.v1.Contact;
 };
 
@@ -100,11 +101,11 @@ export const getContactLineage = (medicDb: PouchDB.Database<Doc>) => {
   return async (
     places: NonEmptyArray<Nullable<Doc>>,
     person?: Person.v1.Person,
-  ): Promise<Nullable<Contact.v1.ContactWithLineage>>  => {
+  ): Promise<Nullable<Contact.v1.ContactWithLineage>> => {
     const primaryContactUuids = getPrimaryContactIds(places);
     const uuidsToFetch = person ? primaryContactUuids.filter(uuid => uuid !== person._id) : primaryContactUuids;
     const fetchedContacts = await getMedicDocsById(uuidsToFetch);
-    const allContacts = person ? [person, ...fetchedContacts] : fetchedContacts;
+    const allContacts = person ? [ person, ...fetchedContacts ] : fetchedContacts;
     const contactsWithHydratedPrimaryContact = places.map(
       hydratePrimaryContact(allContacts)
     );

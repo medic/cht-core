@@ -2,7 +2,6 @@ const { Person, Qualifier } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
-const { PermissionError } = require('../errors');
 
 const getPerson = ({ with_lineage }) => ctx.bind(
   with_lineage === 'true'
@@ -10,18 +9,14 @@ const getPerson = ({ with_lineage }) => ctx.bind(
     : Person.v1.get
 );
 const getPageByType = () => ctx.bind(Person.v1.getPage);
+const createPerson = () => ctx.bind(Person.v1.create);
+const updatePerson = () => ctx.bind(Person.v1.update);
 
-const checkUserPermissions = async (req) => {
-  const userCtx = await auth.getUserCtx(req);
-  if (!auth.isOnlineOnly(userCtx) || !auth.hasAllPermissions(userCtx, 'can_view_contacts')) {
-    throw new PermissionError('Insufficient privileges');
-  }
-};
 
 module.exports = {
   v1: {
     get: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req);
+      await auth.checkUserPermissions(req, [ 'can_view_contacts' ]);
       const { uuid } = req.params;
       const person = await getPerson(req.query)(Qualifier.byUuid(uuid));
       if (!person) {
@@ -30,13 +25,32 @@ module.exports = {
       return res.json(person);
     }),
     getAll: serverUtils.doOrError(async (req, res) => {
-      await checkUserPermissions(req);
+      await auth.checkUserPermissions(req, [ 'can_view_contacts' ]);
 
-      const personType  = Qualifier.byContactType(req.query.type);
+      const personType = Qualifier.byContactType(req.query.type);
 
-      const docs = await getPageByType()( personType, req.query.cursor, req.query.limit );
+      const docs = await getPageByType()(personType, req.query.cursor, req.query.limit);
 
       return res.json(docs);
+    }),
+
+    create: serverUtils.doOrError(async (req, res) => {
+      await auth.checkUserPermissions(req, [ 'can_view_contacts', 'can_create_people' ], [ 'can_edit' ]);
+
+      const personDoc = await createPerson()(req.body);
+      return res.json(personDoc);
+    }),
+
+    update: serverUtils.doOrError(async (req, res) => {
+      await auth.checkUserPermissions(req, [ 'can_view_contacts', 'can_update_people' ], [ 'can_edit' ]);
+
+      const { uuid } = req.params;
+      const updatePersonInput = {
+        ...req.body,
+        _id: uuid,
+      };
+      const updatedPersonDoc = await updatePerson()(updatePersonInput);
+      return res.json(updatedPersonDoc);
     }),
   },
 };
