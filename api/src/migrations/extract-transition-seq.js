@@ -4,10 +4,10 @@
 //
 const db = require('../db');
 const logger = require('@medic/logger');
-const { METADATA_KEYS } = require('@medic/constants');
+const { SENTINEL_METADATA } = require('@medic/constants');
 
-const TRANSITION_SEQ_DOCUMENT = METADATA_KEYS.TRANSITIONS_SEQ;
-const BACKGROUND_CLEANUP_SEQ_DOCUMENT = METADATA_KEYS.BACKGROUND_SEQ;
+const TRANSITION_SEQ_DOCUMENT = SENTINEL_METADATA.TRANSITIONS_SEQ;
+const BACKGROUND_CLEANUP_SEQ_DOCUMENT = SENTINEL_METADATA.BACKGROUND_SEQ;
 const METADATA_DOCUMENT = '_local/sentinel-meta-data';
 const OLD_METADATA_DOCUMENT = 'sentinel-meta-data';
 

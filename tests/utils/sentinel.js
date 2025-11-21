@@ -2,11 +2,11 @@ const utils = require('@utils');
 const querystring = require('querystring');
 const constants = require('@constants');
 const _ = require('lodash');
-const { METADATA_KEYS } = require('@medic/constants');
+const { SENTINEL_METADATA } = require('@medic/constants');
 
 const SKIPPED_BY_SENTINEL = /^_design\/|(-info|____tombstone)$/;
-const TRANSITION_SEQ = METADATA_KEYS.TRANSITIONS_SEQ;
-const BACKGROUND_SEQ = METADATA_KEYS.BACKGROUND_SEQ;
+const TRANSITION_SEQ = SENTINEL_METADATA.TRANSITIONS_SEQ;
+const BACKGROUND_SEQ = SENTINEL_METADATA.BACKGROUND_SEQ;
 
 //
 // Waits for a procedure that logs its progress to a metadata document (such as sentinel
