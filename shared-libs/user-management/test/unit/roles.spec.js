@@ -62,7 +62,7 @@ describe('roles', () => {
       chai.expect(roles.isOnlineOnly({ roles: ['national_admin', 'chw'] })).to.equal(false);
     });
 
-    it('should check for "USER_ROLES.ONLINE" role', () => {
+    it('should check for "mm-online" role', () => {
       chai.expect(roles.isOnlineOnly({ roles: [USER_ROLES.ONLINE] })).to.equal(true);
       chai.expect(roles.isOnlineOnly({ roles: [USER_ROLES.ONLINE, 'offline'] })).to.equal(true);
     });
@@ -88,7 +88,7 @@ describe('roles', () => {
       chai.expect(roles.isOffline(['role1', 'role2'])).to.equal(true);
     });
 
-    it('should return true when at least one role is offline and no USER_ROLES.ONLINE role', () => {
+    it('should return true when at least one role is offline and no mm-online role', () => {
       config.get.withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
       chai.expect(roles.isOffline(['roleA'])).to.equal(true);
       chai.expect(roles.isOffline(['roleA', 'random'])).to.equal(true);

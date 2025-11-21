@@ -475,7 +475,7 @@ describe('Users API', () => {
       });
     });
 
-    it('auth should check for USER_ROLES.ONLINE role when requesting other user docs', () => {
+    it('auth should check for mm-online role when requesting other user docs', () => {
       const requestOptions = {
         path: '/api/v1/users-info?role=district_admin&facility_id=fixture:offline',
         auth: { username: 'offlineonline', password },
@@ -494,7 +494,7 @@ describe('Users API', () => {
         });
     });
 
-    it('auth should check for USER_ROLES.ONLINE role when requesting with missing params', () => {
+    it('auth should check for mm-online role when requesting with missing params', () => {
       const requestOptions = {
         path: '/api/v1/users-info',
         auth: { username: 'offlineonline', password },

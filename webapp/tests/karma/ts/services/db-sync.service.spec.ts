@@ -1178,7 +1178,7 @@ describe('DBSync service', () => {
       expect(actual).to.equal(false);
     });
 
-    it('does not replicate the service worker meta doc', () => {
+    it('does not replicate the service-worker-meta doc', () => {
       const actual = filterFunction({ _id: DOC_IDS.SERVICE_WORKER_META });
       expect(actual).to.equal(false);
     });
