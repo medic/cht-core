@@ -187,7 +187,7 @@ jobs:
         if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
       - run: mkdir tests/logs
-      - run: npm install -g git+https://github.com/medic/cht-conf.git#cea08236c97d90358ee3c6c490f8da4fb101682c
+      - run: npm install -g github:medic/cht-conf#uplift-pyxform
       - run: npm ci
 
       - uses: nolar/setup-k3d-k3s@v1
@@ -308,7 +308,7 @@ jobs:
     - name: Create logs directory
       run: mkdir tests/logs
     - name: Install cht-conf
-      run:  npm install -g git+https://github.com/medic/cht-conf.git#cea08236c97d90358ee3c6c490f8da4fb101682c
+      run:  npm install -g github:medic/cht-conf#uplift-pyxform
     - run: npm ci
     - name: Fetch allure history
       uses: actions/checkout@v4
