@@ -104,7 +104,7 @@ const getRecipient = function(context, recipient, default_to_sender = true) {
   const from = context.from || context.contact?.phone;
   recipient = recipient?.trim();
 
-  if (!recipient && default_to_sender) {
+  if (!recipient) {
     return from;
   }
 
