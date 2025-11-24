@@ -1,4 +1,5 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { provideMockStore } from '@ngrx/store/testing';
 import sinon from 'sinon';
 import { assert, expect } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -185,6 +186,7 @@ describe('RulesEngineService', () => {
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
       ],
       providers: [
+        provideMockStore(),
         ParseProvider,
         ContactTypesService,
         { provide: AuthService, useValue: authService },
@@ -781,15 +783,15 @@ describe('RulesEngineService', () => {
     service = TestBed.inject(RulesEngineService);
 
     await service.isEnabled();
-    tick(500 * 1000);
+    tick(1000);
 
-    expect(rulesEngineCoreStubs.refreshEmissionsFor.callCount).to.eq(1);
-    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(0);
+    expect(rulesEngineCoreStubs.refreshEmissionsFor.callCount).to.eq(0);
+    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
     expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(0);
     expect(telemetryService.record.callCount).to.equal(1);
     expect(stopPerformanceTrackStub.calledTwice).to.be.true;
     expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
-    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:background-refresh' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
   }));
 
   it('should cancel all ensure freshness threads', async () => {
@@ -956,7 +958,7 @@ describe('RulesEngineService', () => {
 
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.callCount).to.equal(1);
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.args[0]).to.deep.equal([undefined]);
-      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.calledThrice).to.be.true;
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
       expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks-breakdown:all-contacts' });
     });
@@ -984,8 +986,7 @@ describe('RulesEngineService', () => {
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.callCount).to.equal(1);
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.args[0]).to.deep.equal([['c1', 'c2', 'c3']]);
 
-
-      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.calledThrice).to.be.true;
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
       expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks-breakdown:some-contacts' });
     });

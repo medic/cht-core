@@ -11,6 +11,7 @@ export const Actions = {
   setTaskGroupContactLoading: createSingleValueAction('SET_TASK_GROUP_CONTACT_LOADING', 'loading'),
   setTaskGroup: createSingleValueAction('SET_TASK_GROUP', 'taskGroup'),
   clearTaskGroup: createAction('CLEAR_TASK_GROUP'),
+  clearTaskList: createAction('CLEAR_TASK_LIST'),
 };
 
 export class TasksActions {
@@ -50,5 +51,9 @@ export class TasksActions {
 
   clearTaskGroup() {
     return this.store.dispatch(Actions.clearTaskGroup());
+  }
+
+  clearTaskList() {
+    return this.store.dispatch(Actions.clearTaskList());
   }
 }

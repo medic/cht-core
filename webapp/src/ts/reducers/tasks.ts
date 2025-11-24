@@ -3,7 +3,6 @@ import { createReducer, on } from '@ngrx/store';
 import { Actions as GlobalActions } from '@mm-actions/global';
 import { Actions } from '@mm-actions/tasks';
 import moment from 'moment';
-import * as RulesEngineCore from '@medic/rules-engine';
 
 const initialState = {
   tasksList: [] as any[],
@@ -105,20 +104,23 @@ const _tasksReducer = createReducer(
   on(GlobalActions.clearSelected, state => ({ ...state, selected: null })),
 
   on(Actions.setTasksList, (state, { payload: { tasks } }) => {
+    const sortedTasks = [...tasks].sort(orderByDueDateAndPriority);
+    const overdueTasks = tasks.filter(isTaskOverdue);
+
     return {
       ...state,
-      tasksList: [...tasks].sort(orderByDueDateAndPriority),
-      overdue: tasks.length ? {
-        tasks: tasks.filter(isTaskOverdue),
-        calculatedAt: moment(),
-      } : state.overdue
+      tasksList: sortedTasks,
+      overdue: {
+        tasks: overdueTasks,
+        calculatedAt: moment().valueOf(),
+      }
     };
   }),
 
   on(Actions.setOverdueTasks, (state, { payload: { tasks } }) => {
     const overdueTasks = [...state.overdue.tasks];
     tasks.forEach(task => {
-      const isOverdue = isTaskOverdue(task.emission) && RulesEngineCore().showTask(task);
+      const isOverdue = isTaskOverdue(task.emission);
       const overdueTaskIndex = state.overdue.tasks.findIndex(overdue => overdue._id === task._id);
 
       const isCurrentlyOverdue = overdueTaskIndex !== -1;
@@ -135,7 +137,7 @@ const _tasksReducer = createReducer(
     return {
       ...state,
       overdue: {
-        calculatedAt: tasks.length === 1 ? state.overdue.calculatedAt : moment(),
+        calculatedAt: tasks.length === 1 ? state.overdue.calculatedAt : moment().valueOf(),
         tasks: overdueTasks,
       }
     };
@@ -191,6 +193,11 @@ const _tasksReducer = createReducer(
   on(Actions.clearTaskGroup, state => ({
     ...state,
     taskGroup: { ...initialState.taskGroup },
+  })),
+
+  on(Actions.clearTaskList, state => ({
+    ...state,
+    tasksList: [],
   }))
 );
 

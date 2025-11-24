@@ -63,7 +63,7 @@ export class RulesEngineService implements OnDestroy {
   private uhcMonthStartDate;
   private debounceActive: DebounceActive = {};
   private observable = new Subject();
-  private taskActions: TasksActions;
+  private readonly taskActions: TasksActions;
 
   constructor(
     private translateService:TranslateService,
@@ -139,7 +139,6 @@ export class RulesEngineService implements OnDestroy {
     this.assignMonthStartDate(settingsDoc);
     this.monitorChanges(rulesEngineContext);
 
-    console.warn('rulesDebounceRef');
     const rulesDebounceRef = _debounce(() => {
       this.debounceActive[this.FRESHNESS_KEY].active = false;
       this.fetchOverdueTasksForAllContacts();
@@ -161,10 +160,8 @@ export class RulesEngineService implements OnDestroy {
   }
 
   private async fetchOverdueTasksForAllContacts() {
-    console.warn('fetchOverdueTasksForAllContacts');
     const allTasks = await this.fetchTaskDocsForAllContacts();
-
-    this.taskActions.setOverdueTasks(allTasks);
+    this.taskActions.setTasksList(allTasks);
     this.monitorTaskChanges();
   }
 

@@ -50,7 +50,7 @@ describe('Reports effects', () => {
       { selector: Selectors.getSelectedReports, value: [] },
       { selector: Selectors.getListReport, value: {} },
       { selector: Selectors.getForms, value: [] },
-      { selector: Selectors.getBubbleCounter, value: {} },
+      { selector: Selectors.getBubbleCounter, value: { task: 0 } },
     ];
 
     stopPerformanceTrackStub = sinon.stub();
@@ -546,7 +546,7 @@ describe('Reports effects', () => {
       const updateReportsList = sinon.stub(ReportsActions.prototype, 'updateReportsList');
       const updateBubbleCounter = sinon.stub(GlobalActions.prototype, 'updateBubbleCounter');
       store.overrideSelector(Selectors.getListReport, { _id: 'report', read: true });
-      store.overrideSelector(Selectors.getBubbleCounter, { report: 5 });
+      store.overrideSelector(Selectors.getBubbleCounter, { report: 5, task: 0 });
       actions$ = of(ReportActionList.markReportRead('report'));
 
       effects.markRead.subscribe();
