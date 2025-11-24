@@ -268,8 +268,6 @@ document.addEventListener('DOMContentLoaded', function() {
   selectedLocale = getLocale(translations);
   translate();
 
-  checkUnsupportedBrowser();
-
   document.getElementById('locale')?.addEventListener('click', handleLocaleSelection, false);
   handlePasswordToggle();
 
@@ -287,6 +285,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if (ssoLoginButton) {
     ssoLoginButton.addEventListener('click', requestSSOLogin, false);
   }
+
+  checkUnsupportedBrowser();
 
 });
 
