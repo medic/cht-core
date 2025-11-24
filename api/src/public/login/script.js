@@ -179,10 +179,7 @@ const isUsingSupportedBrowser = () => {
   });
 };
 
-const isSafariBrowser = () => {
-  const ua = navigator.userAgent.toLowerCase();
-  return /safari/.test(ua) && !/chrome|crios|fxios|android/.test(ua);
-};
+const isSafariBrowser = () => /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
 
 const isUsingChtAndroid = () => typeof window.medicmobile_android !== 'undefined';
 
