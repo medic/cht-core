@@ -1192,14 +1192,14 @@ const generateComposeFiles = async () => {
 
     INJECT_SERVICES.forEach((svc) => {
       const svcHeader = `\n  ${svc}:`;
-      let start = compiled.indexOf(svcHeader);
+      const start = compiled.indexOf(svcHeader);
       if (start === -1) {
         return;
       }
       
       const rest = compiled.slice(start + 1);
       
-      const nextServiceMatch = rest.search(/\n  [a-zA-Z0-9_-]+:/);
+      const nextServiceMatch = rest.search(/\n {2}[a-zA-Z0-9_-]+:/);
       const block = nextServiceMatch === -1 ? rest : rest.slice(0, nextServiceMatch + 1);
 
       const envMarker = '\n    environment:\n';
