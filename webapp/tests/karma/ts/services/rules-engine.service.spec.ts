@@ -1,5 +1,6 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
+import { Store } from '@ngrx/store';
 import sinon from 'sinon';
 import { assert, expect } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -990,5 +991,112 @@ describe('RulesEngineService', () => {
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
       expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks-breakdown:some-contacts' });
     });
+  });
+
+  describe('monitorTaskChanges', () => {
+    it('should subscribe to task document changes', fakeAsync(async () => {
+      service = TestBed.inject(RulesEngineService);
+      await service.isEnabled();
+
+      // Trigger the fetchOverdueTasksForAllContacts which calls monitorTaskChanges
+      sinon.stub(service, 'fetchTaskDocsForAllContacts').resolves([sampleTaskDoc]);
+
+      // Trigger the background refresh
+      tick(1000);
+
+      await nextTick();
+
+      // Verify that task-doc-update subscription was created
+      const taskDocSubscription = changesService.subscribe.args.find(
+        args => args[0].key === 'task-doc-update'
+      );
+      expect(taskDocSubscription).to.exist;
+    }));
+
+    it('should update overdue tasks when task document changes', fakeAsync(async () => {
+      const store = TestBed.inject(Store);
+      const dispatchSpy = sinon.spy(store, 'dispatch');
+
+      service = TestBed.inject(RulesEngineService);
+      await service.isEnabled();
+
+      // Trigger the fetchOverdueTasksForAllContacts which calls monitorTaskChanges
+      sinon.stub(service, 'fetchTaskDocsForAllContacts').resolves([sampleTaskDoc]);
+      tick(1000);
+      await nextTick();
+
+      // Get the task-doc-update subscription callback
+      const taskDocSubscription = changesService.subscribe.args.find(
+        args => args[0].key === 'task-doc-update'
+      );
+      expect(taskDocSubscription).to.exist;
+
+      const callback = taskDocSubscription[0].callback;
+
+      // Simulate a task document change
+      const taskChange = {
+        id: 'task-1',
+        doc: {
+          _id: 'task-1',
+          type: 'task',
+          emission: {
+            _id: 'emission-1',
+            dueDate: '2023-10-24',
+          },
+        },
+      };
+
+      callback(taskChange);
+
+      // Verify that setOverdueTasks was dispatched
+      const setOverdueTasksCalls = dispatchSpy.getCalls().filter(
+        call => (call.args[0] as any).type === 'SET_OVERDUE_TASKS'
+      );
+      expect(setOverdueTasksCalls.length).to.be.greaterThan(0);
+      expect((setOverdueTasksCalls[0].args[0] as any).payload.tasks).to.deep.equal([taskChange.doc]);
+    }));
+
+    it('should not update overdue tasks for non-task documents', fakeAsync(async () => {
+      const store = TestBed.inject(Store);
+      const dispatchSpy = sinon.spy(store, 'dispatch');
+
+      service = TestBed.inject(RulesEngineService);
+      await service.isEnabled();
+
+      // Trigger the fetchOverdueTasksForAllContacts which calls monitorTaskChanges
+      sinon.stub(service, 'fetchTaskDocsForAllContacts').resolves([sampleTaskDoc]);
+      tick(1000);
+      await nextTick();
+
+      // Get the task-doc-update subscription callback
+      const taskDocSubscription = changesService.subscribe.args.find(
+        args => args[0].key === 'task-doc-update'
+      );
+      expect(taskDocSubscription).to.exist;
+
+      const callback = taskDocSubscription[0].callback;
+
+      const initialDispatchCount = dispatchSpy.getCalls().filter(
+        call => (call.args[0] as any).type === 'SET_OVERDUE_TASKS'
+      ).length;
+
+      // Simulate a non-task document change
+      const reportChange = {
+        id: 'report-1',
+        doc: {
+          _id: 'report-1',
+          type: 'data_record',
+          form: 'some-form',
+        },
+      };
+
+      callback(reportChange);
+
+      // Verify that setOverdueTasks was not dispatched for non-task docs
+      const setOverdueTasksCalls = dispatchSpy.getCalls().filter(
+        call => (call.args[0] as any).type === 'SET_OVERDUE_TASKS'
+      );
+      expect(setOverdueTasksCalls.length).to.equal(initialDispatchCount);
+    }));
   });
 });
