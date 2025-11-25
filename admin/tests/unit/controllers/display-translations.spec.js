@@ -1,6 +1,5 @@
-const { DOC_TYPES } = require('@medic/constants');
-
 describe('DisplayTranslationsCtrl controller', function() {
+  const { DOC_TYPES } = require('@medic/constants');
   'use strict';
 
   let rootScope;

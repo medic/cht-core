@@ -1,6 +1,5 @@
-const { DOC_TYPES } = require('@medic/constants');
-
 describe('Display Languages controller', function() {
+  const { DOC_TYPES } = require('@medic/constants');
 
   'use strict';
 
