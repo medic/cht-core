@@ -96,7 +96,7 @@ const applyPhoneFilters = function(config, phone) {
   return phone;
 };
 
-const getRecipient = function(context, recipient, default_to_sender = true) {
+const getRecipient = function(context, recipient, defaultToSender = true) {
   if (!context) {
     return;
   }
@@ -110,7 +110,7 @@ const getRecipient = function(context, recipient, default_to_sender = true) {
 
   const phone = resolveRecipient(context, recipient);
 
-  return phone || (default_to_sender && from) || recipient;
+  return phone || (defaultToSender && from) || recipient;
 };
 
 const resolveRecipient = function(context, recipient) {
@@ -206,11 +206,11 @@ const resolveAncestor = function(context, levels) {
   let node = context.patient || context.place || context;
   node = node.parent ? node : node.contact;
 
-  for (let i = 0; i < levels; i++) {
-    if (!node?.parent) {
+  while (levels-- >0){
+    node = node?.parent;
+    if (!node){
       return null;
     }
-    node = node.parent;
   }
 
   return node.contact?.phone || null;

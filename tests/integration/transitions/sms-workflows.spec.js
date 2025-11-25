@@ -1231,7 +1231,7 @@ describe('SMS workflows', () => {
     it('should not send to sender if field is not found and default_to_sender is set to false', async () => {
       const settings = {
         sms: {
-          default_to_sender: true
+          default_to_sender: false
         },
         transitions: {
           conditional_alerts: true,
@@ -1260,7 +1260,7 @@ describe('SMS workflows', () => {
 
       const [ contactChw1] = await processReportsAndSettings(reports, settings);
       expectTasks(contactChw1, [
-        { messages: [{ to: 'phone1', message: 'to patient' }] }
+        { messages: [{ to: 'patient.message_phone', message: 'to patient' }] }
       ]);
     });
   });
