@@ -16,9 +16,18 @@ spec:
       labels:
         cht.service: api
     spec:
-      terminationGracePeriodSeconds: 0
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 1000
       containers:
-        - env:
+        - name: cht-api
+          image: '{{ .Values.upstream_servers.docker_registry | default "public.ecr.aws/medic" }}/cht-api:{{ .Values.cht_image_tag }}'
+          {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+          env:
             - name: BUILDS_URL
               value: {{ .Values.upstream_servers.builds_url | default "https://staging.dev.medicmobile.org/_couch/builds_4" }}
             - name: COUCH_URL
@@ -28,11 +37,29 @@ spec:
                   key: COUCH_URL
             - name: API_PORT
               value: '{{ .Values.api.port | default "5988" }}'
-          image: '{{ .Values.upstream_servers.docker_registry | default "public.ecr.aws/medic" }}/cht-api:{{ .Values.cht_image_tag }}'
-          {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
-          name: cht-api
           ports:
             - containerPort: {{ .Values.api.port | default 5988 }}
-          resources: {}
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          readinessProbe:
+            httpGet:
+              path: /api/info
+              port: {{ .Values.api.port | default 5988 }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /api/info
+              port: {{ .Values.api.port | default 5988 }}
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
       restartPolicy: Always
-

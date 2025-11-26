@@ -16,8 +16,18 @@ spec:
       labels:
         cht.service: healthcheck
     spec:
+      terminationGracePeriodSeconds: 10
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 1000
       containers:
-        - env:
+        - name: cht-haproxy-healthcheck
+          image: '{{ .Values.upstream_servers.docker_registry }}/cht-haproxy-healthcheck:{{ .Values.cht_image_tag }}'
+          {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+          env:
             - name: COUCHDB_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -33,10 +43,27 @@ spec:
                 secretKeyRef:
                   name: cht-couchdb-credentials
                   key: COUCHDB_USER
-          image: '{{ .Values.upstream_servers.docker_registry }}/cht-haproxy-healthcheck:{{ .Values.cht_image_tag }}'
-          {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
-          name: cht-haproxy-healthcheck
-          resources: {}
           ports:
             - containerPort: 5555
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "25m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+          readinessProbe:
+            tcpSocket:
+              port: 5555
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: 5555
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
       restartPolicy: Always

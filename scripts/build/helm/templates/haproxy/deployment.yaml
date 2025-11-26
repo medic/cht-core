@@ -16,9 +16,18 @@ spec:
       labels:
         cht.service: haproxy
     spec:
-      terminationGracePeriodSeconds: 0
+      terminationGracePeriodSeconds: 15
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 1000
       containers:
-        - env:
+        - name: cht-haproxy
+          image: '{{ .Values.upstream_servers.docker_registry | default "public.ecr.aws/medic" }}/cht-haproxy:{{ .Values.cht_image_tag }}'
+          {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+          env:
             - name: COUCHDB_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -40,12 +49,29 @@ spec:
               value: "{{ (default (dict "port" "5984") .Values.haproxy).port | default "5984" }}"
             - name: HEALTHCHECK_ADDR
               value: healthcheck.{{ .Values.namespace }}.svc.cluster.local
-          image: '{{ .Values.upstream_servers.docker_registry | default "public.ecr.aws/medic" }}/cht-haproxy:{{ .Values.cht_image_tag }}'
-          {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
-          name: cht-haproxy
           ports:
             - containerPort: {{ (default (dict "port" 5984) .Values.haproxy).port | default 5984 }}
-          resources: {}
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          readinessProbe:
+            tcpSocket:
+              port: {{ (default (dict "port" 5984) .Values.haproxy).port | default 5984 }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: {{ (default (dict "port" 5984) .Values.haproxy).port | default 5984 }}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
       hostname: haproxy
       restartPolicy: Always
 status: {}

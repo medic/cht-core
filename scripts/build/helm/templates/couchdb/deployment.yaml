@@ -19,10 +19,10 @@ spec:
       labels:
         cht.service: couchdb
     spec:
-      terminationGracePeriodSeconds: 0
+      terminationGracePeriodSeconds: 60
       securityContext:
-        runAsUser: 0  # Run as root
-        fsGroup: 0    # Set fsGroup to root
+        runAsUser: 0  # CouchDB requires root for data directory permissions
+        fsGroup: 0
       {{- if .Values.toleration }}
       tolerations:
         - key: {{ .Values.toleration.key }}
@@ -46,7 +46,29 @@ spec:
 {{- include "couchdb.basicEnv" . | nindent 12 }}
             - name: SVC_NAME
               value: couchdb.{{ .Values.namespace }}.svc.cluster.local
-          resources: {}
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+          readinessProbe:
+            httpGet:
+              path: /_up
+              port: 5984
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /_up
+              port: 5984
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
           {{- if eq (toString .Values.cluster_type) "k3s-k3d" }}
           volumeMounts:
             - mountPath: /opt/couchdb/data
@@ -73,7 +95,27 @@ spec:
           {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
           ports:
             - containerPort: 5987
-          resources: {}
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          readinessProbe:
+            tcpSocket:
+              port: 5987
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: 5987
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
           volumeMounts:
             - mountPath: /data/nouveau
               name: couchdb-claim0
@@ -107,10 +149,10 @@ spec:
       labels:
         cht.service: couchdb-{{ $nodeNumber }}
     spec:
-      terminationGracePeriodSeconds: 0
+      terminationGracePeriodSeconds: 60
       securityContext:
-        runAsUser: 0  # Run as root
-        fsGroup: 0    # Set fsGroup to root
+        runAsUser: 0  # CouchDB requires root for data directory permissions
+        fsGroup: 0
       {{- if $.Values.toleration }}
       tolerations:
         - key: {{ $.Values.toleration.key }}
@@ -152,7 +194,29 @@ spec:
                 name: couchdb-servers-configmap
                 key: CLUSTER_PEER_IPS
         {{- end }}
-        resources: {}
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+        readinessProbe:
+          httpGet:
+            path: /_up
+            port: 5984
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /_up
+            port: 5984
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
         volumeMounts:
         - mountPath: /opt/couchdb/data
           name: couchdb-{{ $nodeNumber }}-claim0
@@ -172,7 +236,27 @@ spec:
         {{ if eq $.Values.cache_images false}}imagePullPolicy: Always{{ end }}
         ports:
           - containerPort: 5987
-        resources: {}
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        readinessProbe:
+          tcpSocket:
+            port: 5987
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          tcpSocket:
+            port: 5987
+          initialDelaySeconds: 20
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
         volumeMounts:
         - mountPath: /data/nouveau
           name: couchdb-{{ $nodeNumber }}-claim0
