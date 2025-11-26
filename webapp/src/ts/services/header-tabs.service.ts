@@ -27,6 +27,7 @@ export class HeaderTabsService {
       defaultIcon: 'fa-flag',
       translation: 'Tasks',
       permissions: ['can_view_tasks', 'can_view_tasks_tab'],
+      typeName: 'task',
       icon: undefined,
       resourceIcon: undefined,
     },

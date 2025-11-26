@@ -29,8 +29,8 @@ export const Actions = {
   setPreventNavigation: createSingleValueAction('SET_PREVENT_NAVIGATION', 'preventNavigation'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
   setProcessingReportVerification: createSingleValueAction('SET_PROCESSING_REPORT_VERIFICATION', 'loading'),
-  setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'),
-  updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'),
+  setBubbleCounter: createSingleValueAction('SET_BUBBLE_COUNTER', 'bubbleCounter'),
+  updateBubbleCounter: createSingleValueAction('UPDATE_BUBBLE_COUNTER', 'bubbleCounter'),
   setTranslationsLoaded: createAction('SET_TRANSLATIONS_LOADED'),
   setUserFacilityIds: createSingleValueAction('SET_USER_FACILITY_IDS', 'userFacilityIds'),
   setUserContactId: createSingleValueAction('SET_USER_CONTACT_ID', 'userContactId'),
@@ -214,12 +214,12 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setProcessingReportVerification(loading));
   }
 
-  setUnreadCount(unreadCount) {
-    return this.store.dispatch(Actions.setUnreadCount(unreadCount));
+  setBubbleCounter(bubbleCounter) {
+    return this.store.dispatch(Actions.setBubbleCounter(bubbleCounter));
   }
 
-  updateUnreadCount(unreadCount) {
-    return this.store.dispatch(Actions.updateUnreadCount(unreadCount));
+  updateBubbleCounter(bubbleCounter) {
+    return this.store.dispatch(Actions.updateBubbleCounter(bubbleCounter));
   }
 
   setTranslationsLoaded() {

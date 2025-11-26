@@ -32,7 +32,7 @@ const globalState: GlobalState = {
   title: 'the title',
   privacyPolicyAccepted: false,
   showPrivacyPolicy: true,
-  unreadCount: { report: 2 },
+  bubbleCounter: { report: 2 },
   translationsLoaded: false,
   userFacilityIds: ['facility_uuid'],
   userContactId: 'contact_uuid',
@@ -116,6 +116,10 @@ const state = {
   },
   tasks: {
     tasksList: [{ _id: 'task1' }, { _id: 'task2' }],
+    overdue: {
+      tasks: [],
+      calculatedAt: null,
+    },
     loaded: 'are tasks loaded?',
     selected: { _id: 'selected task' },
     taskGroup: {
@@ -213,8 +217,11 @@ describe('Selectors', () => {
       expect(Selectors.getShowPrivacyPolicy.projector(state.global)).to.equal(clonedState.global.showPrivacyPolicy);
     });
 
-    it('should getUnreadCount', () => {
-      expect(Selectors.getUnreadCount.projector(state.global)).to.deep.equal(clonedState.global.unreadCount);
+    it('should getBubbleCounter', () => {
+      expect(Selectors.getBubbleCounter.projector(state)).to.deep.equal({
+        ...clonedState.global.bubbleCounter,
+        task: clonedState.tasks.overdue.tasks.length || 0
+      });
     });
 
     it('should getTranslationsLoaded', () => {
@@ -475,6 +482,28 @@ describe('Selectors', () => {
         .to.deep.equal(clonedState.tasks.taskGroup.loadingContact);
       const alternativeState = { tasks: { taskGroup: {} } };
       expect(Selectors.getTaskGroupLoadingContact.projector(alternativeState.tasks)).to.equal(undefined);
+    });
+
+    it('should getOverdueTasks', () => {
+      expect(Selectors.getOverdueTasks.projector(state.tasks)).to.deep.equal([]);
+    });
+
+    it('should getOverdueTasks with overdue tasks', () => {
+      const stateWithOverdue = {
+        ...state.tasks,
+        overdue: {
+          tasks: [{ _id: 'task1' }, { _id: 'task2' }],
+          calculatedAt: new Date()
+        }
+      };
+      expect(Selectors.getOverdueTasks.projector(stateWithOverdue)).to.deep.equal([
+        { _id: 'task1' },
+        { _id: 'task2' }
+      ]);
+    });
+
+    it('should null check overdue tasks', () => {
+      expect(Selectors.getOverdueTasks.projector({})).to.equal(undefined);
     });
   });
 });

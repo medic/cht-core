@@ -48,7 +48,7 @@ const initialState: GlobalState = {
   showContent: false,
   showPrivacyPolicy: false,
   title: null,
-  unreadCount: {},
+  bubbleCounter: {},
   snackbarContent: null as any,
   translationsLoaded: false,
   userFacilityIds: [],
@@ -173,11 +173,11 @@ const _globalReducer = createReducer(
   on(Actions.setProcessingReportVerification, (state, { payload: { loading } }) => {
     return { ...state, processingReportVerification: loading };
   }),
-  on(Actions.setUnreadCount, (state, { payload: { unreadCount } }) => {
-    return { ...state, unreadCount: unreadCount };
+  on(Actions.setBubbleCounter, (state, { payload: { bubbleCounter } }) => {
+    return { ...state, bubbleCounter };
   }),
-  on(Actions.updateUnreadCount, (state, { payload: { unreadCount } }) => {
-    return { ...state, unreadCount: { ...state.unreadCount, ...unreadCount } };
+  on(Actions.updateBubbleCounter, (state, { payload: { bubbleCounter } }) => {
+    return { ...state, bubbleCounter: { ...state.bubbleCounter, ...bubbleCounter } };
   }),
   on(Actions.setTranslationsLoaded, (state) => ({ ...state, translationsLoaded: true })),
   on(Actions.setUserFacilityIds, (state, { payload: { userFacilityIds }}) => {
@@ -229,7 +229,7 @@ export interface GlobalState {
   showContent: boolean;
   showPrivacyPolicy: boolean;
   title: null | string;
-  unreadCount: Record<string, any>;
+  bubbleCounter: Record<string, any>;
   snackbarContent: SnackbarState;
   translationsLoaded: boolean;
   userFacilityIds: null | string[];

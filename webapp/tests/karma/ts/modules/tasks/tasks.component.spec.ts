@@ -92,7 +92,7 @@ describe('TasksComponent', () => {
   it('should ngOnDestroy should unsubscribe and clear state', async () => {
     await getComponent();
 
-    const setTasksList = sinon.stub(TasksActions.prototype, 'setTasksList');
+    const clearTaskList = sinon.stub(TasksActions.prototype, 'clearTaskList');
     const setTasksLoaded = sinon.stub(TasksActions.prototype, 'setTasksLoaded');
     const clearTaskGroup = sinon.stub(TasksActions.prototype, 'clearTaskGroup');
     const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
@@ -100,8 +100,7 @@ describe('TasksComponent', () => {
     component.ngOnDestroy();
 
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
-    expect(setTasksList.callCount).to.equal(1);
-    expect(setTasksList.args[0]).to.deep.equal([[]]);
+    expect(clearTaskList.callCount).to.equal(1);
     expect(setTasksLoaded.callCount).to.equal(1);
     expect(setTasksLoaded.args[0]).to.deep.equal([false]);
     expect(clearTaskGroup.callCount).to.equal(1);
@@ -158,8 +157,28 @@ describe('TasksComponent', () => {
     const pastDate = now.clone().subtract(3, 'days');
     clock = sinon.useFakeTimers({ now: now.valueOf(), toFake: ['Date']});
     const taskDocs = [
-      { _id: '1', emission: { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD') }, owner: 'a' },
-      { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }, owner: 'b' },
+      {
+        _id: '1',
+        emission: {
+          _id: 'e1',
+          dueDate: futureDate.format('YYYY-MM-DD'),
+          owner: 'a',
+          overdue: false,
+          date: new Date(futureDate.valueOf())
+        },
+        owner: 'a'
+      },
+      {
+        _id: '2',
+        emission: {
+          _id: 'e2',
+          dueDate: pastDate.format('YYYY-MM-DD'),
+          owner: 'b',
+          overdue: true,
+          date: new Date(pastDate.valueOf()),
+        },
+        owner: 'b'
+      },
     ];
     const expectedTasks = [
       {
@@ -316,8 +335,18 @@ describe('TasksComponent', () => {
       },
     ];
     const taskDocs = [
-      { _id: '1', emission: { _id: 'e1', dueDate: '2020-10-20' }, forId: 'a', owner: 'a' },
-      { _id: '2', emission: { _id: 'e2', dueDate: '2020-10-20' }, forId: 'b', owner: 'b' },
+      {
+        _id: '1',
+        emission: { _id: 'e1', dueDate: '2020-10-20', date: moment('2020-10-20').toDate(), overdue: true, owner: 'a' },
+        forId: 'a',
+        owner: 'a',
+      },
+      {
+        _id: '2',
+        emission: { _id: 'e2', dueDate: '2020-10-20', date: moment('2020-10-20').toDate(), overdue: true, owner: 'b' },
+        forId: 'b',
+        owner: 'b'
+      },
     ];
 
     it('should not remove the lineage when user lineage level is undefined', async () => {

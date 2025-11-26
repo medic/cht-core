@@ -6,6 +6,10 @@ import moment from 'moment';
 
 const initialState = {
   tasksList: [] as any[],
+  overdue: {
+    tasks: [] as any[],
+    calculatedAt: null as any,
+  },
   selected: null,
   loaded: false,
   taskGroup: {
@@ -93,14 +97,49 @@ const orderByDueDateAndPriority = (t1, t2) => {
   return compareDates();
 };
 
+const isTaskOverdue = (emission) => moment(emission.dueDate, 'YYYY-MM-DD').isBefore(moment());
+
 const _tasksReducer = createReducer(
   initialState,
   on(GlobalActions.clearSelected, state => ({ ...state, selected: null })),
 
   on(Actions.setTasksList, (state, { payload: { tasks } }) => {
+    const sortedTasks = [...tasks].sort(orderByDueDateAndPriority);
+    const overdueTasks = tasks.filter(isTaskOverdue);
+
     return {
       ...state,
-      tasksList: [...tasks].sort(orderByDueDateAndPriority),
+      tasksList: sortedTasks,
+      overdue: {
+        tasks: overdueTasks,
+        calculatedAt: moment().valueOf(),
+      }
+    };
+  }),
+
+  on(Actions.setOverdueTasks, (state, { payload: { tasks } }) => {
+    const overdueTasks = [...state.overdue.tasks];
+    tasks.forEach(task => {
+      const isOverdue = isTaskOverdue(task.emission);
+      const overdueTaskIndex = state.overdue.tasks.findIndex(overdue => overdue._id === task._id);
+
+      const isCurrentlyOverdue = overdueTaskIndex !== -1;
+
+      if (isCurrentlyOverdue && !isOverdue) {
+        // was overdue, shouldn't be anymore → remove
+        overdueTasks.splice(overdueTaskIndex, 1);
+      } else if (!isCurrentlyOverdue && isOverdue) {
+        // wasn't overdue, should be now → add
+        overdueTasks.push(task);
+      }
+    });
+
+    return {
+      ...state,
+      overdue: {
+        calculatedAt: tasks.length === 1 ? state.overdue.calculatedAt : moment().valueOf(),
+        tasks: overdueTasks,
+      }
     };
   }),
 
@@ -154,6 +193,11 @@ const _tasksReducer = createReducer(
   on(Actions.clearTaskGroup, state => ({
     ...state,
     taskGroup: { ...initialState.taskGroup },
+  })),
+
+  on(Actions.clearTaskList, state => ({
+    ...state,
+    tasksList: [],
   }))
 );
 
