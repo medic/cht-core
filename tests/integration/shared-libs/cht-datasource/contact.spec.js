@@ -2,9 +2,9 @@ const utils = require('@utils');
 const personFactory = require('@factories/cht/contacts/person');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
-const {getRemoteDataContext, Qualifier, Contact} = require('@medic/cht-datasource');
-const {expect} = require('chai');
-const {setAuth, removeAuth} = require('./auth');
+const { getRemoteDataContext, Qualifier, Contact } = require('@medic/cht-datasource');
+const { expect } = require('chai');
+const { setAuth, removeAuth } = require('./auth');
 
 describe('cht-datasource Contact', () => {
   // NOTE: this is a common word added to contacts to fetch them
@@ -30,18 +30,18 @@ describe('cht-datasource Contact', () => {
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
   const place1 = utils.deepFreeze({
     ...placeMap.get('health_center'),
-    contact: {_id: contact1._id},
+    contact: { _id: contact1._id },
     notes: commonWord
   });
   const place2 = utils.deepFreeze({
     ...placeMap.get('district_hospital'),
-    contact: {_id: contact2._id},
+    contact: { _id: contact2._id },
     notes: commonWord
   });
   const place0 = utils.deepFreeze({
     ...placeMap.get('clinic'),
     notes: commonWord,
-    contact: {_id: contact0._id},
+    contact: { _id: contact0._id },
     parent: {
       _id: place1._id, parent: {
         _id: place2._id
@@ -122,7 +122,7 @@ describe('cht-datasource Contact', () => {
     removeAuth();
   });
 
-  describe('v1',  () => {
+  describe('v1', () => {
     describe('get', async () => {
       const getContact = Contact.v1.get(dataContext);
       const getContactWithLineage = Contact.v1.getWithLineage(dataContext);
@@ -325,7 +325,8 @@ describe('cht-datasource Contact', () => {
         expect(responseCursor).to.not.equal(emptyNouveauCursor);
       });
 
-      it('returns a page of unique contact ids for when multiple fields match the same freetext with limit',
+      it(
+        'returns a page of unique contact ids for when multiple fields match the same freetext with limit',
         async () => {
           const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
           // NOTE: adding a limit of 4 to deliberately fetch 4 contacts with the given search word
@@ -336,9 +337,11 @@ describe('cht-datasource Contact', () => {
 
           expect(responseIds).to.deep.equalInAnyOrder(expectedContactIds);
           expect(responseCursor).to.not.equal(emptyNouveauCursor);
-        });
+        }
+      );
 
-      it('returns a page of unique contact ids for when multiple fields match the same freetext with lower limit',
+      it(
+        'returns a page of unique contact ids for when multiple fields match the same freetext with lower limit',
         async () => {
           const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
           const responsePage = await getUuidsPage(Qualifier.byFreetext(searchWord), null, twoLimit);
@@ -350,7 +353,8 @@ describe('cht-datasource Contact', () => {
           expect(responseIds).to.satisfy(subsetArray => {
             return subsetArray.every(item => expectedContactIds.includes(item));
           });
-        });
+        }
+      );
 
       it('throws error when limit is invalid', async () => {
         await expect(
@@ -359,7 +363,7 @@ describe('cht-datasource Contact', () => {
             ...Qualifier.byFreetext(placeFreetext)
           }, cursor, invalidLimit)
         ).to.be.rejectedWith(
-          `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`
+          { code: 400, error: `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].` }
         );
       });
 

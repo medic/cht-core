@@ -1,18 +1,25 @@
-import { Doc } from '../libs/doc';
-import contactTypeUtils from '@medic/contact-types-utils';
-import { Nullable, Page } from '../libs/core';
+import { Doc, isDoc } from '../libs/doc';
+import contactTypeUtils, { getContactTypes } from '@medic/contact-types-utils';
+import { hasField, Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
-import { fetchAndFilter, getDocById, queryDocsByKey } from './libs/doc';
+import { createDoc, fetchAndFilter, getDocById, queryDocsByKey, updateDoc } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
 import { InvalidArgumentError } from '../libs/error';
-import { validateCursor } from './libs/core';
+import { addParentToInput, ensureHasRequiredFields, ensureImmutability, validateCursor } from './libs/core';
+import * as Input from '../input';
 import { fetchHydratedDoc } from './libs/lineage';
 
 /** @internal */
 export namespace v1 {
-  const isPerson = (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is Person.v1.Person => {
+  /** @internal */
+  export const isPerson = (
+    settings: SettingsService
+  ) => (
+    doc: Nullable<Doc>,
+    uuid?: string
+  ): doc is Person.v1.Person => {
     if (!doc) {
       if (uuid) {
         logger.warn(`No person found for identifier [${uuid}].`);
@@ -73,13 +80,147 @@ export namespace v1 {
       const getDocsByPageWithPersonType = (
         limit: number,
         skip: number
-      ) => getDocsByPage([personType.contactType], limit, skip);
+      ) => getDocsByPage([ personType.contactType ], limit, skip);
 
       return await fetchAndFilter(
         getDocsByPageWithPersonType,
         isPerson(settings),
         limit
       )(limit, skip) as Page<Person.v1.Person>;
+    };
+  };
+
+  /** @internal */
+  export const create = ({
+    medicDb,
+    settings
+  }: LocalDataContext) => {
+    const createPersonDoc = createDoc(medicDb);
+    const getPersonDoc = getDocById(medicDb);
+    const ensureHasValidParentFieldAndReturnParentDoc = async (
+      input: Record<string, unknown>,
+      contactTypeObject: Record<string, unknown>
+    ): Promise<Nullable<Doc>> => {
+      const parentDoc = await getPersonDoc(input.parent as string);
+      if (parentDoc === null) {
+        throw new InvalidArgumentError(
+          `Parent with _id ${input.parent as string} does not exist.` //NoSONAR
+        );
+      }
+      // Check whether parent doc's `contact_type` or `type`(if `contact_type` is absent)
+      // matches with any of the allowed parents type.
+       
+      const typeToMatch = (parentDoc as Input.v1.PersonInput).contact_type 
+      || (parentDoc as Input.v1.PersonInput).type;
+      const parentTypeMatchWithAllowedParents = (contactTypeObject.parents as string[])
+        .find(parent => parent === typeToMatch);
+
+      if (!(parentTypeMatchWithAllowedParents)) {
+        throw new InvalidArgumentError(
+          `Parent of type ${JSON.stringify(typeToMatch)} is not allowed for ${JSON.stringify(
+            input.contact_type
+          )} type`
+        );
+      }
+      return parentDoc;
+    };
+
+    const validatePersonParent = async (
+      contactTypeObject: Record<string, unknown>,
+      input: Record<string, unknown>
+    ): Promise<Nullable<Doc>> => {
+      if (hasField(contactTypeObject, {name: 'parents', type: 'object'})) {
+        return await ensureHasValidParentFieldAndReturnParentDoc(input, contactTypeObject);
+      }
+
+      throw new InvalidArgumentError(
+        `Invalid type of person, cannot have parent for ${
+          JSON.stringify(input.contact_type)
+        } type`
+      );
+    };
+
+    const appendParent = async (
+      typeFoundInSettingsContactTypes: Record<string, unknown> | undefined,
+      input: Input.v1.PersonInput
+    ) => {
+      let parentDoc: Nullable<Doc> = null;
+      if (typeFoundInSettingsContactTypes) {
+        parentDoc = await validatePersonParent(typeFoundInSettingsContactTypes, input);
+      } else if (input.parent) {
+        parentDoc = await getPersonDoc(input.parent);
+      }
+
+      if (parentDoc === null) {
+        throw new InvalidArgumentError(
+          `Parent with _id ${input.parent} does not exist.`
+        );
+      }
+      input = addParentToInput(input, 'parent', parentDoc);
+      return input;
+    };
+
+    return async (input: Input.v1.PersonInput): Promise<Person.v1.Person> => {
+      input = Input.v1.validatePersonInput(input);
+      if (hasField(input, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
+        throw new InvalidArgumentError('Cannot pass `_rev` when creating a person.');
+      }
+
+      // This check can only be done when we have the contact_types from LocalDataContext.
+      const allowedContactTypes = getContactTypes(settings.getAll());
+      const typeFoundInSettingsContactTypes = allowedContactTypes.find(type => type.id === input.type);
+      const typeIsHardCodedPersonType = input.type === 'person';
+      if (!typeFoundInSettingsContactTypes && !typeIsHardCodedPersonType) {
+        throw new InvalidArgumentError('Invalid person type.');
+      }
+
+      // Append `contact_type` for newer versions.
+      if (typeFoundInSettingsContactTypes) {
+        input = {
+          ...input,
+          contact_type: input.type,
+          type: 'contact'
+        } as unknown as Input.v1.PersonInput;
+      }
+
+      input = await appendParent(typeFoundInSettingsContactTypes, input);
+      return await createPersonDoc(input) as Person.v1.Person;
+    };
+  };
+
+  const validateUpdatePersonPayload = (originalDoc: Person.v1.Person, updatePersonInput: Record<string, unknown>) => {
+    const immutableRequiredFields = new Set([ '_rev', '_id', 'reported_date', 'parent', 'type' ]);
+    if (originalDoc.type === 'contact') {
+      immutableRequiredFields.add('contact_type');
+    }
+    const mutableRequiredFields = new Set([ 'name' ]);
+    ensureHasRequiredFields(immutableRequiredFields, mutableRequiredFields, originalDoc, updatePersonInput);
+    ensureImmutability(immutableRequiredFields, originalDoc, updatePersonInput);
+    // It is safe to assign input's parent to original doc's dehyrated parent lineage
+    // as ensureImmutability ensures that hierarchy is valid.
+    updatePersonInput.parent = originalDoc.parent;
+  };
+
+  /** @internal*/
+  export const update = ({
+    medicDb,
+    settings
+  }: LocalDataContext) => {
+    const updatePerson = updateDoc(medicDb);
+    const getPerson = get({ medicDb, settings } as LocalDataContext);
+    return async (personInput: Record<string, unknown>): Promise<Person.v1.Person> => {
+      if (!isDoc(personInput)) {
+        throw new InvalidArgumentError(`Document for update is not a valid Doc ${JSON.stringify(personInput)}`);
+      }
+      const originalDoc = await getPerson({ uuid: personInput._id });
+      if (originalDoc === null) {
+        throw new InvalidArgumentError(`Person not found`);
+      }
+      if (personInput._rev !== originalDoc._rev) {
+        throw new InvalidArgumentError('`_rev` does not match');
+      }
+      validateUpdatePersonPayload(originalDoc, personInput);
+      return await updatePerson(personInput) as Person.v1.Person;
     };
   };
 }
