@@ -1,11 +1,11 @@
 const reportFactory = require('@factories/cht/reports/generic-report');
 const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 const userFactory = require('@factories/cht/users/users');
-const {getRemoteDataContext, Report, Qualifier} = require('@medic/cht-datasource');
+const { getRemoteDataContext, Report, Qualifier } = require('@medic/cht-datasource');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const {expect} = require('chai');
-const {setAuth, removeAuth} = require('./auth');
+const { setAuth, removeAuth } = require('./auth');
 const uuid = require('uuid').v4;
 
 describe('cht-datasource Report', () => {
@@ -117,11 +117,14 @@ describe('cht-datasource Report', () => {
   const allDocItems = [ contact0, contact1, contact2, place0, place1, place2, patient ];
   const allReports = [ report0, report1, report2, report3, report4, report5, report6, report7, report8 ];
   const dataContext = getRemoteDataContext(utils.getOrigin());
+  
+  const excludedProperties = ['_rev', 'reported_date'];
 
   before(async () => {
     setAuth();
     await utils.saveDocs(allDocItems);
     await utils.saveDocs(allReports);
+    await sentinelUtils.waitForSentinel();
     await utils.createUsers([ userNoPerms, offlineUser ]);
   });
 
@@ -137,7 +140,7 @@ describe('cht-datasource Report', () => {
 
       it('should return the report matching the provided UUID', async () => {
         const resReport = await getReport(Qualifier.byUuid(report0._id));
-        expect(resReport).excluding([ '_rev', 'reported_date' ]).to.deep.equal(report0);
+        expect(resReport).excluding(excludedProperties).to.deep.equal(report0);
       });
 
       it('returns null when no report is found for the UUID', async () => {
@@ -164,7 +167,7 @@ describe('cht-datasource Report', () => {
             }
           }
         };
-        expect(resReport).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+        expect(resReport).excludingEvery(excludedProperties).to.deep.equal({
           ...report0,
           contact: {
             ...contact0,
@@ -211,7 +214,7 @@ describe('cht-datasource Report', () => {
 
         const allReports = [ ...firstPage.data, ...secondPage.data ];
 
-        expect(allReports).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
+        expect(allReports).excludingEvery(excludedProperties).to.deep.equalInAnyOrder(expectedReportIds);
         expect(firstPage.data.length).to.be.equal(4);
         expect(secondPage.data.length).to.be.equal(2);
         expect(firstPage.cursor).to.not.equal(emptyNouveauCursor);
@@ -286,7 +289,7 @@ describe('cht-datasource Report', () => {
           docs.push(doc);
         }
 
-        expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
+        expect(docs).excluding(excludedProperties).to.deep.equalInAnyOrder(expectedReportIds);
       });
     });
   });
