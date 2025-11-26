@@ -439,7 +439,6 @@ const syncAndWaitForSuccess = async (expectReload, timeout = RELOAD_SYNC_TIMEOUT
         await hamburgerMenuSelectors.syncUnknown().isDisplayed()) {
       throw new Error('Failed to sync');
     }
-    await closeHamburgerMenu();
   } catch (err) {
     if (err.message !== 'Failed to sync') {
       console.error(err);
