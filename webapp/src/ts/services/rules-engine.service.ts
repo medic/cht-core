@@ -161,7 +161,7 @@ export class RulesEngineService implements OnDestroy {
 
   private async fetchOverdueTasksForAllContacts() {
     const allTasks = await this.fetchTaskDocsForAllContacts();
-    this.taskActions.setTasksList(allTasks);
+    this.taskActions.setTasksList(allTasks.map(task => task.emission));
     this.monitorTaskChanges();
   }
 
