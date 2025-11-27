@@ -1626,7 +1626,7 @@ const logFeedbackDocs = async (test) => {
     return false;
   }
 
-  const filename = `feedbackDocs-${test.parent} ${test.title}.json`.replace(/\s/g, '-');
+  const filename = `feedbackDocs-${test.parent} ${test.title}.json`.replace(/[^\w.-]/g, '-');
   const filePath = path.resolve(__dirname, '..', 'logs', filename);
   fs.writeFileSync(filePath, JSON.stringify(newFeedbackDocs, null, 2));
   existingFeedbackDocIds.push(...newFeedbackDocs.map(doc => doc._id));
