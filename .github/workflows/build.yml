@@ -187,8 +187,7 @@ jobs:
         if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
       - run: mkdir tests/logs
-      - run: python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-      - run: npm install -g cht-conf
+      - run: npm install -g github:medic/cht-conf#uplift-pyxform
       - run: npm ci
 
       - uses: nolar/setup-k3d-k3s@v1
@@ -308,10 +307,8 @@ jobs:
 
     - name: Create logs directory
       run: mkdir tests/logs
-    - name: Install pyxform
-      run:  python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
     - name: Install cht-conf
-      run:  npm install -g cht-conf
+      run:  npm install -g github:medic/cht-conf#uplift-pyxform
     - run: npm ci
 
     - name: Cache Chrome 90 Installer
