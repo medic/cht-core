@@ -124,24 +124,21 @@ const getRecipient = function(context, recipient, defaultToSender = true) {
 };
 
 const resolveMany = (context, recipients) => {
-  if (Array.isArray(recipients)) {
-    for (const recipient of recipients) {
-      if (typeof recipient !== 'string') {
-        continue;
-      }
-      if (!recipient) {
-        continue;
-      }
-      const phone = resolveRecipient(context, recipient);
+  if (typeof recipients === 'string') {
+    return resolveRecipient(context, recipients);
+  }
+
+  if (!Array.isArray(recipients)) {
+    return null;
+  }
+
+  for (const r of recipients) {
+    if (typeof r === 'string' && r) {
+      const phone = resolveRecipient(context, r);
       if (phone) {
         return phone;
       }
     }
-    return null;
-  }
-
-  if (typeof recipients === 'string') {
-    return resolveRecipient(context, recipients);
   }
 
   return null;
