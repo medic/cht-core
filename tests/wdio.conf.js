@@ -297,7 +297,11 @@ const baseConfig = {
   afterTest: async (test, context, { passed }) => {
     await utils.apiLogTestEnd(test.title);
     if (passed === false) {
-      await browser.takeScreenshot();
+      try {
+        await browser.takeScreenshot();
+      } catch (screenshotError) {
+        console.warn('Failed to take screenshot during error handling:', screenshotError);
+      }
     }
 
     const savedFeedbackDocs = await utils.logFeedbackDocs(test);
