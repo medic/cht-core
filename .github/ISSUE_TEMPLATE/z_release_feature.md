@@ -7,20 +7,19 @@ assignees: ''
 
 ---
 
-When development is ready to begin on a [Feature Release](https://docs.communityhealthtoolkit.org/core/releases/feature_releases/#release-names), an engineer should be nominated as a Release Engineer. They will be responsible for making sure the following tasks are followed, though not necessarily doing the work themselves.
+When development is ready to begin on a [Feature Release](https://docs.communityhealthtoolkit.org/core/releases/feature_releases/#release-names), a maintainer should be nominated as a Release Manager. They will be responsible for making sure the following tasks are followed, though not necessarily doing the work themselves.
 
 # Planning
 
-- [ ] Create a GH Milestone for the release.
+- [ ] Create a GH Milestone for the release and add this issue to it.
 - [ ] Add all the issues to be worked on to the Milestone.
 - [ ] Have an actual named deployment and specific end user that will be testing this Feature Release. They need to test in production, on the latest version. No speculative Feature Releases.
-- [ ] Assign an engineer as Release Engineer for this release.
+- [ ] Assign a maintainer as Release Manager for this release.
 
 # Development
 
 - [ ] Create a new release branch in `cht-core` from the most recent release and call it  `<major>.<minor>.<patch>-FR-<FEATURE-NAME>`. If latest is `3.15.0` and the feature is to "allow movies to be uploaded", call it `3.15.0-FR-movie-upload`. Done before the release so all PRs can be set to merge to this branch, and not to `master`.
 - [ ] Set the version number in `package.json` and `package-lock.json` and submit a PR. The easiest way to do this is to use `npm --no-git-tag-version version <feature-release>`.
-- [ ] Ensure QA is briefed and is partnering with the Engineers and any involved CHT Community members to ensure early and often checks of the feature are on track to be of production quality from the start.
 
 # Releasing
 
