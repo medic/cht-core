@@ -21,7 +21,7 @@ const hamburgerMenuSelectors = {
   syncButton: () => $('aria/Sync now'),
   syncSuccess: () => $('aria/All reports synced'),
   syncFailed: () => $('aria/Reports to sync'),
-  syncUnknon: () => $('aria/Unable to connect'),
+  syncUnknown: () => $('aria/Unable to connect'),
   syncInProgress: () => $('mat-sidenav-content').$('*="Currently syncing"'),
   aboutButton: () => $('aria/About'),
   trainingMaterialsButton: () => $('aria/Training materials'),
@@ -435,13 +435,14 @@ const syncAndWaitForSuccess = async (expectReload, timeout = RELOAD_SYNC_TIMEOUT
     }
     await openHamburgerMenu();
 
-    if (
-      await hamburgerMenuSelectors.syncFailed().isDisplayed() ||
-      await hamburgerMenuSelectors.syncUnknon().isDisplayed()) {
+    if (await hamburgerMenuSelectors.syncFailed().isDisplayed() ||
+        await hamburgerMenuSelectors.syncUnknown().isDisplayed()) {
       throw new Error('Failed to sync');
     }
   } catch (err) {
-    console.error(err);
+    if (err.message !== 'Failed to sync') {
+      console.error(err);
+    }
     return await syncAndWaitForSuccess(expectReload, timeout, retry - 1);
   }
 };
