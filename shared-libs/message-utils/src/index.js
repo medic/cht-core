@@ -96,21 +96,52 @@ const applyPhoneFilters = function(config, phone) {
   return phone;
 };
 
+const normalizeRecipient= function(recipient) {
+  if (Array.isArray(recipient)) {
+    return recipient.map(r => typeof r === 'string' ? r.trim() : r);
+  }
+
+  return typeof recipient === 'string'
+    ? recipient.trim()
+    : recipient;
+};
+
 const getRecipient = function(context, recipient, defaultToSender = true) {
   if (!context) {
     return;
   }
 
   const from = context.from || context.contact?.phone;
-  recipient = recipient?.trim();
+  recipient = normalizeRecipient(recipient);
 
   if (!recipient) {
     return from;
   }
 
-  const phone = resolveRecipient(context, recipient);
+  const phone = resolveMany(context, recipient);
+  const fallBackRecipient = Array.isArray(recipient) ? recipient[0]: recipient;
+  return phone || (defaultToSender && from) || fallBackRecipient;
+};
 
-  return phone || (defaultToSender && from) || recipient;
+const resolveMany = (context, recipients) => {
+  if (typeof recipients === 'string') {
+    return resolveRecipient(context, recipients);
+  }
+
+  if (!Array.isArray(recipients)) {
+    return null;
+  }
+
+  for (const r of recipients) {
+    if (typeof r === 'string' && r) {
+      const phone = resolveRecipient(context, r);
+      if (phone) {
+        return phone;
+      }
+    }
+  }
+
+  return null;
 };
 
 const resolveRecipient = function(context, recipient) {
@@ -120,10 +151,12 @@ const resolveRecipient = function(context, recipient) {
 
   const resolvers = [
     {
+      name: 'reporting_unit',
       match: r => r === 'reporting_unit',
       resolve: () => context.from || context.contact?.phone,
     },
     {
+      name: 'ancestor',
       match: r => r.startsWith('ancestor:'),
       resolve: r => {
         const type = r.split(':')[1];
@@ -135,6 +168,7 @@ const resolveRecipient = function(context, recipient) {
       },
     },
     {
+      name: 'linked',
       match: r => r.startsWith('link:'),
       resolve: r => {
         const tag = r.split(':')[1];
@@ -149,14 +183,17 @@ const resolveRecipient = function(context, recipient) {
       },
     },
     {
+      name: 'parent',
       match: r => r === 'parent',
       resolve: () => resolveAncestor(context, 2),
     },
     {
+      name: 'grandparent',
       match: r => r === 'grandparent',
       resolve: () => resolveAncestor(context, 3),
     },
     {
+      name: 'clinic',
       match: r => r === 'clinic',
       resolve: () => getClinicPhone(context.patient) ||
         getClinicPhone(context.place) ||
@@ -164,30 +201,36 @@ const resolveRecipient = function(context, recipient) {
         context.contact?.phone,
     },
     {
+      name: 'health_center',
       match: r => r === 'health_center',
       resolve: () => getHealthCenterPhone(context.patient) ||
         getHealthCenterPhone(context.place) ||
         getHealthCenterPhone(context),
     },
     {
+      name: 'district',
       match: r => r === 'district',
       resolve: () => getDistrictPhone(context.patient) ||
         getDistrictPhone(context.place) ||
         getDistrictPhone(context),
     },
     {
+      name: 'field',
       match: r => context.fields?.[r],
       resolve: r => context.fields[r],
     },
     {
+      name: 'property',
       match: r => context[r],
       resolve: r => context[r],
     },
     {
+      name: 'object_path',
       match: r => r.includes('.'),
       resolve: r => objectPath.get(context, r),
     },
     {
+      name: 'phone_number',
       match: r => phoneNumber.validate({}, r),
       resolve: r => r,
     }
@@ -325,10 +368,12 @@ const truncateMessage = function(parts, max) {
  * @param {Object} doc The couchdb document this message relates to
  * @param {Object} content An object with one of `translationKey` or a `messages`
  *        array for translation, or an already prepared `message` string.
- * @param {String} recipient A string to determine who the message should be sent to.
- *        One of: 'reporting_unit', 'clinic', 'parent', 'grandparent',
- *        the name of a property in `fields` or on the doc, a path to a
+ * @param {String|String[]} recipient A recipient definition. This can be a string or an array of recipients.
+ *        String or String value can be one of: 'reporting_unit', 'clinic', 'parent', 'grandparent',
+ *        the name of a property in `fields` or on the doc, a valid phone number directly, a path to a
  *        property on the doc.
+ *        If an array is provided, each entry is tried in order and the first successfully resolved phone number 
+ *       is used.
  * @param {Object} [extraContext={}] An object with additional values to
  *        provide as a context for templating. Properties: `patient` (object),
  *        `registrations` (array), `place` (object), `placeRegistrations` (array),
