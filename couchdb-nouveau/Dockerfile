@@ -1,4 +1,4 @@
-FROM couchdb:3.5.0-nouveau
+FROM couchdb:3.5.1-nouveau
 
 VOLUME /data/nouveau
 
