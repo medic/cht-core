@@ -31,6 +31,7 @@ const NOUVEAU_INDEXES_TO_MONITOR = {
     'medic': [
       'contacts_by_freetext',
       'reports_by_freetext',
+      'docs_by_replication_key'
     ],
   },
   sentinel: {},
