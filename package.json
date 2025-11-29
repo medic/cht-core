@@ -174,7 +174,7 @@
     "postcss": "^8.5.6",
     "pouchdb-adapter-memory": "^9.0.0",
     "raw-loader": "^4.0.2",
-    "rewire": "^7.0.0",
+    "rewire": "^9.0.1",
     "rosie": "^2.1.0",
     "sass": "^1.83.4",
     "sharp": "^0.34.3",
