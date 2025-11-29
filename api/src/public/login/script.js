@@ -68,6 +68,10 @@ const requestSSOLogin = function(e){
 };
 
 const requestTokenLogin = (retry = 20) => {
+  if (isSafariBrowser()) {
+    return; 
+  }
+  
   const url = document.getElementById('tokenLogin')?.action;
   const payload = JSON.stringify({ locale: selectedLocale });
   request('POST', url, payload, xmlhttp => {
