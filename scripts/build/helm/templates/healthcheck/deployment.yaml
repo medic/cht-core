@@ -9,7 +9,8 @@ spec:
   selector:
     matchLabels:
       cht.service: healthcheck
-  strategy: {}
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:

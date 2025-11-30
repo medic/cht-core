@@ -1627,7 +1627,7 @@ const logFeedbackDocs = async (test) => {
     return false;
   }
 
-  const filename = `feedbackDocs-${test.parent} ${test.title}.json`.replace(/\s/g, '-');
+  const filename = `feedbackDocs-${test.parent} ${test.title}.json`.replace(/[^\w.-]/g, '-');
   const filePath = path.resolve(__dirname, '..', 'logs', filename);
   fs.writeFileSync(filePath, JSON.stringify(newFeedbackDocs, null, 2));
   existingFeedbackDocIds.push(...newFeedbackDocs.map(doc => doc._id));
@@ -1641,6 +1641,16 @@ const escapeBranchName = (branch) => branch?.replace(/[^A-Za-z0-9.-]/g, '-');
 
 const toggleSentinelTransitions = () => sendSignal('sentinel', 'USR1');
 const runSentinelTasks = () => sendSignal('sentinel', 'USR2');
+
+const waitForIndexes = async () => {
+  let indexes = [];
+  do {
+    indexes = await request({ path: '/_active_tasks' });
+    if (indexes.length) {
+      await delayPromise(500);
+    }
+  } while (indexes.length);
+};
 
 module.exports = {
   db,
@@ -1725,4 +1735,5 @@ module.exports = {
   runCommand,
   deletePurgeDbs,
   saveLogs,
+  waitForIndexes,
 };
