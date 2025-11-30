@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "dependencies": {
+    "@medic/constants": "file:../shared-libs/constants",
     "@uirouter/angularjs": "^1.1.1",
     "angular": "^1.8.3",
     "angular-cookie": "^4.1.0",

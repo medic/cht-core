@@ -14,6 +14,7 @@ browserify \
   -r './node_modules/object-path:object-path' \
   -r './node_modules/bikram-sambat:bikram-sambat' \
   -r './node_modules/lodash/core:lodash/core' \
+  -r './shared-libs/constants:@medic/constants' \
   admin/src/js/main.js > api/build/static/admin/js/main.js
 
 echo "browserify-admin: done"

@@ -1,9 +1,10 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
+const { DOC_IDS } = require('@medic/constants');
 
 const DEFAULT_EXPECTED = [
-  'service-worker-meta',
+  DOC_IDS.SERVICE_WORKER_META,
   'settings',
   'resources',
   'branding',

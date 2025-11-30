@@ -9,6 +9,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@medic/cht-datasource": "file:../cht-datasource",
+    "@medic/constants": "file:../constants",
     "@medic/contacts": "file:../contacts",
     "@medic/lineage": "file:../lineage",
     "@medic/phone-number": "file:../phone-number",

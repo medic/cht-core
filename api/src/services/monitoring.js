@@ -5,6 +5,7 @@ const db = require('../db');
 const environment = require('@medic/environment');
 const logger = require('@medic/logger');
 const deployInfoService = require('./deploy-info');
+const { SENTINEL_METADATA } = require('@medic/constants');
 
 const DBS_TO_MONITOR = {
   'medic': environment.db,
@@ -70,7 +71,7 @@ const getAppVersion = async () => {
 
 const getSentinelProcessedSeq = () => {
   return db.sentinel
-    .get('_local/transitions-seq')
+    .get(SENTINEL_METADATA.TRANSITIONS_SEQ)
     .then(metadata => metadata.value)
     .catch(err => {
       if (err.status === 404) {

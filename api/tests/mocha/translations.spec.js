@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const properties = require('properties');
 const fs = require('fs');
 const rewire = require('rewire');
+const { DOC_TYPES } = require('@medic/constants');
 
 const db = require('../../src/db');
 const settings = require('../../src/services/settings');
@@ -99,7 +100,7 @@ describe('translations', () => {
     const docs = [ { doc: {
       _id: 'messages-en',
       code: 'en',
-      type: 'translations',
+      type: DOC_TYPES.TRANSLATIONS,
       generic: { hello: 'Gidday' }
     } } ];
 
@@ -116,7 +117,7 @@ describe('translations', () => {
         { // merged translations doc
           _id: 'messages-en',
           code: 'en',
-          type: 'translations',
+          type: DOC_TYPES.TRANSLATIONS,
           generic: { hello: 'Hello' }
         }
       ]);
@@ -130,7 +131,7 @@ describe('translations', () => {
     const docs = [ { doc: {
       _id: 'messages-en',
       code: 'en',
-      type: 'translations',
+      type: DOC_TYPES.TRANSLATIONS,
       generic: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
     } } ];
     properties.parse.callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
@@ -153,7 +154,7 @@ describe('translations', () => {
     const docs = [ { doc: {
       _id: 'messages-en',
       code: 'en',
-      type: 'translations',
+      type: DOC_TYPES.TRANSLATIONS,
       generic: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
     } } ];
 
@@ -170,7 +171,7 @@ describe('translations', () => {
         { // merged translations doc
           _id: 'messages-en',
           code: 'en',
-          type: 'translations',
+          type: DOC_TYPES.TRANSLATIONS,
           generic: {
             hello: 'Hello UPDATED',
             bye: 'Goodbye UPDATED',
@@ -189,7 +190,7 @@ describe('translations', () => {
     const docs = [ { doc: {
       _id: 'messages-en',
       code: 'en',
-      type: 'translations',
+      type: DOC_TYPES.TRANSLATIONS,
       generic: { empty: '' }
     } } ];
     properties.parse.callsArgWith(1, null, { empty: '' });
@@ -207,7 +208,7 @@ describe('translations', () => {
     const docs = [ { doc: {
       _id: 'messages-en',
       code: 'en',
-      type: 'translations',
+      type: DOC_TYPES.TRANSLATIONS,
       generic: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
     } } ];
 
@@ -223,7 +224,7 @@ describe('translations', () => {
       chai.expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([
         { // new
           _id: 'messages-fr',
-          type: 'translations',
+          type: DOC_TYPES.TRANSLATIONS,
           code: 'fr',
           name: 'Français (French)',
           generic: {
@@ -245,7 +246,7 @@ describe('translations', () => {
       doc: {
         _id: 'messages-en',
         code: 'en',
-        type: 'translations',
+        type: DOC_TYPES.TRANSLATIONS,
         generic: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
       }
     }];
@@ -263,7 +264,7 @@ describe('translations', () => {
     chai.expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([
       { // new
         _id: 'messages-ar',
-        type: 'translations',
+        type: DOC_TYPES.TRANSLATIONS,
         code: 'ar',
         name: 'عربي (Arabic)',
         generic: {
@@ -282,7 +283,7 @@ describe('translations', () => {
 
     const docs = [ { doc: {
       _id: 'messages-en',
-      type: 'translations',
+      type: DOC_TYPES.TRANSLATIONS,
       code: 'en',
       generic: { hello: 'Hello', bye: 'Goodbye' }
     } } ];
@@ -300,7 +301,7 @@ describe('translations', () => {
         {
           _id: 'messages-fr',
           code: 'fr',
-          type: 'translations',
+          type: DOC_TYPES.TRANSLATIONS,
           generic: {
             hello: 'Hello UPDATED',
             bye: 'Goodbye UPDATED',
@@ -321,13 +322,13 @@ describe('translations', () => {
       { doc: {
         _id: 'messages-en',
         code: 'en',
-        type: 'translations',
+        type: DOC_TYPES.TRANSLATIONS,
         generic: { hello: 'Hello EN', bye: 'Goodbye EN CUSTOMISED' }
       } },
       { doc: {
         _id: 'messages-fr',
         code: 'fr',
-        type: 'translations',
+        type: DOC_TYPES.TRANSLATIONS,
         generic: { hello: 'Hello FR', bye: 'Goodbye FR CUSTOMISED' }
       } }
     ];
@@ -352,7 +353,7 @@ describe('translations', () => {
         {
           _id: 'messages-en',
           code: 'en',
-          type: 'translations',
+          type: DOC_TYPES.TRANSLATIONS,
           generic: {
             hello: 'Hello EN UPDATED',
             bye: 'Goodbye EN UPDATED',
@@ -362,7 +363,7 @@ describe('translations', () => {
         {
           _id: 'messages-fr',
           code: 'fr',
-          type: 'translations',
+          type: DOC_TYPES.TRANSLATIONS,
           generic: {
             hello: 'Hello FR UPDATED',
             bye: 'Goodbye FR UPDATED',
@@ -381,7 +382,7 @@ describe('translations', () => {
       { doc: {
         _id: 'messages-en',
         code: 'en',
-        type: 'translations',
+        type: DOC_TYPES.TRANSLATIONS,
         generic: { hello: null, bye: 'Goodbye' }
       } }
     ];
@@ -399,7 +400,7 @@ describe('translations', () => {
         {
           _id: 'messages-en',
           code: 'en',
-          type: 'translations',
+          type: DOC_TYPES.TRANSLATIONS,
           generic: {
             hello: 'hello',
             bye: 'Goodbye'
@@ -417,13 +418,13 @@ describe('translations', () => {
       { doc: {
         _id: 'messages-en',
         code: 'en',
-        type: 'translations',
+        type: DOC_TYPES.TRANSLATIONS,
         generic: { hello: 'Hello', bye: 'Goodbye' }
       } },
       { doc: {
         _id: 'messages-ne',
         code: 'ne',
-        type: 'translations',
+        type: DOC_TYPES.TRANSLATIONS,
         generic: { bye: 'Goodbye' }
       } }
     ];
@@ -442,7 +443,7 @@ describe('translations', () => {
         {
           _id: 'messages-ne',
           code: 'ne',
-          type: 'translations',
+          type: DOC_TYPES.TRANSLATIONS,
           generic: {
             hello: 'hello', // defaults to the translation key
             bye: 'Goodbye'
@@ -460,7 +461,7 @@ describe('translations', () => {
       { doc: {
         _id: 'messages-en',
         code: 'en',
-        type: 'translations',
+        type: DOC_TYPES.TRANSLATIONS,
         generic: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
       } }
     ];
@@ -478,7 +479,7 @@ describe('translations', () => {
         {
           _id: 'messages-en',
           code: 'en',
-          type: 'translations',
+          type: DOC_TYPES.TRANSLATIONS,
           generic: {
             hello: 'hello',
             bye: '0',
@@ -499,7 +500,7 @@ describe('translations', () => {
       doc: {
         _id: 'messages-ar',
         code: 'ar',
-        type: 'translations',
+        type: DOC_TYPES.TRANSLATIONS,
         generic: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
       }
     }];
@@ -513,7 +514,7 @@ describe('translations', () => {
       {
         _id: 'messages-ar',
         code: 'ar',
-        type: 'translations',
+        type: DOC_TYPES.TRANSLATIONS,
         rtl: true,
         generic: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
       }
@@ -524,14 +525,14 @@ describe('translations', () => {
     it('should return all translation docs', () => {
       sinon.stub(db.medic, 'allDocs').resolves({
         rows: [
-          { doc: { _id: 'messages-en', type: 'translations', code: 'en', generic: {} } },
-          { doc: { _id: 'messages-fr', type: 'translations', code: 'en', values: {} } },
+          { doc: { _id: 'messages-en', type: DOC_TYPES.TRANSLATIONS, code: 'en', generic: {} } },
+          { doc: { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, code: 'en', values: {} } },
         ],
       });
       return translations.getTranslationDocs().then(results => {
         chai.expect(results).to.deep.equal([
-          { _id: 'messages-en', type: 'translations', code: 'en', generic: {} },
-          { _id: 'messages-fr', type: 'translations', code: 'en', values: {} },
+          { _id: 'messages-en', type: DOC_TYPES.TRANSLATIONS, code: 'en', generic: {} },
+          { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, code: 'en', values: {} },
         ]);
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([
@@ -544,15 +545,15 @@ describe('translations', () => {
       sinon.stub(db.medic, 'allDocs').resolves({
         rows: [
           { doc: { _id: 'messages-en', type: 'not-translations', code: 'en', generic: {} } },
-          { doc: { _id: 'messages-fr', type: 'translations', values: {} } },
+          { doc: { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, values: {} } },
           { doc: { _id: 'messages-fr____rev____tombstone', type: 'tombstone', values: {} } },
-          { doc: { _id: 'messages-de', type: 'translations', code: 'en' }, },
-          { doc: { _id: 'messages-es', type: 'translations', code: 'es', generic: {} } },
+          { doc: { _id: 'messages-de', type: DOC_TYPES.TRANSLATIONS, code: 'en' }, },
+          { doc: { _id: 'messages-es', type: DOC_TYPES.TRANSLATIONS, code: 'es', generic: {} } },
         ],
       });
       return translations.getTranslationDocs().then(results => {
         chai.expect(results).to.deep.equal([
-          { _id: 'messages-es', type: 'translations', code: 'es', generic: {} },
+          { _id: 'messages-es', type: DOC_TYPES.TRANSLATIONS, code: 'es', generic: {} },
         ]);
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([
@@ -597,15 +598,15 @@ describe('translations', () => {
         });
         sinon.stub(db.medic, 'allDocs').resolves({
           rows: [
-            { doc: { _id: 'messages-en', type: 'translations', code: 'en', generic: {}, enabled: true } },
-            { doc: { _id: 'messages-fr', type: 'translations', code: 'fr', generic: {}, enabled: false } },
-            { doc: { _id: 'messages-es', type: 'translations', code: 'es', generic: {}, enabled: true } },
+            { doc: { _id: 'messages-en', type: DOC_TYPES.TRANSLATIONS, code: 'en', generic: {}, enabled: true } },
+            { doc: { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, code: 'fr', generic: {}, enabled: false } },
+            { doc: { _id: 'messages-es', type: DOC_TYPES.TRANSLATIONS, code: 'es', generic: {}, enabled: true } },
           ],
         });
         const enabledLocales = await translations.getEnabledLocales();
         chai.expect(enabledLocales).to.deep.equal([
-          { _id: 'messages-en', type: 'translations', code: 'en', generic: {}, enabled: true },
-          { _id: 'messages-fr', type: 'translations', code: 'fr', generic: {}, enabled: false },
+          { _id: 'messages-en', type: DOC_TYPES.TRANSLATIONS, code: 'en', generic: {}, enabled: true },
+          { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, code: 'fr', generic: {}, enabled: false },
         ]);
       });
     });
@@ -615,16 +616,16 @@ describe('translations', () => {
         sinon.stub(settings, 'get').resolves({});
         sinon.stub(db.medic, 'allDocs').resolves({
           rows: [
-            { doc: { _id: 'messages-en', type: 'translations', code: 'en', generic: {} } },
-            { doc: { _id: 'messages-fr', type: 'translations', code: 'fr', generic: {} } },
-            { doc: { _id: 'messages-es', type: 'translations', code: 'es', generic: {} } },
+            { doc: { _id: 'messages-en', type: DOC_TYPES.TRANSLATIONS, code: 'en', generic: {} } },
+            { doc: { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, code: 'fr', generic: {} } },
+            { doc: { _id: 'messages-es', type: DOC_TYPES.TRANSLATIONS, code: 'es', generic: {} } },
           ],
         });
         const enabledLocales = await translations.getEnabledLocales();
         chai.expect(enabledLocales).to.deep.equal([
-          { _id: 'messages-en', type: 'translations', code: 'en', generic: {} },
-          { _id: 'messages-fr', type: 'translations', code: 'fr', generic: {} },
-          { _id: 'messages-es', type: 'translations', code: 'es', generic: {} },
+          { _id: 'messages-en', type: DOC_TYPES.TRANSLATIONS, code: 'en', generic: {} },
+          { _id: 'messages-fr', type: DOC_TYPES.TRANSLATIONS, code: 'fr', generic: {} },
+          { _id: 'messages-es', type: DOC_TYPES.TRANSLATIONS, code: 'es', generic: {} },
         ]);
       });
     });
