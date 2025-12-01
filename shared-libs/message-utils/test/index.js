@@ -622,6 +622,16 @@ describe('messageUtils', () => {
         .should.equal('foo');
     });
 
+    it('returns trimmed phone number from array when first field is invalid', () => {
+      utils._getRecipient({from: 'foo'}, ['unknown_field', ' +18005550123 '], false)
+        .should.equal('+18005550123');
+    });
+
+    it('returns doc.from when recipient is white space.', () => {
+      utils._getRecipient({from: 'foo'}, ' ', false)
+        .should.equal('foo');
+    });
+
     it('returns doc.from when recipient is undefined and default_to_sender is false.', () => {
       utils._getRecipient({from: 'foo'}, '', false)
         .should.equal('foo');

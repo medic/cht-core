@@ -97,13 +97,10 @@ const applyPhoneFilters = function(config, phone) {
 };
 
 const normalizeRecipient= function(recipient) {
-  if (Array.isArray(recipient)) {
-    return recipient.map(r => typeof r === 'string' ? r.trim() : r);
-  }
-
-  return typeof recipient === 'string'
-    ? recipient.trim()
-    : recipient;
+  const toArray = Array.isArray(recipient) ? recipient : [recipient];  
+  return toArray.map(
+    r => (r === null ? '': String(r).trim())
+  ).filter(r => r.length > 0);
 };
 
 const getRecipient = function(context, recipient, defaultToSender = true) {
@@ -114,33 +111,21 @@ const getRecipient = function(context, recipient, defaultToSender = true) {
   const from = context.from || context.contact?.phone;
   recipient = normalizeRecipient(recipient);
 
-  if (!recipient) {
+  if (!recipient.length) {
     return from;
   }
 
   const phone = resolveMany(context, recipient);
-  const fallBackRecipient = Array.isArray(recipient) ? recipient[0]: recipient;
-  return phone || (defaultToSender && from) || fallBackRecipient;
+  return phone || (defaultToSender && from) || recipient[0];
 };
 
 const resolveMany = (context, recipients) => {
-  if (typeof recipients === 'string') {
-    return resolveRecipient(context, recipients);
+  for (const recipient of recipients) {
+    const phone = resolveRecipient(context, recipient);
+    if (phone) {
+      return phone;
+    }    
   }
-
-  if (!Array.isArray(recipients)) {
-    return null;
-  }
-
-  for (const r of recipients) {
-    if (typeof r === 'string' && r) {
-      const phone = resolveRecipient(context, r);
-      if (phone) {
-        return phone;
-      }
-    }
-  }
-
   return null;
 };
 
