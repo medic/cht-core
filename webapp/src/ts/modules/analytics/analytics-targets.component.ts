@@ -109,4 +109,12 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
         });
       });
   }
+
+  getSubtitleKey(subtitleKey: string, reportingPeriod: ReportingPeriod): string {
+    if (!subtitleKey) {
+      return '';
+    }
+    return reportingPeriod === ReportingPeriod.CURRENT ? 'this_month' : 'all_time';
+  }
+
 }
