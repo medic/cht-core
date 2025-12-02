@@ -44,6 +44,26 @@ describe('Replication Limit Log service', () => {
           chai.expect(putStub.args[0][0]).to.deep.include(expectedDoc);
         });
     });
+
+    it('should persist log with pre-purge count', () => {
+      const getStub = sinon.stub(db.medicLogs, 'get').returns(Promise.reject({ status: 404 }));
+      const putStub = sinon.stub(db.medicLogs, 'put').returns(Promise.resolve());
+      const logType = replicationLimitLogService.LOG_TYPE;
+      const expectedDoc = {
+        _id: logType + 'userXYZ',
+        user: 'userXYZ',
+        count: 100,
+        prePurgeCount: 500
+      };
+
+      return replicationLimitLogService
+        .put('userXYZ', 100, 500)
+        .then(() => {
+          chai.expect(getStub.called).to.be.true;
+          chai.expect(putStub.called).to.be.true;
+          chai.expect(putStub.args[0][0]).to.deep.include(expectedDoc);
+        });
+    });
   });
 
   describe('get()', () => {
@@ -158,6 +178,23 @@ describe('Replication Limit Log service', () => {
       };
 
       const result = replicationLimitLogService._isLogDifferent({}, newLog);
+
+      chai.expect(result).to.be.true;
+    });
+
+    it('should return true when pre-purge count is different enough', () => {
+      const oldLog = {
+        date: 1583944505000,
+        count: 50,
+        prePurgeCount: 100
+      };
+      const newLog = {
+        date: 1583944505000,
+        count: 50,
+        prePurgeCount: 250
+      };
+
+      const result = replicationLimitLogService._isLogDifferent(oldLog, newLog);
 
       chai.expect(result).to.be.true;
     });

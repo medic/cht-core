@@ -42,7 +42,11 @@ const isLogDifferent = (oldLog, newLog) => {
 
   const countDiff = Math.abs(oldLog.count - newLog.count);
 
-  if (countDiff > LOG_COUNT_DIFF) {
+  const oldPrePurge = oldLog.prePurgeCount || 0;
+  const newPrePurge = newLog.prePurgeCount || 0;
+  const prePurgeDiff = Math.abs(oldPrePurge - newPrePurge);
+
+  if (countDiff > LOG_COUNT_DIFF || prePurgeDiff > LOG_COUNT_DIFF) {
     return true;
   }
 
@@ -77,11 +81,12 @@ const getReplicationLimitLog = (userName) => {
     });
 };
 
-const logReplicationLimit = (userName, count) => {
+const logReplicationLimit = (userName, count, prePurgeCount) => {
   const info = {
     user: userName,
     date: moment().valueOf(),
-    count
+    count,
+    prePurgeCount
   };
 
   return persistLog(info)
