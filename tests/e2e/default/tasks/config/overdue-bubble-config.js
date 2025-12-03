@@ -1,10 +1,24 @@
 const oneDay = 24 * 60 * 60 * 1000;
+const isFormArraySubmittedInWindow = (reports, formArray, start, end, count) => {
+  end = end || start + 10 * oneDay;
+  let found = false;
+  let reportCount = 0;
+  reports.forEach(function (report) {
+    if (formArray.includes(report.form)) {
+      if (report.reported_date >= start && report.reported_date <= end) {
+        found = true;
+        if (count) {
+          reportCount++;
+        }
+      }
+    }
+  });
+
+  return count ? reportCount >= count : found;
+};
 
 const returnsTrue = function () {
   return true;
-};
-const returnsFalse = function () {
-  return false;
 };
 
 const createTask = function(name, dueDays) {
@@ -15,8 +29,10 @@ const createTask = function(name, dueDays) {
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: returnsTrue,
-    resolvedIf: returnsFalse,
-    actions: [{ type: 'report', form: name }],
+    resolvedIf: function (contact) {
+      return isFormArraySubmittedInWindow(contact.reports, ['home_visit'], contact.contact.reported_date);
+    },
+    actions: [{ type: 'report', form: 'home_visit' }],
     events: [
       {
         id: name,
@@ -38,4 +54,6 @@ module.exports = [
   // Some future tasks that should not be counted
   createTask('task_future_1', 1),
   createTask('task_future_2', 2),
+  createTask('task_future_3', 5),
+  createTask('task_future_4', 10),
 ];

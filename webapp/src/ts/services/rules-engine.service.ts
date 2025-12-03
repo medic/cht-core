@@ -161,7 +161,9 @@ export class RulesEngineService implements OnDestroy {
 
   private async fetchOverdueTasksForAllContacts() {
     const allTasks = await this.fetchTaskDocsForAllContacts();
-    this.taskActions.setTasksList(allTasks.map(task => task.emission));
+    this.ngZone.run(() => {
+      this.taskActions.setTasksList(allTasks.map(task => task.emission));
+    });
     this.monitorTaskChanges();
   }
 
@@ -312,7 +314,9 @@ export class RulesEngineService implements OnDestroy {
       callback: change => {
         const { doc } = change;
         if (doc.type === 'task') {
-          this.taskActions.setOverdueTasks([doc]);
+          this.ngZone.run(() => {
+            this.taskActions.setOverdueTasks([doc]);
+          });
         }
       }
     });
