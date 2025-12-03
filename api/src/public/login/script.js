@@ -68,7 +68,7 @@ const requestSSOLogin = function(e){
 };
 
 const requestTokenLogin = (retry = 20) => {
-  if (isSafariBrowser()) {
+  if (!isUsingSupportedBrowser()) {
     return; 
   }
   
